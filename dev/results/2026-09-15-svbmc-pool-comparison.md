@@ -20,9 +20,13 @@ ELBO, further from it than the raw estimate, and the shortfall deepens
 with `M`. On the other five noisy conditions the raw stacked ELBO
 overshoots by 0.25 to 1.3 nats and grows with `M`, while the capped
 headline stays within 0.05 to 0.56 nats, which is what the cap was
-written for. This report covers stage D; the Phase 2 scoring of its
-cells by the cross-run estimator and the `M = 32` cells of the
-integrated arm are reported in sections added as they complete.
+written for. The Phase 2 cross-run estimator, scored on the same cells,
+does not repair that condition: it is accurate on the noiseless controls
+and on Rosenbrock, under-predicts by 0.2 to 0.7 nats on the typical
+noisy conditions, and lands as low as the cap on Student D8; and no
+weight-aware variant of the cap separates the heavy-tailed case from
+the typical one. The `M = 32` cells of the integrated arm are reported
+in a section added when that run completes.
 
 Tracked outputs:
 [`experiments/svbmc_pool/stack_20260914/`](../experiments/svbmc_pool/stack_20260914/)
@@ -199,6 +203,102 @@ every source: both arms imported gpyreg 1.2.1 (`9e70e6b`) from the
 frozen worktree named by `--gpyreg-source`, the integrated arm PyVBMC at
 `744864a` with a clean tree, the original arm `svbmc` 0.1.1 from the
 pinned checkout, Torch 2.14.0 (CPU) from the recorded overlay.
+
+## Phase 2: the cross-run estimator on these cells
+
+The optimism note's Phase 2 estimator (`svbmc_honest_elbo.py`; the
+[pilot report](2026-09-14-svbmc-honest-elbo-pilot.md) defines every
+quantity) scored every cell of stage D: for each component of a stacked
+posterior, the GPs of the *other* runs that cover it estimate its
+expected log joint, and the weighted sum replaces the runs' own
+estimates, which the weight optimization selected on. 695 runs checked
+and 560 cells scored in 2.0 hours (100 draws per component, coverage
+ratio 2, median combination; tracked under
+[`experiments/svbmc_pool/phase2_20260915/`](../experiments/svbmc_pool/phase2_20260915/)).
+Bias of the expected log joint against `e_log_joint_mc`, medians over
+cells with the estimator's bootstrap intervals in `summary.md`; the
+entropy is common to the three estimates, so these are the ELBO biases
+of the criterion 3 table up to the entropy's 0.03. `covered` is the
+weighted fraction of components some other run covers.
+
+| condition | M | raw | capped (class) | honest | covered |
+|---|---|---|---|---|---|
+| multisensory noise 3 | 2 / 4 / 8 / 16 | +0.79 / +1.07 / +1.17 / +1.32 | +0.41 / +0.56 / +0.40 / +0.42 | −0.30 / −0.48 / −0.71 / −0.68 | 0.97 / 1.00 / 1.00 / 0.99 |
+| multisensory noise 1.3 | 2 / 4 / 8 / 16 | +0.40 / +0.48 / +0.56 / +0.62 | +0.12 / +0.11 / +0.15 / +0.17 | −0.15 / −0.26 / −0.24 / −0.29 | 0.98 / 0.98 / 1.00 / 1.00 |
+| Rosenbrock noise 3 | 2 / 4 / 8 / 16 | +0.25 / +0.35 / +0.53 / +0.73 | +0.10 / +0.08 / +0.10 / +0.11 | −0.01 / −0.07 / −0.05 / +0.04 | 0.98 / 1.00 / 1.00 / 1.00 |
+| GMM noise 3 | 2 / 4 / 8 / 16 | +0.29 / +0.31 / +0.51 / +0.71 | +0.08 / +0.01 / +0.07 / +0.04 | +0.15 / −0.21 / −0.29 / −0.29 | 0.24 / 0.70 / 0.90 / 1.00 |
+| ring noise 3 | 2 / 4 / 8 / 16 | +0.40 / +0.40 / +0.49 / +0.76 | +0.20 / +0.16 / +0.16 / +0.14 | +0.22 / +0.17 / −0.12 / −0.10 | 0.16 / 0.47 / 0.81 / 1.00 |
+| Student D8 noise 3 | 2 / 4 / 8 / 16 | −0.08 / −0.11 / +0.25 / +0.27 | −0.91 / −1.18 / −1.39 / −1.75 | −1.18 / −1.49 / −1.42 / −1.40 | 1.00 / 1.00 / 1.00 / 1.00 |
+| GMM (noiseless) | 2 / 4 / 8 / 16 | +0.01 / +0.01 / +0.01 / +0.01 | −0.00 / −0.01 / −0.02 / −0.02 | +0.01 / +0.01 / −0.00 / +0.01 | 0.28 / 0.63 / 0.99 / 1.00 |
+| multisensory (noiseless) | 2 / 4 / 8 / 16 | +0.05 / +0.04 / +0.07 / +0.05 | −0.04 / −0.01 / +0.03 / +0.02 | +0.00 / −0.02 / −0.01 / −0.03 | 0.85 / 0.96 / 0.99 / 0.99 |
+
+Four readings:
+
+- **Accurate where the pilot said it would be.** Within 0.01 nats on the
+  noiseless GMM and 0.035 on the noiseless multisensory control at every
+  `M`, and within 0.07 on Rosenbrock, where it beats the cap at `M ≥ 8`.
+  On Rosenbrock nine runs are flagged by the estimator's own-run check
+  (`z > 4`): the GPs rebuilt on the analysis machine disagree with the
+  stored statistics, the platform sensitivity described under
+  "Limitations", so that condition's honest values carry that caveat.
+- **The pilot's under-prediction holds at scale.** On noisy GMM and on
+  both multisensory conditions the honest estimate sits 0.2 to 0.7 nats
+  *below* the reference, the shortfall growing with `M` on multisensory
+  noise 3, while the cap sits 0.01 to 0.56 above it; on those three
+  conditions the cap is the closer estimate at every `M ≥ 4`. On the
+  ring the two are comparable, the honest estimate closer at `M ≥ 8`.
+- **Student D8 is not repaired.** The honest estimate is as low as the
+  cap, 1.2 to 1.5 nats below the reference, while the raw value is
+  within 0.3.
+- **One mechanism fits both failures on Student.** The runs' GPs carry a
+  negative-quadratic mean, which falls off faster than a Student-t log
+  density; away from a run's own data, in the tails, the GP's prediction
+  sits well below the truth. The median over all components leans on the
+  tail components, and the cross-run estimate leans on other runs'
+  predictions where they have little data; both are dragged down. The
+  raw value is built on the selected central components with their own
+  data, and is within 0.3. This is a reading consistent with the
+  numbers, not a demonstration; the estimator's decomposition records
+  (the data each run had at each component) are where to test it.
+
+## Weight-aware caps
+
+The cap's failure on Student D8 suggested a cap that respects the
+weights: order the components by weight, take the shortest prefix whose
+cumulative mass reaches `κ` (the crossing component included, so the set
+is never empty), and cap the stacked expected log joint at the median
+of that prefix's `I_k`; `κ = 1` includes every component and is the cap
+the class applies. `svbmc_cap_kappa.py` scored this on stage D's
+recorded cells without refitting (each stack rebuilt from the artifacts
+with the recorded seeds and constructed; the rebuild reproduces the raw
+value and the class's cap exactly), plus the weighted median of the
+`I_k`; tracked under
+[`experiments/svbmc_pool/cap_kappa_20260915/`](../experiments/svbmc_pool/cap_kappa_20260915/).
+Median bias against `elbo_mc` at `M = 16`, with the fraction of cells
+the cap binds on in brackets:
+
+| condition (`M = 16`) | raw | κ 0.8 | κ 0.9 | κ 0.95 | κ 0.99 | κ 1 (class) |
+|---|---|---|---|---|---|---|
+| multisensory noise 3 | +1.31 | +1.30 [0.40] | +1.02 [1.00] | +0.87 [1.00] | +0.68 [1.00] | +0.44 [1.00] |
+| multisensory noise 1.3 | +0.61 | +0.60 [0.40] | +0.51 [0.80] | +0.41 [1.00] | +0.28 [1.00] | +0.16 [1.00] |
+| Rosenbrock noise 3 | +0.74 | +0.74 [0.10] | +0.72 [0.60] | +0.55 [0.90] | +0.30 [1.00] | +0.11 [1.00] |
+| GMM noise 3 | +0.73 | +0.71 [0.30] | +0.66 [0.90] | +0.58 [1.00] | +0.33 [1.00] | +0.05 [1.00] |
+| ring noise 3 | +0.76 | +0.76 [0.20] | +0.70 [0.70] | +0.54 [0.90] | +0.39 [1.00] | +0.14 [1.00] |
+| Student D8 noise 3 | +0.27 | +0.17 [0.70] | −0.32 [1.00] | −0.73 [1.00] | −1.16 [1.00] | −1.78 [1.00] |
+
+For `κ ≤ 0.8` the cap binds on at most 30 % of the cells and the
+headline is the raw value on every condition; `κ` from 0.9 to 0.99
+binds on most cells but leaves 0.3 to 1.0 nats of the optimism on the
+typical noisy conditions while still over-correcting Student by 0.3 to
+1.2; the weighted median is the raw value everywhere; and on Student
+`κ = 0.8` is the least wrong at `M = 8` and `16` (0.14 and 0.18) and
+`κ ≤ 0.7` at `M ≤ 4`. The reading is that the class's cap works
+*because* it includes the low-weight components: they act as a control
+group for the winner's curse of the selected ones, and the debiasing
+is the gap between the selected and the unselected. On Student D8 the
+unselected components are worse than the selected ones for a real
+reason, the tails, not by selection luck, so the control group is
+biased, and no `κ` separates that case from the typical one.
 
 ## Limitations
 

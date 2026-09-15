@@ -1616,6 +1616,53 @@ draft had left open:
   arm alone follow it, 10 repetitions on all eight conditions, about
   6 minutes per cell from the measured `M = 16` cost, so about 8 hours
   rather than the 2 the cost paragraph's extrapolation gave.
+- 2026-09-15: the Phase 2 scoring of stage D's cells is done (695 runs
+  checked, 560 cells, 2.0 hours; 100 draws per component, coverage
+  ratio 2, median combination; tracked under
+  `dev/experiments/svbmc_pool/phase2_20260915/`, the 27.6 MB
+  `results.json` and the per-cell arrays with the raw directory). The
+  cross-run estimate of the expected log joint is within 0.01 nats on
+  the noiseless GMM and 0.035 on the noiseless multisensory control at
+  every `M`, and within 0.07 on Rosenbrock (where nine runs are flagged
+  by the own-run check, the platform sensitivity of that condition's
+  GPs); it under-predicts on noisy GMM (−0.21 to −0.29 at `M ≥ 4`) and
+  on both multisensory conditions (−0.15 to −0.29 at noise 1.3, −0.30
+  to −0.71 at noise 3, growing with `M`), the pilot's systematic
+  under-prediction at scale, where the component-median cap is closer
+  (+0.005 to +0.07 and +0.11 to +0.56); on the ring the two are
+  comparable (honest +0.22 to −0.10, cap +0.20 to +0.14); and on Student
+  D8 it is as low as the cap, −1.18 to −1.49 against the cap's −0.91 to
+  −1.75, with the raw within 0.27. One reading fits both failures on
+  Student: the GPs' negative-quadratic mean falls off faster than a
+  Student-t log density, so predictions away from a run's own data,
+  which is where the tail components and the other runs' evaluations
+  sit, are well below the truth, and any estimator built on them (the
+  median over all components, the cross-run estimates) is dragged down
+  while the raw value, built on the selected central components with
+  their own data, is not; the estimator's decomposition records are
+  where to test that. The weight-aware cap the PI proposed the same day
+  was tried on the recorded cells without refitting
+  (`dev/scripts/svbmc_cap_kappa.py`, tracked under
+  `dev/experiments/svbmc_pool/cap_kappa_20260915/`): order the
+  components by weight, take the shortest prefix carrying mass `κ`, the
+  crossing component included, and cap at the median of that prefix's
+  expected log joints; `κ = 1` is the class's cap and reproduces it
+  exactly. For `κ ≤ 0.8` the cap binds on at most 30 % of the cells and
+  the headline is the raw value on every condition (multisensory noise
+  3 at `M = 16`: +1.30 against raw +1.31); `κ = 0.9` to `0.99` binds on
+  most cells but leaves +0.3 to +1.0 of the optimism on the typical
+  noisy conditions while still over-correcting Student by −0.3 to −1.2;
+  the weighted median of the expected log joints is the raw value
+  everywhere. So the cap's debiasing comes entirely from the low-weight
+  components it includes, which serve as a control group for the
+  winner's curse of the selected ones, and on Student that control
+  group is worse than the selected components for a real reason, not
+  by luck; no `κ` separates the two cases. The stage D report carries
+  both sections. The `M = 32` run for the integrated arm alone is ready
+  (`--arms integrated`, the merged summary through several
+  `--from-results`) and, by the PI's instruction of 2026-09-15, waits
+  for an overnight slot rather than a working day; it costs about 8
+  hours.
 
 ## Execution tracking
 
@@ -1628,7 +1675,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
-- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the Phase 2 scoring is running, the `M = 32` integrated-arm cells and the report follow)
+- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the Phase 2 scoring and the weight-aware-cap experiment are done and reported, the report `dev/results/2026-09-15-svbmc-pool-comparison.md` covers them; the `M = 32` integrated-arm cells wait for an overnight slot)
 - [ ] Documentation updates listed above
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)

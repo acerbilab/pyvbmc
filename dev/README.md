@@ -598,6 +598,19 @@ reason.
   the mapping between two different transformers; the first run, on the
   pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
+- `scripts/svbmc_cap_kappa.py` — weight-aware variants of the S-VBMC
+  component-median cap, scored on a comparison's recorded cells without
+  refitting: each cell's stack is rebuilt from the pool artifacts with
+  the recorded seeds and constructed (the rebuild is checked against the
+  cell's raw value and its recorded cap), and the cap is placed at the
+  median expected log joint of the top-weight components carrying mass
+  `kappa` (the crossing component included; `kappa = 1` is the class's
+  cap) and at the weighted median, every variant's bias scored against
+  the cell's `elbo_mc`. Needs Torch on `PYTHONPATH` and the pool's
+  gpyreg through `--gpyreg-source`; writes `cells.jsonl`, `summary.json`
+  and `summary.md`. Its one run is
+  `experiments/svbmc_pool/cap_kappa_20260915/`, read in the
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
   box-bounded log joint for `VBMC` (a variable bounded on one side keeps

@@ -136,3 +136,33 @@ metrics and reference terms) and `cells.jsonl` stay with the raw
 directory, `dev/scripts/runs/svbmc_pool_20260914_stack/` on the
 analysis machine; `results.json` is what `--summarize-only` and the
 Phase 2 estimator read.
+
+## Phase 2 scoring of stage D (2026-09-15)
+
+`phase2_20260915/` holds the tracked side of `svbmc_honest_elbo.py` on
+the 560 cells of stage D against the cluster pool (`--pool
+dev/scripts/runs/svbmc_pool_20260914 --cells <stage D results.json>
+--gpyreg-source <the 1.2.1 worktree>`, defaults otherwise: 100 draws per
+component, seed 0, coverage ratios 1.5, 2, 3 and 5 with the headline at
+2, from `dev-next` `cd59443`, 2.0 hours): `summary.json` / `summary.md`
+(the headline table across conditions, then per condition and `M` the
+biases of every estimate, the coverage, the calibration of the
+self-reported SDs, the runs' own errors and the decomposition of the
+heaviest components), `sources.json` and `figures/`. The pilot's
+[report](../../results/2026-09-14-svbmc-honest-elbo-pilot.md) defines
+every quantity; the reading of this run is in the
+[stage D report](../../results/2026-09-15-svbmc-pool-comparison.md).
+The 27.6 MB `results.json`, the 17.4 MB `cells.jsonl` and the per-cell
+component arrays (`cells/`, 95 MB) stay with the raw directory,
+`dev/scripts/runs/svbmc_pool_20260914_phase2/` on the analysis machine.
+
+## Weight-aware caps (2026-09-15)
+
+`cap_kappa_20260915/` is the one run of `svbmc_cap_kappa.py` on stage
+D's cells: `cells.jsonl` (per cell, the stack's weighted expected log
+joint `G`, entropy `H` and `elbo_mc`, and for every cap the level, the
+number of components in its set, the bias and whether it binds),
+`summary.json` and `summary.md` (per condition and `M`, the median bias
+and median absolute bias over cells of the raw value, the class's cap,
+each `kappa` in 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99 and 1, and the
+weighted median, with the fraction of cells each cap binds on).

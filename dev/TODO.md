@@ -44,14 +44,18 @@ records its execution.
   the checks, a systematic cross-run under-prediction on two noisy
   conditions, and that at three runs the existing component-median cap is
   closer to the reference than the honest estimate on four of five
-  conditions. Next: the scoring of stage D's 560 cells is running
-  (launched 2026-09-15 from `dev-next` `cd59443` into
-  `dev/scripts/runs/svbmc_pool_20260914_phase2/`); read the raw, capped
-  and honest bias against the number of runs (stage D already shows the
-  cap over-correcting on Student D8 by 0.9 to 1.8 nats, the one
-  condition where criterion 3's gate fails), the `M = 32` integrated-arm
-  cells once they are scored too, and if the under-prediction holds try
-  the two
+  conditions. The full pools are scored (2026-09-15; the
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
+  sections "Phase 2" and "Weight-aware caps"): the honest estimate is
+  within 0.04 nats on the noiseless controls and Rosenbrock, under-
+  predicts by 0.2 to 0.7 on noisy GMM and both multisensory conditions
+  where the cap is closer, and on Student D8 is as low as the cap (both
+  1 to 1.8 nats below the reference) while the raw value is within
+  0.3; the pilot's under-prediction holds at scale, and no weight-aware
+  variant of the cap separates the heavy-tailed case from the typical
+  one. No single rule wins, so the decision on the reported estimator
+  is open for the PI with that evidence. Next: the `M = 32` cells once
+  they run, and, if a cross-run estimator is still wanted, the two
   variants the report names (a leave-one-run-out GP refit on the pooled
   evaluations of the other runs; a per-run offset correction). The
   stacking objective stays unchanged. See the
@@ -96,14 +100,18 @@ records its execution.
   estimates as unreliable, so Phase 2's conclusions rest on the other
   five noisy conditions; and `M = 32` runs for the integrated arm alone
   (`svbmc_pool_stack.py --arms integrated`, merged 2026-09-15 together
-  with `--summarize-only` over several `--from-results` files). Next:
-  the Phase 2 scoring of stage D's cells is running
-  (`dev/scripts/runs/svbmc_pool_20260914_phase2/`); then the `M = 32`
-  run (80 cells, about 8 hours), its scoring, one merged summary, the
-  reading of criterion 3's failure on Student D8, and
-  `results/<date>-svbmc-pool-comparison.md`. Whether the 17.6 MB
-  `results.json` is tracked or published as a release asset like the
-  pool is open. See
+  with `--summarize-only` over several `--from-results` files). The
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md) covers
+  the comparison, the Phase 2 scoring of its cells (2026-09-15) and the
+  weight-aware-cap experiment. Next: the `M = 32` run for the
+  integrated arm (80 cells, about 8 hours, on a night the PI chooses:
+  `svbmc_pool_stack.py --pool ... --gpyreg-source ... --M 32
+  --repetitions 10 --arms integrated`), its Phase 2 scoring, one merged
+  summary (`--summarize-only` with both `--from-results` files), and
+  the report's `M = 32` section. Whether the large per-cell files
+  (stage D's 17.6 MB `results.json`, the scoring's 27.6 MB
+  `results.json` and 17.4 MB `cells.jsonl`) are tracked or published
+  as a release asset like the pool is open. See
   the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
