@@ -424,8 +424,32 @@ bias in magnitude: at `M = 2`, raw 0.77, cap 0.95, `within_full` 0.56,
 `two_level_full` 0.51; at `M = 4`, raw 1.07, cap 1.17, `within_full`
 0.82, `two_level_full` 0.71. The cap remains 0.1 to 0.25 nats closer on
 the two multisensory conditions and 0.6 to 0.8 further on Student D8.
-The grid holds no `M = 3` or `5` cells; the integrated arm alone would
-score them in minutes.
+
+The integrated arm was then run at `M = 3` and `5` as well (20
+repetitions on every condition, 320 cells, 15 minutes; tracked under
+[`experiments/svbmc_pool/stack_M35_20260915/`](../experiments/svbmc_pool/stack_M35_20260915/),
+its scorings under `shrink_M35_20260915/` and `cap_kappa_M35_20260915/`,
+and [`stack_merged_20260915/`](../experiments/svbmc_pool/stack_merged_20260915/)
+is the one summary of stage D and this run over every `M` through
+`--summarize-only --from-results`). Median bias against `elbo_mc` at
+`M` = 2 / 3 / 4 / 5, raw / class cap / `within_full` / `two_level_full`:
+
+| condition | `M = 2` | `M = 3` | `M = 4` | `M = 5` |
+|---|---|---|---|---|
+| multisensory noise 3 | +0.77 / +0.38 / +0.56 / +0.51 | +0.84 / +0.42 / +0.59 / +0.57 | +1.07 / +0.56 / +0.82 / +0.71 | +1.04 / +0.43 / +0.74 / +0.66 |
+| multisensory noise 1.3 | +0.41 / +0.08 / +0.20 / +0.20 | +0.44 / +0.16 / +0.27 / +0.24 | +0.47 / +0.11 / +0.28 / +0.25 | +0.55 / +0.19 / +0.37 / +0.34 |
+| Rosenbrock noise 3 | +0.25 / +0.09 / +0.20 / +0.14 | +0.29 / +0.08 / +0.15 / +0.07 | +0.35 / +0.07 / +0.23 / +0.09 | +0.53 / +0.13 / +0.33 / +0.19 |
+| GMM noise 3 | +0.30 / +0.07 / +0.10 / +0.08 | +0.34 / +0.02 / +0.01 / −0.06 | +0.30 / −0.01 / +0.01 / −0.02 | +0.40 / +0.01 / +0.05 / −0.02 |
+| ring noise 3 | +0.41 / +0.21 / +0.16 / +0.15 | +0.37 / +0.09 / +0.14 / +0.09 | +0.40 / +0.16 / +0.14 / +0.06 | +0.42 / +0.22 / +0.19 / +0.13 |
+| Student D8 noise 3 | −0.11 / −0.95 / −0.34 / −0.37 | −0.09 / −0.97 / −0.28 / −0.33 | −0.10 / −1.17 / −0.35 / −0.39 | +0.04 / −1.26 / −0.19 / −0.24 |
+| noiseless controls | within 0.06 for all | within 0.08 | within 0.06 | within 0.08 |
+
+Over the six noisy conditions, the worst median bias in magnitude is,
+at `M` = 2 / 3 / 4 / 5: raw 0.77 / 0.84 / 1.07 / 1.04, cap 0.95 / 0.97
+/ 1.17 / 1.26, `within_full` 0.56 / 0.59 / 0.82 / 0.74, `two_level_full`
+0.51 / 0.57 / 0.71 / 0.66; the mean over the six: raw 0.37 to 0.50, cap
+0.29 to 0.37, `within_full` 0.24 to 0.31, `two_level_full` 0.23 to
+0.26. The ordering is the same at every `M` a user is likely to run.
 
 ## Limitations
 

@@ -53,8 +53,19 @@ records its execution.
   1 to 1.8 nats below the reference) while the raw value is within
   0.3; the pilot's under-prediction holds at scale, and no weight-aware
   variant of the cap separates the heavy-tailed case from the typical
-  one. No single rule wins. The PI postponed the decision on the
-  reported estimator (2026-09-15) on that evidence; 1.5 must still
+  one. Of the estimates scored afterwards on the same cells (the
+  report's "Weight-aware caps" and "Empirical-Bayes shrinkage"
+  sections, with `M = 3` and `5` added for the integrated arm), the
+  empirical-Bayes shrinkage of the components' expected log joints by
+  the GP's own estimation variance, within each run with the full
+  covariance, is the first correction acceptable on every condition:
+  at `M` = 2 to 5 its worst median bias over the noisy conditions is
+  0.56 to 0.82 nats against 0.77 to 1.07 for raw and 0.95 to 1.26 for
+  the cap, with the noiseless controls untouched and Student D8 within
+  0.4; it has no tuned constant and uses only `I_sk`, `J_sjk` and the
+  runs' own weights. Untested: re-optimizing the weights on the
+  shrunken estimates. The PI postponed the decision on the reported
+  estimator (2026-09-15) on the earlier evidence; 1.5 must still
   report a headline, so until it is made the current default stands
   (the component-median cap on a noisy stack, the raw value otherwise,
   every variant and the cap amount in `elbo_details`), and the

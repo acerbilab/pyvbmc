@@ -1673,6 +1673,35 @@ draft had left open:
   current headline (the component-median cap on a noisy stack) with
   every variant in `elbo_details` and a documented caveat for
   heavy-tailed targets until it is made.
+- 2026-09-15: three further estimates scored on stage D's recorded
+  cells, each in minutes without refitting (the scripts rebuild every
+  cell's stack from the artifacts and re-evaluate at the recorded
+  weights): run-level caps (`E_max`, `E_top`; the stacked value sits
+  below the best input run's own expected log joint on most cells, so
+  they change the raw value by at most 0.1 nats and show that the
+  optimism is already inside each run's own estimate); empirical-Bayes
+  shrinkage of the components' expected log joints by the GP's own
+  estimation variance (`svbmc_shrink_elbo.py`; safe on the noiseless
+  controls and on Student D8, a fifth to a half of the optimism removed
+  elsewhere); and its two-level form with each run's level shrunk
+  toward the runs' mean, whose full-covariance variant is the first
+  correction acceptable on every condition (matches the cap on
+  Rosenbrock, noisy GMM and the ring, within 0.4 nats on Student where
+  the cap is off by up to 1.8, worst case +0.75 on multisensory noise 3
+  against the cap's 1.78 and raw's 1.31). Because users stack three to
+  five runs, the integrated arm was run at `M = 3` and `5` (320 cells,
+  15 minutes) and scored the same way: at `M` = 2 to 5 the within-run
+  full-covariance shrinkage alone is within 0.06 nats of the two-level
+  form (whose run-level moment estimate rests on two to five values
+  and is zero in half the cells), and the worst median bias over the
+  six noisy conditions is 0.56 to 0.82 for it against 0.77 to 1.07 for
+  raw and 0.95 to 1.26 for the cap. The stage D report carries every
+  table; the tracked directories are `shrink_20260915/`,
+  `stack_M35_20260915/`, `shrink_M35_20260915/`,
+  `cap_kappa_M35_20260915/` and `stack_merged_20260915/` (the one
+  summary over every `M`, through the harness's merged
+  `--from-results`). Untested: re-optimizing the weights on the
+  shrunken estimates, and the `M = 32` cells.
 
 ## Execution tracking
 

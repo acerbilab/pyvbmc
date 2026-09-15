@@ -187,6 +187,25 @@ estimates, within a run, over the stack's components and over the runs'
 levels; each cell's record also carries every run's level, its
 estimation variance and its shift).
 
+## The integrated arm at `M = 3` and `5` (2026-09-15)
+
+`stack_M35_20260915/` holds the tracked side of `svbmc_pool_stack.py
+--arms integrated --M 3,5 --repetitions 20,20` on the same pool, seed
+and settings as stage D (320 cells, 15 minutes, from `dev-next`
+`e95e85c`): `summary.json`, `summary.md` and `sources.json` in the
+layout of stage D's, every cell carrying the integrated arm alone (no
+paired quantity, no equivalence test). `shrink_M35_20260915/` and
+`cap_kappa_M35_20260915/` are the shrinkage and cap scorings of its
+cells, in the layouts described above. `stack_merged_20260915/` is the
+summary of stage D and this run together, `svbmc_pool_stack.py
+--summarize-only --from-results <stage D> --from-results <this run>`:
+one table per condition over `M` = 2, 3, 4, 5, 8 and 16, the paired
+quantities and equivalence tests on the cell sets both arms ran, and
+the headline-bias growth across every `M`. The per-cell files of this
+run stay with the raw directory
+`dev/scripts/runs/svbmc_pool_20260914_stack_M35/` on the analysis
+machine.
+
 ## Raw outputs of the analyses (release asset)
 
 What the three analyses above wrote per cell is too large to track and
