@@ -12,7 +12,8 @@ documents can be checked or updated without the raw directories::
     python dev/scripts/svbmc_headline_numbers.py [--experiments DIR]
 
 Reads ``shrink_20260915/cells.jsonl``, ``shrink_M35_20260915/cells.jsonl``,
-``cap_kappa_20260915/cells.jsonl``, ``cap_kappa_M35_20260915/cells.jsonl``
+``shrink_M32_20260916/cells.jsonl``, ``cap_kappa_20260915/cells.jsonl``,
+``cap_kappa_M35_20260915/cells.jsonl``, ``cap_kappa_M32_20260916/cells.jsonl``,
 the ``summary.json`` and ``added.json`` of ``single_run_20260915/``
 (the single-run biases and the added-bias ranges) and the
 ``summary.json`` of ``shrink_opt_20260915/`` (the re-optimization).
@@ -29,9 +30,21 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DEFAULT_EXPERIMENTS = ROOT / "dev" / "experiments" / "svbmc_pool"
-SHRINK_DIRS = ("shrink_20260915", "shrink_M35_20260915")
-CAP_DIRS = ("cap_kappa_20260915", "cap_kappa_M35_20260915")
-GRID = (2, 3, 4, 5, 8, 16)
+SHRINK_DIRS = (
+    "shrink_20260915",
+    "shrink_M35_20260915",
+    "shrink_M32_20260916",
+)
+CAP_DIRS = (
+    "cap_kappa_20260915",
+    "cap_kappa_M35_20260915",
+    "cap_kappa_M32_20260916",
+)
+GRID = (2, 3, 4, 5, 8, 16, 32)
+# The grid of stage D and the M = 3 and 5 run; the aggregates over M are
+# printed for it (the numbers quoted before the M = 32 run) and for GRID.
+GRID16 = (2, 3, 4, 5, 8, 16)
+SCOPES = (("M <= 16", GRID16), ("all M", GRID))
 SHORT = {
     "multisensory_s1_D6_noise3_svbmc": "multisensory noise 3",
     "multisensory_s1_D6_noise1.3_svbmc": "multisensory noise 1.3",
@@ -110,23 +123,25 @@ def main(argv=None):
             f"{bias(c, 16, 'within_full'):+.2f} [{factor(c, 16, 'within_full'):.2f}] | "
             f"{bias(c, 16, 'stack'):+.2f} [{factor(c, 16, 'stack'):.2f}] | {share(c, 16):.2f} |"
         )
-    print(
-        "controls, max |median bias| over M:",
-        {
-            rule: round(
-                max(abs(bias(c, M, rule)) for c in controls for M in GRID), 3
-            )
-            for rule in (
-                "raw",
-                "cap",
-                "within",
-                "within_full",
-                "stack",
-                "two_level_full",
-                "hybrid",
-            )
-        },
-    )
+    for label, grid in SCOPES:
+        print(
+            f"controls, max |median bias| over M ({label}):",
+            {
+                rule: round(
+                    max(abs(bias(c, M, rule)) for c in controls for M in grid),
+                    3,
+                )
+                for rule in (
+                    "raw",
+                    "cap",
+                    "within",
+                    "within_full",
+                    "stack",
+                    "two_level_full",
+                    "hybrid",
+                )
+            },
+        )
 
     print(
         "\n# Report, two-level table at M = 2 / 4 / 8 / 16: two_level_full | two_level | run_level | cap"
@@ -155,6 +170,57 @@ def main(argv=None):
                 for M in (2, 3, 4, 5)
             )
             + " |"
+        )
+
+    print(
+        "\n# Report, M = 32 table: raw | cap | within_full [f] | run_level [f] | two_level_full [f] | hybrid [cap fraction] | noise share within / stack / runs"
+    )
+
+    def population_share(c, M, key):
+        return median(
+            [
+                r[key]["noise_share"]
+                for r in cells(c, M)
+                if r[key]["noise_share"] is not None
+            ]
+        )
+
+    for c in conditions:
+        rs = cells(c, 32)
+        print(
+            f"| {SHORT[c]} | {bias(c, 32, 'raw'):+.2f} | {bias(c, 32, 'cap'):+.2f} | "
+            f"{bias(c, 32, 'within_full'):+.2f} [{factor(c, 32, 'within_full'):.2f}] | "
+            f"{bias(c, 32, 'run_level'):+.2f} [{factor(c, 32, 'run_level'):.2f}] | "
+            f"{bias(c, 32, 'two_level_full'):+.2f} [{factor(c, 32, 'two_level_full'):.2f}] | "
+            f"{bias(c, 32, 'hybrid'):+.2f} [{np.mean([r['variants']['hybrid']['cap'] for r in rs]):.2f}] | "
+            f"{share(c, 32):.2f} / {population_share(c, 32, 'stack_population'):.2f} / {population_share(c, 32, 'run_population'):.2f} |"
+        )
+    print("  M = 16 -> 32, median bias: raw | cap | two_level_full | hybrid")
+    for c in conditions:
+        print(
+            f"    {SHORT[c]}: "
+            + " | ".join(
+                f"{bias(c, 16, rule):+.2f} -> {bias(c, 32, rule):+.2f}"
+                for rule in ("raw", "cap", "two_level_full", "hybrid")
+            )
+        )
+    print(
+        "  |cap| - |two_level_full| at M = 32 per noisy condition (positive: shrinkage closer):"
+    )
+    for c in noisy:
+        print(
+            f"    {SHORT[c]}: {abs(bias(c, 32, 'cap')) - abs(bias(c, 32, 'two_level_full')):+.2f}"
+        )
+    print(
+        "  run_level minus raw at M = 16 and 32 (what the run-level shift removes):"
+    )
+    for c in noisy:
+        print(
+            f"    {SHORT[c]}: "
+            + ", ".join(
+                f"M={M}: {bias(c, M, 'run_level') - bias(c, M, 'raw'):+.2f}"
+                for M in (16, 32)
+            )
         )
 
     print(
@@ -200,27 +266,31 @@ def main(argv=None):
                 f"M={M}: zero {zero:.2f}, factor {np.percentile(f, 10):.2f}-{np.percentile(f, 90):.2f}"
             )
         print(f"    {SHORT[c]}: " + "; ".join(parts))
-    print("  hybrid chooses the cap, cells per condition:")
-    for c in conditions:
-        rs = [r for r in rows if r["condition"] == c]
+    for label, grid in SCOPES:
+        print(f"  hybrid chooses the cap, cells per condition ({label}):")
+        for c in conditions:
+            rs = [r for r in rows if r["condition"] == c and r["M"] in grid]
+            print(
+                f"    {SHORT[c]}: {sum(r['variants']['hybrid']['cap'] for r in rs)}/{len(rs)}"
+            )
+    for label, grid in SCOPES:
         print(
-            f"    {SHORT[c]}: {sum(r['variants']['hybrid']['cap'] for r in rs)}/{len(rs)}"
+            f"  cell noise share ({label}): median over all cells, 5th-95th percentile, min, max:"
         )
-    print(
-        "  cell noise share: median over all cells, 5th-95th percentile, min, max:"
-    )
-    for c in conditions:
-        s = np.array(
-            [
-                r["noise_share"]
-                for r in rows
-                if r["condition"] == c and r["noise_share"] is not None
-            ]
-        )
-        print(
-            f"    {SHORT[c]}: median {np.median(s):.3f}, 5-95% {np.percentile(s, 5):.3f}-{np.percentile(s, 95):.3f}, "
-            f"min {s.min():.3f}, max {s.max():.3f}"
-        )
+        for c in conditions:
+            s = np.array(
+                [
+                    r["noise_share"]
+                    for r in rows
+                    if r["condition"] == c
+                    and r["M"] in grid
+                    and r["noise_share"] is not None
+                ]
+            )
+            print(
+                f"    {SHORT[c]}: median {np.median(s):.3f}, 5-95% {np.percentile(s, 5):.3f}-{np.percentile(s, 95):.3f}, "
+                f"min {s.min():.3f}, max {s.max():.3f}"
+            )
 
     def hybrid(r, t):
         s = r["noise_share"]
@@ -253,15 +323,16 @@ def main(argv=None):
             + "  mean "
             + " ".join(f"{x:.2f}" for x in mean)
         )
-    print(
-        "  |cap| - |two_level_full| (median biases), min..max over M, per noisy condition (positive: shrinkage closer):"
-    )
-    for c in noisy:
-        d = [
-            abs(bias(c, M, "cap")) - abs(bias(c, M, "two_level_full"))
-            for M in GRID
-        ]
-        print(f"    {SHORT[c]}: {min(d):+.2f} .. {max(d):+.2f}")
+    for label, grid in SCOPES:
+        print(
+            f"  |cap| - |two_level_full| (median biases), min..max over M ({label}), per noisy condition (positive: shrinkage closer):"
+        )
+        for c in noisy:
+            d = [
+                abs(bias(c, M, "cap")) - abs(bias(c, M, "two_level_full"))
+                for M in grid
+            ]
+            print(f"    {SHORT[c]}: {min(d):+.2f} .. {max(d):+.2f}")
     print(
         "  Student: |two_level_full| and |raw| at M = 2 to 5, fraction of cells where two_level_full is worse:"
     )
@@ -278,20 +349,23 @@ def main(argv=None):
             f"    M={M}: {abs(bias('student_D8_noise3_svbmc', M, 'two_level_full')):.2f} against "
             f"{abs(bias('student_D8_noise3_svbmc', M, 'raw')):.2f}; worse in {worse:.2f} of cells"
         )
-    print(
-        "  interval [two_level_full, raw] contains the reference, fraction of cells per noisy condition:"
-    )
-    for c in noisy:
-        rs = [r for r in rows if r["condition"] == c]
-        inside = np.mean(
-            [
-                min(r["variants"]["two_level_full"]["bias"], r["bias_raw"])
-                <= 0
-                <= max(r["variants"]["two_level_full"]["bias"], r["bias_raw"])
-                for r in rs
-            ]
+    for label, grid in SCOPES:
+        print(
+            f"  interval [two_level_full, raw] contains the reference, fraction of cells per noisy condition ({label}):"
         )
-        print(f"    {SHORT[c]}: {inside:.2f}")
+        for c in noisy:
+            rs = [r for r in rows if r["condition"] == c and r["M"] in grid]
+            inside = np.mean(
+                [
+                    min(r["variants"]["two_level_full"]["bias"], r["bias_raw"])
+                    <= 0
+                    <= max(
+                        r["variants"]["two_level_full"]["bias"], r["bias_raw"]
+                    )
+                    for r in rs
+                ]
+            )
+            print(f"    {SHORT[c]}: {inside:.2f}")
 
     print(
         "\n# Caps (svbmc_cap_kappa.py): max bind fraction and max |median move from raw| per cap"
@@ -300,69 +374,90 @@ def main(argv=None):
         "E_max",
         "E_top",
     ]
-    for name in names:
-        binds, moves = [], []
-        for c in conditions:
-            for M in GRID:
-                rs = [r for r in caps if r["condition"] == c and r["M"] == M]
-                binds.append(np.mean([r["caps"][name]["binds"] for r in rs]))
-                moves.append(
-                    abs(
-                        median([r["caps"][name]["bias"] for r in rs])
-                        - median([r["bias_raw"] for r in rs])
-                    )
-                )
-        print(
-            f"  {name}: max binds {max(binds):.2f}, max |median move| {max(moves):.2f}"
+
+    def cap_bias(name, c, M):
+        return median(
+            [
+                r["caps"][name]["bias"]
+                for r in caps
+                if r["condition"] == c and r["M"] == M
+            ]
         )
-    for name in ("kappa_0.9", "kappa_0.95", "kappa_0.99"):
-        typical = [
-            median(
-                [
-                    r["caps"][name]["bias"]
-                    for r in caps
-                    if r["condition"] == c and r["M"] == M
-                ]
+
+    for label, grid in SCOPES:
+        print(f"  ({label})")
+        for name in names:
+            binds, moves = [], []
+            for c in conditions:
+                for M in grid:
+                    rs = [
+                        r for r in caps if r["condition"] == c and r["M"] == M
+                    ]
+                    binds.append(
+                        np.mean([r["caps"][name]["binds"] for r in rs])
+                    )
+                    moves.append(
+                        abs(
+                            cap_bias(name, c, M)
+                            - median([r["bias_raw"] for r in rs])
+                        )
+                    )
+            print(
+                f"  {name}: max binds {max(binds):.2f}, max |median move| {max(moves):.2f}"
             )
-            for c in noisy
-            if "student" not in c
-            for M in GRID
-        ]
-        student = [
-            median(
-                [
-                    r["caps"][name]["bias"]
-                    for r in caps
-                    if r["condition"] == "student_D8_noise3_svbmc"
-                    and r["M"] == M
-                ]
+        for name in ("kappa_0.9", "kappa_0.95", "kappa_0.99"):
+            typical = [
+                cap_bias(name, c, M)
+                for c in noisy
+                if "student" not in c
+                for M in grid
+            ]
+            student = [
+                cap_bias(name, "student_D8_noise3_svbmc", M) for M in grid
+            ]
+            print(
+                f"  {name}: typical residual {min(typical):+.2f}..{max(typical):+.2f}; Student {min(student):+.2f}..{max(student):+.2f}"
             )
-            for M in GRID
-        ]
+    print(
+        "  M = 32, per condition: raw | kappa_0.8 [binds] | kappa_0.9 | kappa_0.99 | E_max [binds] | E_top [binds]"
+    )
+    for c in conditions:
+        rs = [r for r in caps if r["condition"] == c and r["M"] == 32]
+
+        def binds(name):
+            return np.mean([r["caps"][name]["binds"] for r in rs])
+
         print(
-            f"  {name}: typical residual {min(typical):+.2f}..{max(typical):+.2f}; Student {min(student):+.2f}..{max(student):+.2f}"
+            f"    {SHORT[c]}: {median([r['bias_raw'] for r in rs]):+.2f} | "
+            f"{cap_bias('kappa_0.8', c, 32):+.2f} [{binds('kappa_0.8'):.2f}] | "
+            f"{cap_bias('kappa_0.9', c, 32):+.2f} | {cap_bias('kappa_0.99', c, 32):+.2f} | "
+            f"{cap_bias('E_max', c, 32):+.2f} [{binds('E_max'):.2f}] | "
+            f"{cap_bias('E_top', c, 32):+.2f} [{binds('E_top'):.2f}]"
         )
 
     print(
-        "\n# Paired bootstrap over cells (10000 resamples) of the difference of median |bias|, at M = 3 / 5 / 16"
+        "\n# Paired bootstrap over cells (10000 resamples) of the difference of median |bias|, at M = 3 / 5 / 16, then at M = 32"
     )
-    for a_name, b_name in (
-        ("cap", "two_level_full"),
-        ("hybrid", "two_level_full"),
-    ):
-        print(f"  {a_name} minus {b_name} (positive: {b_name} closer):")
-        for c in noisy:
-            parts = []
-            for M in (3, 5, 16):
-                rs = cells(c, M)
-                a = np.array([abs(RULES[a_name](r)) for r in rs])
-                b = np.array([abs(RULES[b_name](r)) for r in rs])
-                index = rng.integers(0, len(rs), size=(10000, len(rs)))
-                d = np.median(a[index], axis=1) - np.median(b[index], axis=1)
-                parts.append(
-                    f"M={M}: {np.median(a) - np.median(b):+.2f} [{np.percentile(d, 2.5):+.2f}, {np.percentile(d, 97.5):+.2f}]"
+    pairs = (("cap", "two_level_full"), ("hybrid", "two_level_full"))
+
+    def paired(a_name, b_name, c, M):
+        # The M = 32 draws come after every earlier one so that the
+        # intervals quoted before that run was added stay reproducible.
+        rs = cells(c, M)
+        a = np.array([abs(RULES[a_name](r)) for r in rs])
+        b = np.array([abs(RULES[b_name](r)) for r in rs])
+        index = rng.integers(0, len(rs), size=(10000, len(rs)))
+        d = np.median(a[index], axis=1) - np.median(b[index], axis=1)
+        return f"M={M}: {np.median(a) - np.median(b):+.2f} [{np.percentile(d, 2.5):+.2f}, {np.percentile(d, 97.5):+.2f}]"
+
+    for grid in ((3, 5, 16), (32,)):
+        for a_name, b_name in pairs:
+            print(f"  {a_name} minus {b_name} (positive: {b_name} closer):")
+            for c in noisy:
+                print(
+                    f"    {SHORT[c]}: "
+                    + "; ".join(paired(a_name, b_name, c, M) for M in grid)
                 )
-            print(f"    {SHORT[c]}: " + "; ".join(parts))
     print("\n# Single runs and what stacking adds (single_run_20260915)")
     single_dir = Path(args.experiments) / "single_run_20260915"
     single = json.loads(
@@ -412,16 +507,30 @@ def main(argv=None):
             f"cells; best input minus stack raw {min(best):+.2f}..{max(best):+.2f}; "
             f"run_level removes {min(fr):.2f}..{max(fr):.2f} of the addition"
         )
-    controls_added = [
-        abs(r["added"][n])
-        for c in added["conditions"]
-        if "noise" not in c["condition"]
-        for r in c["by_M"]
-        for n in r["added"]
-    ]
-    print(
-        f"  controls: max |added| over estimates and M {max(controls_added):.3f}"
-    )
+    for label, grid in SCOPES:
+        controls_added = [
+            abs(r["added"][n])
+            for c in added["conditions"]
+            if "noise" not in c["condition"]
+            for r in c["by_M"]
+            if r["M"] in grid
+            for n in r["added"]
+        ]
+        print(
+            f"  controls: max |added| over estimates and M ({label}) {max(controls_added):.3f}"
+        )
+    for c in added["conditions"]:
+        if "noise" in c["condition"]:
+            continue
+        for r in c["by_M"]:
+            if r["M"] != 32:
+                continue
+            print(
+                f"  {SHORT[c['condition']]} at M = 32: inputs mean {r['inputs_mean_bias']:+.2f}, "
+                f"best input {r['inputs_best_bias']:+.2f}, stack raw {r['bias']['raw']:+.2f}, "
+                f"added raw {r['added']['raw']:+.2f}, two_level_full {r['added']['two_level_full']:+.2f}, "
+                f"positive on {r['raw_added_positive']:.2f} of cells"
+            )
     print("\n# Re-optimizing on the shrunken estimates (shrink_opt_20260915)")
     opt = json.loads(
         (

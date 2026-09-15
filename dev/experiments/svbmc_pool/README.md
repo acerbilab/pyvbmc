@@ -213,26 +213,46 @@ layout of stage D's, every cell carrying the integrated arm alone (no
 paired quantity, no equivalence test). `shrink_M35_20260915/` and
 `cap_kappa_M35_20260915/` are the shrinkage and cap scorings of its
 cells, in the layouts described above. `stack_merged_20260915/` is the
-summary of stage D and this run together, `svbmc_pool_stack.py
---summarize-only --from-results <stage D> --from-results <this run>`:
-one table per condition over `M` = 2, 3, 4, 5, 8 and 16, the paired
-quantities and equivalence tests on the cell sets both arms ran, and
-the headline-bias growth across every `M`. The per-cell files of this
-run (`results.json`, `cells.jsonl`) are the second asset of the
-analyses release described below.
+summary of stage D, this run and the `M = 32` run together,
+`svbmc_pool_stack.py --summarize-only --from-results <stage D>
+--from-results <this run> --from-results <M = 32>`: one table per
+condition over `M` = 2, 3, 4, 5, 8, 16 and 32, the paired quantities
+and equivalence tests on the cell sets both arms ran, and the
+headline-bias growth across every `M`. The per-cell files of this run
+(`results.json`, `cells.jsonl`) are the second asset of the analyses
+release described below.
+
+## The integrated arm at `M = 32` (2026-09-15)
+
+`stack_M32_20260915/` holds the tracked side of `svbmc_pool_stack.py
+--arms integrated --M 32 --repetitions 10` on the same pool, seed and
+settings as stage D (80 cells, 237 minutes overnight on 2026-09-15/16
+on the analysis machine, from `dev-next` `1888688`): `summary.json`,
+`summary.md` and `sources.json` in the layout of stage D's, every cell
+carrying the integrated arm alone. `shrink_M32_20260916/` and
+`cap_kappa_M32_20260916/` are the shrinkage and cap scorings of its
+cells, in the layouts described above. `stack_merged_20260915/` and
+`single_run_20260915/` include this run's cells (the merged summary
+covers `M` = 2, 3, 4, 5, 8, 16 and 32; the join carries 960 cells,
+with an `M = 32` row per condition in `added.*`). The per-cell files
+of this run (`results.json`, `cells.jsonl`) are the third asset of
+the analyses release described below.
 
 ## The inputs' own bias (2026-09-15)
 
 `single_run_20260915/` holds the outputs of
 `svbmc_single_run_bias.py --pool <pool> --gpyreg-source <gpyreg 1.2.1>
 --cells <stage D results.json> --cells <M = 3 and 5 results.json>
---shrink shrink_20260915/cells.jsonl --shrink
-shrink_M35_20260915/cells.jsonl` (700 runs in 10.2 minutes, from
+--cells <M = 32 results.json> --shrink shrink_20260915/cells.jsonl
+--shrink shrink_M35_20260915/cells.jsonl --shrink
+shrink_M32_20260916/cells.jsonl` (700 runs in 10.2 minutes, from
 `dev-next` `0ca7dcd` with the script uncommitted; the join was then
 regenerated with `--reuse` after the shrinkage rerun that added the
-anchored forms and again after the doublecheck of 2026-09-15, and
-`sources.json` describes that last pass, hashing the script, the runs
-file and every input file): `runs.jsonl`, one
+anchored forms, again after the doublecheck of 2026-09-15, and on
+2026-09-16 from `1888688` with the `M = 32` cells and their shrinkage
+added as the third `--cells` and `--shrink` files, and `sources.json`
+describes that last pass, hashing the script, the runs file and every
+input file): `runs.jsonl`, one
 record per filtered run of the pool scored as a stack of one
 (`condition`, `name`, `seed`, `K`, `noisy`; `elbo_vbmc`, the ELBO the
 run reports; `elbo_raw`, the class's raw value for the run alone at
@@ -319,21 +339,33 @@ is the raw directory of the `M = 3` and `5` run,
 summaries, `sources.json`, the controller's log), and unpacks the same
 way; its `results.json` is the second `--from-results` file of the
 merged summary and the `--cells` file of `shrink_M35_20260915/` and
-`cap_kappa_M35_20260915/`.
+`cap_kappa_M35_20260915/`. The third asset,
+`svbmc_pool_20260914_stack_M32.tar.gz` (2 943 060 bytes, SHA-256
+`11780b8d7998d2e6742d47b1a92980eeb89a6872813062f303d6ba65cc41d171`),
+is the raw directory of the `M = 32` run,
+`svbmc_pool_20260914_stack_M32/` (`results.json`, `cells.jsonl`, the
+summaries, `sources.json`, the controller's log), and unpacks the same
+way; its `results.json` is the third `--from-results` file of the
+merged summary, the `--cells` file of `shrink_M32_20260916/` and
+`cap_kappa_M32_20260916/` and the third `--cells` file of the
+single-run join.
 
 ## The numbers the documents quote
 
-`python dev/scripts/svbmc_headline_numbers.py` prints, from the four
+`python dev/scripts/svbmc_headline_numbers.py` prints, from the six
 tracked `cells.jsonl` files of the shrinkage and cap scorings, every
 number the [headline note](../../2026-09-15-svbmc-headline-shrinkage.md)
-and the shrinkage and cap sections of the
+and the shrinkage, cap and `M = 32` sections of the
 [stage D report](../../results/2026-09-15-svbmc-pool-comparison.md)
 quote: the per-condition tables, the worst and mean cases over the
 noisy conditions per `M`, the noise-share percentiles, the hybrid
 threshold sweep, the caps' bind fractions, the paired bootstrap
 intervals, from `single_run_20260915/` the single-run biases and the
 added-bias ranges, and from `shrink_opt_20260915/` the
-re-optimization's rows. Check a sentence of those documents against
-its output rather than against the raw directories. The tutorial's
+re-optimization's rows. Every aggregate over `M` is printed twice,
+over the grid through `M = 16` (the scope of the sections written
+before the `M = 32` run) and over every `M`. Check a sentence of
+those documents against its output rather than against the raw
+directories. The tutorial's
 worked example is printed by `dev/scripts/svbmc_shrink_worked_example.py`
 from the pool and the stage D `results.json`.

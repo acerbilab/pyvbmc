@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-15 21:03:49",
+  "generated": "2026-09-16 01:58:03",
   "script": {
     "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\svbmc_single_run_bias.py",
     "sha256": "f247155f5ce2357b1cf9fa87d466f6cdd729708f5ef14800f86eabce7484bddc"
@@ -18,6 +18,10 @@
     {
       "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M35\\results.json",
       "sha256": "7dd63a476a5b67e02c70c1f66b3801786c707da49e9803775945a97ab843f259"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_stack_M32\\results.json",
+      "sha256": "c640d03d78465e150a500f81f536124dd7be3053c52df28d16335768df9dd26e"
     }
   ],
   "shrink": [
@@ -28,12 +32,16 @@
     {
       "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink_M35\\cells.jsonl",
       "sha256": "bb0d9183bf972f1cd9159a70cbc8a8de3ca59e7056619c40527c0506e4b2c108"
+    },
+    {
+      "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260914_shrink_M32\\cells.jsonl",
+      "sha256": "6c6717f7d84d9bbfc42b3c9699c96402422c3101a0f57c667fb8b559ff02f8c3"
     }
   ],
   "environment": {
     "source": {
       "python": "3.12.6",
-      "pyvbmc_commit": "48f46f0c7c57edef14ec4f3362e234a343532566",
+      "pyvbmc_commit": "18886882aef8be1ab5f32838bdfd094e7e66156e",
       "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
       "numpy": "2.5.2",
       "scipy": "1.18.1",
