@@ -12,8 +12,9 @@ documents can be checked or updated without the raw directories::
     python dev/scripts/svbmc_headline_numbers.py [--experiments DIR]
 
 Reads ``shrink_20260915/cells.jsonl``, ``shrink_M35_20260915/cells.jsonl``,
-``cap_kappa_20260915/cells.jsonl`` and ``cap_kappa_M35_20260915/cells.jsonl``.
-Needs NumPy only.
+``cap_kappa_20260915/cells.jsonl``, ``cap_kappa_M35_20260915/cells.jsonl``
+and the ``summary.json`` and ``added.json`` of ``single_run_20260915/``
+(the single-run biases and the added-bias ranges). Needs NumPy only.
 """
 
 import argparse
@@ -360,6 +361,52 @@ def main(argv=None):
                     f"M={M}: {np.median(a) - np.median(b):+.2f} [{np.percentile(d, 2.5):+.2f}, {np.percentile(d, 97.5):+.2f}]"
                 )
             print(f"    {SHORT[c]}: " + "; ".join(parts))
+    print("\n# Single runs and what stacking adds (single_run_20260915)")
+    single_dir = Path(args.experiments) / "single_run_20260915"
+    single = json.loads(
+        (single_dir / "summary.json").read_text(encoding="utf-8")
+    )
+    for c in single["conditions"]:
+        v = c["bias_vbmc"]
+        print(
+            f"  {SHORT[c['condition']]}: reported-ELBO bias median "
+            f"{v['median']:+.2f} [{v['lo']:+.2f}, {v['hi']:+.2f}], quartiles "
+            f"{v['q25']:+.2f}..{v['q75']:+.2f}; class raw "
+            f"{c['bias_raw']['median']:+.2f}; cap {c['bias_cap']['median']:+.2f}"
+        )
+    added = json.loads((single_dir / "added.json").read_text(encoding="utf-8"))
+    noisy_added = [c for c in added["conditions"] if "noise" in c["condition"]]
+    for name in ("raw", "capped_I_median", "run_level", "two_level_full"):
+        parts = []
+        for M in GRID:
+            v = [
+                r["added"][name]
+                for c in noisy_added
+                for r in c["by_M"]
+                if r["M"] == M
+            ]
+            parts.append(f"M={M}: {min(v):+.2f}..{max(v):+.2f}")
+        print(f"  added bias of {name}, noisy conditions: " + "; ".join(parts))
+    for M in GRID:
+        rows = [r for c in noisy_added for r in c["by_M"] if r["M"] == M]
+        pos = [r["raw_added_positive"] for r in rows]
+        best = [r["inputs_best_bias"] - r["bias"]["raw"] for r in rows]
+        fr = [1 - r["added"]["run_level"] / r["added"]["raw"] for r in rows]
+        print(
+            f"  M={M}: raw added > 0 in {min(pos):.2f}..{max(pos):.2f} of "
+            f"cells; best input minus stack raw {min(best):+.2f}..{max(best):+.2f}; "
+            f"run_level removes {min(fr):.2f}..{max(fr):.2f} of the addition"
+        )
+    controls_added = [
+        abs(r["added"][n])
+        for c in added["conditions"]
+        if "noise" not in c["condition"]
+        for r in c["by_M"]
+        for n in r["added"]
+    ]
+    print(
+        f"  controls: max |added| over estimates and M {max(controls_added):.3f}"
+    )
     return 0
 
 

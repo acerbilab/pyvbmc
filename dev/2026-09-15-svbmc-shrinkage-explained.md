@@ -336,17 +336,46 @@ nats for every estimate.
 The two-level estimate is the first whose worst case stays below 0.8
 nats at every $M$ and that is acceptable on every target. Its worst
 case is the multisensory target at noise 3, where it stays 0.5 to 0.8
-nats optimistic; the cap is closer there by 0.09 to 0.32 nats. The
-residual is invisible to shrinkage by construction: shrinking toward a
-population mean removes selection within the population and cannot see
-an error common to all of a run's components, or to all runs. On that
-target the GP's own uncertainty is also miscalibrated (a quarter to two
-thirds of the components are more than two standard deviations from
-the truth), and the method takes $\Sigma$ at face value. On the
-Student target the estimate is 0.24 to 0.39 nats pessimistic at
-$M \le 5$, where the raw value is within 0.11, because the
-full-covariance form still removes a shared deviation that is, on that
-target, mostly real.
+nats optimistic; the cap is closer there by 0.09 to 0.32 nats. That
+residual is the runs' own bias: a single VBMC run on that target,
+scored against its own Monte Carlo ELBO, is already optimistic by
+0.74 nats, and shrinking toward a population mean removes selection
+within the population and cannot see an error common to all of a
+run's components. On that target the GP's own uncertainty is also
+miscalibrated (a quarter to two thirds of the components are more
+than two standard deviations from the truth), and the method takes
+$\Sigma$ at face value. On the Student target the estimate is 0.24
+to 0.39 nats pessimistic at $M \le 5$, where the raw value is within
+0.11, because the full-covariance form still removes a shared
+deviation that is, on that target, mostly real.
+
+Which raises the question of what the target should be. S-VBMC is not
+asked to remove the optimism VBMC builds into each run's ELBO, only
+not to add to it, so the right yardstick for a stacked estimate is
+its bias minus the mean bias of the runs it was built from, each run
+scored against its own Monte Carlo ELBO as a stack of one. Medians
+over subsets of that **added bias** over the six noisy targets:
+
+| estimate | added bias, $M$ = 2 | $M$ = 5 | $M$ = 16 |
+|---|---|---|---|
+| raw | +0.02 to +0.15 | +0.13 to +0.36 | +0.27 to +0.60 |
+| cap | −0.76 to −0.04 | −1.00 to −0.00 | −1.54 to −0.01 |
+| run level alone | +0.01 to +0.10 | +0.10 to +0.20 | +0.21 to +0.46 |
+| two-level, full covariance | −0.22 to −0.04 | −0.15 to +0.03 | −0.11 to +0.15 |
+
+The raw value adds optimism that grows with $M$: it tracks the bias
+of the input run with the highest reported ELBO, the winner's curse
+among runs. The cap removes more than the stacking added, on every
+noisy target. The run-level term alone, the one aimed at selection
+among runs, removes only a sixth to a half of the addition. The
+two-level estimate adds nothing within 0.23 nats at any $M$, and at
+small $M$ sits 0.1 to 0.2 nats below its inputs, because its
+within-run term also removes part of the runs' own optimism. An
+estimator that removes exactly the stacking's addition follows from
+the yardstick and is untested: shrink as in section 9, then add back
+per run, weighted by the run's mass in the stack, what the shrinkage
+removes at the run's own weights, so that a stack of one run reports
+the run's own ELBO.
 
 Two properties are worth keeping in mind. The method has no tuned
 constant: $\mu$, $\tau^2$ and $\Sigma$ come from the data of the run.

@@ -33,9 +33,16 @@ correction acceptable on every
 condition, and a rule that applies the cap only where the GP attributes
 enough of the components' spread to noise does better still on these
 eight conditions; the reading and the decision are in the
-[headline note](../2026-09-15-svbmc-headline-shrinkage.md). The `M = 32`
-cells of the integrated arm are reported in a section added when that
-run completes.
+[headline note](../2026-09-15-svbmc-headline-shrinkage.md). Scored
+against the bias of the input runs themselves, the yardstick the PI
+set on 2026-09-15 (a stack must not add to the optimism its runs
+already carry), a single VBMC run is optimistic by 0.13 to 0.74 nats
+on the typical noisy conditions, the raw stack adds 0.02 to 0.15 nats
+at `M = 2` and 0.27 to 0.60 at `M = 16`, the cap removes more than
+the stacking added on every condition, and the two-level shrinkage
+adds nothing within 0.23 nats (section "The inputs' own bias"). The
+`M = 32` cells of the integrated arm are reported in a section added
+when that run completes.
 
 Tracked outputs:
 [`experiments/svbmc_pool/stack_20260914/`](../experiments/svbmc_pool/stack_20260914/)
@@ -545,6 +552,104 @@ and heavy-tailed), so the worst case names different conditions for
 different rules and the mean is a convenience weighting; and the cells
 of one condition and `M` share runs (ten `M = 16` cells draw 160 run
 slots from 100), so the bootstrap intervals over cells are optimistic.
+The next section restates every estimate against the bias of the
+input runs, the yardstick the PI set after these tables.
+
+## The inputs' own bias, and what stacking adds
+
+Every bias above is against the stack's own Monte Carlo ELBO, with
+zero as the unstated target. The PI restated the requirement on
+2026-09-15 (the plan's decision 11): S-VBMC is not asked to remove the
+optimism VBMC builds into each run's ELBO, only not to add to it, so
+a stacked estimate is judged by its bias relative to the mean bias of
+the runs it was built from. `svbmc_single_run_bias.py` scores every
+filtered run of the pool as a stack of one against the same reference
+(the target's noiseless log density over 10 000 draws from the run's
+posterior, plus the mixture's entropy by the comparison's estimator)
+and joins the result to every cell of stage D and of the `M = 3` and
+`5` run (700 runs in 10 minutes; tracked under
+[`experiments/svbmc_pool/single_run_20260915/`](../experiments/svbmc_pool/single_run_20260915/added.md)).
+
+Single runs: the median bias of the run's reported ELBO against its
+own `elbo_mc`, with a bootstrap interval over the runs and the
+quartiles. The class's raw value for the run alone at its own weights
+agrees with the reported ELBO within 0.02 nats in the median on every
+condition; the last column is the component-median cap at those
+weights, what the class would report for the run alone.
+
+| condition | n | reported ELBO bias, median [CI] | quartiles | cap at `M = 1` |
+|---|---|---|---|---|
+| multisensory noise 3 | 100 | +0.74 [+0.64, +0.80] | +0.50 to +0.94 | +0.43 |
+| multisensory noise 1.3 | 100 | +0.37 [+0.32, +0.42] | +0.21 to +0.50 | +0.12 |
+| Rosenbrock noise 3 | 100 | +0.13 [+0.05, +0.19] | −0.05 to +0.27 | +0.06 |
+| GMM noise 3 | 100 | +0.17 [+0.09, +0.23] | −0.01 to +0.36 | +0.04 |
+| ring noise 3 | 100 | +0.26 [+0.21, +0.35] | +0.07 to +0.43 | +0.11 |
+| Student D8 noise 3 | 100 | −0.19 [−0.34, −0.14] | −0.50 to −0.01 | −0.64 |
+| GMM (noiseless) | 50 | +0.01 [+0.00, +0.01] | −0.00 to +0.01 | −0.03 |
+| multisensory (noiseless) | 50 | +0.03 [+0.01, +0.05] | −0.00 to +0.07 | −0.08 |
+
+A single VBMC run is optimistic by 0.13 to 0.74 nats on the five
+typical noisy conditions and pessimistic by 0.19 on Student D8; the
+noiseless controls are within 0.03. Against the raw stacked bias at
+`M = 2` (0.25 to 0.9 on the typical noisy conditions), most of the
+stack's bias is inherited from its inputs.
+
+Added bias, per condition and `M`: the median over cells of the
+stack's bias minus the mean bias of its inputs, for the raw value, the
+cap, the run-level shrinkage alone and the two-level full shrinkage;
+positive means the stacked estimate is more optimistic than the runs
+it was built from. `added.md` in the tracked directory has every
+estimate at every `M`, the bootstrap interval on the raw value's added
+bias, the bias of the input with the highest reported ELBO and the
+fraction of cells whose raw added bias is positive.
+
+| condition | raw, `M` = 2 / 3 / 5 / 16 | cap | run level alone | two-level full |
+|---|---|---|---|---|
+| multisensory noise 3 | +0.10 / +0.20 / +0.24 / +0.55 | −0.33 / −0.29 / −0.26 / −0.31 | +0.06 / +0.11 / +0.20 / +0.40 | −0.19 / −0.10 / −0.08 / +0.01 |
+| multisensory noise 1.3 | +0.02 / +0.07 / +0.18 / +0.27 | −0.25 / −0.21 / −0.20 / −0.19 | +0.01 / +0.05 / +0.13 / +0.21 | −0.14 / −0.09 / −0.04 / +0.03 |
+| Rosenbrock noise 3 | +0.15 / +0.21 / +0.36 / +0.60 | −0.04 / +0.00 / −0.00 / −0.01 | +0.10 / +0.10 / +0.18 / +0.34 | −0.04 / −0.01 / +0.03 / +0.01 |
+| GMM noise 3 | +0.08 / +0.14 / +0.19 / +0.50 | −0.16 / −0.24 / −0.16 / −0.14 | +0.06 / +0.09 / +0.16 / +0.34 | −0.16 / −0.23 / −0.15 / −0.08 |
+| ring noise 3 | +0.03 / +0.10 / +0.13 / +0.43 | −0.08 / −0.11 / −0.07 / −0.16 | +0.06 / +0.06 / +0.10 / +0.30 | −0.17 / −0.14 / −0.13 / −0.11 |
+| Student D8 noise 3 | +0.02 / +0.20 / +0.24 / +0.54 | −0.76 / −0.86 / −1.00 / −1.54 | +0.02 / +0.17 / +0.19 / +0.46 | −0.22 / −0.03 / −0.07 / +0.15 |
+| noiseless controls, every `M` | within 0.04 | within 0.09 | within 0.04 | within 0.05 |
+
+What the yardstick shows:
+
+- **Stacking adds optimism, and the addition grows with `M`.** The
+  raw value's added bias is +0.02 to +0.15 nats at `M = 2`, +0.07 to
+  +0.21 at `M = 3`, +0.13 to +0.36 at `M = 5` and +0.27 to +0.60 at
+  `M = 16` over the six noisy conditions, positive on 80 to 100 % of
+  the cells from `M = 3` on (55 to 100 % at `M = 2`). The stack's raw
+  bias tracks the bias of the input run with the highest reported
+  ELBO within 0.25 nats at every `M`: the stacking's own optimism is
+  the winner's curse among the runs (and the components) it was
+  given.
+- **The cap over-corrects relative to the inputs everywhere.** Its
+  added bias is −0.04 to −0.33 on the typical noisy conditions and
+  −0.76 to −1.54 on Student D8: the capped headline is less
+  optimistic than the runs it was built from, by more than the
+  stacking added. Under this yardstick the cap fails on every noisy
+  condition, not only on the heavy-tailed one.
+- **The run-level term alone is not enough.** The shrinkage of the
+  runs' levels, the term aimed at selection among runs, removes only
+  15 to 51 % of the raw addition at `M = 5` and 16 to 44 % at
+  `M = 16`.
+- **The two-level full shrinkage adds nothing, within 0.23 nats.** Its
+  added bias lies between −0.23 and +0.15 on every noisy condition at
+  every `M`, and within 0.15 at `M = 16`. It gets there by removing
+  part of the inputs' own optimism as well, through its within-run
+  term: at `M ≤ 5` its added bias is negative on most conditions, by
+  0.04 to 0.23 nats, so the stacked headline sits a little below the
+  level of its inputs. The within-run term debiases the runs, which
+  the requirement does not ask for, and the two effects roughly
+  cancel.
+- **The natural estimator under the yardstick is untested.** Shrink
+  the components as the two-level estimate does, then add back, per
+  run and weighted by the run's mass in the stack, what the shrinkage
+  removes at the run's own weights, so that a stack of one run reports
+  the run's own ELBO and only the selection the stacking adds is
+  removed. It reads the same statistics and would be scored on the
+  same cells in minutes.
 
 ## Limitations
 
@@ -595,4 +700,7 @@ slots from 100), so the bootstrap intervals over cells are optimistic.
   the draft release `svbmc-analyses-20260915` (the experiments README
   names its size and SHA-256), unpacking to the three raw directories
   under `dev/scripts/runs/`.
+- The single-run baseline and the added-bias join:
+  [`experiments/svbmc_pool/single_run_20260915/`](../experiments/svbmc_pool/single_run_20260915/added.md)
+  (`runs.jsonl`, `cells.jsonl`, the summaries, `sources.json`).
 - The pool: [`experiments/svbmc_pool/pool_20260914/`](../experiments/svbmc_pool/pool_20260914/README.md).

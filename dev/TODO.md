@@ -58,7 +58,18 @@ records its execution.
   estimate acceptable on every condition, with no tuned constant. It
   reads only `I_sk`, `J_sjk` and each run's own weights, which
   `SVBMC` already requires of every input posterior, so the class's
-  interface does not change and no GP or VBMC object is needed.
+  interface does not change and no GP or VBMC object is needed. The
+  yardstick (PI, 2026-09-15; the campaign plan's decision 11): a
+  stacked headline must not add to the optimism its input runs
+  already carry, so it is judged by its bias minus the mean bias of
+  its inputs, each scored against its own Monte Carlo ELBO
+  (`svbmc_single_run_bias.py`; the report's section "The inputs' own
+  bias"): the raw value adds 0.02 to 0.60 nats growing with `M`, the
+  cap removes more than the stacking added on every noisy condition,
+  the two-level shrinkage adds nothing within 0.23 nats. Untested and
+  next to try: the anchored variant, which adds back per run what the
+  shrinkage removes at the run's own weights, so that a stack of one
+  run reports the run's own ELBO (minutes on the recorded cells).
   Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
   the component-median cap; (2) the headline's user-facing caveat
   either way (the shrinkage remains optimistic by about 0.8 nats on a
@@ -100,7 +111,11 @@ records its execution.
   numerically fragile GPs as a caveat); the
   [experiments README](experiments/svbmc_pool/README.md) indexes the
   tracked outputs, and the per-cell outputs are the two assets of the
-  draft release `svbmc-analyses-20260915`. Remaining: the `M = 32`
+  draft release `svbmc-analyses-20260915`; every filtered run is also
+  scored as a stack of one against its own Monte Carlo ELBO
+  (`svbmc_single_run_bias.py`,
+  `experiments/svbmc_pool/single_run_20260915/`), the baseline of the
+  plan's decision 11. Remaining: the `M = 32`
   run of the integrated arm alone (80 cells, about 8 hours, one heavy
   process, on a night the PI chooses, overnight on the analysis
   machine or on the cluster):
@@ -207,6 +222,18 @@ records its execution.
   [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
 - **The Goris neuronal-model benchmark.** It remains deferred; see the
   [target decisions](plans/benchmark-realistic-targets.md#decisions-pi-2026-09-11).
+- **Debiasing the VBMC ELBO itself on noisy targets.** A single run's
+  reported ELBO is optimistic on a noisy target because the
+  variational optimization selects components on noisy GP estimates;
+  the S-VBMC run pools measure it per run against the run's own Monte
+  Carlo ELBO (`experiments/svbmc_pool/single_run_20260915/`, read in
+  the [stage D report](results/2026-09-15-svbmc-pool-comparison.md)).
+  The within-run empirical-Bayes shrinkage of the components' expected
+  log joints (the [tutorial note](2026-09-15-svbmc-shrinkage-explained.md))
+  reads only a run's own `I_sk`, `J_sjk` and weights and would apply
+  to a single run's headline. The PI (2026-09-15): a question separate
+  from S-VBMC, whose requirement is not to add bias to its inputs; not
+  part of 1.5.
 
 ## After PyVBMC 1.5 is published
 

@@ -59,10 +59,14 @@ agree within 0.25 nats.
 ## Which number should the port report?
 
 **The raw value** is optimistic on every noisy target: by 0.25 to 0.9
-nats at M = 2 and by 0.6 to 1.3 at M = 16. Most of the bias is present
-in each run before stacking, because VBMC's own variational
-optimization already selects components with high GP estimates.
-Stacking adds a smaller part that grows with M.
+nats at M = 2 and by 0.6 to 1.3 at M = 16. Most of it is inherited:
+a single VBMC run, scored against its own Monte Carlo ELBO, is
+already optimistic by 0.13 to 0.74 nats on the typical noisy targets
+(0.74 on the multisensory target at noise 3), because its variational
+optimization selected components on noisy GP estimates. Stacking adds
+0.02 to 0.15 nats at M = 2 and 0.27 to 0.60 at M = 16, the optimism
+of picking the best of M noisy runs: the stack's raw value tracks the
+bias of its highest-reported input within 0.25 nats.
 
 **The cap** replaces the stack's expected log joint by the median of the
 expected log joints over all components, weighted or not. It brings the
@@ -73,7 +77,11 @@ reason is plain: on a heavy-tailed posterior the median component is a
 tail component. Where the cap works, it works because the components
 with small weight are the ones the optimization did not select, so
 they act as an unselected control group. Variants of the cap that leave
-out the small-weight components lose the debiasing.
+out the small-weight components lose the debiasing. Relative to its
+inputs the cap over-corrects everywhere: the capped headline sits
+0.04 to 0.33 nats below the bias level of the runs it was built from
+on the typical targets and 0.8 to 1.5 nats below on Student, more
+than the stacking added.
 
 **Scoring each component with the other runs' GPs**, the replacement
 that had been planned, is not the answer. It is unbiased on the two
@@ -116,8 +124,24 @@ a third, with the same worst case for any threshold from 0.08 to 0.20;
 its gain is statistically resolvable only on the multisensory target at
 noise 3.
 
+**The yardstick.** The PI restated the requirement after these
+results (2026-09-15): S-VBMC is not asked to remove the optimism VBMC
+builds into each run's ELBO, only not to add to it, so a headline is
+judged by its bias relative to the mean bias of its input runs, each
+run scored against its own Monte Carlo ELBO. Under that yardstick the
+raw value adds +0.02 to +0.60 nats, growing with M; the cap removes
+more than the stacking added, on every noisy target; the run-level
+term alone removes a sixth to a half of the addition; and the
+two-level shrinkage adds nothing within 0.23 nats at every M on every
+noisy target, sitting 0.1 to 0.2 nats below the inputs' level at
+M ≤ 5 because its within-run term also removes part of the runs' own
+optimism. The report's section "The inputs' own bias" has the
+tables. Debiasing the VBMC ELBO itself is a separate question,
+recorded in the TODO as outside 1.5.
+
 Worst and mean, over the six noisy targets, of the median absolute
-bias. The two noiseless targets are within 0.09 nats for every
+bias against the truth (the earlier yardstick). The two noiseless
+targets are within 0.09 nats for every
 estimate. The six targets are not exchangeable: the worst is the
 multisensory target at noise 3 for the shrinkage estimates and Student
 for the cap, and the mean weights the targets equally.
@@ -130,19 +154,26 @@ for the cap, and the mean weights the targets equally.
 | two-level shrinkage | 0.58 / 0.67 / 0.77 | 0.24 / 0.26 / 0.28 |
 | cap if noise share ≥ 0.2, else within-run shrinkage | 0.42 / 0.43 / 0.44 | 0.19 / 0.22 / 0.15 |
 
-The residual on the multisensory targets is invisible to shrinkage by
-construction: shrinking toward a population mean removes selection
-within the population, not an error common to all of a run's
-components or to all runs. On those targets the GP's own uncertainty
-is also miscalibrated (a quarter to two thirds of the components have
-|z| > 2 against the truth), and the shrinkage takes it at face value.
+The residual on the multisensory targets is the runs' own: a single
+multisensory run at noise 3 is optimistic by 0.74 nats, and shrinking
+toward a population mean removes selection within the population, not
+an error common to all of a run's components. On those targets the
+GP's own uncertainty is also miscalibrated (a quarter to two thirds
+of the components have |z| > 2 against the truth), and the shrinkage
+takes it at face value.
 
 ## Decision
 
 The PI endorsed the recommendation on 2026-09-15: the two-level
 shrinkage is the headline candidate for a noisy stack. The raw value
 stays the headline of a noiseless stack, where shrinkage changes it by
-at most 0.03 nats.
+at most 0.03 nats. Under the inputs yardstick, set later the same
+day, the endorsement stands: it is the one estimate that neither adds
+to the inputs' optimism nor removes much of it. The estimator the
+yardstick itself suggests, the same shrinkage with what it removes at
+each run's own weights added back, so that a stack of one run
+reports the run's own ELBO and only the stacking's addition is
+removed, is untested and listed under Open.
 
 Against the alternatives: the cap fails silently and without bound on
 heavy tails. The hybrid has the best numbers, but its threshold was
@@ -168,6 +199,11 @@ that pin the capped headline, and the user documentation.
 
 ## Open
 
+- The anchored variant of the shrinkage (add back, per run and
+  weighted by its mass in the stack, what the shrinkage removes at
+  the run's own weights) removes exactly the stacking's addition by
+  construction and is untested; it reads the same statistics and
+  scores on the same subsets in minutes.
 - Re-optimizing the weights on the shrunken estimates is untested; only
   the reported value is shrunk today.
 - Stacks of 32 runs (a later overnight or cluster run) test the

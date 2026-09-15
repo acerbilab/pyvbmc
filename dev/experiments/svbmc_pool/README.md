@@ -211,6 +211,41 @@ the headline-bias growth across every `M`. The per-cell files of this
 run (`results.json`, `cells.jsonl`) are the second asset of the
 analyses release described below.
 
+## The inputs' own bias (2026-09-15)
+
+`single_run_20260915/` holds the outputs of
+`svbmc_single_run_bias.py --pool <pool> --gpyreg-source <gpyreg 1.2.1>
+--cells <stage D results.json> --cells <M = 3 and 5 results.json>
+--shrink shrink_20260915/cells.jsonl --shrink
+shrink_M35_20260915/cells.jsonl` (700 runs in 10.2 minutes, from
+`dev-next` `0ca7dcd` with the script uncommitted; its `sources.json`
+hashes the script as run, before the formatting hook reflowed it
+without changing its logic): `runs.jsonl`, one
+record per filtered run of the pool scored as a stack of one
+(`condition`, `name`, `seed`, `K`, `noisy`; `elbo_vbmc`, the ELBO the
+run reports; `elbo_raw`, the class's raw value for the run alone at
+its own weights, with its `G` and `H`; `elbo_cap`, the
+component-median cap at those weights; `e_log_joint_mc`,
+`entropy_ref`, `elbo_mc` with `_sd` standard errors, computed as the
+comparison computes a cell's reference; `bias_vbmc`, `bias_raw`,
+`bias_cap` against `elbo_mc`; `kl_gap` where `ln Z` is known; the
+run's own `elbo_sd`; `metrics` as `sample_metrics` returns them;
+`seconds`); `summary.json` / `summary.md` (per condition, the median
+with a bootstrap interval, the mean and the quartiles of each bias and
+of the KL gap); `cells.jsonl`, one record per cell of the joined
+comparisons (`inputs`: the runs' names, biases and stack masses, the
+mean bias, the bias of the input with the highest reported ELBO and
+the mass-weighted bias; `bias`: the cell's raw and capped biases from
+the comparison and every shrinkage variant's from the shrinkage cells;
+`added`: each minus the inputs' mean bias); `added.json` / `added.md`
+(per condition and `M`, medians over cells of the inputs' biases, of
+every estimate's bias and added bias, bootstrap intervals on the
+added bias of `raw`, `run_level` and `two_level_full`, and the
+fraction of cells whose raw added bias is positive); and
+`sources.json`. The raw directory,
+`dev/scripts/runs/svbmc_pool_20260914_single_run/`, holds the same
+files and the controller's log.
+
 ## Raw outputs of the analyses (release asset)
 
 What stage D and the Phase 2 scoring wrote per cell is too large to
@@ -248,6 +283,7 @@ and the shrinkage and cap sections of the
 [stage D report](../../results/2026-09-15-svbmc-pool-comparison.md)
 quote: the per-condition tables, the worst and mean cases over the
 noisy conditions per `M`, the noise-share percentiles, the hybrid
-threshold sweep, the caps' bind fractions and the paired bootstrap
-intervals. Check a sentence of those documents against its output
-rather than against the raw directories.
+threshold sweep, the caps' bind fractions, the paired bootstrap
+intervals, and from `single_run_20260915/` the single-run biases and
+the added-bias ranges. Check a sentence of those documents against
+its output rather than against the raw directories.

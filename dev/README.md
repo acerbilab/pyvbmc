@@ -651,6 +651,20 @@ reason.
   [headline note](2026-09-15-svbmc-headline-shrinkage.md); the method
   is explained in the
   [tutorial note](2026-09-15-svbmc-shrinkage-explained.md).
+- `scripts/svbmc_single_run_bias.py` — the bias of a single VBMC run's
+  ELBO and what stacking adds to it: every filtered run of a pool is
+  scored as a stack of one against its own Monte Carlo ELBO (the
+  comparison's reference estimator at the run's own weights: the run's
+  reported ELBO, the class's raw value for the run alone and the
+  component-median cap), and with `--cells` (the comparison's
+  `results.json`, repeatable) and `--shrink` (a shrinkage `cells.jsonl`,
+  repeatable) every stacked estimate's bias is restated as the **added
+  bias**, the stack's bias minus the mean bias of its input runs, the
+  yardstick of the campaign plan's decision 11. Its run is
+  `experiments/svbmc_pool/single_run_20260915/`, read in the
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
+  (section "The inputs' own bias") and the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md).
 - `scripts/svbmc_headline_numbers.py` — prints every number the headline
   note and the report's shrinkage and cap sections quote (per-condition
   tables, worst and mean cases over the noisy conditions per `M`,

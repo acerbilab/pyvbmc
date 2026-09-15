@@ -1179,6 +1179,18 @@ draft had left open:
     the `acq_AcqFcnVIQR` oracle reference is re-baselined to it (one
     ulp). Rejected: staying on 1.2.0 for the pool while the package
     moves on, which would only invite a forgotten mismatch.
+11. **The headline's yardstick is the bias of the inputs (2026-09-15,
+    after stage D)**: S-VBMC's job is not to remove the optimism
+    VBMC's own optimization builds into each run's ELBO but not to add
+    to it, so a stacked estimate is judged by its bias relative to the
+    mean bias of the runs it was built from, each run scored against
+    its own `elbo_mc` as a stack of one (`svbmc_single_run_bias.py`),
+    and a correction by the part of the stack's bias it removes beyond
+    the inputs' own. Debiasing the VBMC ELBO itself is a separate
+    question (`dev/TODO.md`, outside 1.5). Rejected: zero bias as the
+    target for the stacked headline, which criterion 3 and the day's
+    analyses had used without saying so, and which would put the
+    stacked ELBO below the ELBOs of its own inputs.
 
 ## Risks and rollback
 
@@ -1749,6 +1761,27 @@ draft had left open:
   paragraph and `dev/TODO.md` state what remains: the `M = 32` run,
   and the two decisions of the debiasing item (whether the two-level
   shrinkage ships in 1.5, and the headline's user-facing caveat).
+- 2026-09-15: the yardstick restated (decision 11) and the baseline
+  measured. `svbmc_single_run_bias.py` scores every filtered run of
+  the pool as a stack of one against its own `elbo_mc` (the
+  comparison's reference estimator at the run's own weights; 700 runs
+  in 10.2 minutes) and joins the biases to the 880 cells of stage D
+  and the `M = 3` and `5` run; tracked under
+  `dev/experiments/svbmc_pool/single_run_20260915/`. A single run's
+  reported ELBO is optimistic by 0.13 (Rosenbrock) to 0.74 nats
+  (multisensory noise 3) in the median on the typical noisy
+  conditions, pessimistic by 0.19 on Student D8, within 0.03 on the
+  controls; the class's raw value for the run alone agrees within
+  0.02. Added bias (the stack's bias minus its inputs' mean, medians
+  over cells): raw +0.02 to +0.15 at `M = 2`, +0.13 to +0.36 at
+  `M = 5`, +0.27 to +0.60 at `M = 16`, tracking the highest-reported
+  input within 0.25; the cap −0.04 to −0.33 on the typical conditions
+  and −0.76 to −1.54 on Student; `run_level` alone removes 15 to 51 %
+  of the addition at `M = 5`; `two_level_full` within −0.23 and
+  +0.15 everywhere. The report's section "The inputs' own bias" and
+  the headline note carry the reading; the anchored variant (add
+  back per run what the shrinkage removes at the run's own weights)
+  is the untested next candidate.
 
 ## Execution tracking
 
