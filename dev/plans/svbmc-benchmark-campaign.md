@@ -1570,6 +1570,52 @@ draft had left open:
   with the pilot's timings, so the run is expected to take under five
   hours; the controller's log is `controller_<timestamp>.log` in the
   output directory and `cells.jsonl` grows one line per finished cell.
+- 2026-09-15: stage D complete, 560 cells in 485.8 minutes (8.1 hours;
+  the plan's 5-hour figure extrapolated the pilot's `M = 3` timings
+  with `M²`, and the measured cells cost about 2 s at `M = 2`, 8 s at
+  `M = 4`, 47 s at `M = 8` and 240 s at `M = 16`, of which the
+  integrated arm takes 57 s, the original 162 s and the entropy
+  reference 23 s, with the multisensory conditions the slowest at about
+  95 minutes each). Against the acceptance criteria: **1** holds, the
+  all-`M` median paired `max |Δw|` is 0.007 (ring) to 0.028 (Student)
+  per condition, inside Phase 4's within-arm spread of 0.018–0.048;
+  **2** holds, no Holm rejection in either direction on any of the 32
+  condition-and-`M` cell sets for MMTV or gsKL; **4** holds, the median
+  runtime ratio integrated / original is 0.25 (multisensory noise 3) to
+  0.54 (noiseless GMM) with every upper interval at or below 0.60;
+  **5** holds, `--summarize-only` on the recorded `results.json`
+  reproduces `summary.md` exactly and `summary.json` up to the
+  timestamp and the `arms_present` field the harness gained the same
+  day. **Criterion 3 fails on one condition.** Its gate (the median
+  bias of the integrated headline no larger in magnitude than the
+  original's raw estimate's) holds on seven conditions at every `M`,
+  with the raw bias growing with `M` on every noisy condition
+  (Rosenbrock 0.25 → 0.74, noisy GMM 0.30 → 0.73, ring 0.41 → 0.76,
+  multisensory noise 3 0.77 → 1.31 from `M = 2` to `16`) while the
+  capped headline stays within 0.05–0.56 nats of the reference; on
+  Student D8 the gate fails at every `M`: the capped headline sits
+  0.95 (`M = 2`) to 1.78 (`M = 16`) nats **below** the stack's own
+  Monte Carlo ELBO while the original's raw estimate is within ±0.41
+  and the integrated raw within ±0.27, so the component-median cap
+  over-corrects there and deepens with `M` (the growth bound, which
+  only limits an increase, holds everywhere; Student's growth is
+  −0.84). The stacked posteriors improve with `M` on every condition
+  (MMTV from the single-run 0.28 to 0.12 at `M = 16` on multisensory
+  noise 3, 0.63 to 0.13 on the ring, 0.48 to 0.11 on noisy GMM; the
+  KL gap of the ring from 1.01 to 0.15 nats). The tracked copies are
+  `dev/experiments/svbmc_pool/stack_20260914/` (`summary.json`,
+  `summary.md`, `sources.json`; the 17.6 MB `results.json` stays with
+  the raw directory until it is decided whether to track it or publish
+  it as a release asset like the pool). The Phase 2 scoring of the 560
+  cells was launched from `dev-next` `cd59443` into
+  `dev/scripts/runs/svbmc_pool_20260914_phase2/` once the per-arm
+  harness change had merged (`svbmc_pool_stack.py --arms integrated`
+  and `--summarize-only` over several `--from-results` files, 19
+  comparison tests, the integrated-only run reproducing the two-arm
+  run's integrated fits exactly); the `M = 32` cells for the integrated
+  arm alone follow it, 10 repetitions on all eight conditions, about
+  6 minutes per cell from the measured `M = 16` cost, so about 8 hours
+  rather than the 2 the cost paragraph's extrapolation gave.
 
 ## Execution tracking
 
@@ -1582,7 +1628,7 @@ Live status of the phases above (`[ ]` not started, `[~]` in progress,
 - [x] Phase 3: pool generator (Opus sub-agent; 2026-09-14, 16 tests pass, manual gate on `rosenbrock_D2_noise3_svbmc` verified and stacked; see worklog)
 - [x] Phase 4: pilot (Fable; authorized by the PI on 2026-09-13; run 2026-09-14 from the harness commit `e2aaef5`, campaign directory `dev/scripts/runs/svbmc_pool_20260913/pool/`, three seeds per condition, `--save-vbmc`; 15/15 runs pass the filters, all artifacts verify, `M = 3` stacking measured in both arms; stages B–D await authorization)
 - [x] Phase 5: stacking comparison harness (Opus sub-agent; 2026-09-14, steps 1–3 and 5 done, 7 tests pass; step 4, the dry run on the pilot artifacts, waits for Phase 4)
-- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells; the Phase 2 scoring, the assessment of criteria 1–5 and the report follow)
+- [~] Phase 6: campaign, comparison and report (stages B and C became the cluster pool of decision 8; stage D authorized by the PI and launched 2026-09-14 from `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`, the decision-6 grid on all eight conditions, both arms, 560 cells, finished 2026-09-15 in 8.1 hours: criteria 1, 2, 4 and 5 hold on every condition and criterion 3's gate fails on Student D8 at every `M`, see the worklog; the Phase 2 scoring is running, the `M = 32` integrated-arm cells and the report follow)
 - [ ] Documentation updates listed above
 - [x] Doublecheck of the implemented phases (three fresh reviewers on 2026-09-14; every finding fixed and re-verified, see worklog)
 - [x] Evidence yardstick change (decision 7): `elbo_mc` with an arm-independent entropy reference, bias and KL-gap columns, criterion 3 gates, `--summarize-only`; reviewed, no must-fix (2026-09-14)

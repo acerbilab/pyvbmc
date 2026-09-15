@@ -106,3 +106,33 @@ the array, none failed, partial, missing or stray). Its
 commands and environment that generated the pool, its resource fit, and
 the archive of the raw directory (`svbmc_pool_20260914.tar.zst`, an asset
 of the draft release `svbmc-pool-20260914`, with its size and SHA-256).
+
+## Stacking comparison, stage D (2026-09-14)
+
+`stack_20260914/` holds the tracked side of the two-arm comparison on
+that pool, run by `dev/scripts/svbmc_pool_stack.py` from `dev-next`
+`744864a` on the analysis machine (560 cells: the decision-6 grid,
+`M ∈ {2, 4, 8, 16}` with 20, 20, 20, 10 repetitions, both
+implementations on every cell, all eight conditions from the pool's
+`selection.json`, 8.1 hours). `summary.json` is the harness's summary:
+`settings` (the stacking call, the draw counts, the entropy reference,
+the bootstrap), `equivalence_tests` (one exact signed-rank test per
+condition, `M` and metric, Holm-corrected per metric) and
+`conditions`, each with its `single_run` medians (`M = 1`, from the
+pool's records), an `all_M` aggregate of the runtime ratio and
+`max_abs_dw`, `headline_bias_growth` (criterion 3's second clause) and
+one entry per `M` holding both arms' medians with bootstrap intervals
+(`arms`), the paired differences (`paired`), `criterion3` (the gate on
+the headline bias), `max_abs_dw`, `runtime_ratio` and `tests`.
+`summary.md` renders the same tables; the columns are defined in the
+harness's module docstring and the campaign plan's "Stacking
+comparison", "Metrics" and "Acceptance criteria" sections.
+`sources.json` records both arms' environments (commits, import paths,
+Torch and gpyreg, the checkout the pool's manifest names against the
+`--gpyreg-source` used), the baseline re-verification, the pool's
+identity and the harness's SHA-256. The comparison's `results.json`
+(17.6 MB, every cell with its subset, seeds, weights, ELBO variants,
+metrics and reference terms) and `cells.jsonl` stay with the raw
+directory, `dev/scripts/runs/svbmc_pool_20260914_stack/` on the
+analysis machine; `results.json` is what `--summarize-only` and the
+Phase 2 estimator read.

@@ -44,9 +44,14 @@ records its execution.
   the checks, a systematic cross-run under-prediction on two noisy
   conditions, and that at three runs the existing component-median cap is
   closer to the reference than the honest estimate on four of five
-  conditions. Next: once stage D has run on the full pools, score its
-  cells (minutes to an hour), read the raw, capped and honest bias against
-  the number of runs, and if the under-prediction holds try the two
+  conditions. Next: the scoring of stage D's 560 cells is running
+  (launched 2026-09-15 from `dev-next` `cd59443` into
+  `dev/scripts/runs/svbmc_pool_20260914_phase2/`); read the raw, capped
+  and honest bias against the number of runs (stage D already shows the
+  cap over-correcting on Student D8 by 0.9 to 1.8 nats, the one
+  condition where criterion 3's gate fails), the `M = 32` integrated-arm
+  cells once they are scored too, and if the under-prediction holds try
+  the two
   variants the report names (a leave-one-run-out GP refit on the pooled
   evaluations of the other runs; a per-run offset correction). The
   stacking objective stays unchanged. See the
@@ -77,22 +82,28 @@ records its execution.
   condition (GPs trained on far-tail evaluations) reaches a relative
   0.3 (the plan's worklog of 2026-09-14 has the numbers). The stacking
   harness reads a copied pool through `--gpyreg-source`. Stage D, the
-  two-arm comparison on the decision-6 grid (both arms, 560 cells,
-  about five hours), was authorized and launched the same day from
-  `dev-next` `744864a` into `dev/scripts/runs/svbmc_pool_20260914_stack/`.
-  Next: when it finishes, copy `results.json`, `summary.json`,
-  `summary.md` and `sources.json` under `experiments/svbmc_pool/`, run
-  the Phase 2 scoring on its cells (`svbmc_honest_elbo.py --pool
-  dev/scripts/runs/svbmc_pool_20260914 --cells <results.json>
-  --gpyreg-source <the 1.2.1 worktree>`, minutes to an hour), assess
-  criteria 1 to 5 and write `results/<date>-svbmc-pool-comparison.md`.
-  The PI decided (2026-09-15): the Rosenbrock noise-3 condition stays,
-  with its numerically fragile GPs stated as a caveat; Phase 2 scores
-  every condition and its own-run consistency check marks Rosenbrock's
-  honest estimates as unreliable, so Phase 2's conclusions rest on the
-  other five noisy conditions; and `M = 32` is run for the integrated
-  arm alone, after stage D, once the harness has a per-arm cap on `M`
-  (a feature branch with tests). See
+  two-arm comparison on the decision-6 grid (both arms, 560 cells), ran
+  on the analysis machine from `dev-next` `744864a` in 8.1 hours into
+  `dev/scripts/runs/svbmc_pool_20260914_stack/`, its summaries tracked
+  under `experiments/svbmc_pool/stack_20260914/`. Criteria 1, 2, 4 and
+  5 hold on every condition; criterion 3's gate fails on Student D8 at
+  every `M`, where the capped headline sits 0.9 to 1.8 nats below the
+  stack's own Monte Carlo ELBO while both raw estimates are within 0.4
+  (the plan's worklog of 2026-09-15 has every number). The PI decided
+  (2026-09-15): the Rosenbrock noise-3 condition stays, with its
+  numerically fragile GPs stated as a caveat; Phase 2 scores every
+  condition and its own-run consistency check marks Rosenbrock's honest
+  estimates as unreliable, so Phase 2's conclusions rest on the other
+  five noisy conditions; and `M = 32` runs for the integrated arm alone
+  (`svbmc_pool_stack.py --arms integrated`, merged 2026-09-15 together
+  with `--summarize-only` over several `--from-results` files). Next:
+  the Phase 2 scoring of stage D's cells is running
+  (`dev/scripts/runs/svbmc_pool_20260914_phase2/`); then the `M = 32`
+  run (80 cells, about 8 hours), its scoring, one merged summary, the
+  reading of criterion 3's failure on Student D8, and
+  `results/<date>-svbmc-pool-comparison.md`. Whether the 17.6 MB
+  `results.json` is tracked or published as a release asset like the
+  pool is open. See
   the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
