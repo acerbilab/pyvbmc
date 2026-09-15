@@ -136,11 +136,16 @@ records its execution.
   summary (`--summarize-only` with both `--from-results` files), and
   the report's `M = 32` section; the PI's decision (2026-09-15) is
   that it runs later, overnight on the analysis machine or on the
-  cluster. The per-cell outputs of the three analyses are the asset of
-  the draft release `svbmc-analyses-20260915` (the experiments README,
-  "Raw outputs of the analyses"), as the pool is of
-  `svbmc-pool-20260914`. See
-  the
+  cluster. The per-cell outputs of the three analyses and of the
+  `M = 3` and `5` run are the two assets of the draft release
+  `svbmc-analyses-20260915` (the experiments README, "Raw outputs of
+  the analyses"), as the pool is of `svbmc-pool-20260914`; the M = 32
+  run needs the pool unpacked under `dev/scripts/runs/` and a clean
+  gpyreg 1.2.1 checkout (`--gpyreg-source`), nothing from the assets.
+  Pickup (2026-09-15): nothing is running; the next actions are the
+  two decisions of the debiasing item above (whether the two-level
+  shrinkage ships in 1.5, and the headline's user-facing caveat) and
+  the `M = 32` run on a night the PI chooses. See the
   [campaign requirement](plans/svbmc-integration.md#benchmark-campaign-required-for-15).
 
 - [ ] **Robustness of the GP on noisy unbounded targets (investigate;

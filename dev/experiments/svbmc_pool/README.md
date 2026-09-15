@@ -208,9 +208,8 @@ summary of stage D and this run together, `svbmc_pool_stack.py
 one table per condition over `M` = 2, 3, 4, 5, 8 and 16, the paired
 quantities and equivalence tests on the cell sets both arms ran, and
 the headline-bias growth across every `M`. The per-cell files of this
-run stay with the raw directory
-`dev/scripts/runs/svbmc_pool_20260914_stack_M35/` on the analysis
-machine.
+run (`results.json`, `cells.jsonl`) are the second asset of the
+analyses release described below.
 
 ## Raw outputs of the analyses (release asset)
 
@@ -230,3 +229,25 @@ svbmc-analyses-20260915 --pattern svbmc_pool_20260914_analyses.tar.gz`).
 `svbmc_pool_stack.py --summarize-only --from-results
 <stack results.json>` rebuilds the stage D summaries from it, and the
 Phase 2 estimator and `svbmc_cap_kappa.py` take that file as `--cells`.
+The second asset of the same release,
+`svbmc_pool_20260914_stack_M35.tar.gz` (1 849 978 bytes, SHA-256
+`349e73f9e578782250bb06be3848b0e84da9d174f39991d75d9e3db6cafd34c3`),
+is the raw directory of the `M = 3` and `5` run,
+`svbmc_pool_20260914_stack_M35/` (`results.json`, `cells.jsonl`, the
+summaries, `sources.json`, the controller's log), and unpacks the same
+way; its `results.json` is the second `--from-results` file of the
+merged summary and the `--cells` file of `shrink_M35_20260915/` and
+`cap_kappa_M35_20260915/`.
+
+## The numbers the documents quote
+
+`python dev/scripts/svbmc_headline_numbers.py` prints, from the four
+tracked `cells.jsonl` files of the shrinkage and cap scorings, every
+number the [headline note](../../2026-09-15-svbmc-headline-shrinkage.md)
+and the shrinkage and cap sections of the
+[stage D report](../../results/2026-09-15-svbmc-pool-comparison.md)
+quote: the per-condition tables, the worst and mean cases over the
+noisy conditions per `M`, the noise-share percentiles, the hybrid
+threshold sweep, the caps' bind fractions and the paired bootstrap
+intervals. Check a sentence of those documents against its output
+rather than against the raw directories.

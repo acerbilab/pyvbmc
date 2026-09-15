@@ -638,6 +638,13 @@ reason.
   `experiments/svbmc_pool/shrink_20260915/` and `shrink_M35_20260915/`,
   read in the same report and in the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md).
+- `scripts/svbmc_headline_numbers.py` — prints every number the headline
+  note and the report's shrinkage and cap sections quote (per-condition
+  tables, worst and mean cases over the noisy conditions per `M`,
+  noise-share percentiles, the hybrid threshold sweep, the caps' bind
+  fractions, paired bootstrap intervals) from the four tracked
+  `cells.jsonl` files under `experiments/svbmc_pool/`; NumPy only, no
+  pool or raw directory needed. The check for a quoted number.
 - `scripts/pymc_feasibility.py` — the bounded feasibility check of a PyMC
   model adapter (`2026-09-13-pymc-integration.md`): a PyMC model becomes a
   box-bounded log joint for `VBMC` (a variable bounded on one side keeps
