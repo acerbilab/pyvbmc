@@ -7,6 +7,11 @@ candidates (`box_search_frac` defaults to 0.25), including noiseless
 targets, and changes the random stream and subsequent optimization
 trajectories.
 
+The subsequent [tail-acquisition investigation](2026-09-16-gp-tail-acquisition.md)
+reconstructs the first extreme evaluation in each corrected run. Their
+VIQR preferences survive a 50-digit numerical check, and the following
+GP refits account for the large immediate conditioning increases.
+
 ## Source comparison
 
 MATLAB's `getSearchPoints` draws `rand(Nbox,D)` and scales and translates
