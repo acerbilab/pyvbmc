@@ -134,7 +134,7 @@ records its execution.
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
-- [ ] **Robustness of the GP on noisy unbounded targets (investigate;
+- [x] **Robustness of the GP on noisy unbounded targets (investigate;
   algorithmic changes are outside 1.5 unless the cause is a bug).** In
   the S-VBMC pool's Rosenbrock condition at noise 3 (D = 2, unbounded,
   N(0, 3²) prior, VIQR), most runs evaluate points far in the tails, log
@@ -154,15 +154,18 @@ records its execution.
   golden replays pass, but all three corrected noisy Rosenbrock runs
   remain ill-conditioned (7e12 to 1e14). Noise shaping is unported and
   defaults off; the unused outer search clamps are also unused in
-  MATLAB. Next: reconstruct the acquisition batch preceding corrected
-  seed 1000's first extreme evaluation (call 80), identify whether the
-  candidate comes from the sieve or CMA-ES, compare its predicted
-  uncertainty reduction with central candidates and test the ranking's
-  numerical stability, then inspect the subsequent GP refit. Check the
-  explanation against seeds 1001 and 1002. The saved histories and
-  call records are listed in `dev/scripts/runs/LOCAL.md`; the probe is
-  `dev/scripts/gp_box_probe.py`. The PI decided (2026-09-15) that an
-  algorithmic fix belongs after 1.5 unless the investigation finds a bug.
+  MATLAB. The [tail-acquisition investigation](results/2026-09-16-gp-tail-acquisition.md)
+  reproduced the five-call batches around the first extreme evaluation
+  in all three corrected runs, including the next GP fit, VP and RNG
+  state. Uniform-box sieve candidates win; their VIQR preferences over
+  central candidates survive a 50-digit check. Adding the new data with
+  fixed hyperparameters barely changes conditioning, whereas refitting
+  raises it 7–30 times through larger GP scales. No further bug was found
+  in those decisions; later near-singular decisions remain unchecked.
+  The investigation is complete (2026-09-16); the remaining algorithmic
+  work is outside 1.5 under the PI's decision of 2026-09-15. The saved
+  histories and captures are listed in `dev/scripts/runs/LOCAL.md`;
+  reproducible diagnostics are in `dev/scripts/gp_tail_probe.py`.
 
 - [ ] **PyMC integration: the target adapter with the tested scope.** The
   PI chose (2026-09-14), on the
@@ -234,6 +237,12 @@ records its execution.
   and [reference record](golden/promotion_20260913/README.md).
 
 ## Outside 1.5 scope
+
+- **GP robustness on noisy unbounded targets.** Investigate controls on
+  the influence of extreme low-density observations, including MATLAB's
+  optional noise shaping. The [tail-acquisition report](results/2026-09-16-gp-tail-acquisition.md)
+  records the VIQR/refit mechanism and precision checks at its onset;
+  remedies and their effects on inference accuracy have not been compared.
 
 - **New acquisition-function design.** Efficiency work uses existing criteria.
   The experimental VIQR losses and the EIG acquisition were removed from the
