@@ -1191,6 +1191,21 @@ draft had left open:
     target for the stacked headline, which criterion 3 and the day's
     analyses had used without saying so, and which would put the
     stacked ELBO below the ELBOs of its own inputs.
+12. **The headline switch is confirmed at the release gate, on fresh
+    pools (2026-09-16, after the `M = 32` run)**: the PI leans to
+    promoting the two-level shrinkage to the headline of a noisy stack
+    (the noiseless case open), but the switch is confirmed, and the
+    user-facing wording written, at the final large-scale check before
+    the release of 1.5: VBMC pools regenerated on the cluster by the
+    consolidated release code (about 100 runs per condition, several
+    hundred where `M = 32` is to be scored), S-VBMC at several `M`,
+    and this campaign's results holding. That check gates 1.5 as a
+    whole. The present pools (100 noisy and 50 noiseless runs per
+    condition) reuse each run 1.6 to 3.2 times at `M = 16` and 3.2 to
+    6.4 times at `M = 32`, so the `M = 32` cells of a control are
+    closer to one measurement than to ten and the `M = 32` control
+    observation is a direction to confirm, not an interval. Rejected:
+    switching the headline on this campaign's evidence alone.
 
 ## Risks and rollback
 
@@ -1884,7 +1899,11 @@ draft had left open:
   be stated separately in every document, VBMC's own (what each run
   carries, the separate item) and what S-VBMC adds; the headline
   note's decision paragraph and the TODO's decision (2) were restated
-  that way.
+  that way. Decision 12, the same day: the two-level shrinkage is the
+  PI's leaning for the noisy headline, confirmed at the release gate
+  on fresh pools rather than on this campaign; the run reuse of the
+  present pools at `M` = 16 and 32 is quantified in the report's
+  Limitations and the gate is a TODO item of its own.
 
 ## Execution tracking
 

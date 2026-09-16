@@ -904,8 +904,11 @@ the stack's components and over the runs' levels:
   errors of GPs the class treats as noiseless (the runs of this
   real-data target carry a little noise, the noise share 0.085 in the
   median over their cells) becomes visible, and no estimate scored
-  here removes it. On the noiseless GMM every estimate adds within
-  0.01.
+  here removes it. The ten subsets of 32 draw 320 slots from this
+  control's 50 runs and share about 20 runs pairwise, so this is
+  closer to one measurement than to ten (the Limitations); its
+  direction stands, its interval does not. On the noiseless GMM every
+  estimate adds within 0.01.
 
 What `M = 32` adds to the reading: the ordering of the estimates
 through `M = 16` holds (the hybrid, then the two-level shrinkage, then
@@ -941,8 +944,19 @@ adds is not confined to the targets the class treats as noisy.
   the absolute medians less so, and the bootstrap intervals are over
   the repetitions of a cell set only. The cells of one condition and
   `M` draw from one pool of 100 runs (50 for the controls) and share
-  runs, so every interval over cells is optimistic.
-- **Medians over 20 cells (10 at `M = 16`).** Differences between rules
+  runs, so every interval over cells is optimistic. The reuse grows
+  with `M`: the ten `M = 16` subsets draw 160 slots, so a run appears
+  1.6 times on a noisy condition and 3.2 times on a control, and two
+  subsets share about 3 runs on a noisy condition and 5 on a control;
+  the ten `M = 32` subsets draw 320 slots, 3.2 appearances per run on
+  a noisy condition and 6.4 on a control, two subsets sharing about 10
+  of their 32 runs on a noisy condition and 20 on a control. The
+  `M = 32` cells of a control are therefore closer to one measurement
+  than to ten, and the `M = 32` observation on the noiseless
+  multisensory control is to be read as a direction, not an interval.
+  A future pool that is to support `M = 32` needs several hundred runs
+  per condition (320 for ten disjoint subsets).
+- **Medians over 20 cells (10 at `M = 16` and `32`).** Differences between rules
   of about 0.1 nats are at the edge of what the cells resolve; the
   shrinkage section quotes paired bootstrap intervals where a
   comparison rests on them.
