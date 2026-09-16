@@ -93,11 +93,18 @@ def active_sample(
         # this is also not implemented in MATLAB yet.
 
         x0 = optim_state["cache"]["x_orig"]
+        skip_logger_cache = optim_state["cache"].get("skip_logger")
+        if skip_logger_cache is None or skip_logger_cache.shape != (
+            x0.shape[0],
+        ):
+            skip_logger_cache = np.zeros(x0.shape[0], dtype=bool)
+            optim_state["cache"].pop("skip_logger", None)
         provided_sample_count, D = x0.shape
 
         if provided_sample_count <= sample_count:
             Xs = np.copy(x0)
             ys = np.copy(optim_state["cache"]["y_orig"])
+            skip_logger = np.copy(skip_logger_cache)
 
             if provided_sample_count < sample_count:
                 pub_tran = optim_state.get("pub_tran")
@@ -139,6 +146,12 @@ def active_sample(
                     np.full(sample_count - provided_sample_count, np.nan),
                     axis=0,
                 )
+                skip_logger = np.append(
+                    skip_logger,
+                    np.full(
+                        sample_count - provided_sample_count, False, dtype=bool
+                    ),
+                )
 
             idx_remove = np.full(provided_sample_count, True)
 
@@ -149,6 +162,7 @@ def active_sample(
 
             Xs = np.copy(x0[:sample_count])
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
+            skip_logger = np.copy(skip_logger_cache[:sample_count])
             idx_remove = np.full(provided_sample_count, True)
             logger.info(
                 "More than sample_count=%s initial points have been "
@@ -164,13 +178,20 @@ def active_sample(
         optim_state["cache"]["y_orig"] = np.delete(
             optim_state["cache"]["y_orig"], np.where(idx_remove), 0
         )
+        if "skip_logger" in optim_state["cache"]:
+            optim_state["cache"]["skip_logger"] = np.delete(
+                optim_state["cache"]["skip_logger"], np.where(idx_remove), 0
+            )
 
         Xs = parameter_transformer(Xs)
 
         if getattr(function_logger, "vectorized_target", False):
-            function_logger.batch_call(Xs, ys)
+            if np.any(~skip_logger):
+                function_logger.batch_call(Xs[~skip_logger], ys[~skip_logger])
         else:
             for idx in range(sample_count):
+                if skip_logger[idx]:
+                    continue
                 if np.isnan(ys[idx]):  # Function value is not available
                     function_logger(Xs[idx])
                 else:

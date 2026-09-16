@@ -30,8 +30,8 @@ all 45 Part B fits are complete. Execution status is tracked below. The
 results, limitations and proposed design choices; local outputs and
 commands are listed in `dev/scripts/runs/LOCAL.md`.
 
-The design uses the
-setup cap and 0.001-nat stopping rule only when a start is not supplied;
+The setup cap bounds initialization work. When a start is not supplied,
+an automatic mode search uses the 0.001-nat stopping rule;
 prior-location checks report diagnostics without relocating the start.
 `precomputed_evaluations` carries observations independently of
 the start and plausible box, including noisy observations and independent
@@ -49,9 +49,9 @@ Package implementation is authorized on the feature branches below.
 The orchestrator owns this checklist; phase instructions and acceptance
 checks below remain authoritative. At most one heavy process runs at a time.
 
-- [~] Phase 0: record approval, commit and push planning/evidence on
+- [x] Phase 0: record approval, commit and push planning/evidence on
   `dev-next`, then create `dev-pymc-adapter` and `dev-precomputed-evaluations`.
-- [ ] Phase 0a: general precomputed evaluations and budget accounting;
+- [~] Phase 0a: general precomputed evaluations and budget accounting;
   independent Sol review, focused checks, exact oracles and golden replay;
   merge into `dev-pymc-adapter`.
 - [ ] Phase 1: structured ArviZ export and focused validation.
@@ -812,7 +812,7 @@ constant, `TESTED_RANGE`, that the error messages and the installation
 page quote; Phase 2 sets it to `"PyMC 6.3 with ArviZ 1.3"` and Phase 6 is
 its only later editor.
 
-The adapter reaches past PyMC's documented surface in four places. Each
+The adapter reaches past PyMC's documented surface in five places. Each
 is guarded by capability, not by version number, so that an incompatible
 PyMC fails at construction with a message naming the tested range rather
 than misbehaving. A guard that finds PyMC's surface changed raises
@@ -850,6 +850,15 @@ finds a particular model outside the supported scope raises
    `rvs_to_values`, `rvs_to_transforms`, `named_vars_to_dims`): one
    `hasattr` check on the model instance at construction, the guard's
    `ImportError` when one is missing.
+5. **Snapshot graph reconstruction.** Use the public
+   `freeze_dims_and_data` for registered data and dimensions. PyMC 6.3
+   leaves unregistered numeric shared inputs live, so a private helper
+   freezes remaining non-RNG shared ancestors through PyMC's model-graph
+   conversion utilities. Guard these imports and reconstruction
+   capabilities, preserve constant/string initialization values and
+   original free-variable order, and assert that no numeric shared inputs
+   remain. Copy coordinate metadata. Random-generator state is excluded
+   from this numeric-data check.
 
 ### Save and copy
 
@@ -1356,7 +1365,7 @@ is not the package implementation.
    `ModuleNotFoundError` for those names becomes `ImportError("PyMC
    targets require the pymc extra; install pyvbmc[pymc] on Python
    3.12+.")`); `transform_classes()`, `default_transform()`,
-   `remove_value_transforms()` and `check_model(model)` (the four guards
+   `remove_value_transforms()` and `check_model(model)` (the five guards
    of the design section, each raising `ImportError` that quotes
    `pymc.__version__` and `TESTED_RANGE`); `closed_form(kind, lower,
    upper)` returning the NumPy `backward` map the construction-time
@@ -1508,6 +1517,10 @@ is not the package implementation.
      verify changed data are picked up there. Check posterior prediction
      with new covariates on the original model without changing the old
      target. Use constructor/mapping checks, not additional optimize runs.
+     Include unregistered numeric shared inputs used as likelihood scales,
+     covariates or support limits; preserve constant/string initial values
+     through freezing and transform removal. Check the absence of residual
+     numeric shared inputs and stable free-variable ordering.
    - `test_guards.py`: with `_compat.default_transform` monkeypatched to
      raise `ImportError`, construction raises `ImportError` containing
      `TESTED_RANGE`; the same for a `transform_classes()` that lacks a
@@ -1727,7 +1740,7 @@ chosen default before that decision.
    extra is installed.
 8. `AGENTS.md`: the `Extras` line in "Setup and commands" and the extras
    sentence of the "Posterior exports" bullet; a bullet on the adapter's
-   contract (coordinates, `-inf` outside the box only, the four guarded
+   contract (coordinates, `-inf` outside the box only, the five guarded
    reaches, where the tests run); the lazy-import sentence.
 9. After Phase 5 has committed the notebook, build the docs (`cd docsrc
    && make github`, or `make.bat github` from `cmd` on Windows) and
@@ -1945,6 +1958,39 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: Phase 0a implementation passed 225 focused checks, all 11
+  exact numerical fixtures and the pinned formatting hooks. Independent
+  Sol review verified the resolved budget, load, precision-pooling and
+  GP-schedule findings. The five default golden configurations passed the
+  historical accuracy gate and matched a clean `4007aab` control exactly
+  for all stored non-timing loop/final arrays and semantic result fields;
+  the trace format does not capture the returned transformer. Ordinary
+  caches retain their previous structure. A bounded-coordinate pooling
+  regression also covers the existing logger alias bug exposed by noisy
+  supplied repeats.
+
+- 2026-09-16: Phase 0a's first verification pass passed 124 existing
+  logger/constructor/GP-training checks and all 11 exact oracle fixtures.
+  Review identified the need to preserve initial-design size when cached
+  starts reduce fresh calls, and to include legacy `f_vals` in that fresh
+  requirement when an initialization charge is supplied. Both corrections
+  are covered by focused tests. The golden reference predates the existing
+  uniform acquisition-box fix, so a clean `4007aab` control is also used to
+  distinguish inherited trajectory changes from this implementation.
+
+- 2026-09-16: a snapshot preflight against installed PyMC 6.3.2 confirmed
+  that `freeze_dims_and_data` isolates registered `pm.Data`, while an
+  unregistered shared likelihood scale remains live. A read-only Sol
+  compatibility review traced this to shared-variable cloning and scoped
+  the residual numeric-input freezing helper and its fifth compatibility
+  guard. Raw preflight evidence is indexed in `dev/scripts/runs/LOCAL.md`.
+
+- 2026-09-16: approved planning/evidence committed as `4007aab` and pushed
+  to `origin/dev-next`; formatting hooks and strict JSON validation passed.
+  Created `dev-pymc-adapter`, then its Phase 0a branch
+  `dev-precomputed-evaluations`. Phase 0a implementation is assigned to Sol;
+  the orchestrator retains the tracker and heavy verification.
 
 - 2026-09-16: the PI approved the complete plan and instructed committing
   and pushing the planning work on `dev-next`, then starting implementation

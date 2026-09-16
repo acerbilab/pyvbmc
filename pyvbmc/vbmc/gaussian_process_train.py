@@ -621,9 +621,20 @@ def _get_gp_training_options(
     b = -3 * a
     c = 3 * a
     d = options["gp_train_n_init"]
-    x = (optim_state["n_eff"] - options["fun_eval_start"]) / (
-        min(options["max_fun_evals"], 1e3) - options["fun_eval_start"]
+    schedule_limit = min(
+        optim_state.get("max_fun_evals", options["max_fun_evals"]), 1e3
     )
+    schedule_span = schedule_limit - options["fun_eval_start"]
+    if optim_state.get("budget_active", False) and schedule_span <= 0:
+        # A charged or precomputed run can validly have fewer fresh calls
+        # than the ordinary initial-design size because cached starting rows
+        # cover part of that design. At that point the finite end-of-horizon
+        # training schedule is the meaningful limiting value.
+        x = 1.0
+    else:
+        x = (optim_state["n_eff"] - options["fun_eval_start"]) / schedule_span
+        if optim_state.get("budget_active", False):
+            x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
     init_N = max(round(f(x)), 9)
 

@@ -661,18 +661,58 @@ class FunctionLogger:
             idx = np.argwhere(duplicate_flag)[0, 0]
             N = self.n_evals[idx]
             if f_sd is not None:
-                tau_n = 1 / self.S[idx] ** 2
-                tau_1 = 1 / f_sd**2
-                self.y_orig[idx] = (
-                    tau_n * self.y_orig[idx] + tau_1 * f_val_orig
-                ) / (tau_n + tau_1)
-                self.S[idx] = 1 / np.sqrt(tau_n + tau_1)
+                f_sd_value = np.float64(f_sd)
+                with np.errstate(
+                    divide="ignore",
+                    over="ignore",
+                    under="ignore",
+                    invalid="ignore",
+                ):
+                    tau_n = 1 / self.S[idx] ** 2
+                    tau_1 = 1 / f_sd_value**2
+                    tau_sum = tau_n + tau_1
+                    pooled_y = (
+                        tau_n * self.y_orig[idx] + tau_1 * f_val_orig
+                    ) / tau_sum
+                    pooled_sd = 1 / np.sqrt(tau_sum)
+                if (
+                    np.all(np.isfinite(tau_n))
+                    and np.isfinite(tau_1)
+                    and np.all(tau_n > 0)
+                    and tau_1 > 0
+                    and np.all(np.isfinite(tau_sum))
+                    and np.all(tau_sum > 0)
+                    and np.all(np.isfinite(pooled_y))
+                    and np.all(np.isfinite(pooled_sd))
+                    and np.all(pooled_sd > 0)
+                ):
+                    self.y_orig[idx] = pooled_y
+                    self.S[idx] = pooled_sd
+                else:
+                    # Scale both precisions by the smaller SD. Their relative
+                    # weights are then in [0, 1], avoiding overflow and
+                    # underflow for finite positive extreme SDs. This fallback
+                    # leaves the historical arithmetic untouched whenever its
+                    # intermediates are representable.
+                    old_sd = float(self.S[idx, 0])
+                    scale = min(old_sd, float(f_sd_value))
+                    relative_n = (scale / old_sd) ** 2
+                    relative_1 = (scale / float(f_sd_value)) ** 2
+                    relative_sum = relative_n + relative_1
+                    weight_n = relative_n / relative_sum
+                    weight_1 = relative_1 / relative_sum
+                    self.y_orig[idx] = (
+                        weight_n * self.y_orig[idx] + weight_1 * f_val_orig
+                    )
+                    self.S[idx] = scale / np.sqrt(relative_sum)
             else:
                 self.y_orig[idx] = (N * self.y_orig[idx] + f_val_orig) / (
                     N + 1
                 )
 
-            f_val = self.y_orig[idx]
+            # Work on a copy: adding the transform Jacobian to a view would
+            # corrupt the pooled original-space observation on every repeat.
+            f_val = self.y_orig[idx].copy()
             if self.transform_parameters:
                 f_val += self.parameter_transformer.log_abs_det_jacobian(x)
             self.y[idx] = f_val

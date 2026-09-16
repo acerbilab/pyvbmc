@@ -20,6 +20,76 @@
 
   The iteration history (``vbmc.iteration_history``) keeps each iteration's Gaussian process surrogate as its training data and hyperparameters, without the posterior factors; ``vbmc.get_gp(iteration)`` returns the surrogate of an iteration with its posterior restored, ready for prediction.
 
+Reusing evaluations and charging initialization work
+----------------------------------------------------
+
+Use ``precomputed_evaluations`` to give VBMC target evaluations that are
+already available when the run starts. These observations are independent of
+the starting point and plausible box: they neither become additional rows of
+``x0`` nor change the plausible bounds. Pass ``(X, y)`` for an exact target or
+one with unknown noise, where ``X`` has shape ``(N, D)`` in the target's
+original input coordinates and ``y`` has shape ``(N,)``::
+
+  vbmc = VBMC(
+      log_density,
+      x0,
+      lower_bounds,
+      upper_bounds,
+      plausible_lower_bounds,
+      plausible_upper_bounds,
+      precomputed_evaluations=(X, y),
+  )
+
+The values in ``y`` must be outputs of ``log_density`` at the corresponding
+rows of ``X``. When ``prior`` or ``log_prior`` is supplied separately,
+``log_density`` and ``y`` contain log-likelihood values; VBMC adds the
+deterministic log-prior once. Precomputed points must lie strictly inside the
+hard bounds, but they need not lie inside the plausible box.
+
+For a target with user-provided noise estimates, set
+``options["specify_target_noise"]`` and pass ``(X, y, y_sd)``. ``y_sd`` has
+shape ``(N,)`` and contains positive standard deviations of the log-density
+observations, not uncertainties in ``X``. Repeated rows of ``X`` remain
+independent noisy observations and are pooled by inverse-variance weighting::
+
+  vbmc = VBMC(
+      noisy_log_density,
+      x0,
+      lower_bounds,
+      upper_bounds,
+      plausible_lower_bounds,
+      plausible_upper_bounds,
+      precomputed_evaluations=(X, y, y_sd),
+      options={"specify_target_noise": True},
+  )
+
+Precomputed observations do not count as fresh target calls. By default they
+also carry no cost for the current run, which is appropriate for evaluations
+obtained during earlier work. If preparing this run incurred target or
+derivative work, pass its nonnegative integer function-equivalent charge as
+``initialization_cost``. The charge is independent of the number of retained
+observations and counts once against the total ``max_fun_evals`` allowance::
+
+  vbmc = VBMC(
+      log_density,
+      x0,
+      lower_bounds,
+      upper_bounds,
+      plausible_lower_bounds,
+      plausible_upper_bounds,
+      precomputed_evaluations=(X, y),
+      initialization_cost=13,
+      options={"max_fun_evals": 100},
+  )
+
+Here VBMC can make at most 87 fresh target calls.
+``results["func_count"]`` remains the literal number of fresh calls made by
+VBMC. When ``initialization_cost`` is positive,
+``results["evaluation_budget"]`` additionally reports the
+function-equivalent ``limit``, ``initialization``, ``new_calls`` and ``used``
+total. Zero-cost runs retain the ordinary result and display without this
+additional budget report.
+
 Performance calibration
 -----------------------
 

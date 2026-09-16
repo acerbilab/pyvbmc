@@ -194,6 +194,37 @@ def test_record_duplicate_f_sd():
     assert f_logger.S[1] == 1 / np.sqrt(1 / 9 + 1 / 9)
 
 
+def test_record_duplicate_transform_preserves_original_space_pool():
+    transformer = ParameterTransformer(
+        1,
+        np.array([[-2.0]]),
+        np.array([[2.0]]),
+        np.array([[-1.0]]),
+        np.array([[1.0]]),
+    )
+    x = transformer(np.array([[0.0]]))[0]
+    f_logger = FunctionLogger(non_noisy_function, 1, True, 2, 500, transformer)
+
+    f_logger.add(x, 0.0, 1.0)
+    f_logger.add(x, 1.0, 2.0)
+
+    assert f_logger.y_orig[0, 0] == pytest.approx(0.2)
+    jacobian = transformer.log_abs_det_jacobian(x[None, :])[0]
+    assert f_logger.y[0, 0] == pytest.approx(0.2 + jacobian)
+
+
+@pytest.mark.parametrize("scale", [1e-300, 1e300])
+def test_record_duplicate_extreme_finite_sds(scale):
+    x = np.array([0.0])
+    f_logger = FunctionLogger(non_noisy_function, 1, True, 2)
+
+    f_logger.add(x, 0.0, scale)
+    f_logger.add(x, 1.0, 2 * scale)
+
+    assert f_logger.y_orig[0, 0] == pytest.approx(0.2)
+    assert f_logger.S[0, 0] / scale == pytest.approx(1 / np.sqrt(1.25))
+
+
 def test_finalize():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)

@@ -43,6 +43,21 @@ from .options import Options
 from .variational_optimization import optimize_vp, update_K
 
 
+class _OmittedArgument:
+    """Private sentinel with the public default shown in API signatures."""
+
+    def __init__(self, public_default):
+        self.public_default = public_default
+
+    def __repr__(self):
+        return self.public_default
+
+
+_PRECOMPUTED_NOT_PROVIDED = _OmittedArgument("None")
+_INITIALIZATION_COST_NOT_PROVIDED = _OmittedArgument("0")
+_PRECOMPUTED_DUPLICATE_ULPS = 4
+
+
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
@@ -131,6 +146,21 @@ class VBMC:
         state is never written. Draws from ``vbmc.rng`` before ``optimize``
         (e.g. ``vbmc.vp.sample``) change the run like any other change of
         the generator's state.
+    precomputed_evaluations : tuple, optional
+        Evaluations available before the run, independently of ``x0``. Pass
+        ``(X, y)`` for exact or unknown-noise targets, or ``(X, y, y_sd)``
+        when ``options["specify_target_noise"]`` is true. ``X`` has shape
+        ``(N, D)`` in the target's original coordinates and the other arrays
+        have shape ``(N,)``. If a separate prior is supplied, ``y`` contains
+        log-likelihood values; VBMC adds the prior once. Inputs are copied to
+        float64 storage. Exact duplicate points must agree within four
+        float64 ULPs at their value scale and are retained once; noisy repeats
+        remain independent observations and are pooled by the logger.
+    initialization_cost : int, optional
+        Nonnegative function-equivalent cost incurred while preparing this
+        run. It is independent of the number of precomputed rows and counts
+        once against ``options["max_fun_evals"]``, leaving the difference for
+        fresh target calls. Default is zero.
 
     Attributes
     ----------
@@ -163,6 +193,24 @@ class VBMC:
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
     in the PyVBMC documentation:
     https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1.html
+
+    Previously computed target values can seed the logger without becoming
+    starting points or changing the plausible box. Preparation performed for
+    the current run can be charged against the total function-equivalent
+    budget independently of the number of retained observations::
+
+        cached = (X_evaluated, log_density_values)
+        vbmc = VBMC(
+            log_density,
+            x0,
+            lower_bounds,
+            upper_bounds,
+            plausible_lower_bounds,
+            plausible_upper_bounds,
+            precomputed_evaluations=cached,
+            initialization_cost=setup_cost,
+            options={"max_fun_evals": 100},
+        )
     """
 
     def __init__(
@@ -179,6 +227,9 @@ class VBMC:
         log_prior: callable = None,
         sample_prior: callable = None,
         seed=None,
+        *,
+        precomputed_evaluations=_PRECOMPUTED_NOT_PROVIDED,
+        initialization_cost=_INITIALIZATION_COST_NOT_PROVIDED,
     ):
         # set up root logger (only changes stuff if not initialized yet)
         logging.basicConfig(stream=sys.stdout, format="%(message)s")
@@ -241,6 +292,33 @@ class VBMC:
         self._validate_final_boost_tolerance(
             self.options.get("tol_elcbo_boost")
         )
+
+        precomputed_was_provided = (
+            precomputed_evaluations is not _PRECOMPUTED_NOT_PROVIDED
+        )
+        initialization_cost_was_provided = (
+            initialization_cost is not _INITIALIZATION_COST_NOT_PROVIDED
+        )
+        if not precomputed_was_provided:
+            precomputed_evaluations = None
+        if not initialization_cost_was_provided:
+            initialization_cost = 0
+        self._budget_active = bool(
+            precomputed_was_provided or initialization_cost_was_provided
+        )
+        self.initialization_cost = self._validate_initialization_cost(
+            initialization_cost
+        )
+        self._configured_max_fun_evals = self.options.get("max_fun_evals")
+        self._effective_max_fun_evals = (
+            self._configured_max_fun_evals - self.initialization_cost
+        )
+        if self._budget_active and self._effective_max_fun_evals <= 0:
+            raise ValueError(
+                "The function-equivalent budget is exhausted by "
+                "initialization_cost; options['max_fun_evals'] must be "
+                "larger than initialization_cost."
+            )
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
@@ -334,6 +412,12 @@ class VBMC:
             vectorized_target=self.options["vectorized_target"],
         )
 
+        self.precomputed_evaluations = None
+        self.precomputed_observation_count = 0
+        self.precomputed_location_count = 0
+        self._initialize_precomputed_evaluations(precomputed_evaluations)
+        self._validate_initial_fresh_budget()
+
         self.x0 = self.parameter_transformer(self.x0)
         self.random_state = self._get_random_state()
         self.iteration_history = IterationHistory(
@@ -367,6 +451,242 @@ class VBMC:
                 "random_state",
             ]
         )
+
+    @staticmethod
+    def _validate_initialization_cost(cost):
+        """Return a valid integer function-equivalent initialization cost."""
+        if isinstance(cost, (bool, np.bool_)) or not isinstance(
+            cost, (int, np.integer)
+        ):
+            raise ValueError(
+                "initialization_cost must be a nonnegative integer."
+            )
+        if cost < 0:
+            raise ValueError(
+                "initialization_cost must be a nonnegative integer."
+            )
+        return int(cost)
+
+    @staticmethod
+    def _precomputed_float64_array(value, shape, name):
+        """Validate and copy one array from precomputed evaluations."""
+        array = np.asarray(value)
+        if array.shape != shape:
+            raise ValueError(
+                f"{name} must have shape {shape}, but has shape {array.shape}."
+            )
+        if not np.isrealobj(array):
+            raise ValueError(f"{name} must contain real values.")
+        try:
+            with np.errstate(over="ignore", invalid="ignore"):
+                converted = np.array(array, dtype=np.float64, copy=True)
+        except (OverflowError, TypeError, ValueError) as err:
+            raise ValueError(f"{name} must contain numeric values.") from err
+        if not np.all(np.isfinite(converted)):
+            rows = np.flatnonzero(
+                ~np.all(np.isfinite(converted), axis=1)
+                if converted.ndim == 2
+                else ~np.isfinite(converted)
+            ).tolist()
+            raise ValueError(
+                f"{name} must contain finite float64 values; invalid rows: "
+                f"{rows}."
+            )
+        return converted
+
+    @staticmethod
+    def _precomputed_values_agree(first, second):
+        """Compare deterministic repeats within a small float64 ULP margin."""
+        scale = max(1.0, abs(float(first)), abs(float(second)))
+        with np.errstate(over="ignore", invalid="ignore"):
+            spacing = np.spacing(scale)
+        if not np.isfinite(spacing):
+            spacing = scale - np.nextafter(scale, 0.0)
+        tolerance = _PRECOMPUTED_DUPLICATE_ULPS * spacing
+        return abs(float(first) - float(second)) <= tolerance
+
+    def _initialize_precomputed_evaluations(self, evaluations):
+        """Validate and seed observations supplied independently of ``x0``."""
+        cache = self.optim_state["cache"]
+        if evaluations is None:
+            return
+        cache["skip_logger"] = np.zeros(cache["x_orig"].shape[0], dtype=bool)
+        if np.asarray(self.options.get("f_vals")).size:
+            raise ValueError(
+                "precomputed_evaluations cannot be combined with the legacy "
+                "options['f_vals'] interface."
+            )
+        if not isinstance(evaluations, (tuple, list)) or len(
+            evaluations
+        ) not in (
+            2,
+            3,
+        ):
+            raise ValueError(
+                "precomputed_evaluations must be a tuple (X, y) or "
+                "(X, y, y_sd)."
+            )
+
+        X_input = np.asarray(evaluations[0])
+        if X_input.ndim != 2 or X_input.shape[1:] != (self.D,):
+            raise ValueError(
+                "Precomputed points X must have shape "
+                f"(N, {self.D}), but have shape {X_input.shape}."
+            )
+        n_observations = X_input.shape[0]
+        X = self._precomputed_float64_array(
+            evaluations[0], (n_observations, self.D), "Precomputed points X"
+        )
+        y = self._precomputed_float64_array(
+            evaluations[1], (n_observations,), "Precomputed values y"
+        )
+        y_sd = None
+        if len(evaluations) == 3:
+            y_sd = self._precomputed_float64_array(
+                evaluations[2],
+                (n_observations,),
+                "Precomputed noise SDs y_sd",
+            )
+            if np.any(y_sd <= 0):
+                rows = np.flatnonzero(y_sd <= 0).tolist()
+                raise ValueError(
+                    "Precomputed noise SDs y_sd must be positive; invalid "
+                    f"rows: {rows}."
+                )
+
+        uncertainty_level = self.optim_state["uncertainty_handling_level"]
+        if uncertainty_level == 2 and y_sd is None:
+            raise ValueError(
+                "precomputed_evaluations must include positive y_sd values "
+                "when options['specify_target_noise'] is true."
+            )
+        if uncertainty_level != 2 and y_sd is not None:
+            raise ValueError(
+                "Precomputed y_sd values require "
+                "options['specify_target_noise']=True."
+            )
+
+        inside = np.all(
+            (X > self.lower_bounds) & (X < self.upper_bounds), axis=1
+        )
+        if not np.all(inside):
+            rows = np.flatnonzero(~inside).tolist()
+            raise ValueError(
+                "Precomputed points must lie strictly inside the hard bounds; "
+                f"invalid rows: {rows}."
+            )
+
+        self.precomputed_evaluations = tuple(
+            value.copy()
+            for value in ((X, y) if y_sd is None else (X, y, y_sd))
+        )
+        self.precomputed_observation_count = n_observations
+        if n_observations:
+            self.precomputed_location_count = np.unique(X, axis=0).shape[0]
+        self.optim_state["cache_active"] = (
+            bool(n_observations) or self.optim_state["cache_active"]
+        )
+
+        retained = np.arange(n_observations)
+        if uncertainty_level == 0 and n_observations:
+            retained_rows = []
+            for row, point in enumerate(X):
+                previous = next(
+                    (
+                        retained_row
+                        for retained_row in retained_rows
+                        if np.array_equal(X[retained_row], point)
+                    ),
+                    None,
+                )
+                if previous is None:
+                    retained_rows.append(row)
+                elif not self._precomputed_values_agree(y[previous], y[row]):
+                    raise ValueError(
+                        "Conflicting deterministic precomputed values at "
+                        f"identical coordinates in rows {previous} and {row}."
+                    )
+            retained = np.asarray(retained_rows, dtype=int)
+
+        joint_values = y[retained].copy()
+        if self.prior is not None and self.prior.log_pdf is not None:
+            for output_row, input_row in enumerate(retained):
+                prior_value = np.asarray(self.prior.log_pdf(X[input_row]))
+                if prior_value.size != 1:
+                    raise ValueError(
+                        "The prior log density for a precomputed point must "
+                        f"return a scalar, but row {input_row} returned shape "
+                        f"{prior_value.shape}."
+                    )
+                prior_value = prior_value.item()
+                try:
+                    valid = np.isreal(prior_value) and np.isfinite(prior_value)
+                except TypeError:
+                    valid = False
+                if not valid:
+                    raise ValueError(
+                        "The prior log density for a precomputed point must "
+                        "return a finite real scalar; row "
+                        f"{input_row} returned {prior_value}."
+                    )
+                joint_values[output_row] += prior_value
+
+        transformed = self.parameter_transformer(X[retained])
+        for output_row, input_row in enumerate(retained):
+            supplied_sd = None if y_sd is None else y_sd[input_row]
+            self.function_logger.add(
+                transformed[output_row], joint_values[output_row], supplied_sd
+            )
+
+        # The initial design still contains x0. If one supplied location is
+        # also an initial point, let that row cover its first occurrence so
+        # the same cached observation is not inserted or evaluated twice.
+        matched_locations = []
+        for cache_row, point in enumerate(cache["x_orig"]):
+            matches = np.flatnonzero(np.all(X == point, axis=1))
+            if matches.size:
+                already_matched = any(
+                    np.array_equal(location, point)
+                    for location in matched_locations
+                )
+                if not already_matched:
+                    cache["skip_logger"][cache_row] = True
+                    matched_locations.append(point.copy())
+
+    def _validate_initial_fresh_budget(self):
+        """Ensure an opted-in run can complete its fresh initial design."""
+        if not self._budget_active:
+            return
+        sample_count = int(self.options.get("fun_eval_start"))
+        cache = self.optim_state["cache"]
+        n_initial = min(cache["x_orig"].shape[0], sample_count)
+        skip_logger = cache.get("skip_logger")
+        if skip_logger is None or skip_logger.shape != (
+            cache["x_orig"].shape[0],
+        ):
+            skip_logger = np.zeros(cache["x_orig"].shape[0], dtype=bool)
+        covered = skip_logger[:n_initial] | np.isfinite(
+            cache["y_orig"][:n_initial]
+        )
+        n_cached = int(np.sum(covered))
+        required = sample_count - n_cached
+        if self._effective_max_fun_evals < required:
+            raise ValueError(
+                "The remaining function-equivalent budget is insufficient "
+                "for the initial design: "
+                f"{self._effective_max_fun_evals} fresh calls remain, but "
+                f"{required} are required."
+            )
+
+    def _fresh_evaluations_for_batch(self, requested):
+        """Cap one opted-in acquisition batch at the fresh-call allowance."""
+        if not self._budget_active:
+            return requested
+        remaining = max(
+            0,
+            self._effective_max_fun_evals - self.function_logger.func_count,
+        )
+        return min(requested, remaining)
 
     def _bounds_check(
         self,
@@ -795,9 +1115,15 @@ class VBMC:
         # Tolerance threshold on GP variance (used by some acquisition fcns)
         optim_state["tol_gp_var"] = self.options.get("tol_gp_var")
 
-        # Copy maximum number of fcn. evaluations,
-        # used by some acquisition fcns.
-        optim_state["max_fun_evals"] = self.options.get("max_fun_evals")
+        # Copy maximum number of fresh function evaluations, used by some
+        # schedules and acquisition functions. The ordinary path keeps the
+        # historical value exactly; the opted-in budget path subtracts its
+        # explicit initialization charge.
+        optim_state["max_fun_evals"] = self._effective_max_fun_evals
+        if self._budget_active:
+            optim_state["max_fun_evals_total"] = self._configured_max_fun_evals
+            optim_state["initialization_cost"] = self.initialization_cost
+            optim_state["budget_active"] = True
 
         # By default, apply variance-based regularization
         # to acquisition functions
@@ -930,6 +1256,14 @@ class VBMC:
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
+        if self._budget_active and (
+            self.function_logger.func_count >= self._effective_max_fun_evals
+        ):
+            raise ValueError(
+                "No fresh function-equivalent budget remains for optimize(); "
+                "increase options['max_fun_evals'] when loading or construct "
+                "the run with a larger total budget."
+            )
         self._ensure_gp_sampling_history()
         # set up strings for logging of the iteration
         display_format = self._setup_logging_display_format()
@@ -955,6 +1289,17 @@ class VBMC:
             self.optim_state = copy.deepcopy(
                 self.iteration_history["optim_state"][-1]
             )
+            if self._budget_active:
+                self.optim_state[
+                    "max_fun_evals"
+                ] = self._effective_max_fun_evals
+                self.optim_state[
+                    "max_fun_evals_total"
+                ] = self._configured_max_fun_evals
+                self.optim_state[
+                    "initialization_cost"
+                ] = self.initialization_cost
+                self.optim_state["budget_active"] = True
         self.vp._calibration_display = self.options.get("display") != "off"
         calibration_profile = self.vp._resolve_calibration(
             display=self.vp._calibration_display
@@ -1163,6 +1508,7 @@ class VBMC:
                 new_funevals = self.options.get("fun_eval_start")
             else:
                 new_funevals = self.options.get("fun_evals_per_iter")
+                new_funevals = self._fresh_evaluations_for_batch(new_funevals)
 
             # Careful with Xn, in MATLAB this condition is > 0
             # due to 1-based indexing.
@@ -1623,7 +1969,21 @@ class VBMC:
             if self.options.get("plot"):
                 self._log_column_headers()
 
-            if (
+            if self.optim_state["cache_active"]:
+                self.logger.info(
+                    display_format.format(
+                        np.inf,
+                        self.function_logger.func_count,
+                        self.function_logger.cache_count,
+                        elbo,
+                        elbo_sd,
+                        sKL,
+                        self.vp.K,
+                        self.iteration_history.get("r_index")[idx_best],
+                        "finalize",
+                    )
+                )
+            elif (
                 self.optim_state["uncertainty_handling_level"] > 0
                 and self.options.get("max_repeated_observations") > 0
             ):
@@ -1680,6 +2040,7 @@ class VBMC:
                 "Caution: Returned variational solution may have"
                 " not converged."
             )
+        self._log_evaluation_budget_summary()
 
         results = self._create_result_dict(
             idx_best, termination_message, success_flag
@@ -1851,9 +2212,12 @@ class VBMC:
         termination_message = ""
 
         # Maximum number of new function evaluations
-        if self.function_logger.func_count >= self.options.get(
-            "max_fun_evals"
-        ):
+        max_fun_evals = (
+            self._effective_max_fun_evals
+            if self._budget_active
+            else self.options.get("max_fun_evals")
+        )
+        if self.function_logger.func_count >= max_fun_evals:
             is_finished_flag = True
             termination_message = (
                 "Inference terminated: reached maximum number "
@@ -1940,9 +2304,13 @@ class VBMC:
         self.iteration_history.record("stable", stableflag, iteration)
 
         # Prevent early termination
-        if self.function_logger.func_count < self.options.get(
+        below_minimum = self.function_logger.func_count < self.options.get(
             "min_fun_evals"
-        ) or iteration < self.options.get("min_iter"):
+        ) or iteration < self.options.get("min_iter")
+        if below_minimum and (
+            not self._budget_active
+            or self.function_logger.func_count < max_fun_evals
+        ):
             is_finished_flag = False
 
         return (
@@ -2700,6 +3068,35 @@ class VBMC:
         vbmc._validate_final_boost_tolerance(
             vbmc.options.get("tol_elcbo_boost")
         )
+        if not hasattr(vbmc, "initialization_cost"):
+            vbmc.initialization_cost = 0
+        if not hasattr(vbmc, "_budget_active"):
+            vbmc._budget_active = False
+        if not hasattr(vbmc, "precomputed_evaluations"):
+            vbmc.precomputed_evaluations = None
+        if not hasattr(vbmc, "precomputed_observation_count"):
+            vbmc.precomputed_observation_count = 0
+        if not hasattr(vbmc, "precomputed_location_count"):
+            vbmc.precomputed_location_count = 0
+        vbmc._configured_max_fun_evals = vbmc.options.get("max_fun_evals")
+        vbmc._effective_max_fun_evals = (
+            vbmc._configured_max_fun_evals - vbmc.initialization_cost
+        )
+        if vbmc._budget_active:
+            if vbmc._effective_max_fun_evals <= 0:
+                raise ValueError(
+                    "The function-equivalent budget is exhausted by "
+                    "initialization_cost; options['max_fun_evals'] must be "
+                    "larger than initialization_cost."
+                )
+            vbmc.optim_state["max_fun_evals"] = vbmc._effective_max_fun_evals
+            vbmc.optim_state[
+                "max_fun_evals_total"
+            ] = vbmc._configured_max_fun_evals
+            vbmc.optim_state["initialization_cost"] = vbmc.initialization_cost
+            vbmc.optim_state["budget_active"] = True
+            if vbmc.iteration < 0:
+                vbmc._validate_initial_fresh_budget()
         if has_calibration_override:
             vbmc.vp._apply_calibration_load_override(calibration_override)
         vbmc.vp._calibration_display = vbmc.options.get("display") != "off"
@@ -2836,6 +3233,20 @@ class VBMC:
 
         output["iterations"] = self.optim_state["iter"]
         output["func_count"] = self.function_logger.func_count
+        if self.precomputed_observation_count:
+            output[
+                "precomputed_observations"
+            ] = self.precomputed_observation_count
+            output["precomputed_locations"] = self.precomputed_location_count
+        if self.initialization_cost > 0:
+            output["evaluation_budget"] = {
+                "unit": "function_equivalent_evaluations",
+                "limit": self._configured_max_fun_evals,
+                "initialization": self.initialization_cost,
+                "new_calls": self.function_logger.func_count,
+                "used": self.initialization_cost
+                + self.function_logger.func_count,
+            }
         output["best_iter"] = idx_best
         output["train_set_size"] = self.iteration_history["n_eff"][idx_best]
         output["components"] = self.vp.K
@@ -2867,6 +3278,23 @@ class VBMC:
         output["success_flag"] = success_flag
 
         return output
+
+    def _log_evaluation_budget_summary(self):
+        """Log charged budget accounting without changing zero-cost output."""
+        if (
+            self.initialization_cost <= 0
+            or self.options.get("display") == "off"
+        ):
+            return
+        used = self.initialization_cost + self.function_logger.func_count
+        self.logger.warning(
+            "Function-equivalent budget: %s / %s "
+            "(initialization %s + VBMC %s)",
+            used,
+            self._configured_max_fun_evals,
+            self.initialization_cost,
+            self.function_logger.func_count,
+        )
 
     def _log_column_headers(self):
         """
