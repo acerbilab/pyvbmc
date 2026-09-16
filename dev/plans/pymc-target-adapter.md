@@ -1,14 +1,14 @@
 # PyMC target adapter
 
 Implementation plan for the PyMC integration chosen for PyVBMC 1.5.
-Created 2026-09-14 on `dev-next` at `613f2a8`. Status: **approved;
-implementation in progress** (PI approval 2026-09-16). The two investigations of
+Created 2026-09-14 on `dev-next` at `613f2a8`. Status: **complete, verified
+and merged** (PI approval and completion 2026-09-16). The two investigations of
 [Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
 and the focused filtering/coverage follow-up are complete. The design
 review decisions are incorporated, including fixed model-data snapshots,
 conservative support recognition and an upfront setup cap.
-Code work runs on
-the feature branch `dev-pymc-adapter` and merges back into `dev-next`.
+Implementation ran on `dev-pymc-adapter` and was fast-forwarded into
+`dev-next` at `adc16e0`; the temporary implementation branches are deleted.
 Design inputs: the
 [PyMC proposal](../2026-09-13-pymc-integration.md), the
 [feasibility report](../results/2026-09-14-pymc-feasibility.md) and the
@@ -60,7 +60,7 @@ checks below remain authoritative. At most one heavy process runs at a time.
 - [x] Phase 4: user/API documentation and docs build after Example 8.
 - [x] Phase 5: executed Example 8 and regenerated script.
 - [x] Phase 6: integrated verification, packaging and independent doublecheck.
-- [~] Phase 7: merge into `dev-next`, update records and finish tracking.
+- [x] Phase 7: merge into `dev-next`, update records and finish tracking.
 
 The PI requested a focused follow-up to separate filtering from initial
 coverage. Twenty additional attempts are complete on the two hard models:
@@ -1982,6 +1982,25 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: integrated CI
+  [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)
+  passes on `adc16e0`: 1,644 passed, 60 skipped, 13 warnings and one
+  successful rerun (`test_active_uncertainty_sampling`) in 754 seconds.
+  The dependency versions and default Numba linker match the feature run.
+  Every implementation phase is complete, with no open review findings.
+  This plan remains the durable task and execution record. The release-wide
+  benchmark, S-VBMC headline switch and deferred GP remedies retain their
+  separate scope and gates in `dev/TODO.md`.
+
+- 2026-09-16: the implementation was fast-forwarded and pushed to
+  `dev-next` at `adc16e0`; the feature branch and its Phase 0a branch were
+  deleted after merge. The completed PyMC item is removed from `dev/TODO.md`
+  and retained in the roadmap, release overview, index, proposal status and
+  this full plan. The automatic integrated smoke is
+  [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018).
+  Both feature and integrated smoke runs are green. The only package change
+  after the feature smoke is the tested-version diagnostic string.
 
 - 2026-09-16: feature CI
   [35124802016](https://github.com/acerbilab/pyvbmc/actions/runs/35124802016)
