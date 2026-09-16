@@ -186,3 +186,4 @@ Load the file only with compatible PyMC and PyTensor versions, then use
    :members:
 
 .. autoexception:: pyvbmc.pymc.UnsupportedModel
+   :no-members:

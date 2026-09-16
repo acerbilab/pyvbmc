@@ -57,8 +57,8 @@ checks below remain authoritative. At most one heavy process runs at a time.
 - [x] Phase 1: structured ArviZ export and focused validation.
 - [x] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
 - [~] Phase 3: optional-dependency CI coverage and smoke run.
-- [~] Phase 4: user/API documentation and docs build after Example 8.
-- [~] Phase 5: executed Example 8 and regenerated script.
+- [x] Phase 4: user/API documentation and docs build after Example 8.
+- [x] Phase 5: executed Example 8 and regenerated script.
 - [~] Phase 6: integrated verification, packaging and independent doublecheck.
 - [ ] Phase 7: merge into `dev-next`, update records and finish tracking.
 
@@ -1771,9 +1771,9 @@ chosen default before that decision.
    check that the new and changed pages render without warnings.
 
 **Verification**:
-- [ ] `grep -rn -i pymc docsrc/source README.md skills AGENTS.md` shows
+- [x] `grep -rn -i pymc docsrc/source README.md skills AGENTS.md` shows
   every site above, `classes.rst` and the three FAQ entries included.
-- [ ] The docs build is warning-free for the new and changed pages.
+- [x] The docs build is warning-free for the new and changed pages.
 
 ### Phase 5: Example 8
 
@@ -1808,9 +1808,9 @@ this example; its NUTS comparison must assess the fitted posterior.
    commit `examples/scripts/pyvbmc_example_8_full_code.py`.
 
 **Verification**:
-- [ ] The notebook runs top to bottom in the PyMC environment in a few
+- [x] The notebook runs top to bottom in the PyMC environment in a few
   minutes and the PyVBMC and NUTS marginals overlap in the forest plot.
-- [ ] The `docsrc` build lists the example (checked in Phase 4 step 9).
+- [x] The `docsrc` build lists the example (checked in Phase 4 step 9).
 
 ### Phase 6: verification
 
@@ -1982,6 +1982,16 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: the integrated branch passes all 11 exact numerical fixtures.
+  A fresh strict Sphinx build renders the API and executed Example 8 with
+  no new-page warnings. The command suppresses the existing unsupported
+  Plotly MIME warning and duplicate-label categories for Examples 1–7;
+  Example 8 remains subject to the strict warning gate. Both package
+  archives were built and inspected: the adapter and Example 8 ship in the
+  wheel and sdist, and the 14 PyMC test files ship only in the sdist.
+  Detailed logs and the archive manifest are indexed in
+  `dev/scripts/runs/LOCAL.md`.
 
 - 2026-09-16: Phase 2 implementation is complete. All 147 optional
   adapter/export checks pass: the final combined run passed 146 and exposed
