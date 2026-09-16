@@ -1,6 +1,7 @@
 # S-VBMC two-level shrinkage estimator
 
-Created: 2026-09-16. Status: **implemented and verified on `dev-next-work`**.
+Created: 2026-09-16. Status: **implemented, verified and integrated into
+`dev-next` at `a51cad5`**. Full matrix verification at `9cc6882` also passes.
 
 ## Live checklist
 
@@ -15,6 +16,7 @@ owns this checklist; implementers report outcomes without editing it.
 - [x] Independent implementation doublecheck and any resulting fixes.
 - [x] Rebase onto the completed PyMC integration on `dev-next`; rerun
   focused tests and independently review compatibility.
+- [x] Fast-forward into `dev-next`; smoke and full nine-job CI matrix pass.
 
 ## Purpose and scope
 
@@ -370,5 +372,14 @@ An independent Sol review checked the rebased patch, shared interfaces,
 posterior-statistics producer, lazy imports and combined development
 indexes, with no must-fix or should-fix findings. This was a static
 compatibility review; it did not repeat the scientific derivation or run
-a fresh PyMC-to-S-VBMC workflow. The updated base remains an ancestor of
-the feature branch; integration into `dev-next` is still pending.
+a fresh PyMC-to-S-VBMC workflow.
+
+The feature was fast-forwarded into `dev-next` at `a51cad5` and pushed by
+the PI. The integrated smoke
+[35129910134](https://github.com/acerbilab/pyvbmc/actions/runs/35129910134)
+passes. The full
+[matrix 35131582296](https://github.com/acerbilab/pyvbmc/actions/runs/35131582296)
+at `9cc6882` passes all nine OS/Python jobs, including optional PyMC and
+S-VBMC coverage in Ubuntu/Python 3.12. The later commit changes only the
+headline-decision documentation: Example 7's existing bias explanation
+will receive a brief update if shrinkage is selected at the release gate.

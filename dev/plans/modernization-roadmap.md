@@ -14,6 +14,17 @@ anything that changes numerics lands.
 
 ## Stages
 
+**Integrated verification, 2026-09-16:** the PyMC adapter and additional
+S-VBMC two-level shrinkage estimate are integrated on `dev-next`. The full
+[CI matrix 35131582296](https://github.com/acerbilab/pyvbmc/actions/runs/35131582296)
+passes at `9cc6882`: all nine Ubuntu/Windows/macOS × Python 3.10/3.11/3.12
+jobs succeed. Ubuntu/Python 3.12 includes the optional Torch, ArviZ, PyMC
+and S-VBMC coverage; the other cells check the core installation. The
+current S-VBMC headline is unchanged. This verifies the integrated code;
+the final release population benchmark and headline decision remain pending.
+The next workstream is user-facing teaching material, with its pickup in
+[`dev/TODO.md`](../TODO.md#next-pickup-finish-user-facing-teaching-material).
+
 **Population assessment, 2026-09-13:** the full 870-case candidate population
 is complete and accepted, with 837 usable runs versus 825 historical and
 no convincing evidence of meaningful degradation. The
