@@ -37,6 +37,9 @@ for using it effectively. Highlights include:
   see :ref:`Reproducible runs`.
 - **Torch and JAX model adapters**, with optional batch evaluation of the
   initial points; see :ref:`Bring a torch or JAX model into PyVBMC`.
+- **Direct PyMC model support**, including model-aware coordinates, automatic
+  setup and structured posterior export; see
+  :ref:`Bring a PyMC model into PyVBMC`.
 - **Posterior exports to Torch and ArviZ** for further analysis;
   see :ref:`Use a fitted posterior downstream`.
 - **More practical guidance**, with tips during runs, a :doc:`PyVBMC FAQ <faq>`,
@@ -71,7 +74,7 @@ PyVBMC is effective when:
 - the target posterior density is continuous and reasonably smooth;
 - optionally, log-likelihood evaluations may be noisy (see the :ref:`FAQ <faq-noisy-target-function>`).
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_.
+Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out :labrepos:`Bayesian Adaptive Direct Search in Python (PyBADS) <pybads>`, our companion method for fast Bayesian optimization.
 
@@ -80,8 +83,8 @@ How-to
 
 Start with the :doc:`quickstart` and :doc:`examples`, and consult the
 :doc:`FAQ <faq>` for practical advice on setting up and validating a run.
-The quickstart also covers reproducibility, vectorized targets and exporting
-a fitted posterior to Torch or ArviZ. Optional
+The quickstart also covers reproducibility, vectorized targets, fitting PyMC
+models and exporting a fitted posterior to Torch or ArviZ. Optional
 :doc:`performance calibration <api/functions/calibrate>` tunes PyVBMC for
 your machine. To combine the posteriors of several
 runs on the same model and data without further model evaluations, see

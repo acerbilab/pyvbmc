@@ -1,6 +1,6 @@
 ---
 name: pyvbmc
-description: Find and apply PyVBMC documentation when setting up Bayesian inference, troubleshooting a run, or interpreting posterior and model-evidence estimates.
+description: Find and apply PyVBMC documentation when fitting callable or PyMC models, troubleshooting a run, or interpreting posterior and model-evidence estimates.
 ---
 
 # PyVBMC
@@ -24,6 +24,7 @@ this skill folder has been copied elsewhere.
 
 | Task | Read |
 | --- | --- |
+| Fit a PyMC model | [PyMC quickstart](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/quickstart.rst#bring-a-pymc-model-into-pyvbmc), [`PyMCTarget` API](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/api/classes/pymc_target.rst), and [Example 8](https://github.com/acerbilab/pyvbmc/blob/dev-next/examples/pyvbmc_example_8_pymc.ipynb). |
 | Decide whether PyVBMC fits the problem; install it | [README.md](https://github.com/acerbilab/pyvbmc/blob/dev-next/README.md): “When should I use PyVBMC?” and “Installation”. |
 | Set up or adapt an analysis | [docsrc/source/quickstart.rst](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/quickstart.rst); consult the FAQ's “Input arguments” sections for target functions, priors, starting points and bounds. |
 | Handle noisy likelihoods | The FAQ's “Noisy target function” section and [Example 6](https://github.com/acerbilab/pyvbmc/blob/dev-next/examples/pyvbmc_example_6_noisy_likelihoods.ipynb). |

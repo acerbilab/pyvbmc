@@ -241,6 +241,94 @@ Cached initial values can be mixed with evaluations through
 rows that still need evaluation. Results and cache indices retain input row
 order.
 
+Bring a PyMC model into PyVBMC
+==============================
+
+Install the optional integration on Python 3.12 or newer with
+``python -m pip install "pyvbmc[pymc]"``. A :class:`~pyvbmc.pymc.PyMCTarget`
+provides the flat target and setup that PyVBMC needs. This model has a named
+coefficient vector and a positive observation scale:
+
+.. code-block:: python
+
+  import numpy as np
+  import pymc as pm
+  from pyvbmc import PyMCTarget, VBMC
+  rng = np.random.default_rng(7)
+  x_data = np.linspace(-1.0, 1.0, 30)
+  design = np.column_stack((np.ones(x_data.size), x_data))
+  observations = design @ np.array([0.5, 1.0])
+  observations += rng.normal(0.0, 0.7, size=x_data.size)
+  coords = {
+      "observation": np.arange(x_data.size),
+      "coefficient": ["intercept", "slope"],
+  }
+  with pm.Model(coords=coords) as model:
+      X = pm.Data("X", design, dims=("observation", "coefficient"))
+      beta = pm.Normal("beta", 0.0, 2.0, dims="coefficient")
+      sigma = pm.HalfNormal("sigma", 1.0)
+      mean = pm.Deterministic("mean", X @ beta, dims="observation")
+      pm.Normal("y", mean, sigma, observed=observations, dims="observation")
+  target = PyMCTarget(model, seed=7)
+  print(target)
+  vbmc = VBMC(
+      target,
+      seed=7,
+      options={"max_fun_evals": target.setup_cost + 60},
+  )
+  vp, results = vbmc.optimize()
+  posterior_data = target.to_arviz(vp, n_samples=1000)
+  posterior_data = pm.compute_deterministics(
+      posterior_data, model=model, extend_dataset=True
+  )
+  predictions = pm.sample_posterior_predictive(
+      posterior_data, model=model, var_names=["y"], random_seed=7
+  )
+
+``print(target)`` lists each model variable, its shape, its flat VBMC
+coordinates, hard and plausible bounds, and its start. Here ``beta`` becomes
+``beta[intercept]`` and ``beta[slope]``. The positive ``sigma`` keeps PyMC's
+log transform, so its VBMC coordinate is ``sigma_log__`` and the target
+includes the corresponding Jacobian.
+
+.. code-block:: text
+
+  variable | shape | VBMC coordinates | kept transform | hard bounds | plausible bounds | start
+  beta | (2,) | beta[intercept], beta[slope] | - | [[-inf -inf], [inf inf]] | [[-0.09967958  0.24424391], [0.5182185 1.2769416]] | [0.20926946 0.76059275]
+  sigma | () | sigma_log__ | LogTransform | [[-inf], [inf]] | [[-0.96092139], [-0.18161372]] | [-0.57126755]
+
+The adapter computes a mode and a Laplace plausible box by default. Unusable
+curvature falls back to prior widths; a mode outside the prior's location
+interval produces a diagnostic and is not moved. Finite values obtained during
+setup are saved in ``target.setup_evaluations`` and reused by ``VBMC(target)``.
+They supplement the ordinary initial design without becoming extra starting
+points or changing the plausible box. ``target.setup_cost`` charges the work
+once against the
+total ``max_fun_evals`` budget, while importing the cached values adds no
+second charge. ``results["func_count"]`` remains the number of fresh calls
+made by VBMC. Pass ``setup_budget=`` to cap preparation before it runs, or
+supply ``start=`` and ``plausible_bounds=`` mappings in model coordinates to
+override the automatic choices. The extra 60 calls above keep the example
+short; use an adequate budget and validate repeated runs for real inference.
+
+Supported free variables are continuous and float64, with recognized real-line
+support or PyMC's standard log, log-odds or interval transform. Unknown support,
+suppressed or custom transforms, discrete variables, and support bounds that
+depend on another random variable are rejected. Custom likelihood operations
+remain usable when their PyTensor graph provides the density; without
+gradients, setup uses the initial point and prior quantiles.
+
+Construction freezes the data and dimensions used for inference. Later
+``pm.set_data`` calls on ``model`` therefore do not alter the fitted target;
+build a new ``PyMCTarget`` to refit changed data. The original model remains
+available as ``target.model`` for the structured export, deterministics and
+posterior prediction shown above. Export the posterior fitted with this same
+target and inference snapshot. ``PyMCTarget(seed=)`` controls setup draws;
+``VBMC(seed=)`` independently controls the run. Saving a run also saves its
+adapter and models; load it only with compatible PyMC and PyTensor versions.
+See :doc:`api/classes/pymc_target` and
+:ref:`PyVBMC Example 8: Fitting a PyMC model` for the full workflow.
+
 Use a fitted posterior downstream
 =================================
 

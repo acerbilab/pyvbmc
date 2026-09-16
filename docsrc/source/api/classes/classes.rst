@@ -11,6 +11,7 @@ Classes
    iteration_history
    options
    parameter_transformer
+   pymc_target
    svbmc
    timer
    variational_posterior

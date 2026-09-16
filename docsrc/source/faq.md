@@ -32,6 +32,7 @@ NumPy arrays for the starting point and bounds.
   - [I am having trouble installing PyVBMC. Can you help?](#faq-i-am-having-trouble-installing-vbmc-can-you-help)
 - [Input arguments (target function: `fun`)](#faq-input-arguments-target-function-fun)
   - [What is the target function?](#faq-what-is-the-target-function)
+  - [Can I use a PyMC model with PyVBMC?](#faq-can-i-use-a-pymc-model-with-pyvbmc)
   - [I do not have a likelihood function, but another loss function. Can I still use VBMC?](#faq-i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc)
   - [Wait, do I need a prior?](#faq-wait-do-i-need-a-prior)
   - [How do I specify the prior to VBMC?](#faq-how-do-i-specify-the-prior-to-vbmc)
@@ -93,7 +94,7 @@ If your likelihood function is fully analytical — or, more generally, fast to 
 (faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)=
 ### What do I do if VBMC is not suited for my problem?
 
-If the likelihood function is smooth and analytical (and fast to compute), you should consider estimating the posterior via Markov Chain Monte Carlo, for example using probabilistic programming languages such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/).
+If the likelihood function is smooth and analytical (and fast to compute), you should consider estimating the posterior via Markov Chain Monte Carlo, for example using probabilistic programming languages such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](api/classes/pymc_target.rst).
 
 If the likelihood function is computationally expensive *and* non-smooth (or it produces a pathological posterior), then, well, tough luck. In this case, you may see if revising your model, for example by changing the parameterization, produces a posterior landscape which is more compatible with the approximations used by VBMC.
 
@@ -127,15 +128,16 @@ PyVBMC uses NumPy, SciPy and several other Python packages, which are
 installed automatically with PyVBMC. It does not require MATLAB.
 
 The Torch posterior export and S-VBMC need the optional `torch` extra;
-the ArviZ export needs the `arviz` extra. See
+the ArviZ export needs the `arviz` extra, and the PyMC adapter needs the
+`pymc` extra. See
 [optional integrations](installation.rst) for installation
 instructions.
 
 (faq-which-version-of-python-do-i-need)=
 ### Which version of Python do I need?
 
-PyVBMC requires Python 3.10 or newer. The optional ArviZ export requires
-Python 3.12 or newer.
+PyVBMC requires Python 3.10 or newer. The optional ArviZ export and PyMC
+adapter require Python 3.12 or newer.
 
 (faq-i-am-having-trouble-installing-vbmc-can-you-help)=
 ### I am having trouble installing PyVBMC. Can you help?
@@ -166,6 +168,33 @@ vp, results = vbmc.optimize()
 
 Opt-in [vectorized targets](quickstart.rst) receive a batch
 of points; the default interface evaluates one point at a time.
+
+(faq-can-i-use-a-pymc-model-with-pyvbmc)=
+### Can I use a PyMC model with PyVBMC?
+
+Yes. On Python 3.12 or newer, install `pyvbmc[pymc]`, construct
+`PyMCTarget(model)`, and pass that object directly to `VBMC`:
+
+```python
+from pyvbmc import PyMCTarget, VBMC
+
+target = PyMCTarget(model, seed=7)
+vbmc = VBMC(
+    target, seed=7, options={"max_fun_evals": target.setup_cost + 100}
+)
+vp, results = vbmc.optimize()
+posterior_data = target.to_arviz(vp)
+```
+
+The adapter maps supported continuous float64 variables to a flat VBMC box,
+chooses a start and plausible bounds, and reuses its finite setup observations.
+Setup work is charged once through `target.setup_cost`; importing the cached
+observations incurs no second charge and leaves the ordinary initial design in
+place. The numerical target uses a fixed snapshot of the model's data and
+dimensions, while `target.model` remains available for PyMC deterministics and
+posterior prediction. Construct a new target to refit changed data. See the
+[PyMC quickstart](quickstart.rst) and [`PyMCTarget` API](api/classes/pymc_target.rst)
+for supported transforms, model-scope limits and setup overrides.
 
 (faq-i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc)=
 ### I do not have a likelihood function, but another loss function. Can I still use VBMC?
@@ -340,6 +369,8 @@ is negligible; if the cutoff defines a truncated prior for model comparison,
 include its normalization in the log prior. Another approach is to
 reparameterize, for example using the logarithm of a positive parameter.
 Include the change-of-variables Jacobian in the log density when you do so.
+For a supported PyMC model, `PyMCTarget` performs this one-sided
+reparameterization and includes PyMC's transform Jacobian automatically.
 
 (faq-can-i-set-lb-ub-for-some-variable-to-fix-it-to-a-given-value)=
 ### Can I set `LB = UB` for some variable to fix it to a given value?
@@ -382,6 +413,8 @@ If those regions remain possible under your model, use the [prior over parameter
 
 Do **not** have `fun(x)` return `np.inf`, `-np.inf` or `np.nan` for invalid inputs.
 VBMC would simply crash (see [this question](#faq-vbmc-crashes-saying-that-the-returned-function-value-must-be-a-finite-real-valued-scalar-what-do-i-do)).
+The `PyMCTarget` adapter is the exception: it returns `-np.inf` only on or
+outside its hard box, where VBMC does not evaluate the target.
 
 Returning `0` is valid for a log density, but it does not mean zero probability and will not exclude a point.
 

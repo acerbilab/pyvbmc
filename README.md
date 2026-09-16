@@ -25,6 +25,7 @@ PyVBMC 1.5 is faster and more efficient, integrates better with the modern scien
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC to combine posteriors from independent runs ([Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004); [usage below](#combine-runs-and-use-the-posterior-downstream)).
 - **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs).
 - **Torch and JAX model adapters**, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
+- **Direct PyMC model support**, including model-aware coordinates, automatic setup, and structured posterior export; see the [PyMC integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-pymc-model-into-pyvbmc).
 - **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
 - **More practical guidance**, with tips during runs, a [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
 
@@ -47,7 +48,7 @@ PyVBMC is effective when:
 - the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general));
 - optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
 
-Conversely, if your model can be written analytically and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/).
+Conversely, if your model can be written analytically and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
 
@@ -91,9 +92,13 @@ requires Python 3.12 or newer and is installed with:
 ```console
 python -m pip install "pyvbmc[arviz]"
 ```
-Conda users can install the corresponding `pytorch`, `arviz`, and
-`arviz-base` packages from `conda-forge`; PyVBMC's bracketed extras are pip
-dependency groups.
+The PyMC adapter also requires Python 3.12 or newer and is installed with:
+```console
+python -m pip install "pyvbmc[pymc]"
+```
+Conda users can install the corresponding `pytorch`, `arviz`, `arviz-base`,
+and `pymc` packages from `conda-forge`; PyVBMC's `torch`, `arviz`, and `pymc`
+extras are pip dependency groups.
 
 If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
 

@@ -55,8 +55,25 @@ corresponding packages directly::
 
   conda install --channel=conda-forge pyvbmc arviz arviz-base
 
-The bracketed ``torch`` and ``arviz`` names are pip dependency groups; they
-are not Conda package names. Both integrations are optional and loaded on demand.
+PyMC
+----
+
+The :class:`~pyvbmc.pymc.PyMCTarget` adapter requires Python 3.12 or newer.
+Install PyMC and the ArviZ data interface with::
+
+  python -m pip install "pyvbmc[pymc]"
+
+The adapter is tested with PyMC 6.3 and ArviZ 1.3. PyVBMC itself continues
+to support Python 3.10 and newer; on Python 3.10 or 3.11, pip does not install
+the PyMC dependencies because of their Python version marker, and
+``PyMCTarget`` is unavailable. With Conda, install the named packages
+directly::
+
+  conda install --channel=conda-forge pyvbmc pymc
+
+The bracketed ``torch``, ``arviz`` and ``pymc`` names are pip dependency
+groups; they are not Conda package names. All three integrations are optional
+and loaded on demand.
 
 Examples and tests
 ==================

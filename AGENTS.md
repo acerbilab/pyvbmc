@@ -55,10 +55,14 @@ reinstall it editable: its setuptools_scm version otherwise stays below the
 minimum in `pyproject.toml`, and the next `pip install -e .` installs
 gpyreg from PyPI over the checkout.
 
-Extras: `test` (pytest, pytest-mock, pytest-rerunfailures; what the test
-workflows install), `examples` (plotly for notebook 2), `dev` (both plus
-docs and formatting tools, and scikit-learn for the mixture proposal of the
-benchmark ground-truth generator).
+Extras: `torch` (Torch posterior export and S-VBMC), `arviz` (DataTree
+export, Python >=3.12), `pymc` (PyMC >=6.3 adapter plus the ArviZ
+dependencies, Python >=3.12), `test` (pytest, pytest-mock,
+pytest-rerunfailures; what the test workflows install), `examples` (plotly
+for notebook 2), `dev` (the test and examples dependencies plus docs and
+formatting tools, and
+scikit-learn for the mixture proposal of the benchmark ground-truth
+generator).
 
 Tests (no conftest or markers; `pyproject.toml` limits default pytest
 discovery to the shipped package suite under `pyvbmc/testing`):
@@ -184,9 +188,23 @@ Things you must hold in your head across files:
   and returns a distribution in original coordinates; conversion makes no
   draws, its samples use torch's RNG. Bounded density inputs must be strictly
   interior. `vp.to_arviz()` exports one-chain DataTree samples and advances
-  `vp.rng`. Extras are `torch` (torch >=2.7) and `arviz` (current API,
-  Python >=3.12); core PyVBMC remains Python >=3.10. No exported objects are
-  retained on the VP, so the dtype canary is unchanged.
+  `vp.rng`. Extras are `torch` (torch >=2.7), `arviz` (current API,
+  Python >=3.12) and `pymc` (PyMC >=6.3 plus ArviZ, Python >=3.12); core
+  PyVBMC remains Python >=3.10. No exported objects are retained on the VP,
+  so the dtype canary is unchanged.
+- **PyMC targets.** `PyMCTarget` snapshots PyMC-managed data, residual
+  numeric shared graph inputs, dimensions and coordinates before setup.
+  Free variables retain the given model's order; two-sided variables use
+  model coordinates, while supported one-sided variables keep PyMC's value
+  transform and Jacobian. The adapter returns `-inf` only on or outside its
+  hard box. Five undocumented reaches are capability-guarded: transform
+  classes; transform `args_fn`/`forward`/`backward`; the default-transform
+  registry; Model mappings; and graph reconstruction/random-variable
+  recognition (including PyMC symbolic random variables). Setup
+  observations reach `VBMC(target)` through `precomputed_evaluations`, and
+  their actual `setup_cost` is charged once as `initialization_cost`.
+  Focused tests live under `pyvbmc/testing/pymc/` and run in the optional
+  Python 3.12 PyMC CI cell.
 - **S-VBMC** (`pyvbmc/svbmc/`, the standalone `svbmc` package moved in at
   0.1.1) stacks finished posteriors of several runs. It needs the `torch`
   extra, imported lazily: `pyvbmc.SVBMC` resolves on request and
@@ -296,8 +314,9 @@ Things you must hold in your head across files:
 - `pyvbmc/priors/__init__.py` has `# isort:skip` markers preserving a
   circular-import-safe order; do not reorder.
 - `import pyvbmc` eagerly imports matplotlib.pyplot, cma, and imageio.
-  Corner is imported inside `vp.plot`; torch and ArviZ exports import their
-  dependencies lazily.
+  Corner is imported inside `vp.plot`; torch, ArviZ and PyMC integrations
+  import their dependencies lazily, so importing `pyvbmc` does not import
+  torch, PyMC or PyTensor.
   `pyvbmc.timer.main_timer` is a process-wide singleton shared by all `VBMC`
   instances, so concurrent runs in one interpreter are not safe.
 - `pyvbmc/testing/oracles/` pins the numerics stage by stage: each fixture

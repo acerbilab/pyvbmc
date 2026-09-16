@@ -156,6 +156,7 @@ The final command creates an html folder with a full report on coverage -- doubl
 A few comments about testing:
 
 - Testing is mandatory! The full suite of tests is automatically run before any pull request can be merged into ``main``. The tests run on Windows, Linux, and macOS. Automatic tests are skipped for PRs which do not change the source code or tests (e.g., changes to the documentation only).
+- Tests for the optional torch, ArviZ and PyMC integrations skip unless the matching ``torch``, ``arviz`` or ``pymc`` extra is installed.
 - Still, as a good practice, please rerun all tests before major commits and pull requests. This might take a while, but it is worth it to avoid surprises.
 - Please try to keep the total runtime of the tests minimal for the task at hand.
 - A nice way of proceeding is "test first": write a test first, make it fail, write the code until the test is passed.
