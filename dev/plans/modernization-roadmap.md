@@ -22,8 +22,11 @@ jobs succeed. Ubuntu/Python 3.12 includes the optional Torch, ArviZ, PyMC
 and S-VBMC coverage; the other cells check the core installation. The
 current S-VBMC headline is unchanged. This verifies the integrated code;
 the final release population benchmark and headline decision remain pending.
-The next workstream is user-facing teaching material, with its pickup in
-[`dev/TODO.md`](../TODO.md#next-pickup-finish-user-facing-teaching-material).
+The focused teaching-material work is complete on `dev-teaching-material`:
+Example 9 fits a psychometric curve with a Torch target, checks its JAX
+counterpart and demonstrates Torch/ArviZ posterior exports. Its outputs,
+generated script, numerical reference checks and rendered-doc verification
+are recorded in the [teaching-material plan](teaching-material.md).
 
 **Population assessment, 2026-09-13:** the full 870-case candidate population
 is complete and accepted, with 837 usable runs versus 825 historical and

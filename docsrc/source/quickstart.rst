@@ -97,7 +97,8 @@ Bring a torch or JAX model into PyVBMC
 
 The default target interface calls one point at a time. It accepts a
 one-dimensional NumPy parameter vector and returns one finite scalar. A model
-implemented in torch can be adapted without adding torch objects to PyVBMC.
+implemented in Torch can be connected with a small user-written wrapper that
+keeps framework objects outside PyVBMC.
 The example below uses independent Gaussian observations with unit standard
 deviation and a Gaussian prior on their common mean. Install the modelling
 framework used by your model separately::
@@ -172,7 +173,7 @@ shape ``(N,)`` or ``(N, 1)``. PyVBMC does not probe a target to determine
 whether it supports batches. A scalar return is invalid even when ``N`` is
 one.
 
-The torch adapter above becomes::
+The Torch wrapper above becomes::
 
   def torch_vectorized_log_likelihood(x):
       theta_t = torch.as_tensor(x, dtype=torch.float64, device=device)
@@ -196,7 +197,7 @@ The torch adapter above becomes::
       options={"vectorized_target": True},
   )
 
-The equivalent JAX adapter is::
+The equivalent JAX wrapper is::
 
   def jax_vectorized_log_likelihood(x):
       theta_j = jnp.asarray(x, dtype=jnp.float64)
@@ -234,12 +235,19 @@ example::
   }
 
 Pass ``noisy_options`` as the ``options`` argument when constructing
-``VBMC`` with either noisy adapter.
+``VBMC`` with either noisy wrapper.
 
-Cached initial values can be mixed with evaluations through
-:meth:`~pyvbmc.function_logger.FunctionLogger.batch_call`; ``NaN`` marks the
-rows that still need evaluation. Results and cache indices retain input row
-order.
+To reuse cached target values, pass ``precomputed_evaluations=(X, y)`` to
+``VBMC``. Each value in ``y`` must be the output of the target supplied to
+``VBMC`` at the corresponding row of ``X``. When a prior is supplied
+separately, the target and ``y`` contain the log-likelihood and PyVBMC adds the
+prior; when the target is a log joint, ``y`` contains that log joint. See
+:ref:`Reusing evaluations and charging initialization work` for shapes,
+noisy observations and budget accounting.
+
+For a complete Torch fit, an equivalent short JAX target, Torch posterior
+predictions and density gradients, and ArviZ summaries, see
+:ref:`PyVBMC Example 9: Torch and JAX models and posterior exports`.
 
 Bring a PyMC model into PyVBMC
 ==============================
@@ -373,6 +381,10 @@ the hard bounds. Support validation rejects exact-bound and outside values.
 Samples remain strictly inside representable bounds. The distribution has
 event shape ``(D,)`` and accepts arbitrary leading sample dimensions.
 
+The complete workflow in
+:ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` uses this
+distribution for psychometric probability predictions and density gradients.
+
 ArviZ DataTree
 --------------
 
@@ -387,9 +399,10 @@ the current ArviZ DataTree format::
   summary = az.summary(posterior_data, group="posterior", kind="stats")
   axes = az.plot_dist(posterior_data, group="posterior")
 
-The result contains one ``posterior`` group, one chain, and one scalar
-variable per parameter. Names default to ``x_0``, ..., ``x_{D-1}``. Pass
-``orig_flag=False`` to export samples in internal coordinates.
+The result contains one ``posterior`` group and one chain. By default, each
+parameter is a scalar variable named ``x_0``, ..., ``x_{D-1}``; the structured
+form below supports vector and matrix variables. Pass ``orig_flag=False`` to
+export samples in internal coordinates.
 
 For a three-dimensional posterior whose first two columns form a vector,
 preserve the variable shape and labels with a structured export::

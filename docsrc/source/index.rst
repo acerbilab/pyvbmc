@@ -35,8 +35,9 @@ for using it effectively. Highlights include:
   :doc:`usage <api/classes/svbmc>`).
 - **Explicit random seed control** for reproducing individual runs;
   see :ref:`Reproducible runs`.
-- **Torch and JAX model adapters**, with optional batch evaluation of the
-  initial points; see :ref:`Bring a torch or JAX model into PyVBMC`.
+- **Torch and JAX model integration** through small user-written wrappers,
+  with optional batch evaluation of the initial points; see
+  :ref:`Bring a torch or JAX model into PyVBMC`.
 - **Direct PyMC model support**, including model-aware coordinates, automatic
   setup and structured posterior export; see
   :ref:`Bring a PyMC model into PyVBMC`.
@@ -90,6 +91,9 @@ your machine. To combine the posteriors of several
 runs on the same model and data without further model evaluations, see
 :doc:`S-VBMC <api/classes/svbmc>` (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__) and
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`.
+For an end-to-end Torch target, the equivalent JAX target wrapper, and
+posterior exports, see
+:ref:`PyVBMC Example 9: Torch and JAX models and posterior exports`.
 
 .. toctree::
    :maxdepth: 2

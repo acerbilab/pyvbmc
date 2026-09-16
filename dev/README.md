@@ -109,6 +109,9 @@ plan and consolidated human summary.
 
 - `plans/modernization-roadmap.md` — living tracker of the staged plan in
   `2026-09-02-modernization-discussion.md` §10: stage status, pickup point.
+- [plans/teaching-material.md](plans/teaching-material.md) — Example 9's
+  psychometric-model design, Torch/JAX targets, posterior-export workflow,
+  consistency review and notebook/script/rendered-documentation verification.
 - [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
   — computational optimizations of existing noisy acquisitions, with
   guarded standard-VIQR sum results and subsequent efficiency experiments.

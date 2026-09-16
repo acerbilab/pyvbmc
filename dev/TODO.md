@@ -7,43 +7,6 @@ Completed 1.5 work is not listed here: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
-## Next pickup: finish user-facing teaching material
-
-The next workstream is the teaching-material part of release documentation
-and validation below (PI, 2026-09-16). Resume from `dev-next`; the integrated
-PyMC adapter and S-VBMC shrinkage estimator are complete. The full nine-job
-CI matrix passed on `9cc6882`; the [roadmap](plans/modernization-roadmap.md)
-records the verification. No jobs or session-bound processes need reattachment.
-
-- Start with the [1.5 overview](2026-09-06-pyvbmc-1.5-overview.md),
-  `docsrc/source/quickstart.rst`, the export API pages under
-  `docsrc/source/api/methods/`, and Examples 7 and 8 under `examples/`.
-  The [Stage 3 plan](plans/stage3-pipeline-features.md) records the existing
-  Torch/JAX target, initial-design batching and posterior-export contracts.
-- The main tutorial gap is a runnable Torch/JAX model and posterior-export
-  workflow. The quickstart already has recipes; develop a compact worked
-  notebook from them, with the example model and layout still to be chosen.
-  Example 8 already covers the complete PyMC workflow, and Example 7 covers
-  S-VBMC stacking. Review existing examples and guides for consistency with
-  the settled 1.5 interfaces. Calibration, reproducibility and precomputed
-  evaluations already have prose guides and code examples.
-- Keep shrinkage within the S-VBMC workflow. Example 7 already explains
-  optimistic bias and the median cap; briefly update that explanation only
-  if the release gate selects shrinkage as the headline. The headline
-  decision below owns this conditional edit. No separate shrinkage tutorial
-  or user action is needed.
-- Work on a feature branch and track execution under `dev/plans/`.
-  Astra owns the teaching design and integration; Sol can author and review.
-  Keep one heavy process at a time. Execute new or changed notebook code,
-  retain outputs, regenerate scripts via `examples/scripts/Makefile`, and
-  check the rendered docs. Notebooks are not executed by CI or Sphinx.
-  Use the repository's pinned formatting hooks.
-- Local environments and ignored artifacts are indexed in
-  `dev/scripts/runs/LOCAL.md`. A fresh clone must recreate the needed
-  optional-dependency environment; the teaching work requires no old run
-  pools. GP remedies remain deferred, and the final release benchmark and
-  S-VBMC headline decision come after the remaining release work.
-
 ## In scope for 1.5
 
 - [ ] **Efficiency of existing noisy acquisitions.** Improve sieve/search,
@@ -212,8 +175,11 @@ records the verification. No jobs or session-bound processes need reattachment.
   `dev/scripts/` through the cluster workflow of the HPC item above.
   PI, 2026-09-16.
 
-- [ ] **Release documentation and validation.** Finish the API/tutorial
-  review; run examples, check links, build Sphinx and inspect rendered pages.
+- [ ] **Release documentation and validation.** Finish the release-wide
+  API/tutorial and compatibility review; run examples, check links, build
+  Sphinx and inspect rendered pages against the settled release code. The
+  focused Torch/JAX workflow and teaching consistency review are recorded
+  in the [teaching-material plan](plans/teaching-material.md).
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. Search the whole repository's

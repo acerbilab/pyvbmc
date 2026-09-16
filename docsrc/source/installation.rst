@@ -97,6 +97,16 @@ Example 2 uses ``plotly`` for one interactive figure. Install it with::
 
   python -m pip install "pyvbmc[examples]"
 
+:ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` uses both
+posterior exports and requires Python 3.12 or newer. A CPU-only environment is
+sufficient. Install its PyVBMC dependencies with::
+
+  python -m pip install "pyvbmc[torch,arviz]"
+
+Install JAX separately to run the short JAX target section, following the
+`JAX installation guide <https://docs.jax.dev/en/latest/installation.html>`_.
+JAX is not required for the Torch target or posterior-export sections.
+
 The test suite is included in the source distribution and repository.
 To run it, follow the :ref:`installation instructions for developers`,
 then run this command from the PyVBMC repository root::

@@ -18,4 +18,6 @@ strictly inside the hard bounds; exact-bound and outside values fail support
 validation.
 
 See :ref:`Torch distribution` for a short example and installation details in
-:ref:`optional integrations`.
+:ref:`optional integrations`. The worked
+:ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` uses the
+export for posterior probability predictions and density gradients.

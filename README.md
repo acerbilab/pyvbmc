@@ -24,7 +24,7 @@ PyVBMC 1.5 is faster and more efficient, integrates better with the modern scien
 - **Faster inference and lower memory use**, with numerical improvements and more compact run histories. Optional [performance calibration](#optional-performance-calibration) tunes PyVBMC for your machine.
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC to combine posteriors from independent runs ([Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004); [usage below](#combine-runs-and-use-the-posterior-downstream)).
 - **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs).
-- **Torch and JAX model adapters**, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
+- **Torch and JAX model integration** through small user-written wrappers, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
 - **Direct PyMC model support**, including model-aware coordinates, automatic setup, and structured posterior export; see the [PyMC integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-pymc-model-into-pyvbmc).
 - **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
 - **More practical guidance**, with tips during runs, a [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
@@ -173,7 +173,9 @@ does not require further model evaluations. See [Example 7](examples/pyvbmc_exam
 A fitted `VariationalPosterior` can also be exported as a Torch distribution
 with `vp.to_torch()`, or as samples in an ArviZ DataTree with `vp.to_arviz()`.
 See the [posterior export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream)
-for examples and the optional dependencies listed above.
+and [PyVBMC Example 9: Torch and JAX models and posterior exports](examples/pyvbmc_example_9_torch_jax.ipynb)
+for worked examples, including posterior predictions and density gradients in
+Torch and summaries in ArviZ.
 
 ## Next steps
 
