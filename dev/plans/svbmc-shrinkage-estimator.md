@@ -13,6 +13,8 @@ owns this checklist; implementers report outcomes without editing it.
 - [x] Verification: S-VBMC suite, developer parity and harness checks,
   formatting, Sphinx build and rendered API inspection.
 - [x] Independent implementation doublecheck and any resulting fixes.
+- [x] Rebase onto the completed PyMC integration on `dev-next`; rerun
+  focused tests and independently review compatibility.
 
 ## Purpose and scope
 
@@ -348,3 +350,25 @@ result is an additive estimator with **244 passing tests**, unchanged
 reference fixtures and historical research code, and no open implementation
 review findings. The headline decision and release campaign remain outside
 this task; no merge or publication was performed.
+
+### Integration with the PyMC base (2026-09-16)
+
+The feature was rebased onto `dev-next` at `95c5689`, which includes the
+completed PyMC integration. The rebase had no conflicts; `git range-diff`
+confirmed that the feature patch in `628064a` matches the original
+`6630917`. Both development indexes retain the PyMC completion records and
+the shrinkage entries. Core VBMC, posterior and PyMC code match the base.
+
+The same focused commands above, with fresh temporary directories, passed
+after rebase: **222 S-VBMC and historical-parity tests in 43.25 seconds**,
+and **22 campaign-harness tests in 115.57 seconds**. No reference fixtures
+were regenerated. The full PyMC suite and documentation build were not
+repeated for this rebase; the feature patch and its API documentation were
+unchanged.
+
+An independent Sol review checked the rebased patch, shared interfaces,
+posterior-statistics producer, lazy imports and combined development
+indexes, with no must-fix or should-fix findings. This was a static
+compatibility review; it did not repeat the scientific derivation or run
+a fresh PyMC-to-S-VBMC workflow. The updated base remains an ancestor of
+the feature branch; integration into `dev-next` is still pending.
