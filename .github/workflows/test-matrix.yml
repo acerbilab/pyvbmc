@@ -58,7 +58,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Select optional torch coverage (posterior exports, S-VBMC)
+      - name: Select optional coverage (posterior exports, S-VBMC, PyMC)
         id: exports
         shell: python
         env:
@@ -84,15 +84,33 @@ jobs:
           cd ./pyvbmc
           python -m pip install -e ".[test]"
 
-      - name: Install optional torch features (posterior exports, S-VBMC)
+      - name: Install optional features (posterior exports, S-VBMC, PyMC)
         if: steps.exports.outputs.enabled == 'true'
-        run: python -m pip install -e "./pyvbmc[test,torch,arviz]"
+        run: python -m pip install -e "./pyvbmc[test,torch,arviz,pymc]"
 
       - name: Install GPyReg
         run: |
           cd ./gpyreg
           git log --oneline -1
           python -m pip install -e ".[test]"
+
+      - name: Report optional dependency versions and PyTensor linker
+        if: steps.exports.outputs.enabled == 'true'
+        shell: python
+        run: |
+          import arviz
+          import numpy
+          import pymc
+          import pytensor
+          import scipy
+
+          print(f"PyMC: {pymc.__version__}")
+          print(f"PyTensor: {pytensor.__version__}")
+          print(f"ArviZ: {arviz.__version__}")
+          print(f"NumPy: {numpy.__version__}")
+          print(f"SciPy: {scipy.__version__}")
+          linker = pytensor.compile.mode.get_default_mode().linker
+          print(f"PyTensor linker: {type(linker).__name__}")
 
       - name: Run tests
         run: |
