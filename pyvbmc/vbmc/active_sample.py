@@ -898,9 +898,7 @@ def _get_search_points(
             box_lb = np.maximum(np.amin(X, axis=0) - 0.5 * X_diam, box_lb)
             box_ub = np.minimum(np.amax(X, axis=0) + 0.5 * X_diam, box_ub)
 
-            box_Xs = (
-                rng.standard_normal((N_box, D)) * (box_ub - box_lb) + box_lb
-            )
+            box_Xs = rng.random((N_box, D)) * (box_ub - box_lb) + box_lb
 
             random_Xs = np.append(random_Xs, box_Xs, axis=0)
 

@@ -359,6 +359,19 @@
     },
     "oracle": "active_sample_step",
     "reason": "Phase 4: CMA-ES trajectory follows analytically verified acquisition regularization; all changed acquisition references have been updated separately"
+   },
+   {
+    "date": "2026-09-16 10:14:59",
+    "git": {
+     "dirty": true,
+     "sha": "69a7a18"
+    },
+    "max_abs_change": {
+     "X_new": 0.6092675019966116,
+     "y_new": 0.23826644609618652
+    },
+    "oracle": "active_sample_step",
+    "reason": "Restore MATLAB uniform box proposals: replace standard_normal with random in _get_search_points (2021 porting bug). Fixed-input oracles pass; paired probe in dev/results/2026-09-16-gp-box-sampler.md."
    }
   ],
   "recipe": "cigar_D4_boosted",

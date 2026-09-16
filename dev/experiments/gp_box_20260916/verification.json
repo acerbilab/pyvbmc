@@ -1,0 +1,82 @@
+{
+  "changed_oracle_arrays": {
+    "cigar_D4_boosted.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "cigar_D4_largeK.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "corr_D5_warped.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "halfnormal_D2_bounded.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "normal_D2_K1.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "normal_D2_singlesample.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ],
+    "normal_D2_warmup.npz": [
+      "ref/active_sample_step/X_new",
+      "ref/active_sample_step/y_new"
+    ]
+  },
+  "paired_initial_designs": [
+    {
+      "seed": 1000,
+      "initial_calls": 10,
+      "initial_design_exact": true
+    },
+    {
+      "seed": 1001,
+      "initial_calls": 10,
+      "initial_design_exact": true
+    },
+    {
+      "seed": 1002,
+      "initial_calls": 10,
+      "initial_design_exact": true
+    }
+  ],
+  "fixed_input_oracles": {
+    "passed": 136,
+    "skipped": 14,
+    "active_sample_step_deselected": 8
+  },
+  "exact_oracle_check": {
+    "fixture_groups_passed": 11,
+    "fixture_groups_total": 11
+  },
+  "package_suite": {
+    "command": "python -m pytest --reruns=5 -x -q -p no:cacheprovider --basetemp=dev/scripts/runs/gp_box_20260916/pytest_tmp",
+    "passed": 1264,
+    "skipped": 47,
+    "reruns": 0,
+    "seconds": 324.02,
+    "gpyreg": "1.2.1",
+    "blas_threads": 1
+  },
+  "golden_replay": {
+    "configs": [
+      "normal_D5",
+      "banana_D2",
+      "halfnormal_D2",
+      "cigar_D4",
+      "rosenbrock_D2_noise1"
+    ],
+    "seeds": [
+      0
+    ],
+    "flagged": 0,
+    "initial_designs_exact": 5,
+    "minutes": 2.883821654319763
+  }
+}
