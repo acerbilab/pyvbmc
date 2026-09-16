@@ -147,13 +147,22 @@ records its execution.
   the numbers; the laptop pilot's runs show the same). The runs' own
   answers are fine (median evidence error 0.17, gsKL 0.11, MMTV 0.09),
   but a GP this ill-conditioned makes every consumer of its posterior
-  fragile. To find out: why the acquisition samples such points on a
-  noisy unbounded target and whether that is intended, whether noise
-  shaping (`gaussian_process_train.py`) is doing what it should for
-  them, and whether the acquisition's search or the plausible box
-  should bound the candidates. The PI decided (2026-09-15) that an
-  algorithmic fix belongs after 1.5 unless the investigation finds a
-  bug.
+  fragile. The [box-sampler investigation](results/2026-09-16-gp-box-sampler.md)
+  found and fixed a 2021 porting bug: the box proposal used normal
+  draws where MATLAB uses uniform draws (`40a6f18`, merged into
+  `dev-next`, 2026-09-16). The package suite, exact oracles and five
+  golden replays pass, but all three corrected noisy Rosenbrock runs
+  remain ill-conditioned (7e12 to 1e14). Noise shaping is unported and
+  defaults off; the unused outer search clamps are also unused in
+  MATLAB. Next: reconstruct the acquisition batch preceding corrected
+  seed 1000's first extreme evaluation (call 80), identify whether the
+  candidate comes from the sieve or CMA-ES, compare its predicted
+  uncertainty reduction with central candidates and test the ranking's
+  numerical stability, then inspect the subsequent GP refit. Check the
+  explanation against seeds 1001 and 1002. The saved histories and
+  call records are listed in `dev/scripts/runs/LOCAL.md`; the probe is
+  `dev/scripts/gp_box_probe.py`. The PI decided (2026-09-15) that an
+  algorithmic fix belongs after 1.5 unless the investigation finds a bug.
 
 - [ ] **PyMC integration: the target adapter with the tested scope.** The
   PI chose (2026-09-14), on the
