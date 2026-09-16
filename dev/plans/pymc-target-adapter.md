@@ -15,6 +15,58 @@ specification of the route through PyMC. The PI chose the scope on
 decision; this plan settles the design questions that decision left to
 the implementation and lays out the work.
 
+## Pickup: 2026-09-16
+
+Resume from `dev-next` with the two investigations in
+[Before approval](#before-approval-the-setup-probe-and-evaluation-reuse).
+The implementation plan remains **pending approval**. Neither
+investigation has run; `dev/scripts/pymc_setup_probe.py` has not been
+written, and Phase 0 has not started. No job or watcher needs reattachment.
+
+Read `dev/TODO.md`, this plan, the
+[PyMC proposal](../2026-09-13-pymc-integration.md), the
+[feasibility report](../results/2026-09-14-pymc-feasibility.md) and the
+prototype's module docstring before writing the probe. Preserve
+`dev/scripts/pymc_feasibility.py` as the historical feasibility record:
+its `find_MAP` and finite-difference Hessian are superseded by this
+plan's gradient search and exact Hessian.
+
+1. **Part A:** implement the separate setup probe over the specified
+   models. Measure the `20 + 5 D` budget, stopping rules and prior-based
+   location check, including models without a mode or usable gradients.
+   Record the evidence and any design questions before Part B.
+2. **Part B:** compare the three evaluation-reuse arms on the three
+   specified models, five seeds each, at equal total evaluation budgets
+   including setup. The probe emulates logger seeding without changing
+   package code. Generate and assess the required NUTS references and
+   run VBMC sequentially in the heavy-compute slot.
+3. Write the findings into this plan's design, decisions, affected
+   phases and execution record. Present the setup and reuse choices to
+   the PI for approval; only then start Phase 0 and package implementation.
+
+Both investigations belong to the orchestrator. In Codex, the executor
+names below follow `AGENTS.md`: Astra fills the Fable orchestrator role;
+Sol fills the Opus implementation/review role after approval. At most
+one heavy process runs at a time.
+
+The analysis environment is local by design and listed under "PyMC
+feasibility check" in `dev/scripts/runs/LOCAL.md`. Its metadata was
+checked on 2026-09-16: Python 3.12.6, PyMC 6.3.2, PyTensor 3.3.1,
+ArviZ 1.3.0 and gpyreg 1.2.1. PyVBMC resolves to this checkout; gpyreg
+resolves to the sibling checkout, so verify its revision before probing.
+On a fresh machine, create a Python 3.12 environment, install those
+PyMC/PyTensor/ArviZ versions, install gpyreg from tag `v1.2.1`
+(`9e70e6b`) and this checkout editable with its development dependencies.
+The tracked feasibility outputs under `dev/experiments/pymc_feasibility/`
+remain readable without that environment. The planned probe's raw and
+tracked output locations are specified below in Before approval.
+
+The GP investigation is complete and preserved in the
+[tail-acquisition report](../results/2026-09-16-gp-tail-acquisition.md)
+and its linked box-sampler study; algorithmic remedies are outside 1.5.
+The S-VBMC campaign is closed. Its headline switch remains tied to the
+release gate, which follows the remaining 1.5 work in `dev/TODO.md`.
+
 ## Summary
 
 A PyMC model with continuous free variables becomes a box-bounded log

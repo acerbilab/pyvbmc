@@ -155,9 +155,11 @@ records its execution.
   approval: the plan's two investigations, the setup probe (the budget,
   the stopping rule, the location check) and the route by which the setup
   evaluations reach VBMC (the existing `f_vals` option or an extension of
-  `VBMC`'s interface, measured in short runs); then approval, Phase 0
-  creates the branch `dev-pymc-adapter` and Opus sub-agents implement
-  Phases 1 to 5. Automatic
+  `VBMC`'s interface, measured in short runs). The
+  [pickup record](plans/pymc-target-adapter.md#pickup-2026-09-16)
+  gives the reading order, environment and executor mapping; neither
+  investigation has started. After approval, Phase 0 creates the branch
+  `dev-pymc-adapter` and the phase executors implement Phases 1 to 5. Automatic
   initialization and inference orchestration stay deferred. See the
   [PyMC proposal](2026-09-13-pymc-integration.md).
 
