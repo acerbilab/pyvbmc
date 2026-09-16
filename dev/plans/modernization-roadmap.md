@@ -22,7 +22,7 @@ jobs succeed. Ubuntu/Python 3.12 includes the optional Torch, ArviZ, PyMC
 and S-VBMC coverage; the other cells check the core installation. The
 current S-VBMC headline is unchanged. This verifies the integrated code;
 the final release population benchmark and headline decision remain pending.
-The focused teaching-material work is complete on `dev-teaching-material`:
+The focused teaching-material work is integrated into `dev-next` at `1be3111`:
 Example 9 fits a psychometric curve with a Torch target, checks its JAX
 counterpart and demonstrates Torch/ArviZ posterior exports. Its outputs,
 generated script, numerical reference checks and rendered-doc verification

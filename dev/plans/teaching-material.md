@@ -1,6 +1,6 @@
 # PyVBMC 1.5 teaching material
 
-Status: complete on feature branch `dev-teaching-material`, 2026-09-16.
+Status: complete and integrated into `dev-next`, 2026-09-16.
 
 Finish the worked model-to-posterior-export tutorial and review existing
 teaching material against the settled 1.5 interfaces. The scope and release
@@ -177,6 +177,14 @@ change. The numerical source and CI configuration match the nine-job-tested
 documentation, formatting and independent-review checks above; it does not
 dispatch the documentation-publishing workflow.
 
-- [~] Commit and push the teaching feature branch.
-- [ ] Verify the pushed revision and merge it into `dev-next`, then push
+- [x] Commit and push the teaching feature branch.
+- [x] Verify the pushed revision and merge it into `dev-next`, then push
   the integration and confirm a clean, synchronized checkout.
+
+Feature commit `1be3111` passed all five commit hooks and was pushed to
+`origin/dev-teaching-material`. GitHub Actions reported no run for that
+branch, consistent with the path filters. Remote `dev-next` was still at
+the starting `3138a73`; integration fast-forwarded it to `1be3111` and
+pushed successfully. The integrated tree equals the verified feature tree,
+and the checkout was clean and synchronized with `origin/dev-next` before
+this documentation-only delivery record was added.
