@@ -278,6 +278,19 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
   Pickup 9 is in progress: Phase 1 neutral fixes are complete; Q1/Q4 decisions
   and moving groups remain open.
+- [x] **PyMC model adapter and structured posterior export** (2026-09-16).
+  `PyMCTarget(model)` snapshots model data, handles supported continuous
+  coordinates and Jacobians, and supplies `VBMC(target)` with budgeted
+  initialization and reusable evaluations. The general
+  `precomputed_evaluations` interface also accepts independent noisy
+  repeats with precision pooling; initialization cost is explicit and
+  charged once. Structured ArviZ exports preserve variable shapes and
+  named coordinates. PyMC and ArviZ remain optional Python >=3.12 extras;
+  core PyVBMC remains Python >=3.10. Example 8 demonstrates the complete
+  regression and prediction workflow with a NUTS comparison. The
+  [adapter plan](pymc-target-adapter.md) records scope, review findings,
+  CI and local verification: 1,311 core tests, 147 optional checks,
+  11/11 exact fixtures and five exact stored optimization traces.
 - [x] **Stage 4 — PyTorch feasibility prototype, then a port decision**
   (preferred for 1.5 if feasible;
   PI decision, 2026-09-06). The purpose combines future method development,

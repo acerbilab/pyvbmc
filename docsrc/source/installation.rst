@@ -63,9 +63,10 @@ Install PyMC and the ArviZ data interface with::
 
   python -m pip install "pyvbmc[pymc]"
 
-The adapter is tested with PyMC 6.3 and ArviZ 1.3. PyVBMC itself continues
-to support Python 3.10 and newer; on Python 3.10 or 3.11, pip does not install
-the PyMC dependencies because of their Python version marker, and
+The adapter is tested with PyMC 6.3.2, PyTensor 3.3.1–3.3.2 and ArviZ 1.3.0,
+using PyTensor's default Numba linker on Windows and Linux. PyVBMC itself
+continues to support Python 3.10 and newer; on Python 3.10 or 3.11, pip does
+not install the PyMC dependencies because of their Python version marker, and
 ``PyMCTarget`` is unavailable. With Conda, install the named packages
 directly::
 

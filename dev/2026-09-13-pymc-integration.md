@@ -1,14 +1,12 @@
 # 2026-09-13 — A scoped PyMC integration for PyVBMC 1.5
 
-**Status:** proposal based on inspection of the 2022 PyMC integration PR,
-the current PyVBMC source and current PyMC/ArviZ documentation. The next
-technical step would be a bounded feasibility prototype. No adapter has
-been implemented or executed; effort estimates below are provisional.
-The feasibility check has since run (see the end of this note), the PI
-chose the target adapter with the tested scope for 1.5, and the
-[implementation plan](plans/pymc-target-adapter.md) was approved on
-2026-09-16 and tracks implementation. This note preserves the original
-scope discussion; the approved plan defines the final interface and setup.
+**Status:** the scoped adapter and structured export are implemented
+following PI approval on 2026-09-16. The
+[implementation plan](plans/pymc-target-adapter.md) records the final
+interface, setup policy, validation and integration status. This note
+preserves the original proposal and its provisional effort estimates,
+based on inspection of the 2022 PyMC integration PR and the APIs available
+on 2026-09-13. The feasibility results appear at the end of this note.
 
 ## Purpose
 

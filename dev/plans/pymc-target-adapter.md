@@ -56,11 +56,11 @@ checks below remain authoritative. At most one heavy process runs at a time.
   merge into `dev-pymc-adapter`.
 - [x] Phase 1: structured ArviZ export and focused validation.
 - [x] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
-- [~] Phase 3: optional-dependency CI coverage and smoke run.
+- [x] Phase 3: optional-dependency CI coverage and smoke run.
 - [x] Phase 4: user/API documentation and docs build after Example 8.
 - [x] Phase 5: executed Example 8 and regenerated script.
-- [~] Phase 6: integrated verification, packaging and independent doublecheck.
-- [ ] Phase 7: merge into `dev-next`, update records and finish tracking.
+- [x] Phase 6: integrated verification, packaging and independent doublecheck.
+- [~] Phase 7: merge into `dev-next`, update records and finish tracking.
 
 The PI requested a focused follow-up to separate filtering from initial
 coverage. Twenty additional attempts are complete on the two hard models:
@@ -1686,7 +1686,7 @@ exist).
 2. Push the branch; the `dev*` smoke runs the cell.
 
 **Verification**:
-- [ ] The smoke run is green and its log shows the PyMC tests running,
+- [x] The smoke run is green and its log shows the PyMC tests running,
   not skipping, and the installed versions and linker; record them in
   the execution record (Phase 6 carries them into `TESTED_RANGE` and the
   installation page).
@@ -1982,6 +1982,25 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: feature CI
+  [35124802016](https://github.com/acerbilab/pyvbmc/actions/runs/35124802016)
+  passes on `da17051`: 1,644 passed, 60 skipped, 11 warnings in 643 seconds.
+  All 99 tests under `pyvbmc/testing/pymc/` execute and pass. Ubuntu/Python
+  3.12 resolves PyMC 6.3.2, PyTensor 3.3.2, ArviZ 1.3.0, NumPy 2.5.3 and
+  SciPy 1.18.1 with the default `NumbaLinker`; the local Windows checks use
+  PyTensor 3.3.1 with the same PyMC/ArviZ versions and linker. The public
+  tested-range string and installation page record both tested environments.
+  Independent implementation, test and documentation reviews have no open
+  findings. The feature's local and CI gates are complete; merge and final
+  integration records follow.
+
+- 2026-09-16: the final five-configuration golden replay matches the
+  clean approved `4007aab` control exactly for all stored non-timing
+  loop/final arrays, initial designs and all 11 semantic result fields
+  (2.7 minutes; zero flags). Returned-transformer equality is outside the
+  trace format. The verified feature branch was pushed at `da17051` for
+  the optional-dependency CI gate.
 
 - 2026-09-16: the integrated branch passes all 11 exact numerical fixtures.
   A fresh strict Sphinx build renders the API and executed Example 8 with

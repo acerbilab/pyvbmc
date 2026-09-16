@@ -65,13 +65,16 @@ For the release overview, start with
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
   PR #73 compared with 1.5, the proposed split between model/export adapters
   and automatic fitting, and the feasibility questions for release scope;
-  the bounded feasibility check is done, with its result in
-  [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
+  the adapter and structured export are implemented. The
+  [feasibility report](results/2026-09-14-pymc-feasibility.md) records the
+  prototype; the [implementation plan](plans/pymc-target-adapter.md)
+  records the final contract and verification.
 - [PyMC setup budget and evaluation reuse](results/2026-09-16-pymc-setup-probe.md) —
   Preapproval measurements of a capped gradient search and exact Hessian,
   stopping rules, the prior-location guard, and three ways to use setup
-  observations at equal total evaluation budgets. Implementation is
-  approved and tracked in the plan's live implementation checklist.
+  observations at equal total evaluation budgets. The resulting adapter
+  and generic precomputed-evaluation interface are implemented; the plan
+  records their verification and integration status.
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
   Two questions about the S-VBMC port, answered from the run-pool
   benchmark: it matches the standalone package (same weights and
@@ -241,7 +244,8 @@ plan and consolidated human summary.
   fallbacks, the structured `to_arviz` export, the `pymc >= 6.3` floor
   and the capability guards, save and load), what it rests on, the
   phased work with its executors, decisions and the execution record.
-  Approved 2026-09-16; implementation runs on `dev-pymc-adapter`.
+  Approved and implemented 2026-09-16; includes the executed Example 8,
+  independent reviews, numerical regression evidence and CI records.
 
 - [plans/stage4-torch-feasibility.md](plans/stage4-torch-feasibility.md) -
   Completed bounded PyTorch feasibility prototype: complete variational fits,
