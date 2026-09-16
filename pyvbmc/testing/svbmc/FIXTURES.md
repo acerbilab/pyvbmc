@@ -84,6 +84,13 @@ integrated class (the Monte Carlo draws come from the object's generator,
 so they cannot be compared with the upstream package draw for draw) and
 are the gate for later performance changes to the entropy computation.
 
+The regression file predates the additive two-level shrinkage report.
+`test_svbmc_references.py` therefore requires the current report to contain
+exactly the stored keys plus `shrunk_two_level` and
+`shrinkage_noise_share`, then compares every stored value against its fixed
+reference. The two added values are covered by algebra, integration and
+historical-reference parity tests and do not require a fixture rebaseline.
+
 The 2026-09-12 rebaseline is intentional and implements the PI-approved
 [ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian
 expectations are deterministic, final estimates use fresh samples at the

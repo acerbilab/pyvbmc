@@ -21,6 +21,7 @@ import numpy as np
 
 from pyvbmc.rng import get_rng
 
+from ._elbo_shrinkage import _two_level_shrinkage
 from ._entropy import component_log_densities
 from ._jacobian import expected_log_jacobian
 from ._runtime_tips import consider_runtime_tip
@@ -254,10 +255,18 @@ Generator, optional
         interval for the capped headline.
     elbo_details : dict or None
         After :meth:`optimize`: ``raw``, ``capped_I_median``,
-        ``capped_E_median`` and ``naive`` ELBO estimates; ``headline_method``
-        (``raw`` or ``capped_I_median``); ``cap_amount`` (the reduction
-        applied to the headline); ``entropy_sd``, ``gp_sd`` and ``raw_sd``
-        (equal to :attr:`elbo_sd`); ``noisy`` and ``noise_status_source``.
+        ``capped_E_median``, ``naive`` and ``shrunk_two_level`` ELBO
+        estimates; ``shrinkage_noise_share``; ``headline_method`` (``raw``
+        or ``capped_I_median``); ``cap_amount`` (the reduction applied to the
+        headline); ``entropy_sd``, ``gp_sd`` and ``raw_sd`` (equal to
+        :attr:`elbo_sd`); ``noisy`` and ``noise_status_source``. Shrinkage
+        adjusts component estimates within each run and then shifts run
+        levels, at the selected weights and with the same final entropy as
+        ``raw``. ``shrunk_two_level`` is ``None`` when its numerical
+        calculation is undefined, in which case optimization still succeeds
+        with a ``RuntimeWarning``. ``shrinkage_noise_share`` is the estimated
+        noise-to-spread ratio averaged over runs using their selected masses;
+        it can exceed one and can be ``None`` independently.
         Naive stacking equally weights retained runs with their original
         internal weights. Its estimate inherits the runs' errors and is
         a diagnostic baseline, not a bound on the optimized ELBO.
@@ -698,7 +707,9 @@ Generator, optional
         Runs :meth:`maximize_ELBO`, stores the optimized weights in
         :attr:`w` (NumPy float64), the entropy estimate in :attr:`entropy`
         and a fresh final evaluation in :attr:`elbo`, :attr:`elbo_sd` and
-        :attr:`elbo_details`.
+        :attr:`elbo_details`. The report includes a deterministic two-level
+        shrinkage estimate at those weights, using the same final entropy;
+        it consumes no random draws.
         Returns ``None``.
 
         Parameters
@@ -763,12 +774,30 @@ Generator, optional
         varG = self._expected_log_joint_variance(self.w.ravel())
         self.elbo_sd = float(np.sqrt(varG + varH))
         capped_I = min(G, I_median) + self.entropy
+        offsets = np.concatenate([[0], np.cumsum(self.K)])
+        shrunk, shrinkage_noise_share = _two_level_shrinkage(
+            [vp.stats["I_sk"] for vp in self.vp_list],
+            [vp.stats["J_sjk"] for vp in self.vp_list],
+            [
+                self.I_corrected[0, offsets[m] : offsets[m + 1]]
+                for m in range(self.M)
+            ],
+            [
+                np.ravel(vp.w).astype(np.float64)
+                / np.sum(vp.w, dtype=np.float64)
+                for vp in self.vp_list
+            ],
+            self.w.ravel(),
+            self.entropy,
+        )
         self.elbo = float(capped_I if self.noisy else raw)
         self.elbo_details = {
             "raw": raw,
             "capped_I_median": capped_I,
             "capped_E_median": min(G, E_median) + self.entropy,
             "naive": naive,
+            "shrunk_two_level": shrunk,
+            "shrinkage_noise_share": shrinkage_noise_share,
             "headline_method": method,
             "cap_amount": float(max(0.0, raw - self.elbo)),
             "entropy_sd": float(np.sqrt(varH)),

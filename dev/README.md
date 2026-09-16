@@ -142,12 +142,17 @@ plan and consolidated human summary.
   [results/2026-09-13-svbmc-speedups.md](results/2026-09-13-svbmc-speedups.md).
 - [plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md) —
   the S-VBMC run-pool campaign: pools of independent VBMC runs on noisy
-  targets saved with their posteriors and GPs (the input of the Phase 2
-  ELBO estimator), the matched comparison of the integrated S-VBMC against
+  targets saved with their posteriors and GPs for the cross-run estimator
+  investigation, the matched comparison of the integrated S-VBMC against
   the original standalone package, the harness scripts, allocation, gates
   and execution worklog. Run on 2026-09-14/15, extended to `M = 32` for
   the integrated arm on 2026-09-15/16, and assessed in
   [results/2026-09-15-svbmc-pool-comparison.md](results/2026-09-15-svbmc-pool-comparison.md).
+- [plans/svbmc-shrinkage-estimator.md](plans/svbmc-shrinkage-estimator.md) —
+  integration of full-covariance two-level shrinkage as an additional
+  S-VBMC ELBO estimate, using existing posterior statistics; numerical
+  boundary cases, campaign recording and parity checks. Headline selection
+  remains a decision after the final release campaign.
 - [plans/svbmc-pool-handoff.md](plans/svbmc-pool-handoff.md) — the brief
   under which the S-VBMC run pools were generated on the cluster
   (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a

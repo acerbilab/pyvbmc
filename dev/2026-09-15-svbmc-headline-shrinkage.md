@@ -225,8 +225,8 @@ heavy-tailed one; on noiseless targets up to about 0.1 nats at
 M = 32 and within 0.05 through M = 16). And that the raw value is not
 an upper bound on the truth.
 
-The PI's position on 2026-09-16: the two-level shrinkage is to be
-promoted to the headline of a noisy stack; whether a noiseless stack
+The PI's position on 2026-09-16: the two-level shrinkage is the candidate
+for the headline of a noisy stack; whether a noiseless stack
 also reports it or keeps the raw value is undecided (through M = 16
 the two differ by at most 0.03 nats on the controls, and the M = 32
 control cannot resolve them). The switch is not made on this
@@ -238,18 +238,25 @@ note must hold. That check is the release gate for 1.5 as a whole, not
 for S-VBMC only. The present pools hold 100 runs per noisy target and
 50 per noiseless one, so the subsets at M = 16 reuse each run 1.6 to
 3.2 times and those at M = 32 3.2 to 6.4 times; a pool that is to
-support M = 32 needs several hundred runs per target. The user-facing
-wording follows the confirmation. The change is contained: a function
-in `pyvbmc/svbmc/svbmc.py` that computes the shrunken expected log
-joint from the stored `I_sk`, `J_sjk` and the runs' own weights at the
-selected weights (as the cap is applied today, so the posterior does
-not move), a new `elbo_details` key and headline method, the tests that
-pin the capped headline, and the user documentation.
-`dev/scripts/svbmc_shrink_elbo.py` is the reference implementation.
-Whether the class change lands before the gate, so that the gate
-records what the released class reports, or the gate scores the
-shrinkage from the recorded statistics as this benchmark did and the
-class switches afterwards, is to be settled when the gate is planned.
+support M = 32 needs several hundred runs per target. User-facing
+recommendations for the headline follow the confirmation.
+
+The implementation decision, also 2026-09-16, separates availability from
+headline selection: add the full-covariance two-level estimate as
+`elbo_details["shrunk_two_level"]` for both noisy and noiseless stacks,
+alongside `shrinkage_noise_share`, before the campaign. Evaluate it at the
+existing selected weights with the same final entropy estimate. The
+campaign can then compare the packaged estimate directly; promote it to
+the headline afterwards only if it is confirmed to be the best estimator.
+The current headline, optimization and raw-estimate uncertainty remain
+unchanged. `VBMC.optimize()` returns the same posterior and results objects,
+and `SVBMC(vp_list)` keeps its input requirements: the existing `I_sk`,
+`J_sjk`, component weights and transformers suffice. No GP, full VBMC
+object, new posterior statistic or save-format change is needed.
+
+The [integration plan](plans/svbmc-shrinkage-estimator.md) owns the package
+implementation, reporting, campaign recording and verification.
+`dev/scripts/svbmc_shrink_elbo.py` remains the scientific reference.
 
 ## Open
 

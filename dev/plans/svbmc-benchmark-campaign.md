@@ -1206,6 +1206,17 @@ draft had left open:
     closer to one measurement than to ten and the `M = 32` control
     observation is a direction to confirm, not an interval. Rejected:
     switching the headline on this campaign's evidence alone.
+13. **Package the candidate before selecting the headline (2026-09-16):**
+    implement the full-covariance two-level estimate as
+    `elbo_details["shrunk_two_level"]` for both noise statuses, alongside
+    a noise-share diagnostic, under the
+    [estimator integration plan](svbmc-shrinkage-estimator.md). Record it
+    in subsequent campaign cells and summaries while preserving the
+    current headline and its acceptance criteria. Promote it to headline
+    after the final campaign only if that comparison confirms it is best.
+    The inputs remain fitted posteriors with their existing statistics;
+    this estimator needs no GP or full VBMC object, and the objects
+    returned by `VBMC.optimize()` remain unchanged.
 
 ## Risks and rollback
 

@@ -19,6 +19,7 @@ Torch overlay, which this module also puts on the harness's path itself, so
 the tests pass whether or not pytest was started with it.
 """
 
+import copy
 import hashlib
 import json
 import os
@@ -203,8 +204,17 @@ def test_cell_schema(comparison):
             for key in ("construction", "optimize", "sample"):
                 assert arm[f"{key}_seconds"] > 0
             if name == "integrated":
-                assert {"raw", "capped_I_median", "naive"} <= set(elbos)
+                assert {
+                    "raw",
+                    "capped_I_median",
+                    "naive",
+                    "shrunk_two_level",
+                } <= set(elbos)
                 assert arm["elbo_sd"] > 0
+                assert arm["shrinkage_available"] is True
+                assert arm["shrinkage_noise_share"] is None or np.isfinite(
+                    arm["shrinkage_noise_share"]
+                )
             else:
                 assert {"estimated", "debiased_I_median"} <= set(elbos)
 
@@ -390,6 +400,7 @@ def test_summary_reports_the_biases_and_the_criterion_3_gates(comparison):
             )
             for interval in (
                 integrated["bias"]["raw"],
+                integrated["bias"]["shrunk_two_level"],
                 original["bias"]["debiased_I_median"],
                 integrated["kl_gap"],
                 original["kl_gap"],
@@ -400,11 +411,141 @@ def test_summary_reports_the_biases_and_the_criterion_3_gates(comparison):
             ):
                 assert interval["n"] == repetitions
                 assert interval["lo"] <= interval["median"] <= interval["hi"]
+            availability = integrated["shrinkage_availability"]
+            assert availability == {
+                "contributing_cells": repetitions,
+                "unavailable_cells": 0,
+                "not_recorded_cells": 0,
+            }
     text = (comparison["out"] / "summary.md").read_text(encoding="utf-8")
     assert "descriptive only" in text
     # The bias against `elbo_mc` is the criterion; the error against ln Z
     # is descriptive, and follows it.
     assert text.index("bias headline int") < text.index("err int")
+
+
+def test_integrated_report_omits_unavailable_numeric_value():
+    class Stack:
+        elbo = 1.0
+        elbo_details = {
+            "raw": 1.0,
+            "capped_I_median": 0.9,
+            "capped_E_median": 0.8,
+            "naive": 0.7,
+            "shrunk_two_level": None,
+            "shrinkage_noise_share": None,
+        }
+
+    elbos, available, share = harness.integrated_elbo_report(Stack())
+    assert "shrunk_two_level" not in elbos
+    assert available is False
+    assert share is None
+    encoded = json.dumps(
+        {
+            "elbos": elbos,
+            "shrinkage_available": available,
+            "shrinkage_noise_share": share,
+        }
+    )
+    assert '"shrinkage_noise_share": null' in encoded
+
+
+def _without_shrinkage_fields(results):
+    """Copy cells as a historical result that predates shrinkage."""
+    rows = copy.deepcopy(results["cells"])
+    for row in rows:
+        integrated = row["arms"].get("integrated")
+        if integrated is None:
+            continue
+        integrated["elbos"].pop("shrunk_two_level", None)
+        integrated["bias"].pop("shrunk_two_level", None)
+        integrated["metrics"].pop("elbo_err_shrunk_two_level", None)
+        integrated.pop("shrinkage_available", None)
+        integrated.pop("shrinkage_noise_share", None)
+    return rows
+
+
+def _without_shrinkage_summary(summary):
+    """Copy a summary with only the pre-shrinkage fields."""
+    result = copy.deepcopy(summary)
+    for condition in result["conditions"]:
+        for entry in condition["M"]:
+            integrated = entry["arms"].get("integrated")
+            if integrated is None:
+                continue
+            integrated["bias"].pop("shrunk_two_level", None)
+            integrated.pop("shrinkage_availability", None)
+    return result
+
+
+def test_added_summary_uses_an_independent_bootstrap_stream(comparison):
+    results = comparison["results"]
+    settings = results["settings"]
+    seed = settings["seed"]
+    current_rng = np.random.default_rng(seed)
+    historical_rng = np.random.default_rng(seed)
+    current = harness.build_summary(
+        copy.deepcopy(results["cells"]),
+        results["single_run"],
+        settings,
+        current_rng,
+    )
+    historical = harness.build_summary(
+        _without_shrinkage_fields(results),
+        results["single_run"],
+        settings,
+        historical_rng,
+    )
+    assert _without_shrinkage_summary(current)["conditions"] == (
+        _without_shrinkage_summary(historical)["conditions"]
+    )
+    assert (
+        current_rng.bit_generator.state == historical_rng.bit_generator.state
+    )
+    for condition in historical["conditions"]:
+        for entry in condition["M"]:
+            availability = entry["arms"]["integrated"][
+                "shrinkage_availability"
+            ]
+            assert availability["contributing_cells"] == 0
+            assert availability["unavailable_cells"] == 0
+            assert availability["not_recorded_cells"] == entry["cells"]
+
+
+def test_summary_counts_unavailable_shrinkage_cells(comparison):
+    results = comparison["results"]
+    first_condition = results["cells"][0]["condition"]
+    first_M = results["cells"][0]["M"]
+    rows = [
+        copy.deepcopy(row)
+        for row in results["cells"]
+        if row["condition"] == first_condition and row["M"] == first_M
+    ]
+    for row in rows:
+        integrated = row["arms"]["integrated"]
+        integrated["elbos"].pop("shrunk_two_level", None)
+        integrated["bias"].pop("shrunk_two_level", None)
+        integrated["metrics"].pop("elbo_err_shrunk_two_level", None)
+        integrated["shrinkage_available"] = False
+        integrated["shrinkage_noise_share"] = None
+    settings = copy.deepcopy(results["settings"])
+    settings["M"] = [first_M]
+    settings["repetitions"] = [len(rows)]
+    summary = harness.build_summary(
+        rows,
+        {first_condition: results["single_run"][first_condition]},
+        settings,
+        np.random.default_rng(settings["seed"]),
+    )
+    integrated = summary["conditions"][0]["M"][0]["arms"]["integrated"]
+    assert integrated["bias"]["shrunk_two_level"]["n"] == 0
+    assert integrated["shrinkage_availability"] == {
+        "contributing_cells": 0,
+        "unavailable_cells": len(rows),
+        "not_recorded_cells": 0,
+    }
+    text = harness.summary_markdown(summary)
+    assert f"(0 / {len(rows)} / 0)" in text
 
 
 def test_equivalence_tests_cover_every_cell_set(comparison):

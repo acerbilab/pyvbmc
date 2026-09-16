@@ -42,6 +42,7 @@ and stack them:
    print(stacked.elbo)                       # headline stacked ELBO
    print(stacked.elbo_sd)                    # uncertainty of the raw estimate
    print(stacked.elbo_details["raw"])
+   print(stacked.elbo_details["shrunk_two_level"])
 
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
 walks through this on a bimodal target.
@@ -90,6 +91,19 @@ it does not remove every source of bias.
      - Baseline that gives every retained run equal total weight and keeps
        that run's original internal component weights. It inherits errors in
        the input runs and is not a bound on the optimized ELBO.
+   * - ``shrunk_two_level``
+     - Empirical-Bayes estimate that first shrinks component expected
+       log-joints within each retained run using their full GP covariance,
+       then shifts each run by its shrunken run-level estimate. It uses the
+       selected stacking weights and the same final entropy as ``raw``.
+       ``None`` means finite input statistics led to a numerically undefined
+       calculation; :meth:`~pyvbmc.svbmc.SVBMC.optimize` emits a
+       ``RuntimeWarning`` and leaves every other report value available.
+   * - ``shrinkage_noise_share``
+     - Diagnostic ratio of estimated noise to component spread, averaged over
+       runs using their selected mixture masses. It can exceed one and is
+       ``None`` when shrinkage is unavailable or no run with positive spread
+       has positive selected mass.
    * - ``headline_method``
      - ``"raw"`` for a noiseless stack or ``"capped_I_median"`` for a noisy
        stack.
@@ -113,6 +127,12 @@ variance with the GP quadrature uncertainty at the selected weights. It
 describes the uncapped ``raw`` value. It excludes selection bias and does not
 propagate the median cap, so it must not be interpreted as defining a
 calibrated confidence interval for a capped headline.
+
+``shrunk_two_level`` is an additional diagnostic estimate for both noisy and
+noiseless stacks. It relies on the GP uncertainty estimates saved in
+``I_sk`` and ``J_sjk``. Shrinkage can reduce selection bias, but it does not
+guarantee removal of bias. ``elbo_sd`` describes ``raw`` and is not an
+uncertainty interval for the shrunken estimate.
 
 By default, the keyword-only constructor argument ``noisy=None`` reads the
 noise status recorded by each retained posterior. Older posteriors without

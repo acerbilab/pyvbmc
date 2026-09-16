@@ -78,7 +78,12 @@ def test_matches_reference(group, mode):
     np.testing.assert_allclose(
         stacked.elbo_sd, reference["elbo_sd"], **TOLERANCE
     )
-    assert set(stacked.elbo_details) == set(reference["elbo_details"])
+    assert set(stacked.elbo_details) == set(reference["elbo_details"]) | {
+        "shrunk_two_level",
+        "shrinkage_noise_share",
+    }
+    assert np.isfinite(stacked.elbo_details["shrunk_two_level"])
+    assert np.isfinite(stacked.elbo_details["shrinkage_noise_share"])
     for key, expected in reference["elbo_details"].items():
         actual = stacked.elbo_details[key]
         if key == "noise_status_source":

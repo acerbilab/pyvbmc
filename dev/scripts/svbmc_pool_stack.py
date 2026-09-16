@@ -35,6 +35,13 @@ posterior itself is from the target, in evidence units. The error against
 column: it adds the estimator's bias to that gap and so cannot rank
 estimators.
 
+Integrated-arm cells record the additive ``shrunk_two_level`` estimate when
+its numerical calculation is available, plus ``shrinkage_available`` and the
+nullable ``shrinkage_noise_share`` diagnostic. Summaries report its bias and
+the numbers of contributing, unavailable and older unrecorded cells. Its
+bootstrap uses an independent deterministic stream, so adding it does not
+move historical intervals or paired checks.
+
 Usage. ``TORCH_PATH`` is the Torch overlay recorded in
 ``dev/experiments/svbmc_pool/baseline_environment.json``, the only Torch on
 the campaign's machine, so every invocation that runs a cell needs it::
@@ -195,6 +202,9 @@ ENTROPY_REF_STREAM = 11
 #: integrated headline may grow from the smallest ``M`` to the largest.
 GROWTH_BOUND = 0.5
 BOOTSTRAP_RESAMPLES = 10_000
+#: Independent summary stream for the additive shrinkage estimator. Keeping
+#: it separate preserves every historical bootstrap draw and paired check.
+SHRINKAGE_BOOTSTRAP_STREAM = 31
 #: Criterion 2 of the plan: the metrics tested for equivalence, and the
 #: level of the Holm correction over all condition-and-``M`` cells.
 TEST_METRICS = ("mmtv", "gskl")
@@ -660,6 +670,23 @@ def stacked_outcome(problem, reference, samples, elbos, seed, arm):
     }
 
 
+def integrated_elbo_report(stacked):
+    """Numeric ELBOs and nullable shrinkage diagnostics for one stack."""
+    details = stacked.elbo_details
+    elbos = {
+        "headline": float(stacked.elbo),
+        "raw": float(details["raw"]),
+        "capped_I_median": float(details["capped_I_median"]),
+        "capped_E_median": float(details["capped_E_median"]),
+        "naive": float(details["naive"]),
+    }
+    available = details["shrunk_two_level"] is not None
+    if available:
+        elbos["shrunk_two_level"] = float(details["shrunk_two_level"])
+    share = details["shrinkage_noise_share"]
+    return elbos, bool(available), None if share is None else float(share)
+
+
 def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
     """One cell of the integrated arm, in this process.
 
@@ -687,17 +714,14 @@ def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
     samples = stacked.sample(N_DRAWS)
     sample_seconds = time.perf_counter() - started
     details = stacked.elbo_details
+    elbos, shrinkage_available, shrinkage_noise_share = integrated_elbo_report(
+        stacked
+    )
     outcome = stacked_outcome(
         problem,
         reference,
         samples,
-        {
-            "headline": float(stacked.elbo),
-            "raw": float(details["raw"]),
-            "capped_I_median": float(details["capped_I_median"]),
-            "capped_E_median": float(details["capped_E_median"]),
-            "naive": float(details["naive"]),
-        },
+        elbos,
         cell_seed,
         "integrated",
     )
@@ -716,6 +740,8 @@ def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
             "gp_sd": float(details["gp_sd"]),
             "noisy": bool(details["noisy"]),
             "noise_status_source": list(details["noise_status_source"]),
+            "shrinkage_available": shrinkage_available,
+            "shrinkage_noise_share": shrinkage_noise_share,
             "construction_seconds": construction_seconds,
             "optimize_seconds": optimize_seconds,
             "sample_seconds": sample_seconds,
@@ -1542,7 +1568,9 @@ def headline_bias_growth(entries):
     }
 
 
-def cell_summary(rows, rng, resamples=BOOTSTRAP_RESAMPLES):
+def cell_summary(
+    rows, rng, resamples=BOOTSTRAP_RESAMPLES, *, shrinkage_rng=None
+):
     """The arms a cell set ran, their paired differences and the ratios.
 
     ``arms_present`` names the arms every cell of the set ran; the paired
@@ -1573,12 +1601,41 @@ def cell_summary(rows, rng, resamples=BOOTSTRAP_RESAMPLES):
             "optimize_seconds",
         ):
             entry[key] = boot(arm_field(rows, arm, key))
+        variants = sorted(
+            {v for row in rows for v in row["arms"][arm]["bias"]}
+            - {"shrunk_two_level"}
+        )
         entry["bias"] = {
             variant: boot(bias_values(rows, arm, variant))
-            for variant in sorted(
-                {v for row in rows for v in row["arms"][arm]["bias"]}
-            )
+            for variant in variants
         }
+        if arm == "integrated":
+            outcomes = [row["arms"][arm] for row in rows]
+            recorded = [
+                outcome
+                for outcome in outcomes
+                if "shrinkage_available" in outcome
+            ]
+            if recorded:
+                if shrinkage_rng is None:
+                    shrinkage_rng = np.random.default_rng(
+                        SHRINKAGE_BOOTSTRAP_STREAM
+                    )
+                entry["bias"]["shrunk_two_level"] = bootstrap_median(
+                    bias_values(rows, arm, "shrunk_two_level"),
+                    shrinkage_rng,
+                    resamples,
+                )
+            entry["shrinkage_availability"] = {
+                "contributing_cells": entry["bias"].get(
+                    "shrunk_two_level", {"n": 0}
+                )["n"],
+                "unavailable_cells": sum(
+                    outcome.get("shrinkage_available") is False
+                    for outcome in outcomes
+                ),
+                "not_recorded_cells": len(outcomes) - len(recorded),
+            }
         summary["arms"][arm] = entry
     summary["criterion3"] = headline_bias_gate(summary["arms"])
     if set(present) == set(ARMS):
@@ -1623,6 +1680,9 @@ def build_summary(rows, singles, settings, rng):
     """
     resamples = int(setting(settings, "bootstrap_resamples"))
     boot = partial(bootstrap_median, rng=rng, resamples=resamples)
+    shrinkage_rng = np.random.default_rng(
+        [int(settings["seed"]), SHRINKAGE_BOOTSTRAP_STREAM]
+    )
     conditions = []
     for condition in dict.fromkeys(row["condition"] for row in rows):
         here = [row for row in rows if row["condition"] == condition]
@@ -1631,7 +1691,10 @@ def build_summary(rows, singles, settings, rng):
             "M": [
                 dict(
                     cell_summary(
-                        [r for r in here if r["M"] == M], rng, resamples
+                        [r for r in here if r["M"] == M],
+                        rng,
+                        resamples,
+                        shrinkage_rng=shrinkage_rng,
                     ),
                     M=M,
                 )
@@ -1776,27 +1839,42 @@ def summary_markdown(summary):
             f"max\\|dw\\| {cell(aggregate['max_abs_dw'], 4)}.",
             "",
             "Bias of every reported ELBO against `elbo_mc` (criterion 3), "
-            "and the KL gap of the stacked posterior. `d(head-est)` is the "
+            "and the KL gap of the stacked posterior. The shrinkage column "
+            "shows its contributing and numerically unavailable cell counts; "
+            "older cells that did not record shrinkage are counted separately. "
+            "`d(head-est)` is the "
             "paired difference of the two arms' headline biases; the last "
             "column is the criterion's gate, `|median bias headline| <= "
             "|median bias estimated|`.",
             "",
-            "| M | cells | bias headline int | bias raw int | "
+            "| M | cells | bias headline int | bias raw int | bias shrink int "
+            "(contributing / unavailable / not recorded) | "
             "bias estimated orig | bias debiased_I orig | d(head-est) | "
             "KL gap int | KL gap orig | not worse |",
-            "|---|---|---|---|---|---|---|---|---|---|",
+            "|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for entry in condition["M"]:
             integrated = entry["arms"]["integrated"]
             original = entry["arms"].get("original")
             gate = entry["criterion3"]["headline_bias_not_worse"]
             lines.append(
-                "| {M} | {cells} | {bh} | {br} | {be} | {bd} | {dp} | "
+                "| {M} | {cells} | {bh} | {br} | {bs} ({sc} / {su} / {so}) "
+                "| {be} | {bd} | {dp} | "
                 "{ki} | {ko} | {gate} |".format(
                     M=entry["M"],
                     cells=entry["cells"],
                     bh=cell(integrated["bias"]["headline"]),
                     br=cell(integrated["bias"]["raw"]),
+                    bs=optional(integrated, "bias", "shrunk_two_level"),
+                    sc=integrated["shrinkage_availability"][
+                        "contributing_cells"
+                    ],
+                    su=integrated["shrinkage_availability"][
+                        "unavailable_cells"
+                    ],
+                    so=integrated["shrinkage_availability"][
+                        "not_recorded_cells"
+                    ],
                     be=optional(original, "bias", "estimated"),
                     bd=optional(original, "bias", "debiased_I_median"),
                     dp=optional(

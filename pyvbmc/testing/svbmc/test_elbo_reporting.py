@@ -18,7 +18,7 @@ torch = pytest.importorskip("torch")
 from pyvbmc.svbmc import SVBMC  # noqa: E402
 from pyvbmc.svbmc import _runtime_tips  # noqa: E402
 from pyvbmc.svbmc._tip_catalog import TIPS  # noqa: E402
-from pyvbmc.testing.svbmc._fixtures import load_vp  # noqa: E402
+from pyvbmc.testing.svbmc._fixtures import load_group, load_vp  # noqa: E402
 from pyvbmc.testing.svbmc.test_svbmc_filters import make_vp  # noqa: E402
 
 
@@ -204,6 +204,198 @@ def test_final_report_uses_fresh_count_and_returned_weights(monkeypatch):
     assert stacked.elbo_details["raw"] == pytest.approx(5.0)
     assert stacked.elbo_details["entropy_sd"] == pytest.approx(0.3)
     assert stacked.elbo_details["raw_sd"] == stacked.elbo_sd
+
+
+@pytest.mark.parametrize("noisy", [False, True])
+@pytest.mark.parametrize("version", ["all-weights", "posterior-only", "ns"])
+def test_shrinkage_is_additive_for_every_mode_and_noise_status(
+    monkeypatch, noisy, version
+):
+    runs = [
+        _run(weights=(0.25, 0.75), I=[[0.0, 2.0]], J=[np.eye(2)]),
+        _run(
+            weights=(0.8, 0.2),
+            I=[[5.0, 9.0]],
+            J=[2.0 * np.eye(2)],
+            seed=2,
+        ),
+    ]
+    for vp in runs:
+        vp.stats.pop("elbo_sd", None)
+    input_stats = [copy.deepcopy(vp.stats) for vp in runs]
+    input_states = [copy.deepcopy(vp.rng.bit_generator.state) for vp in runs]
+    stacked = SVBMC(runs, M_min=2, noisy=noisy, seed=101)
+    state = copy.deepcopy(stacked.rng.bit_generator.state)
+    selected = (
+        stacked._naive_weights if version == "ns" else [0.1, 0.2, 0.3, 0.4]
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=selected, entropy=1.25
+    )
+
+    stacked.optimize(
+        version=version, n_samples=2, max_steps=1, n_samples_final=3
+    )
+
+    details = stacked.elbo_details
+    assert np.isfinite(details["shrunk_two_level"])
+    assert np.isfinite(details["shrinkage_noise_share"])
+    assert details["raw"] == pytest.approx(
+        np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.25
+    )
+    assert details["headline_method"] == (
+        "capped_I_median" if noisy else "raw"
+    )
+    assert stacked.rng.bit_generator.state == state
+    for vp, stats, input_state in zip(runs, input_stats, input_states):
+        assert vp.stats.keys() == stats.keys()
+        for key in ("I_sk", "J_sjk"):
+            np.testing.assert_array_equal(vp.stats[key], stats[key])
+        assert vp.rng.bit_generator.state == input_state
+        assert not hasattr(vp, "gp")
+        assert not hasattr(vp, "vbmc")
+
+
+@pytest.mark.parametrize("group", ["bounded_D2", "corr_D3", "upstream_GMM"])
+def test_shrinkage_receives_original_space_inputs_and_final_entropy(
+    monkeypatch, group
+):
+    import pyvbmc.svbmc.svbmc as module
+
+    runs = load_group(group, rng=0)[0]
+    stacked = SVBMC(runs, M_min=1, noisy=False, seed=102)
+    selected = stacked._naive_weights.copy()
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=selected, entropy=2.75
+    )
+    captured = {}
+
+    def shrink(I_sk, J_sjk, corrected, own, weights, entropy):
+        captured.update(
+            corrected=[np.array(x, copy=True) for x in corrected],
+            own=[np.array(x, copy=True) for x in own],
+            weights=np.array(weights, copy=True),
+            entropy=entropy,
+        )
+        return 123.0 + entropy, 0.5
+
+    monkeypatch.setattr(module, "_two_level_shrinkage", shrink)
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    offsets = np.concatenate([[0], np.cumsum(stacked.K)])
+    for m, vp in enumerate(stacked.vp_list):
+        np.testing.assert_array_equal(
+            captured["corrected"][m],
+            stacked.I_corrected[0, offsets[m] : offsets[m + 1]],
+        )
+        np.testing.assert_array_equal(
+            captured["own"][m], np.ravel(vp.w) / np.sum(vp.w)
+        )
+    np.testing.assert_array_equal(captured["weights"], stacked.w.ravel())
+    assert captured["entropy"] == 2.75
+    assert stacked.elbo_details["shrunk_two_level"] == 125.75
+    assert stacked.elbo_details["shrinkage_noise_share"] == 0.5
+
+
+def test_shrinkage_receives_only_runs_retained_by_both_filters(monkeypatch):
+    import pyvbmc.svbmc.svbmc as module
+
+    retained = [_run(I=[[1.0]], seed=1), _run(I=[[3.0]], seed=2)]
+    unstable = _run(I=[[1000.0]], seed=3)
+    unstable.stats["stable"] = False
+    imprecise = _run(I=[[2000.0]], J=[[[6.0]]], seed=4)
+    stacked = SVBMC(
+        [*retained, unstable, imprecise],
+        M_min=2,
+        noisy=False,
+        seed=105,
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.25, 0.75], entropy=0.0
+    )
+    captured = {}
+
+    def shrink(I_sk, J_sjk, corrected, own, weights, entropy):
+        captured["I_sk"] = [np.array(x, copy=True) for x in I_sk]
+        captured["corrected"] = [np.array(x, copy=True) for x in corrected]
+        return 2.0, None
+
+    monkeypatch.setattr(module, "_two_level_shrinkage", shrink)
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    assert stacked.vp_list == retained
+    assert len(captured["I_sk"]) == len(retained)
+    np.testing.assert_array_equal(captured["I_sk"][0], [[1.0]])
+    np.testing.assert_array_equal(captured["I_sk"][1], [[3.0]])
+    assert all(np.max(x) < 1000.0 for x in captured["corrected"])
+
+
+def test_repeated_optimization_uses_current_selected_weights(monkeypatch):
+    stacked = SVBMC(
+        [
+            _run(weights=(0.5, 0.5), I=[[0.0, 2.0]], J=[np.eye(2)]),
+            _run(weights=(0.5, 0.5), I=[[6.0, 10.0]], J=[np.eye(2)], seed=2),
+        ],
+        M_min=2,
+        noisy=False,
+        seed=103,
+    )
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.7, 0.1, 0.1, 0.1], entropy=0.5
+    )
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+    first = stacked.elbo_details["shrunk_two_level"]
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.1, 0.1, 0.1, 0.7], entropy=0.5
+    )
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+    second = stacked.elbo_details["shrunk_two_level"]
+    assert first != second
+
+
+@pytest.mark.parametrize(
+    "I,J,warning",
+    [
+        (
+            [[0.0, 2.0]],
+            [[[0.0, -1.0], [-1.0, 0.0]]],
+            "singular within-run linear solve",
+        ),
+        (
+            [[0.0, 2.0]],
+            [[[-1.0, 0.0], [0.0, -1.0]]],
+            "negative run-level variance",
+        ),
+        (
+            [[1e308, -1e308], [-1e308, 1e308]],
+            np.zeros((2, 2, 2)),
+            "nonfinite component covariance",
+        ),
+    ],
+)
+def test_undefined_shrinkage_preserves_existing_report(
+    monkeypatch, I, J, warning
+):
+    run = _run(weights=(0.5, 0.5), I=I, J=J, Ns=len(I), seed=1)
+    original_I = run.stats["I_sk"].copy()
+    original_J = run.stats["J_sjk"].copy()
+    stacked = SVBMC([run], M_min=1, noisy=False, seed=104)
+    _fixed_final_evaluation(
+        monkeypatch, stacked, selected=[0.5, 0.5], entropy=1.0
+    )
+
+    with pytest.warns(RuntimeWarning, match=warning):
+        stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    assert stacked.elbo_details["shrunk_two_level"] is None
+    assert stacked.elbo_details["shrinkage_noise_share"] is None
+    assert stacked.elbo_details["raw"] == pytest.approx(
+        np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.0
+    )
+    assert stacked.elbo == stacked.elbo_details["raw"]
+    assert np.isfinite(stacked.elbo_sd)
+    np.testing.assert_array_equal(run.stats["I_sk"], original_I)
+    np.testing.assert_array_equal(run.stats["J_sjk"], original_J)
 
 
 def test_naive_mode_reuses_final_evaluation_and_original_weights(monkeypatch):
