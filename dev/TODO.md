@@ -102,7 +102,14 @@ records its execution.
   heavy-tailed one, a `cap_amount` large against `elbo_sd` being the
   sign; on noiseless targets up to about 0.1 nats at `M = 32`, within
   0.05 through `M = 16`); and that the raw value is not an upper bound
-  on the truth. If it ships, the
+  on the truth. The wording goes where the headline is described
+  today, in qualitative terms only: the `SVBMC` docstring (`elbo`,
+  `elbo_sd`), the "ELBO reporting" section of
+  `docsrc/source/api/classes/svbmc.rst`, the FAQ entry "Can I combine
+  the posteriors of several runs?" and Example 7 (the cell after
+  `optimize()` and the conclusions). No user-facing text states a
+  single run's own optimism, so the S-VBMC wording has nothing on the
+  VBMC side to point at until the item below adds it. If it ships, the
   note's "Decision" section lists the change: a headline method in
   `pyvbmc/svbmc/svbmc.py` from the reference
   `dev/scripts/svbmc_shrink_elbo.py`, applied at the selected weights
@@ -250,7 +257,10 @@ records its execution.
   reads only a run's own `I_sk`, `J_sjk` and weights and would apply
   to a single run's headline. The PI (2026-09-15): a question separate
   from S-VBMC, whose requirement is not to add bias to its inputs; not
-  part of 1.5.
+  part of 1.5. No user-facing text states this optimism today (the FAQ
+  and the noisy-target documentation are silent); a sentence there
+  belongs to this item, and the S-VBMC caveat of the debiasing item
+  above will point at it.
 
 ## After PyVBMC 1.5 is published
 
