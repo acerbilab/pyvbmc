@@ -209,10 +209,21 @@ and, in the KL gap, on the Gaussian mixture and Student (report,
 section "Re-optimizing on the shrunken estimates").
 
 The class keeps the raw value and the cap in `elbo_details` and adds
-the noise share as a diagnostic. The documentation must state that the
-headline can remain optimistic (in our benchmarks, by about 0.8 nats on a
-high-noise real-data target and pessimistic by up to 0.4 nats on a
-heavy-tailed one), and that the raw value is not an upper bound on the truth.
+the noise share as a diagnostic. The documentation must state the two
+contributions to the bias of a reported value separately. The first is
+VBMC's own: what the variational optimization builds into each run's
+ELBO, which S-VBMC inherits and is not asked to remove (in our
+benchmarks 0.1 to 0.7 nats of optimism on the typical noisy targets,
+0.2 nats of pessimism on the heavy-tailed one, within 0.03 on the
+noiseless ones; a separate item). The second is S-VBMC's: what
+stacking adds on top of its inputs (the raw value +0.07 to +0.36 nats
+at M = 3 to 5 and +0.36 to +0.79 at M = 32 on the noisy targets,
+growing with M; the two-level shrinkage within 0.23 nats at every M;
+the cap nothing added but up to 0.4 nats of the inputs' own optimism
+removed on the typical noisy targets and 0.8 to 1.6 on the
+heavy-tailed one; on noiseless targets up to about 0.1 nats at
+M = 32 and within 0.05 through M = 16). And that the raw value is not
+an upper bound on the truth.
 
 Whether the switch ships in 1.5, or 1.5 keeps the cap with that caveat
 and switches later, is the next decision. The change is contained: a
@@ -239,14 +250,14 @@ that pin the capped headline, and the user documentation.
   M = 16; the two-level shrinkage adds −0.15 to +0.19 nats and its
   residual on multisensory noise 3 grows to +0.86, where the cap
   stays at +0.45. The refinement above remains the untested one.
-- A stack of 32 runs of the noiseless multisensory control is
-  optimistic by 0.14 nats, 0.11 above its inputs' bias and 0.07 above
-  its best input, on every subset. No cap applies to a noiseless
-  stack, and the shrinkage moves the value to +0.18, since the GP
-  attributes only 0.08 to 0.09 of the components' spread to noise on
-  that target. The optimism that stacking adds is not confined to the
-  targets the class treats as noisy; through M = 16 the controls'
-  headlines stay within 0.07.
+- On the noiseless multisensory control, stacking 32 runs adds 0.11
+  nats of optimism to the 0.03 its inputs carry (the raw value +0.14
+  against the truth, 0.07 above the best input), on every subset. No
+  cap applies to a noiseless stack, and the shrinkage adds 0.14
+  rather than 0.11, since the GP attributes only 0.08 to 0.09 of the
+  components' spread to noise on that target. The optimism that
+  stacking adds is not confined to the targets the class treats as
+  noisy; through M = 16 the controls' added bias stays within 0.05.
 - The subsets of one target and one M share runs (ten subsets of 16
   draw 160 slots from 100 runs), so intervals over subsets are
   optimistic, and the benchmark is one pool of runs at one seed.

@@ -55,9 +55,9 @@ improves, the raw stacked ELBO overshoots by 0.7 to 1.45 nats on the
 typical noisy conditions and adds 0.36 to 0.79 to its inputs' bias,
 the cap stays within 0.45 there and lands 1.85 below the reference on
 Student D8, the two-level shrinkage stays within 0.86 everywhere and
-adds −0.15 to +0.19; and a stack of 32 runs of the noiseless
-multisensory control is optimistic by 0.14 nats, 0.11 above its
-inputs, which no estimate scored here removes (section "The
+adds −0.15 to +0.19; and on the noiseless multisensory control,
+stacking 32 runs adds 0.11 nats of optimism to the 0.03 its inputs
+carry, which no estimate scored here removes (section "The
 integrated arm at `M = 32`").
 
 Tracked outputs:
@@ -886,26 +886,26 @@ the stack's components and over the runs' levels:
   ring's cells and moves its median by 0.30 (+0.84 to +0.54), by at
   most 0.02 elsewhere.
 - **A noiseless control shows the winner's curse at this size.** On
-  the noiseless multisensory control the raw stacked ELBO is +0.14 at
-  `M = 32` (+0.03 at `M = 2`, +0.05 at `M = 16`): 0.11 nats [0.10,
-  0.13] above the mean bias of its inputs (+0.03), positive on every
-  cell, and 0.07 above the input with the highest reported ELBO
-  (+0.07). No cap applies on a noiseless stack, so this is the
-  headline; and the shrinkage moves it further from the reference, to
-  +0.18 (the within-run full form raises the value by 0.04 at these
-  weights; the run-level term leaves it at +0.14), since the GP
-  attributes 0.09 of the components' spread to noise within a run and
-  0.08 over the stack, so the estimator sees little to remove. The
-  stacked posterior is 0.15 nats from the target (its KL gap; gsKL
-  0.03), and the reported value is within 0.01 of `ln Z` by
-  cancellation. Through `M = 16` both controls' headlines were within
-  0.07 and every estimate within 0.09; with 32 runs the selection
-  among their components
-  on the small errors of GPs the class treats as noiseless (the runs
-  of this real-data target carry a little noise, the noise share
-  0.085 in the median over their cells) becomes visible, and no
-  estimate scored here removes it. The noiseless GMM stays within
-  0.01 for every estimate.
+  the noiseless multisensory control, stacking 32 runs adds 0.11 nats
+  [0.10, 0.13] of optimism to the 0.03 its input runs carry, positive
+  on every cell (the raw stacked ELBO is +0.14 against the reference,
+  +0.03 at `M = 2` and +0.05 at `M = 16`, and 0.07 above the input
+  with the highest reported ELBO, +0.07). No cap applies on a
+  noiseless stack, so this is the headline; and the shrinkage adds
+  0.14 rather than 0.11 (the within-run full form raises the value by
+  0.04 at these weights; the run-level term leaves it unchanged),
+  since the GP attributes 0.09 of the components' spread to noise
+  within a run and 0.08 over the stack, so the estimator sees little
+  to remove. The stacked posterior is 0.15 nats from the target (its
+  KL gap; gsKL 0.03), and the reported value is within 0.01 of `ln Z`
+  by cancellation. Through `M = 16` every estimate on both controls
+  added within 0.05 (the raw headline within 0.07 of the reference);
+  with 32 runs the selection among their components on the small
+  errors of GPs the class treats as noiseless (the runs of this
+  real-data target carry a little noise, the noise share 0.085 in the
+  median over their cells) becomes visible, and no estimate scored
+  here removes it. On the noiseless GMM every estimate adds within
+  0.01.
 
 What `M = 32` adds to the reading: the ordering of the estimates
 through `M = 16` holds (the hybrid, then the two-level shrinkage, then

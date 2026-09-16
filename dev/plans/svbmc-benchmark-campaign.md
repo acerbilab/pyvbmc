@@ -1876,10 +1876,15 @@ draft had left open:
   +0.06 / +0.21 / +0.10 / −0.06, adding −0.15 to +0.19, the cap closer
   on the multisensory conditions by 0.41 and 0.24; the run-level term
   removes 15 to 55 % of the addition; the hybrid's worst case 0.45;
-  and the noiseless multisensory control at this size is optimistic
-  by 0.14 nats, 0.11 above its inputs, which no estimate removes. The
-  campaign item of `dev/TODO.md` closes; the two decisions of the
-  debiasing item remain.
+  and on the noiseless multisensory control stacking 32 runs adds
+  0.11 nats of optimism to the 0.03 its inputs carry, which no
+  estimate removes. The campaign item of `dev/TODO.md` closes; the two
+  decisions of the debiasing item remain. The PI's reading of the
+  same day: the two contributions to a reported value's bias are to
+  be stated separately in every document, VBMC's own (what each run
+  carries, the separate item) and what S-VBMC adds; the headline
+  note's decision paragraph and the TODO's decision (2) were restated
+  that way.
 
 ## Execution tracking
 

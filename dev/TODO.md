@@ -79,11 +79,19 @@ records its execution.
   worklog records what changed); the next step is decision (1).
   Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
   the component-median cap; (2) the headline's user-facing caveat
-  either way (the shrinkage remains optimistic by about 0.8 nats on a
-  high-noise real-data target and pessimistic by up to 0.4 on a
-  heavy-tailed one; the cap sits 1 to 1.8 nats below the truth on
-  heavy tails, a `cap_amount` large against `elbo_sd` being the sign;
-  the raw value is not an upper bound on the truth). If it ships, the
+  either way, stating the two contributions to the bias separately:
+  VBMC's own, which each input run carries and S-VBMC inherits (0.1 to
+  0.7 nats of optimism on the typical noisy targets, 0.2 of pessimism
+  on the heavy-tailed one, within 0.03 on the noiseless ones; the
+  separate item below), and what S-VBMC adds to it (the raw value
+  +0.07 to +0.36 nats at `M` = 3 to 5 and +0.36 to +0.79 at `M = 32`
+  on the noisy targets; the two-level shrinkage within 0.23 at every
+  `M`; the cap nothing added but up to 0.4 nats of the inputs' own
+  optimism removed on the typical noisy targets and 0.8 to 1.6 on the
+  heavy-tailed one, a `cap_amount` large against `elbo_sd` being the
+  sign; on noiseless targets up to about 0.1 nats at `M = 32`, within
+  0.05 through `M = 16`); and that the raw value is not an upper bound
+  on the truth. If it ships, the
   note's "Decision" section lists the change: a headline method in
   `pyvbmc/svbmc/svbmc.py` from the reference
   `dev/scripts/svbmc_shrink_elbo.py`, applied at the selected weights
@@ -101,9 +109,10 @@ records its execution.
   estimator is still wanted. The stacking
   objective stays unchanged. The campaign's `M = 32` cells (the
   report's section "The integrated arm at `M = 32`") keep the ordering
-  of the estimates and add one observation for the caveat: a stack of
-  32 runs of the noiseless multisensory control is optimistic by 0.14
-  nats, 0.11 above its inputs, and no estimate removes it. See the
+  of the estimates and add one observation for the caveat: on the
+  noiseless multisensory control, stacking 32 runs adds 0.11 nats of
+  optimism to the 0.03 its inputs carry, and no estimate removes it.
+  See the
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
