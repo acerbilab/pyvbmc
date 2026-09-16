@@ -67,6 +67,11 @@ For the release overview, start with
   and automatic fitting, and the feasibility questions for release scope;
   the bounded feasibility check is done, with its result in
   [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
+- [PyMC setup budget and evaluation reuse](results/2026-09-16-pymc-setup-probe.md) —
+  Preapproval measurements of a capped gradient search and exact Hessian,
+  stopping rules, the prior-location guard, and three ways to use setup
+  observations at equal total evaluation budgets. Implementation is
+  approved and tracked in the plan's live implementation checklist.
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
   Two questions about the S-VBMC port, answered from the run-pool
   benchmark: it matches the standalone package (same weights and
@@ -236,7 +241,7 @@ plan and consolidated human summary.
   fallbacks, the structured `to_arviz` export, the `pymc >= 6.3` floor
   and the capability guards, save and load), what it rests on, the
   phased work with its executors, decisions and the execution record.
-  Pending approval; implementation runs on `dev-pymc-adapter`.
+  Approved 2026-09-16; implementation runs on `dev-pymc-adapter`.
 
 - [plans/stage4-torch-feasibility.md](plans/stage4-torch-feasibility.md) -
   Completed bounded PyTorch feasibility prototype: complete variational fits,
@@ -722,6 +727,17 @@ reason.
   environment in its gitignored `scripts/runs/LOCAL.md`). Outputs under
   `experiments/pymc_feasibility/`; the write-up is
   [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
+- `scripts/pymc_setup_probe.py` — preapproval setup and evaluation-reuse
+  experiments for the [PyMC adapter plan](plans/pymc-target-adapter.md).
+  Subcommands `a`, `references`, `b`, `check` and `summarize` compare
+  capped gradient searches, generate and assess sequential NUTS references,
+  run the three reuse arms at matched total budgets, verify derivatives
+  and cached observations, and publish compact evidence. It uses the
+  feasibility environment in `scripts/runs/LOCAL.md` and imports the
+  historical prototype's coordinate mapping without editing it. Raw
+  paths and draws stay under `scripts/runs/`; summaries belong under
+  `experiments/pymc_setup_probe/`. See the
+  [setup report](results/2026-09-16-pymc-setup-probe.md).
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only

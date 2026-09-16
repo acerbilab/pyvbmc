@@ -1,0 +1,3235 @@
+{
+  "sources": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "versions": {
+      "pymc": "6.3.2",
+      "pytensor": "3.3.1",
+      "arviz": "1.3.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "gpyreg": "1.2.1"
+    },
+    "pyvbmc_commit": "741d635bd11431d800e70a50f56cfe5dafa31119",
+    "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "gpyreg_dirty": "",
+    "linker": "NumbaLinker",
+    "sha256": {
+      "dev\\scripts\\pymc_setup_probe.py": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f",
+      "dev\\scripts\\pymc_feasibility.py": "a7f0f12520b4bde78a72ca35ae226416faf19f2f216c53fdc8023cf63fca3bb2",
+      "pyvbmc\\vbmc\\vbmc.py": "7c9b9715c1a307a8533123103c8c57905acc32108ab105fd2e1c737f9a03e6bc",
+      "pyvbmc\\vbmc\\active_sample.py": "1175ffe230b3e634c69e2837a2e3c217bf6d23223cf0d67dc4572810ba29416b",
+      "pyvbmc\\function_logger\\function_logger.py": "5ef869c2d877307c296fe0829d115e6c0e831f00ba8e1c47ba4540dea3c9ec18"
+    }
+  },
+  "cases": [
+    {
+      "name": "vector",
+      "seed": 0,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.500089925739154,
+      "elbo_sd": 0.000504310257181318,
+      "elbo_error": 0.0006604744308020827,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.012851545980736215,
+        "max_mean_sd": 0.01229012702836102,
+        "covariance_relative_frobenius": 0.0230181508042144,
+        "gaussian_symmetric_kl": 0.00047593654926345074,
+        "max_marginal_w1_sd": 0.011720443383832836,
+        "mean_marginal_w1_sd": 0.010005533808955738
+      },
+      "seconds": 43.721718100016005,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -52.16961737964495,
+          -37.052859931562566
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 13,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 0,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 7,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50408249406143,
+      "elbo_sd": 0.0005062133620134208,
+      "elbo_error": -0.0033320938914727094,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.01238687105858313,
+        "max_mean_sd": 0.01170387946757775,
+        "covariance_relative_frobenius": 0.02592343018362886,
+        "gaussian_symmetric_kl": 0.00057595659105017,
+        "max_marginal_w1_sd": 0.017318003174463373,
+        "mean_marginal_w1_sd": 0.011020217819609662
+      },
+      "seconds": 44.8228391999146,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 3,
+        "cached_calls": 7,
+        "value_range": [
+          -53.67046175995865,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 18,
+      "first_stable_iteration": 14,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 0,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 11,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50424840649633,
+      "elbo_sd": 0.0004621665599006057,
+      "elbo_error": -0.0034980063263745365,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.00908500241330296,
+        "max_mean_sd": 0.008919602301592968,
+        "covariance_relative_frobenius": 0.01936344932637987,
+        "gaussian_symmetric_kl": 0.0003314242015830998,
+        "max_marginal_w1_sd": 0.016313947024534786,
+        "mean_marginal_w1_sd": 0.010356140178864772
+      },
+      "seconds": 34.43402669997886,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 20,
+        "new_calls": 9,
+        "cached_calls": 11,
+        "value_range": [
+          -31036.402715035038,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 12,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "vector",
+      "seed": 1,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 7,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.510804166527066,
+      "elbo_sd": 0.00045835373859367834,
+      "elbo_error": -0.010053766357110305,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.019022602239690614,
+        "max_mean_sd": 0.018958499289563623,
+        "covariance_relative_frobenius": 0.03229326611496245,
+        "gaussian_symmetric_kl": 0.0009990845822561087,
+        "max_marginal_w1_sd": 0.018576308407802,
+        "mean_marginal_w1_sd": 0.012159464412459143
+      },
+      "seconds": 36.31410249997862,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 3,
+        "cached_calls": 7,
+        "value_range": [
+          -53.67046175995865,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 18,
+      "first_stable_iteration": 14,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 1,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 11,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.499195306523866,
+      "elbo_sd": 0.0005277590913378687,
+      "elbo_error": 0.0015550936460897447,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.012033795795762164,
+        "max_mean_sd": 0.011062350917717676,
+        "covariance_relative_frobenius": 0.028838816589869806,
+        "gaussian_symmetric_kl": 0.0006952183667637038,
+        "max_marginal_w1_sd": 0.011537001791645707,
+        "mean_marginal_w1_sd": 0.009582417208704992
+      },
+      "seconds": 57.101132999989204,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 20,
+        "new_calls": 9,
+        "cached_calls": 11,
+        "value_range": [
+          -31036.402715035038,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 12,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "vector",
+      "seed": 1,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.49874886344793,
+      "elbo_sd": 0.000511729714302175,
+      "elbo_error": 0.002001536722026742,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.03050858718622549,
+        "max_mean_sd": 0.02376922832470375,
+        "covariance_relative_frobenius": 0.019307464301074724,
+        "gaussian_symmetric_kl": 0.0007376019414608397,
+        "max_marginal_w1_sd": 0.025451674551970123,
+        "mean_marginal_w1_sd": 0.019417649022412903
+      },
+      "seconds": 39.704966800054535,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -43.33505462647455,
+          -37.052859931562566
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 12,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 2,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 11,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50630786378874,
+      "elbo_sd": 0.0006274608951989329,
+      "elbo_error": -0.0055574636187856186,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.019875589714316674,
+        "max_mean_sd": 0.01826438962320633,
+        "covariance_relative_frobenius": 0.02843119194535451,
+        "gaussian_symmetric_kl": 0.0007795321407352082,
+        "max_marginal_w1_sd": 0.018087563145446076,
+        "mean_marginal_w1_sd": 0.01480759862442351
+      },
+      "seconds": 51.83827800001018,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 20,
+        "new_calls": 9,
+        "cached_calls": 11,
+        "value_range": [
+          -31036.402715035038,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 16,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "vector",
+      "seed": 2,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.495489470798304,
+      "elbo_sd": 0.0005374193465592912,
+      "elbo_error": 0.005260929371651457,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.015879051768099877,
+        "max_mean_sd": 0.01171754183107465,
+        "covariance_relative_frobenius": 0.012092865717620794,
+        "gaussian_symmetric_kl": 0.00023405411375769145,
+        "max_marginal_w1_sd": 0.016037591700627327,
+        "mean_marginal_w1_sd": 0.012056831877270482
+      },
+      "seconds": 45.170210899901576,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -48.7127610769597,
+          -37.052859931562566
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 13,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 2,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 7,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.49905819638874,
+      "elbo_sd": 0.0004858758911489403,
+      "elbo_error": 0.001692203781217927,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.02402144732404138,
+        "max_mean_sd": 0.02207876503471484,
+        "covariance_relative_frobenius": 0.027477502632658593,
+        "gaussian_symmetric_kl": 0.0008351734671942275,
+        "max_marginal_w1_sd": 0.02303200838638997,
+        "mean_marginal_w1_sd": 0.014979880381289654
+      },
+      "seconds": 47.64383889990859,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 3,
+        "cached_calls": 7,
+        "value_range": [
+          -53.67046175995865,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 18,
+      "first_stable_iteration": 14,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 3,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50440303829737,
+      "elbo_sd": 0.0004720925482934882,
+      "elbo_error": -0.0036526381274128994,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.011650079240477838,
+        "max_mean_sd": 0.007681458795532822,
+        "covariance_relative_frobenius": 0.022831782977043847,
+        "gaussian_symmetric_kl": 0.0004541787195718946,
+        "max_marginal_w1_sd": 0.012426866508928752,
+        "mean_marginal_w1_sd": 0.010739332107376149
+      },
+      "seconds": 50.496973200002685,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -47.195729576632644,
+          -37.052859931562566
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 13,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 3,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 7,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50551463129894,
+      "elbo_sd": 0.0004950572164110565,
+      "elbo_error": -0.004764231128980612,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.007401392165685036,
+        "max_mean_sd": 0.005587033068312012,
+        "covariance_relative_frobenius": 0.01903944388523374,
+        "gaussian_symmetric_kl": 0.0003047178305764245,
+        "max_marginal_w1_sd": 0.0179790616395764,
+        "mean_marginal_w1_sd": 0.011700360292410365
+      },
+      "seconds": 42.315217199968174,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 3,
+        "cached_calls": 7,
+        "value_range": [
+          -53.67046175995865,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 18,
+      "first_stable_iteration": 13,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 3,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 11,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50355451214522,
+      "elbo_sd": 0.000562613499063999,
+      "elbo_error": -0.002804111975265755,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.024997767990855218,
+        "max_mean_sd": 0.01977108364395853,
+        "covariance_relative_frobenius": 0.02222462136941886,
+        "gaussian_symmetric_kl": 0.000677709598610301,
+        "max_marginal_w1_sd": 0.019405232677724826,
+        "mean_marginal_w1_sd": 0.015002278723699048
+      },
+      "seconds": 43.68066270009149,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 20,
+        "new_calls": 9,
+        "cached_calls": 11,
+        "value_range": [
+          -31036.402715035038,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 17,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "vector",
+      "seed": 4,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 7,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50228256210624,
+      "elbo_sd": 0.00046011276245725563,
+      "elbo_error": -0.0015321619362822503,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.017186491084667993,
+        "max_mean_sd": 0.015061899684718641,
+        "covariance_relative_frobenius": 0.020109542594684844,
+        "gaussian_symmetric_kl": 0.0004433489490364317,
+        "max_marginal_w1_sd": 0.014985926841356082,
+        "mean_marginal_w1_sd": 0.011395405543154748
+      },
+      "seconds": 56.94551480002701,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 3,
+        "cached_calls": 7,
+        "value_range": [
+          -53.67046175995865,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 18,
+      "first_stable_iteration": 13,
+      "execution_source_sha256": "f0bd25e00cf446ca8719ce5390dafb7b0fce20c2f69c30c966bc51c890d9051e"
+    },
+    {
+      "name": "vector",
+      "seed": 4,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 11,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.49640285956662,
+      "elbo_sd": 0.0014940300034202126,
+      "elbo_error": 0.004347540603333755,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.01820459681861356,
+        "max_mean_sd": 0.014153467310300587,
+        "covariance_relative_frobenius": 0.03750355375374211,
+        "gaussian_symmetric_kl": 0.001160774384432465,
+        "max_marginal_w1_sd": 0.017405079223055616,
+        "mean_marginal_w1_sd": 0.014339466741152334
+      },
+      "seconds": 57.18213580001611,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 20,
+        "new_calls": 9,
+        "cached_calls": 11,
+        "value_range": [
+          -31036.402715035038,
+          -37.05285993156256
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "vector",
+      "seed": 4,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 14,
+      "setup_unique_finite_rows": 11,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -31036.402715035038,
+        -37.05285993156256
+      ],
+      "x0": [
+        [
+          0.5890950508829547,
+          -1.0264207376673193,
+          -0.38395767222609933
+        ]
+      ],
+      "plb": [
+        [
+          0.20421730982673625,
+          -1.3718873900072996,
+          -0.7763140535913342
+        ]
+      ],
+      "pub": [
+        [
+          0.9739727919391731,
+          -0.680954085327339,
+          0.00839870913913554
+        ]
+      ],
+      "elbo": -40.50929355251531,
+      "elbo_sd": 0.0005680493123828408,
+      "elbo_error": -0.008543152345353633,
+      "success_flag": true,
+      "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+      "metrics": {
+        "mean_mahalanobis": 0.012660065477211426,
+        "max_mean_sd": 0.011120000771724507,
+        "covariance_relative_frobenius": 0.022273529578983764,
+        "gaussian_symmetric_kl": 0.00046590264549241313,
+        "max_marginal_w1_sd": 0.013957578796896249,
+        "mean_marginal_w1_sd": 0.011335194269830921
+      },
+      "seconds": 53.6215310000116,
+      "new_calls": 86,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -46.527028814373786,
+          -37.052859931562566
+        ]
+      },
+      "iterations": 17,
+      "first_stable_iteration": 14,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "arm": "discard",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -32.12714401707959,
+      "elbo_sd": 0.28510966341070176,
+      "elbo_error": -0.8157966647868022,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.46705803200606355,
+        "max_mean_sd": 0.36696866822789914,
+        "covariance_relative_frobenius": 0.305421659923986,
+        "gaussian_symmetric_kl": 1.0696018676174086,
+        "max_marginal_w1_sd": 0.3868119929886327,
+        "mean_marginal_w1_sd": 0.1422530507858574
+      },
+      "seconds": 175.9751892000204,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -7037.90876009054,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "arm": "f_vals",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 13,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.564258432736903,
+      "elbo_sd": 0.14799028370965875,
+      "elbo_error": -0.25291108044411814,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.4241018362363134,
+        "max_mean_sd": 0.3853926183153737,
+        "covariance_relative_frobenius": 0.1971223443327088,
+        "gaussian_symmetric_kl": 0.24727689866057592,
+        "max_marginal_w1_sd": 0.3749128278920125,
+        "mean_marginal_w1_sd": 0.12609434769352112
+      },
+      "seconds": 171.7386228000978,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 13,
+        "new_calls": 0,
+        "cached_calls": 13,
+        "value_range": [
+          -42.48012589035761,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 27,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "arm": "logger",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 14,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.88782623603889,
+      "elbo_sd": 0.24818277621041201,
+      "elbo_error": -0.5764788837461055,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.5576503275386051,
+        "max_mean_sd": 0.47769356429462423,
+        "covariance_relative_frobenius": 0.32023021155127035,
+        "gaussian_symmetric_kl": 1.0935921582966441,
+        "max_marginal_w1_sd": 0.46696549008792243,
+        "mean_marginal_w1_sd": 0.1300306269457991
+      },
+      "seconds": 172.17185600008816,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 23,
+        "new_calls": 9,
+        "cached_calls": 14,
+        "value_range": [
+          -7037.90876009054,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "arm": "f_vals",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 13,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.628116316239996,
+      "elbo_sd": 0.1044099532357625,
+      "elbo_error": -0.31676896394721155,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.6086932054552464,
+        "max_mean_sd": 0.5793731792014011,
+        "covariance_relative_frobenius": 0.22318708911190535,
+        "gaussian_symmetric_kl": 0.43137911688415476,
+        "max_marginal_w1_sd": 0.5669224124545668,
+        "mean_marginal_w1_sd": 0.14570479571565217
+      },
+      "seconds": 185.9954062999459,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 13,
+        "new_calls": 0,
+        "cached_calls": 13,
+        "value_range": [
+          -42.48012589035761,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 29,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "arm": "logger",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 14,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.903017847516487,
+      "elbo_sd": 0.20588970326268421,
+      "elbo_error": -0.5916704952237026,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.45313562053553463,
+        "max_mean_sd": 0.3538217192793023,
+        "covariance_relative_frobenius": 0.2868724956087204,
+        "gaussian_symmetric_kl": 0.6358151711269864,
+        "max_marginal_w1_sd": 0.3615295204762087,
+        "mean_marginal_w1_sd": 0.13023339232507258
+      },
+      "seconds": 165.1507653000299,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 23,
+        "new_calls": 9,
+        "cached_calls": 14,
+        "value_range": [
+          -1646.9235326428745,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "arm": "discard",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -32.25611426455547,
+      "elbo_sd": 0.2173375829122345,
+      "elbo_error": -0.9447669122626863,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.8608172879970031,
+        "max_mean_sd": 0.6527656933980308,
+        "covariance_relative_frobenius": 0.34659906301579857,
+        "gaussian_symmetric_kl": 1.6421345188256868,
+        "max_marginal_w1_sd": 0.6383977315917033,
+        "mean_marginal_w1_sd": 0.2677358676723934
+      },
+      "seconds": 160.5992707000114,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -618.2787230440667,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 2,
+      "arm": "logger",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 14,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -32.1848108516584,
+      "elbo_sd": 0.43420840154191875,
+      "elbo_error": -0.873463499365613,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.8145097671157105,
+        "max_mean_sd": 0.6446550599963508,
+        "covariance_relative_frobenius": 0.3402814536615804,
+        "gaussian_symmetric_kl": 4.1906105389013435,
+        "max_marginal_w1_sd": 0.6637428763800612,
+        "mean_marginal_w1_sd": 0.2366826198969721
+      },
+      "seconds": 178.22288489993662,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 23,
+        "new_calls": 9,
+        "cached_calls": 14,
+        "value_range": [
+          -2157.550459896288,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 2,
+      "arm": "discard",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -32.67565111434397,
+      "elbo_sd": 0.14449735434033187,
+      "elbo_error": -1.3643037620511862,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.9458546206863259,
+        "max_mean_sd": 0.9055924608538883,
+        "covariance_relative_frobenius": 0.37262679543988364,
+        "gaussian_symmetric_kl": 1.6284060447020625,
+        "max_marginal_w1_sd": 0.8918570284166105,
+        "mean_marginal_w1_sd": 0.23190479635847933
+      },
+      "seconds": 158.2086002000142,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -2157.550459896288,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 2,
+      "arm": "f_vals",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 13,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -26.155926425097995,
+      "elbo_sd": 0.6085696242671256,
+      "elbo_error": 5.15542092719479,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 3.513613889188531,
+        "max_mean_sd": 3.172387184101693,
+        "covariance_relative_frobenius": 13.81892599578086,
+        "gaussian_symmetric_kl": 26.237071590155452,
+        "max_marginal_w1_sd": 3.4231363931938836,
+        "mean_marginal_w1_sd": 1.6606438284544556
+      },
+      "seconds": 252.92496640002355,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 13,
+        "new_calls": 0,
+        "cached_calls": 13,
+        "value_range": [
+          -42.48012589035761,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 27,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 3,
+      "arm": "discard",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": 5.002779786316055e+32,
+      "elbo_sd": 9.571482085865787e+32,
+      "elbo_error": 5.002779786316055e+32,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 151.31881481946778,
+        "max_mean_sd": 98.278284361916,
+        "covariance_relative_frobenius": 1497.2294468832256,
+        "gaussian_symmetric_kl": 201577.3854506113,
+        "max_marginal_w1_sd": 113.26132289436948,
+        "mean_marginal_w1_sd": 40.72976781030251
+      },
+      "seconds": 503.5756860000547,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -4297.0318250188975,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 3,
+      "arm": "f_vals",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 13,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -29.960800179715594,
+      "elbo_sd": 0.7977022959839348,
+      "elbo_error": 1.3505471725771905,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.8009968381236906,
+        "max_mean_sd": 0.5309674369985171,
+        "covariance_relative_frobenius": 3.130060797508481,
+        "gaussian_symmetric_kl": 4.4844611361444455,
+        "max_marginal_w1_sd": 1.4290448978858914,
+        "mean_marginal_w1_sd": 0.5265869814470219
+      },
+      "seconds": 86.57186380005442,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 13,
+        "new_calls": 0,
+        "cached_calls": 13,
+        "value_range": [
+          -42.48012589035761,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 27,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 3,
+      "arm": "logger",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 14,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.73340771000498,
+      "elbo_sd": 0.19219584816036628,
+      "elbo_error": -0.4220603577121942,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.5062521950072089,
+        "max_mean_sd": 0.46517163343899237,
+        "covariance_relative_frobenius": 0.2606353917729879,
+        "gaussian_symmetric_kl": 0.5630063649494688,
+        "max_marginal_w1_sd": 0.4495493542003411,
+        "mean_marginal_w1_sd": 0.12126001106057996
+      },
+      "seconds": 69.00288699998055,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 23,
+        "new_calls": 9,
+        "cached_calls": 14,
+        "value_range": [
+          -4297.0318250188975,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "arm": "f_vals",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 13,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -30.55485511849919,
+      "elbo_sd": 0.2934096050543277,
+      "elbo_error": 0.756492233793594,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.9786089188124951,
+        "max_mean_sd": 0.5915130819690216,
+        "covariance_relative_frobenius": 1.882321819629742,
+        "gaussian_symmetric_kl": 3.961365124519132,
+        "max_marginal_w1_sd": 1.0926485466129259,
+        "mean_marginal_w1_sd": 0.4389988726489006
+      },
+      "seconds": 87.4603506999556,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 13,
+        "new_calls": 0,
+        "cached_calls": 13,
+        "value_range": [
+          -42.48012589035761,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 27,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "arm": "logger",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 14,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.495103155633274,
+      "elbo_sd": 1.2390386309420032,
+      "elbo_error": -0.1837558033404889,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.4437137013314846,
+        "max_mean_sd": 0.3299278812517809,
+        "covariance_relative_frobenius": 0.2969097435346219,
+        "gaussian_symmetric_kl": 0.4995188716659659,
+        "max_marginal_w1_sd": 0.32907748807494885,
+        "mean_marginal_w1_sd": 0.13604532153364607
+      },
+      "seconds": 92.40320550010074,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 23,
+        "new_calls": 9,
+        "cached_calls": 14,
+        "value_range": [
+          -5036.274476962386,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "arm": "discard",
+      "total_budget": 150,
+      "setup_cost": 24,
+      "setup_unique_finite_rows": 14,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -1646.9235326428745,
+        -40.056579381579674
+      ],
+      "x0": [
+        [
+          1.3835336654887573,
+          3.3667017821674943,
+          0.7212062652228387,
+          0.2045750102909801,
+          -0.11608330164036146,
+          0.1693679448826785,
+          -0.07504190473182806,
+          -0.011239352492103399,
+          0.5131033719763094,
+          0.2651120353498288
+        ]
+      ],
+      "plb": [
+        [
+          -13.408356560319119,
+          0.5473228194200281,
+          -1.0299524713869457,
+          -0.8980712553393687,
+          -1.6449787144021417,
+          -0.9878803746320536,
+          -1.1238918411948469,
+          -1.169002437402109,
+          -0.9268967305539526,
+          -1.3655583373952234
+        ]
+      ],
+      "pub": [
+        [
+          16.17542389129663,
+          6.18608074491496,
+          2.472365001832623,
+          1.3072212759213289,
+          1.4128121111214187,
+          1.3266162643974106,
+          0.9738080317311908,
+          1.146523732417902,
+          1.9531034745065714,
+          1.895782408094881
+        ]
+      ],
+      "elbo": -31.892180240039174,
+      "elbo_sd": 0.785368817220566,
+      "elbo_error": -0.5808328877463893,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.8009014909437173,
+        "max_mean_sd": 0.7024176165932352,
+        "covariance_relative_frobenius": 0.3454254166548363,
+        "gaussian_symmetric_kl": 2.3169551640442614,
+        "max_marginal_w1_sd": 0.687184525809033,
+        "mean_marginal_w1_sd": 0.23069964978390428
+      },
+      "seconds": 85.179479500046,
+      "new_calls": 126,
+      "total_spent": 150,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -5036.274476962386,
+          -40.056579381579674
+        ]
+      },
+      "iterations": 25,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.25544522511507,
+      "elbo_sd": 0.027837108047755705,
+      "elbo_error": -3.5162245359431097,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.07292912449648607,
+        "max_mean_sd": 0.06437276937276559,
+        "covariance_relative_frobenius": 1.5722651753643373,
+        "gaussian_symmetric_kl": 4.601649977909679,
+        "max_marginal_w1_sd": 0.4960677672408581,
+        "mean_marginal_w1_sd": 0.4323214867273906
+      },
+      "seconds": 23.694612800027244,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -792.3885260141794,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 15,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.83846928988736,
+      "elbo_sd": 0.014966872030250891,
+      "elbo_error": -3.0992486007153985,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.17078658573770078,
+        "max_mean_sd": 0.1705144994988095,
+        "covariance_relative_frobenius": 1.561785962609817,
+        "gaussian_symmetric_kl": 3.452729731320845,
+        "max_marginal_w1_sd": 0.4456371605040467,
+        "mean_marginal_w1_sd": 0.4035770097828661
+      },
+      "seconds": 24.690267199999653,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 15,
+        "new_calls": 0,
+        "cached_calls": 15,
+        "value_range": [
+          -184.03751392396853,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 15,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 27,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.68438561282989,
+      "elbo_sd": 0.004193293070807942,
+      "elbo_error": -2.945164923657927,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.08178911110109528,
+        "max_mean_sd": 0.0798308158293218,
+        "covariance_relative_frobenius": 1.5208639027723392,
+        "gaussian_symmetric_kl": 3.0531285789061373,
+        "max_marginal_w1_sd": 0.40373731923310974,
+        "mean_marginal_w1_sd": 0.37576408032300906
+      },
+      "seconds": 27.693795799976215,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 36,
+        "new_calls": 9,
+        "cached_calls": 27,
+        "value_range": [
+          -3416280.821106909,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 15,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.16339086594101,
+      "elbo_sd": 0.017234993854681437,
+      "elbo_error": -3.424170176769053,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.08031240378539509,
+        "max_mean_sd": 0.07497379585011861,
+        "covariance_relative_frobenius": 1.5802305952559006,
+        "gaussian_symmetric_kl": 4.315835925701328,
+        "max_marginal_w1_sd": 0.4629312334155657,
+        "mean_marginal_w1_sd": 0.4224262595917506
+      },
+      "seconds": 24.827923999982886,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 15,
+        "new_calls": 0,
+        "cached_calls": 15,
+        "value_range": [
+          -184.03751392396853,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 15,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 27,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -101.63276262267402,
+      "elbo_sd": 0.0030799189833984946,
+      "elbo_error": -0.893541933502064,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.1112112129204091,
+        "max_mean_sd": 0.09842013124662816,
+        "covariance_relative_frobenius": 0.750988590900544,
+        "gaussian_symmetric_kl": 0.7563828165646573,
+        "max_marginal_w1_sd": 0.27156624814945257,
+        "mean_marginal_w1_sd": 0.17107707239357464
+      },
+      "seconds": 40.272878199932165,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 36,
+        "new_calls": 9,
+        "cached_calls": 27,
+        "value_range": [
+          -3416280.821106909,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 14,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.25896557617632,
+      "elbo_sd": 0.024232807089965145,
+      "elbo_error": -3.5197448870043644,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.029537876144867064,
+        "max_mean_sd": 0.027300607152954934,
+        "covariance_relative_frobenius": 1.6036275851871973,
+        "gaussian_symmetric_kl": 4.580057917241237,
+        "max_marginal_w1_sd": 0.4716967199370771,
+        "mean_marginal_w1_sd": 0.4299627205843623
+      },
+      "seconds": 20.027793999994174,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -692.0036670211484,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 27,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.8806571350853,
+      "elbo_sd": 0.012609363394246512,
+      "elbo_error": -3.1414364459133424,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.05411860484656734,
+        "max_mean_sd": 0.04955073548852673,
+        "covariance_relative_frobenius": 1.5607660787805335,
+        "gaussian_symmetric_kl": 3.431773157634443,
+        "max_marginal_w1_sd": 0.43050405332212904,
+        "mean_marginal_w1_sd": 0.3907905888292205
+      },
+      "seconds": 23.11908219999168,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 36,
+        "new_calls": 9,
+        "cached_calls": 27,
+        "value_range": [
+          -3416280.821106909,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -95.92949647568696,
+      "elbo_sd": 1.694189346208545,
+      "elbo_error": 4.809724213484998,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 3.1339937657065313,
+        "max_mean_sd": 1.9529919365912751,
+        "covariance_relative_frobenius": 727.9718859374947,
+        "gaussian_symmetric_kl": 414.10182883492996,
+        "max_marginal_w1_sd": 2.055565443065248,
+        "mean_marginal_w1_sd": 1.2244793625868418
+      },
+      "seconds": 21.004778699949384,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -1049.8082624933913,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 15,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.83037919005442,
+      "elbo_sd": 0.03234582096940895,
+      "elbo_error": -3.0911585008824574,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.11776075011545435,
+        "max_mean_sd": 0.11349600362275897,
+        "covariance_relative_frobenius": 1.5310477150658923,
+        "gaussian_symmetric_kl": 3.807532622755473,
+        "max_marginal_w1_sd": 0.4699781637029101,
+        "mean_marginal_w1_sd": 0.4123316626195665
+      },
+      "seconds": 25.51896040001884,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 15,
+        "new_calls": 0,
+        "cached_calls": 15,
+        "value_range": [
+          -184.03751392396853,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 15,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -96.51172748861852,
+      "elbo_sd": 1.7709373517843077,
+      "elbo_error": 4.22749320055344,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 9.595379083193881,
+        "max_mean_sd": 1.4258689130240545,
+        "covariance_relative_frobenius": 453.03540711337297,
+        "gaussian_symmetric_kl": 282.4290432683109,
+        "max_marginal_w1_sd": 2.437848940779678,
+        "mean_marginal_w1_sd": 1.1818896664039893
+      },
+      "seconds": 21.146549400058575,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -1203.6255209261592,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 15,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.3064212978737,
+      "elbo_sd": 0.008993451164515194,
+      "elbo_error": -3.5672006087017394,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.04666579231722674,
+        "max_mean_sd": 0.04595383986319834,
+        "covariance_relative_frobenius": 1.598479806558627,
+        "gaussian_symmetric_kl": 4.734556100911387,
+        "max_marginal_w1_sd": 0.47396350551419597,
+        "mean_marginal_w1_sd": 0.4286648413374837
+      },
+      "seconds": 24.516399599961005,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 15,
+        "new_calls": 0,
+        "cached_calls": 15,
+        "value_range": [
+          -184.03751392396853,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 15,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 27,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.6385746607777,
+      "elbo_sd": 0.006120111667199794,
+      "elbo_error": -2.8993539716057484,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.03546834112208737,
+        "max_mean_sd": 0.011640344324915206,
+        "covariance_relative_frobenius": 1.498988352884864,
+        "gaussian_symmetric_kl": 3.013374787184735,
+        "max_marginal_w1_sd": 0.4058712309525105,
+        "mean_marginal_w1_sd": 0.37380476336757773
+      },
+      "seconds": 40.38572560006287,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 36,
+        "new_calls": 9,
+        "cached_calls": 27,
+        "value_range": [
+          -3416280.821106909,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "arm": "f_vals",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 15,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.20799348385603,
+      "elbo_sd": 0.009181288165290727,
+      "elbo_error": -3.468772794684071,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.09791718361848517,
+        "max_mean_sd": 0.0948605018507738,
+        "covariance_relative_frobenius": 1.5545699112207267,
+        "gaussian_symmetric_kl": 4.591793448803916,
+        "max_marginal_w1_sd": 0.4982296459123983,
+        "mean_marginal_w1_sd": 0.43369770200852586
+      },
+      "seconds": 27.508092200034298,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 15,
+        "new_calls": 0,
+        "cached_calls": 15,
+        "value_range": [
+          -184.03751392396853,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 15,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "arm": "logger",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 27,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -103.74875970156099,
+      "elbo_sd": 0.014817819574741816,
+      "elbo_error": -3.009539012389027,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.0755387539672625,
+        "max_mean_sd": 0.07002760080821839,
+        "covariance_relative_frobenius": 1.528487961384098,
+        "gaussian_symmetric_kl": 3.240383766845819,
+        "max_marginal_w1_sd": 0.436306404054314,
+        "mean_marginal_w1_sd": 0.38249166073938146
+      },
+      "seconds": 29.075352500076406,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 36,
+        "new_calls": 9,
+        "cached_calls": 27,
+        "value_range": [
+          -3416280.821106909,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "arm": "discard",
+      "total_budget": 100,
+      "setup_cost": 32,
+      "setup_unique_finite_rows": 27,
+      "reused_rows": 0,
+      "setup_logp_range": [
+        -3416280.821106909,
+        -93.2808019874704
+      ],
+      "x0": [
+        [
+          1.806410267483623,
+          -1.2139996465256315,
+          0.061193593938034904,
+          0.001690260816691963,
+          -0.003927355270708316
+        ]
+      ],
+      "plb": [
+        [
+          -0.8066061386265668,
+          -1.9477830181200178,
+          -0.008015353661453284,
+          -0.0061760941520616185,
+          -14.704745456884565
+        ]
+      ],
+      "pub": [
+        [
+          4.419426673593813,
+          -0.4802162749312453,
+          0.1304025415375231,
+          0.009556615785445545,
+          14.696890746343149
+        ]
+      ],
+      "elbo": -104.14786774973479,
+      "elbo_sd": 0.09713714703996269,
+      "elbo_error": -3.408647060562828,
+      "success_flag": false,
+      "message": "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.",
+      "metrics": {
+        "mean_mahalanobis": 0.1521552287473369,
+        "max_mean_sd": 0.12903616533564713,
+        "covariance_relative_frobenius": 1.6292628787316001,
+        "gaussian_symmetric_kl": 3.9670042805585193,
+        "max_marginal_w1_sd": 0.4786987347045628,
+        "mean_marginal_w1_sd": 0.4067077847862154
+      },
+      "seconds": 20.12708289991133,
+      "new_calls": 68,
+      "total_spent": 100,
+      "initial_design": {
+        "rows": 10,
+        "new_calls": 10,
+        "cached_calls": 0,
+        "value_range": [
+          -857.827859101112,
+          -93.2808019874704
+        ]
+      },
+      "iterations": 13,
+      "first_stable_iteration": null,
+      "execution_source_sha256": "920e1e36da78598f99a02583bdc7a7abe7f8265114093ba555025429fd67309f"
+    }
+  ],
+  "schools_evidence": {
+    "method": "Gaussian integration over mu and school effects; quadrature over HalfCauchy(5) tau",
+    "checks": [
+      {
+        "ln_Z": -31.311347352292785,
+        "relative_quadrature_error": 7.956468013029524e-12
+      },
+      {
+        "ln_Z": -31.311347352292785,
+        "relative_quadrature_error": 9.376557394067186e-13
+      }
+    ]
+  }
+}

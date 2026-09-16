@@ -1,0 +1,402 @@
+{
+  "groups": [
+    {
+      "name": "vector",
+      "arm": "discard",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 0,
+      "median_abs_elbo_error": 0.0036526381274128994,
+      "median_seconds": 45.170210899901576,
+      "elbo_error_range": [
+        -0.008543152345353633,
+        0.005260929371651457
+      ],
+      "marginal_w1_range": [
+        0.010005533808955738,
+        0.019417649022412903
+      ],
+      "gaussian_kl_range": [
+        0.00023405411375769145,
+        0.0007376019414608397
+      ],
+      "stable_cases": 5,
+      "median_first_stable_iteration": 13.0,
+      "median_iterations": 17.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 0.00046590264549241313,
+        "mean_marginal_w1_sd": 0.011335194269830921,
+        "max_mean_sd": 0.01171754183107465,
+        "covariance_relative_frobenius": 0.022273529578983764
+      }
+    },
+    {
+      "name": "vector",
+      "arm": "f_vals",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 7,
+      "median_abs_elbo_error": 0.0033320938914727094,
+      "median_seconds": 44.8228391999146,
+      "elbo_error_range": [
+        -0.010053766357110305,
+        0.001692203781217927
+      ],
+      "marginal_w1_range": [
+        0.011020217819609662,
+        0.014979880381289654
+      ],
+      "gaussian_kl_range": [
+        0.0003047178305764245,
+        0.0009990845822561087
+      ],
+      "stable_cases": 5,
+      "median_first_stable_iteration": 14.0,
+      "median_iterations": 18.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 0.00057595659105017,
+        "mean_marginal_w1_sd": 0.011700360292410365,
+        "max_mean_sd": 0.015061899684718641,
+        "covariance_relative_frobenius": 0.02592343018362886
+      }
+    },
+    {
+      "name": "vector",
+      "arm": "logger",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 11,
+      "median_abs_elbo_error": 0.0034980063263745365,
+      "median_seconds": 51.83827800001018,
+      "elbo_error_range": [
+        -0.0055574636187856186,
+        0.004347540603333755
+      ],
+      "marginal_w1_range": [
+        0.009582417208704992,
+        0.015002278723699048
+      ],
+      "gaussian_kl_range": [
+        0.0003314242015830998,
+        0.001160774384432465
+      ],
+      "stable_cases": 4,
+      "median_first_stable_iteration": 14.0,
+      "median_iterations": 17.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 0.0006952183667637038,
+        "mean_marginal_w1_sd": 0.014339466741152334,
+        "max_mean_sd": 0.014153467310300587,
+        "covariance_relative_frobenius": 0.02843119194535451
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "arm": "discard",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 0,
+      "median_abs_elbo_error": 0.9447669122626863,
+      "median_seconds": 160.5992707000114,
+      "elbo_error_range": [
+        -1.3643037620511862,
+        5.002779786316055e+32
+      ],
+      "marginal_w1_range": [
+        0.1422530507858574,
+        40.72976781030251
+      ],
+      "gaussian_kl_range": [
+        1.0696018676174086,
+        201577.3854506113
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 25.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 1.6421345188256868,
+        "mean_marginal_w1_sd": 0.23190479635847933,
+        "max_mean_sd": 0.7024176165932352,
+        "covariance_relative_frobenius": 0.34659906301579857
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "arm": "f_vals",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 13,
+      "median_abs_elbo_error": 0.756492233793594,
+      "median_seconds": 171.7386228000978,
+      "elbo_error_range": [
+        -0.31676896394721155,
+        5.15542092719479
+      ],
+      "marginal_w1_range": [
+        0.12609434769352112,
+        1.6606438284544556
+      ],
+      "gaussian_kl_range": [
+        0.24727689866057592,
+        26.237071590155452
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 27.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 3.961365124519132,
+        "mean_marginal_w1_sd": 0.4389988726489006,
+        "max_mean_sd": 0.5793731792014011,
+        "covariance_relative_frobenius": 1.882321819629742
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "arm": "logger",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 14,
+      "median_abs_elbo_error": 0.5764788837461055,
+      "median_seconds": 165.1507653000299,
+      "elbo_error_range": [
+        -0.873463499365613,
+        -0.1837558033404889
+      ],
+      "marginal_w1_range": [
+        0.12126001106057996,
+        0.2366826198969721
+      ],
+      "gaussian_kl_range": [
+        0.4995188716659659,
+        4.1906105389013435
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 25.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 0.6358151711269864,
+        "mean_marginal_w1_sd": 0.13023339232507258,
+        "max_mean_sd": 0.46517163343899237,
+        "covariance_relative_frobenius": 0.2969097435346219
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "discard",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 0,
+      "median_abs_elbo_error": 3.5197448870043644,
+      "median_seconds": 21.004778699949384,
+      "elbo_error_range": [
+        -3.5197448870043644,
+        4.809724213484998
+      ],
+      "marginal_w1_range": [
+        0.4067077847862154,
+        1.2244793625868418
+      ],
+      "gaussian_kl_range": [
+        3.9670042805585193,
+        414.10182883492996
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 13.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 4.601649977909679,
+        "mean_marginal_w1_sd": 0.4323214867273906,
+        "max_mean_sd": 0.12903616533564713,
+        "covariance_relative_frobenius": 1.6292628787316001
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "f_vals",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 15,
+      "median_abs_elbo_error": 3.424170176769053,
+      "median_seconds": 24.827923999982886,
+      "elbo_error_range": [
+        -3.5672006087017394,
+        -3.0911585008824574
+      ],
+      "marginal_w1_range": [
+        0.4035770097828661,
+        0.43369770200852586
+      ],
+      "gaussian_kl_range": [
+        3.452729731320845,
+        4.734556100911387
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 15.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 4.315835925701328,
+        "mean_marginal_w1_sd": 0.4224262595917506,
+        "max_mean_sd": 0.0948605018507738,
+        "covariance_relative_frobenius": 1.561785962609817
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "arm": "logger",
+      "completed": 5,
+      "failures": [],
+      "reused_rows": 27,
+      "median_abs_elbo_error": 2.945164923657927,
+      "median_seconds": 29.075352500076406,
+      "elbo_error_range": [
+        -3.1414364459133424,
+        -0.893541933502064
+      ],
+      "marginal_w1_range": [
+        0.17107707239357464,
+        0.3907905888292205
+      ],
+      "gaussian_kl_range": [
+        0.7563828165646573,
+        3.431773157634443
+      ],
+      "stable_cases": 0,
+      "median_first_stable_iteration": null,
+      "median_iterations": 13.0,
+      "metrics": {
+        "gaussian_symmetric_kl": 3.0531285789061373,
+        "mean_marginal_w1_sd": 0.37576408032300906,
+        "max_mean_sd": 0.07002760080821839,
+        "covariance_relative_frobenius": 1.5208639027723392
+      }
+    }
+  ],
+  "paired": [
+    {
+      "name": "vector",
+      "seed": 0,
+      "w1_delta_vs_discard": {
+        "f_vals": 0.001014684010653924,
+        "logger": 0.0003506063699090338
+      }
+    },
+    {
+      "name": "vector",
+      "seed": 1,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.00725818460995376,
+        "logger": -0.009835231813707912
+      }
+    },
+    {
+      "name": "vector",
+      "seed": 2,
+      "w1_delta_vs_discard": {
+        "f_vals": 0.002923048504019171,
+        "logger": 0.002750766747153027
+      }
+    },
+    {
+      "name": "vector",
+      "seed": 3,
+      "w1_delta_vs_discard": {
+        "f_vals": 0.0009610281850342163,
+        "logger": 0.004262946616322899
+      }
+    },
+    {
+      "name": "vector",
+      "seed": 4,
+      "w1_delta_vs_discard": {
+        "f_vals": 6.0211273323826364e-05,
+        "logger": 0.003004272471321413
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 0,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.016158703092336274,
+        "logger": -0.01222242384005831
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 1,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.1220310719567412,
+        "logger": -0.1375024753473208
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 2,
+      "w1_delta_vs_discard": {
+        "f_vals": 1.4287390320959763,
+        "logger": 0.004777823538492765
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 3,
+      "w1_delta_vs_discard": {
+        "f_vals": -40.20318082885549,
+        "logger": -40.608507799241934
+      }
+    },
+    {
+      "name": "schools_noncentered",
+      "seed": 4,
+      "w1_delta_vs_discard": {
+        "f_vals": 0.2082992228649963,
+        "logger": -0.09465432825025821
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 0,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.028744476944524533,
+        "logger": -0.05655740640438156
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 1,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.007536460992611682,
+        "logger": -0.25888564819078763
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 2,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.8121476999672752,
+        "logger": -0.8336887737576213
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 3,
+      "w1_delta_vs_discard": {
+        "f_vals": -0.7532248250665056,
+        "logger": -0.8080849030364116
+      }
+    },
+    {
+      "name": "ill_conditioned",
+      "seed": 4,
+      "w1_delta_vs_discard": {
+        "f_vals": 0.026989917222310478,
+        "logger": -0.02421612404683393
+      }
+    }
+  ],
+  "validation": {
+    "cases": 45,
+    "completed": 45,
+    "paired_budgets_checked": true,
+    "references_accepted": true
+  }
+}

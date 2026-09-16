@@ -1,0 +1,70 @@
+{
+  "current_source_sha256": "206e40d683660a8ddc790925ace71e82f3fdc119fb0a39ce4e406d6ce3d36b92",
+  "checks": [
+    {
+      "stage": "a_selected",
+      "function": "build_model",
+      "ast_identical": true
+    },
+    {
+      "stage": "a_selected",
+      "function": "search",
+      "ast_identical": true
+    },
+    {
+      "stage": "a_selected",
+      "function": "curvature",
+      "ast_identical": true
+    },
+    {
+      "stage": "a_selected",
+      "function": "make_setup",
+      "ast_identical": true
+    },
+    {
+      "stage": "a_selected",
+      "function": "compile_derivatives",
+      "ast_identical": true
+    },
+    {
+      "stage": "a_selected",
+      "function": "part_a",
+      "ast_identical": true
+    },
+    {
+      "stage": "references",
+      "function": "build_model",
+      "ast_identical": true
+    },
+    {
+      "stage": "references",
+      "function": "references",
+      "ast_identical": true
+    },
+    {
+      "stage": "references",
+      "function": "posterior_metrics",
+      "ast_identical": true
+    },
+    {
+      "stage": "b_final",
+      "function": "build_model",
+      "ast_identical": true
+    },
+    {
+      "stage": "b_final",
+      "function": "reuse_case",
+      "ast_identical": true
+    },
+    {
+      "stage": "b_final",
+      "function": "part_b",
+      "ast_identical": true
+    },
+    {
+      "stage": "b_final",
+      "function": "posterior_metrics",
+      "ast_identical": true
+    }
+  ]
+}

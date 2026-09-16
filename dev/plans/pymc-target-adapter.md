@@ -1,10 +1,13 @@
 # PyMC target adapter
 
 Implementation plan for the PyMC integration chosen for PyVBMC 1.5.
-Created 2026-09-14 on `dev-next` at `613f2a8`. Status: **pending
-approval**, after the two investigations of
+Created 2026-09-14 on `dev-next` at `613f2a8`. Status: **approved;
+implementation in progress** (PI approval 2026-09-16). The two investigations of
 [Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
-have run and their answers are written into this plan; code work runs on
+and the focused filtering/coverage follow-up are complete. The design
+review decisions are incorporated, including fixed model-data snapshots,
+conservative support recognition and an upfront setup cap.
+Code work runs on
 the feature branch `dev-pymc-adapter` and merges back into `dev-next`.
 Design inputs: the
 [PyMC proposal](../2026-09-13-pymc-integration.md), the
@@ -17,37 +20,117 @@ the implementation and lays out the work.
 
 ## Pickup: 2026-09-16
 
-Resume from `dev-next` with the two investigations in
+The approved planning record is committed and pushed on `dev-next` before
+implementation branches are created; the two investigations are recorded in
 [Before approval](#before-approval-the-setup-probe-and-evaluation-reuse).
-The implementation plan remains **pending approval**. Neither
-investigation has run; `dev/scripts/pymc_setup_probe.py` has not been
-written, and Phase 0 has not started. No job or watcher needs reattachment.
+The implementation plan was **approved on 2026-09-16**. The separate
+`dev/scripts/pymc_setup_probe.py`, Part A, the three NUTS references and
+all 45 Part B fits are complete. Execution status is tracked below. The
+[probe report](../results/2026-09-16-pymc-setup-probe.md) records the methods,
+results, limitations and proposed design choices; local outputs and
+commands are listed in `dev/scripts/runs/LOCAL.md`.
+
+The design uses the
+setup cap and 0.001-nat stopping rule only when a start is not supplied;
+prior-location checks report diagnostics without relocating the start.
+`precomputed_evaluations` carries observations independently of
+the start and plausible box, including noisy observations and independent
+repeats. The default retains all finite deterministic setup observations
+and the full initial design. Explicit initialization cost is charged once
+against the function-equivalent budget; ordinary zero-charge reporting is
+unchanged. `VBMC(target, ...)` reads the adapter's initialization fields and
+setup cost automatically; explicit start, plausible bounds, observations
+and cost can override defaults, while hard bounds must match model support.
+Target construction snapshots model data and accepts a `setup_budget` cap.
+Package implementation is authorized on the feature branches below.
+
+### Live implementation checklist
+
+The orchestrator owns this checklist; phase instructions and acceptance
+checks below remain authoritative. At most one heavy process runs at a time.
+
+- [~] Phase 0: record approval, commit and push planning/evidence on
+  `dev-next`, then create `dev-pymc-adapter` and `dev-precomputed-evaluations`.
+- [ ] Phase 0a: general precomputed evaluations and budget accounting;
+  independent Sol review, focused checks, exact oracles and golden replay;
+  merge into `dev-pymc-adapter`.
+- [ ] Phase 1: structured ArviZ export and focused validation.
+- [ ] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
+- [ ] Phase 3: optional-dependency CI coverage and smoke run.
+- [ ] Phase 4: user/API documentation and docs build after Example 8.
+- [ ] Phase 5: executed Example 8 and regenerated script.
+- [ ] Phase 6: integrated verification, packaging and independent doublecheck.
+- [ ] Phase 7: merge into `dev-next`, update records and finish tracking.
+
+The PI requested a focused follow-up to separate filtering from initial
+coverage. Twenty additional attempts are complete on the two hard models:
+filtered/full and filtered/shortened, both using logger seeding and a
+single `x0`. The existing all-points/full runs supply the filtering
+baseline. This also controls the initial component means, which the
+original multi-row `f_vals` route changes. Eighteen fits returned; two
+filtered/full schools fits failed during GP fitting. Results and controls
+are recorded in the probe report.
+The PI clarified that the filter should use relative log density. The
+candidate rule retains points within `10D` nats of the best and at least
+`D+1` observations, following normal warmup pruning. Eight-schools selects
+exactly the same points under both rules, so its ten completed cases are
+carried forward; the regression uses density filtering (24 retained points,
+versus 15 for the geometric rule). See the report for provenance.
+The follow-up supports retaining all finite setup observations initially
+and preserving the ordinary uniform design, with warmup pruning at its
+existing stage. Early density pruning shows no consistent benefit; reduced
+coverage produces severe joint-posterior errors in two regression seeds.
+No hard-model arm reaches stability. These findings support the defaults
+in the consolidated plan without establishing universal performance.
 
 Read `dev/TODO.md`, this plan, the
 [PyMC proposal](../2026-09-13-pymc-integration.md), the
 [feasibility report](../results/2026-09-14-pymc-feasibility.md) and the
-prototype's module docstring before writing the probe. Preserve
+prototype's module docstring before implementation. Preserve
 `dev/scripts/pymc_feasibility.py` as the historical feasibility record:
 its `find_MAP` and finite-difference Hessian are superseded by this
 plan's gradient search and exact Hessian.
 
-1. **Part A:** implement the separate setup probe over the specified
-   models. Measure the `20 + 5 D` budget, stopping rules and prior-based
-   location check, including models without a mode or usable gradients.
-   Record the evidence and any design questions before Part B.
-2. **Part B:** compare the three evaluation-reuse arms on the three
-   specified models, five seeds each, at equal total evaluation budgets
-   including setup. The probe emulates logger seeding without changing
-   package code. Generate and assess the required NUTS references and
-   run VBMC sequentially in the heavy-compute slot.
-3. Write the findings into this plan's design, decisions, affected
-   phases and execution record. Present the setup and reuse choices to
-   the PI for approval; only then start Phase 0 and package implementation.
+1. **Part A complete:** the separate probe measured the `20 + 5 D`
+   budget, stopping rules and prior-based location check over the
+   specified models, including models without a mode or usable gradients.
+   Initial findings were recorded before Part B.
+2. **Part B complete:** three reuse arms, three models, five seeds each,
+   equal total budgets including setup, and accepted NUTS references.
+   Logger seeding was emulated without package changes; numerical runs
+   were sequential.
+3. **Approved for implementation:** all accepted review decisions are
+   reflected in the public surface, phases and acceptance checks.
+   The first implementation is the general
+   precomputed-evaluation interface in Phase 0a.
 
 Both investigations belong to the orchestrator. In Codex, the executor
 names below follow `AGENTS.md`: Astra fills the Fable orchestrator role;
 Sol fills the Opus implementation/review role after approval. At most
 one heavy process runs at a time.
+
+### Accepted design-review decisions
+
+The independent Sol review led to the following contracts:
+
+- Model-data lifetime: a private snapshot of
+  PyMC-managed data/shared inputs used by the density, support and coordinate
+  maps. The target keeps representing that fixed model after
+  `pm.set_data` on the original model. Construct a new target for
+  refitting; the original model remains available for prediction.
+- Unknown support: conservative recognition of
+  known real-line distributions when no transform is present. Reject an
+  unknown untransformed free-variable distribution rather than guessing
+  its support. Custom likelihood operations are unaffected by this rule.
+- Upfront budget: eager preparation with an optional `setup_budget` cap
+  on `PyMCTarget`, defaulting to the
+  measured `20 + 5 D`. Users with a strict total can allocate a bounded
+  share to setup before creating VBMC. The constructor must reject an
+  allowance insufficient for its required setup before density evaluations.
+  The total supplied later to VBMC accounts for completed setup and limits
+  subsequent work; it cannot retroactively constrain preparation. Effective
+  fresh-budget consumers match the probe, including algorithm schedules;
+  the configured total remains available for reporting.
 
 The analysis environment is local by design and listed under "PyMC
 feasibility check" in `dev/scripts/runs/LOCAL.md`. Its metadata was
@@ -58,7 +141,7 @@ On a fresh machine, create a Python 3.12 environment, install those
 PyMC/PyTensor/ArviZ versions, install gpyreg from tag `v1.2.1`
 (`9e70e6b`) and this checkout editable with its development dependencies.
 The tracked feasibility outputs under `dev/experiments/pymc_feasibility/`
-remain readable without that environment. The planned probe's raw and
+remain readable without that environment. The probe's raw and
 tracked output locations are specified below in Before approval.
 
 The GP investigation is complete and preserved in the
@@ -77,7 +160,8 @@ coordinate, a variable bounded on both sides or unbounded is handed over
 in the model's own coordinates with its interval as hard bounds, and
 everything else is rejected by variable name before anything is compiled.
 The adapter proposes the starting point and the plausible box within a
-budget of `20 + 5 D` log-density evaluations: a gradient search for the
+default budget of `20 + 5 D` function-equivalent evaluations, optionally
+reduced by `setup_budget`: a gradient search for the
 mode of its own log joint and a Laplace box from the exact Hessian there,
 both from PyTensor's derivatives, with fallbacks that cost no evaluations;
 explicit values are accepted and cost one evaluation, a finiteness check.
@@ -90,9 +174,9 @@ functions on that export. The structured export is a generic extension of
 `VariationalPosterior.to_arviz` (vector and matrix parameters with names,
 dimensions and coordinates) that is useful without PyMC. PyMC is an
 optional extra, imported only when the adapter is constructed. The
-inference defaults, the numerical core and gpyreg are untouched; whether
-`VBMC`'s interface gains a way to receive precomputed evaluations is
-settled before approval.
+inference defaults and gpyreg are unchanged. The general precomputed-evaluation
+interface and explicit initialization-budget path extend `VBMC`; unused,
+they preserve existing numerical behavior and reporting.
 
 ## Scope
 
@@ -106,9 +190,8 @@ In scope:
   (`variables`, `dims`, `coords`), backwards compatible.
 - Tests, including `VBMC.save` and `VBMC.load` on an adapter target and
   one short seeded end-to-end run.
-- The route by which the setup evaluations reach `VBMC`, as settled
-  before approval (possibly an extension of `VBMC`'s interface, which
-  would then be in scope on its own branch).
+- The general `precomputed_evaluations` and `initialization_cost` interface,
+  implemented and reviewed separately before the adapter.
 - User documentation (quickstart section, installation, API page, FAQ,
   README and index bullets, agent skill row) and Example 8.
 
@@ -284,12 +367,61 @@ and package metadata:
 from pyvbmc import VBMC, PyMCTarget          # PyMCTarget resolves lazily
 target = PyMCTarget(model)                    # or PyMCTarget(model, plausible_bounds=..., start=..., seed=...)
 print(target)                                 # variable, VBMC coordinate(s), hard and plausible bounds
-vbmc = VBMC(target.log_joint, target.x0, target.lb, target.ub, target.plb, target.pub)
-                                              # plus the setup evaluations, by the route settled before approval
+vbmc = VBMC(target, options={"max_fun_evals": 200})
 vp, results = vbmc.optimize()
 data = target.to_arviz(vp, n_samples=2000)    # DataTree over the model's variables
 pm.compute_deterministics(data, model=model)  # a Dataset of the deterministics
 pm.sample_posterior_predictive(data, model=model)
+```
+
+`VBMC` accepts a constructed `PyMCTarget` as its first argument. Before
+normal constructor validation, resolve its `log_joint`, `x0`, `lb`, `ub`,
+`plb`, `pub`, `setup_evaluations` and `setup_cost` into the corresponding
+constructor inputs. Resolution performs no setup, density evaluations or
+random draws and does not mutate the target. The ordinary callable path
+remains unchanged and imports neither PyMC nor PyTensor. Recognize the
+supported adapter explicitly, rather than inspecting arbitrary callables
+for similarly named attributes.
+
+Explicit non-`None` starting-point and plausible-bound arguments override
+the adapter's values. Hard bounds describe the model's support: reject a
+supplied hard bound that differs from the corresponding adapter bound
+after ordinary shape/dtype normalization. Explicit `precomputed_evaluations` and
+`initialization_cost` replace the corresponding adapter defaults; they do
+not append observations or add another charge. In particular, explicit
+`precomputed_evaluations=None` disables reuse and explicit
+`initialization_cost=0` treats setup as previous work. Use an internal
+omitted-argument sentinel for these two keywords so omission is distinct
+from an explicit `None` or zero; for ordinary callables the effective
+defaults remain `None` and zero. Apply the usual validation after resolving
+overrides. Reject separate `prior` or `log_prior` with a target object,
+whose density already includes the model's prior.
+
+Expose the adapter as a read-only `vbmc.target` property for direct-target
+construction; return `None` for an ordinary callable or an older saved
+instance without adapter metadata. Preserve the association across
+save/load so `loaded.target.to_arviz(loaded.vp)` is a public workflow.
+Keep the callable passed to the logger a bound method and ensure this
+association does not make iteration-history copies duplicate the adapter
+or make the numerical-state dtype canary traverse PyTensor graphs.
+
+Supply `start=` to `PyMCTarget` to skip its mode search. Overriding `x0`
+in `VBMC` changes the inference starting point after setup has already
+run and does not reduce its recorded cost. `options`, `options_path` and
+the VBMC `seed` retain their ordinary meanings. Each VBMC instance receives
+its own initialization charge; constructing one does not consume or clear
+the target's observations or cost. When setup belongs to previous work,
+the caller can explicitly use `initialization_cost=0`.
+
+The equivalent manually unpacked interface remains available:
+
+```python
+vbmc = VBMC(
+    target.log_joint, target.x0, target.lb, target.ub, target.plb, target.pub,
+    precomputed_evaluations=target.setup_evaluations,
+    initialization_cost=target.setup_cost,
+    options={"max_fun_evals": 200},           # includes initialization_cost
+)
 ```
 
 `pyvbmc/pymc/__init__.py` exports `PyMCTarget` and `UnsupportedModel`
@@ -297,12 +429,17 @@ pm.sample_posterior_predictive(data, model=model)
 PyMC nor PyTensor; constructing a `PyMCTarget` without PyMC raises an
 `ImportError` naming `pyvbmc[pymc]`, as `SVBMC` does for `pyvbmc[torch]`.
 
-`PyMCTarget(model, *, plausible_bounds=None, start=None, seed=None)`:
+`PyMCTarget(model, *, plausible_bounds=None, start=None, seed=None,
+setup_budget=None)`:
 
 - `model`: a `pymc.Model`. Its free variables, in the order of the given
   model's `free_RVs` (the partially untransformed model may list them in
   another order; the adapter looks them up by name), become consecutive
   blocks of the flat vector, each flattened in C order.
+  Before deriving bounds, initial points or compiled functions, snapshot
+  the PyMC-managed data/shared inputs used by the density and coordinate
+  maps. Capture dimension and coordinate metadata as well. Subsequent
+  mutation of the original model does not change the target.
 - `plausible_bounds`: `None` (the default) computes the Laplace box
   below. Otherwise a mapping from every free variable's name to a pair
   `(lower, upper)` in the model's own variables, each broadcastable to
@@ -323,6 +460,25 @@ PyMC nor PyTensor; constructing a `PyMCTarget` without PyMC raises an
   (`pymc.draw(random_seed=...)`); the mode search and the Hessian are
   deterministic. A `PyMCTarget` never reads or writes NumPy's global
   state.
+- `setup_budget`: `None` uses `20 + 5 D`; otherwise a positive integer
+  function-equivalent allowance (reject booleans and nonintegers). It caps
+  setup work before it is performed. Smaller caps shorten mode search;
+  a larger cap does not extend the measured `19 + 4 D` search limit.
+  Reject a cap insufficient for the selected route before density calls,
+  rather than dropping a requested setup step or overspending. Only actual
+  work contributes to `setup_cost`; unused allowance is not charged.
+
+For a strict total allowance, allocate a share to preparation explicitly:
+
+```python
+target = PyMCTarget(model, setup_budget=40)
+vbmc = VBMC(target, options={"max_fun_evals": 100})
+```
+
+Here setup spends at most 40 units and VBMC may spend the remainder of 100
+after the actual setup cost. VBMC validates that enough remains for its
+initial design before further calls. A total supplied to VBMC after target
+construction cannot constrain work that already occurred.
 
 Attributes, all float64 NumPy arrays of shape `(1, D)` where they are
 arrays: `x0`, `lb`, `ub`, `plb`, `pub`; `D`; `names` (free variables in
@@ -345,16 +501,23 @@ keys `route`, one of `"laplace"` (the box from the Hessian),
 `"initial"` (the model's initial point, when there is no gradient) or
 `"user"`; `mode`, the best point of the search as a dictionary over the
 model's variables when the search ran, else `None`; `n_evaluations`, the
-log-density evaluations spent, the Hessian counted as `D`; `cap_reached`,
+evaluation-equivalent setup units spent, the Hessian counted as `D`;
+`n_target_calls`, the actual setup density/value-gradient calls, including
+rejected and nonfinite trials; `n_hessian_calls`, the number of compiled
+Hessian evaluations; `hessian_cost`, the explicit derivative-work
+charge in function-equivalent units; `cap_reached`,
 whether the search stopped at its budget; `start_moved`, `curvature`,
-`relocated` and `clipped`, lists of coordinate names, empty when the
+`location_outside_prior` and `clipped`, lists of coordinate names, empty when the
 corresponding step did not run or changed nothing);
 `setup_evaluations` (the pair `(X, y)`: the `(n, D)` points in VBMC's
 coordinates at which the setup evaluated `log_joint`, the search's calls
 and the finiteness check, and the `(n,)` finite values, in call order;
-how they reach `VBMC` is settled before approval); `model` (the model as
-given; the partially untransformed model the adapter compiles is
-private).
+passed through `precomputed_evaluations`); `setup_budget` (the resolved
+positive-integer preparation cap); `setup_cost` (a read-only property
+returning `plausible_info["n_evaluations"]`, equal to `n_target_calls +
+hessian_cost`); `model` (the original model, retained for use with PyMC's
+prediction functions; the numerical target uses a private frozen snapshot
+and its partially untransformed model, with copied layout metadata).
 
 Methods:
 
@@ -403,6 +566,13 @@ order:
 
 1. A non-floating dtype raises `UnsupportedModel` (`k is int64: VBMC
    needs continuous parameters`).
+   Require float64 free/value variables and float64 compiled density,
+   gradient and Hessian outputs when those graphs are used. Reject a
+   float32 PyTensor configuration or value graph with an actionable error
+   before setup evaluations; do not silently upcast its computed results.
+   This requirement concerns evaluation precision, not the dtype of every
+   constant in the graph: PyTensor's documented exactly representable
+   float32 constants in an otherwise float64 graph remain supported.
 2. The transform PyMC attached (`rvs_to_transforms`) gives the hard
    bounds of every coordinate in the model's variables: `LogTransform`
    means `(0, inf)`; `LogOddsTransform` means `(0, 1)`; an interval
@@ -412,7 +582,16 @@ order:
    interval limit depends on another random variable`); any other
    transform raises `UnsupportedModel` (`unsupported transform
    <ClassName>`). No transform means unbounded only when
-   `_default_transform(rv.owner.op, rv)` is `None` as well; a transform
+   `_default_transform(rv.owner.op, rv)` is `None` as well and the
+   distribution operator belongs to an explicitly recognized real-line
+   support family. Keep that small support registry in `_compat.py`, with
+   type-based recognition and an evidence-backed support rule for each
+   entry. An unfamiliar no-transform operator raises `UnsupportedModel`
+   naming the variable and explaining that its support cannot be inferred.
+   Do not infer support by sampling, density probes or a missing transform.
+   This check applies to free-variable distributions, not custom likelihood
+   operations. No public support-override argument is added in this version.
+   A transform
    suppressed at construction raises `UnsupportedModel` (`its
    <ClassName> was suppressed at construction`).
 3. A variable that has no transform, or whose coordinates are all
@@ -435,14 +614,29 @@ variables are PyTensor functions compiled once at construction from
 
 ### Starting point and plausible box
 
-The setup spends at most `20 + 5 D` evaluations of the log joint (25 at
+The default setup allowance is `20 + 5 D` evaluation units (25 at
 `D = 1`, 70 at `D = 10`, 120 at `D = 20`), the Hessian counted as `D`;
 one, the finiteness check, when the model has no gradient or the user
-gives both `start` and `plausible_bounds`. Every evaluation is recorded
-in `setup_evaluations`. The budget, the stopping rule and the width of
-the location check are provisional until the setup probe of
-[Before approval](#before-approval-the-setup-probe-and-evaluation-reuse)
-has run. The default route, `laplace`:
+gives both `start` and `plausible_bounds`. Every finite log-density
+observation is recorded in `setup_evaluations`; the Hessian's D-unit
+charge does not create D reusable observations. Part A of the
+[setup probe](../results/2026-09-16-pymc-setup-probe.md) supports this
+budget, an absolute accepted-step improvement threshold of 0.001 nat,
+and a location interval from the prior's 0.5% to 99.5% quantiles. These
+are the approved defaults. A supplied
+`setup_budget` is an additional upper bound. Determine derivative
+availability and the selected route before density evaluations. Reserve
+`H = D` units if a Hessian will be evaluated, otherwise zero, and one unit
+for the final finiteness check. If a mode search will run, require room for
+at least one search call and cap its calls at
+`min(19 + 4 D, setup_budget - H - 1)`. Thus the minimum allowance is
+`H + 2` for search and `H + 1` without search. A graph without gradients
+or fully explicit initialization needs just one unit. Enforce this cap
+inside the objective, including rejected/nonfinite trials; reuse of a
+final cached value consumes no unit. Do not silently select a cheaper
+setup route merely because the supplied allowance is insufficient.
+The default route,
+`laplace`:
 
 1. **Search start.** The initial point of the partially untransformed
    model (`initial_point()`, read at the adapter's value names), moved by
@@ -453,38 +647,55 @@ has run. The default route, `laplace`:
    gradient (`logp(jacobian=True)` and `dlogp(vars=<free variables in
    the adapter's order>, jacobian=True)`), with the start-point rule's
    interval as bounds for a coordinate with finite hard bounds and none
-   otherwise, at most `19 + 4 D` calls, and a loose stopping rule (the
-   box needs a point well inside the posterior, not the mode to many
-   digits). The search maximizes the target VBMC sees, Jacobian
-   included, so for a kept variable the point is the stationary point of
-   the adapter's log joint. `x0` is the best point found. A search that
+   otherwise, at most the search allowance above, and a loose stopping rule (the
+   accepted-step improvement is between zero and 0.001 nat; `ftol=1e-14`
+   and `gtol=1e-8` are numerical safeguards). A counter inside the
+   objective enforces the cap even during a line search. The search
+   maximizes the target VBMC sees, including the Jacobian of each kept
+   transform. `x0` is the best point found within the stopping rule and
+   budget. A search that
    exhausts its calls sets `cap_reached`; the steps below run at the best
    point.
 3. **Curvature.** The exact Hessian at `x0` (`compile_d2logp(vars=...,
    jacobian=True, negate_output=False)`), counted as `D` evaluations.
    The box is `x0 ± 3` marginal standard deviations from the inverse of
    the negative Hessian.
+   A supplemental probe supports compiling this one-off Hessian with
+   `mode="FAST_COMPILE"`: compilation plus evaluation takes 0.071–0.911
+   seconds on the ten differentiable models, agreeing with the default
+   linker to scaled error below `3.8e-16`. The default-linker first
+   Hessian call takes 3.1–22.1 seconds. This selective compilation option
+   is approved; repeatedly evaluated targets keep the default
+   linker, and broader graph compatibility remains an implementation check.
 4. **Fallbacks without evaluations.** The prior box below is the 5 % to
    95 % quantiles of 4000 prior draws (`pymc.draw`, seeded by `seed`,
    mapped to value space).
-   - *Curvature*: a coordinate whose marginal variance is not finite and
-     positive (a ridge, a saddle, a singular Hessian), and every
+   - *Curvature*: first require the symmetric negative Hessian to be
+     positive definite; a singular or indefinite matrix gives prior
+     widths for every coordinate. A coordinate whose marginal variance is
+     not finite and positive, and every
      coordinate when the graph has a gradient but no second derivative,
      takes as its standard deviation half the width of the prior box
      divided by 3; listed in `curvature`.
-   - *Location*: a coordinate of `x0` outside the prior's `q` to `1 - q`
-     quantile interval (`q` from the probe) means the search ran away,
-     as it does on a density without a mode (a centered hierarchical
-     model whose group scale goes to zero). That coordinate of `x0` moves
-     to the midpoint of the prior box, takes the prior width, and is
-     listed in `relocated`.
+   - *Location*: a coordinate of `x0` outside the prior's 0.005 to 0.995
+     quantile interval flags a possible runaway search, as on a centered
+     hierarchical model whose group scale goes to zero. The probe's
+     shifted-normal counterexample shows that a valid mode can lie far
+     outside this interval. For an automatically searched start, list
+     outlying coordinates in `location_outside_prior` and warn without
+     moving them. A singular full Hessian does not establish runaway
+     behavior in each coordinate: adding an independent uniform parameter
+     to the shifted-normal example makes the full Hessian singular while
+     its normal coordinate remains well determined. Prior-location checks
+     never alter either an automatic or an explicit start. Curvature
+     fallback changes widths only; hard-bound normalization still applies.
    - *No gradient*: when the gradient cannot be built (a custom `Op`
      without `grad` in the graph), no search and no Hessian run: `route`
      is `"prior"`, `start` is `"initial"`, `x0` is the model's initial
      point after the start-point rule, the box is the prior box, and a
      warning recommends explicit `plausible_bounds`.
-5. **Start-point rule and clipping.** A coordinate of `x0` (the search
-   start, the best point, a relocated point or a user-supplied `start`)
+5. **Automatic start-point rule and clipping.** A coordinate of an
+   automatically generated `x0` (the search start or best point)
    closer than `2e-3` of the range to a finite hard bound, or on it (a
    mode of a bounded density on its boundary maps back onto the bound),
    is moved to that distance and listed in `start_moved`; the search's
@@ -497,28 +708,51 @@ has run. The default route, `laplace`:
    beyond `x0` (a start point within 1 % of a hard bound), that bound is
    placed halfway between the hard bound and `x0` instead, which is at
    least `1e-3` of the range inside the hard bound and strictly on the
-   far side of `x0`.
+   far side of an automatically generated `x0`.
+   Explicit starts and plausible bounds instead receive ordinary VBMC
+   normalization, including its `1e-3` effective margin; preserve any
+   values that VBMC would accept unchanged. Do not apply the automatic
+   `2e-3` start margin or 1% plausible-box heuristic to explicit inputs.
+   When bounds are generated around an explicit start, respect that start
+   and the core's valid effective interval. Reuse core normalization
+   semantics rather than maintaining divergent rules. Record required
+   adjustments before the final finiteness check, so stored observations
+   always refer to the actual evaluated point.
 6. **Finiteness.** `log_joint(x0)` must be finite; the search's value is
    reused when `x0` is its best point, and otherwise the check is one
-   more evaluation, which the search's `19 + 4 D` leaves room for. A
+   more evaluation, reserved in the setup allowance. A
    non-finite value raises `ValueError` naming the variables and values,
    before a user reaches VBMC's less specific error.
 
-With these rules none of the `VBMC.__init__` adjustments (`TooCloseBounds`,
+For automatically generated starts and boxes, none of the `VBMC.__init__` adjustments (`TooCloseBounds`,
 `InitialPointsTooClosePB`, `InitialPointsOutsidePB`) fires on an adapter
 target, and `test_plausible.py` asserts it. The lists (`start_moved`,
-`curvature`, `relocated`, `clipped`), `cap_reached` and the `prior`
+`curvature`, `location_outside_prior`, `clipped`), `cap_reached` and the `prior`
 route are reported through the logger `logging.getLogger("pyvbmc.pymc")`
 at `WARNING` (Python's last-resort handler shows warnings when no logging
 is configured, and a configured root logger receives them), because each
 is worth the user's attention. With `plausible_bounds` given, no Hessian
 is computed and no prior draws happen; with `start` given, no search
-runs; the clipping and the start-point rule apply in every case.
+runs. Explicit initialization follows ordinary VBMC normalization.
 
-A model whose observed data are `pm.Data` containers reads them when the
-compiled functions are called: `pm.set_data` after construction changes
-`log_joint` and leaves the box and `setup_evaluations` describing the old
-data. The documentation says to build a new target after changing data.
+A target represents a fixed snapshot of the supplied model. Its private
+graph has independent, frozen values for every PyMC-managed data/shared
+input used by the density, prior draws, support limits, initial point or
+coordinate maps. Capture names, shapes, dimensions and coordinate labels
+from the same snapshot. Compiled functions and all setup calculations use
+that graph; copying only the outer model object while sharing mutable
+data storage is insufficient. Mutating the original input arrays or
+calling `pm.set_data` on the original model must leave the target's
+density, maps, bounds, setup observations and export layout unchanged.
+Do not hash or compare datasets on every target call.
+
+Construct a new target to fit changed data. The original `model`, also
+accessible as `target.model`, remains available for PyMC posterior
+prediction with changed covariates, subject to PyMC's ordinary shape and
+model-compatibility requirements. A saved adapter retains both this
+prediction model and its private inference snapshot. The contract covers
+PyMC-managed graph inputs; custom likelihood operations must themselves
+keep any external files or hidden mutable state consistent during a fit.
 
 ### The structured ArviZ export
 
@@ -609,7 +843,9 @@ finds a particular model outside the supported scope raises
    the guard's `ImportError`. The alternative, treating a missing
    transform as unbounded, was rejected because a suppressed transform
    would then hand VBMC a density that is `-inf` on part of the box, the
-   failure the check exists to prevent.
+   failure the check exists to prevent. A `None` default additionally
+   requires the recognized real-line support rule above; it is not by
+   itself proof of unbounded support.
 4. **The undocumented `Model` instance attributes** (`free_RVs`,
    `rvs_to_values`, `rvs_to_transforms`, `named_vars_to_dims`): one
    `hasattr` check on the model instance at construction, the guard's
@@ -617,8 +853,10 @@ finds a particular model outside the supported scope raises
 
 ### Save and copy
 
-Nothing in `VBMC.save`, `VBMC.load` or `IterationHistory` changes. The
-adapter keeps only picklable state (NumPy arrays, the PyMC model, the
+The direct-target association exposed through `vbmc.target` survives
+`VBMC.save` and `VBMC.load`; ordinary callable and older saved instances
+expose `None`. Initialization-cost accounting also persists as specified
+below. The adapter keeps only picklable state (NumPy arrays, the PyMC model, the
 partially untransformed model, compiled PyTensor functions, the
 generator) and no module objects; `dill` pickles it once because the
 history shares `fun`. The documentation notes that a saved run carries
@@ -717,9 +955,10 @@ neither `max_fun_evals` nor the reported `func_count`.
    points; points outside the box are dropped.
 2. An extension of `VBMC`'s interface that seeds the function logger with
    evaluated points as training data, independent of `x0`, of the
-   plausible box and of `fun_eval_start` (a constructor argument such as
-   `initial_evaluations=(X, y)`), with a documented rule on whether they
-   count towards `max_fun_evals`, and the moved-row defect fixed. Unused,
+   plausible box and of `fun_eval_start`, through
+   `precomputed_evaluations=(X, y)` or `(X, y, y_sd)`. Initialization cost
+   is represented separately from these observations, and the moved-row
+   defect is fixed. Unused,
    it must leave every oracle (`--check --exact`) and the golden replay
    bit-identical. It would be implemented and reviewed on its own branch
    before Phase 2, with its own tests and documentation.
@@ -727,12 +966,19 @@ neither `max_fun_evals` nor the reported `func_count`.
    arguments for `VBMC` (`x0`, bounds, the evaluations, the options), so
    that the documented call cannot pass them inconsistently.
 
-**Also to decide.** Whether supplied evaluations count towards the
-budget; whether VBMC's uniform initial design still runs in full on top
-of them (a search path clusters along its way to the mode and is not
-space-filling) or is shortened by their number; whether points far below
-the best value (the first calls of a path started in the tail) are
-passed at all.
+**Budget requirement.** Actual setup evaluations count toward the total
+evaluation budget once. Supplying their cached results incurs no second
+charge. The interface must make that total-budget accounting explicit.
+Receiving precomputed observations does not itself consume the current
+budget. User-provided evaluations from earlier work carry no automatic
+charge to the current run; evaluations performed during this run's
+initialization are charged through its explicitly recorded initialization
+cost. Cost must not be inferred from the number of supplied rows.
+
+**Design choices tested.** Whether the uniform initial design runs in full
+or is shortened by the supplied points, and whether to prune low-density
+setup observations. The completed comparison supports full coverage and
+no additional setup-pruning step; existing later warmup pruning remains.
 
 **Method.** Part B runs VBMC and takes the heavy slot. On the vector
 model, the non-centered eight-schools model and the badly conditioned
@@ -750,6 +996,209 @@ wall time.
 **Decides.** The PI chooses among the options on the recorded evidence;
 the design's public surface, Phase 2's steps and tests, Phase 4's
 documentation and Example 8's call are revised to the choice.
+
+### Recorded outcome: 2026-09-16
+
+Both investigations are complete; the
+[report](../results/2026-09-16-pymc-setup-probe.md) and
+[45-case tables](../experiments/pymc_setup_probe/summary.md) are the evidence.
+Part A supports the cap and an absolute accepted-step improvement of
+0.001 nat. All eight usable-curvature models have centre shifts below
+0.3 marginal SD. The widest prior location interval catches the centered
+hierarchy, but a valid data-shifted normal mode proves that the interval
+alone cannot justify relocation. The probe tested a curvature-qualified
+relocation rule, but review found that an independent flat parameter makes
+that rule relocate a valid sharp mode. The public design therefore retains
+the prior-location diagnostic without automatic relocation. The historical
+probe outputs remain unchanged and do not validate the revised behavior
+on the centered hierarchy.
+
+Part B used total budgets 100, 150 and 100, including setup charges 14,
+24 and 32. All 45 cases spent exactly their assigned budget. All arms
+are accurate on the vector model; logger reuse improves median posterior
+distance on both harder models. It avoids the extreme outcomes observed
+in discard and filtered `f_vals` on eight-schools, and improves the
+badly conditioned regression's posterior distance in every paired seed.
+None of the hard-model fits reaches stability, so the comparison does
+not establish performance at normal convergence budgets.
+
+**Proposed choice:** option 2, an observation interface independent of
+`x0`, plausible bounds and the initial design. The all-points/full-design
+arm is the strongest tested candidate. A focused 20-attempt follow-up
+separates `10D`-nat density pruning (with a `D+1` minimum) from uniform
+coverage while holding the logger interface and initial components fixed.
+Filtering has no consistent benefit and introduces two schools GP failures;
+shortened coverage produces two severe regression posterior errors.
+Retain all finite unique setup observations initially, preserve the full
+ordinary design, and leave later warmup pruning unchanged. Five seeds on
+two hard models do not establish a universal policy. Count setup work
+against the total budget, including evaluated trials whose observations
+are subsequently omitted. Charge each evaluation once: importing its
+cached result adds no new target evaluation. For example, ten setup
+target calls leave 90 fresh calls under a total target-call budget of 100;
+retaining all ten results does not change that arithmetic.
+
+The probe enforces this by subtracting setup cost from the solver's
+remaining fresh-call cap. Preserving the internal meaning of `func_count`
+avoids changing algorithmic decisions that use it; it does not exclude
+setup from the user's total cost. The proposed API must expose and enforce
+the total-budget accounting through the parameters specified below.
+Supplied rows alone cannot reconstruct all prior
+cost: nonfinite/discarded trials and setup derivative work may be absent.
+Report actual target calls separately from the Hessian's explicit D-unit
+evaluation-equivalent charge; that charge does not represent D newly
+observed density values.
+
+A shipped reuse route must also fix the existing cached final-boost
+display row, which raises a formatting exception even with display off.
+The probe bypasses only that formatter. Its corrected logger emulation
+inserts the starting observation once; provisional duplicate-insertion
+cases are excluded. These are explicit acceptance checks for the
+separate interface work in Phase 0a.
+
+### Precomputed evaluations and initialization cost
+
+The observation interface must support deterministic targets, unknown-noise
+targets and targets with user-provided noise SDs. PyMC's deterministic
+setup is one caller of this general interface. The agreed name is
+`precomputed_evaluations`, accepting `(X, y)` or `(X, y, y_sd)` for optional
+per-observation noise SDs. Documentation can call observations supplied by
+the user "user-provided evaluations". The SD describes uncertainty in
+the evaluated log density, not uncertainty in the parameter coordinates.
+
+`X` has shape `(N, D)` and `y` (and `y_sd`, when present) shape `(N,)`;
+copy inputs into float64 storage without changing caller arrays. Values
+are outputs of the supplied `log_density` callable. If a separate prior is
+configured, add its deterministic log density once before logger insertion,
+without reevaluating the target or changing SDs. Require finite values and
+points strictly inside the hard bounds; do not move supplied observations
+or expand plausible bounds to accommodate them. Reject simultaneous use
+of the new argument and legacy `f_vals` to avoid ambiguous duplicate inputs.
+The PyMC adapter supplies joint densities with no separate prior.
+
+Precomputed evaluations describe available data; initialization cost
+describes work already performed for the current run. The adapter records
+that cost, which is deducted once from the total budget before further
+evaluations. The proposed concrete budget contract is:
+
+- Add keyword-only `initialization_cost=0` alongside
+  `precomputed_evaluations=None` in `VBMC` (effective defaults for ordinary
+  callables; omission uses a sentinel to support adapter defaults). Cost is a nonnegative integer
+  number of evaluation-equivalent units, independent of the supplied row
+  count. It may be positive even when no observations are supplied.
+- `max_fun_evals` denotes the total allowance, including this explicit
+  initialization charge. Compute the remaining fresh-call allowance as
+  `max_fun_evals - initialization_cost`. Keep the logger's fresh-call
+  counter and algorithmic uses of it unchanged. Record the configured total,
+  initialization charge and fresh calls separately so their relationship
+  remains visible after save/load; do not silently rewrite the user's total
+  as though it had been the original budget.
+- Match the probe's reduced solver allowance in algorithm schedules:
+  termination, acquisition batch limits, entropy-switch thresholds and
+  the GP training schedule's evaluation horizon use the effective fresh
+  allowance. Preserve actual training-data/observation counts such as
+  `n_eff`; Hessian cost creates no data. Keep the configured total separate
+  for public reporting and load-time overrides. Audit all existing
+  `max_fun_evals` consumers when implementing this split and test the
+  smallest accepted allowances so schedule calculations remain finite.
+- User-provided observations from previous work use the default zero
+  current-run initialization charge. `VBMC(target, ...)` supplies
+  `target.setup_cost` automatically unless explicitly overridden; the
+  manually unpacked form passes it explicitly. The adapter counts the calls
+  while performing setup.
+  Every actual density/value-gradient evaluation costs one unit, including
+  rejected line-search trials and nonfinite results. A cached finiteness
+  check or importing a stored value incurs no new charge. A newly evaluated
+  finiteness check costs one. No count is inferred from the retained rows.
+- The Hessian's D-unit charge is a declared approximation to derivative
+  cost, not a measured number of ordinary target calls. Keep actual calls
+  and Hessian units separately available in `plausible_info`. Compilation
+  and prior sampling have timing costs but are not target calls.
+- In the new interface path, reject an exhausted budget or one insufficient
+  for the required fresh initial design before calling the target. Limit
+  subsequent acquisition batches to the remaining allowance; minimum-run
+  settings must not override the total cap. With both new arguments unused,
+  preserve existing behavior and the exact numerical gates.
+
+For example, eight actual setup calls and a five-unit Hessian charge give
+`setup_cost=13`; a total allowance of 100 leaves 87 fresh calls, regardless
+of how many setup observations are retained. If the same observations come
+from prior work and no current initialization cost is supplied, all 100
+fresh calls remain available. This is explicit accounting, not cost inference.
+
+**Reporting without changing the ordinary workflow.** Call the charged
+quantity a *function-equivalent budget*. With `initialization_cost=0`,
+retain ordinary evaluation reporting and add no budget display or extra
+required arguments. `results["func_count"]` remains the number of fresh
+target calls made by VBMC. Precomputed observations alone do not activate
+function-equivalent-budget reporting.
+
+With a positive initialization charge, add one final summary line when
+display is enabled, for example:
+
+```text
+Function-equivalent budget: 100 / 100 (initialization 13 + VBMC 87)
+```
+
+Keep detailed accounting in the optional `results["evaluation_budget"]`
+entry, populated only for a positive initialization charge: `unit` is
+`"function_equivalent_evaluations"`; `limit` is the configured total;
+`initialization` is the recorded charge; `new_calls` matches `func_count`;
+and `used` is their sum. No additional iteration-table columns are needed.
+The PyMC adapter's `plausible_info` holds its actual density/value-gradient
+and Hessian invocation counts, along with the Hessian budget charge. Thus
+VBMC need not expose PyMC or Hessian details in its general reporting.
+Invocation counts describe the compiled functions called by the adapter;
+they do not claim to count every operation inside a derivative graph.
+
+- Validate supplied noise information against `uncertainty_handling_level`.
+  User-provided-noise mode requires finite positive SDs for supplied
+  observations; do not silently replace missing estimates with the logger's
+  internal default. Unknown-noise mode accepts observations without SDs and
+  retains its existing interpretation. Reject incompatible noise metadata
+  rather than silently discarding it or changing the noise mode.
+- Accept points in the target's original input coordinates. The logger
+  applies its coordinate transformation and deterministic log-Jacobian
+  offset to values; supplied noise SDs are unchanged by that offset.
+- Preserve independent noisy repeats at the same coordinates. Each input
+  row represents an observation and reaches the existing logger's pooling
+  and `n_evals` accounting; with supplied SDs, repeated observations are
+  combined by inverse-variance weighting. The probe's deduplication of
+  deterministic setup trials is not a general rule for noisy inputs.
+- With supplied independent noise SDs, precision is `1 / y_sd**2`:
+  sum precisions, use their weighted mean for the pooled value, and use
+  the reciprocal square root of their sum for the pooled SD. Never pool
+  an already supplied observation again merely because it is also `x0`.
+  Without supplied SDs, retain existing unknown-noise inference; do not
+  pretend heterogeneous observation precisions were supplied.
+- In deterministic mode, deduplicate agreeing observations at identical
+  original coordinates before insertion. Reject materially conflicting
+  values rather than averaging them. Specify a numerical comparison
+  tolerance that allows the documented compiled-value roundoff; this is
+  not an observation-noise tolerance. Keep supplied-row counts distinct
+  from retained locations, and never reduce the recorded setup cost when
+  deduplicating observations. These rules apply to the new input API;
+  ordinary logger behavior outside it remains unchanged.
+- Distinguish an independent repeat from handing the same cached starting
+  observation through two insertion paths. A supplied observation must be
+  inserted once; genuine noisy repeats must not be dropped. Report the
+  number of supplied observations separately from unique training locations
+  and fresh target calls.
+
+The separate interface change needs focused checks for noiseless input,
+unknown noise, heterogeneous supplied SDs, invalid or missing SDs, repeated
+noisy observations and their pooled uncertainty, coordinate conversion,
+single insertion of a cached starting observation, and save/load behavior.
+Budget checks cover zero and positive cost, positive cost without supplied
+rows, cost independent of the retained row count, invalid or exhausted
+budgets, final batches, minimum-run settings and save/load persistence of
+both the total and initialization charge.
+Check that ordinary zero-charge reporting is unchanged, charged runs add
+only the summary and result entry described above, display-off suppresses
+the additional line, and budget units are not mislabeled as literal calls.
+Unused, it retains the existing oracle and golden-replay guarantees. The
+setup/reuse experiments establish behavior for deterministic targets; they
+do not establish a pruning or initialization policy for noisy observations.
 
 ## Phases
 
@@ -783,6 +1232,46 @@ the decisions. On approval:
 1. Set this plan's status line to in progress and commit it on
    `dev-next` (`docs(dev):`).
 2. `git switch -c dev-pymc-adapter`.
+
+### Phase 0a: general precomputed evaluations and budget accounting
+
+**Executor**: Sol (the plan's Opus executor role), after Phase 0; independent
+Sol review before integration. The orchestrator owns numerical verification.
+**Goal**: implement the general interface above, including noisy observations,
+before any adapter depends on it.
+
+1. Work on a separate branch from `dev-pymc-adapter`,
+   `dev-precomputed-evaluations`. Add the two keyword-only constructor
+   arguments with omission sentinels for the Phase 2 adapter defaults,
+   validate their shapes, noise modes, bounds and cost, and
+   preserve the no-argument path. Seed observations independently of `x0`
+   and plausible bounds using existing logger transformations and pooling.
+   Preserve the ordinary initial design, while inserting any already
+   supplied starting observation only once. A fresh evaluation is still
+   needed if the actual starting point has no supplied observation.
+2. Implement the configured total and effective fresh-call allowance,
+   charged-path termination/batch limits, optional results breakdown and
+   conditional final summary. Keep literal fresh-call counts unchanged.
+   Preserve both configured and effective accounting on save/load, including
+   load-time budget overrides; old saves imply zero initialization charge.
+   Fix the cached final-display formatting defect exercised by the probe.
+3. Add focused checks for the validation, prior composition, noisy-repeat
+   pooling, deterministic deduplication/conflict rejection, initial-design
+   coverage, duplicate-start prevention and budget
+   cases listed above. Prefer constructor/logger and mocked-loop checks;
+   use the planned adapter end-to-end run for integration coverage rather
+   than adding a campaign of package `optimize()` tests.
+4. Update the hand-written VBMC API documentation and constructor docstring
+   with examples for externally precomputed observations and explicitly
+   charged initialization. Ordinary usage and zero-charge reporting stay
+   unchanged. Run the focused tests, exact oracles and golden replay in the
+   single heavy slot, with independent static review in parallel. Resolve
+   findings and merge the branch into `dev-pymc-adapter` before Phase 1.
+
+Acceptance: all supplied observations are accounted for exactly once,
+independent noisy repeats retain their information, total charged budgets
+are enforced, and unused-interface numerics/reporting remain unchanged.
+The full package suite remains the single Phase 6 gate.
 
 ### Phase 1: the structured ArviZ export
 
@@ -848,6 +1337,18 @@ and `coords`; the packaging lives in a helper the adapter reuses.
 **Goal**: `pyvbmc.pymc.PyMCTarget` as designed, tested against
 hand-written densities.
 
+Before assigning this phase, complete Phase 0a's
+separate interface change, including oracle/golden gates,
+unmodified initial bounds, one insertion per supplied observation,
+full-design behavior, fresh-call accounting and the cached final-display
+regression. Include the noisy-observation contract and focused checks above;
+deterministic setup deduplication must not discard independent noisy repeats.
+Verify that real setup evaluations are charged once against the total budget,
+including discarded trials, and importing their results adds no second charge.
+Add no preprocessing
+pruning and preserve existing warmup retention rules. The probe itself
+is not the package implementation.
+
 **Steps**:
 
 1. `pyvbmc/pymc/_compat.py`: `TESTED_RANGE = "PyMC 6.3 with ArviZ 1.3"`;
@@ -859,17 +1360,27 @@ hand-written densities.
    of the design section, each raising `ImportError` that quotes
    `pymc.__version__` and `TESTED_RANGE`); `closed_form(kind, lower,
    upper)` returning the NumPy `backward` map the construction-time
-   check compares against.
+   check compares against. Add the conservative real-line support registry:
+   document the support rule for each recognized operator; reject unknown
+   no-transform free-variable operators. Cover the distributions used by
+   the accepted examples and probes without adding a generic public
+   support-override API.
 2. `pyvbmc/pymc/_target.py`: port `PyMCTarget` from the prototype with
    these changes: no module stored on the instance; dispatch by type
    identity through `_compat`; the `args_fn`/`forward`/`backward`
-   guards and the construction-time closed-form check; the order of
+   guards and the construction-time closed-form check; a private frozen
+   snapshot of PyMC-managed shared data and copied export metadata,
+   created before support/initial-point discovery or compilation; the order of
    `names` taken from the given model; `value_names` and
    `coordinate_names`; `plausible_bounds` (support check for every
-   variable, mapping, per-coordinate sort), `start` and `seed`; the
+   variable, mapping, per-coordinate sort), `start`, `seed` and
+   `setup_budget` (route-specific minimum validation before density calls
+   and a capped search with Hessian/finiteness reserves); the
    compiled log joint with its gradient and the compiled Hessian
    (`compile_d2logp`), both with the free variables in the adapter's
-   order, and the detection of a graph without a gradient or without a
+   order (compile only the one-off Hessian with
+   `mode="FAST_COMPILE"` and compare both linkers in compatibility tests),
+   and the detection of a graph without a gradient or without a
    second derivative (the exception PyTensor raises while building the
    graph, caught narrowly and turned into the `prior` route or the
    curvature fallback); the evaluation counter and `setup_evaluations`;
@@ -878,7 +1389,8 @@ hand-written densities.
    density inside the box; `log_joint_no_jacobian`, `flatten`,
    `unflatten`, `to_model_variables`, `from_model_variables`;
    `to_arviz(vp, n_samples)` in the order of the design section through
-   `datatree_from_arrays`; `plausible_info` with exactly the nine keys;
+   `datatree_from_arrays`; `plausible_info` with the keys defined in the
+   public surface and `setup_cost` as its read-only total-cost property;
    the `pyvbmc.pymc` logger; `__str__`. Numpydoc docstrings in the
    `VariationalPosterior` style, with Raises sections.
 3. `pyvbmc/pymc/_plausible.py`, NumPy and SciPy over callables, no PyMC
@@ -887,25 +1399,47 @@ hand-written densities.
    X, y, cap_reached)` (L-BFGS-B with the start-point rule's interval as
    bounds, the stopping rule set by the probe, every call's point and
    finite value returned in call order, the best point by value);
-   `marginal_sd(H) -> (sd, usable_mask)` (inverse of `-H`, `sd` finite
-   and positive where usable; a `LinAlgError` makes nothing usable);
+   `marginal_sd(H) -> (sd, usable_mask)` (symmetrize `-H` and require a
+   successful Cholesky factorization before inversion; `sd` finite and
+   positive where usable; a `LinAlgError` makes nothing usable);
    `quantile_box(draws, quantiles=(0.05, 0.95)) -> (plb, pub)` on `(n,
-   D)` value-space draws; `relocate(x0, draws, q) -> (x0, moved_mask)`
-   (the location check); `clip_inside(plb, pub, lb, ub, x0,
+   D)` value-space draws; `location_outside_prior(x0, draws, q) ->
+   outside_mask` (diagnostic only, with no change to `x0`);
+   `clip_inside(plb, pub, lb, ub, x0,
    margin=0.01) -> (plb, pub, clipped_mask)` implementing the clipping
    including the halfway rule; `laplace_box(x0, hessian, lb, ub,
-   prior_draws, k=3.0) -> (x0, plb, pub, curvature_mask,
-   relocated_mask, clipped_mask)` composing them, where `hessian()`
+   prior_draws, k=3.0, check_location=True) -> (x0, plb, pub, curvature_mask,
+   location_mask, clipped_mask)` composing them, where `hessian()`
    returns the `(D, D)` Hessian at `x0` or `None` when the graph has no
    second derivative, and `prior_draws()` is a callable returning the
    `(4000, D)` value-space prior draws, called at most once and only
-   when a coordinate needs a fallback or the location check. `_target.py`
+   when a coordinate needs a fallback or the location check. Set
+   `check_location=False` for an explicit start. `_target.py`
    turns the masks into coordinate-name lists and logs them. The
    budget, the stopping rule and `q` are module constants with the
    values the probe settled.
+   Apply `move_inside` and heuristic clipping only to automatically
+   generated values. Explicit values follow core-equivalent normalization;
+   test mixed routes with an explicit start and automatically chosen bounds.
 4. `pyvbmc/pymc/__init__.py` (docstring naming the extra and the lazy
    import) and the `PyMCTarget` branch in `pyvbmc/__init__.py`'s
    `__getattr__` and `__dir__`.
+   Add `VBMC(target, ...)` resolution before starting-point and dimension
+   validation, following the public-surface override rules. Update the
+   VBMC constructor docstring and hand-written API page. Constructor tests
+   must compare direct and manually unpacked forms with the same seed:
+   resolved bounds/start, logger observations, initial VP/RNG state and
+   budget accounting must match. Check starting/plausible-bound overrides,
+   rejection of changed hard bounds, acceptance of identical hard bounds,
+   explicit zero cost,
+   explicit disabled reuse, incompatible prior inputs, repeated use of one
+   target without mutation, and absence of setup/target calls during
+   resolution. Extend import tests to cover ordinary callable construction
+   without PyMC/PyTensor imports. Use the direct form in the already planned
+   end-to-end test and lead adapter examples with it. Document the read-only
+   `vbmc.target` accessor and verify it is `None` on ordinary callable and
+   legacy saved instances; keep the adapter outside the numerical-state
+   dtype traversal and shared across logger/history copies.
 5. `pyproject.toml`: `pyvbmc.pymc` in `packages`; the `pymc` extra.
 6. Tests under `pyvbmc/testing/pymc/` with an `__init__.py`; every file
    except `test_imports.py` begins with `pytest.importorskip("pymc")`
@@ -932,6 +1466,11 @@ hand-written densities.
      `PyMCTarget(object())` raises `ImportError` matching
      `pyvbmc\[pymc\]` (the pattern of
      `pyvbmc/testing/svbmc/test_svbmc_imports.py`).
+     In the PyMC environment, add a subprocess precision check with
+     `PYTENSOR_FLAGS=floatX=float32`: constructing an adapter on an ordinary
+     continuous model raises a clear float64-requirement error before
+     setup evaluations. Check explicitly float32 value variables as well,
+     and retain the supported float64 model with float32 graph constants.
    - `test_target.py`: for each accepted model, `names` (in the given
      model's order, on a model whose partially untransformed order
      differs, for instance `beta, sigma, t, p`), `shapes`, `sizes`,
@@ -956,6 +1495,19 @@ hand-written densities.
      `int64`, `unsupported transform SimplexTransform`, `suppressed`,
      `depends on another random variable`, `unsupported transform
      Ordered`, `unsupported transform ZeroSumTransform`, `mix`.
+     Add a bounded `CustomDist` free variable with no registered transform:
+     reject its unknown support before setup calls. Contrast a recognized
+     unbounded distribution with no transform, and a supported free-variable
+     prior paired with a custom likelihood operation, which remains accepted.
+   - `test_model_snapshot.py`: construct a target using `pm.Data` for
+     observed values/covariates and for fixed interval limits. Record its
+     density, coordinate maps, support, bounds, setup observations and
+     export metadata. Change the original data (including in-place changes
+     to caller arrays and dimension labels where supported) and assert the
+     recorded target state remains unchanged. Build a fresh target to
+     verify changed data are picked up there. Check posterior prediction
+     with new covariates on the original model without changing the old
+     target. Use constructor/mapping checks, not additional optimize runs.
    - `test_guards.py`: with `_compat.default_transform` monkeypatched to
      raise `ImportError`, construction raises `ImportError` containing
      `TESTED_RANGE`; the same for a `transform_classes()` that lacks a
@@ -968,16 +1520,36 @@ hand-written densities.
    - `test_plausible.py`: on the `scalar` model the box equals the
      analytic posterior mean `± 3` standard deviations to `1e-3`
      relative and `plausible_info` is `{"route": "laplace", "start":
-     "mode", "mode": {...}, "n_evaluations": n, "cap_reached": False,
-     "start_moved": [], "curvature": [], "relocated": [], "clipped":
+     "mode", "mode": {...}, "n_evaluations": n, "n_target_calls": n - 1,
+     "n_hessian_calls": 1, "hessian_cost": 1, "cap_reached": False,
+     "start_moved": [], "curvature": [], "location_outside_prior": [], "clipped":
      []}` with `n <= 25` equal to the number of rows of
      `setup_evaluations` plus 1 for the Hessian (`D = 1`); for every
-     model `n_evaluations <= 20 + 5 D`, and the rows of
-     `setup_evaluations` satisfy `y[i] == log_joint(X[i])` exactly and
-     lie inside the start-point rule's interval; the `bounded` model's
+     model `setup_cost == n_evaluations == n_target_calls + hessian_cost`
+     and `n_evaluations <= setup_budget` (with the default
+     `setup_budget == 20 + 5 D`), and the rows of
+     `setup_evaluations` agree with `log_joint(X[i])` to floating-point
+     precision (`rtol=1e-12`, `atol=1e-8` for the probe models) and
+     lie inside the applicable start-point interval; the `bounded` model's
      `curvature` and `clipped` lists and the `cap_reached` and
-     `relocated` entries of both eight-schools models are asserted as
-     the probe recorded them, and each fallback emits a warning from the
+     `location_outside_prior` entries of both eight-schools models are
+     checked against the setup evidence at seed 0: bounded uses curvature fallback
+     on all three coordinates and clips both coordinates of `u`, without
+     relocation or a cap; centered eight-schools reaches the cap, uses
+     curvature fallback on all ten coordinates and flags `tau_log__`
+     without relocating it; non-centered eight-schools has none of these
+     fallbacks. This diagnostic-only behavior supersedes the historical
+     centered-model relocation and requires fresh implementation checks;
+     do not claim its initialization outcome was validated by that probe.
+     Add a symmetric indefinite-Hessian case with some positive inverse
+     diagonal entries: no coordinate may take a Laplace width from it.
+     Add the shifted-normal counterexample: report `location_outside_prior`
+     while retaining its valid-curvature mode. Also add an independent
+     `Uniform(-1, 1)` parameter: the resulting singular full Hessian must
+     not move the normal coordinate from `1000/101` toward its prior.
+     Check that an explicit
+     start is never relocated based on the prior, even with unusable
+     curvature. Each fallback emits a warning from the
      `pyvbmc.pymc` logger (`caplog`); the custom-`Op` model gives
      `route == "prior"`, `start == "initial"`, `n_evaluations == 1` and
      a warning; a `Beta(1, 3)` variable with no data, whose mode is on
@@ -995,6 +1567,16 @@ hand-written densities.
      fail) and gives `plausible_info["start"] == "user"`, `mode` None,
      `n_evaluations == 1 + D`; `start` together with `plausible_bounds`
      gives `n_evaluations == 1`;
+     check a smaller setup cap truncates search, including during a line
+     search, while reserving Hessian/finiteness work. Check invalid caps,
+     each route's minimum allowance, and insufficient caps rejected with
+     zero density calls. Fully explicit initialization and the no-gradient
+     route work with cap one. Confirm only actual work enters `setup_cost`
+     and hence the remaining VBMC budget;
+     on hard bounds `[0, 1]`, explicit start `.0015` and plausible bounds
+     `[.0012, .0018]` remain unchanged as in ordinary VBMC. Compare any
+     necessary normalization with core behavior, including an explicit
+     start combined with automatic plausible bounds;
      a mapping missing a variable or naming an unknown one raises
      `ValueError` naming it; two targets built with `seed=3` on the
      `bounded` model have identical boxes, and NumPy's global state is
@@ -1009,11 +1591,16 @@ hand-written densities.
      `pymc.sample_posterior_predictive` returns the observed variable
      with shape `(1, 40, n)`; a posterior of the wrong `D` raises
      `ValueError` and leaves `vp.rng` untouched.
-   - `test_save_load.py`: build `VBMC(target.log_joint, target.x0,
-     target.lb, target.ub, target.plb, target.pub, options={"display":
+   - `test_save_load.py`: build `VBMC(target, options={"display":
      "off"})`, `save` to `tmp_path`, `load`, and assert
      `loaded.function_logger.fun(x) == target.log_joint(x)` at three
-     points; `copy.deepcopy(target)` and `dill.loads(dill.dumps(target,
+     points. Use `loaded.target.to_arviz(loaded.vp)` and PyMC's predictive
+     function to verify a public load/export/predictive workflow using a
+     hand-built VP, without adding an optimization run. Verify initialization
+     cost and supplied observations survive without being inserted or
+     charged again on load. Confirm the frozen inference snapshot survives
+     even if the original prediction model's data changed before saving.
+     `copy.deepcopy(target)` and `dill.loads(dill.dumps(target,
      recurse=True))` give the same values (the pattern of
      `pyvbmc/testing/vbmc/test_vbmc_save_and_load.py`).
    - `test_optimize_short.py`: one seeded run on the `scalar` model with
@@ -1075,6 +1662,14 @@ Nothing heavy runs in this phase besides the docs build.
 **Goal**: every user-facing surface that lists integrations covers the
 adapter.
 
+The quickstart and API must use the agreed precomputed-evaluation interface
+and location policy. Explain that setup evaluations count toward the total
+budget once, while importing cached results incurs no second charge.
+Document setup cost, remaining fresh-call budget and reused observations,
+and whether reuse preserves the ordinary
+initial design. Do not present the provisional `f_vals` recipe as the
+chosen default before that decision.
+
 **Steps** (the sites and their analogues were located on 2026-09-14):
 
 1. `docsrc/source/quickstart.rst`: a new top-level section `Bring a PyMC
@@ -1085,8 +1680,10 @@ adapter.
    which, the kept transform), the `VBMC` call, the structured export
    and the two PyMC calls, then the supported scope and the rejections,
    the default box, its evaluation budget, how its evaluations reach
-   VBMC and how to override it, building a new target after
-   `pm.set_data`, float64, the generator, and that saving works under a
+   VBMC and how to override it, the optional upfront `setup_budget`,
+   fixed inference snapshots and building a new target to refit after
+   `pm.set_data`, conservative unknown-support rejection, float64,
+   the generator, and that saving works under a
    compatible PyMC. Run every code block of the section in the PyMC
    environment (as a script; no full `optimize()` is needed beyond one
    short run) and paste the actual `print(target)` output; do not
@@ -1148,6 +1745,10 @@ phase holds the heavy slot (the notebook's VBMC run and NUTS sampling).
 **Goal**: `examples/pyvbmc_example_8_pymc.ipynb`, executed once, with its
 generated script.
 
+Use the same approved reuse call and budget accounting as Phase 4. The
+short-budget probe's hard-model results are not a convergence target for
+this example; its NUTS comparison must assess the fitted posterior.
+
 **Steps**:
 
 1. Title `# PyVBMC Example 8: Fitting a PyMC model` (the exact text every
@@ -1183,12 +1784,11 @@ generated script.
   `test_vp_arviz.py` and `test_vp_export_dependencies.py`. In the
   project venv with single-threaded BLAS: the full suite (the PyMC and
   ArviZ tests skip there; every other test must pass as before, since
-  only `to_arviz` and new modules changed) and
-  `python dev/scripts/make_oracle_fixtures.py --check --exact` (nothing
-  numerical changed, so every oracle must be bit-identical). The golden
-  replay (`dev/scripts/golden_replay.py`) runs only if the diff touches
-  a file the solver imports; the adapter and the export do not, and the
-  exact oracle check stands in for it.
+  the new precomputed-evaluation and charged-budget paths are opt-in) and
+  `python dev/scripts/make_oracle_fixtures.py --check --exact` (the existing
+  numerical paths remain bit-identical). Run the golden replay
+  (`dev/scripts/golden_replay.py`) on the integrated branch: Phase 0a touches
+  the solver, so the adapter/export-only exemption does not apply.
 - A wheel and an sdist built and inspected: `pyvbmc/pymc/` in both,
   `pyvbmc/testing/pymc/` in the sdist only; if the sdist lacks it, add
   `recursive-include pyvbmc/testing/pymc *.py` to `MANIFEST.in` as the
@@ -1256,13 +1856,17 @@ and this plan (the design decisions and the execution record).
   guarded by a closed-form check at construction. Rejected: PyMC's
   public `constrain_values` and `unconstrain_values`, which fail under
   the default linker on the tested PyMC (see "What the plan rests on").
-- **A setup budget of `20 + 5 D` evaluations, spent on a gradient search
+- **A proposed setup budget of `20 + 5 D` evaluation units, spent on a gradient search
   and one exact Hessian of the adapter's own log joint** — the PI's
   decision of 2026-09-14: VBMC exists for targets whose evaluations are
   expensive, so the setup must be nearly free of them, and PyTensor
   supplies exact first and second derivatives of every PyMC model built
-  from differentiable operations. The budget is provisional until the
-  setup probe has run. Rejected: a finite-difference Hessian (about
+  from differentiable operations. Part A supports retaining the cap:
+  the largest centre error among the eight models with usable reference
+  curvature is 0.254 marginal SD. The proposed stopping rule is an
+  accepted-step improvement of at most 0.001 nat, with a strict
+  objective-call cap. The exact Hessian's D-unit charge supplies no
+  reusable density rows. Rejected: a finite-difference Hessian (about
   `2 D²` evaluations, 800 at `D = 20`, where the exact one costs about
   `D`), `pymc.find_MAP` (a search on the density without the Jacobian,
   allowed 5000 evaluations by default and falling back to Powell's
@@ -1272,23 +1876,42 @@ and this plan (the design decisions and the execution record).
   with `Normal(0, 5)` coefficients their box spanned log joints from
   −93 827 to −63 and the initial GP fit failed).
 - **Fallbacks that cost no evaluations** — prior-quantile widths for a
-  coordinate without usable curvature, a location check against the
-  prior for a search that ran away, and the prior box for a model without
-  a gradient, each reported. Explicit `plausible_bounds` and `start` are
+  coordinate without usable curvature, a diagnostic location check against
+  the prior, and the prior box for a model without
+  a gradient, each reported. Part A supports `q=0.005`: it flags the
+  collapsing scale in centered eight-schools and no coordinate in the
+  other specified models. A shifted-normal counterexample rules out
+  unconditional prior-quantile relocation as a general default. Adding an
+  independent uniform parameter defeats the curvature-qualified rule too:
+  full-Hessian singularity does not invalidate the normal coordinate's
+  mode. The location check therefore reports a warning without relocation;
+  explicit starts are respected. Positive
+  definiteness is required before inverting the
+  negative Hessian; an indefinite inverse can have positive diagonal
+  entries without defining a covariance. Explicit `plausible_bounds` and `start` are
   accepted; the mapping form of `plausible_bounds` is all-or-nothing
   (every free variable), because a partial mapping would have to combine
   user intervals with Laplace intervals coordinate by coordinate and the
   fallbacks already handle the ridge case that would motivate it.
-- **The setup's evaluations go to VBMC** — every evaluation the search
-  spends is a valid training point, and discarding them would waste
-  evaluations of an expensive target. The route (the existing `f_vals`
-  option or an extension of `VBMC`'s interface) is settled before
-  approval.
-- **The adapter applies VBMC's own start-point and margin rules before
-  handing over** — a start point moved inside by `2e-3` of the range and
-  plausible bounds never clipped past it, so that the finiteness check
-  and the curvature are evaluated at the point VBMC uses and none of the
-  constructor's adjustments fires. Rejected: leaving a boundary mode to
+- **Retain finite setup observations through `precomputed_evaluations`.**
+  Part B favors an observation interface
+  independent of `x0`, bounds and the initial design: all-points logger
+  seeding improves the hard-model posterior scores. The easy model
+  shows no clear gain; no hard-model arm converges at the short caps.
+  The original filtering/coverage confound is addressed by the focused
+  follow-up with fixed logger initialization. Early `10D`-nat pruning
+  brings no consistent benefit; the proposed default retains all finite
+  unique observations with the ordinary full design and lets existing
+  warmup pruning run later. There is no universal point-filtering
+  conclusion. Setup evaluations count toward the total budget once;
+  importing their cached results incurs no second charge. Separate reporting
+  of setup and fresh calls preserves their total cost while allowing the
+  existing internal algorithmic meaning of `func_count` to remain unchanged.
+- **Normalize initialization before caching its value** — automatic
+  starts use the measured `2e-3` margin and automatically generated bounds
+  use heuristic clipping. Explicit inputs receive ordinary VBMC
+  normalization, preserving values the core accepts unchanged. The final
+  finiteness check uses the resulting start. Rejected: leaving a boundary mode to
   VBMC, which would have made the construction-time finiteness check
   reject models VBMC accepts.
 - **`-inf` on and outside the hard box, a named `ValueError` inside it** —
@@ -1322,6 +1945,115 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: the PI approved the complete plan and instructed committing
+  and pushing the planning work on `dev-next`, then starting implementation
+  on another branch with the task skill. The live checklist records phase
+  execution; Sol fills the implementation/review roles and the orchestrator
+  owns integration and the single heavy-verification slot.
+
+- 2026-09-16: the PI accepted private model-data snapshots, conservative
+  recognition of support for untransformed free variables, and an optional
+  upfront `setup_budget` while retaining eager preparation. The PI also
+  confirmed precision-weighted pooling of independent noisy observations.
+  These contracts, their implementation steps and acceptance checks are
+  incorporated. All review decisions are settled; package implementation
+  remains pending explicit approval.
+
+- 2026-09-16: three independent Sol design reviews identified lifecycle,
+  support, initialization and budget footguns. The PI accepted diagnostic-only
+  prior-location checks, fixed model-support bounds in the direct interface,
+  core-equivalent handling of explicit initialization, a public persisted
+  `vbmc.target` association, deterministic-input duplicate validation and
+  a float64 precision requirement. These changes are incorporated in the
+  design and acceptance checks. Data snapshots, conservative support
+  recognition and an upfront setup allowance are recommendations awaiting
+  discussion. No package implementation is authorized.
+
+- 2026-09-16: the PI requested direct adapter input. The public interface
+  now specifies `VBMC(target, ...)`, automatic initialization-field and
+  cost resolution, explicit overrides, and equivalence/import checks.
+  Manual unpacking remains available. This updates the plan only;
+  implementation remains pending approval.
+
+- 2026-09-16: the design discussion was consolidated into the implementation
+  plan: precomputed evaluations with noise support, explicit initialization
+  cost and conditional function-equivalent reporting, full initial coverage,
+  unchanged later warmup pruning, and curvature-qualified location fallback
+  for automatic starts only. Phase 0a specifies the independently reviewed
+  general API change before the adapter; public diagnostics and acceptance
+  checks are aligned. No further scientific investigation is required for
+  the scoped integration. Implementation still awaits PI approval.
+
+- 2026-09-16: the PI requested function-equivalent budget reporting that
+  leaves ordinary non-PyMC usage simple. The proposal preserves default
+  displays and `func_count`, adds one final summary and an optional results
+  entry only for positive initialization charges, and keeps the actual
+  density/value-gradient and Hessian invocation counts on the adapter.
+  The Hessian's D-unit charge is not reported as D literal density calls.
+
+- 2026-09-16: the orchestrator made the budget proposal concrete for PI
+  review: `initialization_cost=0`, independent of `precomputed_evaluations`,
+  deducted once from the total `max_fun_evals` allowance. `PyMCTarget`
+  counts actual initialization calls and records the separate Hessian-unit
+  charge; `setup_cost` exposes their sum. The plan includes budget-exhaustion,
+  batching and persistence checks while preserving the unused-interface
+  behavior. This is a proposed contract; package implementation remains
+  pending approval.
+
+- 2026-09-16: the PI clarified total-budget accounting and terminology.
+  Real setup evaluations must count against the total budget; reuse incurs
+  no second charge. Keeping a separate internal fresh-call counter must not
+  exclude setup costs from the public budget. The PI agreed to
+  `precomputed_evaluations=(X, y)` or `(X, y, y_sd)`, with initialization
+  cost represented separately. Receiving precomputed data incurs no automatic
+  current-run charge; initialization performed for this run is charged once.
+  Cost cannot be inferred from the supplied row count. The cost parameter
+  details remain pending, and no package implementation is approved.
+
+- 2026-09-16: the PI required the general precomputed-evaluation API to
+  accommodate noisy evaluations. The plan records optional per-observation
+  SDs, explicit compatibility with existing noise modes, preservation and
+  pooling of independent repeats, observation-versus-location accounting,
+  and the corresponding interface tests. Public syntax and implementation
+  remain pending approval; the deterministic probe is unchanged.
+
+- 2026-09-16: at the PI's request, the orchestrator completed the focused
+  filtering/coverage comparison: 20 additional attempts on the two hard
+  models, five seeds and two new arms, against ten saved all-points/full
+  baselines. The PI corrected the filtering criterion from plausible-box
+  membership to relative log density. The normal warmup rule (`10D` nats,
+  at least `D+1` points) selects exactly the same schools observations;
+  those ten cases were carried forward with source hashes and an equivalence
+  record. Regression retained 24 observations instead of the box's 15.
+  Eighteen attempts returned at exact budgets; two schools full-design
+  attempts failed during GP fitting before their caps. Full-design random
+  points and density values match the saved baseline bit-for-bit, and
+  filtered-arm starting VP/RNG states match. The recommendation is all
+  finite setup observations plus the ordinary full design, with later
+  warmup pruning unchanged. Detailed results and limitations are in the
+  report; implementation remains pending discussion and approval.
+
+- 2026-09-16: resumed preapproval investigations from `dev-next`
+  `741d635` with gpyreg `9e70e6b` (1.2.1). The orchestrator wrote the
+  separate `pymc_setup_probe.py`; the historical prototype and package
+  remain unchanged. Part A's eleven-model comparison supports the
+  `20 + 5D` cap and the 0.001-nat accepted-step stopping rule. The
+  widest tested prior interval flags the centered hierarchy, but a
+  shifted-normal counterexample requires a revision of unconditional
+  relocation before approval. Three sequential four-chain NUTS references
+  pass diagnostics. Part B completed five paired seeds per model and
+  three arms at total budgets of 100/150/100 units, with exact accounting
+  in every case. All-points logger seeding improves the two hard-model
+  posterior comparisons; none of their arms reaches stability. The
+  proposed interface preserves the full design and fresh-call counters,
+  while that initial comparison left filtering unsettled. The runner bypasses
+  an existing cached final-display formatting defect; an initial
+  duplicate observation in the logger emulation was corrected and its
+  affected cases excluded and rerun. Evidence and limitations are in the
+  [probe report](../results/2026-09-16-pymc-setup-probe.md). No Phase 0
+  or package implementation has started; the PI requested discussion of
+  the results before implementation approval.
 
 - 2026-09-14: plan drafted from the feasibility record, the probes and
   the API research above, reviewed by three read-only Opus reviewers

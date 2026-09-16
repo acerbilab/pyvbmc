@@ -1,0 +1,44 @@
+{
+  "summary_runner": {
+    "python": "3.12.6",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "versions": {
+      "pymc": "6.3.2",
+      "pytensor": "3.3.1",
+      "arviz": "1.3.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "gpyreg": "1.2.1"
+    },
+    "pyvbmc_commit": "741d635bd11431d800e70a50f56cfe5dafa31119",
+    "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "gpyreg_dirty": "",
+    "linker": "NumbaLinker",
+    "floatX": "float64",
+    "blas_thread_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "sha256": {
+      "dev\\scripts\\pymc_setup_probe.py": "206e40d683660a8ddc790925ace71e82f3fdc119fb0a39ce4e406d6ce3d36b92",
+      "dev\\scripts\\pymc_feasibility.py": "a7f0f12520b4bde78a72ca35ae226416faf19f2f216c53fdc8023cf63fca3bb2",
+      "pyvbmc\\vbmc\\vbmc.py": "7c9b9715c1a307a8533123103c8c57905acc32108ab105fd2e1c737f9a03e6bc",
+      "pyvbmc\\vbmc\\active_sample.py": "1175ffe230b3e634c69e2837a2e3c217bf6d23223cf0d67dc4572810ba29416b",
+      "pyvbmc\\function_logger\\function_logger.py": "5ef869c2d877307c296fe0829d115e6c0e831f00ba8e1c47ba4540dea3c9ec18"
+    }
+  },
+  "input_sha256": {
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\a_selected\\part_a.json": "aac00a6144035e57e7a7343cfe7998c933ec4d6fe8d3d4eb7aecbafac0b544cb",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\b_final\\part_b.json": "fec5fb2bab6641336e484c6922cd4e323d8f17f84adbc64da6a1ddcb71f0b1a4",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\a_selected\\setups\\vector.json": "3cf65194e66c94e177ed545ea817b8d173f665d1484fcc72393b0ead48718952",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\vector.json": "c80f79b38188aacfb30fc2bf640c107ab35a38ede92c855b8596ea42934c3ba7",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\vector.npz": "c3cb91b174a71b756a57b29c7ee2f3c002729252d0782765625536ced3b32dae",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\a_selected\\setups\\schools_noncentered.json": "9c07ee354368397da27fda46cee20a2a960a84640c8502325451912d13229299",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\schools_noncentered.json": "4e7398a36afa54980d9e6eed101673d6aac0eb98d10e150a0b3dacdf80387786",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\schools_noncentered.npz": "e59bfb2086561ff86c93d7ad09bae50483ddc12276f666e7cf73fa5fe5c18ac6",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\a_selected\\setups\\ill_conditioned.json": "ca844c94a3715d518fdb6a246f9b39c7a70dcb5af016a374cb4678fe0786e14e",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\ill_conditioned.json": "c8a83feae5c20776a6ec4b040505f205f609497181ce210663f1fd46ddb04467",
+    "dev\\scripts\\runs\\pymc_setup_probe_20260916\\references\\ill_conditioned.npz": "6df373c3abb9859ea1dab9b35d2be7e8e8f30b4f5190fec62d11aed9ad576b75"
+  }
+}

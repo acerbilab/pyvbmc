@@ -151,15 +151,53 @@ records its execution.
   [implementation plan](plans/pymc-target-adapter.md) is drafted and
   reviewed (module and extra, the `PyMCTarget` class, the `to_arviz`
   extension, the four guarded PyMC reaches, the `pymc >= 6.3` floor with
-  the CI cell, save and load, tests, docs, Example 8). Next, before
-  approval: the plan's two investigations, the setup probe (the budget,
-  the stopping rule, the location check) and the route by which the setup
-  evaluations reach VBMC (the existing `f_vals` option or an extension of
-  `VBMC`'s interface, measured in short runs). The
+  the CI cell, save and load, tests, docs, Example 8). The investigations
+  are complete. Independent Sol review corrections are accepted and
+  incorporated; the PI approved implementation on 2026-09-16. The live
+  checklist in the plan tracks the work. The target
+  snapshots model data, conservatively recognizes support for untransformed
+  free variables, and accepts an optional upfront `setup_budget`. Automatic mode
+  search uses the measured budget and stopping rule; prior-location checks
+  are diagnostic and do not relocate starts. Explicit initialization uses
+  ordinary core normalization. The
+  evaluation-reuse comparison (`f_vals` or logger seeding, matched total
+  budgets) completed 45 fits, with three accepted NUTS references.
+  All-points logger seeding gives the best hard-model posterior scores,
+  but no hard-model arm reaches stability at the short budgets. The
+  consolidated plan records the reuse interface and location policy. The
+  PI requested a focused follow-up: 20 attempts on the two hard models,
+  comparing filtered/full and filtered/shortened designs through the same
+  logger interface, against the existing all-points/full baseline. The
+  filter uses relative log density (`10D` nats, at least `D+1` points),
+  as the PI clarified, following normal warmup pruning. It is complete:
+  18 returned fits and two GP failures. Early pruning shows no consistent
+  benefit; the proposed default keeps all finite setup observations and
+  the full ordinary design, with later warmup pruning unchanged.
+  Implementation is in progress on feature branches. The
+  general `precomputed_evaluations` API must also support noisy evaluations,
+  optional per-observation noise SDs and independent repeats; the plan
+  records the noise-mode and pooling requirements. Actual setup evaluations
+  count against the total budget once through separately recorded
+  initialization cost; receiving precomputed data incurs no automatic charge.
+  Cost must not be inferred from the supplied row count. The concrete
+  proposal is `initialization_cost=0`, deducted from the total
+  `max_fun_evals` allowance; the adapter exposes its measured call count
+  plus separately identified Hessian units through `setup_cost`.
+  `VBMC(target, ...)` reads the adapter's density, start, bounds, observations
+  and setup cost automatically, with explicit starting/plausible-bound and
+  observation/cost arguments overriding defaults. Hard bounds must match
+  model support; `vbmc.target` retains the adapter for export after loading.
+  Manual unpacking remains available. Ordinary
+  zero-charge reporting remains unchanged; charged runs add one
+  function-equivalent budget summary and an optional results breakdown. The
+  [probe report](results/2026-09-16-pymc-setup-probe.md) records the evidence.
+  The
   [pickup record](plans/pymc-target-adapter.md#pickup-2026-09-16)
-  gives the reading order, environment and executor mapping; neither
-  investigation has started. After approval, Phase 0 creates the branch
-  `dev-pymc-adapter` and the phase executors implement Phases 1 to 5. Automatic
+  gives the reading order, environment and executor mapping. Approval is
+  recorded; Phase 0 commits and pushes the planning evidence on `dev-next`.
+  Phase 0 creates the branch
+  `dev-pymc-adapter`; Phase 0a implements and independently reviews the general
+  precomputed-evaluation API before Phases 1 to 5. Automatic
   initialization and inference orchestration stay deferred. See the
   [PyMC proposal](2026-09-13-pymc-integration.md).
 

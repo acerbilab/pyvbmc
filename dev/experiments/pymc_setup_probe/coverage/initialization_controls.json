@@ -1,0 +1,62 @@
+[
+  {
+    "name": "schools_noncentered",
+    "seed": 0,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.006771193707598044
+  },
+  {
+    "name": "schools_noncentered",
+    "seed": 1,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.006771193707598044
+  },
+  {
+    "name": "schools_noncentered",
+    "seed": 2,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.006771193707598044
+  },
+  {
+    "name": "schools_noncentered",
+    "seed": 3,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.006771193707598044
+  },
+  {
+    "name": "schools_noncentered",
+    "seed": 4,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.006771193707598044
+  },
+  {
+    "name": "ill_conditioned",
+    "seed": 0,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.007550063177547139
+  },
+  {
+    "name": "ill_conditioned",
+    "seed": 1,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.007550063177547139
+  },
+  {
+    "name": "ill_conditioned",
+    "seed": 2,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.007550063177547139
+  },
+  {
+    "name": "ill_conditioned",
+    "seed": 3,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.007550063177547139
+  },
+  {
+    "name": "ill_conditioned",
+    "seed": 4,
+    "filtered_arms_initial_vp_and_rng_identical": true,
+    "old_f_vals_initial_mu_max_abs_difference": 0.007550063177547139
+  }
+]
