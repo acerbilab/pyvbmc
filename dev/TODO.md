@@ -157,10 +157,29 @@ records its execution.
   final large-scale check below is the first such campaign. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
+- [ ] **Independent codebase and MATLAB-port audit.** Before freezing the
+  code for the final release benchmark, have several independent reviewers
+  examine the PyVBMC codebase for errors and latent bugs. Split coverage
+  between internal correctness and systematic comparison with the original
+  MATLAB VBMC implementation, with overlapping review of critical numerical
+  paths. Cover formulas and gradients, indexing and array shapes, defaults,
+  control flow, random draws, state and caching, and cross-module behavior.
+  Record the MATLAB revision used and distinguish intentional Python
+  differences from porting mistakes and defects shared by both versions.
+  The recently discovered long-standing acquisition-box sampling error
+  motivates checking established code as well as recent changes; passing
+  tests and stored oracles do not establish correctness of the original port.
+  Reconcile findings against source and reproducible examples, add regression
+  checks for confirmed fixes, and apply the existing numerical gates to any
+  behavior changes. Resolve findings or document their disposition before the
+  final benchmark so it measures the reviewed release candidate. This audit
+  can start before the other release work is complete.
+
 - [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated, regenerate the VBMC run pools on the test
-  targets with the release code on the cluster (about 100 runs per
-  condition as in the [campaign](plans/svbmc-benchmark-campaign.md),
+  1.5 is consolidated and the code audit above is complete, regenerate the
+  VBMC run pools on the test targets with the release code on the cluster
+  (about 100 runs per condition as in the
+  [campaign](plans/svbmc-benchmark-campaign.md),
   several hundred where `M = 32` is to be scored: the present pools of
   100 noisy and 50 noiseless runs reuse each run 1.6 to 3.2 times at
   `M = 16` and 3.2 to 6.4 times at `M = 32`, so ten disjoint subsets of
