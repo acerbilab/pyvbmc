@@ -443,7 +443,16 @@ class VariationalPosterior:
             ) from exc
         return to_torch(self, orig_flag=orig_flag, dtype=dtype, device=device)
 
-    def to_arviz(self, n_samples=1000, *, var_names=None, orig_flag=True):
+    def to_arviz(
+        self,
+        n_samples=1000,
+        *,
+        var_names=None,
+        orig_flag=True,
+        variables=None,
+        dims=None,
+        coords=None,
+    ):
         """Export independent posterior draws as an ArviZ DataTree.
 
         Parameters
@@ -453,15 +462,29 @@ class VariationalPosterior:
         var_names : sequence of str, optional
             Unique names for the D scalar parameters, default ``x_0``,
             ``x_1``, and so on. Names must differ from ``chain`` and ``draw``.
+            Cannot be used with `variables`.
         orig_flag : bool, optional
             Draw in original coordinates (default True), or in the internal
             unconstrained coordinates if False.
+        variables : mapping of str to int or sequence of int, optional
+            Structured variable layout. Mapping order assigns consecutive
+            columns of each draw to each variable. An integer defines a
+            one-dimensional shape and ``()`` defines a scalar. Variable sizes
+            must sum to ``D``.
+        dims : mapping of str to sequence of str, optional
+            Event dimension names for structured variables. Each sequence must
+            have one name per variable axis. Requires `variables`.
+        coords : mapping of str to one-dimensional array-like, optional
+            Coordinate values for structured dimensions. Each coordinate must
+            match the length of every axis using that dimension. Requires
+            `variables`.
 
         Returns
         -------
         data : xarray.DataTree
-            A ``posterior`` group with one variable per parameter, each with
-            dimensions ``(chain, draw)`` and shape ``(1, n_samples)``.
+            A ``posterior`` group with one chain. Without `variables`, it has
+            one scalar variable per parameter. Structured variables retain
+            their event dimensions after ``chain`` and ``draw``.
 
         Raises
         ------
@@ -469,7 +492,8 @@ class VariationalPosterior:
             If Python is older than 3.12 or ArviZ's current data API is absent;
             use Python 3.12+ and install ``pyvbmc[arviz]``.
         ValueError
-            If the sample count or parameter names are invalid.
+            If the sample count, names, structured layout, dimensions, or
+            coordinates are invalid.
 
         Notes
         -----
@@ -478,6 +502,13 @@ class VariationalPosterior:
         likelihood or sampler-diagnostic groups. These are draws from a
         variational approximation: MCMC diagnostics on them do not assess
         how well the approximation represents the target posterior.
+
+        A structured layout takes consecutive sample columns in mapping order
+        and reshapes each block in C order. The exported arrays are independent
+        of the posterior's parameter arrays afterwards. The posterior group's
+        ``parameter_space`` attribute is ``"original"`` or ``"internal"``
+        according to `orig_flag`; ``"model"`` denotes exports assembled in
+        model-variable coordinates by an integration.
         """
         if (
             isinstance(n_samples, (bool, np.bool_))
@@ -485,57 +516,71 @@ class VariationalPosterior:
             or n_samples < 1
         ):
             raise ValueError("n_samples must be a positive integer.")
-        if var_names is None:
-            names = [f"x_{i}" for i in range(self.D)]
+
+        from ._arviz import (
+            _structured_layout,
+            datatree_from_arrays,
+            require_from_dict,
+        )
+
+        if variables is None:
+            if dims is not None:
+                raise ValueError("dims requires variables.")
+            if coords is not None:
+                raise ValueError("coords requires variables.")
+            if var_names is None:
+                names = [f"x_{i}" for i in range(self.D)]
+            else:
+                if isinstance(var_names, str):
+                    raise ValueError(
+                        "var_names must contain D parameter names."
+                    )
+                try:
+                    names = list(var_names)
+                except TypeError as exc:
+                    raise ValueError(
+                        "var_names must contain D parameter names."
+                    ) from exc
+                if (
+                    len(names) != self.D
+                    or any(
+                        not isinstance(n, str) or not n.strip() for n in names
+                    )
+                    or len(set(names)) != self.D
+                    or any(n in {"chain", "draw"} for n in names)
+                ):
+                    raise ValueError(
+                        "var_names must contain D unique, nonempty strings, "
+                        "excluding 'chain' and 'draw'."
+                    )
+            layout = [(name, i, (), ()) for i, name in enumerate(names)]
         else:
-            if isinstance(var_names, str):
-                raise ValueError("var_names must contain D parameter names.")
-            try:
-                names = list(var_names)
-            except TypeError as exc:
+            if var_names is not None:
                 raise ValueError(
-                    "var_names must contain D parameter names."
-                ) from exc
-            if (
-                len(names) != self.D
-                or any(not isinstance(n, str) or not n.strip() for n in names)
-                or len(set(names)) != self.D
-                or any(n in {"chain", "draw"} for n in names)
-            ):
-                raise ValueError(
-                    "var_names must contain D unique, nonempty strings, "
-                    "excluding 'chain' and 'draw'."
+                    "var_names and variables cannot be supplied together."
                 )
-        if sys.version_info < (3, 12):
-            raise ImportError(
-                "ArviZ DataTree export requires Python 3.12+; "
-                "use Python 3.12+ and install pyvbmc[arviz]."
-            )
-        try:
-            from arviz_base import from_dict
-        except ModuleNotFoundError as exc:
-            if exc.name != "arviz_base":
-                raise
-            raise ImportError(
-                "ArviZ DataTree export requires arviz-base; "
-                "install pyvbmc[arviz] on Python 3.12+."
-            ) from exc
+            layout = _structured_layout(self.D, variables, dims, coords)
+
+        require_from_dict()
         samples, _ = self.sample(n_samples, orig_flag=orig_flag)
-        posterior = {
-            name: samples[:, i].reshape(1, n_samples)
-            for i, name in enumerate(names)
+        arrays = {
+            name: samples[:, offset : offset + int(np.prod(shape))].reshape(
+                (1, n_samples, *shape), order="C"
+            )
+            for name, offset, shape, _ in layout
         }
-        return from_dict(
-            {"posterior": posterior},
-            sample_dims=["chain", "draw"],
-            coords={"chain": [0], "draw": np.arange(n_samples)},
+        structured_dims = {
+            name: event_dims for name, _, _, event_dims in layout
+        }
+        return datatree_from_arrays(
+            arrays,
+            dims=structured_dims if variables is not None else None,
+            coords=coords,
             attrs={
-                "posterior": {
-                    "inference_library": "pyvbmc",
-                    "inference_method": "variational approximation",
-                    "sample_type": "independent",
-                    "parameter_space": "original" if orig_flag else "internal",
-                }
+                "inference_library": "pyvbmc",
+                "inference_method": "variational approximation",
+                "sample_type": "independent",
+                "parameter_space": "original" if orig_flag else "internal",
             },
         )
 

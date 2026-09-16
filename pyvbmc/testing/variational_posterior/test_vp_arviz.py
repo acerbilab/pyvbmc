@@ -113,3 +113,155 @@ def test_bad_names_do_not_draw(names):
     with pytest.raises(ValueError, match="var_names"):
         vp.to_arviz(3, var_names=names)
     assert vp.rng.bit_generator.state == state
+
+
+def make_structured_vp(D, seed=29):
+    lb = np.full((1, D), -np.inf)
+    ub = np.full((1, D), np.inf)
+    plb = np.full((1, D), -2.0)
+    pub = np.full((1, D), 2.0)
+    lb[0, 0], ub[0, 0] = 0.0, 1.0
+    plb[0, 0], pub[0, 0] = 0.2, 0.8
+    transformer = ParameterTransformer(
+        D,
+        lb_orig=lb,
+        ub_orig=ub,
+        plb_orig=plb,
+        pub_orig=pub,
+        transform_type="probit",
+    )
+    vp = VariationalPosterior(
+        D, 2, parameter_transformer=transformer, rng=seed
+    )
+    vp.sigma[:] = 0.6
+    return vp
+
+
+@pytest.mark.parametrize("orig_flag", [True, False])
+def test_structured_export_matches_sample_and_stream(orig_flag):
+    vp = make_structured_vp(3)
+    reference = make_structured_vp(3)
+    expected, _ = reference.sample(19, orig_flag=orig_flag)
+
+    data = vp.to_arviz(
+        19,
+        orig_flag=orig_flag,
+        variables={"beta": (2,), "sigma": ()},
+        dims={"beta": ["coef"]},
+        coords={"coef": ["a", "b"]},
+    )
+
+    posterior = data["posterior"]
+    assert posterior.beta.dims == ("chain", "draw", "coef")
+    assert posterior.beta.shape == (1, 19, 2)
+    assert posterior.sigma.dims == ("chain", "draw")
+    assert posterior.sigma.shape == (1, 19)
+    np.testing.assert_array_equal(posterior.beta.values[0], expected[:, :2])
+    np.testing.assert_array_equal(posterior.sigma.values[0], expected[:, 2])
+    np.testing.assert_array_equal(posterior.coef.values, ["a", "b"])
+    assert vp.rng.bit_generator.state == reference.rng.bit_generator.state
+    expected_space = "original" if orig_flag else "internal"
+    assert posterior.attrs["parameter_space"] == expected_space
+
+
+def test_structured_matrix_uses_c_order_and_accepts_list_shape():
+    vp = make_structured_vp(4)
+    reference = make_structured_vp(4)
+    expected, _ = reference.sample(7)
+
+    data = vp.to_arviz(7, variables={"matrix": [2, 2]})
+
+    matrix = data["posterior"].matrix
+    assert matrix.dims == (
+        "chain",
+        "draw",
+        "matrix_dim_0",
+        "matrix_dim_1",
+    )
+    assert matrix.shape == (1, 7, 2, 2)
+    for i in range(2):
+        for j in range(2):
+            np.testing.assert_array_equal(
+                matrix.values[0, :, i, j], expected[:, 2 * i + j]
+            )
+
+
+@pytest.mark.parametrize(
+    "kwargs, parameter",
+    [
+        (
+            {"var_names": ["a", "b", "c", "d"], "variables": {"x": 4}},
+            "var_names",
+        ),
+        ({"variables": {"x": 3}}, "variables"),
+        (
+            {"variables": {"x": 4}, "dims": {"x": ["row", "column"]}},
+            "dims",
+        ),
+        (
+            {"variables": {"x": 4}, "dims": {"missing": ["axis"]}},
+            "dims",
+        ),
+        (
+            {
+                "variables": {"matrix": (2, 2)},
+                "dims": {"matrix": ["row", "column"]},
+                "coords": {"row": [0, 1, 2]},
+            },
+            "coords",
+        ),
+        (
+            {"variables": {"x": 4}, "coords": {"unused": [0, 1, 2, 3]}},
+            "coords",
+        ),
+        (
+            {
+                "variables": {"beta": 2, "coef": 2},
+                "dims": {"beta": ["coef"], "coef": ["item"]},
+            },
+            "variables",
+        ),
+        ({"dims": {"x": ["axis"]}}, "dims"),
+        ({"coords": {"axis": [0, 1, 2, 3]}}, "coords"),
+        ({"variables": {"x": (True, 4)}}, "variables"),
+        ({"variables": {"x": (0,), "y": 4}}, "variables"),
+        ({"variables": {"x": (-1,), "y": 5}}, "variables"),
+        (
+            {
+                "variables": {"a": 1, "b": 3},
+                "dims": {"a": ["shared"], "b": ["shared"]},
+            },
+            "dims",
+        ),
+        ({"variables": {"a": 3, "a_dim_0": ()}}, "variables"),
+        (
+            {
+                "variables": {"matrix": (2, 2)},
+                "dims": {"matrix": ["coef", "coef"]},
+            },
+            "dims",
+        ),
+        (
+            {
+                "variables": {"x": 4},
+                "dims": {"x": ["axis"]},
+                "coords": {"axis": 1},
+            },
+            "coords",
+        ),
+        (
+            {
+                "variables": {"matrix": (2, 2)},
+                "dims": {"matrix": ["row", "column"]},
+                "coords": {"row": [[0, 1]]},
+            },
+            "coords",
+        ),
+    ],
+)
+def test_bad_structured_layout_does_not_draw(kwargs, parameter):
+    vp = make_structured_vp(4)
+    state = copy.deepcopy(vp.rng.bit_generator.state)
+    with pytest.raises(ValueError, match=parameter):
+        vp.to_arviz(3, **kwargs)
+    assert vp.rng.bit_generator.state == state

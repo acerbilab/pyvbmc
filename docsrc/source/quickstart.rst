@@ -303,6 +303,21 @@ The result contains one ``posterior`` group, one chain, and one scalar
 variable per parameter. Names default to ``x_0``, ..., ``x_{D-1}``. Pass
 ``orig_flag=False`` to export samples in internal coordinates.
 
+For a three-dimensional posterior whose first two columns form a vector,
+preserve the variable shape and labels with a structured export::
+
+  # Here vp has D == 3.
+  structured_data = vp.to_arviz(
+      n_samples=2000,
+      variables={"beta": (2,), "sigma": ()},
+      dims={"beta": ["coef"]},
+      coords={"coef": ["intercept", "slope"]},
+  )
+
+Here ``beta`` has dimensions ``(chain, draw, coef)`` and ``sigma`` has
+dimensions ``(chain, draw)``. Variables consume consecutive posterior columns
+in mapping order.
+
 This method advances ``vp.rng`` in the same way as
 :meth:`~pyvbmc.VariationalPosterior.sample`. The draws are independent samples
 from a variational approximation, so MCMC convergence diagnostics computed on

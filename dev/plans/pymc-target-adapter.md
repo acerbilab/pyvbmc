@@ -51,10 +51,10 @@ checks below remain authoritative. At most one heavy process runs at a time.
 
 - [x] Phase 0: record approval, commit and push planning/evidence on
   `dev-next`, then create `dev-pymc-adapter` and `dev-precomputed-evaluations`.
-- [~] Phase 0a: general precomputed evaluations and budget accounting;
+- [x] Phase 0a: general precomputed evaluations and budget accounting;
   independent Sol review, focused checks, exact oracles and golden replay;
   merge into `dev-pymc-adapter`.
-- [ ] Phase 1: structured ArviZ export and focused validation.
+- [x] Phase 1: structured ArviZ export and focused validation.
 - [ ] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
 - [ ] Phase 3: optional-dependency CI coverage and smoke run.
 - [ ] Phase 4: user/API documentation and docs build after Example 8.
@@ -458,8 +458,10 @@ setup_budget=None)`:
   `pyvbmc.rng.get_rng`. Only the prior draws (the curvature fallback, the
   location check and the route without gradients) use it
   (`pymc.draw(random_seed=...)`); the mode search and the Hessian are
-  deterministic. A `PyMCTarget` never reads or writes NumPy's global
-  state.
+  deterministic. An explicit seed or generator leaves NumPy's global
+  state untouched. With `None`, `get_rng` initializes the generator from
+  NumPy's legacy global state, following the existing VBMC convention;
+  subsequent target draws use the instance generator.
 - `setup_budget`: `None` uses `20 + 5 D`; otherwise a positive integer
   function-equivalent allowance (reject booleans and nonintegers). It caps
   setup work before it is performed. Smaller caps shorten mode search;
@@ -1336,8 +1338,8 @@ and `coords`; the packaging lives in a helper the adapter reuses.
    runs everywhere and pins the guard order).
 
 **Verification**:
-- [ ] Both test files pass, the existing tests unchanged.
-- [ ] `git diff` of `variational_posterior.py` touches only `to_arviz`
+- [x] Both test files pass, the existing tests unchanged.
+- [x] `git diff` of `variational_posterior.py` touches only `to_arviz`
   and its docstring.
 
 ### Phase 2: the adapter and its tests
@@ -1402,6 +1404,15 @@ is not the package implementation.
    public surface and `setup_cost` as its read-only total-cost property;
    the `pyvbmc.pymc` logger; `__str__`. Numpydoc docstrings in the
    `VariationalPosterior` style, with Raises sections.
+   Share the existing VBMC bounds normalization through private helpers in
+   `pyvbmc/vbmc/_bounds.py`: `_normalize_bounds(..., logger=...)` retains
+   the current checks and return values, and `_effective_bounds(lb, ub)`
+   supplies its interior hard bounds. `VBMC._bounds_check` delegates to the
+   helper without changing ordinary behavior. The adapter uses the same
+   effective bounds to normalize explicit starts before evaluating
+   curvature, then the full helper to normalize the completed box before
+   its final density check. This prevents duplicated normalization rules
+   or curvature evaluated at a start that is subsequently moved.
 3. `pyvbmc/pymc/_plausible.py`, NumPy and SciPy over callables, no PyMC
    import: `move_inside(x0, lb, ub, fraction=2e-3) -> (x0, moved_mask)`;
    `search_mode(value_and_grad, x_start, lb, ub, max_calls) -> (x_best,
@@ -1958,6 +1969,27 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: Phase 1 implements structured ArviZ layouts and shared
+  packaging/validation helpers. All 48 export/dependency checks pass in the
+  PyMC environment, with the four dependency checks also passing in the
+  core environment. Existing tests are unchanged; the posterior-class diff
+  is confined to `to_arviz` and its docstring. Invalid shapes, names,
+  dimensions and coordinates are rejected before sampling, including
+  repeated event dimensions and inconsistent shared lengths.
+
+- 2026-09-16: the residual-input reconstruction preflight isolated both an
+  unregistered likelihood scale and support limit while preserving constant
+  and strategy-string initial values through transform removal. PyMC
+  reconstruction changed free-variable order in the example, confirming
+  the need for original-name ordering in layout and derivative compilation.
+  The script and result are indexed in `dev/scripts/runs/LOCAL.md`.
+
+- 2026-09-16: Phase 0a committed as `6769a9a` on
+  `dev-precomputed-evaluations` and fast-forwarded into `dev-pymc-adapter`.
+  The final noisy replay also matched the clean control exactly after the
+  precision-pooling fallback. Phase 1 is assigned to Sol; the orchestrator
+  retains verification and the live checklist.
 
 - 2026-09-16: Phase 0a implementation passed 225 focused checks, all 11
   exact numerical fixtures and the pinned formatting hooks. Independent
