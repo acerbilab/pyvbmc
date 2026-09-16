@@ -14,14 +14,18 @@ from pyvbmc.vbmc import VBMC
 
 
 def __getattr__(name):
-    # S-VBMC needs the optional torch extra; resolve it only on request so
-    # that importing pyvbmc never imports torch.
+    # Optional integrations resolve only on request so importing pyvbmc does
+    # not import their third-party dependencies.
     if name == "SVBMC":
         from pyvbmc.svbmc import SVBMC
 
         return SVBMC
+    if name == "PyMCTarget":
+        from pyvbmc.pymc import PyMCTarget
+
+        return PyMCTarget
     raise AttributeError(f"module 'pyvbmc' has no attribute {name!r}")
 
 
 def __dir__():
-    return sorted(set(globals()) | {"SVBMC"})
+    return sorted(set(globals()) | {"PyMCTarget", "SVBMC"})

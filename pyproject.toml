@@ -24,7 +24,13 @@ requires-python = ">=3.10"
 [tool.setuptools]
 include-package-data = true
 # Include examples in binary/wheel distribution:
-packages = ["pyvbmc", "pyvbmc.calibration", "pyvbmc.examples", "pyvbmc.svbmc"]
+packages = [
+    "pyvbmc",
+    "pyvbmc.calibration",
+    "pyvbmc.examples",
+    "pyvbmc.pymc",
+    "pyvbmc.svbmc",
+]
 package-dir = { "pyvbmc.examples" = "examples" }
 
 [tool.setuptools.package-data]
@@ -42,6 +48,13 @@ package-dir = { "pyvbmc.examples" = "examples" }
 torch = ["torch >= 2.7"]
 # Current ArviZ uses DataTree and requires Python 3.12+. Core stays 3.10+.
 arviz = [
+    "arviz >= 1.0; python_version >= '3.12'",
+    "arviz-base >= 1.0; python_version >= '3.12'",
+]
+# PyMC target adapter and structured posterior export; Python 3.12+ matches
+# the current ArviZ stack used by the export path.
+pymc = [
+    "pymc >= 6.3; python_version >= '3.12'",
     "arviz >= 1.0; python_version >= '3.12'",
     "arviz-base >= 1.0; python_version >= '3.12'",
 ]

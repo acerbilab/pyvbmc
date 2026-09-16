@@ -145,16 +145,21 @@ records its execution.
   accepted; structured ArviZ export with the model's names, shapes and
   coordinates; deterministics and posterior predictions through PyMC's
   own functions. The PI's review of the plan set the default's cost: at
-  most `20 + 5 D` evaluations (a gradient search and an exact Hessian of
-  the log joint, fallbacks that cost none), all of them handed to VBMC.
+  most `20 + 5 D` function-equivalent units (a gradient search and an exact
+  Hessian charged as `D`). Finite density observations are reused by VBMC;
+  the Hessian charge creates no additional observations.
   The
   [implementation plan](plans/pymc-target-adapter.md) is drafted and
   reviewed (module and extra, the `PyMCTarget` class, the `to_arviz`
-  extension, the four guarded PyMC reaches, the `pymc >= 6.3` floor with
+  extension, the five guarded PyMC reaches, the `pymc >= 6.3` floor with
   the CI cell, save and load, tests, docs, Example 8). The investigations
   are complete. Independent Sol review corrections are accepted and
   incorporated; the PI approved implementation on 2026-09-16. The live
-  checklist in the plan tracks the work. The target
+  checklist in the plan tracks the work. Phase 0a's generic observation and
+  budget interface (`6769a9a`) and Phase 1's structured ArviZ export
+  (`4be3cad`) and Phase 2's adapter are complete on `dev-pymc-adapter`;
+  documentation, packaging, numerical replay and CI integration gates remain.
+  The target
   snapshots model data, conservatively recognizes support for untransformed
   free variables, and accepts an optional upfront `setup_budget`. Automatic mode
   search uses the measured budget and stopping rule; prior-location checks

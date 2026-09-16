@@ -55,11 +55,11 @@ checks below remain authoritative. At most one heavy process runs at a time.
   independent Sol review, focused checks, exact oracles and golden replay;
   merge into `dev-pymc-adapter`.
 - [x] Phase 1: structured ArviZ export and focused validation.
-- [ ] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
-- [ ] Phase 3: optional-dependency CI coverage and smoke run.
-- [ ] Phase 4: user/API documentation and docs build after Example 8.
-- [ ] Phase 5: executed Example 8 and regenerated script.
-- [ ] Phase 6: integrated verification, packaging and independent doublecheck.
+- [x] Phase 2: PyMC adapter, snapshots, setup, direct input and validation.
+- [~] Phase 3: optional-dependency CI coverage and smoke run.
+- [~] Phase 4: user/API documentation and docs build after Example 8.
+- [~] Phase 5: executed Example 8 and regenerated script.
+- [~] Phase 6: integrated verification, packaging and independent doublecheck.
 - [ ] Phase 7: merge into `dev-next`, update records and finish tracking.
 
 The PI requested a focused follow-up to separate filtering from initial
@@ -455,10 +455,12 @@ setup_budget=None)`:
   in the model's variables, strictly inside the support, mapped to VBMC's
   coordinates the same way; no search runs.
 - `seed`: an `int`, a `numpy.random.Generator` or `None`, through
-  `pyvbmc.rng.get_rng`. Only the prior draws (the curvature fallback, the
-  location check and the route without gradients) use it
-  (`pymc.draw(random_seed=...)`); the mode search and the Hessian are
-  deterministic. An explicit seed or generator leaves NumPy's global
+  `pyvbmc.rng.get_rng`. It controls prior draws (the curvature fallback,
+  location check and route without gradients) and any stochastic `"prior"`
+  initial-value strategy declared in the model. Constant and
+  `"support_point"` initialization consume no target-generator draws.
+  The mode search and Hessian are deterministic given their starting point.
+  An explicit seed or generator leaves NumPy's global
   state untouched. With `None`, `get_rng` initializes the generator from
   NumPy's legacy global state, following the existing VBMC convention;
   subsequent target draws use the instance generator.
@@ -852,7 +854,7 @@ finds a particular model outside the supported scope raises
    `rvs_to_values`, `rvs_to_transforms`, `named_vars_to_dims`): one
    `hasattr` check on the model instance at construction, the guard's
    `ImportError` when one is missing.
-5. **Snapshot graph reconstruction.** Use the public
+5. **Graph reconstruction and random-variable recognition.** Use the public
    `freeze_dims_and_data` for registered data and dimensions. PyMC 6.3
    leaves unregistered numeric shared inputs live, so a private helper
    freezes remaining non-RNG shared ancestors through PyMC's model-graph
@@ -860,7 +862,10 @@ finds a particular model outside the supported scope raises
    capabilities, preserve constant/string initialization values and
    original free-variable order, and assert that no numeric shared inputs
    remain. Copy coordinate metadata. Random-generator state is excluded
-   from this numeric-data check.
+   from this numeric-data check. Interval-bound dependency checks recognize
+   both PyTensor `RandomVariable` and PyMC `SymbolicRandomVariable` operators;
+   guard the latter's import so wrapped distributions cannot masquerade as
+   fixed interval limits.
 
 ### Save and copy
 
@@ -1348,6 +1353,13 @@ and `coords`; the packaging lives in a helper the adapter reuses.
 **Goal**: `pyvbmc.pymc.PyMCTarget` as designed, tested against
 hand-written densities.
 
+Implementation ownership is split between three Sol executors: the target,
+model fixtures and target tests; compatibility/snapshot and numerical setup
+helpers with their focused tests; and direct VBMC binding, shared bounds
+normalization, package entry points and optional-dependency metadata. The
+orchestrator owns integration, the checklist and every heavy verification
+process. Executors coordinate private helper signatures before use.
+
 Before assigning this phase, complete Phase 0a's
 separate interface change, including oracle/golden gates,
 unmodified initial bounds, one insertion per supplied observation,
@@ -1416,9 +1428,10 @@ is not the package implementation.
 3. `pyvbmc/pymc/_plausible.py`, NumPy and SciPy over callables, no PyMC
    import: `move_inside(x0, lb, ub, fraction=2e-3) -> (x0, moved_mask)`;
    `search_mode(value_and_grad, x_start, lb, ub, max_calls) -> (x_best,
-   X, y, cap_reached)` (L-BFGS-B with the start-point rule's interval as
+   X, y, n_calls, cap_reached)` (L-BFGS-B with the start-point rule's interval as
    bounds, the stopping rule set by the probe, every call's point and
-   finite value returned in call order, the best point by value);
+   finite value returned in call order, the best point by value;
+   `n_calls` counts every attempted evaluation, including nonfinite trials);
    `marginal_sd(H) -> (sd, usable_mask)` (symmetrize `-H` and require a
    successful Cholesky factorization before inversion; `sd` finite and
    positive where usable; a `LinAlgError` makes nothing usable);
@@ -1639,9 +1652,9 @@ is not the package implementation.
    project venv (everything but `test_imports.py` skips).
 
 **Verification**:
-- [ ] All `pyvbmc/testing/pymc` tests pass in the PyMC environment.
-- [ ] `python -c "import pyvbmc, pyvbmc.pymc, sys; assert 'pymc' not in sys.modules"`.
-- [ ] The prototype still runs:
+- [x] All `pyvbmc/testing/pymc` tests pass in the PyMC environment.
+- [x] `python -c "import pyvbmc, pyvbmc.pymc, sys; assert 'pymc' not in sys.modules"`.
+- [x] The prototype still runs:
   `python dev/scripts/pymc_feasibility.py --no-fit --out dev/scripts/runs/pymc_feasibility_20260914/nofit_phase2`
   in the PyMC environment (the output directory is gitignored; the
   tracked `dev/experiments/pymc_feasibility/` is not overwritten).
@@ -1969,6 +1982,78 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-09-16: Phase 2 implementation is complete. All 147 optional
+  adapter/export checks pass: the final combined run passed 146 and exposed
+  one test's incorrect scalar batch-shape expectation, which was corrected
+  and passed separately. The callable-subclass binding correction also
+  passes 113 core-environment constructor, accounting, binding and import
+  checks (one precision test skips without PyMC). Independent implementation
+  and test reviewers verified all their findings resolved. Documentation
+  review prompted explicit same-target posterior provenance, flat-coordinate
+  hard-bound wording, and a method-labelled comparison legend. Packaging,
+  docs, exact numerical replay and CI remain integration gates.
+
+- 2026-09-16: the full core suite passes with single-threaded BLAS:
+  1,311 passed, 58 skipped, one statistical rerun, in 348 seconds.
+  The optional adapter/ArviZ gate passed all 134 tests before independent
+  review additions. The test reviewer verified the added literal coordinate
+  and export oracles, initial-value transform probe, rejected/nonfinite-call
+  accounting, and separate reuse/charge overrides. Implementation review
+  identified symbolic random bounds, invalid transformed export values,
+  generated-dimension collisions, and callable target subclass dispatch;
+  focused corrections and runtime checks are in progress.
+
+- 2026-09-16: Example 8 executes in about 38 seconds with sequential
+  NUTS chains. VBMC reports probable convergence at 81 total units
+  (12 setup plus 69 fresh evaluations); nine setup observations are reused.
+  Its three marginal means differ from NUTS by at most 0.06 posterior
+  standard deviations, with overlapping 90% intervals and no NUTS
+  divergences. Visual validation required combining each fit's draws onto
+  a common sample axis before ArviZ's forest plot; aligning different
+  chain/draw layouts had produced missing values and blank intervals.
+  Both predictive and final labelled forest plots were inspected. The
+  forest cell was re-rendered from saved draws after adding its legend;
+  no new fit was needed. The script is generated through the Makefile's
+  nbconvert/sed pipeline. Independent Sol implementation and test reviews
+  are underway.
+
+- 2026-09-16: 41 target, rejection, compatibility and import/precision
+  checks pass after correcting an empty-array construction in a test.
+  Executing the quickstart exposed a PyMC workflow trap: the default
+  `compute_deterministics` return contains only deterministics, so replacing
+  the posterior with it causes prior resampling during prediction. The
+  examples use `extend_dataset=True` to retain posterior parameters.
+  The final quickstart uses a seeded 30-observation regression, passes
+  through export and prediction with only `y` sampled, and reaches the
+  stability criterion within 73 total units (13 setup plus 60 fresh
+  evaluations, 10 reused observations). Example 8 execution is in progress.
+
+- 2026-09-16: the diagnostic-only location policy was checked on fresh
+  adapter constructions at seed 0. Centered eight-schools reaches the
+  search cap, spends 59 density calls plus a 10-unit Hessian, falls back to
+  prior widths in all ten coordinates and flags `tau_log__`; its start
+  remains at the discovered value (approximately -7.897). Non-centered
+  eight-schools spends 14 density calls plus the Hessian with no fallback
+  diagnostics. The custom likelihood without gradients takes the prior
+  route and one density call. These are initialization checks, not
+  posterior-convergence results.
+
+- 2026-09-16: initial Phase 2 runtime checks pass: 96 existing constructor
+  and precomputed-evaluation checks after shared bounds extraction, then
+  35 helper, snapshot, compatibility, import and direct-binding checks.
+  Five actual PyMC model families (scalar normal, positive scale, beta,
+  vector normal and one-sided truncated normal) construct and bind with
+  the default Numba linker; automatic setup costs are 4, 5, 6, 5 and 7
+  function-equivalent units. Target-specific tests remain in progress.
+  The completed helper and binding executors move to Phase 4 writing and
+  Phase 3 workflow preparation; the orchestrator retains every runtime gate.
+  The workflow edit is ready for the eventual CI push, and its executor
+  proceeds to Example 8 writing. The historical prototype's no-fit check
+  also passes without changing the prototype.
+
+- 2026-09-16: Phase 1 committed as `4be3cad` on `dev-pymc-adapter`.
+  Phase 2 begins with the three bounded Sol assignments described above.
 
 - 2026-09-16: Phase 1 implements structured ArviZ layouts and shared
   packaging/validation helpers. All 48 export/dependency checks pass in the
