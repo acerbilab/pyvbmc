@@ -241,6 +241,15 @@ for S-VBMC only. The present pools hold 100 runs per noisy target and
 support M = 32 needs several hundred runs per target. User-facing
 recommendations for the headline follow the confirmation.
 
+Example 7 already discusses optimistic bias, the median cap and the limits
+of `elbo_sd` in the cell after `optimize()`. If the release gate selects
+shrinkage as the headline, update that existing explanation briefly:
+selecting weights using noisy estimates can make the estimate optimistic;
+shrinkage is the implemented correction, applied automatically, and some
+bias can remain. The derivation and experiments remain in the developer
+tutorial linked above. No separate notebook section, user tutorial or
+additional user step is needed.
+
 The implementation decision, also 2026-09-16, separates availability from
 headline selection: add the full-covariance two-level estimate as
 `elbo_details["shrunk_two_level"]` for both noisy and noiseless stacks,

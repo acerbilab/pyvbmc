@@ -111,7 +111,16 @@ records its execution.
   `elbo_sd`), the "ELBO reporting" section of
   `docsrc/source/api/classes/svbmc.rst`, the FAQ entry "Can I combine
   the posteriors of several runs?" and Example 7 (the cell after
-  `optimize()` and the conclusions). No user-facing text states a
+  `optimize()` and the conclusions). Example 7 already explains optimistic
+  bias, the current median cap and the limits of `elbo_sd`. If shrinkage is
+  selected at the release gate, update that existing explanation briefly:
+  explain why selection using noisy estimates can make the ELBO optimistic,
+  identify shrinkage as the implemented correction in the returned ELBO,
+  and retain the caveat that some bias can remain. It is an automatic part
+  of ELBO estimation, with no extra user step. Derivations and experiments
+  stay in the developer tutorial; no separate section or user tutorial is
+  needed.
+  No user-facing text states a
   single run's own optimism, so the S-VBMC wording has nothing on the
   VBMC side to point at until the item below adds it. If it ships, the
   note's "Decision" section lists the change: a headline method in
