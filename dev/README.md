@@ -47,6 +47,12 @@ For the release overview, start with
   interim conclusions and suggestions; the evidence is in the
   [acquisition experiments](results/2026-09-08-noisy-acquisition-experiments.md)
   and the [search analysis](results/2026-09-09-acquisition-search-analysis.md).
+- [GP robustness on noisy unbounded targets](results/2026-09-16-gp-tail-acquisition.md) —
+  Completed investigation of tail acquisitions and GP conditioning. The
+  [box-sampler study](results/2026-09-16-gp-box-sampler.md) found and fixed
+  the normal-versus-uniform porting bug. Exact batch replays and 50-digit
+  checks explain the remaining VIQR/refit behavior; algorithmic remedies
+  are deferred beyond 1.5. Both reports link to the preserved evidence.
 - [S-VBMC ELBO optimism](2026-09-12-svbmc-elbo-optimism.md) —
   What the stacking implementation reports today, why the ELBO optimism
   on noisy targets is a cross-run selection effect, the decision to leave

@@ -134,39 +134,6 @@ records its execution.
   [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
   completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
 
-- [x] **Robustness of the GP on noisy unbounded targets (investigate;
-  algorithmic changes are outside 1.5 unless the cause is a bug).** In
-  the S-VBMC pool's Rosenbrock condition at noise 3 (D = 2, unbounded,
-  N(0, 3²) prior, VIQR), most runs evaluate points far in the tails, log
-  densities of -1e5 to -1e6 and once -6.5e9, and the GP that fits them
-  next to values near zero with the negative-quadratic mean ends with
-  kernel-matrix condition numbers of 1e10 to 1e17, so its posterior
-  factors are at the edge of double precision: another machine's BLAS
-  recomputes the run's expected-log-joint statistics with relative
-  deviations up to 0.3 (the campaign plan's worklog of 2026-09-14 has
-  the numbers; the laptop pilot's runs show the same). The runs' own
-  answers are fine (median evidence error 0.17, gsKL 0.11, MMTV 0.09),
-  but a GP this ill-conditioned makes every consumer of its posterior
-  fragile. The [box-sampler investigation](results/2026-09-16-gp-box-sampler.md)
-  found and fixed a 2021 porting bug: the box proposal used normal
-  draws where MATLAB uses uniform draws (`40a6f18`, merged into
-  `dev-next`, 2026-09-16). The package suite, exact oracles and five
-  golden replays pass, but all three corrected noisy Rosenbrock runs
-  remain ill-conditioned (7e12 to 1e14). Noise shaping is unported and
-  defaults off; the unused outer search clamps are also unused in
-  MATLAB. The [tail-acquisition investigation](results/2026-09-16-gp-tail-acquisition.md)
-  reproduced the five-call batches around the first extreme evaluation
-  in all three corrected runs, including the next GP fit, VP and RNG
-  state. Uniform-box sieve candidates win; their VIQR preferences over
-  central candidates survive a 50-digit check. Adding the new data with
-  fixed hyperparameters barely changes conditioning, whereas refitting
-  raises it 7–30 times through larger GP scales. No further bug was found
-  in those decisions; later near-singular decisions remain unchecked.
-  The investigation is complete (2026-09-16); the remaining algorithmic
-  work is outside 1.5 under the PI's decision of 2026-09-15. The saved
-  histories and captures are listed in `dev/scripts/runs/LOCAL.md`;
-  reproducible diagnostics are in `dev/scripts/gp_tail_probe.py`.
-
 - [ ] **PyMC integration: the target adapter with the tested scope.** The
   PI chose (2026-09-14), on the
   [feasibility report](results/2026-09-14-pymc-feasibility.md), to include
