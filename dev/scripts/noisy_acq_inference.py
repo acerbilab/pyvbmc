@@ -1,9 +1,16 @@
 """Prepare, execute, and summarize the bounded E5 S0/S2 inference campaign.
 
-The manifest describes the full paired design (six targets, seeds 2000--2009)
-but only the two-seed pilot is executable.  Cases run sequentially in fresh
-processes, write complete golden traces, and become resumable only after an
-atomic, hash-validated terminal record is present.
+Two manifest kinds describe the same full paired design (six targets, seeds
+2000--2009).  The pilot manifest makes only the two-seed pilot (24 fits)
+executable.  The continuation manifest binds a completed, reviewed pilot
+manifest and makes exactly the remaining 96 fits (seeds 2002--2009)
+executable; every numerical source, data archive and environment entry must
+equal the pilot's, and only this runner's own hash may differ.  Cases run
+sequentially in fresh processes, write complete golden traces, and become
+resumable only after an atomic, hash-validated terminal record is present.
+Continuation batches have explicit wall-time and fit-count limits, reuse
+validated success terminals and never rerun a failed fit.  The combined
+summary reports all ten paired seeds per target from both campaigns.
 """
 
 import argparse
@@ -50,6 +57,20 @@ LABELS = (
 ARMS = ("S0", "S2")
 FULL_SEEDS = tuple(range(2000, 2010))
 PILOT_SEEDS = (2000, 2001)
+CONTINUATION_SEEDS = tuple(range(2002, 2010))
+PILOT_KIND = "noisy_acq_e5_inference"
+CONTINUATION_KIND = "noisy_acq_e5_continuation"
+PILOT_CEILING_SECONDS = 10800
+CONTINUATION_BATCH_CEILING_SECONDS = 21600
+MINIMUM_FIT_TIMEOUT_SECONDS = 1200
+# Immutable pilot records bound by a continuation manifest, relative to the
+# directory holding the pilot manifest.
+PARENT_RECORDS = (
+    "launch_clearance.json",
+    "summary.json",
+    "completion.json",
+    "independent_review.json",
+)
 SELECTION_SHA256 = (
     "98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40"
 )
@@ -87,6 +108,9 @@ POSITIVE_PAIRED = ("wall_s", "search_s", "target_eval_s", "func_count")
 USABLE_LIMITS = {"elbo_err": 1.0, "gskl": 1.0, "mmtv": 0.2}
 REFERENCE_DEFAULT = ROOT / "dev/scripts/runs/golden/reference_990_20260913"
 PROMOTION_DEFAULT = ROOT / "dev/golden/promotion_20260913/sha256_manifest.json"
+# The runner's own entry in the source inventory (same key format as
+# ``_source_inventory``); the one source a continuation may change.
+RUNNER_SOURCE_KEY = str(Path(__file__).resolve().relative_to(ROOT))
 
 
 def _utc_now():
@@ -399,12 +423,356 @@ def prepare_manifest(
     }
 
 
+def verify_parent_campaign(parent, parent_campaign):
+    """Require every pilot fit and the replay to be complete and valid.
+
+    Returns the pilot terminal records keyed by cell id.
+    """
+    terminals = {}
+    for requested in parent["semantic"]["executable_cell_ids"]:
+        terminal = validate_terminal(parent, parent_campaign, requested)
+        if terminal["status"] != "success":
+            raise RuntimeError(f"Pilot fit did not succeed: {requested}")
+        terminals[requested] = terminal
+    validate_replay_report(parent, parent_campaign)
+    return terminals
+
+
+def _parent_records(parent_path, parent, parent_campaign):
+    """Check the pilot's immutable records against each other and hash them."""
+    root = Path(parent_path).parent
+    records = {}
+    for name in PARENT_RECORDS:
+        path = root / name
+        if not path.is_file():
+            raise RuntimeError(f"Pilot record is missing: {name}")
+        records[name] = json.loads(path.read_text(encoding="utf-8"))
+    digest = parent["semantic_digest"]
+    raw = sha256(parent_path)
+    if (
+        records["launch_clearance.json"].get("manifest_semantic_digest")
+        != (digest)
+        or records["launch_clearance.json"].get("manifest_sha256") != raw
+    ):
+        raise RuntimeError("Pilot launch clearance binds another manifest")
+    summary = records["summary.json"]
+    if summary.get("manifest_semantic_digest") != digest or summary.get(
+        "fit_status_counts"
+    ) != {"success": 24, "failure": 0, "missing": 0}:
+        raise RuntimeError("Pilot summary is not a complete 24-fit record")
+    completion = records["completion.json"]
+    if (
+        completion.get("manifest_semantic_digest") != digest
+        or completion.get("manifest_sha256") != raw
+        or completion.get("summary_sha256") != sha256(root / "summary.json")
+        or completion.get("fit_status_counts") != summary["fit_status_counts"]
+    ):
+        raise RuntimeError("Pilot completion record does not bind the summary")
+    review = records["independent_review.json"]
+    if (
+        review.get("manifest_semantic_digest") != digest
+        or review.get("verdict") != "pass"
+        or review.get("remaining_findings") != []
+        or review.get("operational_continuation_criteria_satisfied")
+        is not True
+    ):
+        raise RuntimeError(
+            "Pilot independent review did not clear operational continuation"
+        )
+    for name, expected in review.get("artifact_sha256", {}).items():
+        path = root / name
+        if path.is_file() and sha256(path) != expected:
+            raise RuntimeError(f"Pilot artifact changed since review: {name}")
+    return {name: sha256(root / name) for name in PARENT_RECORDS}, completion
+
+
+def prepare_continuation_manifest(
+    parent_path,
+    parent_campaign,
+    reference=REFERENCE_DEFAULT,
+    promotion=PROMOTION_DEFAULT,
+):
+    """Allocate exactly the 96 remaining fits under a reviewed pilot.
+
+    The pilot manifest, its complete campaign and its immutable records are
+    bound by hash.  The current runtime identity may differ from the pilot's
+    only in this runner's own source hash.
+    """
+    parent_path = Path(parent_path).resolve()
+    parent_campaign = Path(parent_campaign).resolve()
+    parent = validate_manifest(
+        json.loads(parent_path.read_text(encoding="utf-8")),
+        require_ready=True,
+    )
+    if _kind(parent) != PILOT_KIND:
+        raise RuntimeError(
+            "The continuation parent must be the pilot manifest"
+        )
+    verify_parent_campaign(parent, parent_campaign)
+    record_hashes, completion = _parent_records(
+        parent_path, parent, parent_campaign
+    )
+    parent_semantic = parent["semantic"]
+    selection = Path(parent_semantic["selection"]["path"])
+    if sha256(selection) != SELECTION_SHA256:
+        raise RuntimeError(
+            "S2 selection artifact does not have the frozen raw SHA256"
+        )
+    current = runtime_identity()
+    provenance = identity_provenance(parent_semantic["identity"], current)
+    contracts = _target_contracts()
+    if contracts != parent_semantic["target_contracts"]:
+        raise RuntimeError("Target contracts differ from the pilot")
+    envelopes = _reference_envelopes(reference, promotion)
+    if envelopes != parent_semantic["reference"]:
+        raise RuntimeError(
+            "Promoted reference envelopes differ from the pilot"
+        )
+    cells = _cells()
+    continuation_ids = [
+        c["cell_id"] for c in cells if c["phase"] == "continuation"
+    ]
+    semantic = {
+        "schema_version": 1,
+        "kind": CONTINUATION_KIND,
+        "arms": parent_semantic["arms"],
+        "labels": list(LABELS),
+        "full_seeds": list(FULL_SEEDS),
+        "pilot_seeds": list(PILOT_SEEDS),
+        "continuation_seeds": list(CONTINUATION_SEEDS),
+        "full_design_fit_count": 120,
+        "pilot_fit_count": 24,
+        "continuation_fit_count": 96,
+        "cells": cells,
+        "executable_cell_ids": continuation_ids,
+        "validation_replay": None,
+        "options": {},
+        "target_contracts": contracts,
+        "selection": parent_semantic["selection"],
+        "identity": current,
+        "identity_provenance": provenance,
+        "parent": {
+            "path": str(parent_path),
+            "raw_sha256": sha256(parent_path),
+            "semantic_digest": parent["semantic_digest"],
+            "campaign_dir": str(parent_campaign),
+            "record_sha256": record_hashes,
+            "pilot_fit_count": 24,
+            "pilot_pair_count": 12,
+        },
+        "reference": envelopes,
+        "measurement": parent_semantic["measurement"],
+        "planning": {
+            "pilot_worker_seconds": completion.get("pilot_worker_seconds"),
+            "remaining_96_fits_point_estimate_seconds": completion.get(
+                "remaining_96_fits_point_estimate_seconds"
+            ),
+            "remaining_96_fits_planning_seconds": completion.get(
+                "remaining_96_fits_planning_seconds"
+            ),
+            "cost_estimate_method": completion.get("cost_estimate_method"),
+            "minimum_per_fit_timeout_seconds": MINIMUM_FIT_TIMEOUT_SECONDS,
+            "batch_operational_ceiling_seconds": (
+                CONTINUATION_BATCH_CEILING_SECONDS
+            ),
+            "scheduling": (
+                "Sequential batches in manifest cell order (target-major, "
+                "arm order alternating by seed block); each batch declares "
+                "its wall-time limit and optional fit-count limit, stops "
+                "launching when less than one per-fit timeout remains, "
+                "reuses validated success terminals and never reruns a "
+                "failed fit."
+            ),
+            "source_freeze": (
+                "The runner's own source hash is part of this manifest's "
+                "identity. Do not modify the runner once any continuation "
+                "fit has run: its terminals would then belong to another "
+                "manifest and could neither be reused nor rerun. A "
+                "correction requires a declared successor allocation with "
+                "explicit handling of the fits it invalidates."
+            ),
+            "interrupted_fit_handling": (
+                "A fit interrupted before its terminal record leaves partial "
+                "artifacts that the runner refuses on resume. Move them out "
+                "of the campaign directory, record the interruption, and "
+                "let the next batch rerun that cell from scratch; a partial "
+                "fit is never completed evidence."
+            ),
+        },
+    }
+    return {
+        "created_utc": _utc_now(),
+        "prepared_from_commit": _git(ROOT, "rev-parse", "HEAD"),
+        "semantic_digest": _digest(semantic),
+        "semantic": semantic,
+        "reviewed_ready": {
+            "approved": False,
+            "reviewer": None,
+            "reviewed_utc": None,
+            "note": "Set only after independent implementation/allocation review.",
+        },
+    }
+
+
+def _kind(manifest):
+    kind = manifest["semantic"].get("kind")
+    if kind not in (PILOT_KIND, CONTINUATION_KIND):
+        raise RuntimeError(f"Unknown E5 manifest kind: {kind!r}")
+    return kind
+
+
+def _seeds_for(manifest):
+    return PILOT_SEEDS if _kind(manifest) == PILOT_KIND else CONTINUATION_SEEDS
+
+
+def _phase_for(manifest):
+    return "pilot" if _kind(manifest) == PILOT_KIND else "continuation"
+
+
+def identity_provenance(parent_identity, current_identity):
+    """Compare a pilot identity with the current one.
+
+    Every source hash except this runner's own entry must be identical, the
+    inventories must list the same files, and the environment (Python,
+    dependency versions, import paths, NumPy build, gpyreg commit and source
+    hashes, thread variables) must be unchanged.  Raise on any other change.
+    """
+    parent_sources = parent_identity.get("sources", {})
+    current_sources = current_identity.get("sources", {})
+    if set(parent_sources) != set(current_sources):
+        raise RuntimeError(
+            "Source inventory differs from the pilot: "
+            f"{sorted(set(parent_sources) ^ set(current_sources))}"
+        )
+    changed = {
+        key: {"parent": parent_sources[key], "current": current_sources[key]}
+        for key in sorted(parent_sources)
+        if parent_sources[key] != current_sources[key]
+    }
+    disallowed = sorted(set(changed) - {RUNNER_SOURCE_KEY})
+    if disallowed:
+        raise RuntimeError(
+            f"Numerical/helper/data source changed since the pilot: {disallowed}"
+        )
+    if parent_identity.get("environment") != current_identity.get(
+        "environment"
+    ):
+        raise RuntimeError("Execution environment differs from the pilot")
+    return {
+        "allowed_changed_sources": [RUNNER_SOURCE_KEY],
+        "changed_sources": changed,
+        "source_keys_identical": True,
+        "unchanged_source_count": len(parent_sources) - len(changed),
+        "environment_unchanged": True,
+    }
+
+
+def _validate_pilot_semantic(semantic, expected_cells):
+    allowed = semantic.get("executable_cell_ids")
+    expected_allowed = [
+        c["cell_id"] for c in expected_cells if c["phase"] == "pilot"
+    ]
+    if allowed != expected_allowed or len(allowed) != 24:
+        raise RuntimeError(
+            "Executable allocation is not exactly the 24-fit pilot"
+        )
+    if semantic.get("validation_replay") != {
+        "cell_id": cell_id("rosenbrock_D2_noise1", 2000, "S2"),
+        "purpose": "operational reproducibility check before the remaining pilot fits",
+        "excluded_from_all_scientific_and_timing_denominators": True,
+    }:
+        raise RuntimeError("Validation replay contract changed")
+    if (
+        semantic.get("planning", {}).get("pilot_operational_ceiling_seconds")
+        != PILOT_CEILING_SECONDS
+    ):
+        raise RuntimeError("Pilot operational ceiling changed")
+
+
+def _validate_continuation_semantic(semantic, expected_cells):
+    if semantic.get("continuation_seeds") != list(CONTINUATION_SEEDS):
+        raise RuntimeError(
+            "Manifest continuation seeds differ from the approved design"
+        )
+    allowed = semantic.get("executable_cell_ids")
+    expected_allowed = [
+        c["cell_id"] for c in expected_cells if c["phase"] == "continuation"
+    ]
+    if allowed != expected_allowed or len(allowed) != 96:
+        raise RuntimeError(
+            "Executable allocation is not exactly the 96 remaining fits"
+        )
+    if semantic.get("continuation_fit_count") != 96:
+        raise RuntimeError("Continuation fit count changed")
+    if semantic.get("validation_replay") is not None:
+        raise RuntimeError(
+            "The continuation allocates no validation replay of its own"
+        )
+    parent = semantic.get("parent")
+    required = {
+        "path",
+        "raw_sha256",
+        "semantic_digest",
+        "campaign_dir",
+        "record_sha256",
+    }
+    if not isinstance(parent, dict) or not required <= set(parent):
+        raise RuntimeError("Continuation manifest does not bind its parent")
+    if set(parent["record_sha256"]) != set(PARENT_RECORDS):
+        raise RuntimeError(
+            "Continuation manifest does not bind every pilot record"
+        )
+    provenance = semantic.get("identity_provenance")
+    if (
+        not isinstance(provenance, dict)
+        or provenance.get("allowed_changed_sources") != [RUNNER_SOURCE_KEY]
+        or not set(provenance.get("changed_sources", {"?": None}))
+        <= {RUNNER_SOURCE_KEY}
+        or provenance.get("source_keys_identical") is not True
+        or provenance.get("environment_unchanged") is not True
+    ):
+        raise RuntimeError(
+            "Continuation provenance permits more than the runner to change"
+        )
+    planning = semantic.get("planning", {})
+    if (
+        planning.get("batch_operational_ceiling_seconds")
+        != CONTINUATION_BATCH_CEILING_SECONDS
+        or planning.get("minimum_per_fit_timeout_seconds")
+        != MINIMUM_FIT_TIMEOUT_SECONDS
+    ):
+        raise RuntimeError("Continuation batch limits changed")
+
+
+def _load_parent(manifest):
+    """Return the bound pilot manifest after checking its bytes and digest."""
+    parent = manifest["semantic"]["parent"]
+    path = Path(parent["path"])
+    if not path.is_file() or sha256(path) != parent["raw_sha256"]:
+        raise RuntimeError("Bound pilot manifest changed or is missing")
+    loaded = validate_manifest(json.loads(path.read_text(encoding="utf-8")))
+    if (
+        _kind(loaded) != PILOT_KIND
+        or loaded["semantic_digest"] != parent["semantic_digest"]
+        or not loaded.get("reviewed_ready", {}).get("approved")
+    ):
+        raise RuntimeError("Bound pilot manifest is not the reviewed pilot")
+    for name, expected in parent["record_sha256"].items():
+        record = path.parent / name
+        if not record.is_file() or sha256(record) != expected:
+            raise RuntimeError(
+                f"Bound pilot record changed or missing: {name}"
+            )
+    return loaded
+
+
 def validate_manifest(manifest, require_ready=False, check_runtime=False):
     semantic = manifest.get("semantic")
     if not isinstance(semantic, dict) or manifest.get(
         "semantic_digest"
     ) != _digest(semantic):
         raise RuntimeError("Manifest semantic digest is invalid")
+    kind = _kind(manifest)
     if semantic.get("labels") != list(LABELS) or semantic.get(
         "full_seeds"
     ) != list(FULL_SEEDS):
@@ -421,31 +789,16 @@ def validate_manifest(manifest, require_ready=False, check_runtime=False):
     expected = _cells()
     if cells != expected:
         raise RuntimeError("Manifest cells or sequential order changed")
-    allowed = semantic.get("executable_cell_ids")
-    expected_allowed = [
-        c["cell_id"] for c in expected if c["phase"] == "pilot"
-    ]
-    if allowed != expected_allowed or len(allowed) != 24:
-        raise RuntimeError(
-            "Executable allocation is not exactly the 24-fit pilot"
-        )
-    if semantic.get("validation_replay") != {
-        "cell_id": cell_id("rosenbrock_D2_noise1", 2000, "S2"),
-        "purpose": "operational reproducibility check before the remaining pilot fits",
-        "excluded_from_all_scientific_and_timing_denominators": True,
-    }:
-        raise RuntimeError("Validation replay contract changed")
+    if kind == PILOT_KIND:
+        _validate_pilot_semantic(semantic, expected)
+    else:
+        _validate_continuation_semantic(semantic, expected)
     if semantic.get("options") != {}:
         raise RuntimeError(
             "E5 must use the standard target options without overrides"
         )
     if set(semantic.get("target_contracts", {})) != set(LABELS):
         raise RuntimeError("Manifest does not bind every target contract")
-    if (
-        semantic.get("planning", {}).get("pilot_operational_ceiling_seconds")
-        != 10800
-    ):
-        raise RuntimeError("Pilot operational ceiling changed")
     if require_ready and not manifest.get("reviewed_ready", {}).get(
         "approved"
     ):
@@ -456,10 +809,20 @@ def validate_manifest(manifest, require_ready=False, check_runtime=False):
             raise RuntimeError(
                 "Frozen S2 selection artifact changed or is missing"
             )
-        if semantic.get("identity") != runtime_identity():
+        current = runtime_identity()
+        if semantic.get("identity") != current:
             raise RuntimeError(
                 "Numerical/helper/data/dependency/environment identity changed"
             )
+        if kind == CONTINUATION_KIND:
+            parent = _load_parent(manifest)
+            provenance = identity_provenance(
+                parent["semantic"]["identity"], current
+            )
+            if provenance != semantic.get("identity_provenance"):
+                raise RuntimeError(
+                    "Recorded pilot/continuation provenance no longer holds"
+                )
     return manifest
 
 
@@ -471,7 +834,7 @@ def _cell(manifest, requested):
         raise RuntimeError(f"Unknown cell id: {requested}")
     if requested not in manifest["semantic"]["executable_cell_ids"]:
         raise RuntimeError(
-            f"Cell is outside the executable pilot allocation: {requested}"
+            f"Cell is outside the executable allocation: {requested}"
         )
     return matches[0]
 
@@ -831,6 +1194,8 @@ def run_pilot(manifest_path, out, timeout, campaign_max_seconds=10800):
         json.loads(Path(manifest_path).read_text(encoding="utf-8")),
         require_ready=True,
     )
+    if _kind(manifest) != PILOT_KIND:
+        raise RuntimeError("run-pilot accepts only the pilot manifest")
     ceiling = manifest["semantic"]["planning"][
         "pilot_operational_ceiling_seconds"
     ]
@@ -903,6 +1268,210 @@ def run_pilot(manifest_path, out, timeout, campaign_max_seconds=10800):
         raise RuntimeError(
             "Another E5 fit or pilot supervisor is active"
         ) from exc
+
+
+def _batch_state(manifest, out):
+    """Classify every executable cell from its terminal record."""
+    state = {}
+    for requested in manifest["semantic"]["executable_cell_ids"]:
+        cell = _cell(manifest, requested)
+        if _paths(out, cell)["terminal"].is_file():
+            state[requested] = validate_terminal(manifest, out, requested)[
+                "status"
+            ]
+        else:
+            state[requested] = "missing"
+    return state
+
+
+def run_continuation(
+    manifest_path,
+    out,
+    timeout,
+    max_wall_seconds,
+    max_fits=None,
+    on_failure="stop",
+):
+    """Run one bounded, resumable batch of the 96 continuation fits.
+
+    Cells are visited in manifest order.  A validated success terminal is
+    reused without launching; a failed terminal is never rerun and, unless
+    ``on_failure="continue"``, ends the batch so the failure can be
+    investigated first.  No fit is launched when fewer than ``timeout``
+    seconds of the batch allowance remain or when ``max_fits`` launches have
+    occurred.  Return 0 when every continuation cell has a success terminal,
+    1 when a failure was encountered or skipped, and 2 when the batch ended
+    cleanly with cells still missing.
+    """
+    manifest = validate_manifest(
+        json.loads(Path(manifest_path).read_text(encoding="utf-8")),
+        require_ready=True,
+    )
+    if _kind(manifest) != CONTINUATION_KIND:
+        raise RuntimeError(
+            "run-continuation accepts only the continuation manifest"
+        )
+    if on_failure not in ("stop", "continue"):
+        raise RuntimeError("on_failure must be 'stop' or 'continue'")
+    planning = manifest["semantic"]["planning"]
+    if timeout < planning["minimum_per_fit_timeout_seconds"]:
+        raise RuntimeError("Per-fit timeout must be at least 1200 seconds")
+    ceiling = planning["batch_operational_ceiling_seconds"]
+    if not timeout <= max_wall_seconds <= ceiling:
+        raise RuntimeError(
+            "Batch wall time must lie between one per-fit timeout and the "
+            f"frozen ceiling of {ceiling} seconds"
+        )
+    if max_fits is not None and max_fits < 1:
+        raise RuntimeError("max_fits must be a positive integer")
+    parent = _load_parent(manifest)
+    verify_parent_campaign(
+        parent, manifest["semantic"]["parent"]["campaign_dir"]
+    )
+    campaign_lock = Path(out) / "execution.lock"
+    campaign_lock.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with FileLock(str(campaign_lock), timeout=0):
+            started_utc = _utc_now()
+            started = time.monotonic()
+            batch_path = (
+                Path(out)
+                / "batches"
+                / f"batch_{started_utc.replace(':', '').replace('-', '')}.json"
+            )
+            record = {
+                "schema_version": 1,
+                "manifest_semantic_digest": manifest["semantic_digest"],
+                "started_utc": started_utc,
+                "timeout_seconds": timeout,
+                "max_wall_seconds": max_wall_seconds,
+                "max_fits": max_fits,
+                "on_failure": on_failure,
+                "cells": [],
+                "stop_reason": None,
+            }
+            # One validation pass over the terminals; launches update it.
+            state = _batch_state(manifest, out)
+            record["state_before"] = _state_counts(state)
+            launched = failures = 0
+
+            def checkpoint(stop_reason=None):
+                record["stop_reason"] = stop_reason
+                record["updated_utc"] = _utc_now()
+                record["batch_wall_s"] = time.monotonic() - started
+                record["launched"] = launched
+                record["failures"] = failures
+                atomic_json(batch_path, record)
+                atomic_json(
+                    Path(out) / "status.json",
+                    {
+                        "updated_utc": record["updated_utc"],
+                        "batch_record": _relative(batch_path, out),
+                        "stop_reason": stop_reason,
+                        "cells": record["cells"],
+                    },
+                )
+
+            def finish(stop_reason):
+                record["state_after"] = _state_counts(state)
+                record["complete"] = record["state_after"]["success"] == len(
+                    state
+                )
+                record["finished_utc"] = _utc_now()
+                checkpoint(stop_reason)
+
+            checkpoint()
+            stop_reason = None
+            try:
+                for requested in manifest["semantic"]["executable_cell_ids"]:
+                    status = state[requested]
+                    if status == "success":
+                        record["cells"].append(
+                            {"cell_id": requested, "action": "reused"}
+                        )
+                        continue
+                    if status == "failure":
+                        failures += 1
+                        if on_failure == "stop":
+                            record["cells"].append(
+                                {
+                                    "cell_id": requested,
+                                    "action": "stopped_at_failed",
+                                }
+                            )
+                            stop_reason = "prior_failed_terminal"
+                            break
+                        record["cells"].append(
+                            {"cell_id": requested, "action": "skipped_failed"}
+                        )
+                        continue
+                    if max_fits is not None and launched >= max_fits:
+                        record["cells"].append(
+                            {"cell_id": requested, "action": "not_launched"}
+                        )
+                        stop_reason = "fit_limit_reached"
+                        break
+                    remaining = max_wall_seconds - (time.monotonic() - started)
+                    if remaining < timeout:
+                        record["cells"].append(
+                            {
+                                "cell_id": requested,
+                                "action": "not_launched",
+                                "remaining_seconds": remaining,
+                            }
+                        )
+                        stop_reason = "insufficient_time_for_next_fit"
+                        break
+                    launch_started = time.monotonic()
+                    code = _run_cell_locked(
+                        manifest_path, out, requested, timeout
+                    )
+                    # ``_run_cell_locked`` returns 0 only after validating a
+                    # success terminal and 1 only after a failure terminal.
+                    state[requested] = "success" if code == 0 else "failure"
+                    launched += 1
+                    record["cells"].append(
+                        {
+                            "cell_id": requested,
+                            "action": "launched",
+                            "returncode": code,
+                            "outer_seconds": time.monotonic() - launch_started,
+                        }
+                    )
+                    checkpoint()
+                    if code:
+                        failures += 1
+                        if on_failure == "stop":
+                            stop_reason = "fit_failed"
+                            break
+            except BaseException as exc:
+                # A refused partial attempt, a tampered terminal or an
+                # interrupt leaves an explicit aborted record, never an
+                # open-ended one; the cell's own artifacts are untouched.
+                record["abort_error"] = f"{type(exc).__name__}: {exc}"
+                finish("aborted")
+                raise
+            if stop_reason is None:
+                stop_reason = (
+                    "all_cells_complete"
+                    if _state_counts(state)["success"] == len(state)
+                    else "allocation_visited"
+                )
+            finish(stop_reason)
+            if record["complete"]:
+                return 0
+            return 1 if failures else 2
+    except Timeout as exc:
+        raise RuntimeError(
+            "Another E5 fit or continuation batch is active"
+        ) from exc
+
+
+def _state_counts(state):
+    return {
+        status: sum(v == status for v in state.values())
+        for status in ("success", "failure", "missing")
+    }
 
 
 def _without_selection_timing(records):
@@ -1159,21 +1728,45 @@ def _transitions(rows, key):
     }
 
 
-def summarize(manifest, out):
-    validate_manifest(manifest)
+PAIR_STATUSES = (
+    "complete",
+    "failure",
+    "missing",
+    "invalid_initial_design",
+    "nonfinite",
+)
+
+
+def _executable_cells(manifest):
     executable = set(manifest["semantic"]["executable_cell_ids"])
-    scheduled_cells = [
+    return [
         cell
         for cell in manifest["semantic"]["cells"]
         if cell["cell_id"] in executable
     ]
-    outcomes = {
-        c["cell_id"]: _load_outcome(manifest, out, c) for c in scheduled_cells
-    }
+
+
+def _outcome_index(campaigns):
+    """Load outcomes for ``(manifest, out)`` campaigns, keyed by cell id.
+
+    Also returns the campaign directory that holds each cell's artifacts, so
+    pilot and continuation cells can be paired from different campaigns.
+    """
+    outcomes, locations = {}, {}
+    for manifest, out in campaigns:
+        for cell in _executable_cells(manifest):
+            if cell["cell_id"] in outcomes:
+                raise RuntimeError(f"Duplicate cell: {cell['cell_id']}")
+            outcomes[cell["cell_id"]] = _load_outcome(manifest, out, cell)
+            locations[cell["cell_id"]] = out
+    return outcomes, locations
+
+
+def _pairs(outcomes, locations, seeds):
     pairs = []
     initial_mismatches = []
     for label in LABELS:
-        for seed in PILOT_SEEDS:
+        for seed in seeds:
             arms = {arm: outcomes[cell_id(label, seed, arm)] for arm in ARMS}
             statuses = {v["status"] for v in arms.values()}
             status = (
@@ -1184,7 +1777,12 @@ def summarize(manifest, out):
             pair = {"label": label, "seed": seed, "status": status, **arms}
             pair["initial_design_equal"] = None
             if status == "complete":
-                traces = [_paths(out, arms[a]["cell"])["npz"] for a in ARMS]
+                traces = [
+                    _paths(
+                        locations[arms[a]["cell"]["cell_id"]], arms[a]["cell"]
+                    )["npz"]
+                    for a in ARMS
+                ]
                 with np.load(traces[0], allow_pickle=False) as s0, np.load(
                     traces[1], allow_pickle=False
                 ) as s2:
@@ -1210,41 +1808,36 @@ def summarize(manifest, out):
                 ):
                     pair["status"] = "nonfinite"
             pairs.append(pair)
-    by_target = {}
-    for label in LABELS:
-        rows = [p for p in pairs if p["label"] == label]
-        accuracy = {metric: _accuracy(rows, metric) for metric in QUALITY}
-        full_ten = (
-            all(p["status"] == "complete" for p in rows) and len(rows) == 10
-        )
-        review_metrics = [
-            metric
-            for metric, report in accuracy.items()
-            if full_ten and report["median"] > 0 and report["worse_count"] >= 7
-        ]
-        by_target[label] = {
-            "scheduled_pairs": len(PILOT_SEEDS),
-            "status_counts": {
-                s: sum(p["status"] == s for p in rows)
-                for s in (
-                    "complete",
-                    "failure",
-                    "missing",
-                    "invalid_initial_design",
-                    "nonfinite",
-                )
-            },
-            "pairs": rows,
-            "log_ratio_intervals_S2_over_S0": {
-                metric: _log_ratio_interval(rows, metric)
-                for metric in POSITIVE_PAIRED
-            },
-            "accuracy_differences": accuracy,
-            "convergence": _transitions(rows, "converged"),
-            "usability": _transitions(rows, "usable"),
-            "full_ten_pair_review_metrics": review_metrics,
-            "pilot_quality_gate": "descriptive_only",
-        }
+    return pairs, initial_mismatches
+
+
+def _target_report(rows, scheduled_pairs):
+    """Per-target paired summaries; the ten-pair review trigger needs all ten."""
+    accuracy = {metric: _accuracy(rows, metric) for metric in QUALITY}
+    full_ten = all(p["status"] == "complete" for p in rows) and len(rows) == 10
+    review_metrics = [
+        metric
+        for metric, report in accuracy.items()
+        if full_ten and report["median"] > 0 and report["worse_count"] >= 7
+    ]
+    return {
+        "scheduled_pairs": scheduled_pairs,
+        "status_counts": {
+            s: sum(p["status"] == s for p in rows) for s in PAIR_STATUSES
+        },
+        "pairs": rows,
+        "log_ratio_intervals_S2_over_S0": {
+            metric: _log_ratio_interval(rows, metric)
+            for metric in POSITIVE_PAIRED
+        },
+        "accuracy_differences": accuracy,
+        "convergence": _transitions(rows, "converged"),
+        "usability": _transitions(rows, "usable"),
+        "full_ten_pair_review_metrics": review_metrics,
+    }
+
+
+def _campaign_flags(outcomes, pairs):
     new_failures = [
         {"label": p["label"], "seed": p["seed"]}
         for p in pairs
@@ -1270,37 +1863,14 @@ def summarize(manifest, out):
         ]
         if bad:
             nonfinite_outcomes.append({"cell_id": key, "metrics": bad})
-    continuation_ids = [
-        cell["cell_id"]
-        for cell in manifest["semantic"]["cells"]
-        if cell["cell_id"] not in executable
-    ]
-    report = {
-        "schema_version": 1,
-        "created_utc": _utc_now(),
-        "manifest_semantic_digest": manifest["semantic_digest"],
-        "scheduled_pairs": len(pairs),
-        "scheduled_fits": len(outcomes),
-        "planned_continuation": {
-            "allocated": False,
-            "fit_count": len(continuation_ids),
-            "cell_ids": continuation_ids,
-        },
+    return {
         "fit_status_counts": {
             s: sum(o["status"] == s for o in outcomes.values())
             for s in ("success", "failure", "missing")
         },
         "pair_status_counts": {
-            s: sum(p["status"] == s for p in pairs)
-            for s in (
-                "complete",
-                "failure",
-                "missing",
-                "invalid_initial_design",
-                "nonfinite",
-            )
+            s: sum(p["status"] == s for p in pairs) for s in PAIR_STATUSES
         },
-        "initial_design_mismatches": initial_mismatches,
         "nonfinite_outcomes": nonfinite_outcomes,
         "new_S2_failures": new_failures,
         "S0_usable_to_S2_unusable": usable_losses,
@@ -1309,22 +1879,243 @@ def summarize(manifest, out):
             for key, value in outcomes.items()
             if value.get("reference_exceedances")
         ],
-        "targets": by_target,
-        "scientific_review": {
-            "automatic_adoption": False,
-            "pilot_is_descriptive_only": True,
-            "new_failure": bool(new_failures),
-            "usability_loss": bool(usable_losses),
-            "invalid_initial_design": bool(initial_mismatches),
-            "nonfinite_outcome": bool(nonfinite_outcomes),
-            "full_ten_pair_accuracy_triggers": {
-                label: row["full_ten_pair_review_metrics"]
-                for label, row in by_target.items()
-                if row["full_ten_pair_review_metrics"]
-            },
+    }
+
+
+def _review_block(flags, initial_mismatches, by_target):
+    return {
+        "automatic_adoption": False,
+        "new_failure": bool(flags["new_S2_failures"]),
+        "usability_loss": bool(flags["S0_usable_to_S2_unusable"]),
+        "invalid_initial_design": bool(initial_mismatches),
+        "nonfinite_outcome": bool(flags["nonfinite_outcomes"]),
+        "full_ten_pair_accuracy_triggers": {
+            label: row["full_ten_pair_review_metrics"]
+            for label, row in by_target.items()
+            if row["full_ten_pair_review_metrics"]
         },
     }
+
+
+def summarize(manifest, out):
+    """Summarize one campaign: the 24-fit pilot or the 96-fit continuation."""
+    validate_manifest(manifest)
+    kind = _kind(manifest)
+    seeds = _seeds_for(manifest)
+    outcomes, locations = _outcome_index([(manifest, out)])
+    pairs, initial_mismatches = _pairs(outcomes, locations, seeds)
+    by_target = {}
+    for label in LABELS:
+        rows = [p for p in pairs if p["label"] == label]
+        by_target[label] = _target_report(rows, len(seeds))
+        if kind == PILOT_KIND:
+            by_target[label]["pilot_quality_gate"] = "descriptive_only"
+    flags = _campaign_flags(outcomes, pairs)
+    report = {
+        "schema_version": 1,
+        "created_utc": _utc_now(),
+        "manifest_semantic_digest": manifest["semantic_digest"],
+        "scheduled_pairs": len(pairs),
+        "scheduled_fits": len(outcomes),
+    }
+    if kind == PILOT_KIND:
+        executable = set(manifest["semantic"]["executable_cell_ids"])
+        continuation_ids = [
+            cell["cell_id"]
+            for cell in manifest["semantic"]["cells"]
+            if cell["cell_id"] not in executable
+        ]
+        report["planned_continuation"] = {
+            "allocated": False,
+            "fit_count": len(continuation_ids),
+            "cell_ids": continuation_ids,
+        }
+    else:
+        report["phase"] = "continuation"
+        report["parent_manifest_semantic_digest"] = manifest["semantic"][
+            "parent"
+        ]["semantic_digest"]
+    report.update(
+        fit_status_counts=flags["fit_status_counts"],
+        pair_status_counts=flags["pair_status_counts"],
+        initial_design_mismatches=initial_mismatches,
+        nonfinite_outcomes=flags["nonfinite_outcomes"],
+        new_S2_failures=flags["new_S2_failures"],
+        S0_usable_to_S2_unusable=flags["S0_usable_to_S2_unusable"],
+        reference_exceedances=flags["reference_exceedances"],
+        targets=by_target,
+    )
+    review = _review_block(flags, initial_mismatches, by_target)
+    descriptive_key = (
+        "pilot_is_descriptive_only"
+        if kind == PILOT_KIND
+        else "phase_summary_is_descriptive_only"
+    )
+    report["scientific_review"] = {
+        "automatic_adoption": False,
+        descriptive_key: True,
+        **{k: v for k, v in review.items() if k != "automatic_adoption"},
+    }
     return report
+
+
+def _json_text(value):
+    """Serialize for equality checks; NaN compares equal to NaN."""
+    return json.dumps(value, sort_keys=True, allow_nan=True)
+
+
+def _pilot_consistency(parent_root, pairs):
+    """Check recomputed pilot pairs against the immutable pilot summary."""
+    stored = json.loads(
+        (Path(parent_root) / "summary.json").read_text(encoding="utf-8")
+    )
+    mismatches = []
+    for pair in pairs:
+        if pair["seed"] not in PILOT_SEEDS:
+            continue
+        stored_pair = next(
+            p
+            for p in stored["targets"][pair["label"]]["pairs"]
+            if p["seed"] == pair["seed"]
+        )
+        compared = [
+            (stored_pair["status"], pair["status"]),
+            (
+                stored_pair["initial_design_equal"],
+                pair["initial_design_equal"],
+            ),
+        ]
+        for arm in ARMS:
+            compared += [
+                (stored_pair[arm].get("final"), pair[arm].get("final")),
+                (stored_pair[arm].get("search_s"), pair[arm].get("search_s")),
+                (
+                    stored_pair[arm].get("terminal", {}).get("record_digest"),
+                    pair[arm].get("terminal", {}).get("record_digest"),
+                ),
+            ]
+        if any(_json_text(a) != _json_text(b) for a, b in compared):
+            mismatches.append({"label": pair["label"], "seed": pair["seed"]})
+    return {
+        "pilot_summary_sha256": sha256(Path(parent_root) / "summary.json"),
+        "pilot_pairs_checked": sum(p["seed"] in PILOT_SEEDS for p in pairs),
+        "mismatches": mismatches,
+    }
+
+
+def _pooled(by_target):
+    """Equal-weight geometric means of per-target ratios (descriptive)."""
+    pooled = {}
+    for metric in POSITIVE_PAIRED:
+        intervals = {
+            label: row["log_ratio_intervals_S2_over_S0"][metric]
+            for label, row in by_target.items()
+        }
+        available = {
+            label: interval["geometric_mean_ratio"]
+            for label, interval in intervals.items()
+            if interval["geometric_mean_ratio"] is not None
+        }
+        pooled[metric] = {
+            "targets_available": sorted(available),
+            "targets_scheduled": len(intervals),
+            "pairs_available_by_target": {
+                label: interval["n_available_pairs"]
+                for label, interval in sorted(intervals.items())
+            },
+            "equal_weight_geometric_mean_of_target_ratios": (
+                math.exp(
+                    float(np.mean([math.log(v) for v in available.values()]))
+                )
+                if available
+                else None
+            ),
+        }
+    return pooled
+
+
+def summarize_combined(manifest, out):
+    """Report all ten paired seeds per target from the pilot and continuation.
+
+    Pilot outcomes are read from the bound pilot campaign under the pilot
+    manifest; continuation outcomes from ``out`` under the continuation
+    manifest.  Missing and failed fits stay in every denominator.
+    """
+    validate_manifest(manifest)
+    if _kind(manifest) != CONTINUATION_KIND:
+        raise RuntimeError(
+            "The combined summary needs the continuation manifest"
+        )
+    parent = _load_parent(manifest)
+    parent_info = manifest["semantic"]["parent"]
+    parent_campaign = Path(parent_info["campaign_dir"])
+    verify_parent_campaign(parent, parent_campaign)
+    outcomes, locations = _outcome_index(
+        [(parent, parent_campaign), (manifest, out)]
+    )
+    pairs, initial_mismatches = _pairs(outcomes, locations, FULL_SEEDS)
+    for pair in pairs:
+        pair["phase"] = (
+            "pilot" if pair["seed"] in PILOT_SEEDS else "continuation"
+        )
+    by_target = {}
+    for label in LABELS:
+        rows = [p for p in pairs if p["label"] == label]
+        by_target[label] = _target_report(rows, len(FULL_SEEDS))
+        by_target[label]["pilot_pairs"] = sum(
+            p["phase"] == "pilot" for p in rows
+        )
+        by_target[label]["continuation_pairs"] = sum(
+            p["phase"] == "continuation" for p in rows
+        )
+    flags = _campaign_flags(outcomes, pairs)
+    consistency = _pilot_consistency(Path(parent_info["path"]).parent, pairs)
+    if consistency["mismatches"]:
+        raise RuntimeError(
+            "Recomputed pilot pairs differ from the immutable pilot summary: "
+            f"{consistency['mismatches']}"
+        )
+    incomplete = sorted(
+        label
+        for label, row in by_target.items()
+        if row["status_counts"]["complete"] != len(FULL_SEEDS)
+    )
+    review = _review_block(flags, initial_mismatches, by_target)
+    return {
+        "schema_version": 1,
+        "kind": "noisy_acq_e5_combined_summary",
+        "created_utc": _utc_now(),
+        "continuation_manifest_semantic_digest": manifest["semantic_digest"],
+        "pilot_manifest_semantic_digest": parent["semantic_digest"],
+        "phases": {
+            "pilot": {
+                "seeds": list(PILOT_SEEDS),
+                "fits": 24,
+                "pairs": 12,
+                "campaign_dir": str(parent_campaign),
+            },
+            "continuation": {
+                "seeds": list(CONTINUATION_SEEDS),
+                "fits": 96,
+                "pairs": 48,
+                "campaign_dir": str(Path(out).resolve()),
+            },
+        },
+        "scheduled_pairs": len(pairs),
+        "scheduled_fits": len(outcomes),
+        "pilot_consistency": consistency,
+        **flags,
+        "initial_design_mismatches": initial_mismatches,
+        "targets": by_target,
+        "pooled_equal_weight": _pooled(by_target),
+        "scientific_review": {
+            "automatic_adoption": False,
+            "descriptive_only": True,
+            "incomplete_targets": incomplete,
+            "planned_degrees_of_freedom_for_ten_complete_pairs": 9,
+            **{k: v for k, v in review.items() if k != "automatic_adoption"},
+        },
+    }
 
 
 def parse_args(argv=None):
@@ -1337,23 +2128,73 @@ def parse_args(argv=None):
         "--promotion-manifest", type=Path, default=PROMOTION_DEFAULT
     )
     prepare.add_argument("--out", type=Path, required=True)
+    continuation = commands.add_parser(
+        "prepare-continuation",
+        help="allocate the 96 remaining fits under a completed pilot",
+    )
+    continuation.add_argument("--parent-manifest", type=Path, required=True)
+    continuation.add_argument("--parent-campaign", type=Path, required=True)
+    continuation.add_argument(
+        "--reference", type=Path, default=REFERENCE_DEFAULT
+    )
+    continuation.add_argument(
+        "--promotion-manifest", type=Path, default=PROMOTION_DEFAULT
+    )
+    continuation.add_argument("--out", type=Path, required=True)
     for name in (
         "cell",
         "run-pilot",
+        "run-continuation",
         "validation-replay",
         "_worker",
         "summary",
+        "summary-combined",
     ):
-        command = commands.add_parser(name)
+        epilog = None
+        if name == "run-continuation":
+            epilog = (
+                "Exit status: 0 when every continuation cell has a success "
+                "terminal; 1 when a failed fit was encountered or skipped; "
+                "2 when the batch ended cleanly (time or fit limit) with "
+                "cells still missing. Each batch writes batches/batch_*.json "
+                "and status.json under --out."
+            )
+        command = commands.add_parser(name, epilog=epilog)
         command.add_argument("--manifest", type=Path, required=True)
         command.add_argument("--out", type=Path, required=True)
         if name in ("cell", "_worker"):
             command.add_argument("--cell-id", required=True)
-        if name in ("cell", "run-pilot", "validation-replay"):
+        if name in (
+            "cell",
+            "run-pilot",
+            "run-continuation",
+            "validation-replay",
+        ):
             command.add_argument("--timeout", type=int, default=1200)
         if name == "run-pilot":
             command.add_argument("--max-wall-seconds", type=int, default=10800)
-        if name == "summary":
+        if name == "run-continuation":
+            command.add_argument(
+                "--max-wall-seconds",
+                type=int,
+                required=True,
+                help="explicit batch allowance; no fit starts once less than "
+                "one per-fit timeout remains",
+            )
+            command.add_argument(
+                "--max-fits",
+                type=int,
+                default=None,
+                help="optional cap on fits launched by this batch",
+            )
+            command.add_argument(
+                "--on-failure",
+                choices=("stop", "continue"),
+                default="stop",
+                help="stop (default) ends the batch at a failed fit so it "
+                "can be investigated; continue records it and proceeds",
+            )
+        if name in ("summary", "summary-combined"):
             command.add_argument("--report", type=Path)
     return parser.parse_args(argv)
 
@@ -1368,9 +2209,54 @@ def main(argv=None):
             ),
         )
         return 0
+    if args.command == "prepare-continuation":
+        if args.out.exists():
+            raise RuntimeError(
+                f"Refusing to overwrite an existing manifest: {args.out}"
+            )
+        prepared = prepare_continuation_manifest(
+            args.parent_manifest,
+            args.parent_campaign,
+            args.reference,
+            args.promotion_manifest,
+        )
+        atomic_json(args.out, prepared)
+        semantic = prepared["semantic"]
+        print(
+            json.dumps(
+                {
+                    "out": str(args.out),
+                    "semantic_digest": prepared["semantic_digest"],
+                    "prepared_from_commit": prepared["prepared_from_commit"],
+                    "executable_fits": len(semantic["executable_cell_ids"]),
+                    "continuation_seeds": semantic["continuation_seeds"],
+                    "changed_sources": sorted(
+                        semantic["identity_provenance"]["changed_sources"]
+                    ),
+                    "unchanged_source_count": semantic["identity_provenance"][
+                        "unchanged_source_count"
+                    ],
+                    "parent_semantic_digest": semantic["parent"][
+                        "semantic_digest"
+                    ],
+                    "reviewed_ready": prepared["reviewed_ready"]["approved"],
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
     if args.command == "_worker":
         return worker(args.manifest, args.out, args.cell_id)
     if args.command == "cell":
+        manifest = validate_manifest(
+            json.loads(args.manifest.read_text(encoding="utf-8")),
+            require_ready=True,
+        )
+        if _kind(manifest) == CONTINUATION_KIND:
+            verify_parent_campaign(
+                _load_parent(manifest),
+                manifest["semantic"]["parent"]["campaign_dir"],
+            )
         return run_cell(args.manifest, args.out, args.cell_id, args.timeout)
     if args.command == "run-pilot":
         if args.max_wall_seconds < 1200 or args.max_wall_seconds > 10800:
@@ -1380,11 +2266,24 @@ def main(argv=None):
         return run_pilot(
             args.manifest, args.out, args.timeout, args.max_wall_seconds
         )
+    if args.command == "run-continuation":
+        return run_continuation(
+            args.manifest,
+            args.out,
+            args.timeout,
+            args.max_wall_seconds,
+            args.max_fits,
+            args.on_failure,
+        )
     if args.command == "validation-replay":
         return run_validation_replay(args.manifest, args.out, args.timeout)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-    report = summarize(manifest, args.out)
-    target = args.report or (args.out / "summary.json")
+    if args.command == "summary-combined":
+        report = summarize_combined(manifest, args.out)
+        target = args.report or (args.out / "summary_combined.json")
+    else:
+        report = summarize(manifest, args.out)
+        target = args.report or (args.out / "summary.json")
     if target.exists():
         raise RuntimeError(
             f"Refusing to overwrite immutable summary: {target}"
