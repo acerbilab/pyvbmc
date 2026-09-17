@@ -273,8 +273,9 @@ search-core tests but could not create the default temporary directory for
 the campaign tests; the successful rerun used a workspace-local temporary
 directory. Black's direct formatter check, isort and `git diff --check`
 passed. The Black CLI's Windows process pool stalled, so the same installed
-formatter API checked the files directly. Pycln was unavailable; this patch
-adds no imports.
+formatter API checked the files directly. Standalone Pycln was unavailable
+during preflight. All repository pre-commit hooks subsequently passed,
+including Black and Pycln in their hook environments.
 
 The twelve-cell MC1600 search pilot completed successfully in 25.57 seconds
 of outer worker time including imports (1.91–2.48 seconds per cell). All
