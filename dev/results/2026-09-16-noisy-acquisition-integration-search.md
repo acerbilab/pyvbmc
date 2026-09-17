@@ -970,7 +970,14 @@ its preparation record, review and validation logs beside it; its
 `campaign/` is empty until launch. No continuation fit is running or has
 run. Launching is a user decision: record it in `launch_clearance.json` in
 that directory, then run bounded batches from the repository root with the
-environment above plus `$env:MPLBACKEND = 'Agg'`, which the runner requires:
+environment above plus `$env:MPLBACKEND = 'Agg'`, which the runner requires.
+The clearance record states the user's authorization and its time, the
+manifest semantic digest
+`c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335` and raw
+SHA-256 `cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228`,
+and the batch limits authorized; the pilot's clearance, published as
+`e5_launch_clearance_20260917.json`, is the pattern. The runner does not
+read this file; it is the durable record that the decision was taken.
 
 ```powershell
 $cont = "$runRoot/e5_continuation_20260917"

@@ -29,14 +29,16 @@ records its execution.
   compares ordinary and stratified Monte Carlo and randomized quasi-Monte
   Carlo, then fixed-budget
   search and conditional adaptive integration. It includes an independent
-  integration judge and a bounded paired inference comparison. The plan
-  is paused on `dev-noisy-acquisition-efficiency` after a usage-limit
-  interruption: 24 states and all 960 panel selection cells are saved and
-  verified; independent judging, timing and search runs remain pending.
-  The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
-  records the restart commands. A separate inference window is not yet
-  authorized. Its benefit criteria, allocation and screening gates are
-  accepted; Bayesian quadrature is excluded following the scope review.
+  integration judge and a bounded paired inference comparison. On
+  `dev-noisy-acquisition-efficiency`, E2 closed without an integration
+  finalist, E3 froze the S2 search arm with mixed holdout evidence, E4's
+  entry gates are unmet, and the exploratory E5 pilot (24 fits) is
+  complete. The 96-fit E5 continuation for seeds 2002-2009 is prepared,
+  reviewed and frozen but not launched; launching it is the user's
+  decision. The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
+  records the results and the resume and launch commands. The benefit
+  criteria, allocation and screening gates are accepted; Bayesian
+  quadrature is excluded following the scope review.
   A controlled whole-VBMC timing comparison of the completed
   arithmetic optimizations remains optional; replay wall times do not
   establish that speedup.
