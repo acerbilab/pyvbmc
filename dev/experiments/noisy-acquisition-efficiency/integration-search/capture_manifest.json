@@ -1,0 +1,273 @@
+{
+  "allocation": [
+    {
+      "label": "rosenbrock_D2_noise1",
+      "seeds": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "rosenbrock_D2_noise3",
+      "seeds": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "logreg_D5_noise3",
+      "seeds": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "student_D8_noise3",
+      "seeds": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "multisensory_s1_D6_noise1.3",
+      "seeds": [
+        0,
+        1
+      ]
+    },
+    {
+      "label": "timing_D5_noise2.2",
+      "seeds": [
+        0,
+        1
+      ]
+    }
+  ],
+  "case_count": 12,
+  "checkpoint_policy": {
+    "candidate_count": 8192,
+    "early_charged_evaluations": "max(20, 2*D)",
+    "late_budget_fraction": 0.6,
+    "late_fallback": "last distinct acquisition checkpoint on early termination"
+  },
+  "data_hashes": {
+    "dev/scripts/data/multisensory.npz": "caf62b205a67bbb3a53d2650c0cf98ddcd4dc1c15da72e31d3c1f97256db982f",
+    "dev/scripts/data/timing.npz": "9fb1c08afa2b52810dafb04d62ac0166c502ae60b0b18a2741f89efd75e5a9cc",
+    "dev/scripts/data/truths/multisensory_s1.npz": "f11bc97cef7fe5820cd43d4b7fed6b6885f323abb1892241bfb16cf6e4707c04",
+    "dev/scripts/data/truths/multisensory_s2.npz": "975ec0b6a8c5b6676bcc01eb478863adc9cde45b30dfdcfe63771dee913638ff",
+    "dev/scripts/data/truths/timing.npz": "1366987f73dd30de1f3cfa0c0940e2113fd34f9283c6aa367779d50b3d245a0d"
+  },
+  "dependencies": {
+    "cma": "4.4.4",
+    "gpyreg": "1.2.0",
+    "numpy": "2.5.2",
+    "pyvbmc": "1.0.5.dev156+g4d91a5e61",
+    "scipy": "1.18.1"
+  },
+  "gpyreg": {
+    "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+    "import": "<USER_HOME>/Documents/GitHub/pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/gpyreg/__init__.py",
+    "source_hashes": {
+      "gpyreg/__init__.py": "d2683e21c965713c2f68027984514e3c070eea4540c6ab0aa1acab2833976927",
+      "gpyreg/covariance_functions.py": "482e8c1690e8430c46fa88235bb34a178fc5c8fae5c0296240f50c3120a4a932",
+      "gpyreg/f_min_fill.py": "b3bc9360e3cbab518ce710d153c1fc8e3d0344aeee85391ccad22a13e30221bd",
+      "gpyreg/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+      "gpyreg/gaussian_process.py": "fd15bae3d70ef0053e5500e359f814f98655678d6690ea3905e80e2578795df8",
+      "gpyreg/isotropic_covariance_functions.py": "cd48ba78624fe971a57b4b113d530d58e2a5ba65094397c1ec6f86ed8eeb1832",
+      "gpyreg/mean_functions.py": "13ddb745485f186800440fd9aa6989ee8e78539e99fb9ed9a39e0a08f513af04",
+      "gpyreg/noise_functions.py": "f7168d6ca0e0ad54d26800bf8e1709cc980df718a7789eea97a384a8c33e94a7",
+      "gpyreg/rng.py": "cc9ca12def071d07894cfeae9dec95ccafac8643b548d06da9dfaee20dd7b5d2",
+      "gpyreg/slice_sample.py": "5e15fb79b25e19d9e9f4ae0d3f0a091e599b7da5088b6a43ba2f3dc6ad577fc2",
+      "gpyreg/testing/__init__.py": "55e1a1c093fb290c59144f3bec778dd1ca7d1475c0c009aba7909822f49e75cd",
+      "gpyreg/testing/test_covariance_functions.py": "daa93221b2271ed955aed8d4fd508da524ea17ac01bb33697ba4f663c69d6e3f",
+      "gpyreg/testing/test_gaussian_process.py": "4398b22f50fac2b1e115be8187341635ecfa3c7eada436ed7be36c5f135f44c2",
+      "gpyreg/testing/test_gaussian_process_isotropic.py": "9ab52aaa873469bc5ae7327da673c719f099ea27054d412adb3291a9733d2944",
+      "gpyreg/testing/test_isotropic_covariance_functions.py": "aae3e23a0a32f352bed2e68d0cb9d853b02ead586fe2d1d86f2b8103eb4143e1",
+      "gpyreg/testing/test_mean_functions.py": "bbb6e46e5227a171811bb4534d3bf5af414cdcb43fc9088cf66531952f22a033",
+      "gpyreg/testing/test_noise_functions.py": "57b6cbaf054e3c8212d1dd4d29d8c3a58b17cc3615f07ee7dcd0489f259b12df",
+      "gpyreg/testing/test_predict_cross_covariance.py": "9235cba829a42690529bdd6e63d0426c6d417adff670a4993a44adcd5af6ee77",
+      "gpyreg/testing/test_rng.py": "fc9f1d83e22447e4d46b2087f2dd71efd204bedf2320f12a93fe36b111662bb5",
+      "gpyreg/testing/test_slice_sample.py": "35df5309383b2d44fba25a1cbfbb060332e1a365cf5f1d82ebc3175f9f1c8b9c",
+      "gpyreg/testing/test_smoothbox.py": "3cc4d907f38d8c189f22f7ce1090b16a65858cab2cb431845100af6d3b09091a",
+      "gpyreg/testing/test_smoothbox_student_t.py": "9ca12c6f0a2e14f61bfdf836358f39a569c7141fbc28e722680ba482dcad1bc8",
+      "gpyreg/testing/test_utils.py": "494badb7633320fab1cff2d2f59f3a675d613d205ea337d3da3762c12b3d9995"
+    }
+  },
+  "launch_ready": true,
+  "numerical_base_commit": "9cc6882768ff682ae892a6b453c42e0f2d03d5fa",
+  "numpy_build": {
+    "Build Dependencies": {
+      "blas": {
+        "detection method": "pkgconfig",
+        "found": true,
+        "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+        "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+        "name": "scipy-openblas",
+        "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+        "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+        "version": "0.3.34.0.0"
+      },
+      "lapack": {
+        "detection method": "pkgconfig",
+        "found": true,
+        "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+        "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+        "name": "scipy-openblas",
+        "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+        "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+        "version": "0.3.34.0.0"
+      }
+    },
+    "Compilers": {
+      "c": {
+        "commands": "cl",
+        "linker": "link",
+        "name": "msvc",
+        "version": "19.44.35228"
+      },
+      "c++": {
+        "commands": "cl",
+        "linker": "link",
+        "name": "msvc",
+        "version": "19.44.35228"
+      },
+      "cython": {
+        "commands": "cython",
+        "linker": "cython",
+        "name": "cython",
+        "version": "3.2.9"
+      }
+    },
+    "Machine Information": {
+      "build": {
+        "cpu": "x86_64",
+        "endian": "little",
+        "family": "x86_64",
+        "system": "windows"
+      },
+      "host": {
+        "cpu": "x86_64",
+        "endian": "little",
+        "family": "x86_64",
+        "system": "windows"
+      }
+    },
+    "Python Information": {
+      "path": "<USER_HOME>/AppData/Local/Temp/build-env-03ol50fu/Scripts/python.exe",
+      "version": "3.12"
+    },
+    "SIMD Extensions": {
+      "baseline": [
+        "X86_V2"
+      ],
+      "found": [
+        "X86_V3"
+      ]
+    }
+  },
+  "options": {
+    "display": "off",
+    "performance_calibration": "off",
+    "plot": false,
+    "print_iteration_header": false
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "prepared_from_commit": "3fe616c477130625bb01d30d29785773fe2e0e66",
+  "publication_note": "Local user-directory paths are redacted in this review copy. Run the experiment with the original local manifests; recorded artifact hashes identify the unmodified originals.",
+  "purpose": "noisy-acquisition E0 state capture",
+  "python": "3.12.6",
+  "schema_version": 1,
+  "source_hashes": {
+    "dev/scripts/benchmark_targets.py": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+    "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+    "pyvbmc/__init__.py": "4db4104c16ebc10161cc401aac7d3eafa9fc702f22a04c3f62b32ee85c57f0f6",
+    "pyvbmc/__main__.py": "68f653e43d27f08955a6dd5bd5878e784682b4c0a98b838ba3d6f6dac7a36f6d",
+    "pyvbmc/_user_hints.py": "dbda66942ef8e13b622786dd475c4b96126c94a574083af723f318feba655303",
+    "pyvbmc/acquisition_functions/__init__.py": "76109b2c4b81946bfde6f433e6c846465ffac9109eea8befe837b3319b712ae6",
+    "pyvbmc/acquisition_functions/abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+    "pyvbmc/acquisition_functions/acq_fcn.py": "f854200282c898f0e1b594f4859eb4e9a4966746531d5809d48c5d4e2e626d9d",
+    "pyvbmc/acquisition_functions/acq_fcn_imiqr.py": "f3901dd204e29e3ed0a6a248fa853a9d11f567d34f089a54c441fde668f4181f",
+    "pyvbmc/acquisition_functions/acq_fcn_log.py": "4dd1739a953c8f98260dbac9ab8ef5d944147a9734cb9aa95f807b01e0c0471b",
+    "pyvbmc/acquisition_functions/acq_fcn_noisy.py": "c2249507e66cff475a9f3b42f408ae9ad5bae8c429c883c139b1dddeb70b96d0",
+    "pyvbmc/acquisition_functions/acq_fcn_vanilla.py": "764c3a54277daa2ea7f4be8cbce75f174807fca29e4342fa7e1aba6cb13fd497",
+    "pyvbmc/acquisition_functions/acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+    "pyvbmc/acquisition_functions/utilities.py": "fdab0381876e6f3e4c8d6df22bbe1cf9b8df6e5a4af32e01fd336cf31de3bd7a",
+    "pyvbmc/calibration/__init__.py": "be6cdde1fde951ceb47650b92d1dcbfdf2da1e9f640436c66b88c9d1851724d5",
+    "pyvbmc/calibration/_api.py": "1f4c54b5a92e6150dede48424ae5c4d2e00604767517fff58b0576de439a17df",
+    "pyvbmc/calibration/_cache.py": "ada64d67f04b8149821b55ad54247319a8ee7335520a52acd45ddd06552f5fb1",
+    "pyvbmc/calibration/_campaign.py": "f4ac1eaa72f5d1911aca1dd355e19e455a18bba4e4fbc3992bc4f9bf0bb7c76b",
+    "pyvbmc/calibration/profile.py": "ebea4c134f00303dcd842e240d5ad068b615346b07cc27996a5c6077303e15ef",
+    "pyvbmc/decorators/__init__.py": "da20264996abc36c1cba9182b57c07eee917e5df6e81556fbbbec9beab92d8c9",
+    "pyvbmc/decorators/handle_0D_1D_input.py": "e3299b32b1470acd9ef6527dc3bdb248ef3f2aaea3ae5f488d3f24735db4d8be",
+    "pyvbmc/entropy/__init__.py": "9e332e33254929eeb77105bb359b9fcdfd5c7e9abe81910eb7f5c9ab2d0a6612",
+    "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+    "pyvbmc/entropy/entmc_vbmc.py": "a221bec072902f340be04006938f6c913ad992ec60c69528d111f7d3672dc7a8",
+    "pyvbmc/formatting/__init__.py": "74ada912abdc570961cefe5a5d6111a82bdeff7ea369e0ceb1274fa87f592acb",
+    "pyvbmc/formatting/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+    "pyvbmc/function_logger/__init__.py": "370cb39a6e1bbbef535ee7f68e93861f1fdc162a983531161e02a8d85859cf14",
+    "pyvbmc/function_logger/function_logger.py": "8bb64c7cbbaf2864bfbfd420f4b2289fc10e2332f09dc018663d1320e2f31de3",
+    "pyvbmc/parameter_transformer/__init__.py": "a61c3059bc1032a72555133cdfe00e0de25712f9a07164550409bd70d70459d9",
+    "pyvbmc/parameter_transformer/parameter_transformer.py": "77df8fdc20aa4ae79080d152412a2e9aea165fccd8e95c653ee36a81c77b4447",
+    "pyvbmc/priors/__init__.py": "550e3dd43a27e66435ed659b2f49144b4bcfd1214f5669010dcd3d9df0641bd5",
+    "pyvbmc/priors/convert_to_prior.py": "9073b1551b0bc355ababa180a1a94e938ec65e5b17dd92c8f380e3b679e62ebd",
+    "pyvbmc/priors/prior.py": "3d32c741e1295ef084dff33647a28d95c8ef85761e125bcf80983bec373229ab",
+    "pyvbmc/priors/product.py": "8f8dda5ca0c2c5f1bb4be16d80547932b92b7be0d87e9d8a8982e06da3483399",
+    "pyvbmc/priors/scipy.py": "5ec080bd19cec99c2b23b30df5fc72e23d378236301ba8c937f8a1c8a7056d34",
+    "pyvbmc/priors/smooth_box.py": "05d8fd5745b41e30f1d0390c18737b13e9fca42decd5d5504909de9bd6a59535",
+    "pyvbmc/priors/spline_trapezoidal.py": "be7bbb39d669154b296aaca1286b13031bc1ad7775644d3dd491a21efa214bf4",
+    "pyvbmc/priors/tile_inputs.py": "0834153962c09fdfdfa6888dddbac19801b9b9f9678a5b31e5e191ae61e80944",
+    "pyvbmc/priors/trapezoidal.py": "6fb22cc083649b74fdc9e2abc52974e40e914af6849ecc62ede746bd340db115",
+    "pyvbmc/priors/uniform_box.py": "4c705acdf466272184e3686253540b88a54481bb7a8c6a2228cafb684e9f23f7",
+    "pyvbmc/priors/user_function.py": "4c2dce49f7c4aa4d04a29fa1871f8374dab8d34255977384498c562280d13029",
+    "pyvbmc/pymc/__init__.py": "f20363bc2ab03daf78fdc1e5688f6404f8ac88919a782db80343bca11b6a687e",
+    "pyvbmc/pymc/_compat.py": "ab4820d3ba1f9e5189fa06f93fa9ee5ba477bbee38993b328bb8bfdc8c1a1a4b",
+    "pyvbmc/pymc/_plausible.py": "ed7e0c9647d05e752cb3da3f4a182ecc132b2dbffe564fe9a53f141cd17fe9fd",
+    "pyvbmc/pymc/_snapshot.py": "d62b324f866ea93ef7d644c4615a2b90ce6003f118ca1aabe6f8474dd99206a8",
+    "pyvbmc/pymc/_target.py": "0882b0b0e1b7f9aa5e8043218bde0bd079155258c4594bad2eb9aaf158965a3e",
+    "pyvbmc/rng.py": "a6bd2dd386db5ed713acbf2daa400e819eaa1feb0082daa4bd20b8b3ece05fb7",
+    "pyvbmc/stats/__init__.py": "5074c0fa11e0f5ce87ab8bc69d950b4ccca3024da6c2d3796346fcf4761003eb",
+    "pyvbmc/stats/get_hpd.py": "1c685981cd236a8b4fbe566d99c02ace10082352368688489d159f2cb375a698",
+    "pyvbmc/stats/kde_1d.py": "bc5d6c91f43735eb7304cbb93e83745828ac609df66109de0d7bd58c24604934",
+    "pyvbmc/stats/kl_div_mvn.py": "f63571d2d6c88842fa2542ff0fc139e94bb35480703ca2707f0436c25ae5159f",
+    "pyvbmc/svbmc/__init__.py": "a27adf91c62e3c93a966cea6c8474725950d9bd992e30c39ac30607b6799677d",
+    "pyvbmc/svbmc/_elbo_shrinkage.py": "c749a25d65f83d029b51cf0688107505a8498bfba56a11ce610d6ece75c1f70b",
+    "pyvbmc/svbmc/_entropy.py": "702657e2dded564dad258129f1227ec520b717a93aa7d02c13616970f2a752b3",
+    "pyvbmc/svbmc/_jacobian.py": "2dd92b5305365f87f77a81a7e1100051b1388c7ad7d72fdce9229ebfdda7bc45",
+    "pyvbmc/svbmc/_runtime_tips.py": "5e505025e30095bbfcd592d9c6babc9b84e2a17d1e60505778de2167611c0d2e",
+    "pyvbmc/svbmc/_tip_catalog.py": "9b91555ce93cc4729abe3943a7c31c72971f8f07c34994142104fa58c15cda39",
+    "pyvbmc/svbmc/svbmc.py": "eefb8345d4acb8eb7f18b237b316d05aeb678bfe51827230af457796711fe0f1",
+    "pyvbmc/svbmc/utils.py": "90e5d1da900d5bbd5cec6bc053f96dec367f759dea62205003f3c1545770ed18",
+    "pyvbmc/testing/oracles/_state.py": "13abc1e5ed4f75d17dfe8c2944d37247ec0fe1295e02863416773f55632c6d37",
+    "pyvbmc/timer/__init__.py": "9cb964b08f313f5866b964a2532e9dd2ed20af51b50d5114133b85f91878934d",
+    "pyvbmc/timer/timer.py": "7bf42b79067c3156ae9bd0e3f340e054bc52a0bdd7c47126112563714169331b",
+    "pyvbmc/variational_posterior/__init__.py": "6a9a75bcc33df379d7a722786a01dc4fc84f812f822c04ea2d0cacb65b168a8a",
+    "pyvbmc/variational_posterior/_arviz.py": "a27197073091784ea59c65d14013d8bfd6f99fcdceab0cb95ba5fdc24c028a00",
+    "pyvbmc/variational_posterior/_torch.py": "da6fe5ef52c5fb44fe9e55747671bff13c00cf7f2bcd0bf0054bd8d2cf228582",
+    "pyvbmc/variational_posterior/variational_posterior.py": "a2ec7e763d4da2fa9442330f5dcc1c1ffa7c447fcb23f995f383502604ea4b41",
+    "pyvbmc/vbmc/__init__.py": "f64d3e78b3bd7a1bf88d2144b5d073eb781697693513eb9f9c69b861901a5f29",
+    "pyvbmc/vbmc/_bounds.py": "46a8249b923f187aafb6876bbbc0af746d8beef4e74572260b5984728983f1db",
+    "pyvbmc/vbmc/_runtime_tips.py": "6351c1fed0184bc943d52b473dc407c5ccc64b7669ca4167e025e3b68a06e43b",
+    "pyvbmc/vbmc/_tip_catalog.py": "fc5150c203ac76529546694e1d34df9eb821c83cadf1c900532ddae666d1ceed",
+    "pyvbmc/vbmc/active_importance_sampling.py": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378",
+    "pyvbmc/vbmc/active_sample.py": "4b09254caf87b8e93582d25bcb9fa7489fbb1519aebd803617ceb40a69c751b3",
+    "pyvbmc/vbmc/create_vbmc_animation.py": "5e28759228460894eca458924d8f0e69b4d5d0cfb482fa6b0d9e3c83a6358f18",
+    "pyvbmc/vbmc/gaussian_process_train.py": "cdf52636e9a39d56200e69f2b8eb74ae00ace51564aafbfccc71b33d30d535e4",
+    "pyvbmc/vbmc/iteration_history.py": "0027271a386d7e6fcc4a3a3d85a2c14e22caeb0b2518e0e60eb4bb2df7f9a87d",
+    "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+    "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": "8e62e3a4bb4a63717af82255119e57845d31902fea301b79e1c3c0a9cc053eda",
+    "pyvbmc/vbmc/option_configs/basic_vbmc_options.ini": "d6cd78c909edc62708659688bdca7f7937a1efb402878e91afe5ede6d6510106",
+    "pyvbmc/vbmc/option_configs/test_options.ini": "65b1eb537c44b784803f1a027cb7427db6172da389ba53b8e85d9e73edb1a36c",
+    "pyvbmc/vbmc/option_configs/test_options2.ini": "563c9c617a5cd7a11212767843729e565c4b5800a1c2ec20454209c6b0a5eddf",
+    "pyvbmc/vbmc/options.py": "113e8fc272a2fcdeb06be32cf171e76e13f021d949e1f3d5161d9d7c8f05037a",
+    "pyvbmc/vbmc/variational_optimization.py": "542056b665d6d8d548d4ba6f1c44b57673ac6cff0cdfe9a1bf521e0aad016274",
+    "pyvbmc/vbmc/vbmc.py": "649dbb9b88e8d2c62f0b26a2f8a6ca334435d2d39230a83d42a88801c450df55",
+    "pyvbmc/whitening/__init__.py": "39ab0a0f26daaeaed1cf5100bbd56d07822f8ec562afb7a4bdb453191d6fed7f",
+    "pyvbmc/whitening/whitening.py": "d7cf3ba568fd2b0537ee3baadd422e43393c162deb979007a2584e00df200d7c"
+  },
+  "state_target_count": 24,
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  }
+}

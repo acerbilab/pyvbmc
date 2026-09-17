@@ -4,17 +4,49 @@ Created 2026-09-13. Status: guarded-sinh and kernel-reuse implementation,
 validation, independent review and integration into `dev-next` are complete.
 The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
-its released gpyreg dependency and completed gates. Search and quadrature
-experiments remain independent possibilities in this workstream.
+its released gpyreg dependency and completed gates.
+
+Experimental extension drafted 2026-09-16: **INTERRUPTED; SCREENING SAVED**. Branch:
+`dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
+The [integration and search experiment](#integration-and-search-experiment)
+below specifies the investigation. E0-E4 execution is authorized within
+the first window; E5 requires a separately authorized inference window.
+The PI accepted the benefit criteria, paired allocation and screening gates
+on 2026-09-16. The revised experimental scope omits Bayesian quadrature.
 
 ## Pickup point and deferred measurements
 
+The usage-limit interruption occurred after all 864 development-panel
+treatment selections and 96 production baselines completed, before full
+independent judging. Morning recovery on 2026-09-17 verified every terminal
+record and bound payload hash and passed all 133 developer tests. No Python
+experiment process remained running. The
+[completion record](../experiments/noisy-acquisition-efficiency/integration-search/panel_completion.json)
+identifies the saved allocation. E2 timing, full-sieve comparisons and holdout
+evaluation are pending; E3 tools are implemented but no search allocation
+has run. E4's entry gates have not been assessed. No method is selected.
+
+The user needs the laptop about 45 minutes after the 04:46 UTC recovery
+check. Recovery is limited to verification, documentation and a local
+commit; the numerical campaign is paused. Resume E2 in an available compute
+window using the commands in the experiment report. Preserve the existing
+capture and panel artifacts, and estimate judge cost with a bounded pilot
+before launching its full allocation. All source locks and holdout gates
+remain applicable.
+
+Planning estimate for the remaining work: E2 2-4 hours, E3 1-2 hours,
+conditional E4 up to 1-3 additional hours if its gate passes, and 30-60
+minutes for final review and reporting. Reserve approximately 6-8 hours;
+these are provisional elapsed-work estimates, to be revised from the
+bounded judge pilot. Resume in the existing unchanged checkout and local
+environment. The report identifies the local-only artifacts; no background
+work requires reattachment.
+
 The completed computational optimizations require no further campaign or
-release action. Choose the next experiment from adaptive sieve/search,
-integration budgets and multistart L-BFGS-B, or integration of the existing
-VIQR criterion. These possibilities are not ordered by dependency and have
-no approved implementation or new run allocation yet. The completed kernel
-plan's approval does not select one of them.
+release action. The proposed next work compares integration methods on
+frozen states, then tests fixed-budget search and, conditionally, adaptive
+integration. GP fitting, initialization and retraining policy are excluded
+from this experiment by the PI's scope decision of 2026-09-16.
 
 A controlled estimate of the combined **whole-VBMC runtime speedup** from
 guarded sinh and kernel reuse is deferred. The saved replay campaigns ran
@@ -27,7 +59,851 @@ are PyVBMC `83692ac` with gpyreg `a2f8ddc` before both changes and PyVBMC
 `9c7d1b8` with gpyreg `39536b0` after both changes. This measurement is an
 optional follow-up, not a prerequisite for the other experiments.
 
-## Guarded-sinh execution checklist
+## Integration and search experiment
+
+### Question, ownership and scope
+
+Can numerical integration and search choose equally good or better VIQR
+evaluation points at lower computational cost, with acceptable inference
+performance across noisy synthetic and real-data problems?
+
+This section owns the experimental design, allocation, decisions and eventual
+execution checklist. The historical sections below retain the completed
+arithmetic optimizations. The existing acquisition note and search report
+own the earlier measurements; their scratch scripts and performance claims
+are not assumed to reproduce on the current code.
+
+In scope are ordinary Monte Carlo (MC), component-stratified MC, randomized
+quasi-Monte Carlo (RQMC), fixed-budget sieve/re-scoring/refinement,
+conditional adaptive integration, and evaluation
+of the resulting decisions and inference. Candidate-side linear algebra may
+be tested if integration setup remains a measured bottleneck.
+
+Out of scope are changes to GP fitting, hyperparameter initialization or
+sampling, retraining schedules, noise estimation, the variational objective,
+the VIQR criterion, acquisition regularization, final boost, repeat policy,
+IMIQR, Bayesian quadrature (BQ), new acquisitions and public defaults.
+No HPC connection is required. Production adoption is a later decision
+supported by this experiment, not a consequence of an arm winning locally.
+
+### Live checklist and execution roles
+
+- [x] E0: freeze sources, state allocation and measurement protocol.
+- [x] E1: build and verify developer integration and judging tools.
+- [~] E2: compare MC, stratified MC and RQMC; panel selections complete,
+  judging and subsequent stages paused.
+- [~] E3: compare fixed-budget re-scoring and local search; tools verified,
+  numerical allocation awaits E2.
+- [ ] E4: test adaptive integration only if its entry gate passes.
+- [ ] E5: run the bounded paired inference comparison for eligible finalists.
+- [~] E6: consolidate evidence and review recovery; adoption recommendation
+  awaits the uncompleted numerical comparisons.
+
+Astra (`gpt-6-astra`, high) orchestrates E0, scientific decisions in E2-E5,
+and E6. Sol (`gpt-5.6-sol`, high) implements the developer harness and
+executes the specified E1-E5 checks; use separate Sol agents for independent
+review. At most one agent runs compute, including tests and timing, at once.
+Other agents perform static review. `$task` execution began on 2026-09-16;
+E0 and the independent E1 harness work proceed together. No additional
+approval is needed for phases within the authorized window and gates.
+A failed gate ends that arm or yields an
+inconclusive result; it does not authorize expanding the experiment.
+
+### Scientific and software contracts
+
+**Two point sets.** A candidate is a possible next target evaluation. An
+integration node estimates a candidate's utility using the fitted GP. The
+frozen-state experiments make no target calls and no GP fits. State capture
+and E5 inference do make target calls under the unchanged fitting policy.
+
+For a fixed VP, let `R(x)` be the posterior-weighted residual IQR after a
+hypothetical observation at candidate `x`, averaged over the existing GP
+hyperparameter samples. Let `R0` be the corresponding current IQR. Compute
+both using normalized integration weights. The usual VIQR score differs
+from `log(R(x))` by a candidate-independent constant for uniform MC nodes.
+Normalize those constants when comparing different node counts; do not
+compare raw unnormalized sums from different budgets.
+
+**The complete acquisition must be preserved.**
+`AbstractAcqFcn.__call__` maps integer coordinates, applies a
+candidate-dependent variance penalty and rejects points near hard bounds.
+The judged score is `F(x) = log(R(x)) + P(x)` for valid continuous candidates,
+with the existing penalty `P` and masks. Its equivalent positive score is
+`J(x) = exp(P(x)) * R(x)`; evaluate comparisons stably in log space.
+The GP noise estimate, hyperparameter averaging and variance clipping must
+match the frozen source. Record raw VIQR and the complete score separately.
+
+Minimizing residual IQR and maximizing IQR reduction share a minimizer for
+fixed nodes and weights before candidate-dependent penalties. Adding the
+same penalty to their logarithms need not preserve that equivalence.
+Therefore local search initially uses a positive affine rescaling of the
+complete `F`, fixed for that optimization. Test `iqr_reduction` only where
+the penalty is identically inactive throughout the searched domain and
+equivalence has been verified. Merely observing zero penalty at the start
+is insufficient. Do not disable or redesign regularization for an arm.
+
+**Weights require an explicit evaluator.** Standard VIQR's `iqr` path
+currently assumes constant weights and does not consume `ln_weights` in
+its sum. Replacing nodes or populating that field is insufficient for
+component-stratified rules. Build a private developer evaluator that
+supports explicit weights, preserving all hyperparameter contributions and
+the full wrapper semantics. Establish equal-weight parity first. Reuse the
+current production path as the timed baseline, including its kernel reuse;
+do not handicap it with the experimental evaluator's overhead.
+
+All integration is in the VP's internal coordinates, where component `k`
+has mean `mu[:, k]` and diagonal standard deviation
+`sigma[0, k] * lambd[:, 0]`. Preserve the transformer and use its original
+coordinate bounds through the existing wrapper. Freeze the GP, VP, logger,
+options, observation-noise inputs, cache and search bounds together.
+Capture object/RNG digests before and after every frozen-state treatment.
+`VariationalPosterior.__deepcopy__` shares its generator: install an
+independent generator on experiment copies before drawing. Pass candidate
+copies through integer snapping so shared panels cannot be modified.
+
+Keep evaluation nodes fixed throughout a local optimization. Frozen-state
+candidate generation, integration replicates, local starts, acceptance
+checks and final judging use explicitly separate deterministic streams.
+Common nodes across candidates within one replicate reduce noise in their
+differences. Development judging may select among the predeclared bounded
+method/settings grid, but must never optimize a candidate or decide a
+runtime fallback. Holdout and final judging are evaluation-only and cannot
+tune methods or settings. Independent RQMC scrambles, not
+the scatter within a scramble, provide its replicate uncertainty estimate.
+
+### E0: freeze the baseline and representative states
+
+**Executor:** Astra orchestrator; Sol may implement capture plumbing.
+
+Freeze the exact branch base, gpyreg revision, Python/NumPy/SciPy versions,
+BLAS/thread configuration, options, target/data/truth hashes and seed
+allocation in a versioned manifest before measurements. The starting
+gpyreg pin is `9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b` (1.2.1); verify
+the imported source rather than relying on a package version string.
+Later `dev-next` changes do not silently change the baseline. If integration
+onto a newer base becomes necessary, record the difference and rerun the
+affected checks before using old measurements to support it.
+
+Use these six existing golden configurations, with their existing bounds,
+budgets, noise and initialization conventions:
+
+| Configuration | Coverage |
+| --- | --- |
+| `rosenbrock_D2_noise1` | Lower noise and low dimension |
+| `rosenbrock_D2_noise3` | Same geometry at higher noise |
+| `logreg_D5_noise3` | Bounded synthetic target |
+| `student_D8_noise3` | Heavy tails and higher dimension |
+| `multisensory_s1_D6_noise1.3` | Real-data likelihood |
+| `timing_D5_noise2.2` | Real-data likelihood with larger target cost |
+
+Target 24 states: two trajectories per configuration (seeds 0 and 1),
+two acquisition checkpoints per trajectory. The early checkpoint is the
+first acquisition after at least `max(20, 2*D)` charged target evaluations;
+the late checkpoint is the first after 60% of the configured budget.
+For these ordinary runs initialization cost is zero. If a run terminates
+before the late threshold, use its last acquisition checkpoint, provided
+it is distinct from the early one; otherwise mark the missing cell. Do not
+force extra iterations or discard failed trajectories to fill the matrix.
+Capture after the current GP/VP update and before candidate selection.
+
+Seed-0 trajectories are development states; seed-1 trajectories are held
+out. Never split early/late states from the same trajectory across those
+groups. Add constructed stress checks for tiny mixture weights, narrow
+components, warped/bounded transforms, nearly zero acquisition reductions,
+penalty-active candidates and both GP factor representations. These are
+correctness/stress tests, not extra independent target observations.
+
+Audit existing captures using `validate_viqr_sinh.py:restore` and
+`probe_viqr_kernel_reuse.py:captured_states`; consult the ignored
+`dev/scripts/runs/LOCAL.md` for availability. Historical captures are useful
+supplementary states, but are not automatically current-base trajectories.
+The local inventory at planning contains six early captures (`N=10`) and
+one late Rosenbrock-noise-3 capture (`N=150`). It cannot supply the proposed
+24-state matrix or late higher-dimensional/real-data coverage. The original
+mid-run search scratch scripts and pickles were not committed; rebuilding
+the experiment must not depend on finding them.
+Check complete capture contents and source provenance; do not attempt to
+reconstruct omitted importance samples from an ordinary lean history.
+If the current-base matrix is unavailable, capture it in at most 12 baseline
+fits. Archive acquisition inputs using the existing plain-array state
+machinery where possible. Preserve any necessary additional metadata in
+an explicit schema; never silently discard unsupported state.
+Preserve live GP posterior factors and `temporary_data` using the existing
+capture extension: ordinary state reconstruction recomputes factors and can
+move acquisition rounding. Save the generator state at the capture point
+explicitly; supplying a seed to `build_state` does not restore a mid-run
+stream. Keep provenance for whether candidates/nodes were captured or drawn
+afresh by the experiment.
+
+Freeze candidate panels with the current `_get_search_points` and existing
+repeat/cache rules. E2 uses a common 8192-candidate pool per state. Its
+512-candidate development panel includes the baseline's top 32 and 480
+seeded candidates from the remaining pool. Record this selection bias;
+panel results alone cannot establish full-sieve selection quality. E3
+generates each sieve size through the existing generator with recorded
+seeds; taking the first rows of a larger sieve can distort its source mix.
+
+**Acceptance:** complete manifest and coverage table; current public VIQR
+reproduced on captured nodes/candidates; missing states and unverified
+historical claims explicitly identified. Check data and truth availability
+before scheduling real-data runs. Missing truth prevents inference-quality
+claims for that target even if acquisition comparisons can proceed.
+
+### E1: developer tools and independent judging
+
+**Executor:** Sol implementation; Astra checks the measurement contract.
+
+Implement the following developer-only modules (names are proposed paths):
+
+- `dev/scripts/noisy_acq_experiment.py`: manifest-driven commands for state
+  inventory/capture, integration comparisons, search, inference and summaries.
+- `dev/scripts/noisy_acq_quadrature.py`: node rules, explicit-weight VIQR,
+  stable residual/reduction calculations and replicate judging.
+- `dev/scripts/test_noisy_acq_experiment.py`: protocol, isolation, resumption,
+  full-score parity and focused numerical checks.
+
+Reuse `benchmark_targets.py`, `golden_trace.py`, `population_run.py`'s
+manifest-checked completion records, the existing captured-state loader,
+and the sequential warmed-worker timing pattern in
+`validate_viqr_kernel_reuse.py`. Do not modify their historical outputs or
+copy a complete numerical solver into a second implementation. If a small
+shared helper is needed, extract it with value/RNG regression coverage;
+experimental weighted behavior stays behind the developer harness.
+
+Concrete implementation steps:
+
+1. Add a state schema check and digests, load the real baseline callable,
+   and reproduce its equal-weight results after accounting for constant
+   normalization. Cover single/multiple hyperparameter samples, both GP
+   factor representations, penalties, masks, finite and zero reductions.
+2. Implement explicit positive weights and test constants and analytic
+   Gaussian moments under the VP. Keep all positive-weight components;
+   invalid weighted evaluations return structured failure records rather
+   than a clipped number or silently substituted method. Check stable
+   positive-weight residual and reduction sums against direct dot products
+   in well-conditioned cases and higher-precision references in
+   cancellation stress cases.
+3. Add a deterministic fixed-node cache builder and compare it with the
+   captured MC cache; ordinary `active_importance_sampling` draws nodes
+   and cannot be used as a fixed-node constructor. Implement randomized
+   node streams without changing the captured VP's
+   generator. Repeated calls on the same manifest must reproduce results;
+   draw ordering in one arm must not change another arm or its judge.
+4. Build the independent judge below, retaining raw replicate estimates,
+   candidate provenance, uncertainty and unresolved status.
+5. Add atomic per-cell output, manifest/hash checks on resume, and summaries
+   that count failed/missing/unresolved cells in their denominators.
+
+Judge all methods' selected candidates together with the baseline candidate
+and a fixed reference shortlist. Use eight independent component-stratified
+RQMC replicates initially, each with an actual budget near 4096 nodes.
+Double per-replicate budgets to 8192, 16384, 32768 and at most 65536 only for
+unresolved comparisons. Use the same judge nodes for paired candidates.
+Check a separate ordinary-MC estimate for the development extremes and
+any apparent catastrophic win/loss. Disagreement triggers investigation,
+not automatic preference for RQMC.
+
+The MC diagnostic includes each development state's most positive and most
+negative mean complete-score difference, every comparison whose magnitude
+is at least ten practical bands, and every confidently flagged material
+raw loss. Deduplicate candidate pairs and evaluate their union with eight
+fresh MC replicates at 32768 and 65536 nodes. Retain the original pilot
+band and the same uncertainty and consecutive-budget checks. These two
+budgets are diagnostic allocations; disagreement or unresolved MC evidence
+cannot certify the RQMC verdict. Add apparent holdout catastrophes explicitly
+without using them to tune a treatment.
+
+For candidates A and B, form paired per-replicate complete-score differences
+`d_r = F_r(A) - F_r(B)` using the same nodes within each replicate. Use
+the paired mean and a two-sided 95% Student-t interval with seven degrees
+of freedom for eight replicates. These are approximate operational
+intervals; nonlinearity of the logarithm and heavy-tailed contributions
+require the budget-stability and cross-method checks. Also report scores
+computed from the pooled residual estimates. If averaging replicate log
+scores versus taking the log of pooled residuals changes the classification,
+increase the budget or leave the comparison unresolved.
+
+Define a per-state practical band before comparing treatments:
+`eps_F = max(log1p(1e-6), 0.01 * abs(log(R0) - log(Rbaseline)))`, using
+independently judged raw residuals for the production winner. Compute the
+band once per state from a dedicated pilot judge stream. The absolute
+floor prevents near-flat surfaces from demanding rounding-level accuracy;
+the second term scales with the baseline's look-ahead benefit. If the
+baseline gain is unresolved, use the absolute floor and mark that state.
+This band is an engineering choice, not a numerical precision claim; report
+unthresholded differences as well. It is never passed to a runtime policy.
+
+Relative to B, A is beneficial if the upper interval endpoint is below
+`-eps_F`, harmful if the lower endpoint is above `+eps_F`, a practical tie
+only if the entire interval lies inside the band, and unresolved otherwise.
+Require the same classification at two consecutive node budgets; for a
+resolved directional result also require the interval half-width to be at
+most one quarter of its magnitude. Compare adjacent budgets up to the cap;
+there is no requirement for a budget beyond 65536. Retain unresolved cells
+at the cap. Check the raw-reduction material-loss gate below even when the
+complete scores are practically tied. These are resolution checks, not
+simultaneous hypothesis-test claims.
+An unseen narrow contribution can defeat every replicate; analytic stress
+cases and the cross-method check address that risk without claiming proof.
+
+The primary score is the complete acquisition `F`; also report stable raw
+IQR reduction `R0-R(x)`. Evaluate reductions directly where possible,
+rather than subtracting nearly equal exponentials. Report regret relative
+to the best assessed candidate in the recorded union, explicitly not a
+global optimum. Do not report reduction ratios when their denominator is
+unresolved or effectively zero. A true-GP pathological flat surface is an
+uninformative selection case to record, not permission to change GP fitting.
+
+For implementation, assess baseline-gain resolution from the eight paired
+relative reductions `(R0-Rbaseline)/R0`: the 95% Student-t lower endpoint
+must exceed `1e-12`. This numerical floor is fixed before inspecting
+treatment outcomes. Assess a material raw loss through paired differences
+`reduction_arm - 0.9 * reduction_baseline`, using a common log-derived
+scale to avoid overflow. A confidently negative difference must satisfy
+the same consecutive-budget and directional-precision checks as the
+complete-score comparison. Retain unresolved raw-loss checks separately
+from complete-score ties.
+
+Use quiet-machine sequential timings, single-threaded BLAS, warmed code,
+alternating treatment order and seven paired timing rounds. Report total
+node generation/preparation plus acquisition/search cost, separately from
+judge time and capture/import time. Count cache construction once per
+acquisition selection; no amortization across subsequent GP/VP updates.
+Measure memory separately from timed rounds and bound allocations by
+chunking nodes/candidates; never compare an instrumented arm to an
+uninstrumented baseline.
+
+**Acceptance:** focused developer tests pass; equal-weight objective and
+full-wrapper parity pass; manifests isolate source, seeds and holdout data;
+timing includes preparation; independent judge can decline a verdict.
+Only after these checks may performance measurements count as evidence.
+
+### E2: integration methods at fixed budgets
+
+**Executor:** Sol implements/runs; Astra chooses at most two finalists.
+
+Keep candidate locations fixed. Compare the exact production MC baseline
+at its ordinary 100 nodes, ordinary MC at budgets 128/512/2048,
+component-stratified MC at those budgets, and component-stratified scrambled
+Sobol integration at those budgets. The stratified-MC control separates
+the gain from component allocation from the gain from low-discrepancy nodes.
+
+For stratified rules allocate at least one node to each positive-weight
+component, then assign further nodes according to weight, without inspecting
+the candidate integrands. For Sobol, preserve power-of-two blocks per
+component: start at one each and double the component allocation with
+largest `w_k/n_k` that fits within the total budget, with a fixed tie rule.
+Record actual counts and unused budget. Use the same counts for the
+stratified-MC control. Every node in component `k` has weight `w_k/n_k`.
+If the budget is smaller than the number of positive-weight components,
+mark the rule unavailable at that budget; do not drop components. Protect
+inverse-normal transforms at machine endpoints and test the handling.
+
+Use eight independent integration repetitions on development panels. Retain
+one fresh production-MC100 selection for each state and repetition, paired
+with that repetition's treatment selections. The captured production
+winner remains a fixed reference and supplies the practical-band pilot.
+Retain the non-dominated accuracy/time settings, at most two settings per method,
+for the full 8192-candidate development sieve. Timing finalists receive
+the seven paired rounds from E1. Choose at most two integration methods
+and one fixed setting per method before opening held-out trajectories.
+Evaluate those fixed choices with eight fresh repetitions on the holdout
+full sieves. If holdout fails, report the failure; do not retune on it.
+
+**Screening gate:** an integration treatment should either reduce median
+selection time by at least 20% with no more than 5% confidently worse
+selections, or improve independently judged choices at comparable cost
+(within 10%). Count unresolved comparisons separately; if more than 20%
+are unresolved, make no positive quality claim. A reproducible loss of
+over 10% of a resolved positive raw reduction when penalties are inactive,
+or a repeated adverse complete-score selection when penalties are active,
+requires investigation and blocks promotion until explained. Report every
+state/trajectory and the worst losses; pooled medians cannot hide a failing
+target. Fractions use all scheduled state-by-integration-repetition cells
+for that treatment, including failed cells; missing or failed method cells
+cannot count as ties or wins. Also report resolved-only results separately.
+Report each trajectory's cell counts and harmful/unresolved fractions;
+replicates and early/late states are clustered observations, not independent
+inference runs. A reproducible numerical failure blocks promotion even if
+its pooled frequency is low. Thresholds are proposed engineering screens,
+not statistical proof
+of noninferiority. If no method passes, retain ordinary MC for E3.
+
+### E3: fixed-budget search
+
+**Executor:** Sol implementation/run; Astra assesses tradeoffs.
+
+Use the best eligible integration rule from E2, retaining a plain-MC
+version of the strongest search arm to separate integration and search
+effects. S1-S3 all use the production ordinary-MC 100-node coarse rule.
+Their accurate re-scoring and refinement use the single E2-selected rule
+and its frozen node budget. The ordinary-MC control uses exactly 1600
+accurate nodes, with every other search setting unchanged. Couple candidate-
+generation streams across arms where possible and record actual candidates
+when different sieve sizes consume different streams. Use eight paired
+selection repetitions per state, with a shared candidate-generation seed
+across arms and a shared accurate-rule seed across S1-S3. Derive a separate
+integration stream for the ordinary-MC control. Compare these development
+treatments:
+
+| Arm | Candidate search |
+| --- | --- |
+| S0 | Unmodified production search, including CMA-ES and current setup |
+| S1 | 1024 candidates, ordinary coarse integration, top 8 accurately re-scored |
+| S2 | S1 plus one L-BFGS-B refinement from the re-scored best |
+| S3 | S1 plus up to four spatially separated local starts |
+
+Judge every arm against S0. Also retain the paired contrasts S2 versus S1,
+S3 versus S2 and S3 versus S1, using the same repetition's candidate stream.
+These contrasts separate refinement and multiple-start effects and identify
+harmful refinement for E4's entry gate. They use the existing candidate
+union and independent judge streams; unresolved component contrasts remain
+eligible for budget escalation even when an arm's comparison with S0 has
+resolved. Keep their denominators and classifications separate from the
+primary S0 screening counts.
+
+After choosing the strongest development search arm, compare its E2 rule
+directly with the same arm using MC1600 on common independent judge nodes.
+The control allocation includes S0 and both versions of that arm; reproduce
+the original version with its frozen development settings and seeds. Retain
+this direct contrast on holdout and through unresolved-contrast escalation,
+with a separate denominator. If the selected rule is already ordinary MC1600,
+the duplicate control is unnecessary. Timings paired separately with S0 are
+descriptive for the direct integration contrast and do not establish a paired
+runtime effect between the two versions.
+
+Use the E2-selected accurate budget; include the historical ordinary-MC
+1600-node refinement as one development comparator, rather than assuming
+it remains optimal. Test a 2048-candidate sieve only if 1024 shows coverage
+loss on development states. Do not turn this into a Cartesian sweep over
+sieve sizes, node counts, start counts and stopping thresholds.
+
+Re-score the original coarse winner alongside the shortlist and compare
+all refined points using the same accurate integration rule. Always retain
+that winner as a possible return value. Such a fallback protects only the
+arm's own smaller sieve; it does not reproduce S0's 8192-point search.
+
+Use batched finite differences in internal coordinates, with a step tied to
+coordinate scale and checked by step halving on development cases. Start
+with at most 50 iterations and 1000 candidate-row evaluations total across
+all starts, including finite differences. Calibrate numerical tolerances
+and fixed affine objective scaling on development states, then freeze them.
+Use existing search bounds, with explicit shape validation. Preserve hard
+bounds, integer handling, repeat rows and cache indices. Integer variables
+and nonsmooth/invalid refinement cases return the arm's re-scored candidate;
+log the reason and include fallback cost and outcome. Nearest-neighbor
+noise estimates can make the objective nonsmooth even for continuous
+parameters, so a solver's success flag is not a quality certificate.
+
+If matrix setup dominates, permit one separately labelled candidate-side
+evaluation variant. Reuse current GP factors; verify values for both factor
+representations, multiple hyperparameter samples, noise scaling and chunks.
+No GP-fitting code changes are permitted. Include kernel storage and all
+preparation costs; retire the variant if it does not improve total time.
+
+Choose a search finalist on development results under E2's quality/time
+screens. Freeze it before holdout. Use fresh independent streams for E3's
+judge; holdout results are evaluation only and cannot tune later arms.
+If E2's holdout has already been inspected, E3 is a staged development
+comparison on those same geometries, not a second independent confirmation.
+The fresh E5 trajectories supply the final out-of-trajectory assessment.
+
+**Acceptance:** independent complete-score quality and timing pass the
+screens; accurate re-scoring/refinement gains are separated; fallback and
+multiple-start costs are included; baseline default behavior remains exact.
+
+### E4: conditional adaptive integration
+
+**Executor:** Astra specifies the rule from development evidence; Sol runs it.
+
+Enter only if development evidence meets one of these prespecified gates:
+
+- Within one integration method, at least two fixed budgets are needed:
+  a lower budget is tied/beneficial
+  under E2's classification on some cells but harmful/unresolved on others,
+  and retrospectively choosing each cell's cheapest passing fixed budget
+  would save at least 20% median selection time versus the cheapest fixed
+  rule that passes globally. This is an optimistic upper bound that excludes
+  adaptive-check overhead, not a runtime policy with access to the judge.
+- The best fixed search rule accepts a harmful refinement on at least two
+  development trajectories, and a higher tested fixed integration budget
+  removes those same errors. This supports testing an accuracy gate even
+  if a global fixed rule has not passed.
+
+To verify the second gate, if component-contrast harm appears on at least
+two development trajectories, freeze a confirmation allocation for the
+affected state/repetition cells. Re-run both members of each implicated
+contrast at the next higher already-tested E2 budget of the same integration
+method, keeping search settings and paired candidate-generation streams
+fixed. Test only that one higher budget. Include the original selected and
+reference points in the independent judge union, so a changed reference
+cannot by itself establish that the original error was removed. Require
+the higher-budget contrast to pass and its selected point to avoid the
+original harmful loss against the original reference. If no higher tested
+budget exists, this gate is unavailable. The MC1600 control separates
+integration methods and search effects; it does not establish this gate.
+
+Evaluate the first gate on the full-sieve development results, using the
+retained budgets within the integration method that the adaptive prototype
+would use. A passing fixed rule satisfies the quality requirements; assess
+its speed relative to production separately. Use each state's warmed median
+time for the relevant method/budget when evaluating the
+retrospective cell choices. A cell with no passing budget contributes no
+time saving and remains failed or unresolved in the quality accounting.
+The independently drawn fixed-budget rules make this an optimistic screen;
+it supplies no evidence that a runtime policy can identify the same cells.
+
+If neither gate passes, record E4 as unnecessary and continue with the
+fixed rule. Adaptive sieve size is deferred: keep the selected sieve fixed
+to isolate this experiment.
+
+Prototype one rule with at most two attempts and a cumulative ceiling of
+2048 integration nodes for refinement and acceptance. The ordinary
+100-node coarse sieve is additional and charged separately:
+
+| Attempt | Fixed search nodes | Fresh acceptance nodes | Maximum cumulative nodes |
+| --- | ---: | ---: | ---: |
+| 1 | 128 | Four independent replicates of at most 96 each | 512 |
+| 2, if needed | 512 fresh | Four independent replicates of at most 256 each | 2048 |
+
+Use independent RQMC scrambles or MC draws for the acceptance replicates.
+Record actual component allocations and unused budget. If any replicate
+cannot cover all positive-weight components, skip to the next feasible
+attempt within the cap or fall back. Nodes discarded by a failed attempt
+still count against the ceiling. There is no free intermediate check at
+128 nodes and no recycling of acceptance nodes into a later proposal.
+
+Freeze search nodes within each attempt, propose one candidate from the
+shortlist/refinement, then compare it with the arm's coarse winner on the
+fresh acceptance nodes. Use a paired Student-t 97.5% interval with three
+degrees of freedom for the four complete-score differences. Accept only
+when its upper endpoint is below `-log1p(1e-6)`. This fixed runtime threshold
+does not use the external judge's baseline-dependent band. Otherwise move
+to the second attempt or return the coarse winner. A log-mean versus
+pooled-residual ordering disagreement also prevents acceptance.
+This is an empirical decision rule whose calibration must be measured,
+not a guaranteed confidence sequence or simultaneous error bound.
+
+Cap candidate-row evaluations at 1000 cumulatively across both attempts,
+including finite differences, re-scoring and acceptance. Charge all cache
+preparation, discarded attempts and fallback costs. Never add a hidden
+full production sieve as a free fallback. Record which coarse winner is
+returned; the external judge scores the actual final choice.
+
+Compare the resulting decisions with the independent judge, especially
+false acceptance of worse points and missed tail contributions. Use E2's
+screening gates and compare against the best fixed rule as well as S0.
+Construct and select this rule using development states only; the previously
+inspected seed-1 trajectories cannot choose fixed versus adaptive. Any
+additional seed-1 measurements are labelled staged evaluation, and E5
+provides the fresh out-of-trajectory comparison.
+The adaptive arm replaces the fixed search finalist only if it earns its
+complexity; it does not create an additional unbounded family of E5 arms.
+
+### E5: bounded paired inference comparison
+
+**Executor:** Sol prepares/runs; Astra assesses inference evidence.
+
+Freeze no more than two candidate pipelines: an integration-only treatment
+with production search and a selected search treatment (fixed or adaptive).
+The comparator is the frozen current production code. If only one treatment
+passes, use two arms; if none passes, end without changing the package.
+
+Use the same six configurations as E0 and six fresh seeds 2000-2005:
+at most **108 fits**, including all three arms. Seeds 2000-2001 form a
+36-fit maximum operational pilot; run the remaining seeds only if the
+pipeline is reproducible, finite and free of unexplained failures. A
+scientific loss is evidence, not a reason to replace a seed. Do not tune
+the frozen method after seeing these results. A revised treatment requires
+a new declared allocation; do not merge its results with the old arm.
+
+Use existing per-target budgets, initial design, noise generation, stopping
+rules, GP fitting and final boost. Pair by configuration and seed, not by
+assuming identical trajectories or identical noise at different locations.
+Record acquisition RNG consumption; altered search can shift subsequent
+shared-stream draws. The unmodified arm must retain its exact stream;
+experimental arms must remain reproducible and preserve the initial design.
+No special RNG repartitioning of the baseline is allowed to improve pairing.
+
+The developer runner needs an explicit scoped search-policy seam, since
+`active_sample.py` currently recognizes CMA-ES/Nelder-Mead/none only.
+Prefer process-local injection confined to that runner; if a small private
+package hook is necessary, isolate it and verify the default path exactly.
+Do not monkeypatch GP training or duplicate the active-sampling loop. Restore
+all temporary hooks in `finally` and test exception cleanup. An integration-
+only arm uses its new integration rule throughout the existing search.
+
+Collect complete traces and sidecars through `golden_trace.py` conventions.
+Use the validated completion-manifest pattern in `population_run.py` for
+resume, not the presence of a trace file alone. Reuse the paired summaries
+from `analyze_population_run.py` where compatible, binding their metric and
+failure definitions in the new manifest.
+Assess absolute evidence error, gsKL, MMTV, convergence, usable fraction,
+target calls, total optimizer time and acquisition time. Keep the existing
+usable criteria (evidence error <1, gsKL <1, MMTV <0.2), and report failures
+and nonfinite metrics explicitly. Compare with the promoted reference's
+per-target envelopes as a supplementary regression diagnostic; fresh paired
+baseline runs, not historical laptop timing, are the primary comparator.
+The historical noisy multisensory-subject-1 usable fraction is only 0.17;
+retain that difficult configuration and report continuous errors alongside
+the binary usable flag. Its low success rate is not a reason to filter runs.
+
+Sequentially alternate arm order within seed blocks on a quiet machine;
+record interruptions and target evaluation time. Do not infer acquisition
+speedup from total runtime alone. Predeclare these per-target summaries:
+
+- All six paired observations for every metric, including failures.
+- For positive elapsed times and target-call counts, the mean paired log
+  ratio and its two-sided 95% Student-t interval (five degrees of freedom
+  for six complete pairs), exponentiated for display. If a pair fails,
+  retain its failure and report the interval only for available complete
+  pairs with the corresponding degrees of freedom and explicit counts.
+  Such a conditional runtime interval cannot establish overall efficiency.
+- For continuous accuracy errors, all paired differences and their median
+  and range. These small-sample descriptive summaries do not establish
+  equivalence; no post hoc choice among significance tests.
+- For convergence and usability, paired gain/loss counts and the full
+  transition table. Show nonfinite/error cases separately rather than
+  assigning arbitrary numerical errors.
+
+Pooled tables weight configurations equally and remain descriptive;
+heterogeneous targets, iterations and quadrature repetitions are not
+additional independent inference runs. A worse median accuracy error with
+at least four of six pairs worse on the same target/metric triggers review,
+as does any new failure or usable-to-unusable transition. These triggers
+are deliberately descriptive investigation gates, not calibrated tests.
+
+**Decision gate:** no automatic adoption. Investigate every new failure,
+usability loss or reference-envelope exceedance. Recommend continuation only
+if the acquisition speed/quality benefit survives inference, with no coherent
+target-specific accuracy loss and no unexplained failure mechanism. Six
+seeds per target cannot establish a tight noninferiority bound; if that is
+the remaining uncertainty, report it and propose a targeted extension.
+Do not interpret a nonsignificant test as equivalence. The final release
+campaign and any default change require a separate decision.
+
+### Resource bounds, artifacts and verification
+
+The proposed allocation is at most 12 state-capture fits plus 108 inference
+fits; frozen-state calculations make no target calls. The PI authorized
+an **11-hour first window** beginning 2026-09-16 18:34:41 UTC and ending
+2026-09-17 05:34:41 UTC for E0-E4, including implementation, capture,
+experiments, verification and the progress report. Reserve the final hour
+for checks and consolidation; do not launch work expected to overrun it.
+E5 may receive a separate 11-12-hour window tomorrow if needed; that second
+window is not yet activated. The first window does not launch E5 fits.
+These are ceilings, not expected durations or a reason to spend the
+remaining allowance. Record a pilot cost estimate before each matrix and
+stop cleanly with partial results if a ceiling would be exceeded. Never
+extend by silently adding seeds, methods or nodes beyond the stated caps.
+
+Store versioned manifests and compact per-cell results under
+`dev/experiments/noisy-acquisition-efficiency/integration-search/`.
+Large captures, worker logs and traces go under ignored
+`dev/scripts/runs/noisy_acq_efficiency_20260916/`; list their local locations
+in `LOCAL.md` only when they exist. The manifest identifies source revisions,
+normalized source hashes, raw artifact hashes, target/data/truth versions,
+state split, all node/candidate/acceptance/judge seeds, numerical settings,
+failures and timing method. Summaries must regenerate without rerunning fits.
+
+The developer tools separate capture, integration, search and judging.
+`noisy_acq_experiment.py` captures and inventories states;
+`noisy_acq_integration.py` runs fixed-budget selections;
+`noisy_acq_search_experiment.py` runs search selections;
+`noisy_acq_campaign.py` advances independent judging budgets; and
+`noisy_acq_timing.py` measures integration cost. Conditional adaptation
+and E5 inference are implemented only when their entry conditions apply.
+Run commands with the frozen dependency path and thread environment
+recorded in the experiment manifest. For example:
+
+```console
+python -m pytest dev/scripts/test_noisy_acq_experiment.py -q
+python dev/scripts/noisy_acq_experiment.py inventory --manifest <manifest> --out <out>
+python dev/scripts/noisy_acq_integration.py run --manifest <integration-manifest> --out <selections>
+python dev/scripts/noisy_acq_campaign.py integration --manifest <integration-manifest> --results <selections> --out <judging>
+python dev/scripts/noisy_acq_timing.py run --manifest <integration-manifest> --out <timing>
+```
+
+Run relevant acquisition/importance-sampling tests whenever their helpers
+or hooks change. Before E5, run the package suite and exact oracle comparison
+for the default path on its generating platform. Follow repository gates
+for any default-path numerical change; do not regenerate fixtures to hide
+an experimental regression. Targeted synthetic analytic and finite-difference
+checks belong in the developer tests, with no new full `VBMC.optimize()`
+runs added to the shipped unit suite. Experimental fits are the allocation
+above. Apply repository formatting hooks to changed files.
+
+### E6: interpretation, records and independent review
+
+**Executor:** Astra orchestrator, independent Sol reviewers.
+
+Consolidate results into one report under
+`dev/results/2026-09-16-noisy-acquisition-integration-search.md`, created
+when measurements exist. It owns scientific comparisons and limitations,
+while this plan owns execution status and decisions; machine-readable
+artifacts own reproducible values. Do not create separate session journals.
+Update the existing acquisition note with conclusions and links, and update
+`dev/TODO.md`, `dev/README.md` and the modernization roadmap's scope/status.
+Public API documentation changes belong to a later production integration.
+
+Use `$doublecheck` on protocol, numerical implementation and final evidence.
+Independent reviewers check objective preservation, weights, holdout use,
+failure accounting, cost fairness and whether the conclusion follows from
+the measured uncertainty. The compute-owning agent runs tests and reproduces
+summaries; reviewers remain static. Preserve a null or negative result as a
+valid completed outcome. Return a recommendation to retain the current
+method, pursue one specified treatment, or collect narrowly identified
+missing evidence. No merge, publication or default switch is part of this
+experimental plan.
+
+### Decisions and unresolved empirical questions
+
+- **Integration before search, fixed rules before adaptation.** This order
+  separates estimation error from optimizer behavior. A combined adaptive
+  rewrite could show a gain without explaining which part earned it.
+- **Stratified MC accompanies RQMC.** It isolates the benefit of component
+  coverage. Plain MC versus RQMC alone would conflate two changes.
+- **BQ is excluded from this experiment (PI scope review, 2026-09-16).**
+  Analytic kernel means under the VP make integration convenient but do
+  not determine a suitable kernel for the candidate-dependent VIQR
+  integrands. The original proposed kernel/length-scale grid was a
+  heuristic. Learning or deriving an auxiliary integration kernel would
+  require a separate modelling and validation effort. MC/RQMC comparisons
+  address the present efficiency question without that additional model.
+- **Use the complete acquisition score.** Unregularized reduction alone
+  can change the selected point under the existing variance penalty.
+- **Small paired allocation with explicit uncertainty.** A reference-sized
+  campaign is unnecessary for screening. This allocation cannot certify
+  rare-failure rates and does not automatically select a release default.
+- **Developer prototypes precede a public interface.** An experimental win
+  may suggest a simpler implementation than exposing every tested control.
+
+The PI accepted the benefit criteria, six-seed paired allocation and
+screening thresholds on 2026-09-16. BQ was removed following that scope
+review. The resource ceilings remain limits rather than runtime estimates.
+Which integration rule wins, whether refinement pays, whether adaptation is
+needed, and whether inference benefits are empirical questions addressed by
+the phases rather than assumptions. Plan approval authorizes the bounded
+experiment; it does not authorize changing GP policy or public defaults.
+
+### Plan verification (2026-09-16)
+
+Independent Sol review through `$doublecheck` checked the complete-score
+contract, integration rules, judging, holdout separation, resource allocation
+and inference analysis against the source and historical evidence. Review
+corrections made practical ties and interval construction explicit, fixed
+adaptive node accounting and its entry gate, and specified the paired
+inference summaries. The initial review also covered the BQ design before
+its removal from the experimental scope.
+The final review reported no remaining must-fix or should-fix findings.
+
+Read-only feasibility exploration identified the reusable state, timing and
+completion-manifest tools and the limited historical state coverage. Local
+checks confirmed relative links, preservation of the historical evidence
+and execution records below, repository formatting and `git diff --check`.
+No experimental implementation, numerical probe, test suite or campaign ran
+during planning. The subsequent first-window authorization is recorded
+in the resource bounds above.
+
+The BQ removal and first-window timing amendment were checked directly
+against the PI's scope and scheduling instructions. This narrow revision
+used the doublecheck skill's faithful-record self-review exception; the
+scientific design had already received independent review.
+
+### Execution record
+
+- 2026-09-16 18:34:41 UTC: first-window clock started. The deadline is
+  2026-09-17 05:34:41 UTC; verification/reporting reserve begins at 04:34 UTC.
+- E0 inventory and E1 developer harness implementation began in parallel.
+  The root owns all tests and numerical runs; Sol workers own disjoint
+  numerical-module and capture/runner files. The production package is
+  frozen at `9cc6882` for the experiment baseline.
+- Environment preflight resolved the frozen gpyreg source to commit
+  `9e70e6b`; installed distribution metadata still says 1.2.0, so source
+  hashes and the import path identify the dependency. The three BLAS thread
+  environment variables are fixed at one. Five data/truth archives were
+  hashed in `integration-search/environment_preflight.json`.
+- All seven historical captures reproduce their stored full-sieve VIQR
+  scores exactly without changing state or RNG. They support harness
+  checks; current early/late trajectory coverage still requires fresh
+  capture. Single-call preflight timings are feasibility measurements only.
+- The first eight capture-protocol checks pass. The initial test command
+  encountered permissions on pytest's shared temporary directory; using
+  a new workspace-local temporary directory resolved that environment
+  issue. Numerical and snapshot-roundtrip checks remain in progress.
+- The combined developer checks reached 44 passes before first capture
+  launch. These cover explicit weighted rules, live-factor replay, exact
+  restored RNG, failed-trajectory accounting, source isolation, full-score
+  parity and target-free search instrumentation. Independent review found
+  and verified fixes to capture-state digests and failure persistence;
+  numerical stress coverage and the E2 driver remain in progress.
+- Search instrumentation lives in `dev/scripts/noisy_acq_search.py`; it
+  invokes the production active-sampling controller and stops at selection
+  before any target call. E2 orchestration lives in the separate
+  `dev/scripts/noisy_acq_integration.py`, allowing the capture source to stay
+  locked during the baseline trajectories.
+- Capture harness commit `3fe616c` passed its commit hooks. The reviewed
+  capture manifest is stored in the tracked `integration-search/` directory
+  and the raw `noisy_acq_efficiency_20260916/` directory. The first allocated
+  case (`rosenbrock_D2_noise1`, seed 0) completed in 57.2 seconds: early
+  state at 20 charged evaluations, late fallback at 114, natural termination
+  at 115. Both full 8192-point scores replay exactly. The remaining eleven
+  cases were launched sequentially after 49 focused checks passed.
+- 2026-09-16 19:38 UTC: all twelve allocated capture runs completed without
+  execution errors. All twenty-four early/late states are present and pass
+  exact public full-sieve replay. Integration and timing tools passed
+  independent static review after fixes to pooled-score regret, grouped
+  denominators and artifact/source identity checks. The expanded numerical
+  and protocol checks are running before E2 launch.
+- Pre-launch verification passed: 77 focused developer checks and 234
+  existing acquisition/oracle checks, with 15 skips.
+  The developer tests include exact S0 agreement with direct production
+  CMA-ES selection. Warnings came from deliberate invalid numerical inputs
+  and existing VP-density gradient cases. Production source remains
+  identical to the numerical baseline. E2 begins with a one-cell smoke
+  before the full development allocation.
+- Harness commit `8a13215` freezes integration, quadrature, search and
+  timing tools. The paired E2 smoke succeeded; its separate judge evaluated
+  34 candidate coordinates under eight independent replicates without
+  invalid scores. The reviewed development panel manifest allocates 864
+  treatment selections and 96 fresh production baselines across twelve
+  states. The full sequential panel run began at 19:43 UTC. Holdout
+  treatment evaluation remains locked. Fourteen additional search-runner
+  and ordinary-MC crosscheck protocol tests passed; their independent
+  static review continues alongside the panel run.
+- E3 campaign tools are being verified while E2 runs. They include a
+  separate development comparison of the strongest search arm with
+  MC1600, before finalist selection; the fixed captured reference
+  shortlist; paired selection and judging streams; retention of valid
+  cells alongside failed/missing ones; and separate memory measurements.
+  No E3 numerical allocation has been launched before selection of its
+  accurate integration rule.
+- Independent static review of E3 and the judging controllers is complete.
+  The MC1600 control includes a direct comparison with the same frozen
+  search configuration; primary, component and direct-control comparisons
+  retain separate denominators. Judging ladders bind all terminal selection
+  artifacts across budgets. The ordinary-MC diagnostics retain the primary
+  verdict and report agreement, disagreement and unresolved checks separately.
+  Runtime verification of these additional tools follows completion of the
+  E2 panel, preserving the single-compute-process rule.
+- 2026-09-17 morning recovery: the usage limit stopped work after all panel
+  cells completed and during the expanded tool tests. Fixture corrections
+  aligned exact-byte zero rows, synthetic state identifiers and required
+  provenance fields with the tested contracts. All 133 developer checks
+  pass, with two expected warnings from deliberately invalid inputs.
+  Recovery revalidated all 960 panel terminal records and their bound
+  payload hashes. Production source is unchanged from `9cc6882`.
+  Full judging, timing, E3 numerical runs and holdout treatment evaluation
+  remain unstarted; the earlier one-cell judge smoke is separate evidence.
+  Independent recovery review cleared the fixture repairs, completion
+  record and bounded-pilot restart instructions with no open findings.
+- Recovery checkpoint `07b00c6` preserves the reviewed tools and records.
+  The branch incorporates `dev-next` at `953c88b`, including teaching
+  material and release-audit documentation. That integration changes no
+  numerical experiment source; the frozen source identity and all 960 panel
+  terminal records remain valid after the merge.
+
+## Guarded-sinh execution checklist (completed)
 
 - [x] Freeze before-change source and oracle outputs; implement guarded sum
   and focused tests.
@@ -36,7 +912,7 @@ optional follow-up, not a prerequisite for the other experiments.
 - [x] Measure complete acquisition calls against the frozen implementation.
 - [x] Complete full tests, CI and independent review; record outcome.
 
-## Goal and scope
+## Goal and scope of the completed computational work
 
 Reduce the cost of evaluating existing noisy acquisitions while preserving
 their criterion, importance samples, random draws and search settings.

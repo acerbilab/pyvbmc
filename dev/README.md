@@ -113,8 +113,11 @@ plan and consolidated human summary.
   psychometric-model design, Torch/JAX targets, posterior-export workflow,
   consistency review and notebook/script/rendered-documentation verification.
 - [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
-  — computational optimizations of existing noisy acquisitions, with
-  guarded standard-VIQR sum results and subsequent efficiency experiments.
+  — completed guarded-sum and kernel-reuse optimizations, and the active
+  integration/search experiment: fixed-state comparisons, independent
+  judging, conditional adaptation and paired inference validation.
+  Its [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
+  records sources, coverage, verification and measured results.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local

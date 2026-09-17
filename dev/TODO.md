@@ -10,7 +10,9 @@ records its execution.
 ## In scope for 1.5
 
 - [ ] **Efficiency of existing noisy acquisitions.** Improve sieve/search,
-  importance sampling, criterion-evaluation costs and GP-update costs.
+  integration accuracy and criterion-evaluation costs. GP fitting,
+  initialization and retraining policy are outside this workstream
+  (PI decision, 2026-09-16).
   Separate changes to search behavior from computational optimizations;
   assess them on noisy synthetic and real-data targets against the promoted
   reference. Choose seed coverage for the experiment; a full reference-sized
@@ -23,129 +25,43 @@ records its execution.
   integrated into `dev-next` and validated (the
   [production validation](results/2026-09-13-viqr-kernel-production.md)
   reports a 1.205x late-sieve speedup and 18/18 exact stored replays).
-  Remaining possibilities: adaptive sieve size, integration budgets,
-  multistart L-BFGS-B, more efficient integration of the same VIQR
-  criterion (shared-weight Bayesian quadrature against mixture-stratified
-  randomized quasi-Monte Carlo), and a controlled whole-VBMC timing
-  comparison of the combined changes, which replay wall times do not
-  establish; see the
-  [pickup point](plans/noisy-acquisition-efficiency.md#pickup-point-and-deferred-measurements).
+  The [integration and search experiment](plans/noisy-acquisition-efficiency.md#integration-and-search-experiment)
+  compares ordinary and stratified Monte Carlo and randomized quasi-Monte
+  Carlo, then fixed-budget
+  search and conditional adaptive integration. It includes an independent
+  integration judge and a bounded paired inference comparison. The plan
+  is paused on `dev-noisy-acquisition-efficiency` after a usage-limit
+  interruption: 24 states and all 960 panel selection cells are saved and
+  verified; independent judging, timing and search runs remain pending.
+  The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
+  records the restart commands. A separate inference window is not yet
+  authorized. Its benefit criteria, allocation and screening gates are
+  accepted; Bayesian quadrature is excluded following the scope review.
+  A controlled whole-VBMC timing comparison of the completed
+  arithmetic optimizations remains optional; replay wall times do not
+  establish that speedup.
   Keep standard VIQR (`loss="iqr"`); the retained `iqr_reduction`
-  formulation preserves the criterion for fixed samples and weights but
-  can change numerical search behavior and needs end-to-end validation
-  before any use. IMIQR cache reuse is optional cleanup.
+  formulation preserves the unregularized criterion for fixed samples and
+  weights. The complete objective, including candidate-dependent penalties,
+  needs an equivalence check before a search reformulation is used, followed
+  by end-to-end validation. IMIQR cache reuse is optional cleanup.
 
-- [ ] **S-VBMC ELBO debiasing (the optimism note's Phase 2).** Decide
-  the headline `elbo` of a noisy stack. The candidate is the two-level
-  empirical-Bayes shrinkage of the components' expected log joints by
-  the estimation covariance saved with each posterior (PI,
-  2026-09-15): the
-  [headline note](2026-09-15-svbmc-headline-shrinkage.md) is the
-  summary and decision record, the
-  [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
-  (sections "Phase 2", "Weight-aware caps" and "Empirical-Bayes
-  shrinkage") the evidence, the
-  [tutorial note](2026-09-15-svbmc-shrinkage-explained.md) the
-  explanation of the method with a worked example, and
-  `python dev/scripts/svbmc_headline_numbers.py` regenerates every
-  number they quote. What the run pools settled: the cross-run
-  "honest" estimator (`dev/scripts/svbmc_honest_elbo.py`; the
-  [pilot report](results/2026-09-14-svbmc-honest-elbo-pilot.md) is
-  its first run) is not the answer, under-predicting by 0.2 to 0.7
-  nats on three noisy conditions and matching the cap's error on
-  Student D8; no weight-aware variant of the cap separates the
-  heavy-tailed case from the typical one; the shrinkage is the first
-  estimate acceptable on every condition, with no tuned constant. It
-  reads only `I_sk`, `J_sjk` and each run's own weights, which
-  `SVBMC` already requires of every input posterior, so the class's
-  interface does not change and no GP or VBMC object is needed. The
-  yardstick (PI, 2026-09-15; the campaign plan's decision 11): a
-  stacked headline must not add to the optimism its input runs
-  already carry, so it is judged by its bias minus the mean bias of
-  its inputs, each scored against its own Monte Carlo ELBO
-  (`svbmc_single_run_bias.py`; the report's section "The inputs' own
-  bias, and what stacking adds"): the raw value adds 0.02 to 0.60
-  nats growing with `M`, the cap removes more than the stacking added
-  on five of the six noisy conditions and lands at the inputs' level
-  on Rosenbrock, the two-level shrinkage adds nothing within 0.23
-  nats, and the anchored variants (what the shrinkage removes at each
-  run's own weights added back, so that only the stacking's selection
-  is removed) leave −0.02 to +0.21 nats of the addition at `M` = 3 to
-  5, so the two-level shrinkage stays the candidate; the untested
-  refinement is a run-level error term that includes the run-to-run
-  scatter of the runs' own optimism, which the stacking selects on.
-  Pickup (2026-09-16): the pool analyses and their write-ups are complete
-  and reviewed (the campaign plan's worklog records the corrections).
-  Estimator integration is tracked below. The PI leans to promoting the
-  two-level shrinkage to the headline of a noisy stack (decision (1)); whether a
-  noiseless stack also reports it or keeps the raw value is open (the
-  two differ by at most 0.03 nats on the controls through `M = 16`).
-  The switch is confirmed, and the user-facing wording written, at the
-  final large-scale check before the release (the gate item below):
-  fresh pools generated by the consolidated 1.5 code on the cluster,
-  S-VBMC at several `M`, the results of the headline note holding.
-  Package the full-covariance two-level estimate before the gate as
-  `elbo_details["shrunk_two_level"]`, with a noise-share diagnostic;
-  the [integration plan](plans/svbmc-shrinkage-estimator.md) tracks
-  implementation and verification. The campaign records this estimate
-  alongside the existing ones. Selection as headline follows the campaign
-  only if it confirms the estimator is best. `VBMC.optimize()` returns
-  the same posterior and results objects, and `SVBMC(vp_list)` requires
-  the same posterior statistics; no GP or full VBMC object is needed.
-  Decisions to make: (1) whether the switch ships in 1.5 or 1.5 keeps
-  the component-median cap; (2) the headline's user-facing caveat
-  either way, stating the two contributions to the bias separately:
-  VBMC's own, which each input run carries and S-VBMC inherits (0.1 to
-  0.7 nats of optimism on the typical noisy targets, 0.2 of pessimism
-  on the heavy-tailed one, within 0.03 on the noiseless ones; the
-  separate item below), and what S-VBMC adds to it (the raw value
-  +0.07 to +0.36 nats at `M` = 3 to 5 and +0.36 to +0.79 at `M = 32`
-  on the noisy targets; the two-level shrinkage within 0.23 at every
-  `M`; the cap nothing added but up to 0.4 nats of the inputs' own
-  optimism removed on the typical noisy targets and 0.8 to 1.6 on the
-  heavy-tailed one, a `cap_amount` large against `elbo_sd` being the
-  sign; on noiseless targets up to about 0.1 nats at `M = 32`, within
-  0.05 through `M = 16`); and that the raw value is not an upper bound
-  on the truth. The wording goes where the headline is described
-  today, in qualitative terms only: the `SVBMC` docstring (`elbo`,
-  `elbo_sd`), the "ELBO reporting" section of
-  `docsrc/source/api/classes/svbmc.rst`, the FAQ entry "Can I combine
-  the posteriors of several runs?" and Example 7 (the cell after
-  `optimize()` and the conclusions). Example 7 already explains optimistic
-  bias, the current median cap and the limits of `elbo_sd`. If shrinkage is
-  selected at the release gate, update that existing explanation briefly:
-  explain why selection using noisy estimates can make the ELBO optimistic,
-  identify shrinkage as the implemented correction in the returned ELBO,
-  and retain the caveat that some bias can remain. It is an automatic part
-  of ELBO estimation, with no extra user step. Derivations and experiments
-  stay in the developer tutorial; no separate section or user tutorial is
-  needed.
-  No user-facing text states a
-  single run's own optimism, so the S-VBMC wording has nothing on the
-  VBMC side to point at until the item below adds it. If it ships, the
-  note's "Decision" section lists the change: a headline method in
-  `pyvbmc/svbmc/svbmc.py` from the reference
-  `dev/scripts/svbmc_shrink_elbo.py`, applied at the selected weights
-  so the posterior does not move, an `elbo_details` key and the noise
-  share as a diagnostic, the tests that pin the capped headline, and
-  the user documentation. Rejected on the evidence: re-optimizing
-  the weights on the shrunken estimates (`svbmc_shrink_optimize.py`,
-  `M` = 3 to 5: the optimizer selects on the shrinkage's own errors,
-  the headline is 0.05 to 0.40 nats more optimistic than the
-  value-only shrinkage on four of six noisy conditions, and the
-  posterior improves on the multisensory conditions and the ring and
-  worsens on Rosenbrock and, in the KL gap, on GMM and Student). Not
-  planned: the cross-run variants the report names (a
-  leave-one-run-out GP refit, a per-run offset) unless a cross-run
-  estimator is still wanted. The stacking
-  objective stays unchanged. The campaign's `M = 32` cells (the
-  report's section "The integrated arm at `M = 32`") keep the ordering
-  of the estimates and add one observation for the caveat: on the
-  noiseless multisensory control, stacking 32 runs adds 0.11 nats of
-  optimism to the 0.03 its inputs carry, and no estimate removes it.
-  See the
-  [ELBO optimism note](2026-09-12-svbmc-elbo-optimism.md) and the
-  completed [Phase 1 plan](plans/svbmc-elbo-reporting.md).
+- [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
+  is implemented as `elbo_details["shrunk_two_level"]` and integrated into
+  `dev-next`; see the [integration plan](plans/svbmc-shrinkage-estimator.md).
+  Validate it against the existing estimates on fresh release-campaign
+  pools, judging the optimism added by stacking relative to its input runs.
+  Promote it only if the campaign confirms it is the best estimator; decide
+  separately whether noiseless stacks use shrinkage or retain the raw value.
+  The stacking objective and selected posterior remain unchanged.
+  Finalize the headline's qualitative caveat, distinguishing inherited VBMC
+  bias from bias added by stacking and explaining that residual bias can
+  remain; the raw estimate is not an upper bound on the truth. Update the
+  `SVBMC` docstring, API reporting section, FAQ and existing Example 7
+  explanation to match the decision, with no additional user step.
+  The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
+  evidence, rejected alternatives and open scientific questions; the
+  [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The pool campaign's

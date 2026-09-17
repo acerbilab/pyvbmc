@@ -1,0 +1,194 @@
+{
+  "counts": {
+    "complete_cases": 12,
+    "failed_cases": 0,
+    "missing_cases": 0,
+    "states": 24
+  },
+  "expected_cases": 12,
+  "expected_states": 24,
+  "manifest_sha256": "a4c49146cfb606c20f000d58599c7f096376824fa7c378d43726d77b11b2adbe",
+  "rows": [
+    {
+      "func_count": {
+        "early": 20,
+        "late": 114
+      },
+      "label": "rosenbrock_D2_noise1",
+      "late_trigger": "early_termination_fallback",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 120
+      },
+      "label": "rosenbrock_D2_noise1",
+      "late_trigger": "threshold",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 120
+      },
+      "label": "rosenbrock_D2_noise3",
+      "late_trigger": "threshold",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 120
+      },
+      "label": "rosenbrock_D2_noise3",
+      "late_trigger": "threshold",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 210
+      },
+      "label": "logreg_D5_noise3",
+      "late_trigger": "threshold",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 210
+      },
+      "label": "logreg_D5_noise3",
+      "late_trigger": "threshold",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 300
+      },
+      "label": "student_D8_noise3",
+      "late_trigger": "threshold",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 300
+      },
+      "label": "student_D8_noise3",
+      "late_trigger": "threshold",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 184
+      },
+      "label": "multisensory_s1_D6_noise1.3",
+      "late_trigger": "early_termination_fallback",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 219
+      },
+      "label": "multisensory_s1_D6_noise1.3",
+      "late_trigger": "early_termination_fallback",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 210
+      },
+      "label": "timing_D5_noise2.2",
+      "late_trigger": "threshold",
+      "seed": 0,
+      "split": "development",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    },
+    {
+      "func_count": {
+        "early": 20,
+        "late": 189
+      },
+      "label": "timing_D5_noise2.2",
+      "late_trigger": "early_termination_fallback",
+      "seed": 1,
+      "split": "holdout",
+      "states": [
+        "early",
+        "late"
+      ],
+      "status": "succeeded"
+    }
+  ],
+  "schema_version": 1
+}

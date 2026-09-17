@@ -38,11 +38,20 @@ records execution. Future candidate checks may use smaller allocations;
 reference size does not prescribe their run count.
 
 The remaining numerical work for 1.5 is improving the efficiency of existing
-noisy acquisitions (sieve/search, importance sampling, criterion evaluation
-and GP-update costs) and checking/improving S-VBMC's reported ELBO
+noisy acquisitions (sieve/search, integration and criterion evaluation)
+and checking/improving S-VBMC's reported ELBO
 debiasing. The S-VBMC preparation/entropy speedups that preserve the
 method are implemented, measured and merged into `dev-next` (2026-09-13,
 [svbmc-speedups.md](svbmc-speedups.md)).
+GP fitting, initialization and retraining policy are outside the noisy-
+acquisition efficiency work (PI decision, 2026-09-16). The
+[integration and search experiment](noisy-acquisition-efficiency.md#integration-and-search-experiment)
+defines its bounded comparisons and validation. Its first 11-hour
+capture/integration/search window is authorized; the possible inference
+window remains separate. The [experiment report](../results/2026-09-16-noisy-acquisition-integration-search.md)
+records frozen-source verification and state coverage. A usage-limit
+interruption paused the experiment after all 960 panel selection cells
+completed; independent judging, timing and search allocations remain pending.
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
