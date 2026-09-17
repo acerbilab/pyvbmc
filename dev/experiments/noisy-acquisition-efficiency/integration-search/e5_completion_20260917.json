@@ -1,0 +1,90 @@
+{
+  "continuation_fits_allocated": 0,
+  "cost_estimate_method": "Four times the 24 pilot worker durations for the remaining eight seeds. Worker durations include fitting, metric calculation and artifact writes; process startup, validation and preparation are excluded. Planning range applies 1.25-1.50 to that extrapolation; small-sample estimate, not a statistical bound.",
+  "created_utc": "2026-09-17T17:40:27.408713+00:00",
+  "elapsed_first_worker_start_to_last_finish_seconds_including_validation_and_gaps": 3726.550211,
+  "fit_status_counts": {
+    "failure": 0,
+    "missing": 0,
+    "success": 24
+  },
+  "manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "manifest_sha256": "048fffad6a85113aae568525e5263f534dbfaa61821971262827206fce5797c3",
+  "pair_status_counts": {
+    "complete": 12,
+    "failure": 0,
+    "invalid_initial_design": 0,
+    "missing": 0,
+    "nonfinite": 0
+  },
+  "pilot_worker_seconds": 3634.5520537000193,
+  "remaining_96_fits_planning_seconds": [
+    18172.760268500097,
+    21807.312322200116
+  ],
+  "remaining_96_fits_point_estimate_seconds": 14538.208214800077,
+  "scientific_review": {
+    "automatic_adoption": false,
+    "full_ten_pair_accuracy_triggers": {},
+    "invalid_initial_design": false,
+    "new_failure": false,
+    "nonfinite_outcome": false,
+    "pilot_is_descriptive_only": true,
+    "usability_loss": false
+  },
+  "summary_sha256": "471088e38580de45609a7b5d183598c45b6e0ac379ff6103ceccbd73a50efb51",
+  "terminal_record_digests": {
+    "logreg_D5_noise3__seed2000__S0": "f9e3d25d582a2ac63dfe3072e37b4db469a3a06939e9fe51a5415f42076b696c",
+    "logreg_D5_noise3__seed2000__S2": "bac4ce1feaa5fe162045198fc97d9b273f7dfb68224a44633c96f7a4b35d1e4c",
+    "logreg_D5_noise3__seed2001__S0": "de8577204d3bf0bf24be3b4444f780926b829d2dd9a884cda5422b1e6774f878",
+    "logreg_D5_noise3__seed2001__S2": "ffca16be780c8fe8ad9e0a3145fe010e078d56af0d49aca9dc31b2aa2a4166f7",
+    "multisensory_s1_D6_noise1.3__seed2000__S0": "c41c19ace9ceae7ac217dddb5b8527d1fc7dcd27f9783165395f175119d352fd",
+    "multisensory_s1_D6_noise1.3__seed2000__S2": "ef14051441f394efd6e523663cf78563e13b6427f9ce16a3aa28f56e3c24baa6",
+    "multisensory_s1_D6_noise1.3__seed2001__S0": "8690a90d2c20178df1243722dc80c8d6b91e22ce9a74479d575e632785871de4",
+    "multisensory_s1_D6_noise1.3__seed2001__S2": "2c55ee1f649b74edd320a4fdf97531ba34b8140aa8cb11a805cbf3b902a41c2e",
+    "rosenbrock_D2_noise1__seed2000__S0": "9dd4b82698c3e7c1a68c158369b6ddb7b9fbe7dd423d453238ff700e2bab43ea",
+    "rosenbrock_D2_noise1__seed2000__S2": "bf38db7771adb5793a86c31aa97bced9dded3ce999d07970da9346b77fceec9d",
+    "rosenbrock_D2_noise1__seed2001__S0": "113fe16176c48db5f87f3bbdba21cd1a7fd92f3d16bf961a4540580985a7b9dd",
+    "rosenbrock_D2_noise1__seed2001__S2": "3a254b7bfea5a8168135ec97c80f443f9b47adefb68cebfd2a7bbf3b268e96e1",
+    "rosenbrock_D2_noise3__seed2000__S0": "3b3454a64cc5e2de42af8d1682f60df3f857d8de6447358ea3ca3f33078d95c5",
+    "rosenbrock_D2_noise3__seed2000__S2": "dcf84c5dba0ed2fc981f3460f2ed48df136fa4c642bd406ec87a1effb58c6596",
+    "rosenbrock_D2_noise3__seed2001__S0": "c43d33439906d3fc14b5d31a2c26592361c4c47b8a5154771285bf30de4bc9c9",
+    "rosenbrock_D2_noise3__seed2001__S2": "c51bf435dff8cabab4f5ce5b4f3b77014eca50adbfde231eaf9db36fa3ad0cba",
+    "student_D8_noise3__seed2000__S0": "3aebaddea69ce65b7e58ae59d115c265b909a05785afddcb31a270c5000e45a8",
+    "student_D8_noise3__seed2000__S2": "75a723ac37508c6e3898955e0523b1a81f1740c2cea4ff5ad5980c10dfa78d33",
+    "student_D8_noise3__seed2001__S0": "f95772753c00de1d86864dea759343c9b95bca8a1f604d45eb32971ea640caa6",
+    "student_D8_noise3__seed2001__S2": "41c85c2a74011f2daeb88d9ad42d4820719f78a08fab1cb5ed13f657819d1659",
+    "timing_D5_noise2.2__seed2000__S0": "1f5b01b2ae8abe691aa7d615a9fe60bf230d099c4328a5225434e8bc1cdb1381",
+    "timing_D5_noise2.2__seed2000__S2": "1d777706429356ba02c06fd2672eece0e9b1363a83082ae1acb0f8cf1920e816",
+    "timing_D5_noise2.2__seed2001__S0": "7ebe0f8efce56a43461e5a696184d10ba340cac92b43a157d53797bb7bc19489",
+    "timing_D5_noise2.2__seed2001__S2": "2fe1e91185b733d46137bda362fe0ccac13ac073019ed6c1d91bbb0c4430a031"
+  },
+  "validation_replay_outer_seconds": 45.52831580000202,
+  "validation_replay_record_digest": "d86937153ed93fd3038c58835ed4e23382edc3855653d2a1a3fce2f5c32ad448",
+  "worker_seconds_by_target_and_arm": {
+    "logreg_D5_noise3": {
+      "S0": 405.50715660000424,
+      "S2": 292.0028000999955
+    },
+    "multisensory_s1_D6_noise1.3": {
+      "S0": 272.7171787000043,
+      "S2": 162.11660880001
+    },
+    "rosenbrock_D2_noise1": {
+      "S0": 141.77898870000354,
+      "S2": 76.78420090000873
+    },
+    "rosenbrock_D2_noise3": {
+      "S0": 233.72301290000178,
+      "S2": 108.87020420000044
+    },
+    "student_D8_noise3": {
+      "S0": 672.9999587999991,
+      "S2": 684.9848618999968
+    },
+    "timing_D5_noise2.2": {
+      "S0": 331.5053470999992,
+      "S2": 251.56173499999568
+    }
+  }
+}

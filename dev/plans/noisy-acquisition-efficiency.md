@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2 AND E3 COMPLETE; E5 PILOT PREPARATION**. Branch:
+Experimental extension drafted 2026-09-16: **E2, E3 AND E5 PILOT COMPLETE; CONTINUATION UNALLOCATED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
@@ -50,6 +50,13 @@ several losses before refinement. The mixed holdout evidence does not support
 a general replacement recommendation. E4's development entry gates are not
 established. The user subsequently authorized the exploratory E5 pilot
 specified in the amendment below. Production defaults are unchanged.
+The 24-fit E5 pilot and its excluded exact reproducibility repeat are complete.
+All fits executed successfully and all twelve initial-design pairs match.
+Search time falls on all six configurations, total fit time on five;
+S2 has three convergence-flag losses and no usability loss. The pilot took
+60.58 minutes of worker time. Remaining seeds 2002-2009 require a user
+decision after the reviewed report; their measured-rate estimate is 4.04
+hours, with a 5-6-hour planning allowance. No continuation job is allocated.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -358,10 +365,11 @@ unbounded search controller also launches timing, memory and judging work.
 - [x] E4: entry gates assessed; neither is established. No adaptive arm is
   allocated. Full-sieve E2 quality comparisons were cost-screened out;
   accepted harmful E3 refinements occur on only one development trajectory.
-- [~] E5: prepare and run the authorized exploratory S0/S2 pilot under the
-  ten-seed amendment; the current executable scope is seeds 2000-2001.
-- [~] E6: frozen-state evidence consolidated and independently reviewed;
-  inference assessment remains outside the completed scope and requires E5.
+- [~] E5: the authorized 24-fit S0/S2 pilot is complete and independently
+  reviewed. Seeds 2002-2009 require a subsequent user decision and allocation.
+- [~] E6: frozen-state and pilot evidence are consolidated and independently
+  reviewed; full ten-seed inference assessment and any adoption decision remain
+  outside the completed scope.
 
 Astra (`gpt-6-astra`, high) orchestrates E0, scientific decisions in E2-E5,
 and E6. Sol (`gpt-5.6-sol`, high) implements the developer harness and
@@ -882,6 +890,9 @@ S0 and the frozen S2 in `search_holdout_selection.json` (raw SHA256
 The full design has seeds 2000-2009: 120 fits, comprising 24 pilot fits
 (2000-2001) and 96 subsequent fits (2002-2009). The current executable
 allocation is only the pilot. Retain its results in the full comparison.
+After the pilot, complete verification and independent review, then report
+the findings and measured cost estimate to the user. Launching seeds
+2002-2009 requires a subsequent explicit user decision.
 Continuation depends on verified execution and affordable measured cost,
 not favorable early scientific results. No treatment tuning or replacement
 of adverse seeds is permitted. Any implementation correction requires a
@@ -921,13 +932,19 @@ Pilot preparation and execution checklist:
   accurate-rule seeds, search diagnostics, complete golden traces and
   paired final metrics. Define acquisition timing separately from full
   active-sampling time, which includes GP and VP updates.
-- [~] Independently review implementation and scientific allocation; run
+- [x] Independently review implementation and scientific allocation; run
   focused tests, the package suite and exact default-path oracle checks.
-- [ ] Freeze source/configuration/data/environment identities and reviewed
+- [x] Freeze source/configuration/data/environment identities and reviewed
   24-fit pilot manifest. Alternate arm order across seed blocks and stop
   after the pilot; seeds 2002-2009 remain outside its executable allocation.
-- [ ] Execute the pilot, summarize all outcomes and observed costs, update
+- [x] Execute the pilot, summarize all outcomes and observed costs, update
   the result report and local inventory, and review before further allocation.
+
+The [pilot report](../results/2026-09-16-noisy-acquisition-integration-search.md#pilot-outcomes)
+records all 24 valid fits, the exact excluded replay, the independent review
+and the measured continuation cost. All twelve initial-design pairs match,
+and all 5,365 selection records verify. The operational continuation criteria
+are satisfied; seeds 2002-2009 remain unallocated pending the user's decision.
 
 Implementation contract for the scoped policy:
 

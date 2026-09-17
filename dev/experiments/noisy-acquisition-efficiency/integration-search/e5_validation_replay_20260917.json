@@ -1,0 +1,12 @@
+{
+  "cell_id": "rosenbrock_D2_noise1__seed2000__S2",
+  "created_utc": "2026-09-17T16:40:31.890180+00:00",
+  "differences": [],
+  "exact_non_timing_match": true,
+  "excluded_from_all_scientific_and_timing_denominators": true,
+  "manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "primary_terminal_record_digest": "bf38db7771adb5793a86c31aa97bced9dded3ce999d07970da9346b77fceec9d",
+  "record_digest": "d86937153ed93fd3038c58835ed4e23382edc3855653d2a1a3fce2f5c32ad448",
+  "replay_terminal_record_digest": "7569d49c8810252f743efdc5b7c8168ccd348f22f74caa1c43e9736e8c53f0e2",
+  "schema_version": 1
+}

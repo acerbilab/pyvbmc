@@ -1,0 +1,46 @@
+{
+  "artifacts": [
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/manifest.json",
+      "published_copy": "e5_manifest_20260917.json",
+      "published_copy_lf_bytes_sha256": "06fe08d980a3515d02aa294629fde8acd192b05695f8c720a9b883d850876cdc",
+      "raw_artifact_sha256": "048fffad6a85113aae568525e5263f534dbfaa61821971262827206fce5797c3"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/launch_clearance.json",
+      "published_copy": "e5_launch_clearance_20260917.json",
+      "published_copy_lf_bytes_sha256": "214cf5da5a24cf334d6fcadca117cdf357b7ca3e3e36bdad5a83bc29965de213",
+      "raw_artifact_sha256": "2af906dd443fc5f1c5fb4cf365d97b0ec75cd340cb347561a6613290bedca520"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/campaign/validation_replay/validation_replay.json",
+      "published_copy": "e5_validation_replay_20260917.json",
+      "published_copy_lf_bytes_sha256": "2c55fb7c4f955afa3eafccfdb483f78b65d6a49b530f57fec438e0f4cfc16a13",
+      "raw_artifact_sha256": "429532cab094b5089c764e8c2b5d79ee3459e84635f3aa37efd20cfd8c062536"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/summary.json",
+      "published_copy": "e5_summary_20260917.json",
+      "published_copy_lf_bytes_sha256": "1505f07c6a1e9d0c40836ea5a1b02234bdacf7a0fa5afda01d0d3198a381226d",
+      "raw_artifact_sha256": "471088e38580de45609a7b5d183598c45b6e0ac379ff6103ceccbd73a50efb51"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/completion.json",
+      "published_copy": "e5_completion_20260917.json",
+      "published_copy_lf_bytes_sha256": "01937fda6c46137c4bd49aae4b1a971df1d55519d084c4a2674ad17eedd33159",
+      "raw_artifact_sha256": "c760d2e34e7584f818b73eb12c8a8ae2811bed4c19fd5800b689dbe3605111d6"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_pilot_20260917/independent_review.json",
+      "published_copy": "e5_independent_review_20260917.json",
+      "published_copy_lf_bytes_sha256": "7adbbdce5101771028a8c15edd733cdc74fb273e821dec2d5480a42b56c86917",
+      "raw_artifact_sha256": "8a4222e47eefa045b932ac29fb99547bb82f000a2c9bf3c2fa493e020f7ce270"
+    }
+  ],
+  "created_utc": "2026-09-17T17:47:20.173478+00:00",
+  "hash_convention": "Raw hashes bind original local bytes. Published-copy hashes bind UTF-8 LF bytes as stored in Git; normalize CRLF before checking a Windows working copy. Review copies are not executable manifests.",
+  "kind": "noisy_acquisition_e5_pilot_publication_index",
+  "local_run_root": "dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "schema_version": 1,
+  "source_checkpoint": "d8eb7af547e92d639e402edc9d8c62db2239668f"
+}

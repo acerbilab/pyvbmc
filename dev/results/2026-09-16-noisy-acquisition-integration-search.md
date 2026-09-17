@@ -17,21 +17,25 @@ starting winner, with several losses localized before refinement. The mixed
 holdout evidence does not support a general replacement recommendation.
 E4's development entry gates are unmet. E5 was unapproved at the E3
 checkpoint; the user subsequently authorized the exploratory pilot described
-below, whose implementation and validation are in progress.
-Production defaults are unchanged, and inference performance is unmeasured.
+below. All 24 pilot fits and the separate reproducibility repeat are complete.
+S2 lowers search time on all six configurations and total fit time on five,
+but loses the convergence flag in three pairs. The two-seed results support
+further measurement, not adoption. Production defaults are unchanged, and
+the remaining eight seeds require a separate user decision.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
 [experimental plan](../plans/noisy-acquisition-efficiency.md) specifies the
 allocation, independent judging, timing protocol and promotion criteria.
-GP fitting and Bayesian quadrature are outside its scope.
+Changes to GP fitting and Bayesian quadrature are outside its scope.
 
 ## Sources and environment
 
 The numerical baseline is PyVBMC commit
 `9cc6882768ff682ae892a6b453c42e0f2d03d5fa`. The capture harness is committed
-as `3fe616c477130625bb01d30d29785773fe2e0e66`. Production `pyvbmc/` source
-is unchanged by these experiments.
+as `3fe616c477130625bb01d30d29785773fe2e0e66`. E1-E3 leave production
+`pyvbmc/` source unchanged. E5 source checkpoint `d8eb7af` adds a private,
+inactive-by-default selection callback; exact default-path oracle checks pass.
 
 The frozen gpyreg source is commit
 `9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b`, imported from the archived
@@ -733,7 +737,8 @@ configurations: 120 fits across two arms. The authorized pilot executes only
 seeds 2000-2001, giving 24 fits. Its outcomes remain part of the full design.
 The first batch checks execution, reproducibility and cost; favorable early
 accuracy is not a condition for continuing. Remaining seeds require a
-reviewed continuation allocation after the pilot. The
+reviewed continuation allocation and explicit user authorization after the
+pilot report. The
 [plan amendment](../plans/noisy-acquisition-efficiency.md#approved-exploratory-s0s2-amendment-2026-09-17)
 specifies the exact scope, metrics, safeguards and preparation checklist.
 
@@ -744,6 +749,94 @@ are 90-120 minutes and 7-10 hours, respectively, before measuring actual S2
 inference costs. Adapter implementation and validation are additional.
 Completed fits can be resumed by identity-checked records; interrupted fits
 are not assumed to have a usable intermediate checkpoint.
+
+The adapter, runner and tests are committed at `d8eb7af`. Validation passed
+18 focused developer tests, 1,614 package tests (45 skipped), and all 11
+exact numerical oracle fixtures. The three package warnings are the existing
+VP-density derivative warnings in oracle cases. The existing environment
+lacked the declared `threadpoolctl` dependency; installing version 3.6.0 with
+`--no-deps` repaired collection without changing numerical dependencies.
+Initial focused-test failures were fixture/stub errors, including a consumed
+search RNG during VP reconstruction. Matching the frozen selector's fresh
+post-reconstruction stream restores exact S2 parity without changing the
+adapter or relaxing tolerance. Original and final validation logs are retained.
+
+Independent Sol review verified the implementation, all 99 source/data/config
+hashes, 23 gpyreg source hashes, 220 promoted reference sidecars and 18
+reference envelopes. The locked pilot manifest has semantic digest
+`98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134`.
+Its executable allocation contains only the 24 pilot fits. One separately
+recorded S2 replay of Rosenbrock D2/noise 1/seed 2000 checks every stored
+non-timer trace array, semantic final field and selection record before the
+remaining pilot fits proceed. The replay is validation overhead and contributes
+no additional scientific or timing observation.
+The predeclared repeat passed exact comparison with no differing field.
+
+### Pilot outcomes
+
+All 24 fits completed without execution failure. All 12 paired initial designs
+and initial noisy observations match exactly; all reported quality metrics
+are finite. No fit exceeds the frozen promoted-reference quality envelopes.
+The [paired summary](../experiments/noisy-acquisition-efficiency/integration-search/e5_summary_20260917.json)
+retains every observation, paired difference and interval, including adverse
+outcomes. The replay is excluded from those denominators.
+The [independent post-pilot review](../experiments/noisy-acquisition-efficiency/integration-search/e5_independent_review_20260917.json)
+passed without remaining findings. It verified all 24 terminal digests, 72
+bound payload hashes, 5,365 selection records and 2,780 independently derived
+S2 accurate-rule seeds, including every frozen search-budget cap.
+
+The table gives geometric means of the two paired S2/S0 ratios for each
+configuration. Values below one indicate lower S2 time or fewer calls.
+Usability applies the predeclared evidence-error, gsKL and MMTV thresholds;
+the convergence flag is a separate outcome.
+
+| Configuration | Fit time S2/S0 | Search time S2/S0 | Calls S2/S0 | Usable S0 → S2 (of 2) | Converged S0 → S2 (of 2) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Rosenbrock D2, noise 1 | 0.521 | 0.313 | 0.983 | 2 → 2 | 2 → 2 |
+| Rosenbrock D2, noise 3 | 0.467 | 0.337 | 1.000 | 2 → 2 | 2 → 0 |
+| Logistic regression D5, noise 3 | 0.749 | 0.483 | 1.012 | 1 → 2 | 2 → 2 |
+| Student-t D8, noise 3 | 1.070 | 0.782 | 1.152 | 1 → 2 | 2 → 2 |
+| Multisensory subject 1 D6, noise 1.3 | 0.592 | 0.377 | 1.012 | 0 → 0 | 2 → 2 |
+| Timing D5, noise 2.2 | 0.747 | 0.389 | 1.158 | 2 → 2 | 2 → 1 |
+
+Equal-weight geometric means across the six configurations are 0.6646 for
+fit time and 0.4246 for search time: descriptive reductions of 33.5% and
+57.5%. These are laptop measurements on two seeds per configuration, not
+quality-equivalence claims. The stored per-target timing intervals have one
+degree of freedom and are generally very wide.
+
+Usable outcomes increase from 8/12 to 10/12, with gains on logistic-regression
+seed 2001 and Student-t seed 2000 and no usable-to-unusable transition.
+Convergence falls from 12/12 to 9/12: both high-noise Rosenbrock S2 fits stop
+at 200 evaluations, and timing seed 2001 stops at 350. All three still satisfy
+the usable-quality thresholds. For timing seed 2001, S0 converges at 250 calls;
+S2 therefore uses 100 additional evaluations. These are scientific outcomes
+under the unchanged stopping rule and budgets, not execution failures.
+
+Student-t uses more evaluations with S2 on both seeds (370 versus 305, and
+410 versus 375), offsetting cheaper search and leaving the paired geometric
+fit-time ratio above one. Multisensory remains unusable in both arms for both
+seeds. Its seed-2001 S2 result is worse on all three quality metrics, including
+gsKL 4.252 versus 2.068 and MMTV 0.266 versus 0.205; the other seed improves
+these two posterior metrics. Low-noise Rosenbrock also has higher MMTV on
+both S2 seeds, while remaining well within the usable threshold. These
+target-specific concerns remain visible in any ten-seed continuation.
+
+The pilot's summed worker time is 60.58 minutes; elapsed time from the first
+worker start to the last finish is 62.11 minutes, including the 45.53-second
+validation repeat and launch gaps. The observed-rate estimate for the
+remaining 96 fits is 4.04 hours. Reserve approximately 5-6 hours, using a
+25-50% allowance over that small-sample extrapolation. Preparation and review
+are additional. The [completion record](../experiments/noisy-acquisition-efficiency/integration-search/e5_completion_20260917.json)
+records the exact arithmetic and per-target worker times.
+
+The pilot clears the amendment's operational continuation criteria through
+verified execution, reproducibility and measured cost. Scientific outcomes
+remain descriptive and do not serve as a favorable-results screen.
+Convergence losses, target-call increases and multisensory quality remain
+explicit concerns for the complete comparison. Two seeds cannot establish
+noninferiority or the frequency of those outcomes. Seeds 2002-2009 remain
+unallocated and require a user decision after this report.
 
 ## Resuming the saved experiment
 
@@ -810,8 +903,16 @@ holdout MC checks and the saved-point loss diagnostic are complete;
 their `completed_ladder.json` records bind every executed budget.
 Do not use the unbounded `run` controller: it also launches the structurally
 declared timing and memory cells that this holdout does not allocate.
-E4's entry gates are not established. E5 pilot preparation proceeds under
-the exploratory amendment above; E3 artifacts remain immutable.
+E4's entry gates are not established. The exploratory E5 pilot is complete;
+E3 artifacts remain immutable. Its raw
+manifest, launch clearance and validation logs are in
+`noisy_acq_efficiency_20260916/e5_pilot_20260917/`; fit artifacts are under
+`campaign/`, with the excluded repeat under `campaign/validation_replay/`.
+The immutable `summary.json` and `completion.json` bind the 24-fit result.
+No continuation job is running or allocated.
+The [E5 publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_e5_20260917.json)
+binds the raw manifest, launch clearance, replay, paired summary, completion
+record and independent review to their redacted review copies.
 
 The [publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_20260917.json)
 maps raw local artifact hashes to the redacted review copies and specifies

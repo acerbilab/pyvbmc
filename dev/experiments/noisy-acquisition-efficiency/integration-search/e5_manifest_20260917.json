@@ -1,0 +1,1694 @@
+{
+  "created_utc": "2026-09-17T16:30:31.587726+00:00",
+  "prepared_from_commit": "d8eb7af547e92d639e402edc9d8c62db2239668f",
+  "reviewed_ready": {
+    "approved": true,
+    "note": "Static implementation and allocation review clear; 18 focused tests, 1614 package tests and all 11 exact oracle fixtures passed. Only the 24 pilot fits and predeclared separate validation replay are allocated.",
+    "reviewed_utc": "2026-09-17T16:37:18.885129+00:00",
+    "reviewer": "independent Sol e5_review; Astra orchestration clearance"
+  },
+  "semantic": {
+    "arms": {
+      "S0": {
+        "description": "unmodified production search"
+      },
+      "S2": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S2",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      }
+    },
+    "cells": [
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2000__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 0,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2000__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 1,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2001__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 2,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2001__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 3,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2002__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 4,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2002__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 5,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2003__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 6,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2003__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 7,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2004__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 8,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2004__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 9,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2005__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 10,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2005__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 11,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2006__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 12,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2006__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 13,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2007__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 14,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2007__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 15,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2008__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 16,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2008__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 17,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise1__seed2009__S2",
+        "label": "rosenbrock_D2_noise1",
+        "order": 18,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise1__seed2009__S0",
+        "label": "rosenbrock_D2_noise1",
+        "order": 19,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2000__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 20,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2000__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 21,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2001__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 22,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2001__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 23,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2002__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 24,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2002__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 25,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2003__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 26,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2003__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 27,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2004__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 28,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2004__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 29,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2005__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 30,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2005__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 31,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2006__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 32,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2006__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 33,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2007__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 34,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2007__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 35,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2008__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 36,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2008__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 37,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "rosenbrock_D2_noise3__seed2009__S2",
+        "label": "rosenbrock_D2_noise3",
+        "order": 38,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "rosenbrock_D2_noise3__seed2009__S0",
+        "label": "rosenbrock_D2_noise3",
+        "order": 39,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2000__S0",
+        "label": "logreg_D5_noise3",
+        "order": 40,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2000__S2",
+        "label": "logreg_D5_noise3",
+        "order": 41,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2001__S2",
+        "label": "logreg_D5_noise3",
+        "order": 42,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2001__S0",
+        "label": "logreg_D5_noise3",
+        "order": 43,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2002__S0",
+        "label": "logreg_D5_noise3",
+        "order": 44,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2002__S2",
+        "label": "logreg_D5_noise3",
+        "order": 45,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2003__S2",
+        "label": "logreg_D5_noise3",
+        "order": 46,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2003__S0",
+        "label": "logreg_D5_noise3",
+        "order": 47,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2004__S0",
+        "label": "logreg_D5_noise3",
+        "order": 48,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2004__S2",
+        "label": "logreg_D5_noise3",
+        "order": 49,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2005__S2",
+        "label": "logreg_D5_noise3",
+        "order": 50,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2005__S0",
+        "label": "logreg_D5_noise3",
+        "order": 51,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2006__S0",
+        "label": "logreg_D5_noise3",
+        "order": 52,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2006__S2",
+        "label": "logreg_D5_noise3",
+        "order": 53,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2007__S2",
+        "label": "logreg_D5_noise3",
+        "order": 54,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2007__S0",
+        "label": "logreg_D5_noise3",
+        "order": 55,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2008__S0",
+        "label": "logreg_D5_noise3",
+        "order": 56,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2008__S2",
+        "label": "logreg_D5_noise3",
+        "order": 57,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "logreg_D5_noise3__seed2009__S2",
+        "label": "logreg_D5_noise3",
+        "order": 58,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "logreg_D5_noise3__seed2009__S0",
+        "label": "logreg_D5_noise3",
+        "order": 59,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2000__S0",
+        "label": "student_D8_noise3",
+        "order": 60,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2000__S2",
+        "label": "student_D8_noise3",
+        "order": 61,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2001__S2",
+        "label": "student_D8_noise3",
+        "order": 62,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2001__S0",
+        "label": "student_D8_noise3",
+        "order": 63,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2002__S0",
+        "label": "student_D8_noise3",
+        "order": 64,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2002__S2",
+        "label": "student_D8_noise3",
+        "order": 65,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2003__S2",
+        "label": "student_D8_noise3",
+        "order": 66,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2003__S0",
+        "label": "student_D8_noise3",
+        "order": 67,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2004__S0",
+        "label": "student_D8_noise3",
+        "order": 68,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2004__S2",
+        "label": "student_D8_noise3",
+        "order": 69,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2005__S2",
+        "label": "student_D8_noise3",
+        "order": 70,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2005__S0",
+        "label": "student_D8_noise3",
+        "order": 71,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2006__S0",
+        "label": "student_D8_noise3",
+        "order": 72,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2006__S2",
+        "label": "student_D8_noise3",
+        "order": 73,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2007__S2",
+        "label": "student_D8_noise3",
+        "order": 74,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2007__S0",
+        "label": "student_D8_noise3",
+        "order": 75,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2008__S0",
+        "label": "student_D8_noise3",
+        "order": 76,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2008__S2",
+        "label": "student_D8_noise3",
+        "order": 77,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "student_D8_noise3__seed2009__S2",
+        "label": "student_D8_noise3",
+        "order": 78,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "student_D8_noise3__seed2009__S0",
+        "label": "student_D8_noise3",
+        "order": 79,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2000__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 80,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2000__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 81,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2001__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 82,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2001__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 83,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2002__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 84,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2002__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 85,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2003__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 86,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2003__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 87,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2004__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 88,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2004__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 89,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2005__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 90,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2005__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 91,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2006__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 92,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2006__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 93,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2007__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 94,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2007__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 95,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2008__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 96,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2008__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 97,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2009__S2",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 98,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "multisensory_s1_D6_noise1.3__seed2009__S0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "order": 99,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2000__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 100,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2000__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 101,
+        "phase": "pilot",
+        "seed": 2000
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2001__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 102,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2001__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 103,
+        "phase": "pilot",
+        "seed": 2001
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2002__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 104,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2002__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 105,
+        "phase": "continuation",
+        "seed": 2002
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2003__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 106,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2003__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 107,
+        "phase": "continuation",
+        "seed": 2003
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2004__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 108,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2004__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 109,
+        "phase": "continuation",
+        "seed": 2004
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2005__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 110,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2005__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 111,
+        "phase": "continuation",
+        "seed": 2005
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2006__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 112,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2006__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 113,
+        "phase": "continuation",
+        "seed": 2006
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2007__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 114,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2007__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 115,
+        "phase": "continuation",
+        "seed": 2007
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2008__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 116,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2008__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 117,
+        "phase": "continuation",
+        "seed": 2008
+      },
+      {
+        "arm": "S2",
+        "cell_id": "timing_D5_noise2.2__seed2009__S2",
+        "label": "timing_D5_noise2.2",
+        "order": 118,
+        "phase": "continuation",
+        "seed": 2009
+      },
+      {
+        "arm": "S0",
+        "cell_id": "timing_D5_noise2.2__seed2009__S0",
+        "label": "timing_D5_noise2.2",
+        "order": 119,
+        "phase": "continuation",
+        "seed": 2009
+      }
+    ],
+    "executable_cell_ids": [
+      "rosenbrock_D2_noise1__seed2000__S0",
+      "rosenbrock_D2_noise1__seed2000__S2",
+      "rosenbrock_D2_noise1__seed2001__S2",
+      "rosenbrock_D2_noise1__seed2001__S0",
+      "rosenbrock_D2_noise3__seed2000__S0",
+      "rosenbrock_D2_noise3__seed2000__S2",
+      "rosenbrock_D2_noise3__seed2001__S2",
+      "rosenbrock_D2_noise3__seed2001__S0",
+      "logreg_D5_noise3__seed2000__S0",
+      "logreg_D5_noise3__seed2000__S2",
+      "logreg_D5_noise3__seed2001__S2",
+      "logreg_D5_noise3__seed2001__S0",
+      "student_D8_noise3__seed2000__S0",
+      "student_D8_noise3__seed2000__S2",
+      "student_D8_noise3__seed2001__S2",
+      "student_D8_noise3__seed2001__S0",
+      "multisensory_s1_D6_noise1.3__seed2000__S0",
+      "multisensory_s1_D6_noise1.3__seed2000__S2",
+      "multisensory_s1_D6_noise1.3__seed2001__S2",
+      "multisensory_s1_D6_noise1.3__seed2001__S0",
+      "timing_D5_noise2.2__seed2000__S0",
+      "timing_D5_noise2.2__seed2000__S2",
+      "timing_D5_noise2.2__seed2001__S2",
+      "timing_D5_noise2.2__seed2001__S0"
+    ],
+    "full_design_fit_count": 120,
+    "full_seeds": [
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009
+    ],
+    "identity": {
+      "environment": {
+        "dependencies": {
+          "cma": "4.4.4",
+          "filelock": "3.32.5",
+          "gpyreg": "1.2.0",
+          "numpy": "2.5.2",
+          "psutil": "7.2.2",
+          "scipy": "1.18.1",
+          "threadpoolctl": "3.6.0"
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "import": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg\\__init__.py",
+          "repository": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1",
+          "source_hashes": {
+            "gpyreg/__init__.py": "d2683e21c965713c2f68027984514e3c070eea4540c6ab0aa1acab2833976927",
+            "gpyreg/covariance_functions.py": "482e8c1690e8430c46fa88235bb34a178fc5c8fae5c0296240f50c3120a4a932",
+            "gpyreg/f_min_fill.py": "b3bc9360e3cbab518ce710d153c1fc8e3d0344aeee85391ccad22a13e30221bd",
+            "gpyreg/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+            "gpyreg/gaussian_process.py": "fd15bae3d70ef0053e5500e359f814f98655678d6690ea3905e80e2578795df8",
+            "gpyreg/isotropic_covariance_functions.py": "cd48ba78624fe971a57b4b113d530d58e2a5ba65094397c1ec6f86ed8eeb1832",
+            "gpyreg/mean_functions.py": "13ddb745485f186800440fd9aa6989ee8e78539e99fb9ed9a39e0a08f513af04",
+            "gpyreg/noise_functions.py": "f7168d6ca0e0ad54d26800bf8e1709cc980df718a7789eea97a384a8c33e94a7",
+            "gpyreg/rng.py": "cc9ca12def071d07894cfeae9dec95ccafac8643b548d06da9dfaee20dd7b5d2",
+            "gpyreg/slice_sample.py": "5e15fb79b25e19d9e9f4ae0d3f0a091e599b7da5088b6a43ba2f3dc6ad577fc2",
+            "gpyreg/testing/__init__.py": "55e1a1c093fb290c59144f3bec778dd1ca7d1475c0c009aba7909822f49e75cd",
+            "gpyreg/testing/test_covariance_functions.py": "daa93221b2271ed955aed8d4fd508da524ea17ac01bb33697ba4f663c69d6e3f",
+            "gpyreg/testing/test_gaussian_process.py": "4398b22f50fac2b1e115be8187341635ecfa3c7eada436ed7be36c5f135f44c2",
+            "gpyreg/testing/test_gaussian_process_isotropic.py": "9ab52aaa873469bc5ae7327da673c719f099ea27054d412adb3291a9733d2944",
+            "gpyreg/testing/test_isotropic_covariance_functions.py": "aae3e23a0a32f352bed2e68d0cb9d853b02ead586fe2d1d86f2b8103eb4143e1",
+            "gpyreg/testing/test_mean_functions.py": "bbb6e46e5227a171811bb4534d3bf5af414cdcb43fc9088cf66531952f22a033",
+            "gpyreg/testing/test_noise_functions.py": "57b6cbaf054e3c8212d1dd4d29d8c3a58b17cc3615f07ee7dcd0489f259b12df",
+            "gpyreg/testing/test_predict_cross_covariance.py": "9235cba829a42690529bdd6e63d0426c6d417adff670a4993a44adcd5af6ee77",
+            "gpyreg/testing/test_rng.py": "fc9f1d83e22447e4d46b2087f2dd71efd204bedf2320f12a93fe36b111662bb5",
+            "gpyreg/testing/test_slice_sample.py": "35df5309383b2d44fba25a1cbfbb060332e1a365cf5f1d82ebc3175f9f1c8b9c",
+            "gpyreg/testing/test_smoothbox.py": "3cc4d907f38d8c189f22f7ce1090b16a65858cab2cb431845100af6d3b09091a",
+            "gpyreg/testing/test_smoothbox_student_t.py": "9ca12c6f0a2e14f61bfdf836358f39a569c7141fbc28e722680ba482dcad1bc8",
+            "gpyreg/testing/test_utils.py": "494badb7633320fab1cff2d2f59f3a675d613d205ea337d3da3762c12b3d9995"
+          }
+        },
+        "imports": {
+          "benchmark_targets": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\benchmark_targets.py",
+          "golden_trace": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\golden_trace.py",
+          "gpyreg": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg\\__init__.py",
+          "noisy_acq_inference_policy": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_inference_policy.py",
+          "noisy_acq_quadrature": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_quadrature.py",
+          "noisy_acq_search": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\noisy_acq_search.py",
+          "profile_run": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\scripts\\profile_run.py",
+          "pyvbmc": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\pyvbmc\\__init__.py"
+        },
+        "numpy_build": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "<USER_HOME>/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.9"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "<USER_HOME>\\AppData\\Local\\Temp\\build-env-03ol50fu\\Scripts\\python.exe",
+            "version": "3.12"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "platform": "Windows-11-10.0.26200-SP0",
+        "python": "3.12.6",
+        "python_implementation": "CPython",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "MPLBACKEND": "Agg",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "sources": {
+        "dev\\scripts\\benchmark_targets.py": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+        "dev\\scripts\\data\\multisensory.npz": "caf62b205a67bbb3a53d2650c0cf98ddcd4dc1c15da72e31d3c1f97256db982f",
+        "dev\\scripts\\data\\provenance.json": "0557b9c72963c51ba9673422cb388982ca1582fd7619ae4e292bb8ccda292382",
+        "dev\\scripts\\data\\timing.npz": "9fb1c08afa2b52810dafb04d62ac0166c502ae60b0b18a2741f89efd75e5a9cc",
+        "dev\\scripts\\data\\truths\\multisensory_s1.json": "a67699f9f733d389345b71bb1985ad8e8e6a0be2744826f0b808efe521e89f1b",
+        "dev\\scripts\\data\\truths\\multisensory_s1.npz": "f11bc97cef7fe5820cd43d4b7fed6b6885f323abb1892241bfb16cf6e4707c04",
+        "dev\\scripts\\data\\truths\\multisensory_s2.json": "c37078b62b18f6e8bf306789a1fdb463f32617623de6a8744db22368b4016883",
+        "dev\\scripts\\data\\truths\\multisensory_s2.npz": "975ec0b6a8c5b6676bcc01eb478863adc9cde45b30dfdcfe63771dee913638ff",
+        "dev\\scripts\\data\\truths\\timing.json": "1a3a10e0234f186d840b85bb80a1cf7d1135fc50d229fe1efc4c7bed49a6cdfe",
+        "dev\\scripts\\data\\truths\\timing.npz": "1366987f73dd30de1f3cfa0c0940e2113fd34f9283c6aa367779d50b3d245a0d",
+        "dev\\scripts\\golden_replay.py": "d28088f98656f388e4b40f9d565d3e51b513361401bcb6aa630f445a090ae970",
+        "dev\\scripts\\golden_trace.py": "912cedabc344598de292f7fed6c37666c8ea5eb596e3691a8cb9d9e7fa2898ea",
+        "dev\\scripts\\noisy_acq_inference.py": "10ca99a151cfa00bd6e29bae2a3285bb4ea25c0f27f89079a0c572ec9721e88a",
+        "dev\\scripts\\noisy_acq_inference_policy.py": "b9b58b294564c5e9e6fe3b86b7b2ef0342f4800c74570d4ecd2820f656d5a527",
+        "dev\\scripts\\noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+        "dev\\scripts\\noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+        "dev\\scripts\\profile_run.py": "4742bf6b47997d579a1e01ae46f42a34801174a6be4a0ab94844fa722124ba60",
+        "pyvbmc\\__init__.py": "4db4104c16ebc10161cc401aac7d3eafa9fc702f22a04c3f62b32ee85c57f0f6",
+        "pyvbmc\\__main__.py": "68f653e43d27f08955a6dd5bd5878e784682b4c0a98b838ba3d6f6dac7a36f6d",
+        "pyvbmc\\_user_hints.py": "dbda66942ef8e13b622786dd475c4b96126c94a574083af723f318feba655303",
+        "pyvbmc\\acquisition_functions\\__init__.py": "76109b2c4b81946bfde6f433e6c846465ffac9109eea8befe837b3319b712ae6",
+        "pyvbmc\\acquisition_functions\\abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+        "pyvbmc\\acquisition_functions\\acq_fcn.py": "f854200282c898f0e1b594f4859eb4e9a4966746531d5809d48c5d4e2e626d9d",
+        "pyvbmc\\acquisition_functions\\acq_fcn_imiqr.py": "f3901dd204e29e3ed0a6a248fa853a9d11f567d34f089a54c441fde668f4181f",
+        "pyvbmc\\acquisition_functions\\acq_fcn_log.py": "4dd1739a953c8f98260dbac9ab8ef5d944147a9734cb9aa95f807b01e0c0471b",
+        "pyvbmc\\acquisition_functions\\acq_fcn_noisy.py": "c2249507e66cff475a9f3b42f408ae9ad5bae8c429c883c139b1dddeb70b96d0",
+        "pyvbmc\\acquisition_functions\\acq_fcn_vanilla.py": "764c3a54277daa2ea7f4be8cbce75f174807fca29e4342fa7e1aba6cb13fd497",
+        "pyvbmc\\acquisition_functions\\acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+        "pyvbmc\\acquisition_functions\\utilities.py": "fdab0381876e6f3e4c8d6df22bbe1cf9b8df6e5a4af32e01fd336cf31de3bd7a",
+        "pyvbmc\\calibration\\__init__.py": "be6cdde1fde951ceb47650b92d1dcbfdf2da1e9f640436c66b88c9d1851724d5",
+        "pyvbmc\\calibration\\_api.py": "1f4c54b5a92e6150dede48424ae5c4d2e00604767517fff58b0576de439a17df",
+        "pyvbmc\\calibration\\_cache.py": "ada64d67f04b8149821b55ad54247319a8ee7335520a52acd45ddd06552f5fb1",
+        "pyvbmc\\calibration\\_campaign.py": "f4ac1eaa72f5d1911aca1dd355e19e455a18bba4e4fbc3992bc4f9bf0bb7c76b",
+        "pyvbmc\\calibration\\profile.py": "ebea4c134f00303dcd842e240d5ad068b615346b07cc27996a5c6077303e15ef",
+        "pyvbmc\\decorators\\__init__.py": "da20264996abc36c1cba9182b57c07eee917e5df6e81556fbbbec9beab92d8c9",
+        "pyvbmc\\decorators\\handle_0D_1D_input.py": "e3299b32b1470acd9ef6527dc3bdb248ef3f2aaea3ae5f488d3f24735db4d8be",
+        "pyvbmc\\entropy\\__init__.py": "9e332e33254929eeb77105bb359b9fcdfd5c7e9abe81910eb7f5c9ab2d0a6612",
+        "pyvbmc\\entropy\\entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+        "pyvbmc\\entropy\\entmc_vbmc.py": "a221bec072902f340be04006938f6c913ad992ec60c69528d111f7d3672dc7a8",
+        "pyvbmc\\formatting\\__init__.py": "74ada912abdc570961cefe5a5d6111a82bdeff7ea369e0ceb1274fa87f592acb",
+        "pyvbmc\\formatting\\formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+        "pyvbmc\\function_logger\\__init__.py": "370cb39a6e1bbbef535ee7f68e93861f1fdc162a983531161e02a8d85859cf14",
+        "pyvbmc\\function_logger\\function_logger.py": "8bb64c7cbbaf2864bfbfd420f4b2289fc10e2332f09dc018663d1320e2f31de3",
+        "pyvbmc\\parameter_transformer\\__init__.py": "a61c3059bc1032a72555133cdfe00e0de25712f9a07164550409bd70d70459d9",
+        "pyvbmc\\parameter_transformer\\parameter_transformer.py": "77df8fdc20aa4ae79080d152412a2e9aea165fccd8e95c653ee36a81c77b4447",
+        "pyvbmc\\priors\\__init__.py": "550e3dd43a27e66435ed659b2f49144b4bcfd1214f5669010dcd3d9df0641bd5",
+        "pyvbmc\\priors\\convert_to_prior.py": "9073b1551b0bc355ababa180a1a94e938ec65e5b17dd92c8f380e3b679e62ebd",
+        "pyvbmc\\priors\\prior.py": "3d32c741e1295ef084dff33647a28d95c8ef85761e125bcf80983bec373229ab",
+        "pyvbmc\\priors\\product.py": "8f8dda5ca0c2c5f1bb4be16d80547932b92b7be0d87e9d8a8982e06da3483399",
+        "pyvbmc\\priors\\scipy.py": "5ec080bd19cec99c2b23b30df5fc72e23d378236301ba8c937f8a1c8a7056d34",
+        "pyvbmc\\priors\\smooth_box.py": "05d8fd5745b41e30f1d0390c18737b13e9fca42decd5d5504909de9bd6a59535",
+        "pyvbmc\\priors\\spline_trapezoidal.py": "be7bbb39d669154b296aaca1286b13031bc1ad7775644d3dd491a21efa214bf4",
+        "pyvbmc\\priors\\tile_inputs.py": "0834153962c09fdfdfa6888dddbac19801b9b9f9678a5b31e5e191ae61e80944",
+        "pyvbmc\\priors\\trapezoidal.py": "6fb22cc083649b74fdc9e2abc52974e40e914af6849ecc62ede746bd340db115",
+        "pyvbmc\\priors\\uniform_box.py": "4c705acdf466272184e3686253540b88a54481bb7a8c6a2228cafb684e9f23f7",
+        "pyvbmc\\priors\\user_function.py": "4c2dce49f7c4aa4d04a29fa1871f8374dab8d34255977384498c562280d13029",
+        "pyvbmc\\pymc\\__init__.py": "f20363bc2ab03daf78fdc1e5688f6404f8ac88919a782db80343bca11b6a687e",
+        "pyvbmc\\pymc\\_compat.py": "ab4820d3ba1f9e5189fa06f93fa9ee5ba477bbee38993b328bb8bfdc8c1a1a4b",
+        "pyvbmc\\pymc\\_plausible.py": "ed7e0c9647d05e752cb3da3f4a182ecc132b2dbffe564fe9a53f141cd17fe9fd",
+        "pyvbmc\\pymc\\_snapshot.py": "d62b324f866ea93ef7d644c4615a2b90ce6003f118ca1aabe6f8474dd99206a8",
+        "pyvbmc\\pymc\\_target.py": "0882b0b0e1b7f9aa5e8043218bde0bd079155258c4594bad2eb9aaf158965a3e",
+        "pyvbmc\\rng.py": "a6bd2dd386db5ed713acbf2daa400e819eaa1feb0082daa4bd20b8b3ece05fb7",
+        "pyvbmc\\stats\\__init__.py": "5074c0fa11e0f5ce87ab8bc69d950b4ccca3024da6c2d3796346fcf4761003eb",
+        "pyvbmc\\stats\\get_hpd.py": "1c685981cd236a8b4fbe566d99c02ace10082352368688489d159f2cb375a698",
+        "pyvbmc\\stats\\kde_1d.py": "bc5d6c91f43735eb7304cbb93e83745828ac609df66109de0d7bd58c24604934",
+        "pyvbmc\\stats\\kl_div_mvn.py": "f63571d2d6c88842fa2542ff0fc139e94bb35480703ca2707f0436c25ae5159f",
+        "pyvbmc\\svbmc\\__init__.py": "a27adf91c62e3c93a966cea6c8474725950d9bd992e30c39ac30607b6799677d",
+        "pyvbmc\\svbmc\\_elbo_shrinkage.py": "c749a25d65f83d029b51cf0688107505a8498bfba56a11ce610d6ece75c1f70b",
+        "pyvbmc\\svbmc\\_entropy.py": "702657e2dded564dad258129f1227ec520b717a93aa7d02c13616970f2a752b3",
+        "pyvbmc\\svbmc\\_jacobian.py": "2dd92b5305365f87f77a81a7e1100051b1388c7ad7d72fdce9229ebfdda7bc45",
+        "pyvbmc\\svbmc\\_runtime_tips.py": "5e505025e30095bbfcd592d9c6babc9b84e2a17d1e60505778de2167611c0d2e",
+        "pyvbmc\\svbmc\\_tip_catalog.py": "9b91555ce93cc4729abe3943a7c31c72971f8f07c34994142104fa58c15cda39",
+        "pyvbmc\\svbmc\\svbmc.py": "eefb8345d4acb8eb7f18b237b316d05aeb678bfe51827230af457796711fe0f1",
+        "pyvbmc\\svbmc\\utils.py": "90e5d1da900d5bbd5cec6bc053f96dec367f759dea62205003f3c1545770ed18",
+        "pyvbmc\\timer\\__init__.py": "9cb964b08f313f5866b964a2532e9dd2ed20af51b50d5114133b85f91878934d",
+        "pyvbmc\\timer\\timer.py": "7bf42b79067c3156ae9bd0e3f340e054bc52a0bdd7c47126112563714169331b",
+        "pyvbmc\\variational_posterior\\__init__.py": "6a9a75bcc33df379d7a722786a01dc4fc84f812f822c04ea2d0cacb65b168a8a",
+        "pyvbmc\\variational_posterior\\_arviz.py": "a27197073091784ea59c65d14013d8bfd6f99fcdceab0cb95ba5fdc24c028a00",
+        "pyvbmc\\variational_posterior\\_torch.py": "da6fe5ef52c5fb44fe9e55747671bff13c00cf7f2bcd0bf0054bd8d2cf228582",
+        "pyvbmc\\variational_posterior\\variational_posterior.py": "a2ec7e763d4da2fa9442330f5dcc1c1ffa7c447fcb23f995f383502604ea4b41",
+        "pyvbmc\\vbmc\\__init__.py": "f64d3e78b3bd7a1bf88d2144b5d073eb781697693513eb9f9c69b861901a5f29",
+        "pyvbmc\\vbmc\\_bounds.py": "46a8249b923f187aafb6876bbbc0af746d8beef4e74572260b5984728983f1db",
+        "pyvbmc\\vbmc\\_runtime_tips.py": "6351c1fed0184bc943d52b473dc407c5ccc64b7669ca4167e025e3b68a06e43b",
+        "pyvbmc\\vbmc\\_tip_catalog.py": "fc5150c203ac76529546694e1d34df9eb821c83cadf1c900532ddae666d1ceed",
+        "pyvbmc\\vbmc\\active_importance_sampling.py": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378",
+        "pyvbmc\\vbmc\\active_sample.py": "e1ecdf60cb58754050eafab951dc072a8bd5b36f5983729cc811afa39b2322b6",
+        "pyvbmc\\vbmc\\create_vbmc_animation.py": "5e28759228460894eca458924d8f0e69b4d5d0cfb482fa6b0d9e3c83a6358f18",
+        "pyvbmc\\vbmc\\gaussian_process_train.py": "cdf52636e9a39d56200e69f2b8eb74ae00ace51564aafbfccc71b33d30d535e4",
+        "pyvbmc\\vbmc\\iteration_history.py": "0027271a386d7e6fcc4a3a3d85a2c14e22caeb0b2518e0e60eb4bb2df7f9a87d",
+        "pyvbmc\\vbmc\\minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+        "pyvbmc\\vbmc\\option_configs\\advanced_vbmc_options.ini": "8e62e3a4bb4a63717af82255119e57845d31902fea301b79e1c3c0a9cc053eda",
+        "pyvbmc\\vbmc\\option_configs\\basic_vbmc_options.ini": "d6cd78c909edc62708659688bdca7f7937a1efb402878e91afe5ede6d6510106",
+        "pyvbmc\\vbmc\\option_configs\\test_options.ini": "65b1eb537c44b784803f1a027cb7427db6172da389ba53b8e85d9e73edb1a36c",
+        "pyvbmc\\vbmc\\option_configs\\test_options2.ini": "563c9c617a5cd7a11212767843729e565c4b5800a1c2ec20454209c6b0a5eddf",
+        "pyvbmc\\vbmc\\options.py": "113e8fc272a2fcdeb06be32cf171e76e13f021d949e1f3d5161d9d7c8f05037a",
+        "pyvbmc\\vbmc\\variational_optimization.py": "542056b665d6d8d548d4ba6f1c44b57673ac6cff0cdfe9a1bf521e0aad016274",
+        "pyvbmc\\vbmc\\vbmc.py": "649dbb9b88e8d2c62f0b26a2f8a6ca334435d2d39230a83d42a88801c450df55",
+        "pyvbmc\\whitening\\__init__.py": "39ab0a0f26daaeaed1cf5100bbd56d07822f8ec562afb7a4bdb453191d6fed7f",
+        "pyvbmc\\whitening\\whitening.py": "d7cf3ba568fd2b0537ee3baadd422e43393c162deb979007a2584e00df200d7c"
+      }
+    },
+    "kind": "noisy_acq_e5_inference",
+    "labels": [
+      "rosenbrock_D2_noise1",
+      "rosenbrock_D2_noise3",
+      "logreg_D5_noise3",
+      "student_D8_noise3",
+      "multisensory_s1_D6_noise1.3",
+      "timing_D5_noise2.2"
+    ],
+    "measurement": {
+      "optimizer_wall_seconds": "golden trace wall_s around VBMC.optimize",
+      "outer_wall_seconds": "case worker including metrics and artifact writes",
+      "search_seconds": "InferencePolicy total_search_seconds",
+      "usable_limits_strict": {
+        "elbo_err": 1.0,
+        "gskl": 1.0,
+        "mmtv": 0.2
+      }
+    },
+    "options": {},
+    "pilot_fit_count": 24,
+    "pilot_seeds": [
+      2000,
+      2001
+    ],
+    "planning": {
+      "full_design_hours": [
+        7,
+        10
+      ],
+      "minimum_per_fit_timeout_seconds": 1200,
+      "pilot_minutes": [
+        90,
+        120
+      ],
+      "pilot_operational_ceiling_seconds": 10800
+    },
+    "reference": {
+      "labels": {
+        "logreg_D5_noise3": {
+          "envelopes": {
+            "elbo_err": 1.7530973656290474,
+            "gskl": 1.4211156580775617,
+            "mmtv": 0.36970986409492707
+          },
+          "finite_counts": {
+            "elbo_err": 50,
+            "gskl": 50,
+            "mmtv": 50
+          },
+          "sidecar_lf_sha256": {
+            "logreg_D5_noise3_seed0.json": "3174a1156d6df809c0f67db11276f0ec6e1937057b959736c15bc8f3de8521b2",
+            "logreg_D5_noise3_seed1.json": "0be3cde0b0d2e5b72941cf1575f44f77e555a196d19295f6129b694359f44b75",
+            "logreg_D5_noise3_seed10.json": "8ede6d5820b3aeccd90ac7ec0959204c274ab638fe88fbcc6ab3e3fe099974a4",
+            "logreg_D5_noise3_seed11.json": "c7026703c7d74d02ab784aef21d38d94d1b93ac3ca274007bcd9149982b06788",
+            "logreg_D5_noise3_seed12.json": "1ed536af80354235caa85a33bb8db309b1d97a6fcb8d9a678978a401a4eada01",
+            "logreg_D5_noise3_seed13.json": "2f0677bac000c53fc4a491e25e26e2f798e5018550042c999fde0065de1e3793",
+            "logreg_D5_noise3_seed14.json": "18c8da0beb7e17f5bd11dde8089b771ea1380b0a9bad97aef3c0b50a965ef139",
+            "logreg_D5_noise3_seed15.json": "a7136faab45fe665f206cd2b943226823b063b9cd7210573a7563e2c7687cfe4",
+            "logreg_D5_noise3_seed16.json": "968c8cc92c252db394eca77100d5276170a2b79f949ab67068abf8807be4c035",
+            "logreg_D5_noise3_seed17.json": "7ddf30fcc9f377a68b7db414d5a563dfef8042f8eb4139abbd1572049cf2c8b6",
+            "logreg_D5_noise3_seed18.json": "e243f63b0f034d1a1c271ceb9bf8bb91df0aeff6ffd6e601640dcd2f2ce3bee0",
+            "logreg_D5_noise3_seed19.json": "958c2aac1c4eb62b71aec6f75fa7f4cdc834f9d7cc60245b81409262c1491646",
+            "logreg_D5_noise3_seed2.json": "60ef772a0704525446f9de202d193e395c0a8b01046cfcc42b11b5db3d3798ae",
+            "logreg_D5_noise3_seed20.json": "fe041f975df5953727ac556fa6ce53718c1a39503218089d4f5c0f3d3e74f3f4",
+            "logreg_D5_noise3_seed21.json": "1869d61b17a71e076296f40714000b646328cb6721e99dc3cd8aacd4aff36c53",
+            "logreg_D5_noise3_seed22.json": "c811ca1e2a1836feb53aba3b8f714c4da124f079f4b6157ceba4e1f39f2c5540",
+            "logreg_D5_noise3_seed23.json": "b24711177783cd9aa6c7ba37f4307460c6ee378be44ad576ae02d592e795ec95",
+            "logreg_D5_noise3_seed24.json": "f276f203975bdc17ca527e34434ad211e5aa99b1d83af38eb4d15d4980d9d4b0",
+            "logreg_D5_noise3_seed25.json": "e734ae349fa81d6a8051bf747cd65732c2b3f1749bda763fc885a9177ad5784b",
+            "logreg_D5_noise3_seed26.json": "09894721a80740e46ccaa72547368b05d4e755ef65b6a9e04a1cf21d13ec6d15",
+            "logreg_D5_noise3_seed27.json": "2c0197017ac3ce9da2015fe95a46b3e10e8443b5ca6b7d147b5059dce72ed5cc",
+            "logreg_D5_noise3_seed28.json": "a34f77bf62855db53ea31688f3bfe95a496756998dc9023587473bc0aa412a14",
+            "logreg_D5_noise3_seed29.json": "a116a6e90a7728a2538e7ccc7522d98ccc63915f6be609bd8004a14a66c51423",
+            "logreg_D5_noise3_seed3.json": "18339c651f1124c6f85268812f451fdcfbebd6618853b815e732bd1102491a41",
+            "logreg_D5_noise3_seed30.json": "fedb4030a7ac120adf493c28667375496605258f385bf2f53dc4348ee3c71d27",
+            "logreg_D5_noise3_seed31.json": "c9b0419e4198d50a5753e5e24130c6a6b5560ae599151c86834066043694efba",
+            "logreg_D5_noise3_seed32.json": "62b448c494deb495cf5045917f7dddd89e4cb276d561d787b77b12c24a24cd1b",
+            "logreg_D5_noise3_seed33.json": "88c4cb92d2388bb2f2d8d32d0636a1b953db62972fafbf91e8f3340b9a0bf6c6",
+            "logreg_D5_noise3_seed34.json": "9d3f65579d9f388ee0c57c24d49becb8b6d8875ed456d3db4ef46c2c31bb6c77",
+            "logreg_D5_noise3_seed35.json": "7335c86e63b6ac5519f63c7064ac42ab492c49793ed000045d69ac3d6e67545c",
+            "logreg_D5_noise3_seed36.json": "5851a89c8e72dd0be5035eeec614460c84a541c804bb674608ce476fb1b08372",
+            "logreg_D5_noise3_seed37.json": "504eb276b5e0bf5f8b991626aa414daee5f58453f2229a6305157711b288556d",
+            "logreg_D5_noise3_seed38.json": "2a29eaabe58043aa487b0d1a081c93f603facbe1be1119acebc37867afb81d06",
+            "logreg_D5_noise3_seed39.json": "93f94e3543a462f1e24d992c26d0f8ac858cedcd0895dc4b257df977d95eb3d9",
+            "logreg_D5_noise3_seed4.json": "adf31ac12f6d707fb38d512da767beb287f76b65d77518b6bfebe047757bc42c",
+            "logreg_D5_noise3_seed40.json": "9826496d7e1dae8a2cfd4a33ca8ae343fe7840ea21748fe789799b2ee69d3d31",
+            "logreg_D5_noise3_seed41.json": "9ac26e007d062315d564d4ab19253a3e9066023e54f4b28be497c6db28163c72",
+            "logreg_D5_noise3_seed42.json": "a812dff7a3e818eb0725433c8eb37f7866f868636dea761587951f4eeeecef70",
+            "logreg_D5_noise3_seed43.json": "03e2d9ba3778fe9e73cdfddfb0cdcf2fa0ac72711b15d9820ba750fd707b50b7",
+            "logreg_D5_noise3_seed44.json": "bd14a26425165960ed9ad350b0b2783c5b270a37ad865ef3e3c0c19847418125",
+            "logreg_D5_noise3_seed45.json": "a7a307620bd579e728ac1e7edc1b9977f3a8ad96f5fea5d8d918d0193f4090eb",
+            "logreg_D5_noise3_seed46.json": "3ddd6d8103d412dea5e687537b81706e255dbacb56829fe171155a9cf8f5c6c9",
+            "logreg_D5_noise3_seed47.json": "20345f93f2c8c2e3d3c52041976a4072628c6c8de604f430fefdae000a578792",
+            "logreg_D5_noise3_seed48.json": "3fb9a2c2a0a653c0d01ae8e7a69c40dfb3d83bb04e54e71e332892534aaa923f",
+            "logreg_D5_noise3_seed49.json": "dc662ab78459e6deb3f02219c54aab5fb6b5c172b9c0ecb5a8388c21ddb418a1",
+            "logreg_D5_noise3_seed5.json": "ea617c87cd85ce25474fb915fa04210e9d58bb6caf3052402bbc9f391724a19a",
+            "logreg_D5_noise3_seed6.json": "efe4282c217df511b1ebdd39075c791bd405a3b6097b650d7e22255daf3f0ef6",
+            "logreg_D5_noise3_seed7.json": "bdee6b4da46c8d25aaf68f415a3b2550fa0a11bb658837391b02e80f97ca79e0",
+            "logreg_D5_noise3_seed8.json": "6d946c02b851832bda4b27343b68e2f60014c2c3d3f2933fc113a1d00c9b0064",
+            "logreg_D5_noise3_seed9.json": "1128361c294c136b9be84708403f23fe4ea7b6b56de40a012b2d98ed135ca371"
+          }
+        },
+        "multisensory_s1_D6_noise1.3": {
+          "envelopes": {
+            "elbo_err": 1.307129972457588,
+            "gskl": 9.356894980892084,
+            "mmtv": 0.3896017036571401
+          },
+          "finite_counts": {
+            "elbo_err": 30,
+            "gskl": 30,
+            "mmtv": 30
+          },
+          "sidecar_lf_sha256": {
+            "multisensory_s1_D6_noise1.3_seed0.json": "db991f66dc1f6445ff97f94236d55f3ffa3071677bce0ca40e8f578992e8f6fc",
+            "multisensory_s1_D6_noise1.3_seed1.json": "6a0e3d775fdce272f92fcd1188bfb0082af2a913efeeb03a5fb5727dc4c23b34",
+            "multisensory_s1_D6_noise1.3_seed10.json": "b1216b98f11a2934061b2b22d21cfb2bbe803c0ab2b50f5ccaccf49f9e4d020e",
+            "multisensory_s1_D6_noise1.3_seed11.json": "3aa0679f4a31b32feb8c9c82c060745b781e011e5ee7260e92c459f7de2ad5b8",
+            "multisensory_s1_D6_noise1.3_seed12.json": "455bff7e4514de0f5c8d69af4c7df40e608134be6c4c4a9644b6a90068ab3b9d",
+            "multisensory_s1_D6_noise1.3_seed13.json": "d937983a0d7d41f966260934879fc3c583d1564a130a27aeae38d45eff9a27fc",
+            "multisensory_s1_D6_noise1.3_seed14.json": "004ed608f2079856515b472299d3336613dee4889df6b39675bf5b17a5a8b844",
+            "multisensory_s1_D6_noise1.3_seed15.json": "79e65887578061cfbd0a01fa5d221e6bcdd4bae4d3ad06de4100034a3fa94c55",
+            "multisensory_s1_D6_noise1.3_seed16.json": "f0c7522f2ef29bbce7a1088d8c7a03d5a46f38f312863659a1c4d0795a1eee5d",
+            "multisensory_s1_D6_noise1.3_seed17.json": "253e08f2d8267e896825f342279b0f3d30de82995683697c18b81f9d2a5587a3",
+            "multisensory_s1_D6_noise1.3_seed18.json": "d1b9e9bd5d2c6945759fb7a291615fa590d92d464cb759b1e0892feacbac7b64",
+            "multisensory_s1_D6_noise1.3_seed19.json": "00909ddce1c5da1698fc5dc33457a9cfcace1a297ab77c719fedc7f36dacba5a",
+            "multisensory_s1_D6_noise1.3_seed2.json": "c4bc5bfcb4500d1177c5c9908dc9dcc1dc1f17c8e0f619406d05962d29ac4543",
+            "multisensory_s1_D6_noise1.3_seed20.json": "aa0480a56fe3d16a4f7a2e0923a8885a8d394fa3e7c3a598a8b1e13ce45dc96b",
+            "multisensory_s1_D6_noise1.3_seed21.json": "db1a6a8304025b2a81be951c338b60331c368ef3fae90f917e55ef4ed02c26eb",
+            "multisensory_s1_D6_noise1.3_seed22.json": "927de4ba687af92df9680ec518c84e403ced045bde5ef5a4560a815ae41705cc",
+            "multisensory_s1_D6_noise1.3_seed23.json": "da04cb32c1dc5a5ef48eb872909dea28100a173f816d79ab3fc7ffb49128dec4",
+            "multisensory_s1_D6_noise1.3_seed24.json": "808ea1c27ec349cc590e95c85bd9d74d83afcf90959a900320828c9fc06c9bb1",
+            "multisensory_s1_D6_noise1.3_seed25.json": "cce5bcf3abbdc23b88cecba3a44eac6180fc1d888724a01f50f9d2440142a68e",
+            "multisensory_s1_D6_noise1.3_seed26.json": "4128c8d1a7c07fd363558106ddaf35e19ada5a79ca3b0360844308930b102c41",
+            "multisensory_s1_D6_noise1.3_seed27.json": "50ae99dcf543bb16e1dd7bdf5bd6107ea8721ad88d7bbdaa73510671883759ff",
+            "multisensory_s1_D6_noise1.3_seed28.json": "4543890e644f443d8b63f6434aa3819bd97729d674ac97c785bfd653cb960962",
+            "multisensory_s1_D6_noise1.3_seed29.json": "f0dedbf4fcd99e0d490ec4f8ab560726ba56654081f90bdb1ec1ca1ee4c716bf",
+            "multisensory_s1_D6_noise1.3_seed3.json": "9885990337d0f450c9d3b89c964a9643fc1cdb6b7237f832831d1f2d78d617df",
+            "multisensory_s1_D6_noise1.3_seed4.json": "4331d96208c90f6b6f599234720f231801cd1404cc7a9999318b5fde155241ed",
+            "multisensory_s1_D6_noise1.3_seed5.json": "3bf311c44b4bc3f8141fc9388bfebe3dd5b29997727a6bacff4d18127b5eef7c",
+            "multisensory_s1_D6_noise1.3_seed6.json": "a7e4d26aa2b908e8650c48bc5d6ceae1cd1a311ad9efe9b50d2afaf65ef8eb7f",
+            "multisensory_s1_D6_noise1.3_seed7.json": "e2a6c4c69d9442b921f92e06ad5888bff9e333f3f335f921f98c26951a11d2b3",
+            "multisensory_s1_D6_noise1.3_seed8.json": "c7f6977e153189ed140e89d2bbe76465b67517ba78b7ccaa221a67d4c4228fe4",
+            "multisensory_s1_D6_noise1.3_seed9.json": "bebd13dc3ca6a02ca58267b841b3d60cde2d28520e3e48d32d32f5789ac035a2"
+          }
+        },
+        "rosenbrock_D2_noise1": {
+          "envelopes": {
+            "elbo_err": 0.4784551057993276,
+            "gskl": 0.14508667176131804,
+            "mmtv": 0.1182150214790117
+          },
+          "finite_counts": {
+            "elbo_err": 50,
+            "gskl": 50,
+            "mmtv": 50
+          },
+          "sidecar_lf_sha256": {
+            "rosenbrock_D2_noise1_seed0.json": "cb54e58a656d967cee794f0e803fcbe5967091392dc90df77d8de0553aa22bcd",
+            "rosenbrock_D2_noise1_seed1.json": "eb853523d48a2d53c104d04efdb920500c91981fbb28f57ce36d380b1b8e8646",
+            "rosenbrock_D2_noise1_seed10.json": "52be8ae98b02ee89810890eb43a1509e71922685e8eeda31078fc5fdd11a7348",
+            "rosenbrock_D2_noise1_seed11.json": "9db124ed3ce7cbf9b0e4784009ae2ba419f29039d8745fb727c5854ab5f06e21",
+            "rosenbrock_D2_noise1_seed12.json": "e51c5fee3608bb81a098329929ae649e4b0e175f4635df4269705712f927c9ba",
+            "rosenbrock_D2_noise1_seed13.json": "240df65218f3ce6360f379f6c17444c9d6f190f52c10d19e21442a5141594b16",
+            "rosenbrock_D2_noise1_seed14.json": "ce7189ea7cde159bc8b96b2664dc27519928c84b0263794bdd57a21ac4c8b0ee",
+            "rosenbrock_D2_noise1_seed15.json": "5ef1388b7a68654e0b864c6d63aa68e9bcd78d456c64b6179e15f135225f209d",
+            "rosenbrock_D2_noise1_seed16.json": "5bd18b75cb4ba45c65afadac3ca05cfc1ff100e2e14c6a6140ebfdda37a65d05",
+            "rosenbrock_D2_noise1_seed17.json": "d5aa8103ad92f3ca9f0f75ff81c932b3b179da1ef836a57b79ac04eec79fe4ec",
+            "rosenbrock_D2_noise1_seed18.json": "c838eefd26e4fb94f02037bc2a5604c23575f8f43d04c728287c0256a0cb33f7",
+            "rosenbrock_D2_noise1_seed19.json": "1d20d685e7bb0a4200dd4edd9bbfe52d39c0aacc7f043d43bdca15da54c032bd",
+            "rosenbrock_D2_noise1_seed2.json": "266610cf8caa0a1dfc76dc50783e081dee837b484ef524831a4e796d2715bd94",
+            "rosenbrock_D2_noise1_seed20.json": "45eab66e789ad74113f81d595712f407034d5a49b945c8cf3ff55441fd18ce4e",
+            "rosenbrock_D2_noise1_seed21.json": "752ad6cd6970dceca36283c945dffdee083770acb0cb81162f3f324deab21a20",
+            "rosenbrock_D2_noise1_seed22.json": "f2041c30ea599331e025632b6bf4dd160e56545530549658a96c43d3b452448a",
+            "rosenbrock_D2_noise1_seed23.json": "cd4aa029872196d8ba2bab671f345ad1b87212f8ce39e74697d8d26ecd79313e",
+            "rosenbrock_D2_noise1_seed24.json": "facacf8e631bcd9a4122d9db31ab413d5e97a618a039d230f03fd738857bcd7a",
+            "rosenbrock_D2_noise1_seed25.json": "b1b7d5b3638e8e095d5f4c36ee43bd04b29b9a402bbd2a7c3830c74144b934e0",
+            "rosenbrock_D2_noise1_seed26.json": "e2f696298f56db7f4f7431e3e213888eb2911063a57bd4ec06260dc1940232b6",
+            "rosenbrock_D2_noise1_seed27.json": "68067c5dd552a01e0c10c69f7e85979811b4536275e6d7bc4d56ff7545cc983d",
+            "rosenbrock_D2_noise1_seed28.json": "9525942455900bb4c302df842b4b3fdf0737724b4c24c21131c4a2e087c20bbb",
+            "rosenbrock_D2_noise1_seed29.json": "530da55f193d6c9ed5fe82238b46720fd7f86e23cf52314d8c8d56f53155bd7b",
+            "rosenbrock_D2_noise1_seed3.json": "418a9f552b18abf54b9c0303e03788e5ebded4fcf64200fcbadffaf5822cd7e9",
+            "rosenbrock_D2_noise1_seed30.json": "dafbe7060965b2e3c06c559ebea8522117a36774f924f2a18f803f68f22d8ccb",
+            "rosenbrock_D2_noise1_seed31.json": "1f067dc19db29359f0b8c2d481eb321741bf983d3d891929cbb3bb76240e35a8",
+            "rosenbrock_D2_noise1_seed32.json": "bd30ed9811207d10475bada487d7688a52ac1994fd6d033cb9c294dd23e3b9df",
+            "rosenbrock_D2_noise1_seed33.json": "08dcb29423b3e3395e3d8d63131d9b5a387fb0ac99204e05748ac3f0e8f8b38e",
+            "rosenbrock_D2_noise1_seed34.json": "67d73843e7bd280f3975ed4e2f9fc7c6ecfb6d8b08ad234c117ee35cc8372c68",
+            "rosenbrock_D2_noise1_seed35.json": "5634b8adf131e6648e824a8a0792e4f550fe48b312d0c19a4dc199c3a3ac0dfd",
+            "rosenbrock_D2_noise1_seed36.json": "f8c393472e76505a7f43e3cdd3ca850092f85413826cd11f72098398dbdfd62d",
+            "rosenbrock_D2_noise1_seed37.json": "6afccda245e7dc9ff8a328c70770d6201d6327d06b4311d5402beed3a50ec08b",
+            "rosenbrock_D2_noise1_seed38.json": "de8c1d6c930d8fde8fc3d8737ea20cb99f31c5d9cf8e4ab00495d31ae4fe4929",
+            "rosenbrock_D2_noise1_seed39.json": "429b984d59df701f374dd46adb0775f7c2e72d0eae16df39e12b098ba68a36f6",
+            "rosenbrock_D2_noise1_seed4.json": "aef6ddee116157121800a69daff8f128316f708fd06eede400d7937e143d010e",
+            "rosenbrock_D2_noise1_seed40.json": "ba504be82a5b3858bc41804babe85917543f043441b4d71e63217f1e1fc63a06",
+            "rosenbrock_D2_noise1_seed41.json": "41950344005c86447a9e3176a98069d63371c9effed65b4637677e4c8cb19853",
+            "rosenbrock_D2_noise1_seed42.json": "deca3dc01c0c6c3d63b65a45ff30d4f2b444dd0d0cfd50fc09c8af410b986a92",
+            "rosenbrock_D2_noise1_seed43.json": "291d74a0b57d8d82bc989b0c750150921f7b287c0b079dbad8d48b56464229f6",
+            "rosenbrock_D2_noise1_seed44.json": "80b1f7b8c61fadb3c31a1fff31dbc6257a05cd2900de955e84f71c39266fd094",
+            "rosenbrock_D2_noise1_seed45.json": "6d18280020c283b645df4b343cde9e181ea77ecb6868a36e7db297b6638bc350",
+            "rosenbrock_D2_noise1_seed46.json": "335babd5ba15109cdeda08519a25225aa5c1684e37689c9d115bc8a522779b41",
+            "rosenbrock_D2_noise1_seed47.json": "9d964b92627b374dabdaf4e4973305e7cae08537e12eabb1c4e2468341614a60",
+            "rosenbrock_D2_noise1_seed48.json": "1c1fe790898acb8469e47a239c5fdd34d008b6d594163ae4f1883d2db8857652",
+            "rosenbrock_D2_noise1_seed49.json": "d7326decdf81b6370be362266de1e18129120c1cb9937c98dfa419b0459eccde",
+            "rosenbrock_D2_noise1_seed5.json": "268c0dda946b3e4bf53acdfb0e67a3ecb75bd495f04cac495d863749d3ecc255",
+            "rosenbrock_D2_noise1_seed6.json": "33c8a7ec844285cf59efe664b7544777d835d85fe82a20efcec0597e1175bcef",
+            "rosenbrock_D2_noise1_seed7.json": "5148d8762dce447ca2e7d7e46c00ddefd66eda99ea710c954b6cc843e5010964",
+            "rosenbrock_D2_noise1_seed8.json": "cff0ea7ca58a13c6c6802d396e6899d0db769f7d94348de1876055b748ed5477",
+            "rosenbrock_D2_noise1_seed9.json": "8ff8e5a4dcd16de3128c1132fea84d4937cf3729570224be0478f67d41079172"
+          }
+        },
+        "rosenbrock_D2_noise3": {
+          "envelopes": {
+            "elbo_err": 0.861776847350355,
+            "gskl": 2.0226405305579966,
+            "mmtv": 0.3695155851469893
+          },
+          "finite_counts": {
+            "elbo_err": 30,
+            "gskl": 30,
+            "mmtv": 30
+          },
+          "sidecar_lf_sha256": {
+            "rosenbrock_D2_noise3_seed0.json": "27a02ea601dd6f1232722914a706452fa235d5eb26faf894972012c552fa5c2d",
+            "rosenbrock_D2_noise3_seed1.json": "1bfe06225397eecbae8aedc29905dc565f1fdcef3388798c77199fdba3b7c826",
+            "rosenbrock_D2_noise3_seed10.json": "47b3a29dd5a1d4ce7e914aac9822eb4c620b51cc23ea9fad9f86390c7acf2f2b",
+            "rosenbrock_D2_noise3_seed11.json": "b3d17d72f4710760185ac0ba2121d52ad54730dd16653b6f6c635d2d9bae6b9d",
+            "rosenbrock_D2_noise3_seed12.json": "c330d6fc922deb1b5d10bc04348ddfd5505623c7c2fe94cda2576e7319df6308",
+            "rosenbrock_D2_noise3_seed13.json": "4faaee52d273e14012d3c381515a743cf05829eeabf4a95bfd71200f5a8caff2",
+            "rosenbrock_D2_noise3_seed14.json": "f39d21638a8a6b390ed95059758f351af12b428034dd5969b8d526326307e2b2",
+            "rosenbrock_D2_noise3_seed15.json": "d675c45e579463bdf47ac3d7172af7d0c5cd23a3b1e285e2e7f3b0351ca9f896",
+            "rosenbrock_D2_noise3_seed16.json": "ddc2d19ff3896b5571ded35b58536c0ef70f9c85bf1164634ba7d0e0fb76d432",
+            "rosenbrock_D2_noise3_seed17.json": "0aa2b157976e1b55c885308b87b236882517377bb0b2a80e2ae8587e09aa372e",
+            "rosenbrock_D2_noise3_seed18.json": "733cac4069a1b06d40ac3d02c9f25a68d40eaacfb2f8493440694ff837ce83bb",
+            "rosenbrock_D2_noise3_seed19.json": "151c583126f87de5180093e44a833cf11c98b9f460ac6530da267d3920449257",
+            "rosenbrock_D2_noise3_seed2.json": "ce31ee92786f9ef147a8bb3491d9f642a183bfd2e74a8f3e6b874627d41c8655",
+            "rosenbrock_D2_noise3_seed20.json": "d45a55ed229709e276a05e94e515fac02b18006a309d82525bc43fb968b17429",
+            "rosenbrock_D2_noise3_seed21.json": "830fc5fe1fa27d8f77a8774babb67d6716293d9c1de591b5a29770cd2ae495d8",
+            "rosenbrock_D2_noise3_seed22.json": "e3a5eca0a20366ba1a6e05a3527f2323b73531e4f79ac1d9b5e693356ccab598",
+            "rosenbrock_D2_noise3_seed23.json": "38d89fd351432632eb637c96d0e76c274607c22bd59c9beac51dfeda3d7b93d8",
+            "rosenbrock_D2_noise3_seed24.json": "cf08e7362d13fc4f7fbda2df7a502945b809956cdfef6ffb435dd619bd57d948",
+            "rosenbrock_D2_noise3_seed25.json": "d6f4ee645cdeace77d8963620f88f914bd99fbb774d6d389c1be83554f255ce7",
+            "rosenbrock_D2_noise3_seed26.json": "c7ab83196b0786530a6d4a2849250bd6e927c11fbe930c2b042d467acc186767",
+            "rosenbrock_D2_noise3_seed27.json": "3440c1d7ddecc1ec2f545a1895ed36f46aec111fb6dd681052c9f6745c4faf5f",
+            "rosenbrock_D2_noise3_seed28.json": "ee98c1aed0bb5b404f4becfb104d8c2ca710520cbcdef0cf8b822005f343a38f",
+            "rosenbrock_D2_noise3_seed29.json": "7ff360dc548003dafbada35a8752ea7fee87c4ed2b671b6a83fad2e6d7a71233",
+            "rosenbrock_D2_noise3_seed3.json": "626d9311192362590f64a730f4e9d3997f4361ffb850ea67d64be78b8d266a5d",
+            "rosenbrock_D2_noise3_seed4.json": "595df9ef7fc4d825f447b1cde22dc85789b00476faa5df6c83b98be776551c62",
+            "rosenbrock_D2_noise3_seed5.json": "1974f955922abe71739fa2e8394e944be2dc0de411ca7c24eb39ec7403d57138",
+            "rosenbrock_D2_noise3_seed6.json": "81aa698eb2f5c8b2c54be918b93c69573aa6979e57abbeb16d1310ac986128a7",
+            "rosenbrock_D2_noise3_seed7.json": "f2eb80290c4fc17965552d7676d4b0274082d49ecd6d2eb6850bac09b988346d",
+            "rosenbrock_D2_noise3_seed8.json": "a8752a9d572428b4665b17bf4f077cf1306168d5b4fda0c3e3ccc3b154198ca5",
+            "rosenbrock_D2_noise3_seed9.json": "1f7490f6a4d6a10c25dfefa7a26a5d62534c9a8ac1639814ceed702c0d8305c4"
+          }
+        },
+        "student_D8_noise3": {
+          "envelopes": {
+            "elbo_err": 2.7714886237320684,
+            "gskl": 1.635449573136306,
+            "mmtv": 0.2641636226722113
+          },
+          "finite_counts": {
+            "elbo_err": 30,
+            "gskl": 30,
+            "mmtv": 30
+          },
+          "sidecar_lf_sha256": {
+            "student_D8_noise3_seed0.json": "9b3287c4cad369bd51636dcece40bbbe42bd95f5ad136b3fd38a9b8eac6890c4",
+            "student_D8_noise3_seed1.json": "aa2aff0cd38ff0563a6d78da0dbff9c8001c4476f4357f541c6a30c26104c44b",
+            "student_D8_noise3_seed10.json": "07a1794511183c201909db70ae8c44b04bb1eb7bbd310ec97d1af0cf76e60d9d",
+            "student_D8_noise3_seed11.json": "5ef2d27422275502be975c6b600c7eba61467d72a1556a116c4484e06dd47567",
+            "student_D8_noise3_seed12.json": "cf9214187f41af9bdfcbcbe4370633c48ec70b3b6d6b9ed6838e509e98110688",
+            "student_D8_noise3_seed13.json": "6a4cd93244fe8b6b93a6e0d3252576cea625ae50edc9a6c4376313186566f2b1",
+            "student_D8_noise3_seed14.json": "d120c597e43424988fae8e6630e264048a0321396fd2655bebdb845e0f4d5eb5",
+            "student_D8_noise3_seed15.json": "eb41c9c70925e730e746abfdc653377db857e5d82d3f02b41cccb0124f45a6b8",
+            "student_D8_noise3_seed16.json": "bcfb602bfa7137c97c2d9770a38f388b8ae350cbba6f49ce3145796f6cba7035",
+            "student_D8_noise3_seed17.json": "9ddd83bc8535a6143df7b8c949231eb4c387f9c4fb2fdf88f0cbdbf141d2f35d",
+            "student_D8_noise3_seed18.json": "54638fff99064a548388d6e84368efed60929f8f91d0b40e3ac63c5f5755dfa9",
+            "student_D8_noise3_seed19.json": "a300d75da78e918031dfa399a097ccb93438de3eaee9e8c0a1524810c6c3257d",
+            "student_D8_noise3_seed2.json": "ba55184b5ef5500475a8de4f14d49e2bbf8f7ee4f830d84a8a117562fa5a3caf",
+            "student_D8_noise3_seed20.json": "a174d546ee70d488d4aadedbff304b25cd4c42ac689224bac75614df46be519f",
+            "student_D8_noise3_seed21.json": "802aafc7b730af60d073663b9302140e7b7a173df43c87ae9f1cb73eefdfb180",
+            "student_D8_noise3_seed22.json": "fed7383d6c280d5c4984de3369590cb46657476a97ab9f0c147eaee99f3b6f39",
+            "student_D8_noise3_seed23.json": "2ba40913b9ad93c58cff9a4311175619085128aedfbd292c5244fa688f989578",
+            "student_D8_noise3_seed24.json": "2ddafde1667935a9ba6be2783e5577a37a47ecaea3e9111b1e2742e9cf0a7cd0",
+            "student_D8_noise3_seed25.json": "8f9837a96cf039d3e00459ece23ba2f3efc3c90095cb6c854984415d3fc86067",
+            "student_D8_noise3_seed26.json": "3e9337baab70225863232c3c39f35a63274c14f3f6f5600413ec3ffe518a7d02",
+            "student_D8_noise3_seed27.json": "82124c4d286f6f27c041255b55dec655c5f2a1b64b249284c3b79c18cc675e6f",
+            "student_D8_noise3_seed28.json": "6b99661ff353db028d5a92ca038802b00a0c60b3c721fb8865554b592107f484",
+            "student_D8_noise3_seed29.json": "340ad1de4840d149743e29818a648d56028437d0ab2cdb96bd40d615497d9b3d",
+            "student_D8_noise3_seed3.json": "12c564ca3ec951ffc3a66d01bc7568b6ee5135d5cb0fdfe1afe7d90820af4645",
+            "student_D8_noise3_seed4.json": "e2d65fea370979119578cc702c273436867c64108d2b2a713302e8550a87de26",
+            "student_D8_noise3_seed5.json": "befd773377f15ff26ccc290c7a77e70869ed4fbfb8d32fa0e72e3613f34c5b3a",
+            "student_D8_noise3_seed6.json": "e9bc44c83efcf4f1da73bc2a049247a201a14ce565b8196540de7a1d4610c496",
+            "student_D8_noise3_seed7.json": "21555a57a255f7d925811aeb204aa2257f7d827e9f04f1ffc6bb88b5c8de7590",
+            "student_D8_noise3_seed8.json": "2ff544f6027f960d79f138d389a8d5f8660a7e59e01f430cfd300e68542b5b99",
+            "student_D8_noise3_seed9.json": "503f56a5653d60b1ced44a40adb018908c1fae406cb3da429bc7f613ac20fab5"
+          }
+        },
+        "timing_D5_noise2.2": {
+          "envelopes": {
+            "elbo_err": 1.0726714507977704,
+            "gskl": 1.1823139807345378,
+            "mmtv": 0.28200542228517744
+          },
+          "finite_counts": {
+            "elbo_err": 30,
+            "gskl": 30,
+            "mmtv": 30
+          },
+          "sidecar_lf_sha256": {
+            "timing_D5_noise2.2_seed0.json": "2f1f0eb4c8c7151443a3846d3c34aee0de244ff5cae3e97d3870380bc5a6e7a2",
+            "timing_D5_noise2.2_seed1.json": "f92e21d02eea54272150c7c7b5c8e9b87fc7584a8da9dba64d2dbdb5cb5b64e5",
+            "timing_D5_noise2.2_seed10.json": "8557bb66f10ab843e64c1c0afb0fadb298bf9b506f57163f8f46f694200288c0",
+            "timing_D5_noise2.2_seed11.json": "0931e385d8b0c7beedbe83b8114f99fec54809fdf77ee0bf573ae7662adaeab2",
+            "timing_D5_noise2.2_seed12.json": "bedf9ce1e5a7bfbd12b6ad7254d772c4f36b067df5f1acb88f6381e43ff6bf69",
+            "timing_D5_noise2.2_seed13.json": "a1c0bb06975a1cb000476bdac80684ff9aa469db0297407d47c2b9e77d80f65d",
+            "timing_D5_noise2.2_seed14.json": "32344555f1c30a534291c667a3a9a2fd1c746f7cfad6a57d9822dd0dc117e23a",
+            "timing_D5_noise2.2_seed15.json": "318a7126609ab162e093ca501019e060b6179c86845aae6350e2a2de6c73c065",
+            "timing_D5_noise2.2_seed16.json": "f0ffda70194f10f86e1fa82344e95be1b623e06cce0d859530fb391100facb8b",
+            "timing_D5_noise2.2_seed17.json": "61a2ecd14dfb0f32bb8c81d62340b6e0fbb9c2808660a0ad9252ec22be06c6dc",
+            "timing_D5_noise2.2_seed18.json": "56fb38aff54a7639d3e78d7c331cff7152b824b7cf656ca5e98417ab12057d93",
+            "timing_D5_noise2.2_seed19.json": "4997564710fd394bec9c7badf38777f16f9f8a5c54e3c5af71a03434280d2aca",
+            "timing_D5_noise2.2_seed2.json": "813fcb12caec9452703302f877678599b058c52d85f7e536366cbcf9e1bd63bf",
+            "timing_D5_noise2.2_seed20.json": "5b0f87b65251ad910cc18d1cbab371eee2d32b79299a41eb03e85836c1ab6a43",
+            "timing_D5_noise2.2_seed21.json": "0225404da4cbcb9730ff66ccae57a07f55388611559b8e880bedb4f3c74dc65f",
+            "timing_D5_noise2.2_seed22.json": "35c68734f97f9b5156ddce5b4206dac1e78bc682fca7b62412b0376786712b92",
+            "timing_D5_noise2.2_seed23.json": "4745e0e8fc06affb235fd1745d3a72a861328f523c63b488149921b08aa121dd",
+            "timing_D5_noise2.2_seed24.json": "487ca868190613835453533be1a489bd65c94089706fa4142be2c309d07559e4",
+            "timing_D5_noise2.2_seed25.json": "b55d70d6960f7be2476f84db9116f186dfe80dc3e64f1d27237b132fda5baf05",
+            "timing_D5_noise2.2_seed26.json": "82aa4a42d89b745118c199bf77471259d709ee81d9633dd8c887b8a2907e63d9",
+            "timing_D5_noise2.2_seed27.json": "682a37951466c66ba8f79000d5f0c322cd5f566eb3a1a142802e2cc1dbc9d368",
+            "timing_D5_noise2.2_seed28.json": "96b5bb94a1fa8f8ceeb41b66f2593b9b0667a7a6d430ae6ca65a2f6311bd3a7f",
+            "timing_D5_noise2.2_seed29.json": "334ddfd6e0f58ce1916bcefab9c82323d685685e21c7275d93beded82a1a66cd",
+            "timing_D5_noise2.2_seed3.json": "d616a7448b55c3e2de4191f9d57829c2a239040315fe4cfa56e3e56b6f08438a",
+            "timing_D5_noise2.2_seed4.json": "033295cad24c5e20f44f7a2aa467968344d5c88be159ae500a36151f97df44ce",
+            "timing_D5_noise2.2_seed5.json": "72983e2b56b908f3563bf96c2b704a0216bd0be8a4efb72c0967095838832b64",
+            "timing_D5_noise2.2_seed6.json": "bff2b5799532c9b04e2c4f76ffe58ca7f245a31aa7eb1b9238e32965fd5af688",
+            "timing_D5_noise2.2_seed7.json": "3736fa86124949d47e37802e2cad5b0e542aa46f7df7ce17b3bc45cd08fc8ec1",
+            "timing_D5_noise2.2_seed8.json": "e7bd2d772339dc5b2535d0f10a8e14ece4312b9b500392efb3e73b719527ccd9",
+            "timing_D5_noise2.2_seed9.json": "e9c14b535979261bde126e7c8095b9cd810485ff02b6f7f2ff1937abe69f3389"
+          }
+        }
+      },
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\golden\\reference_990_20260913",
+      "promotion_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc-stage3\\dev\\golden\\promotion_20260913\\sha256_manifest.json",
+      "promotion_manifest_sha256": "99da064f937e0028bdb57d1d76dbda9da4ef52848885813f613daaea4c77b719"
+    },
+    "schema_version": 1,
+    "selection": {
+      "finalist_config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S2",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_holdout_selection.json",
+      "raw_sha256": "98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40"
+    },
+    "target_contracts": {
+      "logreg_D5_noise3": {
+        "dimension": 5,
+        "extra_options": {},
+        "noise_sd": 3.0,
+        "standard_options": {
+          "max_fun_evals": 350,
+          "specify_target_noise": true
+        }
+      },
+      "multisensory_s1_D6_noise1.3": {
+        "dimension": 6,
+        "extra_options": {},
+        "noise_sd": 1.3,
+        "standard_options": {
+          "max_fun_evals": 400,
+          "specify_target_noise": true
+        }
+      },
+      "rosenbrock_D2_noise1": {
+        "dimension": 2,
+        "extra_options": {},
+        "noise_sd": 1.0,
+        "standard_options": {
+          "max_fun_evals": 200,
+          "specify_target_noise": true
+        }
+      },
+      "rosenbrock_D2_noise3": {
+        "dimension": 2,
+        "extra_options": {},
+        "noise_sd": 3.0,
+        "standard_options": {
+          "max_fun_evals": 200,
+          "specify_target_noise": true
+        }
+      },
+      "student_D8_noise3": {
+        "dimension": 8,
+        "extra_options": {},
+        "noise_sd": 3.0,
+        "standard_options": {
+          "max_fun_evals": 500,
+          "specify_target_noise": true
+        }
+      },
+      "timing_D5_noise2.2": {
+        "dimension": 5,
+        "extra_options": {},
+        "noise_sd": 2.2,
+        "standard_options": {
+          "max_fun_evals": 350,
+          "specify_target_noise": true
+        }
+      }
+    },
+    "validation_replay": {
+      "cell_id": "rosenbrock_D2_noise1__seed2000__S2",
+      "excluded_from_all_scientific_and_timing_denominators": true,
+      "purpose": "operational reproducibility check before the remaining pilot fits"
+    }
+  },
+  "semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134"
+}

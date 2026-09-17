@@ -1,0 +1,47 @@
+{
+  "allocation": {
+    "continuation_fits_allocated": 0,
+    "pilot_fits": 24,
+    "validation_replay_fits": 1
+  },
+  "created_utc": "2026-09-17T16:37:18.885129+00:00",
+  "draft_changes": [
+    "prepared_from_commit",
+    "reviewed_ready"
+  ],
+  "independent_review": {
+    "gpyreg_source_files_verified": 23,
+    "reference_envelopes_recomputed": 18,
+    "reference_sidecars_verified": 220,
+    "reviewer": "Sol e5_review",
+    "source_files_verified": 99,
+    "verdict": "pass; no remaining findings"
+  },
+  "manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "manifest_sha256": "048fffad6a85113aae568525e5263f534dbfaa61821971262827206fce5797c3",
+  "review_draft_sha256": "e81caf7935ca70f78d36755dc66cda8c02ae459f52f49f5e3f779a90491f0684",
+  "source_commit": "d8eb7af547e92d639e402edc9d8c62db2239668f",
+  "validation": {
+    "environment_repair": "Installed missing declared dependency threadpoolctl 3.6.0 from cached wheel with --no-deps; numerical dependency versions unchanged.",
+    "exact_oracles": {
+      "fixtures_passed": 11
+    },
+    "focused": {
+      "passed": 18
+    },
+    "log_sha256": {
+      "exact_oracles.log": "b5ea57e7cd81a8742b5368b634005d9c8bceaf8352f88f1a014174b19bdf6b0c",
+      "exact_oracles_final.log": "b13aec4d53bcba6e61380a4b2fa4f98ec5fd5d07029c685a22965110ea115be8",
+      "focused.log": "44afe99f197c8be7887a42ee6ef13dd216fdde06600289fcae09f0a0f567104b",
+      "focused_final.log": "ef33ed47a1d68123c45c060b7ee1daaa80b2505ba20b7cc7f9efd4f3d9dc2fed",
+      "package_suite.log": "93f07883f26c07829b60a9c4a5703acfddd2e6dd1d74592d1e280c85e221f73b",
+      "package_suite_final.log": "815ecce4903e2669da13bb7dd8a5bc9c2b5220abdf69674b79ec6a32f844a2f3",
+      "package_suite_v2.log": "b269e051d665f28befb2b7e1e8f12bd2b2af07320f21bdec5a117079ac558336"
+    },
+    "package": {
+      "passed": 1614,
+      "skipped": 45
+    },
+    "parity_test_correction": "build_state consumes the supplied VP RNG during reconstruction. Assign the fresh search RNG after rebuilding to match the frozen selector. Exact selected-coordinate parity then passes; no algorithm or tolerance changed."
+  }
+}
