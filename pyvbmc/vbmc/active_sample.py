@@ -23,6 +23,10 @@ from pyvbmc.vbmc.variational_optimization import (
 
 from .options import Options
 
+# Private, process-local seam used by bounded developer experiments.  The
+# default path does not install a callback and retains the production search.
+_selection_policy_callback = None
+
 
 def active_sample(
     gp: gpr.GP,
@@ -347,6 +351,15 @@ def active_sample(
             ## Start active search
 
             # Create fast search set from cache and randomly generated
+            selection_policy = _selection_policy_callback
+            if selection_policy is not None:
+                selection_policy.start(
+                    gp=gp,
+                    vp=vp,
+                    function_logger=function_logger,
+                    optim_state=optim_state,
+                    options=options,
+                )
             X_search, idx_cache = _get_search_points(
                 options["ns_search"], optim_state, function_logger, vp, options
             )
@@ -405,6 +418,20 @@ def active_sample(
             else:
                 idx = np.argmin(acq_fast)
 
+            policy_selection = None
+            if selection_policy is not None:
+                policy_selection = selection_policy.select(
+                    candidates=X_search,
+                    coarse_scores=acq_fast,
+                    cache_indices=idx_cache,
+                    n_train=n_train_cand,
+                    gp=gp,
+                    vp=vp,
+                    function_logger=function_logger,
+                    optim_state=optim_state,
+                    options=options,
+                )
+
             X_acq = X_search[[idx]]
             idx_cache_acq = idx_cache[idx]
             repeat_flag = idx < n_train_cand
@@ -415,6 +442,10 @@ def active_sample(
                 # be a near-duplicate rather than the exact repeat the
                 # logger pools.
                 X_acq = X_train_cand[[idx]].copy()
+
+            if policy_selection is not None:
+                X_acq, idx_cache_acq, repeat_flag = policy_selection
+                X_acq = np.asarray(X_acq, dtype=np.float64).reshape(1, gp.D)
 
             # Remove selected points from search set
             X_search = np.delete(X_search, idx, 0)
@@ -445,7 +476,11 @@ def active_sample(
                 return acq.tolist()
 
             # Additional search via optimization
-            if options["search_optimizer"] != "none" and not repeat_flag:
+            if (
+                policy_selection is None
+                and options["search_optimizer"] != "none"
+                and not repeat_flag
+            ):
                 if gp.D == 1:
                     # Use Nelder-Mead method for 1D optimization
                     options.__setitem__(
@@ -581,6 +616,12 @@ def active_sample(
             else:
                 idx = int(idx)
                 y_orig = optim_state["cache"]["y_orig"][idx]
+            if selection_policy is not None:
+                selection_policy.finish(
+                    selected=xnew,
+                    cache_index=idx_cache_acq,
+                    repeat=repeat_flag,
+                )
             timer.start_timer("fun_time")
             if np.isnan(y_orig):
                 # Function value is not available, evaluate

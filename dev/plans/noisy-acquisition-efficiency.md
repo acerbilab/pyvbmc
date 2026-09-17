@@ -6,11 +6,12 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2 AND E3 COMPLETE; E4 NOT ENTERED**. Branch:
+Experimental extension drafted 2026-09-16: **E2 AND E3 COMPLETE; E5 PILOT PREPARATION**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
-below specifies the investigation. E0-E4 execution is authorized within
-the recorded windows; E5 requires a separately authorized inference window.
+below specifies the investigation. E0-E4 execution was authorized within
+the recorded windows; the exploratory E5 pilot is separately authorized
+under the 2026-09-17 amendment.
 The PI accepted the benefit criteria, paired allocation and screening gates
 on 2026-09-16. The revised experimental scope omits Bayesian quadrature.
 
@@ -47,7 +48,8 @@ the five-case saved-point loss investigation is also complete. It found no
 confirmed harmful refinement against its own starting winner, and localized
 several losses before refinement. The mixed holdout evidence does not support
 a general replacement recommendation. E4's development entry gates are not
-established; E5 remains unapproved. Production defaults are unchanged.
+established. The user subsequently authorized the exploratory E5 pilot
+specified in the amendment below. Production defaults are unchanged.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -61,8 +63,8 @@ excluding imports. All five judge budgets, the independent MC diagnostic
 and panel timing subsequently completed; the execution report records
 measured costs and forecast errors. Further allocations use observed
 per-state costs and the remaining window.
-All source locks, scientific gates and the separate E5 approval remain in
-force.
+All completed-phase source locks and scientific gates remain in force;
+the later E5 amendment records its separate authorization.
 
 The pre-pilot planning estimate was E2 2-4 hours, E3 1-2 hours,
 conditional E4 up to 1-3 additional hours if its gate passes, and 30-60
@@ -356,7 +358,8 @@ unbounded search controller also launches timing, memory and judging work.
 - [x] E4: entry gates assessed; neither is established. No adaptive arm is
   allocated. Full-sieve E2 quality comparisons were cost-screened out;
   accepted harmful E3 refinements occur on only one development trajectory.
-- [ ] E5: run the bounded paired inference comparison for eligible finalists.
+- [~] E5: prepare and run the authorized exploratory S0/S2 pilot under the
+  ten-seed amendment; the current executable scope is seeds 2000-2001.
 - [~] E6: frozen-state evidence consolidated and independently reviewed;
   inference assessment remains outside the completed scope and requires E5.
 
@@ -864,6 +867,108 @@ complexity; it does not create an additional unbounded family of E5 arms.
 ### E5: bounded paired inference comparison
 
 **Executor:** Sol prepares/runs; Astra assesses inference evidence.
+
+#### Approved exploratory S0/S2 amendment (2026-09-17)
+
+The user authorized preparation and execution of the two-seed pilot after
+agreeing to ten paired seeds per configuration in total. This amendment
+admits the frozen S2 as an exploratory treatment despite E3's mixed outcome;
+it does not classify S2 as a passed replacement or reopen E4. Historical
+records stating E5 was unapproved retain the status at their creation.
+
+Use the six E0 configurations and exactly two arms: unmodified production
+S0 and the frozen S2 in `search_holdout_selection.json` (raw SHA256
+`98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40`).
+The full design has seeds 2000-2009: 120 fits, comprising 24 pilot fits
+(2000-2001) and 96 subsequent fits (2002-2009). The current executable
+allocation is only the pilot. Retain its results in the full comparison.
+Continuation depends on verified execution and affordable measured cost,
+not favorable early scientific results. No treatment tuning or replacement
+of adverse seeds is permitted. Any implementation correction requires a
+declared successor allocation and explicit handling of invalidated fits.
+
+The twelve recent production capture fits completed full optimizations in
+33.55 minutes. Equal-cost extrapolation gives 67.1 minutes for 24 fits and
+335.5 minutes for 120. Reserve 90-120 minutes for pilot computation and
+7-10 hours for the full design, subject to measured pilot costs. These are
+planning allowances, not timing claims. Preparation and verification are
+additional. Resume between completed fits; an interrupted fit may need to
+restart and must not be mistaken for completed evidence.
+The supervisor has a three-hour operational ceiling per pilot invocation
+and a twenty-minute per-fit timeout. It stops launching when less than one
+full per-fit allowance remains, preserving completed fits for resumption.
+
+For ten complete pairs, use nine degrees of freedom in the planned runtime
+and target-call log-ratio intervals. Report all ten paired accuracy differences
+and transition outcomes. A worse median with at least seven of ten pairs
+worse on the same target/metric triggers scientific review, together with
+every new failure or usability loss. The two-seed pilot provides descriptive
+results and operational checks only; it cannot establish quality equivalence.
+This amendment supersedes the six-seed/108-fit maximum and the E5
+eligibility and authorization statements in the original design below.
+
+Pilot preparation and execution checklist:
+
+- [x] Add a scoped S2 selection adapter and frozen-state parity checks.
+  Reuse the existing shortlist scoring and refinement implementation.
+  Preserve the sampling loop, target logger, repeats, cache consumption,
+  GP/VP updates and default random stream. Use a private module callback
+  only if process-local instrumentation cannot preserve those semantics.
+- [x] Add a manifest-bound, sequential two-arm runner with atomic terminal
+  records, per-fit subprocesses, immutable payload hashes, failure records,
+  interrupted-fit rejection, bounded scheduling and resume validation.
+- [x] Record initial-design equality, per-selection RNG state digests,
+  accurate-rule seeds, search diagnostics, complete golden traces and
+  paired final metrics. Define acquisition timing separately from full
+  active-sampling time, which includes GP and VP updates.
+- [~] Independently review implementation and scientific allocation; run
+  focused tests, the package suite and exact default-path oracle checks.
+- [ ] Freeze source/configuration/data/environment identities and reviewed
+  24-fit pilot manifest. Alternate arm order across seed blocks and stop
+  after the pilot; seeds 2002-2009 remain outside its executable allocation.
+- [ ] Execute the pilot, summarize all outcomes and observed costs, update
+  the result report and local inventory, and review before further allocation.
+
+Implementation contract for the scoped policy:
+
+- Keep S2's 1024-candidate coarse sieve, ordinary MC100 scoring, top-eight
+  shortlist without a diversity constraint, independent MC1600 re-scoring,
+  and one bounded L-BFGS-B start. Reuse the frozen refinement code and every
+  tolerance and fallback. The user explicitly retained this configuration
+  after discussing shortlist clustering.
+- Install the policy only inside a process-local context. The default
+  callback is absent. The callback receives the current GP, VP, logger,
+  options, optimization state and full scored candidate set on every
+  selection, including selections after in-loop GP/VP updates. It returns
+  the selected coordinate, starting-cache index and exact-repeat flag.
+  Production target evaluation, cache removal and update bookkeeping remain
+  in the existing sampling loop. Restore all installed hooks in `finally`.
+- Candidate generation and the production coarse rule retain the live VP
+  random stream. Derive each S2 accurate-rule seed from a separate stable
+  domain, configuration, run seed and selection ordinal. No instrumentation
+  or S0 policy setup may consume a random draw. Record RNG state digests
+  around selection and the independent accurate-rule seeds. Do not promise
+  identical post-initialization streams between arms.
+- Measure search wall time from candidate generation through point selection,
+  ending before the logger evaluates or records the point. Apply the same
+  boundaries to both arms; exclude target evaluation and intervening GP/VP
+  updates. Report this alongside total optimizer and target-evaluation time,
+  with the existing active-sampling stage timers available in the traces.
+- Validate default-path exactness with the stored oracles, adapter S0 parity
+  on frozen states and cleanup checks. Validate S2 against the frozen-state
+  selector with matched search and accurate-rule streams, plus repeat and
+  starting-cache cases. Check each complete pilot pair's initial design and
+  initial noisy observations for exact equality before interpreting it.
+
+One operational validation repeat is predeclared before opening pilot
+results: repeat Rosenbrock D2, noise 1, seed 2000, S2 in a separate
+`validation_replay` output directory under the same frozen identity.
+Compare every stored non-timer trace array, semantic final field and
+per-selection record (excluding timing), including the initial design.
+The first pilot fit remains the sole scientific and timing observation;
+the repeat contributes no extra pair, seed or quality evidence. Charge
+its execution to validation overhead. Any mismatch stops operational
+clearance and is investigated without replacing the original result.
 
 Freeze no more than two candidate pipelines: an integration-only treatment
 with production search and a selected search treatment (fixed or adaptive).

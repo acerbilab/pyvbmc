@@ -15,7 +15,9 @@ are complete with no resolved disagreement. The five-case saved-point loss
 diagnostic is complete: no confirmed harmful refinement against its own
 starting winner, with several losses localized before refinement. The mixed
 holdout evidence does not support a general replacement recommendation.
-E4's development entry gates are unmet; E5 remains unapproved and unrun.
+E4's development entry gates are unmet. E5 was unapproved at the E3
+checkpoint; the user subsequently authorized the exploratory pilot described
+below, whose implementation and validation are in progress.
 Production defaults are unchanged, and inference performance is unmeasured.
 
 This experiment evaluates the cost and selection quality of positive-weight
@@ -716,6 +718,33 @@ holdout losses to establish its development entry gates, and the diagnostic
 does not supply the missing multi-budget development comparisons or harmful
 accepted refinements on two development trajectories.
 
+## Exploratory E5 pilot
+
+Following the mixed E3 result, the user authorized a focused S0-versus-S2
+inference pilot on 2026-09-17. The question is whether the faster selection
+rule improves complete-run efficiency without a coherent loss of inference
+accuracy. S2 retains its frozen 1024-candidate sieve, MC100 coarse scores,
+eight-candidate shortlist without a diversity filter, MC1600 accurate rule
+and single bounded refinement. This exploratory allocation does not certify
+S2 as a replacement and does not use holdout data to design a new treatment.
+
+The agreed design contains ten fresh paired seeds, 2000-2009, on all six
+configurations: 120 fits across two arms. The authorized pilot executes only
+seeds 2000-2001, giving 24 fits. Its outcomes remain part of the full design.
+The first batch checks execution, reproducibility and cost; favorable early
+accuracy is not a condition for continuing. Remaining seeds require a
+reviewed continuation allocation after the pilot. The
+[plan amendment](../plans/noisy-acquisition-efficiency.md#approved-exploratory-s0s2-amendment-2026-09-17)
+specifies the exact scope, metrics, safeguards and preparation checklist.
+
+The twelve existing production capture fits took 33.55 minutes, including
+capture instrumentation. Equal-cost extrapolation predicts 67.1 minutes
+for the pilot and 335.5 minutes for the full design. Planning allowances
+are 90-120 minutes and 7-10 hours, respectively, before measuring actual S2
+inference costs. Adapter implementation and validation are additional.
+Completed fits can be resumed by identity-checked records; interrupted fits
+are not assumed to have a usable intermediate checkpoint.
+
 ## Resuming the saved experiment
 
 Run from the existing `pyvbmc-stage3` checkout on
@@ -781,7 +810,8 @@ holdout MC checks and the saved-point loss diagnostic are complete;
 their `completed_ladder.json` records bind every executed budget.
 Do not use the unbounded `run` controller: it also launches the structurally
 declared timing and memory cells that this holdout does not allocate.
-E4's entry gates are not established; E5 remains unapproved.
+E4's entry gates are not established. E5 pilot preparation proceeds under
+the exploratory amendment above; E3 artifacts remain immutable.
 
 The [publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_20260917.json)
 maps raw local artifact hashes to the redacted review copies and specifies
