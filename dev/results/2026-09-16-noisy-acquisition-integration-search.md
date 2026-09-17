@@ -20,8 +20,9 @@ checkpoint; the user subsequently authorized the exploratory pilot described
 below. All 24 pilot fits and the separate reproducibility repeat are complete.
 S2 lowers search time on all six configurations and total fit time on five,
 but loses the convergence flag in three pairs. The two-seed results support
-further measurement, not adoption. Production defaults are unchanged, and
-the remaining eight seeds require a separate user decision.
+further measurement, not adoption. Production defaults are unchanged. The
+96-fit continuation for the remaining eight seeds is prepared, reviewed and
+frozen but not launched; launching it requires a separate user decision.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -835,8 +836,62 @@ verified execution, reproducibility and measured cost. Scientific outcomes
 remain descriptive and do not serve as a favorable-results screen.
 Convergence losses, target-call increases and multisensory quality remain
 explicit concerns for the complete comparison. Two seeds cannot establish
-noninferiority or the frequency of those outcomes. Seeds 2002-2009 remain
-unallocated and require a user decision after this report.
+noninferiority or the frequency of those outcomes. Seeds 2002-2009 are
+allocated by the continuation manifest below and require a user decision
+before launch.
+
+### Continuation preparation
+
+The 96 remaining fits, seeds 2002-2009 on all six configurations, are
+allocated by a separate continuation manifest prepared and independently
+reviewed on 2026-09-17 and frozen without a launch clearance. Its semantic
+digest is `c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335`.
+The manifest binds the pilot manifest, its campaign and its four immutable
+records by hash. The runner's own source hash is part of the recorded
+identity, so the continuation records a provenance comparison instead of
+reusing the pilot identity: all 98 other source and data hashes and the
+entire environment equal the pilot's, and only the runner differs. Each
+worker re-derives this comparison before fitting. The fit path itself
+(worker, selection policy, golden trace) is unchanged, the default-path
+oracle fixtures remain exact, and the refactored reporting regenerates the
+immutable pilot summary byte-for-byte.
+
+Execution proceeds in sequential batches in manifest order: target-major,
+with arm order alternating by seed block as in the pilot. Each batch
+declares a wall-time limit of at most six hours, the upper planning
+allowance, and optionally a fit cap. It launches no fit when less than one
+20-minute per-fit timeout remains, reuses validated success terminals,
+never reruns a failed fit, and by default stops at a failure so it can be
+investigated before more compute is spent. Every batch writes an
+append-only record with its stop reason, including an explicit aborted
+record if it is interrupted. The runner must not be modified once a
+continuation fit has run; a correction needs a declared successor
+allocation with explicit handling of the fits it invalidates.
+
+The combined summary reports all ten paired seeds per configuration. Pilot
+pairs are read from the pilot campaign under the pilot manifest and
+continuation pairs from the continuation campaign. It gives the planned
+runtime and target-call log-ratio intervals with nine degrees of freedom for
+ten complete pairs, all paired accuracy differences with the seven-of-ten
+review trigger applied only when all ten pairs are complete, convergence
+and usability transition tables, reference-envelope exceedances, and
+failures and missing fits in every denominator. It also checks the
+recomputed pilot pairs against the immutable pilot summary. Equal-weight
+pooled geometric means across configurations remain descriptive.
+
+Validation passed 26 focused tests, all 11 exact oracle fixtures and the
+byte-identical pilot-summary regeneration. The independent static review
+found no must-fix defect; its should-fix items (abort-safe batch records,
+one terminal validation pass per batch, tests for the runtime provenance
+gate and for a batch leaving the pilot directory untouched, the
+source-freeze rule and these records) were addressed before freezing. The
+[continuation manifest](../experiments/noisy-acquisition-efficiency/integration-search/e5_continuation_manifest_20260917.json),
+[preparation record](../experiments/noisy-acquisition-efficiency/integration-search/e5_continuation_preparation_20260917.json)
+and [independent review](../experiments/noisy-acquisition-efficiency/integration-search/e5_continuation_review_20260917.json)
+are published as redacted review copies bound by the
+[continuation publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_e5_continuation_20260917.json).
+The measured-rate estimate for the 96 fits is 4.04 hours with a 5-6-hour
+planning allowance. No continuation fit has been launched.
 
 ## Resuming the saved experiment
 
@@ -909,7 +964,29 @@ manifest, launch clearance and validation logs are in
 `noisy_acq_efficiency_20260916/e5_pilot_20260917/`; fit artifacts are under
 `campaign/`, with the excluded repeat under `campaign/validation_replay/`.
 The immutable `summary.json` and `completion.json` bind the 24-fit result.
-No continuation job is running or allocated.
+The reviewed continuation manifest is
+`noisy_acq_efficiency_20260916/e5_continuation_20260917/manifest.json`, with
+its preparation record, review and validation logs beside it; its
+`campaign/` is empty until launch. No continuation fit is running or has
+run. Launching is a user decision: record it in `launch_clearance.json` in
+that directory, then run bounded batches from the repository root with the
+environment above plus `$env:MPLBACKEND = 'Agg'`, which the runner requires:
+
+```powershell
+$cont = "$runRoot/e5_continuation_20260917"
+.venv/Scripts/python.exe -u dev/scripts/noisy_acq_inference.py run-continuation --manifest "$cont/manifest.json" --out "$cont/campaign" --timeout 1200 --max-wall-seconds 21600
+.venv/Scripts/python.exe dev/scripts/noisy_acq_inference.py summary --manifest "$cont/manifest.json" --out "$cont/campaign" --report "$cont/campaign/summary_interim.json"
+.venv/Scripts/python.exe dev/scripts/noisy_acq_inference.py summary-combined --manifest "$cont/manifest.json" --out "$cont/campaign"
+```
+
+`--max-wall-seconds` is required and capped at 21600; `--max-fits N` bounds
+a batch further, and `--on-failure continue` lets a batch proceed past a
+recorded failure after it has been investigated. Exit status 0 means every
+continuation cell has a success terminal, 1 that a failure was encountered
+or skipped, and 2 that the batch ended cleanly with cells still missing.
+Repeating the command resumes from the validated terminals. The interim
+summary needs a fresh `--report` path each time; the combined summary
+refuses to overwrite an existing `summary_combined.json`.
 The [E5 publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_e5_20260917.json)
 binds the raw manifest, launch clearance, replay, paired summary, completion
 record and independent review to their redacted review copies.

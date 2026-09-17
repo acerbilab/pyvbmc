@@ -1,0 +1,57 @@
+{
+  "compiled_by": "Fable orchestrator from the reviewer's two hand-back reports",
+  "continuation_authorized": false,
+  "continuation_fits_launched": 0,
+  "created_utc": "2026-09-17T19:40:44.115432+00:00",
+  "draft_sha256": "14df38b523393a5565f74b84d628eef8162efe908749d7c68b6cfca252842b82",
+  "first_round_findings": {
+    "must_fix": 0,
+    "nits_addressed": [
+      "exit codes in CLI epilog",
+      "NaN-safe pilot consistency comparison",
+      "per-target pair counts in pooled block",
+      "cell subcommand verifies the pilot campaign",
+      "prepare-continuation prints a JSON summary; preparation log records command and exit code",
+      "pytest scratch directory removed"
+    ],
+    "nits_deliberately_not_changed": [
+      "_run_cell_locked literal 1200 and atomic_json allow_nan: fit-path functions kept byte-identical to the pilot runner",
+      "stop_reason naming when a cap coincides with the last missing cell: record is accurate as written"
+    ],
+    "should_fix_addressed": [
+      "abort-safe batch record (try/except BaseException, finish())",
+      "single terminal validation pass per batch",
+      "test: worker-side runtime provenance re-derivation",
+      "test: real batch leaves the pilot tree hash-identical",
+      "documentation and preparation records (plan, report, LOCAL.md, this record)",
+      "source-freeze and interrupted-fit statements in planning"
+    ]
+  },
+  "kind": "noisy_acq_e5_continuation_independent_review",
+  "manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "remaining_findings": [],
+  "reviewer": "independent Opus static reviewer (read-only; no tests or fits run)",
+  "runner_sha256": "26b94fc58b50270a54ebdbd012817de13a2eca54ac318a60e9979ae4a368810c",
+  "schema_version": 1,
+  "scientific_adoption_approved": false,
+  "second_round": {
+    "all_should_fix_items_verified": true,
+    "new_defects": "none substantive",
+    "new_draft_bindings_confirmed": true,
+    "open_nit": "The comment above the abort handler says a tampered terminal yields an aborted record; _batch_state validates terminals before the first checkpoint, so that case raises before any batch file exists. Comment left as is to keep the reviewed runner bytes frozen; the behavior is safe."
+  },
+  "superseded_draft_sha256": "9768c4d93b0f2df7e67e2dbf4f5d887cecbc7a9e8387fcee406bdb6698150f0d",
+  "verdict": "pass",
+  "verified": {
+    "allocation_exactly_96_continuation_cells_in_manifest_order": true,
+    "combined_summary_denominators_df_and_trigger": true,
+    "draft_digest_recomputes": true,
+    "environment_contracts_reference_selection_arms_equal_pilot": true,
+    "fit_path_functions_ast_identical_to_47fce86": true,
+    "no_launch_clearance_present": true,
+    "no_new_code_path_writes_into_pilot_tree": true,
+    "parent_raw_sha_digest_and_four_record_hashes_verify": true,
+    "pilot_checks_not_relaxed": true,
+    "provenance_admits_only_runner_key_in_inventory_format": true
+  }
+}

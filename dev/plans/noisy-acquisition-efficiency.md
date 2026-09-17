@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 PILOT COMPLETE; CONTINUATION UNALLOCATED**. Branch:
+Experimental extension drafted 2026-09-16: **E2, E3 AND E5 PILOT COMPLETE; CONTINUATION PREPARED, NOT LAUNCHED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
@@ -54,9 +54,11 @@ The 24-fit E5 pilot and its excluded exact reproducibility repeat are complete.
 All fits executed successfully and all twelve initial-design pairs match.
 Search time falls on all six configurations, total fit time on five;
 S2 has three convergence-flag losses and no usability loss. The pilot took
-60.58 minutes of worker time. Remaining seeds 2002-2009 require a user
-decision after the reviewed report; their measured-rate estimate is 4.04
-hours, with a 5-6-hour planning allowance. No continuation job is allocated.
+60.58 minutes of worker time. The 96-fit continuation for seeds 2002-2009
+is prepared, independently reviewed and frozen under
+`e5_continuation_20260917/`; no continuation fit has run, and launching
+requires a user decision recorded in a launch clearance. Its measured-rate
+estimate is 4.04 hours, with a 5-6-hour planning allowance.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -366,7 +368,8 @@ unbounded search controller also launches timing, memory and judging work.
   allocated. Full-sieve E2 quality comparisons were cost-screened out;
   accepted harmful E3 refinements occur on only one development trajectory.
 - [~] E5: the authorized 24-fit S0/S2 pilot is complete and independently
-  reviewed. Seeds 2002-2009 require a subsequent user decision and allocation.
+  reviewed. The 96-fit continuation for seeds 2002-2009 is prepared,
+  reviewed and frozen; launching it requires a subsequent user decision.
 - [~] E6: frozen-state and pilot evidence are consolidated and independently
   reviewed; full ten-seed inference assessment and any adoption decision remain
   outside the completed scope.
@@ -944,7 +947,30 @@ The [pilot report](../results/2026-09-16-noisy-acquisition-integration-search.md
 records all 24 valid fits, the exact excluded replay, the independent review
 and the measured continuation cost. All twelve initial-design pairs match,
 and all 5,365 selection records verify. The operational continuation criteria
-are satisfied; seeds 2002-2009 remain unallocated pending the user's decision.
+are satisfied; the continuation below is prepared and awaits the user's
+launch decision.
+
+Continuation preparation checklist (2026-09-17):
+
+- [x] Add a continuation manifest kind that makes exactly the 96 remaining
+  fits executable. It binds the pilot manifest, its campaign and its four
+  immutable records by hash, and admits only the runner's own source hash
+  to differ from the pilot identity; every other source, data archive and
+  environment entry must be equal, re-derived by each worker at start.
+- [x] Add sequential, resumable batches with an explicit wall-time limit and
+  optional fit cap. Validated success terminals are reused, failed fits are
+  never rerun, and a failure ends the batch unless told to continue.
+- [x] Add the combined ten-seed summary: pilot pairs read from the pilot
+  campaign, nine degrees of freedom for ten complete pairs, the seven-of-ten
+  accuracy trigger, transition tables, reference-envelope exceedances and a
+  consistency check against the immutable pilot summary.
+- [x] Focused checks (26 tests), exact default-path oracles, byte-identical
+  regeneration of the pilot summary, independent static review and its
+  should-fix corrections; freeze the reviewed manifest without a launch
+  clearance and record the preparation.
+- [ ] Launch seeds 2002-2009 in bounded batches: a user decision, recorded
+  in a launch clearance before the first batch. Then the combined summary,
+  scientific review of every trigger, and the E6 assessment.
 
 Implementation contract for the scoped policy:
 

@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/manifest.json",
+      "published_copy": "e5_continuation_manifest_20260917.json",
+      "published_copy_lf_bytes_sha256": "f101a4a8278bdd4dc3a029ca93b1ba09d7867ce9b888bfff75c0bbf0332c64f2",
+      "raw_artifact_sha256": "cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/preparation_record.json",
+      "published_copy": "e5_continuation_preparation_20260917.json",
+      "published_copy_lf_bytes_sha256": "c70d429ed3d4177b67512c9e068fc32cff0c3270c1a1f5bbc4e56f2532c11bc4",
+      "raw_artifact_sha256": "578f849eb1fd8630c557b011532ba5f707ce2d72e8397674f10ae4940ac521f8"
+    },
+    {
+      "local_artifact_relative_to_run_root": "e5_continuation_20260917/independent_review.json",
+      "published_copy": "e5_continuation_review_20260917.json",
+      "published_copy_lf_bytes_sha256": "7fce9f9da609847b0a0167f714b2025a42db1d0c51d39647586001358d122333",
+      "raw_artifact_sha256": "98eb9d2c8a172a2500d72dd4a101c4075290b30317da5ac43ef1ca194cfda076"
+    }
+  ],
+  "continuation_manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "created_utc": "2026-09-17T19:41:39.471962+00:00",
+  "hash_convention": "Raw hashes bind original local bytes. Published-copy hashes bind UTF-8 LF bytes as stored in Git; normalize CRLF before checking a Windows working copy. Review copies are not executable manifests.",
+  "kind": "noisy_acquisition_e5_continuation_publication_index",
+  "launch_authorized": false,
+  "local_run_root": "dev/scripts/runs/noisy_acq_efficiency_20260916",
+  "pilot_publication_index": "publication_index_e5_20260917.json",
+  "schema_version": 1,
+  "source_checkpoint": "d08b8cb4713d7e1000d31a3f6a8f4435cc4512d3"
+}
