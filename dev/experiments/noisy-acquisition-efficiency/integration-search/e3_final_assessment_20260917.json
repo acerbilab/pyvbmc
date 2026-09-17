@@ -1,0 +1,517 @@
+{
+  "assessment_script_sha256": "f4d14cc2db9203b62f8e999ca517897be4dbeec609f439eec205902738ce4712",
+  "cost_evidence": {
+    "development_median_of_state_median_S2_to_S0_ratios": 0.43387114765700374,
+    "holdout_paired_timing_allocated": false,
+    "inference_runtime_measured": false
+  },
+  "created_utc": "2026-09-17T14:19:01.152836+00:00",
+  "decision": "mixed_holdout_evidence_no_general_replacement_recommendation",
+  "development_mc_pair_counts": {
+    "observed": 137,
+    "raw": {
+      "agree": 108,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 29
+    },
+    "scheduled": 137,
+    "score": {
+      "agree": 118,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "unresolved": 19
+    }
+  },
+  "e4": "Development entry gates not established; no adaptive arm or confirmation search allocated. Holdout diagnostics cannot establish this development gate.",
+  "e5_authorized": false,
+  "e5_executed": false,
+  "evidence": {
+    "development_gate": {
+      "path_relative_to_run_root": "search_development_gate.json",
+      "sha256": "6a5971a23bfbf414cd6c82841d7659fabec03ff09640e1c5b594d3c2ccf7cfd7"
+    },
+    "development_mc": {
+      "path_relative_to_run_root": "search_mc_development/b65536/summary.json",
+      "sha256": "5da5273ea6f20f70a4f8b6286512bbb176d7788beaecd42784754df8627a7623"
+    },
+    "development_selections": {
+      "path_relative_to_run_root": "search_selection_outcome.json",
+      "sha256": "d27ce5089864ab46b38fc33fbcd1f7d94573c18cbd9bb0be529c45c5162342e5"
+    },
+    "frozen_finalist": {
+      "path_relative_to_run_root": "search_holdout_selection.json",
+      "sha256": "98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40"
+    },
+    "holdout_mc": {
+      "path_relative_to_run_root": "search_mc_holdout/b65536/summary.json",
+      "sha256": "21dc22f2f2be1d1261774a5ec6fea2ad386f40ebd965102708e0ff119eb7a67e"
+    },
+    "holdout_rqmc": {
+      "path_relative_to_run_root": "search_holdout_judging/b65536_summary.json",
+      "sha256": "add5b9e55c83bb70b8c80ce4d548e337ac9b9afd966a2e9fd96ad19c5ecedf7c"
+    },
+    "holdout_selections": {
+      "path_relative_to_run_root": "holdout_selection_outcome.json",
+      "sha256": "66334e5583dbc353cc0405625593af7926f544059de08831776e9f1703640cd1"
+    },
+    "loss_diagnostic": {
+      "path_relative_to_run_root": "search_loss/b65536/summary.json",
+      "sha256": "ff8ce1e039f9f69c0480a3792dcc737441e295062af4eedffa2985ab5ebb35ef"
+    }
+  },
+  "execution_and_independent_review_role": "Separate Sol agents",
+  "finalist": "Frozen S2: MC1600, 1024 candidates, top eight, one refinement, shared 50 iterations and 1000 accurate rows",
+  "gp_fits": 0,
+  "holdout_by_trajectory": [
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.125,
+        "raw_material_loss": 0.125,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0625
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 2,
+        "no_material_loss": 14,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 12,
+        "failed_or_missing": 0,
+        "harmful": 2,
+        "practical_tie": 1,
+        "unresolved": 1
+      },
+      "trajectory": "logreg_D5_noise3_seed1"
+    },
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.5,
+        "unresolved": 0.4375
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 8,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 8
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 8,
+        "failed_or_missing": 0,
+        "harmful": 0,
+        "practical_tie": 1,
+        "unresolved": 7
+      },
+      "trajectory": "multisensory_s1_D6_noise1.3_seed1"
+    },
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.5,
+        "raw_material_loss": 0.4375,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 7,
+        "no_material_loss": 9,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 5,
+        "failed_or_missing": 0,
+        "harmful": 8,
+        "practical_tie": 3,
+        "unresolved": 0
+      },
+      "trajectory": "rosenbrock_D2_noise1_seed1"
+    },
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0625,
+        "raw_material_loss": 0.0625,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 1,
+        "no_material_loss": 15,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 5,
+        "failed_or_missing": 0,
+        "harmful": 1,
+        "practical_tie": 10,
+        "unresolved": 0
+      },
+      "trajectory": "rosenbrock_D2_noise3_seed1"
+    },
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.0,
+        "raw_material_loss": 0.0,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.0
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 0,
+        "no_material_loss": 16,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 15,
+        "failed_or_missing": 0,
+        "harmful": 0,
+        "practical_tie": 1,
+        "unresolved": 0
+      },
+      "trajectory": "student_D8_noise3_seed1"
+    },
+    {
+      "arm_tag": "finalist",
+      "contrast": "finalist_minus_S0",
+      "fractions_of_scheduled": {
+        "failed_or_missing": 0.0,
+        "harmful": 0.125,
+        "raw_material_loss": 0.0625,
+        "raw_unresolved": 0.0,
+        "unresolved": 0.25
+      },
+      "kind": "primary_vs_s0",
+      "observed": 16,
+      "raw_loss_gate_counts": {
+        "failed_or_missing": 0,
+        "material_loss": 1,
+        "no_material_loss": 15,
+        "not_applicable_penalty_active": 0,
+        "unresolved": 0
+      },
+      "reference_tag": "S0",
+      "scheduled": 16,
+      "score_counts": {
+        "beneficial": 9,
+        "failed_or_missing": 0,
+        "harmful": 2,
+        "practical_tie": 1,
+        "unresolved": 4
+      },
+      "trajectory": "timing_D5_noise2.2_seed1"
+    }
+  ],
+  "holdout_mc_pair_counts": {
+    "observed": 48,
+    "raw": {
+      "agree": 44,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 4
+    },
+    "scheduled": 48,
+    "score": {
+      "agree": 47,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "unresolved": 1
+    }
+  },
+  "holdout_primary_counts": {
+    "fractions_of_scheduled": {
+      "failed_or_missing": 0.0,
+      "harmful": 0.13541666666666666,
+      "raw_material_loss": 0.11458333333333333,
+      "raw_unresolved": 0.08333333333333333,
+      "unresolved": 0.125
+    },
+    "observed": 96,
+    "raw_loss_gate_counts": {
+      "failed_or_missing": 0,
+      "material_loss": 11,
+      "no_material_loss": 77,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 8
+    },
+    "scheduled": 96,
+    "score_counts": {
+      "beneficial": 54,
+      "failed_or_missing": 0,
+      "harmful": 13,
+      "practical_tie": 17,
+      "unresolved": 12
+    }
+  },
+  "interpretation": [
+    "Aggregate held-out improvements coexist with substantial target-specific regressions, particularly Rosenbrock noise 1; this does not support an unqualified replacement of S0.",
+    "The original RQMC classifications and all scheduled denominators remain unchanged by MC confirmation and the explanatory diagnostic.",
+    "Unresolved evidence at the prescribed caps remains unresolved; these clustered frozen-state comparisons are not independent inference runs or a noninferiority test.",
+    "The search-specific MC check followed finalist freeze and holdout evaluation, a recorded sequencing deviation; no treatment was retuned.",
+    "The saved-point investigation is post-hoc and can locate an observed loss within search stages without uniquely separating sieve coverage from approximate re-scoring."
+  ],
+  "kind": "noisy_acquisition_e3_final_assessment",
+  "loss_diagnostic_cases": [
+    {
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r0",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6625723659585959,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.44559250768674563,
+            0.52344783998734
+          ],
+          "score_mean_difference": 0.4845201738370428
+        },
+        "selected_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7877993152255784,
+          "raw_classification": "unresolved",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.2884129665426606,
+            0.3729755332403265
+          ],
+          "score_mean_difference": 0.33069424989149354
+        },
+        "selected_minus_own_winner": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.1890011653078933,
+          "raw_classification": "no_material_loss",
+          "score_classification": "beneficial",
+          "score_interval": [
+            -0.163506825777891,
+            -0.14414502211320757
+          ],
+          "score_mean_difference": -0.15382592394554928
+        }
+      },
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "unresolved_selected_vs_S0"
+    },
+    {
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7844144138977516,
+          "raw_classification": "unresolved",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.2865526459043153,
+            0.3602465020248644
+          ],
+          "score_mean_difference": 0.32339957396458985
+        },
+        "selected_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7932813228192566,
+          "raw_classification": "unresolved",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.2754445358214221,
+            0.34854536240918105
+          ],
+          "score_mean_difference": 0.31199494911530157
+        },
+        "selected_minus_own_winner": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.011303857711443,
+          "raw_classification": "no_material_loss",
+          "score_classification": "beneficial",
+          "score_interval": [
+            -0.012421395866515032,
+            -0.01038785383206153
+          ],
+          "score_mean_difference": -0.01140462484928828
+        }
+      },
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "unresolved_selected_vs_S0"
+    },
+    {
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r5",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.7288098015829856,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.011684651793786142,
+            0.012225296815908445
+          ],
+          "score_mean_difference": 0.011954974304847293
+        },
+        "selected_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.73022663487994,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.011620141117565591,
+            0.012165633484318488
+          ],
+          "score_mean_difference": 0.01189288730094204
+        },
+        "selected_minus_own_winner": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.0019440371052597,
+          "raw_classification": "no_material_loss",
+          "score_classification": "practical_tie",
+          "score_interval": [
+            -7.370580146008185e-05,
+            -5.046820635042506e-05
+          ],
+          "score_mean_difference": -6.208700390525346e-05
+        }
+      },
+      "mechanism_status": "loss_located_before_refinement",
+      "raw_mechanism_status": "material_loss_before_refinement"
+    },
+    {
+      "comparison_tag": "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6743647126195006,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.0015710725735889894,
+            0.001649905267066514
+          ],
+          "score_mean_difference": 0.0016104889203277517
+        },
+        "selected_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6824954704626837,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.0015254129735238922,
+            0.0016151842496948518
+          ],
+          "score_mean_difference": 0.001570298611609372
+        },
+        "selected_minus_own_winner": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.012056914739207,
+          "raw_classification": "no_material_loss",
+          "score_classification": "unresolved",
+          "score_interval": [
+            -5.894885329255976e-05,
+            -2.143176414419964e-05
+          ],
+          "score_mean_difference": -4.01903087183797e-05
+        }
+      },
+      "mechanism_status": "direct_regression_stage_unresolved",
+      "raw_mechanism_status": "material_loss_before_refinement"
+    },
+    {
+      "comparison_tag": "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r6",
+      "contrasts": {
+        "own_winner_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.6996896993135222,
+          "raw_classification": "material_loss",
+          "score_classification": "harmful",
+          "score_interval": [
+            0.00122788171421386,
+            0.0014394867152199096
+          ],
+          "score_mean_difference": 0.0013336842147168848
+        },
+        "selected_minus_S0": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 0.8687568103706969,
+          "raw_classification": "unresolved",
+          "score_classification": "unresolved",
+          "score_interval": [
+            0.00043535421616692506,
+            0.0007308742077296508
+          ],
+          "score_mean_difference": 0.0005831142119482879
+        },
+        "selected_minus_own_winner": {
+          "penalty_active": false,
+          "raw_arm_to_baseline_ratio": 1.2416315564214384,
+          "raw_classification": "no_material_loss",
+          "score_classification": "beneficial",
+          "score_interval": [
+            -0.0008091837992814882,
+            -0.0006919562062557055
+          ],
+          "score_mean_difference": -0.0007505700027685969
+        }
+      },
+      "mechanism_status": "unresolved_selected_vs_S0",
+      "raw_mechanism_status": "unresolved_selected_vs_S0"
+    }
+  ],
+  "loss_diagnostic_raw_mechanism_counts": {
+    "material_loss_before_refinement": 2,
+    "unresolved_selected_vs_S0": 3
+  },
+  "loss_diagnostic_score_mechanism_counts": {
+    "direct_regression_stage_unresolved": 1,
+    "loss_located_before_refinement": 3,
+    "unresolved_selected_vs_S0": 1
+  },
+  "production_defaults_changed": false,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "7ea4e5f6c5e89e31fc12e5b3f6c04313ca53fe7b4547950da18507c2aded2614",
+  "schema_version": 1,
+  "scientific_assessor_role": "Astra orchestration and scientific judgment",
+  "scope_completed": "E3 frozen-state selections, prescribed RQMC and MC judging, bounded saved-point loss investigation",
+  "target_evaluations": 0
+}

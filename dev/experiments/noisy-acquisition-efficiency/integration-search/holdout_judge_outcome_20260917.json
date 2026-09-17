@@ -1,0 +1,1021 @@
+{
+  "completed_budget_cap": 65536,
+  "created_utc": "2026-09-17T13:14:15.005960+00:00",
+  "final_counts": {
+    "fractions_of_scheduled": {
+      "failed_or_missing": 0.0,
+      "harmful": 0.13541666666666666,
+      "raw_material_loss": 0.11458333333333333,
+      "raw_unresolved": 0.08333333333333333,
+      "unresolved": 0.125
+    },
+    "observed": 96,
+    "raw_loss_gate_counts": {
+      "failed_or_missing": 0,
+      "material_loss": 11,
+      "no_material_loss": 77,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 8
+    },
+    "scheduled": 96,
+    "score_counts": {
+      "beneficial": 54,
+      "failed_or_missing": 0,
+      "harmful": 13,
+      "practical_tie": 17,
+      "unresolved": 12
+    }
+  },
+  "final_summary_sha256": "add5b9e55c83bb70b8c80ce4d548e337ac9b9afd966a2e9fd96ad19c5ecedf7c",
+  "grouped": {
+    "by_arm": [
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.13541666666666666,
+          "raw_material_loss": 0.11458333333333333,
+          "raw_unresolved": 0.08333333333333333,
+          "unresolved": 0.125
+        },
+        "kind": "primary_vs_s0",
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 77,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 54,
+          "failed_or_missing": 0,
+          "harmful": 13,
+          "practical_tie": 17,
+          "unresolved": 12
+        }
+      }
+    ],
+    "by_checkpoint": [
+      {
+        "arm_tag": "finalist",
+        "checkpoint": "early",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.08333333333333333,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.16666666666666666,
+          "unresolved": 0.25
+        },
+        "kind": "primary_vs_s0",
+        "observed": 48,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 3,
+          "no_material_loss": 37,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 48,
+        "score_counts": {
+          "beneficial": 17,
+          "failed_or_missing": 0,
+          "harmful": 4,
+          "practical_tie": 15,
+          "unresolved": 12
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "checkpoint": "late",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.1875,
+          "raw_material_loss": 0.16666666666666666,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 48,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 8,
+          "no_material_loss": 40,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 48,
+        "score_counts": {
+          "beneficial": 37,
+          "failed_or_missing": 0,
+          "harmful": 9,
+          "practical_tie": 2,
+          "unresolved": 0
+        }
+      }
+    ],
+    "by_component_contrast": [],
+    "by_direct_control": [],
+    "by_label": [
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.125,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "label": "logreg_D5_noise3",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 14,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 1,
+          "unresolved": 1
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "primary_vs_s0",
+        "label": "multisensory_s1_D6_noise1.3",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 7
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.5,
+          "raw_material_loss": 0.4375,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "label": "rosenbrock_D2_noise1",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 7,
+          "no_material_loss": 9,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 5,
+          "failed_or_missing": 0,
+          "harmful": 8,
+          "practical_tie": 3,
+          "unresolved": 0
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "label": "rosenbrock_D2_noise3",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 15,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 5,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 10,
+          "unresolved": 0
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "label": "student_D8_noise3",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 15,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 0
+        }
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.25
+        },
+        "kind": "primary_vs_s0",
+        "label": "timing_D5_noise2.2",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 15,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 9,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 1,
+          "unresolved": 4
+        }
+      }
+    ],
+    "by_trajectory": [
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.125,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0625
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 2,
+          "no_material_loss": 14,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 12,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 1,
+          "unresolved": 1
+        },
+        "trajectory": "logreg_D5_noise3_seed1"
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.5,
+          "unresolved": 0.4375
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 8,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 8,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 7
+        },
+        "trajectory": "multisensory_s1_D6_noise1.3_seed1"
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.5,
+          "raw_material_loss": 0.4375,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 7,
+          "no_material_loss": 9,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 5,
+          "failed_or_missing": 0,
+          "harmful": 8,
+          "practical_tie": 3,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise1_seed1"
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0625,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 15,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 5,
+          "failed_or_missing": 0,
+          "harmful": 1,
+          "practical_tie": 10,
+          "unresolved": 0
+        },
+        "trajectory": "rosenbrock_D2_noise3_seed1"
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.0
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 16,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 15,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 1,
+          "unresolved": 0
+        },
+        "trajectory": "student_D8_noise3_seed1"
+      },
+      {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.0625,
+          "raw_unresolved": 0.0,
+          "unresolved": 0.25
+        },
+        "kind": "primary_vs_s0",
+        "observed": 16,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 1,
+          "no_material_loss": 15,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 0
+        },
+        "reference_tag": "S0",
+        "scheduled": 16,
+        "score_counts": {
+          "beneficial": 9,
+          "failed_or_missing": 0,
+          "harmful": 2,
+          "practical_tie": 1,
+          "unresolved": 4
+        },
+        "trajectory": "timing_D5_noise2.2_seed1"
+      }
+    ]
+  },
+  "kind": "noisy_acq_search_holdout_judge_outcome",
+  "manifest_sha256": "c39a838411efe47102007a0e4c9ef15d86b0079aeee5e36fca5cc436aa3211fd",
+  "material_raw_losses": [
+    {
+      "accurate_candidate_rows": 64,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r5",
+      "fallback_reason": null,
+      "judge_budget": 8192,
+      "local_iterations": 5,
+      "raw_arm_to_baseline_ratio": 0.7287867856883741,
+      "raw_mean_difference": -0.17120135214533086,
+      "replicate": 5,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.011978893100643234,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "d450f1127a8d36378c2af54d45cabe116dcf28739016f87840afa287e10cf7db",
+      "selection_terminal_sha256": "cb1d77fb96ca80dce9a5e37f74798a890085188be1118b0e1d638481f86cb42f",
+      "state_id": "rosenbrock_D2_noise1_seed1_early"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r0",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.7845465468727171,
+      "raw_mean_difference": -0.11538494136579874,
+      "replicate": 0,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0013081574497942061,
+      "selected_shortlist_index": 4,
+      "selection_report_sha256": "2ff1d2cd9605ae01659a9b93ffc92315441bca0404dad9d804c79dfe1c9565ad",
+      "selection_terminal_sha256": "6b1ace5547597b3ad51c9271b6a00ddfc11786828d6a1ef9475541a84ca790b6",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r1",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.8683439824088618,
+      "raw_mean_difference": -0.03163561120328716,
+      "replicate": 1,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0007822528389511141,
+      "selected_shortlist_index": 5,
+      "selection_report_sha256": "31b68e46e9399f970910ab0a464223f7680083b3712dd034c5616d301b81b7db",
+      "selection_terminal_sha256": "e3c9c810775efe6a36f5d30f7b974cbd15409d3317da190658071473d6ff6420",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r2",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.7710447260820762,
+      "raw_mean_difference": -0.1288772434378485,
+      "replicate": 2,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0014201182098236287,
+      "selected_shortlist_index": 6,
+      "selection_report_sha256": "cbae83fac8afa8a4b6cef099a27f95a994f1f80ed8402586e89dc3d1a88c7ddf",
+      "selection_terminal_sha256": "ebc57db2b235a498bbf18c076fdd485799a4a52e0a218e72b228aed90e44ebb9",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r3",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.8467249246428455,
+      "raw_mean_difference": -0.05324430592770338,
+      "replicate": 3,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0009497456542545413,
+      "selected_shortlist_index": 4,
+      "selection_report_sha256": "300d5826723738637eac97a1a7947ec5d068fbb70756984e92edafe6d66a7108",
+      "selection_terminal_sha256": "d7f1cc3171fb4c213cdd49462513b21a112f1e1788a173126eb7e37edb20b6c1",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r4",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.8714664624967096,
+      "raw_mean_difference": -0.028519707868343416,
+      "replicate": 4,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0007690773005704088,
+      "selected_shortlist_index": 6,
+      "selection_report_sha256": "3a99f4349ed0a8d999b0522867d259f7cb1049113027034423e0bc235fb6f50d",
+      "selection_terminal_sha256": "f1c65d53131ddc873f6914833ad9c3fc55f9dded65375c9f15ac2b89f3840dcd",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 18,
+      "comparison_tag": "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r7",
+      "fallback_reason": "finite_difference_instability",
+      "judge_budget": 8192,
+      "local_iterations": 0,
+      "raw_arm_to_baseline_ratio": 0.8880188857571578,
+      "raw_mean_difference": -0.011977896990530576,
+      "replicate": 7,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0006478939147961937,
+      "selected_shortlist_index": 2,
+      "selection_report_sha256": "c979fc6b34a5eb4e97d4f4f279a7bab67572bf469165b56074fd24d07ef3f170",
+      "selection_terminal_sha256": "c7f9251db0ffddcd22652fe9bf942ea7488b723a5991ae05a3cf6c798a46d2f4",
+      "state_id": "rosenbrock_D2_noise1_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 89,
+      "comparison_tag": "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0",
+      "fallback_reason": null,
+      "judge_budget": 8192,
+      "local_iterations": 10,
+      "raw_arm_to_baseline_ratio": 0.6842074863441493,
+      "raw_mean_difference": -0.21528829240512465,
+      "replicate": 0,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0015575374569894995,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "5da3ecc01444b95c7a23b05c2bd0f7d1d2ee339b5f71679160d8847bc2d6e43c",
+      "selection_terminal_sha256": "1b810ea0a400ceeecc0442557b85686d3de1175b44168b78820e0f75e68d9b29",
+      "state_id": "rosenbrock_D2_noise3_seed1_late"
+    },
+    {
+      "accurate_candidate_rows": 361,
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r0",
+      "fallback_reason": null,
+      "judge_budget": 8192,
+      "local_iterations": 22,
+      "raw_arm_to_baseline_ratio": 0.7989140648673106,
+      "raw_mean_difference": -0.09723529325260101,
+      "replicate": 0,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.31449538620981365,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "eea70d318d3150c6c91e7cf5f1ddbd087933c6f219ada9d156d1d0c54796891e",
+      "selection_terminal_sha256": "f0817f804249d77476e8a7ecd8d17d322a4bb966ff671b24df21a3faeb573728",
+      "state_id": "logreg_D5_noise3_seed1_early"
+    },
+    {
+      "accurate_candidate_rows": 262,
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4",
+      "fallback_reason": null,
+      "judge_budget": 16384,
+      "local_iterations": 17,
+      "raw_arm_to_baseline_ratio": 0.7946211321694506,
+      "raw_mean_difference": -0.10427858311170382,
+      "replicate": 4,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.3152731429425266,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "82764229a514d93cae83a9efe99eac48e140c2fbb30c3bb13450f5b116565fec",
+      "selection_terminal_sha256": "7760a9da9823241cf2aff5244d1720a38a0ab757f4d5bcf2a175677b8d198383",
+      "state_id": "logreg_D5_noise3_seed1_early"
+    },
+    {
+      "accurate_candidate_rows": 185,
+      "comparison_tag": "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r6",
+      "fallback_reason": null,
+      "judge_budget": 32768,
+      "local_iterations": 12,
+      "raw_arm_to_baseline_ratio": 0.8743349681961788,
+      "raw_mean_difference": -0.02562652993120465,
+      "replicate": 6,
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0005545842690652114,
+      "selected_shortlist_index": null,
+      "selection_report_sha256": "0163f1267a1c461ae7d7e631956023448b01566d0579cf65e90a1dccfa091e08",
+      "selection_terminal_sha256": "881a971d0c46b39749f2b494da89f577c2f1505e53a00e1a1d4ce7cc50bcdbf5",
+      "state_id": "timing_D5_noise2.2_seed1_late"
+    }
+  ],
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim_scope": "frozen finalist holdout judge evidence",
+  "raw_artifact_sha256": "942721d156f691b9b5291a474c030eb8db22294ff0062d3110499c9267ad5dfe",
+  "resolved_only_counts": {
+    "raw_loss": {
+      "material_loss": 11,
+      "no_material_loss": 77,
+      "resolved": 88
+    },
+    "score": {
+      "beneficial": 54,
+      "harmful": 13,
+      "practical_tie": 17,
+      "resolved": 84
+    }
+  },
+  "rounds": [
+    {
+      "actual_worker_seconds_including_imports": 62.932840399997076,
+      "allocation_sha256": "0c21d449d0a63f3c9dba90275d20e415b25a2769217744963fec5cb587d41e42",
+      "budget": 4096,
+      "conservative_seconds": 145.74,
+      "costs_sha256": "8e765e27d041ea3dfb12d7af9b3e4bb0aa6b124a61057c70a8e8883b8fc5cf46",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 1.0,
+          "unresolved": 1.0
+        },
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 0,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 96
+        },
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 0,
+          "unresolved": 96
+        }
+      },
+      "forecast_error_seconds": -19.512864299999933,
+      "forecast_seconds": 72.87,
+      "launched_state_ids": [
+        "rosenbrock_D2_noise1_seed1_early",
+        "rosenbrock_D2_noise1_seed1_late",
+        "rosenbrock_D2_noise3_seed1_early",
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "student_D8_noise3_seed1_late",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_late",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "new_worker_seconds_including_imports": 53.35713570000007,
+      "pending_state_ids": [
+        "rosenbrock_D2_noise1_seed1_early",
+        "rosenbrock_D2_noise1_seed1_late",
+        "rosenbrock_D2_noise3_seed1_early",
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "logreg_D5_noise3_seed1_late",
+        "student_D8_noise3_seed1_early",
+        "student_D8_noise3_seed1_late",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_late",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "pilot_cost_sha256": "e0d420dbda3f465e9f4bd8eaac76d59b9ba350513609721bc71890795a671c4c",
+      "reused_state_ids": [
+        "logreg_D5_noise3_seed1_late"
+      ],
+      "summary_sha256": "494e282eaaa644fc3222c57676dc397d0c64c10ff43c7f9c91d238ea09974796"
+    },
+    {
+      "actual_worker_seconds_including_imports": 79.8172973000037,
+      "allocation_sha256": "d74da31ce77698348a7e3341bbefd33b4816b6fab9d2b0b32fc1222ce1385a9c",
+      "budget": 8192,
+      "conservative_seconds": 169.14,
+      "costs_sha256": "32c4ab32638e237e86236bdfaae52252dfc331d96ab666a3983414ff7b9a8c57",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.09375,
+          "raw_unresolved": 0.125,
+          "unresolved": 0.19791666666666666
+        },
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 9,
+          "no_material_loss": 75,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 12
+        },
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 48,
+          "failed_or_missing": 0,
+          "harmful": 12,
+          "practical_tie": 17,
+          "unresolved": 19
+        }
+      },
+      "forecast_error_seconds": -4.752702699996291,
+      "forecast_seconds": 84.57,
+      "launched_state_ids": [
+        "rosenbrock_D2_noise1_seed1_early",
+        "rosenbrock_D2_noise1_seed1_late",
+        "rosenbrock_D2_noise3_seed1_early",
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "logreg_D5_noise3_seed1_late",
+        "student_D8_noise3_seed1_early",
+        "student_D8_noise3_seed1_late",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_late",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "new_worker_seconds_including_imports": 79.8172973000037,
+      "pending_state_ids": [
+        "rosenbrock_D2_noise1_seed1_early",
+        "rosenbrock_D2_noise1_seed1_late",
+        "rosenbrock_D2_noise3_seed1_early",
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "logreg_D5_noise3_seed1_late",
+        "student_D8_noise3_seed1_early",
+        "student_D8_noise3_seed1_late",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_late",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "pilot_cost_sha256": null,
+      "reused_state_ids": [],
+      "summary_sha256": "dd6c1ca2539cfef0afd38473f2e7825ebcfb8329fedf2fedf3196f8856190e02"
+    },
+    {
+      "actual_worker_seconds_including_imports": 58.618727499997476,
+      "allocation_sha256": "eedc91b533d166f96dbb28a12557f8fc0d4c79979a7bca47a91fd6060064ea47",
+      "budget": 16384,
+      "conservative_seconds": 151.84,
+      "costs_sha256": "af144fefdd9f3c4cfb586b43e391fd4119e1fc0e41fded704efa7c091d088646",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.125,
+          "raw_material_loss": 0.10416666666666667,
+          "raw_unresolved": 0.09375,
+          "unresolved": 0.19791666666666666
+        },
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 10,
+          "no_material_loss": 77,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 9
+        },
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 49,
+          "failed_or_missing": 0,
+          "harmful": 12,
+          "practical_tie": 16,
+          "unresolved": 19
+        }
+      },
+      "forecast_error_seconds": -17.301272500002526,
+      "forecast_seconds": 75.92,
+      "launched_state_ids": [
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "new_worker_seconds_including_imports": 58.618727499997476,
+      "pending_state_ids": [
+        "rosenbrock_D2_noise3_seed1_late",
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "pilot_cost_sha256": null,
+      "reused_state_ids": [],
+      "summary_sha256": "62a9bf9d6ae007448cc0fe570b947cd3c07d1594ae846705bbb5ce74bf217a08"
+    },
+    {
+      "actual_worker_seconds_including_imports": 83.78961139999956,
+      "allocation_sha256": "d08fa2f3a8f413ac81b07517f9938eda91a272d2c5ee510bfa766411e8a08b3b",
+      "budget": 32768,
+      "conservative_seconds": 184.5,
+      "costs_sha256": "cbf757d4db9c54194f64790e420f1cc1f1bbd501d76882f3594cec3fe5e4871f",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.13541666666666666,
+          "raw_material_loss": 0.11458333333333333,
+          "raw_unresolved": 0.08333333333333333,
+          "unresolved": 0.15625
+        },
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 77,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 52,
+          "failed_or_missing": 0,
+          "harmful": 13,
+          "practical_tie": 16,
+          "unresolved": 15
+        }
+      },
+      "forecast_error_seconds": -8.460388600000442,
+      "forecast_seconds": 92.25,
+      "launched_state_ids": [
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "new_worker_seconds_including_imports": 83.78961139999956,
+      "pending_state_ids": [
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early",
+        "timing_D5_noise2.2_seed1_late"
+      ],
+      "pilot_cost_sha256": null,
+      "reused_state_ids": [],
+      "summary_sha256": "ffbfe5d37ea1765a397592c4b36f8aecc072e28552304a22e987730adb7f36d8"
+    },
+    {
+      "actual_worker_seconds_including_imports": 100.47304570000051,
+      "allocation_sha256": "6f8c0d75963a9aa0f1b90c388928db4f394db987c9212fa4ecde2214341ef6d6",
+      "budget": 65536,
+      "conservative_seconds": 233.02,
+      "costs_sha256": "2255435098c3c32a8d25ba107fc82060ec25b30e00f859b877f9cf8f8f260699",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.13541666666666666,
+          "raw_material_loss": 0.11458333333333333,
+          "raw_unresolved": 0.08333333333333333,
+          "unresolved": 0.125
+        },
+        "observed": 96,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 77,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 8
+        },
+        "scheduled": 96,
+        "score_counts": {
+          "beneficial": 54,
+          "failed_or_missing": 0,
+          "harmful": 13,
+          "practical_tie": 17,
+          "unresolved": 12
+        }
+      },
+      "forecast_error_seconds": -16.036954299999493,
+      "forecast_seconds": 116.51,
+      "launched_state_ids": [
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early"
+      ],
+      "new_worker_seconds_including_imports": 100.47304570000051,
+      "pending_state_ids": [
+        "logreg_D5_noise3_seed1_early",
+        "student_D8_noise3_seed1_early",
+        "multisensory_s1_D6_noise1.3_seed1_early",
+        "timing_D5_noise2.2_seed1_early"
+      ],
+      "pilot_cost_sha256": null,
+      "reused_state_ids": [],
+      "summary_sha256": "add5b9e55c83bb70b8c80ce4d548e337ac9b9afd966a2e9fd96ad19c5ecedf7c"
+    }
+  ],
+  "schema_version": 1,
+  "selection_outcome_sha256": "66334e5583dbc353cc0405625593af7926f544059de08831776e9f1703640cd1",
+  "selection_snapshot_sha256": "23cfb8781693525b5a20dc0d9b084125a699510d312b373442f097c9e32dc4fe",
+  "unallocated": [
+    "holdout_timing",
+    "holdout_memory",
+    "E4",
+    "E5"
+  ],
+  "worst_losses": {
+    "worst_raw_retained_ratio": {
+      "cell": {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "kind": "primary_vs_s0",
+        "reference_tag": "S0",
+        "replicate": 0,
+        "state_id": "rosenbrock_D2_noise3_seed1_late"
+      },
+      "comparison_tag": "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0",
+      "judge_budget": 8192,
+      "raw_arm_to_baseline_ratio": 0.6842074863441493,
+      "raw_classification": "material_loss",
+      "score_classification": "harmful",
+      "score_mean_difference": 0.0015575374569894995
+    },
+    "worst_score": {
+      "cell": {
+        "arm_tag": "finalist",
+        "contrast": "finalist_minus_S0",
+        "kind": "primary_vs_s0",
+        "reference_tag": "S0",
+        "replicate": 4,
+        "state_id": "logreg_D5_noise3_seed1_early"
+      },
+      "comparison_tag": "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4",
+      "judge_budget": 16384,
+      "raw_arm_to_baseline_ratio": 0.7946211321694506,
+      "raw_classification": "material_loss",
+      "score_classification": "harmful",
+      "score_mean_difference": 0.3152731429425266
+    }
+  }
+}

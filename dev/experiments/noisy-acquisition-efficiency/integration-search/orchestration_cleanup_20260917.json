@@ -1,0 +1,57 @@
+{
+  "archived_scratch": {
+    "tmp_archive_e3_holdout_wrappers.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_archive_e3_holdout_wrappers.py",
+      "sha256": "b52f80611d4cc0f89f04bfcd3b7e4dcc68eb28b0fa639012fcdc79ebabe25324"
+    },
+    "tmp_archive_e3_remaining_scratch.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_archive_e3_remaining_scratch.py",
+      "sha256": "cddc5ff84a6c82f26e986aabc42306ad1d58ef982d30f98a61fe9dc67be70c19"
+    },
+    "tmp_finalize_e3_holdout_outcomes.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_finalize_e3_holdout_outcomes.py",
+      "sha256": "d519373f9fe9c1a640aa879a6c5362d3fe62d3afaec7dd88822a1fbb6da3e18d"
+    },
+    "tmp_freeze_e3_mc_development.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_mc_development.py",
+      "sha256": "4d2c95913b470e4d8f83610d341d491a7db2bc4cd8ec9cce31bf71b85220ffba"
+    },
+    "tmp_freeze_e3_mc_development65536.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_mc_development65536.py",
+      "sha256": "f745c862b0c1fde970e4527130eddc960c7f67f934076ec7355f4b1cbfc13501"
+    },
+    "tmp_freeze_e3_mc_holdout.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_freeze_e3_mc_holdout.py",
+      "sha256": "1c4a03ef21f595a244767d2ff2372e87d4b1834e9a9d23c2b4d3d7ab069ad01c"
+    },
+    "tmp_prepare_e3_holdout_mc.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_prepare_e3_holdout_mc.py",
+      "sha256": "39d24f88e6579c21e4ef8f96868a9c4a26d7683f10ef0e97c8da302fec7881cd"
+    },
+    "tmp_prepare_e3_holdout_resume.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_prepare_e3_holdout_resume.py",
+      "sha256": "6dffa9b7b488f82d108c9d88b515294daebeb89d4e5927f05046dbaf28f141f0"
+    },
+    "tmp_run_e3_holdout_judge_pilot.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_run_e3_holdout_judge_pilot.py",
+      "sha256": "6dd4f537836990f6a7cd60cc2db5e48bf89169fea8512a5268782a3170ddff48"
+    },
+    "tmp_run_e3_holdout_judge_round.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_run_e3_holdout_judge_round.py",
+      "sha256": "e0a12afd28f9e74616184a82f00d1c6482fe11a3cbe28ac8fa130460e8fd8837"
+    },
+    "tmp_update_local_holdout.py": {
+      "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\orchestration_scripts_20260917\\tmp_update_local_holdout.py",
+      "sha256": "e847759aca53594e326a09c8ecc87e32b83b3823d81373392f6e475de65b48e5"
+    }
+  },
+  "created_utc": "2026-09-17T14:21:39.114915+00:00",
+  "kind": "e3_search_orchestration_cleanup",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "db9f7a4f2aa2342a8cb3587b1b8e11525a96da8f92f57805489a5b44ae3513d3",
+  "retained_root_scratch": [
+    "tmp_finalize_e3_assessment.py",
+    "tmp_publish_e3_holdout.py"
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,54 @@
+{
+  "automatic_override": false,
+  "development": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_development_outcome.json",
+    "sha256": "96b1a10e8d8ecf5479adb803249eb3c12555f326c5b1fc13176bb09db26d1b5a"
+  },
+  "development_counts": {
+    "observed": 137,
+    "raw": {
+      "agree": 108,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 29
+    },
+    "scheduled": 137,
+    "score": {
+      "agree": 118,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "unresolved": 19
+    }
+  },
+  "development_pair_count": 137,
+  "development_tag_count": 183,
+  "holdout": {
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\search_mc_holdout_outcome.json",
+    "sha256": "847d52db4704206647e6522fedbc0ce872f5c6416f8648938eaac430a4dc52d9"
+  },
+  "holdout_counts": {
+    "observed": 48,
+    "raw": {
+      "agree": 44,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "not_applicable_penalty_active": 0,
+      "unresolved": 4
+    },
+    "scheduled": 48,
+    "score": {
+      "agree": 47,
+      "disagree": 0,
+      "failed_or_missing": 0,
+      "unresolved": 1
+    }
+  },
+  "holdout_pair_count": 48,
+  "holdout_tag_count": 48,
+  "interpretation": "The pooled coordinate-pair denominators differ from the original comparison-tag denominators because identical coordinate pairs are deduplicated within each state. Unresolved results are retained and ordinary MC never overrides the RQMC verdict.",
+  "kind": "e3_search_ordinary_mc_combined_outcome",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "6f81991ccf4d66c6eff57f9a35e9ebe979230bc0cb676e1608ec12c0fa8a13c1",
+  "schema_version": 1
+}

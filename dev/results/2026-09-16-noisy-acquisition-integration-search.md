@@ -5,10 +5,18 @@ All four retained full-sieve integration settings failed the necessary
 cost gate. E3's prescribed MC1600 fallback has all 384 development selections
 saved: all four arms and eight repetitions on twelve states. Independent
 judging, 36 paired timing cells and 72 separate memory cells are complete.
-S2 is frozen for holdout under the improved-choice branch. Its reviewed
-holdout draft remains locked after an approval interruption; no holdout
-selections have run. No production adoption or inference-performance claim
-has been established.
+S2 is frozen for holdout under the improved-choice branch. After the recorded
+approval interruption, the user explicitly authorized its 192 frozen-state
+selections and independent judging at approximately 12:50 UTC. Holdout
+selections all succeeded in 441.33 seconds, with no target calls or GP fits.
+The holdout RQMC ladder is complete: 54 beneficial, 17 tied, 13 harmful and
+12 unresolved comparisons out of 96. Independent ordinary-MC cross-checks
+are complete with no resolved disagreement. The five-case saved-point loss
+diagnostic is complete: no confirmed harmful refinement against its own
+starting winner, with several losses localized before refinement. The mixed
+holdout evidence does not support a general replacement recommendation.
+E4's development entry gates are unmet; E5 remains unapproved and unrun.
+Production defaults are unchanged, and inference performance is unmeasured.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -77,7 +85,7 @@ scheduled denominators, timing records and scientific gates.
 Development-panel selections, their prescribed RQMC judge ladder,
 independent MC diagnostics and paired timing are complete. The four
 full-sieve cost failures end those arms before fresh quality comparisons.
-Search development remains incomplete.
+Search development and holdout subsequently completed, as recorded below.
 Holdout treatment choices must be frozen before their evaluation. Failed,
 missing and unresolved comparisons remain in the allocated denominators.
 
@@ -302,22 +310,22 @@ records its calibration diagnostics and per-cell costs. A
 completed repetition zero on the remaining nine states, adding exactly 36
 successful cells. Its forecast was 74.82 seconds predicted and 180 seconds
 conservative, with unchanged launch and compute cutoffs. All 48 scheduled
-repetition-zero cells succeeded; the other 336 selections, timing, memory,
-judging and holdout remain unallocated. Numerical work stopped after these
+repetition-zero cells succeeded; at this checkpoint the other 336 selections,
+timing, memory, judging and holdout remained unallocated. Numerical work stopped after these
 48 cells, before the soft launch cutoff.
 The [combined repetition-zero outcome](../experiments/noisy-acquisition-efficiency/integration-search/search_rep0_outcome_20260917.json)
 records 104.51 seconds of total outer worker time, including 78.94 seconds
 for the additional 36 cells. Six selections used the prescribed row-budget
 fallback. Every cell respected the 50-iteration and 1000-row limits.
 
-The remaining **336 selections alone** are estimated at **12.2 minutes
+The remaining **336 selections alone** were estimated at **12.2 minutes
 predicted, 30.1 minutes conservative**, using each state/arm's measured
 repetition-zero cost for its seven remaining repetitions. These are
 scheduling allowances, not statistical bounds or paired performance
 measurements. The 36 paired timing cells, 72 memory/allocation cells and
-independent judging/escalation require additional estimates and allocation.
-No search quality or speedup conclusion is available. The final process
-check found no Python processes; no job needs reattachment.
+independent judging/escalation required additional estimates and allocation.
+No search quality or speedup conclusion was available at this checkpoint.
+Its process check found no Python processes or jobs needing reattachment.
 
 ## Additional selection window on 2026-09-17
 
@@ -357,7 +365,7 @@ array, which contains NaN sentinels for newly generated candidates.
 `canonical()` converts an array with `tolist()` without recursively
 encoding its nonfinite entries, and strict JSON serialization rejects it.
 The failure terminal and partial temporary JSON are preserved. Further
-timing cells are paused pending a reviewed reporting repair and fresh
+timing cells were paused pending a reviewed reporting repair and fresh
 measurement allocation that preserves the frozen selection evidence.
 The judge does not consume timing artifacts and its successful pilot can
 be reused; its remaining initial-budget cells were separately allocated
@@ -445,6 +453,15 @@ S2's maximum process-lifetime resident peak is 177.99 MiB. Tracemalloc
 excludes some native allocations, and resident peaks include process setup;
 these measures describe different quantities and are not timing evidence.
 
+The development gate was frozen before the search-specific ordinary-MC
+diagnostic was run. The completed E2 panel diagnostic does not cover E3
+search comparisons. The 2026-09-17 continuation identified this outstanding
+cross-check and retained the frozen S2 choice while allocating the existing
+search-crosscheck harness. This is a sequencing deviation: search-specific
+MC confirmation follows the frozen finalist and holdout evaluation. Neither
+its results nor the holdout results can revise the treatment choice. Its
+outcome must accompany any positive E3 claim.
+
 The [development gate assessment](../experiments/noisy-acquisition-efficiency/integration-search/search_development_gate_20260917.json)
 freezes S2 under the **improved choices at comparable cost** branch:
 54 beneficial comparisons out of 96, 18.75% unresolved, and a timing ratio
@@ -495,6 +512,58 @@ would address.
 
 ## Frozen S2 holdout evaluation
 
+All 192 selections succeeded in 441.33 seconds of outer worker time,
+against 443.69 predicted and 766.64 conservative. Independent review
+authenticated every terminal, report and selected-coordinate archive.
+The maximum accurate-candidate count was 876, below the frozen 1000-row
+cap. There were no target evaluations or GP fits.
+The [selection outcome](../experiments/noisy-acquisition-efficiency/integration-search/holdout_selection_outcome_20260917.json)
+binds its completion snapshot, costs and fallback diagnostics.
+
+The RQMC judge used 12, 12, 6, 5 and 4 state cells at budgets 4096,
+8192, 16384, 32768 and 65536. Their worker times were 62.93, 79.82,
+58.62, 83.79 and 100.47 seconds, respectively. Each escalation used
+the frozen predicate and an immutable completed previous summary.
+All 96 primary comparisons were observed without a failed or missing cell.
+The [judge outcome](../experiments/noisy-acquisition-efficiency/integration-search/holdout_judge_outcome_20260917.json)
+records grouped counts and every material loss; the
+[completed ladder](../experiments/noisy-acquisition-efficiency/integration-search/holdout_judge_ladder_20260917.json)
+binds each allocation, cost record and immutable summary. The exact executed
+holdout wrappers were archived before use, as recorded in their
+[archive index](../experiments/noisy-acquisition-efficiency/integration-search/holdout_wrapper_archive_20260917.json).
+
+| Holdout trajectory | Beneficial | Practical tie | Harmful | Unresolved | Material raw loss |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Logistic regression | 12 | 1 | 2 | 1 | 2 |
+| Multisensory | 8 | 1 | 0 | 7 | 0 |
+| Rosenbrock noise 1 | 5 | 3 | 8 | 0 | 7 |
+| Rosenbrock noise 3 | 5 | 10 | 1 | 0 | 1 |
+| Student-t | 15 | 1 | 0 | 0 | 0 |
+| Timing | 9 | 1 | 2 | 4 | 1 |
+| **All 96 scheduled** | **54** | **17** | **13** | **12** | **11** |
+
+Among the 84 score-resolved comparisons, 64.29% are beneficial, 20.24%
+tied and 15.48% harmful. Fractions of all scheduled comparisons are
+56.25%, 17.71%, 13.54% and 12.50% unresolved. The separate raw-loss
+assessment has 77 no-material-loss, 11 material-loss and eight unresolved
+results. Early/late states and repetitions remain clustered within six
+trajectories; these are not independent inference runs.
+
+All eight late Rosenbrock-noise1 repetitions triggered the prescribed
+finite-difference instability guard. Each used 18 accurate rows and zero
+local iterations, then returned a finite, accurately re-scored shortlist
+winner. Six have material raw losses, retaining 77.10%-88.80% of S0's
+reduction. The guard behaved as specified, but its fallback does not
+recover the larger production search's choices. The other five material
+losses occurred in accepted-refinement outputs: early Rosenbrock noise 1
+repetition 5, late Rosenbrock noise 3 repetition 0, early logistic regression
+repetitions 0 and 4, and late timing repetition 6. Their raw reductions
+retain approximately 72.88%, 68.42%, 79.89%, 79.46% and 87.43% of S0's,
+respectively. Each refined point improved its own fixed MC1600 score;
+that internal comparison does not establish independent improvement over
+its shortlist or explain the loss against S0. The completed cross-method
+checks and saved-point diagnostic below assess these cases with S2 unchanged.
+
 The holdout allocation uses twelve seed-1 states, eight fresh repetitions
 and S0 versus the unchanged finalist: 192 selections and 96 primary judge
 comparisons. The generic manifest also declares twelve timing and 24 memory
@@ -509,9 +578,11 @@ S0/S2 workers took 443.69 seconds
 for 192 cells; the holdout conservative allowance is 766.64 seconds, using
 1.5 times the largest observed worker cost per cell. Judging is allocated
 separately from its pilot and successive complete budget summaries.
-The 14:04 UTC launch cutoff and 14:09 UTC hard stop remain in force.
+The original RQMC allocation retained its 14:04 UTC launch cutoff and
+14:09 UTC hard stop. The user's further 90-minute window at approximately
+13:04 UTC supports successor MC allocations with 14:29/14:34 UTC guards.
 
-Execution is paused at manifest unlock. Automatic approval review twice
+Execution was paused at manifest unlock. Automatic approval review twice
 classified the action as unapproved E5; the second request also incorrectly
 called it E4. The corrected request identified the plan's E3 frozen-state
 holdout, its source-level guards against target calls and GP fits, and the
@@ -519,13 +590,131 @@ frozen gate/selection/draft hashes. That request returned "aborted by user"
 after 5.1 seconds. No executable holdout manifest was written and no holdout
 worker started. Explicit confirmation was requested before retrying this
 action. This is an approval interruption, not an experimental failure.
+At approximately 12:50 UTC the user answered "Run the E3 holdout" to the
+explicit request for 192 frozen-state S0/S2 selections and independent
+judging, with no target evaluations, GP fits or E5 inference. This authorizes
+the reviewed manifest unlock and execution; the earlier pause record remains
+immutable. That RQMC allocation retained the 14:04/14:09 UTC cutoffs.
+The [authorization successor](../experiments/noisy-acquisition-efficiency/integration-search/search_holdout_authorization_20260917.json)
+binds this confirmation to the unchanged finalist and reviewed draft.
+Independent review verified that the
+[executable holdout manifest](../experiments/noisy-acquisition-efficiency/integration-search/search_holdout_manifest_20260917.json)
+changes only the readiness and holdout-lock flags. The
+[192-cell allocation](../experiments/noisy-acquisition-efficiency/integration-search/search_holdout_allocation_20260917.json)
+and [launch clearance](../experiments/noisy-acquisition-efficiency/integration-search/search_holdout_clearance_20260917.json)
+bind every scheduled tag and the executed wrapper.
 The [pause record](../experiments/noisy-acquisition-efficiency/integration-search/search_holdout_approval_pause_20260917.json)
 binds the prepared state. The local wrapper archive preserves fourteen
 available scripts, including the finalist-freeze script, with hashes in its
 [archive index](../experiments/noisy-acquisition-efficiency/integration-search/search_wrapper_archive_20260917.json).
-The final process check found no Python workers. Two workspace-local pytest
+That development-checkpoint process check found no Python workers. Two workspace-local pytest
 temporary directories remain because Windows denied their removal; neither
 is tracked or contains experiment evidence.
+
+## Search-specific independent MC checks
+
+The prescribed development diagnostic selected 183 comparison tags from
+the completed RQMC summary: each state's minimum and maximum mean score
+difference, every comparison at least ten practical bands from zero, and
+every material raw loss. Exact-coordinate deduplication gives 137 pairs
+across twelve states. Eight fresh ordinary-MC rules at 32768 and 65536
+nodes use the original bands and consecutive-budget criteria. All cells
+succeeded. Worker times were 167.94 and 362.73 seconds, respectively.
+
+Of the 137 pairs, complete-score checks agree with RQMC on 118, disagree
+on none and remain unresolved on 19. Raw-loss checks agree on 108,
+disagree on none and remain unresolved on 29. The two S2 Student-t early
+losses have harmful MC complete scores, agreeing with RQMC; their MC
+10% raw-loss checks remain unresolved. These outcomes confirm the score
+direction while leaving that threshold independently unconfirmed.
+
+The holdout [explicit allocation](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_holdout_catastrophes_20260917.json)
+contains 48 distinct pairs across eight states: every apparent ten-band
+gain or loss and all eleven material raw losses. Holdout extrema alone
+do not qualify. This diagnostic uses fresh streams and cannot override
+the frozen primary RQMC classifications or tune S2.
+All eight state cells succeeded at each budget. The 32768-node round took
+276.64 seconds and the 65536-node round 450.21 seconds. Score checks agree
+on 47 of 48 pairs, disagree on none and leave one unresolved; raw-loss
+checks agree on 44, disagree on none and leave four unresolved. All eleven
+RQMC material-loss cases have harmful MC complete scores. MC independently
+confirms seven of their 10% raw-loss classifications; the two early logistic
+regression cases, late Rosenbrock-noise1 repetition 7 and late timing
+repetition 6 remain unresolved on that threshold.
+
+Pilot-based forecasting underestimated the seven remaining holdout
+32768-node cells: 234.45 seconds observed versus 51.55 predicted and 103.09
+conservative. The successor round used twice each state's actual previous
+cost, predicting 553.28 seconds with a 1106.56-second conservative allowance.
+Its 450.21 seconds fit both. Every cell remained within the bounded worker
+allocation; no scientific setting or denominator changed because of cost.
+The [combined MC outcome](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_outcome_20260917.json)
+binds the [development outcome](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_development_outcome_20260917.json)
+and [holdout outcome](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_holdout_outcome_20260917.json),
+including the original material-loss tags and their MC classifications.
+The [development ladder](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_development_ladder_20260917.json)
+and [holdout ladder](../experiments/noisy-acquisition-efficiency/integration-search/search_mc_holdout_ladder_20260917.json)
+preserve both budget allocations, summaries, worker costs and source bindings.
+
+The separate [loss-diagnostic adapter](../scripts/noisy_acq_search_loss_diagnostic.py)
+compares a saved accepted refined point with its accurately re-scored
+pre-refinement winner and S0. It is a post-hoc explanation of confirmed
+or unresolved material losses, outside the 96 primary comparisons.
+Independent static review cleared candidate reconstruction, source bindings,
+fresh common streams, consecutive-budget checks and conservative
+interpretation of all three contrasts. A real-data preflight caught a
+raw-file versus semantic-digest comparison error before any diagnostic
+evaluation. The corrected adapter and a regression test preserve the
+distinct parent hash contracts; the earlier source archive and failed
+preflight remain recorded. Twelve focused tests passed in 1.46 seconds;
+Black, isort, Pycln and whitespace checks passed before the corrected
+source was frozen.
+
+Both diagnostic budgets completed: four states, five cases and fifteen
+contrasts per budget, with eight fresh ordinary-MC rules at 32768 and 65536
+nodes. Worker times were 48.09 and 92.07 seconds. The final round used a
+185.90-second prediction and 371.80-second conservative allowance based on
+matched full-state MC costs. All cases succeeded; no target calls or GP fits
+were made. The [diagnostic outcome](../experiments/noisy-acquisition-efficiency/integration-search/search_loss_outcome_20260917.json)
+and [completed ladder](../experiments/noisy-acquisition-efficiency/integration-search/search_loss_ladder_20260917.json)
+bind the source versions, failed preflight, exact allocations and results.
+A wrapper-identity check was recorded after the first budget's freeze;
+independent review verified that the frozen, executed and archived bytes
+all matched the reviewed wrapper. An append-only clearance preserves this
+sequencing exception without changing any numerical evidence.
+
+Here, "own winner" is S2's accurately re-scored shortlist winner before
+local refinement. Score classifications use the frozen practical bands
+and consecutive-budget rule; no penalty is active in these cases.
+
+| Holdout case | Own winner vs S0 | Selected vs own winner | Selected vs S0 | Direct raw-loss check |
+| --- | --- | --- | --- | --- |
+| Logistic regression early, repetition 0 | Harmful | Beneficial | Harmful | Unresolved |
+| Logistic regression early, repetition 4 | Harmful | Beneficial | Harmful | Unresolved |
+| Rosenbrock noise 1 early, repetition 5 | Harmful | Practical tie | Harmful | Material loss |
+| Rosenbrock noise 3 late, repetition 0 | Harmful | Unresolved | Harmful | Material loss |
+| Timing late, repetition 6 | Harmful | Beneficial | Unresolved | Unresolved |
+
+The score loss is localized before refinement in both logistic-regression
+cases and the early Rosenbrock-noise1 case. The Rosenbrock-noise3 score
+comparison against its own winner remains unresolved, so its score-loss
+stage remains unresolved; its material raw loss is already present before
+refinement. Both Rosenbrock cases have independently resolved material raw
+losses before refinement and after selection. The timing case's direct
+comparison remains unresolved under this fresh diagnostic. There is no
+confirmed harmful selected-versus-own-winner contrast. These observations
+do not distinguish insufficient sieve coverage from inaccurate re-scoring,
+and do not override the primary holdout or earlier MC classifications.
+
+The [final assessment](../experiments/noisy-acquisition-efficiency/integration-search/e3_final_assessment_20260917.json)
+records mixed evidence: S2's development timing ratio is 0.43387 and many
+held-out choices improve, but target-specific regressions prevent a general
+replacement recommendation. The ordinary-MC checks have no resolved
+disagreement with the primary judge; unresolved checks remain unresolved.
+No paired holdout timings or inference runs were allocated. E4 cannot use
+holdout losses to establish its development entry gates, and the diagnostic
+does not supply the missing multi-budget development comparisons or harmful
+accepted refinements on two development trajectories.
 
 ## Resuming the saved experiment
 
@@ -582,14 +771,14 @@ and reused with:
 ```
 
 Set `$cellTag` from the frozen manifest. The command reuses a valid completed
-terminal and refuses incompatible artifacts. The next outstanding work is
-the frozen S2 holdout, pending confirmation after the approval interruption.
-Reuse `search_development_gate.json`, `search_holdout_selection.json` and
-`search_holdout_manifest.draft.json`; do not use the development manifest
-for holdout cells. After confirmation, preserve the reviewed locked draft
-and freeze a separate executable successor with readiness/lock flags
-changed and the draft's hash bound in its allocation. Recheck available
-time before launching the exact 192-cell subset and subsequent judge rungs.
+terminal and refuses incompatible artifacts. The S2 holdout is complete
+under `search_holdout_manifest.json`, with outputs in
+`search_holdout/` and scheduling records in `search_holdout_selection/`.
+Its development gate, frozen selection and reviewed locked draft remain
+immutable. Do not use the development manifest for holdout cells, repeat
+completed cells, or overwrite an existing judge summary. Development and
+holdout MC checks and the saved-point loss diagnostic are complete;
+their `completed_ladder.json` records bind every executed budget.
 Do not use the unbounded `run` controller: it also launches the structurally
 declared timing and memory cells that this holdout does not allocate.
 E4's entry gates are not established; E5 remains unapproved.
@@ -600,3 +789,14 @@ the line-ending convention for checking the published bytes.
 The [extended-window index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_20260917T1124Z.json)
 adds the completed E3 development evidence, reporting-adapter transition,
 frozen finalist decision and reviewed locked holdout draft.
+The [holdout and diagnostic index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_20260917T1425Z.json)
+adds holdout execution, independent MC checks, the loss investigation and
+the final scientific assessment.
+The [compute closure](../experiments/noisy-acquisition-efficiency/integration-search/search_compute_closure_20260917.json)
+and its [final successor](../experiments/noisy-acquisition-efficiency/integration-search/search_compute_closure_20260917_final.json)
+bind the archived orchestration scripts, completed evidence and local
+inventory. The final experiment-process check found no numerical workers.
+The [cleanup successor](../experiments/noisy-acquisition-efficiency/integration-search/search_compute_process_cleanup_20260917.json)
+records removal of owned formatter processes and the final empty check for
+experiment or owned formatter workers. Exact orchestration scripts were
+archived before their workspace scratch copies were removed.

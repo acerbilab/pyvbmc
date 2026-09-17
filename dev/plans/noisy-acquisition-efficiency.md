@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2 COMPLETE; E3 HOLDOUT PREPARED**. Branch:
+Experimental extension drafted 2026-09-16: **E2 AND E3 COMPLETE; E4 NOT ENTERED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution is authorized within
@@ -34,9 +34,20 @@ observed. A reviewed measurement adapter repairs reporting for paired
 timing and memory without changing numerical sources. All 36 timing and
 72 memory cells succeeded. S2 is frozen for holdout under the improved-choice
 branch: its median of state-median timing ratios is 0.43387. The holdout
-draft passed independent review but remains locked after an approval
-interruption; no holdout job started. E4's entry gates were assessed and
-are not established. Production adoption is undecided.
+draft passed independent review. Following the recorded approval interruption,
+the user explicitly authorized its 192 frozen-state selections and independent
+judging at approximately 12:50 UTC. All 192 holdout selections succeeded
+in 441.33 seconds against
+443.69 seconds predicted and 766.64 seconds conservative. No target calls
+or GP fits occurred. The holdout RQMC ladder reached its cap with 54
+beneficial, 17 tied, 13 harmful and 12 unresolved comparisons out of 96;
+11 material raw losses received the prescribed cross-method investigation.
+Search-specific ordinary-MC checks are complete with no resolved disagreement;
+the five-case saved-point loss investigation is also complete. It found no
+confirmed harmful refinement against its own starting winner, and localized
+several losses before refinement. The mixed holdout evidence does not support
+a general replacement recommendation. E4's development entry gates are not
+established; E5 remains unapproved. Production defaults are unchanged.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -119,20 +130,74 @@ supported by this experiment, not a consequence of an arm winning locally.
   allocate the remaining prescribed cells when measured costs fit.
 - [x] Assess E3 development gates and the conditional E4 entry gates before
   freezing any further scientific allocation or opening holdout.
-- [!] Review and freeze the S2-only holdout manifest, then execute its
+- [x] Review and freeze the S2-only holdout manifest, then execute its
   bounded 192 selections and fresh independent judge ladder. Leave the
   generic manifest's 12 timing and 24 memory cells scientifically unallocated.
-  The reviewed draft is saved; executable unlock awaits confirmation after
-  automatic review misclassified the action as E5 and the corrected E3
-  escalation was aborted. No holdout selections have run.
+  The user explicitly confirmed execution after the recorded approval
+  interruption. Preserve that record and bind the new authorization in a
+  successor record before unlock and launch.
 - [x] Publish reviewed evidence, update the pickup point and stop workers.
   Development evidence, locked holdout draft, approval-pause record and
   available wrapper sources are preserved. Independent review verified the
-  numerical evidence, source bindings and publication records; no jobs run.
+  numerical evidence, source bindings and publication records. Holdout,
+  ordinary-MC and loss-diagnostic evidence are complete and preserved.
+- [x] Complete E3's independent ordinary-MC diagnostic using the committed
+  search-crosscheck harness. Freeze development extrema, comparisons at
+  least ten practical bands from zero and material raw losses; add explicit
+  holdout catastrophe tags after its RQMC ladder. Evaluate fresh eight-rule
+  MC budgets 32768 and 65536 with the same frozen bands. Investigate
+  disagreement and retain unresolved diagnostics without retuning S2.
+- [x] If the MC check confirms or cannot resolve material holdout losses
+  in accepted-refinement outputs, investigate those saved choices with a
+  bounded diagnostic comparing S0, the arm's pre-refinement winner and its
+  selected point. Prepare and independently review the diagnostic adapter
+  while the prescribed MC checks run; execute only eligible saved cases.
+  Preserve the primary allocation and frozen configuration.
 
 New launches stop by 14:04 UTC and compute stops by 14:09 UTC. This window
-supersedes the operational deadlines below; scientific gates are unchanged.
+governs the original holdout RQMC allocation and supersedes the earlier
+operational deadlines below; scientific gates are unchanged.
 E5 remains unapproved.
+
+At approximately 13:04 UTC the user extended availability by another
+90 minutes and authorized further work within the E3/E4 gates, including
+resumable allocations. Existing short judge allocations retain their frozen
+deadlines. Successor MC allocations use guards of 14:29 UTC for new launches
+and 14:34 UTC for stopping compute. Independent review
+identified that the completed E2 MC diagnostic does not cover E3 search
+comparisons; the existing `noisy_acq_search_crosscheck.py` provides the
+prescribed search-specific check. Both budgets and the conditional loss
+diagnostic completed with the frozen finalist unchanged. E4's scientific
+entry criteria are unchanged.
+
+The conditional loss diagnostic reconstructs the pre-refinement winner from
+the authenticated selection NPZ: take the first minimum of `shortlist_scores`,
+map it through `shortlist_indices`, and read the corresponding row of
+`coarse_candidates`. Verify that this is a newly generated row using
+`len(coarse_candidates) - generated_count`; repeated rows undergo a separate
+coordinate substitution and cannot use this reconstruction. Accepted
+refinement cases should pass this check because repeat winners return before
+refinement. Bind all source artifacts and reconstructed coordinate
+hashes before evaluation. Its eligible cases are the final holdout's material
+raw losses with an accepted refined point and no fallback; inspect only those
+still confirmed or unresolved by the prescribed MC diagnostic. For each case,
+evaluate S0, the pre-refinement winner and the selected point together using
+eight fresh ordinary-MC rules at 32768 and 65536 nodes, with a separate seed
+domain and the original frozen practical band. Compare selected versus own
+winner, own winner versus S0 and selected versus S0, applying the existing
+precision and consecutive-budget rules. Record raw reduction as well as the
+complete score. Keep these diagnostic contrasts outside the 96 primary
+comparisons. A harmful selected-versus-own-winner contrast identifies an
+accepted refinement regression when the direct selected-versus-S0 loss is
+also resolved. A resolved non-harmful selected-versus-own-winner contrast
+together with a resolved own-winner-versus-S0 loss locates the direct loss
+before refinement. If both stage contrasts are within their bands but the
+direct contrast is harmful, report accumulated sub-band differences rather
+than absence of a loss. Raw localization uses the separate 10% material-loss
+threshold and is inapplicable when any compared point has an active penalty.
+Mixed or unresolved contrasts do not establish a unique cause. These observations can explain
+limitations and guide a later development proposal; they cannot tune S2,
+change the holdout verdict or establish an E4 entry condition from holdout.
 
 The reporting adapter uses new source files and a new measurement namespace.
 Its manifest binds the unchanged parent search manifest, the completed
@@ -177,6 +242,18 @@ than 25 minutes and the existing window cutoffs. Then cost the initial
 4096-node judge round and allocate consecutive budgets only for pending
 states, preserving an immutable summary at each rung. The holdout supplies
 96 primary comparisons, no retuning, and no duplicate MC1600 control.
+
+Before holdout judging, independent review confirmed the interpretation of
+the improved-choice branch. Development timing supplies its frozen
+comparable-cost evidence; no holdout runtime claim is inferred. Use all
+96 scheduled comparisons and report each trajectory and resolved-only
+counts. More than 20% unresolved prevents a positive claim. Reproducible
+numerical failures or unexplained material raw losses block advancement.
+The plan specifies no minimum beneficial fraction, benefit-to-harm ratio or
+per-trajectory pass threshold for this branch; do not introduce one after
+inspection. Assess whether the independently judged pattern supports an
+improvement across trajectories, retain mixed evidence as inconclusive,
+and keep explained regressions visible. E5 remains a separate decision.
 
 2026-09-17 additional window from approximately 11:24 UTC (30+ minutes):
 
@@ -268,17 +345,20 @@ unbounded search controller also launches timing, memory and judging work.
 - [x] E2: compare MC, stratified MC and RQMC; panel selections, prescribed
   RQMC judge ladder, MC crosscheck and timing complete. All four retained
   full-sieve settings fail the necessary cost gate; no integration finalist.
-- [~] E3: compare fixed-budget re-scoring and local search; shared-iteration
+- [x] E3: compare fixed-budget re-scoring and local search; shared-iteration
   correction independently reviewed and 25 focused tests passed. The
   MC1600 development manifest is frozen; all 384 selections succeeded.
   Development judging, 36 paired timing cells and 72 memory cells are
-  complete. S2 is frozen under the improved-choice branch; holdout is pending.
+  complete. S2 is frozen under the improved-choice branch; all 192 holdout
+  selections and its RQMC judge ladder succeeded. Search-specific
+  ordinary-MC diagnostics and the five-case loss investigation are complete.
+  Mixed holdout evidence does not support a general replacement recommendation.
 - [x] E4: entry gates assessed; neither is established. No adaptive arm is
   allocated. Full-sieve E2 quality comparisons were cost-screened out;
   accepted harmful E3 refinements occur on only one development trajectory.
 - [ ] E5: run the bounded paired inference comparison for eligible finalists.
-- [~] E6: consolidate evidence and review recovery; adoption recommendation
-  awaits the uncompleted numerical comparisons.
+- [~] E6: frozen-state evidence consolidated and independently reviewed;
+  inference assessment remains outside the completed scope and requires E5.
 
 Astra (`gpt-6-astra`, high) orchestrates E0, scientific decisions in E2-E5,
 and E6. Sol (`gpt-5.6-sol`, high) implements the developer harness and

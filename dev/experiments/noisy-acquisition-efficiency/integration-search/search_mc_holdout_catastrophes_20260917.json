@@ -1,0 +1,218 @@
+{
+  "automatic_override": false,
+  "comparison_count": 48,
+  "comparison_tags": [
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r0",
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r3",
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4",
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r5",
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r6",
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r7",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r0",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r1",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r2",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r3",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r4",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r5",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r6",
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r7",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r0",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r1",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r2",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r3",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r4",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r5",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r6",
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r7",
+    "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r0",
+    "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r5",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r0",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r1",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r2",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r3",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r4",
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r7",
+    "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0",
+    "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r4",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r0",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r1",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r2",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r3",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r4",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r5",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r6",
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r7",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r0",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r1",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r2",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r3",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r4",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r5",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r6",
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r7"
+  ],
+  "kind": "search_ordinary_mc_holdout_explicit_selection",
+  "policy": "abs(score_mean_difference) >= 10 * eps_F OR confidently classified raw material loss",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "30982b9bc49b45a525796aabd29e087da16830df330a4a110a2485bf4c5466f6",
+  "schema_version": 1,
+  "search_manifest_sha256": "c39a838411efe47102007a0e4c9ef15d86b0079aeee5e36fca5cc436aa3211fd",
+  "selection_reasons": {
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r4": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__finalist_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__finalist_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__finalist_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_early__finalist_minus_S0__r5": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r1": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r2": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r3": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__finalist_minus_S0__r7": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise3_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__finalist_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r6": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__finalist_minus_S0__r7": [
+      "ten_practical_bands"
+    ]
+  },
+  "source_judge_summary_sha256": "add5b9e55c83bb70b8c80ce4d548e337ac9b9afd966a2e9fd96ad19c5ecedf7c"
+}
