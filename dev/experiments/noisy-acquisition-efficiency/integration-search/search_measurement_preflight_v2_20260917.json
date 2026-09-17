@@ -1,0 +1,24 @@
+{
+  "adapter_sha256": "6880e47147f98cf8aa125fc0dc7fa593ea9c840b066b9c2d1d21afe09cb2ba98",
+  "created_utc": "2026-09-17T12:12:48.182287+00:00",
+  "focused_tests": {
+    "command": ".venv/Scripts/python.exe -m pytest dev/scripts/test_noisy_acq_search_measurements.py -q --basetemp=.tmp_pytest_measurements_final -p no:cacheprovider",
+    "result": "5 passed in 1.28s"
+  },
+  "format_validation": {
+    "black_79_api_content_unchanged_after_crlf": true,
+    "core_autocrlf": true,
+    "crlf_only": true,
+    "git_diff_check": "passed",
+    "isort_check_only": "passed",
+    "pycln_cached_precommit_hook": "passed"
+  },
+  "independent_review": "cleared_current_adapter_source",
+  "kind": "noisy_acq_search_measurement_v2_preflight",
+  "manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "parent_sources_unchanged": true,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "7133b01e6a0378114ffc043b82b46aea24f3b12c5481ac64ec8f374c372be095",
+  "schema_version": 1,
+  "test_sha256": "ed3fb44c88c940beeb113cce52153f775538ad0cd84c5259bc342fe3de9ff91d"
+}

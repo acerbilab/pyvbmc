@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2 COMPLETE; E3 REPETITION ZERO SAVED**. Branch:
+Experimental extension drafted 2026-09-16: **E2 COMPLETE; E3 HOLDOUT PREPARED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution is authorized within
@@ -26,21 +26,22 @@ identifies the saved allocation. The continuation completed panel judging,
 MC diagnostics and all 108 paired panel timing cells. All 48 full-sieve
 timing cells also completed; the four retained settings fail the necessary
 cost gate. E2 closes without an integration replacement. E3 uses the
-prescribed MC1600 fallback: all 48 repetition-zero S0-S3 selections are
-saved, with 336 selections remaining in the frozen development manifest.
-Paired search timing and independent judging remain unallocated. E4's
-entry gates have not been assessed. No method is selected for promotion.
-The remaining 336 search selections are estimated at 12.2 minutes predicted
-and 30.1 minutes conservative. Paired timing, memory/allocation and the
-independent judge ladder require additional cost estimates. Reuse the
-saved repetition-zero cells, validate their hashes, then allocate
-repetitions 1–7 from `search_manifest.json`. The final process check found
-no Python processes; no job needs reattachment.
+prescribed MC1600 fallback: all 384 S0-S3 development selections succeeded.
+The additional 336 selections completed in 12.7 minutes of worker time,
+against 12.2 minutes predicted and 30.1 minutes conservative. Independent
+judging reached its 65536-node cap with all 576 scheduled comparisons
+observed. A reviewed measurement adapter repairs reporting for paired
+timing and memory without changing numerical sources. All 36 timing and
+72 memory cells succeeded. S2 is frozen for holdout under the improved-choice
+branch: its median of state-median timing ratios is 0.43387. The holdout
+draft passed independent review but remains locked after an approval
+interruption; no holdout job started. E4's entry gates were assessed and
+are not established. Production adoption is undecided.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
 at approximately 09:03 UTC. At 10:07 UTC the user confirmed approximately
-90 minutes of remaining availability. The compute cutoff is therefore
+90 minutes of remaining availability. That window's compute cutoff was
 11:22 UTC, with new cell launches stopping by 11:12 UTC and about 15 minutes
 reserved before the availability ends. Earlier allocation records retain
 their original 11:03 UTC cutoff. The saved capture and panel artifacts
@@ -106,6 +107,107 @@ supported by this experiment, not a consequence of an arm winning locally.
 
 ### Live checklist and execution roles
 
+2026-09-17 extended measurement window from approximately 11:49 UTC
+(another 2.5 hours):
+
+- [x] Complete the prescribed E3 judge ladder, escalating only unresolved
+  primary or component comparisons under the frozen predicate. Freeze each
+  complete budget summary before allocating the next budget.
+- [x] Implement and independently review a separate measurement-reporting
+  adapter, then run focused checks and freeze its source identity.
+- [x] Pilot and cost the repaired paired timings and separate memory cells;
+  allocate the remaining prescribed cells when measured costs fit.
+- [x] Assess E3 development gates and the conditional E4 entry gates before
+  freezing any further scientific allocation or opening holdout.
+- [!] Review and freeze the S2-only holdout manifest, then execute its
+  bounded 192 selections and fresh independent judge ladder. Leave the
+  generic manifest's 12 timing and 24 memory cells scientifically unallocated.
+  The reviewed draft is saved; executable unlock awaits confirmation after
+  automatic review misclassified the action as E5 and the corrected E3
+  escalation was aborted. No holdout selections have run.
+- [x] Publish reviewed evidence, update the pickup point and stop workers.
+  Development evidence, locked holdout draft, approval-pause record and
+  available wrapper sources are preserved. Independent review verified the
+  numerical evidence, source bindings and publication records; no jobs run.
+
+New launches stop by 14:04 UTC and compute stops by 14:09 UTC. This window
+supersedes the operational deadlines below; scientific gates are unchanged.
+E5 remains unapproved.
+
+The reporting adapter uses new source files and a new measurement namespace.
+Its manifest binds the unchanged parent search manifest, the completed
+384-selection snapshot, frozen numerical sources, adapter source, original
+measurement cells/seeds and the failed timing evidence. It calls the existing
+timing and allocation routines unchanged. After clocks and memory tracing
+stop, it replaces the full selection result with a validated compact record:
+selected-coordinate digest, seeds, arm, counters, nullable cache index,
+target-call flag and fallback reasons. Raw diagnostic arrays are omitted.
+Focused tests cover nonfinite discarded diagnostics, preserved measurements,
+state/identity guards and strict publication/reuse. The original failed
+terminal and partial JSON remain evidence. No selection or numerical source
+identity changes as part of this reporting transition.
+
+The completed development judge supports a conditional S2 holdout decision
+under the improved-choice branch: 54 beneficial, 19 tied, 5 harmful and
+18 unresolved comparisons out of 96. The 5% harmful ceiling belongs to
+the faster-selection branch; the improved-choice branch requires comparable
+cost, within 10%. The two material Student-t raw losses have an identified
+mechanism: exhaustion of the shared row budget returns the re-scored
+shortlist fallback. Independent review accepts this as satisfying the
+investigation requirement while retaining both losses in the evidence.
+This explanation establishes neither harmlessness nor noninferiority.
+If the median of the twelve state-median S2/S0 paired timing ratios is at
+most 1.10, freeze S2's
+unchanged MC1600 configuration and this gate assessment before opening
+holdout. If it exceeds 1.10, S2 fails both benefit branches. Any holdout
+allocation needs a separate manifest, bounded cost estimate, fresh split
+streams and reviewed measurement provenance; it may not retune the arm.
+
+The completed timing ratios are S1 0.18845, S2 0.43387 and S3 0.83991.
+The S2 decision and unchanged configuration were frozen in
+`search_development_gate.json` and `search_holdout_selection.json` before
+holdout inspection. Prepare a locked holdout manifest with twelve seed-1
+states, eight repetitions, and tags S0/finalist. Independently review its
+configuration, source identity, split streams and exact 192-cell allocation
+before freezing the unlocked executable manifest. Reuse the existing
+per-cell selection and judging APIs; do not run the generic controller that
+would also launch timing and memory. Allocate selections from matched
+development S0/S2 worker costs, with a conservative allowance no greater
+than 25 minutes and the existing window cutoffs. Then cost the initial
+4096-node judge round and allocate consecutive budgets only for pending
+states, preserving an immutable summary at each rung. The holdout supplies
+96 primary comparisons, no retuning, and no duplicate MC1600 control.
+
+2026-09-17 additional window from approximately 11:24 UTC (30+ minutes):
+
+- [x] Validate and reuse all 48 completed E3 selections; execute the
+  remaining 336 frozen selections with per-cell checkpoints and deadline
+  guards. Stop new launches by 11:51 UTC and compute by 11:54 UTC.
+- [x] Re-estimate timing and independent judging from a bounded pilot if
+  selections finish with sufficient time remaining.
+- [x] Complete a bounded independent-judge round and assess the next budget.
+- [x] Paired timing required a reporting repair: the frozen timing pilot
+  cannot serialize NaNs inside its diagnostic `cache_indices` array. Keep
+  the failed terminal record and preserve all frozen selection identities.
+- [x] Verify saved evidence, update the pickup point and stop all workers.
+  The extended window below owns subsequent measurements and closeout.
+
+This user-authorized window superseded the earlier compute cutoff without
+changing sources, settings, seeds or scientific gates. The conservative
+selection estimate is approximately the entire window, so unfinished cells
+remain resumable if measured costs prevent completion. E5 is unapproved.
+
+After all 384 selections finish, bind their terminal hashes and run two
+bounded cost pilots on late logistic regression: the 4096-node independent
+judge and S3's prescribed seven-round paired timing against S0. Both pilots
+reuse their original frozen seeds and count toward their respective full
+matrices. Estimate remaining costs before allocating either matrix. If only
+one fits, prioritize the 36 paired timing cells. The initial judge budget
+cannot resolve complete-score quality under the consecutive-budget rule;
+it supplies setup and evidence for the next prescribed budget. Complete a
+judge round before freezing its summary or allocating the next budget.
+Keep memory measurements and holdout separate; E5 remains unapproved.
+
 2026-09-17 bounded continuation from `4145832` (2–2.5-hour availability):
 
 - [x] Run the saved E2 4096-node development judge pilot and estimate costs.
@@ -168,10 +270,12 @@ unbounded search controller also launches timing, memory and judging work.
   full-sieve settings fail the necessary cost gate; no integration finalist.
 - [~] E3: compare fixed-budget re-scoring and local search; shared-iteration
   correction independently reviewed and 25 focused tests passed. The
-  MC1600 development manifest is frozen; all 48 repetition-zero cells
-  succeeded. Remaining selections, timing and independent judging await
-  another bounded allocation.
-- [ ] E4: test adaptive integration only if its entry gate passes.
+  MC1600 development manifest is frozen; all 384 selections succeeded.
+  Development judging, 36 paired timing cells and 72 memory cells are
+  complete. S2 is frozen under the improved-choice branch; holdout is pending.
+- [x] E4: entry gates assessed; neither is established. No adaptive arm is
+  allocated. Full-sieve E2 quality comparisons were cost-screened out;
+  accepted harmful E3 refinements occur on only one development trajectory.
 - [ ] E5: run the bounded paired inference comparison for eligible finalists.
 - [~] E6: consolidate evidence and review recovery; adoption recommendation
   awaits the uncompleted numerical comparisons.

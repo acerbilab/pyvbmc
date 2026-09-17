@@ -1,0 +1,193 @@
+{
+  "available_wrapper_bindings": {
+    "b4096_wrapper_sha256": "f5b66d9ec16c0ccc394c318413914c5ad42d17eb734487f0e3280086ebae7b05",
+    "corrected_b65536_wrapper_sha256": "2093c1fd5dcbe2da779b1603d287bd4515d6d15549f02048974dd9544814e540"
+  },
+  "cap_reached": 65536,
+  "created_utc": "2026-09-17T12:24:45.035301+00:00",
+  "failed_cells": 0,
+  "historical_wrapper_limitation": "The generic wrapper bytes used for b8192, b16384, and b32768 were corrected in place before b65536 and are unavailable. Their exact terminal/payload identities and state sets were independently verified; no historical wrapper hash is reconstructed.",
+  "judge_outcome_sha256": "ed5793221a094b6271b09f3a8f775b64d838495477e9f796ab722ee4caae47b8",
+  "kind": "noisy_acq_search_completed_judge_ladder",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "1d946bd57a3b95799498842ca1c465816f6a4c79f1605862889e9f4ef17049fa",
+  "rounds": [
+    {
+      "allocation_sha256": "1805948dfb8d1cca3b1dfae6d52f46b0679382b522ea0ff9b7880f86fd915b58",
+      "budget": 4096,
+      "costs_sha256": "505f6ab9fcf0b66018cdfffdf5f183eece125b2bafd9f00931a64ad3ac2397ec",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.0,
+          "raw_material_loss": 0.0,
+          "raw_unresolved": 1.0,
+          "unresolved": 1.0
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 0,
+          "no_material_loss": 0,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 576
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 0,
+          "failed_or_missing": 0,
+          "harmful": 0,
+          "practical_tie": 0,
+          "unresolved": 576
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 76.0164173000012,
+      "state_count": 12,
+      "succeeded_state_count": 12,
+      "summary_sha256": "47e53f1ea9b042d21ace6832e629b98a3604aacaad01ce438e5933a4cd84c00a"
+    },
+    {
+      "allocation_sha256": "aebd0ca0a500fa6bdc672b0a5287bf3927ae22912031bf8be7b208f67b70b50d",
+      "budget": 8192,
+      "costs_sha256": "f2a6960a66ef53b9245406e46fbd3df572d64c8922a7d1a97bf15b61bca19b3d",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.08854166666666667,
+          "raw_material_loss": 0.017361111111111112,
+          "raw_unresolved": 0.18055555555555555,
+          "unresolved": 0.14583333333333334
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 10,
+          "no_material_loss": 462,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 104
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 231,
+          "failed_or_missing": 0,
+          "harmful": 51,
+          "practical_tie": 210,
+          "unresolved": 84
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 84.56664650000675,
+      "state_count": 12,
+      "succeeded_state_count": 12,
+      "summary_sha256": "365eb1560f51abffc8b82674c4d73a3db997c6a16de8a59b4323e74bb8c35683"
+    },
+    {
+      "allocation_sha256": "783c82c0c940818fd195e62ce079e9a8590c97b8efd39d8d495bfa354db28920",
+      "budget": 16384,
+      "costs_sha256": "e38bb07e81e9bdf137e2bd863ccd6f08a44ab8e060313922dad374c04a05d668",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.1753472222222222,
+          "unresolved": 0.1423611111111111
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 464,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 101
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 232,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 210,
+          "unresolved": 82
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 79.45095579999543,
+      "state_count": 8,
+      "succeeded_state_count": 8,
+      "summary_sha256": "b4303e57935f4bab80cf882c0456d7ac6c6573147c4bad5133e637cc22d4bf74"
+    },
+    {
+      "allocation_sha256": "d62360072f5d0d61c306c33e73e8f3590491a75cde7afe53675060e0c6df3e5c",
+      "budget": 32768,
+      "costs_sha256": "4ec25bdc3cc7770f2fb7edad886973bf6eb39cecb758a7250102cc6cd5e36ce2",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.171875,
+          "unresolved": 0.13541666666666666
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 466,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 99
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 236,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 210,
+          "unresolved": 78
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 149.16075580000324,
+      "state_count": 8,
+      "succeeded_state_count": 8,
+      "summary_sha256": "d8e700d27060b31db7f7ae4a96a99d00ecd359baa77e6059d87ba7fee05d9540"
+    },
+    {
+      "allocation_sha256": "eb06a43b460166a85035d7196ef19168e1315cfa222076a5fd03ab435fb10649",
+      "budget": 65536,
+      "costs_sha256": "6f744c42855ad98b40d44ceb53a92ea39267442b5d2466611574a1e41aca5dec",
+      "counts": {
+        "fractions_of_scheduled": {
+          "failed_or_missing": 0.0,
+          "harmful": 0.09027777777777778,
+          "raw_material_loss": 0.019097222222222224,
+          "raw_unresolved": 0.171875,
+          "unresolved": 0.13194444444444445
+        },
+        "observed": 576,
+        "raw_loss_gate_counts": {
+          "failed_or_missing": 0,
+          "material_loss": 11,
+          "no_material_loss": 466,
+          "not_applicable_penalty_active": 0,
+          "unresolved": 99
+        },
+        "scheduled": 576,
+        "score_counts": {
+          "beneficial": 236,
+          "failed_or_missing": 0,
+          "harmful": 52,
+          "practical_tie": 212,
+          "unresolved": 76
+        }
+      },
+      "failed_state_count": 0,
+      "outer_wall_seconds_including_imports": 189.9327570000023,
+      "state_count": 6,
+      "succeeded_state_count": 6,
+      "summary_sha256": "bfd675b51614bda2fc87ed24e523722d46b469966bf6efb69e564b295250e560"
+    }
+  ],
+  "schema_version": 1
+}

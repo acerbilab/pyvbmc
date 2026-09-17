@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-09-17T12:24:45.035301+00:00",
+  "historical_limitation": "tmp_run_e3_judge_round.py was corrected in place before b65536; its closure hash applies to b65536 only. Earlier exact state sets and artifacts were independently verified.",
+  "judge_outcome_sha256": "ed5793221a094b6271b09f3a8f775b64d838495477e9f796ab722ee4caae47b8",
+  "kind": "noisy_acq_search_orchestration_closure",
+  "measurement_outcome_sha256": "d7e3171f9c5c4a5774085d1a9638ebb84b4b6713a56180e0c4e4fa4307a44fce",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "71f213fe2ef6b8dc17368bcb28a06096fee0a02a94a9548e5adfa921ce1c7161",
+  "schema_version": 1,
+  "selection_outcome_sha256": "d27ce5089864ab46b38fc33fbcd1f7d94573c18cbd9bb0be529c45c5162342e5",
+  "source_sha256": {
+    "measurement_adapter": "6880e47147f98cf8aa125fc0dc7fa593ea9c840b066b9c2d1d21afe09cb2ba98",
+    "search": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf"
+  },
+  "wrapper_hashes_at_closure": {
+    "tmp_estimate_e3_measurements.py": "70e7046c4db97b33cbefe9e1a7007bed5092efda0b8bb79291d0a0550d656723",
+    "tmp_freeze_e3_followup.py": "b767033e1f3a585e75fbe28ddd398a7d6b97a268b204e4a07fff04339ac4d966",
+    "tmp_run_e3_followup_pilots.py": "da8f7bc8273b1c2290bb92e4b602c6a59247e9553e46f3800dd7515bb5ca9197",
+    "tmp_run_e3_judge4096.py": "f5b66d9ec16c0ccc394c318413914c5ad42d17eb734487f0e3280086ebae7b05",
+    "tmp_run_e3_judge_round.py": "2093c1fd5dcbe2da779b1603d287bd4515d6d15549f02048974dd9544814e540",
+    "tmp_run_e3_measurement_full.py": "9f941e45731584e6f37eba9f6fb4617b14e230e975957c00b4f93dd22b68df2c",
+    "tmp_run_e3_measurement_pilot.py": "f59d51afffbb866f4589cf64580bb4c72c9f85e05125a6a8885ee9f2358efdb3",
+    "tmp_run_e3_remaining336.py": "ccbee165bbf352d43dfff31f070d28eea0df51ac911b6e3d4d57a4f9df78e0cf"
+  }
+}

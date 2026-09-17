@@ -1,0 +1,94 @@
+{
+  "created_utc": "2026-09-17T12:33:54.130909+00:00",
+  "historical_limitation": "The generic judge-round wrapper was corrected in place before b65536. Its archived bytes apply to b65536 only; b8192/b16384/b32768 exact state sets and artifacts were independently verified, and no unavailable historical bytes are reconstructed.",
+  "kind": "noisy_acq_search_orchestration_script_archive",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "4eb436d86b8118058e3dfe5a762007edcf63bdf947fdee68661b20531b7bac90",
+  "schema_version": 1,
+  "scripts": [
+    {
+      "archived_sha256": "ccbee165bbf352d43dfff31f070d28eea0df51ac911b6e3d4d57a4f9df78e0cf",
+      "name": "tmp_run_e3_remaining336.py",
+      "source_sha256_at_archive": "ccbee165bbf352d43dfff31f070d28eea0df51ac911b6e3d4d57a4f9df78e0cf",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "b767033e1f3a585e75fbe28ddd398a7d6b97a268b204e4a07fff04339ac4d966",
+      "name": "tmp_freeze_e3_followup.py",
+      "source_sha256_at_archive": "b767033e1f3a585e75fbe28ddd398a7d6b97a268b204e4a07fff04339ac4d966",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "da8f7bc8273b1c2290bb92e4b602c6a59247e9553e46f3800dd7515bb5ca9197",
+      "name": "tmp_run_e3_followup_pilots.py",
+      "source_sha256_at_archive": "da8f7bc8273b1c2290bb92e4b602c6a59247e9553e46f3800dd7515bb5ca9197",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "f5b66d9ec16c0ccc394c318413914c5ad42d17eb734487f0e3280086ebae7b05",
+      "name": "tmp_run_e3_judge4096.py",
+      "source_sha256_at_archive": "f5b66d9ec16c0ccc394c318413914c5ad42d17eb734487f0e3280086ebae7b05",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "2093c1fd5dcbe2da779b1603d287bd4515d6d15549f02048974dd9544814e540",
+      "name": "tmp_run_e3_judge_round.py",
+      "source_sha256_at_archive": "2093c1fd5dcbe2da779b1603d287bd4515d6d15549f02048974dd9544814e540",
+      "status": "executed_current_bytes_apply_to_b65536_only"
+    },
+    {
+      "archived_sha256": "d52238849eab544c2067f25343ef081a99d1656e46a832ee3e366b3cd1ece85b",
+      "name": "tmp_close_e3_window.py",
+      "source_sha256_at_archive": "d52238849eab544c2067f25343ef081a99d1656e46a832ee3e366b3cd1ece85b",
+      "status": "not_executed_stale_draft"
+    },
+    {
+      "archived_sha256": "f59d51afffbb866f4589cf64580bb4c72c9f85e05125a6a8885ee9f2358efdb3",
+      "name": "tmp_run_e3_measurement_pilot.py",
+      "source_sha256_at_archive": "f59d51afffbb866f4589cf64580bb4c72c9f85e05125a6a8885ee9f2358efdb3",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "70e7046c4db97b33cbefe9e1a7007bed5092efda0b8bb79291d0a0550d656723",
+      "name": "tmp_estimate_e3_measurements.py",
+      "source_sha256_at_archive": "70e7046c4db97b33cbefe9e1a7007bed5092efda0b8bb79291d0a0550d656723",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "9f941e45731584e6f37eba9f6fb4617b14e230e975957c00b4f93dd22b68df2c",
+      "name": "tmp_run_e3_measurement_full.py",
+      "source_sha256_at_archive": "9f941e45731584e6f37eba9f6fb4617b14e230e975957c00b4f93dd22b68df2c",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "0793dda0ff893a4625035fb71087bf834227fbbe92babf312a94b171bc006979",
+      "name": "tmp_finalize_e3_outcomes.py",
+      "source_sha256_at_archive": "0793dda0ff893a4625035fb71087bf834227fbbe92babf312a94b171bc006979",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "d0a1fadd32243260f64135bd6c8400ecfc67029135edb8c5ceb3847846838e92",
+      "name": "tmp_freeze_e3_holdout_manifest.py",
+      "source_sha256_at_archive": "d0a1fadd32243260f64135bd6c8400ecfc67029135edb8c5ceb3847846838e92",
+      "status": "not_successfully_executed_approval_denied_or_aborted"
+    },
+    {
+      "archived_sha256": "5700e78243b06727f06040881bfc1a243197f44d6a856a1b3c548e351c9fbfec",
+      "name": "tmp_run_e3_holdout_selection.py",
+      "source_sha256_at_archive": "5700e78243b06727f06040881bfc1a243197f44d6a856a1b3c548e351c9fbfec",
+      "status": "not_executed"
+    },
+    {
+      "archived_sha256": "4d93d7e16d9c64cae57aaf567894c48f30bd7c2009e192348adc6c8230527cbb",
+      "name": "tmp_checkpoint_e3_pause.py",
+      "source_sha256_at_archive": "4d93d7e16d9c64cae57aaf567894c48f30bd7c2009e192348adc6c8230527cbb",
+      "status": "executed"
+    },
+    {
+      "archived_sha256": "698b34c8de75618377cced409291b949bd8e2aebdef6abec80842c850db61710",
+      "name": "tmp_freeze_e3_finalist.py",
+      "source_sha256_at_archive": "698b34c8de75618377cced409291b949bd8e2aebdef6abec80842c850db61710",
+      "status": "executed_by_root_preserved_in_workspace"
+    }
+  ]
+}

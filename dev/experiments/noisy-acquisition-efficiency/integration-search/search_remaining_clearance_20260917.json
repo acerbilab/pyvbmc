@@ -1,0 +1,15 @@
+{
+  "allocation_sha256": "5265dd3ff673bf42e2499240eb7990705635b9272f108b19e24209c9d89a282c",
+  "cell_count": 336,
+  "created_utc": "2026-09-17T11:27:03.105355+00:00",
+  "decision": "authorized_up_to_exact_336_remaining_selection_cells",
+  "hard_compute_cutoff_utc": "2026-09-17T11:54:00+00:00",
+  "kind": "noisy_acq_search_remaining_selection_launch_clearance",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "no_timing_memory_judging_or_holdout_authorized": true,
+  "publication_note": "Review copy with user-home paths redacted. Execute from original local artifacts; hashes refer to raw artifacts unless labelled published-copy hashes.",
+  "raw_artifact_sha256": "7423c814ba4cf9d0178f8591416d08520dc114f55a35ad17728409ef5eefb245",
+  "rep0_outcome_sha256": "b087afbe33d5fa06352c2674a71818dc489ea3ee504b4378bc3e21b5fa695ac7",
+  "schema_version": 1,
+  "soft_stop_new_launches_utc": "2026-09-17T11:51:00+00:00"
+}

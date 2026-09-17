@@ -1,0 +1,19 @@
+{
+  "allocation_sha256": "5265dd3ff673bf42e2499240eb7990705635b9272f108b19e24209c9d89a282c",
+  "binding_time": "closure_after_execution",
+  "costs_sha256": "5ddd0a4f88778ba3351cce476ff8b143cf11b00dc39fa4a73b2722b1e7148dbb",
+  "created_utc": "2026-09-17T11:42:45.842392+00:00",
+  "kind": "noisy_acq_search_remaining_wrapper_closure",
+  "not_prelaunch_identity": true,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "6b751e0472202a0e79fe09b44109590491630ee3e051f276ab7e6d0a6ebe8255",
+  "result": {
+    "expected_new": 336,
+    "failed_new": 0,
+    "succeeded_new": 336
+  },
+  "schema_version": 1,
+  "selection_snapshot_sha256": "e7d132a3f1902b4ee2e75eaf2769fd769b48b14c4dab4a9009f1705b75ae9b13",
+  "wrapper_path": "tmp_run_e3_remaining336.py",
+  "wrapper_sha256": "ccbee165bbf352d43dfff31f070d28eea0df51ac911b6e3d4d57a4f9df78e0cf"
+}

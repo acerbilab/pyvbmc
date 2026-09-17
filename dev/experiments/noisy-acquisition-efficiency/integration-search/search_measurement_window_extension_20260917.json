@@ -1,0 +1,14 @@
+{
+  "b4096_summary_sha256": "47e53f1ea9b042d21ace6832e629b98a3604aacaad01ce438e5933a4cd84c00a",
+  "created_utc": "2026-09-17T11:51:26.017856+00:00",
+  "hard_compute_cutoff_utc": "2026-09-17T14:09:00+00:00",
+  "kind": "noisy_acq_search_window_amendment",
+  "prior_window_amendment_sha256": "046a285153214b652e313fdf8a1616df22d18868d57ed19bd8066e6d06789f40",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "a4618f90d00389da1273fdcbbaec44d8d00580088d2af7c959e24814023b6dd5",
+  "reason": "user granted another approximately 2.5 hours",
+  "schema_version": 1,
+  "soft_stop_new_launches_utc": "2026-09-17T14:04:00+00:00",
+  "supersedes_hard_compute_cutoff_utc": "2026-09-17T11:54:00+00:00",
+  "supersedes_soft_stop_new_launches_utc": "2026-09-17T11:51:00+00:00"
+}

@@ -1,0 +1,1221 @@
+{
+  "allocation_cell_count": 70,
+  "cell_count": 105,
+  "cells": [
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 11706027593928152208,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 5491220916388944790,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 127023280503823583,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 12779988714776286027,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17622776442889287517,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17327168332127250577,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4986347041840376306,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 2872318536356162359,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4605356808754947806,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 6799548003299985269,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 9536049191036101514,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 167343459978890856,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 2697164094075780154,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "logreg_D5_noise3_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 12424624361826191321,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "logreg_D5_noise3_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 17294676794260366486,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "logreg_D5_noise3_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 17794814708887548882,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "logreg_D5_noise3_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 6909061148505111473,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "logreg_D5_noise3_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 8368367248371917808,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 15934981614925544601,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 13959724936867232102,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 8894973568537496929,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 7916015476480896999,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 10604365628142694106,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "student_D8_noise3_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 17563772072030037529,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 7658412347176330315,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 15510699540582912123,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10720689804352417212,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 5192787094235733533,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10342642402151068481,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17553064904989652522,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_early__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17601085141178270382,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_early__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 15326876456200718192,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_early__S3__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6926974955185360031,
+        "treatment_tag": "S1"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_late__S1__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6459070990370335992,
+        "treatment_tag": "S2"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_late__S2__timing"
+    },
+    {
+      "cell": {
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 104148735866491897,
+        "treatment_tag": "S3"
+      },
+      "command": "cell",
+      "kind": "timing",
+      "tag": "timing_D5_noise2.2_seed0_late__S3__timing"
+    },
+    {
+      "cell": {
+        "allocation_seed": 15527502566419185565,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 11706027593928152208,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2618717273546217298,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 11706027593928152208,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 14163362130964170148,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 5491220916388944790,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 17090638763402573625,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 5491220916388944790,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11702196320552395177,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 127023280503823583,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 12335831698443104559,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_early",
+        "timing_seed": 127023280503823583,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 16414800581718126524,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 12779988714776286027,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2127369206638716026,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 12779988714776286027,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 18418678630913690142,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17622776442889287517,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 15240569680091177177,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17622776442889287517,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 12579823158471901439,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17327168332127250577,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 6163426232018944272,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise1_seed0_late",
+        "timing_seed": 17327168332127250577,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 1422850791875676414,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4986347041840376306,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 6861585442822928421,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4986347041840376306,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 16344093971052566003,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 2872318536356162359,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 787789919546371682,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 2872318536356162359,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 608292834765782900,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4605356808754947806,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2607567318024043764,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_early",
+        "timing_seed": 4605356808754947806,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 17147015837769793469,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 6799548003299985269,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9686978708933314668,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 6799548003299985269,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 7409470801540233392,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 9536049191036101514,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 15853313279317236114,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 9536049191036101514,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 13273046282984048825,
+        "role": "baseline",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 167343459978890856,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 4247259054854753064,
+        "role": "treatment",
+        "state_id": "rosenbrock_D2_noise3_seed0_late",
+        "timing_seed": 167343459978890856,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 7906674428680595489,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 2697164094075780154,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 6343174275130416469,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 2697164094075780154,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 546919782447787239,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 12424624361826191321,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11811688051855904148,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 12424624361826191321,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 8850938942302666914,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 17294676794260366486,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11226535558550899718,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_early",
+        "timing_seed": 17294676794260366486,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 16833190796325009714,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 17794814708887548882,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 12975972777568735746,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 17794814708887548882,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 3668016361753069562,
+        "role": "baseline",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 6909061148505111473,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11867415856654920205,
+        "role": "treatment",
+        "state_id": "logreg_D5_noise3_seed0_late",
+        "timing_seed": 6909061148505111473,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "logreg_D5_noise3_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2151111527956225170,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 8368367248371917808,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 5025329754805209469,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 8368367248371917808,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9731270407626854377,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 15934981614925544601,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 13718549681852713601,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 15934981614925544601,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9124077512573663553,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 13959724936867232102,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11829474211293637025,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_early",
+        "timing_seed": 13959724936867232102,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11701225705176005856,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 8894973568537496929,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2756927880343014574,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 8894973568537496929,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 651750094737590156,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 7916015476480896999,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 17696007570158429827,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 7916015476480896999,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9196227583599700110,
+        "role": "baseline",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 10604365628142694106,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 12251863707552448058,
+        "role": "treatment",
+        "state_id": "student_D8_noise3_seed0_late",
+        "timing_seed": 10604365628142694106,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "student_D8_noise3_seed0_late__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9844923281283063200,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 17563772072030037529,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 538820458563811567,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 17563772072030037529,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 3883755062849713737,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 7658412347176330315,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 5199972699509799625,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 7658412347176330315,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 9975644977192359252,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 15510699540582912123,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 8591027946712201796,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+        "timing_seed": 15510699540582912123,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 11148423287164735289,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10720689804352417212,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 12705493676480393716,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10720689804352417212,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 8111707525327922804,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 5192787094235733533,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2622387149762411282,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 5192787094235733533,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 7836264860321146066,
+        "role": "baseline",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10342642402151068481,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 14821926229959229964,
+        "role": "treatment",
+        "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+        "timing_seed": 10342642402151068481,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 14396791692895419972,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17553064904989652522,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 8279728009043378935,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17553064904989652522,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 1999997505029327895,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17601085141178270382,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 16603590094421554166,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 17601085141178270382,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 5291815290147385695,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 15326876456200718192,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 8723859749633020949,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_early",
+        "timing_seed": 15326876456200718192,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_early__S3__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 14370484234180871507,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6926974955185360031,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S1__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 13664505768695570060,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6926974955185360031,
+        "treatment_tag": "S1"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S1__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 4431243495820619325,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6459070990370335992,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S2__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 2944855743751636825,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 6459070990370335992,
+        "treatment_tag": "S2"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S2__allocation_treatment"
+    },
+    {
+      "cell": {
+        "allocation_seed": 10651757293340139382,
+        "role": "baseline",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 104148735866491897,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S3__allocation_baseline"
+    },
+    {
+      "cell": {
+        "allocation_seed": 1476555873945824466,
+        "role": "treatment",
+        "state_id": "timing_D5_noise2.2_seed0_late",
+        "timing_seed": 104148735866491897,
+        "treatment_tag": "S3"
+      },
+      "command": "allocation-cell",
+      "kind": "allocation",
+      "tag": "timing_D5_noise2.2_seed0_late__S3__allocation_treatment"
+    }
+  ],
+  "conservative_seconds": 777.9462458554617,
+  "created_utc": "2026-09-17T12:15:21.946185+00:00",
+  "execution_order": "all remaining timing cells in frozen manifest order, then all remaining allocation cells in frozen manifest order",
+  "hard_compute_cutoff_utc": "2026-09-17T14:09:00+00:00",
+  "kind": "noisy_acq_search_measurement_v2_full_allocation",
+  "manifest_sha256": "ca307bd6077eb2542cfedaf349c64c1af6fc369572da8f4cc401a3c7ba15a0a5",
+  "no_holdout_e4_or_e5_authorized": true,
+  "pilot_allocation_sha256": "91ca935a747e2a7b8dd146cc8e0bdcecbca8749feb1743ca22bc247d3de46765",
+  "pilot_costs_sha256": "7e23a535adcc04197070ec50a258b4d876517c79d74441698529b5069994dd06",
+  "predicted_seconds": 388.97312292773086,
+  "preflight_validation_sha256": "7133b01e6a0378114ffc043b82b46aea24f3b12c5481ac64ec8f374c372be095",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "cc397893a64e2be6707db29582975a8b68ad9da6bf0bb74989a04313b8a8f4c6",
+  "remaining_forecast_sha256": "cfcc25561005d791fe6519fe659d464c692549dd55e97166f55f8eb3a38b3a37",
+  "schema_version": 1,
+  "soft_stop_new_launches_utc": "2026-09-17T14:04:00+00:00",
+  "successful_pilot_tags_reused": [
+    "logreg_D5_noise3_seed0_late__S3__allocation_baseline",
+    "logreg_D5_noise3_seed0_late__S3__allocation_treatment",
+    "logreg_D5_noise3_seed0_late__S3__timing"
+  ],
+  "timing_cell_count": 35,
+  "window_amendment_sha256": "a4618f90d00389da1273fdcbbaec44d8d00580088d2af7c959e24814023b6dd5",
+  "wrapper_sha256": "9f941e45731584e6f37eba9f6fb4617b14e230e975957c00b4f93dd22b68df2c"
+}

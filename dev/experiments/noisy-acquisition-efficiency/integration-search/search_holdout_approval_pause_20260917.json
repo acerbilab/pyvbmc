@@ -1,0 +1,42 @@
+{
+  "approval_attempts": [
+    {
+      "reason": "review classified the manifest unlock as enabling unapproved E5",
+      "result": "automatic_approval_review_rejected",
+      "scope_label": "E5_misclassification"
+    },
+    {
+      "reason": "review treated the retry as the same E5-enabling action",
+      "result": "automatic_approval_review_rejected",
+      "scope_label": "erroneous_E4_relabel"
+    },
+    {
+      "reason": "no automatic approval decision returned and no process or file effect occurred",
+      "result": "aborted_by_user_after_5.1_seconds",
+      "scope_label": "corrected_E3_target_freeze"
+    }
+  ],
+  "archive_index_sha256": "4eb436d86b8118058e3dfe5a762007edcf63bdf947fdee68661b20531b7bac90",
+  "created_utc": "2026-09-17T12:33:54.130909+00:00",
+  "e3_e5_distinction": "The proposed E3 holdout contains target-free frozen-state S0/S2 selections with no target calls or GP fits. E5 full VBMC inference remains unallocated.",
+  "executable_manifest_exists": false,
+  "holdout_cells_launched": 0,
+  "kind": "noisy_acq_search_approval_pause",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "python_processes_running_at_pause": false,
+  "raw_artifact_sha256": "272011e1f6e5b36d2bf654cff86ebd95a8e4998979d1cff3f2a565106cfa6ce6",
+  "raw_outcomes": {
+    "judge_sha256": "ed5793221a094b6271b09f3a8f775b64d838495477e9f796ab722ee4caae47b8",
+    "measurement_sha256": "d7e3171f9c5c4a5774085d1a9638ebb84b4b6713a56180e0c4e4fa4307a44fce",
+    "selection_sha256": "d27ce5089864ab46b38fc33fbcd1f7d94573c18cbd9bb0be529c45c5162342e5"
+  },
+  "reviewed_locked_draft": {
+    "holdout_locked": true,
+    "independent_review": "clear_no_findings",
+    "launch_ready": false,
+    "path": "search_holdout_manifest.draft.json",
+    "sha256": "5755e0a6994a2c3d967b9b661daae7e3df7adcdb6eae6391dd51e96db291fecc"
+  },
+  "schema_version": 1,
+  "status": "awaiting_explicit_user_confirmation_for_e3_holdout_manifest_unlock"
+}

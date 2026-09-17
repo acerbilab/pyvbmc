@@ -1,0 +1,35 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc"
+  },
+  "created_utc": "2026-09-17T12:23:07.118015+00:00",
+  "development_gate_sha256": "6a5971a23bfbf414cd6c82841d7659fabec03ff09640e1c5b594d3c2ccf7cfd7",
+  "development_manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "e5_authorized": false,
+  "finalist_config": {
+    "accurate_budget": 1600,
+    "accurate_method": "mc",
+    "arm": "S2",
+    "finite_difference_step": 0.0001,
+    "ftol": 1e-09,
+    "gradient_relative_tolerance": 0.25,
+    "gtol": 1e-05,
+    "max_candidate_rows": 1000,
+    "max_iterations": 50,
+    "shortlist_size": 8,
+    "sieve_size": 1024,
+    "start_separation": 0.5
+  },
+  "frozen": true,
+  "holdout_inspected_before_freeze": false,
+  "holdout_measurements": "192 S0/finalist selections and fresh independent judging; generic timing/memory cells are scientifically unallocated.",
+  "include_mc1600_control": true,
+  "kind": "noisy_acq_search_selection",
+  "production_adoption": false,
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Freeze unchanged S2 for independent seed-1 holdout selection and judging under the improved-choice branch.",
+  "raw_artifact_sha256": "98c5d773bd83c6b1954e7d5d5f79b83a47d196c6916925f335897350d66aab40",
+  "schema_version": 1,
+  "stage": "holdout"
+}
