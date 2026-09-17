@@ -1,0 +1,191 @@
+{
+  "cell_rules": [
+    "Use one fresh worker per explicit tag and never invoke the unbounded run controller.",
+    "Before each cell, validate the frozen manifest/source/dependency identity and thread pins.",
+    "Record outer wall time including imports and preserve every completed cell atomically.",
+    "Stop after a completed cell on failure, identity mismatch, timeout, or insufficient remaining window.",
+    "Do not launch a new cell after the soft stop and cap its timeout before the hard cutoff."
+  ],
+  "created_utc": "2026-09-17T11:00:46.684205+00:00",
+  "deadlines": {
+    "hard_compute_cutoff_utc": "2026-09-17T11:22:00+00:00",
+    "soft_stop_new_launches_utc": "2026-09-17T11:12:00+00:00"
+  },
+  "e2_continuation_sha256": "7058cb3be3891819a0c894c21a94f962ec12f1ec56156818f6484d8c9a4f6f1d",
+  "e2_full_cost_screen_sha256": "cfd98533d6c32246b261b32cd2b69dadf4e0dc01320163e5cfc64c673a071e06",
+  "gpyreg_commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+  "initial_cost_assumptions": {
+    "basis": "Operational bounds before E3 measurements: production S0 is cheapest; S1 adds MC1600 rescoring; S2 and S3 add one and up to four bounded local refinements. These assumptions are scheduling guards, not timing evidence.",
+    "by_arm": {
+      "S0": {
+        "initial_expected_seconds": 20.0,
+        "timeout_seconds": 90.0
+      },
+      "S1": {
+        "initial_expected_seconds": 30.0,
+        "timeout_seconds": 120.0
+      },
+      "S2": {
+        "initial_expected_seconds": 60.0,
+        "timeout_seconds": 240.0
+      },
+      "S3": {
+        "initial_expected_seconds": 110.0,
+        "timeout_seconds": 420.0
+      }
+    },
+    "total_expected_seconds": 660.0
+  },
+  "kind": "noisy_acq_search_pilot_allocation",
+  "launch_clearance_recorded": false,
+  "launch_clearance_required": true,
+  "manifest_path": "search_manifest.json",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "output_path": "search_development",
+  "pilot_cell_count": 12,
+  "pilot_cells": [
+    {
+      "accurate_seed": 6638740511871029098,
+      "initial_expected_seconds": 20.0,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S0__r0",
+      "timeout_seconds": 90.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "initial_expected_seconds": 30.0,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S1__r0",
+      "timeout_seconds": 120.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "initial_expected_seconds": 60.0,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S2__r0",
+      "timeout_seconds": 240.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6638740511871029098,
+      "initial_expected_seconds": 110.0,
+      "replicate": 0,
+      "search_seed": 18065803097295611865,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "tag": "rosenbrock_D2_noise3_seed0_early__S3__r0",
+      "timeout_seconds": 420.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "initial_expected_seconds": 20.0,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__S0__r0",
+      "timeout_seconds": 90.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "initial_expected_seconds": 30.0,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__S1__r0",
+      "timeout_seconds": 120.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "initial_expected_seconds": 60.0,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__S2__r0",
+      "timeout_seconds": 240.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 6576014863695281051,
+      "initial_expected_seconds": 110.0,
+      "replicate": 0,
+      "search_seed": 7638704019110502925,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "tag": "logreg_D5_noise3_seed0_late__S3__r0",
+      "timeout_seconds": 420.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "initial_expected_seconds": 20.0,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "tag": "student_D8_noise3_seed0_late__S0__r0",
+      "timeout_seconds": 90.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "initial_expected_seconds": 30.0,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "tag": "student_D8_noise3_seed0_late__S1__r0",
+      "timeout_seconds": 120.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "initial_expected_seconds": 60.0,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "tag": "student_D8_noise3_seed0_late__S2__r0",
+      "timeout_seconds": 240.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 8019181837529467175,
+      "initial_expected_seconds": 110.0,
+      "replicate": 0,
+      "search_seed": 9615879462782270279,
+      "state_id": "student_D8_noise3_seed0_late",
+      "tag": "student_D8_noise3_seed0_late__S3__r0",
+      "timeout_seconds": 420.0,
+      "treatment_tag": "S3"
+    }
+  ],
+  "pilot_order": "frozen manifest order: each selected state S0, S1, S2, S3",
+  "pilot_purpose": "Operational, numerical-calibration and cost pilot only; no search-arm selection or quality inference.",
+  "preflight_validation_sha256": "acf15a279b5c4e7d08cf0d96716bdc38cac93b0880beabee58986559bb383069",
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "a502911e14089fa21023469b9df083d3d11bfd879654bb60780bc7ea5247406a",
+  "schema_version": 1,
+  "selection_sha256": "6dfd2e6f772edce9d9cc642e3a7159e69e70b6dfcd369d3cb04fb2fae8998d42",
+  "source_sha256": {
+    "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+    "dev/scripts/noisy_acq_integration.py": "d9d186d4f5c4e1e9f9733726d660116dd18fab7499d2bb4d234259a13dfc7bbb",
+    "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+    "dev/scripts/noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+    "dev/scripts/noisy_acq_search_experiment.py": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0",
+    "dev/scripts/noisy_acq_timing.py": "1b1f7f8365c8c36cef3bc6bc047498c183b0ddc34061aeee58d68160b2f0e72a"
+  },
+  "unallocated": {
+    "allocation_memory_cells": 72,
+    "holdout_cells": "all",
+    "judge_cells": "all",
+    "selection_cells": 372,
+    "timing_cells": 36
+  }
+}

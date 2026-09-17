@@ -6,11 +6,11 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **INTERRUPTED; SCREENING SAVED**. Branch:
+Experimental extension drafted 2026-09-16: **E2 COMPLETE; E3 REPETITION ZERO SAVED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution is authorized within
-the first window; E5 requires a separately authorized inference window.
+the recorded windows; E5 requires a separately authorized inference window.
 The PI accepted the benefit criteria, paired allocation and screening gates
 on 2026-09-16. The revised experimental scope omits Bayesian quadrature.
 
@@ -22,23 +22,41 @@ independent judging. Morning recovery on 2026-09-17 verified every terminal
 record and bound payload hash and passed all 133 developer tests. No Python
 experiment process remained running. The
 [completion record](../experiments/noisy-acquisition-efficiency/integration-search/panel_completion.json)
-identifies the saved allocation. E2 timing, full-sieve comparisons and holdout
-evaluation are pending; E3 tools are implemented but no search allocation
-has run. E4's entry gates have not been assessed. No method is selected.
+identifies the saved allocation. The continuation completed panel judging,
+MC diagnostics and all 108 paired panel timing cells. All 48 full-sieve
+timing cells also completed; the four retained settings fail the necessary
+cost gate. E2 closes without an integration replacement. E3 uses the
+prescribed MC1600 fallback: all 48 repetition-zero S0-S3 selections are
+saved, with 336 selections remaining in the frozen development manifest.
+Paired search timing and independent judging remain unallocated. E4's
+entry gates have not been assessed. No method is selected for promotion.
+The remaining 336 search selections are estimated at 12.2 minutes predicted
+and 30.1 minutes conservative. Paired timing, memory/allocation and the
+independent judge ladder require additional cost estimates. Reuse the
+saved repetition-zero cells, validate their hashes, then allocate
+repetitions 1–7 from `search_manifest.json`. The final process check found
+no Python processes; no job needs reattachment.
 
-The user needs the laptop about 45 minutes after the 04:46 UTC recovery
-check. Recovery is limited to verification, documentation and a local
-commit; the numerical campaign is paused. Resume E2 in an available compute
-window using the commands in the experiment report. Preserve the existing
-capture and panel artifacts, and estimate judge cost with a bounded pilot
-before launching its full allocation. All source locks and holdout gates
-remain applicable.
+The 2026-09-17 continuation resumed from `4145832` in the existing checkout
+and environment. The user authorized a further 2–2.5-hour window starting
+at approximately 09:03 UTC. At 10:07 UTC the user confirmed approximately
+90 minutes of remaining availability. The compute cutoff is therefore
+11:22 UTC, with new cell launches stopping by 11:12 UTC and about 15 minutes
+reserved before the availability ends. Earlier allocation records retain
+their original 11:03 UTC cutoff. The saved capture and panel artifacts
+are reused. The 4096-node late Student-t judge pilot succeeded in 3.247 seconds
+excluding imports. All five judge budgets, the independent MC diagnostic
+and panel timing subsequently completed; the execution report records
+measured costs and forecast errors. Further allocations use observed
+per-state costs and the remaining window.
+All source locks, scientific gates and the separate E5 approval remain in
+force.
 
-Planning estimate for the remaining work: E2 2-4 hours, E3 1-2 hours,
+The pre-pilot planning estimate was E2 2-4 hours, E3 1-2 hours,
 conditional E4 up to 1-3 additional hours if its gate passes, and 30-60
-minutes for final review and reporting. Reserve approximately 6-8 hours;
-these are provisional elapsed-work estimates, to be revised from the
-bounded judge pilot. Resume in the existing unchanged checkout and local
+minutes for final review and reporting, totaling approximately 6-8 hours.
+Measured pilots supersede these provisional estimates for each allocation.
+Resume in the existing checkout and local
 environment. The report identifies the local-only artifacts; no background
 work requires reattachment.
 
@@ -88,12 +106,71 @@ supported by this experiment, not a consequence of an arm winning locally.
 
 ### Live checklist and execution roles
 
+2026-09-17 bounded continuation from `4145832` (2–2.5-hour availability):
+
+- [x] Run the saved E2 4096-node development judge pilot and estimate costs.
+- [x] Allocate resumable E2 judging and timing from measured costs, stopping
+  compute by the amended 11:22 UTC cutoff and preserving a 15-minute margin.
+- [x] Enforce E3's shared 50-iteration limit, verify the correction, and
+  complete a bounded pilot followed by repetition zero on all twelve states.
+- [x] Verify saved results, independently review the continuation evidence,
+  and record the next pickup point. E5 remains unapproved.
+
+The bounded continuation applies the existing E2 gate to full-sieve timing
+before allocating fresh full-sieve quality comparisons. Freeze MC2048,
+stratified-MC2048 and stratified-RQMC512/2048 from the completed panel
+evidence. These retain the MC/component-allocation controls and the two
+RQMC accuracy/cost settings without confirmed material raw loss. The other
+five panel settings have confirmed material losses and exceed the pooled
+harmful-selection screen. MC2048 and RQMC512 retain explicitly unresolved
+severe early Rosenbrock-noise-3 raw-loss checks; this shortlist is for
+investigation, not promotion.
+
+Run a bounded 8192-candidate timing pilot, then estimate and allocate the
+prescribed seven paired rounds per state/setting, including preparation.
+If a setting's median of state-median treatment/baseline ratios exceeds
+1.10, neither approved benefit branch can pass; end that arm without
+separate selection, judging or holdout allocations. A setting at or below
+1.10 continues through the existing quality gates. Report every state's
+ratio and range;
+timed selections do not substitute for independent quality comparisons.
+This ordering changes no scientific threshold, method or budget and was
+independently reviewed before allocation. Incomplete timing leaves the
+setting pending, not failed. No new full-sieve setting may be added from
+these results.
+
+If the four full-sieve settings all fail the cost gate, E3 uses the
+prescribed ordinary-MC1600 fallback. Before numerical allocation, enforce
+the shared 50-iteration cap across local starts and verify it independently.
+Freeze the full twelve-state, eight-repetition S0-S3 development manifest
+(384 selection cells), then launch only repetition zero of all four arms
+on early Rosenbrock noise 3, late logistic regression and late Student-t.
+These twelve pilot cells cover adverse selection geometry, multiple GP
+hyperparameter samples and higher dimension. Bind the subset, E2 decision,
+source identity and deadlines in a prelaunch allocation record.
+
+The pilot assesses operation, numerical calibration and cost. Check state
+and RNG preservation, absence of target calls/GP fitting, shared iteration
+and row limits, every available step-halving diagnostic, fixed positive
+objective scaling, solver outcomes and fallback reasons. Retain finite-
+difference failures as prescribed fallbacks. Decide whether the frozen
+defaults support further development testing; do not infer quality or
+choose a search arm from these unjudged selections. If settings change,
+freeze a new identity and allocation rather than reusing incompatible
+cells. Estimate remaining work from measured state/arm costs before
+allocating another bounded subset. Use individual cell commands: the
+unbounded search controller also launches timing, memory and judging work.
+
 - [x] E0: freeze sources, state allocation and measurement protocol.
 - [x] E1: build and verify developer integration and judging tools.
-- [~] E2: compare MC, stratified MC and RQMC; panel selections complete,
-  judging and subsequent stages paused.
-- [~] E3: compare fixed-budget re-scoring and local search; tools verified,
-  numerical allocation awaits E2.
+- [x] E2: compare MC, stratified MC and RQMC; panel selections, prescribed
+  RQMC judge ladder, MC crosscheck and timing complete. All four retained
+  full-sieve settings fail the necessary cost gate; no integration finalist.
+- [~] E3: compare fixed-budget re-scoring and local search; shared-iteration
+  correction independently reviewed and 25 focused tests passed. The
+  MC1600 development manifest is frozen; all 48 repetition-zero cells
+  succeeded. Remaining selections, timing and independent judging await
+  another bounded allocation.
 - [ ] E4: test adaptive integration only if its entry gate passes.
 - [ ] E5: run the bounded paired inference comparison for eligible finalists.
 - [~] E6: consolidate evidence and review recovery; adoption recommendation

@@ -1,0 +1,443 @@
+{
+  "cell_count": 36,
+  "cell_rules": [
+    "Run sequential individual cell commands in exact recorded order.",
+    "Check source identity and deadlines before each fresh worker.",
+    "Stop after a completed cell on failure, identity mismatch, timeout or insufficient window.",
+    "Do not launch after the soft stop; cap every timeout before the hard cutoff."
+  ],
+  "cells": [
+    {
+      "accurate_seed": 4155862097468283975,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 4155862097468283975,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 1027864346358571741,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "tag": "rosenbrock_D2_noise1_seed0_early__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7747950913712037962,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 887466508628724560,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "tag": "rosenbrock_D2_noise1_seed0_late__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1883718626546154492,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 12875385303404613080,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "tag": "rosenbrock_D2_noise3_seed0_late__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "tag": "logreg_D5_noise3_seed0_early__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "tag": "logreg_D5_noise3_seed0_early__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "tag": "logreg_D5_noise3_seed0_early__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 1100766715464062016,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 9049607847567654541,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "tag": "logreg_D5_noise3_seed0_early__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "tag": "student_D8_noise3_seed0_early__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "tag": "student_D8_noise3_seed0_early__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "tag": "student_D8_noise3_seed0_early__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 7678428004939404463,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 14394946691475867894,
+      "state_id": "student_D8_noise3_seed0_early",
+      "tag": "student_D8_noise3_seed0_early__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 5858727123013990246,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 9389378662596737222,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_early__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 3310945397591664457,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 18384174334486882058,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "tag": "multisensory_s1_D6_noise1.3_seed0_late__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "tag": "timing_D5_noise2.2_seed0_early__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "tag": "timing_D5_noise2.2_seed0_early__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "tag": "timing_D5_noise2.2_seed0_early__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11093890264243197096,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 15776159622583988432,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "tag": "timing_D5_noise2.2_seed0_early__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.2276318999993237,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "tag": "timing_D5_noise2.2_seed0_late__S0__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0333026999996946,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "tag": "timing_D5_noise2.2_seed0_late__S1__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S1"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 1.9955196999999316,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "tag": "timing_D5_noise2.2_seed0_late__S2__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S2"
+    },
+    {
+      "accurate_seed": 11822580336436967014,
+      "conservative_outer_wall_seconds": 5.0,
+      "predicted_outer_wall_seconds": 2.0565413999993325,
+      "replicate": 0,
+      "search_seed": 8215045077079071225,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "tag": "timing_D5_noise2.2_seed0_late__S3__r0",
+      "timeout_seconds": 30.0,
+      "treatment_tag": "S3"
+    }
+  ],
+  "created_utc": "2026-09-17T11:06:10.956634+00:00",
+  "deadlines": {
+    "hard_compute_cutoff_utc": "2026-09-17T11:22:00+00:00",
+    "soft_stop_new_launches_utc": "2026-09-17T11:12:00+00:00"
+  },
+  "forecast": {
+    "basis": "Per-arm median fresh-worker outer wall from the three-state pilot; five-second conservative allowance and 30-second timeout per cell.",
+    "conservative_total_outer_wall_seconds": 180.0,
+    "predicted_total_outer_wall_seconds": 74.81696129998454
+  },
+  "kind": "noisy_acq_search_remaining_rep0_allocation",
+  "launch_clearance_recorded": false,
+  "launch_clearance_required": true,
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "order": "frozen manifest order: remaining development states, S0-S3",
+  "pilot_costs_sha256": "6dc45538f07fa8822f0ada935d1b366a76dc95d407c9118acd6972b3ea9adce1",
+  "pilot_outcome_sha256": "3f4a794a533c558c172214cca76fdcbdb482473b61a325e40b10b7db7e60ed6a",
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "3c931132deda6af148c0f13583624f976060bb09fb72581e6df5f5cf31a98a48",
+  "schema_version": 1,
+  "source_sha256": {
+    "dev/scripts/noisy_acq_experiment.py": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+    "dev/scripts/noisy_acq_integration.py": "d9d186d4f5c4e1e9f9733726d660116dd18fab7499d2bb4d234259a13dfc7bbb",
+    "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+    "dev/scripts/noisy_acq_search.py": "6ad4366a70b8159c96c3c56dfb903723296c1812900d3f3c918386d85805b7cf",
+    "dev/scripts/noisy_acq_search_experiment.py": "40bcc2e144e583e19b85cba0dbcfb9bc129c5c11d725e7bc68604d0339de24f0",
+    "dev/scripts/noisy_acq_timing.py": "1b1f7f8365c8c36cef3bc6bc047498c183b0ddc34061aeee58d68160b2f0e72a"
+  },
+  "unallocated_after_success": {
+    "allocation_memory_cells": 72,
+    "holdout_cells": "all",
+    "judge_cells": "all",
+    "selection_cells": 336,
+    "timing_cells": 36
+  }
+}

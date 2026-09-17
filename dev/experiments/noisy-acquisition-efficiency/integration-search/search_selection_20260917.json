@@ -1,0 +1,18 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc",
+    "provenance": "Prescribed ordinary-MC1600 fallback after all four retained E2 full-sieve settings failed the approved 1.10 cost threshold."
+  },
+  "created_utc": "2026-09-17T10:58:34.074899+00:00",
+  "e2_continuation_sha256": "7058cb3be3891819a0c894c21a94f962ec12f1ec56156818f6484d8c9a4f6f1d",
+  "e2_full_cost_screen_sha256": "cfd98533d6c32246b261b32cd2b69dadf4e0dc01320163e5cfc64c673a071e06",
+  "frozen": true,
+  "kind": "noisy_acq_search_selection",
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "purpose": "Freeze E3 S0-S3 development allocation without naming a winner.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "6dfd2e6f772edce9d9cc642e3a7159e69e70b6dfcd369d3cb04fb2fae8998d42",
+  "schema_version": 1,
+  "stage": "development"
+}

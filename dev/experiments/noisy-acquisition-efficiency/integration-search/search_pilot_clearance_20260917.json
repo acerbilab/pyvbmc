@@ -1,0 +1,20 @@
+{
+  "allocation_sha256": "a502911e14089fa21023469b9df083d3d11bfd879654bb60780bc7ea5247406a",
+  "conditions": [
+    "Sequential fresh workers; launch no cells outside the explicit pilot subset.",
+    "Check deadlines before every new cell and preserve all completed cells.",
+    "Stop on failure, identity mismatch, timeout or insufficient remaining window.",
+    "No requirement that the sum of every possible timeout fit the remaining window."
+  ],
+  "created_utc": "2026-09-17T11:03:21.531587+00:00",
+  "decision": "authorized_up_to_12_cells",
+  "hard_compute_cutoff_utc": "2026-09-17T11:22:00+00:00",
+  "kind": "noisy_acq_search_pilot_launch_clearance",
+  "manifest_sha256": "08c17373d043dca09e87fdecf5616362de44bda7e66644c8a23b47750299cd88",
+  "pilot_cell_count": 12,
+  "publication_note": "Review copy with user-home paths redacted. Execute from the original local artifacts; hashes refer to unredacted raw artifacts unless explicitly labelled published-copy hashes.",
+  "raw_artifact_sha256": "7dd496949b3dd15af3106d211879b30abdbbe603f9dd8893a926113be2b8eb94",
+  "schema_version": 1,
+  "selection_sha256": "6dfd2e6f772edce9d9cc642e3a7159e69e70b6dfcd369d3cb04fb2fae8998d42",
+  "soft_stop_new_launches_utc": "2026-09-17T11:12:00+00:00"
+}

@@ -49,7 +49,9 @@ class SearchConfig:
         if not 1 <= self.shortlist_size <= 8:
             raise ValueError("shortlist size must be between one and eight")
         if not 1 <= self.max_iterations <= 50:
-            raise ValueError("at most 50 local iterations are allowed")
+            raise ValueError(
+                "at most 50 local iterations in total are allowed"
+            )
         if not self.shortlist_size <= self.max_candidate_rows <= 1000:
             raise ValueError("candidate-row budget must cover the shortlist")
         if self.accurate_budget <= 0 or self.finite_difference_step <= 0:
@@ -105,14 +107,16 @@ def _coordinate_scales(vp):
 
 
 def _refine(state, evaluator, points, scores, repeat_flags, config):
-    """Refine a fixed shortlist with one rule and one total row budget."""
+    """Refine a shortlist with shared iteration and candidate-row budgets."""
     best = int(np.argmin(scores))
     selected = points[best].copy()
     best_score = float(scores[best])
     record = {
         "accurate_candidate_rows": len(points),
+        "local_iterations": 0,
         "local_runs": [],
         "fallback_reason": None,
+        "refinement_stop_reason": None,
         "coarse_fallback_score": best_score,
         "selected_accurate_score": best_score,
         "selected_shortlist_index": best,
@@ -186,8 +190,26 @@ def _refine(state, evaluator, points, scores, repeat_flags, config):
         return float(values[0]), gradient
 
     for index in starts:
-        run = {"shortlist_index": index, "status": None}
+        remaining_iterations = (
+            config.max_iterations - record["local_iterations"]
+        )
+        if remaining_iterations <= 0:
+            record["refinement_stop_reason"] = "iteration_budget"
+            break
+        run = {
+            "shortlist_index": index,
+            "status": None,
+            "iterations": 0,
+            "iteration_limit": remaining_iterations,
+        }
         record["local_runs"].append(run)
+
+        def count_iteration(_):
+            if record["local_iterations"] >= config.max_iterations:
+                raise _RefinementStopped("iteration_budget")
+            run["iterations"] += 1
+            record["local_iterations"] += 1
+
         try:
             lower, upper = _bounds(state, points[index])
             lb, ub = lower / scales, upper / scales
@@ -207,8 +229,9 @@ def _refine(state, evaluator, points, scores, repeat_flags, config):
                 method="L-BFGS-B",
                 jac=True,
                 bounds=list(zip(lb, ub)),
+                callback=count_iteration,
                 options={
-                    "maxiter": config.max_iterations,
+                    "maxiter": remaining_iterations,
                     "ftol": config.ftol,
                     "gtol": config.gtol,
                 },
@@ -218,7 +241,7 @@ def _refine(state, evaluator, points, scores, repeat_flags, config):
                 status="evaluated",
                 solver_success=bool(result.success),
                 message=str(result.message),
-                iterations=int(result.nit),
+                solver_reported_iterations=int(result.nit),
                 score=value,
             )
             if value < best_score:

@@ -52,6 +52,13 @@ def test_refinement_finds_quadratic_minimum_and_counts_every_row():
     np.testing.assert_allclose(chosen, 0, atol=1e-5)
     assert details["accurate_candidate_rows"] == evaluator.rows
     assert len(details["local_runs"]) == 2
+    assert details["local_iterations"] == sum(
+        run["iterations"] for run in details["local_runs"]
+    )
+    assert all(
+        run["iterations"] == run["solver_reported_iterations"]
+        for run in details["local_runs"]
+    )
     assert details["selected_shortlist_index"] is None
 
 
@@ -71,6 +78,70 @@ def test_refinement_budget_keeps_accurately_rescored_fallback():
     np.testing.assert_array_equal(chosen, points[0])
     assert details["fallback_reason"] == "candidate_row_budget"
     assert evaluator.rows <= 4
+
+
+def test_refinement_iteration_budget_is_cumulative_across_starts(monkeypatch):
+    evaluator = Quadratic()
+    points = np.array([[0.1, 0.1], [1.0, 1.0], [-1.0, -1.0], [2.0, -2.0]])
+    scores = evaluator.score(points)["full_score"]
+    iteration_limits = []
+
+    def fake_minimize(fun, x0, *, callback, options, **kwargs):
+        iteration_limits.append(options["maxiter"])
+        iterations = min(30, options["maxiter"])
+        for _ in range(iterations):
+            callback(x0)
+        return SimpleNamespace(
+            x=x0, success=False, message="iteration limit", nit=iterations
+        )
+
+    monkeypatch.setattr("noisy_acq_search.minimize", fake_minimize)
+    chosen, details = _refine(
+        small_state(),
+        evaluator,
+        points,
+        scores,
+        np.zeros(4, dtype=bool),
+        SearchConfig(arm="S3", shortlist_size=4),
+    )
+
+    np.testing.assert_array_equal(chosen, points[0])
+    assert iteration_limits == [50, 20]
+    assert details["local_iterations"] == 50
+    assert [run["iterations"] for run in details["local_runs"]] == [30, 20]
+    assert details["refinement_stop_reason"] == "iteration_budget"
+    assert details["fallback_reason"] is None
+
+
+def test_interrupted_solver_retains_completed_iteration_count(monkeypatch):
+    evaluator = Quadratic()
+    points = np.array([[0.1, 0.1], [1.0, 1.0], [-1.0, -1.0], [2.0, -2.0]])
+    scores = evaluator.score(points)["full_score"]
+
+    def fake_minimize(fun, x0, *, callback, **kwargs):
+        callback(x0)
+        callback(x0)
+        fun(x0)
+        raise AssertionError("the row budget should stop the objective")
+
+    monkeypatch.setattr("noisy_acq_search.minimize", fake_minimize)
+    chosen, details = _refine(
+        small_state(),
+        evaluator,
+        points,
+        scores,
+        np.zeros(4, dtype=bool),
+        SearchConfig(arm="S3", shortlist_size=4, max_candidate_rows=16),
+    )
+
+    np.testing.assert_array_equal(chosen, points[0])
+    assert details["accurate_candidate_rows"] == evaluator.rows == 14
+    assert details["local_iterations"] == 2
+    assert len(details["local_runs"]) == 1
+    assert details["local_runs"][0]["iterations"] == 2
+    assert details["local_runs"][0]["status"] == "candidate_row_budget"
+    assert details["fallback_reason"] == "candidate_row_budget"
+    assert details["selected_accurate_score"] == scores[0]
 
 
 def test_later_invalid_start_restores_original_rescored_candidate():
