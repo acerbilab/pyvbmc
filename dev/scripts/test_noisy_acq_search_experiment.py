@@ -44,9 +44,9 @@ def _selection(stage="development", method="stratified_rqmc", budget=512):
             "budget": 1600,
             "provenance": "unused_by_production_arms",
         }
-        if stage == "f2_control_development":
+        if stage in campaign.F2_CONTROL_STAGES:
             record["control_rule"] = {
-                "kind": campaign.F2_CONTROL_RULE,
+                "kind": campaign.F2_CONTROL_STAGES[stage][0],
                 "offset": campaign.F2_CONTROL_OFFSET,
             }
         else:
@@ -213,6 +213,56 @@ def test_f2_development_pairs_three_production_arms_on_fresh_streams(
     assert [
         spec["contrast"] for spec in campaign._contrast_specs(manifest)
     ] == ["S0_qmc_sorted_minus_S0", "S0_qmc_unsorted_minus_S0"]
+
+
+def test_f2_node_control_stage_pairs_the_baseline_with_fresh_nodes(
+    tmp_path, monkeypatch
+):
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection(stage="f2_node_control_development")
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest,
+        tmp_path,
+        selection_path,
+        "f2_node_control_development",
+    )
+    assert [item["tag"] for item in manifest["treatments"]] == [
+        "S0",
+        "S0_renoded",
+    ]
+    control = manifest["treatments"][1]
+    assert control["role"] == "node_redraw_null_control"
+    assert control["config"] == {
+        **manifest["treatments"][0]["config"],
+        "node_stream_offset": 1,
+    }
+    assert manifest["purpose"].endswith("node-redraw null control")
+    campaign.validate_manifest(manifest, require_ready=False)
+    assert [
+        spec["contrast"] for spec in campaign._contrast_specs(manifest)
+    ] == ["S0_renoded_minus_S0"]
+    other = tmp_path / "stream"
+    other.mkdir()
+    stream_capture, stream_selection = _prepare_inputs(
+        other, monkeypatch, _selection(stage="f2_control_development")
+    )
+    stream_manifest = campaign.prepare_manifest(
+        stream_capture, other, stream_selection, "f2_control_development"
+    )
+    assert (
+        manifest["cells"][0]["search_seed"]
+        != stream_manifest["cells"][0]["search_seed"]
+    )
+    wrong = _selection(stage="f2_node_control_development")
+    wrong["control_rule"]["kind"] = "search_stream_offset"
+    bad_dir = tmp_path / "wrong"
+    bad_dir.mkdir()
+    bad_capture, bad_selection = _prepare_inputs(bad_dir, monkeypatch, wrong)
+    with pytest.raises(RuntimeError, match="node_stream_offset"):
+        campaign.prepare_manifest(
+            bad_capture, bad_dir, bad_selection, "f2_node_control_development"
+        )
 
 
 def test_f2_control_stage_pairs_the_baseline_with_a_reseeded_copy(

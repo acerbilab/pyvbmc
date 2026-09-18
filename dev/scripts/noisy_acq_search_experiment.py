@@ -39,19 +39,36 @@ JUDGE_BUDGETS = (4096, 8192, 16384, 32768, 65536)
 F2_STAGES = {
     "f2_development": "development",
     "f2_holdout": "holdout",
-    # The null control for the search stream: the baseline against itself
-    # with one extra generator draw before the local search, so that the
-    # judge's verdict rate on a pure search-randomness difference is known.
+    # The null controls: the baseline against itself with one extra
+    # generator draw, taken before the local search (search-stream control,
+    # identical nodes) or before the node draw (node-redraw control, fresh
+    # Monte Carlo nodes on the identical sieve), so that the judge's verdict
+    # rates on those differences alone are known.
     "f2_control_development": "development",
+    "f2_node_control_development": "development",
 }
 F2_NODE_STAGES = ("f2_development", "f2_holdout")
 F2_NODE_RULE = "scrambled_sobol_mixture"
 F2_NODE_SAMPLES = 96
 F2_ORDERS = ("axis", "index")
 F2_TAGS = {"axis": "S0_qmc_sorted", "index": "S0_qmc_unsorted"}
-F2_CONTROL_RULE = "search_stream_offset"
 F2_CONTROL_OFFSET = 1
-F2_CONTROL_TAG = "S0_reseeded"
+# Per control stage: the SearchConfig field the control sets, the arm's
+# tag, its role and the manifest purpose.
+F2_CONTROL_STAGES = {
+    "f2_control_development": (
+        "search_stream_offset",
+        "S0_reseeded",
+        "search_stream_null_control",
+        "noisy-acquisition F2 search-stream null control",
+    ),
+    "f2_node_control_development": (
+        "node_stream_offset",
+        "S0_renoded",
+        "node_redraw_null_control",
+        "noisy-acquisition F2 node-redraw null control",
+    ),
+}
 HOLDOUT_STAGES = {"holdout", "f2_holdout"}
 STAGES = {"development", "development_control", *HOLDOUT_STAGES, *F2_STAGES}
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
@@ -230,21 +247,22 @@ def _read_selection(path: Path, stage: str) -> dict[str, Any]:
         or selection.get("strongest_arm_config") is not None
     ):
         raise RuntimeError("an F2 selection names no search arm")
-    if stage == "f2_control_development":
+    if stage in F2_CONTROL_STAGES:
+        field = F2_CONTROL_STAGES[stage][0]
         control = selection.get("control_rule")
         if (
             not isinstance(control, dict)
-            or control.get("kind") != F2_CONTROL_RULE
+            or control.get("kind") != field
             or int(control.get("offset", 0)) != F2_CONTROL_OFFSET
             or selection.get("node_rule") is not None
         ):
             raise RuntimeError(
-                "F2 control selection must carry the one-draw search-stream"
-                " offset and no node rule"
+                f"F2 control selection must carry the one-draw {field} and"
+                " no node rule"
             )
         normalized["control_rule"] = {
             **control,
-            "kind": F2_CONTROL_RULE,
+            "kind": field,
             "offset": F2_CONTROL_OFFSET,
         }
     elif stage in F2_STAGES:
@@ -373,19 +391,18 @@ def _treatments(stage: str, selection: dict[str, Any]) -> list[dict[str, Any]]:
         "config": _config_record("S0", rule),
         "accurate_seed_role": "unused_baseline",
     }
-    if stage == "f2_control_development":
+    if stage in F2_CONTROL_STAGES:
+        field, tag, role, _purpose = F2_CONTROL_STAGES[stage]
         control = selection.get("control_rule")
         if not isinstance(control, dict):
             raise RuntimeError("F2 control selection lacks its control rule")
         return [
             baseline,
             {
-                "tag": F2_CONTROL_TAG,
-                "role": "search_stream_null_control",
+                "tag": tag,
+                "role": role,
                 "config": _config_record(
-                    "S0",
-                    rule,
-                    template={"search_stream_offset": int(control["offset"])},
+                    "S0", rule, template={field: int(control["offset"])}
                 ),
                 "accurate_seed_role": "unused_baseline",
             },
@@ -672,8 +689,8 @@ def prepare_manifest(
         "schema_version": SCHEMA_VERSION,
         "kind": "search",
         "purpose": (
-            "noisy-acquisition F2 search-stream null control"
-            if stage == "f2_control_development"
+            F2_CONTROL_STAGES[stage][3]
+            if stage in F2_CONTROL_STAGES
             else "noisy-acquisition F2 frozen-state importance-node evaluation"
             if stage in F2_STAGES
             else "noisy-acquisition E3 frozen-state search"

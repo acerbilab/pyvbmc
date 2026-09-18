@@ -324,6 +324,52 @@ def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
     assert importance._QMC_COMPONENT_ORDER == "axis"
 
 
+def test_node_redraw_control_shares_the_sieve_and_redraws_the_nodes():
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr"
+    )
+    state = build_state(load_snapshot(fixture), rng=np.random.default_rng(9))
+    state["options"].__setitem__("search_optimizer", "none", force=True)
+    baseline = select_candidate(
+        state, SearchConfig(arm="S0"), search_seed=71, accurate_seed=72
+    )
+    control = select_candidate(
+        state,
+        SearchConfig(arm="S0", node_stream_offset=1),
+        search_seed=71,
+        accurate_seed=72,
+    )
+    np.testing.assert_array_equal(
+        baseline["coarse_candidates"], control["coarse_candidates"]
+    )
+    assert control["importance_node_count"] == 100
+    assert control["coarse_nodes"].shape == baseline["coarse_nodes"].shape
+    assert not np.array_equal(
+        baseline["coarse_nodes"], control["coarse_nodes"]
+    )
+    assert "node_stream_offset_applied" not in baseline
+    assert control["node_stream_offset_applied"] == 1
+    assert len(control["node_stream_offset_draws"]) == 1
+    again = select_candidate(
+        state,
+        SearchConfig(arm="S0", node_stream_offset=1),
+        search_seed=71,
+        accurate_seed=72,
+    )
+    np.testing.assert_array_equal(
+        again["coarse_nodes"], control["coarse_nodes"]
+    )
+    with pytest.raises(ValueError, match="one stream control"):
+        SearchConfig(
+            arm="S0", node_stream_offset=1, search_stream_offset=1
+        ).validate()
+    with pytest.raises(ValueError, match="Monte Carlo nodes"):
+        SearchConfig(
+            arm="S0", importance_qmc=True, node_stream_offset=1
+        ).validate()
+
+
 def test_search_stream_control_shares_sieve_and_nodes_with_the_baseline():
     fixture = (
         Path(__file__).resolve().parents[2]

@@ -53,20 +53,27 @@ class SearchConfig:
     # are taken from the VP's generator, so that only the local search's
     # randomness differs from the baseline at the same search seed.
     search_stream_offset: int = 0
+    # Null control for the node draw: this many extra draws are taken from
+    # the VP's generator after the sieve and before the importance nodes,
+    # so that the baseline's own Monte Carlo nodes are a fresh set while
+    # the 8192 candidates stay identical at the same search seed.
+    node_stream_offset: int = 0
 
     def validate(self):
         if self.arm not in {"S0", "S1", "S2", "S3"}:
             raise ValueError("arm must be S0, S1, S2, or S3")
         if self.importance_qmc_order not in {"axis", "index"}:
             raise ValueError("importance_qmc_order must be axis or index")
-        if self.search_stream_offset < 0:
-            raise ValueError("search_stream_offset must be nonnegative")
-        if self.search_stream_offset and (
+        if self.search_stream_offset < 0 or self.node_stream_offset < 0:
+            raise ValueError("stream offsets must be nonnegative")
+        if self.search_stream_offset and self.node_stream_offset:
+            raise ValueError("one stream control at a time")
+        if (self.search_stream_offset or self.node_stream_offset) and (
             self.arm != "S0" or self.importance_qmc
         ):
             raise ValueError(
-                "the search-stream control is the production selection"
-                " with Monte Carlo nodes"
+                "a stream control is the production selection with Monte"
+                " Carlo nodes"
             )
         if self.importance_qmc:
             if self.arm != "S0":
@@ -485,23 +492,37 @@ def prepare_selection(
                         config.importance_qmc_order,
                     )
                 )
-            if config.search_stream_offset:
+            if config.search_stream_offset or config.node_stream_offset:
                 original_importance = active.active_importance_sampling
 
                 def perturbed_importance(vp_, gp_, acq_, options_):
+                    # Extra generator draws before the node draw give the
+                    # baseline a fresh Monte Carlo node set; after it, they
+                    # change only the local search's randomness. The record
+                    # shows which draws were taken, and with what values.
+                    if config.node_stream_offset:
+                        draws = vp_.rng.integers(
+                            np.iinfo(np.int64).max,
+                            size=config.node_stream_offset,
+                        )
+                        trace["node_stream_offset_applied"] = int(
+                            config.node_stream_offset
+                        )
+                        trace["node_stream_offset_draws"] = [
+                            int(value) for value in draws
+                        ]
                     result = original_importance(vp_, gp_, acq_, options_)
-                    draws = vp_.rng.integers(
-                        np.iinfo(np.int64).max,
-                        size=config.search_stream_offset,
-                    )
-                    # Provenance of the perturbation: the record shows the
-                    # extra draws were taken, and with what values.
-                    trace["search_stream_offset_applied"] = int(
-                        config.search_stream_offset
-                    )
-                    trace["search_stream_offset_draws"] = [
-                        int(value) for value in draws
-                    ]
+                    if config.search_stream_offset:
+                        draws = vp_.rng.integers(
+                            np.iinfo(np.int64).max,
+                            size=config.search_stream_offset,
+                        )
+                        trace["search_stream_offset_applied"] = int(
+                            config.search_stream_offset
+                        )
+                        trace["search_stream_offset_draws"] = [
+                            int(value) for value in draws
+                        ]
                     return result
 
                 stack.enter_context(
