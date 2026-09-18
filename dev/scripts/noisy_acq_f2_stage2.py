@@ -179,11 +179,14 @@ def _run_fit(
     out_dir = Path(manifest["outputs"][arm])
     out_dir.mkdir(parents=True, exist_ok=True)
     extra = manifest["arms"][arm]
+    # The arm's options travel as a JSON string literal and are decoded in
+    # the child: JSON booleans are not Python literals.
     code = (
         "import sys, json\n"
         f"sys.path.insert(0, {str(HERE)!r})\n"
         "import golden_trace\n"
-        f"r = golden_trace.run_task({label!r}, {seed}, {json.dumps(extra)},"
+        f"extra = json.loads({json.dumps(json.dumps(extra))})\n"
+        f"r = golden_trace.run_task({label!r}, {seed}, extra,"
         f" {str(out_dir)!r})\n"
         "print(json.dumps(r))\n"
     )
