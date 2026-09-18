@@ -657,7 +657,18 @@ def validate_manifest(
     expected_treatments = _treatments(
         manifest["stage"], manifest.get("selection", {})
     )
-    if capture.canonical(manifest.get("treatments")) != capture.canonical(
+    # A manifest frozen before SearchConfig gained a field records configs
+    # without it; the field's default reproduces the recorded behaviour, so
+    # the recorded configs are compared after passing through the dataclass.
+    recorded_treatments = [
+        (
+            {**item, "config": asdict(search.SearchConfig(**item["config"]))}
+            if isinstance(item, dict) and isinstance(item.get("config"), dict)
+            else item
+        )
+        for item in manifest.get("treatments") or []
+    ]
+    if capture.canonical(recorded_treatments) != capture.canonical(
         expected_treatments
     ):
         raise RuntimeError(

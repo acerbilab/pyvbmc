@@ -514,6 +514,29 @@ def test_holdout_skips_duplicate_mc1600_control(tmp_path, monkeypatch):
     )
 
 
+def test_manifests_frozen_before_new_config_fields_still_validate(
+    tmp_path, monkeypatch
+):
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection()
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest, tmp_path, selection_path, "development"
+    )
+    older = json.loads(json.dumps(manifest))
+    for treatment in older["treatments"]:
+        for key in (
+            "importance_qmc",
+            "importance_qmc_samples",
+            "importance_qmc_order",
+        ):
+            del treatment["config"][key]
+    campaign.validate_manifest(older, require_ready=False)
+    older["treatments"][1]["config"]["sieve_size"] = 2048
+    with pytest.raises(RuntimeError, match="differ from the frozen"):
+        campaign.validate_manifest(older, require_ready=False)
+
+
 def _minimal_manifest(tmp_path, treatments=None):
     treatments = treatments or [
         {
