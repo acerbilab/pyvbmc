@@ -32,11 +32,15 @@ records its execution.
   integration judge and a bounded paired inference comparison. On
   `dev-noisy-acquisition-efficiency`, E2 closed without an integration
   finalist, E3 froze the S2 search arm with mixed holdout evidence, E4's
-  entry gates are unmet, and the exploratory E5 pilot (24 fits) is
-  complete. The 96-fit E5 continuation for seeds 2002-2009 is prepared,
-  reviewed and frozen but not launched; launching it is the user's
-  decision. The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
-  records the results and the resume and launch commands. The benefit
+  entry gates are unmet, and E5 is complete: 120 paired S0/S2 fits over
+  ten seeds and six configurations. S2 halves fit time at unchanged
+  evaluation counts but degrades inference on high-noise Rosenbrock and
+  the posterior-shape metrics of logistic regression while improving
+  Student-t substantially, so the E6 assessment recommends keeping the
+  production search and proposes frozen-state follow-ups (sieve size,
+  matched-cost RQMC, a trajectory diagnosis) that await a user decision.
+  The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
+  records the results. The benefit
   criteria, allocation and screening gates are accepted; Bayesian
   quadrature is excluded following the scope review.
   A controlled whole-VBMC timing comparison of the completed

@@ -6,12 +6,13 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 PILOT COMPLETE; CONTINUATION PREPARED, NOT LAUNCHED**. Branch:
+Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; FOLLOW-UPS PROPOSED, NOT APPROVED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
-the recorded windows; the exploratory E5 pilot is separately authorized
-under the 2026-09-17 amendment.
+the recorded windows; the exploratory E5 pilot and its continuation are
+separately authorized under the 2026-09-17 amendment and the continuation
+launch clearance of the same day.
 The PI accepted the benefit criteria, paired allocation and screening gates
 on 2026-09-16. The revised experimental scope omits Bayesian quadrature.
 
@@ -50,15 +51,22 @@ several losses before refinement. The mixed holdout evidence does not support
 a general replacement recommendation. E4's development entry gates are not
 established. The user subsequently authorized the exploratory E5 pilot
 specified in the amendment below. Production defaults are unchanged.
-The 24-fit E5 pilot and its excluded exact reproducibility repeat are complete.
-All fits executed successfully and all twelve initial-design pairs match.
-Search time falls on all six configurations, total fit time on five;
-S2 has three convergence-flag losses and no usability loss. The pilot took
-60.58 minutes of worker time. The 96-fit continuation for seeds 2002-2009
-is prepared, independently reviewed and frozen under
-`e5_continuation_20260917/`; no continuation fit has run, and launching
-requires a user decision recorded in a launch clearance. Its measured-rate
-estimate is 4.04 hours, with a 5-6-hour planning allowance.
+The 24-fit E5 pilot, its excluded exact reproducibility repeat and the
+96-fit continuation for seeds 2002-2009 are complete: 120 of 120 fits
+succeeded and all 60 initial-design pairs match. The user's launch decision
+of 2026-09-17 (about 19:47 UTC, with a nine-hour window) is recorded in the
+continuation's `launch_clearance.json`. Two bounded batches ran from 19:51
+to 01:56 UTC, 6.02 hours of worker time against the 4.04-hour estimate, on
+a machine whose seconds per target call drifted from 0.8 to 2.2 times the
+pilot's over the schedule. The combined ten-seed summary, closure record and
+independent review are published, and the [report](../results/2026-09-16-noisy-acquisition-integration-search.md#ten-seed-outcomes)
+records the outcomes: S2 halves fit time at unchanged call counts but is not
+shown to be free of target-specific accuracy loss (five convergence losses
+against none, one usability loss and gsKL increases up to 103 times on
+high-noise Rosenbrock, worse posterior-shape metrics on logistic regression)
+against six usable gains on Student-t. The [E6 assessment](#e6-assessment-2026-09-18)
+recommends against adoption and proposes targeted follow-ups that await a
+user decision. No E5 process is running.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -367,12 +375,12 @@ unbounded search controller also launches timing, memory and judging work.
 - [x] E4: entry gates assessed; neither is established. No adaptive arm is
   allocated. Full-sieve E2 quality comparisons were cost-screened out;
   accepted harmful E3 refinements occur on only one development trajectory.
-- [~] E5: the authorized 24-fit S0/S2 pilot is complete and independently
-  reviewed. The 96-fit continuation for seeds 2002-2009 is prepared,
-  reviewed and frozen; launching it requires a subsequent user decision.
-- [~] E6: frozen-state and pilot evidence are consolidated and independently
-  reviewed; full ten-seed inference assessment and any adoption decision remain
-  outside the completed scope.
+- [x] E5: the 24-fit pilot and the 96-fit continuation are complete and
+  independently reviewed: 120 fits, 60 complete pairs, no failure. The
+  ten-seed comparison is recorded in the report.
+- [x] E6: the [assessment](#e6-assessment-2026-09-18) recommends retaining
+  the production search and proposes frozen-state follow-ups before any
+  further inference allocation. No default changes.
 
 Astra (`gpt-6-astra`, high) orchestrates E0, scientific decisions in E2-E5,
 and E6. Sol (`gpt-5.6-sol`, high) implements the developer harness and
@@ -947,8 +955,8 @@ The [pilot report](../results/2026-09-16-noisy-acquisition-integration-search.md
 records all 24 valid fits, the exact excluded replay, the independent review
 and the measured continuation cost. All twelve initial-design pairs match,
 and all 5,365 selection records verify. The operational continuation criteria
-are satisfied; the continuation below is prepared and awaits the user's
-launch decision.
+were satisfied; the continuation below was launched on the user's decision
+of 2026-09-17 and is complete.
 
 Continuation preparation checklist (2026-09-17):
 
@@ -968,9 +976,11 @@ Continuation preparation checklist (2026-09-17):
   regeneration of the pilot summary, independent static review and its
   should-fix corrections; freeze the reviewed manifest without a launch
   clearance and record the preparation.
-- [ ] Launch seeds 2002-2009 in bounded batches: a user decision, recorded
-  in a launch clearance before the first batch. Then the combined summary,
-  scientific review of every trigger, and the E6 assessment.
+- [x] Launch seeds 2002-2009 in bounded batches: the user's decision of
+  2026-09-17 is recorded in `launch_clearance.json` before the first batch.
+  Two batches (91 and 5 fits) completed all 96 cells with no failure. The
+  combined summary, closure record, review of every trigger and independent
+  review are complete; the E6 assessment records the outcome.
 
 Implementation contract for the scoped policy:
 
@@ -1164,6 +1174,132 @@ valid completed outcome. Return a recommendation to retain the current
 method, pursue one specified treatment, or collect narrowly identified
 missing evidence. No merge, publication or default switch is part of this
 experimental plan.
+
+#### E6 assessment (2026-09-18)
+
+The experiment asked whether numerical integration and search can choose
+equally good or better VIQR points at lower cost with acceptable inference.
+The [report](../results/2026-09-16-noisy-acquisition-integration-search.md)
+holds the measurements; this is the reading.
+
+- **Integration (E2).** Better integration rules choose better points:
+  stratified RQMC at 512 or 2048 nodes was judged better than the
+  production 100-node MC estimate in about half of the panel comparisons
+  and worse in almost none, and even RQMC at 128 nodes was better in 45 and
+  worse in 10 of 96. No rule passed the 10 percent cost gate as a drop-in
+  replacement for the 8192-candidate sieve, because selection cost scales
+  with the node count. The predeclared grid had no matched-cost RQMC
+  setting near 100 nodes, so that direct comparison does not exist.
+- **Search (E3).** S2 (1024-candidate sieve, eight re-scored on MC1600, one
+  L-BFGS-B refinement) selects at 0.43 of production time and improved the
+  judged choice on development states, but the holdout was mixed: 54
+  beneficial, 17 tied, 13 harmful and 12 unresolved of 96, with material
+  raw losses concentrated where the refinement guard fired or the shortlist
+  winner was already worse than S0's choice.
+- **Inference (E5, ten paired seeds per configuration).** S2 reduces fit
+  time to 0.57 and search time to 0.37 of S0's at unchanged target-call
+  counts (0.97); the fit-time saving is the search saving, so it shrinks
+  toward nothing on likelihoods expensive enough for target evaluation to
+  dominate the run. Usable fits rise from 41 to 49 of 60, nine gains (one
+  marginal) against one loss; the gains concentrate on Student-t D8 (3 to 9
+  usable, all three metrics better in eight of ten pairs). All 60 S0 fits
+  converge against 55 of 60 for S2, all five at the evaluation ceiling. The
+  usability loss and four of the five convergence losses are on high-noise
+  Rosenbrock D2, where gsKL increases 3.5 to 103 times within pairs on six
+  of ten seeds. Logistic regression shows worse gsKL and MMTV in eight of
+  ten pairs with a better evidence error. The four seven-of-ten accuracy
+  triggers are at the count a symmetric null predicts (3.1 of 18), and no
+  accuracy comparison reaches a two-sided sign-test probability below 0.11.
+  Multisensory is unusable in both arms.
+
+**Recommendation: retain the production search as the default, do not
+adopt S2, and collect the narrowly identified missing evidence below.**
+The decision gate recommends continuation only if the speed benefit
+survives inference with no coherent target-specific accuracy loss and no
+unexplained mechanism. The speed benefit survives. The accuracy
+precondition is not met: ten paired seeds neither establish nor exclude a
+target-specific loss, and what weighs against S2 is not the trigger count
+but the binary asymmetries (five convergence losses against none, all at
+the evaluation ceiling; one usability loss with gsKL 103 times its pair)
+and the unexplained opposite effects on Student-t and logistic regression.
+The high-noise Rosenbrock accuracy result also reverses sign between the
+two pilot seeds and the eight continuation seeds, which shows how unstable
+a target-level verdict is at this size. Two observations shape the
+follow-ups. First, the frozen-state acquisition judge predicted the
+inference outcomes in neither direction: S2's worst holdout trajectory
+(low-noise Rosenbrock, 8 harmful of 16) is clean in inference with the
+largest speedup, and its near-clean holdout trajectory (high-noise
+Rosenbrock, 1 harmful) is the one that degraded. Frozen-state work can rank
+variants and cost them; the inference comparison remains the arbiter.
+Second, the S2 design changed sieve size, coarse-score noise handling and
+refinement at once, and E3's loss diagnostic could not separate
+insufficient sieve coverage from coarse mis-ranking.
+
+Limitations of the evidence: ten seeds per configuration are descriptive
+and establish neither noninferiority nor outcome frequencies; timings are
+laptop measurements on cheap likelihoods, and the continuation ran on a
+progressively slowing machine (within-pair bias about 1 to 3 percent), so
+only paired ratios are interpretable; the promoted reference envelopes were
+exceeded on gsKL by two fits of each arm and do not register the high-noise
+Rosenbrock usability loss, whose gsKL of 1.56 lies under that target's
+envelope of 2.02. The whole-VBMC runtime measurement of the guarded-sinh
+and kernel-reuse changes remains deferred as recorded in the pickup point.
+
+#### Proposed follow-ups (2026-09-18, not approved)
+
+These extend the completed experiment with narrowly identified missing
+evidence. None is authorized; each needs a user decision, a frozen
+manifest and a bounded allocation before any computation. Because they
+are designed after seeing the E5 results, any variant they produce is a new
+treatment under a new declared allocation whose results are never merged
+with the completed S2 arm; the amendment forbids tuning the frozen method
+itself. F1 to F3 are frozen-state or trace analyses with no target calls
+and no GP fits, and they can run in any order; F4 is conditional on them.
+
+- **F1. Isolate the sieve size.** Run the frozen S2 selection with the
+  coarse sieve at 2048, 4096 and 8192 candidates, holding the eight-point
+  shortlist, MC1600 re-scoring, single refinement and every tolerance
+  fixed, on the 24 captured states with eight repetitions, paired with S0
+  and judged with the existing independent RQMC ladder and ordinary-MC
+  checks. Report, per state and sieve size, the beneficial/harmful counts,
+  material raw losses and the paired timing ratio. The question is where
+  the holdout losses disappear and what each step costs; the E3 timing
+  suggests a 2048 sieve keeps about half of S2's saving and 4096 about a
+  quarter. Estimated cost: selections took about two seconds per cell in
+  E3, so three variants on 24 states and eight repetitions are under an
+  hour of selections plus one to two hours of judging and timing.
+- **F2. Matched-cost RQMC.** Implement a production-grade
+  component-stratified scrambled-Sobol rule that reuses the kernel path,
+  at 96 and 128 nodes, and evaluate it two ways on frozen states: as a
+  drop-in for the production 8192-candidate sieve, timed against MC100 on
+  the full sieve and judged; and as the coarse scorer inside S2 and its F1
+  variants, to test whether low-discrepancy nodes at the same budget remove
+  the coarse mis-ranking that E3 could not separate from coverage loss.
+  E2's panel result for RQMC128 (45 beneficial, 10 harmful of 96 at 1.49
+  times panel cost) is the motivation; the full-sieve cost ratio and the
+  benefit at matched cost are the missing numbers. Estimated cost: one to
+  two hours of frozen-state compute after implementation and focused tests.
+- **F3. Diagnose the high-noise Rosenbrock trajectories.** Read-only
+  analysis of the stored golden traces and selection records of the ten
+  S0/S2 pairs on `rosenbrock_D2_noise3`, starting with seed 2008: where the
+  trajectories diverge, whether S2's selections cluster near the current
+  mode or in the tails, how often the refinement guard and row-budget
+  fallbacks fired, how the GP hyperparameters and the variational
+  components evolve, and why four S2 runs failed the stability criterion
+  within 200 evaluations. The aim is a mechanism for the degradation that
+  F1 and F2 can then be checked against. About an hour of analysis; no new
+  computation on the targets.
+- **F4 (conditional). Inference comparison of a repaired variant.** Only if
+  F1 or F2 identifies a variant that removes the Rosenbrock and logistic
+  regression losses on frozen states at a worthwhile cost, allocate a new
+  E5-style paired inference comparison under a new manifest, with the same
+  six configurations and ten seeds, treating the present S2 results as a
+  completed arm rather than merging them. The cost is that of the completed
+  E5 design, about six worker hours on this laptop.
+
+Executor roles follow the experiment's convention: Astra decides scope and
+reads evidence, Sol implements and runs, separate Sol agents review, and at
+most one agent runs compute at a time.
 
 ### Decisions and unresolved empirical questions
 

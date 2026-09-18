@@ -1,0 +1,422 @@
+{
+  "batch_wall_s": 1405.5,
+  "cells": [
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2007__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2007__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2008__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2008__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2009__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise1__seed2009__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2007__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2007__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2008__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2008__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2009__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "rosenbrock_D2_noise3__seed2009__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2007__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2007__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2008__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2008__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2009__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "logreg_D5_noise3__seed2009__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2007__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2007__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2008__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2008__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2009__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "student_D8_noise3__seed2009__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2007__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2007__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2008__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2008__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2009__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "multisensory_s1_D6_noise1.3__seed2009__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2002__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2002__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2003__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2003__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2004__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2004__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2005__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2005__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2006__S0"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2006__S2"
+    },
+    {
+      "action": "reused",
+      "cell_id": "timing_D5_noise2.2__seed2007__S2"
+    },
+    {
+      "action": "launched",
+      "cell_id": "timing_D5_noise2.2__seed2007__S0",
+      "outer_seconds": 391.0310000000027,
+      "returncode": 0
+    },
+    {
+      "action": "launched",
+      "cell_id": "timing_D5_noise2.2__seed2008__S0",
+      "outer_seconds": 382.9059999999881,
+      "returncode": 0
+    },
+    {
+      "action": "launched",
+      "cell_id": "timing_D5_noise2.2__seed2008__S2",
+      "outer_seconds": 183.48399999999674,
+      "returncode": 0
+    },
+    {
+      "action": "launched",
+      "cell_id": "timing_D5_noise2.2__seed2009__S2",
+      "outer_seconds": 148.26600000000326,
+      "returncode": 0
+    },
+    {
+      "action": "launched",
+      "cell_id": "timing_D5_noise2.2__seed2009__S0",
+      "outer_seconds": 296.9689999999973,
+      "returncode": 0
+    }
+  ],
+  "complete": true,
+  "failures": 0,
+  "finished_utc": "2026-09-18T01:56:12.749216+00:00",
+  "launched": 5,
+  "manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "max_fits": null,
+  "max_wall_seconds": 7200,
+  "on_failure": "stop",
+  "schema_version": 1,
+  "started_utc": "2026-09-18T01:32:47.253170+00:00",
+  "state_after": {
+    "failure": 0,
+    "missing": 0,
+    "success": 96
+  },
+  "state_before": {
+    "failure": 0,
+    "missing": 5,
+    "success": 91
+  },
+  "stop_reason": "all_cells_complete",
+  "timeout_seconds": 1200,
+  "updated_utc": "2026-09-18T01:56:12.749216+00:00"
+}

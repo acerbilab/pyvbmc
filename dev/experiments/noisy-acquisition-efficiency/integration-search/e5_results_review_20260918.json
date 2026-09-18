@@ -1,0 +1,143 @@
+{
+  "compiled_by": "Fable orchestrator from the reviewer's hand-back report",
+  "continuation_fits_reviewed": 96,
+  "created_utc": "2026-09-18T02:20:00.461296+00:00",
+  "findings_on_draft_interpretation": {
+    "additional_observations": [
+      "C-a: convergence asymmetry 60/60 vs 55/60, all five at max evaluations, two-sided p = 0.0625 under a symmetric null; S2 spends its full budget on rosenbrock n3 and still ends worse",
+      "C-b: three of the five non-convergences were in the pilot; the continuation added two (rosenbrock n3 seeds 2004 and 2008)",
+      "C-c: the rosenbrock n3 accuracy degradation is a continuation-seed phenomenon; both pilot seeds favoured S2 on all three metrics",
+      "C-d: the reference-envelope check is insensitive where the concern lies (rosenbrock n3 gsKL envelope 2.0226 not tripped by the 1.558 usability-loss fit)",
+      "C-e: frozen-state judging predicted trajectory outcomes in neither direction (worst holdout target rosenbrock n1 is clean in inference; near-clean rosenbrock n3 degraded)",
+      "C-f: within-pair drift bias quantified at about 0.9 percent median and 3 percent worst",
+      "C-g: seven S0 evidence-error failures into usable fits should be six of seven (Student-t seed 2006 stays unusable)",
+      "C-h: both-arms-alike does not hold on rosenbrock n1 (S0 1.01 vs S2 0.82)",
+      "C-i: both batch logs and the preparation's freeze_continuation.log are empty files hashed as the empty string",
+      "C-j: the multisensory usability gain (seed 2009) is marginal and its evidence error worsens",
+      "C-k: S2's per-call target-evaluation time is 11-14 percent higher within pairs on sub-millisecond targets, timer granularity; on timing it is 0.99/0.85"
+    ],
+    "dispositions_note": "C-a to C-k were incorporated into the report and plan text; C-i needs no change (the batch records are the hash-bound evidence).",
+    "must_fix": [
+      {
+        "claim": "machine ran 1.5-2.4x slower per target call",
+        "correction": "0.8-2.2x by target and arm, rosenbrock n1 S2 faster (0.82) and S0 unchanged (1.01), progressive drift about 18 percent per hour",
+        "disposition": "report, plan and LOCAL.md corrected",
+        "id": "M1"
+      },
+      {
+        "claim": "high-noise Rosenbrock violates the decision gate's no-coherent-loss condition",
+        "correction": "the gate is a precondition to establish; ten seeds neither establish nor exclude a loss, so S2 is not shown free of target-specific accuracy loss; rosenbrock n3 metric evidence is the weakest of the four triggers (elbo_err 7/10, two-sided sign p 0.344; gsKL 6/10, 0.754; MMTV 5/10, 1.0)",
+        "disposition": "report status, outcomes and gate paragraphs and the plan's E6 assessment reframed",
+        "id": "M2"
+      },
+      {
+        "claim": "four seven-of-ten triggers presented as substantive evidence",
+        "correction": "P(worse at least 7 of 10) = 0.1719 per combination under a symmetric null; 3.09 expected of 18, 4 observed (P(at least 4) about 0.375); median above 0 is implied by at least 7 worse; no combination below two-sided sign p 0.109; informative content is clustering, effect sizes and binary outcomes",
+        "disposition": "stated explicitly in report and plan",
+        "id": "M3"
+      }
+    ],
+    "nits": [
+      {
+        "disposition": "report says at its upper end",
+        "id": "N1",
+        "note": "21661.8 s is 99.3 percent of the planning upper bound"
+      },
+      {
+        "disposition": "stated",
+        "id": "N2",
+        "note": "rosenbrock n1 func_count 0.929 [0.869, 0.993] excludes 1"
+      },
+      {
+        "disposition": "stated",
+        "id": "N3",
+        "note": "Student-t func_count 1.059 [0.948, 1.184], about 6 percent more calls"
+      },
+      {
+        "disposition": "pilot report already records the replay",
+        "id": "N4",
+        "note": "121 executions including the pilot's predeclared validation replay"
+      },
+      {
+        "disposition": "none",
+        "id": "N5",
+        "note": "all other draft numbers verified exactly"
+      }
+    ],
+    "should_fix": [
+      {
+        "correction": "gsKL within-pair multipliers on rosenbrock n3 are 14.7x, 3.5x, 3.5x, 10.8x on the converged worse seeds and 103x on seed 2008, not 4-10x",
+        "disposition": "corrected",
+        "id": "S1"
+      },
+      {
+        "correction": "Student-t fit-time interval [0.7104, 1.0011] includes 1",
+        "disposition": "corrected",
+        "id": "S2"
+      },
+      {
+        "correction": "target_eval_s (pooled 1.095; timing 0.894 [0.757, 1.057]) omitted; below 0.2 percent of wall on five targets (timer granularity), 5.4/8.0 percent on timing",
+        "disposition": "added",
+        "id": "S3"
+      },
+      {
+        "correction": "search is 57-77 percent of S0 wall and the wall ratio predicted from the search ratio alone matches observed within 0.02-0.06; the headline saving shrinks toward the search share on expensive likelihoods",
+        "disposition": "added to report and plan",
+        "id": "S4"
+      },
+      {
+        "correction": "result-informed variants are permitted only as new declared allocations never merged with the S2 arm; recommendation phrased as E6's collect-narrowly-identified-missing-evidence form",
+        "disposition": "added to the plan's recommendation and follow-ups",
+        "id": "S5"
+      },
+      {
+        "correction": "schedule is target-major with the first arm alternating by seed parity",
+        "disposition": "corrected",
+        "id": "S6"
+      },
+      {
+        "correction": "screensaver/CPU-clock observation was unrecorded",
+        "disposition": "recorded in machine_load_observation.json as an operator observation without causal attribution",
+        "id": "S7"
+      }
+    ]
+  },
+  "kind": "noisy_acq_e5_continuation_results_independent_review",
+  "manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "manifest_sha256": "cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228",
+  "reviewed_artifact_sha256": {
+    "campaign/summary.json": "78143a984b112ee15ef16a85712fcd124bf5823a400d7bf87c3a1cf3dab520bd",
+    "campaign/summary_combined.json": "1e9f46c518ad7b85c819cabf79ac212603a2b5cc29ff6be369ff6deec925da59",
+    "completion.json": "7a7523571ae9f19bc5845a61b02df6acbea9cd14f50f5cba2dfbf0a071630f39",
+    "launch_clearance.json": "fe30c641ed95299a88e8f9ceae4f8b555cb4f384eb5117cec39afaded0e4298e",
+    "machine_load_observation.json": "06f1fc7c9cb86b30613b10293d24182af320f4fd308b72215afc009f6d45ebba"
+  },
+  "reviewed_at_source_commit": "d50987462839b32105df196fabfd5757d1d7f1bb (tracked docs edited afterwards in the same session; artifacts unchanged)",
+  "reviewer": "independent Opus static reviewer (read-only: JSON/NPZ reads, SHA-256 recomputation and arithmetic; no tests, fits or oracles run; nothing modified)",
+  "schema_version": 1,
+  "scientific_adoption_approved": false,
+  "verdict": "pass with corrections to the draft interpretation; the recommendation (no adoption, no default change, no merge) follows from the measured uncertainty",
+  "verdict_detail": "The speed result is paired, mechanistically explained (fit-time saving equals search saving within 0.02-0.06), robust to the machine drift (within-pair bias at most about 3 percent), and consistent with intervals excluding 1 on five of six configurations. The accuracy result is descriptive: no target-metric combination reaches a two-sided sign p below 0.109, the trigger count is at its null expectation, the paired-difference ranges straddle zero everywhere except Student-t, and the rosenbrock n3 verdict reverses sign between the two pilot seeds and the eight continuation seeds. What weighs against S2 is the binary asymmetry (five convergence losses against none, one usability loss against nine gains, within-pair gsKL increases up to 103x) and the fact that frozen-state judging predicted none of it. That suffices to say S2 is not shown to be free of target-specific accuracy loss, the precondition the gate requires; it does not suffice to say a loss has been demonstrated. No default change, no adoption, no merge; follow-ups only as new declared allocations.",
+  "verification": {
+    "1_provenance": {
+      "detail": "manifest raw SHA-256 and semantic digest equal the recorded values and the digest recomputes from the semantic block; launch_clearance.json cites both; the four pilot records match manifest.semantic.parent.record_sha256 (pilot directory unchanged); completion.json's clearance, summary, combined-summary and two batch-record hashes match the files on disk; both batch logs are 0 bytes (runner writes nothing to stdout) and are hashed as the empty string.",
+      "result": "pass"
+    },
+    "2_batches_and_terminals": {
+      "detail": "two batch records: batch 1 insufficient_time_for_next_fit, 91 launched, 0 failures, 21600/1200 s, wall 20456.0 s, one explicit non-launch (timing seed 2007 S0, 1143.97 s remaining); batch 2 all_cells_complete, 5 launched, 7200/1200 s, wall 1405.5 s. 96 launched cells, unique, equal to executable_cell_ids, manifest order. 96 terminals all success, every record_digest recomputes, manifest digest matches, digests equal completion.terminal_record_digests; all 288 referenced artifacts (68.5 MB) hash-verified with 0 mismatches; 19825 selection records with consistent total_search_seconds; cells strictly sequential, inter-fit gaps 1.6-50.8 s (median 2.0 s, total 244 s); sum outer_wall_s 21661.787 s and elapsed 21909.1 s exactly as recorded.",
+      "result": "pass"
+    },
+    "3_summary_correctness": {
+      "detail": "about 200 quantities recomputed independently from the 60 pairs with 0 discrepancies: all 12 transition tables (usable S0 41/60 -> S2 49/60; converged 60/60 -> 55/60; every usable flag re-derived), all 18 accuracy entries (below 1e-12), the seven-of-ten rule (full ten pairs, median above 0 and worse_count at least 7) and its four triggers, all 24 log-ratio intervals (df 9, below 1e-12), the pooled geometric means 0.57012/0.37451/1.09526/0.97301; pilot consistency (12 pairs, 0 mismatches against the immutable pilot summary); initial designs bitwise equal in all 60 pairs from the raw traces.",
+      "result": "pass"
+    },
+    "4_flags": {
+      "detail": "sole usability loss rosenbrock_D2_noise3 seed 2008: S0 elbo_err 0.4586, gsKL 0.01511, MMTV 0.04785, 195 calls, converged; S2 0.5969, 1.5580, 0.22380, 200 calls, max evaluations reached (gsKL ratio 103.1x). Four gsKL envelope exceedances: rosenbrock_D2_noise1 seed 2007 S0 (0.4352 vs 0.1451, 3.00x), seed 2008 S2 (0.1747, 1.20x), seed 2009 S2 (0.2355, 1.62x), timing_D5 seed 2006 S0 (1.2976 vs 1.1823, 1.10x, unusable); all continuation seeds. new_S2_failures and nonfinite_outcomes empty; all 120 fits finite.",
+      "result": "pass"
+    },
+    "5_timing_caveat": {
+      "detail": "median seconds per target call, continuation over pilot, by target (S0/S2): rosenbrock n1 1.01/0.82, rosenbrock n3 1.18/1.20, logreg 1.50/1.27, student 1.59/1.34, multisensory 2.08/2.23, timing 2.09/1.99; range 0.82-2.23 (median 1.42), rising monotonically with schedule position (block means 0.92, 1.19, 1.39, 1.47, 2.16, 2.04; about 18 percent per hour). Pairing verified from started_utc for all 60 pairs: arms adjacent, first arm alternates by seed parity, median arm-start separation 181 s (max 619 s), implying within-pair bias about 0.9 percent median and 3 percent worst against 16-58 percent effects, with no systematic order direction (3 targets each way). Undermines absolute pilot-vs-continuation time comparisons and the quiet-machine assumption; does not undermine paired ratios or any accuracy, convergence or usability result.",
+      "result": "partial pass: direction holds, the draft's magnitude did not"
+    }
+  }
+}

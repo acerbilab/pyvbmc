@@ -1,0 +1,258 @@
+{
+  "batch_logs_sha256": {
+    "run_continuation_batch1_20260917T195100Z.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "run_continuation_batch2_20260918T013244Z.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "batches": [
+    {
+      "batch_wall_s": 20456.031000000003,
+      "complete": false,
+      "failures": 0,
+      "finished_utc": "2026-09-18T01:32:01.171207+00:00",
+      "launched": 91,
+      "max_fits": null,
+      "max_wall_seconds": 21600,
+      "on_failure": "stop",
+      "record": "batch_20260917T195101.806988+0000.json",
+      "sha256": "9ecb91ba736dd3aa273cd460a4eb42e0f0bc86d2835d8e2d48e046126a4fa66f",
+      "started_utc": "2026-09-17T19:51:01.806988+00:00",
+      "state_after": {
+        "failure": 0,
+        "missing": 5,
+        "success": 91
+      },
+      "state_before": {
+        "failure": 0,
+        "missing": 96,
+        "success": 0
+      },
+      "stop_reason": "insufficient_time_for_next_fit",
+      "timeout_seconds": 1200
+    },
+    {
+      "batch_wall_s": 1405.5,
+      "complete": true,
+      "failures": 0,
+      "finished_utc": "2026-09-18T01:56:12.749216+00:00",
+      "launched": 5,
+      "max_fits": null,
+      "max_wall_seconds": 7200,
+      "on_failure": "stop",
+      "record": "batch_20260918T013247.253170+0000.json",
+      "sha256": "a53f1cafa10e3fcbfb2bfec94436be2441c1df80c7f5a3736f53922f2b9d5704",
+      "started_utc": "2026-09-18T01:32:47.253170+00:00",
+      "state_after": {
+        "failure": 0,
+        "missing": 0,
+        "success": 96
+      },
+      "state_before": {
+        "failure": 0,
+        "missing": 5,
+        "success": 91
+      },
+      "stop_reason": "all_cells_complete",
+      "timeout_seconds": 1200
+    }
+  ],
+  "combined_fit_status_counts": {
+    "failure": 0,
+    "missing": 0,
+    "success": 120
+  },
+  "combined_pair_status_counts": {
+    "complete": 60,
+    "failure": 0,
+    "invalid_initial_design": 0,
+    "missing": 0,
+    "nonfinite": 0
+  },
+  "continuation_worker_seconds": 21661.78743890002,
+  "created_utc": "2026-09-18T01:56:59.066857+00:00",
+  "elapsed_first_worker_start_to_last_finish_seconds_including_gaps": 21909.105363,
+  "fit_status_counts": {
+    "failure": 0,
+    "missing": 0,
+    "success": 96
+  },
+  "kind": "noisy_acq_e5_continuation_completion",
+  "launch_clearance_sha256": "fe30c641ed95299a88e8f9ceae4f8b555cb4f384eb5117cec39afaded0e4298e",
+  "manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "manifest_sha256": "cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228",
+  "pair_status_counts": {
+    "complete": 48,
+    "failure": 0,
+    "invalid_initial_design": 0,
+    "missing": 0,
+    "nonfinite": 0
+  },
+  "pilot_manifest_semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134",
+  "planning_comparison": {
+    "observed_over_point_estimate": 1.4899901775273827,
+    "observed_worker_seconds": 21661.78743890002,
+    "planning_range_seconds": [
+      18172.760268500097,
+      21807.312322200116
+    ],
+    "point_estimate_seconds": 14538.208214800077
+  },
+  "schema_version": 1,
+  "scientific_adoption_approved": false,
+  "scientific_review_combined": {
+    "automatic_adoption": false,
+    "descriptive_only": true,
+    "full_ten_pair_accuracy_triggers": {
+      "logreg_D5_noise3": [
+        "gskl",
+        "mmtv"
+      ],
+      "multisensory_s1_D6_noise1.3": [
+        "elbo_err"
+      ],
+      "rosenbrock_D2_noise3": [
+        "elbo_err"
+      ]
+    },
+    "incomplete_targets": [],
+    "invalid_initial_design": false,
+    "new_failure": false,
+    "nonfinite_outcome": false,
+    "planned_degrees_of_freedom_for_ten_complete_pairs": 9,
+    "usability_loss": true
+  },
+  "scientific_review_continuation_only": {
+    "automatic_adoption": false,
+    "full_ten_pair_accuracy_triggers": {},
+    "invalid_initial_design": false,
+    "new_failure": false,
+    "nonfinite_outcome": false,
+    "phase_summary_is_descriptive_only": true,
+    "usability_loss": true
+  },
+  "summary_combined_sha256": "1e9f46c518ad7b85c819cabf79ac212603a2b5cc29ff6be369ff6deec925da59",
+  "summary_sha256": "78143a984b112ee15ef16a85712fcd124bf5823a400d7bf87c3a1cf3dab520bd",
+  "terminal_record_digests": {
+    "logreg_D5_noise3__seed2002__S0": "a34d178d6123ce145a0309d4c1f8721190b2cab7ae6ef49167f21b9a090e4318",
+    "logreg_D5_noise3__seed2002__S2": "7afbe0640ab606466f3b38f801056b3d7ac151f1db8237fcffc3b57133556ff3",
+    "logreg_D5_noise3__seed2003__S0": "754096c145055dd86e7f4ebdd9c6095c4fb8756e63560fc1d1e85252a1a37214",
+    "logreg_D5_noise3__seed2003__S2": "be6e5c8a59aa65b587f279313b713af069e629868164532c77209c04ba10113f",
+    "logreg_D5_noise3__seed2004__S0": "57819c4db705b6d2ae699892b02b818e3d078068ef9a5e36094f66ad6b0dddbf",
+    "logreg_D5_noise3__seed2004__S2": "1ea82b9043c4e866f908c8bf2a9ec25ef45cefd67d65e7341ef08e746628045e",
+    "logreg_D5_noise3__seed2005__S0": "382e6d74cfbc741ead51e02f7f94a8036752a7c20b7881a2d585bb6547284dc0",
+    "logreg_D5_noise3__seed2005__S2": "c3eb9549b3056e6c7ab2bd1920379e1155cf50cccdf1afad4e6d079dfecf7d0f",
+    "logreg_D5_noise3__seed2006__S0": "93dc049c76d2236f671addfc96040b841eb783d014281183b97036fdcd12c534",
+    "logreg_D5_noise3__seed2006__S2": "6b91dbb42fc0f9af578289401faa85dba778ce832cc77adaa9db212e42696b4f",
+    "logreg_D5_noise3__seed2007__S0": "7c37c617d18ab5d103a6f9a0502dbea9080aadaf50d51e616b38de94b9e5c77d",
+    "logreg_D5_noise3__seed2007__S2": "bb7779fcba4ca333aa377a03e7805aa33079abf56ed062d629c4df1a2e8a5ed6",
+    "logreg_D5_noise3__seed2008__S0": "f84d9192fc05ad4d401619befbda448080c2b02fa63ec569d99f8434e25aeb98",
+    "logreg_D5_noise3__seed2008__S2": "f554c460ea852de0b892c00abaf94f27428cd601fcd30b9883afe486e7a605cd",
+    "logreg_D5_noise3__seed2009__S0": "0eb4f3c538270735de7d0ea63766e5ece951d7df7a09846f1fc23bdeb4b772ba",
+    "logreg_D5_noise3__seed2009__S2": "2d8650379c2e14698ed5f899dd2732aa9530660270e242e85eb3145730e83576",
+    "multisensory_s1_D6_noise1.3__seed2002__S0": "cd5c84dc1d92041aaef3e10206d52b570712c1ffb69993a8b9ce5285964b3c7c",
+    "multisensory_s1_D6_noise1.3__seed2002__S2": "5921e222ebd68fed4787d04b3c91d9f1c51ba0353fbf040912fb8bb090872733",
+    "multisensory_s1_D6_noise1.3__seed2003__S0": "7302f0b6c75f5282ebe0de961e0bd1392c3c0df06b4894efbdfb14739b1c136f",
+    "multisensory_s1_D6_noise1.3__seed2003__S2": "46164e7cb83cf6c04a9c60a5df247e40cad5f28e1643751f1a9abc84e2152a15",
+    "multisensory_s1_D6_noise1.3__seed2004__S0": "f95b656966f44d7fb9a0ba5abeef7448d045e827ed16954f170593a9b7531252",
+    "multisensory_s1_D6_noise1.3__seed2004__S2": "4ab01348efbc5d547a40ccb0dbd3fb2e0d145a4514460d5dce4778755dc0ab68",
+    "multisensory_s1_D6_noise1.3__seed2005__S0": "19779fae1442767bf9f825e632ae52dab09da49ba28cffea31ea72cdd4bbedfe",
+    "multisensory_s1_D6_noise1.3__seed2005__S2": "b7f5f69fc863a0262f5d0b122ea97160f3908bc45979d6d150907015d21328a4",
+    "multisensory_s1_D6_noise1.3__seed2006__S0": "eef99d042809383bf8c5b2eb54a33f88ebf099de293b1ea7412abb8d2feb4263",
+    "multisensory_s1_D6_noise1.3__seed2006__S2": "8d3812c8273e19f0c0fa281f2316bbbf0e5e5eff84381ead797e8f267691d5f7",
+    "multisensory_s1_D6_noise1.3__seed2007__S0": "0f63bc8d116e30d40584d7335b9cae75c3efa935663b6d5894e67d7c8b08625d",
+    "multisensory_s1_D6_noise1.3__seed2007__S2": "17cbf757fdd96ce249e0d1f53fc0dca704336e9eaac44ad7ebe90d7e5bcde5bc",
+    "multisensory_s1_D6_noise1.3__seed2008__S0": "91499942b511b1a07e63c1bba357111ec1bef65041b0f676e3fcecffcc9ae13b",
+    "multisensory_s1_D6_noise1.3__seed2008__S2": "0c89092f0b57f5b366809549f85628e296894eee9f495285e5b60818f5940d2c",
+    "multisensory_s1_D6_noise1.3__seed2009__S0": "641425391c8f6fa34b6b1e1c715cb6da0b85201031c4f91725975bff8f41c9bc",
+    "multisensory_s1_D6_noise1.3__seed2009__S2": "9c551e0ae4023ac14fedcbdb567f190dfac513a6bee8fe45344f141a2f1425dc",
+    "rosenbrock_D2_noise1__seed2002__S0": "9d83aa88e24674a498e552d74186dd7ae1425079f39344d7ab47c7c19f0ce5f5",
+    "rosenbrock_D2_noise1__seed2002__S2": "195f55e0582f1f70a0ceaadd7111c3707540aa02944e60c4efa57f7ea97d3e50",
+    "rosenbrock_D2_noise1__seed2003__S0": "627ddbbf754071413217998b13a83bef3d38573f7556c4265d071e41c205859f",
+    "rosenbrock_D2_noise1__seed2003__S2": "2997e9c949999018fe26299758e6dafb5b61bda20412f7508326231ac44deb8b",
+    "rosenbrock_D2_noise1__seed2004__S0": "58b2eddb5a752c1234b97a49f2f288f012cd1732c0d5116093b4dcd988319319",
+    "rosenbrock_D2_noise1__seed2004__S2": "57ab48c4b32c422fc602f4e26bb137f65a7f8cda07e21a3bd1955d99c05e127a",
+    "rosenbrock_D2_noise1__seed2005__S0": "bd02d5143c02b2b8a28a48ddbd905733cea64714f192d58153b98c0d41965442",
+    "rosenbrock_D2_noise1__seed2005__S2": "049f968d3eccc0fd59d22b2b8150f2422121f9633fc2bc7f60c8c0046b84267c",
+    "rosenbrock_D2_noise1__seed2006__S0": "07867762a5f1a98d4ab23db053b4366e5a37f028688a7110e3c399b01eb721ee",
+    "rosenbrock_D2_noise1__seed2006__S2": "c273c8b8e39c889f1cf5c001990fa96f8692d58ba258e6a8320178341da5de42",
+    "rosenbrock_D2_noise1__seed2007__S0": "81af666a6481858cdce6ad033589f404e43f68b9b83f1dd9e92adb0c602a5964",
+    "rosenbrock_D2_noise1__seed2007__S2": "e32abf6d9ae5d05f67197f56d8d6541ff86996bef9c2105f1282e960f4f88c57",
+    "rosenbrock_D2_noise1__seed2008__S0": "bbe2a95ca9ada76382b484cfd3c4980315c95b0a1456c4af47849d88d84e3657",
+    "rosenbrock_D2_noise1__seed2008__S2": "e62513946608c3cf779e027fb078d43db3d2b382e483c6d288d42852f3417e3a",
+    "rosenbrock_D2_noise1__seed2009__S0": "8e39ebd88a770f28c081f43ee7303229316894746691f0a3e7472a36c8c0801b",
+    "rosenbrock_D2_noise1__seed2009__S2": "0fdccfb536a0168357afa05200ef0c64826c41eec3df1e56075c34db21232ac6",
+    "rosenbrock_D2_noise3__seed2002__S0": "8be86917d396c8e42a412edd880e2eda5ea06f8492027e46172c1ba924b5abff",
+    "rosenbrock_D2_noise3__seed2002__S2": "d5c35ebedf9868c12ef3082fdce93ace1e2305d8f3b21ba68c91afb19c379b32",
+    "rosenbrock_D2_noise3__seed2003__S0": "0f1658a37d299e270fdebdacd9023853b5a5c76a9858316acaf2041ac15fcc53",
+    "rosenbrock_D2_noise3__seed2003__S2": "ea12b4db58be49a9520ce47a47113f72725d6bf2331b9e10a90de5d34f110040",
+    "rosenbrock_D2_noise3__seed2004__S0": "e05c4a56b5c114c496d680249edb8e57ed29a545e1cc672c44b1d8a9facc400e",
+    "rosenbrock_D2_noise3__seed2004__S2": "7e8b6976bd2539fde882072368d31200d91c921b7d2ca449f36270d17c45b9ab",
+    "rosenbrock_D2_noise3__seed2005__S0": "4007d0a060c8b346b6fc2f564f8ff71151f21b471f5d7c65f9ca0590deb42f01",
+    "rosenbrock_D2_noise3__seed2005__S2": "ffec0fb365e1ada16c1dd01921da1bde7c69bf051c31961edfc5a48b50ab43c8",
+    "rosenbrock_D2_noise3__seed2006__S0": "64966d27c018eac13366d43efd6d18bf163b7dd6863974974d03028d50f99969",
+    "rosenbrock_D2_noise3__seed2006__S2": "b53fb41928fd1edfe82af9cb523059a4bdf13d43cd8219d889274aeec5cbe3ed",
+    "rosenbrock_D2_noise3__seed2007__S0": "4ee04d5c6f2de62c068160b2675b4aecc91c679f781a047cab16a155c3645681",
+    "rosenbrock_D2_noise3__seed2007__S2": "ebad9a29dbc2659630e828879d1a779968b4780032a6a259178905556c8a7507",
+    "rosenbrock_D2_noise3__seed2008__S0": "dca4703d4b2150bb21ce898e2d2260ae0a4153469c581f885aca92c41a52c865",
+    "rosenbrock_D2_noise3__seed2008__S2": "f6386f4888e468b22302c206d2202a9dc672b352a9f347421ecb007a402b7ea2",
+    "rosenbrock_D2_noise3__seed2009__S0": "52cd6208feff71b28d88519f492c3630f3786d211f253eaf4b5679e16a7858b8",
+    "rosenbrock_D2_noise3__seed2009__S2": "187bb0238773b4b7d7ff23dfd46731953fa4416d98706b86633f84d0c4987b2f",
+    "student_D8_noise3__seed2002__S0": "a596d9662cc2d5751ed0be21c0e046040dcf559b00bb6ddab0d4472b6949e5c5",
+    "student_D8_noise3__seed2002__S2": "3bf6a93dbf490e7335ef1ea032f63506b3b1232f72da14b480c738a5f7065988",
+    "student_D8_noise3__seed2003__S0": "66f76aaff9adde12070b615590717303572fe9028eeabd038f0c3e2db907bb47",
+    "student_D8_noise3__seed2003__S2": "cd03edcca4790c6dd3997a258844fd07d906d297be8c10af667a8b2b759d4eaf",
+    "student_D8_noise3__seed2004__S0": "3c4a8ef1d1e89a05b190b02e4229bbc70cb32783a86687069cad1e6d6403abdd",
+    "student_D8_noise3__seed2004__S2": "dacce43e81958bc0ba378027c44e0aa72b18af3b25c0511b05fb794172d68710",
+    "student_D8_noise3__seed2005__S0": "28dab289c45659278f2d27fe03e9dbd3009ea34a07e95698da10f2e31ae2e067",
+    "student_D8_noise3__seed2005__S2": "e4a845cd5329693d26c4623cec24b445879482a8bef9094d66bfa404bf530240",
+    "student_D8_noise3__seed2006__S0": "1cc8557249994a08aacde1001ecce737c194ce28ec2a5d223b2924f20fd8bbfd",
+    "student_D8_noise3__seed2006__S2": "fef6c51e71d445c1fb339a68127e2955a5cc20b0711f6982592395d6fb621087",
+    "student_D8_noise3__seed2007__S0": "1a7e0672e2f49d48d299d4d562802ed82295dafd5905e5cfbcaeccdcf89f09d6",
+    "student_D8_noise3__seed2007__S2": "df7b7809afdd9e7530492307f8d341d84f30b45948e851511404bf71fa5a36c6",
+    "student_D8_noise3__seed2008__S0": "f854af3826e39780ebcfc19751e8249ed82e23dabacc0ec1adc5b5e2072d0211",
+    "student_D8_noise3__seed2008__S2": "57b36f5eec394031660d3c2acc8f0747f14df93c74cf0f1d269d49dc1a7d0bd1",
+    "student_D8_noise3__seed2009__S0": "3a0fa7faa6b75077255da7d5a8329cb05b1c0d62a62a0fc94bef76941b733027",
+    "student_D8_noise3__seed2009__S2": "0d1d64c9d27418866cb9afe115a818d47529a4aa3c70feb2accabcf4a78df2d8",
+    "timing_D5_noise2.2__seed2002__S0": "03964f21d1c99e5b5804c70b33aa6551278a60c5438413b20f3f3d5a8c2be296",
+    "timing_D5_noise2.2__seed2002__S2": "5bc03af19c3fcc508e99364c623c069acd49036e455390ecc3e6defc6257bef4",
+    "timing_D5_noise2.2__seed2003__S0": "3877fdf3c3a0f22522a3fe58f3f1c4cf94b7694c8322fceba17371662ff132bf",
+    "timing_D5_noise2.2__seed2003__S2": "786efe5656f3fb7e5d4ef1f7a50bd59424973695a58aeee07eb0ce8288c96ce3",
+    "timing_D5_noise2.2__seed2004__S0": "de884b93e22ada92911c136ddc01b4f33deee6d4c436625d05d82bab7fda534c",
+    "timing_D5_noise2.2__seed2004__S2": "29916123bafb7a48e6d8290d3fe75217730ec4b05f444ddaba1da8b01b477165",
+    "timing_D5_noise2.2__seed2005__S0": "7c9ef8842e23a59453df5627a67285b728e0fc5c7c2303703136425bc8ae0e29",
+    "timing_D5_noise2.2__seed2005__S2": "c140415cde1b4c7171d1775550c0f1903621bd4f6ec0f1d8cf5d941a7648bf31",
+    "timing_D5_noise2.2__seed2006__S0": "f42e99971d8aab88befbb4115409050537d25cf9004c38aa61ea20f87554cf25",
+    "timing_D5_noise2.2__seed2006__S2": "6af27b20f9a2a1f52c7cfced85c707b79fe7dcd8e31fa82c44bc80fbbff28226",
+    "timing_D5_noise2.2__seed2007__S0": "e0d47b092bbb0430d2897cc1e832b0d5826daa8fe74c175ae48ef4b894699d1a",
+    "timing_D5_noise2.2__seed2007__S2": "b461762f22a91de7bec7f613c60a650d433a1c0a4b3062f7fbd2c6bafbada975",
+    "timing_D5_noise2.2__seed2008__S0": "05e5b61c8829a3fff721130de7930d02b291c89b060fbe659a9a5e6da9256c28",
+    "timing_D5_noise2.2__seed2008__S2": "58490ea78baa0ba306dd3e7391df5e7451520218d186621d313650de004ad6c0",
+    "timing_D5_noise2.2__seed2009__S0": "432fbdae6ccdec7bad3ff3e0dd42c9f7a6b357c257cab6a7954be1f1c112c56e",
+    "timing_D5_noise2.2__seed2009__S2": "6e22318a6dfd3fec31d7244a356b023ab6a96985cd35142002f0db126e6a2853"
+  },
+  "worker_seconds_by_target_and_arm": {
+    "logreg_D5_noise3": {
+      "S0": 2632.586531000001,
+      "S2": 1407.514712199998
+    },
+    "multisensory_s1_D6_noise1.3": {
+      "S0": 2456.2446783000123,
+      "S2": 1454.9280555000005
+    },
+    "rosenbrock_D2_noise1": {
+      "S0": 583.1504934999975,
+      "S2": 232.6860502000127
+    },
+    "rosenbrock_D2_noise3": {
+      "S0": 888.7043233000077,
+      "S2": 445.9233128000051
+    },
+    "student_D8_noise3": {
+      "S0": 4064.071084300005,
+      "S2": 3239.2066120000018
+    },
+    "timing_D5_noise2.2": {
+      "S0": 2709.523179999982,
+      "S2": 1547.2484057999973
+    }
+  }
+}

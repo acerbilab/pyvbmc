@@ -1,0 +1,137 @@
+{
+  "allocation": {
+    "continuation_fits_authorized": 96,
+    "continuation_seeds": [
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009
+    ],
+    "pilot_fits_reused": 24,
+    "validation_replay_fits": 0
+  },
+  "authorization": {
+    "decided_by": "user (PI), in the Claude Code session resuming the E5 continuation",
+    "decision": "launch",
+    "decision_utc": "2026-09-17T19:47:00+00:00",
+    "decision_utc_precision": "approximate; the user's message preceded the first pre-launch check at 2026-09-17T19:47:04Z",
+    "scope": "Execution of exactly the 96 continuation fits allocated by this manifest, the continuation-only interim summary, the combined ten-seed summary and the scientific review of its triggers. No treatment tuning, seed replacement, runner modification or adoption decision is authorized.",
+    "statement": "The 96-fit continuation for seeds 2002-2009 is prepared, independently reviewed and frozen but NOT launched; launching it is my decision, taken now: yes. We can proceed, and we can use 9 hours as the wallclock time available (not just 6:00).",
+    "wall_clock_available_hours": 9,
+    "window_end_utc": "2026-09-18T04:47:00+00:00",
+    "window_start_utc": "2026-09-17T19:47:00+00:00"
+  },
+  "authorized_batch_limits": {
+    "batches": "Sequential, resumed by rerunning the same command. Every batch must end before window_end_utc minus a reserve for the summaries and review; a later batch takes max-wall-seconds no larger than the remaining window minus that reserve.",
+    "command": "run-continuation",
+    "first_batch": {
+      "max_fits": null,
+      "max_wall_seconds": 21600,
+      "timeout": 1200
+    },
+    "max_fits": "optional; not used for the first batch",
+    "max_wall_seconds_per_batch": {
+      "maximum": 21600,
+      "rule": "required on every batch; never above the frozen ceiling"
+    },
+    "on_failure": "stop (default). A batch may pass a recorded failure with --on-failure continue only after that failure has been investigated and recorded.",
+    "per_fit_timeout_seconds": 1200,
+    "runner_frozen_after_first_fit": true
+  },
+  "created_utc": "2026-09-17T19:50:15.186848+00:00",
+  "environment": {
+    "checkout": "pyvbmc-stage3 on dev-noisy-acquisition-efficiency, repository root as working directory",
+    "python": ".venv/Scripts/python.exe (3.12.6)",
+    "variables": {
+      "MKL_NUM_THREADS": "1",
+      "MPLBACKEND": "Agg",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "PYTHONPATH": "<repository root>;<PYVBMC_GPYREG_SOURCE>;<repository root>\\dev\\scripts",
+      "PYVBMC_GPYREG_SOURCE": "dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1 (resolved)"
+    }
+  },
+  "independent_review": {
+    "remaining_findings": [],
+    "reviewer": "independent Opus static reviewer (read-only; no tests or fits run)",
+    "runner_sha256_reviewed": "26b94fc58b50270a54ebdbd012817de13a2eca54ac318a60e9979ae4a368810c",
+    "verdict": "pass"
+  },
+  "independent_review_sha256": "98eb9d2c8a172a2500d72dd4a101c4075290b30317da5ac43ef1ca194cfda076",
+  "kind": "noisy_acq_e5_continuation_launch_clearance",
+  "manifest_prepared_from_commit": "d08b8cb4713d7e1000d31a3f6a8f4435cc4512d3",
+  "manifest_semantic_digest": "c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335",
+  "manifest_sha256": "cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228",
+  "parent": {
+    "campaign_dir": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\e5_pilot_20260917\\campaign",
+    "path": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\e5_pilot_20260917\\manifest.json",
+    "pilot_fit_count": 24,
+    "pilot_pair_count": 12,
+    "raw_sha256": "048fffad6a85113aae568525e5263f534dbfaa61821971262827206fce5797c3",
+    "record_sha256": {
+      "completion.json": "c760d2e34e7584f818b73eb12c8a8ae2811bed4c19fd5800b689dbe3605111d6",
+      "independent_review.json": "8a4222e47eefa045b932ac29fb99547bb82f000a2c9bf3c2fa493e020f7ce270",
+      "launch_clearance.json": "2af906dd443fc5f1c5fb4cf365d97b0ec75cd340cb347561a6613290bedca520",
+      "summary.json": "471088e38580de45609a7b5d183598c45b6e0ac379ff6103ceccbd73a50efb51"
+    },
+    "semantic_digest": "98a0f1cd64c6b17137ed623ae7b28e0e7da207c354eb932fa094018d0a939134"
+  },
+  "planning": {
+    "batch_operational_ceiling_seconds": 21600,
+    "cost_estimate_method": "Four times the 24 pilot worker durations for the remaining eight seeds. Worker durations include fitting, metric calculation and artifact writes; process startup, validation and preparation are excluded. Planning range applies 1.25-1.50 to that extrapolation; small-sample estimate, not a statistical bound.",
+    "interrupted_fit_handling": "A fit interrupted before its terminal record leaves partial artifacts that the runner refuses on resume. Move them out of the campaign directory, record the interruption, and let the next batch rerun that cell from scratch; a partial fit is never completed evidence.",
+    "minimum_per_fit_timeout_seconds": 1200,
+    "pilot_worker_seconds": 3634.5520537000193,
+    "remaining_96_fits_planning_seconds": [
+      18172.760268500097,
+      21807.312322200116
+    ],
+    "remaining_96_fits_point_estimate_seconds": 14538.208214800077,
+    "scheduling": "Sequential batches in manifest cell order (target-major, arm order alternating by seed block); each batch declares its wall-time limit and optional fit-count limit, stops launching when less than one per-fit timeout remains, reuses validated success terminals and never reruns a failed fit.",
+    "source_freeze": "The runner's own source hash is part of this manifest's identity. Do not modify the runner once any continuation fit has run: its terminals would then belong to another manifest and could neither be reused nor rerun. A correction requires a declared successor allocation with explicit handling of the fits it invalidates."
+  },
+  "prelaunch_checks": {
+    "checked_utc": "2026-09-17T19:47:04Z to 2026-09-17T19:55:00Z",
+    "continuation_campaign_dir_absent_before_launch": true,
+    "git_head": "d509874",
+    "manifest_semantic_digest_verified": true,
+    "manifest_sha256_verified": true,
+    "no_python_process_running": true,
+    "pilot_directory_treated_as_immutable": true,
+    "resolved_imports": {
+      "gpyreg": "pyvbmc/dev/scripts/runs/svbmc_pool_20260913/gpyreg_1.2.1/gpyreg/__init__.py (junction target)",
+      "pyvbmc": "pyvbmc-stage3/pyvbmc/__init__.py"
+    },
+    "reviewed_ready_approved": true,
+    "runtime_identity_and_provenance_rederived": "validate_manifest(require_ready=True, check_runtime=True) passed under the documented environment; only the runner hash differs from the pilot identity, as the manifest records",
+    "working_tree_clean": true
+  },
+  "preparation_record_sha256": "578f849eb1fd8630c557b011532ba5f707ce2d72e8397674f10ae4940ac521f8",
+  "review_draft_sha256": "14df38b523393a5565f74b84d628eef8162efe908749d7c68b6cfca252842b82",
+  "schema_version": 1,
+  "source_commit": "d50987462839b32105df196fabfd5757d1d7f1bb",
+  "validation": {
+    "exact_oracle_fixtures_passed": 11,
+    "focused_tests_passed": 26,
+    "log_sha256": {
+      "exact_oracles.log": "d58d569565f4f3d89927b19b2b03814442d3621e99d3424cec9bb57d41288f19",
+      "focused.log": "1f682b907bb3fc976d5a15c1dd9d7293e7ced383e60cd8d57d5a20cb87bea691",
+      "freeze_continuation.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inspect_draft.log": "96e538957aa6ae7f244d18af82c959b481abc874e51bbea0a7657a2118201ed6",
+      "pilot_summary_regression.log": "0914ccbd51198d86d8fe53b6f9fcbee82fed50095bbbc3eb3abac6e510811b27",
+      "prepare_continuation.log": "6afcdc623121ad4567dd09db837abdf3e0adc44e218626e0a7e2af04305f1835"
+    },
+    "pilot_summary_regenerated_identically": true,
+    "script_sha256": {
+      "compile_review.py": "d1924a0af55bfd0adf0e159541835fdaf2f011f780693c552154c257f33f14fd",
+      "freeze_continuation.py": "9e7c28b1ea8cb6660f12ef048e938c178d6b2a4d0938af7426b6e182afa72187",
+      "inspect_draft.py": "dc6e9ab137f4f7a346742dc365275e3cd56dfd2dad70356c734ac0da00849e23",
+      "publish_continuation.py": "efaf662d0703ad2a7767eca9f7a7a8a218d22ee1841dd703ddc352d13d169f6b",
+      "regen_pilot_summary.py": "0b03c749890d89e944be5f9f6df1c1628b8c63fe73c48cf3aabff1b8fd9f361b"
+    }
+  }
+}

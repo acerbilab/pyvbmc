@@ -17,12 +17,18 @@ starting winner, with several losses localized before refinement. The mixed
 holdout evidence does not support a general replacement recommendation.
 E4's development entry gates are unmet. E5 was unapproved at the E3
 checkpoint; the user subsequently authorized the exploratory pilot described
-below. All 24 pilot fits and the separate reproducibility repeat are complete.
-S2 lowers search time on all six configurations and total fit time on five,
-but loses the convergence flag in three pairs. The two-seed results support
-further measurement, not adoption. Production defaults are unchanged. The
-96-fit continuation for the remaining eight seeds is prepared, reviewed and
-frozen but not launched; launching it requires a separate user decision.
+below, then its continuation. All 120 fits of the ten-seed S0/S2 design are
+complete: the 24-fit pilot, its excluded reproducibility repeat, and the
+96-fit continuation for seeds 2002-2009, which ran in two bounded batches on
+2026-09-17/18 with no failed fit. S2 roughly halves total fit time at
+unchanged evaluation counts on these cheap likelihoods, but it is not shown
+to be free of target-specific accuracy loss: all 60 S0 fits converge against
+55 of 60 for S2, high-noise Rosenbrock has one usability loss and gsKL
+increases up to 103 times, logistic regression's posterior-shape metrics are
+worse in eight of ten pairs, and Student-t gains six usable fits. The
+ten-seed result does not support adopting S2 as a default; the plan's E6
+assessment proposes narrowly targeted follow-ups. Production defaults are
+unchanged.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -837,8 +843,8 @@ remain descriptive and do not serve as a favorable-results screen.
 Convergence losses, target-call increases and multisensory quality remain
 explicit concerns for the complete comparison. Two seeds cannot establish
 noninferiority or the frequency of those outcomes. Seeds 2002-2009 are
-allocated by the continuation manifest below and require a user decision
-before launch.
+allocated by the continuation manifest below; their execution and the
+ten-seed outcomes follow it.
 
 ### Continuation preparation
 
@@ -891,7 +897,181 @@ and [independent review](../experiments/noisy-acquisition-efficiency/integration
 are published as redacted review copies bound by the
 [continuation publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_e5_continuation_20260917.json).
 The measured-rate estimate for the 96 fits is 4.04 hours with a 5-6-hour
-planning allowance. No continuation fit has been launched.
+planning allowance.
+
+### Continuation execution
+
+The user took the launch decision at approximately 19:47 UTC on 2026-09-17,
+with nine hours of wall clock available, and it is recorded in the
+continuation directory's `launch_clearance.json` together with the manifest
+digests and the authorized batch limits. Pre-launch checks re-derived the
+runtime identity and the runner-only provenance under the documented
+environment, verified both manifest hashes, and found no Python process
+running. Two batches then ran from the repository root with the documented
+environment:
+
+| Batch | Started (UTC) | Wall allowance | Launched | Stop reason | Wall time |
+| --- | --- | ---: | ---: | --- | ---: |
+| 1 | 2026-09-17 19:51:01 | 21600 s | 91 | Less than one fit timeout left | 20456 s |
+| 2 | 2026-09-18 01:32:47 | 7200 s | 5 | All cells complete | 1406 s |
+
+All 96 cells have validated success terminals; no fit failed, timed out or
+was interrupted, and the second batch reused the 91 earlier terminals without
+relaunching them. Summed worker time was 21661.8 s (6.02 hours), 1.49 times
+the 14538 s point estimate and inside the 18173-21807 s planning range at its
+upper end. Elapsed time from the first worker start to the last finish was
+21909 s. The runner writes nothing to its own stdout, so the two batch logs
+are empty; the batch records under `campaign/batches/` are the execution
+evidence.
+
+The machine slowed progressively during the continuation. Target-call
+counts per fit were in the pilot's range, but the median seconds per target
+call, continuation over pilot, ranged from 0.82 (low-noise Rosenbrock S2)
+and 1.01 (its S0) through 1.2 on high-noise Rosenbrock and 1.3 to 1.6 on
+logistic regression and Student-t, to 2.0 to 2.2 on the two real-data
+targets, which ran last in the target-major schedule; the factor grows
+roughly monotonically with position in the schedule, about 18 percent per
+hour. An operator observation at 00:08 UTC, recorded in
+`machine_load_observation.json` beside the manifest, found total CPU load
+of 5 to 24 percent on 22 logical processors against under 5 percent for the
+single-threaded worker, a reported processor clock of 1.4 GHz against a
+3.8 GHz maximum, and a screensaver process with over two hours of
+accumulated CPU time; the record attributes no cause. The two arms of a seed
+run back-to-back, and within each target block the first arm alternates by
+seed parity, so a drift of that size biases a paired ratio by about 1
+percent at the median arm-start separation of three minutes and about 3
+percent at the largest; the independent review found no systematic order
+direction. Paired ratios therefore remain interpretable, absolute times are
+not comparable with the pilot's, and the laptop was not a quiet machine in
+the sense of the timing protocol. Accuracy metrics, convergence and
+usability are deterministic given the seed and unaffected.
+
+The closure record `completion.json` binds the launch clearance, both batch
+records, all 96 terminal digests, the continuation-only summary (48 pairs) and
+the combined ten-seed summary (60 pairs). Every runtime identity check at
+worker start passed; the runner source was not modified after the first
+continuation fit.
+
+### Ten-seed outcomes
+
+All 120 fits succeeded, all 60 paired initial designs and initial noisy
+observations match exactly, all reported metrics are finite, and the twelve
+pilot pairs recomputed from the pilot campaign equal the immutable pilot
+summary. The [combined summary](../experiments/noisy-acquisition-efficiency/integration-search/e5_combined_summary_20260918.json)
+holds every observation, paired difference and interval. Each configuration
+has ten complete pairs; the intervals are two-sided 95% Student-t intervals
+on the mean paired log ratio with nine degrees of freedom, exponentiated.
+
+| Configuration | Fit time S2/S0 | Search time S2/S0 | Calls S2/S0 | Usable S0→S2 (of 10) | Converged S0→S2 (of 10) |
+| --- | --- | --- | --- | --- | --- |
+| Rosenbrock D2, noise 1 | 0.416 [0.356, 0.487] | 0.269 [0.229, 0.317] | 0.929 [0.869, 0.993] | 10 → 10 | 10 → 10 |
+| Rosenbrock D2, noise 3 | 0.487 [0.422, 0.563] | 0.339 [0.295, 0.391] | 1.019 [0.924, 1.125] | 10 → 9 | 10 → 6 |
+| Logistic regression D5, noise 3 | 0.566 [0.473, 0.677] | 0.368 [0.308, 0.440] | 0.903 [0.807, 1.010] | 9 → 10 | 10 → 10 |
+| Student-t D8, noise 3 | 0.843 [0.710, 1.001] | 0.615 [0.524, 0.722] | 1.059 [0.948, 1.184] | 3 → 9 | 10 → 10 |
+| Multisensory subject 1 D6, noise 1.3 | 0.593 [0.488, 0.720] | 0.384 [0.315, 0.468] | 0.964 [0.870, 1.067] | 0 → 1 | 10 → 10 |
+| Timing D5, noise 2.2 | 0.599 [0.494, 0.725] | 0.347 [0.291, 0.413] | 0.972 [0.856, 1.104] | 9 → 10 | 10 → 9 |
+
+Equal-weight geometric means across the six configurations are 0.570 for fit
+time, 0.375 for search time, 0.973 for target calls and 1.095 for
+target-evaluation time. The fit-time saving is the search saving:
+acquisition search is 57 to 77 percent of an S0 fit on these targets, and
+the wall ratio predicted from the search ratio alone matches the observed
+one within 0.02 to 0.06 on every configuration. Two intervals deserve
+mention. Student-t's fit-time interval includes 1, so its saving is not
+distinguished from zero at the predeclared level, and its call count is
+about 6 percent higher with an interval that includes 1; low-noise
+Rosenbrock uses about 7 percent fewer calls with an interval that excludes
+1. Target-evaluation time is below 0.2 percent of the fit on five targets,
+so its ratio there is timer granularity; on the timing model, where it is
+5 to 8 percent of the fit, the ratio is 0.894 [0.757, 1.057]. These are
+laptop measurements on cheap likelihoods: on a likelihood expensive enough
+for target evaluation to dominate the run, the fit-time ratio moves toward
+1 and the headline saving shrinks to the search share.
+
+Paired accuracy differences, S2 minus S0, with the median, the range and the
+number of pairs in which S2 is worse. An asterisk marks the predeclared
+seven-of-ten review trigger (worse median with at least seven of ten pairs
+worse).
+
+| Configuration | Evidence error | gsKL | MMTV |
+| --- | --- | --- | --- |
+| Rosenbrock D2, noise 1 | −0.034 [−0.161, 0.127], 4 | +0.004 [−0.427, 0.218], 6 | +0.010 [−0.052, 0.069], 6 |
+| Rosenbrock D2, noise 3 | +0.044 [−0.177, 0.339], 7* | +0.152 [−0.328, 1.543], 6 | +0.003 [−0.061, 0.176], 5 |
+| Logistic regression D5, noise 3 | −0.111 [−0.866, 0.367], 4 | +0.079 [−0.445, 0.275], 8* | +0.035 [−0.148, 0.084], 8* |
+| Student-t D8, noise 3 | −0.612 [−1.586, 0.557], 2 | −0.113 [−0.978, 0.177], 2 | −0.033 [−0.073, 0.022], 2 |
+| Multisensory subject 1 D6, noise 1.3 | +0.098 [−0.547, 0.402], 7* | +0.050 [−1.016, 2.184], 5 | −0.005 [−0.034, 0.061], 4 |
+| Timing D5, noise 2.2 | −0.036 [−0.613, 0.230], 4 | +0.020 [−0.740, 0.505], 5 | −0.005 [−0.126, 0.085], 4 |
+
+Usable fits (evidence error below 1, gsKL below 1, MMTV below 0.2) rise from
+41 of 60 under S0 to 49 of 60 under S2: nine usable gains against one loss.
+Six gains are on Student-t and one each on logistic regression, multisensory
+and timing; the multisensory gain (seed 2009) is marginal, crossing the gsKL
+and MMTV thresholds narrowly while its evidence error worsens from 0.22 to
+0.52, on a configuration that otherwise fails in both arms. The loss is
+high-noise Rosenbrock seed 2008, where S2 stops at the 200-call budget with
+gsKL 1.56 and MMTV 0.22 while S0 converges at 195 calls with gsKL 0.015 and
+MMTV 0.048. Convergence is the sharpest asymmetry in the design: all 60 S0
+fits converge, 55 of 60 S2 fits do, and all five non-converged S2 fits
+(high-noise Rosenbrock seeds 2000, 2001, 2004 and 2008, timing seed 2001)
+stop at their evaluation budget. A five-to-nothing discordance has two-sided
+probability 0.0625 under a symmetric null, tighter than any accuracy
+comparison in the campaign. Three of the five were already in the pilot; the
+continuation added two. Four fits exceed the promoted reference envelope on
+gsKL: two S0 fits (low-noise Rosenbrock seed 2007 at three times the
+envelope, timing seed 2006) and two S2 fits (low-noise Rosenbrock seeds 2008
+and 2009), all still usable except the timing S0 fit. The envelope check is
+insensitive where the concern lies: high-noise Rosenbrock's gsKL envelope is
+2.02, so the usability-loss fit at 1.56 does not trip it. There is no new
+failure and no nonfinite metric.
+
+The seven-of-ten triggers are descriptive gates, not tests, and their count
+carries little weight on its own: under a symmetric null the probability of
+at least seven worse in ten is 0.17 per target and metric, so about 3.1 of
+the 18 combinations would trigger by chance against the 4 observed, and no
+combination reaches a two-sided sign-test probability below 0.11. What is
+informative is the clustering, the effect sizes and the binary outcomes. On
+high-noise Rosenbrock, gsKL is worse in six of ten pairs with within-pair
+increases of 3.5 to 103 times: the four converged S2 fits on seeds 2002,
+2003, 2006 and 2007 have gsKL between 0.41 and 0.58 against 0.03 to 0.13 for
+S0, and the usability-loss fit has 1.56 against 0.015; S2 spends its full
+200-call budget on four seeds and still ends worse. This is a
+continuation-seed phenomenon: both pilot seeds favoured S2 on all three
+metrics, which shows how unstable such a target-level verdict is at ten
+seeds. On logistic regression S2 improves the evidence error in six of ten
+pairs while gsKL and MMTV are worse in eight of ten, with two S2 fits at MMTV
+0.19 against the 0.2 usability threshold. On Student-t S2 is better on all
+three metrics in eight of ten pairs and turns six of its seven S0
+evidence-error failures into usable fits, with about 6 percent more target
+calls and a fit-time interval that includes 1. Multisensory remains unusable
+in both arms in nine of ten seeds, with gsKL between 0.9 and 4.5; its
+evidence-error trigger fires inside that failing regime.
+
+The frozen-state acquisition judge predicted none of this, in either
+direction. S2's worst holdout trajectory was low-noise Rosenbrock (8 harmful
+of 16, seven material raw losses), which in inference shows no trigger, no
+convergence or usability loss and the largest speedup; its near-clean holdout
+trajectory, high-noise Rosenbrock (1 harmful of 16), is the one that
+degraded. Selection quality judged on frozen states is therefore not a usable
+screen for a search change on its own, which bears on how the E2 to E4
+evidence is weighted and on the design of any follow-up.
+
+The plan's decision gate recommends continuation only if the speed benefit
+survives inference with no coherent target-specific accuracy loss and no
+unexplained failure mechanism. The speed benefit survives. The second
+condition is a precondition to be established, and ten paired seeds neither
+establish nor exclude it: S2 is not shown to be free of target-specific
+accuracy loss. The convergence asymmetry, the usability loss against nine
+gains, the gsKL increases on high-noise Rosenbrock and the opposite effects
+on Student-t and logistic regression are unexplained, so the ten-seed
+comparison does not support adopting S2 as a replacement default. The
+evidence does not demonstrate a loss either; it is descriptive and
+establishes neither noninferiority nor the frequency of the observed
+outcomes. The [plan](../plans/noisy-acquisition-efficiency.md#e6-assessment-2026-09-18)
+records the E6 assessment, which takes the form of collecting narrowly
+identified missing evidence under new declared allocations. The
+[independent results review](../experiments/noisy-acquisition-efficiency/integration-search/e5_results_review_20260918.json)
+verified every provenance, batch and summary quantity above and supplied the
+sign-test, drift-bias and envelope observations.
 
 ## Resuming the saved experiment
 
@@ -958,31 +1138,34 @@ holdout MC checks and the saved-point loss diagnostic are complete;
 their `completed_ladder.json` records bind every executed budget.
 Do not use the unbounded `run` controller: it also launches the structurally
 declared timing and memory cells that this holdout does not allocate.
-E4's entry gates are not established. The exploratory E5 pilot is complete;
-E3 artifacts remain immutable. Its raw
+E4's entry gates are not established. E5 is complete in both phases;
+E3 artifacts remain immutable. The pilot's raw
 manifest, launch clearance and validation logs are in
 `noisy_acq_efficiency_20260916/e5_pilot_20260917/`; fit artifacts are under
 `campaign/`, with the excluded repeat under `campaign/validation_replay/`.
 The immutable `summary.json` and `completion.json` bind the 24-fit result.
-The reviewed continuation manifest is
-`noisy_acq_efficiency_20260916/e5_continuation_20260917/manifest.json`, with
-its preparation record, review and validation logs beside it; its
-`campaign/` is empty until launch. No continuation fit is running or has
-run. Launching is a user decision: record it in `launch_clearance.json` in
-that directory, then run bounded batches from the repository root with the
-environment above plus `$env:MPLBACKEND = 'Agg'`, which the runner requires.
-The clearance record states the user's authorization and its time, the
-manifest semantic digest
-`c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335` and raw
-SHA-256 `cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228`,
-and the batch limits authorized; the pilot's clearance, published as
-`e5_launch_clearance_20260917.json`, is the pattern. The runner does not
-read this file; it is the durable record that the decision was taken.
+The continuation directory
+`noisy_acq_efficiency_20260916/e5_continuation_20260917/` holds the frozen
+`manifest.json` (semantic digest
+`c4d2c7265afb278aa2e7bdcef724ac8d0656bf78888c343730fee56e3175e335`, raw
+SHA-256 `cb4bfb70a0c5c368da3c3e06bc440243a3d30e37bfbbd4eb7545ccb8dc3a5228`),
+the user's `launch_clearance.json`, the two batch logs, and under
+`campaign/` the 96 fit artifacts, terminal and selection records, the two
+batch records, `summary.json` (continuation only) and
+`summary_combined.json` (all ten seeds); `completion.json` beside the
+manifest binds them, and `validation/close_continuation.py` is the script
+that wrote it. All 96 cells have success terminals, so the commands below
+are complete and need not be repeated: `run-continuation` reuses every
+terminal and exits 0, and both summary commands refuse to overwrite their
+outputs (an interim continuation-only summary needs a fresh `--report`
+path). Do not modify `noisy_acq_inference.py` against these artifacts: its
+hash is part of the manifest identity, and a correction would need a
+declared successor allocation.
 
 ```powershell
 $cont = "$runRoot/e5_continuation_20260917"
 .venv/Scripts/python.exe -u dev/scripts/noisy_acq_inference.py run-continuation --manifest "$cont/manifest.json" --out "$cont/campaign" --timeout 1200 --max-wall-seconds 21600
-.venv/Scripts/python.exe dev/scripts/noisy_acq_inference.py summary --manifest "$cont/manifest.json" --out "$cont/campaign" --report "$cont/campaign/summary_interim.json"
+.venv/Scripts/python.exe dev/scripts/noisy_acq_inference.py summary --manifest "$cont/manifest.json" --out "$cont/campaign"
 .venv/Scripts/python.exe dev/scripts/noisy_acq_inference.py summary-combined --manifest "$cont/manifest.json" --out "$cont/campaign"
 ```
 
@@ -991,9 +1174,9 @@ a batch further, and `--on-failure continue` lets a batch proceed past a
 recorded failure after it has been investigated. Exit status 0 means every
 continuation cell has a success terminal, 1 that a failure was encountered
 or skipped, and 2 that the batch ended cleanly with cells still missing.
-Repeating the command resumes from the validated terminals. The interim
-summary needs a fresh `--report` path each time; the combined summary
-refuses to overwrite an existing `summary_combined.json`.
+The first batch ran with the 21600-second allowance and stopped at its
+launch cutoff with five cells left; the second ran with 7200 seconds and
+completed them.
 The [E5 publication index](../experiments/noisy-acquisition-efficiency/integration-search/publication_index_e5_20260917.json)
 binds the raw manifest, launch clearance, replay, paired summary, completion
 record and independent review to their redacted review copies.

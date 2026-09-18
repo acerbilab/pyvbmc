@@ -113,9 +113,10 @@ plan and consolidated human summary.
   psychometric-model design, Torch/JAX targets, posterior-export workflow,
   consistency review and notebook/script/rendered-documentation verification.
 - [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
-  — completed guarded-sum and kernel-reuse optimizations, and the active
+  — completed guarded-sum and kernel-reuse optimizations, and the completed
   integration/search experiment: fixed-state comparisons, independent
-  judging, conditional adaptation and paired inference validation.
+  judging, conditional adaptation and a ten-seed paired inference
+  comparison, with the E6 assessment and proposed follow-ups.
   Its [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records sources, coverage, verification and measured results.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
