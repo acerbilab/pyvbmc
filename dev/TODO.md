@@ -44,7 +44,14 @@ records its execution.
   separate decision, in a paired inference comparison on the production
   labels whose baseline arm doubles as production-reference runs; the
   [F2 amendment](plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
-  fixes the design, seeds, outcomes and gates.
+  fixes the design, seeds, outcomes and gates. Stage 1 completed on
+  2026-09-18 on both splits with a search-stream null control: the cost
+  is matched and early states gain, but on late states the rule scatters
+  selections beyond the search-randomness floor and turns net harmful on
+  holdout, failing the screening gate on both splits; the
+  [assessment](plans/noisy-acquisition-efficiency.md#f2-stage-1-assessment-2026-09-18)
+  recommends against Stage 2 as the rule stands and names a node-redraw
+  control and a late-state loss diagnostic as the missing evidence.
   The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records the results. The benefit
   criteria, allocation and screening gates are accepted; Bayesian

@@ -1,0 +1,11 @@
+{
+  "authorization": "Null control added within Stage 1 of the F2 amendment to make the frozen-state judge's verdicts interpretable; it evaluates no new treatment.",
+  "created_utc": "2026-09-18T19:41:24.279478+00:00",
+  "kind": "f2_control_launch_clearance",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_control_development_manifest.json",
+  "manifest_sha256": "f68fdbc639848a06e75ca0c0323ade9d13080081d964939e96b07daa3dfe1594",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "0fd3c4c3fa33ab8e6828ec754e674dff8f2e7a72ba39bfae5e9407381f283cbe",
+  "schema_version": 1,
+  "source_commit": "059420b13bd8ed85e1ccb6c15bc320ef4eaf44bd"
+}

@@ -94,11 +94,17 @@ switch off every oracle is bit-identical and four stored E3 baseline
 selections replay exactly. The Stage 1 development manifest
 (`f2_development_manifest.json` in the local artifact directory, listed
 in `dev/scripts/runs/LOCAL.md`) was frozen and launched on 2026-09-18 at
-18:19 UTC after a two-pilot check on one state; its cells land under
-`f2_development/` there, and the run controller is resumable: completed
-cells are validated and skipped, `inventory` reports the state. The judge
-ladder, the ordinary-MC cross-check and the holdout stage follow the
-development run; the report gains an F2 section when they finish.
+18:19 UTC after a two-pilot check on one state; the holdout stage and a
+search-stream null control followed the same day, with their judge
+ladders and ordinary-MC cross-checks, and no cell failed. The report's F2
+section records the numbers and the
+[F2 Stage 1 assessment](#f2-stage-1-assessment-2026-09-18) reads them:
+cost matched, a real gain on early states, a late-state degradation beyond
+the search-randomness floor that fails the screening gate on both splits,
+so Stage 2 is not recommended with the rule as it stands. The next
+decision is the user's: the assessment names a node-redraw control and a
+late-state loss diagnostic as the missing evidence. Nothing is running;
+no background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1576,13 +1582,19 @@ Checklist:
   projected timing and allocation records. Two pilots on the early
   low-noise Rosenbrock state: selections of about 0.3 s per arm, node
   counts 100 and 96, shared sieve, paired timing ratios 0.986 and 0.988.
-- [ ] Freeze the Stage 1 manifest; run selections, judging and timing;
+- [x] Freeze the Stage 1 manifest; run selections, judging and timing;
   choose sorted or unsorted on development and confirm on holdout;
   independent static review; report to the user. Two static reviews
   (node rule; harness) found no blocking defect and their should-fix
-  items are committed. The development manifest (288 selections, 24
-  timing and 48 allocation cells on the twelve seed-0 states) was frozen
-  and launched on 2026-09-18 at 18:19 UTC.
+  items are committed. Development (288 selections, 24 timing and 48
+  allocation cells on the twelve seed-0 states), holdout (the same on
+  the seed-1 states, with the sorted order chosen on development as the
+  confirmation contrast) and a search-stream null control ran on
+  2026-09-18 with no failed cell; the judge ladders reached 65536 nodes
+  and the ordinary-MC cross-checks disagree with no verdict. The
+  [report](../results/2026-09-16-noisy-acquisition-integration-search.md#f2-stage-1-quasi-monte-carlo-importance-nodes-on-frozen-states)
+  records the numbers and the
+  [assessment](#f2-stage-1-assessment-2026-09-18) below reads them.
 - [ ] On the user's decision, freeze the Stage 2 manifest; run both arms in
   bounded batches through `golden_trace.py`; verify every archive; analyze
   the pre-registered outcomes and the mechanism check; independent review;
@@ -1591,6 +1603,48 @@ Checklist:
   re-baseline, golden reference update and documentation.
 
 Executor roles are those of the follow-ups above.
+
+#### F2 Stage 1 assessment (2026-09-18)
+
+Stage 1 asked whether the 96-node rule selects at least as well as the
+production 100-node Monte Carlo draw at no more cost. The report holds the
+measurements; this is the reading.
+
+- **Cost is matched.** Median-of-state-median paired ratios of 0.980 and
+  0.982 on development and 0.983 and 0.980 on holdout for the two orders,
+  inside the spread the null control shows for identical work (1.010,
+  states from 0.864 to 1.178). Every selection used the prescribed node
+  count.
+- **Early states: a real gain.** On the six early states of each split the
+  rule is judged better in 23 of 48 comparisons (development) and 15 of
+  48 (holdout) against 3 and 2 worse, where the search's own randomness
+  never changes a verdict (44 ties of 44 resolved in the control).
+- **Late states: scatter beyond the search floor, net harmful on holdout.**
+  Against the control's 13 beneficial, 8 harmful and 3 material raw losses
+  of 48, the rule gives 23, 12 and 12 on development and 20, 23 and 13 on
+  holdout, with losses retaining a median 0.72 to 0.77 and at worst 0.26 of
+  the baseline's reduction, on Student-t, logistic regression, timing and
+  multisensory. The two component orders are indistinguishable everywhere.
+- **The screening gate fails on both splits.** Harmful fractions 0.156 and
+  0.260 against 5 percent; 14 material raw losses per split unexplained.
+  The ordinary-MC cross-checks confirm every verdict they resolve.
+
+**Recommendation: do not proceed to Stage 2 with the rule as it stands.**
+Stage 2's entry condition, the screening gate on Stage 1, is not met, and
+a promotion would ship a late-run degradation to buy an early-run gain.
+The missing evidence is narrow and cheap. First, a node-redraw control:
+the baseline against itself with fresh Monte Carlo nodes and the sieve
+shared (extra generator draws before the node draw), which bounds the
+node-noise floor and decides whether the late-state scatter is specific to
+the quasi-Monte Carlo rule or common to any fresh 100-node set at these
+states; about 45 minutes of frozen-state compute under the same harness,
+run as an addendum to Stage 1 under its own manifest. Second, a read-only
+diagnostic of the late-state material losses: which coarse winners changed
+between the two estimates and how each estimate ranks the judge's best
+candidates. Any change to the rule itself, such as using it only while
+the mixture is small or raising its node count, is a new treatment under
+the amendment's rule and needs a new declared allocation. The user
+decides.
 
 ### Decisions and unresolved empirical questions
 

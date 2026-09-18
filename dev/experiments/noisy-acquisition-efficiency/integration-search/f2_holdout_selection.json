@@ -1,0 +1,30 @@
+{
+  "accurate_rule": {
+    "budget": 1600,
+    "method": "mc",
+    "provenance": "Unused: every F2 arm is the production search. The field satisfies the record schema shared with E3."
+  },
+  "created_utc": "2026-09-18T18:52:33.447314+00:00",
+  "development_choice": "axis",
+  "development_evidence": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_development_evidence.json",
+  "development_evidence_sha256": "18e82e0c6dbf36979238dff7c9ccd4f22f2fa8a268e78a7fa3d9bb4dfcae4d53",
+  "development_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_development_manifest.json",
+  "development_manifest_sha256": "111c0cf2d7be3bdd4d0beacbbaef7e8982a41896759d3eb50eb85bd32ce6b687",
+  "frozen": true,
+  "kind": "noisy_acq_search_selection",
+  "node_rule": {
+    "kind": "scrambled_sobol_mixture",
+    "orders": [
+      "axis",
+      "index"
+    ],
+    "samples": 96
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "Confirm on the twelve holdout states the component order chosen on development for the 96-node scrambled-Sobol' mixture rule, against the production selection; the other order's arm is retained as a descriptive control.",
+  "quality_claim": false,
+  "raw_artifact_sha256": "4da9d5c9b379a3de6f23ae94ebc16b890603933e5e18102687c79e284096953f",
+  "schema_version": 1,
+  "source_commit": "37e3f218870eb43328a649671919a497bd8d304f",
+  "stage": "f2_holdout"
+}

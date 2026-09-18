@@ -1,0 +1,403 @@
+{
+  "kind": "f2_holdout_crosscheck_tag_selection",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "f4ea389943e290b342d84db1dd5d3214be21fa274c228ac90a859e98cced3f21",
+  "reasons": {
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r4": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r6": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r4": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r3": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r4": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r5": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r1": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r5": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r7": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted_minus_S0__r3": [
+      "state_min_mean_difference"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted_minus_S0__r6": [
+      "state_max_mean_difference"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r4": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r5": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r6": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r7": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r2": [
+      "confident_raw_material_loss"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r6": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted_minus_S0__r5": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted_minus_S0__r6": [
+      "state_max_mean_difference"
+    ],
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r1": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r4": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted_minus_S0__r1": [
+      "state_min_mean_difference"
+    ],
+    "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted_minus_S0__r5": [
+      "state_max_mean_difference"
+    ],
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r2": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r6": [
+      "state_max_mean_difference"
+    ],
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r4": [
+      "state_max_mean_difference"
+    ],
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r5": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r3": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r4": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r6": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r7": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r0": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r2": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r4": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r1": [
+      "state_min_mean_difference"
+    ],
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r6": [
+      "state_max_mean_difference",
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted_minus_S0__r6": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r0": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r1": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r2": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r3": [
+      "state_max_mean_difference",
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r6": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r1": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r2": [
+      "state_min_mean_difference",
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r3": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r4": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r5": [
+      "ten_practical_bands"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r6": [
+      "ten_practical_bands",
+      "confident_raw_material_loss"
+    ],
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r7": [
+      "ten_practical_bands"
+    ]
+  },
+  "rule": "the E3 development extrema-and-catastrophes rule applied to the completed holdout judge summary, passed explicitly as the holdout protocol requires",
+  "source_judge_summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_judging\\b65536_summary.json",
+  "tags": [
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r0",
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r2",
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r4",
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r6",
+    "logreg_D5_noise3_seed1_early__S0_qmc_sorted_minus_S0__r7",
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r0",
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r2",
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r4",
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r6",
+    "logreg_D5_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r7",
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r0",
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r3",
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r4",
+    "logreg_D5_noise3_seed1_late__S0_qmc_sorted_minus_S0__r5",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r0",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r1",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r3",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r4",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r5",
+    "logreg_D5_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r7",
+    "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted_minus_S0__r3",
+    "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted_minus_S0__r6",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r0",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r2",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r4",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r5",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r6",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted_minus_S0__r7",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r0",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r2",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r3",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r5",
+    "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted_minus_S0__r6",
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted_minus_S0__r5",
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted_minus_S0__r6",
+    "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted_minus_S0__r5",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r1",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r2",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r3",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted_minus_S0__r7",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r1",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r2",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r3",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r4",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r6",
+    "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted_minus_S0__r7",
+    "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted_minus_S0__r1",
+    "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted_minus_S0__r5",
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted_minus_S0__r2",
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r2",
+    "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r6",
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r2",
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r4",
+    "student_D8_noise3_seed1_early__S0_qmc_sorted_minus_S0__r5",
+    "student_D8_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r2",
+    "student_D8_noise3_seed1_early__S0_qmc_unsorted_minus_S0__r5",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r0",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r2",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r3",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r4",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r6",
+    "student_D8_noise3_seed1_late__S0_qmc_sorted_minus_S0__r7",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r0",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r1",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r2",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r3",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r4",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r6",
+    "student_D8_noise3_seed1_late__S0_qmc_unsorted_minus_S0__r7",
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r1",
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r3",
+    "timing_D5_noise2.2_seed1_early__S0_qmc_sorted_minus_S0__r6",
+    "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted_minus_S0__r3",
+    "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted_minus_S0__r6",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r0",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r1",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r2",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r3",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r5",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_sorted_minus_S0__r6",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r1",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r2",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r3",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r4",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r5",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r6",
+    "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted_minus_S0__r7"
+  ]
+}

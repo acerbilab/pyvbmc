@@ -1,0 +1,2698 @@
+{
+  "contrasts": {
+    "S0_qmc_sorted_minus_S0": {
+      "arm_tag": "S0_qmc_sorted",
+      "by_checkpoint": {
+        "early": {
+          "beneficial": 15,
+          "harmful": 2,
+          "practical_tie": 15,
+          "unresolved": 16
+        },
+        "late": {
+          "beneficial": 20,
+          "harmful": 23,
+          "practical_tie": 5,
+          "unresolved": 0
+        }
+      },
+      "by_label": {
+        "logreg_D5_noise3": {
+          "beneficial": 8,
+          "harmful": 6,
+          "practical_tie": 2,
+          "unresolved": 0
+        },
+        "multisensory_s1_D6_noise1.3": {
+          "beneficial": 4,
+          "harmful": 4,
+          "practical_tie": 0,
+          "unresolved": 8
+        },
+        "rosenbrock_D2_noise1": {
+          "beneficial": 8,
+          "harmful": 2,
+          "practical_tie": 6,
+          "unresolved": 0
+        },
+        "rosenbrock_D2_noise3": {
+          "beneficial": 4,
+          "harmful": 3,
+          "practical_tie": 9,
+          "unresolved": 0
+        },
+        "student_D8_noise3": {
+          "beneficial": 6,
+          "harmful": 7,
+          "practical_tie": 2,
+          "unresolved": 1
+        },
+        "timing_D5_noise2.2": {
+          "beneficial": 5,
+          "harmful": 3,
+          "practical_tie": 1,
+          "unresolved": 7
+        }
+      },
+      "gate": {
+        "harmful_fraction_of_scheduled": 0.2604166666666667,
+        "harmful_within_gate": false,
+        "material_raw_losses": 14,
+        "observed": 96,
+        "positive_claim_allowed": true,
+        "scheduled": 96,
+        "unresolved_fraction_of_scheduled": 0.16666666666666666
+      },
+      "material_losses": [
+        {
+          "arm_to_baseline_ratio": 0.7853788698994514,
+          "mean_score_difference": 0.0015572974059203104,
+          "replicate": 0,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8403961885300556,
+          "mean_score_difference": 0.001184993281917096,
+          "replicate": 3,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.5765872749422798,
+          "mean_score_difference": 0.003048698636796243,
+          "replicate": 5,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6930773978652444,
+          "mean_score_difference": 0.0005048279314781058,
+          "replicate": 0,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8526687640805813,
+          "mean_score_difference": 0.0002837479592594054,
+          "replicate": 2,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6379216795699519,
+          "mean_score_difference": 0.0007473282828784032,
+          "replicate": 4,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7065791846284025,
+          "mean_score_difference": 0.00047292455740280057,
+          "replicate": 6,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.26409487207455834,
+          "mean_score_difference": 0.0032786459178989757,
+          "replicate": 4,
+          "state_id": "multisensory_s1_D6_noise1.3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7159739761937801,
+          "mean_score_difference": 0.0018013604758395085,
+          "replicate": 6,
+          "state_id": "multisensory_s1_D6_noise1.3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6770929194843113,
+          "mean_score_difference": 0.0013647344293665487,
+          "replicate": 7,
+          "state_id": "multisensory_s1_D6_noise1.3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.676918752308288,
+          "mean_score_difference": 0.0017176895347655041,
+          "replicate": 3,
+          "state_id": "timing_D5_noise2.2_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8090184637588194,
+          "mean_score_difference": 0.2837215631925951,
+          "replicate": 4,
+          "state_id": "logreg_D5_noise3_seed1_early"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8811900695610951,
+          "mean_score_difference": 0.00024068037963989597,
+          "replicate": 3,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8731779310712728,
+          "mean_score_difference": 0.0007325086001954972,
+          "replicate": 6,
+          "state_id": "timing_D5_noise2.2_seed1_late"
+        }
+      ],
+      "raw_loss_counts": {
+        "material_loss": 14,
+        "no_material_loss": 73,
+        "unresolved": 9
+      },
+      "score_counts": {
+        "beneficial": 35,
+        "harmful": 25,
+        "practical_tie": 20,
+        "unresolved": 16
+      }
+    },
+    "S0_qmc_unsorted_minus_S0": {
+      "arm_tag": "S0_qmc_unsorted",
+      "by_checkpoint": {
+        "early": {
+          "beneficial": 15,
+          "harmful": 2,
+          "practical_tie": 15,
+          "unresolved": 16
+        },
+        "late": {
+          "beneficial": 21,
+          "harmful": 22,
+          "practical_tie": 5,
+          "unresolved": 0
+        }
+      },
+      "by_label": {
+        "logreg_D5_noise3": {
+          "beneficial": 8,
+          "harmful": 7,
+          "practical_tie": 1,
+          "unresolved": 0
+        },
+        "multisensory_s1_D6_noise1.3": {
+          "beneficial": 4,
+          "harmful": 2,
+          "practical_tie": 2,
+          "unresolved": 8
+        },
+        "rosenbrock_D2_noise1": {
+          "beneficial": 9,
+          "harmful": 3,
+          "practical_tie": 4,
+          "unresolved": 0
+        },
+        "rosenbrock_D2_noise3": {
+          "beneficial": 3,
+          "harmful": 3,
+          "practical_tie": 10,
+          "unresolved": 0
+        },
+        "student_D8_noise3": {
+          "beneficial": 7,
+          "harmful": 6,
+          "practical_tie": 2,
+          "unresolved": 1
+        },
+        "timing_D5_noise2.2": {
+          "beneficial": 5,
+          "harmful": 3,
+          "practical_tie": 1,
+          "unresolved": 7
+        }
+      },
+      "gate": {
+        "harmful_fraction_of_scheduled": 0.25,
+        "harmful_within_gate": false,
+        "material_raw_losses": 15,
+        "observed": 96,
+        "positive_claim_allowed": true,
+        "scheduled": 96,
+        "unresolved_fraction_of_scheduled": 0.16666666666666666
+      },
+      "material_losses": [
+        {
+          "arm_to_baseline_ratio": 0.8521458189720745,
+          "mean_score_difference": 0.0009147584658678598,
+          "replicate": 4,
+          "state_id": "rosenbrock_D2_noise1_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7386108854897726,
+          "mean_score_difference": 0.0018963248986618442,
+          "replicate": 0,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7912498045227615,
+          "mean_score_difference": 0.0015304635159036906,
+          "replicate": 1,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.794352744223838,
+          "mean_score_difference": 0.0015265882983189483,
+          "replicate": 3,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.35333557863896053,
+          "mean_score_difference": 0.0043654845691840916,
+          "replicate": 7,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6928515058704893,
+          "mean_score_difference": 0.0005051992497418778,
+          "replicate": 0,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8526687640805813,
+          "mean_score_difference": 0.0002837479592594054,
+          "replicate": 2,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8117472978475331,
+          "mean_score_difference": 0.00038862025265851835,
+          "replicate": 4,
+          "state_id": "student_D8_noise3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.3111186968488447,
+          "mean_score_difference": 0.004363463490401592,
+          "replicate": 6,
+          "state_id": "multisensory_s1_D6_noise1.3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6458816641707292,
+          "mean_score_difference": 0.001548289625339705,
+          "replicate": 1,
+          "state_id": "timing_D5_noise2.2_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7040286012545741,
+          "mean_score_difference": 0.0015736677329273585,
+          "replicate": 3,
+          "state_id": "timing_D5_noise2.2_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7038205787946483,
+          "mean_score_difference": 0.0017085617898356942,
+          "replicate": 6,
+          "state_id": "timing_D5_noise2.2_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8090184637588194,
+          "mean_score_difference": 0.2837215631925951,
+          "replicate": 4,
+          "state_id": "logreg_D5_noise3_seed1_early"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7276972795296796,
+          "mean_score_difference": 0.0005378504477299706,
+          "replicate": 2,
+          "state_id": "multisensory_s1_D6_noise1.3_seed1_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8848555542009452,
+          "mean_score_difference": 0.0008300721056384575,
+          "replicate": 5,
+          "state_id": "logreg_D5_noise3_seed1_late"
+        }
+      ],
+      "raw_loss_counts": {
+        "material_loss": 15,
+        "no_material_loss": 71,
+        "unresolved": 10
+      },
+      "score_counts": {
+        "beneficial": 36,
+        "harmful": 24,
+        "practical_tie": 20,
+        "unresolved": 16
+      }
+    }
+  },
+  "gates": {
+    "cost_ratio_at_most": 1.1,
+    "harmful_fraction_at_most": 0.05,
+    "unresolved_fraction_for_positive_claim_at_most": 0.2
+  },
+  "holdout_confirmation": {
+    "descriptive_contrasts": [
+      "S0_qmc_unsorted_minus_S0"
+    ],
+    "development_choice": "axis",
+    "primary_contrast": "S0_qmc_sorted_minus_S0"
+  },
+  "inventory": {
+    "counts": {
+      "allocation": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 48
+      },
+      "judge": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 12
+      },
+      "selection": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 288
+      },
+      "timing": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 24
+      }
+    },
+    "manifest_sha256": "d78179b6a87c49681587eb58043b6040bece818c816b194663b52d44bb24359d",
+    "missing_states": [],
+    "rows": [
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__r7"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__timing"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_sorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__S0_qmc_unsorted__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed1_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed1_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed1_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed1_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed1_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed1_late__judge_b4096"
+      }
+    ],
+    "scheduled_allocation_including_missing_states": 48,
+    "scheduled_selection_including_missing_states": 288,
+    "scheduled_timing_including_missing_states": 24,
+    "schema_version": 1,
+    "stage": "f2_holdout"
+  },
+  "judge_budget": 65536,
+  "judge_summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_judging\\b65536_summary.json",
+  "judge_summary_sha256": "fac95ae8f28b637b5eb47401f42a669733f1454f7fd8ef12fcd082f9fafd8294",
+  "kind": "f2_stage_evidence",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_holdout_manifest.json",
+  "manifest_sha256": "2c451b013b0d669ba1a815be8a5961c80122b6cabc2c01b8e2656b21a5ab0958",
+  "node_counts": {
+    "mismatches": [],
+    "observed": {
+      "S0": {
+        "100": 96
+      },
+      "S0_qmc_sorted": {
+        "96": 96
+      },
+      "S0_qmc_unsorted": {
+        "96": 96
+      }
+    },
+    "prescribed": {
+      "S0": 100,
+      "S0_qmc_sorted": 96,
+      "S0_qmc_unsorted": 96
+    },
+    "succeeded_selections": 288
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "1fbfe47e507504d76af81d62c23bdc218f6d2adbe1ad6678075a16e8717df530",
+  "schema_version": 1,
+  "split": "holdout",
+  "stage": "f2_holdout",
+  "timing": {
+    "S0_qmc_sorted": {
+      "cost_within_gate": true,
+      "median_of_state_medians": 0.9834508193440361,
+      "range": [
+        0.9473282493726595,
+        1.0414831237691735
+      ],
+      "state_median_ratios": {
+        "logreg_D5_noise3_seed1_early": 0.9559925481689528,
+        "logreg_D5_noise3_seed1_late": 0.9696854966113179,
+        "multisensory_s1_D6_noise1.3_seed1_early": 1.0414831237691735,
+        "multisensory_s1_D6_noise1.3_seed1_late": 0.9890094642682652,
+        "rosenbrock_D2_noise1_seed1_early": 0.9960079778017341,
+        "rosenbrock_D2_noise1_seed1_late": 0.9864952425772606,
+        "rosenbrock_D2_noise3_seed1_early": 0.9634087694029115,
+        "rosenbrock_D2_noise3_seed1_late": 0.975818956330933,
+        "student_D8_noise3_seed1_early": 1.0068764439262827,
+        "student_D8_noise3_seed1_late": 1.0116046004374823,
+        "timing_D5_noise2.2_seed1_early": 0.9473282493726595,
+        "timing_D5_noise2.2_seed1_late": 0.9804063961108117
+      },
+      "states_scheduled": 12,
+      "states_timed": 12
+    },
+    "S0_qmc_unsorted": {
+      "cost_within_gate": true,
+      "median_of_state_medians": 0.979643407533906,
+      "range": [
+        0.9415542176569633,
+        1.0086712299022984
+      ],
+      "state_median_ratios": {
+        "logreg_D5_noise3_seed1_early": 1.0086712299022984,
+        "logreg_D5_noise3_seed1_late": 0.9815132080646325,
+        "multisensory_s1_D6_noise1.3_seed1_early": 0.9632213507009936,
+        "multisensory_s1_D6_noise1.3_seed1_late": 0.9943843951119128,
+        "rosenbrock_D2_noise1_seed1_early": 0.947014709473769,
+        "rosenbrock_D2_noise1_seed1_late": 0.9769344814576713,
+        "rosenbrock_D2_noise3_seed1_early": 0.9461697652807827,
+        "rosenbrock_D2_noise3_seed1_late": 0.9915794318683778,
+        "student_D8_noise3_seed1_early": 0.9777736070031796,
+        "student_D8_noise3_seed1_late": 0.9942772176378959,
+        "timing_D5_noise2.2_seed1_early": 0.9415542176569633,
+        "timing_D5_noise2.2_seed1_late": 0.984109769559941
+      },
+      "states_scheduled": 12,
+      "states_timed": 12
+    }
+  }
+}

@@ -1,0 +1,2943 @@
+{
+  "allocation_cell_count": 24,
+  "allocation_cells": [
+    {
+      "allocation_seed": 9664464939647609823,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 155336158287788820,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 13724568785954692994,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 155336158287788820,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 16096324006651253862,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 2113343160897570602,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 11300281148093286612,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 2113343160897570602,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 2512230800169515825,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 11243611326983191776,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 8430308229123036902,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 11243611326983191776,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 8534160161591981099,
+      "role": "baseline",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 7142475272683014031,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 13999508787292532714,
+      "role": "treatment",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 7142475272683014031,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 12192047642119331166,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 15863947316613976824,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 11191387019124020779,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 15863947316613976824,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 9121493348609518153,
+      "role": "baseline",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 5825467463197142708,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 10017456244397947356,
+      "role": "treatment",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 5825467463197142708,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 14506042522476268120,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 6505457349898384629,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 11595710624874649501,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 6505457349898384629,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 429255725908195742,
+      "role": "baseline",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8199373697264424321,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 14196206567838903354,
+      "role": "treatment",
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8199373697264424321,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 7740802176597020655,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 3454657944016704437,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 453213575877443535,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 3454657944016704437,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 10720659204442433030,
+      "role": "baseline",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 14107743118693102573,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 14584687612911563963,
+      "role": "treatment",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 14107743118693102573,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 10338772798485973587,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17771392294612499409,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 3538326325988639185,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17771392294612499409,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 4610648085463352499,
+      "role": "baseline",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 18424171193013349506,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "allocation_seed": 3989955896723295917,
+      "role": "treatment",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 18424171193013349506,
+      "treatment_tag": "S0_reseeded"
+    }
+  ],
+  "capture_manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\manifest.json",
+  "capture_manifest_sha256": "964cf24b7307739e79e7861637c6b72145bfa0ee7cd4de06f862b8dc11a220b8",
+  "captures": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures",
+  "cell_count": 192,
+  "cells": [
+    {
+      "accurate_seed": 15234131567067397532,
+      "replicate": 0,
+      "search_seed": 15588592307016553727,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15234131567067397532,
+      "replicate": 0,
+      "search_seed": 15588592307016553727,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 12577864822636500883,
+      "replicate": 1,
+      "search_seed": 16493511392463315165,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12577864822636500883,
+      "replicate": 1,
+      "search_seed": 16493511392463315165,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4200350261456934526,
+      "replicate": 2,
+      "search_seed": 8081022805215166843,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4200350261456934526,
+      "replicate": 2,
+      "search_seed": 8081022805215166843,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1849937097442926632,
+      "replicate": 3,
+      "search_seed": 3433814855042929538,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1849937097442926632,
+      "replicate": 3,
+      "search_seed": 3433814855042929538,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11214968798133404593,
+      "replicate": 4,
+      "search_seed": 12246523908309825494,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11214968798133404593,
+      "replicate": 4,
+      "search_seed": 12246523908309825494,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 9367041521016376109,
+      "replicate": 5,
+      "search_seed": 9445128750164842644,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9367041521016376109,
+      "replicate": 5,
+      "search_seed": 9445128750164842644,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1024003235799376094,
+      "replicate": 6,
+      "search_seed": 13535315661723673643,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1024003235799376094,
+      "replicate": 6,
+      "search_seed": 13535315661723673643,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 3855537159389655501,
+      "replicate": 7,
+      "search_seed": 17916314562744754684,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3855537159389655501,
+      "replicate": 7,
+      "search_seed": 17916314562744754684,
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 17930891344281548582,
+      "replicate": 0,
+      "search_seed": 3185184697686409547,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17930891344281548582,
+      "replicate": 0,
+      "search_seed": 3185184697686409547,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 15873100957492152454,
+      "replicate": 1,
+      "search_seed": 16324699127927217249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15873100957492152454,
+      "replicate": 1,
+      "search_seed": 16324699127927217249,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6305554858620864570,
+      "replicate": 2,
+      "search_seed": 2716649941121378944,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6305554858620864570,
+      "replicate": 2,
+      "search_seed": 2716649941121378944,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 5430781160060554076,
+      "replicate": 3,
+      "search_seed": 9891985230972315208,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5430781160060554076,
+      "replicate": 3,
+      "search_seed": 9891985230972315208,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6314223559980964046,
+      "replicate": 4,
+      "search_seed": 9837876844130771987,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6314223559980964046,
+      "replicate": 4,
+      "search_seed": 9837876844130771987,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 12835213954224209130,
+      "replicate": 5,
+      "search_seed": 6471927037986425119,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12835213954224209130,
+      "replicate": 5,
+      "search_seed": 6471927037986425119,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 9100903625692870635,
+      "replicate": 6,
+      "search_seed": 12613389734572711138,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9100903625692870635,
+      "replicate": 6,
+      "search_seed": 12613389734572711138,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 13067535505935821307,
+      "replicate": 7,
+      "search_seed": 748008657235917614,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13067535505935821307,
+      "replicate": 7,
+      "search_seed": 748008657235917614,
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 70575543515358509,
+      "replicate": 0,
+      "search_seed": 16855580265732134934,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 70575543515358509,
+      "replicate": 0,
+      "search_seed": 16855580265732134934,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 9842286679330983863,
+      "replicate": 1,
+      "search_seed": 7310627196014554575,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 9842286679330983863,
+      "replicate": 1,
+      "search_seed": 7310627196014554575,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 12302657590573087227,
+      "replicate": 2,
+      "search_seed": 3014367432328396835,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12302657590573087227,
+      "replicate": 2,
+      "search_seed": 3014367432328396835,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 10759133446839962093,
+      "replicate": 3,
+      "search_seed": 16028690633912789341,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10759133446839962093,
+      "replicate": 3,
+      "search_seed": 16028690633912789341,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 12487258747119577218,
+      "replicate": 4,
+      "search_seed": 7127372595848469200,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12487258747119577218,
+      "replicate": 4,
+      "search_seed": 7127372595848469200,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6326589061077628722,
+      "replicate": 5,
+      "search_seed": 2198614257384997570,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6326589061077628722,
+      "replicate": 5,
+      "search_seed": 2198614257384997570,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11252925298931256217,
+      "replicate": 6,
+      "search_seed": 4667642354596938025,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11252925298931256217,
+      "replicate": 6,
+      "search_seed": 4667642354596938025,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 699202845650896742,
+      "replicate": 7,
+      "search_seed": 4580375314673516894,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 699202845650896742,
+      "replicate": 7,
+      "search_seed": 4580375314673516894,
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 82081014915361930,
+      "replicate": 0,
+      "search_seed": 17384722859581505123,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 82081014915361930,
+      "replicate": 0,
+      "search_seed": 17384722859581505123,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 10251923960758008113,
+      "replicate": 1,
+      "search_seed": 380986028489566558,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10251923960758008113,
+      "replicate": 1,
+      "search_seed": 380986028489566558,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 3967980153510721452,
+      "replicate": 2,
+      "search_seed": 16290368792494047123,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3967980153510721452,
+      "replicate": 2,
+      "search_seed": 16290368792494047123,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 582486254409065619,
+      "replicate": 3,
+      "search_seed": 17264849844152513863,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 582486254409065619,
+      "replicate": 3,
+      "search_seed": 17264849844152513863,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1269352239065089661,
+      "replicate": 4,
+      "search_seed": 4188755264845033312,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1269352239065089661,
+      "replicate": 4,
+      "search_seed": 4188755264845033312,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4054939373143202164,
+      "replicate": 5,
+      "search_seed": 461853531340948825,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4054939373143202164,
+      "replicate": 5,
+      "search_seed": 461853531340948825,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11665192958752653898,
+      "replicate": 6,
+      "search_seed": 2415965242527529065,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11665192958752653898,
+      "replicate": 6,
+      "search_seed": 2415965242527529065,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 934768511190128059,
+      "replicate": 7,
+      "search_seed": 8791939416995694812,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 934768511190128059,
+      "replicate": 7,
+      "search_seed": 8791939416995694812,
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1813579042128126962,
+      "replicate": 0,
+      "search_seed": 15414659819871783578,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1813579042128126962,
+      "replicate": 0,
+      "search_seed": 15414659819871783578,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 795495710367091235,
+      "replicate": 1,
+      "search_seed": 10511300588085381966,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 795495710367091235,
+      "replicate": 1,
+      "search_seed": 10511300588085381966,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 14859927331860873921,
+      "replicate": 2,
+      "search_seed": 3622196299338210633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14859927331860873921,
+      "replicate": 2,
+      "search_seed": 3622196299338210633,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2887137765745982593,
+      "replicate": 3,
+      "search_seed": 313274802919938071,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2887137765745982593,
+      "replicate": 3,
+      "search_seed": 313274802919938071,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 16902471554261551529,
+      "replicate": 4,
+      "search_seed": 8077002581441341037,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16902471554261551529,
+      "replicate": 4,
+      "search_seed": 8077002581441341037,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2593849951863934098,
+      "replicate": 5,
+      "search_seed": 15039345805784466692,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2593849951863934098,
+      "replicate": 5,
+      "search_seed": 15039345805784466692,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 16935623025891610110,
+      "replicate": 6,
+      "search_seed": 18369141723097871700,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16935623025891610110,
+      "replicate": 6,
+      "search_seed": 18369141723097871700,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 7204430499346968881,
+      "replicate": 7,
+      "search_seed": 6758910596994601119,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7204430499346968881,
+      "replicate": 7,
+      "search_seed": 6758910596994601119,
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11207549002543765952,
+      "replicate": 0,
+      "search_seed": 400240729157117217,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11207549002543765952,
+      "replicate": 0,
+      "search_seed": 400240729157117217,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 17680891067512935252,
+      "replicate": 1,
+      "search_seed": 7625312473298024375,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17680891067512935252,
+      "replicate": 1,
+      "search_seed": 7625312473298024375,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 15496832108872096341,
+      "replicate": 2,
+      "search_seed": 2479934463799876492,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15496832108872096341,
+      "replicate": 2,
+      "search_seed": 2479934463799876492,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 10274318770323191063,
+      "replicate": 3,
+      "search_seed": 6884397960339903441,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10274318770323191063,
+      "replicate": 3,
+      "search_seed": 6884397960339903441,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 10057116751280964851,
+      "replicate": 4,
+      "search_seed": 10372839647359972755,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 10057116751280964851,
+      "replicate": 4,
+      "search_seed": 10372839647359972755,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1080603298646531955,
+      "replicate": 5,
+      "search_seed": 13861173989618982205,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1080603298646531955,
+      "replicate": 5,
+      "search_seed": 13861173989618982205,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2231350036896323537,
+      "replicate": 6,
+      "search_seed": 18217242256074407206,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2231350036896323537,
+      "replicate": 6,
+      "search_seed": 18217242256074407206,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2542843423356131649,
+      "replicate": 7,
+      "search_seed": 9620015312477487869,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2542843423356131649,
+      "replicate": 7,
+      "search_seed": 9620015312477487869,
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11177372869214266810,
+      "replicate": 0,
+      "search_seed": 14834644835647372263,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11177372869214266810,
+      "replicate": 0,
+      "search_seed": 14834644835647372263,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 5495618675526707734,
+      "replicate": 1,
+      "search_seed": 688822749094960923,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5495618675526707734,
+      "replicate": 1,
+      "search_seed": 688822749094960923,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 16938090273159713874,
+      "replicate": 2,
+      "search_seed": 16823416678839689792,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16938090273159713874,
+      "replicate": 2,
+      "search_seed": 16823416678839689792,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6505525083450789335,
+      "replicate": 3,
+      "search_seed": 8297909654412113997,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6505525083450789335,
+      "replicate": 3,
+      "search_seed": 8297909654412113997,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 5837296414381419831,
+      "replicate": 4,
+      "search_seed": 6109714631575570830,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5837296414381419831,
+      "replicate": 4,
+      "search_seed": 6109714631575570830,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2340377261400561847,
+      "replicate": 5,
+      "search_seed": 4828667497437798059,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2340377261400561847,
+      "replicate": 5,
+      "search_seed": 4828667497437798059,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 14771934903593973838,
+      "replicate": 6,
+      "search_seed": 9496146974367319515,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14771934903593973838,
+      "replicate": 6,
+      "search_seed": 9496146974367319515,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 343353522871276323,
+      "replicate": 7,
+      "search_seed": 18010921306266788379,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 343353522871276323,
+      "replicate": 7,
+      "search_seed": 18010921306266788379,
+      "state_id": "student_D8_noise3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 14269088826806839969,
+      "replicate": 0,
+      "search_seed": 1317144140599560990,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14269088826806839969,
+      "replicate": 0,
+      "search_seed": 1317144140599560990,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 5561560802491935200,
+      "replicate": 1,
+      "search_seed": 16577511378796345210,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5561560802491935200,
+      "replicate": 1,
+      "search_seed": 16577511378796345210,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 15046625521052942080,
+      "replicate": 2,
+      "search_seed": 14408418909599628241,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15046625521052942080,
+      "replicate": 2,
+      "search_seed": 14408418909599628241,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 14795736762001629376,
+      "replicate": 3,
+      "search_seed": 14473556578453787543,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 14795736762001629376,
+      "replicate": 3,
+      "search_seed": 14473556578453787543,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1600774371971034500,
+      "replicate": 4,
+      "search_seed": 12276034741678560902,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1600774371971034500,
+      "replicate": 4,
+      "search_seed": 12276034741678560902,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11112529594318260212,
+      "replicate": 5,
+      "search_seed": 12086377950283258934,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11112529594318260212,
+      "replicate": 5,
+      "search_seed": 12086377950283258934,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2344651403622317374,
+      "replicate": 6,
+      "search_seed": 11428910614361531399,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2344651403622317374,
+      "replicate": 6,
+      "search_seed": 11428910614361531399,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6416382474515135091,
+      "replicate": 7,
+      "search_seed": 5759058091673775943,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6416382474515135091,
+      "replicate": 7,
+      "search_seed": 5759058091673775943,
+      "state_id": "student_D8_noise3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 601908096948108946,
+      "replicate": 0,
+      "search_seed": 16817983738714324301,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 601908096948108946,
+      "replicate": 0,
+      "search_seed": 16817983738714324301,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 519755106756128984,
+      "replicate": 1,
+      "search_seed": 7873785070450801035,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 519755106756128984,
+      "replicate": 1,
+      "search_seed": 7873785070450801035,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4001618860422490784,
+      "replicate": 2,
+      "search_seed": 4430963085657254390,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4001618860422490784,
+      "replicate": 2,
+      "search_seed": 4430963085657254390,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 13435239582761131897,
+      "replicate": 3,
+      "search_seed": 7492125913720725059,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13435239582761131897,
+      "replicate": 3,
+      "search_seed": 7492125913720725059,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 17461089231648911016,
+      "replicate": 4,
+      "search_seed": 4348472642014018049,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17461089231648911016,
+      "replicate": 4,
+      "search_seed": 4348472642014018049,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 15581001111406402005,
+      "replicate": 5,
+      "search_seed": 12671475808294669072,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15581001111406402005,
+      "replicate": 5,
+      "search_seed": 12671475808294669072,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 7493782164602728260,
+      "replicate": 6,
+      "search_seed": 5966657479716886972,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 7493782164602728260,
+      "replicate": 6,
+      "search_seed": 5966657479716886972,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 17124377228824815976,
+      "replicate": 7,
+      "search_seed": 875057569560430701,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17124377228824815976,
+      "replicate": 7,
+      "search_seed": 875057569560430701,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 15642286129967222457,
+      "replicate": 0,
+      "search_seed": 16914276035367616892,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 15642286129967222457,
+      "replicate": 0,
+      "search_seed": 16914276035367616892,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2649496627939840845,
+      "replicate": 1,
+      "search_seed": 10852632892822465977,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2649496627939840845,
+      "replicate": 1,
+      "search_seed": 10852632892822465977,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 8741986426816435626,
+      "replicate": 2,
+      "search_seed": 6598444947571138931,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 8741986426816435626,
+      "replicate": 2,
+      "search_seed": 6598444947571138931,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 645563367168956560,
+      "replicate": 3,
+      "search_seed": 1771372715458475482,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 645563367168956560,
+      "replicate": 3,
+      "search_seed": 1771372715458475482,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 3395984153216990112,
+      "replicate": 4,
+      "search_seed": 11154675216651130051,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3395984153216990112,
+      "replicate": 4,
+      "search_seed": 11154675216651130051,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1417526029255633328,
+      "replicate": 5,
+      "search_seed": 2113962706161144471,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1417526029255633328,
+      "replicate": 5,
+      "search_seed": 2113962706161144471,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 13029494066803403611,
+      "replicate": 6,
+      "search_seed": 15446890913774119774,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13029494066803403611,
+      "replicate": 6,
+      "search_seed": 15446890913774119774,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 13234866447871939436,
+      "replicate": 7,
+      "search_seed": 4255886421805065396,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13234866447871939436,
+      "replicate": 7,
+      "search_seed": 4255886421805065396,
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 2115431881391753280,
+      "replicate": 0,
+      "search_seed": 11110715926671668705,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 2115431881391753280,
+      "replicate": 0,
+      "search_seed": 11110715926671668705,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 11521423243450534578,
+      "replicate": 1,
+      "search_seed": 3361875819729974398,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 11521423243450534578,
+      "replicate": 1,
+      "search_seed": 3361875819729974398,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 13844005042982924079,
+      "replicate": 2,
+      "search_seed": 14150919834484554514,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 13844005042982924079,
+      "replicate": 2,
+      "search_seed": 14150919834484554514,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 8806869881766359236,
+      "replicate": 3,
+      "search_seed": 4346747728494733802,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 8806869881766359236,
+      "replicate": 3,
+      "search_seed": 4346747728494733802,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 8887972112401174377,
+      "replicate": 4,
+      "search_seed": 11595325939251265061,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 8887972112401174377,
+      "replicate": 4,
+      "search_seed": 11595325939251265061,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4430984479166575602,
+      "replicate": 5,
+      "search_seed": 14989953162242079893,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4430984479166575602,
+      "replicate": 5,
+      "search_seed": 14989953162242079893,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 6138368703402683297,
+      "replicate": 6,
+      "search_seed": 16702502825674617647,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 6138368703402683297,
+      "replicate": 6,
+      "search_seed": 16702502825674617647,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 3240001003958434261,
+      "replicate": 7,
+      "search_seed": 18006452016324134623,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3240001003958434261,
+      "replicate": 7,
+      "search_seed": 18006452016324134623,
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4999420572214391742,
+      "replicate": 0,
+      "search_seed": 3413159964721545843,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4999420572214391742,
+      "replicate": 0,
+      "search_seed": 3413159964721545843,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 1697552105304769886,
+      "replicate": 1,
+      "search_seed": 12539374006589553755,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 1697552105304769886,
+      "replicate": 1,
+      "search_seed": 12539374006589553755,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 17789842244742625398,
+      "replicate": 2,
+      "search_seed": 2283775900003437353,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 17789842244742625398,
+      "replicate": 2,
+      "search_seed": 2283775900003437353,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 16580645175322466328,
+      "replicate": 3,
+      "search_seed": 18400801591078631203,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 16580645175322466328,
+      "replicate": 3,
+      "search_seed": 18400801591078631203,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 4556813568223590895,
+      "replicate": 4,
+      "search_seed": 3319373173957356760,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 4556813568223590895,
+      "replicate": 4,
+      "search_seed": 3319373173957356760,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 12260418601119506975,
+      "replicate": 5,
+      "search_seed": 5003920865762045354,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 12260418601119506975,
+      "replicate": 5,
+      "search_seed": 5003920865762045354,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 3837111540181951761,
+      "replicate": 6,
+      "search_seed": 10479940383177064383,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 3837111540181951761,
+      "replicate": 6,
+      "search_seed": 10479940383177064383,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "accurate_seed": 5821348450798024510,
+      "replicate": 7,
+      "search_seed": 3681964403474166038,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0"
+    },
+    {
+      "accurate_seed": 5821348450798024510,
+      "replicate": 7,
+      "search_seed": 3681964403474166038,
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "treatment_tag": "S0_reseeded"
+    }
+  ],
+  "direct_control_timing": {
+    "classification": "not_applicable_duplicate_rule",
+    "reason": "The frozen original arm already uses ordinary MC1600."
+  },
+  "expected_state_count": 12,
+  "holdout_locked": false,
+  "identity": {
+    "integration_identity": {
+      "capture_identity": {
+        "data_hashes": {
+          "dev/scripts/data/multisensory.npz": "caf62b205a67bbb3a53d2650c0cf98ddcd4dc1c15da72e31d3c1f97256db982f",
+          "dev/scripts/data/timing.npz": "9fb1c08afa2b52810dafb04d62ac0166c502ae60b0b18a2741f89efd75e5a9cc",
+          "dev/scripts/data/truths/multisensory_s1.npz": "f11bc97cef7fe5820cd43d4b7fed6b6885f323abb1892241bfb16cf6e4707c04",
+          "dev/scripts/data/truths/multisensory_s2.npz": "975ec0b6a8c5b6676bcc01eb478863adc9cde45b30dfdcfe63771dee913638ff",
+          "dev/scripts/data/truths/timing.npz": "1366987f73dd30de1f3cfa0c0940e2113fd34f9283c6aa367779d50b3d245a0d"
+        },
+        "dependencies": {
+          "cma": "4.4.4",
+          "gpyreg": "1.2.0",
+          "numpy": "2.5.2",
+          "pyvbmc": "1.0.5.dev156+g4d91a5e61",
+          "scipy": "1.18.1"
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "import": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_pool_20260913\\gpyreg_1.2.1\\gpyreg\\__init__.py",
+          "source_hashes": {
+            "gpyreg/__init__.py": "d2683e21c965713c2f68027984514e3c070eea4540c6ab0aa1acab2833976927",
+            "gpyreg/covariance_functions.py": "482e8c1690e8430c46fa88235bb34a178fc5c8fae5c0296240f50c3120a4a932",
+            "gpyreg/f_min_fill.py": "b3bc9360e3cbab518ce710d153c1fc8e3d0344aeee85391ccad22a13e30221bd",
+            "gpyreg/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+            "gpyreg/gaussian_process.py": "fd15bae3d70ef0053e5500e359f814f98655678d6690ea3905e80e2578795df8",
+            "gpyreg/isotropic_covariance_functions.py": "cd48ba78624fe971a57b4b113d530d58e2a5ba65094397c1ec6f86ed8eeb1832",
+            "gpyreg/mean_functions.py": "13ddb745485f186800440fd9aa6989ee8e78539e99fb9ed9a39e0a08f513af04",
+            "gpyreg/noise_functions.py": "f7168d6ca0e0ad54d26800bf8e1709cc980df718a7789eea97a384a8c33e94a7",
+            "gpyreg/rng.py": "cc9ca12def071d07894cfeae9dec95ccafac8643b548d06da9dfaee20dd7b5d2",
+            "gpyreg/slice_sample.py": "5e15fb79b25e19d9e9f4ae0d3f0a091e599b7da5088b6a43ba2f3dc6ad577fc2",
+            "gpyreg/testing/__init__.py": "55e1a1c093fb290c59144f3bec778dd1ca7d1475c0c009aba7909822f49e75cd",
+            "gpyreg/testing/test_covariance_functions.py": "daa93221b2271ed955aed8d4fd508da524ea17ac01bb33697ba4f663c69d6e3f",
+            "gpyreg/testing/test_gaussian_process.py": "4398b22f50fac2b1e115be8187341635ecfa3c7eada436ed7be36c5f135f44c2",
+            "gpyreg/testing/test_gaussian_process_isotropic.py": "9ab52aaa873469bc5ae7327da673c719f099ea27054d412adb3291a9733d2944",
+            "gpyreg/testing/test_isotropic_covariance_functions.py": "aae3e23a0a32f352bed2e68d0cb9d853b02ead586fe2d1d86f2b8103eb4143e1",
+            "gpyreg/testing/test_mean_functions.py": "bbb6e46e5227a171811bb4534d3bf5af414cdcb43fc9088cf66531952f22a033",
+            "gpyreg/testing/test_noise_functions.py": "57b6cbaf054e3c8212d1dd4d29d8c3a58b17cc3615f07ee7dcd0489f259b12df",
+            "gpyreg/testing/test_predict_cross_covariance.py": "9235cba829a42690529bdd6e63d0426c6d417adff670a4993a44adcd5af6ee77",
+            "gpyreg/testing/test_rng.py": "fc9f1d83e22447e4d46b2087f2dd71efd204bedf2320f12a93fe36b111662bb5",
+            "gpyreg/testing/test_slice_sample.py": "35df5309383b2d44fba25a1cbfbb060332e1a365cf5f1d82ebc3175f9f1c8b9c",
+            "gpyreg/testing/test_smoothbox.py": "3cc4d907f38d8c189f22f7ce1090b16a65858cab2cb431845100af6d3b09091a",
+            "gpyreg/testing/test_smoothbox_student_t.py": "9ca12c6f0a2e14f61bfdf836358f39a569c7141fbc28e722680ba482dcad1bc8",
+            "gpyreg/testing/test_utils.py": "494badb7633320fab1cff2d2f59f3a675d613d205ea337d3da3762c12b3d9995"
+          }
+        },
+        "manifest_sha256": "a4c49146cfb606c20f000d58599c7f096376824fa7c378d43726d77b11b2adbe",
+        "numerical_base_commit": "9cc6882768ff682ae892a6b453c42e0f2d03d5fa",
+        "numpy_build": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-aabpcgf3/cp312-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.34.0.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.34.0.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35228"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.9"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-03ol50fu\\Scripts\\python.exe",
+            "version": "3.12"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "platform": "Windows-11-10.0.26200-SP0",
+        "python": "3.12.6",
+        "source_hashes": {
+          "dev/scripts/benchmark_targets.py": "3a7f919d9ad40cf529231c13fc32c13538ac2cb5f88edf3ad570ec0fd3fbea60",
+          "dev/scripts/noisy_acq_experiment.py": "8a47327d69db092a4b64d54824d46811086178dba4a1291e5f984922c8da2f66",
+          "pyvbmc/__init__.py": "4db4104c16ebc10161cc401aac7d3eafa9fc702f22a04c3f62b32ee85c57f0f6",
+          "pyvbmc/__main__.py": "68f653e43d27f08955a6dd5bd5878e784682b4c0a98b838ba3d6f6dac7a36f6d",
+          "pyvbmc/_user_hints.py": "dbda66942ef8e13b622786dd475c4b96126c94a574083af723f318feba655303",
+          "pyvbmc/acquisition_functions/__init__.py": "76109b2c4b81946bfde6f433e6c846465ffac9109eea8befe837b3319b712ae6",
+          "pyvbmc/acquisition_functions/abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+          "pyvbmc/acquisition_functions/acq_fcn.py": "f854200282c898f0e1b594f4859eb4e9a4966746531d5809d48c5d4e2e626d9d",
+          "pyvbmc/acquisition_functions/acq_fcn_imiqr.py": "f3901dd204e29e3ed0a6a248fa853a9d11f567d34f089a54c441fde668f4181f",
+          "pyvbmc/acquisition_functions/acq_fcn_log.py": "4dd1739a953c8f98260dbac9ab8ef5d944147a9734cb9aa95f807b01e0c0471b",
+          "pyvbmc/acquisition_functions/acq_fcn_noisy.py": "c2249507e66cff475a9f3b42f408ae9ad5bae8c429c883c139b1dddeb70b96d0",
+          "pyvbmc/acquisition_functions/acq_fcn_vanilla.py": "764c3a54277daa2ea7f4be8cbce75f174807fca29e4342fa7e1aba6cb13fd497",
+          "pyvbmc/acquisition_functions/acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+          "pyvbmc/acquisition_functions/utilities.py": "fdab0381876e6f3e4c8d6df22bbe1cf9b8df6e5a4af32e01fd336cf31de3bd7a",
+          "pyvbmc/calibration/__init__.py": "be6cdde1fde951ceb47650b92d1dcbfdf2da1e9f640436c66b88c9d1851724d5",
+          "pyvbmc/calibration/_api.py": "1f4c54b5a92e6150dede48424ae5c4d2e00604767517fff58b0576de439a17df",
+          "pyvbmc/calibration/_cache.py": "ada64d67f04b8149821b55ad54247319a8ee7335520a52acd45ddd06552f5fb1",
+          "pyvbmc/calibration/_campaign.py": "f4ac1eaa72f5d1911aca1dd355e19e455a18bba4e4fbc3992bc4f9bf0bb7c76b",
+          "pyvbmc/calibration/profile.py": "ebea4c134f00303dcd842e240d5ad068b615346b07cc27996a5c6077303e15ef",
+          "pyvbmc/decorators/__init__.py": "da20264996abc36c1cba9182b57c07eee917e5df6e81556fbbbec9beab92d8c9",
+          "pyvbmc/decorators/handle_0D_1D_input.py": "e3299b32b1470acd9ef6527dc3bdb248ef3f2aaea3ae5f488d3f24735db4d8be",
+          "pyvbmc/entropy/__init__.py": "9e332e33254929eeb77105bb359b9fcdfd5c7e9abe81910eb7f5c9ab2d0a6612",
+          "pyvbmc/entropy/entlb_vbmc.py": "eaaefa1002ad453b8710e042bc190122ac23b5481ef193206fc783ffd540d2f0",
+          "pyvbmc/entropy/entmc_vbmc.py": "a221bec072902f340be04006938f6c913ad992ec60c69528d111f7d3672dc7a8",
+          "pyvbmc/formatting/__init__.py": "74ada912abdc570961cefe5a5d6111a82bdeff7ea369e0ceb1274fa87f592acb",
+          "pyvbmc/formatting/formatting.py": "cae4850f3ca3cd7c3d26d4942f7047de611a889be152be95cecc9b2de25698fd",
+          "pyvbmc/function_logger/__init__.py": "370cb39a6e1bbbef535ee7f68e93861f1fdc162a983531161e02a8d85859cf14",
+          "pyvbmc/function_logger/function_logger.py": "8bb64c7cbbaf2864bfbfd420f4b2289fc10e2332f09dc018663d1320e2f31de3",
+          "pyvbmc/parameter_transformer/__init__.py": "a61c3059bc1032a72555133cdfe00e0de25712f9a07164550409bd70d70459d9",
+          "pyvbmc/parameter_transformer/parameter_transformer.py": "77df8fdc20aa4ae79080d152412a2e9aea165fccd8e95c653ee36a81c77b4447",
+          "pyvbmc/priors/__init__.py": "550e3dd43a27e66435ed659b2f49144b4bcfd1214f5669010dcd3d9df0641bd5",
+          "pyvbmc/priors/convert_to_prior.py": "9073b1551b0bc355ababa180a1a94e938ec65e5b17dd92c8f380e3b679e62ebd",
+          "pyvbmc/priors/prior.py": "3d32c741e1295ef084dff33647a28d95c8ef85761e125bcf80983bec373229ab",
+          "pyvbmc/priors/product.py": "8f8dda5ca0c2c5f1bb4be16d80547932b92b7be0d87e9d8a8982e06da3483399",
+          "pyvbmc/priors/scipy.py": "5ec080bd19cec99c2b23b30df5fc72e23d378236301ba8c937f8a1c8a7056d34",
+          "pyvbmc/priors/smooth_box.py": "05d8fd5745b41e30f1d0390c18737b13e9fca42decd5d5504909de9bd6a59535",
+          "pyvbmc/priors/spline_trapezoidal.py": "be7bbb39d669154b296aaca1286b13031bc1ad7775644d3dd491a21efa214bf4",
+          "pyvbmc/priors/tile_inputs.py": "0834153962c09fdfdfa6888dddbac19801b9b9f9678a5b31e5e191ae61e80944",
+          "pyvbmc/priors/trapezoidal.py": "6fb22cc083649b74fdc9e2abc52974e40e914af6849ecc62ede746bd340db115",
+          "pyvbmc/priors/uniform_box.py": "4c705acdf466272184e3686253540b88a54481bb7a8c6a2228cafb684e9f23f7",
+          "pyvbmc/priors/user_function.py": "4c2dce49f7c4aa4d04a29fa1871f8374dab8d34255977384498c562280d13029",
+          "pyvbmc/pymc/__init__.py": "f20363bc2ab03daf78fdc1e5688f6404f8ac88919a782db80343bca11b6a687e",
+          "pyvbmc/pymc/_compat.py": "ab4820d3ba1f9e5189fa06f93fa9ee5ba477bbee38993b328bb8bfdc8c1a1a4b",
+          "pyvbmc/pymc/_plausible.py": "ed7e0c9647d05e752cb3da3f4a182ecc132b2dbffe564fe9a53f141cd17fe9fd",
+          "pyvbmc/pymc/_snapshot.py": "d62b324f866ea93ef7d644c4615a2b90ce6003f118ca1aabe6f8474dd99206a8",
+          "pyvbmc/pymc/_target.py": "0882b0b0e1b7f9aa5e8043218bde0bd079155258c4594bad2eb9aaf158965a3e",
+          "pyvbmc/rng.py": "a6bd2dd386db5ed713acbf2daa400e819eaa1feb0082daa4bd20b8b3ece05fb7",
+          "pyvbmc/stats/__init__.py": "5074c0fa11e0f5ce87ab8bc69d950b4ccca3024da6c2d3796346fcf4761003eb",
+          "pyvbmc/stats/get_hpd.py": "1c685981cd236a8b4fbe566d99c02ace10082352368688489d159f2cb375a698",
+          "pyvbmc/stats/kde_1d.py": "bc5d6c91f43735eb7304cbb93e83745828ac609df66109de0d7bd58c24604934",
+          "pyvbmc/stats/kl_div_mvn.py": "f63571d2d6c88842fa2542ff0fc139e94bb35480703ca2707f0436c25ae5159f",
+          "pyvbmc/svbmc/__init__.py": "a27adf91c62e3c93a966cea6c8474725950d9bd992e30c39ac30607b6799677d",
+          "pyvbmc/svbmc/_elbo_shrinkage.py": "c749a25d65f83d029b51cf0688107505a8498bfba56a11ce610d6ece75c1f70b",
+          "pyvbmc/svbmc/_entropy.py": "702657e2dded564dad258129f1227ec520b717a93aa7d02c13616970f2a752b3",
+          "pyvbmc/svbmc/_jacobian.py": "2dd92b5305365f87f77a81a7e1100051b1388c7ad7d72fdce9229ebfdda7bc45",
+          "pyvbmc/svbmc/_runtime_tips.py": "5e505025e30095bbfcd592d9c6babc9b84e2a17d1e60505778de2167611c0d2e",
+          "pyvbmc/svbmc/_tip_catalog.py": "9b91555ce93cc4729abe3943a7c31c72971f8f07c34994142104fa58c15cda39",
+          "pyvbmc/svbmc/svbmc.py": "eefb8345d4acb8eb7f18b237b316d05aeb678bfe51827230af457796711fe0f1",
+          "pyvbmc/svbmc/utils.py": "90e5d1da900d5bbd5cec6bc053f96dec367f759dea62205003f3c1545770ed18",
+          "pyvbmc/testing/oracles/_state.py": "13abc1e5ed4f75d17dfe8c2944d37247ec0fe1295e02863416773f55632c6d37",
+          "pyvbmc/timer/__init__.py": "9cb964b08f313f5866b964a2532e9dd2ed20af51b50d5114133b85f91878934d",
+          "pyvbmc/timer/timer.py": "7bf42b79067c3156ae9bd0e3f340e054bc52a0bdd7c47126112563714169331b",
+          "pyvbmc/variational_posterior/__init__.py": "6a9a75bcc33df379d7a722786a01dc4fc84f812f822c04ea2d0cacb65b168a8a",
+          "pyvbmc/variational_posterior/_arviz.py": "a27197073091784ea59c65d14013d8bfd6f99fcdceab0cb95ba5fdc24c028a00",
+          "pyvbmc/variational_posterior/_torch.py": "da6fe5ef52c5fb44fe9e55747671bff13c00cf7f2bcd0bf0054bd8d2cf228582",
+          "pyvbmc/variational_posterior/variational_posterior.py": "a2ec7e763d4da2fa9442330f5dcc1c1ffa7c447fcb23f995f383502604ea4b41",
+          "pyvbmc/vbmc/__init__.py": "f64d3e78b3bd7a1bf88d2144b5d073eb781697693513eb9f9c69b861901a5f29",
+          "pyvbmc/vbmc/_bounds.py": "46a8249b923f187aafb6876bbbc0af746d8beef4e74572260b5984728983f1db",
+          "pyvbmc/vbmc/_runtime_tips.py": "6351c1fed0184bc943d52b473dc407c5ccc64b7669ca4167e025e3b68a06e43b",
+          "pyvbmc/vbmc/_tip_catalog.py": "fc5150c203ac76529546694e1d34df9eb821c83cadf1c900532ddae666d1ceed",
+          "pyvbmc/vbmc/active_importance_sampling.py": "acbfe0301623b8ec544ce9384517f05be7750bff1b83aed2592c5d42caf1bf1c",
+          "pyvbmc/vbmc/active_sample.py": "e1ecdf60cb58754050eafab951dc072a8bd5b36f5983729cc811afa39b2322b6",
+          "pyvbmc/vbmc/create_vbmc_animation.py": "5e28759228460894eca458924d8f0e69b4d5d0cfb482fa6b0d9e3c83a6358f18",
+          "pyvbmc/vbmc/gaussian_process_train.py": "cdf52636e9a39d56200e69f2b8eb74ae00ace51564aafbfccc71b33d30d535e4",
+          "pyvbmc/vbmc/iteration_history.py": "0027271a386d7e6fcc4a3a3d85a2c14e22caeb0b2518e0e60eb4bb2df7f9a87d",
+          "pyvbmc/vbmc/minimize_adam.py": "3ae07d534b63aaabdb50c42c5bdfa96ed506ee6ae784573eb3c514d59fe6dbe0",
+          "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": "d2aa5e54258fd702d04389201e5a20d1e1dfaeca3b43a71c06303e89c2c71dfe",
+          "pyvbmc/vbmc/option_configs/basic_vbmc_options.ini": "d6cd78c909edc62708659688bdca7f7937a1efb402878e91afe5ede6d6510106",
+          "pyvbmc/vbmc/option_configs/test_options.ini": "65b1eb537c44b784803f1a027cb7427db6172da389ba53b8e85d9e73edb1a36c",
+          "pyvbmc/vbmc/option_configs/test_options2.ini": "563c9c617a5cd7a11212767843729e565c4b5800a1c2ec20454209c6b0a5eddf",
+          "pyvbmc/vbmc/options.py": "113e8fc272a2fcdeb06be32cf171e76e13f021d949e1f3d5161d9d7c8f05037a",
+          "pyvbmc/vbmc/variational_optimization.py": "542056b665d6d8d548d4ba6f1c44b57673ac6cff0cdfe9a1bf521e0aad016274",
+          "pyvbmc/vbmc/vbmc.py": "649dbb9b88e8d2c62f0b26a2f8a6ca334435d2d39230a83d42a88801c450df55",
+          "pyvbmc/whitening/__init__.py": "39ab0a0f26daaeaed1cf5100bbd56d07822f8ec562afb7a4bdb453191d6fed7f",
+          "pyvbmc/whitening/whitening.py": "d7cf3ba568fd2b0537ee3baadd422e43393c162deb979007a2584e00df200d7c"
+        },
+        "source_transition": {
+          "changed_sources": {
+            "dev/scripts/benchmark_targets.py": {
+              "capture": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+              "runtime": "3a7f919d9ad40cf529231c13fc32c13538ac2cb5f88edf3ad570ec0fd3fbea60"
+            },
+            "dev/scripts/noisy_acq_experiment.py": {
+              "capture": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+              "runtime": "8a47327d69db092a4b64d54824d46811086178dba4a1291e5f984922c8da2f66"
+            },
+            "pyvbmc/vbmc/active_importance_sampling.py": {
+              "capture": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378",
+              "runtime": "acbfe0301623b8ec544ce9384517f05be7750bff1b83aed2592c5d42caf1bf1c"
+            },
+            "pyvbmc/vbmc/active_sample.py": {
+              "capture": "4b09254caf87b8e93582d25bcb9fa7489fbb1519aebd803617ceb40a69c751b3",
+              "runtime": "e1ecdf60cb58754050eafab951dc072a8bd5b36f5983729cc811afa39b2322b6"
+            },
+            "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": {
+              "capture": "8e62e3a4bb4a63717af82255119e57845d31902fea301b79e1c3c0a9cc053eda",
+              "runtime": "d2aa5e54258fd702d04389201e5a20d1e1dfaeca3b43a71c06303e89c2c71dfe"
+            }
+          },
+          "numerical_base_commit": "9cc6882768ff682ae892a6b453c42e0f2d03d5fa",
+          "numerical_diff_exclude": [
+            "pyvbmc/testing"
+          ],
+          "scope": "f2_importance_nodes"
+        },
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "integration_source_hashes": {
+        "dev/scripts/noisy_acq_experiment.py": "8a47327d69db092a4b64d54824d46811086178dba4a1291e5f984922c8da2f66",
+        "dev/scripts/noisy_acq_integration.py": "075351434c6c8154fa2da066003a79ea54c552df5e1bfacae0968bbdb5ea905e",
+        "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+        "pyvbmc/acquisition_functions/abstract_acq_fcn.py": "84288b05c41d70a753658e377e6e83f0ba4424ffdda8fc6b04cc0b1e6bb32d9e",
+        "pyvbmc/acquisition_functions/acq_fcn_viqr.py": "f5dfd964eee52ddb9e746155770ad38fd361e966d0a2fbd86d3de90a57d8a2f9",
+        "pyvbmc/testing/oracles/_state.py": "13abc1e5ed4f75d17dfe8c2944d37247ec0fe1295e02863416773f55632c6d37",
+        "pyvbmc/vbmc/active_importance_sampling.py": "acbfe0301623b8ec544ce9384517f05be7750bff1b83aed2592c5d42caf1bf1c"
+      }
+    },
+    "search_source_hashes": {
+      "dev/scripts/noisy_acq_experiment.py": "8a47327d69db092a4b64d54824d46811086178dba4a1291e5f984922c8da2f66",
+      "dev/scripts/noisy_acq_integration.py": "075351434c6c8154fa2da066003a79ea54c552df5e1bfacae0968bbdb5ea905e",
+      "dev/scripts/noisy_acq_quadrature.py": "470fdb223d5617914d2b15a99da90b5a0b2013aa329e9fbc4d37e23692666d4e",
+      "dev/scripts/noisy_acq_search.py": "0f78c64ce78ac8d8505def87bc813b37d1cbb157070f59b6f8a65a61d0fdcfbe",
+      "dev/scripts/noisy_acq_search_experiment.py": "2da7c730741b901bab4bf14c6b1dace310e00ff71a5bbb613fa8a43f8ea6d24e",
+      "dev/scripts/noisy_acq_timing.py": "1b1f7f8365c8c36cef3bc6bc047498c183b0ddc34061aeee58d68160b2f0e72a"
+    }
+  },
+  "initial_judge_budget": 4096,
+  "judge": {
+    "logreg_D5_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        3366830043540968308,
+        13005472574007822633,
+        10181587645819069498,
+        7433013617003632865,
+        15261458926548569174,
+        394501839768152918,
+        6389526882632981161,
+        12881317684465327214
+      ],
+      "comparison_seeds": {
+        "16384": [
+          3193684122009545784,
+          18391083768971782484,
+          3674121617724796871,
+          12041263538775632967,
+          7786825165292619677,
+          15311684047628089019,
+          853559972668376194,
+          15824509894789601499
+        ],
+        "32768": [
+          6800268194106661011,
+          12117951578104742456,
+          14384475256448427692,
+          7958367697071833353,
+          1891285382409570719,
+          9756978222436927041,
+          10413826114093456091,
+          14611607540688032232
+        ],
+        "4096": [
+          918661987716490780,
+          7767210596163167033,
+          2567028639234674651,
+          18072902034981181346,
+          2301693339913805733,
+          2201691462937489821,
+          275164080087174395,
+          8349798153594371740
+        ],
+        "65536": [
+          3811438965348466577,
+          15119681423456087083,
+          12574835156325643099,
+          5108444905008851211,
+          7237766442119759993,
+          14413789413054692557,
+          1478591087773654305,
+          17223439186460134436
+        ],
+        "8192": [
+          12167842399198445056,
+          2874867526931901556,
+          1137986859413638811,
+          10066668879120478100,
+          17764348035906122467,
+          10869758695795610488,
+          8498613061087908476,
+          3203581920823771362
+        ]
+      }
+    },
+    "logreg_D5_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        8404806536792988102,
+        7034934661060560668,
+        3262015020961757228,
+        14052486503621572143,
+        15975435591232951544,
+        7095463415099597016,
+        4166531499095945757,
+        10733937322190651631
+      ],
+      "comparison_seeds": {
+        "16384": [
+          15093120160765340481,
+          14090326993766758548,
+          12320032308848038017,
+          466575406561916013,
+          4414133872088216748,
+          7450836270355564017,
+          12055532013030750607,
+          10273331672318422948
+        ],
+        "32768": [
+          9652488741907966926,
+          8230433370562358862,
+          9120088022110394408,
+          14041664302758423763,
+          11132246775513441491,
+          5611155183520846584,
+          4927159913914159073,
+          15787419266182895180
+        ],
+        "4096": [
+          6764226953203015470,
+          6865631437616361296,
+          7463258241033423499,
+          16138694147553866146,
+          1631678372120615848,
+          7940330162107590218,
+          18338980584836652279,
+          2474659513924733716
+        ],
+        "65536": [
+          11176970442346136900,
+          4466982474871339879,
+          12810543782545870441,
+          9277810972025240462,
+          2687549091869341215,
+          8984353820246602622,
+          15656261962597986459,
+          9576621239730370248
+        ],
+        "8192": [
+          5510587594569538389,
+          4739108335949565963,
+          13579303133398063156,
+          673078311937632264,
+          14348903170481132926,
+          3133797574146874138,
+          12714737251871255029,
+          12269048250233370542
+        ]
+      }
+    },
+    "multisensory_s1_D6_noise1.3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        4079915709632189105,
+        17894134687199470504,
+        2964615001705546155,
+        15026039268827141049,
+        3906001846822230501,
+        5507174188046401315,
+        11614654412903149269,
+        17567768001495753473
+      ],
+      "comparison_seeds": {
+        "16384": [
+          7609988019589716973,
+          12156728619097019244,
+          17168840905381283802,
+          309715517500171816,
+          7451736678096641503,
+          6290495680556963272,
+          3271738769625160855,
+          17702166168045696435
+        ],
+        "32768": [
+          7606368615761823265,
+          2734862508808001371,
+          18033258217030578325,
+          2027438064811804677,
+          5853299489123856926,
+          6326095265506001693,
+          1692119395182251361,
+          18003074869484497378
+        ],
+        "4096": [
+          17822062995787161547,
+          15553307308322935243,
+          6376419909955412486,
+          18128313206517413739,
+          4892248618772289575,
+          14161268203770606089,
+          9854063046652694713,
+          657754585978483548
+        ],
+        "65536": [
+          11016956215207091640,
+          7120991018529792516,
+          4871097410517961292,
+          5761054894297471271,
+          6586820475843040999,
+          14577409229907331980,
+          6949007088834398274,
+          14729974603557184590
+        ],
+        "8192": [
+          10970649980337874921,
+          16435365733470800207,
+          6340003835544753698,
+          6928626362525090180,
+          15128310703321850611,
+          1533019182370982966,
+          11683136832978093782,
+          1922379125797151706
+        ]
+      }
+    },
+    "multisensory_s1_D6_noise1.3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        12100696767486366877,
+        14708441806339549025,
+        9156510085472959614,
+        10555437431765348171,
+        13070785116989683002,
+        7498958237756311702,
+        15969589595429720548,
+        3941498398441172713
+      ],
+      "comparison_seeds": {
+        "16384": [
+          9775143837987753016,
+          14815790590730155305,
+          2597810232005186976,
+          7899287226069907024,
+          17652586582450101267,
+          3419251626764687164,
+          5081719213079227333,
+          6218092181261997608
+        ],
+        "32768": [
+          8344267314984178682,
+          15461247776808079079,
+          19573554468778674,
+          12372399098582818772,
+          4821995229611396651,
+          14450404164597291793,
+          9846677951215771131,
+          37412112971102100
+        ],
+        "4096": [
+          12399786348674064739,
+          10465024085390010390,
+          3370254850602267717,
+          2804872169845726177,
+          11981202449339964571,
+          8635281448851143333,
+          6430341474279388136,
+          2627596472774421125
+        ],
+        "65536": [
+          1080330465885890910,
+          7028585229816494760,
+          12925401907031388631,
+          2036245553619278704,
+          11494005785627287161,
+          8526945596286336029,
+          14212330430876736095,
+          8316901781221445951
+        ],
+        "8192": [
+          13544269660249750681,
+          7822390933096030698,
+          9403148525250959558,
+          6132777059209265994,
+          7775995786730450797,
+          3261895742519958415,
+          11907890976745289778,
+          2102299588201556772
+        ]
+      }
+    },
+    "rosenbrock_D2_noise1_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        3859100546818918274,
+        13321433260733350128,
+        7947825364569555568,
+        3105996937375790065,
+        2069775713878825518,
+        11704478211919712150,
+        15300101932822940214,
+        16059554954501836355
+      ],
+      "comparison_seeds": {
+        "16384": [
+          15639140209006868761,
+          15132132193992740904,
+          807684337609190778,
+          9914535679680522057,
+          10058510061789397730,
+          16228454321562226561,
+          18116038817681204379,
+          2536788984783535424
+        ],
+        "32768": [
+          11409092587348925889,
+          5090038108289776190,
+          3857493500559424051,
+          6128335094938206679,
+          5018354826500382528,
+          11130758005793126516,
+          2079749274394351945,
+          12191595802202306215
+        ],
+        "4096": [
+          15200593469859972894,
+          9785343809666340200,
+          10555505324451298953,
+          10118512692663456250,
+          5470153964589161062,
+          4553854006193638490,
+          9729776172005379401,
+          1801566309370002789
+        ],
+        "65536": [
+          4928897737103827243,
+          7157155379225253759,
+          7284053179180346668,
+          11609534874139288116,
+          13583887452860023324,
+          12042324621072222345,
+          12810853609979507427,
+          7115013618362362819
+        ],
+        "8192": [
+          3965428416237026717,
+          14456856482713640962,
+          11252579231905629330,
+          12312551461154407145,
+          9267976511451146174,
+          3641170450553893159,
+          4596533535505427380,
+          11700215370356806059
+        ]
+      }
+    },
+    "rosenbrock_D2_noise1_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        9806918516595983402,
+        5911362787307100073,
+        13442657201844449476,
+        9806788340720997386,
+        561478253161474195,
+        2634532865862411787,
+        18359017434250456696,
+        8601571678296453052
+      ],
+      "comparison_seeds": {
+        "16384": [
+          17344477204245126860,
+          16945834877647361128,
+          10577085493919401328,
+          6894660680502716631,
+          1924262654749972950,
+          8591279490708110153,
+          7670491502612960863,
+          11280066480680861669
+        ],
+        "32768": [
+          684333454978210189,
+          9880856986913994922,
+          14790671359153319140,
+          1848063477324552009,
+          13406495252119867032,
+          17650043972454705824,
+          8272386970903026095,
+          7127831822734573694
+        ],
+        "4096": [
+          14021675450635378045,
+          18384855047858062846,
+          4712003566155544154,
+          4495887920818818099,
+          4857295542174064023,
+          18378770205543795796,
+          7798107884884030164,
+          3535167550526981472
+        ],
+        "65536": [
+          6544267035860145098,
+          16986296611665770860,
+          3355878026883114721,
+          16588348515723586233,
+          10209324367159926896,
+          2845085075520026991,
+          9438314611989771777,
+          2802668341146730904
+        ],
+        "8192": [
+          14026692901679572281,
+          13469545981057371819,
+          11125067628275664074,
+          5633138333347567390,
+          6420410127583386084,
+          16194778095324506076,
+          12098785732544930742,
+          18151132502973987916
+        ]
+      }
+    },
+    "rosenbrock_D2_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        15948549103900926337,
+        13404318598199285842,
+        16083794157383782963,
+        14837157678552162737,
+        11119019233951882214,
+        10687771003912090679,
+        14577448526434388174,
+        8028931699259484271
+      ],
+      "comparison_seeds": {
+        "16384": [
+          12752446969595976068,
+          6713959459261554079,
+          12986955586642640679,
+          16387503194782046854,
+          6895003862452639893,
+          2529032614467953647,
+          14551798983267880031,
+          10753928650092075255
+        ],
+        "32768": [
+          2687937600081684724,
+          7514686918406071816,
+          8463678298691336365,
+          17714211862686229148,
+          17096530051290398545,
+          1739359863739390095,
+          12580120421448569725,
+          5878827846190604080
+        ],
+        "4096": [
+          3514320968861198058,
+          4402213044332195116,
+          12420067182714721554,
+          16544310303201566114,
+          4187399338506516934,
+          15738575915241174317,
+          7425770087702961741,
+          4203630166426036221
+        ],
+        "65536": [
+          2881764085431113572,
+          16968357337893594343,
+          6499478036720202907,
+          5498143388161275918,
+          7370597655883198707,
+          7956743624654020021,
+          2012415367359396028,
+          7991816709109516203
+        ],
+        "8192": [
+          14219966522525062031,
+          15736525627800055945,
+          5100472321986353169,
+          13258348424218866865,
+          13921332795124260265,
+          10359508291360008583,
+          83152061535826305,
+          1647134930792866683
+        ]
+      }
+    },
+    "rosenbrock_D2_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        11917294273390660281,
+        10795470954713439403,
+        2661240146380185030,
+        15640404954946446022,
+        8164686687970581136,
+        2091558821757443886,
+        12190885851127145427,
+        12206903555324801800
+      ],
+      "comparison_seeds": {
+        "16384": [
+          13955319731979228180,
+          14765026679056964967,
+          5043979775943624416,
+          18281534102510007332,
+          16426443984128234831,
+          3834640194039462390,
+          15633312748168291731,
+          10167625933943408372
+        ],
+        "32768": [
+          7439017561299545337,
+          7930156728322696669,
+          4054236332992943436,
+          1840903194202366011,
+          9615911963506483148,
+          8481880570152905221,
+          82326574175239777,
+          11556203248065201413
+        ],
+        "4096": [
+          14631738801050043086,
+          5010634594069223930,
+          10787913073646084035,
+          14579552631230941382,
+          8253467955713348037,
+          15067731128012555817,
+          11015260184601947094,
+          9728063206138448523
+        ],
+        "65536": [
+          3087179085779841185,
+          17394322790770077086,
+          3785304974808984415,
+          5698792233598523830,
+          4638747688358044915,
+          6404805752321673225,
+          9567091171734910463,
+          6059799661523599860
+        ],
+        "8192": [
+          6168766201688275724,
+          11624493393511994040,
+          11548206170588289870,
+          683231550839505679,
+          16449758146072462727,
+          2322198742466354221,
+          6754228190981230598,
+          12391654109768612403
+        ]
+      }
+    },
+    "student_D8_noise3_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        11483881460819774397,
+        8984825823571703023,
+        8875017560923273742,
+        2703078488791870571,
+        3700287700424645336,
+        5834892924821569651,
+        15635956973215147189,
+        8736095110138418260
+      ],
+      "comparison_seeds": {
+        "16384": [
+          10421860809854542573,
+          15310865487056510911,
+          15910284679339608744,
+          13104743455226616131,
+          6616356727470468215,
+          505695849756232859,
+          1466782699644550825,
+          15892370946959402166
+        ],
+        "32768": [
+          14182786794478861108,
+          6797999663920682036,
+          11111332821192010963,
+          6994896504031214851,
+          11074259328183531855,
+          13196245431307796785,
+          4511809601979684002,
+          8030757102694135732
+        ],
+        "4096": [
+          11564904183401544445,
+          7432007197693519769,
+          8971628725127799162,
+          9508590257476202257,
+          7536902385877617231,
+          10794230548038628763,
+          4151776061011416155,
+          14936765809057631424
+        ],
+        "65536": [
+          9712595455914792627,
+          2253657600185362969,
+          5186879741524694605,
+          4711326602419774413,
+          2005826691354511127,
+          7202509164594783714,
+          9690317591206063372,
+          4952986134797081148
+        ],
+        "8192": [
+          15832874194152083841,
+          7242668813516472636,
+          10475906719202110441,
+          14018472302944683109,
+          11226175611444785019,
+          1557661945466909471,
+          2437791054492196322,
+          4145832747137627831
+        ]
+      }
+    },
+    "student_D8_noise3_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        17451418489070522608,
+        10000234099476740604,
+        13822790864256239850,
+        4255805621771140646,
+        13024205095906185390,
+        15677441719934744863,
+        16773294076430074953,
+        9486449116715699004
+      ],
+      "comparison_seeds": {
+        "16384": [
+          17317055319293164819,
+          4096449158324786482,
+          10792394722664453237,
+          16605247037344920657,
+          14838061474240845735,
+          6284011309755424071,
+          12761293115713867766,
+          4033408543602370237
+        ],
+        "32768": [
+          3857422634933308150,
+          10710988090368783110,
+          1195419921929887917,
+          15092288148541215672,
+          10282766701326429669,
+          16992476976323745518,
+          13927543687211488254,
+          12729861744425453713
+        ],
+        "4096": [
+          16755314142829698376,
+          8509572543569591623,
+          679987394940868323,
+          7156011863105277585,
+          7691559170986255569,
+          10438038264416033001,
+          11197830891340400404,
+          2665335831391674780
+        ],
+        "65536": [
+          8650884095717963430,
+          13297639679692571685,
+          3467056727238951349,
+          3654686462224209513,
+          5200532541186651918,
+          15396988517612924894,
+          11277240740253422722,
+          14468610891708298951
+        ],
+        "8192": [
+          9146949356609955246,
+          13206630448134563539,
+          7114738723135901464,
+          1468608353657980526,
+          14076256022822222954,
+          820676304569490912,
+          11188338689452731991,
+          17545145499400863543
+        ]
+      }
+    },
+    "timing_D5_noise2.2_seed0_early": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        14021145317856973156,
+        4125775894002884758,
+        7330930744359656647,
+        7631439486402572463,
+        3772032959960640088,
+        10019295713027930366,
+        8493520170399976817,
+        9328127029330597490
+      ],
+      "comparison_seeds": {
+        "16384": [
+          963434168672072082,
+          8208193795535812984,
+          8905442846875140287,
+          13895702244289046908,
+          16554612393904582930,
+          15203119006042556075,
+          15939496853265836274,
+          6460266886847944517
+        ],
+        "32768": [
+          8927030335966675741,
+          13800145227079679268,
+          17559335165302008529,
+          6436426092443202501,
+          110779783911512987,
+          1799053352149848626,
+          787023421082172749,
+          3684892618686988374
+        ],
+        "4096": [
+          17940621679136621279,
+          17740100726620602645,
+          17301037169597855021,
+          15617974293506668076,
+          6042675778276187134,
+          8266589284076242339,
+          17468771422994050006,
+          14654201578731836070
+        ],
+        "65536": [
+          9397239257807469179,
+          13501342857075332951,
+          1726609207401525248,
+          345697837040604542,
+          10509024686274139068,
+          7253502328550325947,
+          7304240684516494465,
+          12202974985729521079
+        ],
+        "8192": [
+          9758934545494482234,
+          2112476074345367672,
+          12744653918679499422,
+          12439571048345879585,
+          14369627873091442392,
+          11949571715385255978,
+          17181914799667443828,
+          4447340203901904390
+        ]
+      }
+    },
+    "timing_D5_noise2.2_seed0_late": {
+      "band_pilot_budget": 4096,
+      "band_pilot_seeds": [
+        6912568636559673774,
+        3400771907763564984,
+        9469866597467418684,
+        9034142941479466141,
+        5872415466410932896,
+        11513449938944661539,
+        9470253363662859694,
+        8600430345961360825
+      ],
+      "comparison_seeds": {
+        "16384": [
+          16315038222396268633,
+          11868533374379117211,
+          2751854873225126606,
+          4031546830878069885,
+          1124502267990944118,
+          9995503030996017803,
+          10007230394954732351,
+          167948184034604150
+        ],
+        "32768": [
+          13879714316448838075,
+          11893883698421796408,
+          15041592268029511121,
+          10106784882135583153,
+          13568092150791118038,
+          185315885229094089,
+          14300437559101346353,
+          15485834127129150366
+        ],
+        "4096": [
+          18352293518626402038,
+          7440478518164747993,
+          4297843402966551818,
+          1541383252329640625,
+          17398721095252537373,
+          11731157530211736200,
+          5234115911023754111,
+          511299703839373622
+        ],
+        "65536": [
+          3938318677843227410,
+          15805197382347373293,
+          17902955801948023018,
+          887089530253537202,
+          17458307652529769566,
+          3430916424271682791,
+          7390282313095846523,
+          18326090766644646087
+        ],
+        "8192": [
+          7537612126842454485,
+          13116337044605385291,
+          8474383288998089711,
+          7528551942170690367,
+          11688106064409546879,
+          6753556607983421074,
+          9347981595173262449,
+          14960980974287549007
+        ]
+      }
+    }
+  },
+  "judge_budgets": [
+    4096,
+    8192,
+    16384,
+    32768,
+    65536
+  ],
+  "kind": "search",
+  "launch_ready": true,
+  "master_seed": 2026091701,
+  "missing_states": [],
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "purpose": "noisy-acquisition F2 search-stream null control",
+  "raw_artifact_sha256": "f68fdbc639848a06e75ca0c0323ade9d13080081d964939e96b07daa3dfe1594",
+  "replicates": 8,
+  "scheduled_allocation_count_including_missing_states": 24,
+  "scheduled_cell_count_including_missing_states": 192,
+  "scheduled_timing_count_including_missing_states": 12,
+  "schema_version": 1,
+  "selection": {
+    "accurate_rule": {
+      "budget": 1600,
+      "method": "mc",
+      "provenance": "Unused: both arms are the production search. The field satisfies the record schema shared with E3."
+    },
+    "control_rule": {
+      "kind": "search_stream_offset",
+      "offset": 1
+    },
+    "created_utc": "2026-09-18T19:41:22.594487+00:00",
+    "declared_after": "The control was declared after the development ladder's second budget had been read (pooled counts only) and before any per-contrast or holdout result; it changes nothing about the treatments and is not merged with them.",
+    "frozen": true,
+    "kind": "noisy_acq_search_selection",
+    "purpose": "Null control for the F2 frozen-state judge: the production selection (S0) against itself with one extra generator draw after the importance nodes (S0_reseeded), so that sieve and nodes are identical and only the local search's randomness differs, on the twelve development states. Its verdict rates are the floor against which the F2 treatment contrasts are read.",
+    "quality_claim": false,
+    "schema_version": 1,
+    "source_commit": "059420b13bd8ed85e1ccb6c15bc320ef4eaf44bd",
+    "stage": "f2_control_development"
+  },
+  "selection_file": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_control_selection.json",
+  "selection_sha256": "6398af91fde0bb16cc5afe742ba12b4383b3ea5caec7f7fb4326dc69569e7cb9",
+  "source_transition": {
+    "changed_sources": {
+      "dev/scripts/benchmark_targets.py": {
+        "capture": "668d9af9d78280608a53c9dd0ba6afe929e28f78dd128bca8895bdf4b6889c86",
+        "runtime": "3a7f919d9ad40cf529231c13fc32c13538ac2cb5f88edf3ad570ec0fd3fbea60"
+      },
+      "dev/scripts/noisy_acq_experiment.py": {
+        "capture": "d64c70e44697cdb0dcaeaf7c8ea8370816d0ccd8e503284ecb6254173d6e3a65",
+        "runtime": "8a47327d69db092a4b64d54824d46811086178dba4a1291e5f984922c8da2f66"
+      },
+      "pyvbmc/vbmc/active_importance_sampling.py": {
+        "capture": "8cb2bfbe2685d3098e8ed6e22d12ee581817c6dc1135b74fe01bcc8720946378",
+        "runtime": "acbfe0301623b8ec544ce9384517f05be7750bff1b83aed2592c5d42caf1bf1c"
+      },
+      "pyvbmc/vbmc/active_sample.py": {
+        "capture": "4b09254caf87b8e93582d25bcb9fa7489fbb1519aebd803617ceb40a69c751b3",
+        "runtime": "e1ecdf60cb58754050eafab951dc072a8bd5b36f5983729cc811afa39b2322b6"
+      },
+      "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini": {
+        "capture": "8e62e3a4bb4a63717af82255119e57845d31902fea301b79e1c3c0a9cc053eda",
+        "runtime": "d2aa5e54258fd702d04389201e5a20d1e1dfaeca3b43a71c06303e89c2c71dfe"
+      }
+    },
+    "numerical_base_commit": "9cc6882768ff682ae892a6b453c42e0f2d03d5fa",
+    "numerical_diff_exclude": [
+      "pyvbmc/testing"
+    ],
+    "scope": "f2_importance_nodes"
+  },
+  "split": "development",
+  "stage": "f2_control_development",
+  "states": [
+    {
+      "capture_completion_sha256": "3e162abcd8941a0bb3d1d760505afe470ff5c81389e74403434b626b1d619e07",
+      "checkpoint": "early",
+      "label": "rosenbrock_D2_noise1",
+      "panel_seed": 14708891611369050459,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise1_seed0_early",
+      "snapshot_hashes": {
+        ".json": "5d832cb3f0cf0e38cc28e9f0701af77d6c3becac09b6deffe9d818a736692bd0",
+        ".npz": "72272186cd093f6cb324024c51e3dc0f87eaf69ab15be632155a09eb1f3f84df"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "3e162abcd8941a0bb3d1d760505afe470ff5c81389e74403434b626b1d619e07",
+      "checkpoint": "late",
+      "label": "rosenbrock_D2_noise1",
+      "panel_seed": 4135092372141558983,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise1_seed0_late",
+      "snapshot_hashes": {
+        ".json": "20deb77b7ef0a38e4122f292f03c483bc02990a5e984b0fc928322bcbdcc40fc",
+        ".npz": "ef4caad5f285414178fbf09518e087f1e544178e6b68fc3f48f4020f21964811"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "e7cb3d943a63ce923d6779ee6990a8e37ee15cbd77f9f48f8aafd2897a9876cf",
+      "checkpoint": "early",
+      "label": "rosenbrock_D2_noise3",
+      "panel_seed": 2208245702970142589,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "ffbea63604aa1a29f79e3301b528ce061ff575a964a2b1d004a7dfc60f70f281",
+        ".npz": "6b13edea81763318f5fe3a989d0bfc62ed8b05453ca72e48f0663061b334b26c"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "e7cb3d943a63ce923d6779ee6990a8e37ee15cbd77f9f48f8aafd2897a9876cf",
+      "checkpoint": "late",
+      "label": "rosenbrock_D2_noise3",
+      "panel_seed": 8805143927798935718,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\rosenbrock_D2_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "b3695c31636511ed211593bbbcc08b863b37a5bcd0d93c74f3162a558fde235b",
+        ".npz": "8e91dfee725f484837fbd1256f740d92bc75edec5ee5053c039969da8172e261"
+      },
+      "split": "development",
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "aecf471a233a56981d232b5468d63bdb6143160ad3d89f988588e04189cfe543",
+      "checkpoint": "early",
+      "label": "logreg_D5_noise3",
+      "panel_seed": 14308628764918175735,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\logreg_D5_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "a0bc66b527c5c636a314d0b7081e62e1a678b9156b2d6ec48f24d830522efef6",
+        ".npz": "2bbdb1d30c60ab34fba311acbc1efa5d824cf5d69df5da458225e3bb73bde028"
+      },
+      "split": "development",
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "aecf471a233a56981d232b5468d63bdb6143160ad3d89f988588e04189cfe543",
+      "checkpoint": "late",
+      "label": "logreg_D5_noise3",
+      "panel_seed": 13704198449007750198,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\logreg_D5_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "f1d0b1375acace98c3b8d425429d95e7183bb179e9b04aee8c0ba17c093067d1",
+        ".npz": "d0397182afbe10dda48656eb8df3307522e26416f27741597a4384fccdc7cafb"
+      },
+      "split": "development",
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "d9902efb6168ca2a7883e97075cd205fa4db2bd6bec3edb0d8266f1ada5456b2",
+      "checkpoint": "early",
+      "label": "student_D8_noise3",
+      "panel_seed": 17648581979138260895,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\student_D8_noise3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "0dcdb593a9b4f10f176ebe5f1377a7a2923724e4434c03764b613fcdeafc9070",
+        ".npz": "775e80d9fc97d5f5625312c5310260b88a359f911eb289838c8ea4d3cd31bf21"
+      },
+      "split": "development",
+      "state_id": "student_D8_noise3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "d9902efb6168ca2a7883e97075cd205fa4db2bd6bec3edb0d8266f1ada5456b2",
+      "checkpoint": "late",
+      "label": "student_D8_noise3",
+      "panel_seed": 15616332593997049072,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\student_D8_noise3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "e7674eb36917dca27ff447c6d2a242ba008e6be46232325a516ee77bf8de219c",
+        ".npz": "53245df8db900fae427d55bc48b1e1e09117462d7c8c38369d85aa5fbd90bf01"
+      },
+      "split": "development",
+      "state_id": "student_D8_noise3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "bc9c6c4375de5ae67dee61047c8345d6887442eae8e1c2c9891e194a7a6c828f",
+      "checkpoint": "early",
+      "label": "multisensory_s1_D6_noise1.3",
+      "panel_seed": 6970871679400315312,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\multisensory_s1_D6_noise1.3_seed0_early",
+      "snapshot_hashes": {
+        ".json": "a9045a8109653c29269ea11252f91643844f19767b07857d5b245e8e348279c7",
+        ".npz": "a3d4c50ac42355cc11ad8192b30fcd184dd9de5cced157bce537ebc0acc1815f"
+      },
+      "split": "development",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "bc9c6c4375de5ae67dee61047c8345d6887442eae8e1c2c9891e194a7a6c828f",
+      "checkpoint": "late",
+      "label": "multisensory_s1_D6_noise1.3",
+      "panel_seed": 4295982226733416179,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\multisensory_s1_D6_noise1.3_seed0_late",
+      "snapshot_hashes": {
+        ".json": "dea4d034d436b75769525f587fefbdbbcbbdc52afe465859d963e6182795f7ec",
+        ".npz": "f3e01250aca78115ee63ba72a174cfb7e21fc6dfa0d73db7d5c94089f4d2cea5"
+      },
+      "split": "development",
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "325c80e5456261f6966fd3bf20f3cf0301bdd037c781e25a49cc42691a3ae455",
+      "checkpoint": "early",
+      "label": "timing_D5_noise2.2",
+      "panel_seed": 7094732930044784980,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\timing_D5_noise2.2_seed0_early",
+      "snapshot_hashes": {
+        ".json": "e1f4d01139e96b4b751cf63bd96de2cd510dbc063b2f8b464706936c9298556e",
+        ".npz": "b70365ff405ccabba0f194b07ea0d2d25e13dcc4f32c6a79909002ec65f7bf34"
+      },
+      "split": "development",
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "trajectory_status": "succeeded"
+    },
+    {
+      "capture_completion_sha256": "325c80e5456261f6966fd3bf20f3cf0301bdd037c781e25a49cc42691a3ae455",
+      "checkpoint": "late",
+      "label": "timing_D5_noise2.2",
+      "panel_seed": 10492501337742996606,
+      "seed": 0,
+      "snapshot": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\captures\\timing_D5_noise2.2_seed0_late",
+      "snapshot_hashes": {
+        ".json": "b9ca7a1b21480f843a5979a60cf6cf8b57b0f7f7d6dcabf2e1130e88618d3f6e",
+        ".npz": "103b1c74d9a674352e11566277c20d77d0fb7cc677ac7bd2d2476eed997b7bd3"
+      },
+      "split": "development",
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "trajectory_status": "succeeded"
+    }
+  ],
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "timing_cell_count": 12,
+  "timing_cells": [
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_early",
+      "timing_seed": 155336158287788820,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise1_seed0_late",
+      "timing_seed": 2113343160897570602,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_early",
+      "timing_seed": 11243611326983191776,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "rosenbrock_D2_noise3_seed0_late",
+      "timing_seed": 7142475272683014031,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_early",
+      "timing_seed": 15863947316613976824,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "logreg_D5_noise3_seed0_late",
+      "timing_seed": 5825467463197142708,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_early",
+      "timing_seed": 6505457349898384629,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "student_D8_noise3_seed0_late",
+      "timing_seed": 8199373697264424321,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_early",
+      "timing_seed": 3454657944016704437,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "multisensory_s1_D6_noise1.3_seed0_late",
+      "timing_seed": 14107743118693102573,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_early",
+      "timing_seed": 17771392294612499409,
+      "treatment_tag": "S0_reseeded"
+    },
+    {
+      "state_id": "timing_D5_noise2.2_seed0_late",
+      "timing_seed": 18424171193013349506,
+      "treatment_tag": "S0_reseeded"
+    }
+  ],
+  "treatments": [
+    {
+      "accurate_seed_role": "unused_baseline",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S0",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "importance_qmc": false,
+        "importance_qmc_order": "axis",
+        "importance_qmc_samples": 96,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "search_stream_offset": 0,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "production_baseline",
+      "tag": "S0"
+    },
+    {
+      "accurate_seed_role": "unused_baseline",
+      "config": {
+        "accurate_budget": 1600,
+        "accurate_method": "mc",
+        "arm": "S0",
+        "finite_difference_step": 0.0001,
+        "ftol": 1e-09,
+        "gradient_relative_tolerance": 0.25,
+        "gtol": 1e-05,
+        "importance_qmc": false,
+        "importance_qmc_order": "axis",
+        "importance_qmc_samples": 96,
+        "max_candidate_rows": 1000,
+        "max_iterations": 50,
+        "search_stream_offset": 1,
+        "shortlist_size": 8,
+        "sieve_size": 1024,
+        "start_separation": 0.5
+      },
+      "role": "search_stream_null_control",
+      "tag": "S0_reseeded"
+    }
+  ]
+}

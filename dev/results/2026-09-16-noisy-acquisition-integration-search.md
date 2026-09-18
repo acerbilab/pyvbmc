@@ -28,7 +28,12 @@ increases up to 103 times, logistic regression's posterior-shape metrics are
 worse in eight of ten pairs, and Student-t gains six usable fits. The
 ten-seed result does not support adopting S2 as a default; the plan's E6
 assessment proposes narrowly targeted follow-ups. Production defaults are
-unchanged.
+unchanged. Its follow-up F2, the 96-node quasi-Monte Carlo importance-node
+rule evaluated on the frozen states with a search-stream null control,
+completed on 2026-09-18: cost matched and a real gain on early states, but
+on late states the rule scatters selections beyond the search-randomness
+floor and turns net harmful on holdout, so it fails the screening gate on
+both splits; the F2 section below records it.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -1239,6 +1244,224 @@ override and a `production` label tag; the golden labels and their paper
 budget remain for the existing regression references. The E5 results above
 are paper-budget results, and F4 or any successor inference comparison must
 use the production labels.
+
+## F2 Stage 1: quasi-Monte Carlo importance nodes on frozen states
+
+**Status:** complete on the development and holdout splits with a
+search-stream null control; the cross-checks and the control are
+reported below. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+specifies the design. The stage asks whether the production VIQR
+selection, with its 100 Monte Carlo importance nodes replaced by the
+package's 96-node scrambled-Sobol' mixture rule
+(`active_importance_sampling_qmc`), chooses points judged at least as good
+at no more cost. Every arm is the production search: the 8192-candidate
+sieve and the CMA-ES local search are unchanged, and the treatments differ
+from the baseline only in the node rule switched on through its option, in
+sorted (`S0_qmc_sorted`) or in the VP's own (`S0_qmc_unsorted`) component
+order. Eight independent repetitions per state and arm on a shared
+candidate-search seed, judged with the E3 ladder (stratified RQMC at 4096
+to 65536 nodes, eight independent replicates, consecutive-budget
+classification) and cross-checked with ordinary MC, timed in seven paired
+rounds per state. No target evaluation or GP fit occurred anywhere in the
+stage.
+
+### Sources, transition and pilots
+
+The rule and its options are commit `8d983e2` on `feat-viqr-rqmc-nodes`
+(scramble seeding and review fixes in `9ffd822`), the harness stages in
+`b614645` with fixes through `83fedb9`. The E0 capture manifest pins every
+production source hash to the numerical baseline, which no campaign can
+satisfy once production code changes; the F2 stages run under a declared
+source transition (`56502af`) that freezes the runtime hashes of the five
+sources differing from the pins (the node rule and its options, the E5
+selection hook in `active_sample.py`, the production suite in
+`benchmark_targets.py` and the record serializer) and keeps every other
+source pinned. With the switch off, the exact oracle check passes on all
+eleven fixtures and four stored E3 baseline selections replay with
+identical selected rows, importance nodes and coarse scores.
+
+Two pilots on the early low-noise Rosenbrock state selected in about
+0.3 seconds per arm with node counts 100 and 96, a shared sieve, and
+paired timing ratios of 0.986 and 0.988. Two independent static reviews
+of the rule and the harness found no blocking defect. Every selection of
+both splits asserts the node count its arm prescribes and the records
+confirm 100 for the baseline and 96 for both treatments in all 576
+succeeded selections.
+
+### Development split (seed 0, twelve states)
+
+The manifest was frozen at 18:18 UTC on 2026-09-18. Its 288 selections, 24
+timing cells and 48 allocation cells completed by 18:37 UTC with no
+failure; the judge ladder completed at 18:51 UTC after an interruption
+recorded in the plan.
+
+| Contrast | Beneficial | Practical tie | Harmful | Unresolved | Material raw loss | Cost ratio |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sorted order minus baseline | 46 | 19 | 15 | 16 | 14 | 0.980 |
+| Unsorted order minus baseline | 47 | 19 | 17 | 13 | 16 | 0.982 |
+
+Each row has 96 scheduled comparisons. The cost ratio is the median over
+the twelve states of each state's median paired ratio; the state ranges
+are 0.914 to 1.035 (sorted) and 0.963 to 1.031 (unsorted), all under the
+1.10 gate. The harmful fractions of scheduled comparisons, 0.156 and
+0.177, are far above the 5 percent screening gate. The material raw
+losses retain a median 0.77 (sorted) and 0.64 (unsorted) of the
+baseline's raw reduction, the worst 0.26 and 0.33. The verdicts split by
+checkpoint: on the six early states the sorted arm is beneficial in 23 and
+harmful in 3 comparisons; on the six late states, 23 and 12. Per
+trajectory for the sorted arm:
+
+| Development trajectory | Beneficial | Practical tie | Harmful | Unresolved |
+| --- | ---: | ---: | ---: | ---: |
+| Logistic regression | 8 | 2 | 4 | 2 |
+| Multisensory | 5 | 0 | 1 | 10 |
+| Rosenbrock noise 1 | 11 | 5 | 0 | 0 |
+| Rosenbrock noise 3 | 8 | 7 | 1 | 0 |
+| Student-t | 8 | 1 | 7 | 0 |
+| Timing | 6 | 4 | 2 | 4 |
+
+The pre-registered rule (fewest harmful, then most beneficial, then fewest
+material raw losses, then lowest cost) chose the sorted order for holdout
+confirmation. The
+[development evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_development_evidence.json)
+records every count, the timing per state and the node-count check.
+
+### Holdout split (seed 1, twelve states)
+
+The holdout selection bound the development manifest and the chosen order
+before the holdout was unlocked; the sorted arm is the confirmation
+contrast and the unsorted arm a descriptive control. Cells completed by
+19:14 UTC and the ladder by 19:24 UTC, no failure.
+
+| Contrast | Beneficial | Practical tie | Harmful | Unresolved | Material raw loss | Cost ratio |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sorted order minus baseline (confirmation) | 35 | 20 | 25 | 16 | 14 | 0.983 |
+| Unsorted order minus baseline (descriptive) | 36 | 20 | 24 | 16 | 15 | 0.980 |
+
+State timing ranges are 0.947 to 1.041 and 0.942 to 1.009. The harmful
+fraction of the confirmation contrast is 0.260. Material raw losses retain
+a median 0.72 of the baseline's reduction, the worst 0.26. The checkpoint
+split is sharper than on development: early states 15 beneficial and 2
+harmful, late states 20 and 23. Per trajectory for the confirmation
+contrast:
+
+| Holdout trajectory | Beneficial | Practical tie | Harmful | Unresolved |
+| --- | ---: | ---: | ---: | ---: |
+| Logistic regression | 8 | 2 | 6 | 0 |
+| Multisensory | 4 | 0 | 4 | 8 |
+| Rosenbrock noise 1 | 8 | 6 | 2 | 0 |
+| Rosenbrock noise 3 | 4 | 9 | 3 | 0 |
+| Student-t | 6 | 2 | 7 | 1 |
+| Timing | 5 | 1 | 3 | 7 |
+
+The [holdout evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_holdout_evidence.json)
+records the counts.
+
+### Ordinary-MC cross-checks
+
+The independent ordinary-MC cross-check follows the E3 protocol: on the
+development split the predeclared rule selects each state's extreme mean
+differences, every comparison at least ten practical bands from zero and
+every confident material raw loss (97 tags, 80 distinct coordinate pairs);
+on the holdout split the same rule was applied to the completed holdout
+judge summary and the resulting 87 tags (75 pairs) were passed explicitly,
+as the holdout protocol requires. Eight common-node ordinary-MC replicates
+at 32768 nodes, then 65536, re-run the paired test with the frozen bands
+and the consecutive-budget rule.
+
+| Split | Pairs | Score agree | Score disagree | Score unresolved | Raw agree | Raw disagree | Raw unresolved |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Development | 80 | 72 | 0 | 8 | 66 | 0 | 14 |
+| Holdout | 75 | 67 | 0 | 8 | 62 | 0 | 13 |
+
+No cross-method disagreement occurred on either split. Unresolved
+cross-checks do not certify the corresponding RQMC verdicts; every other
+verdict the ladder reached on the selected pairs, including every material
+raw loss it confirmed, is confirmed by ordinary Monte Carlo.
+
+### Search-stream null control
+
+A paired difference between a treatment and the baseline mixes the node
+rule with the local search's randomness: the two arms leave the node draw
+at different generator positions, so CMA-ES runs on different streams even
+at a shared search seed. The `f2_control_development` stage measures that
+floor. It pairs the baseline with itself plus one extra generator draw
+taken after the importance nodes (`S0_reseeded`), so the sieve, the nodes
+and the coarse winner are identical and only the local search's stream
+differs, on the twelve development states with eight repetitions, the
+same ladder and the same timing protocol. It was declared after the
+development ladder's second budget had been read as pooled counts and
+before any per-contrast or holdout result; it evaluates no treatment. Its
+192 selections, 12 timing and 24 allocation cells completed with no
+failure; 35 of the 96 reseeded selections ended at exactly the baseline's
+point.
+
+| Contrast | Beneficial | Practical tie | Harmful | Unresolved | Material raw loss | Cost ratio |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reseeded baseline minus baseline | 13 | 69 | 8 | 6 | 3 | 1.010 |
+
+The cost ratio's state range is 0.864 to 1.178, so paired timing noise on
+one state spans about 15 percent either way and the treatments' 0.98 are
+cost-matched, not cheaper. The verdicts split entirely by checkpoint: on
+the six early states all 44 resolved comparisons are ties; on the six late
+states 13 are beneficial, 25 tied, 8 harmful and 2 unresolved, with the
+three material losses. The
+[control evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_control_evidence.json)
+records the counts.
+
+### Reading
+
+| Comparison, by checkpoint | Early: beneficial / harmful (of 48) | Late: beneficial / harmful (of 48) | Material raw losses early / late |
+| --- | ---: | ---: | ---: |
+| Development, sorted minus baseline | 23 / 3 | 23 / 12 | 2 / 12 |
+| Holdout, sorted minus baseline | 15 / 2 | 20 / 23 | 1 / 13 |
+| Development, reseeded minus baseline (floor) | 0 / 0 | 13 / 8 | 0 / 3 |
+
+- **Cost is matched.** Both treatments sit at 0.98 of the baseline's
+  selection time on both splits, inside the spread the null control shows
+  for identical work, and every selection used 96 nodes against the
+  baseline's 100.
+- **On early states the node rule improves the selection.** Where the
+  search's own randomness never changes a verdict, the treatment is judged
+  better in 23 of 48 comparisons on development and 15 of 48 on holdout
+  against 3 and 2 worse, with one or two material losses. Early states have
+  few components and smooth acquisition surfaces; the two component orders
+  give identical nodes there (two components admit one order) and identical
+  counts.
+- **On late states the treatment scatters the selection beyond the search
+  floor, and on holdout the balance turns against it.** Against a floor of
+  13 beneficial, 8 harmful and 3 material losses, the treatment gives 23,
+  12 and 12 on development and 20, 23 and 13 on holdout. The material
+  losses retain a median 0.72 to 0.77 of the baseline's raw reduction, the
+  worst 0.26, and fall on Student-t, logistic regression, timing and
+  multisensory, not on Rosenbrock. Late states have many components and
+  the bumpy surfaces the investigation described as a few importance points
+  carrying the whole reduction. The two component orders are
+  indistinguishable throughout, within two counts on every row.
+- **The E2 screening gate fails on both splits.** Harmful fractions of
+  0.156 (development) and 0.260 (holdout) against the 5 percent gate, and
+  14 material raw losses on each split against the requirement that any be
+  explained before promotion. The cross-checks confirm the verdicts they
+  resolve and disagree with none.
+
+What the stage cannot separate is whether a fresh 100-node Monte Carlo
+draw scatters late-state selections as much as the 96-node rule does: the
+control kept the nodes identical, so it bounds the search's randomness,
+not the estimator's. A second control that redraws the Monte Carlo nodes
+and nothing else (extra generator draws before the node draw, with the
+sieve shared) would give the node-noise floor and decide whether the
+late-state result is specific to the quasi-Monte Carlo rule or common to
+any fresh node set at this budget. It costs about 45 minutes of compute
+under the same harness. Until it exists, the stage's verdict is that the
+96-node rule is not a drop-in replacement under the accepted gate, with a
+real gain confined to early states and a late-state degradation whose
+attribution is open.
+
+The records of every stage are the `f2_*` review copies under
+`integration-search/`, indexed by
+[the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json);
+the raw artifacts are listed in the local artifact index of the holding
+machine.
 
 ## Resuming the saved experiment
 

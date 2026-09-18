@@ -1,0 +1,98 @@
+{
+  "created_utc": "2026-09-18T20:03:50.939647+00:00",
+  "entries": [
+    {
+      "published": "f2_selection.json",
+      "published_sha256": "3d625e6ad232c44f6e099827c317629bb8e361fb9286a9a1c733de56fc0a30b2",
+      "raw_artifact_sha256": "55a63ee111635ba8feff83ab81ef0f15fb074ea7a40e5a8c2e00e129c98ba953",
+      "raw_name": "f2_selection.json"
+    },
+    {
+      "published": "f2_holdout_selection.json",
+      "published_sha256": "a3d89b3c88c4def41e59cb979d0b895f692183eb157a27c06a2020b782d14fce",
+      "raw_artifact_sha256": "4da9d5c9b379a3de6f23ae94ebc16b890603933e5e18102687c79e284096953f",
+      "raw_name": "f2_holdout_selection.json"
+    },
+    {
+      "published": "f2_control_selection.json",
+      "published_sha256": "a422cc82a8537be06453ae129b157d625f75bb13c4610f80601e142150f780ec",
+      "raw_artifact_sha256": "6398af91fde0bb16cc5afe742ba12b4383b3ea5caec7f7fb4326dc69569e7cb9",
+      "raw_name": "f2_control_selection.json"
+    },
+    {
+      "published": "f2_development_manifest.json",
+      "published_sha256": "ed29fc11942243d1e3ad47e811858386adb90b978e3b605ef92a998fc3eebef7",
+      "raw_artifact_sha256": "111c0cf2d7be3bdd4d0beacbbaef7e8982a41896759d3eb50eb85bd32ce6b687",
+      "raw_name": "f2_development_manifest.json"
+    },
+    {
+      "published": "f2_holdout_manifest.json",
+      "published_sha256": "0c05b49f276e2cf23760702b648c0010a78f5fd9c3ef1c24cf62eea4437a7122",
+      "raw_artifact_sha256": "2c451b013b0d669ba1a815be8a5961c80122b6cabc2c01b8e2656b21a5ab0958",
+      "raw_name": "f2_holdout_manifest.json"
+    },
+    {
+      "published": "f2_control_development_manifest.json",
+      "published_sha256": "c4a399e8c8626b73e4b5c6f2ba71bb4de33dcd5a66c68c3a42d9d6439adfa7e5",
+      "raw_artifact_sha256": "f68fdbc639848a06e75ca0c0323ade9d13080081d964939e96b07daa3dfe1594",
+      "raw_name": "f2_control_development_manifest.json"
+    },
+    {
+      "published": "f2_development_launch_clearance.json",
+      "published_sha256": "80cfe67c7367e29a93aa2cd9a30d29c4a0c1e3cc3d6f24973ecd78c9132e1a80",
+      "raw_artifact_sha256": "887433e1bea629e30854d01f0fd314202c061e3667be6d5557e53f01949a5155",
+      "raw_name": "f2_development_launch_clearance.json"
+    },
+    {
+      "published": "f2_holdout_launch_clearance.json",
+      "published_sha256": "5718239286e9ff8f7e3a056a7ff5902f5e59afc6fcc0a7c29e4baf98796b450b",
+      "raw_artifact_sha256": "149e92bc76205fbf47037da2dcdb73d4821c54ae855f71f9dfdf474dfae37865",
+      "raw_name": "f2_holdout_launch_clearance.json"
+    },
+    {
+      "published": "f2_control_launch_clearance.json",
+      "published_sha256": "7d46672f53d39f5776187d5698209dc32d39cbc75e0de5edded2f4f9eb6df182",
+      "raw_artifact_sha256": "0fd3c4c3fa33ab8e6828ec754e674dff8f2e7a72ba39bfae5e9407381f283cbe",
+      "raw_name": "f2_control_launch_clearance.json"
+    },
+    {
+      "published": "f2_development_evidence.json",
+      "published_sha256": "53e00db98a55e0e12a05fa5b3250d7ac56a48272712f8709b23785897d71885a",
+      "raw_artifact_sha256": "18e82e0c6dbf36979238dff7c9ccd4f22f2fa8a268e78a7fa3d9bb4dfcae4d53",
+      "raw_name": "f2_development_evidence.json"
+    },
+    {
+      "published": "f2_holdout_evidence.json",
+      "published_sha256": "b2064078c009adbf96d6ccc792e0b0843c77ecd72e577d05e1ac85a778cbded0",
+      "raw_artifact_sha256": "1fbfe47e507504d76af81d62c23bdc218f6d2adbe1ad6678075a16e8717df530",
+      "raw_name": "f2_holdout_evidence.json"
+    },
+    {
+      "published": "f2_control_evidence.json",
+      "published_sha256": "fca5a9b77c09f2390d1b0719b285ad766ae940959ef911193c217866fd0a6263",
+      "raw_artifact_sha256": "4979b03865418d7beaa94bc5a0577aed1eb172edac9588e050325b85ed8dc132",
+      "raw_name": "f2_control_evidence.json"
+    },
+    {
+      "published": "f2_pilot_outcome.json",
+      "published_sha256": "b15715356bd666bfc6dcaaa18ac22d7cdbd63a1980b89beed1e06d5a662a1005",
+      "raw_artifact_sha256": "04e440d5043d56cc51d1dcebf99d3d61e0d1df78648b8ebd43d3794432c2fd74",
+      "raw_name": "f2_pilot_outcome.json"
+    },
+    {
+      "published": "f2_holdout_crosscheck_tags.json",
+      "published_sha256": "61d7994470887bf75bb62e01760944b15ec25fcab45e25e8ff4050710b1567f9",
+      "raw_artifact_sha256": "f4ea389943e290b342d84db1dd5d3214be21fa274c228ac90a859e98cced3f21",
+      "raw_name": "f2_holdout_crosscheck_tags.json"
+    },
+    {
+      "published": "f2_crosscheck_outcome.json",
+      "published_sha256": "c4496f298dd8669943d72330a3da7526b015c6f8f666f71d3ffd76caa6e21891",
+      "raw_artifact_sha256": "2c9d2d988962df906ef582e40763cb94f841cea295edfd3a1a785a6436dc0b6c",
+      "raw_name": "f2_crosscheck_outcome.json"
+    }
+  ],
+  "kind": "publication_index",
+  "schema_version": 1,
+  "source_dir": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916"
+}
