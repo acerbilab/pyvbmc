@@ -129,7 +129,14 @@ records its execution.
   in the [teaching-material plan](plans/teaching-material.md).
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
   Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. Search the whole repository's
+  prepare the golden-trace release archive. Decide which locally held
+  artifacts attach to the release as archives rather than commits: the
+  golden reference traces, the run pools, the captured frozen states and
+  the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
+  holding machine. The draft releases `svbmc-pool-20260914` and
+  `svbmc-analyses-20260915` already hold the pool and its analyses that
+  way, so the decision is which of the remaining artifacts a reader of the
+  release needs to revalidate its results. Search the whole repository's
   documentation for references to the `dev-next` branch and remove those
   that are not historical: `dev-next` merges into `main` for the release,
   so nothing a user or contributor reads after it should point at

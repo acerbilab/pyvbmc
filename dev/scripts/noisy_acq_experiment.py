@@ -93,7 +93,7 @@ def canonical(value: Any) -> Any:
     """
 
     if isinstance(value, np.ndarray):
-        return value.tolist()
+        return canonical(value.tolist())
     if isinstance(value, np.generic):
         return canonical(value.item())
     if isinstance(value, Path):

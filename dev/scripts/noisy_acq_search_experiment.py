@@ -31,6 +31,18 @@ SCHEMA_VERSION = 1
 SELECTION_REPLICATES = 8
 MASTER_SEED = 2026091701
 JUDGE_BUDGETS = (4096, 8192, 16384, 32768, 65536)
+# The F2 stages evaluate the package's quasi-Monte Carlo importance nodes
+# as a drop-in for the production selection: every arm is the production
+# search (S0), the treatments differ from the baseline only in the node
+# rule switched on through its option. Each stage maps to the capture
+# split it reads and seeds its own streams under its own name.
+F2_STAGES = {"f2_development": "development", "f2_holdout": "holdout"}
+F2_NODE_RULE = "scrambled_sobol_mixture"
+F2_NODE_SAMPLES = 96
+F2_ORDERS = ("axis", "index")
+F2_TAGS = {"axis": "S0_qmc_sorted", "index": "S0_qmc_unsorted"}
+HOLDOUT_STAGES = {"holdout", "f2_holdout"}
+STAGES = {"development", "development_control", *HOLDOUT_STAGES, *F2_STAGES}
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = Path(__file__).resolve().parent
@@ -86,7 +98,55 @@ def _read_selection(path: Path, stage: str) -> dict[str, Any]:
         )
     normalized = copy.deepcopy(selection)
     normalized["accurate_rule"] = {**rule, "method": method, "budget": budget}
-    if stage == "development":
+    if stage in F2_STAGES:
+        if (
+            selection.get("finalist_config") is not None
+            or selection.get("strongest_arm_config") is not None
+        ):
+            raise RuntimeError("an F2 selection names no search arm")
+        node_rule = selection.get("node_rule")
+        if not isinstance(node_rule, dict):
+            raise RuntimeError("an F2 selection requires node_rule")
+        if (
+            node_rule.get("kind") != F2_NODE_RULE
+            or int(node_rule.get("samples", 0)) != F2_NODE_SAMPLES
+            or list(node_rule.get("orders", [])) != list(F2_ORDERS)
+        ):
+            raise RuntimeError(
+                "F2 node rule must be the frozen 96-node scrambled Sobol'"
+                " mixture rule with both component orders"
+            )
+        normalized["node_rule"] = {
+            **node_rule,
+            "kind": F2_NODE_RULE,
+            "samples": F2_NODE_SAMPLES,
+            "orders": list(F2_ORDERS),
+        }
+        if stage == "f2_holdout":
+            if selection.get("development_choice") not in F2_ORDERS:
+                raise RuntimeError(
+                    "F2 holdout must name the component order chosen on"
+                    " development"
+                )
+            source_name = selection.get("development_manifest")
+            if not source_name or not selection.get(
+                "development_manifest_sha256"
+            ):
+                raise RuntimeError(
+                    "F2 holdout must bind the preceding F2 development"
+                    " manifest"
+                )
+            source_path = Path(source_name)
+            if not source_path.is_absolute():
+                source_path = (path.parent / source_path).resolve()
+            if (
+                not source_path.is_file()
+                or integration.sha256_file(source_path)
+                != selection["development_manifest_sha256"]
+            ):
+                raise RuntimeError("preceding F2 development manifest changed")
+            normalized["development_manifest"] = str(source_path)
+    elif stage == "development":
         if selection.get("finalist_config") is not None:
             raise RuntimeError("development selection cannot name a finalist")
     elif stage == "development_control":
@@ -169,6 +229,30 @@ def _treatments(stage: str, selection: dict[str, Any]) -> list[dict[str, Any]]:
         "config": _config_record("S0", rule),
         "accurate_seed_role": "unused_baseline",
     }
+    if stage in F2_STAGES:
+        node_rule = selection["node_rule"]
+        return [
+            baseline,
+            *[
+                {
+                    "tag": F2_TAGS[order],
+                    "role": "qmc_node_treatment",
+                    "config": _config_record(
+                        "S0",
+                        rule,
+                        template={
+                            "importance_qmc": True,
+                            "importance_qmc_samples": int(
+                                node_rule["samples"]
+                            ),
+                            "importance_qmc_order": order,
+                        },
+                    ),
+                    "accurate_seed_role": "unused_baseline",
+                }
+                for order in node_rule["orders"]
+            ],
+        ]
     if stage == "development":
         return [
             baseline,
@@ -243,17 +327,29 @@ def prepare_manifest(
     selection_path: Path,
     stage: str,
 ) -> dict[str, Any]:
-    """Prepare a locked E3 development or holdout allocation."""
-    if stage not in {"development", "development_control", "holdout"}:
-        raise ValueError(
-            "stage must be development, development_control, or holdout"
-        )
+    """Prepare a locked E3 or F2 development or holdout allocation."""
+    if stage not in STAGES:
+        raise ValueError(f"stage must be one of {sorted(STAGES)}")
     threads = _thread_environment()
     capture_manifest = json.loads(
         capture_manifest_path.read_text(encoding="utf-8")
     )
     capture.validate_manifest(capture_manifest, require_ready=True)
     selection = _read_selection(selection_path, stage)
+    if stage == "f2_holdout":
+        development = json.loads(
+            Path(selection["development_manifest"]).read_text(encoding="utf-8")
+        )
+        if (
+            development.get("stage") != "f2_development"
+            or development.get("capture_manifest_sha256")
+            != integration.sha256_file(capture_manifest_path)
+            or capture.canonical(development.get("identity"))
+            != capture.canonical(_identity(capture_manifest))
+        ):
+            raise RuntimeError(
+                "F2 holdout does not match its F2 development source"
+            )
     if stage == "development_control":
         development = json.loads(
             Path(selection["development_manifest"]).read_text(encoding="utf-8")
@@ -280,13 +376,17 @@ def prepare_manifest(
             raise RuntimeError(
                 "strongest arm config differs from the bound development treatment"
             )
-    split = "development" if stage == "development_control" else stage
+    if stage in F2_STAGES:
+        split = F2_STAGES[stage]
+        seed_stage = stage
+    else:
+        split = "development" if stage == "development_control" else stage
+        seed_stage = split
     states, missing = integration.discover_states(
         capture_manifest, captures, split
     )
     treatments = _treatments(stage, selection)
     cells = []
-    seed_stage = "development" if stage == "development_control" else stage
     for state in states:
         for replicate in range(SELECTION_REPLICATES):
             search_seed = integration.derive_seed(
@@ -388,11 +488,15 @@ def prepare_manifest(
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "search",
-        "purpose": "noisy-acquisition E3 frozen-state search",
+        "purpose": (
+            "noisy-acquisition F2 frozen-state importance-node evaluation"
+            if stage in F2_STAGES
+            else "noisy-acquisition E3 frozen-state search"
+        ),
         "launch_ready": False,
         "stage": stage,
         "split": split,
-        "holdout_locked": stage == "holdout",
+        "holdout_locked": stage in HOLDOUT_STAGES,
         "capture_manifest": str(capture_manifest_path.resolve()),
         "capture_manifest_sha256": integration.sha256_file(
             capture_manifest_path
@@ -450,15 +554,13 @@ def validate_manifest(
         raise RuntimeError("unsupported E3 manifest schema")
     if manifest.get("kind") != "search":
         raise RuntimeError("manifest is not an E3 search manifest")
-    if manifest.get("stage") not in {
-        "development",
-        "development_control",
-        "holdout",
-    }:
-        raise RuntimeError("unknown E3 stage")
+    if manifest.get("stage") not in STAGES:
+        raise RuntimeError("unknown search stage")
     if require_ready and not manifest.get("launch_ready"):
         raise RuntimeError("search manifest is not marked launch_ready")
-    if manifest["stage"] == "holdout" and manifest.get("holdout_locked", True):
+    if manifest["stage"] in HOLDOUT_STAGES and manifest.get(
+        "holdout_locked", True
+    ):
         raise RuntimeError("holdout search manifest remains locked")
     if manifest.get("replicates") != SELECTION_REPLICATES:
         raise RuntimeError("search replicate allocation changed")
@@ -883,6 +985,43 @@ def _timing_factory(
     return prepare
 
 
+TIMING_RESULT_KEYS = (
+    "arm",
+    "elapsed_seconds",
+    "search_seed",
+    "accurate_seed",
+    "target_called",
+    "cache_index",
+    "coarse_candidate_rows",
+    "production_candidate_rows",
+    "coarse_winner_index",
+    "coarse_minimum",
+    "generated_count",
+    "importance_node_count",
+    "accurate_candidate_rows",
+    "local_iterations",
+    "fallback_reason",
+    "refinement_stop_reason",
+)
+
+
+def _project_timing_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Keep the small provenance of a timed selection, not its arrays.
+
+    A timing round retains the selected row and scalar counts; the panel,
+    candidate cache indices and other arrays belong to the untimed
+    selection cells.
+    """
+    projected = {
+        key: result[key] for key in TIMING_RESULT_KEYS if key in result
+    }
+    if "selected" in result:
+        selected = np.asarray(result["selected"], dtype=np.float64).reshape(-1)
+        projected["selected"] = selected.tolist()
+        projected["selected_row_sha256"] = _row_id(selected)
+    return projected
+
+
 def run_timing_cell(
     manifest: dict[str, Any], out: Path, cell: dict[str, Any]
 ) -> dict[str, Any]:
@@ -908,6 +1047,12 @@ def run_timing_cell(
         )
         if before != _state_digest(state):
             raise RuntimeError("paired timing mutated captured state or RNG")
+        for row in report.get("rounds", []):
+            for name in ("baseline", "treatment"):
+                if name in row and "result" in row[name]:
+                    row[name]["result"] = _project_timing_result(
+                        row[name]["result"]
+                    )
         payload = {
             "schema_version": SCHEMA_VERSION,
             "status": "succeeded",
@@ -2098,7 +2243,7 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--selection", type=Path, required=True)
     prepare.add_argument(
         "--stage",
-        choices=("development", "development_control", "holdout"),
+        choices=tuple(sorted(STAGES)),
         required=True,
     )
     prepare.add_argument("--manifest", type=Path, required=True)

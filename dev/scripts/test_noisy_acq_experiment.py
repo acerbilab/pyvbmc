@@ -58,6 +58,16 @@ def test_canonical_callable_has_no_process_specific_repr():
     assert "0x" not in json.dumps(encoded)
     assert runner.canonical(np.array([1.0, 2.0])) == [1.0, 2.0]
     assert runner.canonical(float("inf")) == {"@float": "inf"}
+    # Non-finite entries inside arrays are encoded like scalars, so a
+    # record holding them still serializes as strict JSON.
+    assert runner.canonical(np.array([0.0, np.nan])) == [
+        0.0,
+        {"@float": "nan"},
+    ]
+    json.dumps(
+        runner.canonical({"cache_indices": np.array([[np.nan, 1.0]])}),
+        allow_nan=False,
+    )
 
 
 def write_completed_case(tmp_path, manifest, *, damage=None):

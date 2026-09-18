@@ -38,6 +38,20 @@ def _selection(stage="development", method="stratified_rqmc", budget=512):
         )
         record["finalist_config"] = campaign.asdict(config)
         record["include_mc1600_control"] = True
+    elif stage in campaign.F2_STAGES:
+        record["accurate_rule"] = {
+            "method": "mc",
+            "budget": 1600,
+            "provenance": "unused_by_production_arms",
+        }
+        record["node_rule"] = {
+            "kind": campaign.F2_NODE_RULE,
+            "samples": campaign.F2_NODE_SAMPLES,
+            "orders": list(campaign.F2_ORDERS),
+        }
+        if stage == "f2_holdout":
+            record["development_choice"] = "axis"
+            record["development_manifest_sha256"] = "frozen-development"
     return record
 
 
@@ -48,26 +62,25 @@ def _prepare_inputs(tmp_path, monkeypatch, selection):
         json.dumps({"allocation": [{"label": "case", "seeds": [0, 1]}]}),
         encoding="utf-8",
     )
-    if selection["stage"] == "development_control":
+    if selection["stage"] in ("development_control", "f2_holdout"):
         development_manifest = tmp_path / "development-manifest.json"
-        development_manifest.write_text(
-            json.dumps(
-                {
-                    "stage": "development",
-                    "capture_manifest_sha256": campaign.integration.sha256_file(
-                        capture_manifest
-                    ),
-                    "identity": {"frozen": True},
-                    "treatments": [
-                        {
-                            "tag": selection["strongest_arm_config"]["arm"],
-                            "config": selection["strongest_arm_config"],
-                        }
-                    ],
-                }
+        source = {
+            "stage": "development"
+            if selection["stage"] == "development_control"
+            else "f2_development",
+            "capture_manifest_sha256": campaign.integration.sha256_file(
+                capture_manifest
             ),
-            encoding="utf-8",
-        )
+            "identity": {"frozen": True},
+        }
+        if selection["stage"] == "development_control":
+            source["treatments"] = [
+                {
+                    "tag": selection["strongest_arm_config"]["arm"],
+                    "config": selection["strongest_arm_config"],
+                }
+            ]
+        development_manifest.write_text(json.dumps(source), encoding="utf-8")
         selection["development_manifest"] = str(development_manifest)
         selection[
             "development_manifest_sha256"
@@ -78,7 +91,7 @@ def _prepare_inputs(tmp_path, monkeypatch, selection):
         campaign.capture, "validate_manifest", lambda *a, **k: None
     )
     monkeypatch.setattr(campaign, "_identity", lambda _: {"frozen": True})
-    trajectory_seed = 0 if selection["stage"].startswith("development") else 1
+    trajectory_seed = 1 if selection["stage"] in campaign.HOLDOUT_STAGES else 0
     state = {
         "state_id": f"case_seed{trajectory_seed}_early",
         "snapshot": str(tmp_path / "snapshot"),
@@ -119,6 +132,126 @@ def test_development_manifest_pairs_seeds_without_naming_winner(
     assert len(manifest["cells"]) == 4 * campaign.SELECTION_REPLICATES
     assert not manifest["launch_ready"]
     assert not manifest["holdout_locked"]
+
+
+def test_f2_development_pairs_three_production_arms_on_fresh_streams(
+    tmp_path, monkeypatch
+):
+    e3_dir = tmp_path / "e3"
+    e3_dir.mkdir()
+    e3_capture, e3_selection = _prepare_inputs(
+        e3_dir, monkeypatch, _selection()
+    )
+    e3_manifest = campaign.prepare_manifest(
+        e3_capture, e3_dir, e3_selection, "development"
+    )
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection(stage="f2_development")
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest, tmp_path, selection_path, "f2_development"
+    )
+    assert [item["tag"] for item in manifest["treatments"]] == [
+        "S0",
+        "S0_qmc_sorted",
+        "S0_qmc_unsorted",
+    ]
+    configs = {item["tag"]: item["config"] for item in manifest["treatments"]}
+    assert all(config["arm"] == "S0" for config in configs.values())
+    assert configs["S0"]["importance_qmc"] is False
+    assert configs["S0_qmc_sorted"] == {
+        **configs["S0"],
+        "importance_qmc": True,
+        "importance_qmc_samples": 96,
+        "importance_qmc_order": "axis",
+    }
+    assert configs["S0_qmc_unsorted"]["importance_qmc_order"] == "index"
+    assert manifest["split"] == "development"
+    assert manifest["stage"] == "f2_development"
+    assert not manifest["holdout_locked"] and not manifest["launch_ready"]
+    assert manifest["selection"]["node_rule"]["samples"] == 96
+    assert len(manifest["cells"]) == 3 * campaign.SELECTION_REPLICATES
+    assert manifest["timing_cell_count"] == 2
+    assert manifest["allocation_cell_count"] == 4
+    replicate_zero = [
+        cell for cell in manifest["cells"] if cell["replicate"] == 0
+    ]
+    assert len({cell["search_seed"] for cell in replicate_zero}) == 1
+    # The F2 stage seeds its own streams: the same state and replicate
+    # draw a different candidate-search seed than the E3 development stage.
+    e3_zero = [cell for cell in e3_manifest["cells"] if cell["replicate"] == 0]
+    assert replicate_zero[0]["search_seed"] != e3_zero[0]["search_seed"]
+    campaign.validate_manifest(manifest, require_ready=False)
+    assert [
+        spec["contrast"] for spec in campaign._contrast_specs(manifest)
+    ] == ["S0_qmc_sorted_minus_S0", "S0_qmc_unsorted_minus_S0"]
+
+
+def test_f2_holdout_binds_the_development_choice_and_stays_locked(
+    tmp_path, monkeypatch
+):
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection(stage="f2_holdout")
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest, tmp_path, selection_path, "f2_holdout"
+    )
+    assert manifest["split"] == "holdout"
+    assert manifest["holdout_locked"] is True
+    assert manifest["selection"]["development_choice"] == "axis"
+    assert [item["tag"] for item in manifest["treatments"]] == [
+        "S0",
+        "S0_qmc_sorted",
+        "S0_qmc_unsorted",
+    ]
+    with pytest.raises(RuntimeError, match="locked"):
+        campaign.validate_manifest(
+            {**manifest, "launch_ready": True}, require_ready=True
+        )
+    unlocked = {**manifest, "launch_ready": True, "holdout_locked": False}
+    campaign.validate_manifest(unlocked, require_ready=True)
+
+
+def test_f2_selection_rejects_another_node_rule_or_a_search_arm(
+    tmp_path, monkeypatch
+):
+    selection = _selection(stage="f2_development")
+    selection["node_rule"]["samples"] = 128
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, selection
+    )
+    with pytest.raises(RuntimeError, match="frozen 96-node"):
+        campaign.prepare_manifest(
+            capture_manifest, tmp_path, selection_path, "f2_development"
+        )
+    selection = _selection(stage="f2_development")
+    selection["finalist_config"] = campaign.asdict(
+        campaign.search.SearchConfig(arm="S2")
+    )
+    other = tmp_path / "other"
+    other.mkdir()
+    capture_manifest, selection_path = _prepare_inputs(
+        other, monkeypatch, selection
+    )
+    with pytest.raises(RuntimeError, match="names no search arm"):
+        campaign.prepare_manifest(
+            capture_manifest, other, selection_path, "f2_development"
+        )
+
+
+def test_timing_projection_keeps_scalars_and_the_selected_row():
+    result = _fake_search_result(1)
+    result["cache_indices"] = np.array([np.nan, 1.0])
+    result["importance_node_count"] = 96
+    projected = campaign._project_timing_result(result)
+    assert "cache_indices" not in projected
+    assert "coarse_candidates" not in projected
+    assert projected["importance_node_count"] == 96
+    assert projected["selected"] == [1.0, 1.0]
+    assert projected["selected_row_sha256"] == campaign._row_id(
+        np.array([1.0, 1.0])
+    )
+    json.dumps(campaign.capture.canonical(projected), allow_nan=False)
 
 
 def test_mc1600_is_allowed_as_an_external_fallback(tmp_path, monkeypatch):

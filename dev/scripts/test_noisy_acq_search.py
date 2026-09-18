@@ -236,6 +236,83 @@ def test_source_controller_stops_before_target_and_isolates_rng():
     assert not first["target_called"]
 
 
+def test_qmc_config_is_frozen_to_the_production_search_and_96_nodes():
+    SearchConfig(arm="S0", importance_qmc=True).validate()
+    SearchConfig(
+        arm="S0", importance_qmc=True, importance_qmc_order="index"
+    ).validate()
+    with pytest.raises(ValueError, match="S0"):
+        SearchConfig(arm="S2", importance_qmc=True).validate()
+    with pytest.raises(ValueError, match="96"):
+        SearchConfig(
+            arm="S0", importance_qmc=True, importance_qmc_samples=128
+        ).validate()
+    with pytest.raises(ValueError, match="order"):
+        SearchConfig(
+            arm="S0", importance_qmc=True, importance_qmc_order="random"
+        ).validate()
+
+
+def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr"
+    )
+    state = build_state(load_snapshot(fixture), rng=np.random.default_rng(5))
+    state["options"].__setitem__("search_optimizer", "none", force=True)
+    importance = importlib.import_module(
+        "pyvbmc.vbmc.active_importance_sampling"
+    )
+    orders = []
+    original = importance.qmc_vp_nodes
+
+    def recording(vp, N, rng, order=None):
+        orders.append(None if order is None else np.array(order, copy=True))
+        return original(vp, N, rng, order=order)
+
+    monkeypatch.setattr(importance, "qmc_vp_nodes", recording)
+    baseline = select_candidate(
+        state, SearchConfig(arm="S0"), search_seed=22, accurate_seed=23
+    )
+    sorted_arm = select_candidate(
+        state,
+        SearchConfig(arm="S0", importance_qmc=True),
+        search_seed=22,
+        accurate_seed=23,
+    )
+    unsorted_arm = select_candidate(
+        state,
+        SearchConfig(
+            arm="S0", importance_qmc=True, importance_qmc_order="index"
+        ),
+        search_seed=22,
+        accurate_seed=23,
+    )
+    assert baseline["importance_node_count"] == 100
+    assert baseline["coarse_nodes"].shape == (100, 2)
+    assert sorted_arm["importance_node_count"] == 96
+    assert unsorted_arm["importance_node_count"] == 96
+    assert sorted_arm["coarse_nodes"].shape == (96, 2)
+    # The sieve is drawn before the nodes from the shared search seed, so
+    # every arm scores the same 8192 candidates.
+    np.testing.assert_array_equal(
+        baseline["coarse_candidates"], sorted_arm["coarse_candidates"]
+    )
+    np.testing.assert_array_equal(
+        baseline["coarse_candidates"], unsorted_arm["coarse_candidates"]
+    )
+    assert not np.array_equal(
+        baseline["coarse_nodes"][:96], sorted_arm["coarse_nodes"]
+    )
+    assert orders[0] is None
+    np.testing.assert_array_equal(orders[1], np.arange(state["vp"].K))
+    assert not sorted_arm["target_called"]
+    # Nothing leaks out of the private copy: the captured options keep the
+    # Monte Carlo draw and the production component order is restored.
+    assert state["options"]["active_importance_sampling_qmc"] is False
+    assert importance._QMC_COMPONENT_ORDER == "axis"
+
+
 def test_s0_matches_direct_production_cmaes_selection(monkeypatch):
     fixture = (
         Path(__file__).resolve().parents[2]

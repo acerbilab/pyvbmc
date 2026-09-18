@@ -40,10 +40,30 @@ class SearchConfig:
     start_separation: float = 0.5
     ftol: float = 1e-9
     gtol: float = 1e-5
+    # Importance nodes of the VIQR estimate: the production Monte Carlo
+    # draw, or the package's quasi-Monte Carlo rule switched on through its
+    # option, with the frozen node count and the component order of the
+    # first Sobol' coordinate ("axis": sorted along the leading axis of the
+    # means, the production rule; "index": the VP's own order).
+    importance_qmc: bool = False
+    importance_qmc_samples: int = 96
+    importance_qmc_order: str = "axis"
 
     def validate(self):
         if self.arm not in {"S0", "S1", "S2", "S3"}:
             raise ValueError("arm must be S0, S1, S2, or S3")
+        if self.importance_qmc_order not in {"axis", "index"}:
+            raise ValueError("importance_qmc_order must be axis or index")
+        if self.importance_qmc:
+            if self.arm != "S0":
+                raise ValueError(
+                    "quasi-Monte Carlo importance nodes are evaluated on the"
+                    " production search (S0) only"
+                )
+            if self.importance_qmc_samples != 96:
+                raise ValueError(
+                    "the frozen quasi-Monte Carlo node count is 96"
+                )
         if self.sieve_size not in {1024, 2048}:
             raise ValueError("experimental sieve size must be 1024 or 2048")
         if not 1 <= self.shortlist_size <= 8:
@@ -284,20 +304,42 @@ def prepare_selection(
         raise ValueError(
             "search experiment requires the standard VIQR acquisition"
         )
+    if options.get("active_importance_sampling_qmc", False):
+        raise ValueError(
+            "captured options already request quasi-Monte Carlo importance"
+            " nodes; the frozen-state search expects the production Monte"
+            " Carlo draw as its baseline"
+        )
+    if config.importance_qmc:
+        options.__setitem__("active_importance_sampling_qmc", True, force=True)
+        options.__setitem__(
+            "active_importance_sampling_qmc_samples",
+            int(config.importance_qmc_samples),
+            force=True,
+        )
+        coarse_key = "active_importance_sampling_qmc_samples"
+        expected_budget = int(config.importance_qmc_samples)
+    else:
+        coarse_key = "active_importance_sampling_mcmc_samples"
+        expected_budget = 100
     coarse_budget = options.eval(
-        "active_importance_sampling_mcmc_samples",
+        coarse_key,
         {
             "K": private["vp"].K,
             "n_vars": private["vp"].D,
             "D": private["vp"].D,
         },
     )
-    if coarse_budget != 100:
+    if coarse_budget != expected_budget:
         raise ValueError(
             "search experiment requires the production 100-node coarse rule"
+            " or the frozen quasi-Monte Carlo node count"
         )
     if config.arm != "S0":
         options.__setitem__("ns_search", config.sieve_size, force=True)
+    importance = importlib.import_module(
+        "pyvbmc.vbmc.active_importance_sampling"
+    )
     gp, vp, logger, optim = (
         private[key] for key in ("gp", "vp", "logger", "optim_state")
     )
@@ -339,6 +381,9 @@ def prepare_selection(
         trace["coarse_winner_index"] = int(np.argmin(values))
         trace["coarse_winner"] = np.array(X[np.argmin(values)], copy=True)
         trace["coarse_minimum"] = float(np.min(values))
+        trace["importance_node_count"] = int(
+            np.asarray(call_optim["active_importance_sampling"]["X"]).shape[0]
+        )
         if retain_panel:
             trace["coarse_candidates"] = np.array(X, copy=True)
             trace["coarse_scores"] = np.array(values, copy=True)
@@ -405,6 +450,14 @@ def prepare_selection(
             stack.enter_context(
                 patch.object(AcqFcnVIQR, "__call__", acquisition_call)
             )
+            if config.importance_qmc:
+                stack.enter_context(
+                    patch.object(
+                        importance,
+                        "_QMC_COMPONENT_ORDER",
+                        config.importance_qmc_order,
+                    )
+                )
             executed = False
 
             def execute():
