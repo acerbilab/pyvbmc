@@ -55,6 +55,21 @@ def _selection(stage="development", method="stratified_rqmc", budget=512):
     return record
 
 
+def _canned_transition():
+    """A declared F2 source transition, as prepare_manifest would record."""
+    return {
+        "scope": campaign.F2_TRANSITION_SCOPE,
+        "numerical_base_commit": campaign.capture.NUMERICAL_BASE,
+        "changed_sources": {
+            "pyvbmc/vbmc/active_importance_sampling.py": {
+                "capture": "old",
+                "runtime": "new",
+            }
+        },
+        "numerical_diff_exclude": list(campaign.F2_NUMERICAL_DIFF_EXCLUDE),
+    }
+
+
 def _prepare_inputs(tmp_path, monkeypatch, selection):
     _pin_threads(monkeypatch)
     capture_manifest = tmp_path / "capture.json"
@@ -90,7 +105,12 @@ def _prepare_inputs(tmp_path, monkeypatch, selection):
     monkeypatch.setattr(
         campaign.capture, "validate_manifest", lambda *a, **k: None
     )
-    monkeypatch.setattr(campaign, "_identity", lambda _: {"frozen": True})
+    monkeypatch.setattr(
+        campaign, "_identity", lambda *args, **kwargs: {"frozen": True}
+    )
+    monkeypatch.setattr(
+        campaign, "_f2_source_transition", lambda _: _canned_transition()
+    )
     trajectory_seed = 1 if selection["stage"] in campaign.HOLDOUT_STAGES else 0
     state = {
         "state_id": f"case_seed{trajectory_seed}_early",
@@ -236,6 +256,70 @@ def test_f2_selection_rejects_another_node_rule_or_a_search_arm(
     with pytest.raises(RuntimeError, match="names no search arm"):
         campaign.prepare_manifest(
             capture_manifest, other, selection_path, "f2_development"
+        )
+
+
+def test_f2_source_transition_declares_only_the_allowed_changes(
+    tmp_path, monkeypatch
+):
+    pinned = {"pyvbmc/vbmc/vbmc.py": "same", "pyvbmc/other.py": "same"}
+    for path in campaign.F2_ALLOWED_SOURCE_CHANGES:
+        pinned[path] = "old"
+    current = dict(pinned)
+    current["pyvbmc/vbmc/active_importance_sampling.py"] = "new"
+    current["pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini"] = "new"
+    monkeypatch.setattr(campaign.capture, "source_hashes", lambda: current)
+    transition = campaign._f2_source_transition({"source_hashes": pinned})
+    assert transition["scope"] == "f2_importance_nodes"
+    assert sorted(transition["changed_sources"]) == [
+        "pyvbmc/vbmc/active_importance_sampling.py",
+        "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
+    ]
+    assert transition["changed_sources"][
+        "pyvbmc/vbmc/active_importance_sampling.py"
+    ] == {"capture": "old", "runtime": "new"}
+    current["pyvbmc/vbmc/vbmc.py"] = "drifted"
+    with pytest.raises(RuntimeError, match="beyond the declared"):
+        campaign._f2_source_transition({"source_hashes": pinned})
+
+    # validate_manifest accepts the declared transition on an F2 manifest,
+    # refuses a misdeclared one, and refuses any transition on E3 stages.
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection(stage="f2_development")
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest, tmp_path, selection_path, "f2_development"
+    )
+    good = _canned_transition()
+    assert manifest["source_transition"] == good
+    campaign.validate_manifest(
+        {**manifest, "source_transition": good}, require_ready=False
+    )
+    with pytest.raises(RuntimeError, match="lacks its source transition"):
+        campaign.validate_manifest(
+            {k: v for k, v in manifest.items() if k != "source_transition"},
+            require_ready=False,
+        )
+    bad = dict(good)
+    bad["changed_sources"] = {
+        "pyvbmc/vbmc/vbmc.py": {"capture": "old", "runtime": "new"}
+    }
+    with pytest.raises(RuntimeError, match="not the declared one"):
+        campaign.validate_manifest(
+            {**manifest, "source_transition": bad}, require_ready=False
+        )
+    e3_dir = tmp_path / "e3"
+    e3_dir.mkdir()
+    e3_capture, e3_selection = _prepare_inputs(
+        e3_dir, monkeypatch, _selection()
+    )
+    e3_manifest = campaign.prepare_manifest(
+        e3_capture, e3_dir, e3_selection, "development"
+    )
+    assert "source_transition" not in e3_manifest
+    with pytest.raises(RuntimeError, match="only F2 stages"):
+        campaign.validate_manifest(
+            {**e3_manifest, "source_transition": good}, require_ready=False
         )
 
 

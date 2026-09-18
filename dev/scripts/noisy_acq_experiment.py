@@ -225,18 +225,23 @@ def numpy_build() -> dict[str, Any]:
     return {"structured_config_available": False}
 
 
-def numerical_diff() -> str:
-    """Return tracked or untracked deviations from the numerical base."""
+def numerical_diff(exclude: tuple[str, ...] = ()) -> str:
+    """Return tracked or untracked deviations from the numerical base.
+
+    ``exclude`` lists repository-relative files or directories whose
+    deviations are not reported, for a campaign that declares them.
+    """
 
     paths = ("pyvbmc", "dev/scripts/benchmark_targets.py", "dev/scripts/data")
-    content = _git(ROOT, "diff", NUMERICAL_BASE, "--", *paths)
+    pathspec = (*paths, *(f":(exclude){path}" for path in exclude))
+    content = _git(ROOT, "diff", NUMERICAL_BASE, "--", *pathspec)
     status = _git(
         ROOT,
         "status",
         "--porcelain",
         "--untracked-files=all",
         "--",
-        *paths,
+        *pathspec,
     )
     return "\n".join(part for part in (content, status) if part)
 
@@ -317,8 +322,21 @@ def validate_manifest(
         raise RuntimeError("Manifest state_target_count is inconsistent")
 
 
-def runtime_identity(manifest: dict[str, Any]) -> dict[str, Any]:
-    """Validate and return the load-bearing identity of this invocation."""
+def runtime_identity(
+    manifest: dict[str, Any],
+    source_transition: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate and return the load-bearing identity of this invocation.
+
+    ``source_transition`` lets a later campaign run on the captured states
+    with declared source changes: ``changed_sources`` maps each
+    repository-relative path to its ``capture`` hash (the manifest's pin)
+    and its ``runtime`` hash (the version the campaign froze), and
+    ``numerical_diff_exclude`` lists further paths, such as test
+    directories, that the numerical diff ignores. Every other source stays
+    pinned to the manifest, and the transition is echoed in the returned
+    identity so that a campaign manifest binds it.
+    """
 
     import gpyreg
 
@@ -345,6 +363,24 @@ def runtime_identity(manifest: dict[str, Any]) -> dict[str, Any]:
         "data_hashes": data_hashes(),
         "manifest_sha256": manifest_digest(manifest),
     }
+    changed: dict[str, dict[str, str]] = {}
+    exclude: tuple[str, ...] = ()
+    if source_transition is not None:
+        changed = dict(source_transition["changed_sources"])
+        for path, hashes in changed.items():
+            if manifest["source_hashes"].get(path) != hashes["capture"]:
+                raise RuntimeError(
+                    f"source transition misstates the captured hash of {path}"
+                )
+            if actual["source_hashes"].get(path) != hashes["runtime"]:
+                raise RuntimeError(
+                    f"Runtime source {path} differs from the declared"
+                    " transition"
+                )
+        exclude = (
+            *changed,
+            *source_transition.get("numerical_diff_exclude", ()),
+        )
     for key in (
         "gpyreg",
         "python",
@@ -355,12 +391,21 @@ def runtime_identity(manifest: dict[str, Any]) -> dict[str, Any]:
         "source_hashes",
         "data_hashes",
     ):
-        if canonical(actual[key]) != canonical(manifest[key]):
+        expected, observed = manifest[key], actual[key]
+        if key == "source_hashes" and changed:
+            expected = {k: v for k, v in expected.items() if k not in changed}
+            observed = {k: v for k, v in observed.items() if k not in changed}
+        if canonical(observed) != canonical(expected):
             raise RuntimeError(
                 f"Runtime {key} differs from the frozen manifest"
             )
-    if numerical_diff():
-        raise RuntimeError("Runtime numerical source differs from 9cc6882")
+    if numerical_diff(exclude):
+        raise RuntimeError(
+            "Runtime numerical source differs from 9cc6882"
+            + (" beyond the declared transition" if changed else "")
+        )
+    if source_transition is not None:
+        actual["source_transition"] = canonical(source_transition)
     return actual
 
 

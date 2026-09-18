@@ -118,10 +118,19 @@ def source_hashes() -> dict[str, str]:
     }
 
 
-def integration_identity(capture_manifest: dict[str, Any]) -> dict[str, Any]:
-    """Validate the capture source lock, then identify E2-only sources."""
+def integration_identity(
+    capture_manifest: dict[str, Any],
+    source_transition: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate the capture source lock, then identify E2-only sources.
 
-    capture_identity = capture.runtime_identity(capture_manifest)
+    ``source_transition`` is passed to the capture identity check for a
+    campaign that declares source changes since the captures.
+    """
+
+    capture_identity = capture.runtime_identity(
+        capture_manifest, source_transition
+    )
     return {
         "capture_identity": capture_identity,
         "integration_source_hashes": source_hashes(),

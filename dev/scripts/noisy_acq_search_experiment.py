@@ -63,13 +63,89 @@ def _source_hashes() -> dict[str, str]:
     }
 
 
-def _identity(capture_manifest: dict[str, Any]) -> dict[str, Any]:
+def _identity(
+    capture_manifest: dict[str, Any],
+    source_transition: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "integration_identity": integration.integration_identity(
-            capture_manifest
+            capture_manifest, source_transition
         ),
         "search_source_hashes": _source_hashes(),
     }
+
+
+# Sources the F2 stages may differ in from the E0 capture manifest's pins:
+# the production node rule and its options (the treatment under test), the
+# selection-policy hook that active_sample.py gained for the E5 inference
+# runs (inactive unless a policy is installed), the production benchmark
+# suite added to benchmark_targets.py (not read by frozen-state selection)
+# and this campaign's record serializer. Their runtime hashes are frozen in
+# the F2 manifest; every other source stays pinned to the capture, and the
+# numerical diff against the baseline may touch only these files and the
+# test tree.
+F2_ALLOWED_SOURCE_CHANGES = (
+    "pyvbmc/vbmc/active_importance_sampling.py",
+    "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
+    "pyvbmc/vbmc/active_sample.py",
+    "dev/scripts/benchmark_targets.py",
+    "dev/scripts/noisy_acq_experiment.py",
+)
+F2_NUMERICAL_DIFF_EXCLUDE = ("pyvbmc/testing",)
+F2_TRANSITION_SCOPE = "f2_importance_nodes"
+
+
+def _f2_source_transition(capture_manifest: dict[str, Any]) -> dict[str, Any]:
+    """Declare the sources that differ from the capture pins, or refuse."""
+    current = capture.source_hashes()
+    pinned = capture_manifest["source_hashes"]
+    changed = sorted(
+        path
+        for path in set(current) | set(pinned)
+        if current.get(path) != pinned.get(path)
+    )
+    unexpected = [
+        path for path in changed if path not in F2_ALLOWED_SOURCE_CHANGES
+    ]
+    if unexpected:
+        raise RuntimeError(
+            "sources changed beyond the declared F2 transition:"
+            f" {unexpected}"
+        )
+    return {
+        "scope": F2_TRANSITION_SCOPE,
+        "numerical_base_commit": capture.NUMERICAL_BASE,
+        "changed_sources": {
+            path: {"capture": pinned.get(path), "runtime": current.get(path)}
+            for path in changed
+        },
+        "numerical_diff_exclude": list(F2_NUMERICAL_DIFF_EXCLUDE),
+    }
+
+
+def _validate_source_transition(manifest: dict[str, Any]) -> None:
+    transition = manifest.get("source_transition")
+    if manifest["stage"] not in F2_STAGES:
+        if transition is not None:
+            raise RuntimeError("only F2 stages declare a source transition")
+        return
+    if not isinstance(transition, dict):
+        raise RuntimeError("F2 manifest lacks its source transition")
+    changed = transition.get("changed_sources")
+    if (
+        transition.get("scope") != F2_TRANSITION_SCOPE
+        or transition.get("numerical_base_commit") != capture.NUMERICAL_BASE
+        or transition.get("numerical_diff_exclude")
+        != list(F2_NUMERICAL_DIFF_EXCLUDE)
+        or not isinstance(changed, dict)
+        or any(path not in F2_ALLOWED_SOURCE_CHANGES for path in changed)
+        or any(
+            set(hashes) != {"capture", "runtime"}
+            or hashes["capture"] == hashes["runtime"]
+            for hashes in changed.values()
+        )
+    ):
+        raise RuntimeError("F2 source transition is not the declared one")
 
 
 def _thread_environment() -> dict[str, str | None]:
@@ -336,6 +412,10 @@ def prepare_manifest(
     )
     capture.validate_manifest(capture_manifest, require_ready=True)
     selection = _read_selection(selection_path, stage)
+    source_transition = (
+        _f2_source_transition(capture_manifest) if stage in F2_STAGES else None
+    )
+    identity = _identity(capture_manifest, source_transition)
     if stage == "f2_holdout":
         development = json.loads(
             Path(selection["development_manifest"]).read_text(encoding="utf-8")
@@ -345,7 +425,7 @@ def prepare_manifest(
             or development.get("capture_manifest_sha256")
             != integration.sha256_file(capture_manifest_path)
             or capture.canonical(development.get("identity"))
-            != capture.canonical(_identity(capture_manifest))
+            != capture.canonical(identity)
         ):
             raise RuntimeError(
                 "F2 holdout does not match its F2 development source"
@@ -505,7 +585,12 @@ def prepare_manifest(
         "selection": selection,
         "selection_file": str(selection_path.resolve()),
         "selection_sha256": integration.sha256_file(selection_path),
-        "identity": _identity(capture_manifest),
+        "identity": identity,
+        **(
+            {"source_transition": source_transition}
+            if source_transition is not None
+            else {}
+        ),
         "thread_environment": threads,
         "master_seed": MASTER_SEED,
         "replicates": SELECTION_REPLICATES,
@@ -562,6 +647,7 @@ def validate_manifest(
         "holdout_locked", True
     ):
         raise RuntimeError("holdout search manifest remains locked")
+    _validate_source_transition(manifest)
     if manifest.get("replicates") != SELECTION_REPLICATES:
         raise RuntimeError("search replicate allocation changed")
     if manifest.get("master_seed") != MASTER_SEED:
@@ -705,14 +791,14 @@ def runtime_identity(manifest: dict[str, Any]) -> dict[str, Any]:
         != manifest["selection_sha256"]
     ):
         raise RuntimeError("frozen search selection changed")
-    if manifest["stage"] == "development_control":
+    if manifest["stage"] in {"development_control", "f2_holdout"}:
         development_path = manifest["selection"]["development_manifest"]
         if (
             integration.sha256_file(development_path)
             != manifest["selection"]["development_manifest_sha256"]
         ):
             raise RuntimeError("preceding development manifest changed")
-    actual = _identity(capture_manifest)
+    actual = _identity(capture_manifest, manifest.get("source_transition"))
     if capture.canonical(actual) != capture.canonical(manifest["identity"]):
         raise RuntimeError("search, integration, or capture source changed")
     if _thread_environment() != manifest["thread_environment"]:
