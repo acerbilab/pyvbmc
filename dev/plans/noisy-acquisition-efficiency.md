@@ -99,12 +99,12 @@ search-stream null control followed the same day, with their judge
 ladders and ordinary-MC cross-checks, and no cell failed. The report's F2
 section records the numbers and the
 [F2 Stage 1 assessment](#f2-stage-1-assessment-2026-09-18) reads them:
-cost matched, a real gain on early states, a late-state degradation beyond
-the search-randomness floor that fails the screening gate on both splits,
-so Stage 2 is not recommended with the rule as it stands. The next
-decision is the user's: the assessment names a node-redraw control and a
-late-state loss diagnostic as the missing evidence. Nothing is running;
-no background work needs reattachment.
+cost matched, a real gain on early states, and on late states the
+node-noise floor of the production rule against itself, measured by a
+node-redraw control run on the user's decision the same evening, so the
+assessment recommends Stage 2 subject to the user accepting the
+floor-based reading of the screening gate. The next decision is the
+user's. Nothing is running; no background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1589,7 +1589,7 @@ Checklist:
   items are committed. Development (288 selections, 24 timing and 48
   allocation cells on the twelve seed-0 states), holdout (the same on
   the seed-1 states, with the sorted order chosen on development as the
-  confirmation contrast) and a search-stream null control ran on
+  confirmation contrast) and two null controls (search stream, node redraw) ran on
   2026-09-18 with no failed cell; the judge ladders reached 65536 nodes
   and the ordinary-MC cross-checks disagree with no verdict. The
   [report](../results/2026-09-16-noisy-acquisition-integration-search.md#f2-stage-1-quasi-monte-carlo-importance-nodes-on-frozen-states)
@@ -1608,43 +1608,49 @@ Executor roles are those of the follow-ups above.
 
 Stage 1 asked whether the 96-node rule selects at least as well as the
 production 100-node Monte Carlo draw at no more cost. The report holds the
-measurements; this is the reading.
+measurements, including two null controls run on the development states:
+the baseline against itself with one extra generator draw before the local
+search (identical nodes, the search floor) and before the node draw (fresh
+Monte Carlo nodes on the identical sieve, the node floor). This is the
+reading.
 
 - **Cost is matched.** Median-of-state-median paired ratios of 0.980 and
   0.982 on development and 0.983 and 0.980 on holdout for the two orders,
-  inside the spread the null control shows for identical work (1.010,
-  states from 0.864 to 1.178). Every selection used the prescribed node
+  inside the spread the controls show for identical work (1.010 and 1.016,
+  states from 0.86 to 1.18). Every selection used the prescribed node
   count.
-- **Early states: a real gain.** On the six early states of each split the
-  rule is judged better in 23 of 48 comparisons (development) and 15 of
-  48 (holdout) against 3 and 2 worse, where the search's own randomness
-  never changes a verdict (44 ties of 44 resolved in the control).
-- **Late states: scatter beyond the search floor, net harmful on holdout.**
-  Against the control's 13 beneficial, 8 harmful and 3 material raw losses
-  of 48, the rule gives 23, 12 and 12 on development and 20, 23 and 13 on
-  holdout, with losses retaining a median 0.72 to 0.77 and at worst 0.26 of
-  the baseline's reduction, on Student-t, logistic regression, timing and
-  multisensory. The two component orders are indistinguishable everywhere.
-- **The screening gate fails on both splits.** Harmful fractions 0.156 and
-  0.260 against 5 percent; 14 material raw losses per split unexplained.
-  The ordinary-MC cross-checks confirm every verdict they resolve.
+- **Late states: the treatment sits on the node floor.** A fresh 100-node
+  set against the baseline is judged better in 21, worse in 15 and
+  materially worse in 12 of 48 late-state comparisons; the treatment gives
+  23, 12 and 12 on development and 20, 23 and 13 on holdout. The late-run
+  pick is a lottery for any node set at this budget, and the rule neither
+  adds to nor removes it.
+- **Early states: a real gain.** Where the node floor is balanced (12
+  better, 8 worse) and the search floor is silent, the rule is judged
+  better in 23 of 48 comparisons on development and 15 of 48 on holdout
+  against 3 and 2 worse. The two component orders are indistinguishable
+  everywhere.
+- **The E2 screening gate's 5 percent ceiling does not apply to a node-set
+  change.** The production rule fails it against itself at 24 percent
+  harmful. Read against the node floor, the treatment matches the floor's
+  harmful fractions and material losses (14 against 14 on development, 14
+  on holdout) and exceeds its beneficial fraction on early states. The
+  ordinary-MC cross-checks confirm every verdict they resolve.
 
-**Recommendation: do not proceed to Stage 2 with the rule as it stands.**
-Stage 2's entry condition, the screening gate on Stage 1, is not met, and
-a promotion would ship a late-run degradation to buy an early-run gain.
-The missing evidence is narrow and cheap. First, a node-redraw control:
-the baseline against itself with fresh Monte Carlo nodes and the sieve
-shared (extra generator draws before the node draw), which bounds the
-node-noise floor and decides whether the late-state scatter is specific to
-the quasi-Monte Carlo rule or common to any fresh 100-node set at these
-states; about 45 minutes of frozen-state compute under the same harness,
-run as an addendum to Stage 1 under its own manifest. Second, a read-only
-diagnostic of the late-state material losses: which coarse winners changed
-between the two estimates and how each estimate ranks the judge's best
-candidates. Any change to the rule itself, such as using it only while
-the mixture is small or raising its node count, is a new treatment under
-the amendment's rule and needs a new declared allocation. The user
-decides.
+**Recommendation: proceed to Stage 2 as specified, subject to the user
+accepting the floor-based reading of the gate.** The gate's 5 percent
+figure was written for search changes that keep the node set; for a change
+of the node set the measured floor is the only fair comparison, and on it
+the rule is neutral where the production draw is itself a lottery and
+better where it is not, at matched cost. Stage 2 is the arbiter of whether
+the early-run gain reaches inference: the production suite at production
+budgets, twenty seeds on high-noise Rosenbrock and logistic regression and
+ten elsewhere, the pre-registered outcomes and the F3 mechanism check, with
+the baseline arm doubling as production-reference runs. Two limits of the
+Stage 1 evidence carry into that decision: the node floor was measured on
+the development states only, and a frozen-state judge ranks selections,
+not posteriors. A read-only diagnostic of the late-state material losses
+is available but no longer load-bearing. The user decides.
 
 ### Decisions and unresolved empirical questions
 

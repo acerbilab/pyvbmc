@@ -1,0 +1,1704 @@
+{
+  "contrasts": {
+    "S0_renoded_minus_S0": {
+      "arm_tag": "S0_renoded",
+      "by_checkpoint": {
+        "early": {
+          "beneficial": 12,
+          "harmful": 8,
+          "practical_tie": 12,
+          "unresolved": 16
+        },
+        "late": {
+          "beneficial": 21,
+          "harmful": 15,
+          "practical_tie": 12,
+          "unresolved": 0
+        }
+      },
+      "by_label": {
+        "logreg_D5_noise3": {
+          "beneficial": 6,
+          "harmful": 5,
+          "practical_tie": 3,
+          "unresolved": 2
+        },
+        "multisensory_s1_D6_noise1.3": {
+          "beneficial": 6,
+          "harmful": 3,
+          "practical_tie": 0,
+          "unresolved": 7
+        },
+        "rosenbrock_D2_noise1": {
+          "beneficial": 5,
+          "harmful": 1,
+          "practical_tie": 10,
+          "unresolved": 0
+        },
+        "rosenbrock_D2_noise3": {
+          "beneficial": 6,
+          "harmful": 0,
+          "practical_tie": 9,
+          "unresolved": 1
+        },
+        "student_D8_noise3": {
+          "beneficial": 8,
+          "harmful": 8,
+          "practical_tie": 0,
+          "unresolved": 0
+        },
+        "timing_D5_noise2.2": {
+          "beneficial": 2,
+          "harmful": 6,
+          "practical_tie": 2,
+          "unresolved": 6
+        }
+      },
+      "gate": {
+        "harmful_fraction_of_scheduled": 0.23958333333333334,
+        "harmful_within_gate": false,
+        "material_raw_losses": 14,
+        "observed": 96,
+        "positive_claim_allowed": true,
+        "scheduled": 96,
+        "unresolved_fraction_of_scheduled": 0.16666666666666666
+      },
+      "material_losses": [
+        {
+          "arm_to_baseline_ratio": 0.8586027913109682,
+          "mean_score_difference": 0.00051525664491478,
+          "replicate": 1,
+          "state_id": "logreg_D5_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8573894216747691,
+          "mean_score_difference": 0.0004578492776503018,
+          "replicate": 7,
+          "state_id": "logreg_D5_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.8551979963691086,
+          "mean_score_difference": 0.002496117685039101,
+          "replicate": 0,
+          "state_id": "student_D8_noise3_seed0_early"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7904759951250193,
+          "mean_score_difference": 0.0037513127369157573,
+          "replicate": 4,
+          "state_id": "student_D8_noise3_seed0_early"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7970640556307588,
+          "mean_score_difference": 0.0005065427569590775,
+          "replicate": 1,
+          "state_id": "student_D8_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.3356871301497402,
+          "mean_score_difference": 0.0012636372707186122,
+          "replicate": 3,
+          "state_id": "student_D8_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7057397489316242,
+          "mean_score_difference": 0.0007421422477911638,
+          "replicate": 4,
+          "state_id": "student_D8_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.30956031337526585,
+          "mean_score_difference": 0.001530617382897663,
+          "replicate": 5,
+          "state_id": "student_D8_noise3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7259854522023528,
+          "mean_score_difference": 0.0011312196020073217,
+          "replicate": 2,
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.41208274916728016,
+          "mean_score_difference": 0.002379488229282689,
+          "replicate": 6,
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.3789422973518536,
+          "mean_score_difference": 0.0029618118497676815,
+          "replicate": 7,
+          "state_id": "multisensory_s1_D6_noise1.3_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.44167876088877395,
+          "mean_score_difference": 0.0036954141220937042,
+          "replicate": 1,
+          "state_id": "timing_D5_noise2.2_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.7447335097309273,
+          "mean_score_difference": 0.0014028562842691994,
+          "replicate": 3,
+          "state_id": "timing_D5_noise2.2_seed0_late"
+        },
+        {
+          "arm_to_baseline_ratio": 0.6968867331401575,
+          "mean_score_difference": 0.0017312205422266858,
+          "replicate": 0,
+          "state_id": "timing_D5_noise2.2_seed0_late"
+        }
+      ],
+      "raw_loss_counts": {
+        "material_loss": 14,
+        "no_material_loss": 64,
+        "unresolved": 18
+      },
+      "score_counts": {
+        "beneficial": 33,
+        "harmful": 23,
+        "practical_tie": 24,
+        "unresolved": 16
+      }
+    }
+  },
+  "gates": {
+    "cost_ratio_at_most": 1.1,
+    "harmful_fraction_at_most": 0.05,
+    "unresolved_fraction_for_positive_claim_at_most": 0.2
+  },
+  "inventory": {
+    "counts": {
+      "allocation": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 24
+      },
+      "judge": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 12
+      },
+      "selection": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 192
+      },
+      "timing": {
+        "corrupt": 0,
+        "failed": 0,
+        "missing": 0,
+        "partial": 0,
+        "succeeded": 12
+      }
+    },
+    "manifest_sha256": "0254eef8a893da8d72e4a51a9b24daf75fe9e3e1534d1a9813254676e26bc77f",
+    "missing_states": [],
+    "rows": [
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r0"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r1"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r2"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r3"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r4"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r5"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r6"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0__r7"
+      },
+      {
+        "error": null,
+        "kind": "selection",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__r7"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "timing",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__timing"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__allocation_baseline"
+      },
+      {
+        "error": null,
+        "kind": "allocation",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__S0_renoded__allocation_treatment"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise1_seed0_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "rosenbrock_D2_noise3_seed0_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "logreg_D5_noise3_seed0_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "student_D8_noise3_seed0_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "multisensory_s1_D6_noise1.3_seed0_late__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_early__judge_b4096"
+      },
+      {
+        "error": null,
+        "kind": "judge",
+        "status": "succeeded",
+        "tag": "timing_D5_noise2.2_seed0_late__judge_b4096"
+      }
+    ],
+    "scheduled_allocation_including_missing_states": 24,
+    "scheduled_selection_including_missing_states": 192,
+    "scheduled_timing_including_missing_states": 12,
+    "schema_version": 1,
+    "stage": "f2_node_control_development"
+  },
+  "judge_budget": 65536,
+  "judge_summary": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_node_control_judging\\b65536_summary.json",
+  "judge_summary_sha256": "8922b0a904f3d80c7da2988f0f5174fd1f97ec42194399f3b271b75533a88d2b",
+  "kind": "f2_stage_evidence",
+  "manifest": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916\\f2_node_control_development_manifest.json",
+  "manifest_sha256": "416cce88079a49ae19ff509f0155ae4cced8b79e18a1e11cd8b3f88d198d050a",
+  "node_counts": {
+    "mismatches": [],
+    "observed": {
+      "S0": {
+        "100": 96
+      },
+      "S0_renoded": {
+        "100": 96
+      }
+    },
+    "prescribed": {
+      "S0": 100,
+      "S0_renoded": 100
+    },
+    "succeeded_selections": 192
+  },
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "a9044232d684d895359ec83572b23278a147a8f5b5db05ad040f1a3e82dbddee",
+  "schema_version": 1,
+  "split": "development",
+  "stage": "f2_node_control_development",
+  "timing": {
+    "S0_renoded": {
+      "cost_within_gate": true,
+      "median_of_state_medians": 1.0158826607211382,
+      "range": [
+        0.9486440371418564,
+        1.0347572919872612
+      ],
+      "state_median_ratios": {
+        "logreg_D5_noise3_seed0_early": 1.0134704216914237,
+        "logreg_D5_noise3_seed0_late": 1.018720907489629,
+        "multisensory_s1_D6_noise1.3_seed0_early": 1.0287274364823165,
+        "multisensory_s1_D6_noise1.3_seed0_late": 1.0273578092210232,
+        "rosenbrock_D2_noise1_seed0_early": 1.0026451399100862,
+        "rosenbrock_D2_noise1_seed0_late": 1.030777960316394,
+        "rosenbrock_D2_noise3_seed0_early": 0.9948576154695109,
+        "rosenbrock_D2_noise3_seed0_late": 0.9486440371418564,
+        "student_D8_noise3_seed0_early": 1.0118348369494012,
+        "student_D8_noise3_seed0_late": 1.018294899750853,
+        "timing_D5_noise2.2_seed0_early": 0.9615113845642563,
+        "timing_D5_noise2.2_seed0_late": 1.0347572919872612
+      },
+      "states_scheduled": 12,
+      "states_timed": 12
+    }
+  }
+}

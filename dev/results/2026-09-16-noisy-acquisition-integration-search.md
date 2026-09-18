@@ -30,10 +30,10 @@ ten-seed result does not support adopting S2 as a default; the plan's E6
 assessment proposes narrowly targeted follow-ups. Production defaults are
 unchanged. Its follow-up F2, the 96-node quasi-Monte Carlo importance-node
 rule evaluated on the frozen states with a search-stream null control,
-completed on 2026-09-18: cost matched and a real gain on early states, but
-on late states the rule scatters selections beyond the search-randomness
-floor and turns net harmful on holdout, so it fails the screening gate on
-both splits; the F2 section below records it.
+completed on 2026-09-18 with two null controls: the cost is matched, the
+rule improves early-run selections, and on late runs it sits on the
+node-noise floor of the production rule against itself, a lottery that
+no 100-node set escapes; the F2 section below records it.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -1247,9 +1247,8 @@ use the production labels.
 
 ## F2 Stage 1: quasi-Monte Carlo importance nodes on frozen states
 
-**Status:** complete on the development and holdout splits with a
-search-stream null control; the cross-checks and the control are
-reported below. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+**Status:** complete on the development and holdout splits with two
+null controls; the cross-checks and the controls are reported below. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
 specifies the design. The stage asks whether the production VIQR
 selection, with its 100 Monte Carlo importance nodes replaced by the
 package's 96-node scrambled-Sobol' mixture rule
@@ -1409,53 +1408,79 @@ three material losses. The
 [control evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_control_evidence.json)
 records the counts.
 
+### Node-redraw null control
+
+The search-stream control bounds the search's randomness but not the
+estimator's, because it kept the nodes identical. The
+`f2_node_control_development` stage pairs the baseline with a copy that
+takes its one extra generator draw after the sieve and before the
+importance nodes (`S0_renoded`): the 8192 candidates are identical and the
+100 Monte Carlo nodes are a fresh independent set, so the copy differs from
+the baseline exactly as a second run of the production rule would. Same
+twelve development states, eight repetitions, ladder and timing protocol.
+It was declared and run on the user's decision after the three stages
+above were complete and read. Its 192 selections, 12 timing and 24
+allocation cells completed with no failure, and every one of the 96
+redrawn selections ended at a different point from the baseline's.
+
+| Contrast | Beneficial | Practical tie | Harmful | Unresolved | Material raw loss | Cost ratio |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Redrawn-node baseline minus baseline | 33 | 24 | 23 | 16 | 14 | 1.016 |
+
+By checkpoint: early states 12 beneficial, 12 ties, 8 harmful, 16
+unresolved and 2 material losses; late states 21, 12, 15, 0 and 12
+material losses, retaining a median 0.73 and at worst 0.31 of the
+baseline's reduction, on Student-t (6), multisensory (3), timing (3) and
+logistic regression (2). The
+[control evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_node_control_evidence.json)
+records the counts.
+
 ### Reading
 
 | Comparison, by checkpoint | Early: beneficial / harmful (of 48) | Late: beneficial / harmful (of 48) | Material raw losses early / late |
 | --- | ---: | ---: | ---: |
 | Development, sorted minus baseline | 23 / 3 | 23 / 12 | 2 / 12 |
 | Holdout, sorted minus baseline | 15 / 2 | 20 / 23 | 1 / 13 |
-| Development, reseeded minus baseline (floor) | 0 / 0 | 13 / 8 | 0 / 3 |
+| Development, redrawn nodes minus baseline (node floor) | 12 / 8 | 21 / 15 | 2 / 12 |
+| Development, reseeded search minus baseline (search floor) | 0 / 0 | 13 / 8 | 0 / 3 |
 
 - **Cost is matched.** Both treatments sit at 0.98 of the baseline's
-  selection time on both splits, inside the spread the null control shows
-  for identical work, and every selection used 96 nodes against the
-  baseline's 100.
+  selection time on both splits, inside the spread the two controls show
+  for identical work (1.010 and 1.016 with states from 0.86 to 1.18), and
+  every selection used 96 nodes against the baseline's 100.
+- **On late states the treatment sits on the node-noise floor.** A fresh
+  100-node Monte Carlo set against the baseline is judged better in 21,
+  worse in 15 and materially worse in 12 of 48 late-state comparisons; the
+  treatment gives 23, 12 and 12 on development and 20, 23 and 13 on
+  holdout. The late-run pick is a lottery for any node set at this budget:
+  the production rule against itself loses more than 10 percent of its own
+  reduction in a quarter of late-state selections, and the search's
+  randomness alone accounts for a fifth of that. Late states have many
+  components and the spiky surfaces the investigation described as a few
+  importance points carrying the whole reduction; the node rule neither
+  adds to nor removes the lottery there.
 - **On early states the node rule improves the selection.** Where the
-  search's own randomness never changes a verdict, the treatment is judged
-  better in 23 of 48 comparisons on development and 15 of 48 on holdout
-  against 3 and 2 worse, with one or two material losses. Early states have
-  few components and smooth acquisition surfaces; the two component orders
-  give identical nodes there (two components admit one order) and identical
-  counts.
-- **On late states the treatment scatters the selection beyond the search
-  floor, and on holdout the balance turns against it.** Against a floor of
-  13 beneficial, 8 harmful and 3 material losses, the treatment gives 23,
-  12 and 12 on development and 20, 23 and 13 on holdout. The material
-  losses retain a median 0.72 to 0.77 of the baseline's raw reduction, the
-  worst 0.26, and fall on Student-t, logistic regression, timing and
-  multisensory, not on Rosenbrock. Late states have many components and
-  the bumpy surfaces the investigation described as a few importance points
-  carrying the whole reduction. The two component orders are
-  indistinguishable throughout, within two counts on every row.
-- **The E2 screening gate fails on both splits.** Harmful fractions of
-  0.156 (development) and 0.260 (holdout) against the 5 percent gate, and
-  14 material raw losses on each split against the requirement that any be
-  explained before promotion. The cross-checks confirm the verdicts they
-  resolve and disagree with none.
+  node floor is balanced (12 better, 8 worse) and the search floor is
+  silent, the treatment is judged better in 23 of 48 comparisons on
+  development and 15 of 48 on holdout against 3 and 2 worse. Early states
+  have few components and smooth surfaces; the two component orders give
+  identical nodes there and identical counts, and they stay within two
+  counts of each other on every row of every stage.
+- **The E2 screening gate does not apply as written.** Its 5 percent
+  ceiling on confidently worse selections was set for search changes that
+  keep the node set; the production rule fails it against itself at 24
+  percent. Read against the node floor, the treatment's harmful fractions
+  (0.156 on development, 0.260 on holdout) and material losses (14 and 14)
+  match the floor's (0.240 and 14), while its beneficial fractions exceed
+  it on early states. The cross-checks confirm every verdict they resolve
+  and disagree with none.
 
-What the stage cannot separate is whether a fresh 100-node Monte Carlo
-draw scatters late-state selections as much as the 96-node rule does: the
-control kept the nodes identical, so it bounds the search's randomness,
-not the estimator's. A second control that redraws the Monte Carlo nodes
-and nothing else (extra generator draws before the node draw, with the
-sieve shared) would give the node-noise floor and decide whether the
-late-state result is specific to the quasi-Monte Carlo rule or common to
-any fresh node set at this budget. It costs about 45 minutes of compute
-under the same harness. Until it exists, the stage's verdict is that the
-96-node rule is not a drop-in replacement under the accepted gate, with a
-real gain confined to early states and a late-state degradation whose
-attribution is open.
+Two limits. The node floor was measured on the development states only;
+the holdout treatment is read against it under the assumption that the
+seed-1 states behave like the seed-0 states, which the search floor's
+checkpoint pattern supports but does not prove. And a frozen-state judge
+ranks selections, not inference: whether the early-run gain reaches the
+posterior is Stage 2's question.
 
 The records of every stage are the `f2_*` review copies under
 `integration-search/`, indexed by
