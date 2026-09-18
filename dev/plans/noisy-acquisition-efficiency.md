@@ -84,9 +84,21 @@ nodes, component selection through the first coordinate in sorted
 component order, equal weights) and two stages, each authorized
 separately: a frozen-state evaluation on the 24 captured states, then a
 paired inference comparison on the production labels whose baseline arm
-doubles as production-reference runs. The next step is the implementation
-behind an off-by-default option and the Stage 1 pilot. Nothing is running;
-no background work needs reattachment.
+doubles as production-reference runs. The implementation is on the branch
+`feat-viqr-rqmc-nodes` off `dev-noisy-acquisition-efficiency`: the node
+rule behind the off-by-default option with its tests, the F2 stages of
+the frozen-state search harness, a declared source transition that lets
+the campaign run on the E0 captures with the five changed sources frozen
+by hash, and the fixes from two independent static reviews. With the
+switch off every oracle is bit-identical and four stored E3 baseline
+selections replay exactly. The Stage 1 development manifest
+(`f2_development_manifest.json` in the local artifact directory, listed
+in `dev/scripts/runs/LOCAL.md`) was frozen and launched on 2026-09-18 at
+18:19 UTC after a two-pilot check on one state; its cells land under
+`f2_development/` there, and the run controller is resumable: completed
+cells are validated and skipped, `inventory` reports the state. The judge
+ladder, the ordinary-MC cross-check and the holdout stage follow the
+development run; the report gains an F2 section when they finish.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1547,14 +1559,30 @@ between sorted and unsorted order made on the development states.
 
 Checklist:
 
-- [ ] Implement the rule behind the switch with the focused tests above;
+- [x] Implement the rule behind the switch with the focused tests above;
   run the oracle and acquisition suites with the switch off; freeze the
-  source identity.
-- [ ] Extend the frozen-state harness to run the production selection with
-  replaced nodes; pilot one state and record measured costs.
+  source identity. Done 2026-09-18 on `feat-viqr-rqmc-nodes`: 17 focused
+  tests, exact oracle check 11 of 11, and a replay of four stored E3
+  baseline selections (two late states among them) reproducing rows,
+  nodes and coarse scores bit for bit. The scramble seed is one integer
+  drawn from the VP's generator, so a saved random state replays the
+  nodes.
+- [x] Extend the frozen-state harness to run the production selection with
+  replaced nodes; pilot one state and record measured costs. Done
+  2026-09-18: the campaign driver gained the F2 stages (three arms, all
+  the production search, treatments differing only in the node rule
+  switched on through its option), a declared source transition against
+  the E0 capture pins, a node-count assertion on every selection, and
+  projected timing and allocation records. Two pilots on the early
+  low-noise Rosenbrock state: selections of about 0.3 s per arm, node
+  counts 100 and 96, shared sieve, paired timing ratios 0.986 and 0.988.
 - [ ] Freeze the Stage 1 manifest; run selections, judging and timing;
   choose sorted or unsorted on development and confirm on holdout;
-  independent static review; report to the user.
+  independent static review; report to the user. Two static reviews
+  (node rule; harness) found no blocking defect and their should-fix
+  items are committed. The development manifest (288 selections, 24
+  timing and 48 allocation cells on the twelve seed-0 states) was frozen
+  and launched on 2026-09-18 at 18:19 UTC.
 - [ ] On the user's decision, freeze the Stage 2 manifest; run both arms in
   bounded batches through `golden_trace.py`; verify every archive; analyze
   the pre-registered outcomes and the mechanism check; independent review;
