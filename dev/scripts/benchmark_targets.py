@@ -1780,6 +1780,32 @@ SUITES = {
     ],
 }
 
+# The golden suite at PyVBMC's production defaults, the suite for release
+# checks and new experiments by the PI's decision of 2026-09-18 that
+# experiments test what ships. The noiseless entries are the golden ones
+# unchanged (they carry no override, so their golden runs already are
+# production runs and a production reference copies them; this includes
+# the deliberate exhaust regime entry). The noisy entries drop the paper
+# budget, so the package's own adjustments for a specified-noise target
+# apply: 75 (D + 2) evaluations, a stability count of 90 evaluations, GP
+# and VP updates inside active sampling, VIQR. The golden labels keep the
+# paper budget for the existing references; the `production` tag keeps the
+# noisy labels distinct, so `find_config` never returns a golden entry for
+# a production label or the reverse.
+_PRODUCTION_NOISY = [
+    Config("rosenbrock", 2, noise_sd=1.0, tag="production"),
+    Config("rosenbrock", 2, noise_sd=3.0, tag="production"),
+    Config("logreg", 5, noise_sd=3.0, tag="production"),
+    Config("student", 8, noise_sd=3.0, tag="production"),
+    Config("lumpy", 10, noise_sd=3.0, tag="production"),
+    Config("timing", 5, noise_sd=2.2, tag="production"),
+    Config("multisensory_s1", 6, noise_sd=1.3, tag="production"),
+    Config("multisensory_s2", 6, noise_sd=1.3, tag="production"),
+]
+SUITES["production"] = [
+    c for c in SUITES["golden"] if c.noise_sd is None
+] + _PRODUCTION_NOISY
+
 
 def suite_configs(suite):
     if suite == "all":

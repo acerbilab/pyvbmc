@@ -124,6 +124,47 @@ def test_golden_extension_registration_and_unchanged_profile_suite():
         }
 
 
+def test_production_suite_runs_noisy_targets_at_package_defaults():
+    """The production suite is the golden suite with its noisy entries
+    freed of the paper budget, so VBMC applies its own specified-noise
+    adjustments; the noiseless entries are the golden ones, and the noisy
+    production labels never collide with the golden labels."""
+    from pyvbmc import VBMC
+
+    targets = _load_script("benchmark_targets")
+    production = targets.SUITES["production"]
+    golden = targets.SUITES["golden"]
+    assert [c for c in production if c.noise_sd is None] == [
+        c for c in golden if c.noise_sd is None
+    ]
+    noisy = [c for c in production if c.noise_sd is not None]
+    assert {(c.name, c.D, c.noise_sd) for c in noisy} == {
+        (c.name, c.D, c.noise_sd) for c in golden if c.noise_sd is not None
+    }
+    labels = [c.label for c in targets.suite_configs("all")]
+    assert len(labels) == len(set(labels))
+    for config in noisy:
+        assert config.tag == "production"
+        assert config.label.endswith("_production")
+        assert config.options_dict() == {}
+        assert targets.find_config(config.label) is config
+
+    problem = targets.find_config("rosenbrock_D2_noise3_production").make(
+        seed=0
+    )
+    args, options = problem.vbmc_args()
+    assert options == {"specify_target_noise": True}
+    vbmc = VBMC(*args, options=options)
+    assert vbmc.options["max_fun_evals"] == 300
+    assert vbmc.options["tol_stable_count"] == 90
+    assert vbmc.options["active_sample_gp_update"] is True
+    assert vbmc.options["active_sample_vp_update"] is True
+
+    paper = targets.find_config("rosenbrock_D2_noise3").make(seed=0)
+    args, options = paper.vbmc_args()
+    assert VBMC(*args, options=options).options["max_fun_evals"] == 200
+
+
 def test_extension_allocation_and_run_gate():
     extension = _load_script("reference_noisy_extension")
     tasks = extension._tasks()

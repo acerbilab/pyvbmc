@@ -65,8 +65,12 @@ shown to be free of target-specific accuracy loss (five convergence losses
 against none, one usability loss and gsKL increases up to 103 times on
 high-noise Rosenbrock, worse posterior-shape metrics on logistic regression)
 against six usable gains on Student-t. The [E6 assessment](#e6-assessment-2026-09-18)
-recommends against adoption and proposes targeted follow-ups that await a
-user decision. No E5 process is running.
+recommends against adoption and proposes targeted follow-ups; the user
+chose F3 first and it is complete (a read-only trajectory diagnosis that
+replays the stopping rule exactly and finds S2's evaluations concentrated in
+the posterior core with intermittent stability spikes, under a 200-evaluation
+benchmark budget below the package's noisy default of 300). F1, F2 and F4
+await a user decision. No E5 process is running.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1279,23 +1283,46 @@ and no GP fits, and they can run in any order; F4 is conditional on them.
   times panel cost) is the motivation; the full-sieve cost ratio and the
   benefit at matched cost are the missing numbers. Estimated cost: one to
   two hours of frozen-state compute after implementation and focused tests.
-- **F3. Diagnose the high-noise Rosenbrock trajectories.** Read-only
-  analysis of the stored golden traces and selection records of the ten
-  S0/S2 pairs on `rosenbrock_D2_noise3`, starting with seed 2008: where the
-  trajectories diverge, whether S2's selections cluster near the current
-  mode or in the tails, how often the refinement guard and row-budget
-  fallbacks fired, how the GP hyperparameters and the variational
-  components evolve, and why four S2 runs failed the stability criterion
-  within 200 evaluations. The aim is a mechanism for the degradation that
-  F1 and F2 can then be checked against. About an hour of analysis; no new
-  computation on the targets.
+- **F3. Diagnose the high-noise Rosenbrock trajectories.** Executed
+  2026-09-18 on the user's decision; the
+  [report](../results/2026-09-16-noisy-acquisition-integration-search.md#f3-trajectory-diagnosis-of-high-noise-rosenbrock)
+  records it. Read-only analysis of the stored traces and selection
+  records of the ten pairs, with VBMC's stability rule replayed exactly
+  and independently reviewed. Findings: the four non-converged S2 runs
+  ended with the reliability index below 1 and the ELBO improvement within
+  tolerance, one to three iterations short of the 14-of-17 stability
+  window (1 to 4 more good iterations needed), because of intermittent
+  index spikes carried by the sKL term in both arms and more frequent
+  under S2 (37 against 32 percent of post-warmup iterations); after
+  warmup S2's evaluations sit closer to the centre in six to eight of ten
+  seeds depending on the measure, extremely so in the usability-loss seed,
+  inside a picture where both arms place over half their evaluations
+  outside the plausible box; S2's own records show the 100-node coarse
+  rule identifies the accurate-rule best in 27.6 percent of selections
+  against 12.5 percent by chance, with scatter 17 to 35 times the
+  shortlist spread, so it randomizes the pick, which S2's re-scoring
+  removes. Convergence losses and gsKL losses fall on different seeds, the
+  paired gsKL difference is unresolved at ten seeds, and the S0 half of
+  the mechanism is inferred, not measured. The runs used the benchmark
+  contract's 200-evaluation paper budget rather than the package's own
+  300-evaluation noisy default, so the convergence losses are
+  budget-relative. A cheap measurement is available: continuing the four
+  non-converged S2 runs at the production budget (four fits).
 - **F4 (conditional). Inference comparison of a repaired variant.** Only if
   F1 or F2 identifies a variant that removes the Rosenbrock and logistic
   regression losses on frozen states at a worthwhile cost, allocate a new
   E5-style paired inference comparison under a new manifest, with the same
   six configurations and ten seeds, treating the present S2 results as a
   completed arm rather than merging them. The cost is that of the completed
-  E5 design, about six worker hours on this laptop.
+  E5 design, about six worker hours on this laptop (more at the production
+  budget). After F3, any F4 must run on the `production` suite of
+  `benchmark_targets.py`, at the package's defaults for specified-noise
+  targets including the 75 (D + 2) budget, by the user's decision of
+  2026-09-18 that experiments test what ships; it should name high-noise
+  Rosenbrock convergence and gsKL as outcomes. F3 also warns that a more
+  consistent coarse rule (F2) could reproduce S2's concentration in the
+  production sieve. The completed E5 arms are paper-budget results and are
+  not merged with production-budget runs.
 
 Executor roles follow the experiment's convention: Astra decides scope and
 reads evidence, Sol implements and runs, separate Sol agents review, and at

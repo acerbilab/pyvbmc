@@ -201,6 +201,25 @@ records its execution.
   S-VBMC changes require the comparison campaign against original S-VBMC
   before release. Publication and post-release tasks remain separate
   actions.
+- **Experiments test what ships (PI decision, 2026-09-18).** The golden
+  suite's noisy configurations pin the 2020 paper's budget of 50 (D + 2)
+  evaluations, which suppresses the package's own adjustment for a
+  specified-noise target (75 (D + 2)); every other option is the package
+  default. The golden references and every campaign run on those labels,
+  including the E5 inference comparison, therefore measured noisy targets
+  on the noiseless budget. From now on the release checks and any new
+  experiment run noisy targets at the package's production defaults, on
+  the `production` suite of `benchmark_targets.py`: the golden suite with
+  its noisy entries freed of the budget pin and given the `production`
+  label tag. The noiseless golden runs are production runs already, so a
+  production reference copies them and adds fresh runs only for the noisy
+  labels: the seven noisy configurations with reference runs, 250 runs at
+  their production budgets (`golden_trace.py run --suite production --only
+  <noisy production labels>`), plus `lumpy_D10_noise3_production` if that
+  configuration is to enter the reference (the current reference has no
+  runs for it). The golden references stay the regression baseline for
+  trajectory identity at the paper budget. The E5 report's F3 section
+  records how the difference was found.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.
 

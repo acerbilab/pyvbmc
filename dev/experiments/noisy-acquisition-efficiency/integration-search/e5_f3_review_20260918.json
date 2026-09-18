@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "kind": "noisy_acq_e5_f3_independent_review",
+  "created_utc": "2026-09-18T05:24:18.990295+00:00",
+  "reviewer": "independent Opus static reviewer (read-only: traces, sidecars, selection records and source; nothing run, nothing modified)",
+  "compiled_by": "Fable orchestrator from the reviewer's hand-back report",
+  "reviewed_state": "first diagnostic record and figures of 2026-09-18 (post-warmup split on live rows); the corrected record, scripts and figures bound below incorporate every disposition",
+  "verdict": "sound where mechanical, over-stated where spatial; corrected before publication",
+  "verification": {
+    "stopping_rule_replay": "pass: constants confirmed from source and sidecar (tol_stable_count 90 from Options.update_defaults, 18 iterations, 14 of 17, improvement window 9, warp distance 6, entropy switch off); re-implemented rule matches the recorded stable flag in 20 of 20 runs; the recorded flag is set before the warp gate, so excluding the gate is required rather than a judgement; applied warps (transformer changed) reproduce every final termination; 33 of 40 flagged rotoscales were undone",
+    "index_decomposition": "pass: mean of rebuilt terms reproduces the stored index to at most 3.9e-5; implied HPD noise variance 9.0000, so the constant-noise substitution is exact",
+    "spatial_statistics": "record reproduced exactly, but the post-warmup split and initial-design rows were taken on live logger rows after warmup trimming (4-20 rows trimmed per run, 1-6 initial rows missing), moving the inside-50 count from 8 to 6 of 10 and the nearest-neighbour and deep-tail counts from 8 to 7 of 10; the moment-matched 50 and 99 percent ellipses hold 0.598 and 0.969 of the true banana mass",
+    "selection_summary": "pass: reproduced exactly for seeds 2008 and 2002; fallback totals 287 finite-difference and 4 row-budget of 1700; refinement gain diluted by zero-gain fallbacks",
+    "budget_provenance": "pass: max_fun_evals 200 from the benchmark contract's paper budget passed as a user option; the package default for a specified-noise run would be 300; other effective options are package defaults or the noisy adjustments"
+  },
+  "findings_and_dispositions": {
+    "must_fix": [
+      {
+        "finding": "third rotoscale of seed 2008 S2 at iteration 38 was undone and did not block termination",
+        "disposition": "claim removed; applied and undone warps now distinguished in the record and report"
+      },
+      {
+        "finding": "post-warmup split and initial design computed on live rows after warmup trimming",
+        "disposition": "initial design from X_init, first post-warmup row from the selection records' logger_live_rows; counts republished (inside-50 6/10, beyond-99 8/10, nearest-neighbour 7/10, log density 8/10, deep tail 7/10)"
+      },
+      {
+        "finding": "points figure clipped 29 percent of points with hardcoded limits, labelled live rows as evaluations and the first ten live rows as the initial design",
+        "disposition": "frame kept but off-frame counts, evaluation and live-row counts and true initial design shown; warmup colouring uses the corrected split"
+      },
+      {
+        "finding": "'acquisition surface is nearly flat' overstated; flat over the top candidates only",
+        "disposition": "reworded"
+      },
+      {
+        "finding": "'usable threshold' label covers one of three conditions",
+        "disposition": "relabelled"
+      }
+    ],
+    "should_fix": [
+      {
+        "finding": "'9 of 10' for observed log density is 8 of 10",
+        "disposition": "corrected"
+      },
+      {
+        "finding": "sKL statement should separate 'spikes are sKL-driven in both arms (about 85 percent share)' from 'S2's typical sKL level is higher'",
+        "disposition": "rewritten as two statements"
+      },
+      {
+        "finding": "S0 half of the randomization mechanism is inferred by analogy; S0 records hold no accurate re-score",
+        "disposition": "stated"
+      },
+      {
+        "finding": "direct evidence unused: coarse-minus-accurate scatter IQR 17-35 times the shortlist spread; coarse winner is the accurate best in 27.6 percent of 1700 selections against 12.5 percent by chance",
+        "disposition": "added to the diagnostic and the report"
+      },
+      {
+        "finding": "concentration-gsKL association (Spearman -0.66 over 20 runs, -0.79 within S2) is consistent with the reading but cannot settle causation",
+        "disposition": "added with the caveat"
+      },
+      {
+        "finding": "convergence loss and accuracy loss fall on different seeds; paired gsKL Wilcoxon p = 0.275, S2 lower in 4 of 10",
+        "disposition": "stated; 'S2 worse on gsKL' not claimed"
+      },
+      {
+        "finding": "roll-forward of the window: 1, 2, 2, 4 further good iterations needed; S0 converged at exactly 200 in two seeds; caveats on spike rate, improvement margin and the 220-evaluation GP-sampling switch",
+        "disposition": "added"
+      },
+      {
+        "finding": "fallback counts are 15-55 finite-difference plus 0-2 row-budget; no correlation with outcome",
+        "disposition": "corrected and stated"
+      },
+      {
+        "finding": "refinement gain should be over refined selections only",
+        "disposition": "recomputed (0.0002-0.0004, 9-18 percent of the spread)"
+      },
+      {
+        "finding": "both arms sample far outside the plausible box (S0 median 61 percent, S2 52 percent; max coordinate medians 40 and 32)",
+        "disposition": "stated"
+      },
+      {
+        "finding": "n_warps counts attempts; 33 of 40 undone",
+        "disposition": "stated; record distinguishes applied and undone"
+      },
+      {
+        "finding": "GP hyperparameters extreme in both arms at the end",
+        "disposition": "stated"
+      },
+      {
+        "finding": "ellipse caption should say moment-matched Gaussian with true mass",
+        "disposition": "corrected"
+      },
+      {
+        "finding": "index figure clips 34 finite values silently",
+        "disposition": "clipping stated in the caption"
+      },
+      {
+        "finding": "plotted ELBO error is the per-iteration value, not the reported boosted final",
+        "disposition": "stated in the caption"
+      }
+    ],
+    "nits": [
+      {
+        "finding": "tol_skl hardcoded; improvement computed from iteration 1; INITIAL_ROWS hardcoded; deep-tail threshold uses a single noisy maximum; stopping-count comment attributed 90 to the benchmark contract",
+        "disposition": "tol_skl from effective options, improvement from iteration 2, initial design from X_init, deep-tail reference is the mean of the top five observations, comment corrected"
+      }
+    ]
+  },
+  "reviewer_conclusion_on_follow_ups": "F1 (sieve size on frozen states) directly motivated and the only test of the S0 half; F2 (matched-cost RQMC coarse rule) targets exactly the measured coarse-rule scatter, a drop-in on the same node budget since the current rule is unscrambled; F4 premature at ten seeds without a pre-registered primary endpoint; cheapest next measurement is continuing the four non-converged S2 runs at the production budget",
+  "bound_artifacts_sha256": {
+    "e5_f3_rosenbrock_trajectories_20260918.json": "dbb17e020f856c4f3d5f6153a5682725b2de767a6375b879b4943c1dd7024202",
+    "figures/e5_f3_rosenbrock_D2_noise3_elbo_error.png": "8df1b43f881414ab67e632580a7442391cd24485266262abc8bb99866c643aa3",
+    "figures/e5_f3_rosenbrock_D2_noise3_r_index.png": "31e70f39772e7fe5def05f1807ec4c95a0c6b89140bcd0d7e4978054d45d46b7",
+    "figures/e5_f3_rosenbrock_D2_noise3_points.png": "d87be6c8e2770e42be85e98131b8addae1940a77a0070bf9c5c430c67fe46ba3",
+    "dev/scripts/noisy_acq_e5_trajectory_diagnostic.py": "7b1420d2b24696d0c6d2e2b4be8c756e37023060b75010b6c80fe71edc385fe9",
+    "dev/scripts/noisy_acq_e5_trajectory_figures.py": "209cdb975d3e34fb2498150d40ad03aee00910c9aa9023c4d0b30af8b2077876"
+  },
+  "scientific_adoption_approved": false
+}

@@ -309,6 +309,18 @@ historical checkout `c4c692c`, which contains the checks and retains the
 `03650a2` numerical source pinned by `scripts/eta_bound_variants.py`. Its
 source-digest guard is expected to reject later production changes.
 
+The golden suite's noisy configurations pin the 2020 paper's budget of
+50 (D + 2) evaluations, which suppresses the package's own 75 (D + 2)
+default for a specified-noise target; everything else is a package
+default. Since 2026-09-18 release checks and new experiments use the
+`production` suite instead: the same configurations with the noisy entries
+freed of that pin under `production`-tagged labels. Its noiseless entries
+are the golden ones, so a production reference copies the golden noiseless
+runs and adds fresh runs only for the noisy production labels
+(`golden_trace.py run --suite production --only <labels>`). The golden
+reference below remains the baseline for trajectory identity at the paper
+budget.
+
 The current golden reference is `reference_990_20260913`: **990 runs across
 23 configurations, including 250 noisy runs, with 92 population KS tests**.
 Its JSON sidecars and `summary.md` live under `golden/baseline/`, so

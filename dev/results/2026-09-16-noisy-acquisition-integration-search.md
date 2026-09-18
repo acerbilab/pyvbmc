@@ -1073,6 +1073,173 @@ identified missing evidence under new declared allocations. The
 verified every provenance, batch and summary quantity above and supplied the
 sign-test, drift-bias and envelope observations.
 
+### F3: trajectory diagnosis of high-noise Rosenbrock
+
+The user chose follow-up F3 first on 2026-09-18. It is a read-only analysis
+of the ten paired S0/S2 trajectories on `rosenbrock_D2_noise3` from their
+stored golden traces, sidecars and per-selection records, with no target
+call and no GP fit. `dev/scripts/noisy_acq_e5_trajectory_diagnostic.py`
+writes the [diagnostic record](../experiments/noisy-acquisition-efficiency/integration-search/e5_f3_rosenbrock_trajectories_20260918.json);
+`dev/scripts/noisy_acq_e5_trajectory_figures.py` draws the three figures
+under `integration-search/figures/` (ELBO error and reliability index per
+seed, evaluated points for seeds 2004 and 2008 over the reference
+posterior's 50 and 99 percent ellipses). The diagnostic replays VBMC's
+termination rule from the stored series and reproduces the recorded
+stability flag at every iteration of all 20 runs, so the stopping analysis
+below is exact rather than inferred.
+
+**Options in force.** The runs requested only `specify_target_noise`, the
+display, plotting and header switches, performance calibration off, and
+`max_fun_evals = 200`. The last comes from the benchmark contract, which
+fixes every configuration's budget at the 2020 paper's 50 (D + 2). The
+package applies its own adjustments for a specified-noise target when the
+user has not set the key: the stability count rises from 60 to 90
+evaluations, GP and VP updates within active sampling are switched on, and
+the search acquisition is VIQR. The budget adjustment, 1.5 times the
+default to 300 evaluations for D = 2, does not apply because the contract
+set the key. The benchmark therefore runs noisy targets on the noiseless
+budget, the one deliberate deviation from package defaults, shared by all
+six configurations and the whole golden campaign.
+
+**Why the four S2 runs did not converge.** With the effective options a
+run may stop when the reliability index is below 1, the ELCBO improvement
+per evaluation is below 0.01, at least 14 of the previous 17 iterations
+had index below 1, and six iterations have passed since the last kept
+warp. The recorded stability flag covers the first three conditions, and
+the replay reproduces it at every iteration of all 20 runs. The trace flags
+every attempted rotoscale, but only 6 of the 41 attempts were kept; the
+other 35 were reverted by the undo check and 14 of the 20 runs kept none,
+so the sidecar's warp count is a count of attempts. Replaying the warp gate
+on the kept warps alone reproduces every final termination. At their final
+iteration all four non-converged S2 runs satisfy the index and improvement
+conditions and fall short only on the window:
+
+| Seed | Index at the end | Improvement per evaluation | Below 1 in the window (of 17, need 14) | Further iterations needed if the index stays below 1 |
+| --- | ---: | ---: | ---: | ---: |
+| 2000 | 0.34 | 0.0024 | 12 | 2 |
+| 2001 | 0.45 | 0.0035 | 11 | 4 |
+| 2004 | 0.20 | 0.0009 | 13 | 1 |
+| 2008 | 0.62 | 0.0077 | 13 | 2 |
+
+The failure is intermittent spikes of the index, not a trend: after warmup
+the index is at or above 1 in 83 of 259 S0 iterations (32 percent) and 103
+of 277 S2 iterations (37 percent), more often under S2 in eight of ten
+seeds. Two separate facts about the terms of the index: at spike iterations
+the sKL term, the change of the variational posterior between iterations,
+carries about 85 percent of the index in both arms, so spikes are VP jumps
+in either arm; and between arms it is that term's typical level that
+differs (median of the last-twelve medians 0.62 under S2 against 0.50),
+while the ELBO-sd and ELBO-change terms are equal. Seed 2008's third
+flagged rotoscale at iteration 38 was reverted and did not block
+termination. Rolling each window forward on the assumption that the index
+stayed below 1, the four runs needed 1 to 4 more iterations, 5 to 20
+evaluations, against the 100 the package's own 300-evaluation noisy budget
+would have added; they would plausibly, though not certainly, have
+converged. Three caveats: the spike rate of 37 percent makes a clean run of
+good iterations uncertain, the improvements of 0.0024 to 0.0077 sit within
+a factor of four of the 0.01 threshold, and beyond 220 evaluations GP
+hyperparameter sampling switches off, a regime the extrapolation does not
+cover. Every S0 run converged within 150 to 200 evaluations, two of them
+(seeds 2000 and 2001) only at the cap.
+
+**Where the evaluations went.** The trace holds the logger's live rows,
+from which warmup points far below the best observation were removed at
+warmup end; the statistics below use the true initial design and place the
+post-warmup split from the selection records. Both arms sample far outside
+any credible region: after warmup a median 61 percent of S0's live
+evaluations and 52 percent of S2's fall outside the plausible box, and the
+largest coordinate reaches a median of 40 for S0 and 32 for S2 against
+posterior standard deviations of 1.1 and 1.6. Within that diffuse picture
+S2 shifts toward the centre:
+
+| Post-warmup statistic (median over seeds, live rows) | S0 | S2 | Seeds with S2 more central |
+| --- | ---: | ---: | ---: |
+| Median squared Mahalanobis distance to the reference mean | 10.1 | 5.8 | 8 of 10 |
+| Fraction inside the nominal 50 percent ellipse | 0.16 | 0.20 | 6 of 10 |
+| Fraction beyond the nominal 99 percent ellipse | 0.51 | 0.41 | 8 of 10 |
+| Distance to the nearest earlier live point (posterior sd) | 0.54 | 0.43 | 7 of 10 |
+| Median observed log density | −17.6 | −11.1 | 8 of 10 |
+| Fraction 20 nats below the best observations | 0.47 | 0.40 | 7 of 10 |
+
+The ellipses are the moment-matched Gaussian of a banana-shaped posterior:
+the nominal 50 and 99 percent regions hold about 0.60 and 0.97 of the true
+mass, so they compare the arms against a common region rather than measure
+posterior mass, and the two shape-free statistics (observed log density and
+the deep-tail fraction) carry the argument. The dissenting seeds depend on
+the measure (2002, 2003, 2005 and 2009 each dissent on some). Seed 2008 is
+the extreme: 48 percent of S2's post-warmup evaluations fall inside the
+nominal 50 percent ellipse, the median distance to an earlier live point is
+0.16 posterior sd, the median observed log density is −6.4 and 11 percent
+of observations lie deep in the tails, against 10 percent, 0.80 sd, −31 and
+58 percent for S0 on the same seed; its gsKL is 1.56 against 0.015.
+
+**Refinement diagnostics and a direct measurement of the coarse rule.**
+The criterion barely separates its top candidates: the eight re-scored
+shortlist scores span 0.0009 to 0.0016 in log residual IQR, and over
+refined selections the refinement improves the best of them by 0.0002 to
+0.0004, 9 to 18 percent of that spread. The finite-difference instability
+guard fired 15 to 55 times per run in eight seeds and the row budget 0 to
+2 times, returning the shortlist winner; seeds 2008 and 2009 had no
+fallback at all and ended at opposite extremes of quality, and across the
+ten runs the fallback count is unrelated to gsKL (Spearman +0.05) and, if
+anything, higher in converged runs. The direct evidence for randomization
+comes from S2's own records: the coarse winner's 100-node score minus its
+1600-node score has a near-constant offset of 4.60 and an interquartile
+range of 0.020 to 0.036, 17 to 35 times the shortlist spread it would have
+to resolve (median 21), and the coarse winner is the accurate-rule best in
+only 27.6 percent of 1700 selections against 12.5 percent by chance. The
+100-node rule carries some signal but mostly picks at random among its own
+top eight.
+
+**Reading.** On this target production's 100-node estimate effectively
+randomizes the pick among near-equivalent top candidates, which scatters
+evaluations, while S2's accurate re-scoring and refinement return the same
+minimizer consistently and place evaluations more centrally. The S2 half of
+this is measured above; the S0 half is inferred from the shared coarse
+rule, since S0's records hold only the production choice. Concentration and
+final accuracy are associated in the predicted direction (Spearman rank
+correlation between post-warmup median squared Mahalanobis distance and
+gsKL −0.66 over the 20 runs, −0.79 within S2), but the direction of
+causation is open: the acquisition proposes from the current variational
+posterior, so a posterior that is already too narrow also proposes
+narrowly. Two facts limit the story. Convergence loss and accuracy loss are
+largely separate outcomes: the four non-converged S2 runs have gsKL 0.005,
+0.028, 0.112 and 1.56, three of them the arm's best posteriors, while the
+four converged S2 runs with gsKL 0.41 to 0.58 converged. And the paired
+gsKL comparison is not resolved at ten seeds (Wilcoxon p = 0.28, S2 lower
+in four of ten); what is established is one usability loss and four
+convergence-flag losses under the 200-evaluation cap. The mechanism fits
+the extremes and most seeds, rests on ten pairs, and is a hypothesis to
+test, not an established cause. It does explain why the frozen-state judge
+saw nothing: the arms differ by about 0.001 in acquisition value per
+selection, and the effect is cumulative. A last observation for the record:
+at the final iteration the GP hyperparameters are extreme in both arms
+(second length scale 10 to 164, output scale 1e3 to 7e6 against posterior
+scales of order 1), and hyperparameter sampling was still active in every
+run.
+
+Consequences for the follow-ups. F1 isolates the candidate count and is
+the only way to test the S0 half of the mechanism. F2 targets exactly the
+quantity measured here, the coarse rule's scatter; the records show the
+current rule is unscrambled Monte Carlo, so a low-discrepancy rule is a
+drop-in comparison at the same node budget, and it could either remove the
+randomization or, in the production sieve, reproduce S2's centralization.
+F4 is premature at ten seeds unless it names a primary endpoint in
+advance. A cheaper measurement is available first: continuing the four
+non-converged S2 runs at the production budget would turn the largest
+reported deficit from an extrapolation into a measurement for four fits,
+since the trajectories are deterministic given the seed up to the cap.
+
+**Decision on budgets.** On reading this finding the user decided that
+experiments test what ships: noisy targets run at the package's production
+defaults, including its 75 (D + 2) budget for specified-noise targets, in
+the planned release checks and in every future experiment. The benchmark
+suite gains a `production` suite whose noisy configurations carry no budget
+override and a `production` label tag; the golden labels and their paper
+budget remain for the existing regression references. The E5 results above
+are paper-budget results, and F4 or any successor inference comparison must
+use the production labels.
+
 ## Resuming the saved experiment
 
 Run from the existing `pyvbmc-stage3` checkout on
