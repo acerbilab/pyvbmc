@@ -75,12 +75,18 @@ budget below the package's noisy default of 300). On that finding the user
 decided on 2026-09-18 that experiments test what ships: the `production`
 suite of `benchmark_targets.py` carries the noisy configurations at package
 defaults, and the TODO records how a production reference is assembled.
-The next decision is the user's choice among the proposals in the
-[follow-ups](#proposed-follow-ups-2026-09-18-not-approved): the cheapest is
-continuing the four non-converged S2 runs at the production budget (four
-fits); F1 and F2 are frozen-state work; F4 is an inference comparison on the
-production labels with a pre-registered endpoint. Nothing is running; no
-background work needs reattachment.
+Among the [follow-ups](#follow-ups-proposed-2026-09-18) the user chose F2
+on 2026-09-18, matched-cost RQMC nodes for the VIQR estimate with the
+production search retained. The
+[F2 amendment](#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+fixes the node rule (one scrambled Sobol sequence in D + 1 dimensions, 96
+nodes, component selection through the first coordinate in sorted
+component order, equal weights) and two stages, each authorized
+separately: a frozen-state evaluation on the 24 captured states, then a
+paired inference comparison on the production labels whose baseline arm
+doubles as production-reference runs. The next step is the implementation
+behind an off-by-default option and the Stage 1 pilot. Nothing is running;
+no background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1259,16 +1265,20 @@ Rosenbrock usability loss, whose gsKL of 1.56 lies under that target's
 envelope of 2.02. The whole-VBMC runtime measurement of the guarded-sinh
 and kernel-reuse changes remains deferred as recorded in the pickup point.
 
-#### Proposed follow-ups (2026-09-18, not approved)
+#### Follow-ups proposed 2026-09-18
 
 These extend the completed experiment with narrowly identified missing
-evidence. None is authorized; each needs a user decision, a frozen
-manifest and a bounded allocation before any computation. Because they
-are designed after seeing the E5 results, any variant they produce is a new
-treatment under a new declared allocation whose results are never merged
-with the completed S2 arm; the amendment forbids tuning the frozen method
-itself. F1 to F3 are frozen-state or trace analyses with no target calls
-and no GP fits, and they can run in any order; F4 is conditional on them.
+evidence. Each needs a user decision, a frozen manifest and a bounded
+allocation before any computation. Because they are designed after seeing
+the E5 results, any variant they produce is a new treatment under a new
+declared allocation whose results are never merged with the completed S2
+arm; the amendment forbids tuning the frozen method itself. F1 to F3 are
+frozen-state or trace analyses with no target calls and no GP fits.
+Status: F3 was executed on 2026-09-18; F2 was approved the same day with
+the design and two-stage plan of the
+[F2 amendment](#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18),
+whose second stage supersedes F4 for that treatment; F1 is not approved
+and not scheduled.
 
 - **F1. Isolate the sieve size.** Run the frozen S2 selection with the
   coarse sieve at 2048, 4096 and 8192 candidates, holding the eight-point
@@ -1282,17 +1292,21 @@ and no GP fits, and they can run in any order; F4 is conditional on them.
   quarter. Estimated cost: selections took about two seconds per cell in
   E3, so three variants on 24 states and eight repetitions are under an
   hour of selections plus one to two hours of judging and timing.
-- **F2. Matched-cost RQMC.** Implement a production-grade
-  component-stratified scrambled-Sobol rule that reuses the kernel path,
-  at 96 and 128 nodes, and evaluate it two ways on frozen states: as a
-  drop-in for the production 8192-candidate sieve, timed against MC100 on
-  the full sieve and judged; and as the coarse scorer inside S2 and its F1
-  variants, to test whether low-discrepancy nodes at the same budget remove
-  the coarse mis-ranking that E3 could not separate from coverage loss.
-  E2's panel result for RQMC128 (45 beneficial, 10 harmful of 96 at 1.49
-  times panel cost) is the motivation; the full-sieve cost ratio and the
-  benefit at matched cost are the missing numbers. Estimated cost: one to
-  two hours of frozen-state compute after implementation and focused tests.
+- **F2. Matched-cost RQMC.** Approved 2026-09-18; the
+  [amendment](#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+  below specifies it. Replace the 100 Monte Carlo nodes of the production
+  VIQR estimate with 96 randomized quasi-Monte Carlo nodes and evaluate
+  the replacement as a drop-in for the production selection, first on
+  frozen states against MC100, then in a paired inference comparison.
+  E2's panel result for stratified RQMC128 (45 beneficial, 10 harmful of
+  96 at 1.49 times panel cost, where MC128 and stratified MC128 gained
+  nothing over MC100) is the motivation; the full-sieve cost ratio and
+  the benefit at matched cost are the missing numbers. As first proposed,
+  F2 would also have tested the rule as the coarse scorer inside S2 and
+  its F1 variants and used E2's component-stratified power-of-two
+  allocation at 96 and 128 nodes; the approved version drops both,
+  because S2 is not pursued and the per-component allocation does not
+  scale to the component counts of a late run.
 - **F3. Diagnose the high-noise Rosenbrock trajectories.** Executed
   2026-09-18 on the user's decision; the
   [report](../results/2026-09-16-noisy-acquisition-integration-search.md#f3-trajectory-diagnosis-of-high-noise-rosenbrock)
@@ -1332,11 +1346,222 @@ and no GP fits, and they can run in any order; F4 is conditional on them.
   Rosenbrock convergence and gsKL as outcomes. F3 also warns that a more
   consistent coarse rule (F2) could reproduce S2's concentration in the
   production sieve. The completed E5 arms are paper-budget results and are
-  not merged with production-budget runs.
+  not merged with production-budget runs. For the RQMC treatment this
+  comparison is Stage 2 of the F2 amendment, which fixes its seeds,
+  outcomes and harness.
 
 Executor roles follow the experiment's convention: Astra decides scope and
 reads evidence, Sol implements and runs, separate Sol agents review, and at
 most one agent runs compute at a time.
+
+#### Approved F2 amendment: matched-cost RQMC nodes (2026-09-18)
+
+The user approved F2 on 2026-09-18 as the follow-up to pursue, with the
+production search retained and the design and staging below. The question
+is whether the same VIQR criterion, estimated on 96 randomized
+quasi-Monte Carlo (RQMC) nodes instead of the 100 Monte Carlo nodes drawn
+from the variational posterior, selects better points at no extra cost and
+without degrading inference. The criterion, the 8192-candidate sieve, the
+local search and every other option are unchanged; only the node set on
+which the VIQR integral is estimated differs.
+
+**Why the estimate matters.** F3 measured that the production 100-node
+estimate identifies the truly best of an eight-candidate shortlist in
+27.6 percent of selections against 12.5 percent by chance, so the
+production pick is largely randomized among the leading candidates. A
+more accurate estimate at the same budget follows the criterion more
+faithfully. F3 also warns that S2, which made the pick faithful by
+re-scoring on 1600 nodes, placed its evaluations closer to the centre on
+high-noise Rosenbrock and degraded inference there, an effect confounded
+with S2's smaller sieve. RQMC isolates the estimator: if inference
+degrades under it, the cause is the criterion's own optimum, which is
+worth knowing before the release; if it does not, the improvement is
+free.
+
+**The node rule.** One scrambled Sobol sequence in D + 1 dimensions
+(`scipy.stats.qmc.Sobol`, linear matrix scrambling with a digital shift),
+the first 96 points of a 128-point base-2 draw, which is the same point
+set as asking for 96 without scipy's balance warning. The first
+coordinate selects the mixture component through the cumulative
+variational weights; the remaining D coordinates pass through the inverse
+normal CDF, clipped away from 0 and 1, into that component's diagonal
+Gaussian (`mu`, `sigma` times `lambd`). Every node has weight 1/96, so
+the production VIQR sum is unchanged. Before the cumulative weights are
+formed, the components are ordered along one axis so that neighbouring
+slabs of the first coordinate map to neighbouring components and the
+integrand is nearly continuous in that coordinate. The axis is the
+leading eigenvector of the weight-weighted covariance of the means
+measured in units of `lambd`, its sign fixed by making its largest entry
+positive; the components are sorted by their projection onto it, ties
+broken by component index. The order affects only the variance, so the
+ordering never raises and degrades through a fixed chain of fallbacks:
+with one or two components the index order is used (two components give
+the same two contiguous slabs in either order); if the eigendecomposition
+raises, returns a non-finite value, or its two largest eigenvalues lie
+within a relative tolerance of each other (a symmetric arrangement of
+means, where the leading axis is not unique and would depend on the
+BLAS), the axis is the coordinate with the largest weighted variance of
+the standardized means, ties to the lowest index; if that variance is
+zero relative to the component widths (coincident means), the components
+are ordered by `sigma`. A fresh scramble is drawn for every
+selected point from the VP's generator (`seed=vp.rng`), so the node set
+stays random across iterations and the estimate stays unbiased: each node
+is marginally an exact draw from the VP for any component order, and the
+order affects only the variance. A component with weight below 1/96
+receives a node with probability about 96 times its weight and never a
+forced node; a component with weight 0.3 receives 28 to 30 nodes where the
+Monte Carlo count has standard deviation 4.5. Generation costs 0.2 to
+0.6 ms per draw at D from 2 to 20 against selections of 234 to 834 ms, so
+the nodes are not cached.
+
+**Why not E2's rule.** E2's component-stratified rule gives every
+positive-weight component its own power-of-two Sobol block with at least
+one node. The variational mixture grows to `k_fun_max = N ** (2/3)`
+components, 34 at 200 evaluations and 45 at 300, and pruning leaves
+weights down to about 0.002 at that size. At 96 nodes the one-node floor
+spends nearly half the budget before allocating anything, the rule's own
+specification marks it unavailable once components outnumber nodes, and
+the blocks that remain are too small to carry low-discrepancy structure.
+`dev/scripts/rqmc_node_design_check.py` is the developer check that
+settled the design: on a Gaussian bump as wide as a component under a
+synthetic diagonal mixture at 96 nodes, the root-mean-square error of the
+single-sequence rule relative to plain Monte Carlo was 0.30 to 0.85 at
+K = 3 and 0.42 to 0.98 at K = 12 for D from 2 to 10, the gain shrinking
+with dimension; at K = 40 with 16 to 21 weights below 0.01 it was 0.54,
+0.69 and 0.72 at D = 2, 5 and 10 in the mixture's own component order and
+0.47, 0.65 and 0.62 sorted, while proportional and power-of-two block
+rules gave 0.46 to 0.80 with no consistent advantage. Bumps half as wide
+as a component at D of 5 and above are unmeasurable at 96 nodes by every
+rule (Monte Carlo error above the integral), the regime the
+[investigation](../2026-09-08-noisy-acquisitions.md) describes as a few
+importance points carrying the whole reduction. The check stands in for
+the VIQR integrand; Stage 1 measures the real one.
+
+**Stage 1: frozen-state evaluation.** Reuse the 24 captured E0 states
+(six configurations, seeds 0 and 1, early and late checkpoints). Arms: the
+production selection with fresh MC100 nodes (baseline), the production
+selection with RQMC96 nodes in sorted component order (primary) and in
+the VP's own component order (control). Eight independent repetitions per
+state and arm, each treatment selection paired with a fresh baseline
+selection as in E2 and E3, on the full 8192-candidate sieve with the
+production search, with no target calls and no GP fits. Judge with the
+existing independent RQMC ladder and ordinary-MC cross-checks; time with
+seven paired rounds per state on a quiet single-threaded machine, counting
+node generation, ordering and preparation. Choose between sorted and
+unsorted on the twelve development states (seed 0) and confirm the choice
+on the twelve holdout states (seed 1); if neither passes on development,
+stop and report. The gates are E2's screening gate: median of
+state-median cost ratios at most 1.10 (about 1.0 is expected), at most
+5 percent confidently worse selections, no positive claim above
+20 percent unresolved, and any material raw loss investigated and
+blocking promotion until explained; report every state and the worst
+losses. Expected cost after implementation and focused tests: about ten
+minutes of selections, and judging and timing on the scale of E3's
+holdout, one to two hours in all, allocated from measured pilots. Records
+go under `dev/experiments/noisy-acquisition-efficiency/integration-search/`
+with an `f2_` prefix, and the report gains an F2 section.
+
+**Stage 2: paired inference comparison.** Authorized only by a separate
+user decision after the Stage 1 report. Both arms run through
+`golden_trace.py run --suite production`, so every run is a
+production-budget run at the package's defaults for a specified-noise
+target: the baseline arm with no extra options, the treatment arm with
+`--options` enabling the rule (the sidecar records the requested options,
+which identifies the arm). Configurations: the six E0 configurations under
+their production labels, `rosenbrock_D2_noise1_production`,
+`rosenbrock_D2_noise3_production`, `logreg_D5_noise3_production`,
+`student_D8_noise3_production`, `timing_D5_noise2.2_production` and
+`multisensory_s1_D6_noise1.3_production`. Multisensory stays although E5
+found it unusable in both arms: that verdict was gsKL between 0.9 and 4.5
+at 400 evaluations, and the production budget gives it 600. Seeds come
+from the production reference's per-label seed sets (0 to 49 for
+`rosenbrock_D2_noise1` and `logreg_D5_noise3`, 0 to 29 for the others),
+excluding 0 and 1 whose paper-budget trajectories supplied the frozen
+states: seeds 2 to 21 on `rosenbrock_D2_noise3_production` and
+`logreg_D5_noise3_production`, the two configurations where E5 saw
+losses, and seeds 2 to 11 on the other four, the same seeds in both arms.
+That is 80 pairs and 160 fits. The baseline arm's traces are
+production-reference runs: if the rule is not promoted they enter the
+production reference directly, and if it is they are the before-change
+population for the promotion assessment, so no run is wasted. Outcomes
+are fixed before launch: per configuration, the paired differences in
+gsKL, MMTV and evidence error (median paired log-ratio with a bootstrap
+interval and a sign test), usability and convergence transitions,
+target-call counts, and fit-time and search-time ratios; the named
+sensitive outcomes are high-noise Rosenbrock convergence and gsKL,
+logistic-regression gsKL and MMTV, Student-t usability and multisensory
+usability at its production budget. The mechanism check computes F3's
+post-warmup statistics (median squared Mahalanobis distance to the
+reference mean, fractions inside the nominal 50 percent and beyond the
+nominal 99 percent ellipse, distance to the nearest earlier live point,
+median observed log density, fraction 20 nats below the best
+observations) for both arms on every configuration with a reference
+posterior. A worse median with at least seven of ten or fourteen of
+twenty pairs worse on the same configuration and metric triggers
+scientific review, as does every convergence or usability loss. A sign
+test at twenty pairs resolves a three-to-one asymmetry and nothing finer:
+the stage screens for systematic loss and cannot detect a failure that
+occurs one run in twenty. The release gate's regeneration of the run
+pools with the release code is the check for rare failures, so a
+promotion, if any, precedes that regeneration. Cost: E5's 120 fits took
+6.02 worker hours at the paper budget; with 1.5 times the evaluations and
+the late iterations the expensive ones, plan on 12 to 18 laptop hours in
+bounded batches. The completed E5 arms are paper-budget results and are
+not merged with these.
+
+**Implementation.** Two options in `advanced_vbmc_options.ini` (names
+provisional): `active_importance_sampling_qmc`, a switch that stays off
+until promotion so that no oracle or golden trace moves during the
+experiment, and `active_importance_sampling_qmc_samples = 96`, the node
+count of the RQMC path; the Monte Carlo path and its option are
+untouched. The rule applies to the variational-importance-sampling path of
+`active_importance_sampling.py`, which VIQR uses; IMIQR's resampling and
+MCMC path is unchanged. A private helper in that module draws the nodes.
+Focused tests: agreement with Monte Carlo on a toy mixture integral within
+Monte Carlo error (unbiasedness); bit-identical production output when the
+production nodes are injected in place of the drawn ones (parity of
+everything downstream of the draw); K = 1, K above the node count, D = 1
+and a component with weight below 1/96; every ordering fallback (one and
+two components, coincident means, a symmetric arrangement with tied
+leading eigenvalues, an eigendecomposition made to raise, and a `lambd`
+that differs across dimensions by orders of magnitude); seed
+reproducibility from `vp.rng` and the fixed eigenvector sign; endpoint
+clipping. The environment
+preflight pins scipy, since the scrambling stream is not guaranteed
+stable across scipy versions. On promotion: switch the default; dump the
+oracle outputs before the switch and run `--check --exact` after it. The
+`active_sample_step` oracle moves, and the VIQR acquisition oracle may
+move too, because the oracles redraw the importance nodes from the rebuilt
+state with the fixture's stored options; whatever moves is re-baselined
+on purpose with `--rebaseline NAME --reason "..."` and the reason recorded
+in `meta["rebaselined"]`. Update the noisy golden references after
+assessment and preserve the old ones as the working rules require, and
+document the rule in the option's `.ini` comment and the noisy-target
+documentation.
+
+**Excluded.** F1; the rule as S2's coarse scorer; 128 nodes;
+per-component allocation rules; any change to the criterion, sieve size
+or search; and tuning the rule on Stage 1 results beyond the choice
+between sorted and unsorted order made on the development states.
+
+Checklist:
+
+- [ ] Implement the rule behind the switch with the focused tests above;
+  run the oracle and acquisition suites with the switch off; freeze the
+  source identity.
+- [ ] Extend the frozen-state harness to run the production selection with
+  replaced nodes; pilot one state and record measured costs.
+- [ ] Freeze the Stage 1 manifest; run selections, judging and timing;
+  choose sorted or unsorted on development and confirm on holdout;
+  independent static review; report to the user.
+- [ ] On the user's decision, freeze the Stage 2 manifest; run both arms in
+  bounded batches through `golden_trace.py`; verify every archive; analyze
+  the pre-registered outcomes and the mechanism check; independent review;
+  report.
+- [ ] Promotion decision and, if promoted, the default switch, oracle
+  re-baseline, golden reference update and documentation.
+
+Executor roles are those of the follow-ups above.
 
 ### Decisions and unresolved empirical questions
 

@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-16. These lists describe scope, not priority or execution
+Updated 2026-09-18. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -37,8 +37,14 @@ records its execution.
   evaluation counts but degrades inference on high-noise Rosenbrock and
   the posterior-shape metrics of logistic regression while improving
   Student-t substantially, so the E6 assessment recommends keeping the
-  production search and proposes frozen-state follow-ups (sieve size,
-  matched-cost RQMC, a trajectory diagnosis) that await a user decision.
+  production search. Of its follow-ups, the trajectory diagnosis (F3) is
+  done and the PI approved matched-cost RQMC (F2) on 2026-09-18: 96
+  scrambled-Sobol nodes replace the 100 Monte Carlo nodes of the VIQR
+  estimate, evaluated first on the 24 frozen states and then, on a
+  separate decision, in a paired inference comparison on the production
+  labels whose baseline arm doubles as production-reference runs; the
+  [F2 amendment](plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+  fixes the design, seeds, outcomes and gates.
   The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records the results. The benefit
   criteria, allocation and screening gates are accepted; Bayesian
