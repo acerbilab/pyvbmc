@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; FOLLOW-UPS PROPOSED, NOT APPROVED**. Branch:
+Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; F3 EXECUTED; F1, F2, F4 AND THE FOUR-RUN BUDGET CONTINUATION PROPOSED, NOT APPROVED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
@@ -66,11 +66,21 @@ against none, one usability loss and gsKL increases up to 103 times on
 high-noise Rosenbrock, worse posterior-shape metrics on logistic regression)
 against six usable gains on Student-t. The [E6 assessment](#e6-assessment-2026-09-18)
 recommends against adoption and proposes targeted follow-ups; the user
-chose F3 first and it is complete (a read-only trajectory diagnosis that
-replays the stopping rule exactly and finds S2's evaluations concentrated in
-the posterior core with intermittent stability spikes, under a 200-evaluation
-benchmark budget below the package's noisy default of 300). F1, F2 and F4
-await a user decision. No E5 process is running.
+chose F3 first and it is complete and independently reviewed (a read-only
+trajectory diagnosis that replays the stopping rule exactly, measures that
+the 100-node coarse rule picks the accurate-rule best in 27.6 percent of
+selections against 12.5 percent by chance, and finds S2's evaluations more
+central with intermittent stability spikes, under a 200-evaluation benchmark
+budget below the package's noisy default of 300). On that finding the user
+decided on 2026-09-18 that experiments test what ships: the `production`
+suite of `benchmark_targets.py` carries the noisy configurations at package
+defaults, and the TODO records how a production reference is assembled.
+The next decision is the user's choice among the proposals in the
+[follow-ups](#proposed-follow-ups-2026-09-18-not-approved): the cheapest is
+continuing the four non-converged S2 runs at the production budget (four
+fits); F1 and F2 are frozen-state work; F4 is an inference comparison on the
+production labels with a pre-registered endpoint. Nothing is running; no
+background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
