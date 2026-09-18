@@ -1738,6 +1738,23 @@ scientific design had already received independent review.
   material and release-audit documentation. That integration changes no
   numerical experiment source; the frozen source identity and all 960 panel
   terminal records remain valid after the merge.
+- 2026-09-18, F2 Stage 1 development: the manifest was frozen at 18:19 UTC
+  and its 288 selection, 24 timing and 48 allocation cells plus the twelve
+  first-budget judge cells completed by about 19:20 UTC with no failure.
+  Every selection used the node count its arm prescribes. The judge ladder
+  was interrupted at budget 32768: a harness source was edited on disk
+  while the ladder ran, and every judge cell refuses a source whose hash
+  differs from the frozen manifest. The edit was set aside as a patch, the
+  exact frozen bytes were restored (a plain checkout would have rewritten
+  the files with CRLF line endings and different hashes), the identity
+  check passed again and the ladder resumed from its immutable budget
+  summaries, which were unaffected. The set-aside edit is a search-stream
+  null control described with the results. The holdout ladder was
+  interrupted the same way once more, by a commit of an unrelated tool
+  whose pre-commit hook set aside and restored the working tree and left
+  the two harness files with CRLF endings; the same restoration resumed
+  it. While a frozen-state campaign runs, nothing may be committed or
+  checked out in the worktree that executes it.
 
 ## Guarded-sinh execution checklist (completed)
 

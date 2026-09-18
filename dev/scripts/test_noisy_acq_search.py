@@ -324,6 +324,60 @@ def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
     assert importance._QMC_COMPONENT_ORDER == "axis"
 
 
+def test_search_stream_control_shares_sieve_and_nodes_with_the_baseline():
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr"
+    )
+    state = build_state(load_snapshot(fixture), rng=np.random.default_rng(8))
+    state["options"].__setitem__("search_optimizer", "cmaes", force=True)
+    state["options"].__setitem__("search_max_fun_evals", 30, force=True)
+    baseline = select_candidate(
+        state, SearchConfig(arm="S0"), search_seed=61, accurate_seed=62
+    )
+    control = select_candidate(
+        state,
+        SearchConfig(arm="S0", search_stream_offset=1),
+        search_seed=61,
+        accurate_seed=62,
+    )
+    np.testing.assert_array_equal(
+        baseline["coarse_candidates"], control["coarse_candidates"]
+    )
+    np.testing.assert_array_equal(
+        baseline["coarse_nodes"], control["coarse_nodes"]
+    )
+    np.testing.assert_array_equal(
+        baseline["coarse_scores"], control["coarse_scores"]
+    )
+    assert control["importance_node_count"] == 100
+    # Only the local search's randomness differs: the coarse winner the
+    # search starts from is the same, the record shows the extra draw, and
+    # the same seed reproduces it.
+    np.testing.assert_array_equal(
+        baseline["coarse_winner"], control["coarse_winner"]
+    )
+    assert "search_stream_offset_applied" not in baseline
+    assert control["search_stream_offset_applied"] == 1
+    assert len(control["search_stream_offset_draws"]) == 1
+    again = select_candidate(
+        state,
+        SearchConfig(arm="S0", search_stream_offset=1),
+        search_seed=61,
+        accurate_seed=62,
+    )
+    assert again["search_stream_offset_draws"] == (
+        control["search_stream_offset_draws"]
+    )
+    np.testing.assert_array_equal(again["selected"], control["selected"])
+    with pytest.raises(ValueError, match="Monte Carlo nodes"):
+        SearchConfig(
+            arm="S0", importance_qmc=True, search_stream_offset=1
+        ).validate()
+    with pytest.raises(ValueError, match="Monte Carlo nodes"):
+        SearchConfig(arm="S2", search_stream_offset=1).validate()
+
+
 def test_component_order_is_restored_when_a_selection_fails(monkeypatch):
     fixture = (
         Path(__file__).resolve().parents[2]

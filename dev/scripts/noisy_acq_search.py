@@ -48,12 +48,26 @@ class SearchConfig:
     importance_qmc: bool = False
     importance_qmc_samples: int = 96
     importance_qmc_order: str = "axis"
+    # Null control for the search stream: the production selection with
+    # its own sieve and importance nodes, after which this many extra draws
+    # are taken from the VP's generator, so that only the local search's
+    # randomness differs from the baseline at the same search seed.
+    search_stream_offset: int = 0
 
     def validate(self):
         if self.arm not in {"S0", "S1", "S2", "S3"}:
             raise ValueError("arm must be S0, S1, S2, or S3")
         if self.importance_qmc_order not in {"axis", "index"}:
             raise ValueError("importance_qmc_order must be axis or index")
+        if self.search_stream_offset < 0:
+            raise ValueError("search_stream_offset must be nonnegative")
+        if self.search_stream_offset and (
+            self.arm != "S0" or self.importance_qmc
+        ):
+            raise ValueError(
+                "the search-stream control is the production selection"
+                " with Monte Carlo nodes"
+            )
         if self.importance_qmc:
             if self.arm != "S0":
                 raise ValueError(
@@ -469,6 +483,32 @@ def prepare_selection(
                         importance,
                         "_QMC_COMPONENT_ORDER",
                         config.importance_qmc_order,
+                    )
+                )
+            if config.search_stream_offset:
+                original_importance = active.active_importance_sampling
+
+                def perturbed_importance(vp_, gp_, acq_, options_):
+                    result = original_importance(vp_, gp_, acq_, options_)
+                    draws = vp_.rng.integers(
+                        np.iinfo(np.int64).max,
+                        size=config.search_stream_offset,
+                    )
+                    # Provenance of the perturbation: the record shows the
+                    # extra draws were taken, and with what values.
+                    trace["search_stream_offset_applied"] = int(
+                        config.search_stream_offset
+                    )
+                    trace["search_stream_offset_draws"] = [
+                        int(value) for value in draws
+                    ]
+                    return result
+
+                stack.enter_context(
+                    patch.object(
+                        active,
+                        "active_importance_sampling",
+                        perturbed_importance,
                     )
                 )
             executed = False

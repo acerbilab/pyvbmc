@@ -44,11 +44,17 @@ def _selection(stage="development", method="stratified_rqmc", budget=512):
             "budget": 1600,
             "provenance": "unused_by_production_arms",
         }
-        record["node_rule"] = {
-            "kind": campaign.F2_NODE_RULE,
-            "samples": campaign.F2_NODE_SAMPLES,
-            "orders": list(campaign.F2_ORDERS),
-        }
+        if stage == "f2_control_development":
+            record["control_rule"] = {
+                "kind": campaign.F2_CONTROL_RULE,
+                "offset": campaign.F2_CONTROL_OFFSET,
+            }
+        else:
+            record["node_rule"] = {
+                "kind": campaign.F2_NODE_RULE,
+                "samples": campaign.F2_NODE_SAMPLES,
+                "orders": list(campaign.F2_ORDERS),
+            }
         if stage == "f2_holdout":
             record["development_choice"] = "axis"
             record["development_manifest_sha256"] = "frozen-development"
@@ -207,6 +213,57 @@ def test_f2_development_pairs_three_production_arms_on_fresh_streams(
     assert [
         spec["contrast"] for spec in campaign._contrast_specs(manifest)
     ] == ["S0_qmc_sorted_minus_S0", "S0_qmc_unsorted_minus_S0"]
+
+
+def test_f2_control_stage_pairs_the_baseline_with_a_reseeded_copy(
+    tmp_path, monkeypatch
+):
+    capture_manifest, selection_path = _prepare_inputs(
+        tmp_path, monkeypatch, _selection(stage="f2_control_development")
+    )
+    manifest = campaign.prepare_manifest(
+        capture_manifest, tmp_path, selection_path, "f2_control_development"
+    )
+    assert [item["tag"] for item in manifest["treatments"]] == [
+        "S0",
+        "S0_reseeded",
+    ]
+    control = manifest["treatments"][1]
+    assert control["role"] == "search_stream_null_control"
+    assert control["config"] == {
+        **manifest["treatments"][0]["config"],
+        "search_stream_offset": 1,
+    }
+    assert manifest["split"] == "development"
+    assert manifest["purpose"].endswith("search-stream null control")
+    assert len(manifest["cells"]) == 2 * campaign.SELECTION_REPLICATES
+    campaign.validate_manifest(manifest, require_ready=False)
+    assert [
+        spec["contrast"] for spec in campaign._contrast_specs(manifest)
+    ] == ["S0_reseeded_minus_S0"]
+    # Its streams are its own: the same state and replicate draw another
+    # search seed than the F2 development stage.
+    other = tmp_path / "nodes"
+    other.mkdir()
+    node_capture, node_selection = _prepare_inputs(
+        other, monkeypatch, _selection(stage="f2_development")
+    )
+    node_manifest = campaign.prepare_manifest(
+        node_capture, other, node_selection, "f2_development"
+    )
+    assert (
+        manifest["cells"][0]["search_seed"]
+        != node_manifest["cells"][0]["search_seed"]
+    )
+    bad = _selection(stage="f2_control_development")
+    bad["control_rule"]["offset"] = 2
+    wrong = tmp_path / "wrong"
+    wrong.mkdir()
+    bad_capture, bad_selection = _prepare_inputs(wrong, monkeypatch, bad)
+    with pytest.raises(RuntimeError, match="one-draw"):
+        campaign.prepare_manifest(
+            bad_capture, wrong, bad_selection, "f2_control_development"
+        )
 
 
 def test_f2_holdout_binds_the_development_choice_and_stays_locked(

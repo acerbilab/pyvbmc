@@ -36,11 +36,22 @@ JUDGE_BUDGETS = (4096, 8192, 16384, 32768, 65536)
 # search (S0), the treatments differ from the baseline only in the node
 # rule switched on through its option. Each stage maps to the capture
 # split it reads and seeds its own streams under its own name.
-F2_STAGES = {"f2_development": "development", "f2_holdout": "holdout"}
+F2_STAGES = {
+    "f2_development": "development",
+    "f2_holdout": "holdout",
+    # The null control for the search stream: the baseline against itself
+    # with one extra generator draw before the local search, so that the
+    # judge's verdict rate on a pure search-randomness difference is known.
+    "f2_control_development": "development",
+}
+F2_NODE_STAGES = ("f2_development", "f2_holdout")
 F2_NODE_RULE = "scrambled_sobol_mixture"
 F2_NODE_SAMPLES = 96
 F2_ORDERS = ("axis", "index")
 F2_TAGS = {"axis": "S0_qmc_sorted", "index": "S0_qmc_unsorted"}
+F2_CONTROL_RULE = "search_stream_offset"
+F2_CONTROL_OFFSET = 1
+F2_CONTROL_TAG = "S0_reseeded"
 HOLDOUT_STAGES = {"holdout", "f2_holdout"}
 STAGES = {"development", "development_control", *HOLDOUT_STAGES, *F2_STAGES}
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
@@ -214,12 +225,29 @@ def _read_selection(path: Path, stage: str) -> dict[str, Any]:
         )
     normalized = copy.deepcopy(selection)
     normalized["accurate_rule"] = {**rule, "method": method, "budget": budget}
-    if stage in F2_STAGES:
+    if stage in F2_STAGES and (
+        selection.get("finalist_config") is not None
+        or selection.get("strongest_arm_config") is not None
+    ):
+        raise RuntimeError("an F2 selection names no search arm")
+    if stage == "f2_control_development":
+        control = selection.get("control_rule")
         if (
-            selection.get("finalist_config") is not None
-            or selection.get("strongest_arm_config") is not None
+            not isinstance(control, dict)
+            or control.get("kind") != F2_CONTROL_RULE
+            or int(control.get("offset", 0)) != F2_CONTROL_OFFSET
+            or selection.get("node_rule") is not None
         ):
-            raise RuntimeError("an F2 selection names no search arm")
+            raise RuntimeError(
+                "F2 control selection must carry the one-draw search-stream"
+                " offset and no node rule"
+            )
+        normalized["control_rule"] = {
+            **control,
+            "kind": F2_CONTROL_RULE,
+            "offset": F2_CONTROL_OFFSET,
+        }
+    elif stage in F2_STAGES:
         node_rule = selection.get("node_rule")
         if not isinstance(node_rule, dict):
             raise RuntimeError("an F2 selection requires node_rule")
@@ -345,6 +373,23 @@ def _treatments(stage: str, selection: dict[str, Any]) -> list[dict[str, Any]]:
         "config": _config_record("S0", rule),
         "accurate_seed_role": "unused_baseline",
     }
+    if stage == "f2_control_development":
+        control = selection.get("control_rule")
+        if not isinstance(control, dict):
+            raise RuntimeError("F2 control selection lacks its control rule")
+        return [
+            baseline,
+            {
+                "tag": F2_CONTROL_TAG,
+                "role": "search_stream_null_control",
+                "config": _config_record(
+                    "S0",
+                    rule,
+                    template={"search_stream_offset": int(control["offset"])},
+                ),
+                "accurate_seed_role": "unused_baseline",
+            },
+        ]
     if stage in F2_STAGES:
         node_rule = selection.get("node_rule")
         if not isinstance(node_rule, dict) or list(
@@ -627,7 +672,9 @@ def prepare_manifest(
         "schema_version": SCHEMA_VERSION,
         "kind": "search",
         "purpose": (
-            "noisy-acquisition F2 frozen-state importance-node evaluation"
+            "noisy-acquisition F2 search-stream null control"
+            if stage == "f2_control_development"
+            else "noisy-acquisition F2 frozen-state importance-node evaluation"
             if stage in F2_STAGES
             else "noisy-acquisition E3 frozen-state search"
         ),
