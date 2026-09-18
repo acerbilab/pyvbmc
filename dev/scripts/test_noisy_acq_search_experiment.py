@@ -114,6 +114,8 @@ def _prepare_inputs(tmp_path, monkeypatch, selection):
     trajectory_seed = 1 if selection["stage"] in campaign.HOLDOUT_STAGES else 0
     state = {
         "state_id": f"case_seed{trajectory_seed}_early",
+        "label": "case",
+        "seed": trajectory_seed,
         "snapshot": str(tmp_path / "snapshot"),
         "snapshot_hashes": {".json": "j", ".npz": "n"},
     }
@@ -224,9 +226,30 @@ def test_f2_holdout_binds_the_development_choice_and_stays_locked(
         "S0_qmc_sorted",
         "S0_qmc_unsorted",
     ]
+    roles = {item["tag"]: item["role"] for item in manifest["treatments"]}
+    assert roles["S0_qmc_sorted"] == "qmc_node_treatment_confirmation"
+    assert roles["S0_qmc_unsorted"] == "qmc_node_control_descriptive"
+    assert manifest["holdout_confirmation"] == {
+        "development_choice": "axis",
+        "primary_contrast": "S0_qmc_sorted_minus_S0",
+        "descriptive_contrasts": ["S0_qmc_unsorted_minus_S0"],
+    }
     with pytest.raises(RuntimeError, match="locked"):
         campaign.validate_manifest(
             {**manifest, "launch_ready": True}, require_ready=True
+        )
+    unlocked = {**manifest, "launch_ready": True, "holdout_locked": False}
+    with pytest.raises(RuntimeError, match="split does not match"):
+        campaign.validate_manifest(
+            {**unlocked, "split": "development"}, require_ready=True
+        )
+    wrong_seed = json.loads(json.dumps(unlocked))
+    wrong_seed["states"][0]["seed"] = 0
+    with pytest.raises(RuntimeError, match="other split"):
+        campaign.validate_manifest(wrong_seed, require_ready=True)
+    with pytest.raises(RuntimeError, match="confirmation record"):
+        campaign.validate_manifest(
+            {**unlocked, "holdout_confirmation": None}, require_ready=True
         )
     unlocked = {**manifest, "launch_ready": True, "holdout_locked": False}
     campaign.validate_manifest(unlocked, require_ready=True)
@@ -321,6 +344,79 @@ def test_f2_source_transition_declares_only_the_allowed_changes(
         campaign.validate_manifest(
             {**e3_manifest, "source_transition": good}, require_ready=False
         )
+
+
+def test_timing_and_allocation_records_project_their_results(
+    tmp_path, monkeypatch
+):
+    manifest = _minimal_manifest(tmp_path)
+    monkeypatch.setattr(campaign, "runtime_identity", lambda _: {})
+    state = {"vp": SimpleNamespace(D=2)}
+    monkeypatch.setattr(campaign.capture, "restore_capture", lambda _: state)
+    monkeypatch.setattr(campaign, "_state_digest", lambda _: "unchanged")
+    monkeypatch.setattr(
+        campaign.search,
+        "prepare_selection",
+        lambda state, config, **kwargs: nullcontext(
+            lambda: _fake_search_result(0)
+        ),
+    )
+
+    def time_pair(baseline, treatment, *, seed):
+        results = {}
+        for name, factory in (
+            ("baseline", baseline),
+            ("treatment", treatment),
+        ):
+            with factory(seed) as operation:
+                results[name] = operation()
+                results[name]["cache_indices"] = np.array([np.nan, 1.0])
+                results[name]["importance_node_count"] = 96
+        first_round = {"round": 0}
+        for name, result in results.items():
+            first_round[name] = {
+                "seed": seed,
+                "seconds": 0.1,
+                "result": result,
+            }
+        return {"seed": seed, "rounds": [first_round], "quality_claim": False}
+
+    monkeypatch.setattr(campaign.timing, "time_pair", time_pair)
+    cell = manifest["timing_cells"][0]
+    assert campaign.run_timing_cell(manifest, tmp_path, cell)["status"] == (
+        "succeeded"
+    )
+    written = json.loads(
+        campaign._paths(tmp_path, campaign.timing_tag(cell), "timing")[
+            "json"
+        ].read_text(encoding="utf-8")
+    )
+    for name in ("baseline", "treatment"):
+        result = written["timing"]["rounds"][0][name]["result"]
+        assert "cache_indices" not in result
+        assert result["importance_node_count"] == 96
+        assert result["selected"] == [0.0, 0.0]
+
+    def measure_allocations(prepare, *, seed):
+        with prepare(seed) as operation:
+            result = operation()
+        result["cache_indices"] = np.full(8192, np.nan)
+        return {"seed": seed, "result": result, "traced_peak_bytes": 1}
+
+    monkeypatch.setattr(
+        campaign.timing, "measure_allocations", measure_allocations
+    )
+    allocation = manifest["allocation_cells"][0]
+    assert campaign.run_allocation_cell(manifest, tmp_path, allocation)[
+        "status"
+    ] == ("succeeded")
+    written = json.loads(
+        campaign._paths(
+            tmp_path, campaign.allocation_tag(allocation), "allocation"
+        )["json"].read_text(encoding="utf-8")
+    )
+    assert "cache_indices" not in written["allocation"]["result"]
+    assert written["allocation"]["result"]["selected"] == [0.0, 0.0]
 
 
 def test_timing_projection_keeps_scalars_and_the_selected_row():

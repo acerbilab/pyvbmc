@@ -1391,8 +1391,8 @@ formed, the components are ordered along one axis so that neighbouring
 slabs of the first coordinate map to neighbouring components and the
 integrand is nearly continuous in that coordinate. The axis is the
 leading eigenvector of the weight-weighted covariance of the means
-measured in units of `lambd`, its sign fixed by making its largest entry
-positive; the components are sorted by their projection onto it, ties
+measured in units of `lambd`, its sign fixed by making its entry of
+largest magnitude positive; the components are sorted by their projection onto it, ties
 broken by component index. The order affects only the variance, so the
 ordering never raises and degrades through a fixed chain of fallbacks:
 with one or two components the index order is used (two components give
@@ -1403,11 +1403,12 @@ means, where the leading axis is not unique and would depend on the
 BLAS), the axis is the coordinate with the largest weighted variance of
 the standardized means, ties to the lowest index; if that variance is
 zero relative to the component widths (coincident means), the components
-are ordered by `sigma`. A fresh scramble is drawn for every
-selected point from the VP's generator (`seed=vp.rng`), so the node set
-stays random across iterations and the estimate stays unbiased: each node
-is marginally an exact draw from the VP for any component order, and the
-order affects only the variance. A component with weight below 1/96
+are ordered by `sigma`. For every selected point the scramble's seed is
+one integer drawn from the VP's generator, so the node set is a function
+of the generator's state: a saved random state replays it, successive
+draws differ, and the estimate stays unbiased, since each node is
+marginally a draw from the VP for any component order and the order
+affects only the variance. A component with weight below 1/96
 receives a node with probability about 96 times its weight and never a
 forced node; a component with weight 0.3 receives 28 to 30 nodes where the
 Monte Carlo count has standard deviation 4.5. Generation costs 0.2 to

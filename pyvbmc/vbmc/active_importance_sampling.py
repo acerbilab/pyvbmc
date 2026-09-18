@@ -33,17 +33,19 @@ def qmc_component_order(vp):
     to neighbouring components, which keeps the integrand nearly continuous
     in that coordinate. The axis is the leading eigenvector of the
     weight-weighted covariance of the component means measured in units of
-    ``vp.lambd``, its sign fixed by making its largest entry positive; the
-    components are sorted by their projection onto it, ties broken by
-    index. The order affects only the variance of an estimate, never its
-    expectation, so this function never raises and falls back in a fixed
-    order: one or two components keep their index order; if the
-    eigendecomposition raises, returns non-finite values or has its two
-    largest eigenvalues within ``_QMC_EIGENVALUE_TIE_RTOL`` of each other,
-    the axis is the coordinate with the largest weighted variance of the
-    standardized means (lowest index on ties); if the means coincide (that
-    variance below ``_QMC_COINCIDENT_RTOL`` times the mean squared
-    component width), the components are ordered by ``vp.sigma``.
+    ``vp.lambd``, its sign fixed by making its entry of largest magnitude
+    positive; the components are sorted by their projection onto it, ties
+    broken by index. The order affects only the variance of an estimate,
+    never its expectation, so this function never raises and decides in
+    this order: one or two components keep their index order; if the
+    weighted variances of the standardized means are not finite (a
+    non-finite weight or mean) or all lie below ``_QMC_COINCIDENT_RTOL``
+    times the mean squared component width (coincident means), the
+    components are ordered by ``vp.sigma``; if the eigendecomposition
+    raises, returns non-finite values or has its two largest eigenvalues
+    within ``_QMC_EIGENVALUE_TIE_RTOL`` of each other, the axis is the
+    coordinate with the largest weighted variance of the standardized
+    means (lowest index on ties); otherwise it is the leading eigenvector.
 
     Parameters
     ----------
@@ -102,11 +104,15 @@ def qmc_vp_nodes(vp, N, rng, order=None):
     mixture component through the cumulative weights taken in ``order``,
     the other ``D`` coordinates pass through the inverse normal CDF into
     that component's Gaussian. Every node has the same weight and each is
-    marginally an exact draw from the VP, so the plain average of a
-    function over the nodes is an unbiased estimate of its expectation
-    under the VP; the scramble comes from ``rng``. Components with weight
-    below ``1 / N`` receive a node with probability about ``N`` times their
-    weight and are never forced one, so ``N`` may be smaller than ``K``.
+    marginally a draw from the VP (a scrambled Sobol' point is uniform on
+    the cube, to the sequence's 30-bit resolution), so the plain average
+    of a function over the nodes is an unbiased estimate of its
+    expectation under the VP. The scramble's seed is one integer drawn
+    from ``rng``, so the node set is a function of the generator's state:
+    a restored state replays it, and successive calls differ. Components
+    with weight below ``1 / N`` receive a node with probability about
+    ``N`` times their weight and are never forced one, so ``N`` may be
+    smaller than ``K``.
 
     Parameters
     ----------
@@ -115,7 +121,7 @@ def qmc_vp_nodes(vp, N, rng, order=None):
     N : int
         The number of nodes, positive.
     rng : np.random.Generator
-        The source of the scramble.
+        The generator the scramble's seed is drawn from.
     order : np.ndarray, optional
         The component order along the first coordinate, shape ``(K,)``.
         By default ``qmc_component_order(vp)``.
@@ -133,7 +139,13 @@ def qmc_vp_nodes(vp, N, rng, order=None):
         order = qmc_component_order(vp)
     order = np.asarray(order)
     m = int(np.ceil(np.log2(N))) if N > 1 else 0
-    u = qmc.Sobol(d=D + 1, scramble=True, seed=rng).random_base2(m)[:N]
+    # ``seed`` is the keyword every supported scipy accepts without a
+    # warning; passing the generator itself would derive the scramble by
+    # spawning from its seed sequence, which a saved random state does not
+    # record.
+    scramble_seed = int(rng.integers(np.iinfo(np.int64).max))
+    u = qmc.Sobol(d=D + 1, scramble=True, seed=scramble_seed).random_base2(m)
+    u = u[:N]
     w = np.asarray(vp.w, dtype=float).ravel()[order]
     cdf = np.cumsum(w)
     cdf /= cdf[-1]
@@ -223,8 +235,13 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
         if use_qmc:
             if _QMC_COMPONENT_ORDER == "index":
                 order = np.arange(vp.K)
-            else:
+            elif _QMC_COMPONENT_ORDER == "axis":
                 order = None
+            else:
+                raise ValueError(
+                    "_QMC_COMPONENT_ORDER must be 'axis' or 'index', not"
+                    f" {_QMC_COMPONENT_ORDER!r}"
+                )
             Xa, __ = qmc_vp_nodes(vp, Na, rng, order=order)
         else:
             Xa, __ = vp.sample(Na, orig_flag=False)

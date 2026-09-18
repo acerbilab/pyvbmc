@@ -123,6 +123,46 @@ def _f2_source_transition(capture_manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _holdout_confirmation(selection: dict[str, Any]) -> dict[str, Any]:
+    """Name the F2 holdout's primary contrast and its descriptive one."""
+    choice = selection["development_choice"]
+    return {
+        "development_choice": choice,
+        "primary_contrast": f"{F2_TAGS[choice]}_minus_S0",
+        "descriptive_contrasts": [
+            f"{F2_TAGS[order]}_minus_S0"
+            for order in F2_ORDERS
+            if order != choice
+        ],
+    }
+
+
+def _expected_split(stage: str) -> str:
+    if stage in F2_STAGES:
+        return F2_STAGES[stage]
+    return "development" if stage == "development_control" else stage
+
+
+def _validate_split(manifest: dict[str, Any]) -> None:
+    """The split drives the holdout guards and the trajectory seed."""
+    split = _expected_split(manifest["stage"])
+    if manifest.get("split") != split:
+        raise RuntimeError("manifest split does not match its stage")
+    wanted_seed = 0 if split == "development" else 1
+    if any(
+        state.get("seed") != wanted_seed
+        for state in manifest.get("states", [])
+        + manifest.get("missing_states", [])
+    ):
+        raise RuntimeError("a manifest state comes from the other split")
+    confirmation = manifest.get("holdout_confirmation")
+    if manifest["stage"] == "f2_holdout":
+        if confirmation != _holdout_confirmation(manifest["selection"]):
+            raise RuntimeError("F2 holdout confirmation record is wrong")
+    elif confirmation is not None:
+        raise RuntimeError("only the F2 holdout carries a confirmation")
+
+
 def _validate_source_transition(manifest: dict[str, Any]) -> None:
     transition = manifest.get("source_transition")
     if manifest["stage"] not in F2_STAGES:
@@ -306,13 +346,31 @@ def _treatments(stage: str, selection: dict[str, Any]) -> list[dict[str, Any]]:
         "accurate_seed_role": "unused_baseline",
     }
     if stage in F2_STAGES:
-        node_rule = selection["node_rule"]
+        node_rule = selection.get("node_rule")
+        if not isinstance(node_rule, dict) or list(
+            node_rule.get("orders", [])
+        ) != list(F2_ORDERS):
+            raise RuntimeError("F2 selection lacks the frozen node rule")
+        choice = selection.get("development_choice")
+        if stage == "f2_holdout" and choice not in F2_ORDERS:
+            raise RuntimeError("F2 holdout selection lacks its choice")
+
+        def role(order):
+            # On holdout the order chosen on development is the one under
+            # confirmation; the other order's arm is retained as a
+            # descriptive control and never becomes a second selection.
+            if stage != "f2_holdout":
+                return "qmc_node_treatment"
+            if order == choice:
+                return "qmc_node_treatment_confirmation"
+            return "qmc_node_control_descriptive"
+
         return [
             baseline,
             *[
                 {
                     "tag": F2_TAGS[order],
-                    "role": "qmc_node_treatment",
+                    "role": role(order),
                     "config": _config_record(
                         "S0",
                         rule,
@@ -577,6 +635,11 @@ def prepare_manifest(
         "stage": stage,
         "split": split,
         "holdout_locked": stage in HOLDOUT_STAGES,
+        **(
+            {"holdout_confirmation": _holdout_confirmation(selection)}
+            if stage == "f2_holdout"
+            else {}
+        ),
         "capture_manifest": str(capture_manifest_path.resolve()),
         "capture_manifest_sha256": integration.sha256_file(
             capture_manifest_path
@@ -648,6 +711,7 @@ def validate_manifest(
     ):
         raise RuntimeError("holdout search manifest remains locked")
     _validate_source_transition(manifest)
+    _validate_split(manifest)
     if manifest.get("replicates") != SELECTION_REPLICATES:
         raise RuntimeError("search replicate allocation changed")
     if manifest.get("master_seed") != MASTER_SEED:
@@ -1215,6 +1279,8 @@ def run_allocation_cell(
             raise RuntimeError(
                 "allocation measurement mutated captured state or RNG"
             )
+        if isinstance(report.get("result"), dict):
+            report["result"] = _project_timing_result(report["result"])
         payload = {
             "schema_version": SCHEMA_VERSION,
             "status": "succeeded",

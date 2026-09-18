@@ -109,17 +109,29 @@ def test_nodes_shape_dtype_finite_and_seeded():
     assert np.array_equal(X, X_again) and np.array_equal(comp, comp_again)
     X_other, __ = qmc_vp_nodes(vp, N_NODES, np.random.default_rng(12))
     assert not np.array_equal(X, X_other)
+    # Successive draws from one generator give fresh scrambles, and the
+    # draw advances the generator's state, so a restored state replays it.
+    rng = np.random.default_rng(13)
+    first, __ = qmc_vp_nodes(vp, N_NODES, rng)
+    state = rng.bit_generator.state
+    second, __ = qmc_vp_nodes(vp, N_NODES, rng)
+    assert not np.array_equal(first, second)
+    rng.bit_generator.state = state
+    replayed, __ = qmc_vp_nodes(vp, N_NODES, rng)
+    assert np.array_equal(second, replayed)
 
 
 def test_component_counts_are_within_two_of_proportional():
     """The first 96 points of a scrambled Sobol' sequence are a balanced
-    block of 64 and a balanced block of 32, so a slab of width ``w`` holds
-    ``96 w`` points up to two either way."""
+    block of 64 and a balanced block of 32; each block puts one point in
+    every dyadic cell of its resolution, so a slab of width ``w`` holds
+    ``96 w`` points up to two per block, four in all. Monte Carlo counts
+    have standard deviation 4.5 for the half-weight component."""
     w = np.array([0.5, 0.3, 0.2])
     vp = _vp(2, 3, [[0, 0], [3, 0], [0, 3]], w=w)
     for seed in range(20):
         __, comp = qmc_vp_nodes(vp, N_NODES, np.random.default_rng(seed))
-        assert np.all(np.abs(_counts(comp, 3) - N_NODES * w) <= 2)
+        assert np.all(np.abs(_counts(comp, 3) - N_NODES * w) <= 4)
 
 
 def test_small_weight_component_is_never_forced_a_node():
@@ -287,6 +299,27 @@ def test_switch_off_keeps_the_monte_carlo_draw(monkeypatch):
     assert active_is["X"].shape == (10, vp.D)
 
 
+def test_options_saved_before_the_switch_existed_take_the_mc_path():
+    vp, gp, __ = _scenario()
+    options = _options(vp.D, active_importance_sampling_mcmc_samples=10)
+    del options["active_importance_sampling_qmc"]
+    del options["active_importance_sampling_qmc_samples"]
+    active_is = active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
+    assert active_is["X"].shape == (10, vp.D)
+
+
+def test_unknown_component_order_mode_is_refused(monkeypatch):
+    vp, gp, __ = _scenario()
+    options = _options(
+        vp.D,
+        active_importance_sampling_qmc=True,
+        active_importance_sampling_qmc_samples=N_NODES,
+    )
+    monkeypatch.setattr(ais, "_QMC_COMPONENT_ORDER", "random")
+    with pytest.raises(ValueError, match="_QMC_COMPONENT_ORDER"):
+        active_importance_sampling(vp, gp, AcqFcnVIQR(), options)
+
+
 def test_switch_on_draws_qmc_nodes_and_leaves_the_rest_unchanged(
     monkeypatch,
 ):
@@ -303,9 +336,11 @@ def test_switch_on_draws_qmc_nodes_and_leaves_the_rest_unchanged(
     assert active_qmc["X"].dtype == np.float64
     expected, __ = qmc_vp_nodes(vp, N_NODES, np.random.default_rng(5))
     assert np.array_equal(active_qmc["X"], expected)
-    np.testing.assert_allclose(
-        np.exp(active_qmc["ln_weights"]).sum(), 1.0, rtol=1e-12
-    )
+    # Equal node weights: VIQR's base density is constant, so after
+    # normalization every log weight is the same value.
+    ln_w = active_qmc["ln_weights"]
+    assert ln_w.shape[1] == N_NODES
+    np.testing.assert_allclose(ln_w, ln_w.flat[0], rtol=0, atol=1e-12)
 
     # Everything downstream of the draw is the production path: feeding
     # the same nodes through the Monte Carlo path gives identical output.

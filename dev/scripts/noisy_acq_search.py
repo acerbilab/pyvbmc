@@ -304,12 +304,29 @@ def prepare_selection(
         raise ValueError(
             "search experiment requires the standard VIQR acquisition"
         )
+    if active._selection_policy_callback is not None:
+        raise ValueError(
+            "a selection policy is installed; the frozen-state search runs"
+            " the production controller unmodified"
+        )
     if options.get("active_importance_sampling_qmc", False):
         raise ValueError(
             "captured options already request quasi-Monte Carlo importance"
             " nodes; the frozen-state search expects the production Monte"
             " Carlo draw as its baseline"
         )
+    evaluation = {
+        "K": private["vp"].K,
+        "n_vars": private["vp"].D,
+        "D": private["vp"].D,
+    }
+    if options.eval("active_importance_sampling_mcmc_samples", evaluation) != (
+        100
+    ):
+        raise ValueError(
+            "search experiment requires the production 100-node coarse rule"
+        )
+    expected_nodes = 100
     if config.importance_qmc:
         options.__setitem__("active_importance_sampling_qmc", True, force=True)
         options.__setitem__(
@@ -317,24 +334,15 @@ def prepare_selection(
             int(config.importance_qmc_samples),
             force=True,
         )
-        coarse_key = "active_importance_sampling_qmc_samples"
-        expected_budget = int(config.importance_qmc_samples)
-    else:
-        coarse_key = "active_importance_sampling_mcmc_samples"
-        expected_budget = 100
-    coarse_budget = options.eval(
-        coarse_key,
-        {
-            "K": private["vp"].K,
-            "n_vars": private["vp"].D,
-            "D": private["vp"].D,
-        },
-    )
-    if coarse_budget != expected_budget:
-        raise ValueError(
-            "search experiment requires the production 100-node coarse rule"
-            " or the frozen quasi-Monte Carlo node count"
-        )
+        expected_nodes = int(config.importance_qmc_samples)
+        if (
+            options.eval("active_importance_sampling_qmc_samples", evaluation)
+            != expected_nodes
+        ):
+            raise ValueError(
+                "quasi-Monte Carlo node count did not reach the private"
+                " options"
+            )
     if config.arm != "S0":
         options.__setitem__("ns_search", config.sieve_size, force=True)
     importance = importlib.import_module(
@@ -384,6 +392,11 @@ def prepare_selection(
         trace["importance_node_count"] = int(
             np.asarray(call_optim["active_importance_sampling"]["X"]).shape[0]
         )
+        if trace["importance_node_count"] != expected_nodes:
+            raise RuntimeError(
+                f"the selection used {trace['importance_node_count']}"
+                f" importance nodes where its arm prescribes {expected_nodes}"
+            )
         if retain_panel:
             trace["coarse_candidates"] = np.array(X, copy=True)
             trace["coarse_scores"] = np.array(values, copy=True)

@@ -260,9 +260,18 @@ def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
     )
     state = build_state(load_snapshot(fixture), rng=np.random.default_rng(5))
     state["options"].__setitem__("search_optimizer", "none", force=True)
+    # Three components at distinct locations, so that the sorted and the
+    # VP-order arms draw different node sets (with two components the two
+    # orders coincide).
+    vp = state["vp"]
+    vp.K = 3
+    vp.mu = np.array([[0.0, 0.6, -0.5], [0.0, -0.4, 0.5]])
+    vp.w = np.array([[0.5, 0.3, 0.2]])
+    vp.sigma = np.array([[0.08, 0.1, 0.12]])
     importance = importlib.import_module(
         "pyvbmc.vbmc.active_importance_sampling"
     )
+    assert not np.array_equal(importance.qmc_component_order(vp), [0, 1, 2])
     orders = []
     original = importance.qmc_vp_nodes
 
@@ -301,8 +310,10 @@ def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
     np.testing.assert_array_equal(
         baseline["coarse_candidates"], unsorted_arm["coarse_candidates"]
     )
+    # The control arm is a real control: the same scramble seed maps the
+    # first coordinate through a different component order.
     assert not np.array_equal(
-        baseline["coarse_nodes"][:96], sorted_arm["coarse_nodes"]
+        sorted_arm["coarse_nodes"], unsorted_arm["coarse_nodes"]
     )
     assert orders[0] is None
     np.testing.assert_array_equal(orders[1], np.arange(state["vp"].K))
@@ -311,6 +322,67 @@ def test_qmc_arms_replace_only_the_importance_nodes(monkeypatch):
     # Monte Carlo draw and the production component order is restored.
     assert state["options"]["active_importance_sampling_qmc"] is False
     assert importance._QMC_COMPONENT_ORDER == "axis"
+
+
+def test_component_order_is_restored_when_a_selection_fails(monkeypatch):
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr"
+    )
+    state = build_state(load_snapshot(fixture), rng=np.random.default_rng(6))
+    state["options"].__setitem__("search_optimizer", "none", force=True)
+    importance = importlib.import_module(
+        "pyvbmc.vbmc.active_importance_sampling"
+    )
+
+    def failing(*args, **kwargs):
+        raise RuntimeError("node draw failed")
+
+    monkeypatch.setattr(importance, "qmc_vp_nodes", failing)
+    with pytest.raises(RuntimeError, match="node draw failed"):
+        select_candidate(
+            state,
+            SearchConfig(
+                arm="S0", importance_qmc=True, importance_qmc_order="index"
+            ),
+            search_seed=1,
+            accurate_seed=2,
+        )
+    assert importance._QMC_COMPONENT_ORDER == "axis"
+    assert state["options"]["active_importance_sampling_qmc"] is False
+
+
+def test_selection_refuses_a_wrong_node_count_or_an_installed_policy(
+    monkeypatch,
+):
+    fixture = (
+        Path(__file__).resolve().parents[2]
+        / "pyvbmc/testing/oracles/fixtures/rosenbrock_D2_noise1_viqr"
+    )
+    state = build_state(load_snapshot(fixture), rng=np.random.default_rng(7))
+    state["options"].__setitem__("search_optimizer", "none", force=True)
+    importance = importlib.import_module(
+        "pyvbmc.vbmc.active_importance_sampling"
+    )
+    original = importance.qmc_vp_nodes
+    monkeypatch.setattr(
+        importance,
+        "qmc_vp_nodes",
+        lambda vp, N, rng, order=None: original(vp, N - 1, rng, order=order),
+    )
+    with pytest.raises(RuntimeError, match="95 importance nodes"):
+        select_candidate(
+            state,
+            SearchConfig(arm="S0", importance_qmc=True),
+            search_seed=3,
+            accurate_seed=4,
+        )
+    active = importlib.import_module("pyvbmc.vbmc.active_sample")
+    monkeypatch.setattr(active, "_selection_policy_callback", object())
+    with pytest.raises(ValueError, match="selection policy"):
+        select_candidate(
+            state, SearchConfig(arm="S0"), search_seed=3, accurate_seed=4
+        )
 
 
 def test_s0_matches_direct_production_cmaes_selection(monkeypatch):
