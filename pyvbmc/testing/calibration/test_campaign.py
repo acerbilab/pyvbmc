@@ -1,6 +1,7 @@
 """Focused scheduler and numerical tests for the calibration campaign."""
 
 import json
+import math
 from statistics import median
 from types import SimpleNamespace
 
@@ -225,6 +226,31 @@ def test_selection_rejects_workload_regression_controls_aliases_and_gaps():
 
     incomplete = [_timing_workload("gap", [0.7] * 4, [1.0] * 5)]
     assert campaign._select_group(incomplete, valid, 5)["budget"] == 2**16
+
+
+def test_regression_veto_admits_exactly_the_named_workload_slowdown():
+    assert 1 / campaign._MAX_WORKLOAD_SLOWDOWN == campaign._CONTROL_LOW
+
+    def gate(workload_median):
+        rounds = campaign.DISCOVERY_ROUNDS
+        ratios = {
+            "complete": True,
+            "affected_workloads": ["fast", "slow"],
+            "per_workload": {
+                "fast": [2.0] * rounds,
+                "slow": [workload_median] * rounds,
+            },
+            "rounds": [1.5] * rounds,
+        }
+        return campaign._gate_ratios(ratios, rounds)
+
+    admitted = 1 / campaign._MAX_WORKLOAD_SLOWDOWN
+    assert gate(admitted)["regression_veto_pass"]
+    assert gate(admitted)["pass"]
+
+    vetoed = math.nextafter(admitted, 0.0)
+    assert not gate(vetoed)["regression_veto_pass"]
+    assert not gate(vetoed)["pass"]
 
 
 def test_output_comparison_rejects_broadcastable_shape_mismatch():

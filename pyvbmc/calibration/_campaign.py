@@ -350,17 +350,6 @@ def _aligned_timing_orders(
     return _balanced_orders(base, len(base))
 
 
-def _deduplicate_order(order: tuple[int, ...], aliases: dict[int, int]):
-    seen = set()
-    result = []
-    for budget in order:
-        representative = aliases[budget]
-        if representative not in seen:
-            seen.add(representative)
-            result.append(representative)
-    return tuple(result)
-
-
 def _legacy_rng_equal(left, right) -> bool:
     return (
         left[0] == right[0]
@@ -884,8 +873,12 @@ def _gate_ratios(ratios: dict, rounds: int) -> dict:
     workload_medians = {
         name: median(values) for name, values in ratios["per_workload"].items()
     }
+    # A candidate is vetoed when any single workload is more than
+    # _MAX_WORKLOAD_SLOWDOWN times slower than at the default budget, even
+    # when the group as a whole is faster.
     regression_ok = all(
-        value >= _CONTROL_LOW for value in workload_medians.values()
+        value >= 1 / _MAX_WORKLOAD_SLOWDOWN
+        for value in workload_medians.values()
     )
     passed = (
         group_median >= _MIN_SPEEDUP and wins >= needed_wins and regression_ok
