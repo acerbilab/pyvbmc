@@ -1148,6 +1148,16 @@ before publication.
 - [x] Add a thin [agent skill](../../skills/pyvbmc/SKILL.md) directing users'
   coding agents to existing documentation (2026-09-12). Scope and maintenance
   are recorded in the [skill note](../2026-09-02-user-agent-skill.md).
+- [ ] Sweep every tracked document and record before the release for
+  acknowledgments of a wrong value or defect that the affected file does
+  not itself carry as a correction or flag, and for statements that were
+  true when written and are stale now (branch names, counts, work
+  described as continuing or remaining): `dev/*.md`, `dev/plans/`,
+  `dev/results/`, the review copies under `dev/experiments/`,
+  `dev/README.md`, `AGENTS.md`, the README, `docsrc/` and the docstrings.
+  Fix each in place; where a record cannot change, put the flag in the
+  record or as close to it as its format allows. Read-only reviewers by
+  area; the PI triages. `TODO.md` states the rule and its origin.
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages before release.
 

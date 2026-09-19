@@ -119,6 +119,12 @@ plan and consolidated human summary.
   comparison, with the E6 assessment and proposed follow-ups.
   Its [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records sources, coverage, verification and measured results.
+- [plans/port-correctness-review.md](plans/port-correctness-review.md) —
+  independent correctness review of PyVBMC and gpyreg before the release
+  freeze: internal-correctness and MATLAB-comparison tracks per slice,
+  third readers on the gradient and integral formulas, the reviewer
+  brief, verification into a findings ledger, and the later MATLAB check
+  session, against the latest MATLAB `master`.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local
