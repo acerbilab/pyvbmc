@@ -279,6 +279,14 @@ def _effective_count(workload: _Workload) -> int:
     return workload.count
 
 
+def _entropy_blocks(Ns: int, D: int, K: int, budget: int) -> tuple[int, int]:
+    """Components and samples of the entropy kernel's block at a budget."""
+    per_component = Ns * D * K
+    g = max(1, min(K, budget // max(1, per_component)))
+    step = Ns if per_component <= budget else max(1, budget // max(1, D * K))
+    return g, min(Ns, step)
+
+
 def _layout_signature(workload: _Workload, budget: int) -> tuple[int, ...]:
     D, K = int(workload.D), int(workload.K)
     budget = int(budget)
@@ -286,12 +294,29 @@ def _layout_signature(workload: _Workload, budget: int) -> tuple[int, ...]:
         step = max(1, budget // max(1, D * K))
         step = min(workload.count, step)
         return (step, workload.count // step, workload.count % step)
+    # The entropy kernel reduces over the blocks of the default budget
+    # whatever budget is in force, and computes the component densities of
+    # such a block in blocks of its own: a subdivision of one of them, or a
+    # union of whole ones that spans every sample.
     Ns = _effective_count(workload)
-    per_component = Ns * D * K
-    g = max(1, min(K, budget // max(1, per_component)))
-    step = Ns if per_component <= budget else max(1, budget // (D * K))
-    step = min(Ns, step)
-    return (g, K // g, K % g, step, Ns // step, Ns % step)
+    g_c, step_c = _entropy_blocks(Ns, D, K, DEFAULT_BUDGET)
+    g_x, step_x = _entropy_blocks(Ns, D, K, budget)
+    if step_x >= Ns:
+        step_x = Ns
+    elif step_x > step_c:
+        step_x = (step_x // step_c) * step_c
+    if g_x > g_c:
+        g_x = (g_x // g_c) * g_c if step_x >= Ns else g_c
+    return (
+        g_c,
+        K // g_c,
+        K % g_c,
+        step_c,
+        Ns // step_c,
+        Ns % step_c,
+        g_x,
+        step_x,
+    )
 
 
 def _layout_aliases(
@@ -509,23 +534,31 @@ def _workspace_estimate(workload: _Workload, budget: int) -> dict:
             + K
         )
     else:
-        g, _, _, step, _, _ = _layout_signature(workload, budget)
-        block = g * step
+        g_c, _, _, step_c, _, _, g_x, step_x = _layout_signature(
+            workload, budget
+        )
+        canonical = g_c * step_c
+        block = g_x * step_x
         # Antithetic construction briefly overlaps eps_half, -eps_half and
         # epsilon (2*K*Ns*D doubles).  The kernel later retains epsilon while
-        # a block can require four distance-tensor-sized buffers: the stored
-        # delta, chained ufunc input/output, and conservative einsum workspace.
-        # Include reduced densities, sample/gradient intermediates, fixed
-        # mixture arrays and the softmax Jacobian.  Summing these phase peaks
-        # is intentionally conservative; 25% additional allocator/reduction
-        # headroom is applied below.
+        # a computed block can require four distance-tensor-sized buffers: the
+        # stored delta, chained ufunc input/output, and conservative einsum
+        # workspace, alongside its squared distances, component densities,
+        # samples and location sums.  A canonical block can hold gathered
+        # component densities and location sums or contiguous copies of them,
+        # and holds the mixture densities and the gradient intermediates
+        # reduced from them.  Include the fixed mixture arrays and the softmax
+        # Jacobian.  Summing these phase peaks is intentionally conservative;
+        # 25% additional allocator/reduction headroom is applied below.
         grad_mu, grad_sigma, grad_lambd, grad_w = workload.grad_flags
         raw_doubles = (
             2 * K * count * D
             + 4 * block * D * K
             + 3 * block * K
-            + block
-            + 5 * block * D
+            + 3 * block * D
+            + 2 * canonical * K
+            + 5 * canonical * D
+            + 3 * canonical
             + (3 + int(grad_mu)) * K * D
             + (6 + int(grad_sigma) + int(grad_w)) * K
             + (1 + int(grad_lambd)) * D

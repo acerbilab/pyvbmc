@@ -34,7 +34,7 @@ from pyvbmc._user_hints import emit_user_hint
 from .profile import CalibrationProfile, default_profile
 
 CACHE_SCHEMA_VERSION = 1
-KERNEL_REVISION = "chunk-kernels-v1"
+KERNEL_REVISION = "chunk-kernels-v2"
 WORKLOAD_REVISION = "machine-calibration-v1"
 CANDIDATE_BUDGETS = frozenset(2**power for power in range(14, 19))
 MAX_CACHE_BYTES = 1024 * 1024
