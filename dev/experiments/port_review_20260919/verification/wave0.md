@@ -6,7 +6,10 @@ orchestrator, 2026-09-19, on branch `dev-port-review` at `0e4e27a` (package
 code identical to `f91fdf0`). Each finding was reproduced by running a small
 script or by reading the cited lines; the scripts under `scripts/` are the
 reviewers' own reproductions, read before reuse, plus one written here
-(`n2s_f1_prior_draws.py`). Outputs are under `logs/`. All scripts insert the
+(`n2s_f1_prior_draws.py`). Their outputs were logged under the gitignored
+`dev/scripts/runs/port_review_20260919/verification_logs/` on the machine
+that ran them, which its `LOCAL.md` lists; the tables below quote the
+decisive lines. All scripts insert the
 repository root into `sys.path` or were run with `PYTHONPATH` set to it, so
 they exercise this checkout.
 
