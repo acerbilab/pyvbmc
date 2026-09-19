@@ -184,10 +184,12 @@ Sampling
 the original space: the number of draws from each run is multinomial in the
 runs' total weights, the component within a run is chosen at random by
 weight, and the rows are shuffled, so any subset of rows is itself a valid
-sample. ``sample(n, balance_flag=True)`` instead splits the draws across
-runs and components in proportion to the weights, every count within one
-draw of its exact share: a stratified sample with lower variance for
-expectations, not an independent one.
+sample. ``sample(n, balance_flag=True)`` instead stratifies the draws: the
+number taken from each run is within one draw of that run's exact share of
+the weights, and within a run they are spread over its components by the
+balanced allocation of ``VariationalPosterior.sample``, which follows the
+component weights up to the random placement of its remainder. A stratified
+sample has lower variance for expectations, but is not an independent one.
 
 All numerical draws of an ``SVBMC`` object come from its own generator, set
 by the ``seed`` argument; the input posteriors are never modified or advanced.

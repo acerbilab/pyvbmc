@@ -879,11 +879,16 @@ Generator, optional
         component choice within a run is random (see
         :meth:`VariationalPosterior.sample`) and the rows are shuffled, so
         the result is an independent sample of exactly ``n_samples`` rows.
-        With ``balance_flag=True`` the draws are split across runs, and
-        across components within a run, in proportion to the weights, every
-        count within one draw of its exact share (a stratified sample with
-        lower variance for expectations, not an independent one). All randomness comes from this object's
-        generator; the input posteriors are not touched.
+        With ``balance_flag=True`` the draws are stratified instead: the
+        number taken from a run is within one draw of that run's exact
+        share of the weights, and within a run they are spread over its
+        components by the balanced allocation of
+        :meth:`VariationalPosterior.sample`, which follows the component
+        weights up to the random placement of its remainder and so holds
+        no exact bound per component. Stratification lowers the variance
+        of expectations; it does not give an independent sample. All
+        randomness comes from this object's generator; the input
+        posteriors are not touched.
 
         Parameters
         ----------
