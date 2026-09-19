@@ -343,6 +343,14 @@ dated addendum.
 - **Noise handler kept.** It changes CMA-ES's step-size adaptation on a
   deterministic acquisition (it measures the 1e-7-scale local variation
   as "noise"); removing it would be an algorithmic change, out of Stage 2.
+  Superseded on 2026-09-19: the port review compared the search with and
+  without the handler
+  (`dev/experiments/port_review_20260919/verification/cmaes_side_by_side/`)
+  and found the acquired values equivalent within noise, the handler
+  costing about 2.4 extra acquisition evaluations per generation, while
+  MATLAB VBMC's `cmaes_modded` has no noise handling; the handler and
+  the `_BatchedNoiseHandler` subclass were removed
+  (`plans/port-correctness-review.md`).
 - **The replay gate is soft by design**: ranking flips from one-ulp
   differences are expected, so it reports an agreement horizon and checks
   the finals against the population range rather than demanding identity.

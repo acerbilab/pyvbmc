@@ -137,7 +137,10 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
   cma noise handler drawing from the global state) was removed on
   2026-09-05 with Stage 2 item 8: gpyreg's `fit` takes `rng=`
-  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`,
+  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`
+  (the subclass was removed on 2026-09-19 together with the search's
+  noise handling, which the port review found unneeded on a
+  deterministic acquisition; `plans/port-correctness-review.md`),
   and a run never reads or writes NumPy's global state; the per-iteration
   `random_state` holds only the generator state. One call site had been
   missed: the slice sampler of the MCMC step in

@@ -276,8 +276,9 @@ Things you must hold in your head across files:
   notebooks rely on this). The GP hyperparameter fit receives the generator
   (`train_gp(rng=)` → `gpyreg.GP.fit(rng=)`, which covers the space-filling
   design and the slice sampler; needs the gpyreg commit pinned in
-  `test-matrix.yml` or later) and the CMA-ES noise-handler subclass in
-  `active_sample.py` draws its re-evaluation count from `vp.rng`, and
+  `test-matrix.yml` or later), the CMA-ES search in `active_sample.py`
+  draws its populations through the generator (the `randn` option of
+  `cma`), and
   `active_importance_sampling` passes `vp.rng` to the slice sampler of its
   MCMC step (IMIQR), so a run never reads or writes NumPy's global state
   (since 2026-09-05, and for IMIQR runs since 2026-09-10, when the
