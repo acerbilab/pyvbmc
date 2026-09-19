@@ -456,8 +456,8 @@ def active_sample(
 
                 One point (a 1-D array: Nelder-Mead, or CMA-ES's rejection
                 path) returns a float; a list of points (one CMA-ES
-                generation, or the noise handler's re-evaluations) is
-                evaluated in a single batched call and returns a list.
+                generation) is evaluated in a single batched call and
+                returns a list.
                 With integer variables the acquisition snaps its input to
                 the integer grid in place (`AbstractAcqFcn._real2int`), and
                 the pointwise call let that reach CMA-ES's own solution
@@ -541,15 +541,16 @@ def active_sample(
                     # call (`parallel_objective`); `ask_and_eval` draws it
                     # with a single `ask` in either mode, so the random
                     # stream is the same as with a pointwise objective.
+                    # The GP, the variational posterior and the importance
+                    # samples are fixed while the search runs, so the
+                    # acquisition is deterministic and the search needs no
+                    # noise handling: one generation costs one population.
                     res = cma.fmin(
                         acq_fun,
                         x0,
                         sigma0,
                         options=cma_options,
                         parallel_objective=acq_fun,
-                        noise_handler=_BatchedNoiseHandler(
-                            np.size(x0), acq_fun, vp.rng
-                        ),
                     )
 
                     xsearch_optim, f_val_optim = res[:2]
@@ -1014,65 +1015,3 @@ def _get_search_points(
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)
     return search_X, idx_cache
-
-
-class _BatchedNoiseHandler(cma.NoiseHandler):
-    """``cma.NoiseHandler`` whose re-evaluations are one batched call.
-
-    ``cma.fmin`` re-evaluates ``2 + popsize/20`` solutions per generation
-    at a perturbation of ``epsilon`` to measure "noise" (on VBMC's
-    deterministic acquisition this measures its local variation and only
-    affects the step-size adaptation). The stock ``reeval`` alternates
-    ``ask`` (one draw from the strategy's ``randn``) and one scalar
-    objective call per solution; this subclass performs the same ``ask``
-    calls in the same order first and then evaluates all perturbed
-    solutions with one call to `batch_fun`, so the strategy's random stream
-    is that of the stock handler and the fitness values are the same up to
-    the arithmetic of a batched evaluation (a few ulp, as for the population
-    itself). Falls back to the stock method whenever its
-    one-evaluation-per-solution assumption does not hold (never with
-    ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
-
-    The stock ``indices`` decides the fractional part of the number of
-    re-evaluations (``2 + popsize / 20``) with one ``np.random.rand()``,
-    the only draw of a VBMC run that came from NumPy's global state; the
-    override takes it from `rng` (the instance's generator) instead.
-    """
-
-    def __init__(self, N, batch_fun, rng):
-        super().__init__(N)
-        self._batch_fun = batch_fun
-        self._rng = rng
-
-    def indices(self, fit):
-        # The stock policy (`choice == 1` in cma 4.4.4): the first
-        # `lam_reev - lam_reev // 2` solutions and the best of the rest.
-        lam_reev = 1.0 * (
-            self.lam_reeval if self.lam_reeval else 2 + len(fit) / 20
-        )
-        lam_reev = int(lam_reev) + ((lam_reev % 1) > self._rng.random())
-        n_first = lam_reev - lam_reev // 2
-        sort_idx = np.argsort(np.asarray(fit)[n_first:]) + n_first
-        return np.asarray(
-            list(range(0, n_first)) + list(sort_idx[0 : lam_reev - n_first])
-        )
-
-    def reeval(self, X, fit, func, ask, args=()):
-        if (
-            not self.epsilon
-            or self.f_aggregate is None
-            or int(self.evaluations) != 1
-            or args
-        ):
-            return super().reeval(X, fit, func, ask, args)
-        self.fit = list(fit)
-        self.fitre = list(fit)
-        self.idx = self.indices(fit)
-        if not len(self.idx):
-            return self.idx
-        X_re = [ask(1, X[i], self.epsilon)[0] for i in self.idx]
-        f_re = self._batch_fun(X_re)
-        for i, f in zip(self.idx, f_re):
-            self.fitre[i] = self.f_aggregate([f])
-        self.evaluations_just_done = len(self.idx)
-        return self.fit, self.fitre, self.idx

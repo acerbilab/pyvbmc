@@ -131,6 +131,70 @@ def test_cmaes_search_starts_from_per_coordinate_step_sizes(mocker):
     assert np.allclose(population.std(axis=0), insigma, rtol=0.1)
 
 
+def test_cmaes_search_runs_without_noise_handling(mocker):
+    """The CMA-ES search spends one population per generation."""
+
+    def rosen(self, x, *args):
+        x = np.atleast_2d(x)
+        return np.log(
+            np.sum(
+                100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2.0
+                + (1 - x[:, :-1]) ** 2,
+                axis=1,
+            )
+        )
+
+    vbmc, gp = _state_with_gp(2)
+    real_fmin = cma.fmin
+    captured = {}
+
+    def fake_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["objective"] = objective
+        captured["x0"] = np.asarray(x0, dtype=float)
+        captured["sigma0"] = sigma0
+        captured["options"] = dict(options)
+        captured["kwargs"] = kwargs
+        # A rejected search result: the sieve's point is kept.
+        return np.asarray(x0, dtype=float), np.inf
+
+    mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
+    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+
+    active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert captured["kwargs"].get("noise_handler") is None
+
+    # Run that search: one batched call of `popsize` points per
+    # generation, and no re-evaluations on top of them.
+    batch_sizes = []
+
+    def counting(X):
+        batch_sizes.append(
+            1 if isinstance(X, np.ndarray) and X.ndim == 1 else len(X)
+        )
+        return captured["objective"](X)
+
+    res = real_fmin(
+        counting,
+        captured["x0"],
+        captured["sigma0"],
+        options=captured["options"],
+        parallel_objective=counting,
+    )
+    es = res[-2]
+    generations = res[4]
+    assert generations > 1
+    assert [n for n in batch_sizes if n > 1] == [es.popsize] * generations
+
+
 def test_active_uncertainty_sampling(mocker):
     def rosen(self, x, *args):
         x = np.atleast_2d(x)
