@@ -135,6 +135,25 @@ def test_init_with_specify_target_noise():
     assert vbmc1.options["active_sample_gp_update"] == False
 
 
+@pytest.mark.parametrize(
+    "D, expected",
+    [(1, 10), (2, 10), (9, 10), (10, 20), (15, 20), (19, 20), (20, 30)],
+)
+def test_fun_eval_start_default(D, expected):
+    """The initial design holds 10 evaluations up to nine dimensions and
+    the next multiple of 10 above ``D`` from there on, as in MATLAB VBMC
+    (``10*ceil((D+1)/10)``)."""
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+    )
+    assert vbmc.options["fun_eval_start"] == expected
+
+
 def test__str__and__repr__():
     default_options_path = options_path.joinpath("test_options.ini")
     options = Options(default_options_path, {"D": 2})
