@@ -471,12 +471,88 @@ pattern. The plan is written so that a developer with MATLAB and the
   `minimize_adam` writing into its starting point, and the
   deterministic-entropy branch raising where MATLAB continues.
   Verification and triage pending.
-- [ ] `test_vp_optimize_1D_g_mixture` fails about one run in forty (PI:
+- [x] 2026-09-19: wave 1 verified. P6: 24 ledger rows
+  (`verification/wave1_P6.md`); M and P2: 21 rows and seven minor
+  observations (`verification/wave1_M_P2.md`); every statement
+  reproduced or read in both sources, and the reports' own errors
+  recorded there (the reasoning behind P2 F15, M's cause for the
+  one-dimensional search override, three line citations). A pass over
+  the options surface that grew out of M F2
+  (`verification/wave1_options.md`) found 25 declared options that
+  nothing reads, three selection options that `determine_best_vp` took
+  as arguments both call sites left out, a ranking branch that had
+  never executed, and two iteration counts off by one against
+  `best_vbmc`.
+- [x] 2026-09-19: wave 1 fixed, 34 commits on `dev-port-review` after
+  `6c151cb` (three Opus agents on worktrees, one finding per commit with
+  its test, cherry-picked after review). Active sampling (13 plus one):
+  the CMA-ES search starts at the per-coordinate scales (`CMA_stds`) and
+  runs without cma's noise handler; the rank-one GP update takes a first
+  noisy observation with its variance; an empty search cache no longer
+  raises; `n_eff` is refreshed under the name its readers use; one
+  fallback search bound per coordinate; a failing local search keeps
+  the sieve's best candidate; the discarded repository write and the
+  unbalanced GP timer removed; surplus starting points stay in the cache
+  and an acquired cached point leaves it in every case; a
+  one-dimensional acquisition is searched by a bounded scalar method over
+  its interval; `warp_cov_reg` accepts a callable or any scalar.
+  Variational optimization (11): type-2 starting widths divide each
+  dimension's variance by its own length scale; the exact entropy of a
+  one-component posterior; `eta` set alongside `w`; `_sieve` without
+  candidates returns one-element arrays; `minimize_adam` copies its start
+  and averages over the iterates performed; the deterministic optimizer's
+  iterate is kept with a warning; `adaptive_k` evaluated on `K`; stable
+  sorts and `nanargmin` in the candidate selection; `var_ss` documented;
+  the Gaussian-mixture tests made deterministic; `get_bounds` computes
+  the soft-bound box from the call's training inputs. Options and
+  selection (5): inert options marked and warned about, `noise_shaping`
+  rejected, the selection options wired, iteration counts corrected.
+  Gates: every module suite touched; `--check --exact` 11 of 11 after
+  one sanctioned re-baseline of `active_sample_step` (`dd89374`: the
+  search reaches a different point on 7 of the 8 states, every other
+  reference bit-identical); the oracle tests; both flaky tests made
+  deterministic. Records: `AGENTS.md`, the Stage 1 and Stage 2 plans and
+  the oracle harness comments describe the search without its noise
+  handler (`80204f7`); the known-differences sheet brought to the state
+  of the code. **Moves default trajectories**: the per-coordinate search
+  scales and the dropped noise handler (every search with `D > 1`), the
+  ranking criterion (runs ending without a stable iteration), the exact
+  one-component entropy (reported values where `K = 1`), the type-2
+  starting widths (`D > 1` with two slow candidates), the bounded
+  one-dimensional search (`D = 1`) and the kept starting points (`x0`
+  longer than `fun_eval_start`), on top of `fun_eval_start` above. The
+  golden references are regenerated once after the review's remaining
+  trajectory-moving fixes are decided.
+- [x] 2026-09-19: rulings without a code change (PI). The soft-bound box
+  stays a function of the call's training inputs where MATLAB
+  accumulates it: `verification/scripts/soft_bounds_trace.py` on two
+  short seeded runs (Rosenbrock `D = 2`, two Gaussians `D = 3`) found
+  the accumulated box wider than the rebuilt one on about half the
+  calls (up to 2.2 and 12 times its width) while the fitted posterior
+  stayed within the rebuilt box up to a small overshoot (a component
+  mean 0.07 box widths outside, a log scale 0.008 above its bound), so
+  the rebuilt bounds bind marginally at most and the accumulation code
+  was removed instead of completed. `search_cmaes_best`
+  stays inert: the acquisition is deterministic while the search runs,
+  so cma's best-ever point is the best. The noise handler was dropped
+  after a side-by-side (`verification/cmaes_side_by_side/`) found the
+  two searches equivalent in value within noise and the handler costing
+  about 2.4 acquisition evaluations per generation. Unported features
+  found by the wave (`Bandwidth`, the `samples` output struct, the
+  clustering of surplus starting points) become sheet entries.
+- [x] `test_vp_optimize_1D_g_mixture` failed about one run in forty (PI:
   no flaky test is acceptable). Cause traced
   (`verification/scripts/flaky_vp_optimize_1d*.py`): `optimize_vp` gets a
   fresh, degenerate posterior, so its first slow optimization always
   ends in the merged solution and everything rides on the one candidate
-  the sieve ranks first, which is sometimes a broad merged pair.
+  the sieve ranks first, which is sometimes a broad merged pair. Remedy
+  (`29c822d`): a second `optimize_vp` call continuing from the returned
+  posterior, a seed, and the one-dimensional KL from exact moments; ten
+  of ten runs pass. `test_active_uncertainty_sampling` failed about one
+  run in seven for a different reason: the CMA-ES search stops by its
+  own tolerance (`tolfun = 1e-2` on a log acquisition) and on 6 of 40
+  seeds halts on the Rosenbrock valley floor short of the minimum the
+  test asserts; it is seeded (`39ad28a`).
 - [ ] Waves 1 to 7: P1a to P9, G1, G2, both tracks; M.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.

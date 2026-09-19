@@ -51,7 +51,7 @@ fact inherited from MATLAB.
   marginal likelihood and the acquisition functions. Python has none of it.
   PyVBMC keeps the option (`gp_int_mean_fun = 0`,
   `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:111`) and copies it
-  into `optim_state["int_mean_fun"]` (`pyvbmc/vbmc/vbmc.py:1100`), where
+  into `optim_state["int_mean_fun"]` (`pyvbmc/vbmc/vbmc.py:1101`), where
   nothing reads it.
 - Why: gpyreg never ported the feature. `gplite_intmeanfun.m` is absent from
   gpyreg's reference copy under `gpyreg/matlab/gplite/`, and every one of the
@@ -66,7 +66,7 @@ fact inherited from MATLAB.
 - Python: `pyvbmc/vbmc/gaussian_process_train.py:334`, `:363`, `:443`, `:461`
   ("Missing port: output warping hyperparameters not implemented",
   "Missing port: priors and bounds for output warping hyperparameters");
-  `pyvbmc/whitening/whitening.py:293` keeps the MATLAB line as a comment.
+  `pyvbmc/whitening/whitening.py:300-302` keeps the MATLAB line as a comment.
   gpyreg has no output-warping component.
 - MATLAB: `gplite/outwarp_negpow.m`, `gplite/outwarp_negpowc1.m`,
   `gplite/outwarp_negscaledpow.m`; option `defopts.gpOutwarpFun = []`
@@ -76,7 +76,7 @@ fact inherited from MATLAB.
   bookkeeping options (`fitness_shaping`, `out_warp_thresh_base`,
   `out_warp_thresh_mult`, `out_warp_thresh_tol` in
   `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:248-255`, and
-  `optim_state["out_warp_delta"]` in `pyvbmc/vbmc/vbmc.py:1105`, `:1672`)
+  `optim_state["out_warp_delta"]` in `pyvbmc/vbmc/vbmc.py:1106`, `:1696`)
   but there is no warping function behind them.
 - Why: gpyreg's `AGENTS.md` §"Relation to the MATLAB reference" states the
   `outwarp_*.m` functions are not ported; the PyVBMC comments record the same
@@ -247,28 +247,41 @@ fact inherited from MATLAB.
   `pyvbmc/vbmc/README.md` ("sample(): vbmc_rnd.m — gp_sample is missing").
 - Kind: unported feature.
 
-### Noise shaping is an unported stub
+### Noise shaping is not ported, and `noise_shaping=True` is rejected
 - Python: `pyvbmc/vbmc/gaussian_process_train.py:823` and
-  `pyvbmc/vbmc/active_sample.py:327` ("Missing port: noise_shaping"). The
+  `pyvbmc/vbmc/active_sample.py:343` ("Missing port: noise_shaping"). The
   options `noise_shaping`, `noise_shaping_threshold`, `noise_shaping_factor`
   exist (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:261-265`,
-  default off) and only flip a noise-function flag.
+  default off). `VBMC.__init__` raises `NotImplementedError` when
+  `noise_shaping` is set (`pyvbmc/vbmc/vbmc.py:327` calling
+  `_validate_noise_shaping_option`, `:3435`); `VBMC.load` does not apply the
+  check, so a saved run that carries the option still loads.
 - MATLAB: `misc/noiseshaping_vbmc.m`, called from
   `misc/get_traindata_vbmc.m`, `misc/gpsample_vbmc.m` and
   `private/activesample_vbmc.m`; `defopts.NoiseShaping = 'no'` (`vbmc.m:320`).
 - What differs: MATLAB inflates the observation noise of training points far
-  below the maximum observed density; PyVBMC does not.
+  below the maximum observed density; PyVBMC does not. What the option does
+  reach in PyVBMC is the rest of MATLAB's setting: an input-dependent GP
+  noise function (`pyvbmc/vbmc/vbmc.py:1073-1077`) and no rank-one GP update
+  inside active sampling (`pyvbmc/vbmc/active_sample.py:803-806`). A run with
+  those two and no shaping is a configuration of neither toolbox, so
+  construction refuses it and names the missing MATLAB feature.
 - Why: `dev/2026-09-02-modernization-discussion.md` §9
   ("`gaussian_process_train.py:768` — `noise_shaping` is an unported stub;
   the option only flips a noise-function flag"), and
   `dev/results/2026-09-16-gp-box-sampler.md` ("Noise shaping remains an
   unported, default-off option"). Out of 1.5 scope per `dev/TODO.md`
-  §"Outside 1.5 scope".
+  §"Outside 1.5 scope". The construction-time rejection was added on
+  2026-09-19 by commit `bb6ab65` "fix(vbmc): reject noise_shaping, whose
+  shaping is not ported"; what the option reaches without the shaping is set
+  out in
+  `dev/experiments/port_review_20260919/verification/wave1_options.md`
+  (row O-2).
 - Kind: unported feature.
 
 ### The iteration history stores GPs without their posterior factors
 - Python: `pyvbmc/vbmc/gaussian_process_train.py:872` (`_lean_gp`),
-  `:910` (`_restore_gp_posteriors`), `pyvbmc/vbmc/vbmc.py:2725`
+  `:910` (`_restore_gp_posteriors`), `pyvbmc/vbmc/vbmc.py:2747`
   (`get_gp`).
 - MATLAB: `vbmc.m`, `save_stats` (stores `stats.gp` in full).
 - What differs: PyVBMC records training data, hyperparameter samples and the
@@ -287,9 +300,9 @@ fact inherited from MATLAB.
 ## Slice P1a — main loop, warmup, termination, final boost
 
 ### Final boost is guarded; MATLAB accepts its result unconditionally
-- Python: `pyvbmc/vbmc/vbmc.py:2403` (`final_boost`), `:2575`
-  (`_validate_final_boost_tolerance`), `:2591`
-  (`_is_valid_final_boost_score`), `:2604`
+- Python: `pyvbmc/vbmc/vbmc.py:2412` (`final_boost`), `:2584`
+  (`_validate_final_boost_tolerance`), `:2600`
+  (`_is_valid_final_boost_score`), `:2613`
   (`_accept_final_boost_candidate`); option `tol_elcbo_boost = 0.1`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:51`).
 - MATLAB: `misc/finalboost_vbmc.m` (no acceptance test).
@@ -327,7 +340,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `results["overhead"]` is not implemented
-- Python: `pyvbmc/vbmc/vbmc.py:3137` (`output["overhead"] = np.nan`).
+- Python: `pyvbmc/vbmc/vbmc.py:3159` (`output["overhead"] = np.nan`).
 - MATLAB: `private/vbmc_output.m`.
 - What differs: PyVBMC returns `NaN` where MATLAB returns the fractional
   overhead (total running time / total function time − 1).
@@ -337,8 +350,8 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `results["rng_state"]` is a generator snapshot, not MATLAB's `rng` state
-- Python: `pyvbmc/vbmc/vbmc.py:3034` (`_get_random_state`, returning
-  `{"generator": <bit generator state>}`), `:3138`, `:3071`
+- Python: `pyvbmc/vbmc/vbmc.py:3056` (`_get_random_state`, returning
+  `{"generator": <bit generator state>}`), `:3160`, `:3093`
   (`_set_random_state`).
 - MATLAB: `private/vbmc_output.m` stores `rng` (the global generator state).
 - What differs: PyVBMC snapshots the instance's own `numpy.random.Generator`
@@ -351,6 +364,24 @@ fact inherited from MATLAB.
   draws") and Phase 1 item 6; `AGENTS.md` §"Randomness goes through
   `numpy.random.Generator` objects".
 - Kind: deliberate change.
+
+### MATLAB's `samples` output struct has no counterpart in `results`
+- Python: `pyvbmc/vbmc/vbmc.py:3119` (`_create_result_dict`) builds a results
+  dict with no equivalent key. The arrays it would hold live on the run's
+  `FunctionLogger` (`X_orig`, `y_orig`, `S`, `X_flag`, `n_evals`), which
+  `finalize()` trims to the filled rows.
+- MATLAB: `vbmc.m:942-957` (the `nargout > 5` block) returns a sixth output
+  with `samples.X`, `samples.y`, `samples.y_sd`, `samples.active_flag` and
+  `samples.nevals`, taken from `optimState` over `1:optimState.Xn` and scaled
+  by the posterior temperature.
+- What differs: a PyVBMC caller reads the evaluated points and their values
+  from the function logger rather than from the results dict, and no
+  temperature scaling is applied (PyVBMC runs at `temperature = 1`; see the
+  P7 entry on posterior tempering).
+- Why: `dev/experiments/port_review_20260919/verification/wave1_M_P2.md`
+  (row "M F4") reads the MATLAB lines and confirms that
+  `_create_result_dict`'s key list has no counterpart.
+- Kind: unported feature.
 
 ### The automated retry on failure (`RetryMaxFunEvals`) is not ported
 - Python: no counterpart.
@@ -424,9 +455,9 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### Vectorized targets, precomputed evaluations and the initialization cost
-- Python: `pyvbmc/vbmc/vbmc.py:595` (`_validate_initialization_cost`),
-  `:647` (`_initialize_precomputed_evaluations`), `:820`
-  (`_fresh_evaluations_for_batch`), `:3396`
+- Python: `pyvbmc/vbmc/vbmc.py:596` (`_validate_initialization_cost`),
+  `:648` (`_initialize_precomputed_evaluations`), `:821`
+  (`_fresh_evaluations_for_batch`), `:3418`
   (`_validate_vectorized_target_option`);
   `pyvbmc/function_logger/function_logger.py: batch_call`; option
   `vectorized_target = False`
@@ -445,8 +476,8 @@ fact inherited from MATLAB.
 - Kind: Python-only addition.
 
 ### The iteration history omits the noisy acquisitions' importance samples
-- Python: `pyvbmc/vbmc/vbmc.py:3013` (`_optim_state_record`, setting
-  `record["active_importance_sampling"] = None`); option
+- Python: `pyvbmc/vbmc/vbmc.py:3035` (`_optim_state_record`, setting
+  `record["active_importance_sampling"] = None` at `:3053`); option
   `record_full_history_details = False`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:337`).
 - MATLAB: `vbmc.m`, `save_stats`.
@@ -475,6 +506,42 @@ fact inherited from MATLAB.
   and fix test. (#111)"; commit `014b287` (`ns_gp_max_active`).
 - Kind: Python-only addition.
 
+### Declared options that nothing reads
+- Python: `pyvbmc/vbmc/options.py:21-46` (`INERT_OPTIONS`, twenty-two names)
+  and `:214-255` (`_warn_inert_options`, called at the end of
+  `Options.__init__`, `:209`). The `# description` line of each name in
+  `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini` says that the option
+  is not used and why; those comments are the user documentation.
+- MATLAB: four of the names have no MATLAB counterpart any more
+  (`GPStochasticStepsize`, `EmpiricalGPPrior`, `IntegrateGPMean`, `DoubleGP`,
+  whose `defopts` lines commit `2044530` (2021-06-18) deleted); two are still
+  declared in MATLAB with no reader (`defopts.AnnealedGPMean` and
+  `defopts.ConstrainedGPMean`, `vbmc.m:305-306`, whose readers the same
+  commit removed from `misc/gptrain_vbmc.m`); the rest name features PyVBMC
+  never ported.
+- What differs: PyVBMC keeps the keys and their declared defaults, so option
+  dictionaries recorded by earlier runs still load, and warns at construction
+  when one of them is supplied at a value other than its default, naming the
+  option. An inert option whose declared default is a callable
+  (`annealed_gp_mean`) is left uncompared, because two functions cannot be
+  told apart by value and a recorded option set repeats every default.
+  MATLAB accepts and ignores such fields silently. Besides the six options
+  above, the set holds the knobs of features that were never ported (the
+  acquisition-portfolio hedge, variational active sampling and the sampling
+  of the variational parameters, the repository of previous variational
+  posteriors, output warping's callback, per-stage option overrides, noise
+  shaping), `active_sample_fess_thresh`
+  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:299`, where
+  `pyvbmc/vbmc/active_sample.py:737` fixes `fESS_thresh = 1`) and
+  `search_cmaes_best` (`:185`, see the P2 entry on the `cma` package).
+- Why: commits `a63b17a` "docs(options): mark the declared options that
+  nothing reads" and `0d9a422` "fix(options): leave a callable inert default
+  uncompared", both 2026-09-19, on the scan recorded in
+  `dev/experiments/port_review_20260919/verification/wave1_options.md`
+  (row O-1). A test recomputes the set by scanning the package for reads, so
+  a newly dead option, or a newly read registered one, fails it.
+- Kind: deliberate change.
+
 ### `misc/vbmc_gphyp.m` is an empty file in the comparison target
 - Python: `pyvbmc/vbmc/gaussian_process_train.py:279` (`_gp_hyp`).
 - MATLAB: `misc/vbmc_gphyp.m` is zero bytes at `396d649`; the function
@@ -491,60 +558,153 @@ fact inherited from MATLAB.
 ## Slice P2 — initial design and active-sampling search
 
 ### The `cma` package replaces `cmaes_modded.m`
-- Python: `pyvbmc/vbmc/active_sample.py:5` (`import cma`), the `cma.fmin`
-  call at `:533`, and the `_BatchedNoiseHandler` subclass.
-- MATLAB: `utils/cmaes_modded.m`.
+- Python: `pyvbmc/vbmc/active_sample.py:5` (`import cma`), the options built
+  at `:541-561` and the `cma.fmin` call at `:572-578`.
+- MATLAB: `utils/cmaes_modded.m`, called from
+  `private/activesample_vbmc.m:282-283` with the settings that
+  `misc/setupoptions_vbmc.m:166-178` assembles.
 - What differs: the acquisition search uses the third-party `cma` package
   with `seed=np.nan` and a `randn` callback bound to the run's generator, so
-  neither the population draws nor the restart logic are MATLAB's. The noise
-  handler is a PyVBMC subclass that draws its re-evaluation count from
-  `vp.rng`.
+  neither the population draws nor the restart logic are MATLAB's. Of the
+  settings the two packages both express, three agree: the overall step size
+  is `max(insigma)` and the coordinate scaling `insigma / max(insigma)`
+  (`CMA_stds`, which cma holds in a non-adapting `sigma_vec`), matching
+  `sigma` and `diagD` at `utils/cmaes_modded.m:561`, `:567`; the search runs
+  without cma's noise handler, matching `defopts.Noise.on = 0`
+  (`utils/cmaes_modded.m:215`); and `tolfun` and `maxfevals` carry the
+  acquisition tolerance and `search_max_fun_evals`. Four do not.
+  `TolX` is `1e-11*max(insigma)` in MATLAB (`misc/setupoptions_vbmc.m:168`)
+  against cma's absolute `tolx = 1e-11`; `TolHistFun = 1e-13`
+  (`misc/setupoptions_vbmc.m:170`) against cma's `tolfunhist = 1e-12`;
+  `EvalInitialX = 'yes'` (`utils/cmaes_modded.m:207`) makes MATLAB evaluate
+  `x0` and charge it to the budget, while `cma.fmin`'s `eval_initial_x`
+  defaults to `False` and PyVBMC does not pass it; and `cma.fmin` returns the
+  best-ever solution, where MATLAB returns the best point of the last
+  generation (`utils/cmaes_modded.m:1708`) unless `SearchCMAESbest` is set
+  (`vbmc.m:282`, default `no`). PyVBMC's `search_cmaes_best`
+  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:185`) is therefore
+  read nowhere: the search always takes the best-ever point.
 - Why: `dev/plans/port-correctness-review.md` §Slices, P2 ("`utils/cmaes_modded.m`
   (PyVBMC uses the `cma` package)"); `AGENTS.md` §Architecture;
-  `dev/plans/stage2-batched-acquisition.md` §"Findings the plan rests on".
+  `dev/plans/stage2-batched-acquisition.md` §"Findings the plan rests on";
+  the settings are compared one by one in
+  `dev/experiments/port_review_20260919/verification/wave1_M_P2.md`. The
+  coordinate scaling and the absence of the noise handler date from
+  2026-09-19, commits `4d1d984` "fix(active_sample): start the CMA-ES search
+  at the per-coordinate scales" and `d617d99` "fix(active_sample): run the
+  CMA-ES search without noise handling"; the second also deleted the
+  `_BatchedNoiseHandler` subclass, which had drawn its re-evaluation count
+  from `vp.rng`.
 - Kind: substituted library.
 
 ### The CMA-ES search evaluates the whole population in one acquisition call
-- Python: `pyvbmc/vbmc/active_sample.py` (`parallel_objective=acq_fun` in the
-  `cma.fmin` call; the noise handler's re-evaluations batched the same way).
-- MATLAB: `utils/cmaes_modded.m` calls the acquisition one point at a time.
-- What differs: the acquisition is evaluated twice per generation instead of
-  `popsize + 2` times. The algorithm is the same and `cma`'s `ask` draws the
-  same population in either mode, but
-  `AbstractAcqFcn._sq_dist` centers both point sets on a mean that depends on
-  the batch, so acquisition values computed in a batch can differ from
-  pointwise values by about 2e-15 relative, which can flip a near-tie.
+- Python: `pyvbmc/vbmc/active_sample.py:577` (`parallel_objective=acq_fun` in
+  the `cma.fmin` call); the same wrapper is passed as the pointwise objective
+  as well, for cma's resampling path.
+- MATLAB: `utils/cmaes_modded.m:880`, `:917` hand the whole population matrix
+  to the objective when `EvalParallel` is set, which
+  `misc/setupoptions_vbmc.m:171` does for the acquisition search;
+  `acq/acqwrapper_vbmc.m:5` transposes the matrix it receives. A point
+  resampled because its value came back `NaN` is evaluated on its own
+  (`utils/cmaes_modded.m:925`).
+- What differs: how many points reach the acquisition per generation is
+  MATLAB's, one call carrying one population. What belongs to the Python line
+  is that a single acquisition wrapper serves both the batched and the
+  pointwise route, and that the batched route carries
+  `AbstractAcqFcn._sq_dist`'s dependence on the batch: the centering uses a
+  size-weighted mean of the two point sets, so a point's value computed in a
+  batch can differ from its pointwise value by about 2e-15 relative, which
+  can flip a near-tie.
 - Why: `dev/plans/stage2-batched-acquisition.md` §Summary and its "Findings
   the plan rests on"; `dev/2026-09-02-modernization-discussion.md` §9
   ("`_sq_dist` ... Not a bug, but it is why the noisy acquisitions evaluated
   one point at a time and in a batch can differ by a finite amount on a
   near-tie"); retained explicitly in `dev/plans/latent-bug-fixes.md`
   §"Supporting fixes and closed entries" ("Preserve the Stage 2 arithmetic;
-  no change in this plan").
+  no change in this plan"). A second batch per generation, cma's
+  noise-handler re-evaluations, was removed on 2026-09-19 by commit
+  `d617d99` "fix(active_sample): run the CMA-ES search without noise
+  handling".
 - Kind: deliberate change.
 
+### `search_optimizer` takes different values, and `D == 1` is a scalar search
+- Python: `pyvbmc/vbmc/active_sample.py:497-504` and `:532-621`. The option
+  `search_optimizer`
+  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:181`, default
+  `"cmaes"`) is honored for `"cmaes"`, `"Nelder-Mead"` and `"none"`; any
+  other value reaches `raise NotImplementedError` at `:621`. When `gp.D == 1`
+  a local variable selects a bounded scalar search instead
+  (`scipy.optimize.minimize_scalar(method="bounded")`, `:583-608`), whatever
+  the option holds, and the run's options are left as the user set them.
+- MATLAB: `private/activesample_vbmc.m:246`, `:265-315`;
+  `defopts.SearchOptimizer = 'cmaes'` (`vbmc.m:280`). The accepted values are
+  `cmaes`, `fmincon`, `bads`, `slicesample` and `none`, anything else raising
+  at `:314-315`, and there is no special case for `D == 1`.
+- What differs: `"Nelder-Mead"` (SciPy's unbounded simplex) stands in for
+  MATLAB's bounded `fmincon`, while `bads` and the `slicesample` branch have
+  no Python counterpart. At `D == 1` PyVBMC brackets the acquisition on the
+  whole search interval rather than descending from the best candidate of the
+  search set, with `maxiter` set to `search_max_fun_evals` and
+  `xatol = 1e-11`, the step size at which the CMA-ES branch stops; the
+  comparison against that candidate's value still decides whether the result
+  is acquired, as in the other branches.
+- Why: the interval search and the local override date from 2026-09-19,
+  commit `cb8a51d` "fix(active_sample): search a one-dimensional acquisition
+  over its interval". `cma.fmin` runs at `D = 1`, so a separate
+  one-dimensional branch is not forced by the package
+  (`dev/experiments/port_review_20260919/verification/wave1_M_P2.md`, P2 F9).
+- Kind: substituted library.
+
 ### The initial design does not cluster surplus starting points
-- Python: `pyvbmc/vbmc/active_sample.py:164-168` ("In the MATLAB
+- Python: `pyvbmc/vbmc/active_sample.py:173-175` ("In the MATLAB
   implementation there is a cluster algorithm being used to pick the best
   points, but we decided not to implement that yet and just pick the first
-  sample_count points").
-- MATLAB: `misc/initdesign_vbmc.m:29-43`, using `utils/fastkmeans.m`.
+  sample_count points"), with `:183-184` marking for removal only the rows
+  the design consumes.
+- MATLAB: `misc/initdesign_vbmc.m:28-43`, using `utils/fastkmeans.m`; `:34`
+  starts from `idx_remove = false(N0,1)` and `:42` marks the chosen point of
+  each cluster.
 - What differs: when more than `fun_eval_start` starting points are supplied,
   MATLAB clusters them with k-means and takes the highest-density point of
   each cluster; PyVBMC takes the first `sample_count` rows and logs an
-  informational message. The `N0 <= Ns` branch (uniform draws in the
-  plausible box, or the `narrow` design) is ported faithfully.
-- Why: the code comment above is the record of the decision.
+  informational message. Both leave the other `N0 - Ns` rows in the starting
+  cache with their values, where the search sieve can take them as candidates
+  that need no target call, so only the selection rule differs. The
+  `N0 <= Ns` branch (uniform draws in the plausible box, or the `narrow`
+  design) is ported faithfully.
+- Why: the code comment above is the record of the decision. That the rows
+  beyond the design stay in the cache was restored on 2026-09-19 by commit
+  `181a63b` "fix(active_sample): keep the starting points the initial design
+  did not use", which also made the sieve complete its search set to the
+  requested size after taking its share of the cache.
 - Kind: unported feature.
 
+### An acquired starting point leaves the cache whether or not it had a value
+- Python: `pyvbmc/vbmc/active_sample.py:699-707`: once a point drawn from the
+  starting cache has been acquired, its row is deleted from every cache array
+  (`x_orig`, `y_orig`, `skip_logger`), whether its value was stored there or
+  has just been evaluated.
+- MATLAB: `private/activesample_vbmc.m:380-392` deletes the row only in the
+  branch that reuses a stored value (`:389-391`); a cached point whose
+  `y_orig` is `NaN` is evaluated through the target and left in the cache.
+- What differs: in PyVBMC a cached starting point can be acquired once. In
+  MATLAB a cached row without a stored value stays in the cache after it has
+  been evaluated, so the sieve can draw it again and spend a second
+  evaluation on the same input. Such rows exist only when more starting
+  points are supplied than the initial design consumes.
+- Why: commit `a7f323e` (2026-09-19) "fix(active_sample): drop an acquired
+  starting point from the cache in every case", whose message records the
+  departure from MATLAB as deliberate.
+- Kind: deliberate change.
+
 ### Repeated observations are selected differently
-- Python: `pyvbmc/vbmc/active_sample.py:370-390` (training inputs are
+- Python: `pyvbmc/vbmc/active_sample.py:396-406` (training inputs are
   appended to the sieve's search set when
   `max_repeated_observations > 0`, the target is noisy, and the streak is
   below the cap; a chosen repeat skips the local optimizer so the logger
-  pools it into its row) and `:645-651` (streak bookkeeping). The
-  corresponding MATLAB block is kept, commented out, at `:564-609`
-  ("Missing port"), and `:609` records the unported
+  pools it into its row) and `:715-720` (streak bookkeeping). The
+  corresponding MATLAB block is kept, commented out, at `:632-680`
+  ("Missing port"), and `:677` records the unported
   `private/activesample_vbmc.m:356-361`.
 - MATLAB: `private/activesample_vbmc.m:330-364`: after the search, the
   acquisition is re-evaluated on the whole training set with
@@ -569,9 +729,33 @@ fact inherited from MATLAB.
   §"Repeated observations".
 - Kind: deliberate change.
 
+### The rank-one GP update is taken for a fresh observation, noisy or not
+- Python: `pyvbmc/vbmc/active_sample.py:803-806`:
+  `update1 = function_logger.n_evals[idx_new] == 1 and not
+  options["noise_shaping"]`.
+- MATLAB: `private/activesample_vbmc.m:481`:
+  `update1 = (isempty(s2new) || optimState.nevals(idx_new) == 1) &&
+  ~options.NoiseShaping`.
+- What differs: both extend the GP posterior by rank one when the observation
+  adds a training row, and recompute the whole posterior when it is pooled
+  into an existing row or when noise shaping rescales every training point's
+  noise. The two conditions part in one cell, a repeated input on a noiseless
+  target, where `s2new` is empty: MATLAB takes the rank-one path and appends
+  a GP training row for an input that `optimState.X` holds once, because
+  `misc/funlogger_vbmc.m:229-248` pools a repeat into the existing row
+  without incrementing `Xn`; PyVBMC recomputes the posterior from the
+  logger's training set. On a noisy target the observation's noise variance
+  goes into the rank-one update on both sides.
+- Why: commit `510a493` (2026-09-19) "fix(active_sample): rank-one GP update
+  for a fresh noisy observation". Transcribing MATLAB's condition literally
+  would import the duplicate training row, which
+  `dev/experiments/port_review_20260919/verification/wave1_M_P2.md` (P2 F8)
+  identifies as a MATLAB-side defect.
+- Kind: deliberate change.
+
 ### The acquisition-portfolio hedge (`acqhedge_vbmc.m`) is not ported
 - Python: `pyvbmc/vbmc/vbmc.py:1023` (only an empty `optim_state["hedge"]`
-  is created) and `pyvbmc/vbmc/active_sample.py:304` (`if not
+  is created) and `pyvbmc/vbmc/active_sample.py:320-323` (`if not
   options["acq_hedge"]: idx_acq = rng.integers(...)`, so with the option on,
   `idx_acq` is never chosen). Options `acq_hedge`, `acq_hedge_iter_window`,
   `acq_hedge_decay` exist and default to off
@@ -589,7 +773,7 @@ fact inherited from MATLAB.
 
 ### Variational active sampling (`VarActiveSample`) is not ported
 - Python: no counterpart; the option `active_variational_samples = 0` exists
-  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:272`) but nothing
+  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:273`) but nothing
   reads it in the sampling loop.
 - MATLAB: `misc/vpsample_vbmc.m`, called from
   `private/activesample_vbmc.m`; `defopts.VarActiveSample = 'no'`
@@ -619,8 +803,8 @@ fact inherited from MATLAB.
 ### `AbstractAcqFcn._real2int` snaps its input in place
 - Python: `pyvbmc/acquisition_functions/abstract_acq_fcn.py:261`
   (`X[:, integer_vars] = X_temp[:, integer_vars]` writes into the caller's
-  array); called from `pyvbmc/vbmc/active_sample.py:367`, `:556` and from
-  `AbstractAcqFcn.__call__:85`.
+  array); called from `pyvbmc/vbmc/active_sample.py:383`, `:624` and from
+  `AbstractAcqFcn.__call__` (`abstract_acq_fcn.py:85`).
 - MATLAB: `misc/real2int_vbmc.m` returns a new array.
 - What differs: through the `Xs[None, :]` view of a 1-D input, the pointwise
   CMA-ES objective snapped CMA-ES's own solution arrays to the integer grid.
@@ -761,9 +945,10 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### The diagonal approximation of the log-joint variance is not ported
-- Python: `pyvbmc/vbmc/variational_optimization.py:1420` (`compute_var == 2`
-  raises `NotImplementedError`, "Missing port: compute_var == 2 skipped since
-  it is not used"), and the gradient-of-variance path raises before it.
+- Python: `pyvbmc/vbmc/variational_optimization.py:1440-1444`
+  (`compute_var == 2` raises `NotImplementedError`, "Missing port:
+  compute_var == 2 skipped since it is not used"), and the
+  gradient-of-variance path raises before it at `:1436-1439`.
 - MATLAB: `misc/gplogjoint.m`, the `compute_var == 2` branch and the
   `dvarG` accumulators.
 - What differs: PyVBMC can compute the exact variance of the expected log
@@ -780,9 +965,9 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### The weight-only fast paths are not ported
-- Python: `pyvbmc/vbmc/variational_optimization.py:1198-1208` keeps the
+- Python: `pyvbmc/vbmc/variational_optimization.py:1216-1223` keeps the
   `onlyweights_flag` test commented out ("Not currently used, since it is
-  only a speed optimization") and `:1207` records "Missing port: block below
+  only a speed optimization") and `:1225` records "Missing port: block below
   does not have branches for only weight optimization".
 - MATLAB: `misc/gplogjoint_weights.m`, called from
   `misc/negelcbo_vbmc.m:63-86`; `misc/vpoptimizeweights_vbmc.m`, whose only
@@ -795,7 +980,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `ELCBOWeight` is not ported; `elcbo_beta` is fixed at zero
-- Python: `pyvbmc/vbmc/variational_optimization.py:771` ("Missing port:
+- Python: `pyvbmc/vbmc/variational_optimization.py:785` ("Missing port:
   elcboweight does not exist", followed by `elcbo_beta = 0` and
   `compute_var = elcbo_beta != 0`).
 - MATLAB: `misc/vpsieve_vbmc.m` evaluates
@@ -819,7 +1004,13 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### Sampling of the variational parameters is not ported
-- Python: no counterpart.
+- Python: no counterpart. Three option names of the feature survive in
+  `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini` and are read
+  nowhere: `variational_sampler = "malasample"` (`:143`),
+  `active_variational_samples = 0` (`:273`) and `scale_lower_bound = True`
+  (`:275`). All three are in the `INERT_OPTIONS` set of
+  `pyvbmc/vbmc/options.py` (see the P1b entry on declared options that
+  nothing reads).
 - MATLAB: `misc/vpsample_vbmc.m`, `utils/slicesample_vbmc.m`,
   `utils/malasample_vbmc.m`; option `defopts.VarParamsBack = 0`
   (`vbmc.m:361`).
@@ -832,7 +1023,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `_vb_init` type 3 with frozen sigma copies existing widths
-- Python: `pyvbmc/vbmc/variational_optimization.py:844` (`_vb_init`), the
+- Python: `pyvbmc/vbmc/variational_optimization.py:860` (`_vb_init`), the
   `vb_type == 3` branch when `vp.optimize_sigma` is `False` and
   `K_new > vp.K`.
 - MATLAB: `misc/vbinit_vbmc.m` has no such case (MATLAB never combines a
@@ -849,16 +1040,110 @@ fact inherited from MATLAB.
   ("Found 2026-09-05 (evening) by the bit-check of Stage 2 item 6").
 - Kind: deliberate change (a dormant path; unreachable in production).
 
+### The sieve asks for candidates in proportion to the current `K`
+- Python: `pyvbmc/vbmc/vbmc.py:1509-1511`:
+  `N_fastopts = math.ceil(self.options.eval("ns_elbo", {"K": self.vp.K}))`,
+  with `ns_elbo = lambda K : 50 * K`
+  (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:65`).
+- MATLAB: `vbmc.m:699`,
+  `Nfastopts = ceil(evaloption_vbmc(options.NSelbo,K))`, where `K` is the
+  local variable set once at `vbmc.m:459` to `options.Kwarmup` (default 2,
+  `vbmc.m:248`) and never reassigned, so the main loop always asks for
+  `50*2 = 100` fast candidates, or 10 on an incremental iteration.
+  `vbmc.m:584` (the warp branch) and `misc/finalboost_vbmc.m:33` use `Knew`.
+- What differs: PyVBMC's sieve grows its candidate set with the number of
+  mixture components, MATLAB's main loop does not. The two agree while
+  `vp.K == 2`, that is throughout warm-up, and part once `update_K` grows
+  `K`: at `vp.K = 10`, 500 candidates against 100.
+- Why: the option is declared as a function of `K` on both sides and PyVBMC
+  passes the current `K`, which is what the declaration describes;
+  `dev/experiments/port_review_20260919/verification/wave1_P6.md` (row
+  "cmp F3") establishes that `vbmc.m:459` is the only assignment to MATLAB's
+  `K` and that PyVBMC's warp branch and final boost agree with MATLAB's.
+- Kind: deliberate change.
+
+### GP smoothing (`Bandwidth`, `vp.delta`) is not ported
+- Python: no counterpart. There is no `bandwidth` option in
+  `pyvbmc/vbmc/option_configs/`, and `VariationalPosterior` has no `delta`.
+- MATLAB: `defopts.Bandwidth = 0` (`vbmc.m:313`);
+  `misc/setupvars_vbmc.m:247` sets
+  `optimState.delta = options.Bandwidth*(PUB-PLB)` and `:97` initializes
+  `vp.delta = []`; `misc/vpsieve_vbmc.m:16` copies the vector onto the
+  candidate posterior; `misc/gplogjoint.m:86-89` and `:164` widen the
+  integration scale `tau_k` by `delta`, and `acq/acqwrapper_vbmc.m:12-14`
+  switches the GP prediction to `gplite_quad` with `vp.delta` when any of its
+  entries is positive.
+- What differs: MATLAB can smooth the GP surrogate with a fixed kernel width,
+  in units of the plausible box, before the expected log joint and the
+  acquisition are computed. PyVBMC always uses the unsmoothed quantities.
+- Why: at the MATLAB default `Bandwidth = 0` the vector is all zeros and
+  every branch above reduces to the unsmoothed formula, so the two agree at
+  default options;
+  `dev/experiments/port_review_20260919/verification/wave1_P6.md` (row
+  "cmp F5").
+- Kind: unported feature (inactive at MATLAB defaults).
+
+### The full ELCBO evaluation uses the exact entropy of a one-component posterior
+- Python: `pyvbmc/vbmc/variational_optimization.py:493-496`, inside
+  `_eval_full_elcbo` (`:452`): the number of entropy samples is 0 when
+  `vp.K == 1`, which sends `_neg_elcbo` to the deterministic branch
+  (`pyvbmc/entropy/entlb_vbmc.py`), exact for a single Gaussian; for more
+  components it is `ceil(ns_ent_fine(K)/K)` per component.
+- MATLAB: `misc/vpoptimize_vbmc.m:279` computes
+  `NSentFineK = ceil(evaloption_vbmc(options.NSentFine,K)/K)` with no test on
+  `K`, and `:288-289` passes it to `negelcbo_vbmc`, which takes the Monte
+  Carlo estimator whenever the sample count is positive
+  (`misc/negelcbo_vbmc.m:104-110`).
+- What differs: for a one-component posterior, which pruning can produce,
+  PyVBMC's reported ELBO, the ranking of the finished optimizations and the
+  pruning decisions rest on the closed-form Gaussian entropy instead of a
+  4096-sample estimate whose standard deviation is a few hundredths and which
+  the reported ELBO SD does not account for. For more components the
+  deterministic expression is only a lower bound and both sides estimate.
+- Why: commit `7331841` (2026-09-19) "fix(variational_optimization): report
+  the exact entropy of a one-component posterior"; the sampling error it
+  removes is measured in
+  `dev/experiments/port_review_20260919/verification/wave1_P6.md` §(b).
+- Kind: deliberate change.
+
+### The deterministic-entropy optimization is SciPy's BFGS
+- Python: `pyvbmc/vbmc/variational_optimization.py:230-244`:
+  `scipy.optimize.minimize` with analytic gradients and
+  `tol=options["det_entropy_tol_opt"]`, no cap on the number of evaluations,
+  and the returned iterate kept, with the optimizer's own message logged as a
+  warning, when SciPy reports failure.
+- MATLAB: `misc/vpoptimize_vbmc.m:73-101`: `fminunc` with
+  `TolFun = options.DetEntTolOpt` (`:76`) and
+  `MaxFunEvals = 50*(vp.D+2)` (`:77`), inside a `try`/`catch` (`:79-82`) that
+  falls back to `cmaes_modded` on a thrown error.
+- What differs: SciPy hands `tol` to BFGS as `gtol`, a gradient-norm
+  tolerance, where MATLAB's `TolFun` is a function-value tolerance, so the
+  same option number means different things; PyVBMC leaves the evaluation
+  count to BFGS's own default instead of capping it; and PyVBMC has no
+  CMA-ES fallback. An ordinary non-success outcome, such as a loss of
+  precision on a near-flat surface or the iteration limit, keeps the best
+  point reached and warns, which is what MATLAB does with `fminunc`'s
+  iterate, since its `catch` fires only on a thrown error. The branch runs
+  when the entropy is evaluated deterministically: `vp.K == 1`, or
+  `entropy_switch` (non-default).
+- Why: commit `04d15ff` (2026-09-19) "fix(variational_optimization): keep the
+  iterate the deterministic optimizer returns", which replaced a
+  `RuntimeError` that ended the whole run;
+  `dev/experiments/port_review_20260919/verification/wave1_P6.md` (row
+  "int F7 + cmp F4") establishes the `tol`-to-`gtol` mapping and the MATLAB
+  cap.
+- Kind: substituted library.
+
 ---
 
 ## Slice P7 — variational posterior, entropies, VP statistics
 
 ### Posterior tempering (`vbmc_power`, `vptrain2real`) is not ported
-- Python: no counterpart. `pyvbmc/vbmc/vbmc.py:1344` and `:1536` keep
+- Python: no counterpart. `pyvbmc/vbmc/vbmc.py:1349` and `:1541` keep
   `# vp_real = vp.vptrain2real(0, self.options)` commented out with
   `vp_real = self.vp`. The option `temperature = 1` exists
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:256`) and is read
-  only by `pyvbmc/whitening/whitening.py:190`, `:284`.
+  only by `pyvbmc/whitening/whitening.py:196`, `:291`.
 - MATLAB: `vbmc_power.m`, `misc/vptrain2real.m` (the branch
   `any(T == [2,3,4,5])`).
 - What differs: MATLAB can run the algorithm on a tempered posterior and
@@ -898,7 +1183,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `vp.pdf` refuses original-space gradients instead of returning a wrong one
-- Python: `pyvbmc/variational_posterior/variational_posterior.py:795-798`
+- Python: `pyvbmc/variational_posterior/variational_posterior.py:782-785`
   (`if orig_flag and grad_flag: raise NotImplementedError`).
 - MATLAB: `vbmc_pdf.m` divides the density by the transform Jacobian but
   returns the transformed-space gradient uncorrected in the non-log case, and
@@ -912,6 +1197,37 @@ fact inherited from MATLAB.
   This is inherited from MATLAB, so agreement is not a correctness
   argument") and §"MATLAB evidence and bounded probes"; implemented in
   Phase 1 item 7. No solver or S-VBMC caller needs the gradient.
+- Kind: deliberate change.
+
+### The soft bounds are the box of the training inputs of the call
+- Python: `pyvbmc/variational_posterior/variational_posterior.py:340-346`, in
+  `get_bounds` (`:296`): `mu_lb` and `mu_ub` are the componentwise minimum
+  and maximum of the training inputs passed in, and the log-scale bounds are
+  the log of that box's width, down to a factor `tol_length`. The result is
+  stored on the posterior, replacing any box of an earlier call.
+- MATLAB: `misc/vpbounds.m:9-24` fills the box with reversed infinite
+  sentinels only when the posterior carries none, then widens the stored box
+  with the current training inputs. The box travels on the candidate
+  posteriors that `misc/vbinit_vbmc.m:39` copies and on the one
+  `misc/vpoptimize_vbmc.m:188` returns, so it accumulates from iteration to
+  iteration until `misc/setupvars_vbmc.m:98` resets it.
+- What differs: PyVBMC's box follows the training set of the call; MATLAB's
+  never shrinks. The two agree while the training set only grows in fixed
+  coordinates, and part after the post-warm-up trim of the training set or
+  after a warp changes the coordinates, where MATLAB keeps the widest box any
+  iteration produced.
+- Why: commit `7dd2e3f` (2026-09-19) "fix(variational_posterior): compute the
+  soft bounds from the training inputs of the call"; the box is what the soft
+  bounds are meant to follow when the training set is trimmed or the input
+  space is warped. Kept as a deliberate change after a trace of two short
+  seeded runs
+  (`dev/experiments/port_review_20260919/verification/scripts/soft_bounds_trace.py`):
+  the accumulated box reaches 2.2 times the width of the rebuilt one on a
+  two-dimensional Rosenbrock run and 12.1 times on a three-dimensional
+  two-mode target, while the fitted posterior stays within a small margin
+  of the rebuilt box (a component mean at most 0.067 box widths outside
+  it, one log scale 0.008 above its upper bound), so the rebuilt bounds
+  bind marginally at most and the wider box would have changed little.
 - Kind: deliberate change.
 
 ### `kl_div_mvn` takes its inputs directly
@@ -929,17 +1245,24 @@ fact inherited from MATLAB.
 - Kind: deliberate change (API; values unchanged).
 
 ### `vp.stats["J_sjk"]` is pruned on both component axes
-- Python: `pyvbmc/vbmc/variational_optimization.py:382-383` (`np.delete` on
-  `axis=1` and `axis=2`).
-- MATLAB: `misc/vpoptimize_vbmc.m` prunes the corresponding quantity
-  consistently with `I_sk`.
-- What differs: PyVBMC previously deleted only one axis, leaving a
-  non-square `J_sjk` after pruning. Nothing in PyVBMC reads it, but S-VBMC's
-  constructor filters posteriors using its maximum.
+- Python: `pyvbmc/vbmc/variational_optimization.py:391-392` (`np.delete` on
+  `axis=1` and then `axis=2`, after `I_sk` on `axis=1` at `:390`), so the
+  array keeps the shape `(Ns,K,K)` and its correspondence with `I_sk`.
+- MATLAB: `misc/vpoptimize_vbmc.m:236-237` deletes the pruned component from
+  one axis of each quantity: `I_sk(:,idx) = []` from the component axis of
+  the `(Ns,K)` array, and `J_sjk(:,:,idx) = []` from the last axis alone of
+  the `(Ns,K,K)` array declared at `:185`, which leaves `J_sjk` with shape
+  `(Ns,K,K-1)`.
+- What differs: MATLAB's pruned `J_sjk` is rectangular and indexed
+  inconsistently with its own `I_sk`; PyVBMC's stays square. Nothing in
+  PyVBMC reads it, but S-VBMC's constructor filters posteriors using its
+  maximum.
 - Why: `dev/plans/latent-bug-fixes.md` §"Supporting fixes and closed entries"
   ("prune both component axes, keep shape `(Ns,K,K)` and correspondence with
-  `I_sk`") and Phase 1 item 3.
-- Kind: deliberate change (restores the intended shape).
+  `I_sk`") and Phase 1 item 3; the MATLAB lines are read in
+  `dev/experiments/port_review_20260919/verification/wave1_P6.md` (row
+  "cmp sheet note 1").
+- Kind: deliberate change.
 
 ### The corner plot uses the `corner` package
 - Python: `pyvbmc/variational_posterior/variational_posterior.py: plot`
@@ -989,6 +1312,25 @@ fact inherited from MATLAB.
 - Why: `pyvbmc/whitening/README.md` §"Porting status" ("Rotating and
   rescaling has been implemented, but nonlinear warping has not").
 - Kind: unported feature.
+
+### The default bounded transform is probit, not logit
+- Python: `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:311`
+  (`bounded_transform = "probit"`), handed to `ParameterTransformer` at
+  `pyvbmc/vbmc/vbmc.py:405`;
+  `pyvbmc/parameter_transformer/parameter_transformer.py:109-114` maps
+  `"probit"` and `"norminv"` to one transform type and `"logit"` and
+  `"student4"` to their own.
+- MATLAB: `defopts.BoundedTransform = 'logit'` (`vbmc.m:344`);
+  `misc/setupvars_vbmc.m:34-42` accepts `logit`, `norminv`/`probit` and
+  `student4`, and rejects anything else.
+- What differs: at default options a variable with both bounds is carried to
+  the unbounded space by the inverse normal CDF in PyVBMC and by the logit in
+  MATLAB, so the transformed coordinates, the GP training inputs and the
+  variational posterior's parameters of a bounded problem are not MATLAB's.
+  Both transforms are implemented on both sides and either can be selected by
+  the option.
+- Why: `AGENTS.md` §"Two coordinate spaces" ("probit by default").
+- Kind: deliberate change.
 
 ### The gradient of the log Jacobian is not ported
 - Python: `pyvbmc/parameter_transformer/parameter_transformer.py` provides
@@ -1173,3 +1515,71 @@ them. They are *not* differences from MATLAB.
   solves of the 2026-09-04 rewrite compute the formulas of
   `misc/gplogjoint.m`. (`AGENTS.md` §"Gradients are hand-derived";
   `dev/plans/stage2-gp-log-joint-einsum.md`.)
+- **`minimize_adam`'s point and value tables are offset in MATLAB too.**
+  `pyvbmc/vbmc/minimize_adam.py:87` records `y_tab[i]` at the point the
+  iteration starts from and `:101` records `x_tab[:, i]` after the update, so
+  `y_tab[i]` is the objective at `x_tab[:, i-1]`, and the trailing averages
+  at `:141-142` are shifted against each other. `utils/fminadam.m` has the
+  same order: `[ftab(iter),grad] = fun(x)` at `:48`, the update at `:59-60`,
+  `xtab(:,iter) = x` at `:63`, and the two averages at `:96-97`. The pairing
+  that selects the returned parameters
+  (`pyvbmc/vbmc/variational_optimization.py:294-297`,
+  `misc/vpoptimize_vbmc.m:133-134`) is the same on both sides.
+- **`var_ss` adds a standard deviation to a variance in MATLAB too.**
+  `pyvbmc/vbmc/variational_optimization.py:1666` computes
+  `var_ss = varG_ss + np.std(varG, ddof=1)`, the sample variance of the
+  expected log joint across hyperparameter samples plus the sample standard
+  deviation of their per-sample variances. `misc/gplogjoint.m:404` reads
+  `varss = varFss + std(varF)`, with MATLAB's `std` normalizing by `N-1`.
+  The term has no counterpart in the appendix of the algorithm paper on
+  either side.
+- **Adam's constants differ from the paper on both sides.**
+  `pyvbmc/vbmc/minimize_adam.py:62-63` sets `beta_1 = 0.9`,
+  `beta_2 = 0.999`, as `utils/fminadam.m:22-23` does, against the
+  `beta_2 = 0.99` of `papers/acerbi2018variational_appendix.md:274`. The
+  maximum step size is `min(0.1, 10*sgd_step_size) = 0.05` during warm-up and
+  `min(0.1, sgd_step_size) = 0.005` afterwards
+  (`pyvbmc/vbmc/variational_optimization.py:265-272`,
+  `misc/vpoptimize_vbmc.m:110-118`, `sgd_step_size = 0.005`), against the
+  paper's 0.1 and 0.01. The minimum step size 0.001, the decay 200 and the
+  batch size 20 are the paper's on both sides.
+- **`update_K`'s recent window is MATLAB's, mask included.**
+  `pyvbmc/vbmc/variational_optimization.py:50-51` computes
+  `recent_iters = ceil(0.5 * tol_stable_count / fun_evals_per_iter)`, which
+  is 6 at the shipped defaults (60 and 5), where the paper describes a
+  four-iteration window; `private/updateK.m:16` is the same expression with
+  the same defaults (`vbmc.m:162-163`). Setting the first two entries of the
+  post-warm-up window to `-inf` (`:62` here, `private/updateK.m:24`) really
+  does exclude the two oldest entries of that window, on both sides.
+- **The `skip_elbo_variance` guard is dead in MATLAB too.**
+  `pyvbmc/vbmc/variational_optimization.py:498` tests
+  `"skip_elbo_variance" in options`, and no `.ini` file declares the key;
+  `misc/vpoptimize_vbmc.m:281` tests
+  `isfield(options,'SkipELBOVariance')`, and `vbmc.m`'s `defopts` block does
+  not declare it either. Neither branch can execute.
+- **The returned posterior is selected with the options that govern it.**
+  `rank_criterion`, `best_safe_sd` and `best_frac_back` name the three
+  choices `determine_best_vp` (`pyvbmc/vbmc/vbmc.py:2626`) makes when the
+  last iteration is not stable, and both call sites (`:1261`, `:1826`) pass
+  them, as `vbmc.m:547` and `:888` pass `RankCriterion`, `BestSafeSD` and
+  `BestFracBack` to `misc/best_vbmc.m`. The defaults agree
+  (`True`/`yes`, 5, 0.25;
+  `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:17`, `:223`, `:225`,
+  `vbmc.m:201`, `:301-302`). Until 2026-09-19 the three options were declared
+  and never passed, and the ranking branch had never executed, because it
+  indexed the object-dtype arrays of the iteration history; commit `bd47856`
+  "feat(vbmc): select the returned posterior with the options that govern it"
+  passes them and reads the history through `asarray`
+  (`dev/experiments/port_review_20260919/verification/wave1_options.md`,
+  rows O-3 and O-4).
+- **The best-posterior rules count iterations, as `best_vbmc` does.**
+  `misc/best_vbmc.m:58-59` takes `BackIter = ceil(idx*FracBack)` and
+  `idx_start = max(1,idx-BackIter)` from the 1-based iteration index, which
+  is also the number of iterations, and `:44` penalizes a non-stable
+  iteration by that same count. `pyvbmc/vbmc/vbmc.py:2723-2727` and `:2710`
+  use the number of iterations, `max_idx + 1`, where `max_idx` is the
+  0-based index of the last one. Commit `4892fe3` (2026-09-19) "fix(vbmc):
+  count iterations, not the last index, in the best-posterior rules" made
+  both expressions agree with MATLAB
+  (`dev/experiments/port_review_20260919/verification/wave1_options.md`,
+  row O-5); they affect only runs that end without a stable iteration.
