@@ -605,6 +605,8 @@ class PyMCTarget:
                     search_upper,
                     max_search,
                 )
+            except _compat.UnsupportedModel:
+                raise
             except ValueError as exc:
                 raise ValueError(
                     f"Mode search failed for model variables "

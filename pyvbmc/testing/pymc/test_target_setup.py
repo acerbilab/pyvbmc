@@ -9,7 +9,8 @@ pm = pytest.importorskip("pymc")
 pytest.importorskip("arviz_base")
 
 from pyvbmc import VBMC
-from pyvbmc.pymc import PyMCTarget
+from pyvbmc.pymc import PyMCTarget, UnsupportedModel
+from pyvbmc.pymc import _target as target_module
 from pyvbmc.testing.pymc.models import (
     bounded_model,
     no_gradient_model,
@@ -219,6 +220,25 @@ def test_plausible_bounds_only_still_searches_without_hessian():
     assert target.plausible_info["hessian_cost"] == 0
     assert target.plausible_info["n_target_calls"] <= 5
     _assert_accounting(target)
+
+
+def test_unsupported_model_inside_mode_search_keeps_its_type(monkeypatch):
+    detail = (
+        "compiled log-density gradient is float32; PyMC targets require "
+        "float64 free variables, value variables, and density derivatives."
+    )
+    original = target_module._as_float64
+
+    def raise_on_gradient(value, label):
+        if label == "compiled log-density gradient":
+            raise UnsupportedModel(detail)
+        return original(value, label)
+
+    monkeypatch.setattr(target_module, "_as_float64", raise_on_gradient)
+    spec = scalar_model(np.random.default_rng(8052))
+    with pytest.raises(UnsupportedModel) as raised:
+        PyMCTarget(spec["model"], seed=62)
+    assert str(raised.value) == detail
 
 
 def test_small_cap_truncates_search_and_preserves_reserves():
