@@ -890,10 +890,17 @@ def _get_search_points(
             options.get("search_cache_frac") * N_random_points
         )
         if N_search_cache > 0:  # Take points from search cache
+            # The search cache holds the candidates of the previous step,
+            # ranked by acquisition value; it is empty until one has run.
             search_cache = optim_state.get("search_cache")
+            if search_cache is None:
+                search_cache = np.full((0, D), np.nan)
+            else:
+                search_cache = np.reshape(search_cache, (-1, D))
+            N_search_cache = min(N_search_cache, search_cache.shape[0])
             random_Xs = np.append(
                 random_Xs,
-                search_cache[: min(len(search_cache), N_search_cache)],
+                search_cache[:N_search_cache],
                 axis=0,
             )
 

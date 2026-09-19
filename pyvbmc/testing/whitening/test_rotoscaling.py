@@ -234,6 +234,45 @@ def test_warp_input():
     )
 
 
+def test_warp_input_search_cache():
+    """A populated search cache is warped into the new space."""
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    search_cache = np.linspace(-1.0, 1.0, 4 * D).reshape(4, D)
+    vbmc.optim_state["search_cache"] = np.copy(search_cache)
+
+    (
+        parameter_transformer_warp,
+        optim_state,
+        _,
+        _,
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+
+    expected = parameter_transformer_warp(
+        vp.parameter_transformer.inverse(search_cache)
+    )
+    assert optim_state["search_cache"].shape == (4, D)
+    assert np.allclose(optim_state["search_cache"], expected)
+
+
 def test_warp_gp_and_vp():
     D = 2
     angle = 1.309355600770139

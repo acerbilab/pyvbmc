@@ -765,6 +765,39 @@ def test_get_search_points_all_search_cache():
     assert np.all(np.isnan(idx_cache))
 
 
+def test_get_search_points_empty_search_cache():
+    """
+    An empty search cache contributes no points, and the sieve is full.
+    """
+    options = {
+        "cache_frac": 1,
+        "search_cache_frac": 0.25,
+        "heavy_tail_search_frac": 0,
+        "mvn_search_frac": 0,
+        "box_search_frac": 0,
+        "hpd_search_frac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
+    number_of_points = 8
+    # The state of the first active-sampling step: neither cache is filled.
+    vbmc.optim_state["cache"]["x_orig"] = np.full((0, 3), np.nan)
+    assert len(vbmc.optim_state["search_cache"]) == 0
+
+    # no search bounds for test
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points=number_of_points,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.all(np.isnan(idx_cache))
+
+
 def test_get_search_points_search_bounds():
     """
     Ensure that search bounds constrain the search points.

@@ -223,8 +223,9 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["ub_search"] = np.atleast_2d(yyMax + delta / Nrnd)
 
     # If search cache is not empty, update it
-    if optim_state.get("search_cache"):
-        optim_state["search_cache"] = warpfun(optim_state["search_cache"])
+    search_cache = optim_state.get("search_cache")
+    if search_cache is not None and np.size(search_cache) > 0:
+        optim_state["search_cache"] = warpfun(search_cache)
 
     # Update other state fields
     optim_state["recompute_var_post"] = True
