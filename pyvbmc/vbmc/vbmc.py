@@ -1258,7 +1258,11 @@ class VBMC:
 
             if doWarping:
                 timer.start_timer("warping")
-                vp_tmp, __, __, __ = self.determine_best_vp()
+                vp_tmp, __, __, __ = self.determine_best_vp(
+                    safe_sd=self.options.get("best_safe_sd"),
+                    frac_back=self.options.get("best_frac_back"),
+                    rank_criterion_flag=self.options.get("rank_criterion"),
+                )
                 vp_tmp = copy.deepcopy(vp_tmp)
                 # Store variables in case warp needs to be undone:
                 # (vp_old copied above)
@@ -1819,7 +1823,11 @@ class VBMC:
             )
 
         # Pick "best" variational solution to return
-        self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp()
+        self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp(
+            safe_sd=self.options.get("best_safe_sd"),
+            frac_back=self.options.get("best_frac_back"),
+            rank_criterion_flag=self.options.get("rank_criterion"),
+        )
 
         if self.options.get("do_final_boost"):
             # Last variational optimization with large number of components
@@ -2670,26 +2678,36 @@ class VBMC:
                 # Rank by position
                 rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
+                # The history stores object-dtype arrays, so the scores
+                # and the flags are read through `asarray`: the flags have
+                # to be booleans to index with, and the scores have to be
+                # an array to sort.
+                lnZ_iter = np.asarray(
+                    self.iteration_history.get("elbo")[: max_idx + 1]
+                )
+                lnZsd_iter = np.asarray(
+                    self.iteration_history.get("elbo_sd")[: max_idx + 1]
+                )
+                r_index_iter = np.asarray(
+                    self.iteration_history.get("r_index")[: max_idx + 1]
+                )
+                stable_iter = np.asarray(
+                    self.iteration_history.get("stable")[: max_idx + 1],
+                    dtype=bool,
+                )
+
                 # Rank by ELCBO
-                lnZ_iter = self.iteration_history.get("elbo")[: max_idx + 1]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    : max_idx + 1
-                ]
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 order = elcbo.argsort()[::-1]
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = self.iteration_history.get("r_index")[
-                    : max_idx + 1
-                ].argsort()
+                order = r_index_iter.argsort()
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
                 rank[:, 3] = max_idx
-                rank[
-                    self.iteration_history.get("stable")[: max_idx + 1], 3
-                ] = 1
+                rank[stable_iter, 3] = 1
 
                 idx_best = np.argmin(np.sum(rank, 1))
 

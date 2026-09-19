@@ -21,6 +21,100 @@ def create_vbmc(
     return VBMC(fun, x0_array, lb, ub, plb, pub, options)
 
 
+def recorded_history(vbmc, elbo, elbo_sd, r_index, stable):
+    """Install an iteration history shaped as a run records one.
+
+    ``IterationHistory`` stores object-dtype arrays, so the flags and the
+    scores come back as Python objects rather than as native dtypes.
+    """
+    n = len(elbo)
+    vbmc.vp.stats = dict()
+    vbmc.iteration_history["iter"] = np.array(range(n), dtype=object)
+    vbmc.iteration_history["vp"] = np.array([vbmc.vp] * n, dtype=object)
+    vbmc.iteration_history["elbo"] = np.array(elbo, dtype=object)
+    vbmc.iteration_history["elbo_sd"] = np.array(elbo_sd, dtype=object)
+    vbmc.iteration_history["r_index"] = np.array(r_index, dtype=object)
+    vbmc.iteration_history["stable"] = np.array(stable, dtype=object)
+
+
+def test_determine_best_vp_receives_the_option_values():
+    """The options that govern the selection reach ``determine_best_vp``,
+    so setting one of them changes which posterior a run returns."""
+    D = 2
+    options = {
+        "max_iter": 2,
+        "max_fun_evals": 40,
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+        # All three away from their defaults (True, 5, 0.25).
+        "rank_criterion": False,
+        "best_safe_sd": 3,
+        "best_frac_back": 0.5,
+    }
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+        seed=1234,
+    )
+    calls = []
+    unwired = VBMC.determine_best_vp
+
+    def record_call(self, *args, **kwargs):
+        calls.append(kwargs)
+        return unwired(self, *args, **kwargs)
+
+    vbmc.determine_best_vp = record_call.__get__(vbmc, VBMC)
+    vbmc.optimize()
+
+    assert len(calls) > 0
+    for kwargs in calls:
+        assert kwargs["rank_criterion_flag"] is False
+        assert kwargs["safe_sd"] == 3
+        assert kwargs["frac_back"] == 0.5
+
+
+def test_determine_best_vp_ranks_a_recorded_history():
+    """The ranking criterion runs on the object-dtype arrays a run
+    records, and prefers the recent, high-ELCBO, reliable iteration."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(
+        vbmc,
+        elbo=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        elbo_sd=[0.0] * 6,
+        r_index=[5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
+        stable=[False] * 6,
+    )
+    __, __, __, idx_best = vbmc.determine_best_vp(rank_criterion_flag=True)
+    assert idx_best == 5
+
+
+def test_best_safe_sd_changes_the_selection():
+    """The ELCBO penalty picks a different iteration when the best ELBO
+    is also the most uncertain one."""
+    scores = dict(
+        elbo=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+        elbo_sd=[0.0, 0.0, 0.0, 0.0, 0.0, 2.0],
+        r_index=[0.0] * 6,
+        stable=[False] * 6,
+    )
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(vbmc, **scores)
+    __, __, __, idx_unpenalized = vbmc.determine_best_vp(safe_sd=0)
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(vbmc, **scores)
+    __, __, __, idx_penalized = vbmc.determine_best_vp(safe_sd=5)
+
+    assert idx_unpenalized == 5
+    assert idx_penalized == 4
+
+
 def test_determine_best_vp_last_stable():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.iteration_history["iter"] = np.arange(0, 3)
