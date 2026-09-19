@@ -234,6 +234,64 @@ def test_warp_input():
     )
 
 
+def test_warp_input_cov_reg():
+    """The covariance regularization is a number, of any scalar type, or
+    a function of the number of training points."""
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    vbmc.optim_state["N"] = 42
+    seen = []
+
+    def cov_reg_of_N(N):
+        seen.append(N)
+        return 0.75
+
+    transforms = []
+    for value in (0.75, np.float64(0.75), cov_reg_of_N):
+        vbmc.options.__setitem__("warp_cov_reg", value, force=True)
+        parameter_transformer_warp, _, _, _ = warp_input(
+            vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+        )
+        transforms.append(
+            (
+                parameter_transformer_warp.R_mat,
+                parameter_transformer_warp.scale,
+            )
+        )
+
+    # The callable was given the number of training points, and all three
+    # forms of the same amount give the same transform.
+    assert seen == [42]
+    for R_mat, scale in transforms[1:]:
+        assert np.array_equal(R_mat, transforms[0][0])
+        assert np.array_equal(scale, transforms[0][1])
+
+    # The amount reaches the transform: no regularization gives another.
+    vbmc.options.__setitem__("warp_cov_reg", 0.0, force=True)
+    unregularized, _, _, _ = warp_input(
+        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+    )
+    assert not np.allclose(unregularized.R_mat, transforms[0][0])
+
+
 def test_warp_input_search_cache():
     """A populated search cache is warped into the new space."""
     D = 2

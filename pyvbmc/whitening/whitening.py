@@ -147,14 +147,20 @@ def warp_input(vp, optim_state, function_logger, options):
             mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
             vp_cov[mask_idx] = 0
 
-        # Regularization of covariance matrix towards diagonal
-        if (
-            type(options["warp_cov_reg"]) == float
-            or type(options["warp_cov_reg"]) == int
-        ):
-            w_reg = options["warp_cov_reg"]
+        # Regularization of covariance matrix towards diagonal. The
+        # amount is a number, or a function of the number of training
+        # points.
+        warp_cov_reg = options["warp_cov_reg"]
+        if callable(warp_cov_reg):
+            w_reg = warp_cov_reg(optim_state["N"])
+        elif np.ndim(warp_cov_reg) == 0:
+            w_reg = warp_cov_reg
         else:
-            w_reg = options.warp_cov_reg[optim_state["N"]]
+            raise TypeError(
+                "The option 'warp_cov_reg' must be a number or a callable "
+                "of the number of training points, but was "
+                f"{warp_cov_reg}."
+            )
         w_reg = np.max([0, np.min([1, w_reg])])
         vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 
