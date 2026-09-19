@@ -1654,3 +1654,46 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
         )
         assert np.allclose(post_one.sW, post_full.sW, rtol=1e-9, atol=1e-10)
         assert np.allclose(post_one.L, post_full.L, rtol=1e-9, atol=1e-10)
+
+
+def test_active_sample_refreshes_n_eff(mocker):
+    """Each acquisition refreshes the effective training-set count, which
+    the in-loop updates read, to the number of evaluations over the live
+    rows of the function logger."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {"search_optimizer": "none", "max_repeated_observations": 2},
+        acq=_prefer_training,
+    )
+    seen = []
+
+    def recording_get_search_points(number_of_points, state, logger, *a, **k):
+        seen.append(
+            (
+                state["n_eff"],
+                np.sum(logger.n_evals[logger.X_flag]),
+                int(np.sum(logger.X_flag)),
+            )
+        )
+        return _get_search_points(number_of_points, state, logger, *a, **k)
+
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample._get_search_points",
+        side_effect=recording_get_search_points,
+    )
+    active_sample(
+        gp,
+        3,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert len(seen) == 3
+    for n_eff, n_evals_sum, n_rows in seen:
+        assert np.ndim(n_eff) == 0
+        assert n_eff == n_evals_sum
+    # A repeated observation is pooled into its row, so the count is not
+    # the number of rows.
+    assert any(n_eff > n_rows for n_eff, _, n_rows in seen)

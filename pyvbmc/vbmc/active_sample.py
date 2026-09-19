@@ -290,7 +290,7 @@ def active_sample(
             optim_state["N"] = (
                 function_logger.Xn + 1
             )  # Number of training inputs
-            optim_state["N_eff"] = sum(
+            optim_state["n_eff"] = np.sum(
                 function_logger.n_evals[function_logger.X_flag]
             )
             ###
