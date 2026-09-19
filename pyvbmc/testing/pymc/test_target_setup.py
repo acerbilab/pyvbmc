@@ -16,6 +16,8 @@ from pyvbmc.testing.pymc.models import (
     scalar_model,
     schools_model,
     stochastic_initial_model,
+    undefined_gradient_model,
+    undefined_hessian_model,
     vector_model,
 )
 
@@ -133,6 +135,31 @@ def test_setup_diagnostic_routes_and_warnings(diagnostic_targets, caplog):
     assert any("setup call cap" in message for message in messages)
     assert any("unusable curvature" in message for message in messages)
     assert any("outside the prior location" in message for message in messages)
+
+
+def test_absent_scalar_gradient_takes_the_prior_route(caplog):
+    caplog.clear()
+    target = PyMCTarget(undefined_gradient_model(), seed=14)
+    assert target.plausible_info["route"] == "prior"
+    assert target.plausible_info["start"] == "initial"
+    assert target.plausible_info["n_hessian_calls"] == 0
+    assert np.isfinite(target.log_joint(target.x0))
+    _assert_accounting(target)
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("gradient is unavailable" in message for message in messages)
+
+
+def test_absent_scalar_hessian_keeps_the_gradient_and_prior_widths():
+    target = PyMCTarget(undefined_hessian_model(), seed=15)
+    assert target.plausible_info["route"] == "laplace"
+    assert target.plausible_info["start"] == "mode"
+    assert target.plausible_info["n_hessian_calls"] == 0
+    assert target.plausible_info["hessian_cost"] == 0
+    assert set(target.plausible_info["curvature"]) == set(
+        target.coordinate_names
+    )
+    assert np.isfinite(target.log_joint(target.x0))
+    _assert_accounting(target)
 
 
 def test_fully_explicit_and_mixed_setup_routes(monkeypatch):

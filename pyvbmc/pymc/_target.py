@@ -817,7 +817,7 @@ class PyMCTarget:
 
     def _compile_gradient(self, pm):
         """Compile the ordered joint value/gradient, or return None."""
-        from pytensor.gradient import NullTypeGradError
+        no_derivative = _compat.missing_derivative_errors()
 
         try:
             logp = self._partial.logp(jacobian=True)
@@ -833,12 +833,12 @@ class PyMCTarget:
                 inputs=self._partial.value_vars,
                 on_unused_input="ignore",
             )
-        except (NotImplementedError, NullTypeGradError):
+        except no_derivative:
             return None
 
     def _compile_hessian(self, pm):
         """Compile the ordered exact Hessian, or return None."""
-        from pytensor.gradient import NullTypeGradError
+        no_derivative = _compat.missing_derivative_errors()
 
         try:
             hessian = self._partial.d2logp(
@@ -856,7 +856,7 @@ class PyMCTarget:
                 on_unused_input="ignore",
                 mode="FAST_COMPILE",
             )
-        except (NotImplementedError, NullTypeGradError):
+        except no_derivative:
             return None
 
     def _validate_model_mapping(self, values, parameter):
