@@ -11,7 +11,9 @@ from pyvbmc.stats import kl_div_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.variational_optimization import (
+    _eval_full_elcbo,
     _gp_log_joint,
+    _initialize_full_elcbo,
     _neg_elcbo,
     _soft_bound_loss,
     _vb_init,
@@ -571,6 +573,41 @@ def test_vp_optimize_deterministic_entropy_approximation():
         np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-4 * 1.25
     )
+
+
+def test_vp_optimize_one_component_exact_entropy():
+    """A one-component posterior is a single Gaussian, whose entropy is
+    available in closed form: the reported ELBO is the expected log joint
+    plus that entropy, and the evaluation makes no random draws, so its
+    value does not depend on the state of the generator."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 1, rng=np.random.default_rng(3))
+
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 5, 1)
+
+    cov = vp.sigma.item() ** 2 * np.diag(vp.lambd.ravel() ** 2)
+    entropy = 0.5 * np.log(np.linalg.det(2 * np.pi * np.e * cov))
+    assert np.isclose(vp.stats["entropy"], entropy, rtol=1e-10, atol=0)
+    assert np.isclose(
+        vp.stats["elbo"],
+        vp.stats["e_log_joint"] + entropy,
+        rtol=0,
+        atol=1e-10,
+    )
+
+    theta = vp.get_parameters()
+    elbo_stats = _initialize_full_elcbo(
+        2, np.size(theta), vp.K, np.size(gp.posteriors)
+    )
+    vp.rng = np.random.default_rng(11)
+    elbo_stats = _eval_full_elcbo(0, theta, vp, gp, elbo_stats, 0.0, options)
+    vp.rng = np.random.default_rng(12)
+    elbo_stats = _eval_full_elcbo(1, theta, vp, gp, elbo_stats, 0.0, options)
+    assert elbo_stats["H"][0] == elbo_stats["H"][1]
+    assert elbo_stats["nelbo"][0] == elbo_stats["nelbo"][1]
 
 
 def test_vb_init_candidates():

@@ -478,8 +478,13 @@ def _eval_full_elcbo(
         The updated dictionary.
     """
     # Number of samples per component for MC approximation of the entropy.
+    # A single component has a closed-form Gaussian entropy, which the
+    # deterministic evaluation returns exactly, so no samples are drawn.
     K = vp.K
-    ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
+    if K == 1:
+        ns_ent_fine_K = 0
+    else:
+        ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
     if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
         compute_var = False
