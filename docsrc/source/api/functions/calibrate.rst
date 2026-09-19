@@ -92,11 +92,10 @@ allows use of the returned profile and reuse within the process. An
 interrupted or unsuccessful campaign preserves the previous valid record.
 
 The profile contains three fixed budgets: PDF, entropy with gradients and
-entropy values. It does not change sample counts or inference tolerances.
-Entropy chunking changes floating-point addition order, so different profiles
-can produce different trajectories even with the same seed. Save the profile
-with the run to reproduce its settings; saved runs retain their profile on
-another machine as well.
+entropy values. It does not change sample counts or inference tolerances,
+and it changes no result: every budget returns what the default budget
+returns, so one seed gives one trajectory whatever profile is in force. A
+saved run retains its profile, on another machine as well.
 
 .. autofunction:: pyvbmc.calibrate
 
