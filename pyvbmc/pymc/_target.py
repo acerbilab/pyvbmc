@@ -15,6 +15,7 @@ from pyvbmc.vbmc._bounds import _effective_bounds, _normalize_bounds
 from . import _compat, _plausible
 
 _PRIOR_DRAWS = 4000
+_LOG_SUPPORT_PROBE_DECADES = (1, 2, 4, 8, 16)
 _TRANSFORM_KEYS = {"log", "logodds", "interval", "interval_base"}
 _LOGGER = logging.getLogger("pyvbmc.pymc")
 
@@ -212,6 +213,17 @@ class PyMCTarget:
         If a free variable, transform, support, or dtype is unsupported.
     ValueError
         If setup arguments, bounds, or the final starting density are invalid.
+
+    Notes
+    -----
+    PyMC registers its log transform for whole families of positive
+    distributions, so a variable that keeps one is reported with the support
+    ``(0, inf)`` only after that claim is checked. A distribution whose
+    density vanishes below a positive shift, such as a Wald distribution
+    with a nonzero ``alpha``, is rejected at construction. The check
+    evaluates the variable's own density at fractions of its initial value
+    down to sixteen decades below it, so a shift smaller than that escapes
+    it.
     """
 
     def __init__(
@@ -499,6 +511,8 @@ class PyMCTarget:
                 "forward": forward,
                 "backward": backward,
             }
+
+        self._check_log_support(pm, point)
 
         lower_parts = []
         upper_parts = []
@@ -804,6 +818,84 @@ class PyMCTarget:
             self.dims,
             self.coords,
         )
+
+    def _check_log_support(self, pm, point):
+        """Check that every log-transformed support reaches down to zero.
+
+        PyMC registers its log transform for entire families of positive
+        distributions, so a retained log transform alone does not establish
+        that the density extends to zero. The variable's own log density is
+        evaluated at decreasing fractions of its initial value, with every
+        other variable held at the initial point, and a variable whose
+        density vanishes at such a point does not have the support that the
+        transform implies.
+
+        Parameters
+        ----------
+        pm : module
+            The imported PyMC module, for compatibility errors.
+        point : dict
+            Initial point of the partially untransformed model, keyed by
+            value-variable name.
+
+        Raises
+        ------
+        UnsupportedModel
+            If a log-transformed variable has a density of zero at a
+            positive point inside its reported support.
+        """
+        names = [
+            name
+            for name in self.names
+            if self._maps.get(name, {}).get("kind") == "log"
+        ]
+        if not names:
+            return
+        rv_by_name = dict(zip(self.names, self._ordered_rvs))
+        value_by_name = dict(zip(self.names, self.value_names))
+        try:
+            densities = self._partial.compile_fn(
+                self._partial.logp(
+                    vars=[rv_by_name[name] for name in names],
+                    jacobian=False,
+                    sum=False,
+                ),
+                inputs=self._partial.value_vars,
+                on_unused_input="ignore",
+            )
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            raise _compatibility_error(
+                pm, "separate free-variable log densities", exc
+            ) from exc
+        initial_densities = densities(point)
+        if len(initial_densities) != len(names):
+            raise _compatibility_error(
+                pm, "ordered free-variable log densities"
+            )
+
+        for index, name in enumerate(names):
+            label = f"{name} log density"
+            initial_density = _as_float64(initial_densities[index], label)
+            if not np.all(np.isfinite(initial_density)):
+                continue
+            value_name = value_by_name[name]
+            initial = _as_float64(point[value_name], value_name)
+            for decade in _LOG_SUPPORT_PROBE_DECADES:
+                probe = initial - decade * np.log(10.0)
+                original = np.exp(probe)
+                if not np.all(original > 0):
+                    break
+                probed = dict(point)
+                probed[value_name] = probe
+                density = _as_float64(densities(probed)[index], label)
+                if np.any(density == -np.inf):
+                    raise _compat.UnsupportedModel(
+                        f"{name}: its {self.kept[name]} reports the support "
+                        f"(0, inf), but the density is zero at "
+                        f"{name}={original.tolist()}, inside that support. "
+                        "PyMC targets support a log-transformed variable "
+                        "only where its density reaches down to zero."
+                    )
 
     def _compile_density(self, pm):
         """Compile and validate the two repeatedly evaluated densities."""

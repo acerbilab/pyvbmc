@@ -321,8 +321,9 @@ short; use an adequate budget and validate repeated runs for real inference.
 
 Supported free variables are continuous and float64, with recognized real-line
 support or PyMC's standard log, log-odds or interval transform. Unknown support,
-suppressed or custom transforms, discrete variables, and support bounds that
-depend on another random variable are rejected. Custom likelihood operations
+suppressed or custom transforms, discrete variables, support bounds that
+depend on another random variable, and a log-transformed variable whose
+density does not reach down to zero are rejected. Custom likelihood operations
 remain usable when their PyTensor graph provides the density; without
 gradients, setup uses the initial point and prior quantiles.
 

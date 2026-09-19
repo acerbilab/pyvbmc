@@ -167,6 +167,15 @@ The adapter returns ``-inf`` only on or outside that box, where VBMC does not
 evaluate. Use proper, normalized priors when interpreting the ELBO as a bound
 on model evidence.
 
+A variable that keeps PyMC's log transform reports the support ``(0, inf)``.
+PyMC registers that transform for whole families of positive distributions,
+including ones whose density vanishes below a positive shift, such as a Wald
+distribution with a nonzero ``alpha``. Construction therefore evaluates the
+variable's own density at fractions of its initial value, down to sixteen
+decades below it, and rejects the model when the density is zero at one of
+them. A shift smaller than that range escapes the check; reparameterize such a
+variable as its distance above the shift.
+
 Persistence of adapted PyMC runs
 --------------------------------
 

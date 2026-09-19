@@ -299,6 +299,9 @@ def rejected_models(seed=771):
             shape=2,
         )
     models["mixed"] = model
+    with pm.Model() as model:
+        pm.Wald("shifted", mu=1.0, lam=2.0, alpha=2.0)
+    models["shifted_log_support"] = model
     return models
 
 
