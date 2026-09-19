@@ -1,4 +1,5 @@
 import copy
+import logging
 from pathlib import Path
 
 import gpyreg as gpr
@@ -650,6 +651,33 @@ def test_optimize_vp_without_shotgun_evaluation():
 
     assert optimized.K == 2
     assert np.isfinite(optimized.stats["elbo"])
+
+
+def test_optimize_vp_takes_an_unconverged_iterate(mocker, caplog):
+    """The deterministic optimizer reports failure for ordinary outcomes
+    such as a loss of precision, and still returns a usable iterate: the
+    optimization takes it and says so."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    optim_state = {"warmup": False, "entropy_switch": False}
+    vp = VariationalPosterior(D, 1, rng=np.random.default_rng(3))
+    theta = vp.get_parameters().copy()
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization.sp.optimize.minimize",
+        return_value=mocker.Mock(
+            success=False,
+            x=theta,
+            message="Desired error not necessarily achieved due to "
+            "precision loss.",
+        ),
+    )
+
+    with caplog.at_level(logging.WARNING):
+        optimized, _, _ = optimize_vp(options, optim_state, vp, gp, 5, 1)
+
+    assert np.allclose(optimized.get_parameters(), theta)
+    assert "precision loss" in caplog.text
 
 
 def test_vb_init_candidates():

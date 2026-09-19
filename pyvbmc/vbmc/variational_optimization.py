@@ -1,6 +1,7 @@
 """Variational optimization / training of variational posterior"""
 
 import copy
+import logging
 import math
 
 import gpyreg as gpr
@@ -232,13 +233,14 @@ def optimize_vp(
             )
 
             if not res.success:
-                # SciPy minimize failed
-                raise RuntimeError(
-                    "Cannot optimize variational parameters with",
-                    "scipy.optimize.minimize.",
+                # Outcomes such as a loss of precision or the iteration
+                # limit still leave a usable iterate.
+                logging.getLogger("VariationalOptimization").warning(
+                    "scipy.optimize.minimize did not converge while "
+                    "optimizing the variational parameters: %s",
+                    res.message,
                 )
-            else:
-                theta_opt = res.x
+            theta_opt = res.x
         else:
             # Objective function, should only return value and gradient.
             def vb_train_mc_fun(theta_):
