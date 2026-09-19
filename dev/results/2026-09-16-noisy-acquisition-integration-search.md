@@ -1311,7 +1311,7 @@ the twelve states of each state's median paired ratio; the state ranges
 are 0.914 to 1.035 (sorted) and 0.963 to 1.031 (unsorted), all under the
 1.10 gate. The harmful fractions of scheduled comparisons, 0.156 and
 0.177, are far above the 5 percent screening gate. The material raw
-losses retain a median 0.77 (sorted) and 0.64 (unsorted) of the
+losses retain a median 0.70 (sorted) and 0.63 (unsorted) of the
 baseline's raw reduction, the worst 0.26 and 0.33. The verdicts split by
 checkpoint: on the six early states the sorted arm is beneficial in 23 and
 harmful in 3 of 48 comparisons; on the six late states, 23 and 12. Per
@@ -1346,7 +1346,7 @@ contrast and the unsorted arm a descriptive control. Cells completed by
 
 State timing ranges are 0.947 to 1.041 and 0.942 to 1.009. The harmful
 fraction of the confirmation contrast is 0.260. Material raw losses retain
-a median 0.72 of the baseline's reduction, the worst 0.26. The checkpoint
+a median 0.71 of the baseline's reduction, the worst 0.26. The checkpoint
 split is sharper than on development: early states 15 beneficial and 2
 harmful of 48, late states 20 and 23. Per trajectory for the confirmation
 contrast:
@@ -1492,10 +1492,10 @@ posterior is Stage 2's question.
 
 The records of every stage are the `f2_*` review copies under
 `integration-search/`, each carrying its publication note and the digest
-of its raw artifact;
-[the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json)
-lists all of them except the four judge ladders. The raw artifacts are
-listed in the local artifact index of the holding machine.
+of its raw artifact, all listed in
+[the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json);
+the raw artifacts are listed in the local artifact index of the holding
+machine.
 
 ## F2 Stage 2: paired inference comparison on the production suite
 

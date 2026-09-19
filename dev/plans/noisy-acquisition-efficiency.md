@@ -1723,12 +1723,15 @@ baseline arm's 80 fits (51 with a treatment partner, 28 run after the
 stop, completed on 2026-09-19) are production-reference runs. Their
 sidecars record the commits they ran under (`2271f25`, `f1e6ff3`,
 `f91fdf0`), whose default path the exact oracle check and the E3 replays
-show bit-identical to the release code, and label gpyreg `1.2.0`: that is
-the installed metadata of the environment that ran them, whose gpyreg was
-stale, while the code that ran is the frozen worktree at tag `v1.2.1`
-placed ahead of it on `PYTHONPATH`. Sidecars written by later versions of
-the runner also record the imported gpyreg module's path and commit
-(`gpyreg_source`). This outcome closes the efficiency workstream.
+show bit-identical to the release code, and label gpyreg `1.2.1` with its
+source (`gpyreg_source`: the frozen worktree at tag `v1.2.1`, commit
+`9e70e6b`, which the Stage 2 manifests record and which replays with the
+installed 1.2.1 release reproduce bit for bit). The runner had written
+the environment's stale installed metadata, 1.2.0, into these sidecars;
+the label was corrected in place on 2026-09-19 with a `corrections` entry
+in each sidecar, the original bytes preserved beside them so that the
+Stage 2 summary's hashes stay verifiable, and the runner now records
+`gpyreg_source` itself. This outcome closes the efficiency workstream.
 
 ### Decisions and unresolved empirical questions
 

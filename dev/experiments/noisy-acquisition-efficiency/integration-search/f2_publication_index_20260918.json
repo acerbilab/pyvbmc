@@ -114,9 +114,35 @@
       "published_sha256": "c4496f298dd8669943d72330a3da7526b015c6f8f666f71d3ffd76caa6e21891",
       "raw_artifact_sha256": "2c9d2d988962df906ef582e40763cb94f841cea295edfd3a1a785a6436dc0b6c",
       "raw_name": "f2_crosscheck_outcome.json"
+    },
+    {
+      "published": "f2_development_judge_ladder_20260918.json",
+      "published_sha256": "588a25550084b13ec5982fe8a2c9f317ecac435e287df38e246a0544489b8f30",
+      "raw_artifact_sha256": "abd263f87c6587bd7c21a59ff425a1e994aeb307e6b7c2830f95cfc898357674",
+      "raw_name": "f2_development_judging/completed_ladder.json"
+    },
+    {
+      "published": "f2_holdout_judge_ladder_20260918.json",
+      "published_sha256": "e7aa66c57d654b0a86361e436c8588a65ce3aae668db7f2f120129e039cf1df2",
+      "raw_artifact_sha256": "f3103ebaadf3798fd3a2c532acd00d7418ee185c7833d4752a03aaacb6b633de",
+      "raw_name": "f2_holdout_judging/completed_ladder.json"
+    },
+    {
+      "published": "f2_control_judge_ladder_20260918.json",
+      "published_sha256": "c756318ed34a9ba18284cdc47910cc946e655f090bd05576ae22892024ca9a0d",
+      "raw_artifact_sha256": "180d1764561cc14c3f82478f3e632d704a61f54e54cc7fc1d7466570e498a18c",
+      "raw_name": "f2_control_judging/completed_ladder.json"
+    },
+    {
+      "published": "f2_node_control_judge_ladder_20260918.json",
+      "published_sha256": "f6171c0c168474a5c73d5f54de130ae7405501be7371f9649ece6cf200230aef",
+      "raw_artifact_sha256": "c10ed50d3c89b7e3070255fdade73a6433ed1f856a6eed6722b22d7edf261750",
+      "raw_name": "f2_node_control_judging/completed_ladder.json"
     }
   ],
   "kind": "publication_index",
   "schema_version": 1,
-  "source_dir": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916"
+  "source_dir": "<USER_HOME>\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\noisy_acq_efficiency_20260916",
+  "updated_utc": "2026-09-19T07:43:58.206645+00:00",
+  "update_note": "2026-09-19: the four judge ladders, published on 2026-09-18 without index entries, added."
 }
