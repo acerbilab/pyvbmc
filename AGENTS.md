@@ -325,6 +325,14 @@ Things you must hold in your head across files:
   from the sdist.
 - New test directories need an `__init__.py` (`entropy/` and `whitening/`
   currently lack one).
+- The package is installed editable from one checkout. In any other
+  checkout or worktree, `python dev/scripts/<script>.py` imports the
+  installed checkout's package, because `sys.path[0]` is the script's
+  directory, not the current one; `python -m pytest` from that checkout's
+  root is unaffected, since it puts the current directory first. Run every
+  script gate (`make_oracle_fixtures.py`, `golden_replay.py`, the benchmark
+  runners) with `PYTHONPATH=<that checkout>` and print `pyvbmc.__file__`
+  once before trusting the result.
 - `pyvbmc/priors/__init__.py` has `# isort:skip` markers preserving a
   circular-import-safe order; do not reorder.
 - `import pyvbmc` eagerly imports matplotlib.pyplot, cma, and imageio.

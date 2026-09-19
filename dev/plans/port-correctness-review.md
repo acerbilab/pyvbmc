@@ -362,7 +362,12 @@ pattern. The plan is written so that a developer with MATLAB and the
   worktree root so that the worktree's package is the one imported.
   It commits one finding at a time and does not push; the orchestrator
   reviews each diff, cherry-picks the commits onto `dev-port-review` and
-  runs the module's whole test directory there.
+  runs the module's whole test directory there. A `dev/scripts` script
+  run from a worktree imports the main checkout's package unless
+  `PYTHONPATH` names the worktree (`python -m pytest` is unaffected), so
+  every oracle command in an agent's brief carries `PYTHONPATH=<worktree>`
+  and the agent prints `pyvbmc.__file__` once; `AGENTS.md` records the
+  trap.
 - The review proceeds one wave at a time. After every wave the
   orchestrator stops and reports the wave's findings to the PI with
   enough context to judge them; the PI decides what follows: the next
