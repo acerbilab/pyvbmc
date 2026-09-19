@@ -593,7 +593,10 @@ pattern. The plan is written so that a developer with MATLAB and the
   (`dev/results/<date>-port-correctness-review.md`) and the
   consolidation of the sheet's durable entries into
   `pyvbmc/vbmc/README.md` come at the end.
-- [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks.
+- [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
+  reviewers), and the internal track of P2, which wave 1 did not run
+  (its four slots went to M, the P2 comparison and both P6 tracks);
+  17 reviewers, so one wave has a free slot for it.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
