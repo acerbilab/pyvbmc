@@ -1,4 +1,6 @@
 import copy
+import logging
+import re
 from math import ceil
 from pathlib import Path
 
@@ -8,10 +10,34 @@ import pytest
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.vbmc import Options
+from pyvbmc.vbmc.options import INERT_OPTIONS
 
 options_path = Path(__file__).parent.parent.parent.joinpath(
     "vbmc", "option_configs"
 )
+basic_options_path = options_path.joinpath("basic_vbmc_options.ini")
+advanced_options_path = options_path.joinpath("advanced_vbmc_options.ini")
+
+
+def _declared_option_names():
+    """The option names declared by the two shipped ini files."""
+    names = set()
+    for path in (basic_options_path, advanced_options_path):
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line == "" or line.startswith("#") or line.startswith("["):
+                continue
+            names.add(line.split("=", 1)[0].strip())
+    return names
+
+
+def _shipped_options(user_options, D=2):
+    """Build the shipped options as ``VBMC.__init__`` does."""
+    options = Options(basic_options_path, {"D": D}, user_options)
+    options.load_options_file(advanced_options_path, {"D": D})
+    options.update_defaults()
+    options.validate_option_names([basic_options_path, advanced_options_path])
+    return options
 
 
 def test_options_no_user_options():
@@ -152,6 +178,65 @@ def test_fun_eval_start_default(D, expected):
         np.full((1, D), 1.0),
     )
     assert vbmc.options["fun_eval_start"] == expected
+
+
+def test_inert_options_are_the_declared_options_nothing_reads():
+    """``INERT_OPTIONS`` lists exactly the declared options that no module
+    of the package reads, so that a newly dead option, or a newly read
+    registered one, fails here."""
+    package_path = options_path.parent.parent
+    # The option machinery itself is not a consumer, and it spells out
+    # every registered name.
+    registry_parts = ("vbmc", "options.py")
+    sources = []
+    for path in package_path.rglob("*.py"):
+        parts = path.relative_to(package_path).parts
+        if "testing" in parts or "option_configs" in parts:
+            continue
+        if parts == registry_parts:
+            continue
+        sources.append(path)
+    text = "\n".join(path.read_text(encoding="utf-8") for path in sources)
+    unread = {
+        name
+        for name in _declared_option_names()
+        if re.search("['\"]" + re.escape(name) + "['\"]", text) is None
+    }
+    assert unread == set(INERT_OPTIONS)
+
+
+def test_inert_option_away_from_its_default_warns(caplog):
+    """A value supplied for an inert option is named as having no effect."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"double_gp": True})
+    assert options["double_gp"] is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "double_gp" in message and "no effect" in message
+        for message in messages
+    )
+
+
+def test_inert_option_at_its_default_does_not_warn(caplog):
+    """Repeating the default of an inert option changes nothing and is
+    silent, so that an option dictionary recorded by an earlier run loads
+    without notices."""
+    caplog.set_level(logging.WARNING)
+    _shipped_options({"double_gp": False, "noise_shaping_threshold": 20})
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any(
+        "double_gp" in message or "noise_shaping_threshold" in message
+        for message in messages
+    )
+
+
+def test_option_that_is_read_does_not_warn(caplog):
+    """An option the algorithm reads has an effect and is not reported."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 3})
+    assert options["max_iter"] == 3
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any("max_iter" in message for message in messages)
 
 
 def test__str__and__repr__():

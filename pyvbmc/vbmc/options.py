@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import configparser
 import copy
+import logging
 from collections.abc import MutableMapping
 from math import ceil
 from pathlib import Path
@@ -12,6 +13,40 @@ import numpy as np
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
+
+#: Options declared in the ``.ini`` files that no PyVBMC module reads. They
+#: are kept so that option dictionaries recorded by earlier runs still load,
+#: and the value given for one of them has no effect. The ``# description``
+#: line of each says why it is there.
+INERT_OPTIONS = frozenset(
+    {
+        "acq_hedge_decay",
+        "acq_hedge_iter_window",
+        "active_sample_fess_thresh",
+        "active_variational_samples",
+        "adaptive_entropy_alpha",
+        "annealed_gp_mean",
+        "best_frac_back",
+        "best_safe_sd",
+        "constrained_gp_mean",
+        "double_gp",
+        "empirical_gp_prior",
+        "gp_stochastic_step_size",
+        "integrate_gp_mean",
+        "noise_shaping_factor",
+        "noise_shaping_threshold",
+        "nonlinear_scaling",
+        "optimistic_variational_bound",
+        "output_fcn",
+        "rank_criterion",
+        "sample_extra_vp_means",
+        "scale_lower_bound",
+        "search_cmaes_best",
+        "variational_init_repo",
+        "variational_sampler",
+        "warmup_options",
+    }
+)
 
 
 class Options(MutableMapping, dict):
@@ -137,7 +172,7 @@ class Options(MutableMapping, dict):
             Parameters used to evaluate the options.
         """
         options_list = _read_config_file(options_path)
-        for (key, value, description) in options_list:
+        for key, value, description in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
                 self[key] = eval(value, globals(), evaluation_parameters)
                 self.descriptions[key] = description
@@ -174,8 +209,48 @@ class Options(MutableMapping, dict):
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
+        self._warn_inert_options(options_paths)
+
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
+
+    def _warn_inert_options(self, options_paths: list):
+        """
+        Warn about the options of :data:`INERT_OPTIONS` that the user set to
+        a value other than the default declared in the ini files.
+
+        Parameters
+        ----------
+        options_paths : list of str
+            A list of paths to the ini files that declare the defaults.
+        """
+        supplied = set(self.get("useroptions")) & INERT_OPTIONS
+        if len(supplied) == 0:
+            return
+
+        default_values = {}
+        for options_path in options_paths:
+            for key, value, __ in _read_config_file(options_path):
+                if key in supplied:
+                    default_values[key] = value
+
+        for key in sorted(supplied):
+            if key not in default_values:
+                continue
+            try:
+                default = eval(
+                    default_values[key], globals(), self.evaluation_parameters
+                )
+            except Exception:
+                continue
+            if _equals_default(self[key], default):
+                continue
+            logging.warning(
+                "The option %s has no effect in PyVBMC: the value %s is "
+                "accepted and ignored.",
+                key,
+                self[key],
+            )
 
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
@@ -303,6 +378,24 @@ class Options(MutableMapping, dict):
             )
 
 
+def _equals_default(value, default):
+    """
+    Private helper method to compare an option value against its default,
+    for values of any type an ini file can produce.
+    """
+    if value is default:
+        return True
+    try:
+        return bool(
+            np.array_equal(
+                np.asarray(value, dtype=object),
+                np.asarray(default, dtype=object),
+            )
+        )
+    except Exception:
+        return False
+
+
 def _read_config_file(options_path: str):
     """
     Private helper method to read a config file and return the options as a
@@ -325,7 +418,7 @@ def _read_config_file(options_path: str):
     option_list = []
     description = ""
     for section in conf.sections():
-        for (key, value) in conf.items(section):
+        for key, value in conf.items(section):
             if "#" in key:
                 description = key.strip("# ")
             else:
