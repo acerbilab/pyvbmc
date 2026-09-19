@@ -230,6 +230,22 @@ def test_inert_option_at_its_default_does_not_warn(caplog):
     )
 
 
+def test_every_inert_option_at_its_default_is_silent(caplog):
+    """An option dictionary recorded by an earlier run repeats every
+    default, including the one that is a lambda, and passes through
+    without notices."""
+    defaults = _shipped_options({})
+    repeated = {name: defaults[name] for name in INERT_OPTIONS}
+    assert callable(repeated["annealed_gp_mean"])
+
+    caplog.set_level(logging.WARNING)
+    _shipped_options(repeated)
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any(
+        name in message for name in INERT_OPTIONS for message in messages
+    )
+
+
 def test_option_that_is_read_does_not_warn(caplog):
     """An option the algorithm reads has an effect and is not reported."""
     caplog.set_level(logging.WARNING)

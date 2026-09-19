@@ -219,6 +219,11 @@ class Options(MutableMapping, dict):
         Warn about the options of :data:`INERT_OPTIONS` that the user set to
         a value other than the default declared in the ini files.
 
+        An option whose declared default is a callable is left alone: two
+        functions cannot be told apart by value, and repeating such a
+        default (as an option dictionary recorded by an earlier run does)
+        would otherwise look like a change.
+
         Parameters
         ----------
         options_paths : list of str
@@ -243,7 +248,7 @@ class Options(MutableMapping, dict):
                 )
             except Exception:
                 continue
-            if _equals_default(self[key], default):
+            if callable(default) or _equals_default(self[key], default):
                 continue
             logging.warning(
                 "The option %s has no effect in PyVBMC: the value %s is "
