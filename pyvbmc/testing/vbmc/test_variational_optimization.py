@@ -621,6 +621,42 @@ def test_vb_init_candidates():
     assert np.array_equal(vp.mu, base.mu)
 
 
+def test_vb_init_type2_starting_widths():
+    """The type-2 starting widths are ``sqrt(mean(V / lambd**2) / K_new)``
+    times the jitter factor ``exp(0.2 * randn)``, with the across-component
+    variance of each dimension divided by that same dimension's length
+    scale. The first candidate carries the widths without jitter."""
+    D, K, K_new, opts_N = 3, 2, 4, 2
+    seed = 7
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(seed))
+    vp.lambd = np.array([[0.3], [1.0], [1.6]])
+    rng = np.random.default_rng(0)
+    X_star = rng.standard_normal((20, D)) * np.array([2.0, 1.0, 0.5])
+    y_star = rng.standard_normal((20, 1))
+    vp.rng = np.random.default_rng(seed)
+    reference_rng = np.random.default_rng(seed)
+    jitter = np.exp(0.2 * reference_rng.standard_normal((1, K_new)))
+
+    candidates, _ = _vb_init(vp, 2, opts_N, K_new, X_star, y_star)
+
+    V = np.var(candidates[0].mu, axis=1, ddof=1)
+    lambd = vp.lambd.ravel()
+    # The case separates the per-dimension ratio from the product of the
+    # two averages, which are equal only for a uniform length scale.
+    assert not np.isclose(
+        np.mean(V / lambd**2), np.mean(V) * np.mean(1 / lambd**2)
+    )
+    expected = np.sqrt(np.mean(V / lambd**2) / K_new) * jitter
+    assert np.allclose(candidates[0].sigma, expected)
+
+    # The jittered candidate consumes the same draws as before.
+    reference_rng.standard_normal((D, K_new))
+    reference_rng.standard_normal((1, K_new))
+    reference_rng.standard_normal((D, 1))
+    reference_rng.standard_normal((1, K_new))
+    assert vp.rng.bit_generator.state == reference_rng.bit_generator.state
+
+
 @pytest.mark.parametrize("K", [1, 3])
 @pytest.mark.parametrize("growth", [0, 2])
 def test_vb_init_type3_preserves_fixed_sigma_without_extra_draws(K, growth):

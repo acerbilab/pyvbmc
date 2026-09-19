@@ -905,7 +905,7 @@ def _vb_init(
             V = np.var(mu0, axis=1, ddof=1)
         else:
             V = np.var(X_star, axis=0, ddof=1)
-        sigma0 = np.sqrt(np.mean(V / lambd0**2) / K_new) * np.exp(
+        sigma0 = np.sqrt(np.mean(V / lambd0.ravel() ** 2) / K_new) * np.exp(
             0.2 * rng.standard_normal((1, K_new))
         )
     else:
