@@ -458,8 +458,9 @@ def active_sample_step(state, seed):
     # excludes; kept so the call matches production's signature.
     history = {"r_index": np.array([state["meta"].get("r_index", np.inf)])}
     n = state["options"]["fun_evals_per_iter"]
-    # Since 2026-09-05 every draw of the search comes from `vp.rng` (the
-    # noise-handler subclass included; re-baselined then). The legacy seed
+    # Since 2026-09-05 every draw of the search comes from `vp.rng`
+    # (re-baselined then, and again on 2026-09-19 when the search dropped
+    # cma's noise handler and gained per-coordinate scales). The legacy seed
     # is inert and kept only for symmetry with the older fixtures; it would
     # not *detect* a stray global draw (that is
     # `test_seeded_run_leaves_global_state_untouched`'s job).
