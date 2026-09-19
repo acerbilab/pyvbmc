@@ -478,14 +478,6 @@ def test_vbmc_optimstate_gp_functions():
     options = {
         "specify_target_noise": False,
         "uncertainty_handling": [],
-        "noise_shaping": True,
-    }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
-    options = {
-        "specify_target_noise": False,
-        "uncertainty_handling": [],
         "noise_shaping": False,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
@@ -1238,6 +1230,21 @@ def _vectorized_vbmc(target, *, prior=None, options=None, D=2):
         options=merged_options,
         prior=prior,
     )
+
+
+def test_noise_shaping_is_off_by_default():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    assert vbmc.options["noise_shaping"] is False
+
+
+def test_noise_shaping_on_is_rejected():
+    """Only half of the option is ported, so turning it on would configure
+    a run that exists in neither toolbox."""
+    with pytest.raises(NotImplementedError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options={"noise_shaping": True})
+    message = execinfo.value.args[0]
+    assert "noise_shaping" in message
+    assert "noiseshaping_vbmc.m" in message
 
 
 def test_vectorized_target_option_and_logger_mode():

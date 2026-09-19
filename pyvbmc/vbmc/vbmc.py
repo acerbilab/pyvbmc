@@ -324,6 +324,7 @@ class VBMC:
             )
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
+        self._validate_noise_shaping_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3409,6 +3410,19 @@ class VBMC:
         value = self.options.get("show_tips", True)
         if not isinstance(value, (bool, np.bool_)):
             raise ValueError("The option 'show_tips' must be boolean.")
+
+    def _validate_noise_shaping_option(self):
+        """Reject the half-configured noise-shaping mode."""
+        if self.options.get("noise_shaping", False):
+            raise NotImplementedError(
+                "The option 'noise_shaping' must be False. The shaping of "
+                "the training variances that it names (MATLAB VBMC's "
+                "noiseshaping_vbmc.m, which discounts observations from "
+                "extremely low-density regions) is not ported, so turning "
+                "the option on would only replace the GP noise function "
+                "and disable the rank-one GP update, a configuration of "
+                "neither toolbox."
+            )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""
