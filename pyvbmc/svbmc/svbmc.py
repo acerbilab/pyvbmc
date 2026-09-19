@@ -436,6 +436,10 @@ Generator, optional
             axis=1,
         )
         self.w = self.w / np.sum(self.w)
+        # The stack's starting point, which every optimization initializes
+        # its logits from. `self.w` holds the currently selected weights
+        # and `optimize` overwrites it.
+        self._initial_weights = self.w.copy()
         self._naive_weights = np.concatenate(
             [np.ravel(vp.w) / np.sum(vp.w) / self.M for vp in self.vp_list]
         ).astype(np.float64)
@@ -600,10 +604,11 @@ Generator, optional
 
         The weights are the softmax of unconstrained logits, initialized
         from the runs' own weights and ELBOs so that better runs start
-        heavier. Every step draws fresh entropy samples. The optimization
-        stops when the ELBO, rounded to five decimals, has not improved for
-        five consecutive steps, or after ``max_steps``; the best iterate is
-        returned.
+        heavier. That starting point belongs to the stack, so every call
+        departs from it whatever :attr:`w` currently holds. Every step
+        draws fresh entropy samples. The optimization stops when the ELBO,
+        rounded to five decimals, has not improved for five consecutive
+        steps, or after ``max_steps``; the best iterate is returned.
 
         Parameters
         ----------
@@ -633,7 +638,7 @@ Generator, optional
         """
         torch = _import_torch()
         _validate_optimization(n_samples, max_steps, version)
-        w_init = torch.as_tensor(self.w, dtype=torch.float64)
+        w_init = torch.as_tensor(self._initial_weights, dtype=torch.float64)
         log_w = torch.log(w_init)  # (1, K_total); optimize in log space
         repeats = torch.as_tensor(self.K)
 

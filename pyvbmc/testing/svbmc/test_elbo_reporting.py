@@ -330,7 +330,14 @@ def test_shrinkage_receives_only_runs_retained_by_both_filters(monkeypatch):
     assert all(np.max(x) < 1000.0 for x in captured["corrected"])
 
 
-def test_repeated_optimization_uses_current_selected_weights(monkeypatch):
+def test_repeated_optimization_reports_at_the_newly_selected_weights(
+    monkeypatch,
+):
+    """Each report is computed at the weights that call selected.
+
+    The starting point of the optimization belongs to the stack (see
+    ``test_svbmc.py``); what a second call reports is its own result.
+    """
     stacked = SVBMC(
         [
             _run(weights=(0.5, 0.5), I=[[0.0, 2.0]], J=[np.eye(2)]),
