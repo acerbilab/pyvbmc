@@ -205,3 +205,47 @@ def test_determine_best_vp_no_rank_criterion_no_stable():
     assert vp == vbmc.iteration_history["vp"][idx_best]
     assert elbo == 1000
     assert elbo_sd == 0
+
+
+def test_look_back_window_counts_iterations():
+    """Without a stable iteration, the search for the best ELCBO goes back
+    over ``ceil(n * frac_back)`` iterations before the last one, ``n``
+    being the number of iterations ranked (MATLAB VBMC's ``best_vbmc``:
+    ``idx_start = max(1, n - ceil(n * FracBack))`` in 1-based indices)."""
+    for n in range(1, 41):
+        for frac_back in (0.1, 0.25, 0.5):
+            vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+            # A decreasing ELBO makes the earliest iteration of the window
+            # the best one, so the selected index is the window's start.
+            recorded_history(
+                vbmc,
+                elbo=[float(n - i) for i in range(n)],
+                elbo_sd=[0.0] * n,
+                r_index=[1.0] * n,
+                stable=[False] * n,
+            )
+            __, __, __, idx_best = vbmc.determine_best_vp(
+                frac_back=frac_back, rank_criterion_flag=False
+            )
+            expected = max(0, (n - 1) - int(np.ceil(n * frac_back)))
+            assert idx_best == expected, (n, frac_back, idx_best, expected)
+
+
+def test_rank_penalty_equals_the_number_of_iterations():
+    """The ranking criterion penalizes a non-stable iteration by the number
+    of iterations ranked. With four iterations, a stable first iteration
+    ranked second on ELCBO and first on reliability totals 4 + 2 + 1 + 1 =
+    8, and the last iteration, unstable and ranked first on ELCBO and
+    second on reliability, totals 1 + 1 + 2 + 4 = 8; the tie goes to the
+    earlier, stable iteration. A penalty one smaller would select the
+    unstable one."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(
+        vbmc,
+        elbo=[2.0, 0.0, 1.0, 3.0],
+        elbo_sd=[0.0] * 4,
+        r_index=[0.0, 3.0, 2.0, 1.0],
+        stable=[True, False, False, False],
+    )
+    __, __, __, idx_best = vbmc.determine_best_vp(rank_criterion_flag=True)
+    assert idx_best == 0

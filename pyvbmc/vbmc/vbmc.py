@@ -2706,7 +2706,8 @@ class VBMC:
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
-                rank[:, 3] = max_idx
+                # The penalty is the number of iterations ranked.
+                rank[:, 3] = max_idx + 1
                 rank[stable_iter, 3] = 1
 
                 idx_best = np.argmin(np.sum(rank, 1))
@@ -2719,8 +2720,10 @@ class VBMC:
 
                 if len(laststable) == 0:
                     # Go some iterations back if no previous stable iteration
+                    n_iterations = max_idx + 1
                     idx_start = max(
-                        0, int(math.ceil(max_idx - max_idx * frac_back))
+                        0,
+                        max_idx - int(math.ceil(n_iterations * frac_back)),
                     )
                 else:
                     idx_start = np.ravel(laststable)[-1]
