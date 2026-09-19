@@ -1905,6 +1905,22 @@ scientific design had already received independent review.
   at 05:06 UTC on 2026-09-19, after 51 of 80 pairs; the treatment arm's
   remaining fits were not run, and the baseline arm's remaining fits
   continue as production-reference runs from `dev-production-reference`.
+- 2026-09-19, gpyreg label correction: `golden_trace.py` had written the
+  installed distribution metadata of the executing environment as the
+  gpyreg version of every sidecar, and that environment's installed
+  gpyreg was a stale 1.2.0 while every campaign imported the frozen
+  worktree at tag `v1.2.1` (commit `9e70e6b`) placed ahead of it on
+  `PYTHONPATH`, as the E5 and F2 Stage 2 manifests record and as replays
+  of two archived fits with the installed 1.2.1 release confirm bit for
+  bit. The 121 E5 arm sidecars, the 51 F2 treatment sidecars and the 80
+  production-reference sidecars were corrected in place (`meta.gpyreg`
+  1.2.1, `meta.gpyreg_source` with the worktree path and commit, a
+  `meta.corrections` entry stating the change), with the original bytes
+  preserved in a zip beside each directory's sidecars, against which the
+  hashes pinned by the Stage 2 summary and the F3 trajectory record
+  verify. The manifests and judge ladders, which record the metadata
+  version next to the imported commit and path, are unchanged; the
+  runner now records the imported source itself (`gpyreg_source`).
 
 ## Guarded-sinh execution checklist (completed)
 
