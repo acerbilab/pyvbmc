@@ -355,6 +355,14 @@ pattern. The plan is written so that a developer with MATLAB and the
 - At most four agents at a time; the orchestrator holds the heavy-compute
   slot and does not use it while the production-reference runs are active.
 - Reviewers are fresh general-purpose agents, never forks.
+- An agent that changes code works in its own git worktree. The harness
+  creates that worktree at an old commit of `main`, so its brief starts
+  with `git merge --ff-only dev-port-review`; its interpreters are the
+  ones listed in the reviewer brief, run as `python -m pytest` from the
+  worktree root so that the worktree's package is the one imported.
+  It commits one finding at a time and does not push; the orchestrator
+  reviews each diff, cherry-picks the commits onto `dev-port-review` and
+  runs the module's whole test directory there.
 - The review proceeds one wave at a time. After every wave the
   orchestrator stops and reports the wave's findings to the PI with
   enough context to judge them; the PI decides what follows: the next
@@ -402,6 +410,35 @@ pattern. The plan is written so that a developer with MATLAB and the
 - [x] 2026-09-19: slice table reconciled against the counterpart map
   (`experiments/port_review_20260919/prep_report.md` lists the
   corrections applied).
+- [x] 2026-09-19: wave 0 verified and triaged. All 24 findings are true
+  of the code (`experiments/port_review_20260919/verification/wave0.md`
+  has the method, outcome and class of each, with scripts and logs);
+  the PI ruled on them the same day. Fixed on this branch by three
+  Opus agents, one commit per finding with a test written against the
+  contract, each module's whole test directory passing afterwards:
+  calibration (summary speed-up of the selected setting only; the
+  `calibrate` docstrings; the regression veto on its own constant and a
+  dead helper removed; 86 tests), S-VBMC (one original-space box across
+  runs; every `optimize()` from the runs' own weights, first call
+  bit-identical; two docstrings, the API page and Example 7; 226 tests)
+  and the PyMC adapter (a missing pullback treated as an absent
+  derivative; the unsupported-model type kept through the mode search;
+  the no-gradient warning's start point; a dead mask; the support of a
+  log-transformed variable checked by a probe ladder on its own prior
+  density; the arguments that avoid prior draws documented; a draw that
+  rounds onto a support bound kept; 107 tests). Rulings without a code
+  change: the two-level shrinkage stays as devised, with a comparison
+  of the two compositions added to the headline-selection item of
+  `TODO.md`; the prior draws at construction stay; saving an `SVBMC`
+  object works through `dill` and gets `save`/`load` methods as a
+  `TODO.md` item; the core transformer's loss of precision near a
+  nonzero bound waits for slices P8 and O3 to say whether MATLAB shares
+  it.
+- [ ] Chunk-independent Monte Carlo entropy (PI decision, 2026-09-19):
+  every chunk budget reproduces the default budget's output bit for bit
+  through reductions over the default layout's blocks, the default path
+  untouched (gate: `--check --exact` with no oracle moved), and the
+  calibration campaign validates entropy budgets exactly.
 - [ ] Wave 1 (PI decision, 2026-09-19): M, P6 both tracks, P2 comparison.
 - [ ] Waves 1 to 7: P1a to P9, G1, G2, both tracks; M.
 - [ ] Wave 8: O1 to O4.

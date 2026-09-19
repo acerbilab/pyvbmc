@@ -16,6 +16,18 @@ records its execution.
   pools, judging the optimism added by stacking relative to its input runs.
   Promote it only if the campaign confirms it is the best estimator; decide
   separately whether noiseless stacks use shrinkage or retain the raw value.
+  Before that decision, compare two compositions of its stages on the
+  existing pools with the campaign's added-bias measure. The implemented
+  one adds the between-run change of a run's raw level to the
+  within-shrunk components, so the run's final own-weighted level is the
+  shrunk level plus whatever the within-run stage did to it; the
+  alternative pins each run's level to its shrunk value. They coincide
+  for uniform own weights and differ where a run's weights align with its
+  component estimates (0.16 and 0.30 nats in the constructed case of the
+  [port review's verification](experiments/port_review_20260919/verification/wave0.md)).
+  The implemented form keeps the within-run correction of the level, which
+  addresses the single-run optimism that regression across runs cannot
+  see; the comparison is to confirm that on data (PI, 2026-09-19).
   The stacking objective and selected posterior remain unchanged.
   Finalize the headline's qualitative caveat, distinguishing inherited VBMC
   bias from bias added by stacking and explaining that residual bias can
@@ -25,6 +37,20 @@ records its execution.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
+
+- [ ] **Saving and loading an S-VBMC object.** `SVBMC` has no `save` or
+  `load`, unlike `VBMC` and `VariationalPosterior`, and neither the API
+  page nor Example 7 says how to keep a stack; the original standalone
+  package had no such methods either. The standard `pickle` fails on an
+  `SVBMC` object, as it does on a posterior, because the parameter
+  transformer holds local closures. `dill`, which the existing `save` and
+  `load` methods use, serializes a fresh or an optimized stack with an
+  exact round trip of the weights, the ELBO and the generator state, and
+  the object holds no Torch state (checked 2026-09-19 during the
+  [port correctness review](plans/port-correctness-review.md)). Add
+  `SVBMC.save` and `SVBMC.load` mirroring the posterior's (`dill`, the
+  overwrite guard), a round-trip test in the Torch CI cell, the API
+  documentation, and a short saving step in Example 7.
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The pool campaign's

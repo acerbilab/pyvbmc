@@ -202,7 +202,13 @@ Things you must hold in your head across files:
   Free variables retain the given model's order; two-sided variables use
   model coordinates, while supported one-sided variables keep PyMC's value
   transform and Jacobian. The adapter returns `-inf` only on or outside its
-  hard box. Five undocumented reaches are capability-guarded: transform
+  hard box. A variable that keeps a log transform is accepted only if its
+  own prior density stays finite down to sixteen decades below its initial
+  value, so a shifted support (`pm.Wald` with a nonzero `alpha`) is
+  rejected at construction. `to_model_variables` returns a backward-map
+  output that rounded onto a finite support bound as the adjacent value
+  inside the support, and rejects non-finite and out-of-support values.
+  Five undocumented reaches are capability-guarded: transform
   classes; transform `args_fn`/`forward`/`backward`; the default-transform
   registry; Model mappings; and graph reconstruction/random-variable
   recognition (including PyMC symbolic random variables). Setup
@@ -216,7 +222,10 @@ Things you must hold in your head across files:
   constructing without Torch raises naming the extra, so `import pyvbmc`
   never imports Torch. `sample()` draws independently from the stacked
   mixture through copies that use the object's generator (`seed=`), never
-  the inputs'. Its Torch-dependent tests run only where Torch is installed
+  the inputs'. Construction rejects runs whose original-space hard bounds
+  differ (the bounded transform and any warp are free per run), and every
+  `optimize()` starts from the runs' own weights whatever `w` holds. Its
+  Torch-dependent tests run only where Torch is installed
   (one CI cell); the fixtures are plain-array snapshots under
   `pyvbmc/testing/svbmc/fixtures/` written by
   `dev/scripts/make_svbmc_fixtures.py`, and `references.npz` there pins the
