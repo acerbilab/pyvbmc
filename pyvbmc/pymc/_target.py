@@ -381,7 +381,6 @@ class PyMCTarget:
             finite_lower = np.isfinite(lower)
             finite_upper = np.isfinite(upper)
             two_sided = finite_lower & finite_upper
-            unbounded = ~finite_lower & ~finite_upper
             one_sided = finite_lower ^ finite_upper
             if transform is None or np.all(two_sided):
                 untransform.append(rv)
