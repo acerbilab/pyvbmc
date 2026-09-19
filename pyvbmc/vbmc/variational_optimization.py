@@ -339,7 +339,7 @@ def optimize_vp(
             ).ravel()
             idx = idx[vp.rng.integers(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)
-            vp_pruned.eta = np.delete(vp_pruned.eta, idx)
+            vp_pruned.eta = np.delete(vp_pruned.eta, idx, axis=1)
             vp_pruned.sigma = np.delete(vp_pruned.sigma, idx)
             vp_pruned.mu = np.delete(vp_pruned.mu, idx, axis=1)
             vp_pruned.K -= 1

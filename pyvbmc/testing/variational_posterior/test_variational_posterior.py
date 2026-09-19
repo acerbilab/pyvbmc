@@ -481,6 +481,26 @@ def test_get_set_parameters_roundtrip_non_raw():
     assert np.all(theta == theta2)
 
 
+@pytest.mark.parametrize("raw_flag", [True, False])
+@pytest.mark.parametrize("optimize_weights", [True, False])
+def test_set_parameters_eta_matches_weights(raw_flag, optimize_weights):
+    """``eta`` is the unbounded (softmax) parametrization of ``w``."""
+    K = 3
+    D = 2
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_weights = optimize_weights
+    vp.w = np.array([[0.2, 0.3, 0.5]])
+    vp.eta = np.full((1, K), 7.0)
+    theta = vp.get_parameters(raw_flag=raw_flag)
+
+    vp.set_parameters(theta, raw_flag=raw_flag)
+
+    assert vp.eta.shape == (1, K)
+    softmax = np.exp(vp.eta - np.amax(vp.eta))
+    softmax /= np.sum(softmax)
+    assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
+
+
 def test_set_parameters_reference_regression():
     K = 2
     D = 2

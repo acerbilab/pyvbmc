@@ -1065,7 +1065,9 @@ class VariationalPosterior:
         Set variational posterior parameters from a single array.
 
         Takes as input a ``numpy`` array and assigns it to the
-        variational posterior parameters.
+        variational posterior parameters. ``eta``, the unbounded (softmax)
+        parametrization of the mixture weights, is set alongside ``w``, so
+        that ``softmax(eta)`` is the resulting ``w``.
 
         Parameters
         ----------
@@ -1137,6 +1139,13 @@ class VariationalPosterior:
         # Ensure that weights are normalized
         if self.optimize_weights:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
+
+        # Keep the softmax parametrization of the weights in step with them.
+        if self.optimize_weights and raw_flag:
+            eta = theta[-self.K :]
+            self.eta = np.reshape(eta - np.amax(eta), (1, -1))
+        else:
+            self.eta = np.log(self.w).reshape(1, -1)
 
         # remove mode
         self._mode = None

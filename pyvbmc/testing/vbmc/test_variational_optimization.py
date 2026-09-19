@@ -610,6 +610,25 @@ def test_vp_optimize_one_component_exact_entropy():
     assert elbo_stats["nelbo"][0] == elbo_stats["nelbo"][1]
 
 
+def test_optimize_vp_returns_eta_matching_weights():
+    """The returned posterior's ``eta`` is the softmax parametrization of
+    its ``w``. Two slow optimizations with the midpoint evaluation on make
+    the winning parameters come from an evaluation other than the last."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D, {"max_iter_stochastic": 60})
+    assert options["elcbo_midpoint"]
+    optim_state = {"warmup": False, "entropy_switch": False}
+    vp = VariationalPosterior(D, 3, rng=np.random.default_rng(5))
+
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 6, 2)
+
+    assert vp.eta.shape == (1, vp.K)
+    softmax = np.exp(vp.eta - np.amax(vp.eta))
+    softmax /= np.sum(softmax)
+    assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
+
+
 def test_vb_init_candidates():
     """Sieve candidates share the base posterior's generator and parameter
     transformer, own their variational parameters, start with no bounds
@@ -792,3 +811,4 @@ def test_optimize_vp_preserves_transformer_through_pruning(
     expected_k = K - int(prune_expected)
     assert optimized.stats["J_sjk"].shape == (Ns, expected_k, expected_k)
     assert np.array_equal(optimized.stats["J_sjk"], expected_j)
+    assert optimized.eta.shape == (1, expected_k)
