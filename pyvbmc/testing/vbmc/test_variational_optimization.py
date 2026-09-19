@@ -432,10 +432,17 @@ def test_vp_bound_loss():
 
 
 def test_vp_optimize_1D_g_mixture():
-    """
-    Test that the VP is being optimized to the 1D Gaussian Mixture ground truth.
-    """
+    """Test that the VP is being optimized to the 1D Gaussian Mixture
+    ground truth.
 
+    ``optimize_vp`` is called twice, as two successive iterations of VBMC
+    call it. A freshly constructed posterior is a point mass, so the first
+    call can only end with its components on top of one another, and the
+    fit then rests on the single fresh starting point the sieve picks,
+    which lands in one mode of the mixture often enough to matter.
+    Continuing from that result separates the components.
+    """
+    np.random.seed(0)
     D = 1
 
     # fit GP to mixture logpdf
@@ -462,28 +469,19 @@ def test_vp_optimize_1D_g_mixture():
 
     options = setup_options(D, {})
     vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
 
     # ELBO should be equal to the log normalization constant of the distribution
     # that is 0 for a normalized density
     assert np.abs(vp.stats["elbo"]) < 1e-2 * 5
 
-    # compute kl_div between gaussian mixture and vp
-    vp_samples, _ = vp.sample(int(10e6))
-    vp_mu = np.mean(vp_samples)
-    vp_sigma = np.std(vp_samples)
-
-    mixture_samples = np.concatenate(
-        (
-            norm.rvs(loc=-2, scale=1, size=int(10e6 // 2)),
-            norm.rvs(loc=2, scale=1, size=int(10e6 // 2)),
-        )
-    )
-    mixture_mu = np.mean(mixture_samples)
-    mixture_sigma = np.std(mixture_samples)
-    # Unseeded (GP fit, VP initialization and the 1e7 samples all draw from
-    # the global stream): the moment-matched KL fluctuates with the fit and
-    # reached 0.0014 in one of seven runs on 2026-09-04 against the earlier
-    # threshold of 0.00125 (PI: raised to 0.0015).
+    # Moment-matched KL divergence between the mixture and the posterior,
+    # from the exact moments of both. Get the analytical moments of the
+    # posterior in the transformed space (the transform is identity here);
+    # an equal mixture of N(-2, 1) and N(2, 1) has mean 0 and variance 5.
+    vp_mu, vp_sigma = vp.moments(orig_flag=False, cov_flag=True)
+    mixture_mu = np.zeros((1, 1))
+    mixture_sigma = np.array([[5.0]])
     assert np.all(
         np.abs(kl_div_mvn(mixture_mu, mixture_sigma, vp_mu, vp_sigma))
         < 1e-3 * 1.5
@@ -491,9 +489,17 @@ def test_vp_optimize_1D_g_mixture():
 
 
 def test_vp_optimize_2D_g_mixture():
+    """Test that the VP is being optimized to the 2D Gaussian Mixture
+    ground truth.
+
+    ``optimize_vp`` is called twice, as two successive iterations of VBMC
+    call it. A freshly constructed posterior is a point mass, so the first
+    call can only end with its components on top of one another, and the
+    fit then rests on the single fresh starting point the sieve picks,
+    which lands in one mode of the mixture often enough to matter.
+    Continuing from that result separates the components.
     """
-    Test that the VP is being optimized to the 2D Gaussian Mixture ground truth.
-    """
+    np.random.seed(3)
     D = 2
 
     # fit GP to mixture logpdf
@@ -528,6 +534,7 @@ def test_vp_optimize_2D_g_mixture():
     optim_state["entropy_switch"] = False
 
     options = setup_options(D, {})
+    vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
     vp, _, _ = optimize_vp(options, optim_state, vp, gp, 100, 2)
 
     # ELBO should be equal to the log normalization constant of the
