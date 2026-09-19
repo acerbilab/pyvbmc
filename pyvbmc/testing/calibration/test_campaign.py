@@ -450,4 +450,44 @@ def test_small_real_helpers_preserve_numerics_rng_and_state():
     assert result["pass"]
     assert result["inputs_vp_and_vp_rng_unchanged"]
     assert all(check["float64"] for check in result["checks"])
+    assert all(check["exact"] for check in result["checks"])
     assert all(check["rng_advancement_exact"] for check in result["checks"])
+
+
+def test_a_budget_that_moves_the_last_bit_is_not_accepted():
+    """A kernel that is not chunk-independent invalidates its budgets."""
+    clock = _FakeClock(0.001)
+    kernels = _fake_kernels(clock)
+    fake_entropy = kernels.entropy
+
+    def drifting_entropy(vp, Ns, *, grad_flags, jacobian_flag, rng, budget):
+        H, dH = fake_entropy(
+            vp,
+            Ns,
+            grad_flags=grad_flags,
+            jacobian_flag=jacobian_flag,
+            rng=rng,
+            budget=budget,
+        )
+        if budget != campaign.DEFAULT_BUDGET:
+            H = np.nextafter(H, np.inf)
+        return H, dH
+
+    kernels = kernels._replace(entropy=drifting_entropy)
+    watchdog = campaign._Watchdog(
+        lambda: 0.0, 300.0, timer=campaign.time.perf_counter
+    )
+    workload = campaign._Workload(
+        "entropy_grad", "drifting", 2, 3, 10, (True, True, True, True)
+    )
+    problem = campaign._make_problem(workload, kernels, 123)
+    result = campaign._validate_workload(workload, problem, kernels, watchdog)
+    assert not result["pass"]
+    # The drift is far inside the tolerance a loose comparison would allow.
+    assert all(check["within_tolerance"] for check in result["checks"])
+    assert result["valid_budgets"][str(campaign.DEFAULT_BUDGET)]
+    assert not any(
+        valid
+        for budget, valid in result["valid_budgets"].items()
+        if int(budget) != campaign.DEFAULT_BUDGET
+    )

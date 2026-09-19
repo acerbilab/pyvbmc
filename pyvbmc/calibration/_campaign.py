@@ -624,11 +624,7 @@ def _validate_workload(
         else:
             output, rng_state = result
             rng_equal = _state_equal(rng_state, reference_rng_state)
-        comparison = _output_comparison(
-            output,
-            reference,
-            exact=workload.group == "pdf" or budget == DEFAULT_BUDGET,
-        )
+        comparison = _output_comparison(output, reference, exact=True)
         comparison["rng_advancement_exact"] = bool(rng_equal)
         comparison["pass"] = bool(comparison["pass"] and rng_equal)
         valid_budgets[budget] = comparison["pass"]
@@ -792,7 +788,7 @@ def _dedicated_numerics(kernel_api: _KernelAPI, watchdog: _Watchdog) -> dict:
         )
         reference, reference_state = reference_result
         actual, actual_state = actual_result
-        comparison = _output_comparison(actual, reference, exact=False)
+        comparison = _output_comparison(actual, reference, exact=True)
         comparison["rng_advancement_exact"] = _state_equal(
             actual_state, reference_state
         )
