@@ -6,7 +6,6 @@ tests in ``test_noisy_acq_quadrature.py``.
 
 import copy
 import json
-from pathlib import Path
 from types import SimpleNamespace
 
 import noisy_acq_experiment as runner
@@ -59,94 +58,6 @@ def test_canonical_callable_has_no_process_specific_repr():
     assert "0x" not in json.dumps(encoded)
     assert runner.canonical(np.array([1.0, 2.0])) == [1.0, 2.0]
     assert runner.canonical(float("inf")) == {"@float": "inf"}
-    # Non-finite entries inside arrays are encoded like scalars, so a
-    # record holding them still serializes as strict JSON.
-    assert runner.canonical(np.array([0.0, np.nan])) == [
-        0.0,
-        {"@float": "nan"},
-    ]
-    json.dumps(
-        runner.canonical({"cache_indices": np.array([[np.nan, 1.0]])}),
-        allow_nan=False,
-    )
-
-
-def test_runtime_identity_honours_a_declared_source_transition(monkeypatch):
-    import gpyreg
-
-    import pyvbmc
-
-    pinned = {"pyvbmc/a.py": "a0", "pyvbmc/b.py": "b0"}
-    current = {"pyvbmc/a.py": "a1", "pyvbmc/b.py": "b0"}
-    identity = {
-        "gpyreg": {"g": 1},
-        "python": "py",
-        "platform": "plat",
-        "dependencies": {"d": 1},
-        "thread_environment": {"OMP_NUM_THREADS": "1"},
-        "numpy_build": {"n": 1},
-        "data_hashes": {"h": 1},
-    }
-    manifest = {
-        **identity,
-        "gpyreg": {"import": gpyreg.__file__, **identity["gpyreg"]},
-        "source_hashes": pinned,
-    }
-    assert Path(pyvbmc.__file__).resolve().parent == runner.ROOT / "pyvbmc"
-    monkeypatch.setattr(runner, "gpyreg_identity", lambda: manifest["gpyreg"])
-    monkeypatch.setattr(runner.platform, "python_version", lambda: "py")
-    monkeypatch.setattr(runner.platform, "platform", lambda: "plat")
-    monkeypatch.setattr(runner, "_package_versions", lambda: {"d": 1})
-    monkeypatch.setattr(runner, "numpy_build", lambda: {"n": 1})
-    monkeypatch.setattr(runner, "data_hashes", lambda: {"h": 1})
-    monkeypatch.setattr(runner, "source_hashes", lambda: current)
-    monkeypatch.setattr(runner, "manifest_digest", lambda m: "digest")
-    for key in runner.THREAD_KEYS:
-        monkeypatch.setenv(key, "1")
-    monkeypatch.setattr(
-        runner,
-        "THREAD_KEYS",
-        ("OMP_NUM_THREADS",),
-    )
-    seen = []
-
-    def numerical_diff(exclude=()):
-        seen.append(tuple(exclude))
-        return "" if exclude else "pyvbmc/a.py changed"
-
-    monkeypatch.setattr(runner, "numerical_diff", numerical_diff)
-
-    with pytest.raises(RuntimeError, match="source_hashes differs"):
-        runner.runtime_identity(manifest)
-    transition = {
-        "changed_sources": {"pyvbmc/a.py": {"capture": "a0", "runtime": "a1"}},
-        "numerical_diff_exclude": ["pyvbmc/testing"],
-    }
-    actual = runner.runtime_identity(manifest, transition)
-    assert actual["source_hashes"] == current
-    assert actual["source_transition"] == transition
-    assert seen[-1] == ("pyvbmc/a.py", "pyvbmc/testing")
-    with pytest.raises(RuntimeError, match="misstates the captured hash"):
-        runner.runtime_identity(
-            manifest,
-            {
-                "changed_sources": {
-                    "pyvbmc/a.py": {"capture": "wrong", "runtime": "a1"}
-                }
-            },
-        )
-    with pytest.raises(RuntimeError, match="differs from the declared"):
-        runner.runtime_identity(
-            manifest,
-            {
-                "changed_sources": {
-                    "pyvbmc/a.py": {"capture": "a0", "runtime": "a2"}
-                }
-            },
-        )
-    current["pyvbmc/b.py"] = "b1"
-    with pytest.raises(RuntimeError, match="source_hashes differs"):
-        runner.runtime_identity(manifest, transition)
 
 
 def write_completed_case(tmp_path, manifest, *, damage=None):

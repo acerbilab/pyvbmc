@@ -5,155 +5,6 @@ from math import ceil
 import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
-from scipy.special import ndtri
-from scipy.stats import qmc
-
-# Component order of the quasi-Monte Carlo nodes: "axis" sorts the
-# components along the leading axis of their means (the production rule),
-# "index" keeps the VP's own order. Developer harnesses set the module
-# attribute to compare the two on frozen states.
-_QMC_COMPONENT_ORDER = "axis"
-# Inverse-normal inputs are kept this far from 0 and 1: Sobol' points have
-# 30-bit resolution, so 0 can occur (1 cannot).
-_QMC_UNIFORM_EPS = 2.0**-31
-# Two leading eigenvalues closer than this, relative to the largest, count
-# as tied: the leading axis is then not unique and would depend on the
-# BLAS, so a coordinate axis is used instead.
-_QMC_EIGENVALUE_TIE_RTOL = 1e-6
-# A spread of the standardized means below this fraction of the mean
-# squared component width counts as coincident means.
-_QMC_COINCIDENT_RTOL = 1e-12
-
-
-def qmc_component_order(vp):
-    r"""Order the mixture components along one axis for the quasi-Monte
-    Carlo node draw.
-
-    Neighbouring slabs of the Sobol' sequence's first coordinate then map
-    to neighbouring components, which keeps the integrand nearly continuous
-    in that coordinate. The axis is the leading eigenvector of the
-    weight-weighted covariance of the component means measured in units of
-    ``vp.lambd``, its sign fixed by making its entry of largest magnitude
-    positive; the components are sorted by their projection onto it, ties
-    broken by index. The order affects only the variance of an estimate,
-    never its expectation, so this function never raises and decides in
-    this order: one or two components keep their index order; if the
-    weighted variances of the standardized means are not finite (a
-    non-finite weight or mean) or all lie below ``_QMC_COINCIDENT_RTOL``
-    times the mean squared component width (coincident means), the
-    components are ordered by ``vp.sigma``; if the eigendecomposition
-    raises, returns non-finite values or has its two largest eigenvalues
-    within ``_QMC_EIGENVALUE_TIE_RTOL`` of each other, the axis is the
-    coordinate with the largest weighted variance of the standardized
-    means (lowest index on ties); otherwise it is the leading eigenvector.
-
-    Parameters
-    ----------
-    vp : VariationalPosterior
-        The variational posterior.
-
-    Returns
-    -------
-    order : np.ndarray
-        Component indices, shape ``(K,)``, in the chosen order.
-    """
-    K = vp.K
-    index = np.arange(K)
-    if K <= 2:
-        return index
-    w = np.asarray(vp.w, dtype=float).ravel()
-    w = w / np.sum(w)
-    sigma = np.asarray(vp.sigma, dtype=float).ravel()
-    lambd = np.asarray(vp.lambd, dtype=float).reshape(-1, 1)
-    M = (np.asarray(vp.mu, dtype=float) / lambd).T  # (K, D), standardized
-    Mc = M - w @ M
-    var_axis = w @ Mc**2  # (D,)
-    width2 = float(w @ sigma**2)
-    if (
-        not np.all(np.isfinite(var_axis))
-        or np.max(var_axis) <= _QMC_COINCIDENT_RTOL * width2
-    ):
-        return np.lexsort((index, sigma))
-    proj = None
-    if M.shape[1] > 1:
-        try:
-            C = (Mc * w[:, None]).T @ Mc
-            evals, evecs = np.linalg.eigh(C)
-            if (
-                np.all(np.isfinite(evals))
-                and np.all(np.isfinite(evecs))
-                and evals[-2] < (1.0 - _QMC_EIGENVALUE_TIE_RTOL) * evals[-1]
-            ):
-                axis = evecs[:, -1]
-                if axis[int(np.argmax(np.abs(axis)))] < 0:
-                    axis = -axis
-                proj = Mc @ axis
-        except np.linalg.LinAlgError:
-            proj = None
-    if proj is None:
-        proj = Mc[:, int(np.argmax(var_axis))]
-    return np.lexsort((index, proj))
-
-
-def qmc_vp_nodes(vp, N, rng, order=None):
-    r"""Draw ``N`` randomized quasi-Monte Carlo nodes from the variational
-    posterior in the transformed space.
-
-    One scrambled Sobol' sequence in ``D + 1`` dimensions, the first ``N``
-    points of the next power of two: the first coordinate selects the
-    mixture component through the cumulative weights taken in ``order``,
-    the other ``D`` coordinates pass through the inverse normal CDF into
-    that component's Gaussian. Every node has the same weight and each is
-    marginally a draw from the VP (a scrambled Sobol' point is uniform on
-    the cube, to the sequence's 30-bit resolution), so the plain average
-    of a function over the nodes is an unbiased estimate of its
-    expectation under the VP. The scramble's seed is one integer drawn
-    from ``rng``, so the node set is a function of the generator's state:
-    a restored state replays it, and successive calls differ. Components
-    with weight below ``1 / N`` receive a node with probability about
-    ``N`` times their weight and are never forced one, so ``N`` may be
-    smaller than ``K``.
-
-    Parameters
-    ----------
-    vp : VariationalPosterior
-        The variational posterior.
-    N : int
-        The number of nodes, positive.
-    rng : np.random.Generator
-        The generator the scramble's seed is drawn from.
-    order : np.ndarray, optional
-        The component order along the first coordinate, shape ``(K,)``.
-        By default ``qmc_component_order(vp)``.
-
-    Returns
-    -------
-    X : np.ndarray
-        The nodes, shape ``(N, D)``.
-    comp : np.ndarray
-        The component each node was drawn from, shape ``(N,)``.
-    """
-    D = vp.D
-    K = vp.K
-    if order is None:
-        order = qmc_component_order(vp)
-    order = np.asarray(order)
-    m = int(np.ceil(np.log2(N))) if N > 1 else 0
-    # ``seed`` is the keyword every supported scipy accepts without a
-    # warning; passing the generator itself would derive the scramble by
-    # spawning from its seed sequence, which a saved random state does not
-    # record.
-    scramble_seed = int(rng.integers(np.iinfo(np.int64).max))
-    u = qmc.Sobol(d=D + 1, scramble=True, seed=scramble_seed).random_base2(m)
-    u = u[:N]
-    w = np.asarray(vp.w, dtype=float).ravel()[order]
-    cdf = np.cumsum(w)
-    cdf /= cdf[-1]
-    k = np.minimum(np.searchsorted(cdf, u[:, 0], side="right"), K - 1)
-    comp = order[k]
-    z = ndtri(np.clip(u[:, 1:], _QMC_UNIFORM_EPS, 1.0 - _QMC_UNIFORM_EPS))
-    X = vp.mu.T[comp] + vp.lambd.reshape(1, -1) * z * vp.sigma[:, comp].T
-    return X, comp
 
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
@@ -189,11 +40,6 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     Notes
     -----
     Every random draw, the MCMC step's included, comes from ``vp.rng``.
-    With the option ``active_importance_sampling_qmc`` on, the nodes of the
-    variational-importance-sampling path (VIQR) are the randomized
-    quasi-Monte Carlo nodes of :func:`qmc_vp_nodes`,
-    ``active_importance_sampling_qmc_samples`` of them, instead of Monte
-    Carlo draws from the VP; the other paths are unaffected.
     """
     rng = vp.rng
     # Do we simply sample from the variational posterior?
@@ -217,34 +63,22 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     active_is["f_s2"] = None
 
     if only_vp_flag:
-        # Step 0: Simply sample from variational posterior, with Monte
-        # Carlo draws or quasi-Monte Carlo nodes.
+        # Step 0: Simply sample from variational posterior.
 
-        use_qmc = bool(options.get("active_importance_sampling_qmc", False))
-        if use_qmc:
-            n_key = "active_importance_sampling_qmc_samples"
-        else:
-            n_key = "active_importance_sampling_mcmc_samples"
-        Na = ceil(options.eval(n_key, {"K": vp.K, "n_vars": D, "D": D}))
+        Na = ceil(
+            options.eval(
+                "active_importance_sampling_mcmc_samples",
+                {"K": vp.K, "n_vars": D, "D": D},
+            )
+        )
 
         if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
             raise ValueError(
-                f"options[{n_key!r}] should evaluate to a positive integer."
+                "options['active_importance_sampling_mcmc_samples']"
+                + "should evaluate to a positive integer."
             )
 
-        if use_qmc:
-            if _QMC_COMPONENT_ORDER == "index":
-                order = np.arange(vp.K)
-            elif _QMC_COMPONENT_ORDER == "axis":
-                order = None
-            else:
-                raise ValueError(
-                    "_QMC_COMPONENT_ORDER must be 'axis' or 'index', not"
-                    f" {_QMC_COMPONENT_ORDER!r}"
-                )
-            Xa, __ = qmc_vp_nodes(vp, Na, rng, order=order)
-        else:
-            Xa, __ = vp.sample(Na, orig_flag=False)
+        Xa, __ = vp.sample(Na, orig_flag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 

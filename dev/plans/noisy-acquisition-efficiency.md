@@ -6,7 +6,7 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; F3 EXECUTED; F1, F2, F4 AND THE FOUR-RUN BUDGET CONTINUATION PROPOSED, NOT APPROVED**. Branch:
+Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; F3 EXECUTED; F2 EXECUTED IN TWO STAGES, NOT PROMOTED; F1, F4 AND THE FOUR-RUN BUDGET CONTINUATION PROPOSED, NOT APPROVED**. Branch:
 `dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
@@ -84,17 +84,18 @@ nodes, component selection through the first coordinate in sorted
 component order, equal weights) and two stages, each authorized
 separately: a frozen-state evaluation on the 24 captured states, then a
 paired inference comparison on the production labels whose baseline arm
-doubles as production-reference runs. The implementation is on the branch
-`feat-viqr-rqmc-nodes` off `dev-noisy-acquisition-efficiency`: the node
-rule behind the off-by-default option with its tests, the F2 stages of
-the frozen-state search harness, a declared source transition that lets
-the campaign run on the E0 captures with the five changed sources frozen
-by hash, and the fixes from two independent static reviews. With the
-switch off every oracle is bit-identical and four stored E3 baseline
-selections replay exactly. The Stage 1 development manifest
+doubles as production-reference runs. The implementation was developed
+on the branch `feat-viqr-rqmc-nodes` off `dev-noisy-acquisition-efficiency`
+and is retained on `retain/viqr-rqmc-nodes`: the node rule behind an
+off-by-default option with its tests, the F2 stages of the frozen-state
+search harness, a declared source transition that let the campaign run on
+the E0 captures with the five changed sources frozen by hash, and the
+fixes from two independent static reviews. With the switch off every
+oracle was bit-identical and four stored E3 baseline selections replayed
+exactly. The Stage 1 development manifest
 (`f2_development_manifest.json` in the local artifact directory, listed
 in `dev/scripts/runs/LOCAL.md`) was frozen and launched on 2026-09-18 at
-18:19 UTC after a two-pilot check on one state; the holdout stage and a
+18:18 UTC after a two-pilot check on one state; the holdout stage and a
 search-stream null control followed the same day, with their judge
 ladders and ordinary-MC cross-checks, and no cell failed. The report's F2
 section records the numbers and the
@@ -106,12 +107,17 @@ assessment recommended Stage 2 subject to the user accepting the
 floor-based reading of the screening gate. Stage 2 ran on the production
 suite and was stopped by the user on 2026-09-19 after 51 of 80 pairs:
 the rule worsens posterior shape on logistic regression and costs more
-fit time there, so it is not promoted; the implementation is retained on
-`retain/viqr-rqmc-nodes` and removed from the working branch. The
-baseline arm's fits continue as production-reference runs under
-`golden_trace.py run --suite production` into the reference's run
-directory; when they finish, the production reference of the TODO has
-its first 81 noisy runs. No other background work needs reattachment.
+fit time there, so it is not promoted; the working branch removes the implementation
+(the [disposition](#f2-stage-2-outcome-and-decision-2026-09-19) lists
+what it keeps). The baseline arm's fits continue as production-reference
+runs under `golden_trace.py run --suite production` into the reference's
+run directory, `dev/scripts/runs/golden/production_noisy_20260918`
+(listed in `dev/scripts/runs/LOCAL.md`), from the branch
+`dev-production-reference`, cut from `dev-next` once this work merged.
+52 of the 80 fits exist; the runner skips a fit whose archive exists, so
+a stopped run restarts with the same command, and when they finish the
+production reference of the TODO has its first 80 noisy runs. No other
+background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1302,8 +1308,10 @@ frozen-state or trace analyses with no target calls and no GP fits.
 Status: F3 was executed on 2026-09-18; F2 was approved the same day with
 the design and two-stage plan of the
 [F2 amendment](#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18),
-whose second stage supersedes F4 for that treatment; F1 is not approved
-and not scheduled.
+whose second stage supersedes F4 for that treatment, ran on 2026-09-18
+and 2026-09-19 and was not promoted (the
+[Stage 2 outcome](#f2-stage-2-outcome-and-decision-2026-09-19) records
+the decision); F1 is not approved and not scheduled.
 
 - **F1. Isolate the sieve size.** Run the frozen S2 selection with the
   coarse sieve at 2048, 4096 and 8192 candidates, holding the eight-point
@@ -1380,6 +1388,11 @@ reads evidence, Sol implements and runs, separate Sol agents review, and at
 most one agent runs compute at a time.
 
 #### Approved F2 amendment: matched-cost RQMC nodes (2026-09-18)
+
+Outcome: both stages ran on 2026-09-18 and 2026-09-19 and the rule was
+not promoted; the [Stage 1 assessment](#f2-stage-1-assessment-2026-09-18)
+and the [Stage 2 outcome](#f2-stage-2-outcome-and-decision-2026-09-19)
+record the reading and the decision. The design below stands as approved.
 
 The user approved F2 on 2026-09-18 as the follow-up to pursue, with the
 production search retained and the design and staging below. The question
@@ -1574,7 +1587,8 @@ Checklist:
 
 - [x] Implement the rule behind the switch with the focused tests above;
   run the oracle and acquisition suites with the switch off; freeze the
-  source identity. Done 2026-09-18 on `feat-viqr-rqmc-nodes`: 17 focused
+  source identity. Done 2026-09-18, retained on `retain/viqr-rqmc-nodes`:
+  17 focused
   tests, exact oracle check 11 of 11, and a replay of four stored E3
   baseline selections (two late states among them) reproducing rows,
   nodes and coarse scores bit for bit. The scramble seed is one integer
@@ -1608,8 +1622,10 @@ Checklist:
   report. Launched 2026-09-18 at 21:24 UTC and stopped by decision on
   2026-09-19 after 51 of 80 pairs: logistic regression fires both
   triggers, high-noise Rosenbrock leans the same way, no fit failed.
-  The independent review of the Stage 2 records did not run, because
-  the decision does not depend on them beyond the counts.
+  The independent review was a static one on 2026-09-19 that reconciled
+  every reported count and ratio against the published summary and
+  evidence files; no review of the raw archives ran, because the
+  decision does not depend on them beyond the counts.
 - [x] Promotion decision: not promoted (user, 2026-09-19); the rule leaves
   the package and is retained on `retain/viqr-rqmc-nodes`.
 
@@ -1662,8 +1678,7 @@ ten elsewhere, the pre-registered outcomes and the F3 mechanism check, with
 the baseline arm doubling as production-reference runs. Two limits of the
 Stage 1 evidence carry into that decision: the node floor was measured on
 the development states only, and a frozen-state judge ranks selections,
-not posteriors. A read-only diagnostic of the late-state material losses
-is available but no longer load-bearing.
+not posteriors.
 
 #### F2 Stage 2 outcome and decision (2026-09-19)
 
@@ -1693,14 +1708,20 @@ excludes.
 
 Disposition. The implementation, the harness arms that depend on it, the
 Stage 2 tool and every record are retained on the historical branch
-`retain/viqr-rqmc-nodes`, cut at the last commit that holds them; the
-working branch removes the rule, its two options and their tests from the
-package and the option-dependent arms from the developer harness, keeping
-the generic tools (the declared source transition, the stream and node
-null controls, the evidence summary and the record publisher). The
-baseline arm's 51 completed fits and the remaining baseline fits of the
-three unfinished configurations are production-reference runs and
-continue as such; their sidecars record the commits they ran under, whose
+`retain/viqr-rqmc-nodes`, cut at the last commit that holds them. The
+working branch restores the package's importance-sampling module and the
+advanced options file to their versions before the rule and deletes the
+rule's tests. It restores the frozen-state search harness, the capture
+and integration modules and their tests to their versions before the F2
+stages, so the harness hashes pinned by the E2, E3 and E5 manifests hold
+again; the node arms, the two null controls, the holdout confirmation,
+the declared source transition and the serializer fix for non-finite
+values inside arrays live only on the retained branch. It drops the
+Stage 2 runner and the F2 evidence summary and keeps two pieces that
+stand on their own: the record publisher and the node-design check. The
+baseline arm's 52 completed fits (51 with a treatment partner) and the
+remaining 28 baseline fits of the three unfinished configurations are
+production-reference runs and continue as such; their sidecars record the commits they ran under, whose
 default path the exact oracle check and the E3 replays show bit-identical
 to the release code. The F2 thread of the efficiency item closes with this
 outcome.
@@ -1851,9 +1872,9 @@ scientific design had already received independent review.
   material and release-audit documentation. That integration changes no
   numerical experiment source; the frozen source identity and all 960 panel
   terminal records remain valid after the merge.
-- 2026-09-18, F2 Stage 1 development: the manifest was frozen at 18:19 UTC
-  and its 288 selection, 24 timing and 48 allocation cells plus the twelve
-  first-budget judge cells completed by about 19:20 UTC with no failure.
+- 2026-09-18, F2 Stage 1 development: the manifest was frozen at 18:18 UTC
+  and its 288 selection, 24 timing and 48 allocation cells completed by
+  18:37 UTC with no failure; the judge ladder completed at 18:51 UTC.
   Every selection used the node count its arm prescribes. The judge ladder
   was interrupted at budget 32768: a harness source was edited on disk
   while the ladder ran, and every judge cell refuses a source whose hash
@@ -1868,6 +1889,15 @@ scientific design had already received independent review.
   the two harness files with CRLF endings; the same restoration resumed
   it. While a frozen-state campaign runs, nothing may be committed or
   checked out in the worktree that executes it.
+- 2026-09-18 to 2026-09-19, F2 Stage 2: launched at 21:24 UTC under a
+  frozen manifest; the first batch's treatment fits failed at start-up
+  because the launcher embedded the arm's options as a JSON object in
+  Python source, so twelve baseline fits ran without their partners; the
+  fixed launcher (`f1e6ff3`) relaunched under a new manifest at 22:00 UTC
+  and no fit failed afterwards. Stopped by the user's decision, recorded
+  at 05:06 UTC on 2026-09-19, after 51 of 80 pairs; the treatment arm's
+  remaining fits were not run, and the baseline arm's remaining fits
+  continue as production-reference runs from `dev-production-reference`.
 
 ## Guarded-sinh execution checklist (completed)
 

@@ -29,16 +29,16 @@ worse in eight of ten pairs, and Student-t gains six usable fits. The
 ten-seed result does not support adopting S2 as a default; the plan's E6
 assessment proposes narrowly targeted follow-ups. Production defaults are
 unchanged. Its follow-up F2, the 96-node quasi-Monte Carlo importance-node
-rule evaluated on the frozen states with a search-stream null control,
-completed on 2026-09-18 with two null controls: the cost is matched, the
+rule, was evaluated on the frozen states with two null controls on
+2026-09-18: the cost is matched, the
 rule improves early-run selections, and on late runs it sits on the
 node-noise floor of the production rule against itself. Its Stage 2,
 the paired inference comparison on the production suite, was stopped by
 decision on 2026-09-19 after 51 of 80 pairs: on logistic regression the
 rule worsens posterior shape in 17 of 20 pairs and costs 16 to 20 percent
 more fit time, and high-noise Rosenbrock leans the same way, so the rule
-is not promoted and its implementation is retained on a historical
-branch; the two F2 sections below record it.
+is not promoted and its implementation is retained on the branch
+`retain/viqr-rqmc-nodes`; the two F2 sections below record it.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -1255,9 +1255,10 @@ use the production labels.
 **Status:** complete on the development and holdout splits with two
 null controls; the cross-checks and the controls are reported below. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
 specifies the design. The stage asks whether the production VIQR
-selection, with its 100 Monte Carlo importance nodes replaced by the
-package's 96-node scrambled-Sobol' mixture rule
-(`active_importance_sampling_qmc`), chooses points judged at least as good
+selection, with its 100 Monte Carlo importance nodes replaced by a
+96-node scrambled-Sobol' mixture rule (the option
+`active_importance_sampling_qmc` on the branch `retain/viqr-rqmc-nodes`),
+chooses points judged at least as good
 at no more cost. Every arm is the production search: the 8192-candidate
 sieve and the CMA-ES local search are unchanged, and the treatments differ
 from the baseline only in the node rule switched on through its option, in
@@ -1271,9 +1272,10 @@ stage.
 
 ### Sources, transition and pilots
 
-The rule and its options are commit `8d983e2` on `feat-viqr-rqmc-nodes`
-(scramble seeding and review fixes in `9ffd822`), the harness stages in
-`b614645` with fixes through `83fedb9`. The E0 capture manifest pins every
+The rule and its options are commit `8d983e2` (scramble seeding and
+review fixes in `9ffd822`), the harness stages `b614645` with fixes
+through `83fedb9`; all of it is retained on the branch
+`retain/viqr-rqmc-nodes`. The E0 capture manifest pins every
 production source hash to the numerical baseline, which no campaign can
 satisfy once production code changes; the F2 stages run under a declared
 source transition (`56502af`) that freezes the runtime hashes of the five
@@ -1312,7 +1314,7 @@ are 0.914 to 1.035 (sorted) and 0.963 to 1.031 (unsorted), all under the
 losses retain a median 0.77 (sorted) and 0.64 (unsorted) of the
 baseline's raw reduction, the worst 0.26 and 0.33. The verdicts split by
 checkpoint: on the six early states the sorted arm is beneficial in 23 and
-harmful in 3 comparisons; on the six late states, 23 and 12. Per
+harmful in 3 of 48 comparisons; on the six late states, 23 and 12. Per
 trajectory for the sorted arm:
 
 | Development trajectory | Beneficial | Practical tie | Harmful | Unresolved |
@@ -1346,7 +1348,7 @@ State timing ranges are 0.947 to 1.041 and 0.942 to 1.009. The harmful
 fraction of the confirmation contrast is 0.260. Material raw losses retain
 a median 0.72 of the baseline's reduction, the worst 0.26. The checkpoint
 split is sharper than on development: early states 15 beneficial and 2
-harmful, late states 20 and 23. Per trajectory for the confirmation
+harmful of 48, late states 20 and 23. Per trajectory for the confirmation
 contrast:
 
 | Holdout trajectory | Beneficial | Practical tie | Harmful | Unresolved |
@@ -1433,10 +1435,10 @@ redrawn selections ended at a different point from the baseline's.
 | Redrawn-node baseline minus baseline | 33 | 24 | 23 | 16 | 14 | 1.016 |
 
 By checkpoint: early states 12 beneficial, 12 ties, 8 harmful, 16
-unresolved and 2 material losses; late states 21, 12, 15, 0 and 12
-material losses, retaining a median 0.73 and at worst 0.31 of the
-baseline's reduction, on Student-t (6), multisensory (3), timing (3) and
-logistic regression (2). The
+unresolved and 2 material losses, both on the early Student-t state;
+late states 21, 12, 15, 0 and 12 material losses, retaining a median of
+about 0.70 and at worst 0.31 of the baseline's reduction, on Student-t
+(4), multisensory (3), timing (3) and logistic regression (2). The
 [control evidence](../experiments/noisy-acquisition-efficiency/integration-search/f2_node_control_evidence.json)
 records the counts.
 
@@ -1459,8 +1461,9 @@ records the counts.
   treatment gives 23, 12 and 12 on development and 20, 23 and 13 on
   holdout. The late-run pick is a lottery for any node set at this budget:
   the production rule against itself loses more than 10 percent of its own
-  reduction in a quarter of late-state selections, and the search's
-  randomness alone accounts for a fifth of that. Late states have many
+  reduction in a quarter of late-state selections (12 of 48), and the
+  search's randomness alone accounts for a quarter of those losses (3 of
+  12). Late states have many
   components and the spiky surfaces the investigation described as a few
   importance points carrying the whole reduction; the node rule neither
   adds to nor removes the lottery there.
@@ -1488,10 +1491,11 @@ ranks selections, not inference: whether the early-run gain reaches the
 posterior is Stage 2's question.
 
 The records of every stage are the `f2_*` review copies under
-`integration-search/`, indexed by
-[the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json);
-the raw artifacts are listed in the local artifact index of the holding
-machine.
+`integration-search/`, each carrying its publication note and the digest
+of its raw artifact;
+[the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json)
+lists all of them except the four judge ladders. The raw artifacts are
+listed in the local artifact index of the holding machine.
 
 ## F2 Stage 2: paired inference comparison on the production suite
 
@@ -1499,7 +1503,7 @@ machine.
 pairs, with the verdict already determined; the node rule is not
 promoted. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
 specifies the design and the
-[assessment](../plans/noisy-acquisition-efficiency.md#f2-stage-1-assessment-2026-09-18)
+[Stage 2 outcome](../plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
 records the decision.
 
 Both arms ran through `golden_trace.run_task` on the `production` suite,
@@ -1583,9 +1587,10 @@ the machine:
 | Rosenbrock noise 3, wall-time ratio (GP training) | 1.196 (1.37), 9 pairs | 1.014 (1.07), 9 pairs |
 
 On logistic regression the treatment costs 16 to 20 percent more whichever
-arm runs first; on high-noise Rosenbrock the gap is an order effect, the
-second fit of a pair running about 18 percent slower on this machine, and
-the rule's own cost is near zero once the two orders are averaged. The
+arm runs first; on high-noise Rosenbrock much of the gap is an order
+effect: under a symmetric model the two ratios factor into a second-fit
+slowdown of about 9 percent and a treatment cost of about 10 percent,
+consistent with the 1.125 of the table above. The
 low-noise Rosenbrock pairs came from the aborted first batch, whose fits
 were not back to back, so their 1.14 carries an unknown share of drift.
 The traces do not record Cholesky retries or optimizer iteration counts;
@@ -1602,7 +1607,8 @@ criterion value. Stage 2 shows that those points do not help the
 posterior on these targets, and on logistic regression hurt it. The
 resolution is that the criterion, not the integrator, is what changed in
 effect. The production 100-node estimate identifies the truly best
-candidate of a shortlist 28 percent of the time (F3), so in practice it is
+candidate of an eight-point shortlist 28 percent of the time (F3), against
+12.5 by chance, so in practice it is
 a noisy top-k sampler; a more accurate estimate turns it into a faithful
 maximizer of VIQR. A faithful maximizer follows the current variational
 posterior more closely and reinforces it where it is wrong, or, where the
@@ -1620,9 +1626,14 @@ scope excludes.
 
 ## Resuming the saved experiment
 
-Run from the existing `pyvbmc-stage3` checkout on
-`dev-noisy-acquisition-efficiency`, reusing its `.venv`.
-No background job or session needs reattachment.
+Run from the existing `pyvbmc-stage3` checkout, reusing its `.venv`. The
+checkout is on `dev-production-reference`, cut from `dev-next` after the
+F2 work merged, and the remaining baseline production-reference fits run
+from it (`golden_trace.py run --suite production` into
+`dev/scripts/runs/golden/production_noisy_20260918`, 52 of 80 archives
+present); the runner skips a fit whose archive exists, so a stopped run
+restarts with the same command. No other background job or session needs
+reattachment.
 The ignored `dev/scripts/runs` junction points to the shared local artifact
 directory in the sibling checkout, `../pyvbmc/dev/scripts/runs`.
 The `noisy_acq_efficiency_20260916/` results, frozen dependency at

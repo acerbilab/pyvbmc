@@ -31,46 +31,6 @@ SCHEMA_VERSION = 1
 SELECTION_REPLICATES = 8
 MASTER_SEED = 2026091701
 JUDGE_BUDGETS = (4096, 8192, 16384, 32768, 65536)
-# The F2 stages evaluate the package's quasi-Monte Carlo importance nodes
-# as a drop-in for the production selection: every arm is the production
-# search (S0), the treatments differ from the baseline only in the node
-# rule switched on through its option. Each stage maps to the capture
-# split it reads and seeds its own streams under its own name.
-F2_STAGES = {
-    "f2_development": "development",
-    "f2_holdout": "holdout",
-    # The null controls: the baseline against itself with one extra
-    # generator draw, taken before the local search (search-stream control,
-    # identical nodes) or before the node draw (node-redraw control, fresh
-    # Monte Carlo nodes on the identical sieve), so that the judge's verdict
-    # rates on those differences alone are known.
-    "f2_control_development": "development",
-    "f2_node_control_development": "development",
-}
-F2_NODE_STAGES = ("f2_development", "f2_holdout")
-F2_NODE_RULE = "scrambled_sobol_mixture"
-F2_NODE_SAMPLES = 96
-F2_ORDERS = ("axis", "index")
-F2_TAGS = {"axis": "S0_qmc_sorted", "index": "S0_qmc_unsorted"}
-F2_CONTROL_OFFSET = 1
-# Per control stage: the SearchConfig field the control sets, the arm's
-# tag, its role and the manifest purpose.
-F2_CONTROL_STAGES = {
-    "f2_control_development": (
-        "search_stream_offset",
-        "S0_reseeded",
-        "search_stream_null_control",
-        "noisy-acquisition F2 search-stream null control",
-    ),
-    "f2_node_control_development": (
-        "node_stream_offset",
-        "S0_renoded",
-        "node_redraw_null_control",
-        "noisy-acquisition F2 node-redraw null control",
-    ),
-}
-HOLDOUT_STAGES = {"holdout", "f2_holdout"}
-STAGES = {"development", "development_control", *HOLDOUT_STAGES, *F2_STAGES}
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = Path(__file__).resolve().parent
@@ -91,129 +51,13 @@ def _source_hashes() -> dict[str, str]:
     }
 
 
-def _identity(
-    capture_manifest: dict[str, Any],
-    source_transition: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+def _identity(capture_manifest: dict[str, Any]) -> dict[str, Any]:
     return {
         "integration_identity": integration.integration_identity(
-            capture_manifest, source_transition
+            capture_manifest
         ),
         "search_source_hashes": _source_hashes(),
     }
-
-
-# Sources the F2 stages may differ in from the E0 capture manifest's pins:
-# the production node rule and its options (the treatment under test), the
-# selection-policy hook that active_sample.py gained for the E5 inference
-# runs (inactive unless a policy is installed), the production benchmark
-# suite added to benchmark_targets.py (not read by frozen-state selection)
-# and this campaign's record serializer. Their runtime hashes are frozen in
-# the F2 manifest; every other source stays pinned to the capture, and the
-# numerical diff against the baseline may touch only these files and the
-# test tree.
-F2_ALLOWED_SOURCE_CHANGES = (
-    "pyvbmc/vbmc/active_importance_sampling.py",
-    "pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini",
-    "pyvbmc/vbmc/active_sample.py",
-    "dev/scripts/benchmark_targets.py",
-    "dev/scripts/noisy_acq_experiment.py",
-)
-F2_NUMERICAL_DIFF_EXCLUDE = ("pyvbmc/testing",)
-F2_TRANSITION_SCOPE = "f2_importance_nodes"
-
-
-def _f2_source_transition(capture_manifest: dict[str, Any]) -> dict[str, Any]:
-    """Declare the sources that differ from the capture pins, or refuse."""
-    current = capture.source_hashes()
-    pinned = capture_manifest["source_hashes"]
-    changed = sorted(
-        path
-        for path in set(current) | set(pinned)
-        if current.get(path) != pinned.get(path)
-    )
-    unexpected = [
-        path for path in changed if path not in F2_ALLOWED_SOURCE_CHANGES
-    ]
-    if unexpected:
-        raise RuntimeError(
-            "sources changed beyond the declared F2 transition:"
-            f" {unexpected}"
-        )
-    return {
-        "scope": F2_TRANSITION_SCOPE,
-        "numerical_base_commit": capture.NUMERICAL_BASE,
-        "changed_sources": {
-            path: {"capture": pinned.get(path), "runtime": current.get(path)}
-            for path in changed
-        },
-        "numerical_diff_exclude": list(F2_NUMERICAL_DIFF_EXCLUDE),
-    }
-
-
-def _holdout_confirmation(selection: dict[str, Any]) -> dict[str, Any]:
-    """Name the F2 holdout's primary contrast and its descriptive one."""
-    choice = selection["development_choice"]
-    return {
-        "development_choice": choice,
-        "primary_contrast": f"{F2_TAGS[choice]}_minus_S0",
-        "descriptive_contrasts": [
-            f"{F2_TAGS[order]}_minus_S0"
-            for order in F2_ORDERS
-            if order != choice
-        ],
-    }
-
-
-def _expected_split(stage: str) -> str:
-    if stage in F2_STAGES:
-        return F2_STAGES[stage]
-    return "development" if stage == "development_control" else stage
-
-
-def _validate_split(manifest: dict[str, Any]) -> None:
-    """The split drives the holdout guards and the trajectory seed."""
-    split = _expected_split(manifest["stage"])
-    if manifest.get("split") != split:
-        raise RuntimeError("manifest split does not match its stage")
-    wanted_seed = 0 if split == "development" else 1
-    if any(
-        state.get("seed") != wanted_seed
-        for state in manifest.get("states", [])
-        + manifest.get("missing_states", [])
-    ):
-        raise RuntimeError("a manifest state comes from the other split")
-    confirmation = manifest.get("holdout_confirmation")
-    if manifest["stage"] == "f2_holdout":
-        if confirmation != _holdout_confirmation(manifest["selection"]):
-            raise RuntimeError("F2 holdout confirmation record is wrong")
-    elif confirmation is not None:
-        raise RuntimeError("only the F2 holdout carries a confirmation")
-
-
-def _validate_source_transition(manifest: dict[str, Any]) -> None:
-    transition = manifest.get("source_transition")
-    if manifest["stage"] not in F2_STAGES:
-        if transition is not None:
-            raise RuntimeError("only F2 stages declare a source transition")
-        return
-    if not isinstance(transition, dict):
-        raise RuntimeError("F2 manifest lacks its source transition")
-    changed = transition.get("changed_sources")
-    if (
-        transition.get("scope") != F2_TRANSITION_SCOPE
-        or transition.get("numerical_base_commit") != capture.NUMERICAL_BASE
-        or transition.get("numerical_diff_exclude")
-        != list(F2_NUMERICAL_DIFF_EXCLUDE)
-        or not isinstance(changed, dict)
-        or any(path not in F2_ALLOWED_SOURCE_CHANGES for path in changed)
-        or any(
-            set(hashes) != {"capture", "runtime"}
-            or hashes["capture"] == hashes["runtime"]
-            for hashes in changed.values()
-        )
-    ):
-        raise RuntimeError("F2 source transition is not the declared one")
 
 
 def _thread_environment() -> dict[str, str | None]:
@@ -242,73 +86,7 @@ def _read_selection(path: Path, stage: str) -> dict[str, Any]:
         )
     normalized = copy.deepcopy(selection)
     normalized["accurate_rule"] = {**rule, "method": method, "budget": budget}
-    if stage in F2_STAGES and (
-        selection.get("finalist_config") is not None
-        or selection.get("strongest_arm_config") is not None
-    ):
-        raise RuntimeError("an F2 selection names no search arm")
-    if stage in F2_CONTROL_STAGES:
-        field = F2_CONTROL_STAGES[stage][0]
-        control = selection.get("control_rule")
-        if (
-            not isinstance(control, dict)
-            or control.get("kind") != field
-            or int(control.get("offset", 0)) != F2_CONTROL_OFFSET
-            or selection.get("node_rule") is not None
-        ):
-            raise RuntimeError(
-                f"F2 control selection must carry the one-draw {field} and"
-                " no node rule"
-            )
-        normalized["control_rule"] = {
-            **control,
-            "kind": field,
-            "offset": F2_CONTROL_OFFSET,
-        }
-    elif stage in F2_STAGES:
-        node_rule = selection.get("node_rule")
-        if not isinstance(node_rule, dict):
-            raise RuntimeError("an F2 selection requires node_rule")
-        if (
-            node_rule.get("kind") != F2_NODE_RULE
-            or int(node_rule.get("samples", 0)) != F2_NODE_SAMPLES
-            or list(node_rule.get("orders", [])) != list(F2_ORDERS)
-        ):
-            raise RuntimeError(
-                "F2 node rule must be the frozen 96-node scrambled Sobol'"
-                " mixture rule with both component orders"
-            )
-        normalized["node_rule"] = {
-            **node_rule,
-            "kind": F2_NODE_RULE,
-            "samples": F2_NODE_SAMPLES,
-            "orders": list(F2_ORDERS),
-        }
-        if stage == "f2_holdout":
-            if selection.get("development_choice") not in F2_ORDERS:
-                raise RuntimeError(
-                    "F2 holdout must name the component order chosen on"
-                    " development"
-                )
-            source_name = selection.get("development_manifest")
-            if not source_name or not selection.get(
-                "development_manifest_sha256"
-            ):
-                raise RuntimeError(
-                    "F2 holdout must bind the preceding F2 development"
-                    " manifest"
-                )
-            source_path = Path(source_name)
-            if not source_path.is_absolute():
-                source_path = (path.parent / source_path).resolve()
-            if (
-                not source_path.is_file()
-                or integration.sha256_file(source_path)
-                != selection["development_manifest_sha256"]
-            ):
-                raise RuntimeError("preceding F2 development manifest changed")
-            normalized["development_manifest"] = str(source_path)
-    elif stage == "development":
+    if stage == "development":
         if selection.get("finalist_config") is not None:
             raise RuntimeError("development selection cannot name a finalist")
     elif stage == "development_control":
@@ -391,64 +169,6 @@ def _treatments(stage: str, selection: dict[str, Any]) -> list[dict[str, Any]]:
         "config": _config_record("S0", rule),
         "accurate_seed_role": "unused_baseline",
     }
-    if stage in F2_CONTROL_STAGES:
-        field, tag, role, _purpose = F2_CONTROL_STAGES[stage]
-        control = selection.get("control_rule")
-        if not isinstance(control, dict):
-            raise RuntimeError("F2 control selection lacks its control rule")
-        return [
-            baseline,
-            {
-                "tag": tag,
-                "role": role,
-                "config": _config_record(
-                    "S0", rule, template={field: int(control["offset"])}
-                ),
-                "accurate_seed_role": "unused_baseline",
-            },
-        ]
-    if stage in F2_STAGES:
-        node_rule = selection.get("node_rule")
-        if not isinstance(node_rule, dict) or list(
-            node_rule.get("orders", [])
-        ) != list(F2_ORDERS):
-            raise RuntimeError("F2 selection lacks the frozen node rule")
-        choice = selection.get("development_choice")
-        if stage == "f2_holdout" and choice not in F2_ORDERS:
-            raise RuntimeError("F2 holdout selection lacks its choice")
-
-        def role(order):
-            # On holdout the order chosen on development is the one under
-            # confirmation; the other order's arm is retained as a
-            # descriptive control and never becomes a second selection.
-            if stage != "f2_holdout":
-                return "qmc_node_treatment"
-            if order == choice:
-                return "qmc_node_treatment_confirmation"
-            return "qmc_node_control_descriptive"
-
-        return [
-            baseline,
-            *[
-                {
-                    "tag": F2_TAGS[order],
-                    "role": role(order),
-                    "config": _config_record(
-                        "S0",
-                        rule,
-                        template={
-                            "importance_qmc": True,
-                            "importance_qmc_samples": int(
-                                node_rule["samples"]
-                            ),
-                            "importance_qmc_order": order,
-                        },
-                    ),
-                    "accurate_seed_role": "unused_baseline",
-                }
-                for order in node_rule["orders"]
-            ],
-        ]
     if stage == "development":
         return [
             baseline,
@@ -523,33 +243,17 @@ def prepare_manifest(
     selection_path: Path,
     stage: str,
 ) -> dict[str, Any]:
-    """Prepare a locked E3 or F2 development or holdout allocation."""
-    if stage not in STAGES:
-        raise ValueError(f"stage must be one of {sorted(STAGES)}")
+    """Prepare a locked E3 development or holdout allocation."""
+    if stage not in {"development", "development_control", "holdout"}:
+        raise ValueError(
+            "stage must be development, development_control, or holdout"
+        )
     threads = _thread_environment()
     capture_manifest = json.loads(
         capture_manifest_path.read_text(encoding="utf-8")
     )
     capture.validate_manifest(capture_manifest, require_ready=True)
     selection = _read_selection(selection_path, stage)
-    source_transition = (
-        _f2_source_transition(capture_manifest) if stage in F2_STAGES else None
-    )
-    identity = _identity(capture_manifest, source_transition)
-    if stage == "f2_holdout":
-        development = json.loads(
-            Path(selection["development_manifest"]).read_text(encoding="utf-8")
-        )
-        if (
-            development.get("stage") != "f2_development"
-            or development.get("capture_manifest_sha256")
-            != integration.sha256_file(capture_manifest_path)
-            or capture.canonical(development.get("identity"))
-            != capture.canonical(identity)
-        ):
-            raise RuntimeError(
-                "F2 holdout does not match its F2 development source"
-            )
     if stage == "development_control":
         development = json.loads(
             Path(selection["development_manifest"]).read_text(encoding="utf-8")
@@ -576,17 +280,13 @@ def prepare_manifest(
             raise RuntimeError(
                 "strongest arm config differs from the bound development treatment"
             )
-    if stage in F2_STAGES:
-        split = F2_STAGES[stage]
-        seed_stage = stage
-    else:
-        split = "development" if stage == "development_control" else stage
-        seed_stage = split
+    split = "development" if stage == "development_control" else stage
     states, missing = integration.discover_states(
         capture_manifest, captures, split
     )
     treatments = _treatments(stage, selection)
     cells = []
+    seed_stage = "development" if stage == "development_control" else stage
     for state in states:
         for replicate in range(SELECTION_REPLICATES):
             search_seed = integration.derive_seed(
@@ -688,22 +388,11 @@ def prepare_manifest(
     return {
         "schema_version": SCHEMA_VERSION,
         "kind": "search",
-        "purpose": (
-            F2_CONTROL_STAGES[stage][3]
-            if stage in F2_CONTROL_STAGES
-            else "noisy-acquisition F2 frozen-state importance-node evaluation"
-            if stage in F2_STAGES
-            else "noisy-acquisition E3 frozen-state search"
-        ),
+        "purpose": "noisy-acquisition E3 frozen-state search",
         "launch_ready": False,
         "stage": stage,
         "split": split,
-        "holdout_locked": stage in HOLDOUT_STAGES,
-        **(
-            {"holdout_confirmation": _holdout_confirmation(selection)}
-            if stage == "f2_holdout"
-            else {}
-        ),
+        "holdout_locked": stage == "holdout",
         "capture_manifest": str(capture_manifest_path.resolve()),
         "capture_manifest_sha256": integration.sha256_file(
             capture_manifest_path
@@ -712,12 +401,7 @@ def prepare_manifest(
         "selection": selection,
         "selection_file": str(selection_path.resolve()),
         "selection_sha256": integration.sha256_file(selection_path),
-        "identity": identity,
-        **(
-            {"source_transition": source_transition}
-            if source_transition is not None
-            else {}
-        ),
+        "identity": _identity(capture_manifest),
         "thread_environment": threads,
         "master_seed": MASTER_SEED,
         "replicates": SELECTION_REPLICATES,
@@ -766,16 +450,16 @@ def validate_manifest(
         raise RuntimeError("unsupported E3 manifest schema")
     if manifest.get("kind") != "search":
         raise RuntimeError("manifest is not an E3 search manifest")
-    if manifest.get("stage") not in STAGES:
-        raise RuntimeError("unknown search stage")
+    if manifest.get("stage") not in {
+        "development",
+        "development_control",
+        "holdout",
+    }:
+        raise RuntimeError("unknown E3 stage")
     if require_ready and not manifest.get("launch_ready"):
         raise RuntimeError("search manifest is not marked launch_ready")
-    if manifest["stage"] in HOLDOUT_STAGES and manifest.get(
-        "holdout_locked", True
-    ):
+    if manifest["stage"] == "holdout" and manifest.get("holdout_locked", True):
         raise RuntimeError("holdout search manifest remains locked")
-    _validate_source_transition(manifest)
-    _validate_split(manifest)
     if manifest.get("replicates") != SELECTION_REPLICATES:
         raise RuntimeError("search replicate allocation changed")
     if manifest.get("master_seed") != MASTER_SEED:
@@ -785,18 +469,7 @@ def validate_manifest(
     expected_treatments = _treatments(
         manifest["stage"], manifest.get("selection", {})
     )
-    # A manifest frozen before SearchConfig gained a field records configs
-    # without it; the field's default reproduces the recorded behaviour, so
-    # the recorded configs are compared after passing through the dataclass.
-    recorded_treatments = [
-        (
-            {**item, "config": asdict(search.SearchConfig(**item["config"]))}
-            if isinstance(item, dict) and isinstance(item.get("config"), dict)
-            else item
-        )
-        for item in manifest.get("treatments") or []
-    ]
-    if capture.canonical(recorded_treatments) != capture.canonical(
+    if capture.canonical(manifest.get("treatments")) != capture.canonical(
         expected_treatments
     ):
         raise RuntimeError(
@@ -930,14 +603,14 @@ def runtime_identity(manifest: dict[str, Any]) -> dict[str, Any]:
         != manifest["selection_sha256"]
     ):
         raise RuntimeError("frozen search selection changed")
-    if manifest["stage"] in {"development_control", "f2_holdout"}:
+    if manifest["stage"] == "development_control":
         development_path = manifest["selection"]["development_manifest"]
         if (
             integration.sha256_file(development_path)
             != manifest["selection"]["development_manifest_sha256"]
         ):
             raise RuntimeError("preceding development manifest changed")
-    actual = _identity(capture_manifest, manifest.get("source_transition"))
+    actual = _identity(capture_manifest)
     if capture.canonical(actual) != capture.canonical(manifest["identity"]):
         raise RuntimeError("search, integration, or capture source changed")
     if _thread_environment() != manifest["thread_environment"]:
@@ -1210,43 +883,6 @@ def _timing_factory(
     return prepare
 
 
-TIMING_RESULT_KEYS = (
-    "arm",
-    "elapsed_seconds",
-    "search_seed",
-    "accurate_seed",
-    "target_called",
-    "cache_index",
-    "coarse_candidate_rows",
-    "production_candidate_rows",
-    "coarse_winner_index",
-    "coarse_minimum",
-    "generated_count",
-    "importance_node_count",
-    "accurate_candidate_rows",
-    "local_iterations",
-    "fallback_reason",
-    "refinement_stop_reason",
-)
-
-
-def _project_timing_result(result: dict[str, Any]) -> dict[str, Any]:
-    """Keep the small provenance of a timed selection, not its arrays.
-
-    A timing round retains the selected row and scalar counts; the panel,
-    candidate cache indices and other arrays belong to the untimed
-    selection cells.
-    """
-    projected = {
-        key: result[key] for key in TIMING_RESULT_KEYS if key in result
-    }
-    if "selected" in result:
-        selected = np.asarray(result["selected"], dtype=np.float64).reshape(-1)
-        projected["selected"] = selected.tolist()
-        projected["selected_row_sha256"] = _row_id(selected)
-    return projected
-
-
 def run_timing_cell(
     manifest: dict[str, Any], out: Path, cell: dict[str, Any]
 ) -> dict[str, Any]:
@@ -1272,12 +908,6 @@ def run_timing_cell(
         )
         if before != _state_digest(state):
             raise RuntimeError("paired timing mutated captured state or RNG")
-        for row in report.get("rounds", []):
-            for name in ("baseline", "treatment"):
-                if name in row and "result" in row[name]:
-                    row[name]["result"] = _project_timing_result(
-                        row[name]["result"]
-                    )
         payload = {
             "schema_version": SCHEMA_VERSION,
             "status": "succeeded",
@@ -1343,8 +973,6 @@ def run_allocation_cell(
             raise RuntimeError(
                 "allocation measurement mutated captured state or RNG"
             )
-        if isinstance(report.get("result"), dict):
-            report["result"] = _project_timing_result(report["result"])
         payload = {
             "schema_version": SCHEMA_VERSION,
             "status": "succeeded",
@@ -2470,7 +2098,7 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--selection", type=Path, required=True)
     prepare.add_argument(
         "--stage",
-        choices=tuple(sorted(STAGES)),
+        choices=("development", "development_control", "holdout"),
         required=True,
     )
     prepare.add_argument("--manifest", type=Path, required=True)
