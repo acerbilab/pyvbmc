@@ -312,7 +312,12 @@ def optimize_vp(
 
     ## Finalize optimization by taking variational parameters with best ELCBO
 
-    idx = np.argmin(elbo_stats["nelcbo"])
+    if np.all(np.isnan(elbo_stats["nelcbo"])):
+        raise ValueError(
+            "Every full ELCBO evaluation of the variational optimization "
+            "returned NaN, so no variational parameters can be selected."
+        )
+    idx = np.nanargmin(elbo_stats["nelcbo"])
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
@@ -825,7 +830,7 @@ def _sieve(
             nelcbo_fill[i] = nelbo_tmp + elcbo_beta * np.sqrt(varF_tmp)
 
         # Sort by negative ELCBO
-        order = np.argsort(nelcbo_fill)
+        order = np.argsort(nelcbo_fill, kind="stable")
         vp0_vec = vp0_vec[order]
         vp0_type = vp0_type[order]
 
@@ -905,7 +910,7 @@ def _vb_init(
     elif vb_type == 2:
         # Start from highest-posterior density training points
         if vp.optimize_mu:
-            order = np.argsort(y_star, axis=None)[::-1]
+            order = np.argsort(-y_star, axis=None, kind="stable")
             idx_order = np.tile(
                 range(0, min(K_new, N_star)), (math.ceil(K_new / N_star),)
             )

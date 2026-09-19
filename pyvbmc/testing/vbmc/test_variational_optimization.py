@@ -710,6 +710,86 @@ def test_optimize_vp_takes_an_unconverged_iterate(mocker, caplog):
     assert "precision loss" in caplog.text
 
 
+def test_vb_init_type2_orders_tied_targets_stably():
+    """Training points whose targets tie are taken in the order they are
+    given, highest target first."""
+    D, K_new = 2, 2
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(1))
+    X_star = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0], [3.0, 3.0]])
+    y_star = np.array([[3.0], [1.0], [3.0], [2.0]])
+
+    candidates, _ = _vb_init(vp, 2, 1, K_new, X_star, y_star)
+
+    assert np.array_equal(candidates[0].mu, X_star[[0, 2], :].T)
+
+
+def test_sieve_orders_tied_candidates_stably(mocker):
+    """Candidates whose ELCBO ties keep the order in which they were
+    generated, so a tie does not change which one is optimized."""
+    D, K, init_N = 2, 2, 24
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    optim_state = {"warmup": False, "entropy_switch": False}
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(2))
+    values = iter(np.tile([1.0, 0.0], init_N // 2))
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._neg_elcbo",
+        side_effect=lambda *a, **k: (next(values), None, None, None, 0.0),
+    )
+    generated = []
+    build = _vb_init
+
+    def recording(*args, **kwargs):
+        candidates, types = build(*args, **kwargs)
+        generated.extend(candidates)
+        return candidates, types
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._vb_init", side_effect=recording
+    )
+
+    vp0_vec = _sieve(options, optim_state, vp, gp, init_N=init_N, best_N=2)[0]
+
+    # Every second candidate has the lower of the two tied values; within
+    # each of the two groups the candidates keep the order they were
+    # generated in.
+    expected_order = np.concatenate(
+        (np.arange(1, init_N, 2), np.arange(0, init_N, 2))
+    )
+    assert len(generated) == init_N
+    assert all(
+        vp0_vec[i] is generated[j] for i, j in enumerate(expected_order)
+    )
+
+
+def test_optimize_vp_passes_over_a_nan_evaluation(mocker):
+    """A full ELCBO evaluation that comes back NaN is not selected."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D, {"max_iter_stochastic": 40})
+    optim_state = {"warmup": False, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(9))
+    evaluate = _eval_full_elcbo
+
+    def poisoned(idx, theta, vp_arg, gp_arg, stats, beta, options_arg):
+        stats = evaluate(idx, theta, vp_arg, gp_arg, stats, beta, options_arg)
+        if idx == 0:
+            stats["nelbo"][idx] = np.nan
+            stats["nelcbo"][idx] = np.nan
+            stats["theta"][idx, :] = np.nan
+        return stats
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._eval_full_elcbo",
+        side_effect=poisoned,
+    )
+
+    optimized, _, _ = optimize_vp(options, optim_state, vp, gp, 6, 1)
+
+    assert np.all(np.isfinite(optimized.get_parameters()))
+    assert np.isfinite(optimized.stats["elbo"])
+
+
 def test_vb_init_candidates():
     """Sieve candidates share the base posterior's generator and parameter
     transformer, own their variational parameters, start with no bounds
