@@ -195,6 +195,43 @@ def test_cmaes_search_runs_without_noise_handling(mocker):
     assert [n for n in batch_sizes if n > 1] == [es.popsize] * generations
 
 
+def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
+    """With a non-finite search bound the local search is bounded by the
+    training inputs and the starting point, one bound per coordinate."""
+    D = 2
+    vbmc, gp = _state_with_gp(D)
+    vbmc.optim_state["ub_search"][0, 0] = np.inf
+    assert gp.X.shape[0] > 1
+
+    captured = {}
+
+    def fake_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["options"] = dict(options)
+        # A rejected search result: the sieve's point is kept.
+        return np.asarray(x0, dtype=float), np.inf
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+
+    active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    lb_search, ub_search = captured["options"]["bounds"]
+    assert np.shape(lb_search) == (D,)
+    assert np.shape(ub_search) == (D,)
+    assert np.all(lb_search <= gp.X.min(0))
+    assert np.all(ub_search >= gp.X.max(0))
+
+
 def test_active_uncertainty_sampling(mocker):
     def rosen(self, x, *args):
         x = np.atleast_2d(x)

@@ -497,9 +497,12 @@ def active_sample(
                     lb_search = np.minimum(x0, optim_state["lb_search"])
                     ub_search = np.maximum(x0, optim_state["ub_search"])
                 else:
+                    # One bound per coordinate, from the training inputs
+                    # and the starting point taken together.
                     xrange = gp.X.max(0) - gp.X.min(0)
-                    lb_search = np.minimum(gp.X, x0) - 0.1 * xrange
-                    ub_search = np.maximum(gp.X, x0) + 0.1 * xrange
+                    X_stacked = np.vstack((gp.X, np.atleast_2d(x0)))
+                    lb_search = X_stacked.min(0) - 0.1 * xrange
+                    ub_search = X_stacked.max(0) + 0.1 * xrange
 
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
