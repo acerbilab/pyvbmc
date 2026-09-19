@@ -15,6 +15,7 @@ from pyvbmc.vbmc.variational_optimization import (
     _gp_log_joint,
     _initialize_full_elcbo,
     _neg_elcbo,
+    _sieve,
     _soft_bound_loss,
     _vb_init,
     _vp_bound_loss,
@@ -627,6 +628,28 @@ def test_optimize_vp_returns_eta_matching_weights():
     softmax = np.exp(vp.eta - np.amax(vp.eta))
     softmax /= np.sum(softmax)
     assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
+
+
+def test_optimize_vp_without_shotgun_evaluation():
+    """Asking for no fast optimizations makes the sieve hand back the
+    current posterior as its single candidate, in the same one-element
+    arrays as a shotgun evaluation, and the optimization runs from it."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D, {"max_iter_stochastic": 40})
+    optim_state = {"warmup": False, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(8))
+
+    vp0_vec, vp0_type = _sieve(
+        options, optim_state, vp, gp, init_N=0, best_N=1
+    )[:2]
+    assert vp0_vec.shape == (1,) and vp0_type.shape == (1,)
+    assert np.array_equal(vp0_type, np.ones(1))
+
+    optimized, _, _ = optimize_vp(options, optim_state, vp, gp, 0, 1)
+
+    assert optimized.K == 2
+    assert np.isfinite(optimized.stats["elbo"])
 
 
 def test_vb_init_candidates():

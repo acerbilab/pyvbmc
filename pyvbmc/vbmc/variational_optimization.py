@@ -836,9 +836,11 @@ def _sieve(
             ns_ent_K_fast,
         )
 
+    # No shotgun evaluation: the current posterior is the only candidate,
+    # returned in the same one-element arrays as the branch above.
     return (
-        copy.deepcopy(vp),
-        1,
+        np.array([copy.deepcopy(vp)]),
+        np.ones((1,)),
         elcbo_beta,
         compute_var,
         ns_ent_K,
