@@ -124,8 +124,10 @@ def optimize_vp(
     vp : VariationalPosterior
         The optimized variational posterior.
     var_ss : float
-        Estimated variance of the ELBO, due to variance of the expected
-        log-joint, for each GP hyperparameter sample.
+        Spread of the expected log joint across the GP hyperparameter
+        samples: the sample variance of its value from sample to sample
+        plus the sample standard deviation of its per-sample variances.
+        Zero with a single hyperparameter sample.
     pruned : int
         Number of pruned components.
 
@@ -1154,8 +1156,10 @@ def _neg_elcbo(
     dH : np.ndarray
         Gradient of entropy term.
     varG_ss : float
-        Variance of the expected variational log joint, for each GP
-        hyperparameter sample.
+        Spread of the expected variational log joint across the GP
+        hyperparameter samples: the sample variance of its value from
+        sample to sample plus the sample standard deviation of its
+        per-sample variances. Zero with a single hyperparameter sample.
     varG : float
         Variance of the expected variational log joint
         probability.
@@ -1402,7 +1406,10 @@ def _gp_log_joint(
         The gradient of the variance. Not implemented (see Raises); always
         ``None``.
     var_ss : float
-        Variance for each GP hyperparameter sample.
+        Spread of ``G`` across the GP hyperparameter samples: the sample
+        variance of its value from sample to sample plus the sample
+        standard deviation of the per-sample variances. Zero with a single
+        hyperparameter sample.
     I_sk : np.ndarray
         The contribution to ``G`` per GP hyperparameter sample and per VP
         component.
