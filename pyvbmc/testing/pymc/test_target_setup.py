@@ -150,6 +150,30 @@ def test_absent_scalar_gradient_takes_the_prior_route(caplog):
     assert any("gradient is unavailable" in message for message in messages)
 
 
+def test_prior_route_warning_names_the_starting_point(caplog):
+    caplog.clear()
+    automatic = PyMCTarget(undefined_gradient_model(), seed=16)
+    automatic_messages = [record.getMessage() for record in caplog.records]
+    caplog.clear()
+    supplied = PyMCTarget(
+        undefined_gradient_model(), start={"x": 0.5}, seed=16
+    )
+    supplied_messages = [record.getMessage() for record in caplog.records]
+
+    assert automatic.plausible_info["start"] == "initial"
+    assert supplied.plausible_info["start"] == "user"
+    assert automatic.plausible_info["route"] == "prior"
+    assert supplied.plausible_info["route"] == "prior"
+    assert any(
+        "gradient is unavailable; using the model's initial point" in message
+        for message in automatic_messages
+    )
+    assert any(
+        "gradient is unavailable; using the supplied starting point" in message
+        for message in supplied_messages
+    )
+
+
 def test_absent_scalar_hessian_keeps_the_gradient_and_prior_widths():
     target = PyMCTarget(undefined_hessian_model(), seed=15)
     assert target.plausible_info["route"] == "laplace"

@@ -1187,9 +1187,15 @@ class PyMCTarget:
         if info["cap_reached"]:
             _LOGGER.warning("Mode search reached its setup call cap.")
         if info["route"] == "prior":
+            origin = (
+                "the supplied starting point"
+                if info["start"] == "user"
+                else "the model's initial point"
+            )
             _LOGGER.warning(
-                "The model gradient is unavailable; using the initial point "
-                "and prior-quantile plausible bounds."
+                "The model gradient is unavailable; using %s and "
+                "prior-quantile plausible bounds.",
+                origin,
             )
 
     def to_arviz(self, vp, n_samples=1000):
