@@ -78,7 +78,7 @@ def minimize_adam(
     v = 0
     x_tab = np.zeros((n_vars, max_iter))
 
-    x = x0
+    x = np.copy(x0)
     y_tab = np.full((max_iter,), np.nan)
 
     for i in range(0, max_iter):
@@ -136,8 +136,10 @@ def minimize_adam(
             ):
                 break
 
-    x = np.mean(x_tab[:, i - batch_size + 1 : i + 1], axis=1)
-    y = np.mean(y_tab[i - batch_size + 1 : i + 1])
+    # Average over the trailing window, or over every iterate when fewer
+    # than a full window were performed.
+    x = np.mean(x_tab[:, max(0, i - batch_size + 1) : i + 1], axis=1)
+    y = np.mean(y_tab[max(0, i - batch_size + 1) : i + 1])
 
     x_tab = x_tab[:, 0 : i + 1]
     y_tab = y_tab[0 : i + 1]
