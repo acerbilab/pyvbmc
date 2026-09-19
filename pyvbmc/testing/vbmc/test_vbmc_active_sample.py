@@ -337,6 +337,52 @@ def test_acquiring_a_cached_point_reuses_its_value(mocker):
     assert optim_state["cache"]["skip_logger"].shape == (0,)
 
 
+def test_acquiring_a_cached_point_without_a_value_evaluates_it(mocker):
+    """A search point that comes from the cache without a stored value is
+    evaluated through the target and leaves the cache like one with a
+    value, so it cannot be drawn and evaluated a second time."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+    )
+    x_cached = np.array([[0.3, -0.2]])
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.array([np.nan])
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    func_count_before = vbmc.function_logger.func_count
+    cache_count_before = vbmc.function_logger.cache_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The target was called once, for the cached point.
+    assert function_logger.func_count == func_count_before + 1
+    assert function_logger.cache_count == cache_count_before
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert np.allclose(function_logger.y_orig[last], fun(x_cached))
+
+    # The point is gone from every cache array.
+    assert optim_state["cache"]["x_orig"].shape == (0, D)
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
+
+
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     """A local search that raises costs one acquisition, not the run."""
     D = 2

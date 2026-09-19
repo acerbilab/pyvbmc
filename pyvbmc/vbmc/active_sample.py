@@ -696,17 +696,15 @@ def active_sample(
                 ynew, _, idx_new = function_logger(xnew)
             else:
                 ynew, _, idx_new = function_logger.add(xnew, y_orig)
-                # Remove point from starting cache
-                optim_state["cache"]["x_orig"] = np.delete(
-                    optim_state["cache"]["x_orig"], idx, 0
-                )
-                optim_state["cache"]["y_orig"] = np.delete(
-                    optim_state["cache"]["y_orig"], idx, 0
-                )
-                if "skip_logger" in optim_state["cache"]:
-                    optim_state["cache"]["skip_logger"] = np.delete(
-                        optim_state["cache"]["skip_logger"], idx, 0
-                    )
+            if not np.isnan(idx_cache_acq):
+                # The acquired point leaves the starting cache, whether
+                # its value was stored there or has just been evaluated;
+                # a point left behind could be drawn and evaluated again.
+                for key in ("x_orig", "y_orig", "skip_logger"):
+                    if key in optim_state["cache"]:
+                        optim_state["cache"][key] = np.delete(
+                            optim_state["cache"][key], idx, 0
+                        )
             timer.stop_timer("fun_time")
 
             if hasattr(function_logger, "S"):
