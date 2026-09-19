@@ -3,6 +3,7 @@ import importlib
 import logging
 
 import cma
+import gpyreg as gpr
 import numpy as np
 import pytest
 
@@ -11,7 +12,7 @@ from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
-from pyvbmc.vbmc.gaussian_process_train import train_gp
+from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 
 fun = lambda x: np.sum(x + 2)
 
@@ -1507,3 +1508,52 @@ def test_compute_var_log_joint_hook_through_active_sample(mocker):
     assert np.shape(optim_state["cov_log_joint_components"]) == (Ns, K, K)
     assert np.all(np.isfinite(optim_state["cov_log_joint_components"]))
     assert function_logger.Xn == Xn0 + 2
+
+
+def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
+    """On a noisy target a first observation at a new input extends the GP
+    posterior by rank one, reaching the factors of a full recomputation."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker, {"max_repeated_observations": 0}, acq=_cheap_acq
+    )
+
+    # The step takes that branch, with the observation's noise variance,
+    # instead of recomputing the posterior.
+    update_spy = mocker.spy(gpr.GP, "update")
+    reupdate_spy = mocker.patch(
+        "pyvbmc.vbmc.active_sample.reupdate_gp", wraps=reupdate_gp
+    )
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert reupdate_spy.call_count == 0
+    assert update_spy.call_count == 1
+    assert update_spy.call_args.kwargs["s2_new"] is not None
+
+    # The rank-one extension by the last acquired point, which the GP has
+    # not seen yet, agrees with recomputing the posterior from the whole
+    # training set.
+    last = function_logger.Xn
+    assert function_logger.n_evals[last] == 1
+    gp_rank_one = copy.deepcopy(gp)
+    gp_rank_one.update(
+        function_logger.X[[last]],
+        function_logger.y[[last]],
+        s2_new=function_logger.S[[last]] ** 2,
+        compute_posterior=True,
+    )
+    gp_full = reupdate_gp(function_logger, copy.deepcopy(gp))
+    assert gp_rank_one.X.shape == gp_full.X.shape
+    assert np.allclose(gp_rank_one.s2, gp_full.s2, rtol=1e-9, atol=1e-10)
+    for post_one, post_full in zip(gp_rank_one.posteriors, gp_full.posteriors):
+        assert np.allclose(
+            post_one.alpha, post_full.alpha, rtol=1e-9, atol=1e-10
+        )
+        assert np.allclose(post_one.sW, post_full.sW, rtol=1e-9, atol=1e-10)
+        assert np.allclose(post_one.L, post_full.L, rtol=1e-9, atol=1e-10)

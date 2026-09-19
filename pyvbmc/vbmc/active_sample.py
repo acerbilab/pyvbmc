@@ -736,15 +736,22 @@ def active_sample(
                     # If NOT performing full updates with active sampling, only
                     # the GP posterior is updated (but not the hyperparameters)
 
-                    # Perform simple rank-1 update if no noise and first sample
+                    # A first observation at a new input adds one training
+                    # row, which the rank-1 update extends the posterior
+                    # factors with. A repeat is pooled into an existing row
+                    # instead, so the whole posterior is recomputed; so is
+                    # it under noise shaping, which rescales the noise of
+                    # every training point.
                     timer.start_timer("gp_train")
                     update1 = (
-                        (s2new is None)
-                        and function_logger.n_evals[idx_new] == 1
-                    ) and not options["noise_shaping"]
+                        function_logger.n_evals[idx_new] == 1
+                        and not options["noise_shaping"]
+                    )
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)
-                        gp.update(xnew, ynew, compute_posterior=True)
+                        gp.update(
+                            xnew, ynew, s2_new=s2new, compute_posterior=True
+                        )
                         # gp.t(end+1) = tnew
                     else:
                         gp = reupdate_gp(function_logger, gp)
