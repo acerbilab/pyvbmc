@@ -514,6 +514,7 @@ def active_sample(
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
 
                     insigma = np.sqrt(np.diag(Sigma))
+                    sigma0 = np.max(insigma)
                     cma_options = {
                         "verbose": -9,
                         "tolfun": tol_fun,
@@ -526,6 +527,16 @@ def active_sample(
                         "randn": lambda *shape: rng.standard_normal(shape),
                     }
 
+                    # Start the search at the per-coordinate standard
+                    # deviations `insigma`: `sigma0` is the overall step size
+                    # and `CMA_stds` the coordinate scaling, which cma keeps
+                    # in a non-adapting `sigma_vec` while `C` starts at the
+                    # identity and adapts on top of it. A coordinate scaling
+                    # needs every entry positive and finite; otherwise the
+                    # search starts isotropic at `sigma0`.
+                    if np.all(np.isfinite(insigma)) and np.all(insigma > 0):
+                        cma_options["CMA_stds"] = insigma / sigma0
+
                     # The population of each generation is evaluated in one
                     # call (`parallel_objective`); `ask_and_eval` draws it
                     # with a single `ask` in either mode, so the random
@@ -533,7 +544,7 @@ def active_sample(
                     res = cma.fmin(
                         acq_fun,
                         x0,
-                        np.max(insigma),
+                        sigma0,
                         options=cma_options,
                         parallel_objective=acq_fun,
                         noise_handler=_BatchedNoiseHandler(

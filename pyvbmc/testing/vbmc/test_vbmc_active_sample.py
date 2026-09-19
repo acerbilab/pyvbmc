@@ -2,6 +2,7 @@ import copy
 import importlib
 import logging
 
+import cma
 import numpy as np
 import pytest
 
@@ -30,6 +31,103 @@ def create_vbmc(
     plb = np.ones((1, D)) * plausible_lower_bounds
     pub = np.ones((1, D)) * plausible_upper_bounds
     return VBMC(fun, x0_array, lb, ub, plb, pub, options)
+
+
+def _cheap_acq(self, x, *args):
+    """A quadratic standing in for an acquisition function."""
+    return np.sum(np.atleast_2d(x) ** 2, axis=1)
+
+
+def _state_with_gp(D: int, options: dict = None):
+    """Build a VBMC instance and a GP trained on one initial design."""
+    vbmc = create_vbmc(D, 0.0, -np.inf, np.inf, -3, 3, options)
+    function_logger, optim_state, _, _ = active_sample(
+        gp=None,
+        sample_count=10,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    return vbmc, gp
+
+
+def test_cmaes_search_starts_from_per_coordinate_step_sizes(mocker):
+    """CMA-ES starts at the per-coordinate scales of the search covariance."""
+    D = 2
+    vbmc, gp = _state_with_gp(D)
+
+    # An anisotropic variational posterior, so that the per-coordinate
+    # standard deviations differ from their maximum.
+    vp = vbmc.vp
+    vp.mu = np.zeros((D, vp.K))
+    vp.sigma = np.ones((1, vp.K))
+    vp.lambd = np.array([[1.0], [0.05]])
+    vp.w = np.full((1, vp.K), 1 / vp.K)
+    _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
+    insigma = np.sqrt(np.diag(Sigma))
+    assert insigma.max() / insigma.min() > 5
+
+    captured = {}
+
+    def fake_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["x0"] = np.asarray(x0, dtype=float)
+        captured["sigma0"] = sigma0
+        captured["options"] = dict(options)
+        # A rejected search result: the sieve's point is kept.
+        return np.asarray(x0, dtype=float), np.inf
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+
+    active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vp,
+        vbmc.options,
+    )
+
+    assert captured["sigma0"] == pytest.approx(insigma.max())
+    assert np.allclose(
+        captured["options"]["CMA_stds"], insigma / insigma.max()
+    )
+
+    # Those arguments give an initial population whose per-coordinate
+    # standard deviations are `insigma`. The captured search bounds are
+    # left out of the check, since cma repairs the drawn points into them.
+    rng = np.random.default_rng(42)
+    es = cma.CMAEvolutionStrategy(
+        captured["x0"],
+        captured["sigma0"],
+        {
+            "verbose": -9,
+            "CMA_stds": captured["options"]["CMA_stds"],
+            "seed": np.nan,
+            "randn": lambda *shape: rng.standard_normal(shape),
+        },
+    )
+    population = np.asarray(es.ask(4000))
+    assert np.allclose(population.std(axis=0), insigma, rtol=0.1)
 
 
 def test_active_uncertainty_sampling(mocker):
