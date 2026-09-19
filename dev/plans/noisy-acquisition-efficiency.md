@@ -109,15 +109,15 @@ suite and was stopped by the user on 2026-09-19 after 51 of 80 pairs:
 the rule worsens posterior shape on logistic regression and costs more
 fit time there, so it is not promoted; the working branch removes the implementation
 (the [disposition](#f2-stage-2-outcome-and-decision-2026-09-19) lists
-what it keeps). The baseline arm's fits continue as production-reference
-runs under `golden_trace.py run --suite production` into the reference's
-run directory, `dev/scripts/runs/golden/production_noisy_20260918`
-(listed in `dev/scripts/runs/LOCAL.md`), from the branch
-`dev-production-reference`, cut from `dev-next` once this work merged.
-52 of the 80 fits exist; the runner skips a fit whose archive exists, so
-a stopped run restarts with the same command, and when they finish the
-production reference of the TODO has its first 80 noisy runs. No other
-background work needs reattachment.
+what it keeps). The baseline arm's remaining fits ran as
+production-reference runs under `golden_trace.py run --suite production`
+into the reference's run directory,
+`dev/scripts/runs/golden/production_noisy_20260918` (listed in
+`dev/scripts/runs/LOCAL.md`), from the branch `dev-production-reference`,
+cut from `dev-next` once this work merged, and completed on 2026-09-19
+with no failure, so all 80 exist: the first noisy runs of the production
+reference that the TODO's working rules describe. No background work
+needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1719,12 +1719,16 @@ the declared source transition and the serializer fix for non-finite
 values inside arrays live only on the retained branch. It drops the
 Stage 2 runner and the F2 evidence summary and keeps two pieces that
 stand on their own: the record publisher and the node-design check. The
-baseline arm's 52 completed fits (51 with a treatment partner) and the
-remaining 28 baseline fits of the three unfinished configurations are
-production-reference runs and continue as such; their sidecars record the commits they ran under, whose
-default path the exact oracle check and the E3 replays show bit-identical
-to the release code. The F2 thread of the efficiency item closes with this
-outcome.
+baseline arm's 80 fits (51 with a treatment partner, 28 run after the
+stop, completed on 2026-09-19) are production-reference runs. Their
+sidecars record the commits they ran under (`2271f25`, `f1e6ff3`,
+`f91fdf0`), whose default path the exact oracle check and the E3 replays
+show bit-identical to the release code, and label gpyreg `1.2.0`: that is
+the installed metadata of the environment that ran them, whose gpyreg was
+stale, while the code that ran is the frozen worktree at tag `v1.2.1`
+placed ahead of it on `PYTHONPATH`. Sidecars written by later versions of
+the runner also record the imported gpyreg module's path and commit
+(`gpyreg_source`). This outcome closes the efficiency workstream.
 
 ### Decisions and unresolved empirical questions
 

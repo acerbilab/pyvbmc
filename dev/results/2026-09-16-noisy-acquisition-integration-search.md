@@ -1628,11 +1628,10 @@ scope excludes.
 
 Run from the existing `pyvbmc-stage3` checkout, reusing its `.venv`. The
 checkout is on `dev-production-reference`, cut from `dev-next` after the
-F2 work merged, and the remaining baseline production-reference fits run
-from it (`golden_trace.py run --suite production` into
-`dev/scripts/runs/golden/production_noisy_20260918`, 52 of 80 archives
-present); the runner skips a fit whose archive exists, so a stopped run
-restarts with the same command. No other background job or session needs
+F2 work merged; the baseline production-reference fits ran from it
+(`golden_trace.py run --suite production` into
+`dev/scripts/runs/golden/production_noisy_20260918`) and all 80 archives
+are present since 2026-09-19. No background job or session needs
 reattachment.
 The ignored `dev/scripts/runs` junction points to the shared local artifact
 directory in the sibling checkout, `../pyvbmc/dev/scripts/runs`.

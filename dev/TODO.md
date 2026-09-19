@@ -9,73 +9,6 @@ records its execution.
 
 ## In scope for 1.5
 
-- [ ] **Efficiency of existing noisy acquisitions.** Improve sieve/search,
-  integration accuracy and criterion-evaluation costs. GP fitting,
-  initialization and retraining policy are outside this workstream
-  (PI decision, 2026-09-16).
-  Separate changes to search behavior from computational optimizations;
-  assess them on noisy synthetic and real-data targets against the promoted
-  reference. Choose seed coverage for the experiment; a full reference-sized
-  campaign is unnecessary. **Designing new acquisition functions or criteria
-  is excluded.** Start from the
-  [investigation](2026-09-08-noisy-acquisitions.md) and
-  [search analysis](results/2026-09-09-acquisition-search-analysis.md).
-  The [efficiency plan](plans/noisy-acquisition-efficiency.md) tracks the
-  guarded standard-VIQR sum optimization and the GP-kernel reuse, both
-  integrated into `dev-next` and validated (the
-  [production validation](results/2026-09-13-viqr-kernel-production.md)
-  reports a 1.205x late-sieve speedup and 18/18 exact stored replays).
-  The [integration and search experiment](plans/noisy-acquisition-efficiency.md#integration-and-search-experiment)
-  compares ordinary and stratified Monte Carlo and randomized quasi-Monte
-  Carlo, then fixed-budget
-  search and conditional adaptive integration. It includes an independent
-  integration judge and a bounded paired inference comparison. On
-  `dev-noisy-acquisition-efficiency`, E2 closed without an integration
-  finalist, E3 froze the S2 search arm with mixed holdout evidence, E4's
-  entry gates are unmet, and E5 is complete: 120 paired S0/S2 fits over
-  ten seeds and six configurations. S2 halves fit time at unchanged
-  evaluation counts but degrades inference on high-noise Rosenbrock and
-  the posterior-shape metrics of logistic regression while improving
-  Student-t substantially, so the E6 assessment recommends keeping the
-  production search. Of its follow-ups, the trajectory diagnosis (F3) is
-  done and the PI approved matched-cost RQMC (F2) on 2026-09-18: 96
-  scrambled-Sobol nodes replace the 100 Monte Carlo nodes of the VIQR
-  estimate, evaluated first on the 24 frozen states and then, on a
-  separate decision, in a paired inference comparison on the production
-  labels whose baseline arm doubles as production-reference runs; the
-  [F2 amendment](plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
-  fixes the design, seeds, outcomes and gates. Stage 1 completed on
-  2026-09-18 on both splits with two null controls: the cost is matched,
-  the rule improves early-run selections, and on late runs it sits on the
-  node-noise floor of the production rule against itself, a lottery no
-  100-node set escapes; the
-  [assessment](plans/noisy-acquisition-efficiency.md#f2-stage-1-assessment-2026-09-18)
-  recommended Stage 2 on a floor-based reading of the screening gate.
-  Stage 2, the paired inference comparison on the production suite, was
-  stopped by the PI on 2026-09-19 after 51 of 80 pairs: the rule worsens
-  posterior shape on logistic regression in 17 of 20 pairs and costs 16
-  to 20 percent more fit time there, and high-noise Rosenbrock leans the
-  same way. **Not promoted** (PI decision, 2026-09-19): 1.5 takes only
-  bug fixes and unequivocal improvements. The implementation is retained
-  on `retain/viqr-rqmc-nodes`; the
-  [outcome](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
-  records the reading: a more faithful maximizer of VIQR is a worse guide
-  for inference than the noisy one on these targets, so the lever is the
-  criterion's exploration, outside this scope. The baseline arm's fits
-  are the first production-reference runs.
-  The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
-  records the results. The benefit
-  criteria, allocation and screening gates are accepted; Bayesian
-  quadrature is excluded following the scope review.
-  A controlled whole-VBMC timing comparison of the completed
-  arithmetic optimizations remains optional; replay wall times do not
-  establish that speedup.
-  Keep standard VIQR (`loss="iqr"`); the retained `iqr_reduction`
-  formulation preserves the unregularized criterion for fixed samples and
-  weights. The complete objective, including candidate-dependent penalties,
-  needs an equivalence check before a search reformulation is used, followed
-  by end-to-end validation. IMIQR cache reuse is optional cleanup.
-
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
   `dev-next`; see the [integration plan](plans/svbmc-shrinkage-estimator.md).
@@ -172,7 +105,8 @@ records its execution.
   records the VIQR/refit mechanism and precision checks at its onset;
   remedies and their effects on inference accuracy have not been compared.
 
-- **New acquisition-function design.** Efficiency work uses existing criteria.
+- **New acquisition-function design.** The acquisition-efficiency work used
+  existing criteria only.
   The experimental VIQR losses and the EIG acquisition were removed from the
   package on 2026-09-14 and are retained on the branch
   `retain/experimental-acquisitions`; the
@@ -277,7 +211,15 @@ candidate pairs plus 120 unchanged real-data pairs. The
 [promotion record](golden/promotion_20260913/README.md) owns the
 assessment, independent review, hashes and passed gates;
 [the population plan](plans/final-population-benchmark.md) owns execution
-history.
+history. The production reference's noisy runs have begun: 80 runs of six
+noisy configurations at production budgets (logistic regression and
+high-noise Rosenbrock at twenty seeds; low-noise Rosenbrock, Student-t,
+timing and multisensory at ten) exist locally under
+`golden/production_noisy_20260918/` (listed in `dev/scripts/runs/LOCAL.md`),
+run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
+and after its stop; the
+[efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
+records their provenance.
 
 Raw traces, boost captures, run pools, captured states and frozen
 worktrees are gitignored under `dev/scripts/runs/` and exist only on the

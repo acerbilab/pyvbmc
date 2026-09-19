@@ -39,6 +39,7 @@ not target cost.
 
 import argparse
 import cProfile
+import importlib
 import io
 import json
 import os
@@ -222,21 +223,47 @@ def pkg_version(name):
         return None
 
 
-def git_info():
+def git_info(cwd=REPO_ROOT):
     try:
         sha = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT, text=True
+            ["git", "rev-parse", "--short", "HEAD"], cwd=cwd, text=True
         ).strip()
         dirty = bool(
             subprocess.check_output(
                 ["git", "status", "--porcelain", "--untracked-files=no"],
-                cwd=REPO_ROOT,
+                cwd=cwd,
                 text=True,
             ).strip()
         )
         return {"sha": sha, "dirty": dirty}
     except Exception:  # noqa: BLE001
         return {"sha": None, "dirty": None}
+
+
+def module_source(name):
+    """Where the imported package ``name`` loads from, and its commit.
+
+    ``git`` is the commit and dirty state of the repository that tracks the
+    package directory, so a checkout or a worktree placed on ``PYTHONPATH``
+    is identified; an installed copy under site-packages reports ``git`` as
+    None even when the environment lives inside a repository.
+    """
+    try:
+        path = Path(importlib.import_module(name).__file__).resolve().parent
+    except Exception:  # noqa: BLE001
+        return None
+    git = None
+    try:
+        subprocess.check_output(
+            ["git", "ls-files", "--error-unmatch", "__init__.py"],
+            cwd=path,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        git = git_info(cwd=path)
+    except Exception:  # noqa: BLE001
+        pass
+    return {"path": str(path), "git": git}
 
 
 def thread_env():

@@ -24,7 +24,7 @@ run writes ``<tag>.error.txt`` and the sweep continues.
 Each run produces ``<label>_seed<seed>.npz`` (per-iteration vectors, ragged
 blocks with index vectors, final arrays) and ``<label>_seed<seed>.json``
 (config, seed, options as requested and as effective, git SHA, versions,
-final scalar metrics). ``summary`` and ``compare`` read only the sidecars.
+the imported gpyreg's path and commit, final scalar metrics). ``summary`` and ``compare`` read only the sidecars.
 
 ``compare`` runs a two-sample Kolmogorov-Smirnov test per (config, metric)
 on the final ``elbo_err``, ``gskl``, ``mmtv`` and ``func_count`` and applies
@@ -112,6 +112,7 @@ def run_task(label, seed, extra_options, out_dir):
             effective_options,
             git_info,
             jsonable,
+            module_source,
             pkg_version,
             thread_env,
         )
@@ -298,6 +299,7 @@ def run_task(label, seed, extra_options, out_dir):
                 "scipy": pkg_version("scipy"),
                 "pyvbmc": pkg_version("pyvbmc"),
                 "gpyreg": pkg_version("gpyreg"),
+                "gpyreg_source": module_source("gpyreg"),
                 "cma": pkg_version("cma"),
                 "threads": thread_env(),
                 "started": time.strftime(
