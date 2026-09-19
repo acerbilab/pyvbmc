@@ -28,6 +28,16 @@ from .options import Options
 _selection_policy_callback = None
 
 
+def _log_search_failure(logger, exc):
+    """Report a local acquisition search that raised."""
+    logger.warning(
+        "Active search failed (%s: %s); using the best candidate of the "
+        "search set.",
+        type(exc).__name__,
+        exc,
+    )
+
+
 def active_sample(
     gp: gpr.GP,
     sample_count: int,
@@ -509,6 +519,10 @@ def active_sample(
                 else:
                     tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
+                # A local search that fails costs one acquisition, not the
+                # run: the sieve's best candidate is kept instead.
+                xsearch_optim, f_val_optim = x0, np.inf
+
                 if options["search_optimizer"] == "cmaes":
                     if options["search_cmaes_vp_init"]:
                         _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
@@ -548,22 +562,29 @@ def active_sample(
                     # samples are fixed while the search runs, so the
                     # acquisition is deterministic and the search needs no
                     # noise handling: one generation costs one population.
-                    res = cma.fmin(
-                        acq_fun,
-                        x0,
-                        sigma0,
-                        options=cma_options,
-                        parallel_objective=acq_fun,
-                    )
-
-                    xsearch_optim, f_val_optim = res[:2]
+                    try:
+                        res = cma.fmin(
+                            acq_fun,
+                            x0,
+                            sigma0,
+                            options=cma_options,
+                            parallel_objective=acq_fun,
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim, f_val_optim = res[:2]
                 elif options["search_optimizer"] == "Nelder-Mead":
                     from scipy.optimize import minimize
 
-                    res = minimize(
-                        acq_fun, x0, method="Nelder-Mead", tol=tol_fun
-                    )
-                    xsearch_optim, f_val_optim = res.x, res.fun
+                    try:
+                        res = minimize(
+                            acq_fun, x0, method="Nelder-Mead", tol=tol_fun
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 

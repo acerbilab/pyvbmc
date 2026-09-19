@@ -39,9 +39,11 @@ def _cheap_acq(self, x, *args):
     return np.sum(np.atleast_2d(x) ** 2, axis=1)
 
 
-def _state_with_gp(D: int, options: dict = None):
+def _state_with_gp(D: int, options: dict = None, seed: int = None):
     """Build a VBMC instance and a GP trained on one initial design."""
     vbmc = create_vbmc(D, 0.0, -np.inf, np.inf, -3, 3, options)
+    if seed is not None:
+        vbmc.vp.rng = np.random.default_rng(seed)
     function_logger, optim_state, _, _ = active_sample(
         gp=None,
         sample_count=10,
@@ -63,6 +65,7 @@ def _state_with_gp(D: int, options: dict = None):
         vbmc.options,
         vbmc.plausible_lower_bounds,
         vbmc.plausible_upper_bounds,
+        rng=vbmc.vp.rng,
     )
     optim_state["hyp_dict"] = hyp_dict
     return vbmc, gp
@@ -144,7 +147,7 @@ def test_cmaes_search_runs_without_noise_handling(mocker):
             )
         )
 
-    vbmc, gp = _state_with_gp(2)
+    vbmc, gp = _state_with_gp(2, seed=20260919)
     real_fmin = cma.fmin
     captured = {}
 
@@ -230,6 +233,44 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     assert np.shape(ub_search) == (D,)
     assert np.all(lb_search <= gp.X.min(0))
     assert np.all(ub_search >= gp.X.max(0))
+
+
+def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
+    """A local search that raises costs one acquisition, not the run."""
+    D = 2
+    vbmc, gp = _state_with_gp(D)
+    candidates = np.array([[0.5, 0.5], [2.0, 2.0], [-3.0, 1.0]])
+    Xn_before = vbmc.function_logger.Xn
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample._get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample.cma.fmin",
+        side_effect=RuntimeError("no search today"),
+    )
+    caplog.set_level(logging.WARNING)
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The best candidate of the search set under `_cheap_acq`.
+    assert function_logger.Xn == Xn_before + 1
+    assert np.allclose(function_logger.X[function_logger.Xn], candidates[0])
+    assert "Active search failed" in caplog.text
+    assert "RuntimeError" in caplog.text
+    assert "no search today" in caplog.text
 
 
 def test_active_uncertainty_sampling(mocker):
