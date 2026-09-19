@@ -127,6 +127,40 @@ def _has_random_ancestor(expression):
     )
 
 
+def _absorb_onto_support(value, lower, upper):
+    """Move backward-map outputs off the finite bound they rounded onto.
+
+    The backward map of a one-sided transform adds an exponential term to a
+    finite support bound, and a term smaller than half an ulp of that bound
+    leaves the sum equal to it. Such a value is interior in exact arithmetic,
+    so it is replaced by the adjacent representable number inside the
+    support. Values beyond a bound and non-finite values are returned
+    unchanged, for the caller's support check to reject.
+
+    Parameters
+    ----------
+    value : numpy.ndarray
+        Float64 backward-map outputs of shape ``(n, *shape)``.
+    lower, upper : numpy.ndarray
+        Support bounds of shape ``shape``.
+
+    Returns
+    -------
+    absorbed : numpy.ndarray
+        Copy of `value` with exact-bound entries moved inside the support.
+    """
+    absorbed = np.array(value, dtype=np.float64)
+    on_lower = np.isfinite(lower) & (absorbed == lower)
+    if np.any(on_lower):
+        inside = np.broadcast_to(np.nextafter(lower, np.inf), absorbed.shape)
+        absorbed[on_lower] = inside[on_lower]
+    on_upper = np.isfinite(upper) & (absorbed == upper)
+    if np.any(on_upper):
+        inside = np.broadcast_to(np.nextafter(upper, -np.inf), absorbed.shape)
+        absorbed[on_upper] = inside[on_upper]
+    return absorbed
+
+
 def _interval_limit(rv, expression, shape, default):
     """Evaluate one fixed interval limit on the frozen model graph."""
     if expression is None:
@@ -1173,6 +1207,16 @@ class PyMCTarget:
         -------
         values : dict
             Variable names mapped to arrays of shape ``(n, *shape)``.
+            Every value is finite and strictly inside its support. A
+            retained transform's backward map can land on a finite support
+            bound by rounding, and such a coordinate is returned as the
+            adjacent representable value inside the support.
+
+        Raises
+        ------
+        ValueError
+            If `X` has the wrong shape, or a mapped value is non-finite or
+            lies beyond a support bound.
         """
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2 or X.shape[1] != self.D:
@@ -1182,12 +1226,16 @@ class PyMCTarget:
             value = X[:, self._offsets[i] : self._offsets[i + 1]].reshape(
                 (len(X), *shape)
             )
-            if name in self._maps:
-                value = _as_float64(
-                    self._maps[name]["backward"](value),
-                    f"{name} backward map",
-                )
             lower, upper = self.support[name]
+            if name in self._maps:
+                value = _absorb_onto_support(
+                    _as_float64(
+                        self._maps[name]["backward"](value),
+                        f"{name} backward map",
+                    ),
+                    lower,
+                    upper,
+                )
             if (
                 np.any(~np.isfinite(value))
                 or np.any(value <= lower)
