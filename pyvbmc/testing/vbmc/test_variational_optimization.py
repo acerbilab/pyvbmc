@@ -149,6 +149,36 @@ def test_update_K():
     assert update_K(optim_state, iteration_history, options) == 2
 
 
+def test_update_K_callable_adaptive_k():
+    """``adaptive_k`` may be given as a function of the component count."""
+    D = 2
+    optim_state = {
+        "vp_K": 2,
+        "n_eff": 1000,
+        "warmup": False,
+        "iter": 7,
+        "recompute_var_post": False,
+    }
+    iteration_history = {
+        "elbo": np.array(
+            [-0.0996, 0.0094, -0.021, -0.0280, 0.0368, 0.0239, 0.0021]
+        ),
+        "elbo_sd": np.array(
+            [0.0081, 0.0043, 0.0009, 0.0011, 0.0012, 0.0008, 0.0000]
+        ),
+        "warmup": np.array([True, True, True, True, False, False, False]),
+        "pruned": np.zeros((7,)),
+        "r_index": np.array(
+            [np.inf, np.inf, 0.1773, 0.1407, 0.3420, 0.1422, 0.1222]
+        ),
+    }
+
+    # One added component, plus the bonus of the constant default.
+    assert update_K(optim_state, iteration_history, setup_options(D)) == 5
+    options = setup_options(D, {"adaptive_k": lambda K: K + 1})
+    assert update_K(optim_state, iteration_history, options) == 6
+
+
 def test_gp_log_joint():
     base_path = Path(__file__).parent
     vp, gp = _gp_log_joint_fixture()

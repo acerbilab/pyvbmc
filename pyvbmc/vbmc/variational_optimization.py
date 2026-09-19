@@ -43,7 +43,7 @@ def update_K(
     K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
-    K_bonus = round(options.eval("adaptive_k", {"unkn": K_new}))
+    K_bonus = round(options.eval("adaptive_k", {"K": K_new}))
 
     # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:
