@@ -594,7 +594,14 @@ fact inherited from MATLAB.
   at the per-coordinate scales" and `d617d99` "fix(active_sample): run the
   CMA-ES search without noise handling"; the second also deleted the
   `_BatchedNoiseHandler` subclass, which had drawn its re-evaluation count
-  from `vp.rng`.
+  from `vp.rng`. The four settings that do not agree stay as they are
+  (PI, 2026-09-19): the two tolerances sit far below `tolfun`, which
+  stops the search first; the starting point's acquisition value is
+  the sieve's, the search result is kept only when it beats that value
+  (`pyvbmc/vbmc/active_sample.py:623`), and MATLAB spends two more
+  acquisition evaluations per search (a pointwise re-evaluation before
+  the search and cma's initial evaluation) for the same outcome; and
+  the best-ever point is the best while the acquisition is fixed.
 - Kind: substituted library.
 
 ### The CMA-ES search evaluates the whole population in one acquisition call

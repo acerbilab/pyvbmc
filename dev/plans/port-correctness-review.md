@@ -553,7 +553,47 @@ pattern. The plan is written so that a developer with MATLAB and the
   own tolerance (`tolfun = 1e-2` on a log acquisition) and on 6 of 40
   seeds halts on the Rosenbrock valley floor short of the minimum the
   test asserts; it is seeded (`39ad28a`).
-- [ ] Waves 1 to 7: P1a to P9, G1, G2, both tracks; M.
+- [x] 2026-09-19: rulings on the four `cma` settings the sheet lists
+  as unmatched (PI). The two tolerances (`tolx` absolute against
+  MATLAB's `1e-11*max(insigma)`; `tolfunhist` 1e-12 against 1e-13)
+  stay at cma's defaults: both sit far below `tolfun`, which stops
+  the search first. The starting point stays unevaluated inside cma:
+  its acquisition value is the sieve's, the search result is kept only
+  when it beats that value, and MATLAB spends two more acquisition
+  evaluations per search for the same outcome. Recorded in the
+  sheet's entry on the `cma` package.
+- [ ] **Wave 2 (PI decision 2026-09-19): P1a and P1b, both tracks
+  each, four Opus reviewers at once.** Pickup for the next session:
+  the working tree, `../gpyreg` and `../vbmc` were clean and no agent
+  worktree remained at the end of wave 1 (`git worktree list` should
+  show only this checkout, `../pyvbmc-stage3` and the frozen
+  worktrees under `dev/scripts/runs/`). Launch the four reviewers
+  from the reviewer brief above with the slice rows for P1a and P1b,
+  the known-differences sheet at its current state, and the
+  interpreters and working rules; copy their reports to
+  `experiments/port_review_20260919/reviews/P1a_internal.md`,
+  `P1a_comparison.md`, `P1b_internal.md`, `P1b_comparison.md`; then
+  stop and report to the PI before verification, as the working
+  rules say. Two things a P1 reviewer will meet that wave 1 already
+  settled: the best-posterior selection (`determine_best_vp`) was
+  fixed and its options wired on 2026-09-19 (`verification/
+  wave1_options.md`), and the 22 inert options are listed in
+  `INERT_OPTIONS`; the P1b slice row's question about the four
+  removed MATLAB options is answered there and in the sheet's
+  "Declared options that nothing reads" entry. Still open after
+  wave 1 and not yet scheduled: the golden references are
+  regenerated once after the review's remaining trajectory-moving
+  fixes; the MATLAB check session plan and scripts
+  (`dev/plans/port-review-matlab-checks.md`,
+  `dev/scripts/matlab_checks/`) are not written yet, and wave 1
+  produced two candidates for it (the duplicate GP training row of
+  MATLAB's rank-one path on a noiseless repeat, P2 F8; the
+  `EvalParallel` population call of MATLAB's search, sheet entry on
+  the batched acquisition); the final ledger
+  (`dev/results/<date>-port-correctness-review.md`) and the
+  consolidation of the sheet's durable entries into
+  `pyvbmc/vbmc/README.md` come at the end.
+- [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
