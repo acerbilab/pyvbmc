@@ -1,6 +1,7 @@
 import copy
 import importlib
 import logging
+import math
 
 import cma
 import gpyreg as gpr
@@ -234,6 +235,52 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     assert np.shape(ub_search) == (D,)
     assert np.all(lb_search <= gp.X.min(0))
     assert np.all(ub_search >= gp.X.max(0))
+
+
+def test_acquiring_a_cached_point_reuses_its_value(mocker):
+    """A search point that comes from the cache is acquired with the
+    value stored there, and leaves every cache array."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+    )
+    x_cached = np.array([[0.3, -0.2]])
+    y_cached = np.array([12.5])
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.copy(y_cached)
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    func_count_before = vbmc.function_logger.func_count
+    cache_count_before = vbmc.function_logger.cache_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The stored value was used instead of a target call.
+    assert function_logger.func_count == func_count_before
+    assert function_logger.cache_count == cache_count_before + 1
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert np.allclose(function_logger.y_orig[last], y_cached[0])
+
+    # The point is gone from the cache, which stays consistent.
+    assert optim_state["cache"]["x_orig"].shape == (0, D)
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
 
 
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
@@ -713,11 +760,15 @@ def test_active_sample_initial_sample_more_provided(caplog):
     )
 
     logger_message = "More than sample_count=90 initial points have been "
-    logger_message += "provided, using only the first 90 points."
+    logger_message += "provided, using the first 90 for the initial design "
+    logger_message += "and keeping the remaining 10 in the cache."
     assert caplog.record_tuples == [
         ("ActiveSample", logging.INFO, logger_message)
     ]
 
+    # The design consumed the first `sample_count` points with their
+    # values.
+    assert function_logger.Xn == sample_count - 1
     assert np.allclose(
         function_logger.X_orig[:sample_count],
         X_orig[:sample_count],
@@ -730,9 +781,20 @@ def test_active_sample_initial_sample_more_provided(caplog):
         rtol=1e-12,
         atol=1e-14,
     )
-    assert np.all(np.isnan(optim_state["cache"]["x_orig"][:sample_count]))
-    assert np.all(np.isnan(optim_state["cache"]["y_orig"][:sample_count]))
-    assert function_logger.Xn == sample_count - 1
+
+    # The points it did not consume stay in the cache with their values.
+    assert np.allclose(
+        optim_state["cache"]["x_orig"],
+        X_orig[sample_count:],
+        rtol=1e-12,
+        atol=1e-14,
+    )
+    assert np.allclose(
+        np.ravel(optim_state["cache"]["y_orig"]),
+        np.asarray(y_orig)[sample_count:],
+        rtol=1e-12,
+        atol=1e-14,
+    )
 
 
 @pytest.mark.parametrize("D", [1, 2])
@@ -868,10 +930,57 @@ def test_get_search_points_all_cache():
         options=vbmc.options,
     )
 
+    # The cache holds exactly the requested share, so every point comes
+    # from it.
     assert np.all(search_X == vbmc.parameter_transformer(x_orig[idx_cache]))
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
+    assert not np.any(np.isnan(idx_cache))
+    assert len(np.unique(idx_cache)) == number_of_points
     assert np.all(np.isin(idx_cache, np.arange(number_of_points)))
+
+
+def test_get_search_points_cache_share():
+    """
+    A cache larger than its share of the search set contributes that
+    share, and the rest of the set is sampled.
+    """
+    cache_frac = 0.5
+    options = {
+        "cache_frac": cache_frac,
+        "search_cache_frac": 0,
+        "heavy_tail_search_frac": 0,
+        "mvn_search_frac": 0,
+        "box_search_frac": 0,
+        "hpd_search_frac": 0,
+    }
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
+    number_of_points = 10
+    cache_size = 20
+    x_orig = np.linspace((0, 0, 0), (10, 10, 10), cache_size)
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_orig)
+
+    # no search bounds for test
+    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
+    search_X, idx_cache = _get_search_points(
+        number_of_points=number_of_points,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+
+    n_from_cache = math.ceil(number_of_points * cache_frac)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.sum(~np.isnan(idx_cache)) == n_from_cache
+    assert np.all(
+        search_X[:n_from_cache]
+        == vbmc.parameter_transformer(
+            x_orig[idx_cache[:n_from_cache].astype(int)]
+        )
+    )
 
 
 def test_get_search_points_all_search_cache():
@@ -945,8 +1054,9 @@ def test_get_search_points_search_bounds():
     """
     Ensure that search bounds constrain the search points.
     """
+    cache_frac = 0.5
     options = {
-        "cache_frac": 1,
+        "cache_frac": cache_frac,
         "search_cache_frac": 0,
         "heavy_tail_search_frac": 0,
         "mvn_search_frac": 0,
@@ -954,11 +1064,12 @@ def test_get_search_points_search_bounds():
         "hpd_search_frac": 0,
     }
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
-    number_of_points = 2
-    X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
+    number_of_points = 4
+    # More cache points than the share the sieve takes from it, so that
+    # the set is a mix of cache points and sampled ones.
+    X = np.linspace((0, 0, 0), (10, 10, 10), 5)
     vbmc.optim_state["cache"]["x_orig"] = np.copy(X)
 
-    # no search bounds for test
     vbmc.optim_state["lb_search"] = np.full((1, 3), 2)
     vbmc.optim_state["ub_search"] = np.full((1, 3), 4)
     search_X, idx_cache = _get_search_points(
@@ -972,7 +1083,9 @@ def test_get_search_points_search_bounds():
     assert np.all(search_X <= 4)
     assert search_X.shape == (number_of_points, 3)
     assert idx_cache.shape == (number_of_points,)
-    assert np.all(np.isin(idx_cache, np.arange(number_of_points)))
+    assert np.sum(~np.isnan(idx_cache)) == math.ceil(
+        number_of_points * cache_frac
+    )
 
 
 def test_get_search_points_all_heavytailsearch():

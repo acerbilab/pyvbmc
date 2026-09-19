@@ -177,12 +177,18 @@ def active_sample(
             Xs = np.copy(x0[:sample_count])
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
             skip_logger = np.copy(skip_logger_cache[:sample_count])
-            idx_remove = np.full(provided_sample_count, True)
+            # Only the points the initial design consumes leave the cache;
+            # the rest stay there with their values, as candidates of the
+            # search sieve that are acquired without a target call.
+            idx_remove = np.full(provided_sample_count, False)
+            idx_remove[:sample_count] = True
             logger.info(
                 "More than sample_count=%s initial points have been "
-                "provided, using only the first %s points.",
+                "provided, using the first %s for the initial design and "
+                "keeping the remaining %s in the cache.",
                 sample_count,
                 sample_count,
+                provided_sample_count - sample_count,
             )
 
         # Remove points from starting cache
@@ -671,6 +677,10 @@ def active_sample(
                 optim_state["cache"]["y_orig"] = np.delete(
                     optim_state["cache"]["y_orig"], idx, 0
                 )
+                if "skip_logger" in optim_state["cache"]:
+                    optim_state["cache"]["skip_logger"] = np.delete(
+                        optim_state["cache"]["skip_logger"], idx, 0
+                    )
             timer.stop_timer("fun_time")
 
             if hasattr(function_logger, "S"):
@@ -904,9 +914,9 @@ def _get_search_points(
 
         search_X = parameter_transformer(x0[idx_cache])
 
-    # Randomly sample remaining points
-    if x0.shape[0] < number_of_points:
-        N_random_points = number_of_points - x0.shape[0]
+    # Randomly sample the points the cache did not provide
+    if search_X.shape[0] < number_of_points:
+        N_random_points = number_of_points - search_X.shape[0]
         random_Xs = np.full((0, D), np.nan)
 
         N_search_cache = round(
