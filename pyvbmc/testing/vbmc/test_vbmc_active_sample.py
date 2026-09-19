@@ -7,6 +7,7 @@ import cma
 import gpyreg as gpr
 import numpy as np
 import pytest
+import scipy.optimize
 
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AbstractAcqFcn
@@ -235,6 +236,59 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     assert np.shape(ub_search) == (D,)
     assert np.all(lb_search <= gp.X.min(0))
     assert np.all(ub_search >= gp.X.max(0))
+
+
+def test_one_dimensional_search_is_bounded(mocker):
+    """A one-dimensional acquisition is minimized over the search
+    interval, within the search budget, and the acquired point is no
+    worse than the best candidate of the search set."""
+    vbmc, gp = _state_with_gp(1, seed=20260919)
+    candidates = np.array([[0.7], [1.5], [-2.0]])
+    captured = {}
+    real_minimize_scalar = scipy.optimize.minimize_scalar
+
+    def recording_minimize_scalar(fun, **kwargs):
+        captured.update(kwargs)
+        return real_minimize_scalar(fun, **kwargs)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch(
+        "pyvbmc.vbmc.active_sample._get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch(
+        "scipy.optimize.minimize_scalar",
+        side_effect=recording_minimize_scalar,
+    )
+    optimizer_before = vbmc.options["search_optimizer"]
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    lb, ub = captured["bounds"]
+    assert captured["method"] == "bounded"
+    assert lb < ub
+    assert (
+        captured["options"]["maxiter"] == vbmc.options["search_max_fun_evals"]
+    )
+
+    x_new = function_logger.X[function_logger.Xn]
+    assert lb <= x_new <= ub
+    # No worse than the best candidate of the search set.
+    assert (
+        np.sum(x_new**2) <= np.min(np.sum(candidates**2, axis=1)) + 1e-12
+    )
+    # The run's options are as they were.
+    assert vbmc.options["search_optimizer"] == optimizer_before
 
 
 def test_acquiring_a_cached_point_reuses_its_value(mocker):

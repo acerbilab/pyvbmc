@@ -497,11 +497,11 @@ def active_sample(
                 and options["search_optimizer"] != "none"
                 and not repeat_flag
             ):
+                search_optimizer = options["search_optimizer"]
                 if gp.D == 1:
-                    # Use Nelder-Mead method for 1D optimization
-                    options.__setitem__(
-                        "search_optimizer", "Nelder-Mead", force=True
-                    )
+                    # A one-dimensional acquisition is minimized over the
+                    # whole search interval by a bounded scalar search.
+                    search_optimizer = "bounded"
 
                 f_val_old = acq_fast[idx]
                 x0 = X_acq[0, :]
@@ -529,7 +529,7 @@ def active_sample(
                 # run: the sieve's best candidate is kept instead.
                 xsearch_optim, f_val_optim = x0, np.inf
 
-                if options["search_optimizer"] == "cmaes":
+                if search_optimizer == "cmaes":
                     if options["search_cmaes_vp_init"]:
                         _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
@@ -580,7 +580,33 @@ def active_sample(
                         _log_search_failure(logger, exc)
                     else:
                         xsearch_optim, f_val_optim = res[:2]
-                elif options["search_optimizer"] == "Nelder-Mead":
+                elif search_optimizer == "bounded":
+                    from scipy.optimize import minimize_scalar
+
+                    def acq_fun_1d(x):
+                        return acq_fun(np.atleast_1d(x))
+
+                    try:
+                        res = minimize_scalar(
+                            acq_fun_1d,
+                            method="bounded",
+                            bounds=(
+                                float(np.ravel(lb_search)[0]),
+                                float(np.ravel(ub_search)[0]),
+                            ),
+                            options={
+                                "maxiter": options["search_max_fun_evals"],
+                                # The step size at which the CMA-ES search
+                                # of the other branch stops.
+                                "xatol": 1e-11,
+                            },
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim = np.atleast_1d(res.x)
+                        f_val_optim = res.fun
+                elif search_optimizer == "Nelder-Mead":
                     from scipy.optimize import minimize
 
                     try:
