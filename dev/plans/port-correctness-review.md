@@ -434,12 +434,44 @@ pattern. The plan is written so that a developer with MATLAB and the
   `TODO.md` item; the core transformer's loss of precision near a
   nonzero bound waits for slices P8 and O3 to say whether MATLAB shares
   it.
-- [ ] Chunk-independent Monte Carlo entropy (PI decision, 2026-09-19):
-  every chunk budget reproduces the default budget's output bit for bit
-  through reductions over the default layout's blocks, the default path
-  untouched (gate: `--check --exact` with no oracle moved), and the
-  calibration campaign validates entropy budgets exactly.
-- [ ] Wave 1 (PI decision, 2026-09-19): M, P6 both tracks, P2 comparison.
+- [x] 2026-09-19: chunk-independent Monte Carlo entropy (PI decision).
+  Every chunk budget reproduces the default budget's output bit for bit:
+  the mixture densities and every sum over samples and components are
+  taken on the blocks of the default budget, and the default path is
+  the previous code call for call (`f3ba8d3`). The matrix-vector product
+  that forms the mixture density turned out to depend on the number of
+  rows of its block on this machine, so it runs on the canonical block
+  too. The campaign accepts an entropy budget only on identical output
+  (`7c7972f`); the kernel revision is `chunk-kernels-v2`. Gates in this
+  checkout: `--check --exact` 11 of 11 with nothing re-baselined; a new
+  equality test across budgets and shapes that fails on the old kernel;
+  entropy, calibration, oracle and variational-optimization tests;
+  the S-VBMC directory with Torch (226). Timings unchanged within noise.
+  The equality test asserts bit equality of NumPy and BLAS results
+  across block shapes, which holds here and is a property of the build:
+  the CI matrix is where another platform would show otherwise.
+- [x] 2026-09-19: `fun_eval_start` follows MATLAB's `10*ceil((D+1)/10)`
+  (`cb2d513`, PI decision; found by slices M and P2). **Moves default
+  trajectories** for targets of ten or more dimensions (`lumpy_D10`, its
+  noisy variant, `cigar_D15_exhaust`): their golden references describe
+  the previous default until they are regenerated, which is done once,
+  after the review's other trajectory-moving fixes are decided.
+- [x] 2026-09-19: wave 1 reported: M (5 findings), P6 internal (13),
+  P6 comparison (10), P2 comparison (16); reports under
+  `experiments/port_review_20260919/reviews/`. Found by two reviewers
+  independently: the initial-design size, the rank-one GP update gated
+  by `and` for MATLAB's `or`, the broadcast in the type-2 starting
+  widths of `_vb_init`, the stale `eta` on the returned posterior, the
+  soft bounds rebuilt every iteration, `_sieve` with no candidates,
+  `minimize_adam` writing into its starting point, and the
+  deterministic-entropy branch raising where MATLAB continues.
+  Verification and triage pending.
+- [ ] `test_vp_optimize_1D_g_mixture` fails about one run in forty (PI:
+  no flaky test is acceptable). Cause traced
+  (`verification/scripts/flaky_vp_optimize_1d*.py`): `optimize_vp` gets a
+  fresh, degenerate posterior, so its first slow optimization always
+  ends in the merged solution and everything rides on the one candidate
+  the sieve ranks first, which is sometimes a broad merged pair.
 - [ ] Waves 1 to 7: P1a to P9, G1, G2, both tracks; M.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.

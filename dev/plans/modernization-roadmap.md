@@ -1000,7 +1000,11 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
     agreement and identical RNG advancement, pin settings for exact gates,
     and preserve profiles across save/resume. Different profiles need not
     produce identical seeded trajectories; no separate entropy policy gate
-    remains. S-VBMC integration is in progress (item 10), and the final
+    remains. (Superseded on 2026-09-19: since `f3ba8d3` every entropy
+    budget returns the default budget's output bit for bit, and since
+    `7c7972f` the campaign accepts a budget only on identical output, so
+    one seed gives one trajectory whatever profile is in force.)
+    S-VBMC integration is in progress (item 10), and the final
     870-case benchmark remains deferred. Run only one heavy computation at a time.
 
 13. **Optional runtime hints — implemented and verified** (2026-09-10).
