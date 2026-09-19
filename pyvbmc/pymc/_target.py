@@ -165,11 +165,15 @@ class PyMCTarget:
         Mapping from every free-variable name to ``(lower, upper)`` values in
         model coordinates. Values must broadcast to the variable shape and be
         strictly inside its support. By default a Laplace box with prior-width
-        fallbacks is constructed.
+        fallbacks is constructed; supplying bounds instead needs neither the
+        Hessian nor the 4000 prior draws that box can require, which matters
+        when the prior is expensive to sample forward.
     start : mapping, optional
         Starting point in model coordinates. It must contain every free
         variable and lie strictly inside its support. Supplying it skips the
-        mode search.
+        mode search and the automatic box's location check against prior
+        draws, which are then drawn only for a prior-width fallback or for a
+        model without a gradient.
     seed : None, int, SeedSequence or numpy.random.Generator, optional
         Random generator or seed for prior fallback draws and stochastic
         ``initval="prior"`` strategies. A generator is used as is. With

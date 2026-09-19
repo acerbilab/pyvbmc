@@ -85,6 +85,13 @@ moved. If the graph has no gradient, the adapter uses the model's initial
 point and the 5%--95% prior quantiles instead. Supply ``start=`` or
 ``plausible_bounds=`` to override the corresponding automatic step.
 
+Every prior quantity above comes from one batch of 4000 forward draws of the
+model's prior. ``plausible_bounds=`` needs neither those draws nor the
+Hessian. ``start=`` drops the location check, so draws are then taken only for
+a prior-width fallback or for a model without a gradient. Both arguments are
+therefore the way to keep a prior that is expensive to sample forward out of
+setup.
+
 The default ``setup_budget`` is ``20 + 5 * D`` function-equivalent
 evaluations. It caps work before it is performed; a smaller positive budget
 shortens the mode search when the selected route still fits. The Hessian costs
