@@ -55,15 +55,17 @@ def _import_torch():
 
 
 def _validate_posteriors(vp_list):
-    """Check that ``vp_list`` holds fitted posteriors of one dimension.
+    """Check that ``vp_list`` holds fitted posteriors of one problem.
 
     Returns the common ``D``. The checks cover what stacking reads: the
-    component parameters, the transformer, and the ``stable``, ``elbo``,
-    ``I_sk`` and ``J_sjk`` statistics a completed VBMC run stores.
+    component parameters, the transformer and the original-space hard
+    bounds it maps to, and the ``stable``, ``elbo``, ``I_sk`` and ``J_sjk``
+    statistics a completed VBMC run stores.
     """
     if len(vp_list) == 0:
         raise ValueError("`vp_list` is empty; pass at least one posterior.")
     D = None
+    bounds = None
     for i, vp in enumerate(vp_list):
         for attr in (
             "mu",
@@ -101,6 +103,31 @@ def _validate_posteriors(vp_list):
                 f"`vp_list[{i}].lambd` should hold D = {d} scales, got "
                 f"{np.asarray(vp.lambd).size}."
             )
+        # The stacked posterior lives in the common original space, and
+        # every run's density is evaluated at every run's draws, so the
+        # runs have to agree on the hard bounds of that space. How each
+        # run maps the box to its own transformed space -- the bounded
+        # transform, the centering, the scaling, the rotation -- is free.
+        transformer = vp.parameter_transformer
+        lb = np.asarray(transformer.lb_orig, dtype=np.float64).ravel()
+        ub = np.asarray(transformer.ub_orig, dtype=np.float64).ravel()
+        if bounds is None:
+            bounds = (lb, ub)
+        else:
+            for name, edge, first in (
+                ("lower", lb, bounds[0]),
+                ("upper", ub, bounds[1]),
+            ):
+                differing = np.flatnonzero(edge != first)
+                if differing.size > 0:
+                    j = int(differing[0])
+                    raise ValueError(
+                        f"`vp_list[{i}]` has {name} bound {edge[j]} in "
+                        f"dimension {j}, where `vp_list[0]` has "
+                        f"{first[j]}; the stacked posterior lives in one "
+                        "original parameter space, so stack only runs "
+                        "with the same hard bounds."
+                    )
         # A posterior VBMC has not finished (or an unfitted one) has no
         # statistics at all.
         if vp.stats is None or not hasattr(vp.stats, "__contains__"):
@@ -200,8 +227,12 @@ class SVBMC:
     ----------
     vp_list : list of VariationalPosterior
         Posteriors returned by completed VBMC runs on the same model, data
-        and original parameter space. The object structure cannot verify
-        that the runs describe the same target.
+        and original parameter space. Construction verifies the dimension,
+        the mixture shapes, the statistics stacking reads, and that every
+        run carries the same original-space hard bounds; the runs are free
+        to map that space differently. That they were run on the same
+        model and data does not follow from the posteriors and is not
+        verified.
     s_max : float, optional
         Tolerance on the standard deviation of the expected log-joint of
         any single component, ``sqrt(max(stats["J_sjk"]))``. A run at or

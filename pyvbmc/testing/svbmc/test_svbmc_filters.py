@@ -13,6 +13,7 @@ import pytest
 pytest.importorskip("torch")
 
 from pyvbmc import VariationalPosterior  # noqa: E402
+from pyvbmc.parameter_transformer import ParameterTransformer  # noqa: E402
 from pyvbmc.svbmc import SVBMC  # noqa: E402
 from pyvbmc.testing.svbmc._fixtures import load_group  # noqa: E402
 
@@ -27,6 +28,26 @@ def make_vp(D=2, K=1, stable=True, J=0.01, elbo=0.0, Ns=3, seed=0):
         "I_sk": np.full((Ns, K), float(elbo)),
         "J_sjk": np.full((Ns, K, K), float(J)),
     }
+    return vp
+
+
+def with_bounds(vp, lb, ub, plb=None, pub=None, transform_type="logit"):
+    """Give ``vp`` a transformer for the original-space box ``(lb, ub)``."""
+    D = vp.D
+    lb = np.asarray(lb, dtype=float).reshape(1, D)
+    ub = np.asarray(ub, dtype=float).reshape(1, D)
+    if plb is None:
+        plb = lb + 0.25 * (ub - lb)
+    if pub is None:
+        pub = lb + 0.75 * (ub - lb)
+    vp.parameter_transformer = ParameterTransformer(
+        D,
+        lb_orig=lb,
+        ub_orig=ub,
+        plb_orig=np.asarray(plb, dtype=float).reshape(1, D),
+        pub_orig=np.asarray(pub, dtype=float).reshape(1, D),
+        transform_type=transform_type,
+    )
     return vp
 
 
@@ -205,6 +226,51 @@ def test_nonfinite_statistics_raise():
     vp.stats["elbo"] = np.inf
     with pytest.raises(ValueError, match="nonfinite"):
         SVBMC([vp])
+
+
+def test_runs_on_different_boxes_raise():
+    """Stacking is defined on one original space, not a union of boxes."""
+    wide = with_bounds(make_vp(seed=1), [-5.0, -5.0], [5.0, 5.0])
+    narrow = with_bounds(make_vp(seed=2), [-5.0, -2.0], [5.0, 2.0])
+    with pytest.raises(ValueError) as excinfo:
+        SVBMC([wide, narrow], M_min=2, seed=0)
+    message = str(excinfo.value)
+    assert "`vp_list[1]`" in message
+    assert "lower bound" in message
+    assert "dimension 1" in message
+
+
+def test_infinite_bounds_have_to_agree_too():
+    unbounded = make_vp(seed=1)  # both dimensions on the whole line
+    half = with_bounds(
+        make_vp(seed=2),
+        [-np.inf, 0.0],
+        [np.inf, np.inf],
+        plb=[-1.0, 1.0],
+        pub=[1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="dimension 1"):
+        SVBMC([unbounded, half], M_min=2, seed=0)
+    # Two runs that are unbounded in the same dimensions agree.
+    assert SVBMC([unbounded, make_vp(seed=3)], M_min=2, seed=0).M == 2
+
+
+def test_one_box_mapped_by_different_transforms_is_accepted():
+    """Only the box has to match, not how a run parameterizes it."""
+    logit = with_bounds(make_vp(seed=1), [-3.0, -3.0], [3.0, 3.0])
+    probit = with_bounds(
+        make_vp(seed=2),
+        [-3.0, -3.0],
+        [3.0, 3.0],
+        plb=[-2.5, -2.5],
+        pub=[2.5, 2.5],
+        transform_type="probit",
+    )
+    a, b = logit.parameter_transformer, probit.parameter_transformer
+    assert a.bounded_types != b.bounded_types
+    assert not np.array_equal(a.delta, b.delta)
+    stacked = SVBMC([logit, probit], M_min=2, seed=0)
+    assert stacked.M == 2
 
 
 def test_malformed_statistic_shapes_raise():
