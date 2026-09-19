@@ -748,12 +748,10 @@ def active_sample(
                                 slow_opts_N=1,
                             )
 
-                            if optim_state.get("vp_repo") is not None:
-                                np.append(
-                                    optim_state["vp_repo"], vp.get_parameters()
-                                )
-                            else:
-                                optim_state["vp_repo"] = [vp.get_parameters()]
+                            # Missing port: variational_init_repo, which
+                            # collects the variational parameters reached
+                            # here for the sieve of a later variational
+                            # optimization to start from.
                             timer.stop_timer("variational_fit")
                     else:
                         gp = gptmp

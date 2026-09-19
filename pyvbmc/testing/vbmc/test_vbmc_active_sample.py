@@ -1734,6 +1734,35 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
         assert np.allclose(post_one.L, post_full.L, rtol=1e-9, atol=1e-10)
 
 
+def test_in_loop_variational_update_keeps_no_repository(mocker):
+    """The in-loop variational update leaves no repository of variational
+    parameters in the state."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {"search_optimizer": "none", "active_sample_vp_update": True},
+        acq=_cheap_acq,
+    )
+    optim_state.pop("vp_repo", None)
+    vp_before = copy.deepcopy(vbmc.vp.get_parameters())
+
+    _, optim_state, vp, _ = active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The update ran, and nothing was collected.
+    vp_after = vp.get_parameters()
+    assert np.size(vp_after) != np.size(vp_before) or np.any(
+        vp_after != vp_before
+    )
+    assert "vp_repo" not in optim_state
+
+
 def test_active_sample_refreshes_n_eff(mocker):
     """Each acquisition refreshes the effective training-set count, which
     the in-loop updates read, to the number of evaluations over the live
