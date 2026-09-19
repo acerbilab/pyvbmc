@@ -1,6 +1,7 @@
 """Focused scheduler and numerical tests for the calibration campaign."""
 
 import json
+from statistics import median
 from types import SimpleNamespace
 
 import numpy as np
@@ -253,6 +254,57 @@ def test_heldout_rejects_unconfirmed_gain_and_bad_same_budget_control():
     heldout[0]["selected_control_seconds"] = [0.8] * 4
     result = campaign._validate_heldout(discovery, heldout, 2**14)
     assert not result["pass"]
+
+
+def test_summary_speedup_describes_the_selected_setting():
+    rounds = [0.9, 1.3, 1.35, 1.4]
+
+    def report_with(validation):
+        return {
+            "groups": {
+                group: {
+                    "setting": setting,
+                    "discovery_selection": {
+                        "budget": 2**14,
+                        "accepted": True,
+                        "reason": "discovery gates passed",
+                    },
+                    "heldout_validation": validation,
+                }
+                for group, setting in campaign.SETTING_GROUPS.items()
+            }
+        }
+
+    rejected = report_with(
+        {
+            "pass": False,
+            "accepted_budget": campaign.DEFAULT_BUDGET,
+            "reason": "held-out gates failed",
+            "group_speedups": list(rounds),
+        }
+    )
+    assert median(rounds) > 1.0
+    summary = campaign._summary(rejected, campaign._defaults(), "complete")
+    for setting in campaign.SETTING_GROUPS.values():
+        assert summary[setting]["selected"] == campaign.DEFAULT_BUDGET
+        assert summary[setting]["reason"] == "held-out gates failed"
+        assert summary[setting]["heldout_speedup"] is None
+
+    accepted = report_with(
+        {
+            "pass": True,
+            "accepted_budget": 2**14,
+            "reason": "held-out gates passed",
+            "group_speedups": list(rounds),
+        }
+    )
+    settings = {
+        setting: 2**14 for setting in campaign.SETTING_GROUPS.values()
+    }
+    summary = campaign._summary(accepted, settings, "complete")
+    for setting in campaign.SETTING_GROUPS.values():
+        assert summary[setting]["selected"] == 2**14
+        assert summary[setting]["heldout_speedup"] == median(rounds)
 
 
 def test_fake_campaign_completes_after_thirty_second_estimate():

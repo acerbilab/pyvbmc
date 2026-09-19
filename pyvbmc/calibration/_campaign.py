@@ -1287,6 +1287,14 @@ def _defaults() -> dict[str, int]:
 
 
 def _summary(report: dict, settings: dict, status: str) -> dict:
+    """Return one compact entry per setting for the campaign report.
+
+    ``heldout_speedup`` is the median held-out group speed-up of the value
+    in ``settings``, and ``None`` whenever no held-out measurement backs
+    that value: the measurements of a candidate the gates rejected belong
+    to a value the campaign did not select, and stay in the detailed
+    per-group report.
+    """
     summary = {}
     for group, setting in SETTING_GROUPS.items():
         group_report = report.get("groups", {}).get(group, {})
@@ -1294,7 +1302,11 @@ def _summary(report: dict, settings: dict, status: str) -> dict:
         heldout = group_report.get("heldout_validation", {})
         speedup = None
         heldout_rounds = heldout.get("group_speedups", [])
-        if heldout_rounds:
+        measures_selection = (
+            bool(heldout.get("pass"))
+            and heldout.get("accepted_budget") == settings[setting]
+        )
+        if heldout_rounds and measures_selection:
             speedup = median(heldout_rounds)
         if status != "complete":
             reason = report.get("reason", "campaign incomplete")
