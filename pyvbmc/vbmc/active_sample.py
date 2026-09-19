@@ -702,8 +702,8 @@ def active_sample(
                     gptmp = None
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
-                        timer.start_timer("gp_train")
                         if options["active_sample_gp_update"]:
+                            timer.start_timer("gp_train")
                             (
                                 gp,
                                 __,

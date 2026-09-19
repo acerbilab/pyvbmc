@@ -10,6 +10,7 @@ import pytest
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.stats import get_hpd
+from pyvbmc.timer import main_timer
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
@@ -1732,6 +1733,37 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
         )
         assert np.allclose(post_one.sW, post_full.sW, rtol=1e-9, atol=1e-10)
         assert np.allclose(post_one.L, post_full.L, rtol=1e-9, atol=1e-10)
+
+
+def test_in_loop_gp_posterior_update_leaves_no_timer_running(mocker):
+    """The GP training timer runs only while the hyperparameters are
+    refit, so a step that only recomputes the posterior leaves it stopped
+    and charges nothing to GP training."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "active_sample_vp_update": True,
+            "active_sample_gp_update": False,
+        },
+        acq=_cheap_acq,
+    )
+    main_timer.reset()
+
+    active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert "gp_train" not in main_timer._start_times
+    assert main_timer._durations.get("gp_train") is None
+    # The step did run its in-loop variational update.
+    assert main_timer._durations.get("variational_fit") is not None
 
 
 def test_in_loop_variational_update_keeps_no_repository(mocker):
