@@ -470,10 +470,10 @@ def active_sample(
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: Nelder-Mead, or CMA-ES's rejection
-                path) returns a float; a list of points (one CMA-ES
-                generation) is evaluated in a single batched call and
-                returns a list.
+                One point (a 1-D array: the scalar and Nelder-Mead
+                searches, or CMA-ES's rejection path) returns a float; a
+                list of points (one CMA-ES generation) is evaluated in a
+                single batched call and returns a list.
                 With integer variables the acquisition snaps its input to
                 the integer grid in place (`AbstractAcqFcn._real2int`), and
                 the pointwise call let that reach CMA-ES's own solution
