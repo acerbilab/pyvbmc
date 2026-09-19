@@ -501,8 +501,10 @@ Generator, optional
             The entropy estimate (a float64 scalar).
         J_corrections : np.ndarray, shape (K_total,)
             Per-component expected log-Jacobian, computed deterministically
-            at construction, which :meth:`stacked_ELBO` subtracts from the
-            stored expected log-joints to express them in original space.
+            at construction. Subtracting it from the stored expected
+            log-joints expresses them in the original space, which
+            :attr:`I_corrected` already holds and :meth:`stacked_ELBO`
+            reads; this copy is for inspection.
         """
         H, corrections, _ = self._stacked_entropy(w, n_samples)
         return H, corrections
