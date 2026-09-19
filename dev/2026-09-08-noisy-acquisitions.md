@@ -5,7 +5,7 @@
 VIQR's `var_reduction` and `sd_reduction` losses and the `AcqFcnEIG`
 acquisition discussed here are not part of the package: they were removed
 on 2026-09-14, and their implementation is retained on the branch
-`retain-experimental-acquisitions` at `fa6922f`. The decision is recorded
+`retain/experimental-acquisitions` at `fa6922f`. The decision is recorded
 in [TODO.md](TODO.md).
 
 The question was whether VIQR, which makes noisy runs slow, could be

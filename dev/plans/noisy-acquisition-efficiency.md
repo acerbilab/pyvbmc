@@ -102,9 +102,16 @@ section records the numbers and the
 cost matched, a real gain on early states, and on late states the
 node-noise floor of the production rule against itself, measured by a
 node-redraw control run on the user's decision the same evening, so the
-assessment recommends Stage 2 subject to the user accepting the
-floor-based reading of the screening gate. The next decision is the
-user's. Nothing is running; no background work needs reattachment.
+assessment recommended Stage 2 subject to the user accepting the
+floor-based reading of the screening gate. Stage 2 ran on the production
+suite and was stopped by the user on 2026-09-19 after 51 of 80 pairs:
+the rule worsens posterior shape on logistic regression and costs more
+fit time there, so it is not promoted; the implementation is retained on
+`retain/viqr-rqmc-nodes` and removed from the working branch. The
+baseline arm's fits continue as production-reference runs under
+`golden_trace.py run --suite production` into the reference's run
+directory; when they finish, the production reference of the TODO has
+its first 81 noisy runs. No other background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting
@@ -1595,12 +1602,16 @@ Checklist:
   [report](../results/2026-09-16-noisy-acquisition-integration-search.md#f2-stage-1-quasi-monte-carlo-importance-nodes-on-frozen-states)
   records the numbers and the
   [assessment](#f2-stage-1-assessment-2026-09-18) below reads them.
-- [ ] On the user's decision, freeze the Stage 2 manifest; run both arms in
+- [x] On the user's decision, freeze the Stage 2 manifest; run both arms in
   bounded batches through `golden_trace.py`; verify every archive; analyze
   the pre-registered outcomes and the mechanism check; independent review;
-  report.
-- [ ] Promotion decision and, if promoted, the default switch, oracle
-  re-baseline, golden reference update and documentation.
+  report. Launched 2026-09-18 at 21:24 UTC and stopped by decision on
+  2026-09-19 after 51 of 80 pairs: logistic regression fires both
+  triggers, high-noise Rosenbrock leans the same way, no fit failed.
+  The independent review of the Stage 2 records did not run, because
+  the decision does not depend on them beyond the counts.
+- [x] Promotion decision: not promoted (user, 2026-09-19); the rule leaves
+  the package and is retained on `retain/viqr-rqmc-nodes`.
 
 Executor roles are those of the follow-ups above.
 
@@ -1637,8 +1648,10 @@ reading.
   on holdout) and exceeds its beneficial fraction on early states. The
   ordinary-MC cross-checks confirm every verdict they resolve.
 
-**Recommendation: proceed to Stage 2 as specified, subject to the user
-accepting the floor-based reading of the gate.** The gate's 5 percent
+**Recommendation at the end of Stage 1: proceed to Stage 2 as specified,
+subject to the user accepting the floor-based reading of the gate.** The
+user accepted it and Stage 2 ran; its outcome and the decision follow
+this subsection. The gate's 5 percent
 figure was written for search changes that keep the node set; for a change
 of the node set the measured floor is the only fair comparison, and on it
 the rule is neutral where the production draw is itself a lottery and
@@ -1650,7 +1663,47 @@ the baseline arm doubling as production-reference runs. Two limits of the
 Stage 1 evidence carry into that decision: the node floor was measured on
 the development states only, and a frozen-state judge ranks selections,
 not posteriors. A read-only diagnostic of the late-state material losses
-is available but no longer load-bearing. The user decides.
+is available but no longer load-bearing.
+
+#### F2 Stage 2 outcome and decision (2026-09-19)
+
+Stage 2 ran as specified from 21:24 UTC on 2026-09-18 and was stopped by
+the user on 2026-09-19 after 51 of 80 pairs, with no failed fit; the
+[report](../results/2026-09-16-noisy-acquisition-integration-search.md#f2-stage-2-paired-inference-comparison-on-the-production-suite)
+records the numbers. On logistic regression (20 pairs) the rule worsens
+gsKL in 17 pairs and MMTV in 15, firing both pre-registered triggers, turns
+six usable fits unusable against three the other way, and costs 16 to 20
+percent more fit time whichever arm runs first; high-noise Rosenbrock (20
+pairs) leans the same way on posterior shape with a better evidence error
+and two net usability losses; low-noise Rosenbrock (10 pairs) is a wash.
+Student-t, timing and multisensory were not completed: with one target
+negative and one leaning negative, no result on the others could make the
+change unequivocal.
+
+**Decision (user, 2026-09-19): the node rule is not promoted.** PyVBMC
+1.5 promotes only bug fixes and improvements that are simple and
+unequivocal, and this change is neither: on the evidence it is worse on
+one target and slower on another. The reading is that the rule estimates
+the integral better and thereby maximizes the VIQR criterion more
+faithfully, and the criterion's faithful optimum is a worse guide for
+inference than the noisy one on these targets, the outcome the amendment
+named in advance. Better estimation of VIQR therefore does not pay off by
+itself; the lever is the criterion's exploration, which the 1.5 scope
+excludes.
+
+Disposition. The implementation, the harness arms that depend on it, the
+Stage 2 tool and every record are retained on the historical branch
+`retain/viqr-rqmc-nodes`, cut at the last commit that holds them; the
+working branch removes the rule, its two options and their tests from the
+package and the option-dependent arms from the developer harness, keeping
+the generic tools (the declared source transition, the stream and node
+null controls, the evidence summary and the record publisher). The
+baseline arm's 51 completed fits and the remaining baseline fits of the
+three unfinished configurations are production-reference runs and
+continue as such; their sidecars record the commits they ran under, whose
+default path the exact oracle check and the E3 replays show bit-identical
+to the release code. The F2 thread of the efficiency item closes with this
+outcome.
 
 ### Decisions and unresolved empirical questions
 

@@ -32,8 +32,13 @@ unchanged. Its follow-up F2, the 96-node quasi-Monte Carlo importance-node
 rule evaluated on the frozen states with a search-stream null control,
 completed on 2026-09-18 with two null controls: the cost is matched, the
 rule improves early-run selections, and on late runs it sits on the
-node-noise floor of the production rule against itself, a lottery that
-no 100-node set escapes; the F2 section below records it.
+node-noise floor of the production rule against itself. Its Stage 2,
+the paired inference comparison on the production suite, was stopped by
+decision on 2026-09-19 after 51 of 80 pairs: on logistic regression the
+rule worsens posterior shape in 17 of 20 pairs and costs 16 to 20 percent
+more fit time, and high-noise Rosenbrock leans the same way, so the rule
+is not promoted and its implementation is retained on a historical
+branch; the two F2 sections below record it.
 
 This experiment evaluates the cost and selection quality of positive-weight
 integration rules and smaller candidate searches for standard VIQR. The
@@ -1487,6 +1492,131 @@ The records of every stage are the `f2_*` review copies under
 [the publication index](../experiments/noisy-acquisition-efficiency/integration-search/f2_publication_index_20260918.json);
 the raw artifacts are listed in the local artifact index of the holding
 machine.
+
+## F2 Stage 2: paired inference comparison on the production suite
+
+**Status:** stopped by the user's decision on 2026-09-19 after 51 of 80
+pairs, with the verdict already determined; the node rule is not
+promoted. The [F2 amendment](../plans/noisy-acquisition-efficiency.md#approved-f2-amendment-matched-cost-rqmc-nodes-2026-09-18)
+specifies the design and the
+[assessment](../plans/noisy-acquisition-efficiency.md#f2-stage-1-assessment-2026-09-18)
+records the decision.
+
+Both arms ran through `golden_trace.run_task` on the `production` suite,
+so every fit is a production-budget run at the package's defaults for a
+specified-noise target: the baseline with no extra options, the treatment
+with `active_importance_sampling_qmc` on at 96 nodes. Six configurations
+under their production labels, seeds 2 to 21 on high-noise Rosenbrock and
+logistic regression and 2 to 11 elsewhere, the same seeds in both arms;
+the two fits of a pair back to back in alternating order in fresh
+single-threaded processes, gpyreg imported from the frozen `v1.2.1`
+worktree. The baseline arm's traces are production-reference runs and
+live in the production reference's run directory. `dev/scripts/noisy_acq_f2_stage2.py`
+on the retained branch prepared the manifest, ran the fits and computed
+the pre-registered outcomes; the
+[manifest](../experiments/noisy-acquisition-efficiency/integration-search/f2_stage2_manifest.json),
+[clearance](../experiments/noisy-acquisition-efficiency/integration-search/f2_stage2_launch_clearance.json),
+[stop record](../experiments/noisy-acquisition-efficiency/integration-search/f2_stage2_stop_decision.json),
+[summary](../experiments/noisy-acquisition-efficiency/integration-search/f2_stage2_summary.json)
+and [timing split](../experiments/noisy-acquisition-efficiency/integration-search/f2_stage2_timing_by_order.json)
+are the review copies. The campaign was launched at 21:24 UTC on
+2026-09-18; its first batch's treatment fits failed at start-up because
+the launcher embedded the arm's options as a JSON object in Python source,
+so twelve baseline fits of the first batch ran without their partners and
+the fixed launcher relaunched at 22:00 UTC. No fit failed afterwards.
+
+### Outcomes on the completed configurations
+
+Paired log-ratios are treatment over baseline, so positive means the
+treatment is worse; "worse" counts pairs with a positive log-ratio. The
+sign test is two-sided on the pairs' signs. Usability applies the E5
+thresholds (evidence error below 1, gsKL below 1, MMTV below 0.2, all
+strict); convergence is the run's success flag.
+
+| Configuration | Pairs | gsKL: median ratio, worse of n, sign p | MMTV | Evidence error | Usable, baseline to treatment | Converged | Calls | Fit time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Logistic regression | 20 | 1.63, 17 of 20, 0.003 | 1.38, 15 of 20, 0.04 | 1.21, 13 of 20, 0.26 | 17 to 14 | 20 to 20 | 1.000 | 1.178 |
+| Rosenbrock noise 3 | 20 | 1.68, 13 of 20, 0.26 | 1.25, 13 of 20, 0.26 | 0.61, 7 of 20, 0.26 | 17 to 15 | 19 to 19 | 0.973 | 1.125 |
+| Rosenbrock noise 1 | 10 | 1.22, 6 of 10, 0.75 | 1.07, 5 of 10, 1.00 | 0.88, 4 of 10, 0.75 | 10 to 10 | 10 to 10 | 1.000 | 1.142 |
+| Student-t | 1 | stopped | | | | | | |
+| Timing, multisensory | 0 | not started | | | | | | |
+
+- **Logistic regression fires both pre-registered triggers** (a worse
+  median with at least 14 of 20 pairs worse): gsKL in 17 pairs, MMTV in
+  15. Six usable fits become unusable (seeds 4, 6, 10, 13, 17, 20) against
+  three the other way; every fit of both arms converges. The treatment's
+  post-warmup evaluations sit further from the reference mean (median
+  squared Mahalanobis distance 16.2 against 13.5, more central in 5 of 20
+  seeds), more often beyond the nominal 99 percent ellipse (0.53 against
+  0.46) and more often 20 nats below the best observations (0.21 against
+  0.15).
+- **High-noise Rosenbrock shows the E5 S2 signature.** Evidence error is
+  better in 13 of 20 pairs and posterior shape worse in 13 of 20, none
+  resolved by the sign test; five usability losses (seeds 2, 3, 15, 16,
+  21) against three gains, one convergence loss (seed 15) against one
+  gain. Paired gsKL ratios span 0.02 to over 1000, so single pairs carry
+  no information. The treatment's evaluations sit closer to the centre in
+  11 of 20 seeds (median squared distance 6.3 against 7.9) with a higher
+  median observed log density (−15.4 against −17.7), the F3 concentration
+  pattern.
+- **Low-noise Rosenbrock is a wash**: small medians, no transitions.
+- **No fit failed** in either arm, and target-call counts are equal to
+  within three percent.
+
+### Fit time
+
+At equal call counts the treatment's fits took longer: median paired
+wall-time ratios 1.18, 1.13 and 1.14. The time is not in the node draw,
+which is under a millisecond per selection and was cost-matched on frozen
+states; it is spread over GP training (ratios 1.3 to 1.4), variational
+fitting (1.1 to 1.3) and active sampling (1.1 to 1.2), at matched
+training-set sizes and from the first iterations, with identical GP
+sample counts, versions, thread pins and memory. A Sobol' draw does not
+slow subsequent linear algebra in the same process, so the cost comes
+from what the treatment's trajectories do to the fits, not from the rule's
+own arithmetic. The split by which arm ran first separates the rule from
+the machine:
+
+| Configuration, back-to-back pairs | Baseline first | Treatment first |
+| --- | ---: | ---: |
+| Logistic regression, wall-time ratio (GP training) | 1.205 (1.41), 10 pairs | 1.158 (1.30), 10 pairs |
+| Rosenbrock noise 3, wall-time ratio (GP training) | 1.196 (1.37), 9 pairs | 1.014 (1.07), 9 pairs |
+
+On logistic regression the treatment costs 16 to 20 percent more whichever
+arm runs first; on high-noise Rosenbrock the gap is an order effect, the
+second fit of a pair running about 18 percent slower on this machine, and
+the rule's own cost is near zero once the two orders are averaged. The
+low-noise Rosenbrock pairs came from the aborted first batch, whose fits
+were not back to back, so their 1.14 carries an unknown share of drift.
+The traces do not record Cholesky retries or optimizer iteration counts;
+the fitted length scales move in opposite directions on the two targets
+(about twice as long under the treatment on high-noise Rosenbrock, shorter
+on logistic regression), so the cause of the slower GP fits on logistic
+regression is not identified.
+
+### Reading
+
+Stage 1 showed that the rule estimates the same acquisition integral more
+accurately and, where the estimate decides, selects points with a better
+criterion value. Stage 2 shows that those points do not help the
+posterior on these targets, and on logistic regression hurt it. The
+resolution is that the criterion, not the integrator, is what changed in
+effect. The production 100-node estimate identifies the truly best
+candidate of a shortlist 28 percent of the time (F3), so in practice it is
+a noisy top-k sampler; a more accurate estimate turns it into a faithful
+maximizer of VIQR. A faithful maximizer follows the current variational
+posterior more closely and reinforces it where it is wrong, or, where the
+criterion's optimum lies in tail regions the noisy estimate reached only
+by chance, sends evaluations there consistently; the noise had been doing
+exploration by accident. High-noise Rosenbrock shows the first face
+(more central, better evidence, worse shape), logistic regression the
+second (further out, deeper tail, harder GP fits). E5's re-scored search,
+a different way of making the same estimate more accurate, showed the same
+signature, and the amendment named this outcome in advance as the thing
+the experiment could reveal. The result is negative for the rule and
+informative for the criterion: better estimation of VIQR does not pay off
+by itself, and the lever is the criterion's exploration, which the 1.5
+scope excludes.
 
 ## Resuming the saved experiment
 

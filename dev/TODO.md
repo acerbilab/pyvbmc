@@ -50,9 +50,19 @@ records its execution.
   node-noise floor of the production rule against itself, a lottery no
   100-node set escapes; the
   [assessment](plans/noisy-acquisition-efficiency.md#f2-stage-1-assessment-2026-09-18)
-  recommends Stage 2 subject to the PI accepting the floor-based reading
-  of the screening gate, whose 5 percent ceiling the production rule
-  fails against itself.
+  recommended Stage 2 on a floor-based reading of the screening gate.
+  Stage 2, the paired inference comparison on the production suite, was
+  stopped by the PI on 2026-09-19 after 51 of 80 pairs: the rule worsens
+  posterior shape on logistic regression in 17 of 20 pairs and costs 16
+  to 20 percent more fit time there, and high-noise Rosenbrock leans the
+  same way. **Not promoted** (PI decision, 2026-09-19): 1.5 takes only
+  bug fixes and unequivocal improvements. The implementation is retained
+  on `retain/viqr-rqmc-nodes`; the
+  [outcome](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
+  records the reading: a more faithful maximizer of VIQR is a worse guide
+  for inference than the noisy one on these targets, so the lever is the
+  criterion's exploration, outside this scope. The baseline arm's fits
+  are the first production-reference runs.
   The [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records the results. The benefit
   criteria, allocation and screening gates are accepted; Bayesian
@@ -165,7 +175,7 @@ records its execution.
 - **New acquisition-function design.** Efficiency work uses existing criteria.
   The experimental VIQR losses and the EIG acquisition were removed from the
   package on 2026-09-14 and are retained on the branch
-  `retain-experimental-acquisitions`; the
+  `retain/experimental-acquisitions`; the
   [experiment records](results/2026-09-08-noisy-acquisition-experiments.md)
   stay.
 - **Additional packaged regression tests using timing or multisensory.**

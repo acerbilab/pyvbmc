@@ -1,0 +1,27 @@
+{
+  "failed": 0,
+  "finished_utc": "2026-09-18T21:59:36.553370+00:00",
+  "fits": [
+    {
+      "arm": "treatment",
+      "elbo_err": 0.043035804202169015,
+      "func_count": 140,
+      "gskl": 0.0024681567111120017,
+      "mmtv": 0.014327254495632106,
+      "ok": true,
+      "peak_rss_mb": 257.50390625,
+      "returncode": 0,
+      "seconds": 160.90196561813354,
+      "tag": "rosenbrock_D2_noise1_production_seed2",
+      "wall_s": 158.83472210000036
+    }
+  ],
+  "kind": "f2_stage2_batch",
+  "launched": 1,
+  "manifest_sha256": "4171687378c90f48b7007ce405614f8a3e8d961877f1be972520be1646a26814",
+  "publication_note": "Review copy with user-directory paths redacted. The raw artifact hash binds the original local bytes; execute the local manifest.",
+  "raw_artifact_sha256": "c68805af19e3d0ef28a6f6d73f9a5d6a447255caf756ae4234ee37313eb202ed",
+  "skipped": 1,
+  "started_utc": "2026-09-18T21:56:55.650868+00:00",
+  "stopped_early": true
+}

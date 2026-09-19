@@ -9,7 +9,7 @@ companion report on the acquisition search is
 VIQR's `var_reduction` and `sd_reduction` losses and the `AcqFcnEIG`
 acquisition measured here are not part of the package: they were removed
 on 2026-09-14, and their implementation is retained on the branch
-`retain-experimental-acquisitions` at `fa6922f`. The decision is recorded
+`retain/experimental-acquisitions` at `fa6922f`. The decision is recorded
 in [TODO.md](../TODO.md).
 
 ## Where a noisy run spends its time

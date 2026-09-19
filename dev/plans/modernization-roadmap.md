@@ -59,7 +59,7 @@ PI decision 2026-09-13: VIQR's `var_reduction` and `sd_reduction`, scalar
 `AcqFcnEIG()` and per-component `AcqFcnEIG(components=True)` are outside
 the 1.5 public interface. They are removed from the package; their
 implementation is retained on the branch
-`retain-experimental-acquisitions` (at `fa6922f`, the last commit that
+`retain/experimental-acquisitions` (at `fa6922f`, the last commit that
 carries it). The
 [acquisition experiments](../results/2026-09-08-noisy-acquisition-experiments.md)
 record scalar EIG's poor results and per-component EIG's mixed results on
