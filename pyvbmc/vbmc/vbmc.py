@@ -880,6 +880,13 @@ class VBMC:
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("f_vals")).ravel()
+        if len(y_orig) > 0 and self.options.get("specify_target_noise"):
+            raise ValueError(
+                "options['f_vals'] supplies values without their noise, so "
+                "it cannot be used with options['specify_target_noise']. "
+                "Pass such observations through the precomputed_evaluations "
+                "argument, which takes (X, y, y_sd)."
+            )
         if len(y_orig) == 0:
             y_orig = np.full([self.x0.shape[0]], np.nan)
         if len(self.x0) != len(y_orig):
