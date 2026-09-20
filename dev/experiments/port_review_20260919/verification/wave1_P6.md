@@ -9,6 +9,14 @@ messages for recorded decisions. Its check scripts ran in the session
 scratchpad and are not retained. The text below is its final message,
 unedited.
 
+One correction by the orchestrator, from the verification of wave 2
+(`wave2.md`, row W2-16). The paragraph "cmp F3 (sieve size)" says that
+PyVBMC's warp branch agrees with its MATLAB counterpart. At the revision
+the agent read it did not: the warp-undo refit evaluated `ns_elbo` at
+`vp.K` where `vbmc.m:584` uses `Knew`, and the two differ with
+`variable_means=False`. Commit `d7c7887` (2026-09-20) evaluates it at
+`Knew`. What the paragraph says about `final_boost` stands.
+
 ---
 
 ## Ledger

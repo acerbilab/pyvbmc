@@ -174,7 +174,11 @@ Things you must hold in your head across files:
   (`__call__` forward, `.inverse()` back; probit by default) mediates.
   `VariationalPosterior` methods take `orig_flag=True` by default and only
   provide gradients with `orig_flag=False`. The same transformer object must
-  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity);
+  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity,
+  during a run and after `load`, which shares the transformer of the
+  iteration it restores); `vbmc.x0` holds the starting points in the
+  initial transformed space, which a warp leaves behind, and `vbmc.x0_orig`
+  holds them in the caller's coordinates;
   the sieve candidates that `_vb_init` builds share it and the generator
   rather than copying them (a transformer is never mutated after
   construction; a warp installs a fresh copy), while `copy.deepcopy` of a
@@ -265,8 +269,21 @@ Things you must hold in your head across files:
   imported in `options.py` available (`np`, `ceil`, the acquisition function
   classes, lambdas); the `options=` dict is used verbatim. To add an option,
   add a `# description` line followed by `name = <expr>` to the right `.ini`;
-  the comment is the user documentation. Unknown keys raise at validation.
-  Options are frozen after init; use `options.__setitem__(k, v, force=True)`.
+  the comment is the user documentation, and an option that no module reads
+  through an options mapping must be registered in `INERT_OPTIONS`
+  (`options.py`), which a test recomputes from the package. A name that
+  neither shipped file declares raises on every route (the dict, the
+  `options_path=` file, `load(new_options=)`). An option set in the
+  `options_path=` file counts as set by the user, as one in the dict does,
+  and the defaults that depend on other options (`update_defaults`: the
+  noisy-target defaults, applied whenever uncertainty handling is on, by
+  `specify_target_noise` or by `uncertainty_handling=True`) are settled
+  after every source is read. `uncertainty_handling` (a boolean),
+  `integer_vars` (a boolean mask or 0-based indices), `max_fun_evals` and
+  `max_iter` (positive integers, `max_iter` raised to `min_iter`) are
+  checked at construction. Options are frozen after init against assignment
+  and removal; use `options.__setitem__(k, v, force=True)` and
+  `options.__delitem__(k, force=True)`.
 - **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
   creates `vbmc.rng` (`pyvbmc/rng.py: get_rng`), shared with `vbmc.vp`;
   `VariationalPosterior.__deepcopy__` shares the generator so every copy of a

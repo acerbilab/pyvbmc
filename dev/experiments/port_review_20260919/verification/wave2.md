@@ -24,7 +24,7 @@ MATLAB.
 | W2-1 | P1a comparison F1 | The "recent improvement" window of `_check_warmup_end_conditions` starts at `iteration - (T + 1)`, with `T = ceil(tol_stable_warmup / fun_evals_per_iter)`, where `private/vbmc_warmup.m:60-65` gives `iteration + 1 - T` in 0-based terms: five iterations at the defaults where MATLAB's window holds three, so the no-recent-improvement test is met less often and warm-up tends to end later | confirmed port discrepancy; never matched MATLAB (one iteration too long as written in `35be58b`, 2021-07-07; two since `9267816`, 2021-08-25, moved the loop to a 0-based counter, corrected the neighbouring floor and left this offset) | yes, from the fifth iteration of every run | both sources read; the window's index sets tabulated for both sides; history traced | fix |
 | W2-2 | P1a internal F6, P1a comparison F2, P1b internal F8 | `_recompute_lcb_max` returns an empty array that nothing reads, and `_check_warmup_end_conditions` has no counterpart of MATLAB's preference for the recomputed vector (`private/vbmc_warmup.m:46-50`), while `recompute_lcb_max` defaults to `True` as `RecomputeLCBmax` does: both warm-up criteria rest on the per-iteration maxima, each from that iteration's GP, where MATLAB's rest on a cumulative maximum recomputed with the current GP (`private/recompute_lcbmax.m`) | confirmed port discrepancy; an unfinished placeholder (`pass` in the first commit, an empty array since `ec94eba`, 2021-06-08; the ToDo comment came with a pylint clean-up, `39b29e6`); the porting log and the counterpart map list the function as ported | yes, every run | both sources read; reads of `lcb_max_vec` searched; history traced | fix, the function and the consuming branch |
 | W2-3 | P1a comparison F3 | `_setup_vbmc_after_warmup` sets `last_warmup` only, where `private/vbmc_warmup.m:97-102` also sets `LastWarping` and `LastSuccessfulWarping` to the current iteration. Both stay at minus infinity, so the first warp can come as soon as its other conditions hold, where MATLAB waits more than `WarpEveryIters` iterations after warm-up, and the stability termination is not held back for `TolStableIters/3` iterations after warm-up | confirmed port discrepancy; omitted in `35be58b`, eight months before warping existed on the Python side; the two readers came with `4aa4ca9` (2022-03-03) and `0a27ee3` (2023-02-15), neither of which touched the end of warm-up. The third MATLAB line, `LastNonlinearWarping`, is read nowhere in MATLAB | yes | both sources read; readers and writers of the two keys searched; history traced | fix |
-| W2-4 | P1b internal F1 | `VBMC.__init__` builds the variational posterior from the untransformed `x0` and transforms `x0` afterwards, so the initial component means, a transformed-space quantity, hold original coordinates. `misc/setupvars_vbmc.m:66` transforms `x0` before `:84` sets `vp.mu`. With bounds 0 and 10, plausible bounds 4 and 6 and `x0 = 5`, the means map back to 9.94 | confirmed port discrepancy; in this order since the first commit of the constructor (`489598a`, 2021-06-03), against a MATLAB that already transformed first. The P1b comparison report lists the initial posterior as equivalent: it compared the tiling of the means, not their coordinates | yes, whenever `x0` and its transform differ; invisible when `x0` is the centre of a plausible box symmetric about it | `scripts/wave2_initial_vp_mu.py` (five cases); both sources read; `git log -S` | fix |
+| W2-4 | P1b internal F1 | `VBMC.__init__` builds the variational posterior from the untransformed `x0` and transforms `x0` afterwards, so the initial component means, a transformed-space quantity, hold original coordinates. `misc/setupvars_vbmc.m:65` transforms `x0` before `:82` sets `vp.mu`. With bounds 0 and 10, plausible bounds 4 and 6 and `x0 = 5`, the means map back to 9.94 | confirmed port discrepancy; in this order since the first commit of the constructor (`489598a`, 2021-06-03), against a MATLAB that already transformed first. The P1b comparison report lists the initial posterior as equivalent: it compared the tiling of the means, not their coordinates | yes, whenever `x0` and its transform differ; invisible when `x0` is the centre of a plausible box symmetric about it | `scripts/wave2_initial_vp_mu.py` (five cases); both sources read; `git log -S` | fix |
 | W2-5 | P1a internal F4, P1a comparison F4, P1b comparison F9 | `_check_termination_conditions` holds termination while `iteration < min_iter`, with the 0-based index, where `private/vbmc_termination.m:98-99` compares the 1-based counter, and where the same function compares `iteration + 1` with `max_iter`: a run on which the minimum binds performs `min_iter + 1` iterations | confirmed port discrepancy; `test_vbmc_check_termination_conditions_prevent_early_termination` asserts the off-by-one | yes, when the minimum binds | `scripts/wave2_min_iter_guard.py` (iterations performed for six pairs of limits against `max(MinIter, MaxIter)`); both sources read | fix |
 | W2-6 | P1a internal F8 | `warp_input` inverts the search bounds and the search cache with the transformer of the posterior it is handed, the best recorded one, while both live in the current inference space; a posterior recorded before an earlier warp carries another transformer. Handed such a posterior on a stored four-dimensional state, the second warp returns a search box 8.5 to 12.5 times wider per coordinate than the one the current transformer gives; handed the current posterior it returns that one | confirmed shared defect: `misc/warp_input_vbmc.m:8` and `:133` take the old transform from the posterior handed in, as PyVBMC does | latent: on 21 complete stored runs (42 warps, 13 of them after an earlier kept warp) the selection never returned a posterior from another space, under the rank criterion or under the look-back rule | `scripts/wave2_stale_transformer_mechanism.py`, `scripts/wave2_stale_transformer_frequency.py` | fix |
 
@@ -105,3 +105,55 @@ starting set (C-M9).
   gitignored `dev/scripts/runs/` (the box-sampler runs and the S-VBMC
   pilot pool; `dev/scripts/runs/LOCAL.md` lists them). Of the 42 warps in
   those runs, 25 were undone by the undo check.
+
+## Fix commits
+
+The fixes of 2026-09-20 on `dev-port-review`, one commit per finding, each
+with a test written against the contract (the MATLAB lines, the docstring or
+the ruling). Three Opus agents made them in worktrees; their reports are
+`../fixes/wave2_agent_A.md`, `_B.md` and `_C.md`, whose hashes are those of
+the worktree branches. The hashes below are the cherry-picked commits.
+
+| finding | commit | note |
+|---|---|---|
+| W2-1 | `c918d12` | moves default trajectories |
+| W2-2 | `8e591ff` | moves default trajectories. The orchestrator added the handling of `NaN` entries to the agent's commit: a warm-up trim can drop every point an early iteration logged, `movmax` then leaves that iteration's entry `NaN`, and the maxima of the warm-up check pass over it as MATLAB's `max` does; with `np.amax` the check raised |
+| W2-3 | `fb8a12e` | moves default trajectories |
+| W2-4 | `8cd4bbc` | moves default trajectories |
+| W2-5 | `567444f` | moves default trajectories |
+| W2-6 | `7d93f60` | |
+| W2-7 | `0ba7680` | |
+| W2-8 | `640ac92` | an option set in the file of `options_path=` counts as set by the user |
+| W2-9 | `6fa6073` | |
+| W2-10, B-M12 | `e71f97b` | |
+| W2-11 | `ab5c603` | changes the recorded `run_mean` and `run_cov`, which nothing reads |
+| W2-12 | `41ea8b1` | the string stays `"bounded"` |
+| W2-13 | `4822ae1` | `dev/scripts/benchmark_targets.py` drops its `+ 1` |
+| W2-14 | `54f0f19` | |
+| W2-15 | `c7a01f3` | |
+| W2-16 | `d7c7887` | |
+| W2-17 | `5b3b093` | |
+| W2-18 | `1a9f37a` | |
+| W2-19, C-M6 | `477226b` | |
+| W2-20 | `972bbf4` | |
+| W2-21 | `6bb129c` | adds `VBMC.x0_orig`, the starting points in the caller's coordinates; `load` fills it in for instances saved without it |
+| W2-22 | `82c624c` | |
+| W2-23 | `3722210` | also corrects the seventeen other descriptions in which "on" had become "True" |
+| W2-24 | `77575b1` | |
+| W2-26 | `17badf9` | |
+| W2-27 | `f9689dc` | |
+| B-M2 | `fe5f9dc` | |
+| B-M3 | `261b9ae` | |
+| B-M5 | `b3ad32b` | |
+| C-M1 | `9a068c4` | and `1c1f2e4` for the `log-density` line of the same summary, which always printed `None` without a separate prior (found by the fix agent; PI: fix) |
+| C-M2 | `658ecb8` | |
+| C-M5 | `5d2e543` | made by the orchestrator: four tests outside the agent's files delete an option from an initialized object to build the state of an older save, and use the `force` override |
+| B-M9 | `e9e7803`, `9ff44c5` | the agent's fix with one change (PI, 2026-09-20): the divergence of the closing line is estimated on a copy of the run's generator, so that the display moves no random stream and a run stopped without a boost still continues as an uninterrupted one would. The first commit kept the run's generator for the case in which the boost changed the posterior, to leave existing streams alone; the corrected reference of the divergence moved them all the same, because the balanced sampler draws a number of values that depends on the mixture weights, and the second commit takes the copy in every case |
+| B-M4 | `d5b2139` | not among the observations ruled on at first; PI, 2026-09-20: fix |
+
+## Found during the fix pass
+
+| id | found by | statement | verdict (class) | fires at defaults? | how verified | PI disposition |
+|---|---|---|---|---|---|---|
+| W2-28 | fix agent B | `Options.update_defaults` computes all five noisy-target defaults before it checks which of them the user set, so a noisy run with `max_fun_evals = np.inf` raises `OverflowError` from `ceil(inf * 1.5)` although the user's budget would have been kept | confirmed Python-only defect; older than the pass | no | reproduced by the test of the fix, which fails without it | fix (`1421759`) |
+| W2-29 | fix agent A | With `variable_means=False`, `final_boost` asks for `max(vp.K, min_final_components)` components while the candidates of the sieve keep the posterior's `vp.K` fixed means, and `_gp_log_joint` raises a broadcast error. A fixed-means run past warm-up holds one component per training input, so it is affected only while it has fewer than `min_final_components` (50) of them; a run that ends during warm-up always is, with its two components | confirmed shared defect, by a reading of MATLAB: `misc/finalboost_vbmc.m:6` takes `Knew = max(MinFinalComponents, vp.K)` and `misc/vbinit_vbmc.m:132-136` keeps `mu0` beside `Knew` weights and scales; older than the pass | no; only with `variable_means=False` | `scripts/wave2_variable_means_boost.py` (the boost raises, the same run without a boost completes); both sources read | fix (`73d2a81`): the boost of a posterior with fixed means places its components at the training inputs of the GP it is handed, one each, as the main loop does after warm-up |

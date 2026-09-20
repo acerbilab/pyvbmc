@@ -4,8 +4,8 @@ Started 2026-09-19. Owner of the item: `TODO.md`, "Independent codebase and
 MATLAB-port review". This file holds the design, the reviewer brief, the
 working rules and the worklog. The consolidated findings go into a dated
 ledger under `results/` when verification completes; the raw reviewer
-reports, the known-differences sheet and the verification scripts are kept
-under `experiments/port_review_20260919/`.
+reports, the reports of the fix agents, the known-differences sheet and the
+verification scripts are kept under `experiments/port_review_20260919/`.
 
 ## Purpose
 
@@ -411,7 +411,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `experiments/port_review_20260919/`) are the only expected changes.
   Reviewer reports are saved as
   `experiments/port_review_20260919/reviews/<slice>_<track>.md` by the
-  orchestrator.
+  orchestrator, and the reports of fix agents as
+  `experiments/port_review_20260919/fixes/<wave>_agent_<letter>.md`. The
+  worktree and the branch of a fix agent are removed once `git cherry`
+  shows every one of its commits on `dev-port-review`.
 - An agent's report exists only as its final message, because the harness
   refuses report files written by agents. The orchestrator saves that
   message verbatim, never retyped, under a header that says what it is. A
@@ -652,112 +655,134 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the warp re-transforms only the active rows of the function logger,
   where MATLAB re-transforms every row (B-M11); the verification of P8
   checks whether they found it.
-- [ ] Wave 2 fixes, not started; the split below awaits the PI's
-  go-ahead. Three Opus agents on worktrees, by area, so that their hunks
-  do not overlap; each commits one finding at a time with a test written
-  against the contract (the MATLAB lines, the docstring or the ruling)
-  and runs only the focused test files it touches, single-threaded; the
-  orchestrator reviews each diff, cherry-picks, and runs the whole
-  `pyvbmc/testing/vbmc` directory and the gates, one batch at a time.
-  **Agent A, the loop** (`optimize`, warm-up, termination, results,
-  `whitening.warp_input`): W2-10, W2-11, W2-16, W2-6, W2-12, W2-13 and the
-  minor observations B-M2, B-M3, B-M5, B-M9; then W2-14, W2-1, W2-2, W2-3,
-  W2-5. **Agent B, options and inputs** (`options.py`, the `.ini` files,
-  `_bounds.py`, the option handling of `__init__` and `_init_optim_state`,
-  the `new_options` lines of `load`): W2-7, W2-8, W2-18, W2-17, W2-19,
-  W2-20, W2-26, W2-27, W2-22, W2-15 (the branch in `optimize` and the
-  registration, one commit), W2-23, W2-24, C-M5. **Agent C, construction
-  state and load**: W2-9, W2-21, C-M1, C-M2; then W2-4. Order of landing:
-  first every commit that leaves default trajectories alone, gated by
-  `make_oracle_fixtures.py --check --exact` (11 of 11) and by seeded
-  default runs, noiseless and noisy, that reproduce bit for bit before
-  and after; then the block that moves them (W2-1, W2-2, W2-3, W2-4,
-  W2-5, with W2-14 in the same function), after which the oracle check
-  must still be exact. The orchestrator's part: the sheet entries and
-  corrections (the `AcqFcnLog` default; the isolated draws of
-  `_compute_true_diagnostic`; the `display` values; `separate_search_gp`;
-  MATLAB's `problem_type` defect; the stricter option handling; the
-  entries on the sieve's candidate count, on posterior tempering, on the
-  inert options, on `OptimToolbox` and on `results["rng_state"]`), the
-  counterpart-map rows for `private/recompute_lcbmax.m` and
-  `misc/setupvars_vbmc.m`, the note in `verification/wave1_P6.md` on the
-  warp branch, and `AGENTS.md` where a fix changes what it describes.
-  Still open from wave 1: the golden references are regenerated once
-  after the review's remaining trajectory-moving fixes; the final ledger
-  (`dev/results/<date>-port-correctness-review.md`) and the consolidation
-  of the sheet's durable entries into `pyvbmc/vbmc/README.md` come at the
-  end.
+- [x] 2026-09-20: wave 2 fixed, 33 commits on `dev-port-review` after
+  `2f2bc94`, on the PI's go-ahead of the same day: three Opus agents on
+  worktrees, split by area so that their hunks of `vbmc.py` do not overlap,
+  one finding per commit with a test written against the contract (the
+  MATLAB lines, the docstring or the ruling), cherry-picked after review.
+  Their reports are under `experiments/port_review_20260919/fixes/`, and
+  `verification/wave2.md` lists the commit of every finding. The loop
+  (agent A): the forced entropy switch read from the options at both sites;
+  the running average of the variational moments; the warp refit's sieve
+  sized at `Knew`; `warp_input` mapping the search state back with the
+  transform of the current inference space; `results["problem_type"]` from
+  the original bounds and `results["iterations"]` as the count; the warp
+  branch copying `gp.X`; `final_boost` working on a copy of `optim_state`;
+  `determine_best_vp` returning a copy. Options and inputs (agent B):
+  `uncertainty_handling` a boolean; the noisy defaults applied whenever
+  uncertainty handling is on and settled after the options file is read, an
+  option set in that file counting as the user's; `integer_vars` a boolean
+  mask or 0-based indices; scalar bounds replicated; an undeclared option
+  name refused on every route; `max_fun_evals` and `max_iter` checked and
+  `max_iter` raised to `min_iter`; the budget path following the values of
+  its two arguments; `temperature`, `diagnostics` and `separate_search_gp`
+  registered as inert, the search-GP branch removed, the guard test
+  matching reads through an options mapping; whole option descriptions,
+  nineteen of their texts corrected; the `seed` docstring. Construction
+  state and load (agent C): the budget copy refreshed on load and on
+  continuation; one transformer after `load`, the restored iteration's, and
+  `x0_orig` for the summary; `__str__` reporting the GP, the prior and the
+  log-density (the last found by the agent; PI: fix); `_init_logger`. By
+  the orchestrator: a frozen options object refuses removal (C-M5, whose
+  fix needed four test files outside the agent's area), and in the LCB
+  recomputation the handling of `NaN` entries, found in review: a warm-up
+  trim can drop every point an early iteration logged, `movmax` then leaves
+  that iteration's entry `NaN`, and the maxima of the warm-up check pass
+  over it as MATLAB's `max` does, where `np.amax` made the check raise.
+  Last, the block that **moves default trajectories**: the empty stability
+  window, the recent-improvement window, the recomputed LCB maxima with the
+  branch that consumes them, the warping clocks at the end of warm-up, the
+  minimum-iteration guard, and the initial variational means in transformed
+  coordinates.
 
-  Notes for the fix pass, on what the ledger rows do not say:
+  Gates. Before the first cherry-pick: four short seeded runs at the
+  default options (`verification/scripts/wave2_fixpass_gate_runs.py`:
+  Rosenbrock `D = 2` unbounded, two Gaussians `D = 3` bounded with `x0` off
+  the centre of the box, and a noisy variant of each through
+  `specify_target_noise`, one of them with a user-set budget; each reaches
+  the end of warm-up and at least one warp), which reproduce bit for bit on
+  the starting commit, and `make_oracle_fixtures.py --check --exact`, 11 of
+  11. After each batch of the first phase (C, B, A): the whole
+  `pyvbmc/testing/vbmc` directory, the four runs bit for bit (92 arrays,
+  the final generator state among them) and the exact oracle check, 11 of
+  11. After the second phase: the exact oracle check, 11 of 11; the whole
+  default suite (1521 passed, 58 skipped, no reruns); and the four runs for
+  the record. Three of them moved: the noisy Rosenbrock run ends warm-up at
+  iteration 4 where it ended at 8 and takes 165 evaluations for 180, the
+  two bounded runs change from their first iteration, and every final ELBO
+  is within its reported SD of the earlier one. The unbounded Rosenbrock
+  run is bit-identical. The golden references are regenerated once, after
+  the review's remaining trajectory-moving fixes;
+  `dev/scripts/golden_replay.py` was no gate for this pass, its references
+  describing the defaults from before wave 1's fixes.
 
-  - *Why the split runs where it does.* The three areas are line ranges
-    of `pyvbmc/vbmc/vbmc.py` that do not touch. Agent A: `optimize`
-    except its continuation block and its search-GP branch, the warm-up
-    and termination methods, `final_boost`, `determine_best_vp`,
-    `_create_result_dict`. Agent B: the class docstring, the option
-    loading of `__init__` down to the budget arguments, the
-    `integer_vars` and `uncertainty_handling` blocks of
-    `_init_optim_state`, the search-GP branch of `optimize`, the
-    `new_options` lines of `load`. Agent C: the construction of the
-    posterior in `__init__`, the continuation block of `optimize`, the
-    rest of `load`, `__str__`, `_init_logger`. W2-15 is one commit of
-    agent B, branch and registration together, because the guard test
-    wants every unread option registered. C-M1 goes with W2-21 because
-    both edit `__str__`. W2-27 is agent B's because the budget arguments
-    sit directly under the option loading.
-  - *Test files.* Two agents appending to one test file collide on
-    cherry-pick, so each agent adds its tests to files that no other
-    agent touches, new files where needed: A the loop, termination,
-    final-boost, best-posterior and whitening tests; B `test_options.py`,
-    `test_vbmc_init.py` and the bounds tests; C
-    `test_vbmc_save_and_load.py` and new files for the rest.
-  - *Tests that assert a defect* and change with its fix:
-    `test_vbmc_check_termination_conditions_prevent_early_termination`
-    (W2-5); `test_vbmc_optimstate_integer_vars` and the integer mask of
-    `test_repeated_observation_is_exact_with_integer_vars` (W2-17); the
-    `uncertainty_handling` lists in `test_vbmc_init.py` and
-    `test_vbmc_precomputed.py` (W2-18); `test_init_options_path`, which
-    feeds made-up option names through a file (W2-20);
-    `test_inert_options_are_the_declared_options_nothing_reads` (W2-22).
-    Outside the package, `dev/scripts/benchmark_targets.py` prints
-    `results['iterations'] + 1` (W2-13).
-  - *W2-9.* Commit `6769a9a` made the schedule read the budget copy in
-    `optim_state` on purpose: a run charged an initialization cost needs
-    the cost-adjusted value there. The fix refreshes that copy from the
-    options, in `load` and in the continuation block of `optimize`, on the
-    ordinary path as it already does on the budget path, and leaves the
-    reader alone.
-  - *W2-7, W2-8 and W2-18 are one design*, made by agent B in the order
-    W2-18, W2-7, W2-8. Uncertainty handling is on when
-    `specify_target_noise` is set or `uncertainty_handling` is true;
-    `update_defaults` runs after the options file is read; an option set
-    in the file counts as set by the user, as one set in the dict does,
-    so the noisy defaults do not overwrite it.
-  - *W2-2.* `private/recompute_lcbmax.m` builds vectors over every logged
-    row, `NaN` at the inactive ones, predicts the latent mean and
-    variance at the active rows with the current GP, takes
-    `lcb = fmu - ELCBOImproWeight*sqrt(fs2)`, its trailing cumulative
-    maximum with `movmax` (which skips `NaN`), and samples it at each
-    iteration's `stats.N`, the count of logged rows including trimmed
-    ones, which is `iteration_history["N"] - 1` as a 0-based index.
-    `private/vbmc_warmup.m:46-50` then prefers the recomputed vector to
-    the recorded maxima, and `_check_warmup_end_conditions` needs that
-    branch too. The function is tested against that specification with a
-    hand-built GP and logger.
-  - *Gates.* `dev/scripts/golden_replay.py` is no gate for this pass:
-    its references describe the defaults from before wave 1's
-    trajectory-moving fixes. Before the first cherry-pick the orchestrator
-    records a few short seeded default runs, noiseless and noisy (through
-    `specify_target_noise` in the options dict), on the commit the pass
-    starts from; the commits of the first phase must reproduce them bit
-    for bit. `make_oracle_fixtures.py --check --exact` must stay at 11 of
-    11 through both phases, with `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
-    MKL_NUM_THREADS=1`.
-  - *Material for the agents' briefs:* the ledger rows of
-    `verification/wave2.md` with the PI's dispositions, the scope notes
-    at the end of each finding in `verification/wave2_B_loop.md` and
-    `verification/wave2_C_setup.md`, the strictness rule of the Decisions
-    section, and the worktree procedure of the Working rules.
+  Records brought to the state of the code: the known-differences sheet
+  (new entries on `results["problem_type"]`, the empty warm-up window, the
+  diagnostic's isolated draws, the separate search GP, the `AcqFcnLog`
+  default, `integer_vars`, the two MATLAB input-check defects PyVBMC does
+  not reproduce, the `display` values and `warp_input`; corrections to the
+  entries on the options, the randomness, `results["rng_state"]`,
+  `OptimToolbox`, the inert options, the sieve's candidate count and
+  posterior tempering; seven settled non-differences), the counterpart map
+  (eight rows, `private/recompute_lcbmax.m` and `misc/setupvars_vbmc.m`
+  among them), the list of MATLAB-side defects, the note in
+  `verification/wave1_P6.md` on the warp branch, and `AGENTS.md` (the
+  options and the transformer after `load`).
+- [x] 2026-09-20: three follow-ups of the wave-2 fix pass, on the PI's
+  rulings of the same day (36 commits after `2f2bc94` in all). The closing
+  "finalize" line of the display (B-M9, `e9e7803`): the agent's fix follows
+  `vbmc.m:884-913`, printing the line also for a posterior selected from an
+  earlier iteration and measuring its divergence from the posterior the
+  loop ended on; the divergence is estimated from 2 x 10^5 samples, which
+  the PI ruled come from a copy of the run's generator unless the boost
+  changed the posterior, so that the new case leaves the run's stream alone
+  and a run stopped without a boost still continues as an uninterrupted one
+  would (`test_vbmc_resume_optimization` pins that property; a new test
+  pins the stream). A noisy run with `max_fun_evals = np.inf` no longer
+  raises `OverflowError` (`verification/wave2.md`, W2-28, `1421759`, found
+  by a fix agent: `update_defaults` computed every noisy default before
+  checking which the user had set). The `final_boost` docstring types
+  `elbo` and `elbo_sd` as floats (B-M4, `d5b2139`). Gates on `d5b2139`: the
+  exact oracle check, 11 of 11; the whole default suite (1525 passed, 58
+  skipped, no reruns); the PyMC adapter tests (107) and the S-VBMC tests
+  with Torch (226) on the phase-2 head, each with its own interpreter; and
+  the four seeded runs, of which every trajectory array is bit-identical to
+  the phase-2 head, while the final generator state of the two noisy runs
+  is not. The cause is the corrected reference of the closing line's
+  divergence: the balanced sampler of `VariationalPosterior.sample` draws a
+  number of values that depends on the mixture weights, so comparing with
+  another posterior consumes another amount of the run's stream whenever
+  the boost changed the posterior. Nothing but the generator state after
+  the run depends on it. The worktree of agent A, which held the agent's
+  version of B-M9, is removed.
+- [x] 2026-09-20: the two questions the follow-ups left open, ruled on by
+  the PI the same day (39 commits after `2f2bc94` in all, the notebook's
+  included). The closing line's divergence is estimated on a copy of the
+  run's generator in every case (`9ff44c5`): keeping the run's generator
+  for the boosted case had been meant to leave existing streams alone, the
+  corrected reference moved them all the same, and with the copy the
+  display has no effect on the stream; a test pins the generator of a
+  boosted run where the boost left it. The final boost of a posterior with
+  fixed means (W2-29 of `verification/wave2.md`, found by a fix agent,
+  reproduced by `verification/scripts/wave2_variable_means_boost.py`,
+  `73d2a81`): with `variable_means=False` the boost asked for
+  `min_final_components` components while its candidates kept the
+  posterior's own means, and raised a broadcast error in a run that ended
+  with fewer components than that, as one stopped during warm-up always
+  does; MATLAB reads the same way (`misc/finalboost_vbmc.m:6`,
+  `misc/vbinit_vbmc.m:132-136`; entry 14 of the list of MATLAB-side
+  defects). The boost places the components at the training inputs of the
+  GP it is handed and takes their number, as the main loop does after
+  warm-up. Gates on `73d2a81`: the exact oracle check, 11 of 11; the whole
+  default suite (1528 passed, 58 skipped, no reruns); the four seeded runs,
+  of which every trajectory array is bit-identical to the phase-2 head and
+  the generator state after the run differs in all four, the closing line
+  no longer drawing from it. Both changes have their sheet entries, and the
+  line citations of the sheet and of the counterpart map into the files the
+  pass changed point at this head. The stored output of example notebook 3
+  shows `results["iterations"]` as the count (`bf027a7`, PI: edit the two
+  numbers, which the stored function counts confirm, without running the
+  notebook again).
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);
