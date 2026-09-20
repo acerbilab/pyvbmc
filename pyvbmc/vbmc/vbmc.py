@@ -316,6 +316,7 @@ class VBMC:
                 evaluation_parameters={"D": self.D},
                 as_user_options=True,
             )
+        self.options.validate_run_limits()
         # The defaults that follow other options are settled once every
         # source of options has been read.
         self.options.update_defaults()

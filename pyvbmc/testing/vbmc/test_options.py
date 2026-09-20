@@ -35,6 +35,7 @@ def _shipped_options(user_options, D=2):
     """Build the shipped options as ``VBMC.__init__`` does."""
     options = Options(basic_options_path, {"D": D}, user_options)
     options.load_options_file(advanced_options_path, {"D": D})
+    options.validate_run_limits()
     options.update_defaults()
     options.validate_option_names([basic_options_path, advanced_options_path])
     return options
@@ -159,6 +160,47 @@ def test_init_with_specify_target_noise():
     assert isinstance(vbmc1.options["search_acq_fcn"][0], AcqFcnLog)
     assert vbmc1.options["active_sample_vp_update"] == False
     assert vbmc1.options["active_sample_gp_update"] == False
+
+
+@pytest.mark.parametrize("key", ["max_fun_evals", "max_iter"])
+@pytest.mark.parametrize("value", [0, -1, 7.5, -np.inf, np.nan, None])
+def test_a_run_limit_must_be_a_positive_integer(key, value):
+    """``misc/setupoptions_vbmc.m:109-114`` rejects a MaxFunEvals or a
+    MaxIter that is not a positive integer."""
+    with pytest.raises(ValueError) as execinfo:
+        _shipped_options({key: value})
+    assert f"The option {key} needs to be a positive integer" in (
+        execinfo.value.args[0]
+    )
+
+
+@pytest.mark.parametrize("key", ["max_fun_evals", "max_iter"])
+@pytest.mark.parametrize("value", [1, 40, 40.0, np.int64(40), np.inf])
+def test_a_run_limit_accepts_an_integer_value(key, value):
+    """MATLAB compares the value with its rounding, so a floating value
+    that lands on an integer passes, and so does an infinite limit."""
+    options = _shipped_options({key: value, "min_iter": 0})
+    assert options[key] == value
+
+
+def test_max_iter_below_min_iter_is_raised_to_it(caplog):
+    """``misc/setupoptions_vbmc.m:115-119`` raises MaxIter to MinIter and
+    says so."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 2, "min_iter": 7})
+    assert options["max_iter"] == 7
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "max_iter" in message and "7" in message for message in messages
+    )
+
+
+def test_max_iter_at_min_iter_is_left_alone(caplog):
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 7, "min_iter": 7})
+    assert options["max_iter"] == 7
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any("max_iter" in message for message in messages)
 
 
 @pytest.mark.parametrize(

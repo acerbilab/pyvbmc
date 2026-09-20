@@ -6,6 +6,7 @@ import copy
 import logging
 from collections.abc import MutableMapping
 from math import ceil
+from numbers import Real
 from pathlib import Path
 from textwrap import indent
 
@@ -89,6 +90,21 @@ _UNCERTAINTY_HANDLING_FORMS = (
     "also accepted), or an empty value ([], an empty array or None) to "
     "leave the choice to specify_target_noise"
 )
+
+
+def _is_positive_integer_valued(value):
+    """
+    Whether a limit on iterations or evaluations is a positive integer.
+
+    A floating value that lands on an integer counts, as MATLAB VBMC's
+    ``round(x) ~= x`` test lets one through, and so does positive
+    infinity, which stands for no limit.
+    """
+    if not isinstance(value, Real):
+        return False
+    if not value > 0:
+        return False
+    return bool(np.isinf(value)) or float(value).is_integer()
 
 
 def _uncertainty_handling_flag(value):
@@ -246,6 +262,35 @@ class Options(MutableMapping, dict):
             )
         mask[array] = True
         return mask
+
+    def validate_run_limits(self):
+        """
+        Check the limits on iterations and function evaluations.
+
+        ``max_fun_evals`` and ``max_iter`` have to be positive integers,
+        and a ``max_iter`` below ``min_iter`` is raised to it, as
+        ``misc/setupoptions_vbmc.m:109-119`` requires.
+
+        Raises
+        ------
+        ValueError
+            When ``max_fun_evals`` or ``max_iter`` is not a positive
+            integer.
+        """
+        for key in ("max_fun_evals", "max_iter"):
+            value = self.get(key)
+            if not _is_positive_integer_valued(value):
+                raise ValueError(
+                    f"The option {key} needs to be a positive integer; "
+                    f"got {value!r}."
+                )
+        if self.get("max_iter") < self.get("min_iter"):
+            logging.warning(
+                "The option max_iter cannot be smaller than min_iter. "
+                "Raising max_iter to %s.",
+                self.get("min_iter"),
+            )
+            self.__setitem__("max_iter", self.get("min_iter"), force=True)
 
     def uncertainty_handling_on(self):
         """
