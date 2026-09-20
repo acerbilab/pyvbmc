@@ -242,6 +242,35 @@ def test_init_rotation_matrix_validation():
             ParameterTransformer(D=D, rotation_matrix=rotation_matrix)
 
 
+def test_init_copies_the_arrays_it_is_given():
+    """The transform is fixed at construction: changing an array the
+    caller passed does not move it afterwards."""
+    lb_orig = np.full((1, D), -2.0)
+    ub_orig = np.full((1, D), 2.0)
+    scale = np.full(D, 2.0)
+    rotation_matrix = np.eye(D)
+    transformer = ParameterTransformer(
+        D,
+        lb_orig=lb_orig,
+        ub_orig=ub_orig,
+        scale=scale,
+        rotation_matrix=rotation_matrix,
+    )
+    x = np.full((1, D), 0.5)
+    transformed = transformer(x)
+
+    lb_orig[0, 0] = -100.0
+    ub_orig[0, 0] = 100.0
+    scale[0] = 10.0
+    rotation_matrix[0, 0] = -1.0
+
+    assert np.array_equal(transformer(x), transformed)
+    assert transformer.lb_orig[0, 0] == -2.0
+    assert transformer.ub_orig[0, 0] == 2.0
+    assert transformer.scale[0] == 2.0
+    assert transformer.R_mat[0, 0] == 1.0
+
+
 def test_init_scale_validation():
     """The transform divides by ``scale`` and its log-Jacobian adds
     ``log(scale)``, so a scale must have one finite positive entry per

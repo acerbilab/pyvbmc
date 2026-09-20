@@ -90,8 +90,13 @@ class ParameterTransformer:
             if not np.all(scale > 0):
                 raise ValueError("`scale` must contain positive values.")
 
-        self.scale = scale
-        self.R_mat = rotation_matrix
+        # The transform is fixed at construction, so it keeps copies of
+        # the arrays it is given: a later change of one of them by the
+        # caller must not move it.
+        self.scale = None if scale is None else np.copy(scale)
+        self.R_mat = (
+            None if rotation_matrix is None else np.copy(rotation_matrix)
+        )
 
         # Empty LB and UB are Infs
         if lb_orig is None:
@@ -130,8 +135,8 @@ class ParameterTransformer:
             )
 
         # Transform to log coordinates
-        self.lb_orig = lb_orig
-        self.ub_orig = ub_orig
+        self.lb_orig = np.copy(lb_orig)
+        self.ub_orig = np.copy(ub_orig)
 
         # Select and validate the type of transform:
         transform_types = {
