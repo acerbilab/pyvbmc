@@ -20,6 +20,8 @@ its entry below.
   `plotly`.
 - Option values are checked: an unknown option name in an options file,
   `uncertainty_handling=[1]` or an ambiguous `integer_vars` raises an error.
+  So do a `gp_mean_fun` or a `gp_hyp_sampler` that PyVBMC does not implement,
+  and `f_vals` together with `specify_target_noise`.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
@@ -31,6 +33,10 @@ its entry below.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
   input point.
+- `ParameterTransformer` and `FunctionLogger` used on their own: a variable
+  with one finite bound, a `scale` that is not positive, a noise flag that
+  contradicts the uncertainty handling level, and `add` without an SD for a
+  target that provides its noise raise an error.
 
 ### Added
 
@@ -273,7 +279,31 @@ its entry below.
     could not be reached, and the option had no effect.
   - The slice sampler of the GP hyperparameters takes its step widths from a
     weighted covariance of the samples of recent iterations. 1.0.4 computed
-    that covariance wrongly.
+    that covariance wrongly, and from a fifth of the samples: each iteration
+    records the samples drawn before thinning, as MATLAB VBMC does, so
+    `vbmc.iteration_history["gp_hyp_full"]` holds `gp_sample_thin` times as
+    many rows as in 1.0.4.
+  - The fit of the GP hyperparameters starts as in MATLAB VBMC. Its starting
+    points include the hyperparameters of the GPs of the later half of the
+    iterations; 1.0.4 left out the oldest of them whenever an even number of
+    iterations had been recorded. The constant of the GP mean has a lower
+    bound and the observation noise an upper bound, both recommended from
+    the training set, where 1.0.4 left them unbounded, which also kept the
+    starting points for that constant inside a narrow range.
+  - For a target with inferred noise (`uncertainty_handling=True` without
+    `specify_target_noise`), the GP models the noise as MATLAB VBMC does: a
+    constant term plus the noise recorded for each point, scaled by a fitted
+    factor, so that a point evaluated several times weighs more than one
+    evaluated once. 1.0.4 fitted a single noise level for all points. The
+    difference shows with repeated observations
+    (`max_repeated_observations`).
+  - Points with exactly equal values of the target, which a quantized
+    log-likelihood can return, are ordered as in MATLAB VBMC, the earlier
+    one first, when PyVBMC selects the points of highest density
+    (`pyvbmc.stats.get_hpd`). 1.0.4 ordered them arbitrarily.
+  - In a run of more than 1000 evaluations, the number of starting points
+    tried in the fit of the GP hyperparameters goes down to zero, as in
+    MATLAB VBMC, where 1.0.4 kept nine.
   - The variational optimization puts no soft bound on the mixture weights.
     Small weights are still penalized (`weight_penalty`) and removed
     (`tol_weight`). The bound of 1.0.4 came with a gradient that did not
@@ -314,6 +344,14 @@ its entry below.
   - `max_fun_evals` and `max_iter` must be positive integers (`np.inf` is
     allowed). A `max_iter` smaller than `min_iter` is raised to `min_iter`,
     with a warning.
+  - `gp_mean_fun` takes `"zero"`, `"const"` or `"negquad"`, and
+    `gp_hyp_sampler` takes `"slicesample"`: the mean functions and the
+    sampler that PyVBMC implements. 1.0.4 accepted the other names of MATLAB
+    VBMC and failed part-way through the run, after the first evaluations of
+    the target.
+  - `f_vals` cannot be combined with `specify_target_noise`, because it
+    carries no noise for the values it supplies; 1.0.4 gave them a noise of
+    1. Pass such observations through the `precomputed_evaluations` argument.
   - Setting an option that has no effect gives a warning that names the
     option. Such options come from MATLAB VBMC and belong to features that
     PyVBMC does not have; their descriptions in the options files say so.
@@ -442,6 +480,19 @@ its entry below.
 - After a second or later input warp, the bounds of the acquisition search
   could be mapped through the transform of an earlier iteration. We have not
   seen this happen in a run.
+- The input warp keeps the covariance of the posterior as it is when setting
+  its weak correlations to zero would leave a matrix that is not positive
+  definite, which could leave the warped posterior far from unit variance
+  along one direction. We have not seen this happen in a run.
+- After an input warp, `function_logger.X` and `function_logger.y` are
+  expressed in the new coordinates for every recorded evaluation. The points
+  set aside at the end of warm-up kept the coordinates of the space the run
+  had left.
+- `upper_gp_length_factor` caps the length scales of the GP, as documented.
+  In 1.0.4 it had no effect.
+- With `weighted_hyp_cov=False`, the running covariance of the GP
+  hyperparameters is cleared at the end of warm-up and takes in only fits
+  that drew samples. 1.0.4 did neither.
 - `vp.stats["J_sjk"]`, the covariance between the expected log joints of the
   mixture components, has the right shape after the variational optimization
   removed a component. In 1.0.4 the component was removed along one of the
@@ -468,6 +519,19 @@ its entry below.
   keywords failed.
 - `FunctionLogger.finalize()` trims the count of evaluations per point along
   with the other arrays.
+- `FunctionLogger`: recording a repeated evaluation whose duration is unknown
+  leaves the stored average duration of that point as it is, where 1.0.4
+  replaced it with NaN; and the value returned for a repeated point is a
+  float, as for a new one, where 1.0.4 returned a one-element array.
+- `ParameterTransformer` keeps copies of the bound, scale and rotation arrays
+  it is given, so changing one of them afterwards does not change the
+  transform. Built with a rotation or a scale and with plausible bounds, it
+  centres the plausible box as a transformer without them does. Its
+  documentation names the keyword for the bounded transform,
+  `transform_type`.
+- `pyvbmc.whitening.unscent_warp` works in floating point whatever the type
+  of the points it is given, where an array of integers was truncated, and
+  accepts a single point with several scales, which raised an error.
 - Example 1 gave −2.272 as the true log evidence of its target; the value is
   −2.2598.
 - `warp_cov_reg` accepts any number, or a callable that receives the number

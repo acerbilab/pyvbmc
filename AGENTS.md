@@ -109,7 +109,8 @@ are generated from them by `examples/scripts/Makefile`; regenerate, do not edit.
 
 Version comes from git tags via setuptools_scm with no fallback: a shallow
 clone or exported tarball fails to build. Commit messages follow conventional
-commits. A change that a user can notice is listed in `CHANGELOG.md` under
+commits and carry no `Claude-Session:` trailer (a `Co-Authored-By:` line is
+fine). A change that a user can notice is listed in `CHANGELOG.md` under
 `Unreleased` with the work that makes it, in a sentence written for users and
 relative to the last release (a fix to a feature that no release has shipped
 belongs to that feature's entry). A change that can stop a script written for
@@ -286,10 +287,12 @@ Things you must hold in your head across files:
   `specify_target_noise` or by `uncertainty_handling=True`) are settled
   after every source is read. `uncertainty_handling` (a boolean),
   `integer_vars` (a boolean mask or 0-based indices), `max_fun_evals` and
-  `max_iter` (positive integers, `max_iter` raised to `min_iter`) are
-  checked at construction. Options are frozen after init against assignment
-  and removal; use `options.__setitem__(k, v, force=True)` and
-  `options.__delitem__(k, force=True)`.
+  `max_iter` (positive integers, `max_iter` raised to `min_iter`),
+  `gp_mean_fun` and `gp_hyp_sampler` (the values the package implements:
+  `zero`, `const`, `negquad`; `slicesample`) and `f_vals` (not with
+  `specify_target_noise`) are checked at construction. Options are frozen
+  after init against assignment and removal; use `options.__setitem__(k, v,
+  force=True)` and `options.__delitem__(k, force=True)`.
 - **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
   creates `vbmc.rng` (`pyvbmc/rng.py: get_rng`), shared with `vbmc.vp`;
   `VariationalPosterior.__deepcopy__` shares the generator so every copy of a

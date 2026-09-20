@@ -95,7 +95,10 @@ fact inherited from MATLAB.
   isotropic-fixed, quadratic-only and quadratic-mixture mean families, and
   the hyperpriors PyVBMC would need for them, have no Python counterpart.
   `pyvbmc/vbmc/gaussian_process_train.py:_meanfun_name_to_mean_function`
-  accepts only the three that exist. VBMC's default (`negquad`) is ported.
+  accepts only the three that exist, and `VBMC` refuses the other names of
+  `misc/setupvars_vbmc.m:287` at construction (`pyvbmc/vbmc/vbmc.py:1113`);
+  until 2026-09-20 it accepted all twelve and failed in the first GP
+  training. VBMC's default (`negquad`) is ported.
 - Why: recorded in the two "Missing port" comments above and in gpyreg's
   `AGENTS.md`, which lists the three component families gpyreg implements.
 - Kind: unported feature.
@@ -184,7 +187,10 @@ fact inherited from MATLAB.
 - What differs: `np.quantile` interpolates between order statistics at
   `(i-1)/(N-1)`, while `quantile1.m` uses the `(i-0.5)/N` convention, so the
   recommended plausible bounds and starting values of the mean-function
-  hyperparameters differ by a small amount that depends on `N`.
+  hyperparameters differ by a small amount that depends on `N`. The same
+  holds for the plausible bounds that `warp_input` takes after a warp
+  (`pyvbmc/whitening/whitening.py:266` against `misc/warp_input_vbmc.m:85-86`,
+  MATLAB's own `quantile`), by about 1e-4 on its 1e5 draws.
 - Why: the two code comments record the choice explicitly.
 - Kind: deliberate change.
 
@@ -296,6 +302,53 @@ fact inherited from MATLAB.
   `AGENTS.md` §Architecture.
 - Kind: deliberate change (memory; the rebuilt factors are identical to the
   ones dropped).
+
+### The lower bounds of the length scales and of the output scale come from
+    the high-posterior-density subset
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:403` (`_gp_hyp`): the lower
+  bounds of `covariance_log_lengthscale` and `covariance_log_outputscale` are
+  the recommendations of gpyreg's kernel computed on the high-posterior-density
+  subset of the training set (`hpd_frac`, 0.8).
+- MATLAB: `misc/gptrain_vbmc.m:174-180` leaves both entries of `LB_gp` unset,
+  and `gplite/gplite_train.m:74`, `:120` fill them from the full training
+  set.
+- What differs: a subset has a smaller range, so PyVBMC's lower bounds are
+  lower, by a fraction of a nat on an ordinary training set and by much more
+  when the training set holds a value far below the rest.
+- Why: issue 99 and pull request 116 of `acerbilab/pyvbmc` (2022): the
+  recommended bounds "may be not appropriate in some cases when we have a
+  large range of point values", and bounds from the high posterior region
+  give "a broader bounds on the gp's outputscale and lengthscale".
+  `verification/wave3.md`, row W3-11, finds that the reason holds.
+- Kind: deliberate change.
+
+### Slice sampling is the only sampler of the GP hyperparameters
+- Python: `pyvbmc/vbmc/vbmc.py:3583` (`_validate_gp_hyp_sampler_option`)
+  refuses at construction every `gp_hyp_sampler` but `"slicesample"`, and
+  `_get_gp_training_options` holds the policy of that sampler alone;
+  `cov_sample_thresh`, which only covariance sampling read, is an inert
+  option.
+- MATLAB: `misc/get_GPTrainOptions.m:18-91` and `gplite/gplite_train.m:316-457`
+  offer `slicesample`, `npv`, `mala`, `slicelite`, `splitsample`, `covsample`
+  and `laplace`; `utils/slicelite.m` is one of them.
+- What differs: gpyreg samples hyperparameters by slice sampling and raises
+  for any other name, so PyVBMC refuses the other values where they are
+  given. Until 2026-09-20 it accepted them, transcribed their branches (two
+  of them wrongly: `verification/wave3.md`, row W3-13) and failed part-way
+  through the run.
+- Why: the PI's ruling on W3-13, after the pattern of `noise_shaping` and of
+  the separate search GP.
+- Kind: unported feature.
+
+### The evaluation times are not carried onto the GP
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:902` ("Missing port: gp.t =
+  t_train"); `train_gp` drops `t_train` as well.
+- MATLAB: `misc/gpreupdate.m:8`, `misc/gptrain_vbmc.m:76`,
+  `private/activesample_vbmc.m:484`.
+- What differs: MATLAB attaches the evaluation time of every training point
+  to the GP struct. Nothing reads the field anywhere in the MATLAB toolbox.
+- Why: `verification/wave3.md`, row W3-18.
+- Kind: unported feature (without a reader).
 
 ---
 
@@ -1369,7 +1422,13 @@ fact inherited from MATLAB.
   effect, and PyVBMC warns that it has none. MATLAB's `vptrain2real` returns
   its input unchanged at `T = 1`, the only temperature a PyVBMC run has, so
   the commented-out line is behaviorally equivalent at every reachable
-  setting.
+  setting. The same holds for the function logger: `misc/funlogger_vbmc.m`
+  divides the recorded value, its SD and the log-Jacobian by the temperature
+  (`:132-135`, `:180-183`, `:243`, `:269`), and `FunctionLogger._record`
+  divides nothing, while `warp_input` does divide the log-Jacobian
+  (`pyvbmc/whitening/whitening.py`, as `misc/warp_input_vbmc.m:117`); a port
+  of tempering has the logger to complete (`verification/wave3.md`, row
+  W3-30).
 - Why: `pyvbmc/variational_posterior/README.md` §"Porting status"
   ("The function `vbmc_power` ... has not been ported, but it is very low
   priority ... it was part of an experimental feature");
@@ -1639,6 +1698,101 @@ fact inherited from MATLAB.
   algorithm uses. The decorator assumes a `self` first argument and misbehaves
   on module-level functions.
 - Why: `AGENTS.md` §"Shapes are rigid".
+- Kind: Python-only addition.
+
+### The warp keeps a covariance that its correlation threshold would leave
+    indefinite
+- Python: `pyvbmc/whitening/whitening.py:226` (`warp_input`, with
+  `_drop_low_correlations` and `_is_positive_definite`): the covariance with
+  its weak correlations set to zero is used when it is positive definite, and
+  the covariance as it was otherwise.
+- MATLAB: `misc/warp_input_vbmc.m:52-71` takes the SVD of the thresholded
+  matrix in every case, as `papers/acerbi2020variational_appendix.md` §B.2
+  prescribes.
+- What differs: from three dimensions on a covariance with entries zeroed
+  need not be positive semi-definite; the SVD then returns the absolute value
+  of a negative eigenvalue, and the transform misses unit variance along that
+  direction (0.097 for 1 in the example of `verification/wave3.md`, row
+  W3-6). None of the 990 final posteriors of the population campaigns is
+  affected, so the guard changes no run of that population.
+- Why: the PI's ruling on W3-6 (2026-09-20).
+- Kind: deliberate change.
+
+### A variable with one finite bound is refused
+- Python: `pyvbmc/parameter_transformer/parameter_transformer.py:128`: the
+  constructor raises for a variable bounded on one side only. `VBMC` rejects
+  such bounds itself (`pyvbmc/vbmc/_bounds.py`, `vbmc:HalfBounds`).
+- MATLAB: `shared/warpvars_vbmc.m:897-901` assigns types 1 and 2 to such
+  variables, with the log transforms of `:92-101`, `:302-312` and `:491-494`;
+  `misc/boundscheck_vbmc.m:138-143` keeps them from reaching VBMC.
+- What differs: the log transforms were never ported (commit `6a247e5`,
+  2021-02-25, removed their type labels, under which the code already applied
+  the identity). Until 2026-09-20 the public class carried such a variable
+  through the identity, with an inverse outside the support.
+- Why: the PI's ruling on W3-23.
+- Kind: unported feature.
+
+### Points within rounding of a bound: the nudge, the clamp, and the grouping
+    of one product
+- Python: `pyvbmc/parameter_transformer/parameter_transformer.py:581`
+  (`_to_unit_interval`), `:593` (`_from_unit_interval`), `:646`
+  (`_inverse_student4`).
+- MATLAB: `shared/warpvars_vbmc.m:106-107`, `:256-257`, `:265-266` (direct),
+  `:457-459` (clamp of the inverse), `:451` (inverse of type 13).
+- What differs: the direct transform moves a unit-interval image that rounds
+  to 0 or 1 to the adjacent number, where MATLAB returns an infinity; a run
+  reaches this when a warp re-transforms a stored point that the inverse had
+  clamped beside a bound. The clamp of the inverse uses `nextafter` where
+  MATLAB uses `eps(bound)`, one ulp apart at a bound that is a power of two.
+  The inverse of `student4` computes `(3/8)*(u/sqrt(...))` where MATLAB
+  computes `((3/8)*u)/sqrt(...)`, one ulp. Everything else in the three
+  bounded transforms, their inverses and their log-Jacobians is bit-identical
+  to a transcription of `warpvars_vbmc.m` on 20 000 points per configuration
+  (`verification/wave3_P8.md`, rows P8-15a to P8-15c).
+- Why: pull request 89 (2022-08-28): "points strictly within the bounds in
+  the original space should never map to points at infinity in the
+  transformed space". The message of its commit `3e9d1c2`, "identically to
+  MATLAB", is wrong for both of its changes: before it the clamp was
+  MATLAB's.
+- Kind: deliberate change (the nudge); the other two are differences of one
+  ulp, kept.
+
+### The pooling of a repeated noisy observation has a fallback for extreme SDs
+- Python: `pyvbmc/function_logger/function_logger.py:709` (`_record`).
+- MATLAB: `misc/funlogger_vbmc.m:234-238`.
+- What differs: when the precisions of the inverse-variance pooling overflow
+  (an SD below about 1e-154), PyVBMC pools with relative weights, where
+  MATLAB's three lines give Inf or NaN. The ordinary path is MATLAB's
+  arithmetic, bit for bit.
+- Why: commit `6769a9a` (2026-09-16), recorded in
+  `dev/plans/pymc-target-adapter.md`.
+- Kind: Python-only addition.
+
+### A cached value of a target that provides its noise needs its SD
+- Python: `pyvbmc/vbmc/vbmc.py:885` refuses `f_vals` together with
+  `specify_target_noise` at construction, and
+  `pyvbmc/function_logger/function_logger.py:543` (`add`) raises without an
+  SD at uncertainty level 2; level 1 records SD 1.
+- MATLAB: `misc/funlogger_vbmc.m:159-162` intends SD 1 for a missing SD at
+  every noisy level, and raises before reaching that line, because both of
+  its callers pass the value alone (`matlab_side_defects.md`).
+- What differs: `f_vals` has no channel for an SD; the
+  `precomputed_evaluations` argument has one. Until 2026-09-20 PyVBMC
+  recorded SD 1 for such values.
+- Why: the PI's ruling on W3-28.
+- Kind: deliberate change.
+
+### `scale`, and the logger's noise flag, are validated
+- Python: `pyvbmc/parameter_transformer/parameter_transformer.py:82-91`
+  (`scale` finite, positive, one entry per dimension);
+  `pyvbmc/function_logger/function_logger.py:199-204` (`noise_flag` true
+  exactly above uncertainty level 0).
+- MATLAB: `shared/warpvars_vbmc.m:763-765` adds `log(scale)` unchecked, and
+  gives a user no way to supply a scale; `misc/funlogger_vbmc.m` derives the
+  noise flag from the state.
+- What differs: two public constructors refuse inputs that gave a NaN
+  log-Jacobian or a singular map, and a logger whose two routes disagreed.
+- Why: the PI's rulings on W3-26 and W3-32.
 - Kind: Python-only addition.
 
 ---

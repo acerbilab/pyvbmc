@@ -8,7 +8,7 @@ reading of the MATLAB source, confirmed by the verification record it
 cites. **Nothing here was run in MATLAB**, so an entry says what the code
 reads as doing, and one entry marks the step that is inferred. Paths are
 relative to the MATLAB repository root. The list is brought up to date as
-the review's waves are verified; it stands at the end of wave 2 and of its
+the review's waves are verified; it stands at the end of wave 3 and of its
 fix pass.
 
 ## Defects
@@ -29,6 +29,12 @@ fix pass.
 | 12 | `misc/setupoptions_vbmc.m:120-124` | In the `MaxFunEvals < MinFunEvals` branch the assignment reads `options.MinFunEvals = options.MinFunEvals;` | The warning announces a change of `MaxFunEvals` that is never applied | No counterpart of this branch: PyVBMC checks `max_fun_evals` and `max_iter` and raises `max_iter` to `min_iter` (W2-26), and does not compare `max_fun_evals` with `min_fun_evals` | `verification/wave2_C_setup.md`, C-C3 |
 | 13 | `misc/setupoptions_vbmc.m:47` | The list of evaluated fields contains `'ConstrainedGPMean''FeatureTest'`, one string, since commit `2044530` (2021-06-18) dropped the comma | Neither option is evaluated; both stay the character vector `'no'`. Neither is read anywhere, so nothing follows | No counterpart | `reviews/M_comparison.md`; `verification/wave2_C_setup.md`, C-C4 |
 | 14 | `misc/finalboost_vbmc.m:6`, with `misc/vbinit_vbmc.m:132-136` | With `VariableMeans` off the boost takes `Knew = max(MinFinalComponents, vp.K)` while the initialization keeps the posterior's own `mu0`, of `vp.K` columns, beside `Knew` weights and scales. The main loop avoids the mismatch by setting `vp.mu = gp.X'` and `Knew = size(vp.mu,2)` first (`vbmc.m:575-577`, `:690-692`); the boost does not. Read, not run | A fixed-means run that ends with fewer than `MinFinalComponents` components, as one stopped during warm-up does, would fail in the boost | Not shared since `73d2a81`: the boost places the components at the training inputs (`verification/wave2.md`, W2-29) | `verification/scripts/wave2_variable_means_boost.py` for the Python side |
+| 15 | `misc/funlogger_vbmc.m:244` | The duplicate branch of `record` writes the pooled value of a repeated point to `optimState.y(optimState.Xn)`, the last filled row, for `optimState.y(idx)`, the row of the point; the new-row branch below it uses `Xn` rightly, since there `idx == Xn` | The last filled row takes another point's value and the repeated row keeps its old one; both are GP training targets (`misc/get_traindata_vbmc.m:7`) and feed `ymax`. Only with `MaxRepeatedObservations > 0`, which no default sets, those for noisy targets included; then at nearly every repeat, the repeated point being rarely the last one added | Not shared: `self.y[idx]` since `2527c47` (2021-05-20) | `verification/wave3_P8.md`, MATLAB-side defects, 1 |
+| 16 | `misc/funlogger_vbmc.m:159-162`, with `private/activesample_vbmc.m:388` and `misc/initdesign_vbmc.m:56` | The `'add'` action reads `fsd = varargin{2}` whenever the run is noisy, and both call sites pass the value alone, so the line that defaults a missing SD to 1 is never reached | A noisy run with `Fvals`, or one that acquires a cached starting point that has a value, raises "Index exceeds the number of array elements" | Not shared: `add` takes the SD as an optional argument; at the level where the target provides its noise PyVBMC requires it, and refuses `f_vals` there (sheet, "A cached value of a target that provides its noise needs its SD") | `verification/wave3_P8.md`, MATLAB-side defects, 2 |
+| 17 | `misc/setupvars_vbmc.m:96`, with `misc/warp_gpandvp_vbmc.m:8-10` | `vp.temperature` starts as NaN, and the warp guards on `~isempty`, which NaN passes | None as the loop stands: `misc/vpoptimize_vbmc.m:190` overwrites the field in the first iteration, before a warp can occur. The order of the loop is what prevents a NaN temperature from reaching every warped hyperparameter and weight | No counterpart | `verification/wave3_P8.md`, MATLAB-side defects, 4 |
+| 18 | `misc/gptrain_vbmc.m:19-25` | The branch on `optimState.Warmup && options.BOWarmup` and its `else` call `vbmc_gphyp` with the same arguments; the commented-out lines beside them show the intent, a constant mean during that warm-up | `BOWarmup` never switches the GP mean function, and `vbmc.m:825-828` restores at the end of warm-up a mean function that never changed | No counterpart: the option is not ported (sheet) | `verification/wave3_P5.md`, MATLAB-side defects, 2 |
+| 19 | `misc/get_GPTrainOptions.m:112` | The burn-in of the `slicelite` sampler divides by `log(options.GPRetrainThreshold)`, which is `log(1) = 0` at the default. Inferred from the rules of the arithmetic, not run: in the branch's own region `rindex < 1` the quotient is minus infinity, and `max(1, ceil(-Inf))` is 1 | At the default threshold the burn-in is `Ns_gp` whatever the reliability index, so the scaling the formula is there for never happens | No counterpart since 2026-09-20: slice sampling is the only sampler (sheet); the transcription removed then had the division inside the logarithm | `verification/wave3_P5.md`, MATLAB-side defects, 1 |
+| 20 | `misc/gptrain_vbmc.m:33`, with `misc/get_GPTrainOptions.m:63` | For `GPHypSampler = 'covsample'` the widths are built as an `Nhyp` by `Nhyp` covariance, and the caller discards widths whose number of elements differs from `Nhyp` | The covariance never reaches `eissample_lite`: covariance sampling runs on the default widths | No counterpart since 2026-09-20 (as 19); the transcription had the same guard | `verification/wave3_P5.md`, MATLAB-side defects, 5 |
 
 ## Questionable, shared by both implementations
 
@@ -42,6 +48,32 @@ non-differences".
 - `utils/fminadam.m:48`, `:63`: `ftab(iter)` is the objective at the point
   the iteration starts from and `xtab(:,iter)` the point after the update,
   so the two tables, and their trailing averages, are offset by one.
+
+Found in wave 3 and left as they are in both implementations
+(`verification/wave3.md`, rows W3-20, W3-29 and W3-26):
+
+- `misc/funlogger_vbmc.m:220-247`: the duplicate scan of `record` covers
+  every row, and a repeat at an input whose row the end of warm-up
+  deactivated is pooled into that row, which stays inactive: the evaluation
+  is paid for and seen by nothing. It needs `MaxRepeatedObservations > 0`
+  and a search cache that carries a training input across the trim.
+- `misc/warp_input_vbmc.m:164-167`, under the comment "Reset GP
+  hyperparameters", clears the running average of the variational moments,
+  which nothing reads. After a warp only `hypstruct.hyp` is warped
+  (`vbmc.m:559`); the running hyperparameter covariance, the last chain and
+  the recorded GPs and chains of before the warp go on feeding the starting
+  points and the sampler widths of the hyperparameter fit. The density the
+  fit targets is unaffected.
+- `shared/warpvars_vbmc.m:763-765` adds `log(scale)` to the log-Jacobian,
+  where `log(abs(scale))` is the term; a warp always produces a positive
+  scale. PyVBMC validates a scale given to its public constructor.
+
+The thresholded covariance of the warp, which need not be positive
+semi-definite (`misc/warp_input_vbmc.m:52-71`, and the recipe of the 2020
+paper's appendix B.2), is not shared since 2026-09-20: PyVBMC keeps the
+covariance as it was in that case (sheet; `verification/wave3.md`, row
+W3-6). It occurs in none of the 990 final posteriors of PyVBMC's benchmark
+campaigns.
 
 ## Written or declared and never read
 
