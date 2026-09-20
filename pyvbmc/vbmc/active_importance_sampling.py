@@ -37,10 +37,25 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     active_is : dict
         A dictionary of importance sampling values and bookkeeping.
 
+    Raises
+    ------
+    NotImplementedError
+        If the acquisition function sets
+        ``acq_info["mcmc_importance_sampling"]``.
+
     Notes
     -----
     Every random draw, the MCMC step's included, comes from ``vp.rng``.
     """
+    if acq_fcn.acq_info.get("mcmc_importance_sampling"):
+        raise NotImplementedError(
+            "The acquisition function sets "
+            "acq_info['mcmc_importance_sampling']. The refinement of the "
+            "samples of step 1 by an ensemble sampler that the flag asks "
+            "for (MATLAB VBMC's private/activeimportancesampling_vbmc.m, "
+            "lines 57 to 92) is not ported."
+        )
+
     rng = vp.rng
     # Do we simply sample from the variational posterior?
     only_vp_flag = acq_fcn.acq_info.get(
@@ -81,43 +96,6 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
         Xa, __ = vp.sample(Na, orig_flag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
-
-        # Retained custom-acquisition hook; built-ins do not enable this path.
-        if acq_fcn.acq_info.get("mcmc_importance_sampling"):
-            # Compute fractional effective sample size (ESS)
-            fESS = fess(vp, f_mu, Xa)
-
-            if fESS < options["active_importance_sampling_fess_thresh"]:
-                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp)
-
-                # Get MCMC options
-                Nmcmc_samples = (
-                    Na * options["active_importance_sampling_mcmc_thin"]
-                )
-                thin = 1
-                burn_in = 0
-                sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
-                # W = Na  # walkers, not applicable for simple slice sampling.
-
-                # Perform a single MCMC step for all samples.
-                # Contrary to MATLAB, we are using simple slice sampling.
-                # Better (e.g. ensemble slice) sampling methods could
-                # later be implemented.
-                sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun,
-                    Xa,
-                    widths,
-                    lb_tran,
-                    ub_tran,
-                    sampler_opts,
-                    rng=rng,
-                )
-                results = sampler.sample(Nmcmc_samples, thin, burn_in)
-                Xa = results["samples"]
-                # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths,
-                # lb_tran, ub_tran, sample_opts)
-                Xa = Xa[-Na:, :]
-                f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 

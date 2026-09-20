@@ -1,3 +1,4 @@
+import copy
 import os.path
 from sys import float_info
 
@@ -84,7 +85,6 @@ def _scenario():
     # Initialize options:
     user_options = {
         "active_importance_sampling_mcmc_samples": 10,
-        "active_importance_sampling_fess_thresh": 0,
         "active_importance_sampling_mcmc_thin": 2,
         "active_importance_sampling_vp_samples": 11,
         "active_importance_sampling_box_samples": 12,
@@ -128,6 +128,21 @@ def test_active_importance_sampling():
         == active_is_imiqr["f_s2"].T.shape
         == (2, 10)
     )
+
+
+@pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
+def test_an_acquisition_asking_for_mcmc_importance_sampling_is_refused(
+    acq_fcn,
+):
+    """The refinement of the samples of step 1 by an ensemble sampler,
+    which ``acq_info["mcmc_importance_sampling"]`` asks for
+    (``private/activeimportancesampling_vbmc.m``, lines 57 to 92), is not
+    ported."""
+    vp, gp, vbmc_options = _scenario()
+    acq_fcn = copy.deepcopy(acq_fcn)
+    acq_fcn.acq_info["mcmc_importance_sampling"] = True
+    with pytest.raises(NotImplementedError, match="mcmc_importance_sampling"):
+        active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
 
 
 @pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])

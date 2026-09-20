@@ -1512,6 +1512,45 @@ def test_noise_shaping_on_is_rejected():
     assert "noiseshaping_vbmc.m" in message
 
 
+class _McmcImportanceSamplingAcq(AcqFcnVIQR):
+    """An acquisition that asks for the MCMC step of the importance
+    sampler, as a user-supplied one could."""
+
+    def __init__(self):
+        super().__init__()
+        self.acq_info["mcmc_importance_sampling"] = True
+
+
+def test_an_acquisition_asking_for_mcmc_importance_sampling_is_rejected():
+    """The step that the flag asks for is not ported, so an acquisition
+    that sets it is refused where it is supplied."""
+    with pytest.raises(NotImplementedError) as execinfo:
+        create_vbmc(
+            3,
+            3,
+            1,
+            5,
+            2,
+            4,
+            options={"search_acq_fcn": [_McmcImportanceSamplingAcq()]},
+        )
+    message = execinfo.value.args[0]
+    assert "mcmc_importance_sampling" in message
+    assert "not ported" in message
+
+
+def test_the_acquisitions_that_do_not_ask_for_it_are_accepted():
+    """The shipped acquisitions leave the flag unset, and an entry of
+    ``search_acq_fcn`` may also be the name of one."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    for acq_fcn in vbmc.options["search_acq_fcn"]:
+        assert not acq_fcn.acq_info.get("mcmc_importance_sampling")
+    vbmc = create_vbmc(
+        3, 3, 1, 5, 2, 4, options={"search_acq_fcn": ["AcqFcnVIQR()"]}
+    )
+    assert vbmc.options["search_acq_fcn"] == ["AcqFcnVIQR()"]
+
+
 def test_vectorized_target_option_and_logger_mode():
     vbmc = _vectorized_vbmc(lambda x: np.sum(x, axis=1))
     assert vbmc.options["vectorized_target"] is True
