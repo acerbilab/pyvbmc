@@ -154,7 +154,7 @@ def train_gp(
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
                 rng.choice(
-                    N0, math.ceil(gp_train["init_N"] / 2), replace=False
+                    N0, math.floor(gp_train["init_N"] / 2), replace=False
                 ),
                 :,
             ]

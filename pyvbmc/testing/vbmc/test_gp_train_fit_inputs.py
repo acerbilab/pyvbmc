@@ -382,6 +382,26 @@ def test_a_history_holding_no_gp_collects_no_starting_points(monkeypatch):
     np.testing.assert_array_equal(seen["hyp0"], np.full((1, hyp_N), -1.0))
 
 
+def test_a_large_pool_of_starting_points_is_thinned_to_half_the_design(
+    monkeypatch,
+):
+    """A pool of collected starting points larger than half the
+    space-filling design is subsampled to ``floor(init_N/2)`` of them
+    (MATLAB VBMC, ``misc/gptrain_vbmc.m:44``), beside the summary vector of
+    the last fit."""
+    init_N = 5
+    vbmc = build_trained_state()
+    hyp_N = np.size(default_gp(vbmc).hyper_priors["mu"])
+    record_marked_gps(vbmc, 6, hyp_N)
+    seen = capture_starting_points(monkeypatch, init_N=init_N)
+
+    fit_the_gp(vbmc, {"hyp": np.full(hyp_N, -1.0)})
+
+    # The window holds four GPs, more than half the design asks for.
+    assert seen["hyp0"].shape[0] == math.floor(init_N / 2) + 1
+    assert {row[0] for row in seen["hyp0"]} <= {-1.0, 2.0, 3.0, 4.0, 5.0}
+
+
 def test_the_noise_model_follows_the_uncertainty_level():
     """The GP gets the noise function that ``optim_state["gp_noise_fun"]``
     names (MATLAB VBMC, ``misc/setupvars_vbmc.m:277-281``): a constant term
