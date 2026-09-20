@@ -76,6 +76,10 @@ def test_vbmc_check_termination_conditions_max_iter(mocker):
 
 
 def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
+    """A run does not terminate before it has performed ``min_iter``
+    iterations and spent ``min_fun_evals`` evaluations (MATLAB VBMC,
+    ``private/vbmc_termination.m:98-99``, which compares the count of
+    iterations performed, not the index of the current one)."""
     options = {
         "max_fun_evals": 10,
         "min_fun_evals": 5,
@@ -84,15 +88,20 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.function_logger.func_count = 9
-    vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
         return_value=(np.inf, np.nan),
     )
+    # One hundred iterations performed, one short of the minimum.
+    vbmc.optim_state["iter"] = 99
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
+    # The hundred-and-first meets it, and the maximum has been reached.
+    vbmc.optim_state["iter"] = 100
+    terminated, __ = vbmc._check_termination_conditions()
+    assert terminated
 
     options = {
         "max_fun_evals": 10,

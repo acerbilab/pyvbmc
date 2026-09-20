@@ -2198,10 +2198,11 @@ class VBMC:
         # Store stability flag
         self.iteration_history.record("stable", stableflag, iteration)
 
-        # Prevent early termination
+        # Prevent early termination. The guard compares the number of
+        # iterations performed, one more than the index of this one.
         below_minimum = self.function_logger.func_count < self.options.get(
             "min_fun_evals"
-        ) or iteration < self.options.get("min_iter")
+        ) or iteration + 1 < self.options.get("min_iter")
         if below_minimum and (
             not self._budget_active
             or self.function_logger.func_count < max_fun_evals
