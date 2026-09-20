@@ -409,9 +409,20 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   reviewer left is removed before the next wave. The orchestrator's own
   in-progress edits (this file, `TODO.md`, `dev/README.md`, the files under
   `experiments/port_review_20260919/`) are the only expected changes.
-  Reviewer reports are copied from the scratchpad into
+  Reviewer reports are saved as
   `experiments/port_review_20260919/reviews/<slice>_<track>.md` by the
   orchestrator.
+- An agent's report exists only as its final message, because the harness
+  refuses report files written by agents. The orchestrator saves that
+  message verbatim, never retyped, under a header that says what it is. A
+  long message is kept by the harness as a text file in the session's
+  `tool-results` directory under `~/.claude/projects/<project>/<session>/`;
+  a shorter one arrives inline and is extracted from the agent's
+  transcript, `subagents/agent-<id>.jsonl` in the same directory, as the
+  last string of the agent's own output that holds the report's title.
+- The pre-commit hooks rewrite files (formatting, unused imports) and then
+  abort the commit; the rewritten files are staged again and the commit is
+  repeated.
 - All of the review's work happens on the branch `dev-port-review`, cut
   from `dev-next` at `f91fdf0`: this plan's worklog, the files under
   `experiments/port_review_20260919/`, the ledger and the fixes. It
@@ -676,6 +687,77 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`dev/results/<date>-port-correctness-review.md`) and the consolidation
   of the sheet's durable entries into `pyvbmc/vbmc/README.md` come at the
   end.
+
+  Notes for the fix pass, on what the ledger rows do not say:
+
+  - *Why the split runs where it does.* The three areas are line ranges
+    of `pyvbmc/vbmc/vbmc.py` that do not touch. Agent A: `optimize`
+    except its continuation block and its search-GP branch, the warm-up
+    and termination methods, `final_boost`, `determine_best_vp`,
+    `_create_result_dict`. Agent B: the class docstring, the option
+    loading of `__init__` down to the budget arguments, the
+    `integer_vars` and `uncertainty_handling` blocks of
+    `_init_optim_state`, the search-GP branch of `optimize`, the
+    `new_options` lines of `load`. Agent C: the construction of the
+    posterior in `__init__`, the continuation block of `optimize`, the
+    rest of `load`, `__str__`, `_init_logger`. W2-15 is one commit of
+    agent B, branch and registration together, because the guard test
+    wants every unread option registered. C-M1 goes with W2-21 because
+    both edit `__str__`. W2-27 is agent B's because the budget arguments
+    sit directly under the option loading.
+  - *Test files.* Two agents appending to one test file collide on
+    cherry-pick, so each agent adds its tests to files that no other
+    agent touches, new files where needed: A the loop, termination,
+    final-boost, best-posterior and whitening tests; B `test_options.py`,
+    `test_vbmc_init.py` and the bounds tests; C
+    `test_vbmc_save_and_load.py` and new files for the rest.
+  - *Tests that assert a defect* and change with its fix:
+    `test_vbmc_check_termination_conditions_prevent_early_termination`
+    (W2-5); `test_vbmc_optimstate_integer_vars` and the integer mask of
+    `test_repeated_observation_is_exact_with_integer_vars` (W2-17); the
+    `uncertainty_handling` lists in `test_vbmc_init.py` and
+    `test_vbmc_precomputed.py` (W2-18); `test_init_options_path`, which
+    feeds made-up option names through a file (W2-20);
+    `test_inert_options_are_the_declared_options_nothing_reads` (W2-22).
+    Outside the package, `dev/scripts/benchmark_targets.py` prints
+    `results['iterations'] + 1` (W2-13).
+  - *W2-9.* Commit `6769a9a` made the schedule read the budget copy in
+    `optim_state` on purpose: a run charged an initialization cost needs
+    the cost-adjusted value there. The fix refreshes that copy from the
+    options, in `load` and in the continuation block of `optimize`, on the
+    ordinary path as it already does on the budget path, and leaves the
+    reader alone.
+  - *W2-7, W2-8 and W2-18 are one design*, made by agent B in the order
+    W2-18, W2-7, W2-8. Uncertainty handling is on when
+    `specify_target_noise` is set or `uncertainty_handling` is true;
+    `update_defaults` runs after the options file is read; an option set
+    in the file counts as set by the user, as one set in the dict does,
+    so the noisy defaults do not overwrite it.
+  - *W2-2.* `private/recompute_lcbmax.m` builds vectors over every logged
+    row, `NaN` at the inactive ones, predicts the latent mean and
+    variance at the active rows with the current GP, takes
+    `lcb = fmu - ELCBOImproWeight*sqrt(fs2)`, its trailing cumulative
+    maximum with `movmax` (which skips `NaN`), and samples it at each
+    iteration's `stats.N`, the count of logged rows including trimmed
+    ones, which is `iteration_history["N"] - 1` as a 0-based index.
+    `private/vbmc_warmup.m:46-50` then prefers the recomputed vector to
+    the recorded maxima, and `_check_warmup_end_conditions` needs that
+    branch too. The function is tested against that specification with a
+    hand-built GP and logger.
+  - *Gates.* `dev/scripts/golden_replay.py` is no gate for this pass:
+    its references describe the defaults from before wave 1's
+    trajectory-moving fixes. Before the first cherry-pick the orchestrator
+    records a few short seeded default runs, noiseless and noisy (through
+    `specify_target_noise` in the options dict), on the commit the pass
+    starts from; the commits of the first phase must reproduce them bit
+    for bit. `make_oracle_fixtures.py --check --exact` must stay at 11 of
+    11 through both phases, with `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+    MKL_NUM_THREADS=1`.
+  - *Material for the agents' briefs:* the ledger rows of
+    `verification/wave2.md` with the PI's dispositions, the scope notes
+    at the end of each finding in `verification/wave2_B_loop.md` and
+    `verification/wave2_C_setup.md`, the strictness rule of the Decisions
+    section, and the worktree procedure of the Working rules.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);
