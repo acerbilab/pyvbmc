@@ -925,10 +925,14 @@ def test_vectorized_initial_design_matches_scalar(D, noisy):
     x0 = np.vstack((np.zeros(D), np.full(D, 0.25)))
     bounds = np.full((1, D), np.inf)
     plausible = np.full((1, D), 1.0)
-    common_options = {
-        "f_vals": [2 * D, np.nan],
-        "specify_target_noise": noisy,
-    }
+    # A cached value for the first starting point. ``f_vals`` carries no
+    # noise for its values, so a target that provides its own noise cannot
+    # take it, and that arm evaluates every point of the design.
+    common_options = {"specify_target_noise": noisy}
+    if not noisy:
+        common_options["f_vals"] = [2 * D, np.nan]
+    n_cached = 0 if noisy else 1
+    n_evaluated = 5 - n_cached
     scalar = VBMC(
         scalar_target,
         x0,
@@ -971,15 +975,15 @@ def test_vectorized_initial_design_matches_scalar(D, noisy):
         )
     if noisy:
         assert np.array_equal(scalar_logger.S, vector_logger.S, equal_nan=True)
-    assert scalar_logger.func_count == vector_logger.func_count == 4
-    assert scalar_logger.cache_count == vector_logger.cache_count == 1
+    assert scalar_logger.func_count == vector_logger.func_count == n_evaluated
+    assert scalar_logger.cache_count == vector_logger.cache_count == n_cached
     assert (
         scalar.vp.rng.bit_generator.state == vector.vp.rng.bit_generator.state
     )
-    assert len(scalar_calls) == 4
+    assert len(scalar_calls) == n_evaluated
     assert all(call.shape == (D,) for call in scalar_calls)
     assert len(vector_calls) == 1
-    assert vector_calls[0].shape == (4, D)
+    assert vector_calls[0].shape == (n_evaluated, D)
 
 
 def test_vectorized_initial_design_all_values_cached():
