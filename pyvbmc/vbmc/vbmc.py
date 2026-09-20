@@ -335,21 +335,18 @@ class VBMC:
             self.options.get("tol_elcbo_boost")
         )
 
-        precomputed_was_provided = (
-            precomputed_evaluations is not _PRECOMPUTED_NOT_PROVIDED
-        )
-        initialization_cost_was_provided = (
-            initialization_cost is not _INITIALIZATION_COST_NOT_PROVIDED
-        )
-        if not precomputed_was_provided:
+        if precomputed_evaluations is _PRECOMPUTED_NOT_PROVIDED:
             precomputed_evaluations = None
-        if not initialization_cost_was_provided:
+        if initialization_cost is _INITIALIZATION_COST_NOT_PROVIDED:
             initialization_cost = 0
-        self._budget_active = bool(
-            precomputed_was_provided or initialization_cost_was_provided
-        )
         self.initialization_cost = self._validate_initialization_cost(
             initialization_cost
+        )
+        # The budget accounting follows what there is to account for:
+        # observations available before the run, or a charge against the
+        # total. Naming either argument at its default is the default.
+        self._budget_active = bool(
+            precomputed_evaluations is not None or self.initialization_cost > 0
         )
         self._configured_max_fun_evals = self.options.get("max_fun_evals")
         self._effective_max_fun_evals = (
