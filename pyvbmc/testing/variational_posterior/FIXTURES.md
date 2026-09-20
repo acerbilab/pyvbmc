@@ -59,7 +59,9 @@ value, as bytecode of the Python version that wrote it, which is what the
 files are for: whichever interpreter runs the tests, at least one of them
 carries bytecode of another Python version. They cannot be made again with
 the current code, which no longer stores those functions; an older checkout
-and the two interpreters are needed.
+and the two interpreters are needed
+(`dev/experiments/port_review_20260919/verification/scripts/wave2_xver_make_fixture.py`
+is the script that wrote them).
 
 The posterior has `D = 2` and `K = 3`. The first variable has hard bounds 0
 and 10 and plausible bounds 2 and 6, the second is unbounded with plausible
