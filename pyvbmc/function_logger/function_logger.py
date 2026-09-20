@@ -169,7 +169,8 @@ class FunctionLogger:
     D : int
         The number of dimensions that the function takes as input.
     noise_flag : bool
-        Whether the function fun is stochastic or not.
+        Whether the function fun is stochastic or not. It is `True`
+        exactly when ``uncertainty_handling_level`` is above 0.
     uncertainty_handling_level : {0, 1, 2}
         The uncertainty handling level which can be one of
         (0: none; 1: unknown noise level; 2: user-provided noise).
@@ -195,6 +196,12 @@ class FunctionLogger:
     ):
         if not isinstance(vectorized_target, (bool, np.bool_)):
             raise ValueError("vectorized_target must be a boolean.")
+        if bool(noise_flag) != (uncertainty_handling_level > 0):
+            raise ValueError(
+                "noise_flag must be True exactly when "
+                "uncertainty_handling_level is above 0, but they are "
+                f"{bool(noise_flag)} and {uncertainty_handling_level}."
+            )
         self.fun = fun
         self.D: int = D
         self.noise_flag: bool = noise_flag

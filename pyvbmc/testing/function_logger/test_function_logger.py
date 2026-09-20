@@ -9,6 +9,30 @@ noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
 noisy_function_2 = lambda x: (np.sum(x + 2) + 0.5, np.sum(x) + 0.25)
 
 
+@pytest.mark.parametrize(
+    "noise_flag, level", [(True, 0), (False, 1), (False, 2)]
+)
+def test_init_rejects_a_noise_flag_that_contradicts_the_level(
+    noise_flag, level
+):
+    """The noise flag says what the uncertainty handling level says: a
+    logger is noisy exactly above level 0. A pair that disagrees records a
+    different SD through `__call__` than through `batch_call`, so it is
+    refused."""
+    with pytest.raises(ValueError, match="noise_flag"):
+        FunctionLogger(non_noisy_function, 3, noise_flag, level)
+
+
+@pytest.mark.parametrize(
+    "noise_flag, level", [(False, 0), (True, 1), (True, 2)]
+)
+def test_init_accepts_a_noise_flag_that_matches_the_level(noise_flag, level):
+    """The three pairs that agree are the three the class supports."""
+    f_logger = FunctionLogger(non_noisy_function, 3, noise_flag, level)
+    assert f_logger.noise_flag is noise_flag
+    assert f_logger.uncertainty_handling_level == level
+
+
 def test_call_index():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
     _, _, idx = f_logger(np.array([3, 4, 5]))
