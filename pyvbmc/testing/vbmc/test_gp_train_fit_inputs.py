@@ -71,6 +71,16 @@ def training_data(vbmc):
     return logger.X[logger.X_flag, :], logger.y[logger.X_flag]
 
 
+def default_gp(vbmc):
+    """The GP model ``train_gp`` builds for a noiseless target."""
+    return gpr.GP(
+        D=vbmc.D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+
+
 def hyperparameter_bounds(vbmc, gp):
     """Install the bounds and priors of ``vbmc`` on ``gp``.
 
@@ -232,3 +242,39 @@ def test_output_dependent_noise_is_bounded_by_the_training_values():
     lower, upper = bounds["noise_rectified_log_multiplier"]
     assert lower[0] == min(np.min(y), np.max(y) - 20 * D)
     assert upper[0] == np.max(y) - 10 * D
+
+
+def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
+    """``upper_gp_length_factor`` caps the GP input length scales at
+    ``log(factor * (PUB - PLB))`` (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:177``, which assigns ``UB_gp(1:D)`` and leaves
+    the lower entries to their own statement). At the default 0 no cap is
+    asked for and the entry is left for gpyreg to fill from the training
+    set."""
+    capped = build_trained_state({"upper_gp_length_factor": 3})
+    _, bounds, filled = hyperparameter_bounds(capped, default_gp(capped))
+    asked = np.log(
+        3 * (capped.optim_state["pub_tran"] - capped.optim_state["plb_tran"])
+    ).ravel()
+    np.testing.assert_array_equal(
+        bounds["covariance_log_lengthscale"][1], asked
+    )
+    # gpyreg fills the entries left unset and keeps the ones installed, so
+    # the cap is what the fit works with.
+    np.testing.assert_array_equal(
+        filled["covariance_log_lengthscale"][1], asked
+    )
+
+    uncapped = build_trained_state()
+    _, default_bounds, default_filled = hyperparameter_bounds(
+        uncapped, default_gp(uncapped)
+    )
+    # The option touches neither the lower bounds nor any other entry.
+    np.testing.assert_array_equal(
+        bounds["covariance_log_lengthscale"][0],
+        default_bounds["covariance_log_lengthscale"][0],
+    )
+    assert np.all(np.isnan(default_bounds["covariance_log_lengthscale"][1]))
+    # Without the option the fit works with gpyreg's recommendation, which
+    # is not the cap the option asks for.
+    assert np.all(default_filled["covariance_log_lengthscale"][1] != asked)

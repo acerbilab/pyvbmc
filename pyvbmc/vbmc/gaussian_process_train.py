@@ -373,9 +373,11 @@ def _gp_hyp(
 
     bounds = gp.get_bounds()
     if options["upper_gp_length_factor"] > 0:
-        # Max GP input length scale
+        # Max GP input length scale. Each statement here replaces one bound
+        # of a hyperparameter and carries the other one over, so that the
+        # entries a later statement leaves alone survive.
         bounds["covariance_log_lengthscale"] = (
-            -np.inf,
+            bounds["covariance_log_lengthscale"][0],
             np.log(options["upper_gp_length_factor"] * (pub_tran - plb_tran)),
         )
     # Increase minimum noise.
@@ -405,7 +407,7 @@ def _gp_hyp(
         )
         bounds["covariance_log_lengthscale"] = (
             cov_bounds_info["LB"][:D],
-            np.nan,
+            bounds["covariance_log_lengthscale"][1],
         )
         # These bounds are wider since cov_bounds_info is based on the
         # high-posterior-density region as opposed to the full data
