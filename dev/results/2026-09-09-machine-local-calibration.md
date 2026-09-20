@@ -261,7 +261,10 @@ API, cache location/schema/invalidation, bounded campaign checks, fallback
 and lifecycle handling. Normal optimization uses a valid profile or defaults
 without starting a campaign. Settings remain fixed per run, including final
 boost and save/resume. Entropy rounding differences are checked and recorded;
-different profiles need not produce identical seeded trajectories. There is
+different profiles need not produce identical seeded trajectories (true of
+the code this report measured; since `f3ba8d3`, 2026-09-19, every entropy
+budget returns the default budget's output bit for bit, so a profile no
+longer moves a seeded trajectory). There is
 no separate unresolved entropy policy gate. A different CPU/stack remains
 useful validation; this machine's default retention is a valid outcome.
 

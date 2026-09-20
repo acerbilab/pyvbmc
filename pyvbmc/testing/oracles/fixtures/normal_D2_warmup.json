@@ -359,6 +359,19 @@
     },
     "oracle": "active_sample_step",
     "reason": "Restore MATLAB uniform box proposals: replace standard_normal with random in _get_search_points (2021 porting bug). Fixed-input oracles pass; paired probe in dev/results/2026-09-16-gp-box-sampler.md."
+   },
+   {
+    "date": "2026-09-19 15:24:23",
+    "git": {
+     "dirty": true,
+     "sha": "7dd2e3f"
+    },
+    "max_abs_change": {
+     "X_new": 0.03838920927815378,
+     "y_new": 0.011252818699023948
+    },
+    "oracle": "active_sample_step",
+    "reason": "Wave-1 fixes of the port review (2026-09-19): the CMA-ES search starts at the per-coordinate scales (CMA_stds = insigma / max(insigma)) and runs without cma's noise handler, as MATLAB VBMC's cmaes_modded does; every acq_* oracle is unchanged, and the search reaches different points on 7 of the 8 states."
    }
   ],
   "recipe": "normal_D2_warmup",

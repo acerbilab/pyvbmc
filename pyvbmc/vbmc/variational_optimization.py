@@ -1,6 +1,7 @@
 """Variational optimization / training of variational posterior"""
 
 import copy
+import logging
 import math
 
 import gpyreg as gpr
@@ -42,7 +43,7 @@ def update_K(
     K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
-    K_bonus = round(options.eval("adaptive_k", {"unkn": K_new}))
+    K_bonus = round(options.eval("adaptive_k", {"K": K_new}))
 
     # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:
@@ -123,8 +124,10 @@ def optimize_vp(
     vp : VariationalPosterior
         The optimized variational posterior.
     var_ss : float
-        Estimated variance of the ELBO, due to variance of the expected
-        log-joint, for each GP hyperparameter sample.
+        Spread of the expected log joint across the GP hyperparameter
+        samples: the sample variance of its value from sample to sample
+        plus the sample standard deviation of its per-sample variances.
+        Zero with a single hyperparameter sample.
     pruned : int
         Number of pruned components.
 
@@ -232,13 +235,14 @@ def optimize_vp(
             )
 
             if not res.success:
-                # SciPy minimize failed
-                raise RuntimeError(
-                    "Cannot optimize variational parameters with",
-                    "scipy.optimize.minimize.",
+                # Outcomes such as a loss of precision or the iteration
+                # limit still leave a usable iterate.
+                logging.getLogger("VariationalOptimization").warning(
+                    "scipy.optimize.minimize did not converge while "
+                    "optimizing the variational parameters: %s",
+                    res.message,
                 )
-            else:
-                theta_opt = res.x
+            theta_opt = res.x
         else:
             # Objective function, should only return value and gradient.
             def vb_train_mc_fun(theta_):
@@ -310,7 +314,12 @@ def optimize_vp(
 
     ## Finalize optimization by taking variational parameters with best ELCBO
 
-    idx = np.argmin(elbo_stats["nelcbo"])
+    if np.all(np.isnan(elbo_stats["nelcbo"])):
+        raise ValueError(
+            "Every full ELCBO evaluation of the variational optimization "
+            "returned NaN, so no variational parameters can be selected."
+        )
+    idx = np.nanargmin(elbo_stats["nelcbo"])
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
@@ -339,7 +348,7 @@ def optimize_vp(
             ).ravel()
             idx = idx[vp.rng.integers(0, np.size(idx))]
             vp_pruned.w = np.delete(vp_pruned.w, idx)
-            vp_pruned.eta = np.delete(vp_pruned.eta, idx)
+            vp_pruned.eta = np.delete(vp_pruned.eta, idx, axis=1)
             vp_pruned.sigma = np.delete(vp_pruned.sigma, idx)
             vp_pruned.mu = np.delete(vp_pruned.mu, idx, axis=1)
             vp_pruned.K -= 1
@@ -478,8 +487,13 @@ def _eval_full_elcbo(
         The updated dictionary.
     """
     # Number of samples per component for MC approximation of the entropy.
+    # A single component has a closed-form Gaussian entropy, which the
+    # deterministic evaluation returns exactly, so no samples are drawn.
     K = vp.K
-    ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
+    if K == 1:
+        ns_ent_fine_K = 0
+    else:
+        ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
     if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
         compute_var = False
@@ -818,7 +832,7 @@ def _sieve(
             nelcbo_fill[i] = nelbo_tmp + elcbo_beta * np.sqrt(varF_tmp)
 
         # Sort by negative ELCBO
-        order = np.argsort(nelcbo_fill)
+        order = np.argsort(nelcbo_fill, kind="stable")
         vp0_vec = vp0_vec[order]
         vp0_type = vp0_type[order]
 
@@ -831,9 +845,11 @@ def _sieve(
             ns_ent_K_fast,
         )
 
+    # No shotgun evaluation: the current posterior is the only candidate,
+    # returned in the same one-element arrays as the branch above.
     return (
-        copy.deepcopy(vp),
-        1,
+        np.array([copy.deepcopy(vp)]),
+        np.ones((1,)),
         elcbo_beta,
         compute_var,
         ns_ent_K,
@@ -896,7 +912,7 @@ def _vb_init(
     elif vb_type == 2:
         # Start from highest-posterior density training points
         if vp.optimize_mu:
-            order = np.argsort(y_star, axis=None)[::-1]
+            order = np.argsort(-y_star, axis=None, kind="stable")
             idx_order = np.tile(
                 range(0, min(K_new, N_star)), (math.ceil(K_new / N_star),)
             )
@@ -905,7 +921,7 @@ def _vb_init(
             V = np.var(mu0, axis=1, ddof=1)
         else:
             V = np.var(X_star, axis=0, ddof=1)
-        sigma0 = np.sqrt(np.mean(V / lambd0**2) / K_new) * np.exp(
+        sigma0 = np.sqrt(np.mean(V / lambd0.ravel() ** 2) / K_new) * np.exp(
             0.2 * rng.standard_normal((1, K_new))
         )
     else:
@@ -1140,8 +1156,10 @@ def _neg_elcbo(
     dH : np.ndarray
         Gradient of entropy term.
     varG_ss : float
-        Variance of the expected variational log joint, for each GP
-        hyperparameter sample.
+        Spread of the expected variational log joint across the GP
+        hyperparameter samples: the sample variance of its value from
+        sample to sample plus the sample standard deviation of its
+        per-sample variances. Zero with a single hyperparameter sample.
     varG : float
         Variance of the expected variational log joint
         probability.
@@ -1388,7 +1406,10 @@ def _gp_log_joint(
         The gradient of the variance. Not implemented (see Raises); always
         ``None``.
     var_ss : float
-        Variance for each GP hyperparameter sample.
+        Spread of ``G`` across the GP hyperparameter samples: the sample
+        variance of its value from sample to sample plus the sample
+        standard deviation of the per-sample variances. Zero with a single
+        hyperparameter sample.
     I_sk : np.ndarray
         The contribution to ``G`` per GP hyperparameter sample and per VP
         component.

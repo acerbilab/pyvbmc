@@ -481,6 +481,26 @@ def test_get_set_parameters_roundtrip_non_raw():
     assert np.all(theta == theta2)
 
 
+@pytest.mark.parametrize("raw_flag", [True, False])
+@pytest.mark.parametrize("optimize_weights", [True, False])
+def test_set_parameters_eta_matches_weights(raw_flag, optimize_weights):
+    """``eta`` is the unbounded (softmax) parametrization of ``w``."""
+    K = 3
+    D = 2
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_weights = optimize_weights
+    vp.w = np.array([[0.2, 0.3, 0.5]])
+    vp.eta = np.full((1, K), 7.0)
+    theta = vp.get_parameters(raw_flag=raw_flag)
+
+    vp.set_parameters(theta, raw_flag=raw_flag)
+
+    assert vp.eta.shape == (1, K)
+    softmax = np.exp(vp.eta - np.amax(vp.eta))
+    softmax /= np.sum(softmax)
+    assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
+
+
 def test_set_parameters_reference_regression():
     K = 2
     D = 2
@@ -738,6 +758,30 @@ def test_soft_bounds_1():
         1 / (4 * K), options["tol_weight"]
     )
     assert theta_bnd["weight_penalty"] == options["weight_penalty"]
+
+
+def test_soft_bounds_follow_the_training_inputs():
+    """The box is a function of the training inputs of the call, so a
+    later call on a narrower set gives the narrower box."""
+    D = 2
+    options = {
+        "tol_con_loss": 0.01,
+        "tol_weight": 1e-2,
+        "weight_penalty": 0.1,
+        "tol_length": 1e-6,
+    }
+    wide = np.array([np.linspace(-5.0, 5.0, 10)] * D).T
+    narrow = np.array([np.linspace(-1.0, 2.0, 10)] * D).T
+
+    vp = VariationalPosterior(D, 2)
+    vp.get_bounds(wide, options)
+    after_narrowing = vp.get_bounds(narrow, options)
+    fresh = VariationalPosterior(D, 2).get_bounds(narrow, options)
+
+    assert np.array_equal(after_narrowing["lb"], fresh["lb"])
+    assert np.array_equal(after_narrowing["ub"], fresh["ub"])
+    assert np.array_equal(vp.bounds["mu_lb"], np.min(narrow, axis=0))
+    assert np.array_equal(vp.bounds["mu_ub"], np.max(narrow, axis=0))
 
 
 def test_soft_bounds_2():

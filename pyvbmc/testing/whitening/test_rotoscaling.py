@@ -1,3 +1,4 @@
+import copy
 import os
 
 import gpyreg
@@ -232,6 +233,179 @@ def test_warp_input():
             np.array([11.0521101052146, 1.00626951493545]),
         )
     )
+
+
+def test_warp_input_cov_reg():
+    """The covariance regularization is a number, of any scalar type, or
+    a function of the number of training points."""
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    vbmc.optim_state["N"] = 42
+    seen = []
+
+    def cov_reg_of_N(N):
+        seen.append(N)
+        return 0.75
+
+    transforms = []
+    for value in (0.75, np.float64(0.75), cov_reg_of_N):
+        vbmc.options.__setitem__("warp_cov_reg", value, force=True)
+        parameter_transformer_warp, _, _, _ = warp_input(
+            vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+        )
+        transforms.append(
+            (
+                parameter_transformer_warp.R_mat,
+                parameter_transformer_warp.scale,
+            )
+        )
+
+    # The callable was given the number of training points, and all three
+    # forms of the same amount give the same transform.
+    assert seen == [42]
+    for R_mat, scale in transforms[1:]:
+        assert np.array_equal(R_mat, transforms[0][0])
+        assert np.array_equal(scale, transforms[0][1])
+
+    # The amount reaches the transform: no regularization gives another.
+    vbmc.options.__setitem__("warp_cov_reg", 0.0, force=True)
+    unregularized, _, _, _ = warp_input(
+        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+    )
+    assert not np.allclose(unregularized.R_mat, transforms[0][0])
+
+
+def test_warp_input_search_cache():
+    """A populated search cache is warped into the new space."""
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vp = VariationalPosterior(D, 50, mus)
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    search_cache = np.linspace(-1.0, 1.0, 4 * D).reshape(4, D)
+    vbmc.optim_state["search_cache"] = np.copy(search_cache)
+
+    (
+        parameter_transformer_warp,
+        optim_state,
+        _,
+        _,
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+
+    expected = parameter_transformer_warp(
+        vbmc.function_logger.parameter_transformer.inverse(search_cache)
+    )
+    assert optim_state["search_cache"].shape == (4, D)
+    assert np.allclose(optim_state["search_cache"], expected)
+
+
+def _same_posterior_in_a_rescaled_space(vp, scale):
+    """Return the same distribution, expressed in another inference space.
+
+    The space differs from the one ``vp`` is given in by a per-coordinate
+    rescaling, so the component means and the scale vector divide by it and
+    every other parameter is unchanged.
+    """
+    other = copy.deepcopy(vp)
+    other.parameter_transformer = copy.deepcopy(vp.parameter_transformer)
+    other.parameter_transformer.scale = np.asarray(scale, dtype=float)
+    other.mu = vp.mu / np.reshape(scale, (-1, 1))
+    other.lambd = vp.lambd / np.reshape(scale, (-1, 1))
+    return other
+
+
+def test_warp_input_inverts_the_search_state_with_the_current_transform():
+    """The search bounds and the cached search points are points of the
+    inference space the run is in, so they are inverted with that space's
+    transformation. A posterior recorded before an earlier warp carries
+    another one, and handing it in gives the same search state as handing
+    in a posterior of the current space."""
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    search_cache = np.linspace(-1.0, 1.0, 4 * D).reshape(4, D)
+    vbmc.optim_state["search_cache"] = np.copy(search_cache)
+
+    current = VariationalPosterior(
+        D, 50, mus, parameter_transformer=vbmc.parameter_transformer
+    )
+    recorded_elsewhere = _same_posterior_in_a_rescaled_space(
+        current, [2.0, 5.0]
+    )
+    assert not np.allclose(
+        recorded_elsewhere.parameter_transformer.scale, np.ones(D)
+    )
+    # Both calls start from the same draws.
+    current.rng = 20260920
+    recorded_elsewhere.rng = 20260920
+
+    from_current = warp_input(
+        current, vbmc.optim_state, vbmc.function_logger, vbmc.options
+    )
+    from_elsewhere = warp_input(
+        recorded_elsewhere,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.options,
+    )
+
+    # The two posteriors describe the same distribution, so they give the
+    # same whitening transformation; only the space the search state is
+    # inverted from could differ.
+    assert np.allclose(from_current[0].R_mat, from_elsewhere[0].R_mat)
+    assert np.allclose(from_current[0].scale, from_elsewhere[0].scale)
+
+    for key in ("lb_search", "ub_search", "search_cache"):
+        assert np.allclose(from_current[1][key], from_elsewhere[1][key])
 
 
 def test_warp_gp_and_vp():

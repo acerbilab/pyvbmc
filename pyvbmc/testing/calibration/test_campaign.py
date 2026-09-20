@@ -1,6 +1,8 @@
 """Focused scheduler and numerical tests for the calibration campaign."""
 
 import json
+import math
+from statistics import median
 from types import SimpleNamespace
 
 import numpy as np
@@ -226,6 +228,31 @@ def test_selection_rejects_workload_regression_controls_aliases_and_gaps():
     assert campaign._select_group(incomplete, valid, 5)["budget"] == 2**16
 
 
+def test_regression_veto_admits_exactly_the_named_workload_slowdown():
+    assert 1 / campaign._MAX_WORKLOAD_SLOWDOWN == campaign._CONTROL_LOW
+
+    def gate(workload_median):
+        rounds = campaign.DISCOVERY_ROUNDS
+        ratios = {
+            "complete": True,
+            "affected_workloads": ["fast", "slow"],
+            "per_workload": {
+                "fast": [2.0] * rounds,
+                "slow": [workload_median] * rounds,
+            },
+            "rounds": [1.5] * rounds,
+        }
+        return campaign._gate_ratios(ratios, rounds)
+
+    admitted = 1 / campaign._MAX_WORKLOAD_SLOWDOWN
+    assert gate(admitted)["regression_veto_pass"]
+    assert gate(admitted)["pass"]
+
+    vetoed = math.nextafter(admitted, 0.0)
+    assert not gate(vetoed)["regression_veto_pass"]
+    assert not gate(vetoed)["pass"]
+
+
 def test_output_comparison_rejects_broadcastable_shape_mismatch():
     actual = np.ones((2, 1), dtype=np.float64)
     expected = np.ones((2,), dtype=np.float64)
@@ -253,6 +280,57 @@ def test_heldout_rejects_unconfirmed_gain_and_bad_same_budget_control():
     heldout[0]["selected_control_seconds"] = [0.8] * 4
     result = campaign._validate_heldout(discovery, heldout, 2**14)
     assert not result["pass"]
+
+
+def test_summary_speedup_describes_the_selected_setting():
+    rounds = [0.9, 1.3, 1.35, 1.4]
+
+    def report_with(validation):
+        return {
+            "groups": {
+                group: {
+                    "setting": setting,
+                    "discovery_selection": {
+                        "budget": 2**14,
+                        "accepted": True,
+                        "reason": "discovery gates passed",
+                    },
+                    "heldout_validation": validation,
+                }
+                for group, setting in campaign.SETTING_GROUPS.items()
+            }
+        }
+
+    rejected = report_with(
+        {
+            "pass": False,
+            "accepted_budget": campaign.DEFAULT_BUDGET,
+            "reason": "held-out gates failed",
+            "group_speedups": list(rounds),
+        }
+    )
+    assert median(rounds) > 1.0
+    summary = campaign._summary(rejected, campaign._defaults(), "complete")
+    for setting in campaign.SETTING_GROUPS.values():
+        assert summary[setting]["selected"] == campaign.DEFAULT_BUDGET
+        assert summary[setting]["reason"] == "held-out gates failed"
+        assert summary[setting]["heldout_speedup"] is None
+
+    accepted = report_with(
+        {
+            "pass": True,
+            "accepted_budget": 2**14,
+            "reason": "held-out gates passed",
+            "group_speedups": list(rounds),
+        }
+    )
+    settings = {
+        setting: 2**14 for setting in campaign.SETTING_GROUPS.values()
+    }
+    summary = campaign._summary(accepted, settings, "complete")
+    for setting in campaign.SETTING_GROUPS.values():
+        assert summary[setting]["selected"] == 2**14
+        assert summary[setting]["heldout_speedup"] == median(rounds)
 
 
 def test_fake_campaign_completes_after_thirty_second_estimate():
@@ -372,4 +450,44 @@ def test_small_real_helpers_preserve_numerics_rng_and_state():
     assert result["pass"]
     assert result["inputs_vp_and_vp_rng_unchanged"]
     assert all(check["float64"] for check in result["checks"])
+    assert all(check["exact"] for check in result["checks"])
     assert all(check["rng_advancement_exact"] for check in result["checks"])
+
+
+def test_a_budget_that_moves_the_last_bit_is_not_accepted():
+    """A kernel that is not chunk-independent invalidates its budgets."""
+    clock = _FakeClock(0.001)
+    kernels = _fake_kernels(clock)
+    fake_entropy = kernels.entropy
+
+    def drifting_entropy(vp, Ns, *, grad_flags, jacobian_flag, rng, budget):
+        H, dH = fake_entropy(
+            vp,
+            Ns,
+            grad_flags=grad_flags,
+            jacobian_flag=jacobian_flag,
+            rng=rng,
+            budget=budget,
+        )
+        if budget != campaign.DEFAULT_BUDGET:
+            H = np.nextafter(H, np.inf)
+        return H, dH
+
+    kernels = kernels._replace(entropy=drifting_entropy)
+    watchdog = campaign._Watchdog(
+        lambda: 0.0, 300.0, timer=campaign.time.perf_counter
+    )
+    workload = campaign._Workload(
+        "entropy_grad", "drifting", 2, 3, 10, (True, True, True, True)
+    )
+    problem = campaign._make_problem(workload, kernels, 123)
+    result = campaign._validate_workload(workload, problem, kernels, watchdog)
+    assert not result["pass"]
+    # The drift is far inside the tolerance a loose comparison would allow.
+    assert all(check["within_tolerance"] for check in result["checks"])
+    assert result["valid_budgets"][str(campaign.DEFAULT_BUDGET)]
+    assert not any(
+        valid
+        for budget, valid in result["valid_budgets"].items()
+        if int(budget) != campaign.DEFAULT_BUDGET
+    )

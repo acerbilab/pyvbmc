@@ -1,4 +1,7 @@
 import copy
+import logging
+import re
+import tokenize
 from math import ceil
 from pathlib import Path
 
@@ -8,10 +11,35 @@ import pytest
 from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.vbmc import Options
+from pyvbmc.vbmc.options import INERT_OPTIONS
 
 options_path = Path(__file__).parent.parent.parent.joinpath(
     "vbmc", "option_configs"
 )
+basic_options_path = options_path.joinpath("basic_vbmc_options.ini")
+advanced_options_path = options_path.joinpath("advanced_vbmc_options.ini")
+
+
+def _declared_option_names():
+    """The option names declared by the two shipped ini files."""
+    names = set()
+    for path in (basic_options_path, advanced_options_path):
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line == "" or line.startswith("#") or line.startswith("["):
+                continue
+            names.add(line.split("=", 1)[0].strip())
+    return names
+
+
+def _shipped_options(user_options, D=2):
+    """Build the shipped options as ``VBMC.__init__`` does."""
+    options = Options(basic_options_path, {"D": D}, user_options)
+    options.load_options_file(advanced_options_path, {"D": D})
+    options.validate_run_limits()
+    options.update_defaults()
+    options.validate_option_names([basic_options_path, advanced_options_path])
+    return options
 
 
 def test_options_no_user_options():
@@ -135,6 +163,279 @@ def test_init_with_specify_target_noise():
     assert vbmc1.options["active_sample_gp_update"] == False
 
 
+@pytest.mark.parametrize("key", ["max_fun_evals", "max_iter"])
+@pytest.mark.parametrize("value", [0, -1, 7.5, -np.inf, np.nan, None])
+def test_a_run_limit_must_be_a_positive_integer(key, value):
+    """``misc/setupoptions_vbmc.m:109-114`` rejects a MaxFunEvals or a
+    MaxIter that is not a positive integer."""
+    with pytest.raises(ValueError) as execinfo:
+        _shipped_options({key: value})
+    assert f"The option {key} needs to be a positive integer" in (
+        execinfo.value.args[0]
+    )
+
+
+@pytest.mark.parametrize("key", ["max_fun_evals", "max_iter"])
+@pytest.mark.parametrize("value", [1, 40, 40.0, np.int64(40), np.inf])
+def test_a_run_limit_accepts_an_integer_value(key, value):
+    """MATLAB compares the value with its rounding, so a floating value
+    that lands on an integer passes, and so does an infinite limit."""
+    options = _shipped_options({key: value, "min_iter": 0})
+    assert options[key] == value
+
+
+def test_max_iter_below_min_iter_is_raised_to_it(caplog):
+    """``misc/setupoptions_vbmc.m:115-119`` raises MaxIter to MinIter and
+    says so."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 2, "min_iter": 7})
+    assert options["max_iter"] == 7
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "max_iter" in message and "7" in message for message in messages
+    )
+
+
+def test_max_iter_at_min_iter_is_left_alone(caplog):
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 7, "min_iter": 7})
+    assert options["max_iter"] == 7
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any("max_iter" in message for message in messages)
+
+
+@pytest.mark.parametrize(
+    "user_options",
+    [{"specify_target_noise": True}, {"uncertainty_handling": True}],
+)
+def test_noisy_defaults_apply_at_either_noise_level(user_options):
+    """``misc/setupoptions_vbmc.m:143-163`` changes five defaults whenever
+    the noise handling is on, which covers a noise level VBMC infers as
+    well as one the target supplies."""
+    noiseless = _shipped_options({})
+    noisy = _shipped_options(user_options)
+    assert noisy["max_fun_evals"] == ceil(noiseless["max_fun_evals"] * 1.5)
+    assert noisy["tol_stable_count"] == ceil(
+        noiseless["tol_stable_count"] * 1.5
+    )
+    assert noisy["active_sample_gp_update"] is True
+    assert noisy["active_sample_vp_update"] is True
+    assert len(noisy["search_acq_fcn"]) == 1
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnVIQR)
+
+
+def test_noisy_defaults_leave_the_values_the_user_set():
+    """Only a default is changed, as the ``updated`` list of
+    ``misc/setupoptions_vbmc.m`` requires."""
+    noisy = _shipped_options(
+        {
+            "uncertainty_handling": True,
+            "max_fun_evals": 17,
+            "search_acq_fcn": [AcqFcnLog()],
+        }
+    )
+    assert noisy["max_fun_evals"] == 17
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnLog)
+    assert noisy["active_sample_vp_update"] is True
+
+
+@pytest.mark.parametrize(
+    "user_options",
+    [{"specify_target_noise": True}, {"uncertainty_handling": True}],
+)
+def test_noisy_defaults_accept_an_unlimited_budget(user_options):
+    """A noisy run without a limit on its evaluations is a valid
+    configuration: the limit is the user's, so the noisy default that
+    would replace it is not needed, and the other defaults still apply."""
+    noiseless = _shipped_options({})
+    noisy = _shipped_options({"max_fun_evals": np.inf, **user_options})
+    assert noisy["max_fun_evals"] == np.inf
+    assert noisy["tol_stable_count"] == ceil(
+        noiseless["tol_stable_count"] * 1.5
+    )
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnVIQR)
+
+
+def test_a_noiseless_run_keeps_the_noiseless_defaults():
+    noiseless = _shipped_options({})
+    assert noiseless["active_sample_gp_update"] is False
+    assert noiseless["active_sample_vp_update"] is False
+    assert isinstance(noiseless["search_acq_fcn"][0], AcqFcnLog)
+
+
+@pytest.mark.parametrize(
+    "D, expected",
+    [(1, 10), (2, 10), (9, 10), (10, 20), (15, 20), (19, 20), (20, 30)],
+)
+def test_fun_eval_start_default(D, expected):
+    """The initial design holds 10 evaluations up to nine dimensions and
+    the next multiple of 10 above ``D`` from there on, as in MATLAB VBMC
+    (``10*ceil((D+1)/10)``)."""
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+    )
+    assert vbmc.options["fun_eval_start"] == expected
+
+
+def _code_without_comments(path):
+    """The module's source with its comments dropped."""
+    pieces = []
+    with tokenize.open(path) as handle:
+        for token in tokenize.generate_tokens(handle.readline):
+            if token.type != tokenize.COMMENT:
+                pieces.append(token.string)
+    return "".join(pieces)
+
+
+def test_inert_options_are_the_declared_options_nothing_reads():
+    """``INERT_OPTIONS`` lists exactly the declared options that no module
+    of the package reads, so that a newly dead option, or a newly read
+    registered one, fails here.
+
+    An option is read where its name is subscripted or fetched from an
+    options mapping: ``options["name"]``, ``options.get("name")`` or
+    ``options.eval("name", ...)``, and the same through ``self`` inside
+    :class:`Options`. A key of another mapping that happens to carry an
+    option's name, such as an entry of ``optim_state``, is not a read of
+    the option, and neither is a mention in a comment."""
+    package_path = options_path.parent.parent
+    sources = [
+        path
+        for path in package_path.rglob("*.py")
+        if "testing" not in path.relative_to(package_path).parts
+    ]
+    text = re.sub(
+        r"\s+", "", "\n".join(_code_without_comments(path) for path in sources)
+    )
+    unread = {
+        name
+        for name in _declared_option_names()
+        if re.search(
+            r"(?:options|self)(?:\[|\.get\(|\.eval\()['\"]"
+            + re.escape(name)
+            + r"['\"]",
+            text,
+        )
+        is None
+    }
+    assert unread == set(INERT_OPTIONS)
+
+
+def test_inert_option_away_from_its_default_warns(caplog):
+    """A value supplied for an inert option is named as having no effect."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"double_gp": True})
+    assert options["double_gp"] is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "double_gp" in message and "no effect" in message
+        for message in messages
+    )
+
+
+def test_separate_search_gp_is_inert(caplog):
+    """The separate search GP with a constant mean is a development option
+    of MATLAB VBMC that PyVBMC does not implement, so a value given for it
+    has no effect and is reported as having none."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"separate_search_gp": True})
+    assert options["separate_search_gp"] is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "separate_search_gp" in message and "no effect" in message
+        for message in messages
+    )
+
+
+def test_inert_option_at_its_default_does_not_warn(caplog):
+    """Repeating the default of an inert option changes nothing and is
+    silent, so that an option dictionary recorded by an earlier run loads
+    without notices."""
+    caplog.set_level(logging.WARNING)
+    _shipped_options({"double_gp": False, "noise_shaping_threshold": 20})
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any(
+        "double_gp" in message or "noise_shaping_threshold" in message
+        for message in messages
+    )
+
+
+def test_every_inert_option_at_its_default_is_silent(caplog):
+    """An option dictionary recorded by an earlier run repeats every
+    default, including the one that is a lambda, and passes through
+    without notices."""
+    defaults = _shipped_options({})
+    repeated = {name: defaults[name] for name in INERT_OPTIONS}
+    assert callable(repeated["annealed_gp_mean"])
+
+    caplog.set_level(logging.WARNING)
+    _shipped_options(repeated)
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any(
+        name in message for name in INERT_OPTIONS for message in messages
+    )
+
+
+def test_option_that_is_read_does_not_warn(caplog):
+    """An option the algorithm reads has an effect and is not reported."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"max_iter": 3})
+    assert options["max_iter"] == 3
+    messages = [record.getMessage() for record in caplog.records]
+    assert not any("max_iter" in message for message in messages)
+
+
+def test_description_keeps_the_whole_comment_line(tmp_path):
+    """The description of an option is the comment line above it, in full,
+    delimiters of the ini format included."""
+    path = tmp_path.joinpath("described.ini")
+    path.write_text(
+        "[Described]\n"
+        "# Explicit noise handling (0: none; 1: unknown; 2: provided)\n"
+        "max_iter = 3\n"
+        "# Number of GP samples when GP is stable (0 = optimize)\n"
+        "min_iter = 1\n"
+    )
+    options = Options(path, {"D": 2})
+    assert options.descriptions["max_iter"] == (
+        "Explicit noise handling (0: none; 1: unknown; 2: provided)"
+    )
+    assert options.descriptions["min_iter"] == (
+        "Number of GP samples when GP is stable (0 = optimize)"
+    )
+
+
+@pytest.mark.parametrize(
+    "name, description",
+    [
+        (
+            "search_optimizer",
+            'Local optimizer of the acquisition search: "cmaes", '
+            '"Nelder-Mead" or "none" (no local search); with one variable '
+            "a bounded scalar search is used instead of either",
+        ),
+        (
+            "stable_gp_samples",
+            "Number of GP samples when GP is stable (0 = optimize)",
+        ),
+        (
+            "upper_gp_length_factor",
+            "Upper bound on GP input lengths based on plausible box "
+            "(0 = ignore)",
+        ),
+    ],
+)
+def test_shipped_descriptions_are_stored_in_full(name, description):
+    """The descriptions users read come from the ini files as written."""
+    options = _shipped_options({})
+    assert options.descriptions[name] == description
+
+
 def test__str__and__repr__():
     default_options_path = options_path.joinpath("test_options.ini")
     options = Options(default_options_path, {"D": 2})
@@ -148,6 +449,31 @@ def test_del():
     default_options_path = options_path.joinpath("test_options.ini")
     options = Options(default_options_path, {"D": 2})
     options.pop("foo")
+    assert "foo" not in options
+
+
+def test_initialized_options_refuse_removal():
+    """Options are fixed after initialization: a key can no more be
+    removed than it can be set, by whichever method of a mapping."""
+    default_options_path = options_path.joinpath("test_options.ini")
+    options = Options(default_options_path, {"D": 2})
+    options.validate_option_names([default_options_path])
+    assert options.is_initialized
+    n_options = len(options)
+
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.pop("foo")
+    with pytest.raises(AttributeError, match="after initialization"):
+        del options["foo"]
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.popitem()
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.clear()
+    assert len(options) == n_options
+    assert options["foo"] is not None
+
+    # The override that setting an option has.
+    options.__delitem__("foo", force=True)
     assert "foo" not in options
 
 

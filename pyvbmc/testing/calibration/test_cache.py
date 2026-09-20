@@ -246,6 +246,14 @@ def test_cache_rejects_invalid_or_unsupported_budget(identity, invalid):
         _cache.validate_record(record)
 
 
+def test_cache_accepts_a_summary_without_a_heldout_speedup(identity):
+    record = make_test_record(identity)
+    for summary in record["report"]["summary"].values():
+        summary["heldout_speedup"] = None
+
+    assert _cache.validate_record(record) == record
+
+
 def test_cache_rejects_nonfinite_report_and_wrong_fingerprint(identity):
     record = make_test_record(identity)
     record["report"]["timings_seconds"]["total"] = float("nan")

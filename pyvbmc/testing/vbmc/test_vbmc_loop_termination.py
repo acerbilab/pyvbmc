@@ -76,6 +76,10 @@ def test_vbmc_check_termination_conditions_max_iter(mocker):
 
 
 def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
+    """A run does not terminate before it has performed ``min_iter``
+    iterations and spent ``min_fun_evals`` evaluations (MATLAB VBMC,
+    ``private/vbmc_termination.m:98-99``, which compares the count of
+    iterations performed, not the index of the current one)."""
     options = {
         "max_fun_evals": 10,
         "min_fun_evals": 5,
@@ -84,15 +88,20 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     vbmc.function_logger.func_count = 9
-    vbmc.optim_state["iter"] = 100
     vbmc.optim_state["entropy_switch"] = True
     mocker.patch.object(
         vbmc,
         "_compute_reliability_index",
         return_value=(np.inf, np.nan),
     )
+    # One hundred iterations performed, one short of the minimum.
+    vbmc.optim_state["iter"] = 99
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
+    # The hundred-and-first meets it, and the maximum has been reached.
+    vbmc.optim_state["iter"] = 100
+    terminated, __ = vbmc._check_termination_conditions()
+    assert terminated
 
     options = {
         "max_fun_evals": 10,
@@ -161,6 +170,73 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     )
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
+
+
+def test_entropy_force_switch_is_read_from_the_options():
+    """The forced switch to the stochastic entropy compares the number of
+    function evaluations with ``entropy_force_switch`` times the evaluation
+    budget (MATLAB VBMC, ``vbmc.m:524-525``:
+    ``optimState.funccount >= options.EntropyForceSwitch*options.MaxFunEvals``).
+    A fraction of zero makes the comparison true in the first iteration, so
+    the run turns the switch off there and reports it."""
+    D = 2
+    options = {
+        "max_iter": 1,
+        "min_iter": 1,
+        "max_fun_evals": 30,
+        "entropy_force_switch": 0.0,
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+        seed=20260920,
+    )
+    # The deterministic entropy, and with it the forced switch, is only
+    # enabled above `det_entropy_min_d` dimensions.
+    vbmc.optim_state["entropy_switch"] = True
+
+    vbmc.optimize()
+
+    assert not vbmc.optim_state["entropy_switch"]
+    assert "entropy switch" in vbmc.iteration_history["logging_action"][0]
+
+
+def test_stability_termination_with_an_infinite_forced_switch(mocker):
+    """A stable iteration with the entropy switch on terminates the run when
+    the forced switch is disabled, instead of turning the switch off and
+    continuing (MATLAB VBMC, ``private/vbmc_termination.m:80``:
+    ``optimState.EntropySwitch && isfinite(options.EntropyForceSwitch)``)."""
+    options = {
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
+        "tol_improvement": 0.01,
+        "tol_stable_entropy_iters": 6,
+        "tol_stable_excpt_frac": 0.2,
+        "entropy_force_switch": np.inf,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    vbmc.function_logger.func_count = 9
+    vbmc.optim_state["entropy_switch"] = True
+    vbmc.optim_state["iter"] = 98
+    vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(0.5, 0.005),
+    )
+    terminated, __ = vbmc._check_termination_conditions()
+    assert terminated
+    assert vbmc.optim_state["entropy_switch"]
 
 
 def test_vbmc_is_finished_stability_entropy_switch(mocker):
@@ -393,6 +469,66 @@ def test_gp_sampling_stop_drives_next_gp_hyp_to_stable_samples():
     assert gp_s_N == vbmc.options["stable_gp_samples"]
 
 
+def _warmup_history(vbmc, iteration, lcb_max=None):
+    """Record a flat history of ``iteration + 1`` iterations.
+
+    The other two warm-up criteria are inactive on it: the maximum
+    function value never improves, and neither a long stretch without
+    improvement nor a recent trim has happened. What the check returns is
+    then the stability count alone.
+    """
+    n = iteration + 1
+    vbmc.optim_state["iter"] = iteration
+    vbmc.optim_state["N"] = 100
+    vbmc.optim_state["data_trim_list"] = []
+    vbmc.function_logger.func_count = 5
+    vbmc.iteration_history["elbo"] = np.ones(n)
+    vbmc.iteration_history["elbo_sd"] = np.ones(n) * 1e-4
+    vbmc.iteration_history["func_count"] = np.ones(n)
+    vbmc.iteration_history["lcb_max"] = (
+        np.ones(n) if lcb_max is None else np.asarray(lcb_max, dtype=float)
+    )
+
+
+def test_check_warmup_end_conditions_with_a_window_of_one_iteration():
+    """A stability window no more than one iteration long leaves the recent
+    part of the history empty on the first check, which happens with three
+    iterations recorded: there is no stability count yet, and the check
+    reports none. One iteration later the window holds an entry and the
+    count is reached on a flat history."""
+    options = {"tol_stable_warmup": 5, "fun_evals_per_iter": 5}
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=2)
+    assert not vbmc._check_warmup_end_conditions()
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=3)
+    assert vbmc._check_warmup_end_conditions()
+
+
+def test_warmup_recent_improvement_window_is_the_stability_length():
+    """The improvement in the maximum function value is measured over the
+    last ``ceil(tol_stable_warmup / fun_evals_per_iter)`` iterations against
+    all the ones before them (MATLAB VBMC, ``private/vbmc_warmup.m:60-63``,
+    in 1-based indices: ``RecentPast = iter-ceil(...)+1`` and
+    ``idx_last(max(2,RecentPast):end) = true``). With the settings below
+    that window is the last three of the seven recorded iterations, so a
+    jump in the maximum at the fourth-from-last iteration counts as past
+    improvement and one at the third-from-last as recent."""
+    options = {"tol_stable_warmup": 15, "fun_evals_per_iter": 5}
+    before_the_window = [0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 0.0]
+    inside_the_window = [0.0, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0]
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=6, lcb_max=before_the_window)
+    assert vbmc._check_warmup_end_conditions()
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=6, lcb_max=inside_the_window)
+    assert not vbmc._check_warmup_end_conditions()
+
+
 def test_check_warmup_end_conditions_false():
     """
     no_recent_trim_flag is False
@@ -500,6 +636,50 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     assert vbmc.optim_state.get("recompute_var_post")
     assert not vbmc.optim_state.get("skip_active_sampling")
     assert vbmc.optim_state.get("data_trim_list")[-1] == 1
+
+
+def test_setup_vbmc_after_warmup_starts_the_warping_clocks():
+    """Ending warm-up starts the two clocks that hold the input warping
+    and the stability termination back, so the first warp comes no sooner
+    than ``warp_every_iters`` iterations later and a run cannot terminate
+    on stability right after warm-up (MATLAB VBMC,
+    ``private/vbmc_warmup.m:97-102``). A false alarm, which prunes and
+    carries on, leaves them where they were."""
+    options = {
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
+    }
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=100)
+    vbmc.iteration_history["r_index"] = np.ones(101) * 1e-4
+    assert vbmc.optim_state["last_warping"] == -np.inf
+    assert vbmc.optim_state["last_successful_warping"] == -np.inf
+    for i in range(3):
+        vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
+    vbmc._setup_vbmc_after_warmup()
+
+    assert not vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warping"] == 100
+    assert vbmc.optim_state["last_successful_warping"] == 100
+
+    false_alarm = dict(
+        options,
+        warmup_keep_threshold_false_alarm=400,
+        stop_warmup_reliability=1,
+    )
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, false_alarm)
+    _warmup_history(vbmc, iteration=100)
+    vbmc.iteration_history["r_index"] = np.ones(101) * 2
+    for i in range(6):
+        vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
+    vbmc._setup_vbmc_after_warmup()
+
+    assert vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warping"] == -np.inf
+    assert vbmc.optim_state["last_successful_warping"] == -np.inf
 
 
 def test_setup_vbmc_after_warmup_false_alarm():

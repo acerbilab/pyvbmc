@@ -137,12 +137,16 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
     Parameters
     ----------
     verbose : bool, optional
-        Print progress and the resulting settings. The default is ``True``.
+        Print the expected duration, campaign progress, whether faster
+        settings were selected, and where the results were saved. The
+        default is ``True``.
 
     Returns
     -------
     CalibrationProfile
         Immutable settings together with compact outcome and cache metadata.
+        The held-out measurements behind the settings are in the JSON report
+        named by ``cache_path``.
     """
     if not isinstance(verbose, bool):
         raise TypeError("verbose must be a bool")

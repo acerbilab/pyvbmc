@@ -12,8 +12,9 @@ def calibrate(*, verbose=True):
     Parameters
     ----------
     verbose : bool, optional
-        Print the runtime estimate, campaign progress, selected settings,
-        held-out results, and persistence status. The default is ``True``.
+        Print the expected duration, campaign progress, whether faster
+        settings were selected, and where the results were saved. The
+        default is ``True``.
 
     Returns
     -------
@@ -24,11 +25,14 @@ def calibrate(*, verbose=True):
 
     Notes
     -----
-    The displayed 30-second duration is an estimate rather than a deadline.
-    A five-minute watchdog stops further work only after a numerical call
-    returns. If another calibration is active or the campaign is incomplete,
-    this function returns a compatible prior profile or historical defaults
-    with the outcome recorded in its ``status`` and ``provenance``.
+    The selected budgets are attributes of the returned profile, and the
+    held-out measurements that justify them are in the JSON report named by
+    its ``cache_path``. A campaign takes tens of seconds, an estimate rather
+    than a deadline. A five-minute watchdog stops further work only after a
+    numerical call returns. If another calibration is active or the campaign
+    is incomplete, this function returns a compatible prior profile or
+    historical defaults with the outcome recorded in its ``status`` and
+    ``provenance``.
     """
     from ._api import calibrate as _calibrate
 

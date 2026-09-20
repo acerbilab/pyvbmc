@@ -137,7 +137,10 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   (`plans/stage1-rng-generator.md`). The remaining seam (gpyreg and the
   cma noise handler drawing from the global state) was removed on
   2026-09-05 with Stage 2 item 8: gpyreg's `fit` takes `rng=`
-  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`,
+  (acerbilab/gpyreg#43), the noise-handler subclass draws from `vp.rng`
+  (the subclass was removed on 2026-09-19 together with the search's
+  noise handling, which the port review found unneeded on a
+  deterministic acquisition; `plans/port-correctness-review.md`),
   and a run never reads or writes NumPy's global state; the per-iteration
   `random_state` holds only the generator state. One call site had been
   missed: the slice sampler of the MCMC step in
@@ -1000,7 +1003,11 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
     agreement and identical RNG advancement, pin settings for exact gates,
     and preserve profiles across save/resume. Different profiles need not
     produce identical seeded trajectories; no separate entropy policy gate
-    remains. S-VBMC integration is in progress (item 10), and the final
+    remains. (Superseded on 2026-09-19: since `f3ba8d3` every entropy
+    budget returns the default budget's output bit for bit, and since
+    `7c7972f` the campaign accepts a budget only on identical output, so
+    one seed gives one trajectory whatever profile is in force.)
+    S-VBMC integration is in progress (item 10), and the final
     870-case benchmark remains deferred. Run only one heavy computation at a time.
 
 13. **Optional runtime hints — implemented and verified** (2026-09-10).
@@ -1148,6 +1155,16 @@ before publication.
 - [x] Add a thin [agent skill](../../skills/pyvbmc/SKILL.md) directing users'
   coding agents to existing documentation (2026-09-12). Scope and maintenance
   are recorded in the [skill note](../2026-09-02-user-agent-skill.md).
+- [ ] Sweep every tracked document and record before the release for
+  acknowledgments of a wrong value or defect that the affected file does
+  not itself carry as a correction or flag, and for statements that were
+  true when written and are stale now (branch names, counts, work
+  described as continuing or remaining): `dev/*.md`, `dev/plans/`,
+  `dev/results/`, the review copies under `dev/experiments/`,
+  `dev/README.md`, `AGENTS.md`, the README, `docsrc/` and the docstrings.
+  Fix each in place; where a record cannot change, put the flag in the
+  record or as close to it as its format allows. Read-only reviewers by
+  area; the PI triages. `TODO.md` states the rule and its origin.
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages before release.
 

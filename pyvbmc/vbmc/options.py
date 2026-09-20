@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import configparser
 import copy
+import logging
+import re
 from collections.abc import MutableMapping
 from math import ceil
+from numbers import Real
 from pathlib import Path
 from textwrap import indent
 
@@ -12,6 +15,136 @@ import numpy as np
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
+
+#: Options declared in the ``.ini`` files that no PyVBMC module reads. They
+#: are kept so that option dictionaries recorded by earlier runs still load,
+#: and the value given for one of them has no effect. The ``# description``
+#: line of each says why it is there.
+INERT_OPTIONS = frozenset(
+    {
+        "acq_hedge_decay",
+        "acq_hedge_iter_window",
+        "active_sample_fess_thresh",
+        "active_variational_samples",
+        "adaptive_entropy_alpha",
+        "annealed_gp_mean",
+        "constrained_gp_mean",
+        "diagnostics",
+        "double_gp",
+        "empirical_gp_prior",
+        "gp_stochastic_step_size",
+        "integrate_gp_mean",
+        "noise_shaping_factor",
+        "noise_shaping_threshold",
+        "nonlinear_scaling",
+        "optimistic_variational_bound",
+        "output_fcn",
+        "sample_extra_vp_means",
+        "scale_lower_bound",
+        "search_cmaes_best",
+        "separate_search_gp",
+        "temperature",
+        "variational_init_repo",
+        "variational_sampler",
+        "warmup_options",
+    }
+)
+
+
+#: The ``.ini`` files that declare every option PyVBMC accepts. A name
+#: outside them is not an option, wherever it was supplied.
+SHIPPED_OPTIONS_PATHS = (
+    "option_configs/basic_vbmc_options.ini",
+    "option_configs/advanced_vbmc_options.ini",
+)
+
+
+def declared_option_names(options_paths=SHIPPED_OPTIONS_PATHS):
+    """
+    The option names the given ini files declare.
+
+    Parameters
+    ----------
+    options_paths : iterable of str, optional
+        Paths to ini files, absolute or relative to this directory.
+        Default the two files PyVBMC ships.
+
+    Returns
+    -------
+    names : set of str
+        Every option name declared in those files.
+    """
+    names = set()
+    for options_path in options_paths:
+        names.update(_read_config_file(options_path)[:, 0].flatten())
+    return names
+
+
+# How the integer_vars option may be written, named in the errors raised
+# for any other value.
+_INTEGER_VARS_FORMS = (
+    "a boolean array with one entry per variable, or an array of the "
+    "0-based indices of the variables that take only integer values"
+)
+
+# How the uncertainty_handling option may be written, named in the error
+# raised for any other value.
+_UNCERTAINTY_HANDLING_FORMS = (
+    "True or False (the integers 1 and 0 and their NumPy equivalents are "
+    "also accepted), or an empty value ([], an empty array or None) to "
+    "leave the choice to specify_target_noise"
+)
+
+
+def _is_positive_integer_valued(value):
+    """
+    Whether a limit on iterations or evaluations is a positive integer.
+
+    A floating value that lands on an integer counts, as MATLAB VBMC's
+    ``round(x) ~= x`` test lets one through, and so does positive
+    infinity, which stands for no limit.
+    """
+    if not isinstance(value, Real):
+        return False
+    if not value > 0:
+        return False
+    return bool(np.isinf(value)) or float(value).is_integer()
+
+
+def _uncertainty_handling_flag(value):
+    """
+    Read the ``uncertainty_handling`` option as a boolean.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    flag : bool or None
+        `True` or `False` when the value states the choice, and `None` when
+        the option is empty, which leaves the choice to
+        ``specify_target_noise``.
+
+    Raises
+    ------
+    ValueError
+        When the value is neither a boolean nor empty.
+    """
+    if value is None:
+        return None
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
+        return bool(value)
+    if isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0:
+        return None
+    raise ValueError(
+        "The option uncertainty_handling must be "
+        + _UNCERTAINTY_HANDLING_FORMS
+        + f"; got {value!r}."
+    )
 
 
 class Options(MutableMapping, dict):
@@ -65,19 +198,156 @@ class Options(MutableMapping, dict):
             self.update(user_options)
             self["useroptions"].update(user_options.keys())
 
+    def integer_vars_mask(self, D: int):
+        """
+        Read the ``integer_vars`` option as a mask over the variables.
+
+        A boolean array with one entry per variable is that mask. An array
+        of integers holds the 0-based indices of the integer variables,
+        which have to be distinct and within range. An array of `D`
+        integers that are all zero or one reads as either and is refused.
+
+        Parameters
+        ----------
+        D : int
+            The number of variables.
+
+        Returns
+        -------
+        mask : np.ndarray
+            A boolean array of length `D`, `True` at the variables that
+            take only integer values.
+
+        Raises
+        ------
+        ValueError
+            When the value is neither a boolean mask of length `D` nor an
+            array of distinct indices within range.
+        """
+        mask = np.full(D, False)
+        value = self.get("integer_vars")
+        if value is None:
+            return mask
+        array = np.asarray(value)
+        if array.size == 0:
+            return mask
+        if array.ndim != 1 or not (
+            array.dtype == bool or np.issubdtype(array.dtype, np.integer)
+        ):
+            raise ValueError(
+                "The option integer_vars must be "
+                + _INTEGER_VARS_FORMS
+                + f"; got {value!r}."
+            )
+        if array.dtype == bool:
+            if array.size != D:
+                raise ValueError(
+                    "The option integer_vars, written as a boolean mask, "
+                    f"needs one entry per variable, that is {D}; got "
+                    f"{array.size}."
+                )
+            mask[array] = True
+            return mask
+        if array.size == D and np.all((array == 0) | (array == 1)):
+            raise ValueError(
+                f"The option integer_vars holds {D} integers, each of them "
+                "zero or one, which reads both as a mask and as a list of "
+                "indices. Write a boolean array to give a mask."
+            )
+        if np.any(array < 0) or np.any(array >= D):
+            raise ValueError(
+                "The option integer_vars, written as indices, needs "
+                f"0-based indices of the {D} variables; got {value!r}."
+            )
+        if np.unique(array).size != array.size:
+            raise ValueError(
+                "The option integer_vars, written as indices, names a "
+                f"variable twice; got {value!r}."
+            )
+        mask[array] = True
+        return mask
+
+    def validate_run_limits(self):
+        """
+        Check the limits on iterations and function evaluations.
+
+        ``max_fun_evals`` and ``max_iter`` have to be positive integers,
+        and a ``max_iter`` below ``min_iter`` is raised to it, as
+        ``misc/setupoptions_vbmc.m:109-119`` requires.
+
+        Raises
+        ------
+        ValueError
+            When ``max_fun_evals`` or ``max_iter`` is not a positive
+            integer.
+        """
+        for key in ("max_fun_evals", "max_iter"):
+            value = self.get(key)
+            if not _is_positive_integer_valued(value):
+                raise ValueError(
+                    f"The option {key} needs to be a positive integer; "
+                    f"got {value!r}."
+                )
+        if self.get("max_iter") < self.get("min_iter"):
+            logging.warning(
+                "The option max_iter cannot be smaller than min_iter. "
+                "Raising max_iter to %s.",
+                self.get("min_iter"),
+            )
+            self.__setitem__("max_iter", self.get("min_iter"), force=True)
+
+    def uncertainty_handling_on(self):
+        """
+        Whether the run treats the target log-density as noisy.
+
+        It does when the target returns its own noise estimate
+        (``specify_target_noise``) or when ``uncertainty_handling`` asks for
+        the noise level to be inferred.
+
+        Returns
+        -------
+        on : bool
+            Whether uncertainty handling is on.
+
+        Raises
+        ------
+        ValueError
+            When ``uncertainty_handling`` holds a value that is neither a
+            boolean nor empty, or when it is off while
+            ``specify_target_noise`` is set.
+        """
+        requested = _uncertainty_handling_flag(
+            self.get("uncertainty_handling")
+        )
+        if self.get("specify_target_noise"):
+            if requested is False:
+                raise ValueError(
+                    "A target that returns its own noise estimate is a "
+                    "noisy target: with specify_target_noise set, "
+                    "uncertainty_handling cannot be turned off. Leave it "
+                    "empty or set it to True."
+                )
+            return True
+        return bool(requested)
+
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""
-        if self.get("specify_target_noise"):
+        if self.uncertainty_handling_on():
+            # Each default is computed only if it is going to be used: a
+            # value the user set need not admit the computation (an
+            # infinite budget has no ceiling).
             updates = {
-                "max_fun_evals": ceil(self["max_fun_evals"] * 1.5),
-                "tol_stable_count": ceil(self["tol_stable_count"] * 1.5),
-                "active_sample_gp_update": True,
-                "active_sample_vp_update": True,
-                "search_acq_fcn": [AcqFcnVIQR()],
+                "max_fun_evals": lambda: ceil(self["max_fun_evals"] * 1.5),
+                "tol_stable_count": lambda: ceil(
+                    self["tol_stable_count"] * 1.5
+                ),
+                "active_sample_gp_update": lambda: True,
+                "active_sample_vp_update": lambda: True,
+                "search_acq_fcn": lambda: [AcqFcnVIQR()],
             }
-            for key, val in updates.items():
+            for key, default in updates.items():
                 if key not in self["useroptions"]:
-                    self[key] = val
+                    self[key] = default()
 
     @classmethod
     def init_from_existing_options(
@@ -119,7 +389,10 @@ class Options(MutableMapping, dict):
         return new_options
 
     def load_options_file(
-        self, options_path: str, evaluation_parameters: dict = None
+        self,
+        options_path: str,
+        evaluation_parameters: dict = None,
+        as_user_options: bool = False,
     ):
         """
         Load options from an ini file and evaluate them using the specified
@@ -135,12 +408,41 @@ class Options(MutableMapping, dict):
             absolute or relative to this directory.
         evaluation_parameters : dict, optional
             Parameters used to evaluate the options.
+        as_user_options : bool, optional
+            Whether the file states the user's choices rather than the
+            defaults PyVBMC ships. The options it sets then join
+            ``useroptions``, so that they survive a later load and are not
+            replaced by :py:meth:`update_defaults`. Default `False`.
         """
         options_list = _read_config_file(options_path)
-        for (key, value, description) in options_list:
+        loaded = set()
+        for key, value, description in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
                 self[key] = eval(value, globals(), evaluation_parameters)
                 self.descriptions[key] = description
+                loaded.add(key)
+        if as_user_options:
+            self["useroptions"].update(loaded)
+
+    def validate_supplied_option_names(self, names):
+        """
+        Check that every name of ``names`` is one PyVBMC declares.
+
+        Parameters
+        ----------
+        names : iterable of str
+            The option names a caller supplied.
+
+        Raises
+        ------
+        ValueError
+            Raised when a name is declared by neither of the shipped ini
+            files.
+        """
+        declared = declared_option_names()
+        for key in sorted(names):
+            if key not in declared:
+                raise ValueError("The option {} does not exist.".format(key))
 
     def validate_option_names(self, options_paths: list):
         """
@@ -164,18 +466,59 @@ class Options(MutableMapping, dict):
             specified ini files.
         """
         # create set of option names from all ini files
-        file_option_names = set()
-        for options_path in options_paths:
-            file_option_names.update(
-                _read_config_file(options_path)[:, 0].flatten()
-            )
+        file_option_names = declared_option_names(options_paths)
 
         for key in self.keys():
             if key != "useroptions" and key not in file_option_names:
                 raise ValueError("The option {} does not exist.".format(key))
 
+        self._warn_inert_options(options_paths)
+
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
+
+    def _warn_inert_options(self, options_paths: list):
+        """
+        Warn about the options of :data:`INERT_OPTIONS` that the user set to
+        a value other than the default declared in the ini files.
+
+        An option whose declared default is a callable is left alone: two
+        functions cannot be told apart by value, and repeating such a
+        default (as an option dictionary recorded by an earlier run does)
+        would otherwise look like a change.
+
+        Parameters
+        ----------
+        options_paths : list of str
+            A list of paths to the ini files that declare the defaults.
+        """
+        supplied = set(self.get("useroptions")) & INERT_OPTIONS
+        if len(supplied) == 0:
+            return
+
+        default_values = {}
+        for options_path in options_paths:
+            for key, value, __ in _read_config_file(options_path):
+                if key in supplied:
+                    default_values[key] = value
+
+        for key in sorted(supplied):
+            if key not in default_values:
+                continue
+            try:
+                default = eval(
+                    default_values[key], globals(), self.evaluation_parameters
+                )
+            except Exception:
+                continue
+            if callable(default) or _equals_default(self[key], default):
+                continue
+            logging.warning(
+                "The option %s has no effect in PyVBMC: the value %s is "
+                "accepted and ignored.",
+                key,
+                self[key],
+            )
 
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
@@ -199,8 +542,19 @@ class Options(MutableMapping, dict):
     def __len__(self):
         return dict.__len__(self)
 
-    def __delitem__(self, key):
-        return dict.__delitem__(self, key)
+    def __delitem__(self, key, force=False):
+        # Options cannot be removed after initialization, as they cannot be
+        # set; ``pop``, ``popitem`` and ``clear`` all come through here.
+        if (
+            hasattr(self, "is_initialized")
+            and self.is_initialized
+            and not force
+        ):
+            raise AttributeError(
+                "Warning: Cannot remove options after initialization. Please re-initialize with `options = {...}`"
+            )
+        else:
+            dict.__delitem__(self, key)
 
     def __copy__(self):
         cls = self.__class__
@@ -303,6 +657,53 @@ class Options(MutableMapping, dict):
             )
 
 
+def _equals_default(value, default):
+    """
+    Private helper method to compare an option value against its default,
+    for values of any type an ini file can produce.
+    """
+    if value is default:
+        return True
+    try:
+        return bool(
+            np.array_equal(
+                np.asarray(value, dtype=object),
+                np.asarray(default, dtype=object),
+            )
+        )
+    except Exception:
+        return False
+
+
+#: An option line of an ini file, up to the delimiter that ends its name.
+_OPTION_LINE = re.compile(r"\s*([^#;=:\s][^=:]*?)\s*[=:]")
+
+
+def _read_descriptions(path: Path):
+    """
+    Private helper method to read the description of each option of an ini
+    file, that is the comment line above it.
+
+    The description is taken from the raw line, because a config parser
+    would split it at the first ``=`` or ``:`` it contains.
+    """
+    descriptions = {}
+    description = ""
+    with open(path, encoding="utf-8") as config_file:
+        for line in config_file:
+            stripped = line.strip()
+            if stripped == "" or stripped.startswith("["):
+                continue
+            if stripped.startswith("#") or stripped.startswith(";"):
+                description = stripped.lstrip("#;").strip()
+                continue
+            match = _OPTION_LINE.match(line)
+            if match is not None:
+                descriptions[match.group(1)] = description
+                description = ""
+    return descriptions
+
+
 def _read_config_file(options_path: str):
     """
     Private helper method to read a config file and return the options as a
@@ -317,20 +718,16 @@ def _read_config_file(options_path: str):
 
     if not path.exists():
         raise ValueError(f"{path.resolve()} does not exist.")
-    conf = configparser.ConfigParser(comment_prefixes="", allow_no_value=True)
+    conf = configparser.ConfigParser(allow_no_value=True)
     # do not lower() both values as well as descriptions
     conf.optionxform = str
     conf.read(path)
 
+    descriptions = _read_descriptions(path)
     option_list = []
-    description = ""
     for section in conf.sections():
-        for (key, value) in conf.items(section):
-            if "#" in key:
-                description = key.strip("# ")
-            else:
-                option_list.append([key, value, description])
-                description = ""
+        for key, value in conf.items(section):
+            option_list.append([key, value, descriptions.get(key, "")])
 
     if len(option_list) == 0:
         raise ValueError(

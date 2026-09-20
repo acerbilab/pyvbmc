@@ -29,6 +29,7 @@ def models():
         ("ordered", r"ordered.*unsupported transform Ordered"),
         ("zero_sum", r"zero_sum.*unsupported transform ZeroSumTransform"),
         ("mixed", r"mixed.*mix"),
+        ("shifted_log_support", r"shifted.*density is zero"),
     ],
 )
 def test_rejected_model_families(models, key, pattern):
@@ -49,6 +50,17 @@ def test_unknown_custom_free_variable_support_is_rejected():
         UnsupportedModel, match=r"mystery.*support cannot be inferred"
     ):
         PyMCTarget(model, seed=52)
+
+
+def test_log_support_reaching_zero_is_accepted():
+    with pm.Model() as model:
+        pm.Wald("x", mu=1.0, lam=2.0, alpha=0.0)
+    target = PyMCTarget(model, seed=54)
+    lower, upper = target.support["x"]
+    assert float(lower) == 0.0
+    assert np.isposinf(float(upper))
+    assert target.kept == {"x": "LogTransform"}
+    assert np.isfinite(target.log_joint(target.x0))
 
 
 def test_recognized_prior_with_custom_likelihood_is_accepted():

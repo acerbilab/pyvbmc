@@ -28,6 +28,16 @@ from .options import Options
 _selection_policy_callback = None
 
 
+def _log_search_failure(logger, exc):
+    """Report a local acquisition search that raised."""
+    logger.warning(
+        "Active search failed (%s: %s); using the best candidate of the "
+        "search set.",
+        type(exc).__name__,
+        exc,
+    )
+
+
 def active_sample(
     gp: gpr.GP,
     sample_count: int,
@@ -167,12 +177,18 @@ def active_sample(
             Xs = np.copy(x0[:sample_count])
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
             skip_logger = np.copy(skip_logger_cache[:sample_count])
-            idx_remove = np.full(provided_sample_count, True)
+            # Only the points the initial design consumes leave the cache;
+            # the rest stay there with their values, as candidates of the
+            # search sieve that are acquired without a target call.
+            idx_remove = np.full(provided_sample_count, False)
+            idx_remove[:sample_count] = True
             logger.info(
                 "More than sample_count=%s initial points have been "
-                "provided, using only the first %s points.",
+                "provided, using the first %s for the initial design and "
+                "keeping the remaining %s in the cache.",
                 sample_count,
                 sample_count,
+                provided_sample_count - sample_count,
             )
 
         # Remove points from starting cache
@@ -290,7 +306,7 @@ def active_sample(
             optim_state["N"] = (
                 function_logger.Xn + 1
             )  # Number of training inputs
-            optim_state["N_eff"] = sum(
+            optim_state["n_eff"] = np.sum(
                 function_logger.n_evals[function_logger.X_flag]
             )
             ###
@@ -454,10 +470,10 @@ def active_sample(
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: Nelder-Mead, or CMA-ES's rejection
-                path) returns a float; a list of points (one CMA-ES
-                generation, or the noise handler's re-evaluations) is
-                evaluated in a single batched call and returns a list.
+                One point (a 1-D array: the scalar and Nelder-Mead
+                searches, or CMA-ES's rejection path) returns a float; a
+                list of points (one CMA-ES generation) is evaluated in a
+                single batched call and returns a list.
                 With integer variables the acquisition snaps its input to
                 the integer grid in place (`AbstractAcqFcn._real2int`), and
                 the pointwise call let that reach CMA-ES's own solution
@@ -481,11 +497,11 @@ def active_sample(
                 and options["search_optimizer"] != "none"
                 and not repeat_flag
             ):
+                search_optimizer = options["search_optimizer"]
                 if gp.D == 1:
-                    # Use Nelder-Mead method for 1D optimization
-                    options.__setitem__(
-                        "search_optimizer", "Nelder-Mead", force=True
-                    )
+                    # A one-dimensional acquisition is minimized over the
+                    # whole search interval by a bounded scalar search.
+                    search_optimizer = "bounded"
 
                 f_val_old = acq_fast[idx]
                 x0 = X_acq[0, :]
@@ -497,16 +513,23 @@ def active_sample(
                     lb_search = np.minimum(x0, optim_state["lb_search"])
                     ub_search = np.maximum(x0, optim_state["ub_search"])
                 else:
+                    # One bound per coordinate, from the training inputs
+                    # and the starting point taken together.
                     xrange = gp.X.max(0) - gp.X.min(0)
-                    lb_search = np.minimum(gp.X, x0) - 0.1 * xrange
-                    ub_search = np.maximum(gp.X, x0) + 0.1 * xrange
+                    X_stacked = np.vstack((gp.X, np.atleast_2d(x0)))
+                    lb_search = X_stacked.min(0) - 0.1 * xrange
+                    ub_search = X_stacked.max(0) + 0.1 * xrange
 
                 if acq_eval.acq_info.get("log_flag"):
                     tol_fun = 1e-2
                 else:
                     tol_fun = max(1e-12, abs(f_val_old * 1e-3))
 
-                if options["search_optimizer"] == "cmaes":
+                # A local search that fails costs one acquisition, not the
+                # run: the sieve's best candidate is kept instead.
+                xsearch_optim, f_val_optim = x0, np.inf
+
+                if search_optimizer == "cmaes":
                     if options["search_cmaes_vp_init"]:
                         _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
                     else:
@@ -514,6 +537,7 @@ def active_sample(
                         Sigma = np.cov(X_hpd, rowvar=False, bias=True)
 
                     insigma = np.sqrt(np.diag(Sigma))
+                    sigma0 = np.max(insigma)
                     cma_options = {
                         "verbose": -9,
                         "tolfun": tol_fun,
@@ -526,29 +550,73 @@ def active_sample(
                         "randn": lambda *shape: rng.standard_normal(shape),
                     }
 
+                    # Start the search at the per-coordinate standard
+                    # deviations `insigma`: `sigma0` is the overall step size
+                    # and `CMA_stds` the coordinate scaling, which cma keeps
+                    # in a non-adapting `sigma_vec` while `C` starts at the
+                    # identity and adapts on top of it. A coordinate scaling
+                    # needs every entry positive and finite; otherwise the
+                    # search starts isotropic at `sigma0`.
+                    if np.all(np.isfinite(insigma)) and np.all(insigma > 0):
+                        cma_options["CMA_stds"] = insigma / sigma0
+
                     # The population of each generation is evaluated in one
                     # call (`parallel_objective`); `ask_and_eval` draws it
                     # with a single `ask` in either mode, so the random
                     # stream is the same as with a pointwise objective.
-                    res = cma.fmin(
-                        acq_fun,
-                        x0,
-                        np.max(insigma),
-                        options=cma_options,
-                        parallel_objective=acq_fun,
-                        noise_handler=_BatchedNoiseHandler(
-                            np.size(x0), acq_fun, vp.rng
-                        ),
-                    )
+                    # The GP, the variational posterior and the importance
+                    # samples are fixed while the search runs, so the
+                    # acquisition is deterministic and the search needs no
+                    # noise handling: one generation costs one population.
+                    try:
+                        res = cma.fmin(
+                            acq_fun,
+                            x0,
+                            sigma0,
+                            options=cma_options,
+                            parallel_objective=acq_fun,
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim, f_val_optim = res[:2]
+                elif search_optimizer == "bounded":
+                    from scipy.optimize import minimize_scalar
 
-                    xsearch_optim, f_val_optim = res[:2]
-                elif options["search_optimizer"] == "Nelder-Mead":
+                    def acq_fun_1d(x):
+                        return acq_fun(np.atleast_1d(x))
+
+                    try:
+                        res = minimize_scalar(
+                            acq_fun_1d,
+                            method="bounded",
+                            bounds=(
+                                float(np.ravel(lb_search)[0]),
+                                float(np.ravel(ub_search)[0]),
+                            ),
+                            options={
+                                "maxiter": options["search_max_fun_evals"],
+                                # The step size at which the CMA-ES search
+                                # of the other branch stops.
+                                "xatol": 1e-11,
+                            },
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim = np.atleast_1d(res.x)
+                        f_val_optim = res.fun
+                elif search_optimizer == "Nelder-Mead":
                     from scipy.optimize import minimize
 
-                    res = minimize(
-                        acq_fun, x0, method="Nelder-Mead", tol=tol_fun
-                    )
-                    xsearch_optim, f_val_optim = res.x, res.fun
+                    try:
+                        res = minimize(
+                            acq_fun, x0, method="Nelder-Mead", tol=tol_fun
+                        )
+                    except Exception as exc:
+                        _log_search_failure(logger, exc)
+                    else:
+                        xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 
@@ -628,13 +696,15 @@ def active_sample(
                 ynew, _, idx_new = function_logger(xnew)
             else:
                 ynew, _, idx_new = function_logger.add(xnew, y_orig)
-                # Remove point from starting cache
-                optim_state["cache"]["x_orig"] = np.delete(
-                    optim_state["cache"]["x_orig"], idx, 0
-                )
-                optim_state["cache"]["y_orig"] = np.delete(
-                    optim_state["cache"]["y_orig"], idx, 0
-                )
+            if not np.isnan(idx_cache_acq):
+                # The acquired point leaves the starting cache, whether
+                # its value was stored there or has just been evaluated;
+                # a point left behind could be drawn and evaluated again.
+                for key in ("x_orig", "y_orig", "skip_logger"):
+                    if key in optim_state["cache"]:
+                        optim_state["cache"][key] = np.delete(
+                            optim_state["cache"][key], idx, 0
+                        )
             timer.stop_timer("fun_time")
 
             if hasattr(function_logger, "S"):
@@ -666,8 +736,8 @@ def active_sample(
                     gptmp = None
                     fESS, fESS_thresh = 0, 1
                     if fESS <= fESS_thresh:
-                        timer.start_timer("gp_train")
                         if options["active_sample_gp_update"]:
+                            timer.start_timer("gp_train")
                             (
                                 gp,
                                 __,
@@ -712,12 +782,10 @@ def active_sample(
                                 slow_opts_N=1,
                             )
 
-                            if optim_state.get("vp_repo") is not None:
-                                np.append(
-                                    optim_state["vp_repo"], vp.get_parameters()
-                                )
-                            else:
-                                optim_state["vp_repo"] = [vp.get_parameters()]
+                            # Missing port: variational_init_repo, which
+                            # collects the variational parameters reached
+                            # here for the sieve of a later variational
+                            # optimization to start from.
                             timer.stop_timer("variational_fit")
                     else:
                         gp = gptmp
@@ -725,15 +793,22 @@ def active_sample(
                     # If NOT performing full updates with active sampling, only
                     # the GP posterior is updated (but not the hyperparameters)
 
-                    # Perform simple rank-1 update if no noise and first sample
+                    # A first observation at a new input adds one training
+                    # row, which the rank-1 update extends the posterior
+                    # factors with. A repeat is pooled into an existing row
+                    # instead, so the whole posterior is recomputed; so is
+                    # it under noise shaping, which rescales the noise of
+                    # every training point.
                     timer.start_timer("gp_train")
                     update1 = (
-                        (s2new is None)
-                        and function_logger.n_evals[idx_new] == 1
-                    ) and not options["noise_shaping"]
+                        function_logger.n_evals[idx_new] == 1
+                        and not options["noise_shaping"]
+                    )
                     if update1:
                         ynew = np.array([[ynew]])  # (1,1)
-                        gp.update(xnew, ynew, compute_posterior=True)
+                        gp.update(
+                            xnew, ynew, s2_new=s2new, compute_posterior=True
+                        )
                         # gp.t(end+1) = tnew
                     else:
                         gp = reupdate_gp(function_logger, gp)
@@ -863,19 +938,26 @@ def _get_search_points(
 
         search_X = parameter_transformer(x0[idx_cache])
 
-    # Randomly sample remaining points
-    if x0.shape[0] < number_of_points:
-        N_random_points = number_of_points - x0.shape[0]
+    # Randomly sample the points the cache did not provide
+    if search_X.shape[0] < number_of_points:
+        N_random_points = number_of_points - search_X.shape[0]
         random_Xs = np.full((0, D), np.nan)
 
         N_search_cache = round(
             options.get("search_cache_frac") * N_random_points
         )
         if N_search_cache > 0:  # Take points from search cache
+            # The search cache holds the candidates of the previous step,
+            # ranked by acquisition value; it is empty until one has run.
             search_cache = optim_state.get("search_cache")
+            if search_cache is None:
+                search_cache = np.full((0, D), np.nan)
+            else:
+                search_cache = np.reshape(search_cache, (-1, D))
+            N_search_cache = min(N_search_cache, search_cache.shape[0])
             random_Xs = np.append(
                 random_Xs,
-                search_cache[: min(len(search_cache), N_search_cache)],
+                search_cache[:N_search_cache],
                 axis=0,
             )
 
@@ -989,65 +1071,3 @@ def _get_search_points(
     # Apply search bounds
     search_X = np.minimum((np.maximum(search_X, lb_search)), ub_search)
     return search_X, idx_cache
-
-
-class _BatchedNoiseHandler(cma.NoiseHandler):
-    """``cma.NoiseHandler`` whose re-evaluations are one batched call.
-
-    ``cma.fmin`` re-evaluates ``2 + popsize/20`` solutions per generation
-    at a perturbation of ``epsilon`` to measure "noise" (on VBMC's
-    deterministic acquisition this measures its local variation and only
-    affects the step-size adaptation). The stock ``reeval`` alternates
-    ``ask`` (one draw from the strategy's ``randn``) and one scalar
-    objective call per solution; this subclass performs the same ``ask``
-    calls in the same order first and then evaluates all perturbed
-    solutions with one call to `batch_fun`, so the strategy's random stream
-    is that of the stock handler and the fitness values are the same up to
-    the arithmetic of a batched evaluation (a few ulp, as for the population
-    itself). Falls back to the stock method whenever its
-    one-evaluation-per-solution assumption does not hold (never with
-    ``NoiseHandler(N)`` defaults, whose ``maxevals`` is 1).
-
-    The stock ``indices`` decides the fractional part of the number of
-    re-evaluations (``2 + popsize / 20``) with one ``np.random.rand()``,
-    the only draw of a VBMC run that came from NumPy's global state; the
-    override takes it from `rng` (the instance's generator) instead.
-    """
-
-    def __init__(self, N, batch_fun, rng):
-        super().__init__(N)
-        self._batch_fun = batch_fun
-        self._rng = rng
-
-    def indices(self, fit):
-        # The stock policy (`choice == 1` in cma 4.4.4): the first
-        # `lam_reev - lam_reev // 2` solutions and the best of the rest.
-        lam_reev = 1.0 * (
-            self.lam_reeval if self.lam_reeval else 2 + len(fit) / 20
-        )
-        lam_reev = int(lam_reev) + ((lam_reev % 1) > self._rng.random())
-        n_first = lam_reev - lam_reev // 2
-        sort_idx = np.argsort(np.asarray(fit)[n_first:]) + n_first
-        return np.asarray(
-            list(range(0, n_first)) + list(sort_idx[0 : lam_reev - n_first])
-        )
-
-    def reeval(self, X, fit, func, ask, args=()):
-        if (
-            not self.epsilon
-            or self.f_aggregate is None
-            or int(self.evaluations) != 1
-            or args
-        ):
-            return super().reeval(X, fit, func, ask, args)
-        self.fit = list(fit)
-        self.fitre = list(fit)
-        self.idx = self.indices(fit)
-        if not len(self.idx):
-            return self.idx
-        X_re = [ask(1, X[i], self.epsilon)[0] for i in self.idx]
-        f_re = self._batch_fun(X_re)
-        for i, f in zip(self.idx, f_re):
-            self.fitre[i] = self.f_aggregate([f])
-        self.evaluations_just_done = len(self.idx)
-        return self.fit, self.fitre, self.idx

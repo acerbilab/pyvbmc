@@ -8,6 +8,7 @@ import scipy as sp
 import scipy.stats
 
 from pyvbmc import VBMC
+from pyvbmc.acquisition_functions import AcqFcnVIQR
 from pyvbmc.priors import (
     Prior,
     Product,
@@ -137,6 +138,35 @@ def test_vbmc_bounds_check_not_D():
     VBMC(fun, x0, lb, ub)._bounds_check(x0, lb, ub, plb, pub)
 
 
+def test_vbmc_bounds_check_scalars_are_replicated():
+    """``misc/boundscheck_vbmc.m:6-10`` replicates each of the four bounds
+    given as a single value across the variables, and the class docstring
+    promises the same."""
+    D = 3
+    x0 = np.ones((2, D))
+    vbmc = VBMC(fun, x0, -2, 2, -1, 1)
+    for bound, value in (
+        (vbmc.lower_bounds, -2),
+        (vbmc.upper_bounds, 2),
+        (vbmc.plausible_lower_bounds, -1),
+        (vbmc.plausible_upper_bounds, 1),
+    ):
+        assert bound.shape == (1, D)
+        assert np.all(bound == value)
+
+
+def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
+    """A starting set without width leaves the plausible box without
+    width, and the hard bounds take its place, which needs the replicated
+    bound to carry one entry per variable."""
+    D = 1
+    x0 = np.array([[2.0], [2.0]])
+    vbmc = VBMC(fun, x0, -10, 10)
+    assert vbmc.plausible_lower_bounds.shape == (1, D)
+    assert vbmc.plausible_upper_bounds.shape == (1, D)
+    assert np.all(vbmc.plausible_lower_bounds < vbmc.plausible_upper_bounds)
+
+
 def test_vbmc_bounds_check_not_vectors():
     D = 3
     lb = np.ones((1, D)) * -2
@@ -144,8 +174,8 @@ def test_vbmc_bounds_check_not_vectors():
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D))
     x0 = np.ones((2, D))
-    incorrect = 1
-    exception_message = "Bounds must match problem dimension D="
+    incorrect = np.ones((2, D))
+    exception_message = "Bounds must match problem dimension D=3."
     with pytest.raises(ValueError) as execinfo1:
         VBMC(fun, x0, lb, ub)._bounds_check(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
@@ -395,7 +425,7 @@ def test_vbmc_setupvars_no_x0_infinite_bounds():
 
 
 def test_vbmc_optimstate_integer_vars():
-    options = {"integer_vars": np.array([1, 0, 0])}
+    options = {"integer_vars": np.array([True, False, False])}
     D = 3
     lb = np.ones((1, D)) * 1
     ub = np.ones((1, D)) * 5
@@ -422,6 +452,71 @@ def test_vbmc_optimstate_integer_vars():
     integer_vars = np.full((1, D), False)
     integer_vars[:, 0] = True
     assert np.all(vbmc.optim_state.get("integer_vars") == integer_vars)
+
+
+def _integer_vars_vbmc(value, D=3):
+    lb = np.full((1, D), -10.5)
+    ub = np.full((1, D), 10.5)
+    x0 = np.zeros((1, D))
+    plb = np.full((1, D), -2.5)
+    pub = np.full((1, D), 2.5)
+    return VBMC(fun, x0, lb, ub, plb, pub, {"integer_vars": value})
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [0, 2],
+        (0, 2),
+        np.array([0, 2]),
+        np.array([2, 0]),
+        np.array([True, False, True]),
+        [True, False, True],
+    ],
+)
+def test_integer_vars_marks_the_variables_it_names(value):
+    """A boolean array is a mask and an integer array holds the 0-based
+    indices of the integer variables, as ``misc/setupvars_vbmc.m:15-17``
+    reads ``options.IntegerVars`` as indices (1-based there)."""
+    vbmc = _integer_vars_vbmc(value)
+    assert np.array_equal(
+        vbmc.optim_state["integer_vars"], np.array([True, False, True])
+    )
+
+
+@pytest.mark.parametrize("value", [[], (), np.array([]), None])
+def test_integer_vars_empty_marks_no_variable(value):
+    vbmc = _integer_vars_vbmc(value)
+    assert not np.any(vbmc.optim_state["integer_vars"])
+
+
+def test_integer_vars_all_zeros_and_ones_is_ambiguous():
+    """``[1, 0, 1]`` at three variables reads both as a mask and as a list
+    of indices, so it is refused rather than guessed."""
+    with pytest.raises(ValueError) as execinfo:
+        _integer_vars_vbmc(np.array([1, 0, 1]))
+    message = execinfo.value.args[0]
+    assert "integer_vars" in message
+    assert "boolean" in message
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        np.array([1, 3]),  # a 1-based index vector
+        np.array([-1]),
+        np.array([3]),
+        np.array([2, 2]),
+        np.array([True, False]),
+        np.array([0.0, 2.0]),
+        "0, 2",
+        np.array([[0, 2]]),
+    ],
+)
+def test_integer_vars_rejects_what_it_cannot_read(value):
+    with pytest.raises(ValueError) as execinfo:
+        _integer_vars_vbmc(value)
+    assert "integer_vars" in execinfo.value.args[0]
 
 
 def test_vbmc_setupvars_f_vals():
@@ -471,18 +566,10 @@ def test_vbmc_optimstate_gp_functions():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     # uncertainty_handling_level 1
     assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
-    options = {"specify_target_noise": False, "uncertainty_handling": [3]}
+    options = {"specify_target_noise": False, "uncertainty_handling": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["gp_noise_fun"] == [1, 2, 0]
     # uncertainty_handling_level 0
-    options = {
-        "specify_target_noise": False,
-        "uncertainty_handling": [],
-        "noise_shaping": True,
-    }
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["uncertainty_handling_level"] == 0
-    assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
     options = {
         "specify_target_noise": False,
         "uncertainty_handling": [],
@@ -613,12 +700,61 @@ def test_vbmc_optimstate_uncertainty_handling_level():
     options = {"specify_target_noise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 2
-    options = {"specify_target_noise": False, "uncertainty_handling": [3]}
+    options = {"specify_target_noise": False, "uncertainty_handling": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 1
     options = {"specify_target_noise": False, "uncertainty_handling": []}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize("value", [True, 1, np.True_, np.int64(1)])
+def test_uncertainty_handling_true_infers_the_noise_level(value):
+    """``uncertainty_handling`` is a boolean, as ``options.UncertaintyHandling``
+    is in MATLAB VBMC (``misc/setupvars_vbmc.m:232``), and a target whose
+    noise level VBMC infers is handled at level 1."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 1
+
+
+@pytest.mark.parametrize(
+    "value", [False, 0, np.False_, np.int64(0), [], (), np.array([]), None]
+)
+def test_uncertainty_handling_off_or_unset_gives_a_noiseless_run(value):
+    """False turns the noise handling off and an empty value leaves the
+    choice to ``specify_target_noise``, which is off here."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize(
+    "value", ["yes", "no", "off", [0], [1], [2], [3], np.array([1, 0]), 2]
+)
+def test_uncertainty_handling_rejects_other_values(value):
+    """A value that is neither a boolean nor empty is refused, and the
+    message names what may be written instead."""
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    message = execinfo.value.args[0]
+    assert "uncertainty_handling" in message
+    assert "True or False" in message
+
+
+def test_uncertainty_handling_off_with_specify_target_noise_raises():
+    """``misc/setupoptions_vbmc.m:135-137`` refuses a target that supplies
+    its own noise estimate while the noise handling is turned off."""
+    options = {"specify_target_noise": True, "uncertainty_handling": False}
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert "specify_target_noise" in execinfo.value.args[0]
+
+
+def test_uncertainty_handling_true_with_specify_target_noise_is_level_2():
+    """Both set is the one combination MATLAB accepts, and the target's own
+    noise estimate wins."""
+    options = {"specify_target_noise": True, "uncertainty_handling": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 2
 
 
 def test_vbmc_optimstate_acq_hedge():
@@ -1138,7 +1274,7 @@ def test_init_1D_input():
     assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
 
 
-def test_init_options_path():
+def test_init_options_path(tmp_path):
     D = 2
     lb = np.full((D,), -10)
     ub = np.full((D,), 10)
@@ -1162,16 +1298,16 @@ def test_init_options_path():
     assert vbmc.options["sgd_step_size"] == 0.005
     assert vbmc.options["uncertainty_handling"] == []
 
-    # relative path (string)
-    options = {"bar": 666}
-    abspath = (
-        Path(__file__)
-        .parent.parent.parent.joinpath("vbmc/option_configs/test_options.ini")
-        .resolve()
+    abspath = tmp_path.joinpath("user_options.ini")
+    abspath.write_text(
+        "[UserOptions]\n"
+        "# Required stable fcn evals for termination\n"
+        "tol_stable_count = 42\n"
+        "# Min number of iterations\n"
+        "min_iter = 3\n"
     )
+    options = {"min_iter": 666}
     for path in [
-        Path("option_configs/test_options.ini"),  # relative Path
-        "option_configs/test_options.ini",  # relative Path (string)
         abspath,  # absolute Path
         str(abspath),  # absolute Path (string)
     ]:
@@ -1185,16 +1321,137 @@ def test_init_options_path():
             options=options,
             options_path=path,
         )
-        # Keys from test config
-        assert vbmc.options["foo"] == "iter"
-        assert vbmc.options["fooD"] == 4
-        assert vbmc.options["bar"] == 666  # overridden by `options`
         # Keys from basic config
         assert vbmc.options["specify_target_noise"] == False  # same as before
-        assert vbmc.options["tol_stable_count"] == 42  # overridden
+        assert vbmc.options["tol_stable_count"] == 42  # overridden by file
+        assert vbmc.options["min_iter"] == 666  # `options` beats the file
         # Keys from advanced config
         assert vbmc.options["sgd_step_size"] == 0.005  # same as before
-        assert vbmc.options["uncertainty_handling"] == "zip"  # overridden
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        Path("option_configs/advanced_vbmc_options.ini"),
+        "option_configs/advanced_vbmc_options.ini",
+    ],
+)
+def test_init_options_path_relative_to_the_package(path):
+    """A relative ``options_path`` is resolved against the ``pyvbmc/vbmc/``
+    directory."""
+    D = 2
+    vbmc = VBMC(
+        fun,
+        np.zeros((1, D)),
+        np.full((1, D), -10.0),
+        np.full((1, D), 10.0),
+        np.full((1, D), -5.0),
+        np.full((1, D), 5.0),
+        options_path=path,
+    )
+    assert vbmc.options["sgd_step_size"] == 0.005
+
+
+def _vbmc_with_options_file(tmp_path, lines, options=None):
+    D = 2
+    path = tmp_path.joinpath("user_options.ini")
+    path.write_text("[UserOptions]\n" + "".join(lines))
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -10.0),
+        np.full((1, D), 10.0),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+        options_path=path,
+    )
+
+
+@pytest.mark.parametrize(
+    "line",
+    ["specify_target_noise = True\n", "uncertainty_handling = True\n"],
+)
+def test_options_file_reaches_the_noisy_defaults(tmp_path, line):
+    """The defaults that follow the noise handling are settled after every
+    source of options has been read, so that a noisy run configured by file
+    is configured as one configured by dictionary."""
+    by_dictionary = create_vbmc(
+        2, 0, -10, 10, -1, 1, {"specify_target_noise": True}
+    )
+    by_file = _vbmc_with_options_file(tmp_path, ["# noisy\n", line])
+    assert by_file.options["max_fun_evals"] == (
+        by_dictionary.options["max_fun_evals"]
+    )
+    assert by_file.options["active_sample_gp_update"] is True
+    assert by_file.options["active_sample_vp_update"] is True
+    assert isinstance(by_file.options["search_acq_fcn"][0], AcqFcnVIQR)
+
+
+def test_an_option_set_in_a_file_is_not_overwritten_by_a_default(tmp_path):
+    """A value written in the user's file is the user's choice, as one
+    passed in the dictionary is, so the noisy defaults leave it alone."""
+    vbmc = _vbmc_with_options_file(
+        tmp_path,
+        [
+            "# noisy\n",
+            "uncertainty_handling = True\n",
+            "# budget\n",
+            "max_fun_evals = 33\n",
+        ],
+    )
+    assert vbmc.options["max_fun_evals"] == 33
+    assert vbmc.options["active_sample_vp_update"] is True
+
+
+def _same_random_state(first, second):
+    """Whether two legacy global random states are the same state."""
+    return (
+        first[0] == second[0]
+        and np.array_equal(first[1], second[1])
+        and first[2:] == second[2:]
+    )
+
+
+def _global_state_around_construction(seed):
+    """The global random state before and after one construction, and the
+    state that four unsigned draws from the earlier one give."""
+    saved = np.random.get_state()
+    try:
+        np.random.seed(11)
+        before = np.random.get_state()
+        VBMC(
+            fun,
+            np.zeros((1, 2)),
+            np.full((1, 2), -10.0),
+            np.full((1, 2), 10.0),
+            np.full((1, 2), -1.0),
+            np.full((1, 2), 1.0),
+            seed=seed,
+        )
+        after = np.random.get_state()
+        np.random.set_state(before)
+        np.random.randint(0, 2**32, size=4, dtype=np.uint32)
+        four_draws = np.random.get_state()
+    finally:
+        np.random.set_state(saved)
+    return before, after, four_draws
+
+
+def test_a_given_seed_leaves_the_global_random_state_where_it_was():
+    """The ``seed`` documentation separates the two constructions: a seed
+    or a generator is used as it is."""
+    before, after, __ = _global_state_around_construction(42)
+    assert _same_random_state(before, after)
+
+
+def test_an_unseeded_construction_advances_the_global_random_state():
+    """An unseeded construction derives its generator from the global
+    random state, as the ``seed`` documentation says, by drawing the four
+    integers of ``pyvbmc.rng.get_rng``."""
+    before, after, four_draws = _global_state_around_construction(None)
+    assert not _same_random_state(before, after)
+    assert _same_random_state(four_draws, after)
 
 
 def test__str__and__repr__():
@@ -1238,6 +1495,21 @@ def _vectorized_vbmc(target, *, prior=None, options=None, D=2):
         options=merged_options,
         prior=prior,
     )
+
+
+def test_noise_shaping_is_off_by_default():
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    assert vbmc.options["noise_shaping"] is False
+
+
+def test_noise_shaping_on_is_rejected():
+    """Only half of the option is ported, so turning it on would configure
+    a run that exists in neither toolbox."""
+    with pytest.raises(NotImplementedError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options={"noise_shaping": True})
+    message = execinfo.value.args[0]
+    assert "noise_shaping" in message
+    assert "noiseshaping_vbmc.m" in message
 
 
 def test_vectorized_target_option_and_logger_mode():
@@ -1311,7 +1583,7 @@ def test_vectorized_unknown_noise_prior_returns_values_only():
     vbmc = _vectorized_vbmc(
         lambda x: np.sum(x, axis=1),
         prior=prior,
-        options={"uncertainty_handling": [1]},
+        options={"uncertainty_handling": True},
     )
     points = np.array([[0.25, -0.5], [0.75, 0.5]])
 

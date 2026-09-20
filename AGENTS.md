@@ -174,7 +174,11 @@ Things you must hold in your head across files:
   (`__call__` forward, `.inverse()` back; probit by default) mediates.
   `VariationalPosterior` methods take `orig_flag=True` by default and only
   provide gradients with `orig_flag=False`. The same transformer object must
-  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity);
+  be shared by `vbmc`, `vp`, and `function_logger` (tests assert identity,
+  during a run and after `load`, which shares the transformer of the
+  iteration it restores); `vbmc.x0` holds the starting points in the
+  initial transformed space, which a warp leaves behind, and `vbmc.x0_orig`
+  holds them in the caller's coordinates;
   the sieve candidates that `_vb_init` builds share it and the generator
   rather than copying them (a transformer is never mutated after
   construction; a warp installs a fresh copy), while `copy.deepcopy` of a
@@ -202,7 +206,13 @@ Things you must hold in your head across files:
   Free variables retain the given model's order; two-sided variables use
   model coordinates, while supported one-sided variables keep PyMC's value
   transform and Jacobian. The adapter returns `-inf` only on or outside its
-  hard box. Five undocumented reaches are capability-guarded: transform
+  hard box. A variable that keeps a log transform is accepted only if its
+  own prior density stays finite down to sixteen decades below its initial
+  value, so a shifted support (`pm.Wald` with a nonzero `alpha`) is
+  rejected at construction. `to_model_variables` returns a backward-map
+  output that rounded onto a finite support bound as the adjacent value
+  inside the support, and rejects non-finite and out-of-support values.
+  Five undocumented reaches are capability-guarded: transform
   classes; transform `args_fn`/`forward`/`backward`; the default-transform
   registry; Model mappings; and graph reconstruction/random-variable
   recognition (including PyMC symbolic random variables). Setup
@@ -216,7 +226,10 @@ Things you must hold in your head across files:
   constructing without Torch raises naming the extra, so `import pyvbmc`
   never imports Torch. `sample()` draws independently from the stacked
   mixture through copies that use the object's generator (`seed=`), never
-  the inputs'. Its Torch-dependent tests run only where Torch is installed
+  the inputs'. Construction rejects runs whose original-space hard bounds
+  differ (the bounded transform and any warp are free per run), and every
+  `optimize()` starts from the runs' own weights whatever `w` holds. Its
+  Torch-dependent tests run only where Torch is installed
   (one CI cell); the fixtures are plain-array snapshots under
   `pyvbmc/testing/svbmc/fixtures/` written by
   `dev/scripts/make_svbmc_fixtures.py`, and `references.npz` there pins the
@@ -256,8 +269,21 @@ Things you must hold in your head across files:
   imported in `options.py` available (`np`, `ceil`, the acquisition function
   classes, lambdas); the `options=` dict is used verbatim. To add an option,
   add a `# description` line followed by `name = <expr>` to the right `.ini`;
-  the comment is the user documentation. Unknown keys raise at validation.
-  Options are frozen after init; use `options.__setitem__(k, v, force=True)`.
+  the comment is the user documentation, and an option that no module reads
+  through an options mapping must be registered in `INERT_OPTIONS`
+  (`options.py`), which a test recomputes from the package. A name that
+  neither shipped file declares raises on every route (the dict, the
+  `options_path=` file, `load(new_options=)`). An option set in the
+  `options_path=` file counts as set by the user, as one in the dict does,
+  and the defaults that depend on other options (`update_defaults`: the
+  noisy-target defaults, applied whenever uncertainty handling is on, by
+  `specify_target_noise` or by `uncertainty_handling=True`) are settled
+  after every source is read. `uncertainty_handling` (a boolean),
+  `integer_vars` (a boolean mask or 0-based indices), `max_fun_evals` and
+  `max_iter` (positive integers, `max_iter` raised to `min_iter`) are
+  checked at construction. Options are frozen after init against assignment
+  and removal; use `options.__setitem__(k, v, force=True)` and
+  `options.__delitem__(k, force=True)`.
 - **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
   creates `vbmc.rng` (`pyvbmc/rng.py: get_rng`), shared with `vbmc.vp`;
   `VariationalPosterior.__deepcopy__` shares the generator so every copy of a
@@ -267,8 +293,9 @@ Things you must hold in your head across files:
   notebooks rely on this). The GP hyperparameter fit receives the generator
   (`train_gp(rng=)` → `gpyreg.GP.fit(rng=)`, which covers the space-filling
   design and the slice sampler; needs the gpyreg commit pinned in
-  `test-matrix.yml` or later) and the CMA-ES noise-handler subclass in
-  `active_sample.py` draws its re-evaluation count from `vp.rng`, and
+  `test-matrix.yml` or later), the CMA-ES search in `active_sample.py`
+  draws its populations through the generator (the `randn` option of
+  `cma`), and
   `active_importance_sampling` passes `vp.rng` to the slice sampler of its
   MCMC step (IMIQR), so a run never reads or writes NumPy's global state
   (since 2026-09-05, and for IMIQR runs since 2026-09-10, when the
@@ -300,12 +327,35 @@ Things you must hold in your head across files:
   the attempt number (`request.node.execution_count`, set by
   pytest-rerunfailures) before yielding, so a rerun sees fresh draws and
   later tests still find the stream where they used to.
+- Several subpackages export a function under the name of the module that
+  defines it (`pyvbmc.vbmc.active_sample`, `active_importance_sampling` and
+  `create_vbmc_animation`; likewise in `pyvbmc.entropy` and `pyvbmc.stats`),
+  so inside the package that name is the function. A mock target written as a
+  dotted name through it, such as `"pyvbmc.vbmc.active_sample.cma.fmin"`,
+  resolves to the module on Python 3.11 and later and to the function on
+  Python 3.10, where it raises `ModuleNotFoundError`. Patch the module object
+  (`importlib.import_module("pyvbmc.vbmc.active_sample")` with
+  `mocker.patch.object`), or the defining module of what is patched
+  (`"cma.fmin"`).
 - `test_*_save_dynamic` write `.pkl` files into the source tree that the
   matching `load` tests read; running a `load` test alone fails.
 - `test_*_save_static.pkl` fixtures are pickled instances of the current
   classes. Renaming or removing an attribute on `VBMC`, `VariationalPosterior`,
   `Options`, or `IterationHistory` breaks them, and they cannot be regenerated
-  without rerunning `optimize()`.
+  without rerunning `optimize()`. Load the VBMC one, never save it again: it
+  holds the target function and PyVBMC's log-joint wrapper pickled by value,
+  as bytecode of the Python version that wrote the file, and pickling such a
+  function makes dill disassemble it, which corrupts memory on Python 3.11
+  (a segmentation fault in that test, in a later garbage collection, or when
+  the interpreter exits). A test that needs a saved run with history makes a
+  short run of its own. A saved posterior holds no function: a
+  `ParameterTransformer` pickles and copies without its bounded-transform
+  functions and rebuilds them from `bounded_types` when restored, so
+  posterior files and `SVBMC` objects move between Python versions.
+  `test_vp_save_bounded_py311.pkl` and `_py312.pkl` are one bounded
+  posterior written under two Python versions by the last commit that
+  stored those functions, so that every CI cell uses a file holding
+  bytecode of another Python version; calling it ended the interpreter.
 - MATLAB-derived reference values live in plain `.npz` files (flat keys,
   `np.load(path, allow_pickle=False)`) under `entropy/`,
   `variational_posterior/` and `vbmc/compare_MATLAB/`, each directory with a
@@ -316,6 +366,14 @@ Things you must hold in your head across files:
   from the sdist.
 - New test directories need an `__init__.py` (`entropy/` and `whitening/`
   currently lack one).
+- The package is installed editable from one checkout. In any other
+  checkout or worktree, `python dev/scripts/<script>.py` imports the
+  installed checkout's package, because `sys.path[0]` is the script's
+  directory, not the current one; `python -m pytest` from that checkout's
+  root is unaffected, since it puts the current directory first. Run every
+  script gate (`make_oracle_fixtures.py`, `golden_replay.py`, the benchmark
+  runners) with `PYTHONPATH=<that checkout>` and print `pyvbmc.__file__`
+  once before trusting the result.
 - `pyvbmc/priors/__init__.py` has `# isort:skip` markers preserving a
   circular-import-safe order; do not reorder.
 - `import pyvbmc` eagerly imports matplotlib.pyplot, cma, and imageio.

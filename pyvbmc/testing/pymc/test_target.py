@@ -11,6 +11,7 @@ pytest.importorskip("arviz_base")
 from pyvbmc import VariationalPosterior
 from pyvbmc.pymc import PyMCTarget
 from pyvbmc.pymc._compat import closed_form
+from pyvbmc.pymc._target import _as_float64
 from pyvbmc.testing._dtype import assert_float64
 from pyvbmc.testing.pymc.models import (
     accepted_models,
@@ -299,10 +300,7 @@ def test_mapping_validation_and_string_table(accepted_targets):
     assert "sigma_log__" in table
 
 
-@pytest.mark.parametrize("value", [1000.0, -1000.0])
-def test_model_mapping_rejects_nonfinite_or_boundary_transform_output(
-    accepted_targets, value
-):
+def test_model_mapping_rejects_nonfinite_transform_output(accepted_targets):
     positive = next(
         target
         for spec, target in accepted_targets
@@ -312,7 +310,77 @@ def test_model_mapping_rejects_nonfinite_or_boundary_transform_output(
         ValueError,
         match=r"Mapped model values for 'sigma'.*strictly inside",
     ):
-        positive.to_model_variables(np.array([[value]]))
+        positive.to_model_variables(np.array([[1000.0]]))
+
+
+def test_model_mapping_absorbs_underflow_onto_the_support_origin(
+    accepted_targets,
+):
+    positive = next(
+        target
+        for spec, target in accepted_targets
+        if spec["name"] == "positive"
+    )
+    values = positive.to_model_variables(np.array([[-1000.0], [0.0]]))
+    assert values["sigma"][0] == np.nextafter(0.0, np.inf)
+    assert values["sigma"][1] == 1.0
+
+
+def test_model_mapping_absorbs_rounding_onto_a_finite_bound(
+    accepted_targets,
+):
+    one_sided = next(
+        target
+        for spec, target in accepted_targets
+        if spec["name"] == "one_sided"
+    )
+    ordinary = one_sided.x0.ravel()
+    X = np.array([ordinary, [ordinary[0], -50.0]], dtype=np.float64)
+    raw = _as_float64(
+        one_sided._maps["v"]["backward"](X[:, 1]), "v backward map"
+    )
+    assert raw[1] == -0.5
+
+    values = one_sided.to_model_variables(X)
+    for name, (lower, upper) in one_sided.support.items():
+        assert np.all(np.isfinite(values[name]))
+        assert np.all(values[name] > lower)
+        assert np.all(values[name] < upper)
+    assert values["v"][1] == np.nextafter(-0.5, -np.inf)
+    np.testing.assert_array_equal(
+        values["t"],
+        _as_float64(
+            one_sided._maps["t"]["backward"](X[:, 0]), "t backward map"
+        ),
+    )
+    assert values["v"][0] == raw[0]
+
+    with pytest.raises(
+        ValueError, match=r"Mapped model values for 't'.*strictly inside"
+    ):
+        one_sided.to_model_variables(np.array([[1000.0, -50.0]]))
+
+
+def test_export_absorbs_a_rounded_boundary_draw(accepted_targets, monkeypatch):
+    one_sided = next(
+        target
+        for spec, target in accepted_targets
+        if spec["name"] == "one_sided"
+    )
+    vp = VariationalPosterior(one_sided.D, rng=716)
+    ordinary = one_sided.x0.ravel()
+
+    def boundary_sample(n_samples, orig_flag=True):
+        samples = np.tile(ordinary, (n_samples, 1))
+        samples[-1, 1] = -50.0
+        return samples, None
+
+    monkeypatch.setattr(vp, "sample", boundary_sample)
+    data = one_sided.to_arviz(vp, 3)
+    drawn = np.asarray(data["posterior"]["v"].values)
+    assert drawn.shape == (1, 3)
+    assert drawn[0, -1] == np.nextafter(-0.5, -np.inf)
+    assert np.all(drawn < -0.5)
 
 
 def test_export_mapping_failure_restores_posterior_rng(

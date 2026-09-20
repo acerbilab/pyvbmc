@@ -196,6 +196,13 @@ of identical trajectories. Same-profile reproducibility under the same
 numerical environment remains required. No additional user policy decision
 is needed for this ordinary reproducibility contract.
 
+Superseded on 2026-09-19: the Monte Carlo entropy takes its mixture
+densities and every sum over samples and components on the blocks of the
+default budget whatever budget is in force (`f3ba8d3`), so every budget
+returns the default budget's output bit for bit, the calibration campaign
+accepts an entropy budget only on identical output (`7c7972f`), and one
+seed gives one trajectory whatever profile is in force.
+
 ## Storage, compatibility and concurrency
 
 Use `platformdirs.user_cache_dir("pyvbmc", appauthor=False, opinion=False)`

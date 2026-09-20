@@ -146,6 +146,84 @@ def test_zero_steps_raises(d1_vps):
 
 
 # --------------------------------------------------------------------- #
+# (a2) where the weight optimization starts                             #
+# --------------------------------------------------------------------- #
+def _documented_initial_weights(stacked):
+    """Softmax of ``log w_mk + ELBO(phi_m)``, the documented start.
+
+    Equation 16 of the S-VBMC paper: the logits start at the runs' own
+    normalized weights shifted by the ELBO of the run each component
+    belongs to, so better runs start heavier.
+    """
+    logits = np.log(np.ravel(stacked._initial_weights)) + np.repeat(
+        stacked.individual_elbos, stacked.K
+    )
+    weights = np.exp(logits - logits.max())
+    return weights / weights.sum()
+
+
+def _starting_weights(stacked, version):
+    """The weights a one-step optimization returns.
+
+    One step leaves the initial iterate as the best one, so these are the
+    softmax of the initial logits: the point the optimization departs
+    from, observed through the public method.
+    """
+    w, _, _ = stacked.maximize_ELBO(n_samples=2, max_steps=1, version=version)
+    return w.numpy()
+
+
+@pytest.mark.parametrize("version", ["all-weights", "posterior-only"])
+def test_optimization_starts_from_the_runs_weights_and_elbos(d1_vps, version):
+    stacked = SVBMC(d1_vps, seed=0)
+    np.testing.assert_allclose(
+        _starting_weights(stacked, version),
+        _documented_initial_weights(stacked),
+        rtol=1e-12,
+    )
+
+
+@pytest.mark.parametrize("version", ["all-weights", "posterior-only"])
+def test_starting_point_does_not_follow_the_selected_weights(d1_vps, version):
+    """Where the optimization departs from is a property of the stack.
+
+    Neither a hand-set :attr:`w` nor the weights a previous
+    :meth:`optimize` selected move it.
+    """
+    stacked = SVBMC(d1_vps, seed=0)
+    start = _starting_weights(stacked, version)
+
+    K_total = int(np.sum(stacked.K))
+    elsewhere = np.full((1, K_total), 0.5 / (K_total - 1))
+    elsewhere[0, 0] = 0.5
+    stacked.w = elsewhere
+    np.testing.assert_array_equal(_starting_weights(stacked, version), start)
+
+    stacked.optimize(
+        n_samples=5, max_steps=5, n_samples_final=5, version=version
+    )
+    assert not np.allclose(np.ravel(stacked.w), start)
+    np.testing.assert_array_equal(_starting_weights(stacked, version), start)
+
+
+def test_repeated_optimization_reaches_the_same_weights(d1_vps):
+    """Two optimizations of one stack agree, up to the entropy draws.
+
+    The second call neither inherits the first solution nor applies the
+    per-run ELBO shift to it a second time.
+    """
+    once = SVBMC(d1_vps, seed=3)
+    once.optimize(n_samples=20, max_steps=5, n_samples_final=5)
+
+    twice = SVBMC(d1_vps, seed=3)
+    twice.optimize(n_samples=20, max_steps=5, n_samples_final=5)
+    twice.rng = np.random.default_rng(3)  # replay the first call's draws
+    twice.optimize(n_samples=20, max_steps=5, n_samples_final=5)
+
+    np.testing.assert_array_equal(twice.w, once.w)
+
+
+# --------------------------------------------------------------------- #
 # (b) randomness comes from the object's generator                      #
 # --------------------------------------------------------------------- #
 def test_same_seed_reproduces_everything(d1_vps):
@@ -402,3 +480,23 @@ def test_stacked_ELBO_is_differentiable(d1_vps):
     assert w.grad.dtype is torch.float64
     assert torch.isfinite(w.grad).all()
     assert torch.any(w.grad != 0.0)
+
+
+def test_a_pickled_stack_holds_no_function(d2_vps):
+    """An ``SVBMC`` object can be saved under another Python version than
+    the ones that wrote the posteriors it stacks: its pickle carries no
+    function by value (dill marks one with ``_create_function``), and so no
+    bytecode of any Python version. The posteriors of this group are of a
+    bounded problem, whose parameter transformer has bounded transforms."""
+    import dill
+
+    stacked = SVBMC(d2_vps, seed=0)
+    stacked.optimize(max_steps=5, n_samples=5)
+
+    data = dill.dumps(stacked)
+    assert b"_create_function" not in data
+    assert b"_create_code" not in data
+
+    restored = dill.loads(data)
+    samples = restored.sample(200)
+    assert np.all(np.isfinite(np.asarray(samples)))

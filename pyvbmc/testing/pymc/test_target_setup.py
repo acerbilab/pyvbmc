@@ -9,13 +9,16 @@ pm = pytest.importorskip("pymc")
 pytest.importorskip("arviz_base")
 
 from pyvbmc import VBMC
-from pyvbmc.pymc import PyMCTarget
+from pyvbmc.pymc import PyMCTarget, UnsupportedModel
+from pyvbmc.pymc import _target as target_module
 from pyvbmc.testing.pymc.models import (
     bounded_model,
     no_gradient_model,
     scalar_model,
     schools_model,
     stochastic_initial_model,
+    undefined_gradient_model,
+    undefined_hessian_model,
     vector_model,
 )
 
@@ -135,6 +138,55 @@ def test_setup_diagnostic_routes_and_warnings(diagnostic_targets, caplog):
     assert any("outside the prior location" in message for message in messages)
 
 
+def test_absent_scalar_gradient_takes_the_prior_route(caplog):
+    caplog.clear()
+    target = PyMCTarget(undefined_gradient_model(), seed=14)
+    assert target.plausible_info["route"] == "prior"
+    assert target.plausible_info["start"] == "initial"
+    assert target.plausible_info["n_hessian_calls"] == 0
+    assert np.isfinite(target.log_joint(target.x0))
+    _assert_accounting(target)
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("gradient is unavailable" in message for message in messages)
+
+
+def test_prior_route_warning_names_the_starting_point(caplog):
+    caplog.clear()
+    automatic = PyMCTarget(undefined_gradient_model(), seed=16)
+    automatic_messages = [record.getMessage() for record in caplog.records]
+    caplog.clear()
+    supplied = PyMCTarget(
+        undefined_gradient_model(), start={"x": 0.5}, seed=16
+    )
+    supplied_messages = [record.getMessage() for record in caplog.records]
+
+    assert automatic.plausible_info["start"] == "initial"
+    assert supplied.plausible_info["start"] == "user"
+    assert automatic.plausible_info["route"] == "prior"
+    assert supplied.plausible_info["route"] == "prior"
+    assert any(
+        "gradient is unavailable; using the model's initial point" in message
+        for message in automatic_messages
+    )
+    assert any(
+        "gradient is unavailable; using the supplied starting point" in message
+        for message in supplied_messages
+    )
+
+
+def test_absent_scalar_hessian_keeps_the_gradient_and_prior_widths():
+    target = PyMCTarget(undefined_hessian_model(), seed=15)
+    assert target.plausible_info["route"] == "laplace"
+    assert target.plausible_info["start"] == "mode"
+    assert target.plausible_info["n_hessian_calls"] == 0
+    assert target.plausible_info["hessian_cost"] == 0
+    assert set(target.plausible_info["curvature"]) == set(
+        target.coordinate_names
+    )
+    assert np.isfinite(target.log_joint(target.x0))
+    _assert_accounting(target)
+
+
 def test_fully_explicit_and_mixed_setup_routes(monkeypatch):
     spec = vector_model(np.random.default_rng(803))
     start = {"beta": np.array([0.1, -0.2]), "sigma": 1.0}
@@ -192,6 +244,25 @@ def test_plausible_bounds_only_still_searches_without_hessian():
     assert target.plausible_info["hessian_cost"] == 0
     assert target.plausible_info["n_target_calls"] <= 5
     _assert_accounting(target)
+
+
+def test_unsupported_model_inside_mode_search_keeps_its_type(monkeypatch):
+    detail = (
+        "compiled log-density gradient is float32; PyMC targets require "
+        "float64 free variables, value variables, and density derivatives."
+    )
+    original = target_module._as_float64
+
+    def raise_on_gradient(value, label):
+        if label == "compiled log-density gradient":
+            raise UnsupportedModel(detail)
+        return original(value, label)
+
+    monkeypatch.setattr(target_module, "_as_float64", raise_on_gradient)
+    spec = scalar_model(np.random.default_rng(8052))
+    with pytest.raises(UnsupportedModel) as raised:
+        PyMCTarget(spec["model"], seed=62)
+    assert str(raised.value) == detail
 
 
 def test_small_cap_truncates_search_and_preserves_reserves():

@@ -398,7 +398,7 @@ def build_state(snap, fun=None, rng=None):
     active-sampling oracle); ``rng`` seeds the VP's generator.
     """
     # Work on a private copy: oracles may mutate what they are handed
-    # (`get_bounds` accumulates into `vp.bounds`, `prepare_gp_for_acq`
+    # (`get_bounds` writes `vp.bounds`, `prepare_gp_for_acq`
     # writes into `optim_state`), and the caller may reuse the snapshot.
     snap = copy.deepcopy(snap)
     pt = build_transformer(snap["pt"])

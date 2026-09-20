@@ -120,7 +120,7 @@ def test_precomputed_values_receive_separate_prior_once():
             "require.*specify_target_noise",
         ),
         (
-            {"uncertainty_handling": [1]},
+            {"uncertainty_handling": True},
             (np.array([[0.0]]), np.array([0.0]), np.array([0.5])),
             "require.*specify_target_noise",
         ),
@@ -149,7 +149,7 @@ def test_precomputed_noisy_repeats_pool_without_corrupting_original_values(
         expected_sd = 1 / np.sqrt(1 + 1 / 4)
     else:
         evaluations = (X, y)
-        options = {"uncertainty_handling": [1]}
+        options = {"uncertainty_handling": True}
         expected_y = 0.5
         expected_sd = 1 / np.sqrt(2)
 
@@ -406,7 +406,7 @@ def test_new_path_rejects_exhausted_or_too_short_initial_budget():
     with pytest.raises(ValueError, match="exhausted"):
         _vbmc(np.sum, options={"max_fun_evals": 2}, initialization_cost=2)
     with pytest.raises(ValueError, match="insufficient.*initial design"):
-        _vbmc(np.sum, options={"max_fun_evals": 3}, initialization_cost=0)
+        _vbmc(np.sum, options={"max_fun_evals": 4}, initialization_cost=1)
 
 
 def test_short_precomputed_budget_has_finite_gp_training_schedule(mocker):
@@ -482,6 +482,38 @@ def test_precomputed_budget_state_survives_save_load_and_override(tmp_path):
     assert exact._effective_max_fun_evals == 3
     with pytest.raises(ValueError, match="insufficient.*initial design"):
         VBMC.load(path, new_options={"max_fun_evals": 7})
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"precomputed_evaluations": None},
+        {"initialization_cost": 0},
+        {"precomputed_evaluations": None, "initialization_cost": 0},
+    ],
+)
+def test_budget_accounting_follows_the_values_not_the_arguments(kwargs):
+    """Nothing is retained and nothing is charged, so the run has the
+    ordinary budget however the two arguments were written."""
+    vbmc = _vbmc(np.sum, **kwargs)
+    assert vbmc._budget_active is False
+    assert vbmc.initialization_cost == 0
+    assert vbmc._effective_max_fun_evals == vbmc.options["max_fun_evals"]
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"initialization_cost": 3},
+        {"precomputed_evaluations": (np.array([[0.5]]), np.array([1.0]))},
+    ],
+)
+def test_budget_accounting_follows_a_value_that_asks_for_it(kwargs):
+    """A charge against the total, or observations available before the
+    run, turn the accounting on."""
+    vbmc = _vbmc(np.sum, **kwargs)
+    assert vbmc._budget_active is True
 
 
 def test_old_save_budget_migration_defaults_to_zero(tmp_path):

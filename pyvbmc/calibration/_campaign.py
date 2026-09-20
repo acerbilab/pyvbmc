@@ -279,6 +279,14 @@ def _effective_count(workload: _Workload) -> int:
     return workload.count
 
 
+def _entropy_blocks(Ns: int, D: int, K: int, budget: int) -> tuple[int, int]:
+    """Components and samples of the entropy kernel's block at a budget."""
+    per_component = Ns * D * K
+    g = max(1, min(K, budget // max(1, per_component)))
+    step = Ns if per_component <= budget else max(1, budget // max(1, D * K))
+    return g, min(Ns, step)
+
+
 def _layout_signature(workload: _Workload, budget: int) -> tuple[int, ...]:
     D, K = int(workload.D), int(workload.K)
     budget = int(budget)
@@ -286,12 +294,29 @@ def _layout_signature(workload: _Workload, budget: int) -> tuple[int, ...]:
         step = max(1, budget // max(1, D * K))
         step = min(workload.count, step)
         return (step, workload.count // step, workload.count % step)
+    # The entropy kernel reduces over the blocks of the default budget
+    # whatever budget is in force, and computes the component densities of
+    # such a block in blocks of its own: a subdivision of one of them, or a
+    # union of whole ones that spans every sample.
     Ns = _effective_count(workload)
-    per_component = Ns * D * K
-    g = max(1, min(K, budget // max(1, per_component)))
-    step = Ns if per_component <= budget else max(1, budget // (D * K))
-    step = min(Ns, step)
-    return (g, K // g, K % g, step, Ns // step, Ns % step)
+    g_c, step_c = _entropy_blocks(Ns, D, K, DEFAULT_BUDGET)
+    g_x, step_x = _entropy_blocks(Ns, D, K, budget)
+    if step_x >= Ns:
+        step_x = Ns
+    elif step_x > step_c:
+        step_x = (step_x // step_c) * step_c
+    if g_x > g_c:
+        g_x = (g_x // g_c) * g_c if step_x >= Ns else g_c
+    return (
+        g_c,
+        K // g_c,
+        K % g_c,
+        step_c,
+        Ns // step_c,
+        Ns % step_c,
+        g_x,
+        step_x,
+    )
 
 
 def _layout_aliases(
@@ -348,17 +373,6 @@ def _aligned_timing_orders(
         else tuple(reversed(representatives))
     )
     return _balanced_orders(base, len(base))
-
-
-def _deduplicate_order(order: tuple[int, ...], aliases: dict[int, int]):
-    seen = set()
-    result = []
-    for budget in order:
-        representative = aliases[budget]
-        if representative not in seen:
-            seen.add(representative)
-            result.append(representative)
-    return tuple(result)
 
 
 def _legacy_rng_equal(left, right) -> bool:
@@ -520,23 +534,31 @@ def _workspace_estimate(workload: _Workload, budget: int) -> dict:
             + K
         )
     else:
-        g, _, _, step, _, _ = _layout_signature(workload, budget)
-        block = g * step
+        g_c, _, _, step_c, _, _, g_x, step_x = _layout_signature(
+            workload, budget
+        )
+        canonical = g_c * step_c
+        block = g_x * step_x
         # Antithetic construction briefly overlaps eps_half, -eps_half and
         # epsilon (2*K*Ns*D doubles).  The kernel later retains epsilon while
-        # a block can require four distance-tensor-sized buffers: the stored
-        # delta, chained ufunc input/output, and conservative einsum workspace.
-        # Include reduced densities, sample/gradient intermediates, fixed
-        # mixture arrays and the softmax Jacobian.  Summing these phase peaks
-        # is intentionally conservative; 25% additional allocator/reduction
-        # headroom is applied below.
+        # a computed block can require four distance-tensor-sized buffers: the
+        # stored delta, chained ufunc input/output, and conservative einsum
+        # workspace, alongside its squared distances, component densities,
+        # samples and location sums.  A canonical block can hold gathered
+        # component densities and location sums or contiguous copies of them,
+        # and holds the mixture densities and the gradient intermediates
+        # reduced from them.  Include the fixed mixture arrays and the softmax
+        # Jacobian.  Summing these phase peaks is intentionally conservative;
+        # 25% additional allocator/reduction headroom is applied below.
         grad_mu, grad_sigma, grad_lambd, grad_w = workload.grad_flags
         raw_doubles = (
             2 * K * count * D
             + 4 * block * D * K
             + 3 * block * K
-            + block
-            + 5 * block * D
+            + 3 * block * D
+            + 2 * canonical * K
+            + 5 * canonical * D
+            + 3 * canonical
             + (3 + int(grad_mu)) * K * D
             + (6 + int(grad_sigma) + int(grad_w)) * K
             + (1 + int(grad_lambd)) * D
@@ -602,11 +624,7 @@ def _validate_workload(
         else:
             output, rng_state = result
             rng_equal = _state_equal(rng_state, reference_rng_state)
-        comparison = _output_comparison(
-            output,
-            reference,
-            exact=workload.group == "pdf" or budget == DEFAULT_BUDGET,
-        )
+        comparison = _output_comparison(output, reference, exact=True)
         comparison["rng_advancement_exact"] = bool(rng_equal)
         comparison["pass"] = bool(comparison["pass"] and rng_equal)
         valid_budgets[budget] = comparison["pass"]
@@ -770,7 +788,7 @@ def _dedicated_numerics(kernel_api: _KernelAPI, watchdog: _Watchdog) -> dict:
         )
         reference, reference_state = reference_result
         actual, actual_state = actual_result
-        comparison = _output_comparison(actual, reference, exact=False)
+        comparison = _output_comparison(actual, reference, exact=True)
         comparison["rng_advancement_exact"] = _state_equal(
             actual_state, reference_state
         )
@@ -884,8 +902,12 @@ def _gate_ratios(ratios: dict, rounds: int) -> dict:
     workload_medians = {
         name: median(values) for name, values in ratios["per_workload"].items()
     }
+    # A candidate is vetoed when any single workload is more than
+    # _MAX_WORKLOAD_SLOWDOWN times slower than at the default budget, even
+    # when the group as a whole is faster.
     regression_ok = all(
-        value >= _CONTROL_LOW for value in workload_medians.values()
+        value >= 1 / _MAX_WORKLOAD_SLOWDOWN
+        for value in workload_medians.values()
     )
     passed = (
         group_median >= _MIN_SPEEDUP and wins >= needed_wins and regression_ok
@@ -1287,6 +1309,14 @@ def _defaults() -> dict[str, int]:
 
 
 def _summary(report: dict, settings: dict, status: str) -> dict:
+    """Return one compact entry per setting for the campaign report.
+
+    ``heldout_speedup`` is the median held-out group speed-up of the value
+    in ``settings``, and ``None`` whenever no held-out measurement backs
+    that value: the measurements of a candidate the gates rejected belong
+    to a value the campaign did not select, and stay in the detailed
+    per-group report.
+    """
     summary = {}
     for group, setting in SETTING_GROUPS.items():
         group_report = report.get("groups", {}).get(group, {})
@@ -1294,7 +1324,11 @@ def _summary(report: dict, settings: dict, status: str) -> dict:
         heldout = group_report.get("heldout_validation", {})
         speedup = None
         heldout_rounds = heldout.get("group_speedups", [])
-        if heldout_rounds:
+        measures_selection = (
+            bool(heldout.get("pass"))
+            and heldout.get("accepted_budget") == settings[setting]
+        )
+        if heldout_rounds and measures_selection:
             speedup = median(heldout_rounds)
         if status != "complete":
             reason = report.get("reason", "campaign incomplete")

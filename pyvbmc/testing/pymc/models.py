@@ -215,6 +215,38 @@ def no_gradient_model():
     return model
 
 
+def undefined_gradient_model():
+    """Model whose potential uses a scalar operator without a gradient."""
+    import pymc as pm
+    from pytensor.scalar.basic import UnaryScalarOp, upgrade_to_float
+    from pytensor.tensor.elemwise import Elemwise
+
+    class _Quadratic(UnaryScalarOp):
+        def impl(self, x):
+            return -0.5 * ((x - 1.2) / 0.3) ** 2
+
+    quadratic = Elemwise(_Quadratic(upgrade_to_float, name="quadratic"))
+
+    with pm.Model() as model:
+        x = pm.Normal("x", 0.0, 3.0)
+        pm.Potential("likelihood", quadratic(x))
+    return model
+
+
+def undefined_hessian_model():
+    """Model with a first derivative but no second derivative.
+
+    The Rice log density calls an exponentially scaled Bessel function whose
+    derivative is another such function, and that second operator carries no
+    derivative rule of its own.
+    """
+    import pymc as pm
+
+    with pm.Model() as model:
+        pm.Rice("x", nu=1.0, sigma=1.0)
+    return model
+
+
 def rejected_models(seed=771):
     import pymc as pm
 
@@ -267,6 +299,9 @@ def rejected_models(seed=771):
             shape=2,
         )
     models["mixed"] = model
+    with pm.Model() as model:
+        pm.Wald("shifted", mu=1.0, lam=2.0, alpha=2.0)
+    models["shifted_log_support"] = model
     return models
 
 

@@ -75,6 +75,22 @@ def default_transform(op, rv):
     return _default_transform(op, rv)
 
 
+def missing_derivative_errors() -> tuple[type, ...]:
+    """Return the exceptions PyTensor raises for an absent derivative.
+
+    A graph whose operators carry no derivative rule signals this either
+    through a null gradient type or through the missing pullback method of
+    a scalar operator.
+    """
+    pm, _, _ = import_pymc()
+    try:
+        from pytensor.gradient import NullTypeGradError
+        from pytensor.graph.utils import MethodNotDefined
+    except (AttributeError, ImportError) as exc:
+        raise _version_error(pm, "gradient-availability signals", exc)
+    return (NotImplementedError, NullTypeGradError, MethodNotDefined)
+
+
 def remove_value_transforms(model, vars):
     """Remove selected transforms while preserving supported initial values."""
     pm, _, _ = import_pymc()
@@ -267,6 +283,7 @@ __all__ = [
     "default_transform",
     "import_pymc",
     "is_known_real_line",
+    "missing_derivative_errors",
     "real_line_support_types",
     "remove_value_transforms",
     "snapshot_model",

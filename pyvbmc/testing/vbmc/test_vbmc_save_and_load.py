@@ -8,6 +8,7 @@ import scipy.stats as scs
 
 from pyvbmc import VBMC
 from pyvbmc.priors import SciPy
+from pyvbmc.vbmc.gaussian_process_train import _get_gp_training_options
 
 base_path = Path(__file__).parent
 
@@ -144,6 +145,159 @@ def test_vbmc_load_static():
     assert vbmc.iteration == 0
 
 
+def _gp_fit_starting_points(vbmc, n_eff):
+    """The starting points the GP hyperparameter fit would use at ``n_eff``.
+
+    The count follows a schedule which runs from ``gp_train_n_init`` down to
+    ``gp_train_n_init_final`` over the evaluation budget of the run, so it
+    reports which budget the schedule is working from.
+    """
+    optim_state = dict(vbmc.optim_state)
+    optim_state["iter"] = 0
+    optim_state["n_eff"] = n_eff
+    optim_state["recompute_var_post"] = True
+    return _get_gp_training_options(
+        optim_state, vbmc.iteration_history, vbmc.options, {}, 0
+    )["init_N"]
+
+
+def _fresh_vbmc(D, budget):
+    """A fresh instance of dimension ``D`` with ``max_fun_evals = budget``."""
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"max_fun_evals": budget, "display": "off"},
+        seed=1,
+    )
+
+
+class _ReachedFirstIteration(Exception):
+    """Raised to leave ``optimize()`` once it is about to iterate."""
+
+
+def test_load_with_a_larger_budget_schedules_the_gp_fit_as_a_fresh_run():
+    """The hyperparameter fit follows the budget the run was loaded with.
+
+    A run continued with a larger ``max_fun_evals`` must schedule the
+    number of starting points of its GP hyperparameter fit as a fresh run
+    with that budget would at the same number of effective evaluations.
+    """
+    budget = 500
+    loaded = VBMC.load(
+        base_path.joinpath("test_vbmc_save_static.pkl"),
+        new_options={"max_fun_evals": budget},
+    )
+    fresh = _fresh_vbmc(loaded.D, budget)
+    assert loaded.options["fun_eval_start"] == fresh.options["fun_eval_start"]
+
+    for n_eff in (40, 60, 100, 200, 350, 500):
+        assert _gp_fit_starting_points(
+            loaded, n_eff
+        ) == _gp_fit_starting_points(fresh, n_eff)
+
+
+def test_resumed_run_schedules_the_gp_fit_as_a_fresh_run(monkeypatch):
+    """Continuing a finished run keeps the budget it was loaded with.
+
+    ``optimize()`` restores the state of the last recorded iteration before
+    it continues, and that record carries the budget of the finished run.
+    The schedule of the hyperparameter fit must still follow the budget of
+    this call.
+    """
+    budget = 500
+    loaded = VBMC.load(
+        base_path.joinpath("test_vbmc_save_static.pkl"),
+        new_options={"max_fun_evals": budget},
+    )
+    assert loaded.is_finished
+    fresh = _fresh_vbmc(loaded.D, budget)
+
+    # Leave `optimize()` at the last step before its first iteration, so
+    # that the check sees the state the continuation left behind without
+    # paying for an iteration.
+    def stop(self):
+        raise _ReachedFirstIteration
+
+    monkeypatch.setattr(VBMC, "_log_column_headers", stop)
+    with pytest.raises(_ReachedFirstIteration):
+        loaded.optimize()
+
+    for n_eff in (40, 60, 100, 200, 350, 500):
+        assert _gp_fit_starting_points(
+            loaded, n_eff
+        ) == _gp_fit_starting_points(fresh, n_eff)
+
+
+def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
+    """One transformer is shared, and it is the chosen iteration's.
+
+    A run keeps a single ``ParameterTransformer`` object on the instance,
+    on the variational posterior and on the function logger, so that the
+    three always agree on the map between the user's coordinates and the
+    inference space. Restoring the state recorded at an iteration must
+    restore that sharing with the map of that iteration.
+    """
+    path = base_path.joinpath("test_vbmc_save_static.pkl")
+    for iteration in (None, 0, 3, 6):
+        vbmc = VBMC.load(path, iteration=iteration)
+        transformer = vbmc.parameter_transformer
+        assert transformer is vbmc.vp.parameter_transformer
+        assert transformer is vbmc.function_logger.parameter_transformer
+
+        recorded = vbmc.iteration_history["vp"][vbmc.iteration]
+        probe = np.linspace(-1.0, 1.0, vbmc.D).reshape((1, vbmc.D))
+        assert np.array_equal(
+            transformer(probe), recorded.parameter_transformer(probe)
+        )
+
+
+def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
+    """The restored map comes from the iteration, not from the run's end.
+
+    A run that warps its inference space leaves the instance holding a map
+    later than the ones recorded at earlier iterations, so a state restored
+    from such an iteration must carry the recorded map.
+    """
+    # A short run of its own, written and read by the same interpreter. The
+    # stored run of `test_vbmc_save_static.pkl` will not do: it holds its
+    # target function pickled by value, as bytecode of the Python version
+    # that wrote the file, and pickling such a function again makes dill
+    # disassemble it, which crashes Python 3.11 on bytecode of another
+    # version.
+    D = 2
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"max_iter": 2, "display": "off"},
+        seed=1,
+    )
+    vbmc.optimize()
+    assert vbmc.iteration == 1
+
+    later_map = copy.deepcopy(vbmc.parameter_transformer)
+    later_map.mu = np.full(D, 0.5)
+    later_map.delta = np.full(D, 2.0)
+    vbmc.parameter_transformer = later_map
+    doctored = tmp_path / "warped"
+    vbmc.save(doctored)
+
+    loaded = VBMC.load(doctored, iteration=0)
+    probe = np.linspace(-1.0, 1.0, D).reshape((1, D))
+    recorded = loaded.iteration_history["vp"][0].parameter_transformer
+    assert np.array_equal(loaded.parameter_transformer(probe), recorded(probe))
+    assert not np.array_equal(
+        loaded.parameter_transformer(probe), later_map(probe)
+    )
+
+
 def test_vbmc_save_load_error_handling():
     vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
     with pytest.raises(FileExistsError) as err:
@@ -226,7 +380,7 @@ def test_vbmc_load_defaults_missing_vectorized_flags_to_false(tmp_path):
     path = _save_load_vbmc(np.sum, tmp_path, vectorized=False)
     with open(path.with_suffix(".pkl"), "rb") as file:
         vbmc = dill.load(file)
-    del vbmc.options["vectorized_target"]
+    vbmc.options.__delitem__("vectorized_target", force=True)
     del vbmc.function_logger.vectorized_target
     vbmc.save(path, overwrite=True)
 

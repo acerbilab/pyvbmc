@@ -300,7 +300,7 @@ def test_completed_continuation_restores_before_resolution(monkeypatch):
 
 def test_legacy_vbmc_load_pins_historical_defaults(tmp_path):
     vbmc = _make_vbmc("cached")
-    del vbmc.options["performance_calibration"]
+    vbmc.options.__delitem__("performance_calibration", force=True)
     del vbmc.vp._calibration_profile
     del vbmc.vp._calibration_request
     path = tmp_path / "legacy-vbmc"

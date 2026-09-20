@@ -71,6 +71,30 @@ def test_minimize_adam_matyas_with_noise():
     assert np.abs(y) < 0.1
 
 
+def test_minimize_adam_leaves_the_starting_point_unchanged():
+    f = lambda x_: (np.sum(x_**2), 2 * x_)
+    x0 = np.array([1.0, -2.0])
+    expected = x0.copy()
+
+    minimize_adam(f, x0, max_iter=5)
+
+    assert np.array_equal(x0, expected)
+
+
+def test_minimize_adam_short_run_averages_every_iterate():
+    """A run shorter than the trailing window of 20 iterations returns the
+    average over all the iterates it performed."""
+    f = lambda x_: (np.sum(x_**2), 2 * x_)
+    x0 = np.array([1.0, -2.0])
+
+    x, y, x_tab, y_tab, iterations = minimize_adam(f, x0, max_iter=15)
+
+    assert iterations == 15
+    assert x_tab.shape == (2, 15)
+    assert np.allclose(x, np.mean(x_tab, axis=1))
+    assert np.isclose(y, np.mean(y_tab))
+
+
 def test_minimize_adam_rosen():
     f = lambda x_: (sp.optimize.rosen(x_), sp.optimize.rosen_der(x_))
     x0 = np.array([-3.0, -4.0])

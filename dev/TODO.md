@@ -16,6 +16,18 @@ records its execution.
   pools, judging the optimism added by stacking relative to its input runs.
   Promote it only if the campaign confirms it is the best estimator; decide
   separately whether noiseless stacks use shrinkage or retain the raw value.
+  Before that decision, compare two compositions of its stages on the
+  existing pools with the campaign's added-bias measure. The implemented
+  one adds the between-run change of a run's raw level to the
+  within-shrunk components, so the run's final own-weighted level is the
+  shrunk level plus whatever the within-run stage did to it; the
+  alternative pins each run's level to its shrunk value. They coincide
+  for uniform own weights and differ where a run's weights align with its
+  component estimates (0.16 and 0.30 nats in the constructed case of the
+  [port review's verification](experiments/port_review_20260919/verification/wave0.md)).
+  The implemented form keeps the within-run correction of the level, which
+  addresses the single-run optimism that regression across runs cannot
+  see; the comparison is to confirm that on data (PI, 2026-09-19).
   The stacking objective and selected posterior remain unchanged.
   Finalize the headline's qualitative caveat, distinguishing inherited VBMC
   bias from bias added by stacking and explaining that residual bias can
@@ -25,6 +37,20 @@ records its execution.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
+
+- [ ] **Saving and loading an S-VBMC object.** `SVBMC` has no `save` or
+  `load`, unlike `VBMC` and `VariationalPosterior`, and neither the API
+  page nor Example 7 says how to keep a stack; the original standalone
+  package had no such methods either. The standard `pickle` fails on an
+  `SVBMC` object, as it does on a posterior, because the parameter
+  transformer holds local closures. `dill`, which the existing `save` and
+  `load` methods use, serializes a fresh or an optimized stack with an
+  exact round trip of the weights, the ELBO and the generator state, and
+  the object holds no Torch state (checked 2026-09-19 during the
+  [port correctness review](plans/port-correctness-review.md)). Add
+  `SVBMC.save` and `SVBMC.load` mirroring the posterior's (`dill`, the
+  overwrite guard), a round-trip test in the Torch CI cell, the API
+  documentation, and a short saving step in Example 7.
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The pool campaign's
@@ -36,7 +62,7 @@ records its execution.
   final large-scale check below is the first such campaign. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
-- [ ] **Independent codebase and MATLAB-port audit.** Before freezing the
+- [ ] **Independent codebase and MATLAB-port review.** Before freezing the
   code for the final release benchmark, have several independent reviewers
   examine the PyVBMC codebase for errors and latent bugs. Split coverage
   between internal correctness and systematic comparison with the original
@@ -51,11 +77,15 @@ records its execution.
   Reconcile findings against source and reproducible examples, add regression
   checks for confirmed fixes, and apply the existing numerical gates to any
   behavior changes. Resolve findings or document their disposition before the
-  final benchmark so it measures the reviewed release candidate. This audit
-  can start before the other release work is complete.
+  final benchmark so it measures the reviewed release candidate. This review
+  can start before the other release work is complete. Started 2026-09-19;
+  the [review plan](plans/port-correctness-review.md) records the PI's
+  decisions (gpyreg in scope, comparison against the latest MATLAB
+  `master`, Opus reviewers, no MATLAB run unless a finding's disposition
+  depends on one), the slice map, the reviewer brief and the worklog.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated and the code audit above is complete, regenerate the
+  1.5 is consolidated and the code review above is complete, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
   (about 100 runs per condition as in the
   [campaign](plans/svbmc-benchmark-campaign.md),
@@ -92,6 +122,22 @@ records its execution.
   that are not historical: `dev-next` merges into `main` for the release,
   so nothing a user or contributor reads after it should point at
   `dev-next`; dated devlogs and plan worklogs may keep it as history.
+  Before the release, sweep every tracked document and record for two
+  kinds of statement: an acknowledgment that a value or a defect in some
+  file is wrong while that file itself carries neither the correction
+  nor a flag, and a statement that was true when written and is stale
+  now (branch names, counts, work described as continuing or remaining).
+  The scope is the developer notes and plans, the results, the review
+  copies under `dev/experiments/`, `dev/README.md`, `AGENTS.md`, the
+  README, the Sphinx sources and the docstrings. The rule: an error in a
+  record, document or code is fixed in that file; where a record cannot
+  change, the flag goes into the record, or as close to it as its format
+  allows; a note somewhere else is not a fix. Read-only reviewers work by
+  area and the PI triages their findings. The rule was set on 2026-09-19
+  after three cases surfaced in one day: a gpyreg version label wrong in
+  252 run sidecars, upper medians quoted as medians in a report, and a
+  publication index missing four entries, each acknowledged only in a
+  note elsewhere.
   Documentation can proceed
   alongside implementation; final checks must cover settled release code.
   See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)

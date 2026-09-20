@@ -15,6 +15,7 @@ from pyvbmc.vbmc._bounds import _effective_bounds, _normalize_bounds
 from . import _compat, _plausible
 
 _PRIOR_DRAWS = 4000
+_LOG_SUPPORT_PROBE_DECADES = (1, 2, 4, 8, 16)
 _TRANSFORM_KEYS = {"log", "logodds", "interval", "interval_base"}
 _LOGGER = logging.getLogger("pyvbmc.pymc")
 
@@ -126,6 +127,40 @@ def _has_random_ancestor(expression):
     )
 
 
+def _absorb_onto_support(value, lower, upper):
+    """Move backward-map outputs off the finite bound they rounded onto.
+
+    The backward map of a one-sided transform adds an exponential term to a
+    finite support bound, and a term smaller than half an ulp of that bound
+    leaves the sum equal to it. Such a value is interior in exact arithmetic,
+    so it is replaced by the adjacent representable number inside the
+    support. Values beyond a bound and non-finite values are returned
+    unchanged, for the caller's support check to reject.
+
+    Parameters
+    ----------
+    value : numpy.ndarray
+        Float64 backward-map outputs of shape ``(n, *shape)``.
+    lower, upper : numpy.ndarray
+        Support bounds of shape ``shape``.
+
+    Returns
+    -------
+    absorbed : numpy.ndarray
+        Copy of `value` with exact-bound entries moved inside the support.
+    """
+    absorbed = np.array(value, dtype=np.float64)
+    on_lower = np.isfinite(lower) & (absorbed == lower)
+    if np.any(on_lower):
+        inside = np.broadcast_to(np.nextafter(lower, np.inf), absorbed.shape)
+        absorbed[on_lower] = inside[on_lower]
+    on_upper = np.isfinite(upper) & (absorbed == upper)
+    if np.any(on_upper):
+        inside = np.broadcast_to(np.nextafter(upper, -np.inf), absorbed.shape)
+        absorbed[on_upper] = inside[on_upper]
+    return absorbed
+
+
 def _interval_limit(rv, expression, shape, default):
     """Evaluate one fixed interval limit on the frozen model graph."""
     if expression is None:
@@ -164,11 +199,15 @@ class PyMCTarget:
         Mapping from every free-variable name to ``(lower, upper)`` values in
         model coordinates. Values must broadcast to the variable shape and be
         strictly inside its support. By default a Laplace box with prior-width
-        fallbacks is constructed.
+        fallbacks is constructed; supplying bounds instead needs neither the
+        Hessian nor the 4000 prior draws that box can require, which matters
+        when the prior is expensive to sample forward.
     start : mapping, optional
         Starting point in model coordinates. It must contain every free
         variable and lie strictly inside its support. Supplying it skips the
-        mode search.
+        mode search and the automatic box's location check against prior
+        draws, which are then drawn only for a prior-width fallback or for a
+        model without a gradient.
     seed : None, int, SeedSequence or numpy.random.Generator, optional
         Random generator or seed for prior fallback draws and stochastic
         ``initval="prior"`` strategies. A generator is used as is. With
@@ -212,6 +251,17 @@ class PyMCTarget:
         If a free variable, transform, support, or dtype is unsupported.
     ValueError
         If setup arguments, bounds, or the final starting density are invalid.
+
+    Notes
+    -----
+    PyMC registers its log transform for whole families of positive
+    distributions, so a variable that keeps one is reported with the support
+    ``(0, inf)`` only after that claim is checked. A distribution whose
+    density vanishes below a positive shift, such as a Wald distribution
+    with a nonzero ``alpha``, is rejected at construction. The check
+    evaluates the variable's own density at fractions of its initial value
+    down to sixteen decades below it, so a shift smaller than that escapes
+    it.
     """
 
     def __init__(
@@ -381,7 +431,6 @@ class PyMCTarget:
             finite_lower = np.isfinite(lower)
             finite_upper = np.isfinite(upper)
             two_sided = finite_lower & finite_upper
-            unbounded = ~finite_lower & ~finite_upper
             one_sided = finite_lower ^ finite_upper
             if transform is None or np.all(two_sided):
                 untransform.append(rv)
@@ -501,6 +550,8 @@ class PyMCTarget:
                 "backward": backward,
             }
 
+        self._check_log_support(pm, point)
+
         lower_parts = []
         upper_parts = []
         for name, size in zip(self.names, self.sizes):
@@ -605,6 +656,8 @@ class PyMCTarget:
                     search_upper,
                     max_search,
                 )
+            except _compat.UnsupportedModel:
+                raise
             except ValueError as exc:
                 raise ValueError(
                     f"Mode search failed for model variables "
@@ -804,6 +857,84 @@ class PyMCTarget:
             self.coords,
         )
 
+    def _check_log_support(self, pm, point):
+        """Check that every log-transformed support reaches down to zero.
+
+        PyMC registers its log transform for entire families of positive
+        distributions, so a retained log transform alone does not establish
+        that the density extends to zero. The variable's own log density is
+        evaluated at decreasing fractions of its initial value, with every
+        other variable held at the initial point, and a variable whose
+        density vanishes at such a point does not have the support that the
+        transform implies.
+
+        Parameters
+        ----------
+        pm : module
+            The imported PyMC module, for compatibility errors.
+        point : dict
+            Initial point of the partially untransformed model, keyed by
+            value-variable name.
+
+        Raises
+        ------
+        UnsupportedModel
+            If a log-transformed variable has a density of zero at a
+            positive point inside its reported support.
+        """
+        names = [
+            name
+            for name in self.names
+            if self._maps.get(name, {}).get("kind") == "log"
+        ]
+        if not names:
+            return
+        rv_by_name = dict(zip(self.names, self._ordered_rvs))
+        value_by_name = dict(zip(self.names, self.value_names))
+        try:
+            densities = self._partial.compile_fn(
+                self._partial.logp(
+                    vars=[rv_by_name[name] for name in names],
+                    jacobian=False,
+                    sum=False,
+                ),
+                inputs=self._partial.value_vars,
+                on_unused_input="ignore",
+            )
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
+            raise _compatibility_error(
+                pm, "separate free-variable log densities", exc
+            ) from exc
+        initial_densities = densities(point)
+        if len(initial_densities) != len(names):
+            raise _compatibility_error(
+                pm, "ordered free-variable log densities"
+            )
+
+        for index, name in enumerate(names):
+            label = f"{name} log density"
+            initial_density = _as_float64(initial_densities[index], label)
+            if not np.all(np.isfinite(initial_density)):
+                continue
+            value_name = value_by_name[name]
+            initial = _as_float64(point[value_name], value_name)
+            for decade in _LOG_SUPPORT_PROBE_DECADES:
+                probe = initial - decade * np.log(10.0)
+                original = np.exp(probe)
+                if not np.all(original > 0):
+                    break
+                probed = dict(point)
+                probed[value_name] = probe
+                density = _as_float64(densities(probed)[index], label)
+                if np.any(density == -np.inf):
+                    raise _compat.UnsupportedModel(
+                        f"{name}: its {self.kept[name]} reports the support "
+                        f"(0, inf), but the density is zero at "
+                        f"{name}={original.tolist()}, inside that support. "
+                        "PyMC targets support a log-transformed variable "
+                        "only where its density reaches down to zero."
+                    )
+
     def _compile_density(self, pm):
         """Compile and validate the two repeatedly evaluated densities."""
         logp_graph = self._partial.logp(jacobian=True)
@@ -817,7 +948,7 @@ class PyMCTarget:
 
     def _compile_gradient(self, pm):
         """Compile the ordered joint value/gradient, or return None."""
-        from pytensor.gradient import NullTypeGradError
+        no_derivative = _compat.missing_derivative_errors()
 
         try:
             logp = self._partial.logp(jacobian=True)
@@ -833,12 +964,12 @@ class PyMCTarget:
                 inputs=self._partial.value_vars,
                 on_unused_input="ignore",
             )
-        except (NotImplementedError, NullTypeGradError):
+        except no_derivative:
             return None
 
     def _compile_hessian(self, pm):
         """Compile the ordered exact Hessian, or return None."""
-        from pytensor.gradient import NullTypeGradError
+        no_derivative = _compat.missing_derivative_errors()
 
         try:
             hessian = self._partial.d2logp(
@@ -856,7 +987,7 @@ class PyMCTarget:
                 on_unused_input="ignore",
                 mode="FAST_COMPILE",
             )
-        except (NotImplementedError, NullTypeGradError):
+        except no_derivative:
             return None
 
     def _validate_model_mapping(self, values, parameter):
@@ -1076,6 +1207,16 @@ class PyMCTarget:
         -------
         values : dict
             Variable names mapped to arrays of shape ``(n, *shape)``.
+            Every value is finite and strictly inside its support. A
+            retained transform's backward map can land on a finite support
+            bound by rounding, and such a coordinate is returned as the
+            adjacent representable value inside the support.
+
+        Raises
+        ------
+        ValueError
+            If `X` has the wrong shape, or a mapped value is non-finite or
+            lies beyond a support bound.
         """
         X = np.asarray(X, dtype=np.float64)
         if X.ndim != 2 or X.shape[1] != self.D:
@@ -1085,12 +1226,16 @@ class PyMCTarget:
             value = X[:, self._offsets[i] : self._offsets[i + 1]].reshape(
                 (len(X), *shape)
             )
-            if name in self._maps:
-                value = _as_float64(
-                    self._maps[name]["backward"](value),
-                    f"{name} backward map",
-                )
             lower, upper = self.support[name]
+            if name in self._maps:
+                value = _absorb_onto_support(
+                    _as_float64(
+                        self._maps[name]["backward"](value),
+                        f"{name} backward map",
+                    ),
+                    lower,
+                    upper,
+                )
             if (
                 np.any(~np.isfinite(value))
                 or np.any(value <= lower)
@@ -1185,9 +1330,15 @@ class PyMCTarget:
         if info["cap_reached"]:
             _LOGGER.warning("Mode search reached its setup call cap.")
         if info["route"] == "prior":
+            origin = (
+                "the supplied starting point"
+                if info["start"] == "user"
+                else "the model's initial point"
+            )
             _LOGGER.warning(
-                "The model gradient is unavailable; using the initial point "
-                "and prior-quantile plausible bounds."
+                "The model gradient is unavailable; using %s and "
+                "prior-quantile plausible bounds.",
+                origin,
             )
 
     def to_arviz(self, vp, n_samples=1000):

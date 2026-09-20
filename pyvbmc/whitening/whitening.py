@@ -88,11 +88,16 @@ def warp_input(vp, optim_state, function_logger, options):
     Parameters
     ----------
     vp : VariationalPosterior
-        The current VP object for which to compute the warping.
+        The variational posterior whose covariance the whitening
+        transformation is computed from. That covariance is expressed in
+        the inference space of the posterior's own parameter transformer,
+        which need not be the space the run is currently in.
     optim_state : dict
         The dictionary recording the current optimization state.
     function_logger : FunctionLogger
-        The record including cached function values.
+        The record including cached function values. Its parameter
+        transformer defines the current inference space, the one the
+        search bounds and the cached search points are given in.
 
     Returns
     -------
@@ -119,6 +124,12 @@ def warp_input(vp, optim_state, function_logger, options):
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
+    # The transformation of the inference space the run is in. The
+    # posterior given here may have been recorded in an earlier one, and
+    # its own transformation is what its covariance lives in, but the
+    # search bounds and the cached search points below are points of the
+    # current space.
+    current_transformer = function_logger.parameter_transformer
 
     if options.get("warp_nonlinear"):
         raise NotImplementedError("Non-linear warping is not supported.")
@@ -147,14 +158,20 @@ def warp_input(vp, optim_state, function_logger, options):
             mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
             vp_cov[mask_idx] = 0
 
-        # Regularization of covariance matrix towards diagonal
-        if (
-            type(options["warp_cov_reg"]) == float
-            or type(options["warp_cov_reg"]) == int
-        ):
-            w_reg = options["warp_cov_reg"]
+        # Regularization of covariance matrix towards diagonal. The
+        # amount is a number, or a function of the number of training
+        # points.
+        warp_cov_reg = options["warp_cov_reg"]
+        if callable(warp_cov_reg):
+            w_reg = warp_cov_reg(optim_state["N"])
+        elif np.ndim(warp_cov_reg) == 0:
+            w_reg = warp_cov_reg
         else:
-            w_reg = options.warp_cov_reg[optim_state["N"]]
+            raise TypeError(
+                "The option 'warp_cov_reg' must be a number or a callable "
+                "of the number of training points, but was "
+                f"{warp_cov_reg}."
+            )
         w_reg = np.max([0, np.min([1, w_reg])])
         vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 
@@ -207,7 +224,7 @@ def warp_input(vp, optim_state, function_logger, options):
     # Invert points to original space with old transform,
     # then map to new space with new transform
     def warpfun(x):
-        return parameter_transformer(vp.parameter_transformer.inverse(x))
+        return parameter_transformer(current_transformer.inverse(x))
 
     Nrnd = 1000
     xx = (
@@ -223,8 +240,9 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["ub_search"] = np.atleast_2d(yyMax + delta / Nrnd)
 
     # If search cache is not empty, update it
-    if optim_state.get("search_cache"):
-        optim_state["search_cache"] = warpfun(optim_state["search_cache"])
+    search_cache = optim_state.get("search_cache")
+    if search_cache is not None and np.size(search_cache) > 0:
+        optim_state["search_cache"] = warpfun(search_cache)
 
     # Update other state fields
     optim_state["recompute_var_post"] = True

@@ -55,15 +55,17 @@ def _import_torch():
 
 
 def _validate_posteriors(vp_list):
-    """Check that ``vp_list`` holds fitted posteriors of one dimension.
+    """Check that ``vp_list`` holds fitted posteriors of one problem.
 
     Returns the common ``D``. The checks cover what stacking reads: the
-    component parameters, the transformer, and the ``stable``, ``elbo``,
-    ``I_sk`` and ``J_sjk`` statistics a completed VBMC run stores.
+    component parameters, the transformer and the original-space hard
+    bounds it maps to, and the ``stable``, ``elbo``, ``I_sk`` and ``J_sjk``
+    statistics a completed VBMC run stores.
     """
     if len(vp_list) == 0:
         raise ValueError("`vp_list` is empty; pass at least one posterior.")
     D = None
+    bounds = None
     for i, vp in enumerate(vp_list):
         for attr in (
             "mu",
@@ -101,6 +103,31 @@ def _validate_posteriors(vp_list):
                 f"`vp_list[{i}].lambd` should hold D = {d} scales, got "
                 f"{np.asarray(vp.lambd).size}."
             )
+        # The stacked posterior lives in the common original space, and
+        # every run's density is evaluated at every run's draws, so the
+        # runs have to agree on the hard bounds of that space. How each
+        # run maps the box to its own transformed space -- the bounded
+        # transform, the centering, the scaling, the rotation -- is free.
+        transformer = vp.parameter_transformer
+        lb = np.asarray(transformer.lb_orig, dtype=np.float64).ravel()
+        ub = np.asarray(transformer.ub_orig, dtype=np.float64).ravel()
+        if bounds is None:
+            bounds = (lb, ub)
+        else:
+            for name, edge, first in (
+                ("lower", lb, bounds[0]),
+                ("upper", ub, bounds[1]),
+            ):
+                differing = np.flatnonzero(edge != first)
+                if differing.size > 0:
+                    j = int(differing[0])
+                    raise ValueError(
+                        f"`vp_list[{i}]` has {name} bound {edge[j]} in "
+                        f"dimension {j}, where `vp_list[0]` has "
+                        f"{first[j]}; the stacked posterior lives in one "
+                        "original parameter space, so stack only runs "
+                        "with the same hard bounds."
+                    )
         # A posterior VBMC has not finished (or an unfitted one) has no
         # statistics at all.
         if vp.stats is None or not hasattr(vp.stats, "__contains__"):
@@ -200,8 +227,12 @@ class SVBMC:
     ----------
     vp_list : list of VariationalPosterior
         Posteriors returned by completed VBMC runs on the same model, data
-        and original parameter space. The object structure cannot verify
-        that the runs describe the same target.
+        and original parameter space. Construction verifies the dimension,
+        the mixture shapes, the statistics stacking reads, and that every
+        run carries the same original-space hard bounds; the runs are free
+        to map that space differently. That they were run on the same
+        model and data does not follow from the posteriors and is not
+        verified.
     s_max : float, optional
         Tolerance on the standard deviation of the expected log-joint of
         any single component, ``sqrt(max(stats["J_sjk"]))``. A run at or
@@ -405,6 +436,10 @@ Generator, optional
             axis=1,
         )
         self.w = self.w / np.sum(self.w)
+        # The stack's starting point, which every optimization initializes
+        # its logits from. `self.w` holds the currently selected weights
+        # and `optimize` overwrites it.
+        self._initial_weights = self.w.copy()
         self._naive_weights = np.concatenate(
             [np.ravel(vp.w) / np.sum(vp.w) / self.M for vp in self.vp_list]
         ).astype(np.float64)
@@ -466,8 +501,10 @@ Generator, optional
             The entropy estimate (a float64 scalar).
         J_corrections : np.ndarray, shape (K_total,)
             Per-component expected log-Jacobian, computed deterministically
-            at construction, which :meth:`stacked_ELBO` subtracts from the
-            stored expected log-joints to express them in original space.
+            at construction. Subtracting it from the stored expected
+            log-joints expresses them in the original space, which
+            :attr:`I_corrected` already holds and :meth:`stacked_ELBO`
+            reads; this copy is for inspection.
         """
         H, corrections, _ = self._stacked_entropy(w, n_samples)
         return H, corrections
@@ -569,10 +606,11 @@ Generator, optional
 
         The weights are the softmax of unconstrained logits, initialized
         from the runs' own weights and ELBOs so that better runs start
-        heavier. Every step draws fresh entropy samples. The optimization
-        stops when the ELBO, rounded to five decimals, has not improved for
-        five consecutive steps, or after ``max_steps``; the best iterate is
-        returned.
+        heavier. That starting point belongs to the stack, so every call
+        departs from it whatever :attr:`w` currently holds. Every step
+        draws fresh entropy samples. The optimization stops when the ELBO,
+        rounded to five decimals, has not improved for five consecutive
+        steps, or after ``max_steps``; the best iterate is returned.
 
         Parameters
         ----------
@@ -602,7 +640,7 @@ Generator, optional
         """
         torch = _import_torch()
         _validate_optimization(n_samples, max_steps, version)
-        w_init = torch.as_tensor(self.w, dtype=torch.float64)
+        w_init = torch.as_tensor(self._initial_weights, dtype=torch.float64)
         log_w = torch.log(w_init)  # (1, K_total); optimize in log space
         repeats = torch.as_tensor(self.K)
 
@@ -843,11 +881,16 @@ Generator, optional
         component choice within a run is random (see
         :meth:`VariationalPosterior.sample`) and the rows are shuffled, so
         the result is an independent sample of exactly ``n_samples`` rows.
-        With ``balance_flag=True`` the draws are split across runs, and
-        across components within a run, in proportion to the weights, every
-        count within one draw of its exact share (a stratified sample with
-        lower variance for expectations, not an independent one). All randomness comes from this object's
-        generator; the input posteriors are not touched.
+        With ``balance_flag=True`` the draws are stratified instead: the
+        number taken from a run is within one draw of that run's exact
+        share of the weights, and within a run they are spread over its
+        components by the balanced allocation of
+        :meth:`VariationalPosterior.sample`, which follows the component
+        weights up to the random placement of its remainder and so holds
+        no exact bound per component. Stratification lowers the variance
+        of expectations; it does not give an independent sample. All
+        randomness comes from this object's generator; the input
+        posteriors are not touched.
 
         Parameters
         ----------

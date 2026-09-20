@@ -85,7 +85,8 @@ class VariationalPosterior:
         unbounded space.
     bounds : dict
         A dictionary containing the soft bounds for each variable to be
-        optimized.
+        optimized, as ``get_bounds`` last computed them, or ``None`` before
+        the first call.
     stats : dict
         A dictionary of statistics and other relevant info computed during
         optimization.
@@ -296,7 +297,14 @@ class VariationalPosterior:
         """
         Compute soft bounds for variational posterior parameters.
 
-        These bounds are used during the variational optimization in ``VBMC``.
+        These bounds are used during the variational optimization in
+        ``VBMC``. They are a function of the training inputs given here:
+        the component means are bounded by the bounding box of those
+        inputs, and their log scale (the product of ``sigma`` and
+        ``lambd``) by the log of the width of that box, down to a fraction
+        ``tol_length`` of it. The bounds on the weight parameters span the
+        weights above half the weight tolerance. The box is also stored on
+        the posterior as ``bounds``, replacing any box of an earlier call.
 
         Parameters
         ----------
@@ -328,40 +336,19 @@ class VariationalPosterior:
             K = self.K
 
         # Soft-bound loss is computed on MU and SCALE (which is SIGMA times
-        # LAMBDA)
-
-        # Start with reversed bounds (see below)
-        if self.bounds is None:
-            self.bounds = {
-                "mu_lb": np.full((self.D,), np.inf),
-                "mu_ub": np.full((self.D,), -np.inf),
-                "lnscale_lb": np.full((self.D,), np.inf),
-                "lnscale_ub": np.full((self.D,), -np.inf),
-            }
-
-        # Set bounds for mean parameters of variational components
-        self.bounds["mu_lb"] = np.minimum(
-            np.min(X, axis=0), self.bounds["mu_lb"]
-        )
-        self.bounds["mu_ub"] = np.maximum(
-            np.max(X, axis=0), self.bounds["mu_ub"]
-        )
-
-        # Set bounds for log scale parameters of variational components.
+        # LAMBDA). Both follow the bounding box of the training inputs.
         ln_range = np.log(np.max(X, axis=0) - np.min(X, axis=0))
-        self.bounds["lnscale_lb"] = np.minimum(
-            self.bounds["lnscale_lb"], ln_range + np.log(options["tol_length"])
-        )
-        self.bounds["lnscale_ub"] = np.maximum(
-            self.bounds["lnscale_ub"], ln_range
-        )
+        self.bounds = {
+            "mu_lb": np.min(X, axis=0),
+            "mu_ub": np.max(X, axis=0),
+            "lnscale_lb": ln_range + np.log(options["tol_length"]),
+            "lnscale_ub": ln_range,
+        }
 
         # Set bounds for log weight parameters of variation components.
         if self.optimize_weights:
-            # prevent warning to be printed when doing final boost
-            if options["tol_weight"] == 0:
-                self.bounds["eta_lb"] = -np.inf
-            else:
+            with np.errstate(divide="ignore"):
+                # A zero weight tolerance leaves the lower bound at -inf.
                 self.bounds["eta_lb"] = np.log(0.5 * options["tol_weight"])
             self.bounds["eta_ub"] = 0
 
@@ -1065,7 +1052,9 @@ class VariationalPosterior:
         Set variational posterior parameters from a single array.
 
         Takes as input a ``numpy`` array and assigns it to the
-        variational posterior parameters.
+        variational posterior parameters. ``eta``, the unbounded (softmax)
+        parametrization of the mixture weights, is set alongside ``w``, so
+        that ``softmax(eta)`` is the resulting ``w``.
 
         Parameters
         ----------
@@ -1137,6 +1126,13 @@ class VariationalPosterior:
         # Ensure that weights are normalized
         if self.optimize_weights:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
+
+        # Keep the softmax parametrization of the weights in step with them.
+        if self.optimize_weights and raw_flag:
+            eta = theta[-self.K :]
+            self.eta = np.reshape(eta - np.amax(eta), (1, -1))
+        else:
+            self.eta = np.log(self.w).reshape(1, -1)
 
         # remove mode
         self._mode = None
@@ -1671,6 +1667,10 @@ class VariationalPosterior:
 
     def save(self, file, overwrite=False):
         """Save the VP to a file.
+
+        The file holds no Python bytecode, so it can be loaded, used and
+        saved again under another minor version of Python than the one that
+        wrote it.
 
         Parameters
         ----------

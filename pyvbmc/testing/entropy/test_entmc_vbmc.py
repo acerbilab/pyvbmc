@@ -1,7 +1,10 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
+from pyvbmc.calibration._campaign import CANDIDATE_BUDGETS
+from pyvbmc.calibration.profile import DEFAULT_CHUNK_ELEMENTS
 from pyvbmc.entropy import entmc_vbmc
 from pyvbmc.entropy.entmc_vbmc import _entmc_vbmc
 from pyvbmc.testing import check_grad
@@ -194,55 +197,63 @@ def test_entmc_vbmc_grad_flags():
     assert dH.shape == (K,)
 
 
-def test_entmc_vbmc_block_size_invariance():
-    """The computation runs in blocks of components (and of samples when
-    one component's distance tensor exceeds the budget); the block size
-    changes only the order of sums, not the estimate."""
-    rs = np.random.default_rng(11)
-    D, K = 3, 7
+def _budget_case_vp(D, K, seed):
+    """A mixture with a distinct location and scale in every direction."""
+    rs = np.random.default_rng(seed)
     vp = VariationalPosterior(D, K)
     vp.mu = rs.normal(0, 1, (D, K))
     vp.sigma = np.exp(rs.normal(0, 0.3, (1, K)))
     vp.lambd = np.exp(rs.normal(0, 0.3, (D, 1)))
     vp.eta = rs.normal(0, 0.5, (1, K))
     vp.w = np.exp(vp.eta) / np.exp(vp.eta).sum()
+    return vp
 
-    # Ns * D * K = 40 * 3 * 7 = 840 elements per component: the default
-    # budget takes all components in one block; 2600 elements give blocks
-    # of 3, 3 and 1 components (a partial last block, as K = 50 in
-    # production: 11, 11, 11, 11, 6); 1000 force one component per block;
-    # 500 force blocks of samples within a component of 23 and 17 samples
-    # (500 // (D * K) = 23); 100 give ten blocks of 4 samples.
-    Ns = 40
-    H_ref, dH_ref = entmc_vbmc(vp, Ns, rng=5)
-    _, dH_ref_raw = entmc_vbmc(vp, Ns, jacobian_flag=False, rng=5)
-    for budget in (2600, 1000, 500, 100):
-        H, dH = _entmc_vbmc(vp, Ns, rng=5, budget=budget)
-        assert np.isclose(H, H_ref, rtol=1e-12, atol=0)
-        assert np.allclose(dH, dH_ref, rtol=1e-12, atol=1e-14)
-        _, dH_raw = _entmc_vbmc(
-            vp, Ns, jacobian_flag=False, rng=5, budget=budget
-        )
-        assert np.allclose(dH_raw, dH_ref_raw, rtol=1e-12, atol=1e-14)
-        # Partial gradient requests: only the requested blocks, same values
-        _, dH_w = _entmc_vbmc(
-            vp,
-            Ns,
-            grad_flags=(False, False, False, True),
-            rng=5,
-            budget=budget,
-        )
-        assert np.allclose(dH_w, dH_ref[-K:], rtol=1e-12, atol=1e-14)
-        _, dH_s = _entmc_vbmc(
-            vp,
-            Ns,
-            grad_flags=(False, True, False, False),
-            rng=5,
-            budget=budget,
-        )
-        assert np.allclose(
-            dH_s, dH_ref[D * K : D * K + K], rtol=1e-12, atol=1e-14
-        )
+
+def _entmc_at_budget(vp, Ns, grad_flags, budget):
+    """Entropy, gradient and generator state of one seeded call."""
+    rng = np.random.default_rng(404)
+    H, dH = _entmc_vbmc(vp, Ns, grad_flags, True, rng, budget=budget)
+    return H, dH, rng.bit_generator.state
+
+
+_ALL_GRADS = (True, True, True, True)
+_NO_GRADS = (False, False, False, False)
+
+# One component's distance tensor holds Ns * D * K doubles, so every budget
+# below that figure splits a component's samples.  The extra budgets of each
+# case are below the smallest candidate and leave partial blocks: 2600 with
+# (4, 20, 38) gives sample blocks of 32 and 6, 800 with (3, 7, 12) component
+# blocks of 3, 3 and 1, and 110 sample blocks of 5, 5 and 2.
+_BUDGET_CASES = (
+    (4, 20, 38, _ALL_GRADS, (2600, 1000, 300)),
+    (15, 50, 56, _ALL_GRADS, (7000, 2000, 400)),
+    (4, 20, 4096, _NO_GRADS, (5000, 1100)),
+    (15, 26, 4096, _NO_GRADS, (9000, 2500)),
+    (3, 7, 12, _ALL_GRADS, (800, 300, 110, 37)),
+    (3, 1, 40, _ALL_GRADS, (60, 30, 11)),
+    (4, 20, 38, (True, False, False, False), (2600, 1000, 300)),
+    (4, 20, 38, (False, True, False, False), (2600, 1000, 300)),
+    (4, 20, 38, (False, False, True, False), (2600, 1000, 300)),
+    (4, 20, 38, (False, False, False, True), (2600, 1000, 300)),
+)
+
+
+@pytest.mark.parametrize("D, K, Ns, grad_flags, budgets", _BUDGET_CASES)
+def test_entmc_vbmc_is_independent_of_the_chunk_budget(
+    D, K, Ns, grad_flags, budgets
+):
+    """Every budget returns the bits the default budget returns."""
+    vp = _budget_case_vp(D, K, seed=1000 * D + K)
+    H_ref, dH_ref, state_ref = _entmc_at_budget(
+        vp, Ns, grad_flags, DEFAULT_CHUNK_ELEMENTS
+    )
+    assert np.asarray(H_ref).dtype == np.float64
+    assert dH_ref.dtype == np.float64
+    for budget in tuple(CANDIDATE_BUDGETS) + budgets:
+        H, dH, state = _entmc_at_budget(vp, Ns, grad_flags, budget)
+        assert np.array_equal(H, H_ref), budget
+        assert np.array_equal(dH, dH_ref), budget
+        assert state == state_ref, budget
 
 
 if __name__ == "__main__":
