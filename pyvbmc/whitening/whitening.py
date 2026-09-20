@@ -209,15 +209,17 @@ def warp_input(vp, optim_state, function_logger, options):
     else:
         T = 1
 
-    # Adjust stored points after warping
-    X_flag = function_logger.X_flag
-    X_orig = function_logger.X_orig[X_flag, :]
-    y_orig = function_logger.y_orig[X_flag].T
+    # Adjust stored points after warping. Every filled row is rewritten,
+    # whether or not it is active, so that the inference-space coordinates
+    # of the logger agree with its original-space ones throughout.
+    filled = slice(0, function_logger.Xn + 1)
+    X_orig = function_logger.X_orig[filled, :]
+    y_orig = function_logger.y_orig[filled].T
     X = parameter_transformer(X_orig)
     dy = parameter_transformer.log_abs_det_jacobian(X)
     y = y_orig + dy / T
-    function_logger.X[X_flag, :] = X
-    function_logger.y[X_flag] = y.T
+    function_logger.X[filled, :] = X
+    function_logger.y[filled] = y.T
     function_logger.parameter_transformer = parameter_transformer
 
     # Update search bounds:

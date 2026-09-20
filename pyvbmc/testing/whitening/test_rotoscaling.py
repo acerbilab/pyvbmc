@@ -332,6 +332,69 @@ def test_warp_input_search_cache():
     assert np.allclose(optim_state["search_cache"], expected)
 
 
+def test_warp_input_rewrites_every_filled_row_of_the_logger():
+    """The warp re-expresses the stored points in the new inference space.
+
+    Every filled row of the function logger is rewritten, whether or not it
+    is active, so that ``X`` remains the new transform of ``X_orig`` and
+    ``y`` the stored original-space value plus the new log-Jacobian.
+    """
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    vp = VariationalPosterior(
+        D, 50, mus, parameter_transformer=vbmc.parameter_transformer
+    )
+    function_logger = vbmc.function_logger
+    points = np.array(
+        [[0.3, -0.7], [1.1, 0.2], [-0.5, 0.9], [2.0, -1.4]], dtype=float
+    )
+    for i, point in enumerate(points):
+        function_logger.add(point, -0.5 * (i + 1))
+    # A row deactivated, as the trim at the end of warm-up deactivates one.
+    function_logger.X_flag[1] = False
+
+    __, __, warped_logger, __ = warp_input(
+        vp, vbmc.optim_state, function_logger, vbmc.options
+    )
+    warped_transformer = warped_logger.parameter_transformer
+
+    assert warped_logger.Xn == len(points) - 1
+    # The warp does not revive or retire a row.
+    assert np.array_equal(
+        warped_logger.X_flag[: warped_logger.Xn + 1],
+        [True, False, True, True],
+    )
+
+    filled = slice(0, warped_logger.Xn + 1)
+    X_orig = warped_logger.X_orig[filled]
+    expected_X = warped_transformer(X_orig)
+    expected_y = warped_logger.y_orig[
+        filled, 0
+    ] + warped_transformer.log_abs_det_jacobian(expected_X)
+
+    assert np.allclose(warped_logger.X[filled], expected_X)
+    assert np.allclose(warped_logger.y[filled, 0], expected_y)
+    # The rewrite is not vacuous: the warp moved every stored point.
+    assert not np.any(np.isclose(warped_logger.X[filled], points))
+
+
 def _same_posterior_in_a_rescaled_space(vp, scale):
     """Return the same distribution, expressed in another inference space.
 
