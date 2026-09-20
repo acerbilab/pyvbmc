@@ -1129,6 +1129,10 @@ class VBMC:
             The ``VariationalPosterior`` computed by VBMC.
         results : dict
             A dictionary with additional information about the VBMC run.
+            Its ``"iterations"`` entry is the number of iterations the run
+            performed, and its ``"best_iter"`` entry the index, 0-based as
+            the iteration history is, of the iteration whose variational
+            posterior is returned.
 
         Notes
         -----
@@ -3146,6 +3150,10 @@ class VBMC:
     ):
         """
         Private method to create the result dict.
+
+        ``iterations`` holds the number of iterations the run performed.
+        ``best_iter`` holds the index, 0-based as the iteration history is,
+        of the iteration whose variational posterior is returned.
         """
         output = {}
         output["function"] = str(self.function_logger.fun)
@@ -3158,7 +3166,7 @@ class VBMC:
         else:
             output["problem_type"] = "bounded"
 
-        output["iterations"] = self.optim_state["iter"]
+        output["iterations"] = self.optim_state["iter"] + 1
         output["func_count"] = self.function_logger.func_count
         if self.precomputed_observation_count:
             output[

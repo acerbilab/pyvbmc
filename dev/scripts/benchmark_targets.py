@@ -2267,7 +2267,7 @@ def run_smoke(configs, seed=0, only=None):
                     "moment_method"
                 ] += f"; mc diff mean {dm:.3f} sd, cov {dc:.3f}"
             msg = (
-                f"iters={results['iterations'] + 1} evals={results['func_count']}"
+                f"iters={results['iterations']} evals={results['func_count']}"
                 f" elbo={results['elbo']:.3f} elbo_err={met['elbo_err']:.3f}"
                 f" gskl={met['gskl']:.3f} mmtv={met['mmtv']:.3f}"
                 f" rmse={met['rmse']:.3f} ({met['moment_method']})"
