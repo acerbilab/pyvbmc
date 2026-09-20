@@ -13,6 +13,69 @@ import numpy as np
 
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
+from pyvbmc.vbmc.gaussian_process_train import train_gp
+
+
+def build_trained_state(
+    options: dict = None,
+    D: int = 2,
+    sample_count: int = 12,
+    seed: int = 20260920,
+):
+    """A VBMC instance whose function logger holds a small training set.
+
+    The points are written into the logger directly, as
+    ``test_gaussian_process_train.test_gp_hyp`` does, so that no target
+    evaluation and no parameter transform stand between the test and the
+    training set ``train_gp`` will read.
+    """
+    settings = {
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    settings.update(options or {})
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        None,
+        None,
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=settings,
+        seed=seed,
+    )
+    logger = vbmc.function_logger
+    rng = np.random.default_rng(seed)
+    window = vbmc.optim_state["pub_tran"] - vbmc.optim_state["plb_tran"]
+    X = vbmc.optim_state["plb_tran"] + window * rng.random((sample_count, D))
+    y = -0.5 * np.sum(X**2, axis=1)
+    for i in range(sample_count):
+        logger.X_flag[i] = True
+        logger.X[i] = X[i]
+        logger.y[i] = y[i]
+        logger.fun_eval_time[i] = 1e-5
+        if logger.noise_flag:
+            # A point observed once at the level's default accuracy.
+            logger.S[i] = 1.0
+            logger.n_evals[i] = 1
+    vbmc.optim_state["N"] = sample_count
+    vbmc.optim_state["n_eff"] = sample_count
+    return vbmc
+
+
+def fit_the_gp(vbmc, hyp_dict, seed: int = 1):
+    """Train the GP of ``vbmc`` on what its function logger holds."""
+    return train_gp(
+        hyp_dict,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
+        rng=np.random.default_rng(seed),
+    )
 
 
 def build_short(options: dict, seed: int = 20260920, D: int = 2):
@@ -83,3 +146,32 @@ def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):
     assert after_warmup[0]["run_cov"] is None
     # The summary statistics carry no key beyond the ones the fit manages.
     assert set(vbmc.hyp_dict) <= {"hyp", "warp", "logp", "full", "run_cov"}
+
+
+def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
+    """A fit that draws no samples leaves the optimized hyperparameters in
+    ``hyp_dict["full"]`` and no running covariance. MATLAB VBMC assigns
+    ``hypstruct.full = gpoutput.hyp_prethin`` after every fit
+    (``misc/gptrain_vbmc.m:65``), and with no samples ``gplite_train.m:465``
+    makes that the single optimized vector, so the test on the number of
+    samples at ``:83`` fails and ``hypstruct.runcov = []`` follows."""
+    vbmc = build_trained_state()
+    hyp_dict = {}
+
+    gp, gp_s_N, _, hyp_dict = fit_the_gp(vbmc, hyp_dict)
+    assert gp_s_N > 1
+    assert hyp_dict["full"].shape[0] == gp_s_N * vbmc.options["gp_sample_thin"]
+    assert hyp_dict["run_cov"] is not None
+
+    # Stop sampling, as a run does once it has enough training points.
+    vbmc.optim_state["stop_sampling"] = vbmc.optim_state["N"]
+    gp, gp_s_N, _, hyp_dict = fit_the_gp(vbmc, hyp_dict)
+
+    assert gp_s_N == 0
+    fitted = gp.get_hyperparameters(as_array=True)
+    assert hyp_dict["full"].shape == (1, fitted.shape[1])
+    np.testing.assert_array_equal(hyp_dict["full"], fitted)
+    # The covariance of a single vector is not defined, and the chain of
+    # the earlier fit is not folded into it once more.
+    assert hyp_dict["run_cov"] is None
+    assert hyp_dict["logp"] is None

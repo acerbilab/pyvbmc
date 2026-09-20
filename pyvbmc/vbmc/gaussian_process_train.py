@@ -176,7 +176,8 @@ def train_gp(
     )
 
     if res is not None:
-        # Pre-thinning GP hyperparameters
+        # Pre-thinning GP hyperparameters, with the log prior density of
+        # each of them.
         hyp_dict["full"] = res["samples"]
         hyp_dict["logp"] = res["log_priors"]
 
@@ -190,9 +191,15 @@ def train_gp(
         #     optimState.gp_mala_step_size = gpoutput.stepsize;
         #     gpoutput.stepsize
         # end
+    else:
+        # A fit that draws no samples returns the optimized hyperparameters
+        # alone, and they take the place of the chain. The fit reports no
+        # density for them, so there is none to keep.
+        hyp_dict["full"] = np.atleast_2d(hyp_dict["hyp"]).copy()
+        hyp_dict["logp"] = None
 
     # Update running average of GP hyperparameter covariance (coarse)
-    if hyp_dict["full"] is not None and hyp_dict["full"].shape[1] > 1:
+    if hyp_dict["full"] is not None and hyp_dict["full"].shape[0] > 1:
         hyp_cov = np.cov(hyp_dict["full"].T)
         if hyp_dict["run_cov"] is None or options["hyp_run_weight"] == 0:
             hyp_dict["run_cov"] = hyp_cov
