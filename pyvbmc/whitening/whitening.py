@@ -4,6 +4,33 @@ import gpyreg as gpr
 import numpy as np
 
 
+def _drop_low_correlations(vp_cov, corr_thresh):
+    """Set the weakly correlated entries of a covariance matrix to zero.
+
+    An entry is kept where the absolute value of its correlation exceeds
+    ``corr_thresh``. An entry whose correlation is not a number does not
+    exceed the threshold, and goes to zero with the weakly correlated
+    ones.
+
+    Parameters
+    ----------
+    vp_cov : (D,D) np.ndarray
+        The covariance matrix.
+    corr_thresh : float
+        The correlation below which an entry is dropped.
+
+    Returns
+    -------
+    dropped : (D,D) np.ndarray
+        A copy of the covariance matrix with the dropped entries zeroed.
+    """
+    vp_corr = vp_cov / np.sqrt(np.outer(np.diag(vp_cov), np.diag(vp_cov)))
+    mask_idx = np.abs(vp_corr) > corr_thresh
+    dropped = np.copy(vp_cov)
+    dropped[~mask_idx] = 0
+    return dropped
+
+
 def _is_positive_definite(matrix):
     """Whether a real symmetric matrix is positive definite.
 
@@ -179,14 +206,11 @@ def warp_input(vp, optim_state, function_logger, options):
         # miss unit variance along the direction of a negative one. The
         # covariance is kept as it was whenever that happens.
         if options["warp_roto_corr_thresh"] > 0:
-            vp_corr = vp_cov / np.sqrt(
-                np.outer(np.diag(vp_cov), np.diag(vp_cov))
+            vp_cov_dropped = _drop_low_correlations(
+                vp_cov, options["warp_roto_corr_thresh"]
             )
-            mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
-            vp_cov_thresh = np.copy(vp_cov)
-            vp_cov_thresh[mask_idx] = 0
-            if _is_positive_definite(vp_cov_thresh):
-                vp_cov = vp_cov_thresh
+            if _is_positive_definite(vp_cov_dropped):
+                vp_cov = vp_cov_dropped
 
         # Regularization of covariance matrix towards diagonal. The
         # amount is a number, or a function of the number of training

@@ -10,6 +10,7 @@ from pyvbmc import VBMC
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input
+from pyvbmc.whitening.whitening import _drop_low_correlations
 
 D = 2
 
@@ -388,6 +389,35 @@ def test_warp_input_whitens_the_thresholded_covariance_when_it_is_definite():
     # untouched covariance gives another transformation.
     untouched, __, __ = np.linalg.svd(cov)
     assert not np.allclose(parameter_transformer_warp.R_mat, untouched)
+
+
+def test_drop_low_correlations_keeps_only_strong_correlations():
+    """An entry of the covariance survives the threshold only where the
+    absolute value of its correlation exceeds it."""
+    sd = np.array([np.sqrt(2.0), 1.0, np.sqrt(0.5)])
+    corr = np.array([[1.0, 0.3, 0.02], [0.3, 1.0, 0.3], [0.02, 0.3, 1.0]])
+    cov = np.outer(sd, sd) * corr
+
+    dropped = _drop_low_correlations(cov, 0.05)
+
+    expected = np.copy(cov)
+    expected[0, 2] = 0
+    expected[2, 0] = 0
+    assert np.array_equal(dropped, expected)
+    # The threshold is exclusive: an entry exactly at it goes too.
+    unit = np.array([[1.0, 0.2], [0.2, 1.0]])
+    assert np.array_equal(_drop_low_correlations(unit, 0.2), np.eye(2))
+
+
+def test_drop_low_correlations_drops_an_undefined_correlation():
+    """A correlation that is not a number does not exceed the threshold,
+    so its entry is dropped with the weakly correlated ones."""
+    # A negative variance leaves the correlations of that coordinate
+    # undefined.
+    cov = np.array([[1.0, 0.3, 0.02], [0.3, -1.0, 0.3], [0.02, 0.3, 1.0]])
+    with np.errstate(invalid="ignore"):
+        dropped = _drop_low_correlations(cov, 0.05)
+    assert np.array_equal(dropped, np.diag([1.0, -1.0, 1.0]))
 
 
 def test_warp_input_search_cache():
