@@ -110,7 +110,8 @@ class VBMC:
         ``plausible_upper_bounds`` (`PUB`) such that `LB` < `PLB` < `PUB` < `UB`.
         Both `PLB` and `PUB` need to be finite. `PLB` and `PUB` represent a
         "plausible" range, which should denote a region of high posterior
-        probability mass. Among other things, the plausible box is used to
+        probability mass. If scalars, the bound is replicated in each
+        dimension. Among other things, the plausible box is used to
         draw initial samples and to set priors over hyperparameters of the
         algorithm. When in doubt, we found that setting `PLB` and `PUB` using
         the topmost ~68% percentile range of the prior (e.g, mean +/- 1 SD

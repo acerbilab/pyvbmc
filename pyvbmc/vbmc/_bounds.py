@@ -38,6 +38,13 @@ def _effective_bounds(lower_bounds, upper_bounds):
     return lower_effective, upper_effective
 
 
+def _expand_scalar_bound(bound, D):
+    """Replicate a bound given as a single value across the D variables."""
+    if bound is None or bound.size != 1:
+        return bound
+    return np.full((1, D), bound.reshape(-1)[0])
+
+
 def _normalize_bounds(
     x0,
     lower_bounds,
@@ -92,6 +99,12 @@ def _normalize_bounds(
         )
 
     N0, D = x0.shape
+
+    # A bound given as a single value holds for every variable.
+    lower_bounds = _expand_scalar_bound(lower_bounds, D)
+    upper_bounds = _expand_scalar_bound(upper_bounds, D)
+    plausible_lower_bounds = _expand_scalar_bound(plausible_lower_bounds, D)
+    plausible_upper_bounds = _expand_scalar_bound(plausible_upper_bounds, D)
 
     if plausible_lower_bounds is None or plausible_upper_bounds is None:
         if N0 > 1:
@@ -153,7 +166,7 @@ def _normalize_bounds(
             plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
     except ValueError as exc:
         raise ValueError(
-            "Bounds must match problem dimension D=%d.", D
+            f"Bounds must match problem dimension D={D}."
         ) from exc
 
     # check that plausible bounds are finite

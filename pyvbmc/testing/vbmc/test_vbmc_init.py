@@ -138,6 +138,35 @@ def test_vbmc_bounds_check_not_D():
     VBMC(fun, x0, lb, ub)._bounds_check(x0, lb, ub, plb, pub)
 
 
+def test_vbmc_bounds_check_scalars_are_replicated():
+    """``misc/boundscheck_vbmc.m:6-10`` replicates each of the four bounds
+    given as a single value across the variables, and the class docstring
+    promises the same."""
+    D = 3
+    x0 = np.ones((2, D))
+    vbmc = VBMC(fun, x0, -2, 2, -1, 1)
+    for bound, value in (
+        (vbmc.lower_bounds, -2),
+        (vbmc.upper_bounds, 2),
+        (vbmc.plausible_lower_bounds, -1),
+        (vbmc.plausible_upper_bounds, 1),
+    ):
+        assert bound.shape == (1, D)
+        assert np.all(bound == value)
+
+
+def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
+    """A starting set without width leaves the plausible box without
+    width, and the hard bounds take its place, which needs the replicated
+    bound to carry one entry per variable."""
+    D = 1
+    x0 = np.array([[2.0], [2.0]])
+    vbmc = VBMC(fun, x0, -10, 10)
+    assert vbmc.plausible_lower_bounds.shape == (1, D)
+    assert vbmc.plausible_upper_bounds.shape == (1, D)
+    assert np.all(vbmc.plausible_lower_bounds < vbmc.plausible_upper_bounds)
+
+
 def test_vbmc_bounds_check_not_vectors():
     D = 3
     lb = np.ones((1, D)) * -2
@@ -145,8 +174,8 @@ def test_vbmc_bounds_check_not_vectors():
     plb = np.ones((1, D)) * -1
     pub = np.ones((1, D))
     x0 = np.ones((2, D))
-    incorrect = 1
-    exception_message = "Bounds must match problem dimension D="
+    incorrect = np.ones((2, D))
+    exception_message = "Bounds must match problem dimension D=3."
     with pytest.raises(ValueError) as execinfo1:
         VBMC(fun, x0, lb, ub)._bounds_check(x0, incorrect, ub, plb, pub)
     assert exception_message in execinfo1.value.args[0]
