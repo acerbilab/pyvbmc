@@ -88,11 +88,16 @@ def warp_input(vp, optim_state, function_logger, options):
     Parameters
     ----------
     vp : VariationalPosterior
-        The current VP object for which to compute the warping.
+        The variational posterior whose covariance the whitening
+        transformation is computed from. That covariance is expressed in
+        the inference space of the posterior's own parameter transformer,
+        which need not be the space the run is currently in.
     optim_state : dict
         The dictionary recording the current optimization state.
     function_logger : FunctionLogger
-        The record including cached function values.
+        The record including cached function values. Its parameter
+        transformer defines the current inference space, the one the
+        search bounds and the cached search points are given in.
 
     Returns
     -------
@@ -119,6 +124,12 @@ def warp_input(vp, optim_state, function_logger, options):
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
     function_logger = copy.deepcopy(function_logger)
+    # The transformation of the inference space the run is in. The
+    # posterior given here may have been recorded in an earlier one, and
+    # its own transformation is what its covariance lives in, but the
+    # search bounds and the cached search points below are points of the
+    # current space.
+    current_transformer = function_logger.parameter_transformer
 
     if options.get("warp_nonlinear"):
         raise NotImplementedError("Non-linear warping is not supported.")
@@ -213,7 +224,7 @@ def warp_input(vp, optim_state, function_logger, options):
     # Invert points to original space with old transform,
     # then map to new space with new transform
     def warpfun(x):
-        return parameter_transformer(vp.parameter_transformer.inverse(x))
+        return parameter_transformer(current_transformer.inverse(x))
 
     Nrnd = 1000
     xx = (
