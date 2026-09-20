@@ -1100,26 +1100,15 @@ class VBMC:
             optim_state["gp_noise_fun"][1] = 1
 
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        valid_gp_mean_funs = [
-            "zero",
-            "const",
-            "negquad",
-            "se",
-            "negquadse",
-            "negquadfixiso",
-            "negquadfix",
-            "negquadsefix",
-            "negquadonly",
-            "negquadfixonly",
-            "negquadlinonly",
-            "negquadmix",
-        ]
+        # The mean functions the GP backend can build. MATLAB VBMC names
+        # nine more that gpyreg does not provide.
+        valid_gp_mean_funs = ["zero", "const", "negquad"]
 
         if not optim_state["gp_mean_fun"] in valid_gp_mean_funs:
             raise ValueError(
-                """vbmc:UnknownGPmean:Unknown/unsupported GP mean
-            function. Supported mean functions are zero, const,
-            egquad, and se"""
+                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
+                f"{optim_state['gp_mean_fun']!r}. Supported mean functions "
+                "are 'zero', 'const' and 'negquad'."
             )
         optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab

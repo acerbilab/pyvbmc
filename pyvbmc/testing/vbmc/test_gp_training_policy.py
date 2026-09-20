@@ -1,17 +1,20 @@
-"""Checks of the policy and the noise estimate of the GP hyperparameter fit.
+"""Checks of what a run may ask of the GP and of how its fit is steered.
 
-The contract is ``misc/get_GPTrainOptions.m`` of MATLAB VBMC, whose
-iteration counter is one ahead of ``optim_state["iter"]``, and
-``estimate_GPnoise`` of ``misc/gptrain_vbmc.m``.
+The contracts are the GP settings of ``misc/setupvars_vbmc.m``, the
+policy of ``misc/get_GPTrainOptions.m`` of MATLAB VBMC, whose iteration
+counter is one ahead of ``optim_state["iter"]``, and ``estimate_GPnoise``
+of ``misc/gptrain_vbmc.m``.
 """
 
 import gpyreg as gpr
 import numpy as np
+import pytest
 
 from pyvbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import (
     _estimate_noise,
     _get_gp_training_options,
+    _meanfun_name_to_mean_function,
 )
 
 
@@ -60,6 +63,48 @@ def test_retrain_branch_starts_at_the_first_recorded_reliability_index():
 
     assert gp_train["init_N"] == 0
     assert gp_train["opts_N"] == 0
+
+
+@pytest.mark.parametrize("name", ["zero", "const", "negquad"])
+def test_construction_accepts_a_mean_function_the_package_builds(name):
+    """The three mean functions ``_meanfun_name_to_mean_function`` builds
+    are accepted and reach the optimization state."""
+    vbmc = _vbmc(user_options={"gp_mean_fun": name})
+
+    assert vbmc.optim_state["gp_mean_fun"] == name
+    assert _meanfun_name_to_mean_function(name) is not None
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "se",
+        "negquadse",
+        "negquadfixiso",
+        "negquadfix",
+        "negquadsefix",
+        "negquadonly",
+        "negquadfixonly",
+        "negquadlinonly",
+        "negquadmix",
+        "notvalid",
+    ],
+)
+def test_construction_refuses_a_mean_function_the_package_cannot_build(name):
+    """A mean function the package cannot build is refused where it is
+    given, not in the first GP training after the initial design has spent
+    its evaluations. The message names the ones that are supported."""
+    with pytest.raises(ValueError) as excinfo:
+        _vbmc(user_options={"gp_mean_fun": name})
+
+    message = excinfo.value.args[0]
+    assert name in message
+    for supported in ("'zero'", "'const'", "'negquad'"):
+        assert supported in message
+
+    # The helper keeps its own error for a direct caller.
+    with pytest.raises(ValueError):
+        _meanfun_name_to_mean_function(name)
 
 
 def _matlab_n_init(options, n_eff):
