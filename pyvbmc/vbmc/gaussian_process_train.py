@@ -165,13 +165,6 @@ def train_gp(
     if hyp0.shape[1] != np.size(gp.hyper_priors["mu"]):
         hyp0 = None
 
-    if (
-        "hyp_vp" in hyp_dict
-        and hyp_dict["hyp_vp"] is not None
-        and gp_train["sampler"] == "npv"
-    ):
-        hyp0 = hyp_dict["hyp_vp"]
-
     # print(hyp0.shape)
     hyp_dict["hyp"], _, res = gp.fit(
         x_train, y_train, s2_train, hyp0=hyp0, options=gp_train, rng=rng
@@ -374,11 +367,13 @@ def _gp_hyp(
 
     ## Change default bounds and set priors over hyperparameters.
 
+    # Each statement below replaces one bound of a hyperparameter and
+    # carries the other one over, so that the entries a later statement
+    # leaves alone survive. A NaN bound is left to gpyreg, which fills it
+    # with its recommendation from the training set when the GP is fitted.
     bounds = gp.get_bounds()
     if options["upper_gp_length_factor"] > 0:
-        # Max GP input length scale. Each statement here replaces one bound
-        # of a hyperparameter and carries the other one over, so that the
-        # entries a later statement leaves alone survive.
+        # Max GP input length scale
         bounds["covariance_log_lengthscale"] = (
             bounds["covariance_log_lengthscale"][0],
             np.log(options["upper_gp_length_factor"] * (pub_tran - plb_tran)),
@@ -435,9 +430,11 @@ def _gp_hyp(
     # Change bounds and hyperprior over output-dependent noise modulation
     # Note: currently this branch is not used.
     if optim_state["gp_noise_fun"][2] == 1:
+        # Only the threshold, the first of the two parameters, is bounded
+        # here; the bounds of the second are left to gpyreg.
         bounds["noise_rectified_log_multiplier"] = (
-            [np.minimum(np.min(y), np.max(y) - 20 * D), -np.inf],
-            [np.max(y) - 10 * D, np.inf],
+            [np.minimum(np.min(y), np.max(y) - 20 * D), np.nan],
+            [np.max(y) - 10 * D, np.nan],
         )
 
         # These two lines were commented out in MATLAB as well.

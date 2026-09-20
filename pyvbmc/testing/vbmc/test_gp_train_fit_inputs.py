@@ -225,8 +225,10 @@ def test_output_dependent_noise_is_bounded_by_the_training_values():
     """The threshold of the rectified output-dependent noise is bounded by
     the training targets: above by ``max(y) - 10*D`` and below by
     ``min(min(y), max(y) - 20*D)`` (MATLAB VBMC,
-    ``misc/gptrain_vbmc.m:235-236``). No route through ``VBMC`` switches
-    this noise feature on, so the bounds are built here by hand."""
+    ``misc/gptrain_vbmc.m:235-236``, which leaves the bounds of the second
+    parameter of that noise unset, for the GP library to fill). No route
+    through ``VBMC`` switches this noise feature on, so the bounds are
+    built here by hand."""
     vbmc = build_trained_state()
     X, y = training_data(vbmc)
     D = X.shape[1]
@@ -240,11 +242,16 @@ def test_output_dependent_noise_is_bounded_by_the_training_values():
         ),
     )
 
-    _, _, bounds, _ = install_hyperparameters(vbmc, gp)
+    _, _, bounds, filled = install_hyperparameters(vbmc, gp)
 
     lower, upper = bounds["noise_rectified_log_multiplier"]
     assert lower[0] == min(np.min(y), np.max(y) - 20 * D)
     assert upper[0] == np.max(y) - 10 * D
+    assert np.isnan(lower[1]) and np.isnan(upper[1])
+    recommended = gp.noise.get_bounds_info(X, y)
+    filled_lower, filled_upper = filled["noise_rectified_log_multiplier"]
+    assert filled_lower[1] == recommended["LB"][2]
+    assert filled_upper[1] == recommended["UB"][2]
 
 
 def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
