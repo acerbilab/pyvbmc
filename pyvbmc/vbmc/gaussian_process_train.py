@@ -636,7 +636,7 @@ def _get_gp_training_options(
         if optim_state.get("budget_active", False):
             x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
-    init_N = max(round(f(x)), 9)
+    init_N = max(round(f(x)), 0)
 
     # Set other hyperparameter fitting parameters
     if optim_state["recompute_var_post"]:
