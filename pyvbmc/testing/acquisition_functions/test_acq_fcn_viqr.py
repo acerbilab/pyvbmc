@@ -52,6 +52,27 @@ def test_acq_info():
     assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
 
 
+@pytest.mark.parametrize("quantile", [0, 0.25, 0.5, 1])
+def test_a_quantile_outside_its_range_is_refused(quantile):
+    """The interquantile range the acquisition integrates is defined for
+    an upper quantile strictly between 0.5 and 1 (Acerbi 2020)."""
+    with pytest.raises(ValueError, match="quantile"):
+        AcqFcnVIQR(quantile=quantile)
+    with pytest.raises(ValueError, match="quantile"):
+        string_to_acq(f"AcqFcnVIQR({quantile})")
+
+
+def test_a_quantile_that_is_not_a_number_is_refused():
+    with pytest.raises(ValueError, match="quantile"):
+        AcqFcnVIQR(quantile="0.9")
+
+
+def test_a_quantile_inside_its_range_is_accepted():
+    for acqf in (AcqFcnVIQR(quantile=0.9), string_to_acq("AcqFcnVIQR(0.9)")):
+        assert acqf.acq_info["quantile"] == 0.9
+        assert np.isclose(sps.norm.cdf(acqf.u), 0.9)
+
+
 def test_simple__call__():
     D = 2
     epsilon = 1e-6

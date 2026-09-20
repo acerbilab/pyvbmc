@@ -1,3 +1,5 @@
+from numbers import Real
+
 import gpyreg as gpr
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -82,8 +84,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
     Parameters
     ----------
     quantile : float, optional
-        The upper quantile :math:`p_u` of the interquantile range; the
-        default 0.75 gives :math:`u = \Phi^{-1}(0.75)`.
+        The upper quantile :math:`p_u` of the interquantile range, a number
+        strictly between 0.5 and 1; the default 0.75 gives
+        :math:`u = \Phi^{-1}(0.75)`.
     loss : {"iqr", "iqr_reduction"}, optional
         The loss whose expectation under the variational posterior the
         acquisition minimizes. Both losses share the same look-ahead
@@ -123,6 +126,11 @@ class AcqFcnVIQR(AbstractAcqFcn):
         if loss not in self.LOSSES:
             raise ValueError(
                 f"Unknown loss {loss!r}; expected one of {self.LOSSES}."
+            )
+        if not isinstance(quantile, Real) or not 0.5 < quantile < 1:
+            raise ValueError(
+                "The quantile must be a number strictly between 0.5 and "
+                f"1, not {quantile!r}."
             )
         super().__init__()
         self.acq_info["log_flag"] = True

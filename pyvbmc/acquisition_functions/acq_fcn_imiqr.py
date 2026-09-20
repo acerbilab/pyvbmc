@@ -1,3 +1,5 @@
+from numbers import Real
+
 import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
@@ -15,9 +17,21 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
     Approximates the Integrated Median Interquantile Range (IMIQR) via
     importance samples from the GP surrogate.
+
+    Parameters
+    ----------
+    quantile : float, optional
+        The upper quantile :math:`p_u` of the interquantile range, a number
+        strictly between 0.5 and 1; the default 0.75 gives
+        :math:`u = \Phi^{-1}(0.75)`.
     """
 
     def __init__(self, quantile=0.75):
+        if not isinstance(quantile, Real) or not 0.5 < quantile < 1:
+            raise ValueError(
+                "The quantile must be a number strictly between 0.5 and "
+                f"1, not {quantile!r}."
+            )
         super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
