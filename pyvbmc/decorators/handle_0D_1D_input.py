@@ -19,10 +19,10 @@ def handle_0D_1D_input(
 
     Parameters
     ----------
-    kwarg : list of str
-        The names of the keyword arguments that should be handeled.
-    argpos : list of int
-        The positions of the arguments that should be handeled.
+    patched_kwargs : list of str
+        The names of the keyword arguments that should be handled.
+    patched_argpos : list of int
+        The positions of the arguments that should be handled.
     return_scalar : bool, optional
         If the input is 1D the function should return a scalar,
         by default False.
