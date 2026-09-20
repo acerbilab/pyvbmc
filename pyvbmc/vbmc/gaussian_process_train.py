@@ -386,14 +386,14 @@ def _gp_hyp(
         pass
     elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
         # Lower maximum constant mean
-        bounds["mean_const"] = (-np.inf, np.min(hpd_y))
+        bounds["mean_const"] = (np.nan, np.min(hpd_y))
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gp_quadratic_mean_bound"]:
             delta_y = max(
                 options["tol_sd"],
                 min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
-            bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
+            bounds["mean_const"] = (np.nan, np.max(hpd_y) + delta_y)
     else:
         raise TypeError("The mean function is not supported by gpyreg.")
 

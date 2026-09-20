@@ -16,6 +16,7 @@ import numpy as np
 import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
+from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
 
 
@@ -400,6 +401,43 @@ def test_a_large_pool_of_starting_points_is_thinned_to_half_the_design(
     # The window holds four GPs, more than half the design asks for.
     assert seen["hyp0"].shape[0] == math.floor(init_N / 2) + 1
     assert {row[0] for row in seen["hyp0"]} <= {-1.0, 2.0, 3.0, 4.0, 5.0}
+
+
+def test_the_constant_of_the_mean_keeps_a_lower_bound():
+    """VBMC lowers the largest constant a GP mean function may take and
+    says nothing about the smallest (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:174-188``, which assigns into vectors of NaN);
+    ``gplite/gplite_train.m:120-127`` then fills what is still unset with
+    the recommendation of the full training set."""
+    vbmc = build_trained_state()
+    X, y = training_data(vbmc)
+    D = X.shape[1]
+    _, hpd_y, _, _ = get_hpd(X, y, vbmc.options["hpd_frac"])
+
+    # The negative-quadratic mean of a run.
+    gp, _, bounds, filled = install_hyperparameters(vbmc, default_gp(vbmc))
+    delta_y = max(
+        vbmc.options["tol_sd"], min(D, np.max(hpd_y) - np.min(hpd_y))
+    )
+    assert np.all(np.isnan(bounds["mean_const"][0]))
+    assert bounds["mean_const"][1] == np.max(hpd_y) + delta_y
+    recommended = gp.get_recommended_bounds()
+    assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][1] == np.max(hpd_y) + delta_y
+
+    # A constant mean, whose maximum is lowered to a different value.
+    constant = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.ConstantMean(),
+        noise=gpr.noise_functions.GaussianNoise(constant_add=True),
+    )
+    gp, _, bounds, filled = install_hyperparameters(vbmc, constant)
+    assert np.all(np.isnan(bounds["mean_const"][0]))
+    assert bounds["mean_const"][1] == np.min(hpd_y)
+    recommended = gp.get_recommended_bounds()
+    assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][1] == np.min(hpd_y)
 
 
 def test_the_noise_model_follows_the_uncertainty_level():
