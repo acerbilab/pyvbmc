@@ -242,15 +242,18 @@ def test_runs_on_different_boxes_raise():
 
 def test_infinite_bounds_have_to_agree_too():
     unbounded = make_vp(seed=1)  # both dimensions on the whole line
-    half = with_bounds(
+    # The same first dimension, and a box in the second. A variable is
+    # bounded on both sides or on neither, so a run cannot differ from
+    # another in one bound of a dimension alone.
+    boxed = with_bounds(
         make_vp(seed=2),
         [-np.inf, 0.0],
-        [np.inf, np.inf],
+        [np.inf, 5.0],
         plb=[-1.0, 1.0],
         pub=[1.0, 2.0],
     )
     with pytest.raises(ValueError, match="dimension 1"):
-        SVBMC([unbounded, half], M_min=2, seed=0)
+        SVBMC([unbounded, boxed], M_min=2, seed=0)
     # Two runs that are unbounded in the same dimensions agree.
     assert SVBMC([unbounded, make_vp(seed=3)], M_min=2, seed=0).M == 2
 
