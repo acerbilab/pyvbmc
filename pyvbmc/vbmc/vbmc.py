@@ -1581,8 +1581,9 @@ class VBMC:
 
             # Record moments in transformed space
             mubar, sigma = self.vp.moments(orig_flag=False, cov_flag=True)
-            if len(self.optim_state.get("run_mean")) == 0 or len(
-                self.optim_state.get("run_cov") == 0
+            if (
+                len(self.optim_state.get("run_mean")) == 0
+                or len(self.optim_state.get("run_cov")) == 0
             ):
                 self.optim_state["run_mean"] = mubar.reshape(1, -1)
                 self.optim_state["run_cov"] = sigma
