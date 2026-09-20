@@ -3312,15 +3312,19 @@ class VBMC:
         else:
             log_file_mode = "a"
 
-        # Avoid duplicating a handler for the same log file
-        # (remove duplicates, re-add below)
-        for handler in logger.handlers:
-            log_file_name = self.options.get("log_file_name")
-            if (
-                log_file_name is not None
-                and handler.baseFilename == os.path.abspath(log_file_name)
-            ):
-                logger.removeHandler(handler)
+        # Avoid duplicating a handler for the same log file (remove every
+        # handler already writing to it, re-add one below). The logger is
+        # shared with whatever else the process has attached to it, so
+        # handlers of other kinds are left alone.
+        log_file_name = self.options.get("log_file_name")
+        if log_file_name is not None:
+            log_file_path = os.path.abspath(log_file_name)
+            for handler in list(logger.handlers):
+                if (
+                    isinstance(handler, logging.FileHandler)
+                    and handler.baseFilename == log_file_path
+                ):
+                    logger.removeHandler(handler)
 
         if self.options.get("log_file_name") and self.options.get(
             "log_file_level"
@@ -3341,8 +3345,8 @@ class VBMC:
                 file_handler.setLevel(log_file_level)
             else:
                 raise ValueError(
-                    "Log file logging level is not a recognized"
-                    + "string or logging level."
+                    "Log file logging level is not a recognized "
+                    "string or logging level."
                 )
 
             # Add a filter to ignore messages sent to logger.stream_only:
