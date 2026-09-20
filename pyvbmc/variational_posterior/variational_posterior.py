@@ -1668,6 +1668,10 @@ class VariationalPosterior:
     def save(self, file, overwrite=False):
         """Save the VP to a file.
 
+        The file holds no Python bytecode, so it can be loaded, used and
+        saved again under another minor version of Python than the one that
+        wrote it.
+
         Parameters
         ----------
         file : path-like

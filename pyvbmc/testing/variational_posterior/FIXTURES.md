@@ -3,7 +3,8 @@
 Values produced by the MATLAB VBMC toolbox and stored as plain NumPy arrays
 (`np.load(path, allow_pickle=False)`). MATLAB is needed to make them again,
 and the scripts that produced them are not in the repository, so treat the
-numbers as fixed.
+numbers as fixed. The last section describes two pickled posteriors, which
+did not come from MATLAB.
 
 ## `vp-test.npz`
 
@@ -47,3 +48,31 @@ moments are stored here. In the repository since 2022-11-23.
 `test_variational_posterior.py::test_moments_no_orig_flag_2` checks both at
 NumPy's default `allclose` tolerance; in the transformed space the moments are
 analytic, so the two implementations agree closely.
+
+## `test_vp_save_bounded_py311.pkl`, `test_vp_save_bounded_py312.pkl`
+
+Two pickled `VariationalPosterior` objects, the same posterior written
+under Python 3.11.9 and under Python 3.12.6 on 2026-09-20 by PyVBMC at
+commit `e3ccd0e`, the last one whose `ParameterTransformer` pickled its
+bounded transforms. Each file therefore holds three functions by
+value, as bytecode of the Python version that wrote it, which is what the
+files are for: whichever interpreter runs the tests, at least one of them
+carries bytecode of another Python version. They cannot be made again with
+the current code, which no longer stores those functions; an older checkout
+and the two interpreters are needed.
+
+The posterior has `D = 2` and `K = 3`. The first variable has hard bounds 0
+and 10 and plausible bounds 2 and 6, the second is unbounded with plausible
+bounds -1 and 1, and the bounded transform is the default (probit). In
+transformed coordinates `mu = [[-0.8, 0.1, 0.9], [-0.5, 0.0, 0.6]]`,
+`sigma = [[0.3, 0.2, 0.4]]`, `lambd = [[1.1], [0.9]]` and
+`w = [[0.2, 0.5, 0.3]]`; the generator was seeded with 123.
+`_bounded_reference()` in `test_vp_save_and_load.py` builds the same
+posterior under the running interpreter.
+
+`test_vp_save_and_load.py::test_vp_saved_under_another_python_version_is_usable`
+loads each file, samples from it, compares its density (`rtol=1e-12`) and
+its transformed-space moments with the reference, saves it again and checks
+that the new file holds no function. Before the transformer rebuilt its
+transforms on restoring, sampling from the file of another Python version
+ended the interpreter ("Illegal instruction" or a segmentation fault).

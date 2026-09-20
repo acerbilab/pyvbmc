@@ -434,6 +434,31 @@ class ParameterTransformer:
             else:
                 raise NotImplementedError
 
+    def __getstate__(self):
+        """The state to pickle or copy: everything but the bounded transforms.
+
+        They are functions that ``_set_bounded_transforms`` builds from
+        ``bounded_types``. A pickle would hold them by value, as bytecode of
+        the Python version that writes the file, and calling such a function
+        under another Python version brings the interpreter down.
+        """
+        state = self.__dict__.copy()
+        state.pop("_bounded_transforms", None)
+        return state
+
+    def __setstate__(self, state):
+        """Restore the state and build the bounded transforms afresh.
+
+        A file written by a version that stored the functions still holds
+        them; they are dropped here, never called, so such a file can be
+        used under any Python version too.
+        """
+        state = dict(state)
+        state.pop("_bounded_transforms", None)
+        self.__dict__.update(state)
+        self._bounded_transforms = {}
+        self._set_bounded_transforms()
+
     def __eq__(self, other):
         if not isinstance(other, ParameterTransformer):
             return False
