@@ -46,6 +46,13 @@ INERT_OPTIONS = frozenset(
 )
 
 
+# How the integer_vars option may be written, named in the errors raised
+# for any other value.
+_INTEGER_VARS_FORMS = (
+    "a boolean array with one entry per variable, or an array of the "
+    "0-based indices of the variables that take only integer values"
+)
+
 # How the uncertainty_handling option may be written, named in the error
 # raised for any other value.
 _UNCERTAINTY_HANDLING_FORMS = (
@@ -141,6 +148,75 @@ class Options(MutableMapping, dict):
         if user_options is not None:
             self.update(user_options)
             self["useroptions"].update(user_options.keys())
+
+    def integer_vars_mask(self, D: int):
+        """
+        Read the ``integer_vars`` option as a mask over the variables.
+
+        A boolean array with one entry per variable is that mask. An array
+        of integers holds the 0-based indices of the integer variables,
+        which have to be distinct and within range. An array of `D`
+        integers that are all zero or one reads as either and is refused.
+
+        Parameters
+        ----------
+        D : int
+            The number of variables.
+
+        Returns
+        -------
+        mask : np.ndarray
+            A boolean array of length `D`, `True` at the variables that
+            take only integer values.
+
+        Raises
+        ------
+        ValueError
+            When the value is neither a boolean mask of length `D` nor an
+            array of distinct indices within range.
+        """
+        mask = np.full(D, False)
+        value = self.get("integer_vars")
+        if value is None:
+            return mask
+        array = np.asarray(value)
+        if array.size == 0:
+            return mask
+        if array.ndim != 1 or not (
+            array.dtype == bool or np.issubdtype(array.dtype, np.integer)
+        ):
+            raise ValueError(
+                "The option integer_vars must be "
+                + _INTEGER_VARS_FORMS
+                + f"; got {value!r}."
+            )
+        if array.dtype == bool:
+            if array.size != D:
+                raise ValueError(
+                    "The option integer_vars, written as a boolean mask, "
+                    f"needs one entry per variable, that is {D}; got "
+                    f"{array.size}."
+                )
+            mask[array] = True
+            return mask
+        if array.size == D and np.all((array == 0) | (array == 1)):
+            raise ValueError(
+                f"The option integer_vars holds {D} integers, each of them "
+                "zero or one, which reads both as a mask and as a list of "
+                "indices. Write a boolean array to give a mask."
+            )
+        if np.any(array < 0) or np.any(array >= D):
+            raise ValueError(
+                "The option integer_vars, written as indices, needs "
+                f"0-based indices of the {D} variables; got {value!r}."
+            )
+        if np.unique(array).size != array.size:
+            raise ValueError(
+                "The option integer_vars, written as indices, names a "
+                f"variable twice; got {value!r}."
+            )
+        mask[array] = True
+        return mask
 
     def uncertainty_handling_on(self):
         """

@@ -883,10 +883,9 @@ class VBMC:
         )
 
         # Integer variables
-        optim_state["integer_vars"] = np.full(self.D, False)
-        if len(self.options.get("integer_vars")) > 0:
-            integeridx = self.options.get("integer_vars") != 0
-            optim_state["integer_vars"][integeridx] = True
+        integeridx = self.options.integer_vars_mask(self.D)
+        optim_state["integer_vars"] = integeridx
+        if np.any(integeridx):
             if (
                 np.any(np.isinf(self.lower_bounds[:, integeridx]))
                 or np.any(np.isinf(self.upper_bounds[:, integeridx]))

@@ -1740,7 +1740,7 @@ def test_repeated_observation_is_exact_with_integer_vars(mocker):
     vbmc, gp, function_logger, optim_state = _noisy_run(
         mocker,
         {
-            "integer_vars": np.array([1, 0]),
+            "integer_vars": np.array([True, False]),
             "max_repeated_observations": 2,
             "search_optimizer": "none",
         },

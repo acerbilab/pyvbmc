@@ -396,7 +396,7 @@ def test_vbmc_setupvars_no_x0_infinite_bounds():
 
 
 def test_vbmc_optimstate_integer_vars():
-    options = {"integer_vars": np.array([1, 0, 0])}
+    options = {"integer_vars": np.array([True, False, False])}
     D = 3
     lb = np.ones((1, D)) * 1
     ub = np.ones((1, D)) * 5
@@ -423,6 +423,71 @@ def test_vbmc_optimstate_integer_vars():
     integer_vars = np.full((1, D), False)
     integer_vars[:, 0] = True
     assert np.all(vbmc.optim_state.get("integer_vars") == integer_vars)
+
+
+def _integer_vars_vbmc(value, D=3):
+    lb = np.full((1, D), -10.5)
+    ub = np.full((1, D), 10.5)
+    x0 = np.zeros((1, D))
+    plb = np.full((1, D), -2.5)
+    pub = np.full((1, D), 2.5)
+    return VBMC(fun, x0, lb, ub, plb, pub, {"integer_vars": value})
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [0, 2],
+        (0, 2),
+        np.array([0, 2]),
+        np.array([2, 0]),
+        np.array([True, False, True]),
+        [True, False, True],
+    ],
+)
+def test_integer_vars_marks_the_variables_it_names(value):
+    """A boolean array is a mask and an integer array holds the 0-based
+    indices of the integer variables, as ``misc/setupvars_vbmc.m:15-17``
+    reads ``options.IntegerVars`` as indices (1-based there)."""
+    vbmc = _integer_vars_vbmc(value)
+    assert np.array_equal(
+        vbmc.optim_state["integer_vars"], np.array([True, False, True])
+    )
+
+
+@pytest.mark.parametrize("value", [[], (), np.array([]), None])
+def test_integer_vars_empty_marks_no_variable(value):
+    vbmc = _integer_vars_vbmc(value)
+    assert not np.any(vbmc.optim_state["integer_vars"])
+
+
+def test_integer_vars_all_zeros_and_ones_is_ambiguous():
+    """``[1, 0, 1]`` at three variables reads both as a mask and as a list
+    of indices, so it is refused rather than guessed."""
+    with pytest.raises(ValueError) as execinfo:
+        _integer_vars_vbmc(np.array([1, 0, 1]))
+    message = execinfo.value.args[0]
+    assert "integer_vars" in message
+    assert "boolean" in message
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        np.array([1, 3]),  # a 1-based index vector
+        np.array([-1]),
+        np.array([3]),
+        np.array([2, 2]),
+        np.array([True, False]),
+        np.array([0.0, 2.0]),
+        "0, 2",
+        np.array([[0, 2]]),
+    ],
+)
+def test_integer_vars_rejects_what_it_cannot_read(value):
+    with pytest.raises(ValueError) as execinfo:
+        _integer_vars_vbmc(value)
+    assert "integer_vars" in execinfo.value.args[0]
 
 
 def test_vbmc_setupvars_f_vals():
