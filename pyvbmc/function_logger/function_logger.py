@@ -490,8 +490,10 @@ class FunctionLogger:
         f_val_orig : float
             The result of the evaluation of the function.
         f_sd : float, optional
-            The (estimated) SD of the returned value (if heteroskedastic noise
-            handling is on) of the evaluation of the function, by default None.
+            The (estimated) SD of the added value. At uncertainty handling
+            level 2 it is required, the noise of an observation being the
+            caller's to provide; at level 1 it defaults to 1 and at level 0
+            it is ignored. By default None.
         fun_eval_time : float
             The duration of the time it took to evaluate the function,
             by default np.nan.
@@ -511,6 +513,8 @@ class FunctionLogger:
             If the input cannot be coerced to 1-D.
         ValueError
             Raise if the function value is not a finite real-valued scalar.
+        ValueError
+            Raise if ``f_sd`` is missing at uncertainty handling level 2.
         ValueError
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
@@ -534,6 +538,12 @@ class FunctionLogger:
 
         if self.noise_flag:
             if f_sd is None:
+                if self.uncertainty_handling_level == 2:
+                    raise ValueError(
+                        "f_sd is required at uncertainty handling level 2, "
+                        "where the SD of an observation is the caller's to "
+                        "provide."
+                    )
                 f_sd = 1
         else:
             f_sd = None

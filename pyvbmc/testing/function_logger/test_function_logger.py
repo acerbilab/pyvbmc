@@ -128,6 +128,20 @@ def test_add_record_funtime():
     assert f_logger.total_fun_eval_time == 20
 
 
+def test_add_without_an_sd_is_refused_at_level_two():
+    """At uncertainty handling level 2 the target provides the noise of
+    every observation, so a value added without an SD has none the logger
+    could stand in for."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    with pytest.raises(ValueError, match="f_sd"):
+        f_logger.add(x, 1.0)
+    assert f_logger.Xn == -1
+
+    f_logger.add(x, 1.0, 0.5)
+    assert f_logger.S[0] == 0.5
+
+
 def test_add_no_f_sd():
     x = np.array([3, 4, 5])
     y = non_noisy_function(x)
