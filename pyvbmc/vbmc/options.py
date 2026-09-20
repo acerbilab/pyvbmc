@@ -178,7 +178,7 @@ class Options(MutableMapping, dict):
 
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""
-        if self.get("specify_target_noise"):
+        if self.uncertainty_handling_on():
             updates = {
                 "max_fun_evals": ceil(self["max_fun_evals"] * 1.5),
                 "tol_stable_count": ceil(self["tol_stable_count"] * 1.5),

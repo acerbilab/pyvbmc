@@ -162,6 +162,48 @@ def test_init_with_specify_target_noise():
 
 
 @pytest.mark.parametrize(
+    "user_options",
+    [{"specify_target_noise": True}, {"uncertainty_handling": True}],
+)
+def test_noisy_defaults_apply_at_either_noise_level(user_options):
+    """``misc/setupoptions_vbmc.m:143-163`` changes five defaults whenever
+    the noise handling is on, which covers a noise level VBMC infers as
+    well as one the target supplies."""
+    noiseless = _shipped_options({})
+    noisy = _shipped_options(user_options)
+    assert noisy["max_fun_evals"] == ceil(noiseless["max_fun_evals"] * 1.5)
+    assert noisy["tol_stable_count"] == ceil(
+        noiseless["tol_stable_count"] * 1.5
+    )
+    assert noisy["active_sample_gp_update"] is True
+    assert noisy["active_sample_vp_update"] is True
+    assert len(noisy["search_acq_fcn"]) == 1
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnVIQR)
+
+
+def test_noisy_defaults_leave_the_values_the_user_set():
+    """Only a default is changed, as the ``updated`` list of
+    ``misc/setupoptions_vbmc.m`` requires."""
+    noisy = _shipped_options(
+        {
+            "uncertainty_handling": True,
+            "max_fun_evals": 17,
+            "search_acq_fcn": [AcqFcnLog()],
+        }
+    )
+    assert noisy["max_fun_evals"] == 17
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnLog)
+    assert noisy["active_sample_vp_update"] is True
+
+
+def test_a_noiseless_run_keeps_the_noiseless_defaults():
+    noiseless = _shipped_options({})
+    assert noiseless["active_sample_gp_update"] is False
+    assert noiseless["active_sample_vp_update"] is False
+    assert isinstance(noiseless["search_acq_fcn"][0], AcqFcnLog)
+
+
+@pytest.mark.parametrize(
     "D, expected",
     [(1, 10), (2, 10), (9, 10), (10, 20), (15, 20), (19, 20), (20, 30)],
 )
