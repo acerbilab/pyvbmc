@@ -552,66 +552,14 @@ def _get_gp_training_options(
         hyp_n=hyp_n,
     )
 
-    # Setup MCMC sampler
+    # Setup MCMC sampler. Slice sampling is the one sampler the GP backend
+    # runs, and the only value the option takes.
     if options["gp_hyp_sampler"] == "slicesample":
         gp_train["sampler"] = "slicesample"
         if options["gp_sample_widths"] > 0 and hyp_cov is not None:
             width_mult = np.maximum(options["gp_sample_widths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "npv":
-        gp_train["sampler"] = "npv"
-
-    elif options["gp_hyp_sampler"] == "mala":
-        gp_train["sampler"] = "mala"
-        if hyp_cov is not None:
-            gp_train["widths"] = np.sqrt(np.diag(hyp_cov).T)
-        if "gp_mala_step_size" in optim_state:
-            gp_train["step_size"] = optim_state["gp_mala_step_size"]
-
-    elif options["gp_hyp_sampler"] == "slicelite":
-        gp_train["sampler"] = "slicelite"
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-            gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "splitsample":
-        gp_train["sampler"] = "splitsample"
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-            gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "covsample":
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            if np.all(np.isfinite(width_mult)) and np.all(
-                r_index < options["cov_sample_thresh"]
-            ):
-                hyp_n = hyp_cov.shape[0]
-                gp_train["widths"] = (
-                    hyp_cov + 1e-6 * np.eye(hyp_n)
-                ) * width_mult**2
-                gp_train["sampler"] = "covsample"
-                gp_train["thin"] *= math.ceil(np.sqrt(hyp_n))
-            else:
-                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-                gp_train["sampler"] = "slicesample"
-        else:
-            gp_train["sampler"] = "covsample"
-
-    elif options["gp_hyp_sampler"] == "laplace":
-        if optim_state["n_eff"] < 30:
-            gp_train["sampler"] = "slicesample"
-            if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-                width_mult = np.maximum(options["gp_sample_widths"], r_index)
-                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-        else:
-            gp_train["sampler"] = "laplace"
 
     else:
         raise ValueError("Unknown MCMC sampler for GP hyperparameters")
@@ -654,23 +602,6 @@ def _get_gp_training_options(
             < options["gp_retrain_threshold"]
         ):
             gp_train["init_N"] = 0
-            if options["gp_hyp_sampler"] == "slicelite":
-                # TODO: gp_retrain_threshold is by default 1, so we get
-                #       division by zero. what should the default be?
-                gp_train["burn"] = (
-                    max(
-                        1,
-                        math.ceil(
-                            gp_train["thin"]
-                            * np.log(
-                                iteration_history["r_index"][iteration - 1]
-                                / np.log(options["gp_retrain_threshold"])
-                            )
-                        ),
-                    )
-                    * gp_s_N
-                )
-                gp_train["thin"] = 1
             if gp_s_N > 0:
                 gp_train["opts_N"] = 0
             else:

@@ -403,6 +403,10 @@ def test_train_gp_passes_current_hyp_count(monkeypatch):
 
 
 def test_get_gp_training_options_samplers():
+    """Slice sampling is the one sampler the policy answers with, and it
+    sizes its widths from the hyperparameter posterior covariance, scaled
+    by the larger of the width multiplier and the reliability index
+    (``misc/get_GPTrainOptions.m:19-27``)."""
     D = 3
     lb = np.ones((1, D)) * 1
     ub = np.ones((1, D)) * 5
@@ -413,84 +417,46 @@ def test_get_gp_training_options_samplers():
     options = {"weighted_hyp_cov": False}
     vbmc = VBMC(f, x0, lb, ub, plb, pub, options)
 
-    hyp_dict = {"run_cov": np.eye(3)}
+    hyp_cov = np.diag([1.0, 4.0, 9.0])
+    hyp_dict = {"run_cov": hyp_cov}
     hyp_dict_none = {"run_cov": None}
     vbmc.optim_state["n_eff"] = 10
     vbmc.optim_state["iter"] = 1
-    vbmc.iteration_history.record("r_index", 5, 0)
+    vbmc.iteration_history.record("r_index", 50.0, 0)
 
     res1 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
     assert res1["sampler"] == "slicesample"
+    width_mult = max(vbmc.options["gp_sample_widths"], 50.0)
+    assert np.allclose(
+        res1["widths"],
+        np.maximum(np.sqrt(np.diag(hyp_cov)), 1e-3) * width_mult,
+    )
 
-    vbmc.options.__setitem__("gp_hyp_sampler", "npv", force=True)
+    # With no covariance to go by, the widths are left to the GP backend.
     res2 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res2["sampler"] == "npv"
-
-    vbmc.options.__setitem__("gp_hyp_sampler", "mala", force=True)
-    vbmc.optim_state["gp_mala_step_size"] = 10
-    res3 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res3["sampler"] == "mala"
-    assert res3["step_size"] == 10
-
-    vbmc.options.__setitem__("gp_hyp_sampler", "slicelite", force=True)
-    res4 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res4["sampler"] == "slicelite"
-
-    vbmc.options.__setitem__("gp_hyp_sampler", "splitsample", force=True)
-    res5 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res5["sampler"] == "splitsample"
-
-    vbmc.options.__setitem__("gp_hyp_sampler", "covsample", force=True)
-    res6 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res6["sampler"] == "covsample"
-
-    # Test too large r_index for covsample
-    vbmc.iteration_history.record("r_index", 50, 0)
-    res7 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res7["sampler"] == "slicesample"
-
-    res8 = _get_gp_training_options(
         vbmc.optim_state,
         vbmc.iteration_history,
         vbmc.options,
         hyp_dict_none,
         8,
     )
-    assert res8["sampler"] == "covsample"
+    assert res2["sampler"] == "slicesample"
+    assert res2["widths"] is None
 
-    # Test too small n_eff laplace sampler
-    vbmc.options.__setitem__("gp_hyp_sampler", "laplace", force=True)
-    res9 = _get_gp_training_options(
+    # So they are when the multiplier switches the widths off.
+    vbmc.options.__setitem__("gp_sample_widths", 0, force=True)
+    res3 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
     )
-    assert res9["sampler"] == "slicesample"
+    assert res3["sampler"] == "slicesample"
+    assert res3["widths"] is None
 
-    # Test enough n_eff laplace sampler
-    vbmc.optim_state["n_eff"] = 50
-    vbmc.options.__setitem__("gp_hyp_sampler", "laplace", force=True)
-    res10 = _get_gp_training_options(
-        vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
-    )
-    assert res10["sampler"] == "laplace"
-
-    # Test sampler that does not exist.
+    # A sampler the policy does not know is refused.
     vbmc.options.__setitem__("gp_hyp_sampler", "does_not_exist", force=True)
     with pytest.raises(ValueError):
-        res11 = _get_gp_training_options(
+        _get_gp_training_options(
             vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 8
         )
 
@@ -519,7 +485,6 @@ def test_get_gp_training_options_opts_N():
     assert res1["opts_N"] == 2
 
     vbmc.optim_state["recompute_var_post"] = False
-    vbmc.options.__setitem__("gp_hyp_sampler", "slicelite", force=True)
     res2 = _get_gp_training_options(
         vbmc.optim_state, vbmc.iteration_history, vbmc.options, hyp_dict, 0
     )

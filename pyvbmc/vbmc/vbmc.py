@@ -343,6 +343,7 @@ class VBMC:
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
         self._validate_noise_shaping_option()
+        self._validate_gp_hyp_sampler_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3570,6 +3571,18 @@ class VBMC:
                 "the option on would only replace the GP noise function "
                 "and disable the rank-one GP update, a configuration of "
                 "neither toolbox."
+            )
+
+    def _validate_gp_hyp_sampler_option(self):
+        """Reject the GP hyperparameter samplers that are not ported."""
+        value = self.options.get("gp_hyp_sampler", "slicesample")
+        if value != "slicesample":
+            raise NotImplementedError(
+                "The option 'gp_hyp_sampler' must be 'slicesample', not "
+                f"{value!r}. The GP backend samples hyperparameters by "
+                "slice sampling alone, so the other samplers of MATLAB "
+                "VBMC (npv, mala, slicelite, splitsample, covsample and "
+                "laplace) are not ported."
             )
 
     def _ensure_runtime_tip_state(self):

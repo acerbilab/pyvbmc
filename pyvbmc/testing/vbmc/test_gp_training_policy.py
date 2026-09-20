@@ -107,6 +107,39 @@ def test_construction_refuses_a_mean_function_the_package_cannot_build(name):
         _meanfun_name_to_mean_function(name)
 
 
+def test_construction_accepts_slice_sampling():
+    """Slice sampling is what the GP backend runs, and the option's
+    default."""
+    vbmc = _vbmc(user_options={"gp_hyp_sampler": "slicesample"})
+
+    assert vbmc.options["gp_hyp_sampler"] == "slicesample"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "npv",
+        "mala",
+        "slicelite",
+        "splitsample",
+        "covsample",
+        "laplace",
+        "does_not_exist",
+    ],
+)
+def test_construction_refuses_an_unported_hyperparameter_sampler(name):
+    """The GP backend draws hyperparameter samples by slice sampling
+    alone, so any other value is refused where it is given rather than
+    part-way through a run."""
+    with pytest.raises(NotImplementedError) as excinfo:
+        _vbmc(user_options={"gp_hyp_sampler": name})
+
+    message = excinfo.value.args[0]
+    assert "gp_hyp_sampler" in message
+    assert name in message
+    assert "slicesample" in message
+
+
 def _matlab_n_init(options, n_eff):
     """The design size of ``misc/get_GPTrainOptions.m:94-100``."""
     a = -(options["gp_train_n_init"] - options["gp_train_n_init_final"])
