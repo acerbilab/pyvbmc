@@ -133,8 +133,9 @@ measures make a seeded run reproducible anyway:
 
 The cost is a documented side effect on the user's global stream when
 `seed` is given (also when an existing `Generator` is passed, which then
-also loses one draw). With `seed=None` the global state is never written,
-only read once. The seam disappears once gpyreg accepts a generator (§8).
+also loses one draw). With `seed=None` the global state is not reseeded;
+deriving the generator draws four integers from it, which advances it. The
+seam disappears once gpyreg accepts a generator (§8).
 
 **Save format.** The per-iteration `random_state` becomes
 `{"generator": rng.bit_generator.state, "legacy": np.random.get_state()}`;

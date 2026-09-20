@@ -150,9 +150,12 @@ class VBMC:
         hyperparameter fit, for reproducible runs. Anything accepted by
         ``numpy.random.default_rng``. If ``None`` (default), a generator is
         derived from NumPy's global random state, so that calling
-        ``np.random.seed`` beforehand still makes a run reproducible. Every
-        random draw of a run comes from ``vbmc.rng``; NumPy's global random
-        state is never written. Draws from ``vbmc.rng`` before ``optimize``
+        ``np.random.seed`` beforehand still makes a run reproducible;
+        deriving it draws four integers from that state and so advances it,
+        which a construction with a seed or a generator does not do. Every
+        random draw of a run comes from ``vbmc.rng``, and after the
+        construction NumPy's global random state is neither read nor
+        written. Draws from ``vbmc.rng`` before ``optimize``
         (e.g. ``vbmc.vp.sample``) change the run like any other change of
         the generator's state.
     precomputed_evaluations : tuple, optional

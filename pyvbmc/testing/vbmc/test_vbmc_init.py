@@ -1404,6 +1404,56 @@ def test_an_option_set_in_a_file_is_not_overwritten_by_a_default(tmp_path):
     assert vbmc.options["active_sample_vp_update"] is True
 
 
+def _same_random_state(first, second):
+    """Whether two legacy global random states are the same state."""
+    return (
+        first[0] == second[0]
+        and np.array_equal(first[1], second[1])
+        and first[2:] == second[2:]
+    )
+
+
+def _global_state_around_construction(seed):
+    """The global random state before and after one construction, and the
+    state that four unsigned draws from the earlier one give."""
+    saved = np.random.get_state()
+    try:
+        np.random.seed(11)
+        before = np.random.get_state()
+        VBMC(
+            fun,
+            np.zeros((1, 2)),
+            np.full((1, 2), -10.0),
+            np.full((1, 2), 10.0),
+            np.full((1, 2), -1.0),
+            np.full((1, 2), 1.0),
+            seed=seed,
+        )
+        after = np.random.get_state()
+        np.random.set_state(before)
+        np.random.randint(0, 2**32, size=4, dtype=np.uint32)
+        four_draws = np.random.get_state()
+    finally:
+        np.random.set_state(saved)
+    return before, after, four_draws
+
+
+def test_a_given_seed_leaves_the_global_random_state_where_it_was():
+    """The ``seed`` documentation separates the two constructions: a seed
+    or a generator is used as it is."""
+    before, after, __ = _global_state_around_construction(42)
+    assert _same_random_state(before, after)
+
+
+def test_an_unseeded_construction_advances_the_global_random_state():
+    """An unseeded construction derives its generator from the global
+    random state, as the ``seed`` documentation says, by drawing the four
+    integers of ``pyvbmc.rng.get_rng``."""
+    before, after, four_draws = _global_state_around_construction(None)
+    assert not _same_random_state(before, after)
+    assert _same_random_state(four_draws, after)
+
+
 def test__str__and__repr__():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.__str__()
