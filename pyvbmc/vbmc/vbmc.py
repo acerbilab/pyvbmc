@@ -1943,13 +1943,14 @@ class VBMC:
                 "elcbo_impro_weight"
             ) * self.iteration_history.get("elbo_sd")
             # NB: Take care with MATLAB "end" indexing and off-by-one errors:
-            max_now = np.amax(
-                elcbo_vec[max(3, len(elcbo_vec) - tol_stable_warmup_iters) :]
-            )
-            max_before = np.amax(
-                elcbo_vec[2 : max(3, len(elcbo_vec) - tol_stable_warmup_iters)]
-            )
-            stable_count_flag = (max_now - max_before) < stop_warmup_thresh
+            split = max(3, len(elcbo_vec) - tol_stable_warmup_iters)
+            recent = elcbo_vec[split:]
+            # A window no longer than one iteration leaves nothing recent
+            # on the first check, and there is no stability count yet.
+            if np.size(recent) > 0:
+                max_now = np.amax(recent)
+                max_before = np.amax(elcbo_vec[2:split])
+                stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
         # Vector of maximum lower confidence bounds (LCB) of fcn values
         lcb_max_vec = self.iteration_history.get("lcb_max")[: iteration + 1]

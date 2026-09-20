@@ -460,6 +460,44 @@ def test_gp_sampling_stop_drives_next_gp_hyp_to_stable_samples():
     assert gp_s_N == vbmc.options["stable_gp_samples"]
 
 
+def _warmup_history(vbmc, iteration, lcb_max=None):
+    """Record a flat history of ``iteration + 1`` iterations.
+
+    The other two warm-up criteria are inactive on it: the maximum
+    function value never improves, and neither a long stretch without
+    improvement nor a recent trim has happened. What the check returns is
+    then the stability count alone.
+    """
+    n = iteration + 1
+    vbmc.optim_state["iter"] = iteration
+    vbmc.optim_state["N"] = 100
+    vbmc.optim_state["data_trim_list"] = []
+    vbmc.function_logger.func_count = 5
+    vbmc.iteration_history["elbo"] = np.ones(n)
+    vbmc.iteration_history["elbo_sd"] = np.ones(n) * 1e-4
+    vbmc.iteration_history["func_count"] = np.ones(n)
+    vbmc.iteration_history["lcb_max"] = (
+        np.ones(n) if lcb_max is None else np.asarray(lcb_max, dtype=float)
+    )
+
+
+def test_check_warmup_end_conditions_with_a_window_of_one_iteration():
+    """A stability window no more than one iteration long leaves the recent
+    part of the history empty on the first check, which happens with three
+    iterations recorded: there is no stability count yet, and the check
+    reports none. One iteration later the window holds an entry and the
+    count is reached on a flat history."""
+    options = {"tol_stable_warmup": 5, "fun_evals_per_iter": 5}
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=2)
+    assert not vbmc._check_warmup_end_conditions()
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=3)
+    assert vbmc._check_warmup_end_conditions()
+
+
 def test_check_warmup_end_conditions_false():
     """
     no_recent_trim_flag is False
