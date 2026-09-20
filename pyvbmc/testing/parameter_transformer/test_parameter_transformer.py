@@ -1,3 +1,6 @@
+import inspect
+import re
+
 import numpy as np
 import pytest
 import scipy.stats as sps
@@ -240,6 +243,16 @@ def test_init_rotation_matrix_validation():
     for rotation_matrix in invalid_rotations:
         with pytest.raises(ValueError):
             ParameterTransformer(D=D, rotation_matrix=rotation_matrix)
+
+
+def test_class_docstring_documents_the_constructor_arguments():
+    """The class docstring is the published documentation of the
+    constructor, so the names it documents are the ones a caller passes."""
+    documented = set(
+        re.findall(r"^    (\w+) : ", ParameterTransformer.__doc__, re.M)
+    )
+    signature = inspect.signature(ParameterTransformer.__init__).parameters
+    assert documented == set(signature) - {"self"}
 
 
 def test_init_copies_the_arrays_it_is_given():

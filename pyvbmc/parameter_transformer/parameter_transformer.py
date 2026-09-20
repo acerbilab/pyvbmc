@@ -42,7 +42,7 @@ class ParameterTransformer:
         A finite orthogonal matrix of shape ``(D, D)`` applied after the
         coordinate-wise transformation. Reflections are accepted. By default
         `None`.
-    bounded_transform_type : str, optional
+    transform_type : str, optional
         A string indicating the type of transform for bounded variables: one of
         ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
     """
