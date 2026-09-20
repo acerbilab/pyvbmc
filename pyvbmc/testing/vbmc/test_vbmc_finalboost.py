@@ -398,3 +398,70 @@ def test_guarded_boost_weight_regularization_is_zero(mocker):
     assert theta_bnd["weight_penalty"] == 0
     assert objective == 0
     assert np.array_equal(gradient, zero_gradient)
+
+
+class _TrainingInputs:
+    """Stands in for a GP of which the boost reads the training inputs."""
+
+    def __init__(self, X):
+        self.X = X
+
+
+def test_final_boost_with_fixed_means_keeps_them_at_the_training_inputs(
+    mocker,
+):
+    """With ``variable_means`` off the components sit at the training
+    inputs, one each, which is how the main loop builds such a posterior in
+    every iteration after warm-up; the boost cannot add components that
+    have no training input to sit at, whatever ``min_final_components``
+    asks for."""
+    D, n_train = 3, 7
+    vbmc = create_vbmc(
+        D,
+        3,
+        1,
+        5,
+        2,
+        4,
+        _boost_options(0.1, variable_means=False, min_final_components=50),
+    )
+    _set_pre_stats(vbmc)
+    assert vbmc.vp.K < n_train
+    X = np.linspace(2.0, 4.0, n_train * D).reshape((n_train, D))
+    _, captured, _ = _mock_candidate(mocker, vbmc, -9.9, 0.1)
+
+    vbmc.final_boost(vbmc.vp, _TrainingInputs(X))
+
+    n_fast_opts, n_slow_opts, K_new = captured["args"]
+    assert K_new == n_train
+    assert np.array_equal(captured["vp"].mu, X.T)
+    assert not np.shares_memory(captured["vp"].mu, X)
+    assert captured["vp"].optimize_mu is False
+    ns_elbo = vbmc.options.get("ns_elbo")
+    assert n_fast_opts == int(
+        np.ceil(np.ceil(ns_elbo) * vbmc.options.get("ns_elbo_incr"))
+    )
+
+
+def test_a_short_run_with_fixed_means_is_boosted():
+    """A run with ``variable_means`` off that ends with fewer components
+    than ``min_final_components`` goes through its final boost and returns
+    a posterior whose components are the training inputs."""
+    D = 2
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(np.atleast_2d(x) ** 2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"display": "off", "max_iter": 3, "variable_means": False},
+        seed=3,
+    )
+
+    vp, results = vbmc.optimize()
+
+    gp = vbmc.get_gp(results["best_iter"])
+    assert vp.K == gp.X.shape[0] < vbmc.options.get("min_final_components")
+    assert np.array_equal(vp.mu, gp.X.T)
+    assert np.isfinite(results["elbo"])

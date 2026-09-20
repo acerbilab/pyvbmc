@@ -2510,6 +2510,10 @@ class VBMC:
         switched off, on copies of the options and of the optimization
         state; neither the instance's options nor its optimization state
         is changed.
+
+        With ``variable_means`` off the components of the boosted posterior
+        sit at the training inputs of ``gp``, one each, and
+        ``min_final_components`` does not apply.
         """
 
         tol_elcbo_boost = self.options.get("tol_elcbo_boost")
@@ -2520,7 +2524,13 @@ class VBMC:
         vp = pre_vp
         changed_flag = False
 
-        K_new = max(vp.K, self.options.get("min_final_components"))
+        if self.options.get("variable_means"):
+            K_new = max(vp.K, self.options.get("min_final_components"))
+        else:
+            # Variational components fixed to training inputs: there are
+            # as many of them as the GP has training inputs, as in every
+            # iteration of the main loop after warm-up.
+            K_new = gp.X.shape[0]
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("ns_ent", {"K": K_new})
@@ -2549,7 +2559,7 @@ class VBMC:
 
         # Perform final boost?
         do_boost = (
-            vp.K < self.options.get("min_final_components")
+            vp.K < K_new
             or n_sent != n_sent_boost
             or n_sent_fine != n_sent_fine_boost
         )
@@ -2586,6 +2596,9 @@ class VBMC:
             optim_state["warmup"] = False
             vp.optimize_mu = options.get("variable_means")
             vp.optimize_weights = options.get("variable_weights")
+            if not vp.optimize_mu:
+                # Variational components fixed to training inputs
+                vp.mu = gp.X.T.copy()
 
             options.__setitem__("ns_ent", n_sent_boost, force=True)
             options.__setitem__("ns_ent_fast", n_sent_fast_boost, force=True)
