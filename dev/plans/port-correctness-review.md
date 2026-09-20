@@ -343,6 +343,11 @@ fix phase can be run from this file:
   `test_entmc_vbmc.py`, which call `check_grad` directly.
 - The focused tests of the changed module, and gpyreg's suite for a gpyreg
   fix.
+- The tests that need Torch or PyMC, in the environments that have them
+  (listed in the reviewer brief): the default environment skips them
+  without a word, and the branch smoke, which has Torch, does not. After
+  the wave-3 pass the smoke failed on an S-VBMC test that the local suite
+  had skipped.
 - A fix pass ends with its lines in `CHANGELOG.md` under `Unreleased`: what a
   user of the last release will notice, one sentence each, with what to do
   where a script may need it, and one line in the section's "Upgrading from"

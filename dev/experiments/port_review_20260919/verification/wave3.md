@@ -269,6 +269,15 @@ captured inputs and the portable references bit-identical (`c60834d`,
   `test_bounded_log_abs_det_jacobian_numerically` and
   `test_transform_bounded_and_unbounded` draw from the unseeded global
   generator. Not acted on.
+- The branch smoke failed on
+  `test_svbmc_filters.py::test_infinite_bounds_have_to_agree_too`, which
+  built a run bounded on one side in one variable, what W3-23 refuses, to
+  show that S-VBMC rejects runs whose infinite bounds disagree. The test
+  needs Torch, which the orchestrator's default environment lacks, so the
+  local suite had skipped it. The run of the test is bounded on both
+  sides in that variable, which shows the same, and the tests that need
+  Torch or PyMC were run in their environments: 739 passed and 107
+  passed. The plan's gate section lists them among the gates of a pass.
 - The commits of the fix agents carried a `Claude-Session:` trailer, which
   the PI does not want; it was removed from the unpushed commits of the
   pass, and `AGENTS.md` says so for every later session.
