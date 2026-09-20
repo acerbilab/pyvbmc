@@ -82,7 +82,13 @@ records its execution.
   the [review plan](plans/port-correctness-review.md) records the PI's
   decisions (gpyreg in scope, comparison against the latest MATLAB
   `master`, Opus reviewers, no MATLAB run unless a finding's disposition
-  depends on one), the slice map, the reviewer brief and the worklog.
+  depends on one), the slice map, the reviewer brief and the worklog. Status
+  on 2026-09-20: waves 0 to 2 (the subsystems without a MATLAB counterpart,
+  the MATLAB changes since the port, the P2 comparison, P6, P1a and P1b) are
+  reviewed, verified, ruled on and fixed, and merged into `dev-next`; several
+  of the fixes move default trajectories, so the golden references and the
+  production-reference pools describe the code from before them. P3, P4, P5,
+  P7, P8, P9, G1, G2, the internal track of P2 and the third readers remain.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
