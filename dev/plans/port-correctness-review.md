@@ -45,10 +45,11 @@ caching, and cross-module behavior.
   `optimize()` runs, installs, or anything else that competes for the one
   heavy-compute slot. After every wave the orchestrator checks all three
   repositories for leftover files and removes them.
-- A later MATLAB session on another machine runs a short, selected list of
-  fast checks. It is described in a self-contained plan file with scripts on
-  the fix branch, written so that another developer can run it from that
-  description alone.
+- No MATLAB check session is planned (2026-09-20; the design of
+  2026-09-19 had one). A MATLAB run is worth its cost only when its result
+  would change a decision. A session is written up, for another developer
+  to run, only if a finding is classified **needs MATLAB** and its
+  disposition depends on what MATLAB actually computes.
 - Confirmed findings are brought to the PI for triage before any fix is
   made. PyVBMC 1.5 takes only bug fixes and unequivocal improvements.
 - A fix may make an interface stricter (2026-09-20): a value that used to
@@ -283,8 +284,8 @@ classifies the finding as one of:
   which is then updated);
 - **listed as intentional, but the justification does not hold** (the
   sheet entry is withdrawn and the finding proceeds as a discrepancy);
-- **needs MATLAB** (only a MATLAB run can settle it; collected for the
-  session below);
+- **needs MATLAB** (only a MATLAB run can settle it; see "MATLAB runs"
+  below);
 - **not a defect** (the reviewer misread the code).
 
 Findings that two independent reviewers made carry that fact in the
@@ -338,22 +339,46 @@ the old ones preserved. The production-reference runs under way on
 `dev-production-reference` are provisional for the same reason; the final
 release gate regenerates the pools.
 
-## MATLAB check session
+## MATLAB runs
 
-Findings classified **needs MATLAB**, and a short list of high-value
-same-input comparisons chosen from the slices (the expected log joint, both
-entropies, the VIQR and IMIQR acquisition values, the transformer's
-log-abs-det Jacobian, the GP marginal likelihood and its gradient), are
-settled by running both implementations on identical inputs. The plan for
-that session lives on the fix branch as
+The review runs no MATLAB (PI, 2026-09-20). Through wave 2 no verified
+finding needed a MATLAB run for its disposition: reading both sources and
+running the Python side settled every one. The four candidates collected
+up to then would not have changed a decision: the duplicate GP training
+row of MATLAB's rank-one path on a noiseless repeat and the population
+call of MATLAB's search concern behavior PyVBMC has already been ruled to
+keep as it is; `recompute_lcbmax` is ported whatever a run shows, and a
+GP prediction followed by a cumulative maximum is testable against its
+specification in Python; what MATLAB does on the empty warm-up window
+changes a classification, not the fix.
+
+Same-input comparisons of the core formulas are covered otherwise. The
+test suite already pins, against stored MATLAB outputs, both entropies
+with their gradients, the gradient of the expected log joint, the
+variational posterior's functions, the fractional effective sample size
+and the importance-sampling weights of VIQR and IMIQR
+(`pyvbmc/testing/**/FIXTURES.md`). The acquisition values, the
+transformer's log-abs-det Jacobian and gpyreg's marginal likelihood and
+prediction are not pinned against MATLAB; for them the review relies on
+the finite-difference gradient checks, on the comparison reviewers'
+line-by-line reading (a Python transcription of the MATLAB function,
+compared with the port on the same inputs, is the tool of choice), and on
+the third readers of the O slices, who re-derive each formula.
+
+If a later finding can only be settled by a MATLAB run and its disposition
+depends on the outcome, the session is written up then, as
 `dev/plans/port-review-matlab-checks.md` with scripts under
 `dev/scripts/matlab_checks/`: a Python side that dumps states to `.mat`
 files with `scipy.io.savemat`, a MATLAB side that loads them and calls the
-counterpart functions, and a comparison step with stated tolerances. The
-`.m` scripts beside the fixtures in
+counterpart functions, and a comparison step with stated tolerances, so
+that a developer with MATLAB and the `../vbmc` checkout at `396d649` can
+run it from the file alone. The `.m` scripts beside the fixtures in
 `pyvbmc/testing/vbmc/compare_MATLAB/` are the existing instance of this
-pattern. The plan is written so that a developer with MATLAB and the
-`../vbmc` checkout at `396d649` can run it from the file alone.
+pattern.
+
+Defects that the review finds on the MATLAB side are collected in
+`experiments/port_review_20260919/matlab_side_defects.md`, from a reading
+of the MATLAB source, as material for the MATLAB VBMC repository.
 
 ## Working rules
 
@@ -389,8 +414,8 @@ pattern. The plan is written so that a developer with MATLAB and the
   orchestrator.
 - All of the review's work happens on the branch `dev-port-review`, cut
   from `dev-next` at `f91fdf0`: this plan's worklog, the files under
-  `experiments/port_review_20260919/`, the ledger, the fixes and the
-  MATLAB check session plan. It merges into `dev-next` when the fixes have
+  `experiments/port_review_20260919/`, the ledger and the fixes. It
+  merges into `dev-next` when the fixes have
   passed their gates. Only the `TODO.md` status line is updated on
   `dev-next` directly.
 
@@ -647,13 +672,7 @@ pattern. The plan is written so that a developer with MATLAB and the
   `misc/setupvars_vbmc.m`, the note in `verification/wave1_P6.md` on the
   warp branch, and `AGENTS.md` where a fix changes what it describes.
   Still open from wave 1: the golden references are regenerated once
-  after the review's remaining trajectory-moving fixes; the MATLAB check
-  session plan and scripts (`dev/plans/port-review-matlab-checks.md`,
-  `dev/scripts/matlab_checks/`) are not written yet, with four candidates
-  so far (the duplicate GP training row of MATLAB's rank-one path on a
-  noiseless repeat, P2 F8; the `EvalParallel` population call of MATLAB's
-  search; a same-input comparison of the ported `recompute_lcbmax`; what
-  MATLAB does on the empty warm-up window of W2-14); the final ledger
+  after the review's remaining trajectory-moving fixes; the final ledger
   (`dev/results/<date>-port-correctness-review.md`) and the consolidation
   of the sheet's durable entries into `pyvbmc/vbmc/README.md` come at the
   end.
@@ -664,6 +683,7 @@ pattern. The plan is written so that a developer with MATLAB and the
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
-- [ ] Fixes on `dev-port-review` with gates; MATLAB check session plan and
-  scripts written on that branch; durable sheet entries consolidated into
-  the porting log.
+- [ ] Fixes on `dev-port-review` with gates; durable sheet entries
+  consolidated into the porting log; the list of MATLAB-side defects
+  (`experiments/port_review_20260919/matlab_side_defects.md`) brought up
+  to date.

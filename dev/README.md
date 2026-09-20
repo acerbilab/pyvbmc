@@ -123,8 +123,9 @@ plan and consolidated human summary.
   independent correctness review of PyVBMC and gpyreg before the release
   freeze: internal-correctness and MATLAB-comparison tracks per slice,
   third readers on the gradient and integral formulas, the reviewer
-  brief, verification into a findings ledger, and the later MATLAB check
-  session, against the latest MATLAB `master`.
+  brief and verification into a findings ledger, against the latest
+  MATLAB `master`; MATLAB itself is run only if a finding's disposition
+  depends on it.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local

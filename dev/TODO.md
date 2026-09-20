@@ -81,8 +81,8 @@ records its execution.
   can start before the other release work is complete. Started 2026-09-19;
   the [review plan](plans/port-correctness-review.md) records the PI's
   decisions (gpyreg in scope, comparison against the latest MATLAB
-  `master`, Opus reviewers, a later MATLAB check session described for
-  another developer), the slice map, the reviewer brief and the worklog.
+  `master`, Opus reviewers, no MATLAB run unless a finding's disposition
+  depends on one), the slice map, the reviewer brief and the worklog.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
