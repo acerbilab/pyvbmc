@@ -2497,9 +2497,9 @@ class VBMC:
         -------
         vp : VariationalPosterior
             The VariationalPosterior resulting from the final boost.
-        elbo : VariationalPosterior
+        elbo : float
             The ELBO of the VariationalPosterior resulting from the final boost.
-        elbo_sd : VariationalPosterior
+        elbo_sd : float
             The ELBO_SD of the VariationalPosterior resulting from the
             final boost.
         changed_flag : bool
