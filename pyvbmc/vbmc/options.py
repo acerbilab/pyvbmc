@@ -46,6 +46,51 @@ INERT_OPTIONS = frozenset(
 )
 
 
+# How the uncertainty_handling option may be written, named in the error
+# raised for any other value.
+_UNCERTAINTY_HANDLING_FORMS = (
+    "True or False (the integers 1 and 0 and their NumPy equivalents are "
+    "also accepted), or an empty value ([], an empty array or None) to "
+    "leave the choice to specify_target_noise"
+)
+
+
+def _uncertainty_handling_flag(value):
+    """
+    Read the ``uncertainty_handling`` option as a boolean.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    flag : bool or None
+        `True` or `False` when the value states the choice, and `None` when
+        the option is empty, which leaves the choice to
+        ``specify_target_noise``.
+
+    Raises
+    ------
+    ValueError
+        When the value is neither a boolean nor empty.
+    """
+    if value is None:
+        return None
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
+        return bool(value)
+    if isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0:
+        return None
+    raise ValueError(
+        "The option uncertainty_handling must be "
+        + _UNCERTAINTY_HANDLING_FORMS
+        + f"; got {value!r}."
+    )
+
+
 class Options(MutableMapping, dict):
     """
     This class is responsible for Options.
@@ -96,6 +141,40 @@ class Options(MutableMapping, dict):
         if user_options is not None:
             self.update(user_options)
             self["useroptions"].update(user_options.keys())
+
+    def uncertainty_handling_on(self):
+        """
+        Whether the run treats the target log-density as noisy.
+
+        It does when the target returns its own noise estimate
+        (``specify_target_noise``) or when ``uncertainty_handling`` asks for
+        the noise level to be inferred.
+
+        Returns
+        -------
+        on : bool
+            Whether uncertainty handling is on.
+
+        Raises
+        ------
+        ValueError
+            When ``uncertainty_handling`` holds a value that is neither a
+            boolean nor empty, or when it is off while
+            ``specify_target_noise`` is set.
+        """
+        requested = _uncertainty_handling_flag(
+            self.get("uncertainty_handling")
+        )
+        if self.get("specify_target_noise"):
+            if requested is False:
+                raise ValueError(
+                    "A target that returns its own noise estimate is a "
+                    "noisy target: with specify_target_noise set, "
+                    "uncertainty_handling cannot be turned off. Leave it "
+                    "empty or set it to True."
+                )
+            return True
+        return bool(requested)
 
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""

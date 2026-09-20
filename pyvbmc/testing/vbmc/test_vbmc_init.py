@@ -471,7 +471,7 @@ def test_vbmc_optimstate_gp_functions():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     # uncertainty_handling_level 1
     assert vbmc.optim_state["gp_noise_fun"] == [1, 1, 0]
-    options = {"specify_target_noise": False, "uncertainty_handling": [3]}
+    options = {"specify_target_noise": False, "uncertainty_handling": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["gp_noise_fun"] == [1, 2, 0]
     # uncertainty_handling_level 0
@@ -605,12 +605,61 @@ def test_vbmc_optimstate_uncertainty_handling_level():
     options = {"specify_target_noise": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 2
-    options = {"specify_target_noise": False, "uncertainty_handling": [3]}
+    options = {"specify_target_noise": False, "uncertainty_handling": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 1
     options = {"specify_target_noise": False, "uncertainty_handling": []}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize("value", [True, 1, np.True_, np.int64(1)])
+def test_uncertainty_handling_true_infers_the_noise_level(value):
+    """``uncertainty_handling`` is a boolean, as ``options.UncertaintyHandling``
+    is in MATLAB VBMC (``misc/setupvars_vbmc.m:232``), and a target whose
+    noise level VBMC infers is handled at level 1."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 1
+
+
+@pytest.mark.parametrize(
+    "value", [False, 0, np.False_, np.int64(0), [], (), np.array([]), None]
+)
+def test_uncertainty_handling_off_or_unset_gives_a_noiseless_run(value):
+    """False turns the noise handling off and an empty value leaves the
+    choice to ``specify_target_noise``, which is off here."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize(
+    "value", ["yes", "no", "off", [0], [1], [2], [3], np.array([1, 0]), 2]
+)
+def test_uncertainty_handling_rejects_other_values(value):
+    """A value that is neither a boolean nor empty is refused, and the
+    message names what may be written instead."""
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, {"uncertainty_handling": value})
+    message = execinfo.value.args[0]
+    assert "uncertainty_handling" in message
+    assert "True or False" in message
+
+
+def test_uncertainty_handling_off_with_specify_target_noise_raises():
+    """``misc/setupoptions_vbmc.m:135-137`` refuses a target that supplies
+    its own noise estimate while the noise handling is turned off."""
+    options = {"specify_target_noise": True, "uncertainty_handling": False}
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert "specify_target_noise" in execinfo.value.args[0]
+
+
+def test_uncertainty_handling_true_with_specify_target_noise_is_level_2():
+    """Both set is the one combination MATLAB accepts, and the target's own
+    noise estimate wins."""
+    options = {"specify_target_noise": True, "uncertainty_handling": True}
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert vbmc.optim_state["uncertainty_handling_level"] == 2
 
 
 def test_vbmc_optimstate_acq_hedge():
@@ -1186,7 +1235,7 @@ def test_init_options_path():
         assert vbmc.options["tol_stable_count"] == 42  # overridden
         # Keys from advanced config
         assert vbmc.options["sgd_step_size"] == 0.005  # same as before
-        assert vbmc.options["uncertainty_handling"] == "zip"  # overridden
+        assert vbmc.options["uncertainty_handling"] is True  # overridden
 
 
 def test__str__and__repr__():
@@ -1318,7 +1367,7 @@ def test_vectorized_unknown_noise_prior_returns_values_only():
     vbmc = _vectorized_vbmc(
         lambda x: np.sum(x, axis=1),
         prior=prior,
-        options={"uncertainty_handling": [1]},
+        options={"uncertainty_handling": True},
     )
     points = np.array([[0.25, -0.5], [0.75, 0.5]])
 

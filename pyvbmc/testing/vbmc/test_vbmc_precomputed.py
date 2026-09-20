@@ -120,7 +120,7 @@ def test_precomputed_values_receive_separate_prior_once():
             "require.*specify_target_noise",
         ),
         (
-            {"uncertainty_handling": [1]},
+            {"uncertainty_handling": True},
             (np.array([[0.0]]), np.array([0.0]), np.array([0.5])),
             "require.*specify_target_noise",
         ),
@@ -149,7 +149,7 @@ def test_precomputed_noisy_repeats_pool_without_corrupting_original_values(
         expected_sd = 1 / np.sqrt(1 + 1 / 4)
     else:
         evaluations = (X, y)
-        options = {"uncertainty_handling": [1]}
+        options = {"uncertainty_handling": True}
         expected_y = 0.5
         expected_sd = 1 / np.sqrt(2)
 

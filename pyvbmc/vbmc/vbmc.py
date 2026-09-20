@@ -1017,12 +1017,12 @@ class VBMC:
 
         # Set uncertainty handling level
         # (0: none; 1: unknown noise level; 2: user-provided noise)
-        if self.options.get("specify_target_noise"):
-            optim_state["uncertainty_handling_level"] = 2
-        elif len(self.options.get("uncertainty_handling")) > 0:
-            optim_state["uncertainty_handling_level"] = 1
-        else:
+        if not self.options.uncertainty_handling_on():
             optim_state["uncertainty_handling_level"] = 0
+        elif self.options.get("specify_target_noise"):
+            optim_state["uncertainty_handling_level"] = 2
+        else:
+            optim_state["uncertainty_handling_level"] = 1
 
         # Empty hedge struct for acquisition functions
         if self.options.get("acq_hedge"):
