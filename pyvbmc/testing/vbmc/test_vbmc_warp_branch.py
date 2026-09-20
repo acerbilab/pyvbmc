@@ -4,7 +4,10 @@ The branch warps the inference space, refits the Gaussian process and the
 variational posterior there, and keeps the warp only if the ELBO improves.
 It is reached through the loop, so the checks below drive one short seeded
 run whose options bring a warp forward: no warm-up, variational components
-fixed to the training inputs, and a cheap sieve.
+fixed to the training inputs, and a cheap sieve. What the checks rely on, a
+warp and an incoming posterior with fewer components than the training set,
+follows from the options and not from the course the seeded run happens to
+take, which differs between platforms.
 """
 
 import math
@@ -29,8 +32,17 @@ def warped_run():
         "variable_means": False,
         "ns_elbo": lambda K: 2 * K,
         # Pruning keeps the posterior's component count below the size of
-        # the training set the refit fixes its components to.
+        # the training set the refit fixes its components to: every
+        # component lighter than a fifth goes, whatever the ELBO loses, and
+        # a training set of ten points or more cannot give each of its
+        # components a fifth of the weight.
         "tol_weight": 0.2,
+        "pruning_threshold_multiplier": lambda K: 1e9,
+        # The warp comes at the first iteration that allows one, however
+        # few components the posterior keeps and whatever its reliability
+        # index.
+        "warp_min_k": 1,
+        "warp_tol_reliability": np.inf,
         # Components fixed to the training inputs cannot be boosted to a
         # larger count afterwards.
         "do_final_boost": False,
