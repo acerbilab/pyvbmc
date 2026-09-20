@@ -860,6 +860,25 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   1.5 are left to those features' entries. The features of 1.5 (601 commits
   since `v1.0.4`) are to be backfilled from `dev/results/`, `dev/plans/`
   and the log, on the PI's word.
+- [ ] Pickup point (2026-09-20). By the PI's decision two things come
+  before the next wave, and then wave 3 is settled. First the changelog
+  (`dev/TODO.md` has the item): `CHANGELOG.md` lists what the first three
+  waves changed for a user of 1.0.4, each claim checked against `v1.0.4`,
+  but the PI found its prose poor, so a session that did not see the fix
+  pass rewrites it for that user, keeping the facts, and then adds the
+  features of 1.5. The file and the rule in `AGENTS.md` that goes with it
+  are on `dev-port-review` alone; `dev-next` lacks the documentation commits
+  made after the merge, and whether to fast-forward it is the PI's call.
+  Then wave 3: slices P8 and P5, both tracks, four Opus reviewers.
+
+  Two open items ride on P8. Its verification checks whether the reviewers
+  found, unprompted, that the warp re-transforms only the active rows of
+  the function logger (B-M11 of `verification/wave2.md`). And the wave-0
+  question of the transformer's loss of precision near a nonzero bound
+  waits for P8 and O3 to say whether MATLAB shares it. For the waves after
+  the third the orchestrator proposed, and the PI has not yet ruled on, P3
+  with P4, then P7 with P9 and the internal track of P2, then G1 with G2,
+  then O1 to O4.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);

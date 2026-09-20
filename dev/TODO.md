@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-19. These lists describe scope, not priority or execution
+Updated 2026-09-20. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -8,6 +8,20 @@ Completed 1.5 work is not listed here: the
 records its execution.
 
 ## In scope for 1.5
+
+- [ ] **Changelog for 1.5.** `CHANGELOG.md` (root, Keep a Changelog layout)
+  was started on 2026-09-20 with what the first three waves of the port review
+  changed for a user of 1.0.4; every claim in it was checked against the
+  `v1.0.4` tag. Two steps remain. Rewrite its prose for that user: the facts
+  stand, the wording was judged poor by the PI and is best redone by someone
+  who was not part of the work it describes. Then add the features of 1.5,
+  which no entry covers yet (601 commits since `v1.0.4`; the sources are
+  `dev/results/`, `dev/plans/`, the [roadmap](plans/modernization-roadmap.md)
+  and the log), each line checked against the code, and take out the sentence
+  of the unreleased section that says the list is incomplete. A fix to a
+  feature that is itself new in 1.5 belongs to that feature's entry. From here
+  on a user-visible change is listed with the work that makes it
+  (`AGENTS.md`).
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
