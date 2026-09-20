@@ -498,6 +498,28 @@ def test_check_warmup_end_conditions_with_a_window_of_one_iteration():
     assert vbmc._check_warmup_end_conditions()
 
 
+def test_warmup_recent_improvement_window_is_the_stability_length():
+    """The improvement in the maximum function value is measured over the
+    last ``ceil(tol_stable_warmup / fun_evals_per_iter)`` iterations against
+    all the ones before them (MATLAB VBMC, ``private/vbmc_warmup.m:60-63``,
+    in 1-based indices: ``RecentPast = iter-ceil(...)+1`` and
+    ``idx_last(max(2,RecentPast):end) = true``). With the settings below
+    that window is the last three of the seven recorded iterations, so a
+    jump in the maximum at the fourth-from-last iteration counts as past
+    improvement and one at the third-from-last as recent."""
+    options = {"tol_stable_warmup": 15, "fun_evals_per_iter": 5}
+    before_the_window = [0.0, 0.0, 0.0, 10.0, 0.0, 0.0, 0.0]
+    inside_the_window = [0.0, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0]
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=6, lcb_max=before_the_window)
+    assert vbmc._check_warmup_end_conditions()
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=6, lcb_max=inside_the_window)
+    assert not vbmc._check_warmup_end_conditions()
+
+
 def test_check_warmup_end_conditions_false():
     """
     no_recent_trim_flag is False

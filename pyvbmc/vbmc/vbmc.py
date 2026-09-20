@@ -1959,13 +1959,9 @@ class VBMC:
         # in recent iters (unless already performing BO-like warmup)
         if self.options.get("warmup_check_max"):
             idx_last = np.full(lcb_max_vec.shape, False)
-            recent_past = iteration - int(
-                math.ceil(
-                    self.options.get("tol_stable_warmup")
-                    / self.options.get("fun_evals_per_iter")
-                )
-                + 1
-            )
+            # The recent iterations are the last `tol_stable_warmup_iters`
+            # of the history, the current one included.
+            recent_past = iteration + 1 - tol_stable_warmup_iters
             idx_last[max(1, recent_past) :] = True
             impro_fcn = max(
                 0,
