@@ -2893,11 +2893,18 @@ class VBMC:
 
         .. note::
 
-          Complex attributes of a VBMC instance (such as the stored
-          ``log_joint`` callable) may not behave correctly if they have been
-          saved and loaded by different minor versions of Python, due to
-          differing dependency versions. Basic (static) data should remain
-          legible across versions.
+          A saved instance holds the target function, and the function that
+          PyVBMC builds from the target and a separate prior, as Python
+          bytecode whenever they cannot be pickled by name (a lambda, a
+          function defined in a script or inside another function). Bytecode
+          belongs to the minor version of Python that wrote the file. Under
+          another minor version the file can be loaded and inspected (the
+          variational posterior, the iteration history and the evaluated
+          points are data), but the run should not be continued or saved
+          again there: both reach that bytecode, which can end the
+          interpreter. To move a result between Python versions, save the
+          variational posterior on its own (``vp.save``); its file holds no
+          bytecode.
 
         Parameters
         ----------
@@ -2934,11 +2941,18 @@ class VBMC:
 
         .. note::
 
-          Complex attributes of a VBMC instance (such as the stored
-          ``log_joint`` callable) may not behave correctly if they have been
-          saved and loaded by different minor versions of Python, due to
-          differing dependency versions. Basic (static) data should remain
-          legible across versions.
+          A saved instance holds the target function, and the function that
+          PyVBMC builds from the target and a separate prior, as Python
+          bytecode whenever they cannot be pickled by name (a lambda, a
+          function defined in a script or inside another function). Bytecode
+          belongs to the minor version of Python that wrote the file. Under
+          another minor version the file can be loaded and inspected (the
+          variational posterior, the iteration history and the evaluated
+          points are data), but the run should not be continued or saved
+          again there: both reach that bytecode, which can end the
+          interpreter. To move a result between Python versions, save the
+          variational posterior on its own (``vp.save``); its file holds no
+          bytecode.
 
         Parameters
         ----------
