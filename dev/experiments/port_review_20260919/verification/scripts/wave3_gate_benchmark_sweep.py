@@ -15,7 +15,8 @@ symmetrized KL divergence and the mean marginal total variation distance.
 Run it once per code state, from the root of the main checkout, with
 PYTHONPATH naming the checkout under test, and compare the tables.
 
-Usage: python -u wave3_phase2_benchmark_sweep.py LABEL N_SEEDS [LABEL N_SEEDS ...]
+Usage: python -u wave3_gate_benchmark_sweep.py LABEL SEEDS [LABEL SEEDS ...]
+where SEEDS is a count (seeds 1 to that number) or a range such as 2:4.
 Run with OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1.
 """
 
@@ -47,7 +48,12 @@ print(
 pairs = sys.argv[1:]
 for label, n_seeds in zip(pairs[0::2], pairs[1::2]):
     rows = []
-    for seed in range(1, int(n_seeds) + 1):
+    first, last = (
+        (int(v) for v in n_seeds.split(":"))
+        if ":" in n_seeds
+        else (1, int(n_seeds))
+    )
+    for seed in range(first, last + 1):
         cfg = find_config(label)
         prob = cfg.make(seed=seed)
         args, options = prob.vbmc_args()
