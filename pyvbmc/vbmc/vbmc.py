@@ -1832,7 +1832,6 @@ class VBMC:
         # it comes from an earlier iteration or the boost changes it.
         new_final_vp_flag = idx_best != self.iteration
 
-        changed_flag = False
         if self.options.get("do_final_boost"):
             # Last variational optimization with large number of components
             self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
@@ -1842,19 +1841,15 @@ class VBMC:
 
         if new_final_vp_flag:
             # Recompute symmetrized KL-divergence, for the display alone.
-            # Its samples come from the run's generator when the boost
-            # changed the posterior, and from a copy of that generator
-            # otherwise: reporting a posterior taken from an earlier
-            # iteration leaves the run's random stream where the loop left
-            # it, so that a run stopped without a boost continues as an
-            # uninterrupted one would.
-            vp_returned, vp_reference = self.vp, vp_at_end_of_loop
-            if not changed_flag:
-                display_rng = copy.deepcopy(self.vp.rng)
-                vp_returned = copy.deepcopy(self.vp)
-                vp_returned.rng = display_rng
-                vp_reference = copy.deepcopy(vp_at_end_of_loop)
-                vp_reference.rng = display_rng
+            # Its samples come from a copy of the run's generator, so that
+            # the display leaves the run's random stream where the
+            # inference left it: a run stopped without a boost continues
+            # as an uninterrupted one would.
+            display_rng = copy.deepcopy(self.vp.rng)
+            vp_returned = copy.deepcopy(self.vp)
+            vp_returned.rng = display_rng
+            vp_reference = copy.deepcopy(vp_at_end_of_loop)
+            vp_reference.rng = display_rng
             sKL = max(
                 0,
                 0.5

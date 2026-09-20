@@ -141,3 +141,25 @@ def test_the_closing_line_leaves_the_random_stream_of_an_unboosted_run():
         states.append(vbmc.rng.bit_generator.state)
 
     assert states[0] == states[1]
+
+
+def test_the_closing_line_leaves_the_random_stream_of_a_boosted_run():
+    """When the final boost changes the posterior, the closing line reports
+    the divergence of the boosted posterior, estimated from samples. They
+    do not come out of the run's generator, which stays where the boost
+    left it."""
+    vbmc = build_short({"max_iter": 2, "min_iter": 2, "max_fun_evals": 60})
+    unwired = VBMC.final_boost
+    after_the_boost = {}
+
+    def boost_and_note_the_stream(self, vp, gp):
+        result = unwired(self, vp, gp)
+        after_the_boost["changed"] = result[3]
+        after_the_boost["state"] = self.rng.bit_generator.state
+        return result
+
+    vbmc.final_boost = boost_and_note_the_stream.__get__(vbmc, VBMC)
+    vbmc.optimize()
+
+    assert after_the_boost["changed"]
+    assert vbmc.rng.bit_generator.state == after_the_boost["state"]
