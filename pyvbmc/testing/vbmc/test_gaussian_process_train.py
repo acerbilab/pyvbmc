@@ -540,8 +540,8 @@ def test_gp_hyp():
         vbmc.function_logger,
         vbmc.iteration_history,
         vbmc.options,
-        vbmc.plausible_lower_bounds,
-        vbmc.plausible_upper_bounds,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
     )
     priors = gp.get_priors()
     assert priors["noise_log_scale"][1][0] == np.log(
