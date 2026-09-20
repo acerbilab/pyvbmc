@@ -1168,10 +1168,11 @@ class VBMC:
             self.optim_state = copy.deepcopy(
                 self.iteration_history["optim_state"][-1]
             )
+            # The restored record carries the evaluation budget of the run
+            # that finished, and the schedules of the algorithm read it from
+            # there: it describes the budget this call has.
+            self.optim_state["max_fun_evals"] = self._effective_max_fun_evals
             if self._budget_active:
-                self.optim_state[
-                    "max_fun_evals"
-                ] = self._effective_max_fun_evals
                 self.optim_state[
                     "max_fun_evals_total"
                 ] = self._configured_max_fun_evals
@@ -2982,14 +2983,17 @@ class VBMC:
         vbmc._effective_max_fun_evals = (
             vbmc._configured_max_fun_evals - vbmc.initialization_cost
         )
+        if vbmc._budget_active and vbmc._effective_max_fun_evals <= 0:
+            raise ValueError(
+                "The function-equivalent budget is exhausted by "
+                "initialization_cost; options['max_fun_evals'] must be "
+                "larger than initialization_cost."
+            )
+        # The evaluation budget of the run also lives in `optim_state`, where
+        # the schedules of the algorithm read it. It describes the budget of
+        # the continued run, not the one the file was saved with.
+        vbmc.optim_state["max_fun_evals"] = vbmc._effective_max_fun_evals
         if vbmc._budget_active:
-            if vbmc._effective_max_fun_evals <= 0:
-                raise ValueError(
-                    "The function-equivalent budget is exhausted by "
-                    "initialization_cost; options['max_fun_evals'] must be "
-                    "larger than initialization_cost."
-                )
-            vbmc.optim_state["max_fun_evals"] = vbmc._effective_max_fun_evals
             vbmc.optim_state[
                 "max_fun_evals_total"
             ] = vbmc._configured_max_fun_evals
