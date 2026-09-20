@@ -31,6 +31,33 @@
   "problem": "rosenbrock",
   "problem_seed": 0,
   "python": "3.12.6",
+  "rebaselined": [
+   {
+    "date": "2026-09-20 20:30:00",
+    "git": {
+     "dirty": false,
+     "sha": "c60834d9"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 65.14740594577322,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 84.46755695276157,
+     "fit/hyp_dict_hyp": 65.14740594577322,
+     "fit/hyp_dict_logp": 0.0,
+     "fit/hyp_dict_run_cov": 212.63273340680882,
+     "fit/prediction_mean": 0.18165784765607218,
+     "fit/prediction_variance": 0.03925093501356025,
+     "fit/sn2_hpd": 2.314548606952016e-05,
+     "sampler_widths/effective_widths": 8.44533024901644,
+     "sampler_widths/widths_default": 8.44533024901644
+    },
+    "reason": "Port review, wave 3 (PI, 2026-09-20): _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation, as MATLAB leaves them unset (W3-5, W3-7), so the design of 814 points that this fit draws, and the point its chain starts from, change; its history of three GPs gives the same window as before, and the two other captures, whose fits draw no design, replay bit for bit",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
+   }
+  ],
   "role": "noisy_nonuniform_weights",
   "seed": 0,
   "sources": {
