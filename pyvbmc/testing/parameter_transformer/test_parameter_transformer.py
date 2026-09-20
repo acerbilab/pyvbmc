@@ -242,6 +242,29 @@ def test_init_rotation_matrix_validation():
             ParameterTransformer(D=D, rotation_matrix=rotation_matrix)
 
 
+def test_init_scale_validation():
+    """The transform divides by ``scale`` and its log-Jacobian adds
+    ``log(scale)``, so a scale must have one finite positive entry per
+    dimension."""
+    scale = np.array([0.5, 1.0, 2.0])
+    transformer = ParameterTransformer(D=D, scale=scale)
+    assert np.array_equal(transformer.scale, scale)
+
+    invalid_scales = [
+        np.ones(D - 1),
+        np.ones((1, D)),
+        np.array([1.0, 1.0, np.inf]),
+        np.array([1.0, 1.0, np.nan]),
+        np.array([1.0, 1.0, 0.0]),
+        np.array([1.0, 1.0, -2.0]),
+        np.ones(D, dtype=complex),
+    ]
+    for invalid in invalid_scales:
+        with pytest.raises(ValueError) as e_info:
+            ParameterTransformer(D=D, scale=invalid)
+        assert "`scale`" in e_info.value.args[0]
+
+
 def test_equality_handles_optional_arrays_and_shapes():
     first = ParameterTransformer(D=D)
     second = ParameterTransformer(D=D)

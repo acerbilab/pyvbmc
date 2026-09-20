@@ -36,7 +36,8 @@ class ParameterTransformer:
         for each parameter, given in the original space. By default `None`.
     scale : np.ndarray, optional
         Per-coordinate scale applied after transforming and rotating the
-        parameters. By default `None`.
+        parameters, of shape ``(D,)`` and finite and positive throughout.
+        By default `None`.
     rotation_matrix : np.ndarray, optional
         A finite orthogonal matrix of shape ``(D, D)`` applied after the
         coordinate-wise transformation. Reflections are accepted. By default
@@ -77,6 +78,17 @@ class ParameterTransformer:
                 atol=orthogonality_tolerance,
             ):
                 raise ValueError("`rotation_matrix` must be orthogonal.")
+
+        if scale is not None:
+            scale = np.asarray(scale)
+            if scale.shape != (D,):
+                raise ValueError(f"`scale` must have shape ({D},).")
+            if not np.isrealobj(scale):
+                raise ValueError("`scale` must be real-valued.")
+            if not np.all(np.isfinite(scale)):
+                raise ValueError("`scale` must contain finite values.")
+            if not np.all(scale > 0):
+                raise ValueError("`scale` must contain positive values.")
 
         self.scale = scale
         self.R_mat = rotation_matrix
