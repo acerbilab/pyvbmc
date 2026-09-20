@@ -20,6 +20,8 @@ outputs as the reference next to the state. Fixtures land in
     python dev/scripts/make_oracle_fixtures.py --check --exact --against DIR
     python dev/scripts/make_oracle_fixtures.py --capture-gp-fit-history
     python dev/scripts/make_oracle_fixtures.py --check-gp-fit-history --exact
+    python dev/scripts/make_oracle_fixtures.py --rebaseline-gp-fit-history \
+        noisy_nonuniform_weights --reason "..."   # one capture's fit outputs
 
 Regenerating **replaces the references**: do it only when the current code
 is the one the references should pin (a fresh baseline), never to make a
@@ -43,6 +45,11 @@ The authentic GP-history capture mode runs only until it has observed an
 early sampled fit, a later fit whose stored sample counts differ, and a noisy
 fit with unequal history weights. It writes a separate additive subdirectory,
 refuses to replace an existing capture, and hash-checks the legacy fixtures.
+When a deliberate change of the fit moves a capture,
+``--rebaseline-gp-fit-history`` replays it on its stored inputs and replaces
+the platform-bound references of that capture alone (the outputs of the fit
+and the sampler widths); the captured inputs and the portable references stay
+bit-identical.
 """
 
 import argparse
@@ -982,6 +989,109 @@ def rebaseline(names, oracle_name, reason, expect_moving=()):
     return len(pending)
 
 
+def rebaseline_gp_fit_history(name, reason):
+    """Replay one authentic GP-history capture on its stored inputs and
+    replace its platform-bound references: the outputs of the fit and the
+    widths its sampler worked with.
+
+    The counterpart of :func:`rebaseline` for the captures. The capture
+    mode refuses to write a capture again, and rightly: a new one would
+    come from a run whose trajectory has moved, and would stop pinning the
+    inputs the old one holds. This mode keeps the captured inputs and the
+    portable references, which the current code must reproduce exactly,
+    bit-identical (asserted after the write), hash-checks the top-level
+    fixtures, checks the other captures, and records the event under
+    ``meta["rebaselined"]``.
+    """
+    if name not in snapshot_names(GP_HISTORY_FIXTURES):
+        sys.exit(f"no GP-history capture named {name!r}")
+    path = GP_HISTORY_FIXTURES / name
+    npz, js = _files(path)
+    tree = json.loads(js.read_text(encoding="utf-8"))
+    with np.load(npz, allow_pickle=False) as z:
+        arrays = {k: z[k] for k in z.files}
+    snap = load_snapshot(path)
+    if not same_platform(snap):
+        sys.exit(
+            f"{name}: the fit is platform-bound and this is not the"
+            f" generating platform ({snap['meta'].get('platform')})"
+        )
+    portable = portable_outputs(
+        snap["pre"], snap["meta"]["hyp_n"], snap["meta"]["gp_s_N"]
+    )
+    if not _arrays_close(snap["ref"]["portable"], portable, exact=True):
+        sys.exit(
+            f"{name}: the portable references do not reproduce; this mode"
+            " replaces the platform-bound ones alone"
+        )
+    fit, observation = replay_gp_fit_history(snap)
+    new = {
+        "fit": fit,
+        "sampler_widths": {
+            "effective_widths": observation["effective_widths"],
+            "widths_default": observation["widths_default"],
+        },
+    }
+    # Check everything before writing anything.
+    changes = {}
+    for group, out in new.items():
+        old = snap["ref"][group]
+        if set(out) != set(old):
+            sys.exit(
+                f"{name}: {group} outputs {sorted(out)} but the reference"
+                f" holds {sorted(old)}"
+            )
+        for key, val in out.items():
+            if np.shape(val) != np.shape(old[key]):
+                sys.exit(
+                    f"{name}: {group}/{key} changed shape"
+                    f" {np.shape(old[key])} -> {np.shape(val)}"
+                )
+            if f"capture/ref/{group}/{key}" not in arrays:
+                sys.exit(f"{name}: no stored array for {group}/{key}")
+            diff = np.max(
+                np.abs(np.asarray(val, float) - np.asarray(old[key], float))
+            )
+            changes[f"{group}/{key}"] = (
+                float(diff) if np.isfinite(diff) else repr(float(diff))
+            )
+            print(f"  [{name}] {group}/{key:22s} max|d| {diff:.3e}")
+    before = {k: v.copy() for k, v in arrays.items()}
+    top_level = _top_level_fixture_hashes()
+    replaced = set()
+    for group, out in new.items():
+        for key, val in out.items():
+            k = f"capture/ref/{group}/{key}"
+            arrays[k] = np.asarray(val, dtype=float)
+            replaced.add(k)
+    tree["meta"].setdefault("rebaselined", []).append(
+        {
+            "references": ["fit", "sampler_widths"],
+            "date": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "git": git_info(),
+            "reason": reason,
+            "max_abs_change": changes,
+        }
+    )
+    _write_fixture(path, arrays, tree)
+    with np.load(npz, allow_pickle=False) as z:
+        after = {k: z[k] for k in z.files}
+    assert set(after) == set(before), name
+    for k in before:
+        if k not in replaced:
+            assert np.array_equal(before[k], after[k], equal_nan=True), (
+                name,
+                k,
+            )
+    if _top_level_fixture_hashes() != top_level:
+        raise RuntimeError("a top-level oracle fixture changed")
+    failures = check_gp_fit_history(exact=True)
+    if failures:
+        raise RuntimeError(f"captures fail after the rewrite: {failures}")
+    print(f"[rebaseline] gp_fit_history/{name} fit references replaced")
+    return 1
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--list", action="store_true")
@@ -1004,6 +1114,14 @@ def main(argv=None):
         metavar="ORACLE",
         help="add a newly registered oracle's references from the stored"
         " state (needs --reason); every existing array stays bit-identical",
+    )
+    ap.add_argument(
+        "--rebaseline-gp-fit-history",
+        default=None,
+        metavar="CAPTURE",
+        help="replace the platform-bound references of one authentic"
+        " GP-history capture by replaying it on its stored inputs (needs"
+        " --reason); its inputs and portable references stay bit-identical",
     )
     ap.add_argument("--reason", default=None)
     ap.add_argument(
@@ -1041,6 +1159,7 @@ def main(argv=None):
         + args.check
         + args.capture_gp_fit_history
         + args.check_gp_fit_history
+        + bool(args.rebaseline_gp_fit_history)
         + bool(args.dump_outputs)
     )
     if modes > 1:
@@ -1067,6 +1186,11 @@ def main(argv=None):
     if args.check_gp_fit_history:
         failures = check_gp_fit_history(exact=args.exact, verbose=args.verbose)
         return 1 if failures else 0
+    if args.rebaseline_gp_fit_history:
+        if not args.reason:
+            sys.exit("--rebaseline-gp-fit-history needs --reason")
+        rebaseline_gp_fit_history(args.rebaseline_gp_fit_history, args.reason)
+        return 0
     wanted = set(args.only.split(",")) if args.only else None
     if wanted:
         unknown = wanted - {r.name for r in RECIPES}
