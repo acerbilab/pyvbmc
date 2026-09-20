@@ -8,6 +8,7 @@ and its local ``vbmc_gphyp``).
 """
 
 import copy
+import math
 
 import gpyreg as gpr
 import numpy as np
@@ -120,6 +121,54 @@ def fit_the_gp(vbmc, hyp_dict, seed: int = 1):
         vbmc.optim_state["pub_tran"],
         rng=np.random.default_rng(seed),
     )
+
+
+class RecordedGP:
+    """A stand-in for a GP in the iteration history.
+
+    ``train_gp`` asks a recorded GP for its hyperparameter samples and
+    nothing else.
+    """
+
+    def __init__(self, hyp):
+        self.hyp = hyp
+
+    def get_hyperparameters(self, as_array: bool = False):
+        return self.hyp
+
+
+def record_marked_gps(vbmc, count: int, hyp_N: int):
+    """Record ``count`` GPs whose hyperparameters name their iteration.
+
+    Every hyperparameter of the GP recorded at iteration ``i`` is ``i``,
+    so a starting point built from it says where it came from. The
+    optimization state is left in the iteration that follows them, as a
+    run is when it trains its GP.
+    """
+    for i in range(count):
+        vbmc.iteration_history.record(
+            "gp", RecordedGP(np.full((1, hyp_N), float(i))), i
+        )
+    vbmc.optim_state["iter"] = count
+
+
+def capture_starting_points(monkeypatch, init_N: int):
+    """Stand in for the fit and collect the starting points it is given."""
+    seen = {}
+
+    def training_options(*args, **kwargs):
+        return {"widths": None, "init_N": init_N, "sampler": "slicesample"}
+
+    def note_the_starting_points(self, X, y, s2=None, hyp0=None, **kwargs):
+        seen["hyp0"] = np.array(hyp0, copy=True)
+        return np.zeros((1, np.size(self.hyper_priors["mu"]))), None, None
+
+    monkeypatch.setattr(
+        gp_train_module, "_get_gp_training_options", training_options
+    )
+    monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
+    monkeypatch.setattr(gp_train_module, "_estimate_noise", lambda gp: 0.0)
+    return seen
 
 
 def build_short(options: dict, seed: int = 20260920, D: int = 2):
@@ -288,6 +337,49 @@ def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
     # Without the option the fit works with gpyreg's recommendation, which
     # is not the cap the option asks for.
     assert np.all(default_filled["covariance_log_lengthscale"][1] != asked)
+
+
+def test_the_starting_points_come_from_the_later_half_of_the_history(
+    monkeypatch,
+):
+    """The hyperparameter fit starts from the samples of the GPs of the
+    later half of the recorded iterations: with ``n`` of them, MATLAB VBMC
+    collects the 1-based ``ceil(n/2):n`` (``misc/gptrain_vbmc.m:39``),
+    together with the summary vector of the last fit."""
+    for n in range(1, 7):
+        vbmc = build_trained_state()
+        hyp_N = np.size(default_gp(vbmc).hyper_priors["mu"])
+        record_marked_gps(vbmc, n, hyp_N)
+        seen = capture_starting_points(monkeypatch, init_N=100)
+
+        # A summary vector that no recorded GP can be mistaken for.
+        fit_the_gp(vbmc, {"hyp": np.full(hyp_N, -1.0)})
+
+        collected = {row[0] for row in seen["hyp0"]}
+        assert collected == {-1.0} | {
+            float(i) for i in range(math.ceil(n / 2) - 1, n)
+        }
+        # Every starting point is one of the vectors handed in.
+        for row in seen["hyp0"]:
+            assert np.all(row == row[0])
+
+
+def test_a_history_holding_no_gp_collects_no_starting_points(monkeypatch):
+    """A history that holds no GP leaves the summary vector of the last fit
+    as the only starting point. MATLAB VBMC collects past GPs only where it
+    has statistics to collect them from (``misc/gptrain_vbmc.m:38``,
+    ``~isempty(stats)``); a history built for a later iteration with its
+    GPs left out, as the oracle harness builds one, reaches the collection
+    with nothing to take."""
+    vbmc = build_trained_state()
+    hyp_N = np.size(default_gp(vbmc).hyper_priors["mu"])
+    vbmc.iteration_history["gp"] = np.array([], dtype=object)
+    vbmc.optim_state["iter"] = 1
+    seen = capture_starting_points(monkeypatch, init_N=100)
+
+    fit_the_gp(vbmc, {"hyp": np.full(hyp_N, -1.0)})
+
+    np.testing.assert_array_equal(seen["hyp0"], np.full((1, hyp_N), -1.0))
 
 
 def test_the_noise_model_follows_the_uncertainty_level():

@@ -136,12 +136,12 @@ def train_gp(
     # hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
     hyp0 = np.empty((0, hyp_dict["hyp"].T.shape[0]))
     if gp_train["init_N"] > 0 and optim_state["iter"] > 0:
-        # Be very careful with off-by-one errors compared to MATLAB in the
-        # range here.
-        for i in range(
-            math.ceil((np.size(iteration_history["gp"]) + 1) / 2) - 1,
-            np.size(iteration_history["gp"]),
-        ):
+        # The later half of the recorded GPs. With `n` of them, MATLAB
+        # collects the 1-based `ceil(n/2):n`, which over the same records
+        # is `range(ceil(n / 2) - 1, n)` here; a history holding no GP
+        # leaves nothing to collect.
+        n_recorded = np.size(iteration_history["gp"])
+        for i in range(max(math.ceil(n_recorded / 2) - 1, 0), n_recorded):
             hyp0 = np.concatenate(
                 (
                     hyp0,
