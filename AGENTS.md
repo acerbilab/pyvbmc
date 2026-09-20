@@ -327,6 +327,16 @@ Things you must hold in your head across files:
   the attempt number (`request.node.execution_count`, set by
   pytest-rerunfailures) before yielding, so a rerun sees fresh draws and
   later tests still find the stream where they used to.
+- Several subpackages export a function under the name of the module that
+  defines it (`pyvbmc.vbmc.active_sample`, `active_importance_sampling` and
+  `create_vbmc_animation`; likewise in `pyvbmc.entropy` and `pyvbmc.stats`),
+  so inside the package that name is the function. A mock target written as a
+  dotted name through it, such as `"pyvbmc.vbmc.active_sample.cma.fmin"`,
+  resolves to the module on Python 3.11 and later and to the function on
+  Python 3.10, where it raises `ModuleNotFoundError`. Patch the module object
+  (`importlib.import_module("pyvbmc.vbmc.active_sample")` with
+  `mocker.patch.object`), or the defining module of what is patched
+  (`"cma.fmin"`).
 - `test_*_save_dynamic` write `.pkl` files into the source tree that the
   matching `load` tests read; running a `load` test alone fails.
 - `test_*_save_static.pkl` fixtures are pickled instances of the current

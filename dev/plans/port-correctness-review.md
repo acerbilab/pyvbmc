@@ -331,6 +331,14 @@ fix phase can be run from this file:
   `test_entmc_vbmc.py`, which call `check_grad` directly.
 - The focused tests of the changed module, and gpyreg's suite for a gpyreg
   fix.
+- After a fix pass, the full CI matrix on the branch, dispatched once the
+  branch smoke is green (`gh workflow run tests.yml --ref dev-port-review`).
+  The smoke that a push starts is one cell, Ubuntu with the newest Python, and
+  the orchestrator's machine is one more; the matrix adds macOS and Python
+  3.10 and 3.11 on every system. On the wave-2 pass it found what neither had:
+  mock targets that Python 3.10 resolves differently, a tolerance set to one
+  machine's result, and the bounded transforms pickled as bytecode. A push
+  that touches `pyvbmc/` while a smoke run is going cancels it.
 
 A fix whose gates fail is not merged; it returns to triage with the gate
 output. A fix that moves default trajectories follows the working rule in
@@ -833,7 +841,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   again, which the `save` and `load` docstrings say (`1c0d0d3`). Gates: the
   exact oracle check, 11 of 11; the four seeded runs bit for bit against
   the head before, the generator state included; the whole default suite
-  (1540 passed, 58 skipped); the S-VBMC tests with Torch (227).
+  (1540 passed, 58 skipped); the S-VBMC tests with Torch (227); and the
+  full matrix on `ae4e651`, green in all nine cells.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);
