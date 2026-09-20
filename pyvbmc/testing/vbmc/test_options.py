@@ -239,6 +239,23 @@ def test_noisy_defaults_leave_the_values_the_user_set():
     assert noisy["active_sample_vp_update"] is True
 
 
+@pytest.mark.parametrize(
+    "user_options",
+    [{"specify_target_noise": True}, {"uncertainty_handling": True}],
+)
+def test_noisy_defaults_accept_an_unlimited_budget(user_options):
+    """A noisy run without a limit on its evaluations is a valid
+    configuration: the limit is the user's, so the noisy default that
+    would replace it is not needed, and the other defaults still apply."""
+    noiseless = _shipped_options({})
+    noisy = _shipped_options({"max_fun_evals": np.inf, **user_options})
+    assert noisy["max_fun_evals"] == np.inf
+    assert noisy["tol_stable_count"] == ceil(
+        noiseless["tol_stable_count"] * 1.5
+    )
+    assert isinstance(noisy["search_acq_fcn"][0], AcqFcnVIQR)
+
+
 def test_a_noiseless_run_keeps_the_noiseless_defaults():
     noiseless = _shipped_options({})
     assert noiseless["active_sample_gp_update"] is False
