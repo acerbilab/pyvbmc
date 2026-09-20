@@ -51,6 +51,10 @@ caching, and cross-module behavior.
   description alone.
 - Confirmed findings are brought to the PI for triage before any fix is
   made. PyVBMC 1.5 takes only bug fixes and unequivocal improvements.
+- A fix may make an interface stricter (2026-09-20): a value that used to
+  be accepted and now fails with a clear message costs a user one
+  correction in one place. What a fix must not do is change behavior
+  silently.
 
 **Terminology.** The records and the agent prompts of this review use the
 plain vocabulary of code review and debugging: review, reviewer, finding,
@@ -593,23 +597,63 @@ pattern. The plan is written so that a developer with MATLAB and the
   transformed coordinates, the minimum-iteration guard, and the transform
   that `warp_input` inverts the search bounds with (shared with MATLAB,
   latent). The first five **move default trajectories**.
-- [ ] Wave 2, remaining: the six fixes above are not made yet. The other
-  findings of the four reports (those that fire in non-default use, and
-  the reported values, inert state and documentation) are reported and
-  neither verified by the orchestrator nor ruled on. The corrections the
-  reports ask of the records are not applied: the counterpart map lists
-  `private/recompute_lcbmax.m` as ported; the sheet's entries on the
-  sieve's candidate count (warp branch), on posterior tempering (where
-  `temperature` is read) and on the inert options (what the test can
-  detect) overstate; the default search acquisition function and the
-  isolated draws of `_compute_true_diagnostic` have no entry. Still open
-  from wave 1: the golden references are regenerated once after the
-  review's remaining trajectory-moving fixes; the MATLAB check session
-  plan and scripts (`dev/plans/port-review-matlab-checks.md`,
-  `dev/scripts/matlab_checks/`) are not written yet, with two candidates
-  from wave 1 (the duplicate GP training row of MATLAB's rank-one path on
-  a noiseless repeat, P2 F8; the `EvalParallel` population call of
-  MATLAB's search); the final ledger
+- [x] 2026-09-20: the other wave-2 findings verified and ruled on
+  (`verification/wave2.md`, part 2, rows W2-7 to W2-27, with
+  `verification/wave2_B_loop.md` and `verification/wave2_C_setup.md`, two
+  Opus verifiers, and the orchestrator's scripts and two short runs). No
+  finding was refuted. Reclassified: `results["problem_type"]` and the
+  empty slice of the warm-up end check are shared with MATLAB; the stale
+  budget copy after a load is a regression of `6769a9a` (2026-09-16), in
+  no release; the global-state draws of an unseeded construction and the
+  `AcqFcnLog` default are recorded decisions. PI: every row is fixed,
+  except the `AcqFcnLog` default (kept, sheet entry) and the unseeded
+  construction (docstring only); `separate_search_gp` is removed and its
+  option registered as inert; `integer_vars` and `uncertainty_handling`
+  become type-strict; unknown option names raise on every route;
+  `results["iterations"]` reports the number of iterations. The seven
+  minor observations that the verifiers call defects are fixed as well.
+  One observation is left to slice P8 and is not passed to its reviewers:
+  the warp re-transforms only the active rows of the function logger,
+  where MATLAB re-transforms every row (B-M11); the verification of P8
+  checks whether they found it.
+- [ ] Wave 2 fixes, not started; the split below awaits the PI's
+  go-ahead. Three Opus agents on worktrees, by area, so that their hunks
+  do not overlap; each commits one finding at a time with a test written
+  against the contract (the MATLAB lines, the docstring or the ruling)
+  and runs only the focused test files it touches, single-threaded; the
+  orchestrator reviews each diff, cherry-picks, and runs the whole
+  `pyvbmc/testing/vbmc` directory and the gates, one batch at a time.
+  **Agent A, the loop** (`optimize`, warm-up, termination, results,
+  `whitening.warp_input`): W2-10, W2-11, W2-16, W2-6, W2-12, W2-13 and the
+  minor observations B-M2, B-M3, B-M5, B-M9; then W2-14, W2-1, W2-2, W2-3,
+  W2-5. **Agent B, options and inputs** (`options.py`, the `.ini` files,
+  `_bounds.py`, the option handling of `__init__` and `_init_optim_state`,
+  the `new_options` lines of `load`): W2-7, W2-8, W2-18, W2-17, W2-19,
+  W2-20, W2-26, W2-27, W2-22, W2-15 (the branch in `optimize` and the
+  registration, one commit), W2-23, W2-24, C-M5. **Agent C, construction
+  state and load**: W2-9, W2-21, C-M1, C-M2; then W2-4. Order of landing:
+  first every commit that leaves default trajectories alone, gated by
+  `make_oracle_fixtures.py --check --exact` (11 of 11) and by seeded
+  default runs, noiseless and noisy, that reproduce bit for bit before
+  and after; then the block that moves them (W2-1, W2-2, W2-3, W2-4,
+  W2-5, with W2-14 in the same function), after which the oracle check
+  must still be exact. The orchestrator's part: the sheet entries and
+  corrections (the `AcqFcnLog` default; the isolated draws of
+  `_compute_true_diagnostic`; the `display` values; `separate_search_gp`;
+  MATLAB's `problem_type` defect; the stricter option handling; the
+  entries on the sieve's candidate count, on posterior tempering, on the
+  inert options, on `OptimToolbox` and on `results["rng_state"]`), the
+  counterpart-map rows for `private/recompute_lcbmax.m` and
+  `misc/setupvars_vbmc.m`, the note in `verification/wave1_P6.md` on the
+  warp branch, and `AGENTS.md` where a fix changes what it describes.
+  Still open from wave 1: the golden references are regenerated once
+  after the review's remaining trajectory-moving fixes; the MATLAB check
+  session plan and scripts (`dev/plans/port-review-matlab-checks.md`,
+  `dev/scripts/matlab_checks/`) are not written yet, with four candidates
+  so far (the duplicate GP training row of MATLAB's rank-one path on a
+  noiseless repeat, P2 F8; the `EvalParallel` population call of MATLAB's
+  search; a same-input comparison of the ported `recompute_lcbmax`; what
+  MATLAB does on the empty warm-up window of W2-14); the final ledger
   (`dev/results/<date>-port-correctness-review.md`) and the consolidation
   of the sheet's durable entries into `pyvbmc/vbmc/README.md` come at the
   end.

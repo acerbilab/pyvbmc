@@ -1,17 +1,23 @@
-# Wave 2 verification: the findings that fire at the default options
+# Wave 2 verification
 
-The first group of wave-2 findings (slices P1a and P1b; reports under
-`../reviews/`), verified on 2026-09-20 on `dev-port-review` at `51451dc`
-against MATLAB VBMC at `396d649`. Three were verified by the orchestrator
-with the scripts named below. Three were traced through both histories by
-a read-only Opus agent, which also searched the code comments, the commit
-and pull-request messages, the porting logs, the documentation, `dev/` and
-the tests for a recorded reason (`wave2_warmup_history.md`); it found none
-for any of them. The MATLAB lines involved all predate the Python lines,
-so no row is a faithful port of an older MATLAB. The other wave-2 findings
-are not in this file: they have been reported and not yet verified.
+The findings of wave 2 (slices P1a and P1b; reports under `../reviews/`),
+verified on 2026-09-20 on `dev-port-review` against MATLAB VBMC at
+`396d649`. Part 1 holds the six findings that fire at the default options
+and can change a run; part 2 holds the others. Three sources feed the
+ledger: the orchestrator's own checks, with the scripts named in the rows;
+a read-only Opus agent that traced three warm-up findings through both
+histories (`wave2_warmup_history.md`); and two Opus verifiers, one on the
+loop, termination and result findings (`wave2_B_loop.md`, rows B-n) and
+one on the setup, options and input findings (`wave2_C_setup.md`, rows
+C-n), whose files hold the supporting detail, the dating of each row and
+the errors they found in the reviewers' reports. Every verifier searched
+the code comments, the commit and pull-request messages, the porting logs,
+the documentation, `dev/` and the tests for a recorded reason for each
+difference; a row says so where one was found. The MATLAB lines involved
+all predate the Python lines, so no row is a faithful port of an older
+MATLAB.
 
-## Ledger
+## Part 1: findings that fire at the default options and can change a run
 
 | id | reports | statement | verdict (class) | fires at defaults? | how verified | PI disposition |
 |---|---|---|---|---|---|---|
@@ -22,7 +28,70 @@ are not in this file: they have been reported and not yet verified.
 | W2-5 | P1a internal F4, P1a comparison F4, P1b comparison F9 | `_check_termination_conditions` holds termination while `iteration < min_iter`, with the 0-based index, where `private/vbmc_termination.m:98-99` compares the 1-based counter, and where the same function compares `iteration + 1` with `max_iter`: a run on which the minimum binds performs `min_iter + 1` iterations | confirmed port discrepancy; `test_vbmc_check_termination_conditions_prevent_early_termination` asserts the off-by-one | yes, when the minimum binds | `scripts/wave2_min_iter_guard.py` (iterations performed for six pairs of limits against `max(MinIter, MaxIter)`); both sources read | fix |
 | W2-6 | P1a internal F8 | `warp_input` inverts the search bounds and the search cache with the transformer of the posterior it is handed, the best recorded one, while both live in the current inference space; a posterior recorded before an earlier warp carries another transformer. Handed such a posterior on a stored four-dimensional state, the second warp returns a search box 8.5 to 12.5 times wider per coordinate than the one the current transformer gives; handed the current posterior it returns that one | confirmed shared defect: `misc/warp_input_vbmc.m:8` and `:133` take the old transform from the posterior handed in, as PyVBMC does | latent: on 21 complete stored runs (42 warps, 13 of them after an earlier kept warp) the selection never returned a posterior from another space, under the rank criterion or under the look-back rule | `scripts/wave2_stale_transformer_mechanism.py`, `scripts/wave2_stale_transformer_frequency.py` | fix |
 
-## Notes
+## Part 2: the other findings
+
+| id | reports | statement | verdict (class) | fires at defaults? | how verified | PI disposition |
+|---|---|---|---|---|---|---|
+| W2-7 | P1b comparison F1 | `Options.update_defaults` applies the five noisy-target defaults (1.5 times `max_fun_evals` and `tol_stable_count`, the GP and VP updates within active sampling, VIQR as the search acquisition) when `specify_target_noise` is set; `misc/setupoptions_vbmc.m:127-163` applies them whenever `UncertaintyHandling` is on, which covers inferred noise (level 1) as well. A level-1 run keeps the noiseless defaults | confirmed port discrepancy; since `70325a3` (2022-06-02), whose pull request says the defaults update "when `specifytargetnoise=True`, as in MATLAB"; no reason for leaving level 1 out is recorded. No documentation page or example mentions `uncertainty_handling`: the documented noisy route is `specify_target_noise` through the options dict, which is right | no; every run with `uncertainty_handling` set | `scripts/wave2_noisy_defaults.py` (five routes at `D = 3`); both sources read | fix: the noisy defaults apply whenever uncertainty handling is on |
+| W2-8 | P1b internal F4 | `VBMC.__init__` calls `update_defaults` before it reads the file of `options_path=`, so `specify_target_noise = True` written there gives a level-2 run with the noiseless defaults | confirmed Python-only defect | no; a noisy run configured through an options file | same script | fix |
+| W2-9 | P1a internal F7, P1b internal F3 | `load(new_options={"max_fun_evals": n})` updates the option and leaves `optim_state["max_fun_evals"]` at the saved value unless the budget path is active; the GP training options read that copy as the horizon of the schedule for the number of starting points of the hyperparameter fit, which falls to its floor of 9 past the stale horizon (at 60 evaluations: 9 against 759) | confirmed Python-only defect, a regression: until `6769a9a` (2026-09-16) the schedule read `options["max_fun_evals"]`, as `misc/get_GPTrainOptions.m:98` reads `options.MaxFunEvals`. In no release | no; the documented way to continue a run with a larger budget | `scripts/wave2_resume_budget.py` | fix |
+| W2-10 | P1a internal F1, P1a comparison F5, P1b internal F2, P1b comparison F2 | `optimize` reads `optim_state["entropy_force_switch"]`, which nothing writes, where `vbmc.m:524-525` reads the option; the stability branch also lacks the `isfinite(options.EntropyForceSwitch)` test of `private/vbmc_termination.m:80` | confirmed port discrepancy (B-1, B-M12); since the loop skeleton `ec94eba` (2021-06-08) | no; `entropy_switch=True` with `D >= 5` raises `TypeError` at `vbmc.py:1226` before the first iteration is recorded | B-1; `scripts/wave2_two_option_runs.py` inside the loop | fix, both sites |
+| W2-11 | P1a internal F2, P1a comparison F7, P1b internal F5 | The guard of the running average of the variational moments reads `len(run_cov == 0)` for `len(run_cov) == 0`, so the average is never taken and `moments_run_weight` has no effect | confirmed port discrepancy (B-2). Nothing reads `run_mean`, `run_cov` or `last_run_avg` for a computation in either toolbox: only the recorded state differs | yes, every iteration; no computed number changes | B-2 | fix |
+| W2-12 | P1a internal F3, P1a comparison F8 | `results["problem_type"]` tests the transformed bounds, which are infinite for a bounded variable too, so it always says "unconstrained" | confirmed shared defect (B-3a): `private/vbmc_output.m:5-9` tests `optimState.LB`, the transformed bound | yes; a reported field only | B-3a | fix in PyVBMC (test the original bounds); MATLAB's defect goes on the sheet |
+| W2-13 | P1a internal F5, P1a comparison F9 | `results["iterations"]` holds the 0-based index of the last iteration where MATLAB's `output.iterations` is the count | confirmed port discrepancy (B-3b). No documentation defines either result field | yes; a reported field only | B-3b | fix: the field reports the number of iterations and its documentation says so; `best_iter` stays an index |
+| W2-14 | P1a internal F10 | `_check_warmup_end_conditions` takes the maximum of an empty slice when `tol_stable_warmup <= fun_evals_per_iter` | confirmed shared defect (B-4): `private/vbmc_warmup.m:39` reaches the same empty window; that MATLAB then raises at `:87` is inferred from its operator rules, not executed | no | B-4 | fix |
+| W2-15 | P1a comparison F6 | With `separate_search_gp=True` the constant-mean search GP is trained from, and overwrites, the main `hyp_dict` and `optim_state["sn2_hpd"]`, where `vbmc.m:471`, `:638-648` keep a separate struct and discard the returned state | confirmed port discrepancy (B-5); the run fails in the search GP's own training call, iteration 1 (the orchestrator's note in `wave2_B_loop.md`). A fix carries a second hyperparameter struct through save, load and the recorded state | no; the option is unusable | B-5; `scripts/wave2_two_option_runs.py` | remove the branch (a development option of MATLAB VBMC, not needed in PyVBMC); the option stays declared and is registered as inert; sheet entry |
+| W2-16 | P1a comparison F10 | The warp-undo refit sizes its sieve at `vp.K` where `vbmc.m:584` uses `Knew`; they differ only with `variable_means=False` | confirmed port discrepancy (B-6). Issue 98 and `2df0d7e` (2022-09-20) replaced the stale `k_warmup`; the issue names `Knew` as the intended value. The sheet's entry on the sieve's candidate count and `wave1_P6.md` say the warp branch agrees with MATLAB | no | B-6 | fix; correct the sheet entry and `wave1_P6.md` |
+| W2-17 | P1b internal F7, P1b comparison F3 | `integer_vars` is read as a length-`D` mask where the option's description and `misc/setupvars_vbmc.m:14-24` use indices; a plain list marks every variable integer, silently; only a length-`D` array works | confirmed port discrepancy (C-1); since `489598a` (2021-06-03). MATLAB's own half-integer bound check never fires, and PyVBMC's does | no; every run that sets the option | C-1 | fix, type-strict: a boolean array of length `D` is a mask; an integer array holds 0-based indices, unique and in range; an integer array of length `D` holding only zeros and ones is rejected as ambiguous, with a message asking for a boolean mask |
+| W2-18 | P1b comparison F4 | `uncertainty_handling` is tested by length: `True`, `1`, `0`, `False`, `None` raise, and `[0]`, `'no'`, `'off'` select level 1; MATLAB truth-tests a boolean | confirmed port discrepancy (C-2) | no; every run that sets the option | C-2 | fix, type-strict: a boolean as in MATLAB (`True`/`False`, 1/0, empty for unset); any other value raises with a message naming the accepted forms; the description rewritten; MATLAB's error for the option explicitly off with `specify_target_noise` on |
+| W2-19 | P1b internal F6, P1b comparison F7 | Scalar bounds raise for `D > 1`, with an unformatted message, although the class docstring and `misc/boundscheck_vbmc.m:6-10` replicate them | confirmed port discrepancy (C-3, C-M6) | yes, for a caller who writes a scalar bound | C-3 | fix |
+| W2-20 | P1b internal F12 | Option names are validated for the `options=` dict and not for an `options_path=` file or for `load(new_options=)`, where a misspelt budget is accepted and ignored | confirmed Python-only inconsistency (C-4); MATLAB validates no option name | no | C-4 | fix: an unknown name raises on both routes; `VBMC` validates against the two shipped option files |
+| W2-21 | P1b internal F10 | After `load` of a run with history, `vbmc`, `vp` and `function_logger` hold three transformer objects, equal by value, and `vbmc.parameter_transformer` is not the chosen iteration's | confirmed Python-only defect (C-5). No number changes in a continued run, which restores the identity in its first iteration. Separately, `__str__` inverts the stored `x0` with the current transformer, which is wrong after any warp, with or without a load | yes for a loaded run; the wrong map only after a warp | C-5 | fix, the `x0` line of `__str__` included |
+| W2-22 | P1a internal F9, P1b internal F8, P1b comparison F6 and F10 | `temperature`, `diagnostics` and `entropy_force_switch` are read through no options object and are missing from `INERT_OPTIONS`; the guard test matches the quoted name anywhere in the package, so it cannot see them; the sheet's entry on posterior tempering says `temperature` is read by `whitening.py`, which reads an `optim_state` key nothing writes | confirmed (C-6). MATLAB validates `Temperature` and reads it in six files, and reads `Diagnostics` at `vbmc.m:805`, `:961`: both are knobs of unported features, not names dead on both sides. The omitted `vptrain2real` calls are harmless at every reachable setting | no numerical effect | C-6 | register `temperature` and `diagnostics` as inert; the guard test matches reads through an options object; correct the two sheet entries |
+| W2-23 | P1b internal F11 | `_read_config_file` keeps only the part of an option description before its first `=` or `:`; 8 of 183 options are affected, among them `search_optimizer`, `uncertainty_handling` and `performance_calibration` | confirmed Python-only defect (C-7); the stored text surfaces in `str` and `repr` of the options, not in the published documentation. Two descriptions are also wrong in the file itself ("True" for "on" in `upper_gp_length_factor`; "T = 1234" in `temperature`) | yes; no numerical effect | C-7 | fix the parser and the two description texts |
+| W2-24 | P1b internal F9 | `VBMC(seed=None)` draws four integers from NumPy's global state, against the `seed` docstring's "never written" | documentation defect (C-8); the behavior is a recorded decision (`dev/plans/stage1-rng-generator.md`, section 3) pinned by `test_seed_none_does_not_reseed_global_state`; the plan's phrase "only read once" is what reached the docstring | yes, every unseeded construction | C-8 | docstring only (and the phrase in the generator plan) |
+| W2-25 | P1b comparison F5 | The default search acquisition is `AcqFcnLog` where `vbmc.m:213` has `acqf_vbmc` | intentional difference, missing from the sheet (C-9); `e20d081` (2022-09-21), pull request 102: "in order to avoid overflow warnings in `exp()`". The two forms rank candidates identically in exact arithmetic, regularization and bound penalty included; on the eight oracle states the plain form underflows on up to all 512 candidates | yes, every run | C-9 | keep; sheet entry |
+| W2-26 | P1b comparison F8 | MATLAB rejects a non-positive or non-integer `MaxFunEvals` or `MaxIter` and raises `MaxIter` to `MinIter` with a warning; PyVBMC has neither check and overrides a low `max_iter` silently at run time | confirmed port discrepancy, validation only (C-10a) | no | C-10a | fix, together with W2-5 |
+| W2-27 | P1b internal F13 | Passing `initialization_cost=0` or `precomputed_evaluations=None` explicitly activates the budget path, which caps the last batch at the remaining allowance | confirmed Python-only defect (C-10b); `dev/plans/pymc-target-adapter.md` records the omitted-argument sentinel and equates the values, not the budget switch | no | C-10b | fix: the budget path follows the values of the two arguments, not their presence |
+
+The PI ruled on part 2 on 2026-09-20, with one general rule for the
+input-handling rows: making an interface stricter, so that a value that
+used to be accepted now fails with a clear message, is acceptable, since
+the worst case is a user's script that fails once and is corrected in one
+place; what is not acceptable is a change of behavior that happens
+silently.
+
+### Minor observations
+
+The two verifier files rule on each minor observation of the four reports.
+Those they call defects rather than leftovers or faithful ports, all seven
+to be fixed (PI, 2026-09-20):
+
+- `final_boost` leaves `warmup = False` and `entropy_alpha = 0` on the live
+  `optim_state`, where MATLAB's function works on a copy (B-M3); harmless
+  at the end of `optimize`, wrong for a call of the public method.
+- The warp branch binds `vp.mu` to a view of `gp.X` where the main loop
+  copies (B-M2); only with `variable_means=False`.
+- With `do_final_boost=False`, `vbmc.vp` is the iteration-history entry
+  itself (B-M5).
+- The final "finalize" line is printed only when the boost changed the
+  posterior, where MATLAB also prints it when the returned posterior comes
+  from an earlier iteration, and its `sKL` compares with the posterior of
+  the start of the last iteration (B-M9); display only.
+- `VBMC.__str__` always prints `None` for the GP, the log-prior and the
+  prior sampler (C-M1).
+- `_init_logger` removes handlers while iterating over them and raises
+  `AttributeError` when the `"VBMC"` logger carries a non-file handler
+  (C-M2).
+- `Options.pop` succeeds on a frozen options object (C-M5).
+
+Left to slice P8 (PI, 2026-09-20): the warp re-transforms only the active rows of the function
+logger where `misc/warp_input_vbmc.m:112-119` re-transforms every row
+(B-M11). Faithful ports, not defects: the recorded posteriors lacking the
+stability flag (B-M1) and a non-finite entry of `x0` replacing the whole
+starting set (C-M9).
+
+## Notes on part 1
 
 - W2-1 to W2-5 move default trajectories when fixed: the end of warm-up
   (W2-1, W2-2), the first warp and the earliest stable termination
