@@ -2448,6 +2448,11 @@ class VBMC:
         The guard compares the optimizer's stored pre- and post-boost ELBO
         and GP-based ELBO SD. It performs no diagnostic rescoring, and the SD
         does not include Monte Carlo uncertainty from the entropy estimate.
+
+        The boost optimizes with warm-up over and the entropy annealing
+        switched off, on copies of the options and of the optimization
+        state; neither the instance's options nor its optimization state
+        is changed.
         """
 
         tol_elcbo_boost = self.options.get("tol_elcbo_boost")
@@ -2509,6 +2514,10 @@ class VBMC:
             n_slow_opts = 1
 
             options = copy.deepcopy(self.options)
+            # The boost runs on its own copies of the options and of the
+            # optimization state, so a call of this method leaves the
+            # instance as it found it.
+            optim_state = copy.deepcopy(self.optim_state)
             # No pruning of components
             options.__setitem__("tol_weight", 0, force=True)
             if tol_elcbo_boost is not None:
@@ -2517,7 +2526,7 @@ class VBMC:
                 options.__setitem__("weight_penalty", 0, force=True)
 
             # End warmup
-            self.optim_state["warmup"] = False
+            optim_state["warmup"] = False
             vp.optimize_mu = options.get("variable_means")
             vp.optimize_weights = options.get("variable_weights")
 
@@ -2525,11 +2534,11 @@ class VBMC:
             options.__setitem__("ns_ent_fast", n_sent_fast_boost, force=True)
             options.__setitem__("ns_ent_fine", n_sent_fine_boost, force=True)
             options.__setitem__("max_iter_stochastic", np.inf, force=True)
-            self.optim_state["entropy_alpha"] = 0
+            optim_state["entropy_alpha"] = 0
 
             vp, __, __ = optimize_vp(
                 options,
-                self.optim_state,
+                optim_state,
                 vp,
                 gp,
                 n_fast_opts,

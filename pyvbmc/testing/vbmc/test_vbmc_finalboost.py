@@ -193,7 +193,7 @@ def test_final_boost_guard_selects_posterior(
 
     assert optimize.call_count == 1
     assert captured["gp"] is gp
-    assert captured["optim_state"] is vbmc.optim_state
+    assert captured["optim_state"] is not vbmc.optim_state
     assert captured["vp"] is not source
     assert captured["vp"].rng is source.rng
     assert (
@@ -211,6 +211,27 @@ def test_final_boost_guard_selects_posterior(
     assert source.stats.keys() == source_stats.keys()
     for key in source_stats:
         assert np.array_equal(source.stats[key], source_stats[key])
+
+
+def test_final_boost_leaves_the_optimization_state_alone(mocker):
+    """The boost optimizes with warm-up over and the entropy annealing
+    switched off, and leaves the optimization state of the instance as it
+    found it, so that calling it does not end the warm-up of a run
+    (MATLAB VBMC, ``misc/finalboost_vbmc.m:40`` and ``:48`` write the two
+    fields on a state passed by value)."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, _boost_options(0.1))
+    _set_pre_stats(vbmc)
+    vbmc.optim_state["warmup"] = True
+    vbmc.optim_state["entropy_alpha"] = 0.5
+    _, captured, _ = _mock_candidate(mocker, vbmc, -9.9, 0.1)
+
+    __, __, __, changed_flag = vbmc.final_boost(vbmc.vp, object())
+
+    assert changed_flag
+    assert captured["optim_state"]["warmup"] is False
+    assert captured["optim_state"]["entropy_alpha"] == 0
+    assert vbmc.optim_state["warmup"] is True
+    assert vbmc.optim_state["entropy_alpha"] == 0.5
 
 
 def test_final_boost_none_retains_legacy_objective(mocker):
