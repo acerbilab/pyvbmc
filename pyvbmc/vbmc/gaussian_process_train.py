@@ -92,9 +92,11 @@ def train_gp(
         optim_state["gp_cov_fun"]
     )
 
-    # Pick the noise function.
+    # Pick the noise function. The second entry says how the noise the user
+    # provides enters the total variance: 1 adds it as it is, 2 adds it
+    # scaled by a fitted multiplier.
     const_add = optim_state["gp_noise_fun"][0] == 1
-    user_add = optim_state["gp_noise_fun"][1] == 1
+    user_add = optim_state["gp_noise_fun"][1] > 0
     user_scale = optim_state["gp_noise_fun"][1] == 2
     rlod_add = optim_state["gp_noise_fun"][2] == 1
     noise_f = gpr.noise_functions.GaussianNoise(
@@ -352,7 +354,6 @@ def _gp_hyp(
             noise_size = min_noise
         noise_std = 0.5
     elif optim_state["uncertainty_handling_level"] == 1:
-        # This branch is not used and tested at the moment.
         if options["noise_size"] != []:
             noise_mult = max(options["noise_size"], min_noise)
             noise_mult_std = np.log(10) / 2
@@ -365,6 +366,8 @@ def _gp_hyp(
         noise_size = min_noise
         noise_std = 0.5
     noise_x0[0] = np.log(noise_size)
+    if noise_mult is not None:
+        noise_x0[1] = np.log(noise_mult)
     hyp0 = np.concatenate([cov_x0, noise_x0, mean_x0])
 
     # Missing port: output warping hyperparameters not implemented

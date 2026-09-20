@@ -12,6 +12,7 @@ import copy
 import gpyreg as gpr
 import numpy as np
 
+import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
@@ -81,14 +82,15 @@ def default_gp(vbmc):
     )
 
 
-def hyperparameter_bounds(vbmc, gp):
+def install_hyperparameters(vbmc, gp):
     """Install the bounds and priors of ``vbmc`` on ``gp``.
 
-    Returns the GP, the bounds it carries and the ones ``gpyreg.GP.fit``
-    will work with, which fills every entry left unset.
+    Returns the GP, the starting hyperparameters, the bounds the GP
+    carries and the ones ``gpyreg.GP.fit`` will work with, which fills
+    every entry left unset.
     """
     X, y = training_data(vbmc)
-    gp, _, _ = _gp_hyp(
+    gp, hyp0, _ = _gp_hyp(
         vbmc.optim_state,
         vbmc.options,
         vbmc.optim_state["plb_tran"],
@@ -100,6 +102,7 @@ def hyperparameter_bounds(vbmc, gp):
     gp.X, gp.y = X, y
     return (
         gp,
+        hyp0,
         gp.get_bounds(),
         gp.get_recommended_bounds(gp.lower_bounds, gp.upper_bounds),
     )
@@ -237,7 +240,7 @@ def test_output_dependent_noise_is_bounded_by_the_training_values():
         ),
     )
 
-    _, bounds, _ = hyperparameter_bounds(vbmc, gp)
+    _, _, bounds, _ = install_hyperparameters(vbmc, gp)
 
     lower, upper = bounds["noise_rectified_log_multiplier"]
     assert lower[0] == min(np.min(y), np.max(y) - 20 * D)
@@ -252,7 +255,7 @@ def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
     asked for and the entry is left for gpyreg to fill from the training
     set."""
     capped = build_trained_state({"upper_gp_length_factor": 3})
-    _, bounds, filled = hyperparameter_bounds(capped, default_gp(capped))
+    _, _, bounds, filled = install_hyperparameters(capped, default_gp(capped))
     asked = np.log(
         3 * (capped.optim_state["pub_tran"] - capped.optim_state["plb_tran"])
     ).ravel()
@@ -266,7 +269,7 @@ def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
     )
 
     uncapped = build_trained_state()
-    _, default_bounds, default_filled = hyperparameter_bounds(
+    _, _, default_bounds, default_filled = install_hyperparameters(
         uncapped, default_gp(uncapped)
     )
     # The option touches neither the lower bounds nor any other entry.
@@ -278,3 +281,103 @@ def test_the_longest_length_scale_the_option_allows_reaches_the_fit():
     # Without the option the fit works with gpyreg's recommendation, which
     # is not the cap the option asks for.
     assert np.all(default_filled["covariance_log_lengthscale"][1] != asked)
+
+
+def test_the_noise_model_follows_the_uncertainty_level():
+    """The GP gets the noise function that ``optim_state["gp_noise_fun"]``
+    names (MATLAB VBMC, ``misc/setupvars_vbmc.m:277-281``): a constant term
+    alone without uncertainty handling, ``[1 2]`` when the target is noisy
+    and reports no noise of its own, and ``[1 1]`` when it does. The three
+    flags stand for the variances of ``gplite/gplite_noisefun.m:177-194``:
+    ``exp(2*h1)``, ``exp(2*h1) + exp(h2)*s2`` and ``exp(2*h1) + s2``."""
+    cases = [
+        (0, {}, [1, 0, 0], ["noise_log_scale"]),
+        (
+            1,
+            {"uncertainty_handling": True},
+            [1, 2, 0],
+            ["noise_log_scale", "noise_provided_log_multiplier"],
+        ),
+        (2, {"specify_target_noise": True}, [1, 1, 0], ["noise_log_scale"]),
+    ]
+    for level, options, flags, names in cases:
+        vbmc = build_trained_state(options)
+        assert vbmc.optim_state["uncertainty_handling_level"] == level
+        np.testing.assert_array_equal(vbmc.optim_state["gp_noise_fun"], flags)
+        # Enough of a fit to build the model, without sampling.
+        vbmc.optim_state["stop_sampling"] = vbmc.optim_state["N"]
+        gp, _, _, _ = fit_the_gp(vbmc, {})
+
+        np.testing.assert_array_equal(gp.noise.parameters, flags)
+        assert [name for name, _ in gp.noise.hyperparameter_info()] == names
+
+
+def test_a_noisy_target_without_its_own_noise_scales_the_pooled_noise():
+    """At uncertainty level 1 the noise of a training point is
+    ``exp(2*h1) + exp(h2)*s2`` (MATLAB VBMC,
+    ``gplite/gplite_noisefun.m:186-194``), so a point the function logger
+    evaluated several times, and whose pooled noise is smaller, weighs more
+    in the fit than a point evaluated once."""
+    vbmc = build_trained_state({"uncertainty_handling": True})
+    logger = vbmc.function_logger
+    N = vbmc.optim_state["N"]
+    repeats = np.resize([1, 4], N).reshape(-1, 1)
+    logger.n_evals[:N] = repeats
+    logger.S[:N] = 1.0 / np.sqrt(repeats)
+    vbmc.optim_state["n_eff"] = float(np.sum(repeats))
+    vbmc.optim_state["stop_sampling"] = N
+
+    gp, _, _, _ = fit_the_gp(vbmc, {})
+
+    cov_N = gp.covariance.hyperparameter_count(gp.D)
+    noise_N = gp.noise.hyperparameter_count()
+    assert noise_N == 2
+    hyp = gp.posteriors[0].hyp
+    variance = np.ravel(
+        gp.noise.compute(hyp[cov_N : cov_N + noise_N], gp.X, gp.y, gp.s2)
+    )
+    np.testing.assert_allclose(
+        variance,
+        np.exp(2 * hyp[cov_N]) + np.exp(hyp[cov_N + 1]) * np.ravel(gp.s2),
+    )
+    assert variance[0] > variance[1]
+
+
+def test_the_noise_multiplier_starts_where_matlab_starts_it(monkeypatch):
+    """The multiplier of the provided noise starts at ``log(noisemult)``
+    (MATLAB VBMC, ``misc/gptrain_vbmc.m:165``) and carries a Student-t
+    hyperprior centred there with three degrees of freedom (``:213-218``).
+    ``noisemult`` is ``NoiseSize`` where the user gives one, with scale
+    ``log(10)/2``, and 1 otherwise, with scale ``log(10)``
+    (``:151-159``). The constant term of this level is centred at
+    ``log(TolGPNoise)`` with scale ``log(10)``."""
+    for options, center, scale in [
+        ({}, np.log(1.0), np.log(10)),
+        ({"noise_size": 3.0}, np.log(3.0), np.log(10) / 2),
+    ]:
+        vbmc = build_trained_state({"uncertainty_handling": True, **options})
+        seen = {}
+
+        def note_the_starting_points(self, X, y, s2=None, hyp0=None, **kwargs):
+            seen["gp"] = self
+            seen["hyp0"] = np.array(hyp0, copy=True)
+            return np.zeros((1, np.size(self.hyper_priors["mu"]))), None, None
+
+        monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
+        monkeypatch.setattr(gp_train_module, "_estimate_noise", lambda gp: 0.0)
+        fit_the_gp(vbmc, {})
+
+        gp = seen["gp"]
+        cov_N = gp.covariance.hyperparameter_count(gp.D)
+        # The one starting point is the vector `_gp_hyp` builds.
+        assert seen["hyp0"].shape[0] == 1
+        assert seen["hyp0"][0, cov_N + 1] == center
+
+        priors = gp.get_priors()
+        kind, (mu, sigma, df) = priors["noise_provided_log_multiplier"]
+        assert kind == "student_t"
+        assert mu == center and sigma == scale and df == 3
+        kind, (mu, sigma, df) = priors["noise_log_scale"]
+        assert kind == "student_t"
+        assert mu == np.log(vbmc.options["tol_gp_noise"])
+        assert sigma == np.log(10) and df == 3
