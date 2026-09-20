@@ -78,8 +78,8 @@ of each row and the errors they found in the reviewers' reports.
 
 ## Defects on the MATLAB side
 
-For `matlab_side_defects.md`, all from a reading of the source; nothing was
-run in MATLAB. The reviewers' claims that did not hold are in the two raw
+Entries 15 to 20 of `matlab_side_defects.md`, all from a reading of the
+source; nothing was run in MATLAB. The reviewers' claims that did not hold are in the two raw
 reports.
 
 | location | what the code does | consequence | PyVBMC |
@@ -97,9 +97,9 @@ that go on being used after it (W3-29), the thresholded covariance that need
 not be positive semi-definite (W3-6, the PI's to rule), and `log(scale)` in
 the log-Jacobian (W3-26).
 
-## Sheet entries that follow
+## Sheet entries
 
-New entries: the lower bounds from the high-posterior-density subset
+Made with the fix pass (`9c29ce1`). New entries: the lower bounds from the high-posterior-density subset
 (W3-11); the hyperparameter samplers other than slice sampling (W3-13); the
 half-bounded transform types (W3-23); the nudge, the clamp and the grouping
 in the bounded transforms (W3-33); the pooling fallback (W3-35). Extended
@@ -133,3 +133,142 @@ their reports. With the fixes above:
 - `test_rotoscaling_rotation_2d`, `test_bounded_log_abs_det_jacobian_numerically`
   and `test_transform_bounded_and_unbounded` draw from the unseeded global
   generator.
+
+## Fix commits
+
+The PI ruled on all 36 rows on 2026-09-20. The fixes are on
+`dev-port-review` after `fc8e561`, made by three Opus agents on worktrees
+(reports `../fixes/wave3_agent_A.md`, `_B.md`, `_C.md`), reviewed and
+cherry-picked by the orchestrator, which made four of the commits itself.
+
+| row | commit | |
+|---|---|---|
+| W3-1 | `095c82c` | the noise function at uncertainty level 1 |
+| W3-2 | `14a01e2` | the window of past GPs, with the guard for a history that holds none |
+| W3-3 | `6e135f2` | `floor` in the subsample count |
+| W3-4 | `1268d69` | `gp_hyp_full` records the chain before thinning |
+| W3-5 | `720c416`, `894a353` | the lower bound of `mean_const`; the second parameter of the output-dependent noise, in its dead branch |
+| W3-6 | `61a7325` | the guard of the warp's thresholded covariance |
+| W3-7 | `992f7cb` | the upper bound of the noise |
+| W3-8 | `de7a99b` | `upper_gp_length_factor` |
+| W3-9 | `f954c63`, `bf081c2` | the key of the reset; the guard and the chain of a fit that does not sample |
+| W3-10 | `dd41323` | `np.minimum` |
+| W3-12 | `d9e3cc9` | `gp_mean_fun` at construction |
+| W3-13 | `bee1866`, `894a353` | `gp_hyp_sampler` at construction and the branches removed; the `npv` block of `train_gp` |
+| W3-14 | `3b8b26c` | the floor of the design schedule |
+| W3-15 | `175629a` | `iteration > 0` |
+| W3-16 | `0380c5d` | the stable descending order |
+| W3-19 | `9ebaa48` | the warp rewrites every filled row |
+| W3-21 | `490ea14` | the evaluation time of a repeat |
+| W3-22 | `fb02de0` | the returned value is a float |
+| W3-23 | `7b8cf6a` | a half-bounded variable is refused |
+| W3-24 | `7c2f9b6`, `a385d74` | copies of the arrays; the keyword in the docstring |
+| W3-25 | `b74c65c` | the centering before the rotation |
+| W3-26 | `dea6b29` | `scale` validated |
+| W3-27 | `1a204aa` | `unscent_warp` |
+| W3-28 | `fbe25b6`, `e7e27cf`, `74414ce` | `add` at level 2; `f_vals` with `specify_target_noise` at construction; the test that combined them |
+| W3-31 | `7f771b0`, `83ea3d8` | the decorator's docstring, and the names of its arguments there |
+| W3-32 | `5aa4e89` | the logger's flag and level |
+| W3-34 | `490daae` | the mask's comparison |
+| test note | `23a69a9` | `test_gp_hyp` trains on the transformed plausible bounds |
+
+Rows W3-11, W3-18, W3-33, W3-35 and W3-36 are sheet entries, W3-30 a line
+in one, and W3-17, W3-20 and W3-29 are left as they are; `9c29ce1` holds the
+sheet, the list of MATLAB-side defects and the changelog.
+
+## Gates
+
+Before the first cherry-pick, on `fc8e561`: the four seeded runs of
+`scripts/wave2_fixpass_gate_runs.py` recorded, and the exact oracle check,
+11 of 11. After agent B's batch and again after the whole first phase (every
+commit but the five that move default trajectories, W3-2, W3-3, W3-4, W3-5
+and W3-7): the four runs bit for bit against the record (92 arrays), the
+exact oracle check, 11 of 11, and after the phase the whole
+`pyvbmc/testing/vbmc` directory (637 passed, no reruns).
+
+After the second phase the four runs all moved, as they must, and the
+default suite failed in the oracles that the fixes move and nowhere else
+(1588 passed, 58 skipped, 20 failed).
+
+**The level-1 run** (`scripts/wave3_gate_level1_run.py`, W3-1's check: a
+two-dimensional Gaussian target with noise of SD 1, 150 evaluations
+allowed). Before the fix the GP had one noise hyperparameter, which settled
+at an SD of about 1; ELBO 1.715 with SD 0.121 against a true log evidence of
+1.838, posterior SDs 1.02 and 2.09 for 1 and 2, stable after 115
+evaluations. After it the GP has two, the constant term falls to an SD of
+about 0.02 and the multiplier settles at 1, so the recorded noise carries
+the level, as in MATLAB's model; ELBO 1.755 with SD 0.123, posterior SDs
+1.02 and 1.98, stable after 100 evaluations. Without repeated observations
+every row has `s2 = 1` and the two models have one effective noise level
+each, so the defect showed in the prior and with `max_repeated_observations`
+above 0, not in a default level-1 run.
+
+**The accuracy of the second phase.** The four seeded runs are a
+fingerprint for comparing commits bit for bit and are no measure of
+accuracy: their targets have no recorded truth, and the noiseless
+Rosenbrock among them is the unscaled function, with a ridge ten times
+narrower than that of the benchmark's `rosenbrock` (true log evidence
+-1.3947, which PyVBMC misses by about 0.35 before and after the pass). On
+that run the final ELBO moved by 0.054 against a reported SD of 0.0006,
+which reflects the GP alone. A sweep of ten seeds on the same target
+(`scripts/wave3_gate_sharp_rosenbrock_sweep.py`) gives a mean gap to the
+truth of 0.339 before the phase and 0.395 after, the paired difference
+0.056 with a standard error of 0.043. On benchmark targets with known truth
+(`scripts/wave3_gate_benchmark_sweep.py`) the phase changes nothing that ten
+and six seeds can show:
+
+| target | code | error of the ELBO, median / mean / max | gsKL, median / mean | MMTV, mean | evaluations, mean |
+|---|---|---|---|---|---|
+| `rosenbrock_D2`, 10 seeds | before | 0.021 / 0.023 / 0.047 | 0.016 / 0.018 | 0.022 | 85.5 |
+| | after | 0.018 / 0.025 / 0.078 | 0.014 / 0.025 | 0.025 | 87.0 |
+| `cigar_D4`, 6 seeds | before | 0.006 / 0.009 / 0.020 | 0.0003 / 0.0024 | 0.013 | 126.7 |
+| | after | 0.006 / 0.012 / 0.028 | 0.0004 / 0.0039 | 0.016 | 130.0 |
+
+**The oracles that moved**, three and no other: `gp_fit` and
+`gp_fit_history`, which rerun the hyperparameter fit, and the log prior of
+`gp_nlZ`. W3-5 and W3-7 change the bounds that `_gp_hyp` installs, and the
+fit draws its space-filling design inside them, so the design, the point
+the chain starts from and the samples change; the default widths of the
+slice sampler, the standard deviation of the design, change with it, which
+W3-5 reaches as well as the starting points. W3-2 and W3-3 change the pool
+of past samples of a fit with a populated history. The log prior moves by
+the change of the log normalization of the noise prior, truncated at its
+new upper bound, `log(1 - cdf_lb) - log(cdf_ub - cdf_lb)`, between 3e-4 and
+5e-4, which was checked on the eight states; its gradient, the marginal
+likelihood and its gradient are bit-identical. Of the three authentic
+captures of the fit, the two whose fits draw no design (`init_N = 0`: the
+reliability index was below the retraining threshold, so neither the bounds
+nor the window enter) replay bit for bit, one of them with an even history,
+and the noisy one, which draws 814 design points, moved
+(`scripts/wave3_gate_probe_captures.py`). The three oracles were
+re-baselined from the stored states with the generator's targeted mode
+(`0ccaf76`), and the capture by a mode added for it, which keeps the
+captured inputs and the portable references bit-identical (`c60834d`,
+`2828fd3`); every fixture records the reason (PI, 2026-09-20). On
+`2828fd3`: the exact oracle check, 11 of 11, and the whole default suite
+(1608 passed, 58 skipped, no reruns).
+
+## Found during the fix pass
+
+- `test_vectorized_initial_design_matches_scalar` gave both of its arms a
+  cached value through `f_vals`, the arm whose target provides its noise
+  included, which construction refuses since W3-28; the cached value stays
+  in the noiseless arm (`74414ce`).
+- The second parameter of the output-dependent noise had infinite bounds
+  where MATLAB leaves them unset, the defect of W3-5 and W3-7 in the branch
+  that nothing reaches; found by agent A (`894a353`).
+- The window of W3-2 as MATLAB writes it reads the last entry of an empty
+  array when the history holds no GP, which MATLAB's `~isempty(stats)`
+  prevents and which the stand-in history of the `gp_fit` oracle produces;
+  found by agent A and part of `14a01e2`.
+- The docstring of `handle_0D_1D_input` named its arguments `kwarg` and
+  `argpos`; found by agent C (`83ea3d8`). The description of `f_vals` says
+  what it cannot carry (same commit).
+- `pyvbmc/testing/whitening/` has no `__init__.py`, as `AGENTS.md` records,
+  and `test_gp_hyp`, `test_rotoscaling_rotation_2d`,
+  `test_bounded_log_abs_det_jacobian_numerically` and
+  `test_transform_bounded_and_unbounded` draw from the unseeded global
+  generator. Not acted on.
+- The commits of the fix agents carried a `Claude-Session:` trailer, which
+  the PI does not want; it was removed from the unpushed commits of the
+  pass, and `AGENTS.md` says so for every later session.

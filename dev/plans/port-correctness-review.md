@@ -142,8 +142,8 @@ reviewer confirms that and spends no more time on them.
 | **P1a** Main loop, warmup, termination, final boost | `vbmc/vbmc.py`: `optimize`, the warmup and termination checks, `final_boost`, `determine_best_vp`, `get_gp`, `_create_result_dict`; the call site of `update_K` (P6) and the commented-out `vptrain2real` calls (lines 1344 and 1536) | `vbmc.m`, `private/vbmc_warmup.m`, `private/vbmc_termination.m`, `private/recompute_lcbmax.m`, `private/vbmc_output.m`, `misc/finalboost_vbmc.m`, `misc/best_vbmc.m` |
 | **P1b** Setup, options, defaults, bounds, log-joint construction, history, save/load | `vbmc/vbmc.py`: `__init__`, option and bounds setup, `_init_log_joint`/`_rebuild_log_joint`, save/load and everything not in P1a; `vbmc/options.py`, `vbmc/option_configs/*.ini`, `vbmc/_bounds.py`, `vbmc/iteration_history.py`, `pyvbmc/rng.py`, `pyvbmc/__init__.py` (eager imports, lazy `SVBMC` resolution) | `misc/setupoptions_vbmc.m`, `misc/setupvars_vbmc.m`, `misc/boundscheck_vbmc.m`, `misc/evaloption_vbmc.m`, `utils/evalbool.m`, `vbmc.m` (`save_stats`), `lpostfun.m`; `vbmc_diagnostics.m` (unported). Four PyVBMC options (`double_gp`, `empirical_gp_prior`, `integrate_gp_mean`, `gp_stochastic_step_size`) correspond to MATLAB options removed in `2044530`, and `Bandwidth` and `FeatureTest` exist only in MATLAB with no recorded reason: are they live? |
 | **P2** Initial design and active-sampling search | `vbmc/active_sample.py` (including `_BatchedNoiseHandler`, removed by the wave-1 fixes) | `private/activesample_vbmc.m`, `misc/initdesign_vbmc.m`; `utils/cmaes_modded.m` (PyVBMC uses the `cma` package and binds its draws to the run's generator; until the wave-1 fixes it also subclassed cma's noise handler), `misc/proposal_vbmc.m` (unported; unused in MATLAB too), `private/acqhedge_vbmc.m`, `utils/fastkmeans.m`, `utils/covcma.m` (unported), `misc/check_quadcoefficients_vbmc.m` (unported, integrated mean function) |
-| **P3** Acquisition functions | `acquisition_functions/*.py` (including `_real2int` and `_sq_dist` of the base class) | `acq/*.m`, `misc/real2int_vbmc.m`, `utils/sq_dist.m`; `misc/noiseshaping_vbmc.m` (unported, default off), `acq/acqeig_vbmc.m` and `misc/intkernel.m` (the EIG acquisition was removed from PyVBMC on 2026-09-14 and retained on `retain/experimental-acquisitions`) |
-| **P4** Noisy importance sampling | `vbmc/active_importance_sampling.py` (including `fess`) | `private/activeimportancesampling_vbmc.m`, `misc/fess_vbmc.m`, `gplite/private/eissample_lite.m` (MATLAB's MCMC sampler, duplicated as `utils/eissample_lite.m`; PyVBMC uses gpyreg's `SliceSampler`, a substitution the comparison reviewer examines) |
+| **P3** Acquisition functions. First question (PI, 2026-09-20): at uncertainty level 1 (`uncertainty_handling=True` without `specify_target_noise`) the GP has had MATLAB's noise model, a constant plus the recorded noise scaled by a fitted multiplier, only since the wave-3 fixes, so no earlier run exercised it: do the noisy acquisitions treat the noise of a candidate point at that level as MATLAB's do? | `acquisition_functions/*.py` (including `_real2int` and `_sq_dist` of the base class) | `acq/*.m`, `misc/real2int_vbmc.m`, `utils/sq_dist.m`; `misc/noiseshaping_vbmc.m` (unported, default off), `acq/acqeig_vbmc.m` and `misc/intkernel.m` (the EIG acquisition was removed from PyVBMC on 2026-09-14 and retained on `retain/experimental-acquisitions`) |
+| **P4** Noisy importance sampling. First question: the same as for P3, for the importance sampling and the GP updates inside active sampling at uncertainty level 1 (`active_sample.py:337` evaluates the noise at the variance of a single observation, `S**2 * n_evals`, as `private/activesample_vbmc.m:165` does, which the multiplier now scales) | `vbmc/active_importance_sampling.py` (including `fess`) | `private/activeimportancesampling_vbmc.m`, `misc/fess_vbmc.m`, `gplite/private/eissample_lite.m` (MATLAB's MCMC sampler, duplicated as `utils/eissample_lite.m`; PyVBMC uses gpyreg's `SliceSampler`, a substitution the comparison reviewer examines) |
 | **P5** GP training policy, hyperpriors, training data, GP re-update, lean GP records | `vbmc/gaussian_process_train.py` (including `_gp_hyp`, `_get_training_data`, `reupdate_gp`, `_lean_gp`) | `misc/gptrain_vbmc.m` (its local subfunction `vbmc_gphyp` at line 109; the tracked `misc/vbmc_gphyp.m` is an empty file), `misc/get_GPTrainOptions.m`, `misc/get_traindata_vbmc.m`, `misc/gpreupdate.m`, `misc/gpsample_vbmc.m`; `utils/slicelite.m` (unported, one of the hyperparameter samplers `get_GPTrainOptions.m` offers) |
 | **P6** Variational optimization, the ELBO, the `K` update | `vbmc/variational_optimization.py` (including `update_K`), `vbmc/minimize_adam.py` | `private/updateK.m`, `misc/vpoptimize_vbmc.m`, `misc/vpsieve_vbmc.m`, `misc/negelcbo_vbmc.m`, `misc/gplogjoint.m`, `misc/gplogjoint_weights.m`, `misc/vpbndloss.m`, `misc/vpoptimizeweights_vbmc.m`, `misc/vbinit_vbmc.m`, `utils/fminadam.m`, `utils/softbndloss.m`; `misc/vpsample_vbmc.m`, `utils/slicesample_vbmc.m`, `utils/malasample_vbmc.m` (unported: sampling of variational parameters) |
 | **P7** Variational posterior, entropies, VP statistics | `variational_posterior/variational_posterior.py`, `entropy/*.py`, `stats/*.py` | `vbmc_pdf.m`, `vbmc_rnd.m`, `vbmc_moments.m`, `vbmc_kldiv.m`, `vbmc_mtv.m`, `vbmc_mode.m`, `ent/entlb_vbmc.m`, `ent/entmc_vbmc.m`, `shared/mvnkl.m`, `shared/kde1d.m`, `misc/gethpd_vbmc.m`, `misc/vpbounds.m`, `misc/get_vptheta.m`, `misc/rescale_params.m`, `shared/qtrapz.m` (inlined in `mtv` through SciPy's trapezoid rule); `vbmc_power.m`, `ent/entub_vbmc.m`, `misc/vptrain2real.m` (unported; the identity at the default temperature) |
@@ -326,6 +326,18 @@ fix phase can be run from this file:
   only to set a new baseline on purpose, with the reason recorded in the
   fixture metadata, never to make a change pass.
 - `python dev/scripts/golden_replay.py` for the per-step trajectory check.
+- The four short seeded runs of
+  `experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`,
+  recorded on the starting commit and compared bit for bit after every
+  batch that must leave default trajectories alone. They are a
+  fingerprint of the trajectory and no measure of accuracy: their targets
+  have no recorded truth, and the noiseless Rosenbrock among them is the
+  unscaled function, far sharper than any problem of the benchmark, on
+  which PyVBMC misses the log evidence by about 0.35 whatever the pass.
+  A pass that moves default trajectories is read for accuracy on targets
+  of `dev/scripts/benchmark_targets.py`, whose truth is known, over
+  several seeds before and after
+  (`verification/scripts/wave3_gate_benchmark_sweep.py`).
 - The finite-difference gradient checks: `pyvbmc/testing/**/test_*_grad_fd.py`
   and the entropy tests `pyvbmc/testing/entropy/test_entlb_vbmc.py` and
   `test_entmc_vbmc.py`, which call `check_grad` directly.
@@ -981,18 +993,62 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   defects the reviewers ascribed to MATLAB five stand, one of them with
   another consequence than reported, and three do not hold, and the P5
   verifier added one.
-- [ ] Pickup point (2026-09-20, after wave 3 was verified). The PI's triage
-  of `verification/wave3.md`; then the fixes of what the PI rules in, by
-  the section "Fixes and gates". Nothing of wave 3 is fixed, and its sheet
-  entries, its MATLAB-side defects and its test notes, which the ledger
-  lists, are not yet recorded in `known_differences.md` and
-  `matlab_side_defects.md`. For the waves after the third the orchestrator
-  proposed, and the PI has not ruled on, P3 with P4, then P7 with P9 and
-  the internal track of P2, then G1 with G2, then O1 to O4.
+- [x] 2026-09-20: wave 3 triaged and fixed. The PI ruled on all 36 rows the
+  same day (`verification/wave3.md`, last column): the level-1 noise model
+  and the five moving differences of the hyperparameter fit are fixed; the
+  warp keeps the covariance when the thresholded one is not positive
+  definite; `gp_mean_fun`, `gp_hyp_sampler`, `f_vals` with
+  `specify_target_noise`, a half-bounded variable, a `scale` that is not
+  positive and a logger whose flag contradicts its level are refused where
+  they are given; five intentional differences go on the sheet and five
+  rows are left. Three Opus agents on worktrees cut at `fc8e561`, split so
+  that their hunks do not overlap (the inputs of the fit; its policy and
+  option values; slice P8), made 32 commits, one finding each with a test
+  written against the contract; the orchestrator reviewed and cherry-picked
+  them and made four more (a test that combined `f_vals` with a noisy
+  target, which construction now refuses; the dead-branch bound and the
+  unreachable `npv` block; two docstrings). Their reports are
+  `fixes/wave3_agent_A.md`, `_B.md` and `_C.md`, and the ledger lists the
+  commit of every row, the gates and what was found on the way.
+
+  Gates, in the ledger's words: the first phase, every commit but the five
+  that move default trajectories, left the four seeded runs bit for bit and
+  the oracles exact, 11 of 11; the second phase moved the four runs and
+  three oracles, `gp_fit`, `gp_fit_history` and the log prior of `gp_nlZ`,
+  each by what its fix predicts, and no other; the PI approved their new
+  baseline, set from the stored states with the reason in every fixture,
+  and the noisy one of the three authentic captures was replayed on its
+  stored inputs through a mode added to the generator
+  (`--rebaseline-gp-fit-history`). The level-1 run is healthy before and
+  after the fix, and after it the multiplier carries the noise, as in
+  MATLAB's model.
+
+  One lesson for the gates. The noiseless Rosenbrock of the four seeded
+  runs ended 0.054 lower in ELBO after the second phase, against a reported
+  SD of 0.0006, and the PI asked whether results had got worse. That target
+  is the unscaled Rosenbrock function, written into the gate script of the
+  wave-2 pass, ten times sharper than the benchmark's `rosenbrock`; PyVBMC
+  misses its log evidence (-1.3947) by about 0.35 before and after, and the
+  reported SD reflects the GP alone. On the benchmark's `rosenbrock_D2` (ten
+  seeds) and `cigar_D4` (six) the phase changes nothing measurable: median
+  error of the ELBO 0.021 before and 0.018 after, and 0.006 and 0.006. The
+  four runs are a fingerprint, not a measure of accuracy, and the section
+  "Fixes and gates" now says so and names the sweep to run instead.
+
+  The fix agents' commits carried a `Claude-Session:` trailer, which the PI
+  does not want: it was removed from the unpushed commits, and `AGENTS.md`
+  tells every session to leave it out.
+- [ ] Pickup point (2026-09-20, after the wave-3 fix pass). The pass is on
+  `dev-port-review`, 41 commits after `befab5d`, with the exact oracle check
+  and the whole default suite green on the orchestrator's machine. What
+  remains of it: the push, the branch smoke, and the full CI matrix
+  (`gh workflow run tests.yml --ref dev-port-review`), then the merge into
+  `dev-next` on the PI's word, as after wave 2. Then the PI decides on the
+  next wave; the orchestrator proposed P3 with P4, whose rows of the slice
+  table now carry a first question on uncertainty level 1, then P7 with P9
+  and the internal track of P2, then G1 with G2, then O1 to O4.
   `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it exist on
-  `dev-port-review` alone until this branch next merges into `dev-next`;
-  fixes that a user can notice add their lines to the changelog, and to its
-  "Upgrading from 1.0.4" list where they can stop a script.
+  `dev-port-review` alone until this branch next merges into `dev-next`.
 - [ ] Waves 4 to 7: P3, P4, P7, P9, G1, G2, both tracks (12 reviewers), and
   the internal track of P2, which wave 1 did not run (its four slots went
   to M, the P2 comparison and both P6 tracks); 13 reviewers, so the waves

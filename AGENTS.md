@@ -416,7 +416,15 @@ Things you must hold in your head across files:
   when the importance sampler's random stream changes. After the 2026-09-10
   RNG fix, it was re-baselined from the stored state on the original Windows
   generating machine on 2026-09-11; all 11 fixtures pass `--check --exact`.
-  A new oracle is added to the existing
+  On 2026-09-20 the port review's fixes of the hyperparameter fit (the
+  window of past GPs, and the bounds of `mean_const` and of the noise left
+  to gpyreg's recommendation) moved `gp_fit`, `gp_fit_history` and the log
+  prior of `gp_nlZ`, by the change of the noise prior's normalization;
+  the three were re-baselined from the stored states, and the one of the
+  three authentic captures under `fixtures/gp_fit_history/` whose fit
+  draws a design through `--rebaseline-gp-fit-history NAME --reason
+  "..."`, which replaces the outputs of a capture's fit and keeps its
+  captured inputs bit-identical. A new oracle is added to the existing
   fixtures with `--add-oracle NAME --reason "..."` (never by rerunning the
   recipes, which would move every snapshot). The committed references
   equal the current numerics on the generating machine (re-baselined at
