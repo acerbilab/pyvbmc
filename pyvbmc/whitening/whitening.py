@@ -61,17 +61,22 @@ def unscent_warp(fun, x, sigma):
     fun : function
         A single-argument function which warps input points.
     x : (n,D) or (D,) np.ndarray
-        The input mean for which to compute the unscented transform.
+        The input mean for which to compute the unscented transform. A
+        single row is broadcast against the rows of `sigma`.
     sigma : (n,D) or (D,) np.ndarray
         The input matrix of standard deviations or scale parameters for which
-        to compute the unscented transform.
+        to compute the unscented transform. A single row is broadcast
+        against the rows of `x`.
 
     Returns
     -------
     x_warped_mean : (n,D) or (D,) np.ndarray
-        The unscented estimate of the mean.
-    x_warped_sigma : (n,D) np.ndarray
-        The unscented estimate of the standard deviation / scale parameters.
+        The unscented estimate of the mean, with one row per row of the
+        broadcast inputs. It is one-dimensional where `x` is and the
+        inputs give a single row.
+    x_warped_sigma : (n,D) or (D,) np.ndarray
+        The unscented estimate of the standard deviation / scale
+        parameters, shaped like `x_warped_mean`.
     x_warped : (U,n,D) np.ndarray
         The warped mean points at `x_warped[0, :, :]`, and the warped std.
         simplex points, at `[1:, :, :]`. Here `U=2*D+1`.
@@ -81,6 +86,10 @@ def unscent_warp(fun, x, sigma):
     ValueError
         If the rows/columns of `x` and `sigma` cannot be coerced to match.
     """
+    # The sigma points are taken in floating point whatever the dtype of
+    # the inputs, so that an array of integers does not truncate them.
+    x = np.asarray(x, dtype=float)
+    sigma = np.asarray(sigma, dtype=float)
     x_shape_orig = x.shape
     x = np.atleast_2d(x)
     sigma = np.atleast_2d(sigma)
@@ -119,9 +128,14 @@ def unscent_warp(fun, x, sigma):
     x_warped = np.reshape(x_warped, [U, N, D])
 
     # Estimate the mean and standard deviation of the warped points
-    # by the mean and std of these sigma-points
-    x_warped_mean = np.mean(x_warped, axis=0).reshape(x_shape_orig)
-    x_warped_sigma = np.std(x_warped, axis=0, ddof=1).reshape(x_shape_orig)
+    # by the mean and std of these sigma-points. The estimates carry one
+    # row per row of the broadcast inputs; a single row takes the shape
+    # `x` was given in.
+    x_warped_mean = np.mean(x_warped, axis=0)
+    x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
+    if N == 1:
+        x_warped_mean = x_warped_mean.reshape(x_shape_orig)
+        x_warped_sigma = x_warped_sigma.reshape(x_shape_orig)
 
     return x_warped_mean, x_warped_sigma, x_warped
 

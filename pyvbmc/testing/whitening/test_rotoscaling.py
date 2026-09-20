@@ -134,6 +134,39 @@ def test_unscent_warp():
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
 
 
+def test_unscent_warp_does_not_truncate_an_integer_mean():
+    """The sigma points are taken in floating point whatever the dtype of
+    the given mean, so an array of integers does not truncate them. Under
+    the identity warp the transform returns the mean and the scales it was
+    given."""
+    x = np.array([[1, 2], [3, 4]])
+    sigma = np.array([0.25, 0.25])
+
+    x_warped_mean, x_warped_sigma, __ = unscent_warp(lambda u: u, x, sigma)
+
+    assert np.allclose(x_warped_mean, x)
+    assert np.allclose(x_warped_sigma, np.tile(sigma, (2, 1)))
+
+
+def test_unscent_warp_broadcasts_one_mean_over_several_scales():
+    """A single row of `x` against several rows of `sigma` gives one
+    result per row of `sigma`, as several rows of `x` against a single row
+    of `sigma` give one result per row of `x`."""
+    D = 2
+    x = np.array([[1.5, -2.0]])
+    sigma = np.array([[0.5, 0.25], [1.0, 2.0], [0.125, 3.0]])
+
+    x_warped_mean, x_warped_sigma, x_warped = unscent_warp(
+        lambda u: u, x, sigma
+    )
+
+    assert x_warped_mean.shape == (3, D)
+    assert x_warped_sigma.shape == (3, D)
+    assert x_warped.shape == (2 * D + 1, 3, D)
+    assert np.allclose(x_warped_mean, np.tile(x, (3, 1)))
+    assert np.allclose(x_warped_sigma, sigma)
+
+
 def test_parameter_transformer_log_abs_det():
     D = 3
     x = np.array([1.0, -3.0, 8.5])
