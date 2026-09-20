@@ -420,11 +420,16 @@ class VBMC:
             transform_type=self.options["bounded_transform"],
         )
 
+        # The component means of a variational posterior are coordinates of
+        # the transformed space, so the starting points are mapped before
+        # the posterior is built from them.
+        x0_tran = self.parameter_transformer(self.x0)
+
         # Initialize variational posterior
         self.vp = VariationalPosterior(
             D=self.D,
             K=self.options.get("k_warmup"),
-            x0=self.x0,
+            x0=x0_tran,
             parameter_transformer=self.parameter_transformer,
             rng=self.rng,
             calibration=self.options.get("performance_calibration"),
@@ -476,7 +481,7 @@ class VBMC:
         # The transformed copy belongs to the inference space of this
         # moment, which a later warp of that space leaves behind.
         self.x0_orig = self.x0.copy()
-        self.x0 = self.parameter_transformer(self.x0)
+        self.x0 = x0_tran
         self.random_state = self._get_random_state()
         self.iteration_history = IterationHistory(
             [
