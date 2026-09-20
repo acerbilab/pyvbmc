@@ -37,6 +37,42 @@ def recorded_history(vbmc, elbo, elbo_sd, r_index, stable):
     vbmc.iteration_history["stable"] = np.array(stable, dtype=object)
 
 
+def assert_copy_of_recorded(vp, recorded):
+    """The returned posterior is a copy of the recorded one, on the same
+    random stream and with the same variational parameters."""
+    assert vp is not recorded
+    assert vp.rng is recorded.rng
+    assert vp.K == recorded.K
+    for parameter in ("mu", "sigma", "lambd", "w"):
+        assert np.array_equal(
+            getattr(vp, parameter), getattr(recorded, parameter)
+        )
+
+
+def test_determine_best_vp_returns_a_copy_and_leaves_the_history_alone():
+    """The selection returns a copy of the recorded posterior of the
+    selected iteration, with that iteration's stability flag written into
+    the copy. The recorded posterior keeps the statistics it was recorded
+    with, so the history still describes the run as it happened."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(
+        vbmc,
+        elbo=[0.0, 1.0, 2.0],
+        elbo_sd=[0.0] * 3,
+        r_index=[1.0] * 3,
+        stable=[True] * 3,
+    )
+    recorded = vbmc.iteration_history["vp"][2]
+    assert "stable" not in recorded.stats
+
+    vp, __, __, idx_best = vbmc.determine_best_vp()
+
+    assert idx_best == 2
+    assert_copy_of_recorded(vp, recorded)
+    assert vp.stats["stable"]
+    assert "stable" not in recorded.stats
+
+
 def test_determine_best_vp_receives_the_option_values():
     """The options that govern the selection reach ``determine_best_vp``,
     so setting one of them changes which posterior a run returns."""
@@ -125,7 +161,7 @@ def test_determine_best_vp_last_stable():
     vbmc.iteration_history["elbo_sd"] = np.arange(0, 3)
     vp, elbo, elbo_sd, idx_best = vbmc.determine_best_vp()
     assert idx_best == 2
-    assert vp == vbmc.iteration_history["vp"][idx_best]
+    assert_copy_of_recorded(vp, vbmc.iteration_history["vp"][idx_best])
     assert elbo == 2
     assert elbo_sd == 2
 
@@ -145,7 +181,7 @@ def test_determine_best_vp_rank_criterion_elbo():
         rank_criterion_flag=True
     )
     assert idx_best == n_iterations - 1
-    assert vp == vbmc.iteration_history["vp"][idx_best]
+    assert_copy_of_recorded(vp, vbmc.iteration_history["vp"][idx_best])
     assert elbo == n_iterations - 1
     assert elbo_sd == 0
 
@@ -164,7 +200,7 @@ def test_determine_best_vp_rank_criterion_max_idx():
         rank_criterion_flag=True, max_idx=1000
     )
     assert idx_best == 1000
-    assert vp == vbmc.iteration_history["vp"][idx_best]
+    assert_copy_of_recorded(vp, vbmc.iteration_history["vp"][idx_best])
     assert elbo == 1000
     assert elbo_sd == 0
 
@@ -184,7 +220,7 @@ def test_determine_best_vp_no_rank_criterion_second_last_stable():
         rank_criterion_flag=False, max_idx=1000
     )
     assert idx_best == 1000
-    assert vp == vbmc.iteration_history["vp"][idx_best]
+    assert_copy_of_recorded(vp, vbmc.iteration_history["vp"][idx_best])
     assert elbo == 1000
     assert elbo_sd == 0
 
@@ -202,7 +238,7 @@ def test_determine_best_vp_no_rank_criterion_no_stable():
         rank_criterion_flag=False, max_idx=1000
     )
     assert idx_best == 1000
-    assert vp == vbmc.iteration_history["vp"][idx_best]
+    assert_copy_of_recorded(vp, vbmc.iteration_history["vp"][idx_best])
     assert elbo == 1000
     assert elbo_sd == 0
 

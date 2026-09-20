@@ -1271,7 +1271,6 @@ class VBMC:
                     frac_back=self.options.get("best_frac_back"),
                     rank_criterion_flag=self.options.get("rank_criterion"),
                 )
-                vp_tmp = copy.deepcopy(vp_tmp)
                 # Store variables in case warp needs to be undone:
                 # (vp_old copied above)
                 optim_state_old = copy.deepcopy(self.optim_state)
@@ -2671,7 +2670,11 @@ class VBMC:
         Returns
         -------
         vp : VariationalPosterior
-            The VariationalPosterior found during the optimization of VBMC.
+            A copy of the VariationalPosterior of the selected iteration,
+            carrying that iteration's stability flag in its statistics. It
+            shares the random generator with the recorded posterior, as
+            every copy of a VariationalPosterior does, and the recorded
+            posterior itself is left untouched.
         elbo : float
             The ELBO of the iteration with the best VariationalPosterior.
         elbo_sd : float
@@ -2757,8 +2760,10 @@ class VBMC:
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 idx_best = idx_start + np.argmax(elcbo)
 
-        # Return best variational posterior, its ELBO and SD
-        vp = self.iteration_history.get("vp")[idx_best]
+        # Return best variational posterior, its ELBO and SD. The
+        # stability flag goes on the copy: the iteration history describes
+        # the run as it was recorded and is not written to here.
+        vp = copy.deepcopy(self.iteration_history.get("vp")[idx_best])
         elbo = self.iteration_history.get("elbo")[idx_best]
         elbo_sd = self.iteration_history.get("elbo_sd")[idx_best]
         vp.stats["stable"] = self.iteration_history.get("stable")[idx_best]
