@@ -1,6 +1,7 @@
 import copy
 import logging
 import re
+import tokenize
 from math import ceil
 from pathlib import Path
 
@@ -264,27 +265,46 @@ def test_fun_eval_start_default(D, expected):
     assert vbmc.options["fun_eval_start"] == expected
 
 
+def _code_without_comments(path):
+    """The module's source with its comments dropped."""
+    pieces = []
+    with tokenize.open(path) as handle:
+        for token in tokenize.generate_tokens(handle.readline):
+            if token.type != tokenize.COMMENT:
+                pieces.append(token.string)
+    return "".join(pieces)
+
+
 def test_inert_options_are_the_declared_options_nothing_reads():
     """``INERT_OPTIONS`` lists exactly the declared options that no module
     of the package reads, so that a newly dead option, or a newly read
-    registered one, fails here."""
+    registered one, fails here.
+
+    An option is read where its name is subscripted or fetched from an
+    options mapping: ``options["name"]``, ``options.get("name")`` or
+    ``options.eval("name", ...)``, and the same through ``self`` inside
+    :class:`Options`. A key of another mapping that happens to carry an
+    option's name, such as an entry of ``optim_state``, is not a read of
+    the option, and neither is a mention in a comment."""
     package_path = options_path.parent.parent
-    # The option machinery itself is not a consumer, and it spells out
-    # every registered name.
-    registry_parts = ("vbmc", "options.py")
-    sources = []
-    for path in package_path.rglob("*.py"):
-        parts = path.relative_to(package_path).parts
-        if "testing" in parts or "option_configs" in parts:
-            continue
-        if parts == registry_parts:
-            continue
-        sources.append(path)
-    text = "\n".join(path.read_text(encoding="utf-8") for path in sources)
+    sources = [
+        path
+        for path in package_path.rglob("*.py")
+        if "testing" not in path.relative_to(package_path).parts
+    ]
+    text = re.sub(
+        r"\s+", "", "\n".join(_code_without_comments(path) for path in sources)
+    )
     unread = {
         name
         for name in _declared_option_names()
-        if re.search("['\"]" + re.escape(name) + "['\"]", text) is None
+        if re.search(
+            r"(?:options|self)(?:\[|\.get\(|\.eval\()['\"]"
+            + re.escape(name)
+            + r"['\"]",
+            text,
+        )
+        is None
     }
     assert unread == set(INERT_OPTIONS)
 
