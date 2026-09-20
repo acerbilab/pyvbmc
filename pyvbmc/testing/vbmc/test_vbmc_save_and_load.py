@@ -232,6 +232,55 @@ def test_resumed_run_schedules_the_gp_fit_as_a_fresh_run(monkeypatch):
         ) == _gp_fit_starting_points(fresh, n_eff)
 
 
+def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
+    """One transformer is shared, and it is the chosen iteration's.
+
+    A run keeps a single ``ParameterTransformer`` object on the instance,
+    on the variational posterior and on the function logger, so that the
+    three always agree on the map between the user's coordinates and the
+    inference space. Restoring the state recorded at an iteration must
+    restore that sharing with the map of that iteration.
+    """
+    path = base_path.joinpath("test_vbmc_save_static.pkl")
+    for iteration in (None, 0, 3, 6):
+        vbmc = VBMC.load(path, iteration=iteration)
+        transformer = vbmc.parameter_transformer
+        assert transformer is vbmc.vp.parameter_transformer
+        assert transformer is vbmc.function_logger.parameter_transformer
+
+        recorded = vbmc.iteration_history["vp"][vbmc.iteration]
+        probe = np.linspace(-1.0, 1.0, vbmc.D).reshape((1, vbmc.D))
+        assert np.array_equal(
+            transformer(probe), recorded.parameter_transformer(probe)
+        )
+
+
+def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
+    """The restored map comes from the iteration, not from the run's end.
+
+    A run that warps its inference space leaves the instance holding a map
+    later than the ones recorded at earlier iterations, so a state restored
+    from such an iteration must carry the recorded map.
+    """
+    path = base_path.joinpath("test_vbmc_save_static.pkl")
+    vbmc = VBMC.load(path)
+    D = vbmc.D
+    later_map = copy.deepcopy(vbmc.parameter_transformer)
+    later_map.mu = np.full(D, 0.5)
+    later_map.delta = np.full(D, 2.0)
+    vbmc.parameter_transformer = later_map
+    doctored = tmp_path / "warped"
+    vbmc.save(doctored)
+
+    loaded = VBMC.load(doctored, iteration=3)
+    probe = np.linspace(-1.0, 1.0, D).reshape((1, D))
+    recorded = loaded.iteration_history["vp"][3].parameter_transformer
+    assert np.array_equal(loaded.parameter_transformer(probe), recorded(probe))
+    assert not np.array_equal(
+        loaded.parameter_transformer(probe), later_map(probe)
+    )
+
+
 def test_vbmc_save_load_error_handling():
     vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
     with pytest.raises(FileExistsError) as err:

@@ -457,6 +457,10 @@ class VBMC:
         self._initialize_precomputed_evaluations(precomputed_evaluations)
         self._validate_initial_fresh_budget()
 
+        # The starting points in the coordinates the caller gave them in.
+        # The transformed copy belongs to the inference space of this
+        # moment, which a later warp of that space leaves behind.
+        self.x0_orig = self.x0.copy()
         self.x0 = self.parameter_transformer(self.x0)
         self.random_state = self._get_random_state()
         self.iteration_history = IterationHistory(
@@ -2926,6 +2930,15 @@ class VBMC:
                         setattr(
                             vbmc, attr, vbmc.iteration_history[attr][iteration]
                         )
+            # A run holds one transformer, shared by the instance, the
+            # variational posterior and the function logger, so that the
+            # three agree on the map between the user's coordinates and the
+            # inference space. The restored state brings the map of the
+            # iteration it comes from, and the instance takes that one.
+            vbmc.parameter_transformer = vbmc.vp.parameter_transformer
+            vbmc.function_logger.parameter_transformer = (
+                vbmc.vp.parameter_transformer
+            )
             if vbmc.optim_state.get("hyp_dict") is not None:
                 vbmc.hyp_dict = vbmc.optim_state["hyp_dict"]
             vbmc.iteration = iteration
@@ -2979,6 +2992,11 @@ class VBMC:
             vbmc.precomputed_observation_count = 0
         if not hasattr(vbmc, "precomputed_location_count"):
             vbmc.precomputed_location_count = 0
+        if not hasattr(vbmc, "x0_orig"):
+            # Instances saved without the starting points in the caller's
+            # coordinates: the map of the restored iteration is the best
+            # available inverse of the transformed copy they do carry.
+            vbmc.x0_orig = vbmc.parameter_transformer.inverse(vbmc.x0)
         vbmc._configured_max_fun_evals = vbmc.options.get("max_fun_evals")
         vbmc._effective_max_fun_evals = (
             vbmc._configured_max_fun_evals - vbmc.initialization_cost
@@ -3497,7 +3515,7 @@ class VBMC:
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
-x0: {summarize(self.parameter_transformer.inverse(self.x0))},
+x0: {summarize(self.x0_orig)},
 lower bounds: {summarize(self.lower_bounds)},
 upper bounds: {summarize(self.upper_bounds)},
 plausible lower bounds: {summarize(self.plausible_lower_bounds)},
