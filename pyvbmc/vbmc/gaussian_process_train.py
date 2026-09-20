@@ -649,7 +649,7 @@ def _get_gp_training_options(
     else:
         gp_train["burn"] = gp_train["thin"] * 3
         if (
-            iteration > 1
+            iteration > 0
             and iteration_history["r_index"][iteration - 1]
             < options["gp_retrain_threshold"]
         ):
