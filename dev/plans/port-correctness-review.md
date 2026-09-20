@@ -946,14 +946,49 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   The reviewers' check scripts, the transcription of `warpvars_vbmc.m`
   among them, are kept on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`).
-- [ ] Pickup point (2026-09-20, after wave 3 ran). Report wave 3 to the PI,
-  as the working rules ask after every wave: the findings of the four
-  reports with enough context to judge them, the ones two reviewers share
-  first, then the PI decides what follows (verification, fixes, the next
-  wave). Nothing of wave 3 is verified, no fix is made, and no MATLAB-side
-  defect or sheet entry is recorded yet. For the waves after the third the
-  orchestrator proposed, and the PI has not yet ruled on, P3 with P4, then
-  P7 with P9 and the internal track of P2, then G1 with G2, then O1 to O4.
+- [x] 2026-09-20: wave 3 reported to the PI and verified (PI: verify, the
+  findings that can change what a run computes by the orchestrator and the
+  rest by two read-only Opus verifiers, one per slice; the wave gives work
+  enough, and no further wave is considered until it is dealt with). The
+  ledger is `experiments/port_review_20260919/verification/wave3.md`: 36
+  rows from the 48 findings, each with the orchestrator's proposed
+  disposition and an empty column for the PI's; the verifiers' raw reports
+  are `wave3_P5.md` and `wave3_P8.md` beside it, and the 21 scripts are
+  under `verification/scripts/`. How often a finding fires was measured on
+  the 21 stored runs with their history and on the 990 posteriors that the
+  runs of the population campaigns ended with before their boost
+  (`dev/scripts/runs/LOCAL.md`).
+
+  Seven rows can change what a run computes (part 1 of the ledger). At
+  uncertainty level 1 the GP has level 0's noise function, confirmed, never
+  matched MATLAB, no reason recorded (W3-1). Five differences in the
+  hyperparameter fit fire at the defaults and change its starting points
+  or its sampler widths, not the model: the window of past GPs, one short
+  for an even-length history in 170 of the 361 calls that collect past
+  samples, which settles the reviewers' disagreement for the comparison
+  reviewer (W3-2); `ceil` for MATLAB's `floor` in the subsample count
+  (W3-3); `gp_hyp_full` recording the thinned chain where MATLAB records
+  the chain before thinning, in all 732 sampling iterations (W3-4); and
+  two bounds written as infinite where MATLAB leaves the recommendation,
+  the lower bound of `mean_const`, which keeps the whole design of that
+  coordinate inside the plausible box, and the upper bound of the noise
+  (W3-5, W3-7). The thresholded covariance of the warp can be indefinite
+  in principle, as in MATLAB and in the paper's recipe, and is in none of
+  the 990 posteriors (W3-6). Of the other 29 rows none changes a number at
+  the defaults: 13 small fixes, 6 cases for a stricter interface, 5
+  intentional differences for the sheet, 5 to leave. The verifiers found
+  errors in all four reports, which their own reports list; of the eight
+  defects the reviewers ascribed to MATLAB five stand, one of them with
+  another consequence than reported, and three do not hold, and the P5
+  verifier added one.
+- [ ] Pickup point (2026-09-20, after wave 3 was verified). The PI's triage
+  of `verification/wave3.md`; then the fixes of what the PI rules in, by
+  the section "Fixes and gates". Nothing of wave 3 is fixed, and its sheet
+  entries, its MATLAB-side defects and its test notes, which the ledger
+  lists, are not yet recorded in `known_differences.md` and
+  `matlab_side_defects.md`. For the waves after the third the orchestrator
+  proposed, and the PI has not ruled on, P3 with P4, then P7 with P9 and
+  the internal track of P2, then G1 with G2, then O1 to O4.
   `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it exist on
   `dev-port-review` alone until this branch next merges into `dev-next`;
   fixes that a user can notice add their lines to the changelog, and to its
