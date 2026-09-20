@@ -218,6 +218,42 @@ def test_fess():
         assert np.isclose(fess_gp, MATLAB["fess_gp"])
 
 
+def test_fess_draws_the_points_it_is_asked_for():
+    """``X`` may be a number of samples to draw from the variational
+    posterior, the documented default of 100 among them
+    (``misc/fess_vbmc.m:4-12``). The value is the fractional effective
+    sample size of the importance weights at the points drawn."""
+    vp, gp, __ = _scenario()
+    for N, call in (
+        (100, lambda: fess(vp, gp)),
+        (25, lambda: fess(vp, gp, 25)),
+    ):
+        vp.rng = np.random.default_rng(7)
+        value = call()
+        assert np.isscalar(value)
+
+        # The same draws, and the definition of the quantity.
+        vp.rng = np.random.default_rng(7)
+        X, __ = vp.sample(N, orig_flag=False)
+        f_bar, __ = gp.predict(X)
+        ln_weights = (
+            f_bar.ravel() - vp.pdf(X, orig_flag=False, log_flag=True).ravel()
+        )
+        weights = np.exp(ln_weights - np.amax(ln_weights))
+        weights = weights / np.sum(weights)
+        assert value == pytest.approx((1 / np.sum(weights**2)) / N)
+
+
+def test_fess_checks_the_number_of_given_gp_means():
+    """A matrix of GP means carries one row per sample point, whether the
+    points were given or drawn."""
+    vp, gp, __ = _scenario()
+    vp.rng = np.random.default_rng(7)
+    means = np.zeros((7, 2))
+    with pytest.raises(ValueError, match="Mismatch"):
+        fess(vp, means, 25)
+
+
 def test_active_sample_proposal_pdf():
     D = 3
     K = 2

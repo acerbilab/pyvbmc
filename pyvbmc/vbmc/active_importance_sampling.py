@@ -469,7 +469,7 @@ def fess(vp, gp, X=100):
     # If a single number is passed, interpret it as the number of samples
     if np.isscalar(X):
         N = X
-        X = vp.sample(N, orig_flag=False)
+        X, __ = vp.sample(N, orig_flag=False)
     else:
         N = X.shape[0]
 
