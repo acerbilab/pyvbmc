@@ -783,6 +783,57 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   shows `results["iterations"]` as the count (`bf027a7`, PI: edit the two
   numbers, which the stored function counts confirm, without running the
   notebook again).
+- [x] 2026-09-20: the full CI matrix on the fix pass (PI: dispatch it after
+  the branch smoke, which runs Ubuntu and Python 3.12 alone, as the
+  orchestrator's machine runs Windows and 3.12). It needed three runs, and
+  what failed was in tests, two of them wave 1's, on cells that had not run
+  since before wave 1. On the three Python 3.10 cells seven tests of
+  `test_vbmc_active_sample.py` patched `pyvbmc.vbmc.active_sample.<name>`
+  by its dotted name: inside the package that name is the function the
+  package exports, which shadows the module, and Python 3.10's `mock`
+  resolves the target to the function (`99fdb2f`: the `cma` patches name
+  `cma.fmin`, the others patch the module object, as the file's older tests
+  do). On Windows 3.12 the seeded one-dimensional mixture fit of
+  `test_variational_optimization.py` ended in a good solution of variance
+  4.62 where this machine reaches 5.06, against a moment-matched KL bound
+  set at 1.5e-3, and the seed replays the same draws on every rerun
+  (`8e1df32`: the bound is 5e-3, a variance within about 13% of the truth;
+  a merged posterior fails the ELBO check of the same test). On the Python
+  3.11 cells of Ubuntu and macOS the interpreter ended in a segmentation
+  fault, in three different places over three runs: a new test of the pass
+  saved again the run stored in `test_vbmc_save_static.pkl`, which holds
+  its target function pickled by value, as bytecode of the Python 3.10 or
+  older that wrote it in 2023, and pickling such a function makes dill
+  disassemble it, which corrupts memory on 3.11 (`e3ccd0e`: the test saves
+  a short run of its own, and `AGENTS.md` records the trap). The third run,
+  on `e3ccd0e`, is green in all nine cells.
+
+  The crash led to a defect of the package (W2-30 of
+  `verification/wave2.md`; PI: fix). `ParameterTransformer` kept its
+  bounded transforms as functions defined inside `_set_bounded_transforms`,
+  so every saved posterior, saved run and pickled `SVBMC` object carried
+  them as bytecode of the Python version that wrote the file, and for a
+  bounded problem the first use of such a file under another minor version
+  (`vp.sample`, `vp.pdf`, the construction of an `SVBMC`) ended the
+  interpreter; an unbounded problem never calls them, which is why the two
+  static fixtures never showed it. Established with two interpreters on the
+  orchestrator's machine (3.11.9 in a throwaway environment, 3.12.6), one
+  process per step, in both directions. The transformer pickles and copies
+  without the functions and rebuilds them from `bounded_types` when
+  restored, files written before included, whose stored functions are
+  dropped unused (`e610479`); with it every step of the experiment works on
+  the files saved before the fix, and so does the whole S-VBMC path: three
+  converged bounded runs saved under 3.12 by the earlier code, stacked,
+  optimized, sampled and saved under 3.11, and loaded back under 3.12 with
+  the same ELBO. Two fixtures hold one bounded posterior written under 3.11
+  and under 3.12 by the last commit that stored the functions, so that
+  every CI cell uses a file with bytecode of another version. A saved
+  `VBMC` instance still holds the target and the log-joint wrapper by
+  value: under another version it can be inspected, not continued or saved
+  again, which the `save` and `load` docstrings say (`1c0d0d3`). Gates: the
+  exact oracle check, 11 of 11; the four seeded runs bit for bit against
+  the head before, the generator state included; the whole default suite
+  (1540 passed, 58 skipped); the S-VBMC tests with Torch (227).
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);

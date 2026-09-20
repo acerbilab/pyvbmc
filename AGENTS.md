@@ -332,12 +332,20 @@ Things you must hold in your head across files:
 - `test_*_save_static.pkl` fixtures are pickled instances of the current
   classes. Renaming or removing an attribute on `VBMC`, `VariationalPosterior`,
   `Options`, or `IterationHistory` breaks them, and they cannot be regenerated
-  without rerunning `optimize()`. Load them, never save them again: they hold
-  the target function pickled by value, as bytecode of the Python version
-  that wrote the file, and pickling such a function makes dill disassemble
-  it, which corrupts memory on Python 3.11 (a segmentation fault in that
-  test, in a later garbage collection, or when the interpreter exits). A
-  test that needs a saved run with history makes a short run of its own.
+  without rerunning `optimize()`. Load the VBMC one, never save it again: it
+  holds the target function and PyVBMC's log-joint wrapper pickled by value,
+  as bytecode of the Python version that wrote the file, and pickling such a
+  function makes dill disassemble it, which corrupts memory on Python 3.11
+  (a segmentation fault in that test, in a later garbage collection, or when
+  the interpreter exits). A test that needs a saved run with history makes a
+  short run of its own. A saved posterior holds no function: a
+  `ParameterTransformer` pickles and copies without its bounded-transform
+  functions and rebuilds them from `bounded_types` when restored, so
+  posterior files and `SVBMC` objects move between Python versions.
+  `test_vp_save_bounded_py311.pkl` and `_py312.pkl` are one bounded
+  posterior written under two Python versions by the last commit that
+  stored those functions, so that every CI cell uses a file holding
+  bytecode of another Python version; calling it ended the interpreter.
 - MATLAB-derived reference values live in plain `.npz` files (flat keys,
   `np.load(path, allow_pickle=False)`) under `entropy/`,
   `variational_posterior/` and `vbmc/compare_MATLAB/`, each directory with a
