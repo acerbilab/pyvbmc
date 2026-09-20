@@ -169,7 +169,8 @@ class FunctionLogger:
     D : int
         The number of dimensions that the function takes as input.
     noise_flag : bool
-        Whether the function fun is stochastic or not.
+        Whether the function fun is stochastic or not. It is `True`
+        exactly when ``uncertainty_handling_level`` is above 0.
     uncertainty_handling_level : {0, 1, 2}
         The uncertainty handling level which can be one of
         (0: none; 1: unknown noise level; 2: user-provided noise).
@@ -195,6 +196,12 @@ class FunctionLogger:
     ):
         if not isinstance(vectorized_target, (bool, np.bool_)):
             raise ValueError("vectorized_target must be a boolean.")
+        if bool(noise_flag) != (uncertainty_handling_level > 0):
+            raise ValueError(
+                "noise_flag must be True exactly when "
+                "uncertainty_handling_level is above 0, but they are "
+                f"{bool(noise_flag)} and {uncertainty_handling_level}."
+            )
         self.fun = fun
         self.D: int = D
         self.noise_flag: bool = noise_flag
@@ -483,8 +490,10 @@ class FunctionLogger:
         f_val_orig : float
             The result of the evaluation of the function.
         f_sd : float, optional
-            The (estimated) SD of the returned value (if heteroskedastic noise
-            handling is on) of the evaluation of the function, by default None.
+            The (estimated) SD of the added value. At uncertainty handling
+            level 2 it is required, the noise of an observation being the
+            caller's to provide; at level 1 it defaults to 1 and at level 0
+            it is ignored. By default None.
         fun_eval_time : float
             The duration of the time it took to evaluate the function,
             by default np.nan.
@@ -504,6 +513,8 @@ class FunctionLogger:
             If the input cannot be coerced to 1-D.
         ValueError
             Raise if the function value is not a finite real-valued scalar.
+        ValueError
+            Raise if ``f_sd`` is missing at uncertainty handling level 2.
         ValueError
             Raise if the (estimated) SD (second function output)
             is not a finite, positive real-valued scalar.
@@ -527,6 +538,12 @@ class FunctionLogger:
 
         if self.noise_flag:
             if f_sd is None:
+                if self.uncertainty_handling_level == 2:
+                    raise ValueError(
+                        "f_sd is required at uncertainty handling level 2, "
+                        "where the SD of an observation is the caller's to "
+                        "provide."
+                    )
                 f_sd = 1
         else:
             f_sd = None
@@ -710,21 +727,25 @@ class FunctionLogger:
                     N + 1
                 )
 
-            # Work on a copy: adding the transform Jacobian to a view would
-            # corrupt the pooled original-space observation on every repeat.
-            f_val = self.y_orig[idx].copy()
+            # Read the pooled value out of its row: adding the transform
+            # Jacobian to the row itself would corrupt the original-space
+            # observation on every repeat.
+            f_val = self.y_orig[idx, 0]
             if self.transform_parameters:
-                f_val += self.parameter_transformer.log_abs_det_jacobian(x)
+                f_val = (
+                    f_val + self.parameter_transformer.log_abs_det_jacobian(x)
+                )
             self.y[idx] = f_val
-            self.fun_eval_time[idx] = (
-                N * self.fun_eval_time[idx] + fun_eval_time
-            ) / (N + 1)
+            # An unknown evaluation time leaves the stored average alone.
             if not np.isnan(fun_eval_time):
+                self.fun_eval_time[idx] = (
+                    N * self.fun_eval_time[idx] + fun_eval_time
+                ) / (N + 1)
                 self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
             # The pooled value can move the maximum either way.
             self.y_max = np.nanmax(self.y[self.X_flag])
-            return f_val, idx
+            return float(f_val), idx
         else:
             self.Xn += 1
             if self.Xn > self.X_orig.shape[0] - 1:
@@ -749,7 +770,7 @@ class FunctionLogger:
             self.X_flag[self.Xn] = True
             self.n_evals[self.Xn] += 1
             self.y_max = np.nanmax(self.y[self.X_flag])
-            return f_val, self.Xn
+            return float(f_val), self.Xn
 
     def __deepcopy__(self, memo):
         cls = self.__class__

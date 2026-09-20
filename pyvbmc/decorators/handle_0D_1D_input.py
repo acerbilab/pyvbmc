@@ -9,12 +9,20 @@ def handle_0D_1D_input(
     """
     A decorator that handles 0D, 1D inputs and transforms them to 2D.
 
+    A 1D input is unwrapped again on the way out: the result comes back
+    one-dimensional, or as a scalar where ``return_scalar`` is set. A 0D
+    input is promoted to a single row of a single column, and its result
+    is returned as the wrapped function produced it: neither the
+    unwrapping nor ``return_scalar`` applies to it. For a function whose
+    result carries one row per row of its input, that is a ``(1, 1)``
+    array.
+
     Parameters
     ----------
-    kwarg : list of str
-        The names of the keyword arguments that should be handeled.
-    argpos : list of int
-        The positions of the arguments that should be handeled.
+    patched_kwargs : list of str
+        The names of the keyword arguments that should be handled.
+    patched_argpos : list of int
+        The positions of the arguments that should be handled.
     return_scalar : bool, optional
         If the input is 1D the function should return a scalar,
         by default False.

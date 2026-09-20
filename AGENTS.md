@@ -109,16 +109,23 @@ are generated from them by `examples/scripts/Makefile`; regenerate, do not edit.
 
 Version comes from git tags via setuptools_scm with no fallback: a shallow
 clone or exported tarball fails to build. Commit messages follow conventional
-commits. Work on feature branches; PRs to `main` run the full 3-OS × 3-Python
-matrix, skipped when only docs changed. Pushes to `dev*` branches that touch
-`pyvbmc/`, `pyproject.toml` or `setup.py` run a reduced smoke (Ubuntu,
-newest Python). Both call the one job in `test-matrix.yml`, which `tests.yml`
-also runs as the full matrix on manual dispatch and twice a month on `main`.
-`feat-*` and `dev-*` branches are live work; an implementation that is
-rejected or parked after evaluation leaves the working line and is kept
-for the record on a branch named `retain/<topic>`
-(`retain/experimental-acquisitions`, `retain/viqr-rqmc-nodes`), cut at the
-last commit that holds it and named for the topic its records describe.
+commits and carry no `Claude-Session:` trailer (a `Co-Authored-By:` line is
+fine). A change that a user can notice is listed in `CHANGELOG.md` under
+`Unreleased` with the work that makes it, in a sentence written for users and
+relative to the last release (a fix to a feature that no release has shipped
+belongs to that feature's entry). A change that can stop a script written for
+the last release, or change what it returns, also has one line in the
+"Upgrading from" list that opens the section, kept in step with its entry.
+Work on feature branches; PRs to `main` run the full 3-OS × 3-Python matrix,
+skipped when only docs changed. Pushes to `dev*` branches that touch
+`pyvbmc/`, `pyproject.toml` or `setup.py` run a reduced smoke (Ubuntu, newest
+Python). Both call the one job in
+`test-matrix.yml`, which `tests.yml` also runs as the full matrix on manual
+dispatch and twice a month on `main`. `feat-*` and `dev-*` branches are live
+work; an implementation that is rejected or parked after evaluation leaves the
+working line and is kept for the record on a branch named `retain/<topic>`
+(`retain/experimental-acquisitions`, `retain/viqr-rqmc-nodes`), cut at the last
+commit that holds it and named for the topic its records describe.
 
 ## Architecture
 
@@ -280,10 +287,12 @@ Things you must hold in your head across files:
   `specify_target_noise` or by `uncertainty_handling=True`) are settled
   after every source is read. `uncertainty_handling` (a boolean),
   `integer_vars` (a boolean mask or 0-based indices), `max_fun_evals` and
-  `max_iter` (positive integers, `max_iter` raised to `min_iter`) are
-  checked at construction. Options are frozen after init against assignment
-  and removal; use `options.__setitem__(k, v, force=True)` and
-  `options.__delitem__(k, force=True)`.
+  `max_iter` (positive integers, `max_iter` raised to `min_iter`),
+  `gp_mean_fun` and `gp_hyp_sampler` (the values the package implements:
+  `zero`, `const`, `negquad`; `slicesample`) and `f_vals` (not with
+  `specify_target_noise`) are checked at construction. Options are frozen
+  after init against assignment and removal; use `options.__setitem__(k, v,
+  force=True)` and `options.__delitem__(k, force=True)`.
 - **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
   creates `vbmc.rng` (`pyvbmc/rng.py: get_rng`), shared with `vbmc.vp`;
   `VariationalPosterior.__deepcopy__` shares the generator so every copy of a
@@ -407,7 +416,15 @@ Things you must hold in your head across files:
   when the importance sampler's random stream changes. After the 2026-09-10
   RNG fix, it was re-baselined from the stored state on the original Windows
   generating machine on 2026-09-11; all 11 fixtures pass `--check --exact`.
-  A new oracle is added to the existing
+  On 2026-09-20 the port review's fixes of the hyperparameter fit (the
+  window of past GPs, and the bounds of `mean_const` and of the noise left
+  to gpyreg's recommendation) moved `gp_fit`, `gp_fit_history` and the log
+  prior of `gp_nlZ`, by the change of the noise prior's normalization;
+  the three were re-baselined from the stored states, and the one of the
+  three authentic captures under `fixtures/gp_fit_history/` whose fit
+  draws a design through `--rebaseline-gp-fit-history NAME --reason
+  "..."`, which replaces the outputs of a capture's fit and keeps its
+  captured inputs bit-identical. A new oracle is added to the existing
   fixtures with `--add-oracle NAME --reason "..."` (never by rerunning the
   recipes, which would move every snapshot). The committed references
   equal the current numerics on the generating machine (re-baselined at

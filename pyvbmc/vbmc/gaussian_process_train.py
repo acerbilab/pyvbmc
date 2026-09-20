@@ -92,9 +92,11 @@ def train_gp(
         optim_state["gp_cov_fun"]
     )
 
-    # Pick the noise function.
+    # Pick the noise function. The second entry says how the noise the user
+    # provides enters the total variance: 1 adds it as it is, 2 adds it
+    # scaled by a fitted multiplier.
     const_add = optim_state["gp_noise_fun"][0] == 1
-    user_add = optim_state["gp_noise_fun"][1] == 1
+    user_add = optim_state["gp_noise_fun"][1] > 0
     user_scale = optim_state["gp_noise_fun"][1] == 2
     rlod_add = optim_state["gp_noise_fun"][2] == 1
     noise_f = gpr.noise_functions.GaussianNoise(
@@ -134,12 +136,12 @@ def train_gp(
     # hyp0 = np.empty((0, np.size(hyp_dict["hyp"])))
     hyp0 = np.empty((0, hyp_dict["hyp"].T.shape[0]))
     if gp_train["init_N"] > 0 and optim_state["iter"] > 0:
-        # Be very careful with off-by-one errors compared to MATLAB in the
-        # range here.
-        for i in range(
-            math.ceil((np.size(iteration_history["gp"]) + 1) / 2) - 1,
-            np.size(iteration_history["gp"]),
-        ):
+        # The later half of the recorded GPs. With `n` of them, MATLAB
+        # collects the 1-based `ceil(n/2):n`, which over the same records
+        # is `range(ceil(n / 2) - 1, n)` here; a history holding no GP
+        # leaves nothing to collect.
+        n_recorded = np.size(iteration_history["gp"])
+        for i in range(max(math.ceil(n_recorded / 2) - 1, 0), n_recorded):
             hyp0 = np.concatenate(
                 (
                     hyp0,
@@ -152,7 +154,7 @@ def train_gp(
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
                 rng.choice(
-                    N0, math.ceil(gp_train["init_N"] / 2), replace=False
+                    N0, math.floor(gp_train["init_N"] / 2), replace=False
                 ),
                 :,
             ]
@@ -163,20 +165,14 @@ def train_gp(
     if hyp0.shape[1] != np.size(gp.hyper_priors["mu"]):
         hyp0 = None
 
-    if (
-        "hyp_vp" in hyp_dict
-        and hyp_dict["hyp_vp"] is not None
-        and gp_train["sampler"] == "npv"
-    ):
-        hyp0 = hyp_dict["hyp_vp"]
-
     # print(hyp0.shape)
     hyp_dict["hyp"], _, res = gp.fit(
         x_train, y_train, s2_train, hyp0=hyp0, options=gp_train, rng=rng
     )
 
     if res is not None:
-        # Pre-thinning GP hyperparameters
+        # Pre-thinning GP hyperparameters, with the log prior density of
+        # each of them.
         hyp_dict["full"] = res["samples"]
         hyp_dict["logp"] = res["log_priors"]
 
@@ -190,9 +186,15 @@ def train_gp(
         #     optimState.gp_mala_step_size = gpoutput.stepsize;
         #     gpoutput.stepsize
         # end
+    else:
+        # A fit that draws no samples returns the optimized hyperparameters
+        # alone, and they take the place of the chain. The fit reports no
+        # density for them, so there is none to keep.
+        hyp_dict["full"] = np.atleast_2d(hyp_dict["hyp"]).copy()
+        hyp_dict["logp"] = None
 
     # Update running average of GP hyperparameter covariance (coarse)
-    if hyp_dict["full"] is not None and hyp_dict["full"].shape[1] > 1:
+    if hyp_dict["full"] is not None and hyp_dict["full"].shape[0] > 1:
         hyp_cov = np.cov(hyp_dict["full"].T)
         if hyp_dict["run_cov"] is None or options["hyp_run_weight"] == 0:
             hyp_dict["run_cov"] = hyp_cov
@@ -345,7 +347,6 @@ def _gp_hyp(
             noise_size = min_noise
         noise_std = 0.5
     elif optim_state["uncertainty_handling_level"] == 1:
-        # This branch is not used and tested at the moment.
         if options["noise_size"] != []:
             noise_mult = max(options["noise_size"], min_noise)
             noise_mult_std = np.log(10) / 2
@@ -358,35 +359,44 @@ def _gp_hyp(
         noise_size = min_noise
         noise_std = 0.5
     noise_x0[0] = np.log(noise_size)
+    if noise_mult is not None:
+        noise_x0[1] = np.log(noise_mult)
     hyp0 = np.concatenate([cov_x0, noise_x0, mean_x0])
 
     # Missing port: output warping hyperparameters not implemented
 
     ## Change default bounds and set priors over hyperparameters.
 
+    # Each statement below replaces one bound of a hyperparameter and
+    # carries the other one over, so that the entries a later statement
+    # leaves alone survive. A NaN bound is left to gpyreg, which fills it
+    # with its recommendation from the training set when the GP is fitted.
     bounds = gp.get_bounds()
     if options["upper_gp_length_factor"] > 0:
         # Max GP input length scale
         bounds["covariance_log_lengthscale"] = (
-            -np.inf,
+            bounds["covariance_log_lengthscale"][0],
             np.log(options["upper_gp_length_factor"] * (pub_tran - plb_tran)),
         )
     # Increase minimum noise.
-    bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
+    bounds["noise_log_scale"] = (
+        np.log(min_noise),
+        bounds["noise_log_scale"][1],
+    )
 
     # Missing port: we only implement the mean functions that gpyreg supports.
     if isinstance(gp.mean, gpr.mean_functions.ZeroMean):
         pass
     elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
         # Lower maximum constant mean
-        bounds["mean_const"] = (-np.inf, np.min(hpd_y))
+        bounds["mean_const"] = (np.nan, np.min(hpd_y))
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gp_quadratic_mean_bound"]:
             delta_y = max(
                 options["tol_sd"],
                 min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
-            bounds["mean_const"] = (-np.inf, np.max(hpd_y) + delta_y)
+            bounds["mean_const"] = (np.nan, np.max(hpd_y) + delta_y)
     else:
         raise TypeError("The mean function is not supported by gpyreg.")
 
@@ -398,7 +408,7 @@ def _gp_hyp(
         )
         bounds["covariance_log_lengthscale"] = (
             cov_bounds_info["LB"][:D],
-            np.nan,
+            bounds["covariance_log_lengthscale"][1],
         )
         # These bounds are wider since cov_bounds_info is based on the
         # high-posterior-density region as opposed to the full data
@@ -423,9 +433,11 @@ def _gp_hyp(
     # Change bounds and hyperprior over output-dependent noise modulation
     # Note: currently this branch is not used.
     if optim_state["gp_noise_fun"][2] == 1:
+        # Only the threshold, the first of the two parameters, is bounded
+        # here; the bounds of the second are left to gpyreg.
         bounds["noise_rectified_log_multiplier"] = (
-            [np.min(np.min(y), np.max(y) - 20 * D), -np.inf],
-            [np.max(y) - 10 * D, np.inf],
+            [np.minimum(np.min(y), np.max(y) - 20 * D), np.nan],
+            [np.max(y) - 10 * D, np.nan],
         )
 
         # These two lines were commented out in MATLAB as well.
@@ -552,66 +564,14 @@ def _get_gp_training_options(
         hyp_n=hyp_n,
     )
 
-    # Setup MCMC sampler
+    # Setup MCMC sampler. Slice sampling is the one sampler the GP backend
+    # runs, and the only value the option takes.
     if options["gp_hyp_sampler"] == "slicesample":
         gp_train["sampler"] = "slicesample"
         if options["gp_sample_widths"] > 0 and hyp_cov is not None:
             width_mult = np.maximum(options["gp_sample_widths"], r_index)
             hyp_widths = np.sqrt(np.diag(hyp_cov).T)
             gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "npv":
-        gp_train["sampler"] = "npv"
-
-    elif options["gp_hyp_sampler"] == "mala":
-        gp_train["sampler"] = "mala"
-        if hyp_cov is not None:
-            gp_train["widths"] = np.sqrt(np.diag(hyp_cov).T)
-        if "gp_mala_step_size" in optim_state:
-            gp_train["step_size"] = optim_state["gp_mala_step_size"]
-
-    elif options["gp_hyp_sampler"] == "slicelite":
-        gp_train["sampler"] = "slicelite"
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-            gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "splitsample":
-        gp_train["sampler"] = "splitsample"
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-            gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-
-    elif options["gp_hyp_sampler"] == "covsample":
-        if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-            width_mult = np.maximum(options["gp_sample_widths"], r_index)
-            if np.all(np.isfinite(width_mult)) and np.all(
-                r_index < options["cov_sample_thresh"]
-            ):
-                hyp_n = hyp_cov.shape[0]
-                gp_train["widths"] = (
-                    hyp_cov + 1e-6 * np.eye(hyp_n)
-                ) * width_mult**2
-                gp_train["sampler"] = "covsample"
-                gp_train["thin"] *= math.ceil(np.sqrt(hyp_n))
-            else:
-                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-                gp_train["sampler"] = "slicesample"
-        else:
-            gp_train["sampler"] = "covsample"
-
-    elif options["gp_hyp_sampler"] == "laplace":
-        if optim_state["n_eff"] < 30:
-            gp_train["sampler"] = "slicesample"
-            if options["gp_sample_widths"] > 0 and hyp_cov is not None:
-                width_mult = np.maximum(options["gp_sample_widths"], r_index)
-                hyp_widths = np.sqrt(np.diag(hyp_cov).T)
-                gp_train["widths"] = np.maximum(hyp_widths, 1e-3) * width_mult
-        else:
-            gp_train["sampler"] = "laplace"
 
     else:
         raise ValueError("Unknown MCMC sampler for GP hyperparameters")
@@ -636,7 +596,7 @@ def _get_gp_training_options(
         if optim_state.get("budget_active", False):
             x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
-    init_N = max(round(f(x)), 9)
+    init_N = max(round(f(x)), 0)
 
     # Set other hyperparameter fitting parameters
     if optim_state["recompute_var_post"]:
@@ -649,28 +609,11 @@ def _get_gp_training_options(
     else:
         gp_train["burn"] = gp_train["thin"] * 3
         if (
-            iteration > 1
+            iteration > 0
             and iteration_history["r_index"][iteration - 1]
             < options["gp_retrain_threshold"]
         ):
             gp_train["init_N"] = 0
-            if options["gp_hyp_sampler"] == "slicelite":
-                # TODO: gp_retrain_threshold is by default 1, so we get
-                #       division by zero. what should the default be?
-                gp_train["burn"] = (
-                    max(
-                        1,
-                        math.ceil(
-                            gp_train["thin"]
-                            * np.log(
-                                iteration_history["r_index"][iteration - 1]
-                                / np.log(options["gp_retrain_threshold"])
-                            )
-                        ),
-                    )
-                    * gp_s_N
-                )
-                gp_train["thin"] = 1
             if gp_s_N > 0:
                 gp_train["opts_N"] = 0
             else:
@@ -845,8 +788,9 @@ def _estimate_noise(gp: gpr.GP):
     N, _ = gp.X.shape
 
     # Subsample high posterior density dataset
-    # Sort by descending order, not ascending.
-    order = np.argsort(gp.y, axis=None)[::-1]
+    # Sort by descending order, not ascending, keeping points of equal
+    # target value in the order they were given.
+    order = np.argsort(-gp.y, axis=None, kind="stable")
     hpd_N = math.ceil(hpd_top * N)
     hpd_X = gp.X[order[0:hpd_N]]
     hpd_y = gp.y[order[0:hpd_N]]

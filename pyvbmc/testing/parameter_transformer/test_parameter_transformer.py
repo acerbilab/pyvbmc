@@ -1,3 +1,6 @@
+import inspect
+import re
+
 import numpy as np
 import pytest
 import scipy.stats as sps
@@ -15,7 +18,9 @@ def test_init_no_lower_bounds():
 
 
 def test_init_lower_bounds():
-    parameter_transformer = ParameterTransformer(D=D, lb_orig=np.ones((1, D)))
+    parameter_transformer = ParameterTransformer(
+        D=D, lb_orig=np.ones((1, D)), ub_orig=np.ones((1, D)) * 2
+    )
     assert np.all(parameter_transformer.lb_orig == np.ones(D))
 
 
@@ -25,7 +30,9 @@ def test_init_no_upper_bounds():
 
 
 def test_init_upper_bounds():
-    parameter_transformer = ParameterTransformer(D=D, ub_orig=np.ones((1, D)))
+    parameter_transformer = ParameterTransformer(
+        D=D, lb_orig=np.zeros((1, D)), ub_orig=np.ones((1, D))
+    )
     assert np.all(parameter_transformer.ub_orig == np.ones(D))
 
 
@@ -194,6 +201,28 @@ def test_init_bounds_check():
         )
 
 
+def test_init_rejects_half_bounded_variables():
+    """A variable with one finite and one infinite bound would need a log
+    transform, which this class does not provide, so it is refused rather
+    than carried through the identity."""
+    for lb_orig, ub_orig in (
+        (np.array([[0.0]]), np.array([[np.inf]])),
+        (np.array([[-np.inf]]), np.array([[3.0]])),
+    ):
+        with pytest.raises(ValueError) as e_info:
+            ParameterTransformer(D=1, lb_orig=lb_orig, ub_orig=ub_orig)
+        assert "one side only" in e_info.value.args[0]
+
+    # The offending dimensions are named.
+    with pytest.raises(ValueError) as e_info:
+        ParameterTransformer(
+            D=3,
+            lb_orig=np.array([[-1.0, -np.inf, 0.0]]),
+            ub_orig=np.array([[1.0, 2.0, np.inf]]),
+        )
+    assert "[1, 2]" in e_info.value.args[0]
+
+
 def test_init_rotation_matrix_validation():
     reflected = np.diag([-1.0, 1.0, 1.0])
     transformer = ParameterTransformer(D=D, rotation_matrix=reflected)
@@ -214,6 +243,68 @@ def test_init_rotation_matrix_validation():
     for rotation_matrix in invalid_rotations:
         with pytest.raises(ValueError):
             ParameterTransformer(D=D, rotation_matrix=rotation_matrix)
+
+
+def test_class_docstring_documents_the_constructor_arguments():
+    """The class docstring is the published documentation of the
+    constructor, so the names it documents are the ones a caller passes."""
+    documented = set(
+        re.findall(r"^    (\w+) : ", ParameterTransformer.__doc__, re.M)
+    )
+    signature = inspect.signature(ParameterTransformer.__init__).parameters
+    assert documented == set(signature) - {"self"}
+
+
+def test_init_copies_the_arrays_it_is_given():
+    """The transform is fixed at construction: changing an array the
+    caller passed does not move it afterwards."""
+    lb_orig = np.full((1, D), -2.0)
+    ub_orig = np.full((1, D), 2.0)
+    scale = np.full(D, 2.0)
+    rotation_matrix = np.eye(D)
+    transformer = ParameterTransformer(
+        D,
+        lb_orig=lb_orig,
+        ub_orig=ub_orig,
+        scale=scale,
+        rotation_matrix=rotation_matrix,
+    )
+    x = np.full((1, D), 0.5)
+    transformed = transformer(x)
+
+    lb_orig[0, 0] = -100.0
+    ub_orig[0, 0] = 100.0
+    scale[0] = 10.0
+    rotation_matrix[0, 0] = -1.0
+
+    assert np.array_equal(transformer(x), transformed)
+    assert transformer.lb_orig[0, 0] == -2.0
+    assert transformer.ub_orig[0, 0] == 2.0
+    assert transformer.scale[0] == 2.0
+    assert transformer.R_mat[0, 0] == 1.0
+
+
+def test_init_scale_validation():
+    """The transform divides by ``scale`` and its log-Jacobian adds
+    ``log(scale)``, so a scale must have one finite positive entry per
+    dimension."""
+    scale = np.array([0.5, 1.0, 2.0])
+    transformer = ParameterTransformer(D=D, scale=scale)
+    assert np.array_equal(transformer.scale, scale)
+
+    invalid_scales = [
+        np.ones(D - 1),
+        np.ones((1, D)),
+        np.array([1.0, 1.0, np.inf]),
+        np.array([1.0, 1.0, np.nan]),
+        np.array([1.0, 1.0, 0.0]),
+        np.array([1.0, 1.0, -2.0]),
+        np.ones(D, dtype=complex),
+    ]
+    for invalid in invalid_scales:
+        with pytest.raises(ValueError) as e_info:
+            ParameterTransformer(D=D, scale=invalid)
+        assert "`scale`" in e_info.value.args[0]
 
 
 def test_equality_handles_optional_arrays_and_shapes():
@@ -290,6 +381,52 @@ def test_init_type3_delta_all_params():
     assert np.all(
         np.isclose(parameter_transformer.delta, delta2, rtol=1e-12, atol=1e-14)
     )
+
+
+def test_centering_takes_the_plausible_box_to_the_unit_interval():
+    """The centering maps the plausible box to [-0.5, 0.5] in every
+    coordinate."""
+    lb_orig = np.array([[-5.0, -3.0, -1.0]])
+    ub_orig = np.array([[5.0, 7.0, 4.0]])
+    plb_orig = np.array([[-1.0, -2.0, 0.0]])
+    pub_orig = np.array([[1.0, 5.0, 2.0]])
+    transformer = ParameterTransformer(D, lb_orig, ub_orig, plb_orig, pub_orig)
+
+    assert np.allclose(transformer(plb_orig), -0.5)
+    assert np.allclose(transformer(pub_orig), 0.5)
+
+
+def test_centering_is_derived_before_the_rotation_and_the_rescaling():
+    """A rotation and a rescaling act on the centered coordinates, so the
+    transform built with them is the rotated and rescaled image of the one
+    built without them."""
+    lb_orig = np.array([[-5.0, -3.0, -1.0]])
+    ub_orig = np.array([[5.0, 7.0, 4.0]])
+    plb_orig = np.array([[-1.0, -2.0, 0.0]])
+    pub_orig = np.array([[1.0, 5.0, 2.0]])
+    angle = np.pi / 5
+    rotation = np.array(
+        [
+            [np.cos(angle), np.sin(angle), 0.0],
+            [-np.sin(angle), np.cos(angle), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    scale = np.array([2.0, 0.5, 3.0])
+
+    centered = ParameterTransformer(D, lb_orig, ub_orig, plb_orig, pub_orig)
+    warped = ParameterTransformer(
+        D,
+        lb_orig,
+        ub_orig,
+        plb_orig,
+        pub_orig,
+        scale=scale,
+        rotation_matrix=rotation,
+    )
+
+    x = np.array([[0.3, 1.0, 1.5], [-2.0, 4.0, 3.0], [4.5, -2.5, -0.5]])
+    assert np.allclose(warped(x), (centered(x) @ rotation) / scale)
 
 
 def test_direct_transform_type3_within():

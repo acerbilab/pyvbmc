@@ -372,6 +372,50 @@
     },
     "oracle": "active_sample_step",
     "reason": "Wave-1 fixes of the port review (2026-09-19): the CMA-ES search starts at the per-coordinate scales (CMA_stds = insigma / max(insigma)) and runs without cma's noise handler, as MATLAB VBMC's cmaes_modded does; every acq_* oracle is unchanged, and the search reaches different points on 7 of the 8 states."
+   },
+   {
+    "date": "2026-09-20 20:27:18",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 0.0,
+     "sn2_hpd": 0.0
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation, as MATLAB leaves them unset (W3-5, W3-7), so the space-filling design of the fit and the point its chain starts from change"
+   },
+   {
+    "date": "2026-09-20 20:27:34",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 5.464284590060219,
+     "sn2_hpd": 3.3450469875268177e-07,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the fit collects MATLAB's window of past GPs, ceil(n/2):n, and thins an oversized pool to floor(init_N/2) (W3-2, W3-3), and _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation (W3-5, W3-7), so the starting points of the fit and the draws of its subsample change"
+   },
+   {
+    "date": "2026-09-20 20:27:50",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "dlZ": 0.0,
+     "dlp": 0.0,
+     "lZ": 0.0,
+     "lp": 0.0005418084099915177
+    },
+    "oracle": "gp_nlZ",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the noise prior is truncated at the upper bound gpyreg recommends, log(max(y) - min(y)), where _gp_hyp had written +inf (W3-7); lp moves by the change of the prior's log normalization, log(1 - cdf_lb) - log(cdf_ub - cdf_lb), checked on the eight states, and dlp, lZ and dlZ are bit-identical"
    }
   ],
   "recipe": "normal_D2_K1",

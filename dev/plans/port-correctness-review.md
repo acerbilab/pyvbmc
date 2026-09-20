@@ -142,8 +142,8 @@ reviewer confirms that and spends no more time on them.
 | **P1a** Main loop, warmup, termination, final boost | `vbmc/vbmc.py`: `optimize`, the warmup and termination checks, `final_boost`, `determine_best_vp`, `get_gp`, `_create_result_dict`; the call site of `update_K` (P6) and the commented-out `vptrain2real` calls (lines 1344 and 1536) | `vbmc.m`, `private/vbmc_warmup.m`, `private/vbmc_termination.m`, `private/recompute_lcbmax.m`, `private/vbmc_output.m`, `misc/finalboost_vbmc.m`, `misc/best_vbmc.m` |
 | **P1b** Setup, options, defaults, bounds, log-joint construction, history, save/load | `vbmc/vbmc.py`: `__init__`, option and bounds setup, `_init_log_joint`/`_rebuild_log_joint`, save/load and everything not in P1a; `vbmc/options.py`, `vbmc/option_configs/*.ini`, `vbmc/_bounds.py`, `vbmc/iteration_history.py`, `pyvbmc/rng.py`, `pyvbmc/__init__.py` (eager imports, lazy `SVBMC` resolution) | `misc/setupoptions_vbmc.m`, `misc/setupvars_vbmc.m`, `misc/boundscheck_vbmc.m`, `misc/evaloption_vbmc.m`, `utils/evalbool.m`, `vbmc.m` (`save_stats`), `lpostfun.m`; `vbmc_diagnostics.m` (unported). Four PyVBMC options (`double_gp`, `empirical_gp_prior`, `integrate_gp_mean`, `gp_stochastic_step_size`) correspond to MATLAB options removed in `2044530`, and `Bandwidth` and `FeatureTest` exist only in MATLAB with no recorded reason: are they live? |
 | **P2** Initial design and active-sampling search | `vbmc/active_sample.py` (including `_BatchedNoiseHandler`, removed by the wave-1 fixes) | `private/activesample_vbmc.m`, `misc/initdesign_vbmc.m`; `utils/cmaes_modded.m` (PyVBMC uses the `cma` package and binds its draws to the run's generator; until the wave-1 fixes it also subclassed cma's noise handler), `misc/proposal_vbmc.m` (unported; unused in MATLAB too), `private/acqhedge_vbmc.m`, `utils/fastkmeans.m`, `utils/covcma.m` (unported), `misc/check_quadcoefficients_vbmc.m` (unported, integrated mean function) |
-| **P3** Acquisition functions | `acquisition_functions/*.py` (including `_real2int` and `_sq_dist` of the base class) | `acq/*.m`, `misc/real2int_vbmc.m`, `utils/sq_dist.m`; `misc/noiseshaping_vbmc.m` (unported, default off), `acq/acqeig_vbmc.m` and `misc/intkernel.m` (the EIG acquisition was removed from PyVBMC on 2026-09-14 and retained on `retain/experimental-acquisitions`) |
-| **P4** Noisy importance sampling | `vbmc/active_importance_sampling.py` (including `fess`) | `private/activeimportancesampling_vbmc.m`, `misc/fess_vbmc.m`, `gplite/private/eissample_lite.m` (MATLAB's MCMC sampler, duplicated as `utils/eissample_lite.m`; PyVBMC uses gpyreg's `SliceSampler`, a substitution the comparison reviewer examines) |
+| **P3** Acquisition functions. First question (PI, 2026-09-20): at uncertainty level 1 (`uncertainty_handling=True` without `specify_target_noise`) the GP has had MATLAB's noise model, a constant plus the recorded noise scaled by a fitted multiplier, only since the wave-3 fixes, so no earlier run exercised it: do the noisy acquisitions treat the noise of a candidate point at that level as MATLAB's do? | `acquisition_functions/*.py` (including `_real2int` and `_sq_dist` of the base class) | `acq/*.m`, `misc/real2int_vbmc.m`, `utils/sq_dist.m`; `misc/noiseshaping_vbmc.m` (unported, default off), `acq/acqeig_vbmc.m` and `misc/intkernel.m` (the EIG acquisition was removed from PyVBMC on 2026-09-14 and retained on `retain/experimental-acquisitions`) |
+| **P4** Noisy importance sampling. First question: the same as for P3, for the importance sampling and the GP updates inside active sampling at uncertainty level 1 (`active_sample.py:337` evaluates the noise at the variance of a single observation, `S**2 * n_evals`, as `private/activesample_vbmc.m:165` does, which the multiplier now scales) | `vbmc/active_importance_sampling.py` (including `fess`) | `private/activeimportancesampling_vbmc.m`, `misc/fess_vbmc.m`, `gplite/private/eissample_lite.m` (MATLAB's MCMC sampler, duplicated as `utils/eissample_lite.m`; PyVBMC uses gpyreg's `SliceSampler`, a substitution the comparison reviewer examines) |
 | **P5** GP training policy, hyperpriors, training data, GP re-update, lean GP records | `vbmc/gaussian_process_train.py` (including `_gp_hyp`, `_get_training_data`, `reupdate_gp`, `_lean_gp`) | `misc/gptrain_vbmc.m` (its local subfunction `vbmc_gphyp` at line 109; the tracked `misc/vbmc_gphyp.m` is an empty file), `misc/get_GPTrainOptions.m`, `misc/get_traindata_vbmc.m`, `misc/gpreupdate.m`, `misc/gpsample_vbmc.m`; `utils/slicelite.m` (unported, one of the hyperparameter samplers `get_GPTrainOptions.m` offers) |
 | **P6** Variational optimization, the ELBO, the `K` update | `vbmc/variational_optimization.py` (including `update_K`), `vbmc/minimize_adam.py` | `private/updateK.m`, `misc/vpoptimize_vbmc.m`, `misc/vpsieve_vbmc.m`, `misc/negelcbo_vbmc.m`, `misc/gplogjoint.m`, `misc/gplogjoint_weights.m`, `misc/vpbndloss.m`, `misc/vpoptimizeweights_vbmc.m`, `misc/vbinit_vbmc.m`, `utils/fminadam.m`, `utils/softbndloss.m`; `misc/vpsample_vbmc.m`, `utils/slicesample_vbmc.m`, `utils/malasample_vbmc.m` (unported: sampling of variational parameters) |
 | **P7** Variational posterior, entropies, VP statistics | `variational_posterior/variational_posterior.py`, `entropy/*.py`, `stats/*.py` | `vbmc_pdf.m`, `vbmc_rnd.m`, `vbmc_moments.m`, `vbmc_kldiv.m`, `vbmc_mtv.m`, `vbmc_mode.m`, `ent/entlb_vbmc.m`, `ent/entmc_vbmc.m`, `shared/mvnkl.m`, `shared/kde1d.m`, `misc/gethpd_vbmc.m`, `misc/vpbounds.m`, `misc/get_vptheta.m`, `misc/rescale_params.m`, `shared/qtrapz.m` (inlined in `mtv` through SciPy's trapezoid rule); `vbmc_power.m`, `ent/entub_vbmc.m`, `misc/vptrain2real.m` (unported; the identity at the default temperature) |
@@ -326,11 +326,34 @@ fix phase can be run from this file:
   only to set a new baseline on purpose, with the reason recorded in the
   fixture metadata, never to make a change pass.
 - `python dev/scripts/golden_replay.py` for the per-step trajectory check.
+- The four short seeded runs of
+  `experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`,
+  recorded on the starting commit and compared bit for bit after every
+  batch that must leave default trajectories alone. They are a
+  fingerprint of the trajectory and no measure of accuracy: their targets
+  have no recorded truth, and the noiseless Rosenbrock among them is the
+  unscaled function, far sharper than any problem of the benchmark, on
+  which PyVBMC misses the log evidence by about 0.35 whatever the pass.
+  A pass that moves default trajectories is read for accuracy on targets
+  of `dev/scripts/benchmark_targets.py`, whose truth is known, over
+  several seeds before and after
+  (`verification/scripts/wave3_gate_benchmark_sweep.py`).
 - The finite-difference gradient checks: `pyvbmc/testing/**/test_*_grad_fd.py`
   and the entropy tests `pyvbmc/testing/entropy/test_entlb_vbmc.py` and
   `test_entmc_vbmc.py`, which call `check_grad` directly.
 - The focused tests of the changed module, and gpyreg's suite for a gpyreg
   fix.
+- The tests that need Torch or PyMC, in the environments that have them
+  (listed in the reviewer brief): the default environment skips them
+  without a word, and the branch smoke, which has Torch, does not. After
+  the wave-3 pass the smoke failed on an S-VBMC test that the local suite
+  had skipped.
+- A fix pass ends with its lines in `CHANGELOG.md` under `Unreleased`: what a
+  user of the last release will notice, one sentence each, with what to do
+  where a script may need it, and one line in the section's "Upgrading from"
+  list for a change that can stop such a script or change what it returns. A
+  fix to a feature that no release has shipped goes into that feature's
+  entry.
 - After a fix pass, the full CI matrix on the branch, dispatched once the
   branch smoke is green (`gh workflow run tests.yml --ref dev-port-review`).
   The smoke that a push starts is one cell, Ubuntu with the newest Python, and
@@ -431,15 +454,22 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   a shorter one arrives inline and is extracted from the agent's
   transcript, `subagents/agent-<id>.jsonl` in the same directory, as the
   last string of the agent's own output that holds the report's title.
+  `experiments/port_review_20260919/extract_report.py` does that and writes
+  the file under a given header (`<agent.jsonl> <title substring> <header
+  file> <out file>`). The `tasks/<id>.output` file that the harness names
+  when it launches an agent stayed empty in wave 3; the transcript is the
+  source.
 - The pre-commit hooks rewrite files (formatting, unused imports) and then
   abort the commit; the rewritten files are staged again and the commit is
   repeated.
 - All of the review's work happens on the branch `dev-port-review`, cut
   from `dev-next` at `f91fdf0`: this plan's worklog, the files under
   `experiments/port_review_20260919/`, the ledger and the fixes. It
-  merges into `dev-next` when the fixes have
-  passed their gates. Only the `TODO.md` status line is updated on
-  `dev-next` directly.
+  merges into `dev-next`, with a merge commit as the other work branches
+  do, after a fix pass whose gates have passed, the full CI matrix among
+  them (first on 2026-09-20, after wave 2), and is then fast-forwarded onto
+  `dev-next` so that the review goes on from the merged line. Only the
+  `TODO.md` status line is updated on `dev-next` directly.
 
 ## Worklog
 
@@ -843,10 +873,191 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the head before, the generator state included; the whole default suite
   (1540 passed, 58 skipped); the S-VBMC tests with Torch (227); and the
   full matrix on `ae4e651`, green in all nine cells.
-- [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
-  reviewers), and the internal track of P2, which wave 1 did not run
-  (its four slots went to M, the P2 comparison and both P6 tracks);
-  17 reviewers, so one wave has a free slot for it.
+- [x] 2026-09-20: `dev-port-review` merged into `dev-next` (PI; merge
+  commit `57cbfb4`, on `dev-next` at `bb2d2f4`, which had not moved since
+  the review branch was last brought onto it), after the full CI matrix on
+  `ae4e651` was green in all nine cells. The review's status in `TODO.md`
+  was updated on `dev-next` (`0306d68`), and `dev-port-review` was
+  fast-forwarded onto it; waves 3 onward continue on this branch.
+- [x] 2026-09-20: `CHANGELOG.md` started (PI), with the changes of waves 0
+  to 2 that a user of 1.0.4 will notice; fixes to features that are new in
+  1.5 are left to those features' entries. The features of 1.5 (601 commits
+  since `v1.0.4`) are to be backfilled from `dev/results/`, `dev/plans/`
+  and the log, on the PI's word.
+- [x] 2026-09-20: `CHANGELOG.md` rewritten and completed (PI: a session
+  that did not see the fix pass rewrites the prose for a user of 1.0.4,
+  keeping the facts, then adds what the review did not make). The PI
+  approved the rewritten wording. For the rest of 1.5, four read-only Opus
+  agents distilled `dev/results/`, `dev/plans/` and the log by area
+  (reproducibility and the fixes made before the review; performance,
+  memory, calibration and tips; the pipeline features, the PyMC adapter and
+  packaging; S-VBMC), and the orchestrator checked every line against the
+  code at the head and at `v1.0.4` before writing it. In the entries the
+  first version already had, two things changed beyond wording: the
+  scalar-bound entry moved from Changed to Fixed, and the initial-design
+  entry spells out the count (the first version's "20 from ten dimensions
+  on" holds only up to `D = 19`). Everything else is new: the Added
+  section, an "Upgrading from 1.0.4" lead, and further Changed and Fixed
+  entries. An independent doublecheck by five read-only Opus reviewers
+  (fidelity of the rewrite; the new entries in three parts; a reader's pass
+  with an inventory of user-visible differences taken from the code) found
+  six statements to correct and a number of gaps, all applied the same day;
+  two of its findings were refuted against the code (the crash of long runs
+  does start with NumPy 2.4, where the conversion of a one-element array to
+  a scalar stopped being a deprecation warning, and `get_bounds` never
+  accumulated its box in 1.0.4 either, as the message of `7dd2e3f` says).
+  The "What's new in PyVBMC 1.5" blocks of `README.md` and
+  `docsrc/source/index.rst` link to the changelog. The file and the rule in
+  `AGENTS.md` that goes with it stay on `dev-port-review`; the PI ruled that
+  `dev-next` is not fast-forwarded for them.
+- [x] 2026-09-20: wave 3 run, not yet reported to the PI: P8 internal (14
+  findings), P8 comparison (10), P5 internal (7), P5 comparison (17); four
+  fresh Opus reviewers by the brief, code at `96cded7`; reports saved
+  verbatim under `experiments/port_review_20260919/reviews/`. The
+  orchestrator started the wave on its reading of the pickup note, before
+  the PI had read the completed changelog; the working rule stands that no
+  wave starts without the PI's decision, and the PI let this one stand.
+  The sweeps before and after the wave were clean in the three repositories.
+  Nothing below is verified.
+
+  Reported by both reviewers of a slice, independently. P5: at uncertainty
+  level 1 (`uncertainty_handling` without `specify_target_noise`) the GP
+  noise function comes out as level 0's, because gpyreg's `GaussianNoise`
+  honours `scale_user_provided` only under `user_provided_add`, so the
+  per-point noise and its multiplier hyperparameter are dropped (the
+  orchestrator read both code sites and they are as described); the upper
+  bound from `upper_gp_length_factor` overwritten a few statements later;
+  the reset at the end of warm-up writing `hyp_dict["runcov"]` where every
+  reader uses `run_cov`; `np.min` with two operands in the unreachable
+  output-dependent-noise branch; the noise upper bound set to `+inf` where
+  MATLAB leaves the recommended one. P8: the warp rewriting only the active
+  rows of the function logger; the evaluation time of a row turned to NaN
+  by a repeated `add`; a one-element array returned for a repeat and a
+  scalar for a new point; a half-bounded variable taken as unbounded by the
+  public `ParameterTransformer`. One disagreement to settle in
+  verification: the window of past GPs that feeds the starting points of
+  the hyperparameter fit, which the P5 comparison reviewer finds one
+  iteration short for an even-length history (MATLAB has
+  `ceil(numel(stats.gp)/2):numel(stats.gp)`, `misc/gptrain_vbmc.m:39`) and
+  the internal reviewer took for a correct translation without reading
+  MATLAB.
+
+  The two open items that rode on P8. B-M11 was found unprompted by both
+  reviewers (P8 comparison F4; P8 internal within F5); neither was told of
+  it, and the sheet's P8 section does not mention it. For the wave-0
+  question of the precision near a nonzero bound, the brief of the P8
+  comparison reviewer alone carried a neutral first question on the
+  floating-point evaluation of the bounded transforms near a hard bound. Its
+  answer: against a Python transcription of `shared/warpvars_vbmc.m`, the
+  forward transform and the log-Jacobian agree bit for bit on 20 000 random
+  points per configuration, so MATLAB evaluates the same expressions and
+  shares the loss of precision; the differences are Python's own nudge of a
+  unit-interval image that rounds to 0 or 1 (MATLAB returns an infinity
+  there), `nextafter` for MATLAB's `eps(bound)` in the clamp of the inverse,
+  and the grouping of one product in the Student-t inverse. O3 has still to
+  read the same code. Both comparison reports end with defects of the MATLAB
+  side (eight in all, among them `misc/funlogger_vbmc.m:244` writing a
+  repeat's value to the last row), for `matlab_side_defects.md` at
+  verification.
+
+  The reviewers' check scripts, the transcription of `warpvars_vbmc.m`
+  among them, are kept on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`).
+- [x] 2026-09-20: wave 3 reported to the PI and verified (PI: verify, the
+  findings that can change what a run computes by the orchestrator and the
+  rest by two read-only Opus verifiers, one per slice; the wave gives work
+  enough, and no further wave is considered until it is dealt with). The
+  ledger is `experiments/port_review_20260919/verification/wave3.md`: 36
+  rows from the 48 findings, each with the orchestrator's proposed
+  disposition and an empty column for the PI's; the verifiers' raw reports
+  are `wave3_P5.md` and `wave3_P8.md` beside it, and the 21 scripts are
+  under `verification/scripts/`. How often a finding fires was measured on
+  the 21 stored runs with their history and on the 990 posteriors that the
+  runs of the population campaigns ended with before their boost
+  (`dev/scripts/runs/LOCAL.md`).
+
+  Seven rows can change what a run computes (part 1 of the ledger). At
+  uncertainty level 1 the GP has level 0's noise function, confirmed, never
+  matched MATLAB, no reason recorded (W3-1). Five differences in the
+  hyperparameter fit fire at the defaults and change its starting points
+  or its sampler widths, not the model: the window of past GPs, one short
+  for an even-length history in 170 of the 361 calls that collect past
+  samples, which settles the reviewers' disagreement for the comparison
+  reviewer (W3-2); `ceil` for MATLAB's `floor` in the subsample count
+  (W3-3); `gp_hyp_full` recording the thinned chain where MATLAB records
+  the chain before thinning, in all 732 sampling iterations (W3-4); and
+  two bounds written as infinite where MATLAB leaves the recommendation,
+  the lower bound of `mean_const`, which keeps the whole design of that
+  coordinate inside the plausible box, and the upper bound of the noise
+  (W3-5, W3-7). The thresholded covariance of the warp can be indefinite
+  in principle, as in MATLAB and in the paper's recipe, and is in none of
+  the 990 posteriors (W3-6). Of the other 29 rows none changes a number at
+  the defaults: 13 small fixes, 6 cases for a stricter interface, 5
+  intentional differences for the sheet, 5 to leave. The verifiers found
+  errors in all four reports, which their own reports list; of the eight
+  defects the reviewers ascribed to MATLAB five stand, one of them with
+  another consequence than reported, and three do not hold, and the P5
+  verifier added one.
+- [x] 2026-09-20: wave 3 triaged and fixed. The PI ruled on all 36 rows the
+  same day (`verification/wave3.md`, last column): the level-1 noise model
+  and the five moving differences of the hyperparameter fit are fixed; the
+  warp keeps the covariance when the thresholded one is not positive
+  definite; `gp_mean_fun`, `gp_hyp_sampler`, `f_vals` with
+  `specify_target_noise`, a half-bounded variable, a `scale` that is not
+  positive and a logger whose flag contradicts its level are refused where
+  they are given; five intentional differences go on the sheet and five
+  rows are left. Three Opus agents on worktrees cut at `fc8e561`, split so
+  that their hunks do not overlap (the inputs of the fit; its policy and
+  option values; slice P8), made 32 commits, one finding each with a test
+  written against the contract; the orchestrator reviewed and cherry-picked
+  them and made four more (a test that combined `f_vals` with a noisy
+  target, which construction now refuses; the dead-branch bound and the
+  unreachable `npv` block; two docstrings). Their reports are
+  `fixes/wave3_agent_A.md`, `_B.md` and `_C.md`, and the ledger lists the
+  commit of every row, the gates and what was found on the way.
+
+  Gates, in the ledger's words: the first phase, every commit but the five
+  that move default trajectories, left the four seeded runs bit for bit and
+  the oracles exact, 11 of 11; the second phase moved the four runs and
+  three oracles, `gp_fit`, `gp_fit_history` and the log prior of `gp_nlZ`,
+  each by what its fix predicts, and no other; the PI approved their new
+  baseline, set from the stored states with the reason in every fixture,
+  and the noisy one of the three authentic captures was replayed on its
+  stored inputs through a mode added to the generator
+  (`--rebaseline-gp-fit-history`). The level-1 run is healthy before and
+  after the fix, and after it the multiplier carries the noise, as in
+  MATLAB's model.
+
+  One lesson for the gates. The noiseless Rosenbrock of the four seeded
+  runs ended 0.054 lower in ELBO after the second phase, against a reported
+  SD of 0.0006, and the PI asked whether results had got worse. That target
+  is the unscaled Rosenbrock function, written into the gate script of the
+  wave-2 pass, ten times sharper than the benchmark's `rosenbrock`; PyVBMC
+  misses its log evidence (-1.3947) by about 0.35 before and after, and the
+  reported SD reflects the GP alone. On the benchmark's `rosenbrock_D2` (ten
+  seeds) and `cigar_D4` (six) the phase changes nothing measurable: median
+  error of the ELBO 0.021 before and 0.018 after, and 0.006 and 0.006. The
+  four runs are a fingerprint, not a measure of accuracy, and the section
+  "Fixes and gates" now says so and names the sweep to run instead.
+
+  The fix agents' commits carried a `Claude-Session:` trailer, which the PI
+  does not want: it was removed from the unpushed commits, and `AGENTS.md`
+  tells every session to leave it out.
+- [ ] Pickup point (2026-09-20, after the wave-3 fix pass). The pass is on
+  `dev-port-review`, 41 commits after `befab5d`, with the exact oracle check
+  and the whole default suite green on the orchestrator's machine. What
+  remains of it: the push, the branch smoke, and the full CI matrix
+  (`gh workflow run tests.yml --ref dev-port-review`), then the merge into
+  `dev-next` on the PI's word, as after wave 2. Then the PI decides on the
+  next wave; the orchestrator proposed P3 with P4, whose rows of the slice
+  table now carry a first question on uncertainty level 1, then P7 with P9
+  and the internal track of P2, then G1 with G2, then O1 to O4.
+  `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it exist on
+  `dev-port-review` alone until this branch next merges into `dev-next`.
+- [ ] Waves 4 to 7: P3, P4, P7, P9, G1, G2, both tracks (12 reviewers), and
+  the internal track of P2, which wave 1 did not run (its four slots went
+  to M, the P2 comparison and both P6 tracks); 13 reviewers, so the waves
+  have free slots for it.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.

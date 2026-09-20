@@ -47,6 +47,10 @@ for using it effectively. Highlights include:
   and a :mainbranch:`coding-agent skill <skills/pyvbmc/SKILL.md>` that points
   agents to the relevant documentation.
 
+The :mainbranch:`changelog <CHANGELOG.md>` lists what changed since PyVBMC
+1.0.4, including the corrections that make results differ from earlier
+versions and what to check in an existing script.
+
 Example run
 -----------
 

@@ -3,6 +3,7 @@
 import logging
 
 import numpy as np
+import pytest
 
 from pyvbmc import VBMC
 
@@ -34,14 +35,22 @@ def run_short(options: dict, seed: int = 20260920, D: int = 2):
     return vbmc
 
 
-def test_running_moments_are_an_exponentially_weighted_average():
+@pytest.fixture(scope="module")
+def two_iterations():
+    """One short run, read by every test that needs recorded iterations."""
+    return run_short({"max_iter": 2, "min_iter": 2, "max_fun_evals": 60})
+
+
+def test_running_moments_are_an_exponentially_weighted_average(
+    two_iterations,
+):
     """After the first iteration the recorded moments of the variational
     posterior are a running average, not the moments of that iteration
     alone (MATLAB VBMC, ``vbmc.m:781-792``: the instantaneous moments are
     stored only while ``RunMean`` or ``RunCov`` is empty, and afterwards
     ``RunMean = wRun*RunMean + (1-wRun)*mubar`` with
     ``wRun = MomentsRunWeight^(N - LastRunAvg)``)."""
-    vbmc = run_short({"max_iter": 2, "min_iter": 2, "max_fun_evals": 60})
+    vbmc = two_iterations
     history = vbmc.iteration_history
     assert len(history["optim_state"]) >= 2
 
@@ -73,6 +82,29 @@ def test_running_moments_are_an_exponentially_weighted_average():
     # The average differs from the moments of the second iteration alone,
     # so the check above is not satisfied by storing those.
     assert not np.allclose(second["run_mean"], mubar.reshape(1, -1))
+
+
+def test_the_recorded_hyperparameters_are_the_chain_before_thinning(
+    two_iterations,
+):
+    """Every iteration records the GP hyperparameters the fit produced
+    before thinning (MATLAB VBMC, ``misc/gptrain_vbmc.m:65`` and
+    ``vbmc.m:804``, ``:1041``): the whole chain the sampler drew,
+    ``Ns * Thin`` of them, of which the GP keeps every ``Thin``-th. The
+    record is what the weighted covariance of the hyperparameters, and so
+    the widths of the next sampler, is estimated from."""
+    vbmc = two_iterations
+    history = vbmc.iteration_history
+    thin = vbmc.options["gp_sample_thin"]
+    assert thin > 1
+
+    for i in range(vbmc.iteration + 1):
+        n_samples = int(history["Ns_gp"][i])
+        assert n_samples > 0  # these iterations sample
+        recorded = np.asarray(history["gp_hyp_full"][i])
+        kept = history["gp"][i].get_hyperparameters(as_array=True)
+        assert recorded.shape == (n_samples * thin, kept.shape[1])
+        np.testing.assert_array_equal(recorded[thin - 1 :: thin, :], kept)
 
 
 def test_a_closing_line_reports_a_posterior_from_an_earlier_iteration(caplog):

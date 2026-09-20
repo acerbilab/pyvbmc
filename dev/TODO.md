@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-19. These lists describe scope, not priority or execution
+Updated 2026-09-20. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -8,6 +8,21 @@ Completed 1.5 work is not listed here: the
 records its execution.
 
 ## In scope for 1.5
+
+- [ ] **Changelog for 1.5.** `CHANGELOG.md` (root, Keep a Changelog layout)
+  covers the changes since `v1.0.4`; the worklog of the
+  [port review plan](plans/port-correctness-review.md) records how it was
+  written and checked (2026-09-20). Open before the release: the PI's
+  reading of the entries added that day; the whole-run timings of "Runs are
+  faster", measured on 2026-09-03 to 09-05, before the corrections that
+  change how long a run takes, and the S-VBMC speed figure, both to be
+  measured again on the release benchmark; the S-VBMC entry's account of the
+  reported `elbo`, which the item below may change; and the "What's new in
+  PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst`, which
+  link to the changelog and are to be revised against it (the link of the
+  docs resolves once the file is on `main`). A user-visible change is
+  listed with the work that makes it (`AGENTS.md`), and its line in the
+  changelog's "Upgrading from 1.0.4" lead is kept in step with its entry.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -87,8 +102,10 @@ records its execution.
   the MATLAB changes since the port, the P2 comparison, P6, P1a and P1b) are
   reviewed, verified, ruled on and fixed, and merged into `dev-next`; several
   of the fixes move default trajectories, so the golden references and the
-  production-reference pools describe the code from before them. P3, P4, P5,
-  P7, P8, P9, G1, G2, the internal track of P2 and the third readers remain.
+  production-reference pools describe the code from before them. Wave 3 (P8
+  and P5) has been reviewed and its four reports are in, neither verified nor
+  yet reported to the PI; the plan's pickup point says where to resume. P3,
+  P4, P7, P9, G1, G2, the internal track of P2 and the third readers remain.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the

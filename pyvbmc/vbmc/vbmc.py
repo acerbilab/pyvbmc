@@ -343,6 +343,7 @@ class VBMC:
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
         self._validate_noise_shaping_option()
+        self._validate_gp_hyp_sampler_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -879,6 +880,13 @@ class VBMC:
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("f_vals")).ravel()
+        if len(y_orig) > 0 and self.options.get("specify_target_noise"):
+            raise ValueError(
+                "options['f_vals'] supplies values without their noise, so "
+                "it cannot be used with options['specify_target_noise']. "
+                "Pass such observations through the precomputed_evaluations "
+                "argument, which takes (X, y, y_sd)."
+            )
         if len(y_orig) == 0:
             y_orig = np.full([self.x0.shape[0]], np.nan)
         if len(self.x0) != len(y_orig):
@@ -1100,26 +1108,15 @@ class VBMC:
             optim_state["gp_noise_fun"][1] = 1
 
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        valid_gp_mean_funs = [
-            "zero",
-            "const",
-            "negquad",
-            "se",
-            "negquadse",
-            "negquadfixiso",
-            "negquadfix",
-            "negquadsefix",
-            "negquadonly",
-            "negquadfixonly",
-            "negquadlinonly",
-            "negquadmix",
-        ]
+        # The mean functions the GP backend can build. MATLAB VBMC names
+        # nine more that gpyreg does not provide.
+        valid_gp_mean_funs = ["zero", "const", "negquad"]
 
         if not optim_state["gp_mean_fun"] in valid_gp_mean_funs:
             raise ValueError(
-                """vbmc:UnknownGPmean:Unknown/unsupported GP mean
-            function. Supported mean functions are zero, const,
-            egquad, and se"""
+                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
+                f"{optim_state['gp_mean_fun']!r}. Supported mean functions "
+                "are 'zero', 'const' and 'negquad'."
             )
         optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab
@@ -1607,7 +1604,7 @@ class VBMC:
                 "sKL": sKL,
                 "sKL_true": sKL_true,
                 "gp": _lean_gp(self.gp),
-                "gp_hyp_full": self.gp.get_hyperparameters(as_array=True),
+                "gp_hyp_full": self.hyp_dict["full"],
                 "Ns_gp": Ns_gp,
                 "pruned": pruned,
                 "timer": timer,
@@ -1654,7 +1651,7 @@ class VBMC:
                     # options = options_main
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
-                    self.hyp_dict["runcov"] = None
+                    self.hyp_dict["run_cov"] = None
                     # Reset VP repository (not used in python)
                     self.optim_state["vp_repo"] = []
 
@@ -3581,6 +3578,18 @@ class VBMC:
                 "the option on would only replace the GP noise function "
                 "and disable the rank-one GP update, a configuration of "
                 "neither toolbox."
+            )
+
+    def _validate_gp_hyp_sampler_option(self):
+        """Reject the GP hyperparameter samplers that are not ported."""
+        value = self.options.get("gp_hyp_sampler", "slicesample")
+        if value != "slicesample":
+            raise NotImplementedError(
+                "The option 'gp_hyp_sampler' must be 'slicesample', not "
+                f"{value!r}. The GP backend samples hyperparameters by "
+                "slice sampling alone, so the other samplers of MATLAB "
+                "VBMC (npv, mala, slicelite, splitsample, covsample and "
+                "laplace) are not ported."
             )
 
     def _ensure_runtime_tip_state(self):

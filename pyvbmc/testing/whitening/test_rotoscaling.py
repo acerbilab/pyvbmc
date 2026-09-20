@@ -10,6 +10,7 @@ from pyvbmc import VBMC
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import unscent_warp, warp_gp_and_vp, warp_input
+from pyvbmc.whitening.whitening import _drop_low_correlations
 
 D = 2
 
@@ -131,6 +132,39 @@ def test_unscent_warp():
     assert np.all(np.isclose(muw, matlab_result_muw, atol=0.0001))
     assert np.all(np.isclose(muu, matlab_result_muu, atol=0.0001))
     assert np.all(np.isclose(sigmaw, matlab_result_sigmaw, atol=0.0001))
+
+
+def test_unscent_warp_does_not_truncate_an_integer_mean():
+    """The sigma points are taken in floating point whatever the dtype of
+    the given mean, so an array of integers does not truncate them. Under
+    the identity warp the transform returns the mean and the scales it was
+    given."""
+    x = np.array([[1, 2], [3, 4]])
+    sigma = np.array([0.25, 0.25])
+
+    x_warped_mean, x_warped_sigma, __ = unscent_warp(lambda u: u, x, sigma)
+
+    assert np.allclose(x_warped_mean, x)
+    assert np.allclose(x_warped_sigma, np.tile(sigma, (2, 1)))
+
+
+def test_unscent_warp_broadcasts_one_mean_over_several_scales():
+    """A single row of `x` against several rows of `sigma` gives one
+    result per row of `sigma`, as several rows of `x` against a single row
+    of `sigma` give one result per row of `x`."""
+    D = 2
+    x = np.array([[1.5, -2.0]])
+    sigma = np.array([[0.5, 0.25], [1.0, 2.0], [0.125, 3.0]])
+
+    x_warped_mean, x_warped_sigma, x_warped = unscent_warp(
+        lambda u: u, x, sigma
+    )
+
+    assert x_warped_mean.shape == (3, D)
+    assert x_warped_sigma.shape == (3, D)
+    assert x_warped.shape == (2 * D + 1, 3, D)
+    assert np.allclose(x_warped_mean, np.tile(x, (3, 1)))
+    assert np.allclose(x_warped_sigma, sigma)
 
 
 def test_parameter_transformer_log_abs_det():
@@ -293,6 +327,132 @@ def test_warp_input_cov_reg():
     assert not np.allclose(unregularized.R_mat, transforms[0][0])
 
 
+def _unbounded_vbmc(D):
+    """A `VBMC` instance on an unbounded problem of dimension ``D``."""
+    return VBMC(
+        lambda x: np.sum(x),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+
+
+def _posterior_with_covariance(cov):
+    """A posterior whose covariance is ``cov``.
+
+    The covariance is the only quantity of the posterior the whitening
+    transformation is computed from, so it is supplied directly. The
+    posterior's own transformation is the identity, so ``cov`` is its
+    covariance in the original space as well.
+    """
+    D = cov.shape[0]
+    vp = VariationalPosterior(D, 2, np.zeros((2, D)))
+
+    def moments(orig_flag=True, cov_flag=False):
+        return np.zeros((1, D)), np.copy(cov)
+
+    vp.moments = moments
+    return vp
+
+
+def _whitening_map(parameter_transformer, D):
+    """The matrix of the linear map into the whitened inference space."""
+    return parameter_transformer(np.eye(D)) - parameter_transformer(
+        np.zeros((1, D))
+    )
+
+
+def test_warp_input_keeps_a_covariance_the_threshold_makes_indefinite():
+    """Dropping the low-correlation entries of a covariance matrix can
+    leave one that is not positive definite, and the whitening
+    transformation computed from such a matrix does not whiten. The
+    covariance before the threshold is used instead, so that the posterior
+    has unit variance along every coordinate of the new inference space."""
+    D = 3
+    cov = np.array([[1.0, 0.72, 0.04], [0.72, 1.0, 0.72], [0.04, 0.72, 1.0]])
+    vbmc = _unbounded_vbmc(D)
+    thresh = vbmc.options["warp_roto_corr_thresh"]
+    thresholded = np.copy(cov)
+    thresholded[np.abs(cov) <= thresh] = 0
+    assert np.min(np.linalg.eigvalsh(thresholded)) < 0
+
+    parameter_transformer_warp, __, __, __ = warp_input(
+        _posterior_with_covariance(cov),
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.options,
+    )
+
+    linear_map = _whitening_map(parameter_transformer_warp, D)
+    attained = linear_map.T @ cov @ linear_map
+    assert np.allclose(np.diag(attained), np.ones(D))
+
+
+def test_warp_input_whitens_the_thresholded_covariance_when_it_is_definite():
+    """Where the thresholded covariance is positive definite, it is the
+    matrix the whitening transformation is computed from."""
+    D = 3
+    sd = np.array([np.sqrt(2.0), 1.0, np.sqrt(0.5)])
+    corr = np.array([[1.0, 0.3, 0.02], [0.3, 1.0, 0.3], [0.02, 0.3, 1.0]])
+    cov = np.outer(sd, sd) * corr
+    vbmc = _unbounded_vbmc(D)
+    thresh = vbmc.options["warp_roto_corr_thresh"]
+    thresholded = np.copy(cov)
+    thresholded[np.abs(corr) <= thresh] = 0
+    assert np.min(np.linalg.eigvalsh(thresholded)) > 0
+
+    parameter_transformer_warp, __, __, __ = warp_input(
+        _posterior_with_covariance(cov),
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.options,
+    )
+
+    rotation, singular_values, __ = np.linalg.svd(thresholded)
+    if np.linalg.det(rotation) < 0:
+        rotation[:, 0] = -rotation[:, 0]
+    assert np.array_equal(parameter_transformer_warp.R_mat, rotation)
+    assert np.array_equal(
+        parameter_transformer_warp.scale,
+        np.sqrt(singular_values + np.finfo(np.float64).eps),
+    )
+    # The entries dropped by the threshold make a difference: the
+    # untouched covariance gives another transformation.
+    untouched, __, __ = np.linalg.svd(cov)
+    assert not np.allclose(parameter_transformer_warp.R_mat, untouched)
+
+
+def test_drop_low_correlations_keeps_only_strong_correlations():
+    """An entry of the covariance survives the threshold only where the
+    absolute value of its correlation exceeds it."""
+    sd = np.array([np.sqrt(2.0), 1.0, np.sqrt(0.5)])
+    corr = np.array([[1.0, 0.3, 0.02], [0.3, 1.0, 0.3], [0.02, 0.3, 1.0]])
+    cov = np.outer(sd, sd) * corr
+
+    dropped = _drop_low_correlations(cov, 0.05)
+
+    expected = np.copy(cov)
+    expected[0, 2] = 0
+    expected[2, 0] = 0
+    assert np.array_equal(dropped, expected)
+    # The threshold is exclusive: an entry exactly at it goes too.
+    unit = np.array([[1.0, 0.2], [0.2, 1.0]])
+    assert np.array_equal(_drop_low_correlations(unit, 0.2), np.eye(2))
+
+
+def test_drop_low_correlations_drops_an_undefined_correlation():
+    """A correlation that is not a number does not exceed the threshold,
+    so its entry is dropped with the weakly correlated ones."""
+    # A negative variance leaves the correlations of that coordinate
+    # undefined.
+    cov = np.array([[1.0, 0.3, 0.02], [0.3, -1.0, 0.3], [0.02, 0.3, 1.0]])
+    with np.errstate(invalid="ignore"):
+        dropped = _drop_low_correlations(cov, 0.05)
+    assert np.array_equal(dropped, np.diag([1.0, -1.0, 1.0]))
+
+
 def test_warp_input_search_cache():
     """A populated search cache is warped into the new space."""
     D = 2
@@ -330,6 +490,69 @@ def test_warp_input_search_cache():
     )
     assert optim_state["search_cache"].shape == (4, D)
     assert np.allclose(optim_state["search_cache"], expected)
+
+
+def test_warp_input_rewrites_every_filled_row_of_the_logger():
+    """The warp re-expresses the stored points in the new inference space.
+
+    Every filled row of the function logger is rewritten, whether or not it
+    is active, so that ``X`` remains the new transform of ``X_orig`` and
+    ``y`` the stored original-space value plus the new log-Jacobian.
+    """
+    D = 2
+    angle = 1.309355600770139
+    R = np.array(
+        [[np.cos(angle), np.sin(angle)], [-np.sin(angle), np.cos(angle)]]
+    )
+    filepath = os.path.join(
+        os.path.dirname(__file__), "test_warp_input_rands.txt"
+    )
+    rands = np.loadtxt(filepath, delimiter=",")
+    rands[:, 0] = 10 * rands[:, 0]
+    mus = rands @ R
+    vbmc = VBMC(
+        lambda x: np.sum(x),
+        mus,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+    vp = VariationalPosterior(
+        D, 50, mus, parameter_transformer=vbmc.parameter_transformer
+    )
+    function_logger = vbmc.function_logger
+    points = np.array(
+        [[0.3, -0.7], [1.1, 0.2], [-0.5, 0.9], [2.0, -1.4]], dtype=float
+    )
+    for i, point in enumerate(points):
+        function_logger.add(point, -0.5 * (i + 1))
+    # A row deactivated, as the trim at the end of warm-up deactivates one.
+    function_logger.X_flag[1] = False
+
+    __, __, warped_logger, __ = warp_input(
+        vp, vbmc.optim_state, function_logger, vbmc.options
+    )
+    warped_transformer = warped_logger.parameter_transformer
+
+    assert warped_logger.Xn == len(points) - 1
+    # The warp does not revive or retire a row.
+    assert np.array_equal(
+        warped_logger.X_flag[: warped_logger.Xn + 1],
+        [True, False, True, True],
+    )
+
+    filled = slice(0, warped_logger.Xn + 1)
+    X_orig = warped_logger.X_orig[filled]
+    expected_X = warped_transformer(X_orig)
+    expected_y = warped_logger.y_orig[
+        filled, 0
+    ] + warped_transformer.log_abs_det_jacobian(expected_X)
+
+    assert np.allclose(warped_logger.X[filled], expected_X)
+    assert np.allclose(warped_logger.y[filled, 0], expected_y)
+    # The rewrite is not vacuous: the warp moved every stored point.
+    assert not np.any(np.isclose(warped_logger.X[filled], points))
 
 
 def _same_posterior_in_a_rescaled_space(vp, scale):

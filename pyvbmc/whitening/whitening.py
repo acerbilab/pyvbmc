@@ -4,6 +4,55 @@ import gpyreg as gpr
 import numpy as np
 
 
+def _drop_low_correlations(vp_cov, corr_thresh):
+    """Set the weakly correlated entries of a covariance matrix to zero.
+
+    An entry is kept where the absolute value of its correlation exceeds
+    ``corr_thresh``. An entry whose correlation is not a number does not
+    exceed the threshold, and goes to zero with the weakly correlated
+    ones.
+
+    Parameters
+    ----------
+    vp_cov : (D,D) np.ndarray
+        The covariance matrix.
+    corr_thresh : float
+        The correlation below which an entry is dropped.
+
+    Returns
+    -------
+    dropped : (D,D) np.ndarray
+        A copy of the covariance matrix with the dropped entries zeroed.
+    """
+    vp_corr = vp_cov / np.sqrt(np.outer(np.diag(vp_cov), np.diag(vp_cov)))
+    mask_idx = np.abs(vp_corr) > corr_thresh
+    dropped = np.copy(vp_cov)
+    dropped[~mask_idx] = 0
+    return dropped
+
+
+def _is_positive_definite(matrix):
+    """Whether a real symmetric matrix is positive definite.
+
+    Parameters
+    ----------
+    matrix : (D,D) np.ndarray
+        The symmetric matrix to test.
+
+    Returns
+    -------
+    positive_definite : bool
+        `True` if the matrix is finite and admits a Cholesky factorization.
+    """
+    if not np.all(np.isfinite(matrix)):
+        return False
+    try:
+        np.linalg.cholesky(matrix)
+    except np.linalg.LinAlgError:
+        return False
+    return True
+
+
 def unscent_warp(fun, x, sigma):
     r"""Compute the unscented transform of the warping function `fun`.
 
@@ -12,17 +61,22 @@ def unscent_warp(fun, x, sigma):
     fun : function
         A single-argument function which warps input points.
     x : (n,D) or (D,) np.ndarray
-        The input mean for which to compute the unscented transform.
+        The input mean for which to compute the unscented transform. A
+        single row is broadcast against the rows of `sigma`.
     sigma : (n,D) or (D,) np.ndarray
         The input matrix of standard deviations or scale parameters for which
-        to compute the unscented transform.
+        to compute the unscented transform. A single row is broadcast
+        against the rows of `x`.
 
     Returns
     -------
     x_warped_mean : (n,D) or (D,) np.ndarray
-        The unscented estimate of the mean.
-    x_warped_sigma : (n,D) np.ndarray
-        The unscented estimate of the standard deviation / scale parameters.
+        The unscented estimate of the mean, with one row per row of the
+        broadcast inputs. It is one-dimensional where `x` is and the
+        inputs give a single row.
+    x_warped_sigma : (n,D) or (D,) np.ndarray
+        The unscented estimate of the standard deviation / scale
+        parameters, shaped like `x_warped_mean`.
     x_warped : (U,n,D) np.ndarray
         The warped mean points at `x_warped[0, :, :]`, and the warped std.
         simplex points, at `[1:, :, :]`. Here `U=2*D+1`.
@@ -32,6 +86,10 @@ def unscent_warp(fun, x, sigma):
     ValueError
         If the rows/columns of `x` and `sigma` cannot be coerced to match.
     """
+    # The sigma points are taken in floating point whatever the dtype of
+    # the inputs, so that an array of integers does not truncate them.
+    x = np.asarray(x, dtype=float)
+    sigma = np.asarray(sigma, dtype=float)
     x_shape_orig = x.shape
     x = np.atleast_2d(x)
     sigma = np.atleast_2d(sigma)
@@ -70,9 +128,14 @@ def unscent_warp(fun, x, sigma):
     x_warped = np.reshape(x_warped, [U, N, D])
 
     # Estimate the mean and standard deviation of the warped points
-    # by the mean and std of these sigma-points
-    x_warped_mean = np.mean(x_warped, axis=0).reshape(x_shape_orig)
-    x_warped_sigma = np.std(x_warped, axis=0, ddof=1).reshape(x_shape_orig)
+    # by the mean and std of these sigma-points. The estimates carry one
+    # row per row of the broadcast inputs; a single row takes the shape
+    # `x` was given in.
+    x_warped_mean = np.mean(x_warped, axis=0)
+    x_warped_sigma = np.std(x_warped, axis=0, ddof=1)
+    if N == 1:
+        x_warped_mean = x_warped_mean.reshape(x_shape_orig)
+        x_warped_sigma = x_warped_sigma.reshape(x_shape_orig)
 
     return x_warped_mean, x_warped_sigma, x_warped
 
@@ -150,13 +213,18 @@ def warp_input(vp, optim_state, function_logger, options):
             vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
             vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
-        # Remove low-correlation entries
+        # Remove low-correlation entries. Setting entries of a covariance
+        # matrix to zero can leave a matrix that is no longer positive
+        # definite; its singular values would then be the absolute values
+        # of its eigenvalues, and the transform computed from them would
+        # miss unit variance along the direction of a negative one. The
+        # covariance is kept as it was whenever that happens.
         if options["warp_roto_corr_thresh"] > 0:
-            vp_corr = vp_cov / np.sqrt(
-                np.outer(np.diag(vp_cov), np.diag(vp_cov))
+            vp_cov_dropped = _drop_low_correlations(
+                vp_cov, options["warp_roto_corr_thresh"]
             )
-            mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
-            vp_cov[mask_idx] = 0
+            if _is_positive_definite(vp_cov_dropped):
+                vp_cov = vp_cov_dropped
 
         # Regularization of covariance matrix towards diagonal. The
         # amount is a number, or a function of the number of training
@@ -209,15 +277,17 @@ def warp_input(vp, optim_state, function_logger, options):
     else:
         T = 1
 
-    # Adjust stored points after warping
-    X_flag = function_logger.X_flag
-    X_orig = function_logger.X_orig[X_flag, :]
-    y_orig = function_logger.y_orig[X_flag].T
+    # Adjust stored points after warping. Every filled row is rewritten,
+    # whether or not it is active, so that the inference-space coordinates
+    # of the logger agree with its original-space ones throughout.
+    filled = slice(0, function_logger.Xn + 1)
+    X_orig = function_logger.X_orig[filled, :]
+    y_orig = function_logger.y_orig[filled].T
     X = parameter_transformer(X_orig)
     dy = parameter_transformer.log_abs_det_jacobian(X)
     y = y_orig + dy / T
-    function_logger.X[X_flag, :] = X
-    function_logger.y[X_flag] = y.T
+    function_logger.X[filled, :] = X
+    function_logger.y[filled] = y.T
     function_logger.parameter_transformer = parameter_transformer
 
     # Update search bounds:

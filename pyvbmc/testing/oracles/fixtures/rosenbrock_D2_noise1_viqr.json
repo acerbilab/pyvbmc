@@ -308,6 +308,50 @@
     },
     "oracle": "acq_AcqFcnVIQR",
     "reason": "gpyreg 1.2.1 (9e70e6b), the release's heteroskedastic quadrature-variance fix moves the VIQR acquisition by one ulp (8.9e-16); every other oracle is bit-identical under 1.2.1"
+   },
+   {
+    "date": "2026-09-20 20:27:20",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 28.712984437418825,
+     "sn2_hpd": 1.998041881146051e-05
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation, as MATLAB leaves them unset (W3-5, W3-7), so the space-filling design of the fit and the point its chain starts from change"
+   },
+   {
+    "date": "2026-09-20 20:27:37",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 22.41864391464095,
+     "sn2_hpd": 6.5884327999921055e-06,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the fit collects MATLAB's window of past GPs, ceil(n/2):n, and thins an oversized pool to floor(init_N/2) (W3-2, W3-3), and _gp_hyp leaves the lower bound of mean_const and the upper bound of the noise to gpyreg's recommendation (W3-5, W3-7), so the starting points of the fit and the draws of its subsample change"
+   },
+   {
+    "date": "2026-09-20 20:27:52",
+    "git": {
+     "dirty": true,
+     "sha": "9c29ce1b"
+    },
+    "max_abs_change": {
+     "dlZ": 0.0,
+     "dlp": 0.0,
+     "lZ": 0.0,
+     "lp": 0.00029514200303992766
+    },
+    "oracle": "gp_nlZ",
+    "reason": "Port review, wave 3 (PI, 2026-09-20): the noise prior is truncated at the upper bound gpyreg recommends, log(max(y) - min(y)), where _gp_hyp had written +inf (W3-7); lp moves by the change of the prior's log normalization, log(1 - cdf_lb) - log(cdf_ub - cdf_lb), checked on the eight states, and dlp, lZ and dlZ are bit-identical"
    }
   ],
   "recipe": "rosenbrock_D2_noise1_viqr",

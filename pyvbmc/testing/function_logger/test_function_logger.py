@@ -9,6 +9,30 @@ noisy_function = lambda x: (np.sum(x + 2), np.sum(x))
 noisy_function_2 = lambda x: (np.sum(x + 2) + 0.5, np.sum(x) + 0.25)
 
 
+@pytest.mark.parametrize(
+    "noise_flag, level", [(True, 0), (False, 1), (False, 2)]
+)
+def test_init_rejects_a_noise_flag_that_contradicts_the_level(
+    noise_flag, level
+):
+    """The noise flag says what the uncertainty handling level says: a
+    logger is noisy exactly above level 0. A pair that disagrees records a
+    different SD through `__call__` than through `batch_call`, so it is
+    refused."""
+    with pytest.raises(ValueError, match="noise_flag"):
+        FunctionLogger(non_noisy_function, 3, noise_flag, level)
+
+
+@pytest.mark.parametrize(
+    "noise_flag, level", [(False, 0), (True, 1), (True, 2)]
+)
+def test_init_accepts_a_noise_flag_that_matches_the_level(noise_flag, level):
+    """The three pairs that agree are the three the class supports."""
+    f_logger = FunctionLogger(non_noisy_function, 3, noise_flag, level)
+    assert f_logger.noise_flag is noise_flag
+    assert f_logger.uncertainty_handling_level == level
+
+
 def test_call_index():
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
     _, _, idx = f_logger(np.array([3, 4, 5]))
@@ -104,6 +128,20 @@ def test_add_record_funtime():
     assert f_logger.total_fun_eval_time == 20
 
 
+def test_add_without_an_sd_is_refused_at_level_two():
+    """At uncertainty handling level 2 the target provides the noise of
+    every observation, so a value added without an SD has none the logger
+    could stand in for."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(noisy_function, 3, True, 2)
+    with pytest.raises(ValueError, match="f_sd"):
+        f_logger.add(x, 1.0)
+    assert f_logger.Xn == -1
+
+    f_logger.add(x, 1.0, 0.5)
+    assert f_logger.S[0] == 0.5
+
+
 def test_add_no_f_sd():
     x = np.array([3, 4, 5])
     y = non_noisy_function(x)
@@ -173,6 +211,42 @@ def test_record_duplicate():
     assert f_logger.y[1] == 5
     assert f_logger.y_orig[1] == 5
     assert f_logger.fun_eval_time[1] == 5
+
+
+@pytest.mark.parametrize("transformer", [None, ParameterTransformer(3)])
+def test_recorded_value_is_a_float_for_a_new_point_and_for_a_repeat(
+    transformer,
+):
+    """The recorded value comes back as the float the docstrings declare,
+    whether the point is new or a repeat of one already recorded."""
+    x = np.array([3.0, 4.0, 5.0])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, transformer
+    )
+    new_value, __, __ = f_logger.add(x, 9.0)
+    repeat_value, __, __ = f_logger.add(x, 1.0)
+
+    assert type(new_value) is float
+    assert type(repeat_value) is float
+    assert repeat_value == 5.0
+
+
+def test_record_duplicate_unknown_time_keeps_the_stored_average():
+    """A repeat whose evaluation time is unknown leaves the average of the
+    times already recorded for that point as it was, as an unknown time
+    leaves a new row without one."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger._record(x, x, 9, None, 4.0)
+    assert f_logger.fun_eval_time[0] == 4.0
+
+    f_logger._record(x, x, 1, None, np.nan)
+
+    assert f_logger.n_evals[0] == 2
+    assert f_logger.fun_eval_time[0] == 4.0
+    assert f_logger.total_fun_eval_time == 4.0
 
 
 def test_record_duplicate_f_sd():

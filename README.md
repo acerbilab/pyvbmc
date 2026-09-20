@@ -29,6 +29,8 @@ PyVBMC 1.5 is faster and more efficient, integrates better with the modern scien
 - **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
 - **More practical guidance**, with tips during runs, a [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
 
+The [changelog](CHANGELOG.md) lists what changed since PyVBMC 1.0.4, including the corrections that make results differ from earlier versions and what to check in an existing script.
+
 ### Documentation
 
 The full documentation is available at: https://acerbilab.github.io/pyvbmc/

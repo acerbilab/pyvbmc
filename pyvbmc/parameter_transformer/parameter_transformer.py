@@ -19,11 +19,13 @@ class ParameterTransformer:
     lb_orig : np.ndarray, optional
         The lower bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     ub_orig : np.ndarray, optional
         The upper bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     plb_orig : np.ndarray, optional
         The plausible lower bounds such that ``lb_orig < plb_orig < pub_orig <
         ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
@@ -34,12 +36,13 @@ class ParameterTransformer:
         for each parameter, given in the original space. By default `None`.
     scale : np.ndarray, optional
         Per-coordinate scale applied after transforming and rotating the
-        parameters. By default `None`.
+        parameters, of shape ``(D,)`` and finite and positive throughout.
+        By default `None`.
     rotation_matrix : np.ndarray, optional
         A finite orthogonal matrix of shape ``(D, D)`` applied after the
         coordinate-wise transformation. Reflections are accepted. By default
         `None`.
-    bounded_transform_type : str, optional
+    transform_type : str, optional
         A string indicating the type of transform for bounded variables: one of
         ["logit", ("norminv" || "probit"), "student4"]. Default "logit".
     """
@@ -76,8 +79,24 @@ class ParameterTransformer:
             ):
                 raise ValueError("`rotation_matrix` must be orthogonal.")
 
-        self.scale = scale
-        self.R_mat = rotation_matrix
+        if scale is not None:
+            scale = np.asarray(scale)
+            if scale.shape != (D,):
+                raise ValueError(f"`scale` must have shape ({D},).")
+            if not np.isrealobj(scale):
+                raise ValueError("`scale` must be real-valued.")
+            if not np.all(np.isfinite(scale)):
+                raise ValueError("`scale` must contain finite values.")
+            if not np.all(scale > 0):
+                raise ValueError("`scale` must contain positive values.")
+
+        # The transform is fixed at construction, so it keeps copies of
+        # the arrays it is given: a later change of one of them by the
+        # caller must not move it.
+        self.scale = None if scale is None else np.copy(scale)
+        self.R_mat = (
+            None if rotation_matrix is None else np.copy(rotation_matrix)
+        )
 
         # Empty LB and UB are Infs
         if lb_orig is None:
@@ -102,9 +121,22 @@ class ParameterTransformer:
                 for all variables."""
             )
 
+        # A variable bounded on one side only would need a log transform,
+        # which this class does not provide: it would carry such a variable
+        # through the identity, and the inverse would then return points
+        # outside the declared support.
+        half_bounded = np.isfinite(lb_orig) != np.isfinite(ub_orig)
+        if np.any(half_bounded):
+            dimensions = np.flatnonzero(np.ravel(half_bounded)).tolist()
+            raise ValueError(
+                "Variables bounded on one side only are not supported; "
+                "give both bounds or neither. Offending dimensions: "
+                f"{dimensions}."
+            )
+
         # Transform to log coordinates
-        self.lb_orig = lb_orig
-        self.ub_orig = ub_orig
+        self.lb_orig = np.copy(lb_orig)
+        self.ub_orig = np.copy(ub_orig)
 
         # Select and validate the type of transform:
         transform_types = {
@@ -150,8 +182,18 @@ class ParameterTransformer:
             np.all(plb_orig == self.lb_orig)
             and np.all(pub_orig == self.ub_orig)
         ):
-            plb_tran = self.__call__(plb_orig)
-            pub_tran = self.__call__(pub_orig)
+            # The centering is applied to the coordinates before they are
+            # rotated and rescaled, so it is derived from them: the
+            # rotation and the rescaling are held back for the two calls
+            # that measure the plausible box.
+            rotation, rescaling = self.R_mat, self.scale
+            self.R_mat = None
+            self.scale = None
+            try:
+                plb_tran = self.__call__(plb_orig)
+                pub_tran = self.__call__(pub_orig)
+            finally:
+                self.R_mat, self.scale = rotation, rescaling
 
             # Center in transformed space
             for i in range(D):

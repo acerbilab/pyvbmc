@@ -29,6 +29,7 @@ INERT_OPTIONS = frozenset(
         "adaptive_entropy_alpha",
         "annealed_gp_mean",
         "constrained_gp_mean",
+        "cov_sample_thresh",
         "diagnostics",
         "double_gp",
         "empirical_gp_prior",
