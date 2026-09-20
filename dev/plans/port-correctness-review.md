@@ -331,6 +331,10 @@ fix phase can be run from this file:
   `test_entmc_vbmc.py`, which call `check_grad` directly.
 - The focused tests of the changed module, and gpyreg's suite for a gpyreg
   fix.
+- A fix pass ends with its lines in `CHANGELOG.md` under `Unreleased`: what a
+  user of the last release will notice, one sentence each, with what to do
+  where a script may need it. A fix to a feature that no release has shipped
+  goes into that feature's entry.
 - After a fix pass, the full CI matrix on the branch, dispatched once the
   branch smoke is green (`gh workflow run tests.yml --ref dev-port-review`).
   The smoke that a push starts is one cell, Ubuntu with the newest Python, and
@@ -851,6 +855,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `ae4e651` was green in all nine cells. The review's status in `TODO.md`
   was updated on `dev-next` (`0306d68`), and `dev-port-review` was
   fast-forwarded onto it; waves 3 onward continue on this branch.
+- [x] 2026-09-20: `CHANGELOG.md` started (PI), with the changes of waves 0
+  to 2 that a user of 1.0.4 will notice; fixes to features that are new in
+  1.5 are left to those features' entries. The features of 1.5 (601 commits
+  since `v1.0.4`) are to be backfilled from `dev/results/`, `dev/plans/`
+  and the log, on the PI's word.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);

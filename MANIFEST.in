@@ -1,3 +1,4 @@
+include CHANGELOG.md
 include pyvbmc/testing/entropy/*.npz
 include pyvbmc/testing/entropy/FIXTURES.md
 include pyvbmc/testing/variational_posterior/*.txt

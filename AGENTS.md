@@ -109,16 +109,19 @@ are generated from them by `examples/scripts/Makefile`; regenerate, do not edit.
 
 Version comes from git tags via setuptools_scm with no fallback: a shallow
 clone or exported tarball fails to build. Commit messages follow conventional
-commits. Work on feature branches; PRs to `main` run the full 3-OS × 3-Python
-matrix, skipped when only docs changed. Pushes to `dev*` branches that touch
-`pyvbmc/`, `pyproject.toml` or `setup.py` run a reduced smoke (Ubuntu,
-newest Python). Both call the one job in `test-matrix.yml`, which `tests.yml`
-also runs as the full matrix on manual dispatch and twice a month on `main`.
-`feat-*` and `dev-*` branches are live work; an implementation that is
-rejected or parked after evaluation leaves the working line and is kept
-for the record on a branch named `retain/<topic>`
-(`retain/experimental-acquisitions`, `retain/viqr-rqmc-nodes`), cut at the
-last commit that holds it and named for the topic its records describe.
+commits. A change that a user can notice is listed in `CHANGELOG.md` under
+`Unreleased` with the work that makes it, in a sentence written for users and
+relative to the last release (a fix to a feature that no release has shipped
+belongs to that feature's entry). Work on feature branches; PRs to `main` run
+the full 3-OS × 3-Python matrix, skipped when only docs changed. Pushes to
+`dev*` branches that touch `pyvbmc/`, `pyproject.toml` or `setup.py` run a
+reduced smoke (Ubuntu, newest Python). Both call the one job in
+`test-matrix.yml`, which `tests.yml` also runs as the full matrix on manual
+dispatch and twice a month on `main`. `feat-*` and `dev-*` branches are live
+work; an implementation that is rejected or parked after evaluation leaves the
+working line and is kept for the record on a branch named `retain/<topic>`
+(`retain/experimental-acquisitions`, `retain/viqr-rqmc-nodes`), cut at the last
+commit that holds it and named for the topic its records describe.
 
 ## Architecture
 
