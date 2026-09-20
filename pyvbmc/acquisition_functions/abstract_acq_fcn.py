@@ -289,7 +289,12 @@ class AbstractAcqFcn(ABC):
             # coordinates are written back in either shape.
             X_2d = X[None, :] if X.ndim == 1 else X
             X_temp = parameter_transformer.inverse(X_2d)
-            X_temp[:, integer_vars] = np.around(X_temp[:, integer_vars])
+            # MATLAB's `round` (misc/real2int_vbmc.m:7) sends a half away
+            # from zero; `np.around` sends it to the nearer even integer.
+            X_int = X_temp[:, integer_vars]
+            X_temp[:, integer_vars] = np.sign(X_int) * np.floor(
+                np.abs(X_int) + 0.5
+            )
             X_temp = parameter_transformer(X_temp)
             X_2d[:, integer_vars] = X_temp[:, integer_vars]
 
