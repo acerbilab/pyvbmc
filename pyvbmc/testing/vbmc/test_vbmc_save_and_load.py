@@ -262,9 +262,26 @@ def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
     later than the ones recorded at earlier iterations, so a state restored
     from such an iteration must carry the recorded map.
     """
-    path = base_path.joinpath("test_vbmc_save_static.pkl")
-    vbmc = VBMC.load(path)
-    D = vbmc.D
+    # A short run of its own, written and read by the same interpreter. The
+    # stored run of `test_vbmc_save_static.pkl` will not do: it holds its
+    # target function pickled by value, as bytecode of the Python version
+    # that wrote the file, and pickling such a function again makes dill
+    # disassemble it, which crashes Python 3.11 on bytecode of another
+    # version.
+    D = 2
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"max_iter": 2, "display": "off"},
+        seed=1,
+    )
+    vbmc.optimize()
+    assert vbmc.iteration == 1
+
     later_map = copy.deepcopy(vbmc.parameter_transformer)
     later_map.mu = np.full(D, 0.5)
     later_map.delta = np.full(D, 2.0)
@@ -272,9 +289,9 @@ def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
     doctored = tmp_path / "warped"
     vbmc.save(doctored)
 
-    loaded = VBMC.load(doctored, iteration=3)
+    loaded = VBMC.load(doctored, iteration=0)
     probe = np.linspace(-1.0, 1.0, D).reshape((1, D))
-    recorded = loaded.iteration_history["vp"][3].parameter_transformer
+    recorded = loaded.iteration_history["vp"][0].parameter_transformer
     assert np.array_equal(loaded.parameter_transformer(probe), recorded(probe))
     assert not np.array_equal(
         loaded.parameter_transformer(probe), later_map(probe)
