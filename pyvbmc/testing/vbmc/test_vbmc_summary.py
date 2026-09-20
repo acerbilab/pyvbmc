@@ -80,6 +80,9 @@ def test_summary_of_a_run_loaded_from_a_file():
 def test_summary_reports_the_prior_the_caller_gave():
     """The summary reports the prior density and sampler in use."""
 
+    def log_likelihood(x):
+        return -0.5 * np.sum(x**2)
+
     def log_prior(x):
         return -0.5 * np.sum(x**2)
 
@@ -87,7 +90,7 @@ def test_summary_reports_the_prior_the_caller_gave():
         return np.zeros((n, 2))
 
     vbmc = VBMC(
-        lambda x: -0.5 * np.sum(x**2),
+        log_likelihood,
         np.zeros((1, 2)),
         np.array([[-np.inf, -np.inf]]),
         np.array([[np.inf, np.inf]]),
@@ -99,8 +102,30 @@ def test_summary_reports_the_prior_the_caller_gave():
         seed=1,
     )
 
+    assert _summary_field(vbmc, "log-density = ") == str(log_likelihood)
     assert _summary_field(vbmc, "log-prior = ") == str(log_prior)
     assert _summary_field(vbmc, "prior sampler = ") == str(sample_prior)
+
+
+def test_summary_reports_the_log_density_the_caller_gave():
+    """Without a separate prior, the log-density is the target itself."""
+
+    def log_joint(x):
+        return -0.5 * np.sum(x**2)
+
+    vbmc = VBMC(
+        log_joint,
+        np.zeros((1, 2)),
+        np.array([[-np.inf, -np.inf]]),
+        np.array([[np.inf, np.inf]]),
+        np.array([[-1.0, -1.0]]),
+        np.array([[1.0, 1.0]]),
+        options={"display": "off"},
+        seed=1,
+    )
+
+    assert _summary_field(vbmc, "log-density = ") == str(log_joint)
+    assert _summary_field(vbmc, "log-prior = ") == "None"
 
 
 def test_summary_reports_the_gaussian_process_of_the_run():

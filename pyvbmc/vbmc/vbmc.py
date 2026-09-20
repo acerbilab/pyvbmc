@@ -3520,6 +3520,12 @@ class VBMC:
         log_prior = None if prior is None else prior.log_pdf
         sample_prior = None if prior is None else prior.sample
 
+        # The density the caller gave: the log-likelihood when a separate
+        # prior completes it, the log-joint itself otherwise.
+        log_density = getattr(self, "log_likelihood", None)
+        if log_density is None:
+            log_density = self.log_joint
+
         return "VBMC:" + indent(
             f"""
 dimension = {self.D},
@@ -3528,7 +3534,7 @@ lower bounds: {summarize(self.lower_bounds)},
 upper bounds: {summarize(self.upper_bounds)},
 plausible lower bounds: {summarize(self.plausible_lower_bounds)},
 plausible upper bounds: {summarize(self.plausible_upper_bounds)},
-log-density = {getattr(self, "log_likelihood", self.log_joint)},
+log-density = {log_density},
 log-prior = {log_prior},
 prior sampler = {sample_prior},
 variational posterior = {str(getattr(self, "vp", None))},
