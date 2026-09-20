@@ -18,7 +18,7 @@ class AcqFcnIMIQR(AbstractAcqFcn):
     """
 
     def __init__(self, quantile=0.75):
-        self.acq_info = {}
+        super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False

@@ -38,6 +38,7 @@ def test_acq_info():
     assert acqf.acq_info["importance_sampling"]
     assert not acqf.acq_info["importance_sampling_vp"]
     assert acqf.acq_info["log_flag"]
+    assert acqf.acq_info["compute_var_log_joint"] is False
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
     # Test handling of string input for SearchAcqFcn:

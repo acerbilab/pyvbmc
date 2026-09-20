@@ -124,7 +124,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             raise ValueError(
                 f"Unknown loss {loss!r}; expected one of {self.LOSSES}."
             )
-        self.acq_info = {}
+        super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False

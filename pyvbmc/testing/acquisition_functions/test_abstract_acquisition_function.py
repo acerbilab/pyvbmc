@@ -31,7 +31,7 @@ def test_acq_info():
     assert isinstance(acq_fcn.acq_info, dict)
     assert isinstance(acq_fcn.get_info(), dict)
     assert not acq_fcn.acq_info.get("log_flag")
-    assert not acq_fcn.acq_info.get("compute_var_log_joint")
+    assert acq_fcn.acq_info["compute_var_log_joint"] is False
 
 
 def create_gp(D=3):
