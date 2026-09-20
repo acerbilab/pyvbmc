@@ -8,6 +8,7 @@ import scipy as sp
 import scipy.stats
 
 from pyvbmc import VBMC
+from pyvbmc.acquisition_functions import AcqFcnVIQR
 from pyvbmc.priors import (
     Prior,
     Product,
@@ -1236,6 +1237,58 @@ def test_init_options_path():
         # Keys from advanced config
         assert vbmc.options["sgd_step_size"] == 0.005  # same as before
         assert vbmc.options["uncertainty_handling"] is True  # overridden
+
+
+def _vbmc_with_options_file(tmp_path, lines, options=None):
+    D = 2
+    path = tmp_path.joinpath("user_options.ini")
+    path.write_text("[UserOptions]\n" + "".join(lines))
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -10.0),
+        np.full((1, D), 10.0),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+        options_path=path,
+    )
+
+
+@pytest.mark.parametrize(
+    "line",
+    ["specify_target_noise = True\n", "uncertainty_handling = True\n"],
+)
+def test_options_file_reaches_the_noisy_defaults(tmp_path, line):
+    """The defaults that follow the noise handling are settled after every
+    source of options has been read, so that a noisy run configured by file
+    is configured as one configured by dictionary."""
+    by_dictionary = create_vbmc(
+        2, 0, -10, 10, -1, 1, {"specify_target_noise": True}
+    )
+    by_file = _vbmc_with_options_file(tmp_path, ["# noisy\n", line])
+    assert by_file.options["max_fun_evals"] == (
+        by_dictionary.options["max_fun_evals"]
+    )
+    assert by_file.options["active_sample_gp_update"] is True
+    assert by_file.options["active_sample_vp_update"] is True
+    assert isinstance(by_file.options["search_acq_fcn"][0], AcqFcnVIQR)
+
+
+def test_an_option_set_in_a_file_is_not_overwritten_by_a_default(tmp_path):
+    """A value written in the user's file is the user's choice, as one
+    passed in the dictionary is, so the noisy defaults leave it alone."""
+    vbmc = _vbmc_with_options_file(
+        tmp_path,
+        [
+            "# noisy\n",
+            "uncertainty_handling = True\n",
+            "# budget\n",
+            "max_fun_evals = 33\n",
+        ],
+    )
+    assert vbmc.options["max_fun_evals"] == 33
+    assert vbmc.options["active_sample_vp_update"] is True
 
 
 def test__str__and__repr__():

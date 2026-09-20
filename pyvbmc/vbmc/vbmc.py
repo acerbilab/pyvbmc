@@ -308,13 +308,17 @@ class VBMC:
             advanced_options_path,
             evaluation_parameters={"D": self.D},
         )
-        self.options.update_defaults()
         if options_path is not None:
             # Update with user-specified config file
             self.options.load_options_file(
                 options_path,
                 evaluation_parameters={"D": self.D},
+                as_user_options=True,
             )
+        # The defaults that follow other options are settled once every
+        # source of options has been read.
+        self.options.update_defaults()
+        if options_path is not None:
             self.options.validate_option_names(
                 [basic_options_path, advanced_options_path, options_path]
             )

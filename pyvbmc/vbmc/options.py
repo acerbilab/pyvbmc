@@ -230,7 +230,10 @@ class Options(MutableMapping, dict):
         return new_options
 
     def load_options_file(
-        self, options_path: str, evaluation_parameters: dict = None
+        self,
+        options_path: str,
+        evaluation_parameters: dict = None,
+        as_user_options: bool = False,
     ):
         """
         Load options from an ini file and evaluate them using the specified
@@ -246,12 +249,21 @@ class Options(MutableMapping, dict):
             absolute or relative to this directory.
         evaluation_parameters : dict, optional
             Parameters used to evaluate the options.
+        as_user_options : bool, optional
+            Whether the file states the user's choices rather than the
+            defaults PyVBMC ships. The options it sets then join
+            ``useroptions``, so that they survive a later load and are not
+            replaced by :py:meth:`update_defaults`. Default `False`.
         """
         options_list = _read_config_file(options_path)
+        loaded = set()
         for key, value, description in options_list:
             if key not in self.get("useroptions") and key != "useroptions":
                 self[key] = eval(value, globals(), evaluation_parameters)
                 self.descriptions[key] = description
+                loaded.add(key)
+        if as_user_options:
+            self["useroptions"].update(loaded)
 
     def validate_option_names(self, options_paths: list):
         """
