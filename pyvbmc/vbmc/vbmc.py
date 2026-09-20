@@ -1328,7 +1328,7 @@ class VBMC:
 
                     # Decide number of fast/slow optimizations
                     N_fastopts = math.ceil(
-                        self.options.eval("ns_elbo", {"K": self.vp.K})
+                        self.options.eval("ns_elbo", {"K": Knew})
                     )
                     N_slowopts = self.options.get(
                         "elbo_starts"
