@@ -233,8 +233,9 @@ Each reviewer receives:
   since moved or been renamed (`reupdate_gp` in
   `gaussian_process_train.py`, `get_hpd` in `stats/get_hpd.py`).
 
-The reviewer writes `REPORT.md` in its scratchpad directory and returns the
-same text as its final message. The report has three parts: **coverage**
+The reviewer returns its report as its final message, and the orchestrator
+saves that text: the harness refuses report files written by agents. The
+report has three parts: **coverage**
 (what was read completely, what was skimmed, what was not reached),
 **findings** in the format below, and **test adequacy notes** (existing
 tests that mirror the implementation rather than the specification, in the
@@ -562,37 +563,56 @@ pattern. The plan is written so that a developer with MATLAB and the
   when it beats that value, and MATLAB spends two more acquisition
   evaluations per search for the same outcome. Recorded in the
   sheet's entry on the `cma` package.
-- [ ] **Wave 2 (PI decision 2026-09-19): P1a and P1b, both tracks
-  each, four Opus reviewers at once.** Pickup for the next session:
-  the working tree, `../gpyreg` and `../vbmc` were clean and no agent
-  worktree remained at the end of wave 1 (`git worktree list` should
-  show only this checkout, `../pyvbmc-stage3` and the frozen
-  worktrees under `dev/scripts/runs/`). Launch the four reviewers
-  from the reviewer brief above with the slice rows for P1a and P1b,
-  the known-differences sheet at its current state, and the
-  interpreters and working rules; copy their reports to
-  `experiments/port_review_20260919/reviews/P1a_internal.md`,
-  `P1a_comparison.md`, `P1b_internal.md`, `P1b_comparison.md`; then
-  stop and report to the PI before verification, as the working
-  rules say. Two things a P1 reviewer will meet that wave 1 already
-  settled: the best-posterior selection (`determine_best_vp`) was
-  fixed and its options wired on 2026-09-19 (`verification/
-  wave1_options.md`), and the 22 inert options are listed in
-  `INERT_OPTIONS`; the P1b slice row's question about the four
-  removed MATLAB options is answered there and in the sheet's
-  "Declared options that nothing reads" entry. Still open after
-  wave 1 and not yet scheduled: the golden references are
-  regenerated once after the review's remaining trajectory-moving
-  fixes; the MATLAB check session plan and scripts
-  (`dev/plans/port-review-matlab-checks.md`,
-  `dev/scripts/matlab_checks/`) are not written yet, and wave 1
-  produced two candidates for it (the duplicate GP training row of
-  MATLAB's rank-one path on a noiseless repeat, P2 F8; the
-  `EvalParallel` population call of MATLAB's search, sheet entry on
-  the batched acquisition); the final ledger
-  (`dev/results/<date>-port-correctness-review.md`) and the
-  consolidation of the sheet's durable entries into
-  `pyvbmc/vbmc/README.md` come at the end.
+- [x] 2026-09-20: wave 2 reported (PI decision of 2026-09-19: P1a and
+  P1b, both tracks each, four Opus reviewers at once): P1a internal (10
+  findings), P1a comparison (10), P1b internal (13), P1b comparison (10);
+  reports under `experiments/port_review_20260919/reviews/`. About 28
+  distinct findings. Found by two or more reviewers independently: the
+  forced entropy switch reading a key nothing writes (all four), the
+  running average of the moments behind a misplaced parenthesis, the
+  minimum-iteration guard, the unimplemented recomputation of the LCB
+  maxima, `results["problem_type"]` and `results["iterations"]`, the
+  `temperature` and `diagnostics` options that reach no reader and the
+  inert-option test that cannot see them, the stale
+  `optim_state["max_fun_evals"]` after a load with a larger budget,
+  `integer_vars` read as a mask, and scalar bounds. The P1b comparison
+  report holds the complete defaults table: of MATLAB's 180 options, 159
+  agree at every tested `D`, and the two defaults that differ in value are
+  the bounded transform (on the sheet) and the search acquisition
+  function (`AcqFcnLog` for MATLAB's `acqf_vbmc`, deliberate since
+  `e20d081`, not on the sheet). Both P1a reviewers found no defect in the
+  best-posterior selection corrected on 2026-09-19. The sweeps before and
+  after the wave were clean.
+- [x] 2026-09-20: the six wave-2 findings that fire at the default
+  options verified and ruled on (`verification/wave2.md`, with
+  `verification/wave2_warmup_history.md` for the history of three of
+  them). PI: all six are fixed, no reason for differing from MATLAB being
+  recorded anywhere: the warm-up improvement window, the recomputation of
+  the LCB maxima (the function and the branch that consumes it), the
+  warping clocks at the end of warm-up, the initial variational means in
+  transformed coordinates, the minimum-iteration guard, and the transform
+  that `warp_input` inverts the search bounds with (shared with MATLAB,
+  latent). The first five **move default trajectories**.
+- [ ] Wave 2, remaining: the six fixes above are not made yet. The other
+  findings of the four reports (those that fire in non-default use, and
+  the reported values, inert state and documentation) are reported and
+  neither verified by the orchestrator nor ruled on. The corrections the
+  reports ask of the records are not applied: the counterpart map lists
+  `private/recompute_lcbmax.m` as ported; the sheet's entries on the
+  sieve's candidate count (warp branch), on posterior tempering (where
+  `temperature` is read) and on the inert options (what the test can
+  detect) overstate; the default search acquisition function and the
+  isolated draws of `_compute_true_diagnostic` have no entry. Still open
+  from wave 1: the golden references are regenerated once after the
+  review's remaining trajectory-moving fixes; the MATLAB check session
+  plan and scripts (`dev/plans/port-review-matlab-checks.md`,
+  `dev/scripts/matlab_checks/`) are not written yet, with two candidates
+  from wave 1 (the duplicate GP training row of MATLAB's rank-one path on
+  a noiseless repeat, P2 F8; the `EvalParallel` population call of
+  MATLAB's search); the final ledger
+  (`dev/results/<date>-port-correctness-review.md`) and the consolidation
+  of the sheet's durable entries into `pyvbmc/vbmc/README.md` come at the
+  end.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);
