@@ -1233,6 +1233,9 @@ class VBMC:
                     getattr(self.vp, "_calibration_hint_emitted", False)
                 ),
             )
+        # Samples for the symmetrized KL-divergence between successive
+        # variational posteriors.
+        Nkl = int(1e5)
         self._log_column_headers()
         while not self.is_finished:
             self.iteration += 1
@@ -1546,8 +1549,6 @@ class VBMC:
             timer.start_timer("finalize")
 
             # Compute symmetrized KL-divergence between old and new posteriors
-            Nkl = int(1e5)
-
             sKL = max(
                 0,
                 0.5
@@ -1817,36 +1818,54 @@ class VBMC:
                 self.iteration,
             )
 
+        # The posterior the loop ended on, which the final line below
+        # reports the divergence from.
+        vp_at_end_of_loop = copy.deepcopy(self.vp)
+
         # Pick "best" variational solution to return
         self.vp, elbo, elbo_sd, idx_best = self.determine_best_vp(
             safe_sd=self.options.get("best_safe_sd"),
             frac_back=self.options.get("best_frac_back"),
             rank_criterion_flag=self.options.get("rank_criterion"),
         )
+        # The returned posterior differs from the one the loop ended on if
+        # it comes from an earlier iteration or the boost changes it.
+        new_final_vp_flag = idx_best != self.iteration
 
+        changed_flag = False
         if self.options.get("do_final_boost"):
             # Last variational optimization with large number of components
             self.vp, elbo, elbo_sd, changed_flag = self.final_boost(
                 self.vp, self.get_gp(idx_best)
             )
-        else:
-            changed_flag = False
-        if changed_flag:
-            # Recompute symmetrized KL-divergence
-            if "vp_old" in locals():
-                sKL = max(
-                    0,
-                    0.5
-                    * np.sum(
-                        self.vp.kl_div(
-                            vp2=vp_old,
-                            N=Nkl,
-                            gauss_flag=self.options.get("kl_gauss"),
-                        )
-                    ),
-                )
-            else:
-                sKL = -1  # sKL is undefined
+            new_final_vp_flag = new_final_vp_flag or changed_flag
+
+        if new_final_vp_flag:
+            # Recompute symmetrized KL-divergence, for the display alone.
+            # Its samples come from the run's generator when the boost
+            # changed the posterior, and from a copy of that generator
+            # otherwise: reporting a posterior taken from an earlier
+            # iteration leaves the run's random stream where the loop left
+            # it, so that a run stopped without a boost continues as an
+            # uninterrupted one would.
+            vp_returned, vp_reference = self.vp, vp_at_end_of_loop
+            if not changed_flag:
+                display_rng = copy.deepcopy(self.vp.rng)
+                vp_returned = copy.deepcopy(self.vp)
+                vp_returned.rng = display_rng
+                vp_reference = copy.deepcopy(vp_at_end_of_loop)
+                vp_reference.rng = display_rng
+            sKL = max(
+                0,
+                0.5
+                * np.sum(
+                    vp_returned.kl_div(
+                        vp2=vp_reference,
+                        N=Nkl,
+                        gauss_flag=self.options.get("kl_gauss"),
+                    )
+                ),
+            )
 
             if self.options.get("plot"):
                 self._log_column_headers()
