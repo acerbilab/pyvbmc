@@ -393,13 +393,22 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
             temp_lpdf[mask, i + 1] = np.log((1 - w_vp) / VV / N)
             temp_lpdf[~mask, i + 1] = -np.inf
 
+        # A point at which every component of the mixture has density zero
+        # carries no importance weight, and its log-sum-exp is undefined.
+        # Its log weight is -inf, which the caller gives every non-finite
+        # weight.
         m_max = np.amax(temp_lpdf, axis=1)
-        if np.any(m_max == -np.inf):
-            raise ValueError("Invalid value.")
-        l_pdf = np.log(
-            np.sum(np.exp(temp_lpdf - m_max.reshape(-1, 1)), axis=1)
+        in_support = m_max > -np.inf
+        l_pdf = m_max[in_support] + np.log(
+            np.sum(
+                np.exp(
+                    temp_lpdf[in_support] - m_max[in_support].reshape(-1, 1)
+                ),
+                axis=1,
+            )
         )
-        ln_weights = ln_y - (l_pdf + m_max).reshape(-1, 1)
+        ln_weights = np.full(ln_y.shape, -np.inf)
+        ln_weights[in_support, :] = ln_y[in_support, :] - l_pdf.reshape(-1, 1)
     else:
         ln_weights = ln_y - temp_lpdf
 

@@ -329,6 +329,35 @@ def test_active_sample_proposal_pdf():
         assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
 
 
+def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero():
+    """A point that lies outside every component of the proposal has zero
+    proposal density and so no importance weight. MATLAB's arithmetic
+    gives NaN there and ``activeimportancesampling_vbmc.m:148`` turns it
+    into ``-Inf``, which is what the caller does with every non-finite
+    weight."""
+    vp, gp, __ = _scenario()
+    acq_fcn = AcqFcnIMIQR()
+    rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
+    w_vp = 0.5
+
+    Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
+    far = np.full((1, vp.D), 1e5)
+    assert np.all(vp.pdf(far, orig_flag=False, log_flag=True) == -np.inf)
+    assert not np.any(np.all(np.abs(far - gp.X) < rect_delta, axis=1))
+
+    ln_weights, f_s2 = active_sample_proposal_pdf(
+        np.vstack([Xa, far]), gp, vp, w_vp, rect_delta, acq_fcn
+    )
+    assert np.all(ln_weights[-1] == -np.inf)
+
+    # The other points are untouched.
+    ln_weights_alone, f_s2_alone = active_sample_proposal_pdf(
+        Xa, gp, vp, w_vp, rect_delta, acq_fcn
+    )
+    assert np.array_equal(ln_weights[:-1], ln_weights_alone)
+    assert np.array_equal(f_s2[:-1], f_s2_alone)
+
+
 def test_acq_log_f():
     D = 3
     K = 2
