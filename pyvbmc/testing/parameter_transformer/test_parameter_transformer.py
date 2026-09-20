@@ -383,6 +383,52 @@ def test_init_type3_delta_all_params():
     )
 
 
+def test_centering_takes_the_plausible_box_to_the_unit_interval():
+    """The centering maps the plausible box to [-0.5, 0.5] in every
+    coordinate."""
+    lb_orig = np.array([[-5.0, -3.0, -1.0]])
+    ub_orig = np.array([[5.0, 7.0, 4.0]])
+    plb_orig = np.array([[-1.0, -2.0, 0.0]])
+    pub_orig = np.array([[1.0, 5.0, 2.0]])
+    transformer = ParameterTransformer(D, lb_orig, ub_orig, plb_orig, pub_orig)
+
+    assert np.allclose(transformer(plb_orig), -0.5)
+    assert np.allclose(transformer(pub_orig), 0.5)
+
+
+def test_centering_is_derived_before_the_rotation_and_the_rescaling():
+    """A rotation and a rescaling act on the centered coordinates, so the
+    transform built with them is the rotated and rescaled image of the one
+    built without them."""
+    lb_orig = np.array([[-5.0, -3.0, -1.0]])
+    ub_orig = np.array([[5.0, 7.0, 4.0]])
+    plb_orig = np.array([[-1.0, -2.0, 0.0]])
+    pub_orig = np.array([[1.0, 5.0, 2.0]])
+    angle = np.pi / 5
+    rotation = np.array(
+        [
+            [np.cos(angle), np.sin(angle), 0.0],
+            [-np.sin(angle), np.cos(angle), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
+    scale = np.array([2.0, 0.5, 3.0])
+
+    centered = ParameterTransformer(D, lb_orig, ub_orig, plb_orig, pub_orig)
+    warped = ParameterTransformer(
+        D,
+        lb_orig,
+        ub_orig,
+        plb_orig,
+        pub_orig,
+        scale=scale,
+        rotation_matrix=rotation,
+    )
+
+    x = np.array([[0.3, 1.0, 1.5], [-2.0, 4.0, 3.0], [4.5, -2.5, -0.5]])
+    assert np.allclose(warped(x), (centered(x) @ rotation) / scale)
+
+
 def test_direct_transform_type3_within():
     # logit
     parameter_transformer = ParameterTransformer(

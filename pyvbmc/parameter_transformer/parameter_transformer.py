@@ -182,8 +182,18 @@ class ParameterTransformer:
             np.all(plb_orig == self.lb_orig)
             and np.all(pub_orig == self.ub_orig)
         ):
-            plb_tran = self.__call__(plb_orig)
-            pub_tran = self.__call__(pub_orig)
+            # The centering is applied to the coordinates before they are
+            # rotated and rescaled, so it is derived from them: the
+            # rotation and the rescaling are held back for the two calls
+            # that measure the plausible box.
+            rotation, rescaling = self.R_mat, self.scale
+            self.R_mat = None
+            self.scale = None
+            try:
+                plb_tran = self.__call__(plb_orig)
+                pub_tran = self.__call__(pub_orig)
+            finally:
+                self.R_mat, self.scale = rotation, rescaling
 
             # Center in transformed space
             for i in range(D):
