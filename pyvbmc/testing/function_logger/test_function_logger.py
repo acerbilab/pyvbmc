@@ -175,6 +175,24 @@ def test_record_duplicate():
     assert f_logger.fun_eval_time[1] == 5
 
 
+def test_record_duplicate_unknown_time_keeps_the_stored_average():
+    """A repeat whose evaluation time is unknown leaves the average of the
+    times already recorded for that point as it was, as an unknown time
+    leaves a new row without one."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger._record(x, x, 9, None, 4.0)
+    assert f_logger.fun_eval_time[0] == 4.0
+
+    f_logger._record(x, x, 1, None, np.nan)
+
+    assert f_logger.n_evals[0] == 2
+    assert f_logger.fun_eval_time[0] == 4.0
+    assert f_logger.total_fun_eval_time == 4.0
+
+
 def test_record_duplicate_f_sd():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(

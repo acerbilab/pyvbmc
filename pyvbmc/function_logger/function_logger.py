@@ -716,10 +716,11 @@ class FunctionLogger:
             if self.transform_parameters:
                 f_val += self.parameter_transformer.log_abs_det_jacobian(x)
             self.y[idx] = f_val
-            self.fun_eval_time[idx] = (
-                N * self.fun_eval_time[idx] + fun_eval_time
-            ) / (N + 1)
+            # An unknown evaluation time leaves the stored average alone.
             if not np.isnan(fun_eval_time):
+                self.fun_eval_time[idx] = (
+                    N * self.fun_eval_time[idx] + fun_eval_time
+                ) / (N + 1)
                 self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
             # The pooled value can move the maximum either way.
