@@ -102,8 +102,10 @@ records its execution.
   the MATLAB changes since the port, the P2 comparison, P6, P1a and P1b) are
   reviewed, verified, ruled on and fixed, and merged into `dev-next`; several
   of the fixes move default trajectories, so the golden references and the
-  production-reference pools describe the code from before them. P3, P4, P5,
-  P7, P8, P9, G1, G2, the internal track of P2 and the third readers remain.
+  production-reference pools describe the code from before them. Wave 3 (P8
+  and P5) has been reviewed and its four reports are in, neither verified nor
+  yet reported to the PI; the plan's pickup point says where to resume. P3,
+  P4, P7, P9, G1, G2, the internal track of P2 and the third readers remain.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the

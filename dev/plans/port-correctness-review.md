@@ -437,6 +437,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   a shorter one arrives inline and is extracted from the agent's
   transcript, `subagents/agent-<id>.jsonl` in the same directory, as the
   last string of the agent's own output that holds the report's title.
+  `experiments/port_review_20260919/extract_report.py` does that and writes
+  the file under a given header (`<agent.jsonl> <title substring> <header
+  file> <out file>`). The `tasks/<id>.output` file that the harness names
+  when it launches an agent stayed empty in wave 3; the transcript is the
+  source.
 - The pre-commit hooks rewrite files (formatting, unused imports) and then
   abort the commit; the rewritten files are staged again and the commit is
   repeated.
@@ -888,23 +893,75 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `docsrc/source/index.rst` link to the changelog. The file and the rule in
   `AGENTS.md` that goes with it stay on `dev-port-review`; the PI ruled that
   `dev-next` is not fast-forwarded for them.
-- [ ] Pickup point (2026-09-20). Wave 3: slices P8 and P5, both tracks, four
-  Opus reviewers. `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it
-  exist on `dev-port-review` alone until this branch next merges into
-  `dev-next`.
+- [x] 2026-09-20: wave 3 run, not yet reported to the PI: P8 internal (14
+  findings), P8 comparison (10), P5 internal (7), P5 comparison (17); four
+  fresh Opus reviewers by the brief, code at `96cded7`; reports saved
+  verbatim under `experiments/port_review_20260919/reviews/`. The
+  orchestrator started the wave on its reading of the pickup note, before
+  the PI had read the completed changelog; the working rule stands that no
+  wave starts without the PI's decision, and the PI let this one stand.
+  The sweeps before and after the wave were clean in the three repositories.
+  Nothing below is verified.
 
-  Two open items ride on P8. Its verification checks whether the reviewers
-  found, unprompted, that the warp re-transforms only the active rows of
-  the function logger (B-M11 of `verification/wave2.md`). And the wave-0
-  question of the transformer's loss of precision near a nonzero bound
-  waits for P8 and O3 to say whether MATLAB shares it. For the waves after
-  the third the orchestrator proposed, and the PI has not yet ruled on, P3
-  with P4, then P7 with P9 and the internal track of P2, then G1 with G2,
-  then O1 to O4.
-- [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
-  reviewers), and the internal track of P2, which wave 1 did not run
-  (its four slots went to M, the P2 comparison and both P6 tracks);
-  17 reviewers, so one wave has a free slot for it.
+  Reported by both reviewers of a slice, independently. P5: at uncertainty
+  level 1 (`uncertainty_handling` without `specify_target_noise`) the GP
+  noise function comes out as level 0's, because gpyreg's `GaussianNoise`
+  honours `scale_user_provided` only under `user_provided_add`, so the
+  per-point noise and its multiplier hyperparameter are dropped (the
+  orchestrator read both code sites and they are as described); the upper
+  bound from `upper_gp_length_factor` overwritten a few statements later;
+  the reset at the end of warm-up writing `hyp_dict["runcov"]` where every
+  reader uses `run_cov`; `np.min` with two operands in the unreachable
+  output-dependent-noise branch; the noise upper bound set to `+inf` where
+  MATLAB leaves the recommended one. P8: the warp rewriting only the active
+  rows of the function logger; the evaluation time of a row turned to NaN
+  by a repeated `add`; a one-element array returned for a repeat and a
+  scalar for a new point; a half-bounded variable taken as unbounded by the
+  public `ParameterTransformer`. One disagreement to settle in
+  verification: the window of past GPs that feeds the starting points of
+  the hyperparameter fit, which the P5 comparison reviewer finds one
+  iteration short for an even-length history (MATLAB has
+  `ceil(numel(stats.gp)/2):numel(stats.gp)`, `misc/gptrain_vbmc.m:39`) and
+  the internal reviewer took for a correct translation without reading
+  MATLAB.
+
+  The two open items that rode on P8. B-M11 was found unprompted by both
+  reviewers (P8 comparison F4; P8 internal within F5); neither was told of
+  it, and the sheet's P8 section does not mention it. For the wave-0
+  question of the precision near a nonzero bound, the brief of the P8
+  comparison reviewer alone carried a neutral first question on the
+  floating-point evaluation of the bounded transforms near a hard bound. Its
+  answer: against a Python transcription of `shared/warpvars_vbmc.m`, the
+  forward transform and the log-Jacobian agree bit for bit on 20 000 random
+  points per configuration, so MATLAB evaluates the same expressions and
+  shares the loss of precision; the differences are Python's own nudge of a
+  unit-interval image that rounds to 0 or 1 (MATLAB returns an infinity
+  there), `nextafter` for MATLAB's `eps(bound)` in the clamp of the inverse,
+  and the grouping of one product in the Student-t inverse. O3 has still to
+  read the same code. Both comparison reports end with defects of the MATLAB
+  side (eight in all, among them `misc/funlogger_vbmc.m:244` writing a
+  repeat's value to the last row), for `matlab_side_defects.md` at
+  verification.
+
+  The reviewers' check scripts, the transcription of `warpvars_vbmc.m`
+  among them, are kept on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`).
+- [ ] Pickup point (2026-09-20, after wave 3 ran). Report wave 3 to the PI,
+  as the working rules ask after every wave: the findings of the four
+  reports with enough context to judge them, the ones two reviewers share
+  first, then the PI decides what follows (verification, fixes, the next
+  wave). Nothing of wave 3 is verified, no fix is made, and no MATLAB-side
+  defect or sheet entry is recorded yet. For the waves after the third the
+  orchestrator proposed, and the PI has not yet ruled on, P3 with P4, then
+  P7 with P9 and the internal track of P2, then G1 with G2, then O1 to O4.
+  `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it exist on
+  `dev-port-review` alone until this branch next merges into `dev-next`;
+  fixes that a user can notice add their lines to the changelog, and to its
+  "Upgrading from 1.0.4" list where they can stop a script.
+- [ ] Waves 4 to 7: P3, P4, P7, P9, G1, G2, both tracks (12 reviewers), and
+  the internal track of P2, which wave 1 did not run (its four slots went
+  to M, the P2 comparison and both P6 tracks); 13 reviewers, so the waves
+  have free slots for it.
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
