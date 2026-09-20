@@ -845,8 +845,9 @@ def _estimate_noise(gp: gpr.GP):
     N, _ = gp.X.shape
 
     # Subsample high posterior density dataset
-    # Sort by descending order, not ascending.
-    order = np.argsort(gp.y, axis=None)[::-1]
+    # Sort by descending order, not ascending, keeping points of equal
+    # target value in the order they were given.
+    order = np.argsort(-gp.y, axis=None, kind="stable")
     hpd_N = math.ceil(hpd_top * N)
     hpd_X = gp.X[order[0:hpd_N]]
     hpd_y = gp.y[order[0:hpd_N]]

@@ -1,13 +1,18 @@
-"""Checks of the policy that steers the GP hyperparameter fit.
+"""Checks of the policy and the noise estimate of the GP hyperparameter fit.
 
 The contract is ``misc/get_GPTrainOptions.m`` of MATLAB VBMC, whose
-iteration counter is one ahead of ``optim_state["iter"]``.
+iteration counter is one ahead of ``optim_state["iter"]``, and
+``estimate_GPnoise`` of ``misc/gptrain_vbmc.m``.
 """
 
+import gpyreg as gpr
 import numpy as np
 
 from pyvbmc import VBMC
-from pyvbmc.vbmc.gaussian_process_train import _get_gp_training_options
+from pyvbmc.vbmc.gaussian_process_train import (
+    _estimate_noise,
+    _get_gp_training_options,
+)
 
 
 def _vbmc(D=2, user_options=None):
@@ -121,3 +126,68 @@ def test_retrain_branch_is_not_taken_above_the_threshold():
 
     assert gp_train["init_N"] > 0
     assert gp_train["opts_N"] == 1
+
+
+def _noise_gp(y, s2):
+    """A GP whose observation noise is its user-provided variance plus a
+    constant, so that the estimate names the point it was taken at."""
+    gp = gpr.GP(
+        D=1,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True, user_provided_add=True
+        ),
+    )
+    X = np.reshape(np.arange(float(np.size(y))), (-1, 1))
+    gp.update(
+        X_new=X,
+        y_new=np.reshape(y, (-1, 1)),
+        s2_new=np.reshape(s2, (-1, 1)),
+        hyp=np.array([[-0.5, 0.2, -2.0, 0.3, 1.0, 0.0]]),
+    )
+    return gp
+
+
+def _noise_at(gp, index):
+    """The observation noise the GP's one hyperparameter sample gives at
+    one training point."""
+    cov_N = gp.covariance.hyperparameter_count(gp.D)
+    noise_N = gp.noise.hyperparameter_count()
+    hyp = gp.posteriors[0].hyp[cov_N : cov_N + noise_N]
+    rows = [index]
+    return float(
+        np.median(gp.noise.compute(hyp, gp.X[rows], gp.y[rows], gp.s2[rows]))
+    )
+
+
+def test_estimate_noise_breaks_a_tie_at_the_cut_by_index():
+    """``estimate_GPnoise`` of ``misc/gptrain_vbmc.m:355`` sorts with
+    MATLAB's ``sort(gp.y,'descend')``, which is stable: of several points
+    with the same target value, the earlier one enters the
+    high-posterior-density subset first. Here the subset is a single
+    point, so the estimate is that point's noise."""
+    gp = _noise_gp(
+        y=[2.0, 2.0, 2.0, 1.0, 0.0], s2=[0.01, 0.05, 0.09, 0.2, 0.4]
+    )
+
+    estimate = _estimate_noise(gp)
+
+    assert np.isclose(estimate, _noise_at(gp, 0))
+    assert not np.isclose(estimate, _noise_at(gp, 1))
+    assert not np.isclose(estimate, _noise_at(gp, 2))
+
+
+def test_estimate_noise_takes_the_largest_of_distinct_values():
+    """With no two targets equal the descending order is unique, so the
+    single-point subset is the maximum whatever the order of the rows."""
+    rng = np.random.default_rng(20260920)
+    for __ in range(20):
+        y = rng.standard_normal(5)
+        assert np.unique(y).size == y.size
+        s2 = 0.01 + rng.random(5)
+        gp = _noise_gp(y=y, s2=s2)
+
+        estimate = _estimate_noise(gp)
+
+        assert np.isclose(estimate, _noise_at(gp, int(np.argmax(y))))
