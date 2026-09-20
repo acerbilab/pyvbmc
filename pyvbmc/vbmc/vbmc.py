@@ -3149,8 +3149,10 @@ class VBMC:
         """
         output = {}
         output["function"] = str(self.function_logger.fun)
-        if np.all(np.isinf(self.optim_state["lb_tran"])) and np.all(
-            np.isinf(self.optim_state["ub_tran"])
+        # The bounds in the original coordinates: the transform sends a
+        # bounded variable's bounds to minus and plus infinity too.
+        if np.all(np.isinf(self.optim_state["lb_orig"])) and np.all(
+            np.isinf(self.optim_state["ub_orig"])
         ):
             output["problem_type"] = "unconstrained"
         else:
