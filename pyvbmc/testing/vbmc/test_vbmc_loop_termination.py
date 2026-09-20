@@ -163,6 +163,73 @@ def test_vbmc_check_termination_conditions_stability(mocker):
     assert not terminated
 
 
+def test_entropy_force_switch_is_read_from_the_options():
+    """The forced switch to the stochastic entropy compares the number of
+    function evaluations with ``entropy_force_switch`` times the evaluation
+    budget (MATLAB VBMC, ``vbmc.m:524-525``:
+    ``optimState.funccount >= options.EntropyForceSwitch*options.MaxFunEvals``).
+    A fraction of zero makes the comparison true in the first iteration, so
+    the run turns the switch off there and reports it."""
+    D = 2
+    options = {
+        "max_iter": 1,
+        "min_iter": 1,
+        "max_fun_evals": 30,
+        "entropy_force_switch": 0.0,
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+        seed=20260920,
+    )
+    # The deterministic entropy, and with it the forced switch, is only
+    # enabled above `det_entropy_min_d` dimensions.
+    vbmc.optim_state["entropy_switch"] = True
+
+    vbmc.optimize()
+
+    assert not vbmc.optim_state["entropy_switch"]
+    assert "entropy switch" in vbmc.iteration_history["logging_action"][0]
+
+
+def test_stability_termination_with_an_infinite_forced_switch(mocker):
+    """A stable iteration with the entropy switch on terminates the run when
+    the forced switch is disabled, instead of turning the switch off and
+    continuing (MATLAB VBMC, ``private/vbmc_termination.m:80``:
+    ``optimState.EntropySwitch && isfinite(options.EntropyForceSwitch)``)."""
+    options = {
+        "max_fun_evals": 10,
+        "min_fun_evals": 5,
+        "min_iter": 5,
+        "max_iter": 100,
+        "tol_improvement": 0.01,
+        "tol_stable_entropy_iters": 6,
+        "tol_stable_excpt_frac": 0.2,
+        "entropy_force_switch": np.inf,
+    }
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    vbmc.function_logger.func_count = 9
+    vbmc.optim_state["entropy_switch"] = True
+    vbmc.optim_state["iter"] = 98
+    vbmc.iteration_history["r_index"] = np.ones(100) * 0.5
+    mocker.patch.object(
+        vbmc,
+        "_compute_reliability_index",
+        return_value=(0.5, 0.005),
+    )
+    terminated, __ = vbmc._check_termination_conditions()
+    assert terminated
+    assert vbmc.optim_state["entropy_switch"]
+
+
 def test_vbmc_is_finished_stability_entropy_switch(mocker):
     options = {
         "max_fun_evals": 10,

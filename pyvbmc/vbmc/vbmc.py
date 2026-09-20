@@ -1227,7 +1227,7 @@ class VBMC:
             # deterministic.
             if self.optim_state.get("entropy_switch") and (
                 self.function_logger.func_count
-                >= self.optim_state.get("entropy_force_switch")
+                >= self.options.get("entropy_force_switch")
                 * self.optim_state.get("max_fun_evals")
             ):
                 self.optim_state["entropy_switch"] = False
@@ -2170,7 +2170,9 @@ class VBMC:
                 )
                 - 1
             ):
-                if self.optim_state.get("entropy_switch"):
+                if self.optim_state.get("entropy_switch") and np.isfinite(
+                    self.options.get("entropy_force_switch")
+                ):
                     # If stable but entropy switch is On,
                     # turn it off and continue
                     self.optim_state["entropy_switch"] = False
