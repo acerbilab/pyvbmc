@@ -1324,7 +1324,7 @@ class VBMC:
 
                     if not self.vp.optimize_mu:
                         # Variational components fixed to training inputs
-                        self.vp.mu = self.gp.X.T
+                        self.vp.mu = self.gp.X.T.copy()
                         Knew = self.vp.mu.shape[1]
                     else:
                         # Update number of variational mixture components

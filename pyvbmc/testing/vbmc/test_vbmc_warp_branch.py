@@ -61,6 +61,7 @@ def warped_run():
                 "vp_K": vp.K,
                 "K": K,
                 "n_fast_opts": n_fast,
+                "mu_aliases_gp_X": np.shares_memory(vp.mu, gp.X),
             }
         )
         return unwired(options, optim_state, vp, gp, n_fast, n_slow, K)
@@ -103,3 +104,17 @@ def test_warp_refit_sieve_is_sized_at_the_new_component_count(warped_run):
         assert call["n_fast_opts"] == math.ceil(
             vbmc.options.eval("ns_elbo", {"K": call["K"]})
         )
+
+
+def test_warp_refit_gets_its_own_copy_of_the_training_inputs(warped_run):
+    """Fixing the components of the posterior to the training inputs gives
+    it a copy of them, as the same step of an ordinary iteration does, so
+    that writing to the component means cannot reach the Gaussian process's
+    training set (MATLAB VBMC, ``vbmc.m:576``: ``vp.mu = gp.X'``, an
+    assignment by value)."""
+    __, calls = warped_run
+    refits = [call for call in calls if call["after_warp"]]
+    assert refits
+    assert not any(call["mu_aliases_gp_X"] for call in refits)
+    # The same step of an ordinary iteration is the comparison.
+    assert not any(call["mu_aliases_gp_X"] for call in calls)
