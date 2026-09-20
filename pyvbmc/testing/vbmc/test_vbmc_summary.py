@@ -75,3 +75,41 @@ def test_summary_of_a_run_loaded_from_a_file():
     assert _summary_field(loaded, "x0: ") == summarize(
         loaded.parameter_transformer.inverse(loaded.x0)
     )
+
+
+def test_summary_reports_the_prior_the_caller_gave():
+    """The summary reports the prior density and sampler in use."""
+
+    def log_prior(x):
+        return -0.5 * np.sum(x**2)
+
+    def sample_prior(n):
+        return np.zeros((n, 2))
+
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, 2)),
+        np.array([[-np.inf, -np.inf]]),
+        np.array([[np.inf, np.inf]]),
+        np.array([[-1.0, -1.0]]),
+        np.array([[1.0, 1.0]]),
+        log_prior=log_prior,
+        sample_prior=sample_prior,
+        options={"display": "off"},
+        seed=1,
+    )
+
+    assert _summary_field(vbmc, "log-prior = ") == str(log_prior)
+    assert _summary_field(vbmc, "prior sampler = ") == str(sample_prior)
+
+
+def test_summary_reports_the_gaussian_process_of_the_run():
+    """The summary reports the Gaussian process the instance holds."""
+    vbmc, _ = _unbounded_vbmc()
+    assert vbmc.gp is None
+    assert _summary_field(vbmc, "Gaussian process = ") == "None"
+
+    loaded = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
+    assert loaded.gp is not None
+    assert _summary_field(loaded, "Gaussian process = ") != "None"
+    assert str(loaded.gp).splitlines()[0] in str(loaded)

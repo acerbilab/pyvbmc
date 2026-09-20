@@ -3506,11 +3506,15 @@ class VBMC:
     def __str__(self):
         """Construct a string summary."""
 
-        gp = getattr(getattr(self, "vp", None), "gp", None)
+        gp = getattr(self, "gp", None)
         if gp is not None:
             gp_str = f"gpyreg.{gp}"
         else:
             gp_str = "None"
+
+        prior = getattr(self, "prior", None)
+        log_prior = None if prior is None else prior.log_pdf
+        sample_prior = None if prior is None else prior.sample
 
         return "VBMC:" + indent(
             f"""
@@ -3521,8 +3525,8 @@ upper bounds: {summarize(self.upper_bounds)},
 plausible lower bounds: {summarize(self.plausible_lower_bounds)},
 plausible upper bounds: {summarize(self.plausible_upper_bounds)},
 log-density = {getattr(self, "log_likelihood", self.log_joint)},
-log-prior = {getattr(self, "log_prior", None)},
-prior sampler = {getattr(self, "sample_prior", None)},
+log-prior = {log_prior},
+prior sampler = {sample_prior},
 variational posterior = {str(getattr(self, "vp", None))},
 Gaussian process = {gp_str},
 user options = {str(self.options)}""",
