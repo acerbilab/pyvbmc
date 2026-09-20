@@ -1043,17 +1043,43 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   The fix agents' commits carried a `Claude-Session:` trailer, which the PI
   does not want: it was removed from the unpushed commits, and `AGENTS.md`
   tells every session to leave it out.
-- [ ] Pickup point (2026-09-20, after the wave-3 fix pass). The pass is on
-  `dev-port-review`, 41 commits after `befab5d`, with the exact oracle check
-  and the whole default suite green on the orchestrator's machine. What
-  remains of it: the push, the branch smoke, and the full CI matrix
-  (`gh workflow run tests.yml --ref dev-port-review`), then the merge into
-  `dev-next` on the PI's word, as after wave 2. Then the PI decides on the
-  next wave; the orchestrator proposed P3 with P4, whose rows of the slice
-  table now carry a first question on uncertainty level 1, then P7 with P9
-  and the internal track of P2, then G1 with G2, then O1 to O4.
-  `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it exist on
-  `dev-port-review` alone until this branch next merges into `dev-next`.
+- [x] 2026-09-20: the wave-3 pass through CI, and merged (PI: push, the
+  smoke, the matrix, and the merge into `dev-next` if all is green). The
+  branch smoke failed twice, each time on one test that the local gates had
+  not shown. An S-VBMC test built a run bounded on one side in one variable,
+  which the transformer refuses since W3-23 (PI: the refusal stays); it
+  needs Torch, and the orchestrator's default environment skips it without
+  a word, so the tests that need Torch or PyMC now belong to the gates of a
+  pass and were run in their environments (739 and 107 passed). A test of
+  the wave-2 pass needed the seeded run it drives to prune a component
+  before its warp, which after the fixes of the hyperparameter fit the run
+  on Ubuntu no longer did while the one on Windows did; its fixture's
+  options now bring the pruning and the warp about on any platform. The
+  third smoke and the full matrix, nine cells, are green on `92eb2cc`.
+
+  Before the merge the PI asked for a wider check against a regression. On
+  seven more benchmark targets with known truth, a few seeds each, before
+  the pass and after it, every run is a good solution and the differences
+  go both ways: with the two targets of the first sweep, nine targets and
+  35 seeded pairs (`verification/wave3.md`, "Gates"). The final release
+  benchmark remains the measure of the pass.
+
+  `dev-port-review` merged into `dev-next` (merge commit `82aee90`), the
+  review's status in `TODO.md` updated there (`5e5fa18`), and
+  `dev-port-review` fast-forwarded onto it. The worktrees and branches of
+  the three fix agents and the orchestrator's own, which held the code from
+  before the pass for the sweeps, are removed.
+- [ ] Pickup point (2026-09-20, after wave 3 was merged). Nothing is in
+  flight. The PI decides on the next wave; the orchestrator proposed P3
+  with P4, whose rows of the slice table carry a first question on
+  uncertainty level 1, the noise model that the wave-3 fixes made work, then
+  P7 with P9 and the internal track of P2, then G1 with G2, then O1 to O4.
+  A reviewer brief, a verification round and a fix pass go as waves 2 and 3
+  went; the gates of a pass are in "Fixes and gates", among them the tests
+  that need Torch or PyMC and, for a pass that moves default trajectories,
+  the sweep on benchmark targets. The golden references and the run pools
+  describe the code from before the moving fixes of waves 1 to 3 and are
+  regenerated once, after the review's remaining fixes.
 - [ ] Waves 4 to 7: P3, P4, P7, P9, G1, G2, both tracks (12 reviewers), and
   the internal track of P2, which wave 1 did not run (its four slots went
   to M, the P2 comparison and both P6 tracks); 13 reviewers, so the waves
