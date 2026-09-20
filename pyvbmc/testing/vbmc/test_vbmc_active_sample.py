@@ -1781,6 +1781,89 @@ def test_repeated_observation_is_exact_with_integer_vars(mocker):
     assert np.array_equal(function_logger.X[function_logger.X_flag], X_train)
 
 
+def _integer_var_state(D=2, options=None):
+    """A ``VBMC`` whose first variable is an integer, with its initial
+    design drawn and a GP trained on it."""
+    user_options = {
+        "integer_vars": np.array([True] + [False] * (D - 1)),
+        "active_sample_gp_update": False,
+        "active_sample_vp_update": False,
+        **(options or {}),
+    }
+    vbmc = create_vbmc(D, 0.0, -10.5, 10.5, -3, 3, user_options)
+    function_logger, optim_state, _, _ = active_sample(
+        gp=None,
+        sample_count=10,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+        rng=vbmc.vp.rng,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    return vbmc, gp, function_logger, optim_state
+
+
+def test_search_result_is_snapped_with_integer_vars(mocker):
+    """The point that improves on the sieve is snapped to the integer grid.
+
+    The search optimizers return a single point as a one-dimensional array,
+    which ``private/activesample_vbmc.m:325`` passes to ``real2int_vbmc``
+    before the point is evaluated.
+    """
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    vbmc, gp, function_logger, optim_state = _integer_var_state(
+        options={"search_optimizer": "cmaes"}
+    )
+
+    # A search that improves on the sieve's best candidate and returns a
+    # one-dimensional point away from the integer grid.
+    found = {}
+
+    def better_point(objective, x0, sigma0, options=None, **kwargs):
+        x = np.asarray(x0, dtype=float) + 0.37
+        found["x"] = x.copy()  # the returned array is snapped in place
+        return x, -1.0
+
+    mocker.patch("cma.fmin", side_effect=better_point)
+
+    Xn0 = function_logger.Xn
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert function_logger.Xn == Xn0 + 1
+    parameter_transformer = function_logger.parameter_transformer
+    # The search result itself is off the grid, so the snapping is what
+    # the assertion below tests.
+    unsnapped = parameter_transformer.inverse(found["x"][None, :])
+    assert unsnapped[0, 0] != np.round(unsnapped[0, 0])
+    acquired = function_logger.X_orig[function_logger.Xn]
+    assert acquired[0] == np.round(acquired[0])
+
+
 def test_repeated_observation_skips_search_optimizer(mocker):
     """A chosen repeat skips the local optimizer (which would move it off
     the stored row); once the cap excludes the training inputs the

@@ -477,6 +477,44 @@ def test_real2int():
     np.all(X_after == X)
 
 
+def test_real2int_single_point():
+    """A single point is snapped in the shape it is given.
+
+    ``misc/real2int_vbmc.m`` takes the row vector that the local search of
+    ``private/activesample_vbmc.m:325`` hands it, and the search optimizers
+    of ``active_sample`` return a one-dimensional point.
+    """
+
+    class BasicAcqClass(AbstractAcqFcn):
+        def _compute_acquisition_function(
+            self,
+            Xs,
+            vp,
+            gp,
+            function_logger,
+            optim_state,
+            f_mu,
+            f_s2,
+            f_bar,
+            var_tot,
+        ):
+            pass
+
+    acq_fcn = BasicAcqClass()
+    D = 3
+    parameter_transformer = ParameterTransformer(D)
+    integer_vars = np.array([True, False, False])
+    x = np.array([1.2, 1.2, 1.2])
+    x_after = acq_fcn._real2int(x, parameter_transformer, integer_vars)
+
+    assert x_after.shape == (D,)
+    assert x_after[0] == 1.0
+    assert np.all(x_after[1:] == 1.2)
+    # Snapped in place, as an array of points is.
+    assert x_after is x
+    assert x[0] == 1.0
+
+
 def test_sq_dist():
     """
     Test data has been crossvalidated with (original) VBMC in MATLAB.

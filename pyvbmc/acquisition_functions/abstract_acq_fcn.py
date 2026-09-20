@@ -269,18 +269,29 @@ class AbstractAcqFcn(ABC):
         Parameters
         ----------
         X : np.ndarray
-            The points to be converted.
+            The points to be converted, either a single point of shape
+            ``(D,)`` or an array of points of shape ``(n, D)``. The
+            integer-valued coordinates are snapped in place.
         parameter_transformer : ParameterTransformer
             The appropriate ParameterTransformer to convert between the spaces.
         integer_vars : np.ndarray
             A mask to determine which dimensions are integer vars.
+
+        Returns
+        -------
+        X : np.ndarray
+            The converted points, in the shape they were given in.
         """
 
         if np.any(integer_vars):
-            X_temp = parameter_transformer.inverse(X)
+            # A single point is snapped through a two-dimensional view of
+            # it, so that the caller keeps the shape it passed and the
+            # coordinates are written back in either shape.
+            X_2d = X[None, :] if X.ndim == 1 else X
+            X_temp = parameter_transformer.inverse(X_2d)
             X_temp[:, integer_vars] = np.around(X_temp[:, integer_vars])
             X_temp = parameter_transformer(X_temp)
-            X[:, integer_vars] = X_temp[:, integer_vars]
+            X_2d[:, integer_vars] = X_temp[:, integer_vars]
 
         return X
 
