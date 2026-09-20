@@ -59,6 +59,18 @@ _INITIALIZATION_COST_NOT_PROVIDED = _OmittedArgument("0")
 _PRECOMPUTED_DUPLICATE_ULPS = 4
 
 
+def _max_ignoring_nan(values):
+    """The largest entry that is not NaN, as MATLAB's ``max`` returns it.
+
+    NaN when every entry is NaN or there is none.
+    """
+    values = np.asarray(values, dtype=float)
+    values = values[~np.isnan(values)]
+    if values.size == 0:
+        return np.nan
+    return np.amax(values)
+
+
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
@@ -1620,9 +1632,7 @@ class VBMC:
             # Check if we are still warming-up
             if self.optim_state.get("warmup") and self.iteration > 0:
                 if self.options.get("recompute_lcb_max"):
-                    self.optim_state[
-                        "lcb_max_vec"
-                    ] = self._recompute_lcb_max().T
+                    self.optim_state["lcb_max_vec"] = self._recompute_lcb_max()
                 trim_flag = self._check_warmup_end_conditions()
                 if trim_flag:
                     self._setup_vbmc_after_warmup()
@@ -1952,8 +1962,19 @@ class VBMC:
                 max_before = np.amax(elcbo_vec[2:split])
                 stable_count_flag = (max_now - max_before) < stop_warmup_thresh
 
-        # Vector of maximum lower confidence bounds (LCB) of fcn values
-        lcb_max_vec = self.iteration_history.get("lcb_max")[: iteration + 1]
+        # Vector of maximum lower confidence bounds (LCB) of fcn values:
+        # the sequence recomputed with the current Gaussian process where
+        # there is one, the maxima each iteration recorded otherwise. A
+        # recomputed entry is NaN for an iteration none of whose points is
+        # still in the training set, and the maxima below pass over it as
+        # MATLAB's max does.
+        recomputed = self.optim_state.get("lcb_max_vec")
+        if recomputed is not None and np.size(recomputed) > 0:
+            lcb_max_vec = np.asarray(recomputed)[: iteration + 1]
+        else:
+            lcb_max_vec = self.iteration_history.get("lcb_max")[
+                : iteration + 1
+            ]
 
         # Second requirement, also no substantial improvement of max fcn value
         # in recent iters (unless already performing BO-like warmup)
@@ -1963,18 +1984,21 @@ class VBMC:
             # of the history, the current one included.
             recent_past = iteration + 1 - tol_stable_warmup_iters
             idx_last[max(1, recent_past) :] = True
-            impro_fcn = max(
-                0,
-                np.amax(lcb_max_vec[idx_last])
-                - np.amax(lcb_max_vec[~idx_last]),
-            )
+            improvement = _max_ignoring_nan(
+                lcb_max_vec[idx_last]
+            ) - _max_ignoring_nan(lcb_max_vec[~idx_last])
+            # With nothing to compare on one side there is no improvement
+            # to report (MATLAB's max(0, NaN) is 0).
+            impro_fcn = 0 if np.isnan(improvement) else max(0, improvement)
         else:
             impro_fcn = 0
 
         no_recent_improvement_flag = impro_fcn < stop_warmup_thresh
 
         # Alternative criterion for stopping - no improvement over max fcn value
-        max_thresh = np.amax(lcb_max_vec) - self.options.get("tol_improvement")
+        max_thresh = _max_ignoring_nan(lcb_max_vec) - self.options.get(
+            "tol_improvement"
+        )
         idx_1st = np.ravel(np.argwhere(lcb_max_vec > max_thresh))[0]
         yy = self.iteration_history.get("func_count")[: iteration + 1]
         pos = yy[idx_1st]
@@ -2381,10 +2405,50 @@ class VBMC:
 
     def _recompute_lcb_max(self):
         """
-        RECOMPUTE_LCB_MAX Recompute moving LCB maximum based on current GP.
+        Recompute the running maximum of the lower confidence bound.
+
+        Each iteration records the largest lower confidence bound of the
+        log joint over the training inputs, as the Gaussian process of
+        that iteration predicted it. This recomputes the whole sequence
+        with the current Gaussian process: it predicts the latent mean and
+        variance at every training input still in the training set, takes
+        the lower confidence bound there, and reads the running maximum of
+        those bounds over the points logged up to the end of each recorded
+        iteration. Points dropped from the training set carry no
+        prediction and are passed over by the running maximum.
+
+        Returns
+        -------
+        lcb_max_vec : np.ndarray, shape (n_recorded_iterations,)
+            The recomputed maximum for each recorded iteration. An entry
+            is NaN where the iteration's count of logged points is not
+            recorded, or where no logged point of that iteration is still
+            in the training set.
         """
-        # ToDo: Recompute_lcb_max needs to be implemented.
-        return np.array([])
+        n_logged = self.function_logger.Xn + 1
+        in_training_set = self.function_logger.X_flag
+        X = self.function_logger.X[in_training_set, :]
+        y = self.function_logger.y[in_training_set]
+        if self.function_logger.noise_flag:
+            s2 = self.function_logger.S[in_training_set] ** 2
+        else:
+            s2 = None
+        f_mu, f_s2 = self.gp.predict(X, y, s2, add_noise=False)
+
+        lcb = np.full(n_logged, np.nan)
+        lcb[in_training_set[:n_logged]] = np.ravel(
+            f_mu - self.options.get("elcbo_impro_weight") * np.sqrt(f_s2)
+        )
+        # NaN entries do not take part in the running maximum.
+        running_max = np.fmax.accumulate(lcb)
+
+        N_history = self.iteration_history.get("N")
+        lcb_max_vec = np.full(len(N_history), np.nan)
+        for iteration, N in enumerate(N_history):
+            if N is None:
+                continue
+            lcb_max_vec[iteration] = running_max[int(N) - 1]
+        return lcb_max_vec
 
     # Finalizing:
 
