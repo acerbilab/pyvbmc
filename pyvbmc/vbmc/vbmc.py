@@ -319,14 +319,11 @@ class VBMC:
         # The defaults that follow other options are settled once every
         # source of options has been read.
         self.options.update_defaults()
-        if options_path is not None:
-            self.options.validate_option_names(
-                [basic_options_path, advanced_options_path, options_path]
-            )
-        else:
-            self.options.validate_option_names(
-                [basic_options_path, advanced_options_path]
-            )
+        # Every option name is checked against the two shipped files,
+        # whichever source supplied it.
+        self.options.validate_option_names(
+            [basic_options_path, advanced_options_path]
+        )
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
         self._validate_noise_shaping_option()
@@ -2972,6 +2969,7 @@ class VBMC:
 
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
+            vbmc.options.validate_supplied_option_names(new_options)
             vbmc.options.is_initialized = False
             vbmc.options.update(new_options)
             vbmc.options.is_initialized = True

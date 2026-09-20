@@ -46,6 +46,35 @@ INERT_OPTIONS = frozenset(
 )
 
 
+#: The ``.ini`` files that declare every option PyVBMC accepts. A name
+#: outside them is not an option, wherever it was supplied.
+SHIPPED_OPTIONS_PATHS = (
+    "option_configs/basic_vbmc_options.ini",
+    "option_configs/advanced_vbmc_options.ini",
+)
+
+
+def declared_option_names(options_paths=SHIPPED_OPTIONS_PATHS):
+    """
+    The option names the given ini files declare.
+
+    Parameters
+    ----------
+    options_paths : iterable of str, optional
+        Paths to ini files, absolute or relative to this directory.
+        Default the two files PyVBMC ships.
+
+    Returns
+    -------
+    names : set of str
+        Every option name declared in those files.
+    """
+    names = set()
+    for options_path in options_paths:
+        names.update(_read_config_file(options_path)[:, 0].flatten())
+    return names
+
+
 # How the integer_vars option may be written, named in the errors raised
 # for any other value.
 _INTEGER_VARS_FORMS = (
@@ -341,6 +370,26 @@ class Options(MutableMapping, dict):
         if as_user_options:
             self["useroptions"].update(loaded)
 
+    def validate_supplied_option_names(self, names):
+        """
+        Check that every name of ``names`` is one PyVBMC declares.
+
+        Parameters
+        ----------
+        names : iterable of str
+            The option names a caller supplied.
+
+        Raises
+        ------
+        ValueError
+            Raised when a name is declared by neither of the shipped ini
+            files.
+        """
+        declared = declared_option_names()
+        for key in sorted(names):
+            if key not in declared:
+                raise ValueError("The option {} does not exist.".format(key))
+
     def validate_option_names(self, options_paths: list):
         """
         Check that ini files specified by the list of ``options_paths`` contain
@@ -363,11 +412,7 @@ class Options(MutableMapping, dict):
             specified ini files.
         """
         # create set of option names from all ini files
-        file_option_names = set()
-        for options_path in options_paths:
-            file_option_names.update(
-                _read_config_file(options_path)[:, 0].flatten()
-            )
+        file_option_names = declared_option_names(options_paths)
 
         for key in self.keys():
             if key != "useroptions" and key not in file_option_names:

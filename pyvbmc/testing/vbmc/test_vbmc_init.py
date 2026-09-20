@@ -1274,7 +1274,7 @@ def test_init_1D_input():
     assert np.all(vbmc.optim_state["pub_orig"] == pub.reshape((1, D)))
 
 
-def test_init_options_path():
+def test_init_options_path(tmp_path):
     D = 2
     lb = np.full((D,), -10)
     ub = np.full((D,), 10)
@@ -1298,16 +1298,16 @@ def test_init_options_path():
     assert vbmc.options["sgd_step_size"] == 0.005
     assert vbmc.options["uncertainty_handling"] == []
 
-    # relative path (string)
-    options = {"bar": 666}
-    abspath = (
-        Path(__file__)
-        .parent.parent.parent.joinpath("vbmc/option_configs/test_options.ini")
-        .resolve()
+    abspath = tmp_path.joinpath("user_options.ini")
+    abspath.write_text(
+        "[UserOptions]\n"
+        "# Required stable fcn evals for termination\n"
+        "tol_stable_count = 42\n"
+        "# Min number of iterations\n"
+        "min_iter = 3\n"
     )
+    options = {"min_iter": 666}
     for path in [
-        Path("option_configs/test_options.ini"),  # relative Path
-        "option_configs/test_options.ini",  # relative Path (string)
         abspath,  # absolute Path
         str(abspath),  # absolute Path (string)
     ]:
@@ -1321,16 +1321,35 @@ def test_init_options_path():
             options=options,
             options_path=path,
         )
-        # Keys from test config
-        assert vbmc.options["foo"] == "iter"
-        assert vbmc.options["fooD"] == 4
-        assert vbmc.options["bar"] == 666  # overridden by `options`
         # Keys from basic config
         assert vbmc.options["specify_target_noise"] == False  # same as before
-        assert vbmc.options["tol_stable_count"] == 42  # overridden
+        assert vbmc.options["tol_stable_count"] == 42  # overridden by file
+        assert vbmc.options["min_iter"] == 666  # `options` beats the file
         # Keys from advanced config
         assert vbmc.options["sgd_step_size"] == 0.005  # same as before
-        assert vbmc.options["uncertainty_handling"] is True  # overridden
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        Path("option_configs/advanced_vbmc_options.ini"),
+        "option_configs/advanced_vbmc_options.ini",
+    ],
+)
+def test_init_options_path_relative_to_the_package(path):
+    """A relative ``options_path`` is resolved against the ``pyvbmc/vbmc/``
+    directory."""
+    D = 2
+    vbmc = VBMC(
+        fun,
+        np.zeros((1, D)),
+        np.full((1, D), -10.0),
+        np.full((1, D), 10.0),
+        np.full((1, D), -5.0),
+        np.full((1, D), 5.0),
+        options_path=path,
+    )
+    assert vbmc.options["sgd_step_size"] == 0.005
 
 
 def _vbmc_with_options_file(tmp_path, lines, options=None):
