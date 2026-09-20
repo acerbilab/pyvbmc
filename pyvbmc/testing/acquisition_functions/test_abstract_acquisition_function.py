@@ -508,6 +508,18 @@ def test_real2int_rounds_a_half_away_from_zero():
     )
     assert np.array_equal(X_after, expected)
 
+    # The neighbours of a tie go to the nearer integer. Adding a half to
+    # the largest number below a half gives one in floating point, and to
+    # an odd integer of 53 bits gives the even integer above it.
+    below_half = np.nextafter(0.5, 0.0)
+    odd = 2.0**52 + 1.0
+    near = np.array([[below_half], [-below_half], [odd], [-odd], [0.0]])
+    expected = np.array([[0.0], [0.0], [odd], [-odd], [0.0]])
+    X_after = acq_fcn._real2int(
+        near.copy(), parameter_transformer, np.array([True])
+    )
+    assert np.array_equal(X_after, expected)
+
 
 def test_real2int_rounds_a_box_midpoint_away_from_zero():
     """The reachable tie, through the default probit transform.

@@ -291,9 +291,12 @@ class AbstractAcqFcn(ABC):
             X_temp = parameter_transformer.inverse(X_2d)
             # MATLAB's `round` (misc/real2int_vbmc.m:7) sends a half away
             # from zero; `np.around` sends it to the nearer even integer.
+            # The fractional part is exact, where `abs(x) + 0.5` rounds
+            # the largest number below a half up to one.
             X_int = X_temp[:, integer_vars]
-            X_temp[:, integer_vars] = np.sign(X_int) * np.floor(
-                np.abs(X_int) + 0.5
+            X_whole = np.trunc(X_int)
+            X_temp[:, integer_vars] = X_whole + np.sign(X_int) * (
+                np.abs(X_int - X_whole) >= 0.5
             )
             X_temp = parameter_transformer(X_temp)
             X_2d[:, integer_vars] = X_temp[:, integer_vars]
