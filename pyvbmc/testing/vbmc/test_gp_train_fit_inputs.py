@@ -440,6 +440,29 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert filled["mean_const"][1] == np.min(hpd_y)
 
 
+def test_the_scale_of_the_observation_noise_keeps_an_upper_bound():
+    """VBMC raises the smallest observation noise the GP may take to
+    ``log(TolGPNoise)`` and says nothing about the largest (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:180``, one entry of a vector of NaN), which
+    ``gplite/gplite_train.m:125`` fills with the recommendation of the full
+    training set, the logarithm of the range of the training values."""
+    vbmc = build_trained_state()
+    _, y = training_data(vbmc)
+    gp, _, bounds, filled = install_hyperparameters(vbmc, default_gp(vbmc))
+
+    floor = np.log(vbmc.options["tol_gp_noise"])
+    assert bounds["noise_log_scale"][0] == floor
+    assert np.all(np.isnan(bounds["noise_log_scale"][1]))
+
+    recommended = gp.get_recommended_bounds()
+    assert filled["noise_log_scale"][0] == floor
+    assert filled["noise_log_scale"][1] == recommended["noise_log_scale"][1]
+    assert filled["noise_log_scale"][1] == np.log(np.max(y) - np.min(y))
+    # The floor is above the recommendation it replaces, which is what
+    # raising it is for.
+    assert floor > recommended["noise_log_scale"][0]
+
+
 def test_the_noise_model_follows_the_uncertainty_level():
     """The GP gets the noise function that ``optim_state["gp_noise_fun"]``
     names (MATLAB VBMC, ``misc/setupvars_vbmc.m:277-281``): a constant term

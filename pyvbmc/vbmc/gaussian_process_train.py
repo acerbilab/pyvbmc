@@ -379,7 +379,10 @@ def _gp_hyp(
             np.log(options["upper_gp_length_factor"] * (pub_tran - plb_tran)),
         )
     # Increase minimum noise.
-    bounds["noise_log_scale"] = (np.log(min_noise), np.inf)
+    bounds["noise_log_scale"] = (
+        np.log(min_noise),
+        bounds["noise_log_scale"][1],
+    )
 
     # Missing port: we only implement the mean functions that gpyreg supports.
     if isinstance(gp.mean, gpr.mean_functions.ZeroMean):
