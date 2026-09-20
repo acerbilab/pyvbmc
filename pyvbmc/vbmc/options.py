@@ -4,6 +4,7 @@ from __future__ import annotations
 import configparser
 import copy
 import logging
+import re
 from collections.abc import MutableMapping
 from math import ceil
 from numbers import Real
@@ -658,6 +659,35 @@ def _equals_default(value, default):
         return False
 
 
+#: An option line of an ini file, up to the delimiter that ends its name.
+_OPTION_LINE = re.compile(r"\s*([^#;=:\s][^=:]*?)\s*[=:]")
+
+
+def _read_descriptions(path: Path):
+    """
+    Private helper method to read the description of each option of an ini
+    file, that is the comment line above it.
+
+    The description is taken from the raw line, because a config parser
+    would split it at the first ``=`` or ``:`` it contains.
+    """
+    descriptions = {}
+    description = ""
+    with open(path, encoding="utf-8") as config_file:
+        for line in config_file:
+            stripped = line.strip()
+            if stripped == "" or stripped.startswith("["):
+                continue
+            if stripped.startswith("#") or stripped.startswith(";"):
+                description = stripped.lstrip("#;").strip()
+                continue
+            match = _OPTION_LINE.match(line)
+            if match is not None:
+                descriptions[match.group(1)] = description
+                description = ""
+    return descriptions
+
+
 def _read_config_file(options_path: str):
     """
     Private helper method to read a config file and return the options as a
@@ -672,20 +702,16 @@ def _read_config_file(options_path: str):
 
     if not path.exists():
         raise ValueError(f"{path.resolve()} does not exist.")
-    conf = configparser.ConfigParser(comment_prefixes="", allow_no_value=True)
+    conf = configparser.ConfigParser(allow_no_value=True)
     # do not lower() both values as well as descriptions
     conf.optionxform = str
     conf.read(path)
 
+    descriptions = _read_descriptions(path)
     option_list = []
-    description = ""
     for section in conf.sections():
         for key, value in conf.items(section):
-            if "#" in key:
-                description = key.strip("# ")
-            else:
-                option_list.append([key, value, description])
-                description = ""
+            option_list.append([key, value, descriptions.get(key, "")])
 
     if len(option_list) == 0:
         raise ValueError(

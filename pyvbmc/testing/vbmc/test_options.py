@@ -373,6 +373,52 @@ def test_option_that_is_read_does_not_warn(caplog):
     assert not any("max_iter" in message for message in messages)
 
 
+def test_description_keeps_the_whole_comment_line(tmp_path):
+    """The description of an option is the comment line above it, in full,
+    delimiters of the ini format included."""
+    path = tmp_path.joinpath("described.ini")
+    path.write_text(
+        "[Described]\n"
+        "# Explicit noise handling (0: none; 1: unknown; 2: provided)\n"
+        "max_iter = 3\n"
+        "# Number of GP samples when GP is stable (0 = optimize)\n"
+        "min_iter = 1\n"
+    )
+    options = Options(path, {"D": 2})
+    assert options.descriptions["max_iter"] == (
+        "Explicit noise handling (0: none; 1: unknown; 2: provided)"
+    )
+    assert options.descriptions["min_iter"] == (
+        "Number of GP samples when GP is stable (0 = optimize)"
+    )
+
+
+@pytest.mark.parametrize(
+    "name, description",
+    [
+        (
+            "search_optimizer",
+            'Local optimizer of the acquisition search: "cmaes", '
+            '"Nelder-Mead" or "none" (no local search); with one variable '
+            "a bounded scalar search is used instead of either",
+        ),
+        (
+            "stable_gp_samples",
+            "Number of GP samples when GP is stable (0 = optimize)",
+        ),
+        (
+            "upper_gp_length_factor",
+            "Upper bound on GP input lengths based on plausible box "
+            "(0 = ignore)",
+        ),
+    ],
+)
+def test_shipped_descriptions_are_stored_in_full(name, description):
+    """The descriptions users read come from the ini files as written."""
+    options = _shipped_options({})
+    assert options.descriptions[name] == description
+
+
 def test__str__and__repr__():
     default_options_path = options_path.joinpath("test_options.ini")
     options = Options(default_options_path, {"D": 2})
