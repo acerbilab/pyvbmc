@@ -1070,10 +1070,16 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the three fix agents and the orchestrator's own, which held the code from
   before the pass for the sweeps, are removed.
 - [ ] Pickup point (2026-09-20, after wave 3 was merged). Nothing is in
-  flight. The PI decides on the next wave; the orchestrator proposed P3
-  with P4, whose rows of the slice table carry a first question on
-  uncertainty level 1, the noise model that the wave-3 fixes made work, then
-  P7 with P9 and the internal track of P2, then G1 with G2, then O1 to O4.
+  flight. The PI has decided the next wave (2026-09-20): wave 4 is P3 with
+  P4, both tracks, four fresh Opus reviewers by the reviewer brief, on the
+  code of `dev-port-review` as it stands; the rows of the two slices in the
+  slice table carry a first question on uncertainty level 1, the noise model
+  that the wave-3 fixes made work, which goes into the briefs of the two
+  comparison reviewers and of the two internal ones alike. The wave has not
+  been started. After it the orchestrator reports to the PI before anything
+  else, as after every wave. For the waves after the fourth the orchestrator
+  proposed, and the PI has not ruled on, P7 with P9 and the internal track
+  of P2, then G1 with G2, then O1 to O4.
   A reviewer brief, a verification round and a fix pass go as waves 2 and 3
   went; the gates of a pass are in "Fixes and gates", among them the tests
   that need Torch or PyMC and, for a pass that moves default trajectories,
