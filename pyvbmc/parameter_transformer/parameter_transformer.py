@@ -19,11 +19,13 @@ class ParameterTransformer:
     lb_orig : np.ndarray, optional
         The lower bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     ub_orig : np.ndarray, optional
         The upper bounds of the space. ``lb_orig`` and ``ub_orig`` define a set
         of strict lower and upper bounds for each parameter, given in the
-        original space. By default `None`.
+        original space. Each parameter is bounded on both sides or on
+        neither. By default `None`.
     plb_orig : np.ndarray, optional
         The plausible lower bounds such that ``lb_orig < plb_orig < pub_orig <
         ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
@@ -100,6 +102,19 @@ class ParameterTransformer:
             raise ValueError(
                 """Variable bounds should be LB <= PLB < PUB <= UB
                 for all variables."""
+            )
+
+        # A variable bounded on one side only would need a log transform,
+        # which this class does not provide: it would carry such a variable
+        # through the identity, and the inverse would then return points
+        # outside the declared support.
+        half_bounded = np.isfinite(lb_orig) != np.isfinite(ub_orig)
+        if np.any(half_bounded):
+            dimensions = np.flatnonzero(np.ravel(half_bounded)).tolist()
+            raise ValueError(
+                "Variables bounded on one side only are not supported; "
+                "give both bounds or neither. Offending dimensions: "
+                f"{dimensions}."
             )
 
         # Transform to log coordinates

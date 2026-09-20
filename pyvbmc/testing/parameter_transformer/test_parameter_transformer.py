@@ -15,7 +15,9 @@ def test_init_no_lower_bounds():
 
 
 def test_init_lower_bounds():
-    parameter_transformer = ParameterTransformer(D=D, lb_orig=np.ones((1, D)))
+    parameter_transformer = ParameterTransformer(
+        D=D, lb_orig=np.ones((1, D)), ub_orig=np.ones((1, D)) * 2
+    )
     assert np.all(parameter_transformer.lb_orig == np.ones(D))
 
 
@@ -25,7 +27,9 @@ def test_init_no_upper_bounds():
 
 
 def test_init_upper_bounds():
-    parameter_transformer = ParameterTransformer(D=D, ub_orig=np.ones((1, D)))
+    parameter_transformer = ParameterTransformer(
+        D=D, lb_orig=np.zeros((1, D)), ub_orig=np.ones((1, D))
+    )
     assert np.all(parameter_transformer.ub_orig == np.ones(D))
 
 
@@ -192,6 +196,28 @@ def test_init_bounds_check():
             plb_orig=np.ones((1, D)) * 100,
             pub_orig=np.ones((1, D)) * -20,
         )
+
+
+def test_init_rejects_half_bounded_variables():
+    """A variable with one finite and one infinite bound would need a log
+    transform, which this class does not provide, so it is refused rather
+    than carried through the identity."""
+    for lb_orig, ub_orig in (
+        (np.array([[0.0]]), np.array([[np.inf]])),
+        (np.array([[-np.inf]]), np.array([[3.0]])),
+    ):
+        with pytest.raises(ValueError) as e_info:
+            ParameterTransformer(D=1, lb_orig=lb_orig, ub_orig=ub_orig)
+        assert "one side only" in e_info.value.args[0]
+
+    # The offending dimensions are named.
+    with pytest.raises(ValueError) as e_info:
+        ParameterTransformer(
+            D=3,
+            lb_orig=np.array([[-1.0, -np.inf, 0.0]]),
+            ub_orig=np.array([[1.0, 2.0, np.inf]]),
+        )
+    assert "[1, 2]" in e_info.value.args[0]
 
 
 def test_init_rotation_matrix_validation():
