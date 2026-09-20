@@ -431,7 +431,7 @@ def _gp_hyp(
     # Note: currently this branch is not used.
     if optim_state["gp_noise_fun"][2] == 1:
         bounds["noise_rectified_log_multiplier"] = (
-            [np.min(np.min(y), np.max(y) - 20 * D), -np.inf],
+            [np.minimum(np.min(y), np.max(y) - 20 * D), -np.inf],
             [np.max(y) - 10 * D, np.inf],
         )
 

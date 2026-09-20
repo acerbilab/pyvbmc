@@ -9,11 +9,12 @@ and its local ``vbmc_gphyp``).
 
 import copy
 
+import gpyreg as gpr
 import numpy as np
 
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
-from pyvbmc.vbmc.gaussian_process_train import train_gp
+from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
 
 
 def build_trained_state(
@@ -62,6 +63,36 @@ def build_trained_state(
     vbmc.optim_state["N"] = sample_count
     vbmc.optim_state["n_eff"] = sample_count
     return vbmc
+
+
+def training_data(vbmc):
+    """The training inputs and targets the function logger holds."""
+    logger = vbmc.function_logger
+    return logger.X[logger.X_flag, :], logger.y[logger.X_flag]
+
+
+def hyperparameter_bounds(vbmc, gp):
+    """Install the bounds and priors of ``vbmc`` on ``gp``.
+
+    Returns the GP, the bounds it carries and the ones ``gpyreg.GP.fit``
+    will work with, which fills every entry left unset.
+    """
+    X, y = training_data(vbmc)
+    gp, _, _ = _gp_hyp(
+        vbmc.optim_state,
+        vbmc.options,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
+        gp,
+        X,
+        y,
+    )
+    gp.X, gp.y = X, y
+    return (
+        gp,
+        gp.get_bounds(),
+        gp.get_recommended_bounds(gp.lower_bounds, gp.upper_bounds),
+    )
 
 
 def fit_the_gp(vbmc, hyp_dict, seed: int = 1):
@@ -175,3 +206,29 @@ def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
     # the earlier fit is not folded into it once more.
     assert hyp_dict["run_cov"] is None
     assert hyp_dict["logp"] is None
+
+
+def test_output_dependent_noise_is_bounded_by_the_training_values():
+    """The threshold of the rectified output-dependent noise is bounded by
+    the training targets: above by ``max(y) - 10*D`` and below by
+    ``min(min(y), max(y) - 20*D)`` (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:235-236``). No route through ``VBMC`` switches
+    this noise feature on, so the bounds are built here by hand."""
+    vbmc = build_trained_state()
+    X, y = training_data(vbmc)
+    D = X.shape[1]
+    vbmc.optim_state["gp_noise_fun"] = [1, 0, 1]
+    gp = gpr.GP(
+        D=D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=True, rectified_linear_output_dependent_add=True
+        ),
+    )
+
+    _, bounds, _ = hyperparameter_bounds(vbmc, gp)
+
+    lower, upper = bounds["noise_rectified_log_multiplier"]
+    assert lower[0] == min(np.min(y), np.max(y) - 20 * D)
+    assert upper[0] == np.max(y) - 10 * D
