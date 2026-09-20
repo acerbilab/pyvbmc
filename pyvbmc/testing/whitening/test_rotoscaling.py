@@ -293,6 +293,103 @@ def test_warp_input_cov_reg():
     assert not np.allclose(unregularized.R_mat, transforms[0][0])
 
 
+def _unbounded_vbmc(D):
+    """A `VBMC` instance on an unbounded problem of dimension ``D``."""
+    return VBMC(
+        lambda x: np.sum(x),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.ones((1, D)) * -10,
+        np.ones((1, D)) * 10,
+    )
+
+
+def _posterior_with_covariance(cov):
+    """A posterior whose covariance is ``cov``.
+
+    The covariance is the only quantity of the posterior the whitening
+    transformation is computed from, so it is supplied directly. The
+    posterior's own transformation is the identity, so ``cov`` is its
+    covariance in the original space as well.
+    """
+    D = cov.shape[0]
+    vp = VariationalPosterior(D, 2, np.zeros((2, D)))
+
+    def moments(orig_flag=True, cov_flag=False):
+        return np.zeros((1, D)), np.copy(cov)
+
+    vp.moments = moments
+    return vp
+
+
+def _whitening_map(parameter_transformer, D):
+    """The matrix of the linear map into the whitened inference space."""
+    return parameter_transformer(np.eye(D)) - parameter_transformer(
+        np.zeros((1, D))
+    )
+
+
+def test_warp_input_keeps_a_covariance_the_threshold_makes_indefinite():
+    """Dropping the low-correlation entries of a covariance matrix can
+    leave one that is not positive definite, and the whitening
+    transformation computed from such a matrix does not whiten. The
+    covariance before the threshold is used instead, so that the posterior
+    has unit variance along every coordinate of the new inference space."""
+    D = 3
+    cov = np.array([[1.0, 0.72, 0.04], [0.72, 1.0, 0.72], [0.04, 0.72, 1.0]])
+    vbmc = _unbounded_vbmc(D)
+    thresh = vbmc.options["warp_roto_corr_thresh"]
+    thresholded = np.copy(cov)
+    thresholded[np.abs(cov) <= thresh] = 0
+    assert np.min(np.linalg.eigvalsh(thresholded)) < 0
+
+    parameter_transformer_warp, __, __, __ = warp_input(
+        _posterior_with_covariance(cov),
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.options,
+    )
+
+    linear_map = _whitening_map(parameter_transformer_warp, D)
+    attained = linear_map.T @ cov @ linear_map
+    assert np.allclose(np.diag(attained), np.ones(D))
+
+
+def test_warp_input_whitens_the_thresholded_covariance_when_it_is_definite():
+    """Where the thresholded covariance is positive definite, it is the
+    matrix the whitening transformation is computed from."""
+    D = 3
+    sd = np.array([np.sqrt(2.0), 1.0, np.sqrt(0.5)])
+    corr = np.array([[1.0, 0.3, 0.02], [0.3, 1.0, 0.3], [0.02, 0.3, 1.0]])
+    cov = np.outer(sd, sd) * corr
+    vbmc = _unbounded_vbmc(D)
+    thresh = vbmc.options["warp_roto_corr_thresh"]
+    thresholded = np.copy(cov)
+    thresholded[np.abs(corr) <= thresh] = 0
+    assert np.min(np.linalg.eigvalsh(thresholded)) > 0
+
+    parameter_transformer_warp, __, __, __ = warp_input(
+        _posterior_with_covariance(cov),
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.options,
+    )
+
+    rotation, singular_values, __ = np.linalg.svd(thresholded)
+    if np.linalg.det(rotation) < 0:
+        rotation[:, 0] = -rotation[:, 0]
+    assert np.array_equal(parameter_transformer_warp.R_mat, rotation)
+    assert np.array_equal(
+        parameter_transformer_warp.scale,
+        np.sqrt(singular_values + np.finfo(np.float64).eps),
+    )
+    # The entries dropped by the threshold make a difference: the
+    # untouched covariance gives another transformation.
+    untouched, __, __ = np.linalg.svd(cov)
+    assert not np.allclose(parameter_transformer_warp.R_mat, untouched)
+
+
 def test_warp_input_search_cache():
     """A populated search cache is warped into the new space."""
     D = 2

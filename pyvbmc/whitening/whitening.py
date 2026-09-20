@@ -4,6 +4,28 @@ import gpyreg as gpr
 import numpy as np
 
 
+def _is_positive_definite(matrix):
+    """Whether a real symmetric matrix is positive definite.
+
+    Parameters
+    ----------
+    matrix : (D,D) np.ndarray
+        The symmetric matrix to test.
+
+    Returns
+    -------
+    positive_definite : bool
+        `True` if the matrix is finite and admits a Cholesky factorization.
+    """
+    if not np.all(np.isfinite(matrix)):
+        return False
+    try:
+        np.linalg.cholesky(matrix)
+    except np.linalg.LinAlgError:
+        return False
+    return True
+
+
 def unscent_warp(fun, x, sigma):
     r"""Compute the unscented transform of the warping function `fun`.
 
@@ -150,13 +172,21 @@ def warp_input(vp, optim_state, function_logger, options):
             vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
             vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
-        # Remove low-correlation entries
+        # Remove low-correlation entries. Setting entries of a covariance
+        # matrix to zero can leave a matrix that is no longer positive
+        # definite; its singular values would then be the absolute values
+        # of its eigenvalues, and the transform computed from them would
+        # miss unit variance along the direction of a negative one. The
+        # covariance is kept as it was whenever that happens.
         if options["warp_roto_corr_thresh"] > 0:
             vp_corr = vp_cov / np.sqrt(
                 np.outer(np.diag(vp_cov), np.diag(vp_cov))
             )
             mask_idx = np.abs(vp_corr) <= options["warp_roto_corr_thresh"]
-            vp_cov[mask_idx] = 0
+            vp_cov_thresh = np.copy(vp_cov)
+            vp_cov_thresh[mask_idx] = 0
+            if _is_positive_definite(vp_cov_thresh):
+                vp_cov = vp_cov_thresh
 
         # Regularization of covariance matrix towards diagonal. The
         # amount is a number, or a function of the number of training
