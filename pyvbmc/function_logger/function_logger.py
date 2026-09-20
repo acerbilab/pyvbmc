@@ -710,11 +710,14 @@ class FunctionLogger:
                     N + 1
                 )
 
-            # Work on a copy: adding the transform Jacobian to a view would
-            # corrupt the pooled original-space observation on every repeat.
-            f_val = self.y_orig[idx].copy()
+            # Read the pooled value out of its row: adding the transform
+            # Jacobian to the row itself would corrupt the original-space
+            # observation on every repeat.
+            f_val = self.y_orig[idx, 0]
             if self.transform_parameters:
-                f_val += self.parameter_transformer.log_abs_det_jacobian(x)
+                f_val = (
+                    f_val + self.parameter_transformer.log_abs_det_jacobian(x)
+                )
             self.y[idx] = f_val
             # An unknown evaluation time leaves the stored average alone.
             if not np.isnan(fun_eval_time):
@@ -725,7 +728,7 @@ class FunctionLogger:
             self.n_evals[idx] += 1
             # The pooled value can move the maximum either way.
             self.y_max = np.nanmax(self.y[self.X_flag])
-            return f_val, idx
+            return float(f_val), idx
         else:
             self.Xn += 1
             if self.Xn > self.X_orig.shape[0] - 1:
@@ -750,7 +753,7 @@ class FunctionLogger:
             self.X_flag[self.Xn] = True
             self.n_evals[self.Xn] += 1
             self.y_max = np.nanmax(self.y[self.X_flag])
-            return f_val, self.Xn
+            return float(f_val), self.Xn
 
     def __deepcopy__(self, memo):
         cls = self.__class__

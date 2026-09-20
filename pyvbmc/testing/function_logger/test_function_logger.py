@@ -175,6 +175,24 @@ def test_record_duplicate():
     assert f_logger.fun_eval_time[1] == 5
 
 
+@pytest.mark.parametrize("transformer", [None, ParameterTransformer(3)])
+def test_recorded_value_is_a_float_for_a_new_point_and_for_a_repeat(
+    transformer,
+):
+    """The recorded value comes back as the float the docstrings declare,
+    whether the point is new or a repeat of one already recorded."""
+    x = np.array([3.0, 4.0, 5.0])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, transformer
+    )
+    new_value, __, __ = f_logger.add(x, 9.0)
+    repeat_value, __, __ = f_logger.add(x, 1.0)
+
+    assert type(new_value) is float
+    assert type(repeat_value) is float
+    assert repeat_value == 5.0
+
+
 def test_record_duplicate_unknown_time_keeps_the_stored_average():
     """A repeat whose evaluation time is unknown leaves the average of the
     times already recorded for that point as it was, as an unknown time
