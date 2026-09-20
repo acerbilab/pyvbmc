@@ -218,9 +218,16 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(
                     -1, 1
                 ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
-                ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
-                if np.any(ln_weights_max == -np.inf):
-                    raise ValueError("Invalid value.")
+                # The starting point is drawn among the samples in
+                # proportion to their weights, so the maximum is taken
+                # over them (activeimportancesampling_vbmc.m:206-208).
+                ln_weights_max = np.amax(ln_weights)
+                if ln_weights_max == -np.inf:
+                    raise ValueError(
+                        "No importance sample carries any weight under GP "
+                        f"hyperparameter sample {s}, so the chain has no "
+                        "starting point to be drawn."
+                    )
                 weights = np.exp(ln_weights - ln_weights_max).ravel()
                 weights = weights / np.sum(weights)
                 # x0 = np.zeros((Walkers, D))
