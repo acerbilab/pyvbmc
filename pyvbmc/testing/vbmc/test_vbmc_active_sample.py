@@ -17,6 +17,11 @@ from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
 
+# The module, for patching its names. Inside the package the name
+# `pyvbmc.vbmc.active_sample` is the function the package exports, and a
+# dotted patch target that goes through it does not resolve on Python 3.10.
+_active_sample_module = importlib.import_module("pyvbmc.vbmc.active_sample")
+
 fun = lambda x: np.sum(x + 2)
 
 
@@ -102,7 +107,7 @@ def test_cmaes_search_starts_from_per_coordinate_step_sizes(mocker):
     mocker.patch(
         "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
     )
-    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+    mocker.patch("cma.fmin", side_effect=fake_fmin)
 
     active_sample(
         gp,
@@ -164,7 +169,7 @@ def test_cmaes_search_runs_without_noise_handling(mocker):
         return np.asarray(x0, dtype=float), np.inf
 
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
-    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+    mocker.patch("cma.fmin", side_effect=fake_fmin)
 
     active_sample(
         gp,
@@ -219,7 +224,7 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     mocker.patch(
         "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
     )
-    mocker.patch("pyvbmc.vbmc.active_sample.cma.fmin", side_effect=fake_fmin)
+    mocker.patch("cma.fmin", side_effect=fake_fmin)
 
     active_sample(
         gp,
@@ -254,8 +259,9 @@ def test_one_dimensional_search_is_bounded(mocker):
     mocker.patch(
         "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
     )
-    mocker.patch(
-        "pyvbmc.vbmc.active_sample._get_search_points",
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
         return_value=(candidates, np.full(len(candidates), np.nan)),
     )
     mocker.patch(
@@ -393,12 +399,13 @@ def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     mocker.patch(
         "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
     )
-    mocker.patch(
-        "pyvbmc.vbmc.active_sample._get_search_points",
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
         return_value=(candidates, np.full(len(candidates), np.nan)),
     )
     mocker.patch(
-        "pyvbmc.vbmc.active_sample.cma.fmin",
+        "cma.fmin",
         side_effect=RuntimeError("no search today"),
     )
     caplog.set_level(logging.WARNING)
@@ -1911,8 +1918,8 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
     # The step takes that branch, with the observation's noise variance,
     # instead of recomputing the posterior.
     update_spy = mocker.spy(gpr.GP, "update")
-    reupdate_spy = mocker.patch(
-        "pyvbmc.vbmc.active_sample.reupdate_gp", wraps=reupdate_gp
+    reupdate_spy = mocker.patch.object(
+        _active_sample_module, "reupdate_gp", wraps=reupdate_gp
     )
     function_logger, optim_state, _, gp = active_sample(
         gp,
@@ -2031,8 +2038,9 @@ def test_active_sample_refreshes_n_eff(mocker):
         )
         return _get_search_points(number_of_points, state, logger, *a, **k)
 
-    mocker.patch(
-        "pyvbmc.vbmc.active_sample._get_search_points",
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
         side_effect=recording_get_search_points,
     )
     active_sample(
