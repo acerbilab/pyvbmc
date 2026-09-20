@@ -333,8 +333,10 @@ fix phase can be run from this file:
   fix.
 - A fix pass ends with its lines in `CHANGELOG.md` under `Unreleased`: what a
   user of the last release will notice, one sentence each, with what to do
-  where a script may need it. A fix to a feature that no release has shipped
-  goes into that feature's entry.
+  where a script may need it, and one line in the section's "Upgrading from"
+  list for a change that can stop such a script or change what it returns. A
+  fix to a feature that no release has shipped goes into that feature's
+  entry.
 - After a fix pass, the full CI matrix on the branch, dispatched once the
   branch smoke is green (`gh workflow run tests.yml --ref dev-port-review`).
   The smoke that a push starts is one cell, Ubuntu with the newest Python, and
@@ -860,16 +862,36 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   1.5 are left to those features' entries. The features of 1.5 (601 commits
   since `v1.0.4`) are to be backfilled from `dev/results/`, `dev/plans/`
   and the log, on the PI's word.
-- [ ] Pickup point (2026-09-20). By the PI's decision two things come
-  before the next wave, and then wave 3 is settled. First the changelog
-  (`dev/TODO.md` has the item): `CHANGELOG.md` lists what the first three
-  waves changed for a user of 1.0.4, each claim checked against `v1.0.4`,
-  but the PI found its prose poor, so a session that did not see the fix
-  pass rewrites it for that user, keeping the facts, and then adds the
-  features of 1.5. The file and the rule in `AGENTS.md` that goes with it
-  are on `dev-port-review` alone; `dev-next` lacks the documentation commits
-  made after the merge, and whether to fast-forward it is the PI's call.
-  Then wave 3: slices P8 and P5, both tracks, four Opus reviewers.
+- [x] 2026-09-20: `CHANGELOG.md` rewritten and completed (PI: a session
+  that did not see the fix pass rewrites the prose for a user of 1.0.4,
+  keeping the facts, then adds what the review did not make). The PI
+  approved the rewritten wording. For the rest of 1.5, four read-only Opus
+  agents distilled `dev/results/`, `dev/plans/` and the log by area
+  (reproducibility and the fixes made before the review; performance,
+  memory, calibration and tips; the pipeline features, the PyMC adapter and
+  packaging; S-VBMC), and the orchestrator checked every line against the
+  code at the head and at `v1.0.4` before writing it. In the entries the
+  first version already had, two things changed beyond wording: the
+  scalar-bound entry moved from Changed to Fixed, and the initial-design
+  entry spells out the count (the first version's "20 from ten dimensions
+  on" holds only up to `D = 19`). Everything else is new: the Added
+  section, an "Upgrading from 1.0.4" lead, and further Changed and Fixed
+  entries. An independent doublecheck by five read-only Opus reviewers
+  (fidelity of the rewrite; the new entries in three parts; a reader's pass
+  with an inventory of user-visible differences taken from the code) found
+  six statements to correct and a number of gaps, all applied the same day;
+  two of its findings were refuted against the code (the crash of long runs
+  does start with NumPy 2.4, where the conversion of a one-element array to
+  a scalar stopped being a deprecation warning, and `get_bounds` never
+  accumulated its box in 1.0.4 either, as the message of `7dd2e3f` says).
+  The "What's new in PyVBMC 1.5" blocks of `README.md` and
+  `docsrc/source/index.rst` link to the changelog. The file and the rule in
+  `AGENTS.md` that goes with it stay on `dev-port-review`; the PI ruled that
+  `dev-next` is not fast-forwarded for them.
+- [ ] Pickup point (2026-09-20). Wave 3: slices P8 and P5, both tracks, four
+  Opus reviewers. `CHANGELOG.md`, its rule in `AGENTS.md` and the links to it
+  exist on `dev-port-review` alone until this branch next merges into
+  `dev-next`.
 
   Two open items ride on P8. Its verification checks whether the reviewers
   found, unprompted, that the warp re-transforms only the active rows of

@@ -10,18 +10,19 @@ records its execution.
 ## In scope for 1.5
 
 - [ ] **Changelog for 1.5.** `CHANGELOG.md` (root, Keep a Changelog layout)
-  was started on 2026-09-20 with what the first three waves of the port review
-  changed for a user of 1.0.4; every claim in it was checked against the
-  `v1.0.4` tag. Two steps remain. Rewrite its prose for that user: the facts
-  stand, the wording was judged poor by the PI and is best redone by someone
-  who was not part of the work it describes. Then add the features of 1.5,
-  which no entry covers yet (601 commits since `v1.0.4`; the sources are
-  `dev/results/`, `dev/plans/`, the [roadmap](plans/modernization-roadmap.md)
-  and the log), each line checked against the code, and take out the sentence
-  of the unreleased section that says the list is incomplete. A fix to a
-  feature that is itself new in 1.5 belongs to that feature's entry. From here
-  on a user-visible change is listed with the work that makes it
-  (`AGENTS.md`).
+  covers the changes since `v1.0.4`; the worklog of the
+  [port review plan](plans/port-correctness-review.md) records how it was
+  written and checked (2026-09-20). Open before the release: the PI's
+  reading of the entries added that day; the whole-run timings of "Runs are
+  faster", measured on 2026-09-03 to 09-05, before the corrections that
+  change how long a run takes, and the S-VBMC speed figure, both to be
+  measured again on the release benchmark; the S-VBMC entry's account of the
+  reported `elbo`, which the item below may change; and the "What's new in
+  PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst`, which
+  link to the changelog and are to be revised against it (the link of the
+  docs resolves once the file is on `main`). A user-visible change is
+  listed with the work that makes it (`AGENTS.md`), and its line in the
+  changelog's "Upgrading from 1.0.4" lead is kept in step with its entry.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
