@@ -1604,7 +1604,7 @@ class VBMC:
                 "sKL": sKL,
                 "sKL_true": sKL_true,
                 "gp": _lean_gp(self.gp),
-                "gp_hyp_full": self.gp.get_hyperparameters(as_array=True),
+                "gp_hyp_full": self.hyp_dict["full"],
                 "Ns_gp": Ns_gp,
                 "pruned": pruned,
                 "timer": timer,
