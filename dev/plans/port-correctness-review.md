@@ -437,9 +437,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
 - All of the review's work happens on the branch `dev-port-review`, cut
   from `dev-next` at `f91fdf0`: this plan's worklog, the files under
   `experiments/port_review_20260919/`, the ledger and the fixes. It
-  merges into `dev-next` when the fixes have
-  passed their gates. Only the `TODO.md` status line is updated on
-  `dev-next` directly.
+  merges into `dev-next`, with a merge commit as the other work branches
+  do, after a fix pass whose gates have passed, the full CI matrix among
+  them (first on 2026-09-20, after wave 2), and is then fast-forwarded onto
+  `dev-next` so that the review goes on from the merged line. Only the
+  `TODO.md` status line is updated on `dev-next` directly.
 
 ## Worklog
 
@@ -843,6 +845,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the head before, the generator state included; the whole default suite
   (1540 passed, 58 skipped); the S-VBMC tests with Torch (227); and the
   full matrix on `ae4e651`, green in all nine cells.
+- [x] 2026-09-20: `dev-port-review` merged into `dev-next` (PI; merge
+  commit `57cbfb4`, on `dev-next` at `bb2d2f4`, which had not moved since
+  the review branch was last brought onto it), after the full CI matrix on
+  `ae4e651` was green in all nine cells. The review's status in `TODO.md`
+  was updated on `dev-next` (`0306d68`), and `dev-port-review` was
+  fast-forwarded onto it; waves 3 onward continue on this branch.
 - [ ] Waves 3 to 7: P3, P4, P5, P7, P8, P9, G1, G2, both tracks (16
   reviewers), and the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks);
