@@ -1,32 +1,31 @@
 # Changelog
 
-Changes to PyVBMC that a user can notice, newest first, in the layout of
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). An entry says what
-changed and, where a script may need it, what to do. The records behind the
-entries are under `dev/` (start from `dev/README.md`).
+All notable changes to PyVBMC are documented in this file. The format is based
+on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]: PyVBMC 1.5
+## [Unreleased]
 
-Compared with 1.0.4. The section is assembled as the work lands: it holds the
-changes that came out of the correctness review of the port of MATLAB VBMC
-([plan and worklog](dev/plans/port-correctness-review.md)), waves 0 to 2. The
-new features of 1.5 are still to be listed.
+Changes since 1.0.4, to be released as PyVBMC 1.5. The list is not complete
+yet: the new features of 1.5 are still to be added.
+
+Many of the entries below come from a systematic comparison of the code with
+the original MATLAB implementation of VBMC.
 
 ### Changed
 
 - **A seeded run does not reproduce its 1.0.4 numbers.** Several steps of the
-  algorithm follow MATLAB VBMC again where the port had drifted from it, and
+  algorithm were brought into agreement with the MATLAB implementation, and
   each of them changes the trajectory of a run:
   - The initial design holds `10 * ceil((D + 1) / 10)` points, which is 20
     from ten dimensions on (it was `max(D, 10)`).
   - The local search of the acquisition function (CMA-ES) starts with one
     step size per coordinate and runs without `cma`'s noise handling; with a
     single variable a bounded scalar search takes its place.
-  - Warm-up ends as it does in MATLAB: the recent-improvement test looks at
-    the intended window, the running maximum of the lower confidence bound
-    is recomputed with the current GP (the option `recompute_lcb_max`, which
-    had no effect), and the first input warp and the earliest stable
-    termination wait for a few iterations after warm-up.
+  - The end of warm-up is decided as in MATLAB: from the running maximum of
+    the lower confidence bound recomputed with the current GP (the option
+    `recompute_lcb_max`, which had no effect before) and over a shorter
+    window of recent iterations. The first input warp and the earliest
+    stable termination then wait for a few iterations.
   - The initial variational posterior sits at the starting point. For a
     bounded problem it sat somewhere else, because the starting point was
     used in original coordinates where transformed ones belong.
@@ -115,8 +114,8 @@ new features of 1.5 are still to be listed.
   initial design stay available, and one that has been evaluated is not
   proposed again.
 - After a second or later input warp, the bounds of the acquisition search
-  could be mapped through the transform of an earlier iteration (no stored
-  run shows it happening).
+  could be mapped through the transform of an earlier iteration. We have not
+  seen this happen in practice.
 - `warp_cov_reg` accepts a number or a callable.
 - `print(options)` shows option descriptions in full; those holding a `:` or
   an `=` were cut short.
