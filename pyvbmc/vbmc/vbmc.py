@@ -1651,7 +1651,7 @@ class VBMC:
                     # options = options_main
                     # Reset GP hyperparameter covariance
                     # hypstruct.runcov = []
-                    self.hyp_dict["runcov"] = None
+                    self.hyp_dict["run_cov"] = None
                     # Reset VP repository (not used in python)
                     self.optim_state["vp_repo"] = []
 
