@@ -1410,43 +1410,12 @@ class VBMC:
             if self.optim_state.get("skip_active_sampling"):
                 self.optim_state["skip_active_sampling"] = False
             else:
-                if (
-                    self.gp is not None
-                    and self.options.get("separate_search_gp")
-                    and not self.options.get("varactivesample")
-                ):
-                    # Train a distinct GP for active sampling
-                    # Since we are doing iterations from 0 onwards
-                    # instead of from 1 onwards, this should be checking
-                    # oddness, not evenness.
-                    if self.iteration % 2 == 1:
-                        meantemp = self.optim_state.get("gp_mean_fun")
-                        self.optim_state["gp_mean_fun"] = "const"
-                        timer.start_timer("separate_gp_train")
-                        gp_search, Ns_gp, sn2_hpd, self.hyp_dict = train_gp(
-                            self.hyp_dict,
-                            self.optim_state,
-                            self.function_logger,
-                            self.iteration_history,
-                            self.options,
-                            self.optim_state["plb_tran"],
-                            self.optim_state["pub_tran"],
-                            rng=self.rng,
-                        )
-                        timer.stop_timer("separate_gp_train")
-                        self.optim_state["sn2_hpd"] = sn2_hpd
-                        self.optim_state["gp_mean_fun"] = meantemp
-                    else:
-                        gp_search = self.gp
-                else:
-                    gp_search = self.gp
-
                 # Perform active sampling
                 if self.options.get("varactivesample"):
                     # FIX TIMER HERE IF USING THIS
                     # [optimState,vp,t_active,t_func] =
                     # variationalactivesample_vbmc(optimState,new_funevals,
-                    # funwrapper,vp,vp_old,gp_search,options)
+                    # funwrapper,vp,vp_old,gp,options)
                     sys.exit("Function currently not supported")
                 else:
                     self.optim_state["hyp_dict"] = self.hyp_dict
@@ -1456,7 +1425,7 @@ class VBMC:
                         self.vp,
                         self.gp,
                     ) = active_sample(
-                        gp_search,
+                        self.gp,
                         new_funevals,
                         self.optim_state,
                         self.function_logger,

@@ -41,6 +41,7 @@ INERT_OPTIONS = frozenset(
         "sample_extra_vp_means",
         "scale_lower_bound",
         "search_cmaes_best",
+        "separate_search_gp",
         "temperature",
         "variational_init_repo",
         "variational_sampler",

@@ -321,6 +321,20 @@ def test_inert_option_away_from_its_default_warns(caplog):
     )
 
 
+def test_separate_search_gp_is_inert(caplog):
+    """The separate search GP with a constant mean is a development option
+    of MATLAB VBMC that PyVBMC does not implement, so a value given for it
+    has no effect and is reported as having none."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({"separate_search_gp": True})
+    assert options["separate_search_gp"] is True
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        "separate_search_gp" in message and "no effect" in message
+        for message in messages
+    )
+
+
 def test_inert_option_at_its_default_does_not_warn(caplog):
     """Repeating the default of an inert option changes nothing and is
     silent, so that an option dictionary recorded by an earlier run loads
