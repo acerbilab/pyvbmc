@@ -2042,6 +2042,11 @@ class VBMC:
             )
             self.optim_state["last_warmup"] = iteration
 
+            # Start warping: the input warping and the stability
+            # termination are both held back for a while after warm-up.
+            self.optim_state["last_warping"] = iteration
+            self.optim_state["last_successful_warping"] = iteration
+
         else:
             # This may be a false alarm; prune and continue
             if self.options.get("warmup_keep_threshold_false_alarm") is None:

@@ -629,6 +629,50 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     assert vbmc.optim_state.get("data_trim_list")[-1] == 1
 
 
+def test_setup_vbmc_after_warmup_starts_the_warping_clocks():
+    """Ending warm-up starts the two clocks that hold the input warping
+    and the stability termination back, so the first warp comes no sooner
+    than ``warp_every_iters`` iterations later and a run cannot terminate
+    on stability right after warm-up (MATLAB VBMC,
+    ``private/vbmc_warmup.m:97-102``). A false alarm, which prunes and
+    carries on, leaves them where they were."""
+    options = {
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
+    }
+
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+    _warmup_history(vbmc, iteration=100)
+    vbmc.iteration_history["r_index"] = np.ones(101) * 1e-4
+    assert vbmc.optim_state["last_warping"] == -np.inf
+    assert vbmc.optim_state["last_successful_warping"] == -np.inf
+    for i in range(3):
+        vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
+    vbmc._setup_vbmc_after_warmup()
+
+    assert not vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warping"] == 100
+    assert vbmc.optim_state["last_successful_warping"] == 100
+
+    false_alarm = dict(
+        options,
+        warmup_keep_threshold_false_alarm=400,
+        stop_warmup_reliability=1,
+    )
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, false_alarm)
+    _warmup_history(vbmc, iteration=100)
+    vbmc.iteration_history["r_index"] = np.ones(101) * 2
+    for i in range(6):
+        vbmc.function_logger.add(np.ones((3)) * i, 3000 * i)
+    vbmc._setup_vbmc_after_warmup()
+
+    assert vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warping"] == -np.inf
+    assert vbmc.optim_state["last_successful_warping"] == -np.inf
+
+
 def test_setup_vbmc_after_warmup_false_alarm():
     """
     Test the behaviour when it has been detected as a false alarm.
