@@ -1908,6 +1908,119 @@ def test_repeated_observation_skips_search_optimizer(mocker):
     assert fmin.call_count == 1
 
 
+def test_candidate_noise_is_one_observation_at_uncertainty_level_one(mocker):
+    """At uncertainty level 1 the noise the acquisitions read for a
+    candidate is the variance of a single new observation,
+    ``exp(2*h0) + exp(h1)``, averaged over the GP hyperparameter samples
+    (``private/activesample_vbmc.m:159-174``). The function logger records
+    a standard deviation of 1 for every evaluation and pools repeats by
+    precision, so the noise function is evaluated at ``S**2 * n_evals``,
+    which is 1 at every training point whatever its number of
+    evaluations. An input evaluated twice therefore keeps that candidate
+    noise while its own training variance is the pooled
+    ``exp(2*h0) + exp(h1)/2``.
+    """
+    D = 2
+    vbmc = create_vbmc(
+        D,
+        0.0,
+        -np.inf,
+        np.inf,
+        -3,
+        3,
+        {
+            "uncertainty_handling": True,
+            "search_optimizer": "none",
+            "active_sample_gp_update": False,
+            "active_sample_vp_update": False,
+        },
+    )
+    # The two starting points are the same input, so the logger pools the
+    # second evaluation into the first one's row.
+    function_logger, optim_state, _, _ = active_sample(
+        gp=None,
+        sample_count=8,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        iteration_history=vbmc.iteration_history,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+    assert optim_state["uncertainty_handling_level"] == 1
+    n_evals = np.ravel(function_logger.n_evals[function_logger.X_flag])
+    assert np.count_nonzero(n_evals == 2) == 1
+    repeated = int(np.flatnonzero(n_evals == 2)[0])
+
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(n_evals)
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.plausible_lower_bounds,
+        vbmc.plausible_upper_bounds,
+        rng=vbmc.vp.rng,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+
+    seen = {}
+
+    def recording_acq(self, Xs, gp, vp, function_logger, optim_state):
+        seen["sn2_new"] = np.array(gp.temporary_data["sn2_new"], copy=True)
+        seen["hyp"] = np.array([p.hyp for p in gp.posteriors])
+        seen["cov_N"] = gp.covariance.hyperparameter_count(gp.D)
+        seen["noise_N"] = gp.noise.hyperparameter_count()
+        seen["noise"] = gp.noise
+        seen["X"] = np.array(gp.X, copy=True)
+        seen["y"] = np.array(gp.y, copy=True)
+        seen["s2"] = np.array(gp.s2, copy=True)
+        return np.sum(np.atleast_2d(Xs) ** 2, axis=1)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", recording_acq
+    )
+    active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    cov_N, noise_N = seen["cov_N"], seen["noise_N"]
+    assert noise_N == 2  # the constant term and the multiplier
+    h0 = seen["hyp"][:, cov_N]
+    h1 = seen["hyp"][:, cov_N + 1]
+    one_observation = np.exp(2 * h0) + np.exp(h1)
+    assert np.allclose(seen["sn2_new"], np.mean(one_observation))
+
+    # The GP's own noise at the repeated row is the pooled variance.
+    training_noise = np.array(
+        [
+            np.ravel(
+                seen["noise"].compute(
+                    hyp[cov_N : cov_N + noise_N],
+                    seen["X"],
+                    seen["y"],
+                    seen["s2"],
+                )
+            )
+            for hyp in seen["hyp"]
+        ]
+    )
+    assert seen["s2"][repeated] == pytest.approx(0.5)
+    assert np.allclose(
+        training_noise[:, repeated], np.exp(2 * h0) + np.exp(h1) / 2
+    )
+    assert not np.isclose(
+        seen["sn2_new"][repeated], np.mean(training_noise[:, repeated])
+    )
+
+
 def test_ns_gp_max_active_caps_the_in_loop_refits(mocker):
     """``ns_gp_max_active`` caps the number of hyperparameter samples of
     the GP refits within active sampling, as ``ns_gp_max_warmup`` and

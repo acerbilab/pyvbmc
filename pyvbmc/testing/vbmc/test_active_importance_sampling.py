@@ -486,14 +486,12 @@ def test_acq_log_f():
     filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.npz")
     print(filepath)
 
+    # What the stored MATLAB array holds for VIQR is the value of
+    # ``log_isbasefun``, which adds the variational log density to the
+    # added term of the acquisition; ``AcqFcnVIQR.is_log_full`` returns
+    # the added term alone, so the density is added here.
     viqr = AcqFcnVIQR()
-    # Use vp weights for this test, since IMIQR uses them.
-    viqr.acq_info["importance_sampling_vp"] = True
     y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
-    y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
-    viqr = AcqFcnVIQR()
-    y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
-    # Add VP density to i.s. weights:
     y_viqr += np.maximum(
         vp.pdf(Xa, orig_flag=False, log_flag=True), np.log(float_info.min)
     )
