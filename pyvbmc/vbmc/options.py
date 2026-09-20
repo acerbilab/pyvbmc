@@ -537,8 +537,19 @@ class Options(MutableMapping, dict):
     def __len__(self):
         return dict.__len__(self)
 
-    def __delitem__(self, key):
-        return dict.__delitem__(self, key)
+    def __delitem__(self, key, force=False):
+        # Options cannot be removed after initialization, as they cannot be
+        # set; ``pop``, ``popitem`` and ``clear`` all come through here.
+        if (
+            hasattr(self, "is_initialized")
+            and self.is_initialized
+            and not force
+        ):
+            raise AttributeError(
+                "Warning: Cannot remove options after initialization. Please re-initialize with `options = {...}`"
+            )
+        else:
+            dict.__delitem__(self, key)
 
     def __copy__(self):
         cls = self.__class__

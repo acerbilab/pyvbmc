@@ -435,6 +435,31 @@ def test_del():
     assert "foo" not in options
 
 
+def test_initialized_options_refuse_removal():
+    """Options are fixed after initialization: a key can no more be
+    removed than it can be set, by whichever method of a mapping."""
+    default_options_path = options_path.joinpath("test_options.ini")
+    options = Options(default_options_path, {"D": 2})
+    options.validate_option_names([default_options_path])
+    assert options.is_initialized
+    n_options = len(options)
+
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.pop("foo")
+    with pytest.raises(AttributeError, match="after initialization"):
+        del options["foo"]
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.popitem()
+    with pytest.raises(AttributeError, match="after initialization"):
+        options.clear()
+    assert len(options) == n_options
+    assert options["foo"] is not None
+
+    # The override that setting an option has.
+    options.__delitem__("foo", force=True)
+    assert "foo" not in options
+
+
 def test_eval_callable():
     default_options_path = options_path.joinpath("test_options.ini")
 

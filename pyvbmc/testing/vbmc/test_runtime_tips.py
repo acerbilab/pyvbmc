@@ -374,7 +374,7 @@ def test_load_migrates_option_and_first_start_flag_without_output(
     assert loaded_pre_run.options["show_tips"] is False
 
     legacy_pre_run = _make_vbmc(display="off")
-    del legacy_pre_run.options["show_tips"]
+    legacy_pre_run.options.__delitem__("show_tips", force=True)
     del legacy_pre_run._runtime_tip_handled
     legacy_pre_run_path = tmp_path / "legacy-pre-run"
     legacy_pre_run.save(legacy_pre_run_path)
@@ -383,7 +383,7 @@ def test_load_migrates_option_and_first_start_flag_without_output(
     assert loaded_legacy_pre_run.options["show_tips"] is True
 
     legacy = _make_vbmc(display="off")
-    del legacy.options["show_tips"]
+    legacy.options.__delitem__("show_tips", force=True)
     del legacy._runtime_tip_handled
     legacy.iteration = 0
     legacy_path = tmp_path / "legacy"

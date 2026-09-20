@@ -363,7 +363,7 @@ def test_vbmc_load_defaults_missing_vectorized_flags_to_false(tmp_path):
     path = _save_load_vbmc(np.sum, tmp_path, vectorized=False)
     with open(path.with_suffix(".pkl"), "rb") as file:
         vbmc = dill.load(file)
-    del vbmc.options["vectorized_target"]
+    vbmc.options.__delitem__("vectorized_target", force=True)
     del vbmc.function_logger.vectorized_target
     vbmc.save(path, overwrite=True)
 

@@ -346,7 +346,7 @@ def test_final_boost_tolerance_validation(tolerance):
 
 def test_final_boost_old_options_without_tolerance_use_legacy(mocker):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, _boost_options(None))
-    del vbmc.options["tol_elcbo_boost"]
+    vbmc.options.__delitem__("tol_elcbo_boost", force=True)
     _set_pre_stats(vbmc)
     _, captured, _ = _mock_candidate(mocker, vbmc, -10.5, 0.5)
 
