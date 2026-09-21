@@ -19,6 +19,8 @@ from pyvbmc import VBMC
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
 
+from .test_vbmc_loop_state import build_short
+
 
 def build_trained_state(
     options: dict = None,
@@ -170,26 +172,6 @@ def capture_starting_points(monkeypatch, init_N: int):
     monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
     monkeypatch.setattr(gp_train_module, "_estimate_noise", lambda gp: 0.0)
     return seen
-
-
-def build_short(options: dict, seed: int = 20260920, D: int = 2):
-    """A seeded spherical-Gaussian problem, ready to run."""
-    settings = {
-        "display": "off",
-        "plot": False,
-        "print_iteration_header": False,
-    }
-    settings.update(options)
-    return VBMC(
-        lambda x: -0.5 * np.sum(x**2),
-        np.zeros((1, D)),
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
-        np.full((1, D), -1.0),
-        np.full((1, D), 1.0),
-        options=settings,
-        seed=seed,
-    )
 
 
 def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):

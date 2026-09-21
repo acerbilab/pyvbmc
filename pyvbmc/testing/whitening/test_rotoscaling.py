@@ -492,12 +492,15 @@ def test_warp_input_search_cache():
     assert np.allclose(optim_state["search_cache"], expected)
 
 
-def test_warp_input_rewrites_every_filled_row_of_the_logger():
+@pytest.mark.parametrize("bound", [np.inf, 40.0])
+def test_warp_input_rewrites_every_filled_row_of_the_logger(bound):
     """The warp re-expresses the stored points in the new inference space.
 
     Every filled row of the function logger is rewritten, whether or not it
     is active, so that ``X`` remains the new transform of ``X_orig`` and
-    ``y`` the stored original-space value plus the new log-Jacobian.
+    ``y`` the stored original-space value plus the new log-Jacobian. On a
+    bounded problem the log-Jacobian differs from point to point, so each
+    row has to get its own.
     """
     D = 2
     angle = 1.309355600770139
@@ -513,8 +516,8 @@ def test_warp_input_rewrites_every_filled_row_of_the_logger():
     vbmc = VBMC(
         lambda x: np.sum(x),
         mus,
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
+        np.full((1, D), -bound),
+        np.full((1, D), bound),
         np.ones((1, D)) * -10,
         np.ones((1, D)) * 10,
     )
@@ -545,9 +548,10 @@ def test_warp_input_rewrites_every_filled_row_of_the_logger():
     filled = slice(0, warped_logger.Xn + 1)
     X_orig = warped_logger.X_orig[filled]
     expected_X = warped_transformer(X_orig)
-    expected_y = warped_logger.y_orig[
-        filled, 0
-    ] + warped_transformer.log_abs_det_jacobian(expected_X)
+    log_jacobian = warped_transformer.log_abs_det_jacobian(expected_X)
+    expected_y = warped_logger.y_orig[filled, 0] + log_jacobian
+    if np.isfinite(bound):
+        assert np.unique(log_jacobian).size == len(points)
 
     assert np.allclose(warped_logger.X[filled], expected_X)
     assert np.allclose(warped_logger.y[filled, 0], expected_y)
