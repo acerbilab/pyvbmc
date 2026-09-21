@@ -1203,7 +1203,9 @@ class VariationalPosterior:
         Parameters
         ----------
         N : int, optional
-            Number of samples used to estimate the moments, by default ``int(1e6)``.
+            Number of samples used to estimate the moments in the original
+            space, as any scalar that holds a whole number (see `sample`).
+            By default ``int(1e6)``.
         orig_flag : bool, optional
             If ``True``, compute moments in the original parameter space,
             otherwise in the transformed VBMC space. By default ``True``.
@@ -1218,9 +1220,15 @@ class VariationalPosterior:
         cov: np.ndarray
             If `cov_flag` is ``True``, returns the covariance matrix as
             well, of shape ``(D, D)``.
+
+        Raises
+        ------
+        ValueError
+            Raised in the original space if `N` is not a scalar holding a
+            whole number of samples.
         """
         if orig_flag:
-            x, _ = self.sample(int(N), orig_flag=True, balance_flag=True)
+            x, _ = self.sample(N, orig_flag=True, balance_flag=True)
             mubar = np.mean(x, axis=0)
             if cov_flag:
                 # One parameter gives a single variance, returned as the

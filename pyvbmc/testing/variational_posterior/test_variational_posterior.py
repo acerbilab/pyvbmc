@@ -170,6 +170,25 @@ def test_kl_div_and_mtv_take_a_whole_number_given_as_a_float():
     assert np.all(np.isfinite(vp.mtv(vp2=vp2, N=1e4)))
 
 
+def test_moments_and_gaussian_kl_div_refuse_a_fractional_count():
+    """The Monte Carlo moments draw through ``sample``, so they refuse the
+    count that ``sample`` refuses and take the one it takes; the Gaussian
+    KL divergence computes its moments the same way."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+    vp2 = VariationalPosterior(2, 2, np.array([[4]]))
+    vp2.rng = np.random.default_rng(20260922)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.moments(N=2.5)
+    with pytest.raises(ValueError, match="whole number"):
+        vp.kl_div(vp2=vp2, N=2.5, gauss_flag=True)
+
+    mean, cov = vp.moments(N=1e3, cov_flag=True)
+    assert mean.shape == (1, 2) and cov.shape == (2, 2)
+    assert np.all(np.isfinite(vp.kl_div(vp2=vp2, N=1e3, gauss_flag=True)))
+
+
 def test_sample_default():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     N = int(1e6)
