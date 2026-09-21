@@ -1414,6 +1414,19 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-21): every fix pass moves them. The stored oracle state at
   uncertainty level 1 is an item of `TODO.md` (PI, 2026-09-21).
+- [ ] A candidate from outside the slices, to be verified with the
+  accumulated findings. `load(new_options=)` validates the names it is
+  given, updates the options and checks single values
+  (`_validate_option_values`); it runs neither `Options.update_defaults`
+  nor `_init_optim_state`. An option that is read only at construction is
+  therefore accepted and takes no coherent effect:
+  `new_options={"uncertainty_handling": True}` leaves the noise model of
+  the GP, which `_init_optim_state` fixes, and the noiseless values of the
+  five noisy-target defaults as they were. Rows W2-7 and W2-8 of the wave-2
+  ledger cover those defaults at construction only. Found on 2026-09-21
+  while the statements of `AGENTS.md` were checked against the code, by
+  reading `load`; not reproduced by a run. A disposition to consider: `load`
+  refuses the options that are read only at construction.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
 - [ ] Fixes on `dev-port-review` with gates; durable sheet entries

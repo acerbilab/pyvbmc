@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-20. These lists describe scope, not priority or execution
+Updated 2026-09-21. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -127,14 +127,6 @@ records its execution.
   remaining fixes are in, since slices G1, G2 and O4 may still move the GP
   fit (PI, 2026-09-21).
 
-- [ ] **`AGENTS.md` as a statement of what holds.** The file that every
-  agent reads has taken on dated notes and the history of single changes,
-  most of them under "Things you must hold in your head across files" and
-  "Testing conventions and traps". Rewrite it from the subject: the
-  invariants, the procedures and the traps as they stand, with the history
-  left to the plans, the ledgers and the fixture metadata that hold it. A
-  session of its own does it (PI, 2026-09-21).
-
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
@@ -161,7 +153,11 @@ records its execution.
   in the [teaching-material plan](plans/teaching-material.md).
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
   Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. Decide which locally held
+  prepare the golden-trace release archive. The package checks include what
+  the sdist ships: setuptools_scm puts every tracked file in it, `dev/` and
+  `papers/` included (36 MB when built on 2026-09-21), and of `MANIFEST.in`
+  only `prune docsrc` has an effect, its `include` lines naming files that
+  the sdist holds already. Decide which locally held
   artifacts attach to the release as archives rather than commits: the
   golden reference traces, the run pools, the captured frozen states and
   the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
