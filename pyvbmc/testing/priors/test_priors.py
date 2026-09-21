@@ -66,6 +66,45 @@ def test_unit_integral_shifted_scipy():
     assert np.isclose(integrate(product), 1.0)
 
 
+_BOX_ARGUMENTS = [
+    (UniformBox, {"a": 0.0, "b": 1.0}),
+    (Trapezoidal, {"a": 0.0, "u": 0.25, "v": 0.75, "b": 1.0}),
+    (SplineTrapezoidal, {"a": 0.0, "u": 0.25, "v": 0.75, "b": 1.0}),
+    (SmoothBox, {"a": 0.0, "b": 1.0, "scale": 1.0}),
+]
+
+
+@pytest.mark.parametrize("cls, arguments", _BOX_ARGUMENTS)
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
+def test_an_argument_which_is_not_finite_is_refused(cls, arguments, bad):
+    """Every comparison with a NaN is false and an infinity satisfies a
+    strict order, so a bound or a pivot which is not finite would pass the
+    order checks and leave a density which is not a density."""
+    for name in arguments:
+        scalars = dict(arguments)
+        scalars[name] = bad
+        with pytest.raises(ValueError) as err:
+            cls(**scalars)
+        assert f"All elements of {name}=" in err.value.args[0]
+        assert "should be finite" in err.value.args[0]
+
+        # One coordinate of one argument, the others well formed.
+        arrays = {key: np.full(3, value) for key, value in arguments.items()}
+        arrays[name][1] = bad
+        with pytest.raises(ValueError) as err:
+            cls(**arrays)
+        assert f"All elements of {name}=" in err.value.args[0]
+        assert "should be finite" in err.value.args[0]
+
+
+def test_infinite_hard_bounds_are_refused_by_a_uniform_box():
+    """The message says why an unbounded problem's hard bounds do not make
+    a uniform-box prior."""
+    with pytest.raises(ValueError) as err:
+        UniformBox(np.full(2, -np.inf), np.full(2, np.inf))
+    assert "uniform-box prior needs finite bounds" in err.value.args[0]
+
+
 def _dtype_cases():
     """One instance of each class, with a point whose coordinates are whole
     numbers, so that the three dtypes hold the same point exactly."""

@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import check_finite
 from pyvbmc.rng import get_rng
 
 
@@ -38,8 +39,16 @@ class UniformBox(Prior):
         Raises
         ------
         ValueError
-            If ``a[i] >= b[i]``, for any `i`.
+            If any bound is not finite, or if ``a[i] >= b[i]``, for any `i`.
         """
+        check_finite(
+            {"a": a, "b": b},
+            note=(
+                " A uniform-box prior needs finite bounds: an unbounded"
+                " parameter needs a prior with unbounded support, such as"
+                " `SmoothBox` or a `scipy.stats` distribution."
+            ),
+        )
         self.a, self.b = tile_inputs(a, b, size=D, squeeze=True)
         if np.any(self.a >= self.b):
             raise ValueError(

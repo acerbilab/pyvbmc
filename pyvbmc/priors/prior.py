@@ -3,6 +3,33 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+def check_finite(arguments, note=""):
+    """Check that the arguments defining a prior are finite.
+
+    Every comparison with a NaN is false and an infinity satisfies a strict
+    order, so the order checks of the box priors pass such arguments while
+    the density they define is not a density.
+
+    Parameters
+    ----------
+    arguments : dict
+        The arguments by name, each a scalar or an array.
+    note : str, optional
+        A sentence appended to the error message, to say what the prior
+        needs. Default `""`.
+
+    Raises
+    ------
+    ValueError
+        If any element of any argument is NaN or infinite.
+    """
+    for name, value in arguments.items():
+        if not np.all(np.isfinite(value)):
+            raise ValueError(
+                f"All elements of {name}={value} should be finite." + note
+            )
+
+
 class Prior(ABC):
     """Abstract base class for PyVBMC prior distributions."""
 

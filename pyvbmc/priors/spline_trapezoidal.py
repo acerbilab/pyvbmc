@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import check_finite
 from pyvbmc.rng import get_rng
 
 
@@ -66,8 +67,10 @@ class SplineTrapezoidal(Prior):
         Raises
         ------
         ValueError
-            If the order ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
+            If any bound or pivot is not finite, or if the order
+            ``a[i] < u[i] < v[i] < b[i]`` is not respected, for any `i`.
         """
+        check_finite({"a": a, "u": u, "v": v, "b": b})
         self.a, self.u, self.v, self.b = tile_inputs(
             a, u, v, b, size=D, squeeze=True
         )
