@@ -10,6 +10,7 @@ from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
@@ -319,7 +320,9 @@ def active_sample(
 
             if not options["acq_hedge"]:
                 # If multiple acquisition functions are provided and not
-                # following a "hedge" strategy, pick one at random
+                # following a "hedge" strategy, pick one at random. The
+                # hedge is not ported, and the option is refused at
+                # construction, so this is the branch every run takes.
                 idx_acq = rng.integers(len(SearchAcqFcn))
 
             ## Pre-computations for acquisition functions
@@ -429,7 +432,15 @@ def active_sample(
 
             if options["search_cache_frac"] > 0:
                 inds = np.argsort(acq_fast)
-                optim_state["search_cache"] = X_search[inds]
+                # The training inputs at the head of the search set are
+                # candidates for a repeated observation of this step
+                # alone. They are kept out of the cache: a training input
+                # offered again at a later step comes back as an ordinary
+                # candidate, without the repeat flag that caps consecutive
+                # repeats and keeps the point an exact repeat.
+                optim_state["search_cache"] = X_search[
+                    inds[inds >= n_train_cand]
+                ]
                 idx = inds[0]
             else:
                 idx = np.argmin(acq_fast)
@@ -463,17 +474,23 @@ def active_sample(
                 X_acq, idx_cache_acq, repeat_flag = policy_selection
                 X_acq = np.asarray(X_acq, dtype=np.float64).reshape(1, gp.D)
 
-            # Remove selected points from search set
+            # Remove selected points from search set. Nothing reads either
+            # array again: the next step builds both afresh, and the search
+            # cache above, where one is kept, was written before the
+            # deletion, so it still holds the acquired point unless that
+            # point is a training input, which the cache leaves out. The
+            # two lines stand where `private/activesample_vbmc.m:242` has
+            # them.
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: the scalar and Nelder-Mead
-                searches, or CMA-ES's rejection path) returns a float; a
-                list of points (one CMA-ES generation) is evaluated in a
-                single batched call and returns a list.
+                One point (a 1-D array: the bounded scalar search, or
+                CMA-ES's rejection path) returns a float; a list of points
+                (one CMA-ES generation) is evaluated in a single batched
+                call and returns a list.
                 With integer variables the acquisition snaps its input to
                 the integer grid in place (`AbstractAcqFcn._real2int`), and
                 the pointwise call let that reach CMA-ES's own solution
@@ -606,19 +623,12 @@ def active_sample(
                     else:
                         xsearch_optim = np.atleast_1d(res.x)
                         f_val_optim = res.fun
-                elif search_optimizer == "Nelder-Mead":
-                    from scipy.optimize import minimize
-
-                    try:
-                        res = minimize(
-                            acq_fun, x0, method="Nelder-Mead", tol=tol_fun
-                        )
-                    except Exception as exc:
-                        _log_search_failure(logger, exc)
-                    else:
-                        xsearch_optim, f_val_optim = res.x, res.fun
                 else:
-                    raise NotImplementedError("Not implemented yet")
+                    raise NotImplementedError(
+                        "options['search_optimizer'] must be 'cmaes' or "
+                        "'none', not "
+                        f"{options['search_optimizer']!r}."
+                    )
 
                 if f_val_optim < f_val_old:
                     X_acq[0, :] = AbstractAcqFcn._real2int(
@@ -683,7 +693,20 @@ def active_sample(
                 y_orig = np.nan
             else:
                 idx = int(idx)
-                y_orig = optim_state["cache"]["y_orig"][idx]
+                # The stored value belongs to the point the cache holds.
+                # The sieve clips every candidate into the search box and
+                # the acquisition snaps integer coordinates to their grid,
+                # so a candidate that either of the two moved is a point
+                # the target has not been called at: it is evaluated. The
+                # comparison is exact and in the inference space, where
+                # both the clip and the snap act.
+                x_cached = parameter_transformer(
+                    optim_state["cache"]["x_orig"][[idx]]
+                )
+                if np.array_equal(x_cached[0], xnew[0]):
+                    y_orig = optim_state["cache"]["y_orig"][idx]
+                else:
+                    y_orig = np.nan
             if selection_policy is not None:
                 selection_policy.finish(
                     selected=xnew,
@@ -905,14 +928,16 @@ def _get_search_points(
     idx_cache : ndarray, shape (number_of_points,)
         The indicies of the search points if coming from the cache.
 
-    Raises
-    ------
-    ValueError
-        When the options lead to more points sampled than requested, that means
-        `search_X`.shape[0]` would be greater than `number_of_points``.
-
     Notes
     -----
+    The starting cache contributes its own share (``cache_frac``) of the
+    points; the rest are drawn from five sources in the order
+    ``search_cache_frac``, ``heavy_tail_search_frac``, ``mvn_search_frac``,
+    ``hpd_search_frac``, ``box_search_frac``, each taking the rounded share
+    its fraction gives it or what the sources before it left, whichever is
+    smaller. The search cache gives at most the rows it holds. The
+    variational posterior draws the points the five leave.
+
     Random draws use ``vp.rng``.
     """
     rng = vp.rng
@@ -943,9 +968,23 @@ def _get_search_points(
         N_random_points = number_of_points - search_X.shape[0]
         random_Xs = np.full((0, D), np.nan)
 
-        N_search_cache = round(
-            options.get("search_cache_frac") * N_random_points
-        )
+        # What the sources drawn so far have left of the points to draw.
+        N_left = N_random_points
+
+        def capped_share(fraction):
+            """The rounded share of the points to draw that one source
+            takes, capped at what the sources before it left.
+
+            The rounded shares can claim more than the whole even where
+            the fractions sum to one, a half going away from zero: three
+            quarters of two points are three points. MATLAB has no cap
+            and builds a search set larger than it asked for
+            (``private/activesample_vbmc.m:627-633``).
+            """
+            share = round_half_away_from_zero(fraction * N_random_points)
+            return int(min(N_left, max(0, share)))
+
+        N_search_cache = capped_share(options.get("search_cache_frac"))
         if N_search_cache > 0:  # Take points from search cache
             # The search cache holds the candidates of the previous step,
             # ranked by acquisition value; it is empty until one has run.
@@ -960,25 +999,26 @@ def _get_search_points(
                 search_cache[:N_search_cache],
                 axis=0,
             )
+        N_left -= N_search_cache
 
-        N_heavy = round(
-            options.get("heavy_tail_search_frac") * N_random_points
-        )
+        N_heavy = capped_share(options.get("heavy_tail_search_frac"))
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
                 N=N_heavy, orig_flag=False, balance_flag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
+        N_left -= N_heavy
 
-        N_mvn = round(options.get("mvn_search_frac") * N_random_points)
+        N_mvn = capped_share(options.get("mvn_search_frac"))
         if N_mvn > 0:
             mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = rng.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
+        N_left -= N_mvn
 
-        N_hpd = round(options.get("hpd_search_frac") * N_random_points)
+        N_hpd = capped_share(options.get("hpd_search_frac"))
         if N_hpd > 0:
             hpd_min = options.get("hpd_frac") / 8
             hpd_max = options.get("hpd_frac")
@@ -991,7 +1031,9 @@ def _get_search_points(
                 )
             )
             N_hpd_vec = np.diff(
-                np.round(np.linspace(0, N_hpd, len(hpd_fracs) + 1))
+                round_half_away_from_zero(
+                    np.linspace(0, N_hpd, len(hpd_fracs) + 1)
+                )
             )
 
             X = function_logger.X[function_logger.X_flag]
@@ -1022,8 +1064,9 @@ def _get_search_points(
                     mubar, sigmabar, size=int(N_hpd_vec[idx])
                 )
                 random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
+        N_left -= N_hpd
 
-        N_box = round(options.get("box_search_frac") * N_random_points)
+        N_box = capped_share(options.get("box_search_frac"))
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
@@ -1045,22 +1088,10 @@ def _get_search_points(
             box_Xs = rng.random((N_box, D)) * (box_ub - box_lb) + box_lb
 
             random_Xs = np.append(random_Xs, box_Xs, axis=0)
-
-        # ensure that maximum N_random_points are sampled.
-        if N_random_points < random_Xs.shape[0]:
-            raise ValueError(
-                "A maximum of {} points ".format(N_random_points),
-                "should be randomly sampled but {} ".format(
-                    random_Xs.shape[0]
-                ),
-                "were sampled. Please validate the provided options.",
-            )
+        N_left -= N_box
 
         # remaining samples
-        N_vp = max(
-            0,
-            N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
-        )
+        N_vp = N_left
         if N_vp > 0:
             vp_Xs, _ = vp.sample(N=N_vp, orig_flag=False, balance_flag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)

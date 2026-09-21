@@ -63,11 +63,14 @@ posterior factors, and `optim_state` holds the key names of its day
 (`variance_regularized_acqfcn`). A run saved by the current code cannot
 replace it.
 
-Load it, never save it again. It holds its target function and PyVBMC's
-log-joint wrapper pickled by value, as bytecode of the Python version that
-wrote it, and pickling such a function again makes dill disassemble it,
-which corrupts memory on Python 3.11: a segmentation fault in the test that
-saves, in a later garbage collection, or when the interpreter exits. The one
+Load it, never save it again, and never continue its run (`optimize`,
+`final_boost`). It holds its target function, PyVBMC's log-joint wrapper and
+the nine options whose value is a function (`ns_ent`, `k_fun_max` and the
+like) pickled by value, as bytecode of the Python version that wrote it.
+Pickling such a function again makes dill disassemble it, which corrupts
+memory on Python 3.11: a segmentation fault in the test that saves, in a
+later garbage collection, or when the interpreter exits. Continuing the run
+calls the stored option functions in every iteration. The one
 `save` of this object in the suite
 (`test_vbmc_save_and_load.py::test_vbmc_save_load_error_handling`) targets
 the existing file, so it raises `FileExistsError` before anything is

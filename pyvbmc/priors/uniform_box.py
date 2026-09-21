@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import _check_finite
 from pyvbmc.rng import get_rng
 
 
@@ -18,9 +19,9 @@ class UniformBox(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower bound(s), shape `(1, D)`.
+        The lower bound(s), shape `(D,)`.
     b : np.ndarray
-        The upper bound(s), shape `(1, D)`.
+        The upper bound(s), shape `(D,)`.
     """
 
     def __init__(self, a, b, D=None):
@@ -34,12 +35,25 @@ class UniformBox(Prior):
         b : np.ndarray | float
             The upper bound(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
+        D : int, optional
+            The distribution dimension. If given, will convert scalar `a` and
+            `b` to this dimension.
 
         Raises
         ------
         ValueError
-            If ``a[i] >= b[i]``, for any `i`.
+            If any bound is not finite, if an array argument does not agree in
+            shape with the other arguments or with `D`, or if ``a[i] >= b[i]``,
+            for any `i`.
         """
+        _check_finite(
+            {"a": a, "b": b},
+            note=(
+                " A uniform-box prior needs finite bounds: an unbounded"
+                " parameter needs a prior with unbounded support, such as"
+                " `SmoothBox` or a `scipy.stats` distribution."
+            ),
+        )
         self.a, self.b = tile_inputs(a, b, size=D, squeeze=True)
         if np.any(self.a >= self.b):
             raise ValueError(
@@ -66,7 +80,11 @@ class UniformBox(Prior):
         log_norm_factor = np.sum(np.log(self.b - self.a))
         log_pdf = np.full((n, 1), -log_norm_factor)
 
-        mask = np.any((x < self.a) | (x > self.b), axis=1)
+        # A row is in the support when every coordinate is between the
+        # bounds, the bounds included. Asking for membership rather than for
+        # the two violations keeps a row with a NaN coordinate out, as it is
+        # in the other box families.
+        mask = np.any(~((x >= self.a) & (x <= self.b)), axis=1)
         log_pdf[mask] = -np.inf
 
         return log_pdf

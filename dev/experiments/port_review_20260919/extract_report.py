@@ -1,9 +1,15 @@
 """Save a reviewer's final message verbatim from its transcript.
 
-Usage: extract_report.py <agent.jsonl> <title substring> <header file> <out file>
+Usage: extract_report.py <agent.jsonl> <title substring> <header file> <out file> [candidate]
 
 The report is the last string of the agent's own (assistant) output that
 holds the report's title. It is written after the header, unedited.
+
+An agent that hands its report back through a tool call and then closes
+with a short message under the same title leaves two such strings, the
+report first. Every candidate is listed with its line and length; the
+optional fifth argument is the index of the one to take (0 for the first,
+-1, the default, for the last).
 """
 
 import json
@@ -23,6 +29,7 @@ def strings(node, path=""):
 
 def main():
     jsonl, title, header_path, out_path = sys.argv[1:5]
+    pick = int(sys.argv[5]) if len(sys.argv) > 5 else -1
     found = []
     with open(jsonl, encoding="utf-8") as f:
         for n, line in enumerate(f, 1):
@@ -40,7 +47,9 @@ def main():
                     found.append((n, path, s))
     if not found:
         sys.exit(f"no assistant string holds the title {title!r}")
-    n, path, report = found[-1]
+    for i, (n, path, s) in enumerate(found):
+        print(f"candidate {i}: line {n}, {path}, {len(s)} chars")
+    n, path, report = found[pick]
     with open(header_path, encoding="utf-8") as f:
         header = f.read()
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:

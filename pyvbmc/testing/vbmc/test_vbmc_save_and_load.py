@@ -179,6 +179,17 @@ class _ReachedFirstIteration(Exception):
     """Raised to leave ``optimize()`` once it is about to iterate."""
 
 
+def test_load_gives_an_older_run_the_final_boost_it_was_made_with():
+    """A run saved before ``tol_elcbo_boost`` existed keeps the unguarded
+    final boost of its day, which the option states as ``None``."""
+    with open(base_path.joinpath("test_vbmc_save_static.pkl"), "rb") as f:
+        assert "tol_elcbo_boost" not in dill.load(f).options
+
+    loaded = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
+    assert "tol_elcbo_boost" in loaded.options
+    assert loaded.options["tol_elcbo_boost"] is None
+
+
 def test_load_with_a_larger_budget_schedules_the_gp_fit_as_a_fresh_run():
     """The hyperparameter fit follows the budget the run was loaded with.
 
@@ -230,6 +241,48 @@ def test_resumed_run_schedules_the_gp_fit_as_a_fresh_run(monkeypatch):
         assert _gp_fit_starting_points(
             loaded, n_eff
         ) == _gp_fit_starting_points(fresh, n_eff)
+
+
+@pytest.mark.parametrize(
+    "new_options",
+    [
+        {"max_iter": 0},
+        {"max_iter": 7.5},
+        {"max_fun_evals": -5},
+        {"max_fun_evals": 120.5},
+    ],
+)
+def test_load_refuses_the_run_limits_that_construction_refuses(
+    tmp_path, new_options
+):
+    """A limit given to ``load`` is checked as one given at construction.
+
+    ``max_fun_evals`` and ``max_iter`` are the options a continued run is
+    most often given, and both have to be positive integers on either
+    route.
+    """
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros((1, 2)),
+            options={**new_options, "display": "off"},
+        )
+
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC.load(path, new_options=new_options)
+
+
+def test_load_raises_max_iter_to_min_iter_as_construction_does(tmp_path):
+    """A ``max_iter`` below ``min_iter`` is raised to it on either route."""
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    loaded = VBMC.load(path, new_options={"max_iter": 2, "min_iter": 7})
+    assert loaded.options["max_iter"] == 7
+
+    unchanged = VBMC.load(path, new_options={"max_iter": 9, "min_iter": 7})
+    assert unchanged.options["max_iter"] == 9
 
 
 def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
@@ -296,6 +349,50 @@ def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
     assert not np.array_equal(
         loaded.parameter_transformer(probe), later_map(probe)
     )
+
+
+def test_load_recovers_the_starting_point_of_a_file_saved_without_it(tmp_path):
+    """``x0_orig`` of an older file is the starting point the caller gave.
+
+    A file saved before ``x0_orig`` existed carries the starting point in
+    the inference space of construction alone. When the run has warped
+    that space since, the map of the restored iteration is another one, and
+    the starting point has to come back through the map the run started
+    with.
+    """
+    D = 2
+    x0 = np.array([[3.5, 0.0]])
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        x0,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.array([[2.0, -3.0]]),
+        np.array([[4.0, 5.0]]),
+        options={"max_iter": 2, "display": "off"},
+        seed=1,
+    )
+    vbmc.optimize()
+    assert vbmc.iteration == 1
+
+    # The state a warp at the second iteration leaves: its map on the
+    # record of that iteration and on the live objects, the first record
+    # untouched.
+    warped = copy.deepcopy(vbmc.parameter_transformer)
+    warped.mu = np.zeros(D)
+    warped.delta = np.ones(D)
+    assert not np.allclose(warped.inverse(vbmc.x0), x0)
+    vbmc.iteration_history["vp"][1].parameter_transformer = warped
+    vbmc.vp.parameter_transformer = warped
+    vbmc.parameter_transformer = warped
+    vbmc.function_logger.parameter_transformer = warped
+    del vbmc.x0_orig
+    older = tmp_path / "older"
+    vbmc.save(older)
+
+    for iteration in (None, 0, 1):
+        loaded = VBMC.load(older, iteration=iteration)
+        assert np.allclose(loaded.x0_orig, x0)
 
 
 def test_vbmc_save_load_error_handling():

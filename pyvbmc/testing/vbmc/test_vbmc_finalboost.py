@@ -443,6 +443,29 @@ def test_final_boost_with_fixed_means_keeps_them_at_the_training_inputs(
     )
 
 
+def test_final_boost_with_fixed_means_refuses_a_gp_with_too_few_inputs():
+    """With ``variable_means`` off every component needs a training input
+    to sit at, so a GP with fewer training inputs than the posterior has
+    components cannot serve, and the boost says so."""
+    D = 3
+    vbmc = create_vbmc(
+        D,
+        3,
+        1,
+        5,
+        2,
+        4,
+        _boost_options(0.1, variable_means=False),
+    )
+    _set_pre_stats(vbmc)
+    n_train = vbmc.vp.K - 1
+    assert n_train >= 1
+    X = np.linspace(2.0, 4.0, n_train * D).reshape((n_train, D))
+
+    with pytest.raises(ValueError, match="training inputs"):
+        vbmc.final_boost(vbmc.vp, _TrainingInputs(X))
+
+
 def test_a_short_run_with_fixed_means_is_boosted():
     """A run with ``variable_means`` off that ends with fewer components
     than ``min_final_components`` goes through its final boost and returns

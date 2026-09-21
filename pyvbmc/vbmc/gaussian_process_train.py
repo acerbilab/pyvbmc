@@ -7,6 +7,7 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.rng import get_rng
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 
 from .iteration_history import IterationHistory
 from .options import Options
@@ -503,7 +504,7 @@ def _gp_hyp(
     gp.set_bounds(bounds)
     gp.set_priors(priors)
 
-    return gp, hyp0, round(gp_s_N)
+    return gp, hyp0, round_half_away_from_zero(gp_s_N)
 
 
 def _get_gp_training_options(
@@ -599,7 +600,7 @@ def _get_gp_training_options(
         if optim_state.get("budget_active", False):
             x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
-    init_N = max(round(f(x)), 0)
+    init_N = max(round_half_away_from_zero(f(x)), 0)
 
     # Set other hyperparameter fitting parameters
     if optim_state["recompute_var_post"]:
@@ -628,8 +629,8 @@ def _get_gp_training_options(
             else:
                 gp_train["opts_N"] = 2
 
-    gp_train["n_samples"] = round(gp_s_N)
-    gp_train["burn"] = round(gp_train["burn"])
+    gp_train["n_samples"] = round_half_away_from_zero(gp_s_N)
+    gp_train["burn"] = round_half_away_from_zero(gp_train["burn"])
 
     return gp_train
 

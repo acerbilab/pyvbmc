@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from pyvbmc.stats import get_hpd
 
@@ -84,6 +85,21 @@ def test_get_hpd_orders_integer_targets_by_value():
 
         assert list(indices) == _descending_order(y)
         assert hpd_y.dtype == dtype
+
+
+@pytest.mark.parametrize("N, size", [(5, 1), (25, 3)])
+def test_get_hpd_sizes_a_tie_away_from_zero(N, size):
+    """``misc/gethpd_vbmc.m:10`` sizes the subset with MATLAB's ``round``,
+    which sends a half away from zero: a tenth of 5 points is 1 and a
+    tenth of 25 is 3, where Python's built-in ``round`` gives 0 and 2."""
+    X = np.reshape(np.arange(float(N)), (-1, 1))
+    y = X.copy()
+
+    hpd_X, hpd_y, __, indices = get_hpd(X, y, hpd_frac=0.1)
+
+    assert hpd_X.shape == (size, 1)
+    assert hpd_y.shape == (size, 1)
+    assert indices.shape == (size,)
 
 
 def test_get_hpd_hpd_frac_zero():

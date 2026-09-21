@@ -10,6 +10,7 @@ import scipy as sp
 
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .iteration_history import IterationHistory
@@ -43,7 +44,9 @@ def update_K(
     K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
-    K_bonus = round(options.eval("adaptive_k", {"K": K_new}))
+    K_bonus = round_half_away_from_zero(
+        options.eval("adaptive_k", {"K": K_new})
+    )
 
     # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:

@@ -3,6 +3,33 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+def _check_finite(arguments, note=""):
+    """Check that the arguments defining a prior are finite.
+
+    Every comparison with a NaN is false and an infinity satisfies a strict
+    order, so the order checks of the box priors pass such arguments while
+    the density they define is not a density.
+
+    Parameters
+    ----------
+    arguments : dict
+        The arguments by name, each a scalar or an array.
+    note : str, optional
+        A sentence appended to the error message, to say what the prior
+        needs. Default `""`.
+
+    Raises
+    ------
+    ValueError
+        If any element of any argument is NaN or infinite.
+    """
+    for name, value in arguments.items():
+        if not np.all(np.isfinite(value)):
+            raise ValueError(
+                f"All elements of {name}={value} should be finite." + note
+            )
+
+
 class Prior(ABC):
     """Abstract base class for PyVBMC prior distributions."""
 
@@ -13,10 +40,11 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension. The point(s) are read as
+            `float64`, whatever dtype the array carries.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
         Returns
         -------
@@ -25,6 +53,9 @@ class Prior(ABC):
             `(n, 1)` or `(n,)` (depending on ``keepdims``).
         """
         x_orig_shape = x.shape
+        # The densities accumulate in the dtype of the input, so an integer
+        # or a narrower float input would truncate or wrap the result.
+        x = x.astype(np.float64, copy=False)
         x = np.atleast_2d(x)
         n, D = x.shape
         if self.D == 1 and n == 1:
@@ -49,9 +80,9 @@ class Prior(ABC):
             `D` is the distribution dimension.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
-        returns
+        Returns
         -------
         pdf : np.ndarray
             The density of the prior at the input point(s), of dimension `(n,
@@ -93,7 +124,7 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension.
 
         Returns
         -------

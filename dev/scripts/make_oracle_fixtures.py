@@ -345,6 +345,9 @@ def make_snapshot(recipe):
         "note": recipe.note,
         "r_index": float(h["r_index"][i]),
         "best_iter": int(results["best_iter"]),
+        # The number of iterations of the run. A fixture written before
+        # commit 4822ae1 (2026-09-20) holds the index of the last iteration
+        # here, one less: it was what results["iterations"] reported.
         "n_iterations": int(results["iterations"]),
         "K": int(vp.K),
         "Ns": len(gp.posteriors),

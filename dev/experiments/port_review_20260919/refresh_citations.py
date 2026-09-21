@@ -7,8 +7,14 @@ is presumed right, and carry line N of the cited file from that commit to
 the working tree through `git diff`. A citation whose line moved unchanged
 is rewritten; one whose line was itself changed or removed is reported for
 a reading by hand. Citations of MATLAB files and of other documents are left
-alone. The mapping is as good as the citation was at that commit: it moves a
-citation with its line and does not judge whether the line was the right one.
+alone, and so is a bare `:<N>` that follows the name of such a file, whether
+or not the name carries a line number of its own: any file named in the text
+ends the run of the Python path before it. A bare citation beyond the end of
+the file it would be carried through is reported and left alone, and a
+Python file cited without its `pyvbmc/` path is reported, since it is not
+carried. The mapping is as good as the citation was at that commit: it moves
+a citation with its line and does not judge whether the line was the right
+one.
 
 Run from the root of the repository, first without `--write` to read what
 would move:
@@ -84,12 +90,27 @@ def line_map(commit, path):
     return f
 
 
+_text_cache = {}
+
+
+def old_lines(commit, path):
+    """The lines of the cited file at the commit, or None when unknown."""
+    key = (commit, path)
+    if key not in _text_cache:
+        try:
+            if commit.startswith("0000000"):
+                with open(path, encoding="utf-8") as f:
+                    _text_cache[key] = f.read().splitlines()
+            else:
+                _text_cache[key] = git("show", f"{commit}:{path}").splitlines()
+        except (subprocess.CalledProcessError, OSError):
+            _text_cache[key] = None
+    return _text_cache[key]
+
+
 def old_text(commit, path, n):
-    if commit.startswith("0000000"):
-        return None
-    try:
-        lines = git("show", f"{commit}:{path}").splitlines()
-    except subprocess.CalledProcessError:
+    lines = old_lines(commit, path)
+    if lines is None:
         return None
     return lines[n - 1] if 0 < n <= len(lines) else None
 
@@ -101,32 +122,55 @@ commits = blame_commits(DOC)
 if len(commits) != len(lines) and len(commits) != len(lines) - 1:
     print("blame/line mismatch", len(commits), len(lines))
 
+# A file name counts with or without a line number of its own: a sentence
+# that names `private/vbmc_warmup.m` and then cites `:97-102` cites that
+# file, not the Python path before it.
 token = re.compile(
-    r"(?P<path>pyvbmc/[\w/]+\.py):(?P<a>\d+)(?:-(?P<b>\d+))?"
-    r"|(?P<matlab>[\w/]+\.m):\d+(?:-\d+)?"
-    r"|(?P<other>[\w/.]+\.(?:py|md|ini)):\d+(?:-\d+)?"
+    r"(?P<path>pyvbmc/[\w/]+\.py)\b(?::(?P<a>\d+)(?:-(?P<b>\d+))?)?"
+    r"|(?P<matlab>[\w/]+\.m)\b(?::\d+(?:-\d+)?)?"
+    r"|(?P<other>[\w/.]+\.(?:py|md|ini))\b(?P<oline>:\d+(?:-\d+)?)?"
     r"|(?<![\w/.])`?:(?P<c>\d+)(?:-(?P<d>\d+))?"
 )
 
 current = None
-n_ok = n_same = n_manual = 0
+n_ok = n_same = n_manual = n_left = 0
 for i, text in enumerate(lines):
     if text.startswith("#") or not text.strip():
         current = None if text.startswith("#") else current
     commit = commits[i] if i < len(commits) else commits[-1]
 
     def repl(m):
-        global current, n_ok, n_same, n_manual
+        global current, n_ok, n_same, n_manual, n_left
         if m.group("matlab") or m.group("other"):
             current = None
+            other = m.group("other") or ""
+            if other.endswith(".py") and m.group("oline"):
+                n_manual += 1
+                print(
+                    f"MANUAL {DOC}:{i+1}: {m.group(0)}  (a Python file "
+                    "cited without its pyvbmc/ path is not carried)"
+                )
             return m.group(0)
         if m.group("path"):
             current = m.group("path")
             a, b = m.group("a"), m.group("b")
+            if a is None:
+                return m.group(0)
         else:
             if current is None:
+                n_left += 1
                 return m.group(0)
             a, b = m.group("c"), m.group("d")
+            cited = old_lines(commit, current)
+            if cited is not None and int(b or a) > len(cited):
+                n_manual += 1
+                print(
+                    f"MANUAL {DOC}:{i+1}: :{a}"
+                    + (f"-{b}" if b else "")
+                    + f"  (beyond the {len(cited)} lines of {current}: it "
+                    "cites another file)"
+                )
+                return m.group(0)
         f = line_map(commit, current)
         new = []
         for v in (a, b):
@@ -158,7 +202,10 @@ for i, text in enumerate(lines):
 
     lines[i] = token.sub(repl, text)
 
-print(f"moved {n_ok}, unchanged {n_same}, to read by hand {n_manual}")
+print(
+    f"moved {n_ok}, unchanged {n_same}, to read by hand {n_manual}, "
+    f"bare citations of other files left alone {n_left}"
+)
 if WRITE:
     open(DOC, "w", encoding="utf-8", newline="").write(nl.join(lines))
     print("written")

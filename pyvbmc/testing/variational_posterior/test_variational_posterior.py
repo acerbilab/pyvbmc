@@ -1,9 +1,12 @@
+import importlib
+import itertools
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -25,13 +28,165 @@ def get_matlab_vp():
     return vp
 
 
+def test_constructor_takes_one_starting_point_in_any_layout():
+    """A single starting point of `D` elements starts every component,
+    whether it is given as a row, a flat array or a column."""
+    D, K = 3, 4
+    seed = 20260921
+    point = np.array([1.0, -2.0, 0.5])
+
+    row = VariationalPosterior(D, K, point.reshape(1, -1), rng=seed)
+    flat = VariationalPosterior(D, K, point.copy(), rng=seed)
+    column = VariationalPosterior(D, K, point.reshape(-1, 1), rng=seed)
+
+    assert row.mu.shape == (D, K)
+    assert np.allclose(row.mu, point.reshape(-1, 1), atol=1e-5)
+    assert np.array_equal(flat.mu, row.mu)
+    assert np.array_equal(column.mu, row.mu)
+
+
+def test_constructor_broadcasts_one_element_over_every_coordinate():
+    """A starting point of a single element starts every coordinate of
+    every component there."""
+    D, K = 3, 4
+    vp = VariationalPosterior(D, K, np.array([[5.0]]), rng=20260921)
+
+    assert vp.mu.shape == (D, K)
+    assert np.allclose(vp.mu, 5.0, atol=1e-5)
+
+
+def test_constructor_drops_the_starting_points_past_the_components():
+    """An `n0`-by-`D` matrix starts the components at its rows; where
+    there are more rows than components the rows past the `K`-th are
+    dropped, and where there are fewer the rows repeat in order."""
+    D, K = 2, 3
+    many = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]])
+
+    over = VariationalPosterior(D, K, many, rng=20260921)
+    under = VariationalPosterior(D, K, many[:2], rng=20260921)
+
+    assert over.mu.shape == (D, K)
+    assert np.allclose(over.mu, many[:K].T, atol=1e-5)
+    assert np.allclose(under.mu, many[[0, 1, 0]].T, atol=1e-5)
+
+
 def test_sample_n_lower_1():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     x, i = vp.sample(0)
-    assert np.all(x.shape == np.zeros((0, 3)).shape)
-    assert np.all(i.shape == np.zeros((0, 1)).shape)
-    assert np.all(x == np.zeros((0, 3)))
-    assert np.all(i == np.zeros((0, 1)))
+    assert x.shape == (0, 3)
+    assert i.shape == (0,)
+    assert np.issubdtype(i.dtype, np.integer)
+
+
+@pytest.mark.parametrize("K", [1, 2])
+@pytest.mark.parametrize("balance_flag", [False, True])
+def test_sample_index_array_has_one_integer_per_row(K, balance_flag):
+    """The second return value of ``sample`` holds, for each drawn row,
+    the index of the component that generated it."""
+    N = 11
+    vp = VariationalPosterior(3, K, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(N, balance_flag=balance_flag)
+
+    assert x.shape == (N, 3)
+    assert i.shape == (N,)
+    assert np.issubdtype(i.dtype, np.integer)
+
+
+def test_sample_takes_a_whole_number_given_as_a_float():
+    """``1e5``, the documented default of ``kl_div`` and ``mtv``, is a
+    float; a count with a fractional part is refused."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(1e3)
+    assert x.shape == (1000, 2)
+    assert i.shape == (1000,)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.sample(2.5)
+
+
+@pytest.mark.parametrize(
+    "N", [7, 7.0, np.int32(7), np.float64(7.0), np.array(7), np.array(7.0)]
+)
+def test_sample_takes_any_scalar_holding_a_whole_number(N):
+    """A count reaches ``sample`` from every corner of the package and of
+    NumPy: a NumPy scalar and a zero-dimensional array stand for the
+    number they hold, as a Python number does."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(N)
+
+    assert x.shape == (7, 2)
+    assert i.shape == (7,)
+
+
+def test_sample_takes_a_boolean_as_the_count_it_stands_for():
+    """``True`` counts as one sample, whether it is Python's or NumPy's."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    for value in (True, np.bool_(True)):
+        x, i = vp.sample(value)
+        assert x.shape == (1, 2)
+        assert i.shape == (1,)
+
+
+@pytest.mark.parametrize(
+    "N", [np.array([7]), [7], (7,), np.full((1, 1), 7), "7", None]
+)
+def test_sample_refuses_what_is_not_a_scalar_count(N):
+    """A count is one number: a sequence, an array of one row and a value
+    that is no number at all are refused."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.sample(N)
+
+
+def test_sample_refuses_a_negative_df():
+    """A negative ``df`` asks for the product of univariate ``t``
+    densities, which ``pdf`` evaluates and ``sample`` cannot draw from."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    assert vp.pdf(np.full((1, 2), 5.0), df=-3) > 0
+
+    with pytest.raises(ValueError, match="product of univariate t"):
+        vp.sample(10, df=-3)
+
+
+def test_kl_div_and_mtv_take_a_whole_number_given_as_a_float():
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+    vp2 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp2.rng = np.random.default_rng(20260922)
+
+    assert np.all(np.isfinite(vp.kl_div(vp2=vp2, N=1e4, gauss_flag=False)))
+    assert np.all(np.isfinite(vp.mtv(vp2=vp2, N=1e4)))
+
+
+def test_moments_and_gaussian_kl_div_refuse_a_fractional_count():
+    """The Monte Carlo moments draw through ``sample``, so they refuse the
+    count that ``sample`` refuses and take the one it takes; the Gaussian
+    KL divergence computes its moments the same way."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+    vp2 = VariationalPosterior(2, 2, np.array([[4]]))
+    vp2.rng = np.random.default_rng(20260922)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.moments(N=2.5)
+    with pytest.raises(ValueError, match="whole number"):
+        vp.kl_div(vp2=vp2, N=2.5, gauss_flag=True)
+
+    mean, cov = vp.moments(N=1e3, cov_flag=True)
+    assert mean.shape == (1, 2) and cov.shape == (2, 2)
+    assert np.all(np.isfinite(vp.kl_div(vp2=vp2, N=1e3, gauss_flag=True)))
 
 
 def test_sample_default():
@@ -62,6 +217,47 @@ def test_sample_balance_extra():
     assert np.all(i.shape[0] == N)
     _, counts = np.unique(i, return_counts=True)
     assert np.all(np.isin(counts, np.array([N // 2, N // 2 + 1])))
+
+
+class _RecordingGenerator(np.random.Generator):
+    """A generator that keeps the probabilities of each weighted draw."""
+
+    def __init__(self, bit_generator):
+        super().__init__(bit_generator)
+        self.recorded_p = []
+
+    def choice(self, *args, **kwargs):
+        if kwargs.get("p") is not None:
+            self.recorded_p.append(np.array(kwargs["p"], copy=True))
+        return super().choice(*args, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "w, N, expected",
+    [
+        ([0.7, 0.2, 0.1], 13, [0.1, 0.6, 0.3]),
+        ([1 / 3, 2 / 3], 10, [1 / 3, 2 / 3]),
+    ],
+)
+def test_sample_balance_remainder_follows_the_fractional_parts(w, N, expected):
+    """A balanced draw takes ``floor(w * N)`` samples from each component
+    and draws the remainder in proportion to the fractional parts of
+    ``w * N`` (``vbmc_rnd.m:67-71``)."""
+    w = np.atleast_2d(np.asarray(w, dtype=float))
+    K = w.size
+    vp = VariationalPosterior(1, K, np.zeros((1, 1)))
+    vp.w = w.copy()
+    vp.mu = np.linspace(-10, 10, K).reshape(1, K)
+    vp.sigma = np.ones((1, K))
+    vp.lambd = np.ones((1, 1))
+    rng = _RecordingGenerator(np.random.PCG64(20260921))
+    vp.rng = rng
+    assert vp.rng is rng
+
+    vp.sample(N, orig_flag=False, balance_flag=True)
+
+    assert len(rng.recorded_p) == 1
+    assert np.allclose(rng.recorded_p[0], expected, rtol=0, atol=1e-12)
 
 
 def test_sample_one_k():
@@ -315,6 +511,82 @@ def test_pdf_outside_bounds():
     assert np.all(np.isfinite(vp.log_pdf(ub - 0.5, orig_flag=True)))
 
 
+def _probit_posterior(D, mean, sd, seed):
+    """One component of the given scale under a probit transform of the
+    unit box, whose density in the original space grows very large."""
+    parameter_transformer = ParameterTransformer(
+        D, np.zeros((1, D)), np.ones((1, D)), transform_type="probit"
+    )
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)), parameter_transformer)
+    vp.mu = np.full((D, 1), mean)
+    vp.sigma = np.array([[sd]])
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(seed)
+    return vp
+
+
+def test_pdf_original_space_density_holds_its_representable_values():
+    """The density in the original space is the density in the
+    transformed space over the Jacobian. Where the Jacobian underflows,
+    the quotient is infinite although the density itself is a number a
+    double holds, and the density is the number."""
+    vp = _probit_posterior(2, 0.0, 4.5, 20260921)
+    x = vp.parameter_transformer.inverse(np.array([[-27.3, -27.3]]))
+
+    log_density = vp.pdf(x, log_flag=True)
+    density = vp.pdf(x)
+
+    assert np.all(np.isfinite(log_density))
+    assert np.all(density == np.exp(log_density))
+    assert density > 1e306
+
+
+def test_pdf_original_space_density_is_the_quotient_where_that_holds():
+    """Every row on which the quotient is a number is that quotient,
+    to the last digit."""
+    D = 2
+    parameter_transformer = ParameterTransformer(
+        D, np.zeros((1, D)), np.ones((1, D))
+    )
+    vp = VariationalPosterior(
+        D, 3, np.full((1, D), 0.3), parameter_transformer, rng=20260921
+    )
+    vp.sigma = np.array([[0.5, 0.7, 0.9]])
+    axis = np.linspace(0.05, 0.95, 7)
+    x = np.array([[a, b] for a in axis for b in axis])
+
+    density = vp.pdf(x)
+
+    transformed = parameter_transformer(x)
+    quotient = vp.pdf(transformed, orig_flag=False) / np.exp(
+        parameter_transformer.log_abs_det_jacobian(transformed)[:, np.newaxis]
+    )
+    assert np.all(np.isfinite(quotient))
+    assert np.array_equal(density, quotient)
+
+
+def test_pdf_whole_coordinates_given_as_integers():
+    """A point whose coordinates are whole numbers has the same density
+    however it is spelled: the transformed coordinates are computed in
+    full precision, not truncated to the caller's integer type."""
+    D = 2
+    vp = VariationalPosterior(
+        D,
+        2,
+        np.array([[3.0, 4.0]]),
+        ParameterTransformer(D, np.zeros((1, D)), np.full((1, D), 10.0)),
+    )
+    vp.sigma = np.ones((1, 2))
+
+    reference = vp.pdf(np.array([[3.0, 4.0]]))
+
+    assert reference > 0
+    assert vp.pdf(np.array([[3, 4]])) == reference
+    assert vp.pdf([[3, 4]]) == reference
+    assert vp.pdf(np.array([3, 4])) == vp.pdf(np.array([3.0, 4.0]))
+
+
 def test_pdf_duplicate_log_flag():
     D = 2
     lb = np.ones((1, D)) * -3
@@ -386,15 +658,60 @@ def test_set_parameters_not_raw():
 
 
 def test_set_parameters_not_raw_negative_error():
+    """The entries that hold ``sigma``, ``lambd`` and the weights must be
+    positive. The means are left positive here, so that the refusal can
+    only come from those entries."""
     K = 2
     D = 3
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta_size = D * K + 2 * K + D
-    rng = np.random.default_rng()
-    theta = rng.random(theta_size) * -1
-    with pytest.raises(ValueError):
+    rng = np.random.default_rng(20260921)
+    theta = rng.random(theta_size)
+    theta[D * K :] *= -1
+    with pytest.raises(ValueError, match="must be positive"):
         vp.set_parameters(theta, raw_flag=False)
+
+
+@pytest.mark.parametrize("D, K", [(3, 4), (2, 2)])
+@pytest.mark.parametrize(
+    "optimize_mu, optimize_sigma, optimize_lambd, optimize_weights",
+    list(itertools.product([True, False], repeat=4)),
+)
+def test_set_parameters_not_raw_checks_the_constrained_entries(
+    D, K, optimize_mu, optimize_sigma, optimize_lambd, optimize_weights
+):
+    """With ``raw_flag=False`` every entry that holds ``sigma``, ``lambd``
+    or a weight is required to be positive, and those entries alone: the
+    means are unconstrained, and a vector that carries none of the three
+    leaves nothing to check."""
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_mu = optimize_mu
+    vp.optimize_sigma = optimize_sigma
+    vp.optimize_lambd = optimize_lambd
+    vp.optimize_weights = optimize_weights
+
+    blocks = []
+    if optimize_mu:
+        blocks.append(np.full(D * K, -1.0))
+    n_unconstrained = int(sum(block.size for block in blocks))
+    if optimize_sigma:
+        blocks.append(np.full(K, 0.5))
+    if optimize_lambd:
+        blocks.append(np.full(D, 2.0))
+    if optimize_weights:
+        blocks.append(np.full(K, 1.0 / K))
+    theta = np.concatenate(blocks) if blocks else np.array([])
+
+    # Negative means are taken.
+    vp.set_parameters(theta.copy(), raw_flag=False)
+
+    # A single negative scale or weight is refused, wherever it sits.
+    for idx in range(n_unconstrained, theta.size):
+        negative = theta.copy()
+        negative[idx] = -negative[idx]
+        with pytest.raises(ValueError, match="must be positive"):
+            vp.set_parameters(negative, raw_flag=False)
 
 
 def test_get_parameters_raw():
@@ -526,6 +843,18 @@ def test_moments_orig_flag():
     assert np.all(np.isclose(sigma, np.cov(x2.T)))
 
 
+def test_moments_orig_flag_one_dimensional_covariance():
+    """The covariance of one parameter is a 1-by-1 matrix, as it is for
+    every other number of parameters."""
+    vp = VariationalPosterior(1, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    mubar, cov = vp.moments(N=int(1e4), orig_flag=True, cov_flag=True)
+
+    assert mubar.shape == (1, 1)
+    assert cov.shape == (1, 1)
+
+
 def test_moments_no_orig_flag():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     vp.mu = np.ones((3, 2)) * [1, 4]
@@ -572,6 +901,95 @@ def test_mode_exists_already():
     assert np.all(mode2 == vp._mode)
 
 
+def test_mode_is_recomputed_when_n_opts_is_given():
+    """A stored mode answers a call that gives no ``n_opts``; a call that
+    gives one runs the search."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp.sigma = np.ones((1, 2))
+    vp.rng = np.random.default_rng(20260921)
+    stale = np.full(3, 42.0)
+    vp._mode = stale.copy()
+
+    assert np.all(vp.mode() == stale)
+
+    computed = vp.mode(n_opts=1)
+    assert np.allclose(computed, 5.0, atol=1e-3)
+
+
+def test_a_mode_search_with_n_opts_keeps_the_stored_mode():
+    """The store holds the mode of the search a call without ``n_opts``
+    makes, so a call that gives ``n_opts`` leaves what is stored alone."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp.sigma = np.ones((1, 2))
+    vp.rng = np.random.default_rng(20260921)
+    stale = np.full(3, 42.0)
+    vp._mode = stale.copy()
+
+    computed = vp.mode(n_opts=1)
+
+    assert not np.allclose(computed, stale)
+    assert np.array_equal(vp.mode(), stale)
+
+
+def test_a_mode_search_with_n_opts_stores_nothing(mocker):
+    """A posterior that carries no mode still carries none after a call
+    that gives ``n_opts``: the next call without one searches."""
+    K = 4
+    vp = VariationalPosterior(3, K, np.array([[5]]))
+    vp.sigma = np.ones((1, K))
+    vp.rng = np.random.default_rng(20260921)
+
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    runs = []
+    original_minimize = vp_module.minimize
+
+    def record(*args, **kwargs):
+        runs.append(kwargs["x0"])
+        return original_minimize(*args, **kwargs)
+
+    mocker.patch.object(vp_module, "minimize", record)
+
+    vp.mode(n_opts=1)
+    assert len(runs) == 1
+
+    runs.clear()
+    vp.mode()
+    assert len(runs) == int(np.ceil(np.sqrt(K)))
+
+
+def test_mode_leaves_the_random_stream_alone():
+    """The candidates of the mode search come from a copy of the
+    posterior's generator, so a call neither advances the stream a run
+    shares nor depends on where that stream stands."""
+    vp = get_matlab_vp()
+    vp.rng = np.random.default_rng(20260921)
+    state = vp.rng.bit_generator.state
+
+    first = vp.mode(n_opts=2)
+
+    assert vp.rng.bit_generator.state == state
+    second = vp.mode(n_opts=2)
+    assert np.array_equal(first, second)
+
+    # The posterior draws as if the mode had never been computed.
+    after = vp.sample(5, orig_flag=False)[0]
+    vp.rng = np.random.default_rng(20260921)
+    assert np.array_equal(vp.sample(5, orig_flag=False)[0], after)
+
+
+def test_get_parameters_clears_the_stored_mode():
+    """``get_parameters`` normalizes the parameters in place and drops the
+    stored mode, as ``misc/rescale_params.m:39-40`` does."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp._mode = np.ones(3)
+
+    vp.get_parameters()
+
+    assert vp._mode is None
+
+
 def test_mode_no_orig_flag():
     vp = get_matlab_vp()
     assert np.all(
@@ -584,6 +1002,70 @@ def test_mode_orig_flag():
     assert np.all(
         np.isclose([0.0540, -0.1818], vp.mode(orig_flag=True), atol=1e-4)
     )
+
+
+@pytest.mark.parametrize("bounded", [False, True])
+def test_mode_one_dimensional(bounded):
+    """``mode()`` of a one-dimensional posterior returns one point of the
+    original space, where the density is at its highest."""
+    if bounded:
+        parameter_transformer = ParameterTransformer(
+            1, np.array([[-3.0]]), np.array([[3.0]])
+        )
+        grid = np.linspace(-2.99, 2.99, 4001).reshape(-1, 1)
+    else:
+        parameter_transformer = ParameterTransformer(1)
+        grid = np.linspace(-3.0, 4.0, 4001).reshape(-1, 1)
+    vp = VariationalPosterior(1, 1, np.zeros((1, 1)))
+    vp.parameter_transformer = parameter_transformer
+    vp.mu = np.array([[0.7]])
+    vp.sigma = np.array([[0.5]])
+    vp.lambd = np.ones((1, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(20260921)
+
+    mode = vp.mode()
+
+    assert mode.shape == (1,)
+    best = grid[np.argmax(vp.pdf(grid))]
+    assert np.isclose(mode, best, atol=1e-2)
+    assert vp.pdf(mode) >= vp.pdf(best)
+    if not bounded:
+        # Of a single component, the mode is its mean.
+        assert np.isclose(mode, 0.7, atol=1e-4)
+
+
+def test_mode_starts_inside_the_box_it_searches(mocker):
+    """The starting point is clamped to the box handed to the optimizer,
+    the original bounds shrunk by ``sqrt(eps)`` (``vbmc_mode.m:39-41``)."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.ones((1, D))
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)))
+    vp.parameter_transformer = ParameterTransformer(D, lb, ub)
+    vp.mu = np.full((D, 1), -40.0)
+    vp.sigma = np.array([[1.0]])
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(20260921)
+
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    starting_points = []
+    original_minimize = vp_module.minimize
+
+    def record(*args, **kwargs):
+        starting_points.append(np.array(kwargs["x0"], copy=True))
+        return original_minimize(*args, **kwargs)
+
+    mocker.patch.object(vp_module, "minimize", record)
+    vp.mode()
+
+    offset = np.sqrt(np.finfo(float).eps)
+    assert len(starting_points) == 1
+    x0 = starting_points[0]
+    assert np.all(x0 >= lb.ravel() + offset)
+    assert np.all(x0 <= ub.ravel() - offset)
 
 
 def test_mtv_not_enough_arguments():
@@ -703,6 +1185,39 @@ def test_kl_div_two_vp_samples_gauss_flag():
     assert np.all(np.isclose(np.ones(2) * 0.1244, kl_divs, atol=1e-2))
 
 
+def test_kl_div_samples_mean_is_taken_per_coordinate():
+    """The moments of the given samples are those of the sample matrix:
+    one mean per coordinate, as ``mean(vp2,1)`` in ``vbmc_kldiv.m:63``."""
+    D = 3
+    seed = 20260921
+    N = int(2e4)
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)))
+    vp.parameter_transformer = ParameterTransformer(D)
+    vp.mu = np.array([[10.0], [-5.0], [2.0]])
+    vp.sigma = np.ones((1, 1))
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+
+    # Samples of the posterior itself: both divergences are near zero.
+    vp.rng = np.random.default_rng(seed)
+    samples, _ = vp.sample(N)
+    kl_divs = vp.kl_div(samples=samples, N=N, gauss_flag=True)
+    assert np.all(kl_divs < 1e-2)
+
+    # Samples of a shifted Gaussian: the divergence of the posterior's
+    # moments from the sample moments, coordinate by coordinate.
+    shifted = samples + np.array([0.5, -1.0, 2.0])
+    vp.rng = np.random.default_rng(seed + 1)
+    kl_divs = vp.kl_div(samples=shifted, N=N, gauss_flag=True)
+    vp.rng = np.random.default_rng(seed + 1)
+    q1mu, q1sigma = vp.moments(N, True, True)
+    expected = kl_div_mvn(
+        q1mu, q1sigma, np.mean(shifted, axis=0), np.cov(shifted.T)
+    )
+    assert np.array_equal(kl_divs, np.maximum(0, expected))
+    assert np.all(kl_divs > 1e-2)
+
+
 def test_kl_div_two_vp_identical_no_gauss_flag():
     vp = VariationalPosterior(1, 1, np.array([[5]]))
     kl_divs = vp.kl_div(vp2=vp, gauss_flag=False, N=int(1e6))
@@ -718,6 +1233,43 @@ def test_kl_div_two_vp_no_gauss_flag():
     vp2.sigma = np.ones((1, 1))
     kl_divs = vp.kl_div(vp2=vp2, gauss_flag=False, N=int(1e6))
     assert np.all(np.isclose(50, kl_divs, atol=5e-1))
+
+
+def test_kl_div_ignores_a_density_that_is_zero_or_not_finite(mocker):
+    """A density that is zero or not finite, NaN included, is replaced
+    before its logarithm is taken (``vbmc_kldiv.m:75-76``, ``:82-83``)."""
+    values = np.array([[0.0], [1.0], [np.inf], [np.nan], [0.5]])
+    vp = VariationalPosterior(1, 1, np.zeros((1, 1)), rng=20260921)
+    vp2 = VariationalPosterior(1, 1, np.zeros((1, 1)), rng=20260922)
+    mocker.patch.object(
+        VariationalPosterior,
+        "pdf",
+        lambda self, *args, **kwargs: values.copy(),
+    )
+
+    kl_divs = vp.kl_div(vp2=vp2, N=values.size, gauss_flag=False)
+
+    ignored = (values == 0) | ~np.isfinite(values)
+    kept = np.where(ignored, 1.0, values)
+    floored = np.where(ignored, np.finfo(float).tiny, values)
+    expected = np.maximum(
+        0, -np.mean(np.log(floored) - np.log(kept))
+    ) * np.ones(2)
+    assert np.array_equal(kl_divs, expected)
+
+
+def test_kl_div_is_a_number_when_a_density_overflows():
+    """Under a probit transform a wide posterior has draws whose density
+    in the original space is beyond the range of a double; those points
+    are ignored rather than carried into the average."""
+    vp = _probit_posterior(1, 0.0, 30.0, 20260921)
+    vp2 = _probit_posterior(1, 0.5, 30.0, 20260922)
+    x, _ = vp.sample(int(1e4))
+    assert np.any(np.isinf(vp.pdf(x)))
+
+    kl_divs = vp.kl_div(vp2=vp2, N=int(1e4), gauss_flag=False)
+
+    assert np.all(np.isfinite(kl_divs))
 
 
 def test_kl_div_no_samples_gauss_flag():

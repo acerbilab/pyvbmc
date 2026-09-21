@@ -19,6 +19,41 @@ _MULTIVARIATE_FROZEN_TYPES = (
 _UNIVARIATE_FROZEN_TYPE = type(norm())
 
 
+def _check_univariate_parameters(distribution):
+    """Check that a frozen univariate distribution describes one variable.
+
+    A frozen univariate distribution accepts array-valued parameters, and
+    then stands for one distribution per element: it draws one point from
+    each and its density has one column per element. Such an object is not a
+    one-dimensional distribution, and a prior built from it would sample and
+    evaluate two different things.
+
+    Parameters
+    ----------
+    distribution : frozen scipy.stats distribution
+        The univariate distribution to check.
+
+    Raises
+    ------
+    ValueError
+        If any parameter of the distribution holds more than one value.
+    """
+    parameters = {
+        f"positional parameter {i}": value
+        for i, value in enumerate(distribution.args)
+    }
+    parameters.update(distribution.kwds)
+    for name, value in parameters.items():
+        if np.size(value) != 1:
+            raise ValueError(
+                "The parameters of a univariate SciPy distribution used as a "
+                f"one-dimensional prior should be scalars, but {name} holds "
+                f"{np.size(value)} values. A prior over several variables is "
+                "a list of one-dimensional distributions, or a multivariate "
+                "distribution."
+            )
+
+
 def _scipy_distribution_kind(distribution):
     """Classify the supported frozen SciPy distributions."""
     if isinstance(distribution, _MULTIVARIATE_FROZEN_TYPES):
@@ -40,6 +75,12 @@ class SciPy(Prior):
     distribution : frozen scipy.stats distribution
         The underlying continuous univariate, multivariate normal, or
         multivariate t distribution.
+    a : np.ndarray
+        The lower bound(s) of the support, shape `(D,)`, read from
+        ``distribution``.
+    b : np.ndarray
+        The upper bound(s) of the support, shape `(D,)`, read from
+        ``distribution``.
     """
 
     def __init__(self, distribution):
@@ -58,16 +99,16 @@ class SciPy(Prior):
         ------
         TypeError
             If the provided distribution is not of the appropriate type.
+        ValueError
+            If a univariate distribution carries a parameter which is not a
+            scalar, so that it stands for more than one variable.
         """
         distribution_kind = _scipy_distribution_kind(distribution)
         if distribution_kind == "multivariate":
             self.D = int(distribution.dim)
-            self.a = np.full(self.D, -np.inf)
-            self.b = np.full(self.D, np.inf)
         elif distribution_kind == "univariate":
+            _check_univariate_parameters(distribution)
             self.D = 1
-            self.a = np.atleast_1d(distribution.a)
-            self.b = np.atleast_1d(distribution.b)
         else:
             raise TypeError(
                 f'A SciPy prior should be initialized from a "frozen" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type {type(distribution)}.'
@@ -119,6 +160,40 @@ class SciPy(Prior):
         """Return a generic instance of the class (used for tests)."""
         return SciPy(multivariate_normal(np.zeros(D)))
 
+    def _support_box(self):
+        """The box of the support, read from ``self.distribution``.
+
+        The ``a`` and ``b`` attributes of a frozen distribution are those of
+        the standardized one, so they ignore ``loc`` and ``scale``;
+        ``support()`` applies both. The box is read at every call, so an
+        object restored from a file describes the distribution it carries
+        whatever the file stored beside it.
+
+        Returns
+        -------
+        a, b : tuple(np.ndarray, np.ndarray)
+            The lower and upper bounds of the support, each of shape `(D,)`
+            and of dtype `float64`.
+        """
+        if _scipy_distribution_kind(self.distribution) == "univariate":
+            support_a, support_b = self.distribution.support()
+            return (
+                np.atleast_1d(np.asarray(support_a, dtype=np.float64)),
+                np.atleast_1d(np.asarray(support_b, dtype=np.float64)),
+            )
+        # A multivariate normal or t lives on the whole space.
+        return np.full(self.D, -np.inf), np.full(self.D, np.inf)
+
+    @property
+    def a(self):
+        """np.ndarray: The lower bound(s) of the support, shape `(D,)`."""
+        return self._support_box()[0]
+
+    @property
+    def b(self):
+        """np.ndarray: The upper bound(s) of the support, shape `(D,)`."""
+        return self._support_box()[1]
+
     def _support(self):
         """Returns the support of the distribution.
 
@@ -132,7 +207,7 @@ class SciPy(Prior):
             A tuple of lower and upper bounds of the support, such that
             [``a[i]``, ``b[i]``] bounds the support of the `i`th marginal.
         """
-        return self.a, self.b
+        return self._support_box()
 
     def __str__(self):
         """Print a string summary."""

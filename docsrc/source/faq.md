@@ -269,7 +269,14 @@ also supply a custom `log_prior=` callable. See the
 [prior documentation](api/classes/priors.rst) for details.
 
 The hard bounds constrain where PyVBMC evaluates the target; they do not
-by themselves add or normalize a prior.
+by themselves add or normalize a prior. A prior passed with `prior=` must
+have a support that covers the hard bounds, since the log joint would be
+`-inf` wherever the box reaches outside it; `VBMC` refuses a prior that does
+not. Inside the hard bounds the prior is used as it is given: the model
+evidence is that of the prior restricted to the hard bounds, not of a prior
+truncated to them and normalized again, so for a proper evidence choose hard
+bounds that hold essentially all of the prior's mass, or the support itself
+for a bounded prior.
 
 (faq-my-target-function-requires-additional-datainputs-how-do-i-pass-them-to-vbmc)=
 ### My target function requires additional data/inputs. How do I pass them to VBMC?
@@ -428,8 +435,17 @@ changes the inference problem.
 (faq-does-vbmc-support-inference-with-integer-parameters)=
 ### Does VBMC support inference with integer parameters?
 
-No, VBMC does not support integer parameters (that is, variables forced to be integers — or, more in general, constrained to discrete values).
-Be aware that simple workarounds might break down the VBMC approximation, in particular the assumption that the underlying target function (the log posterior) is continuous and reasonably smooth.
+Only as an experimental feature. `options['integer_vars']` names the variables that are forced to take integer values, either as a boolean array with one entry per variable or as an array of their 0-based indices.
+The hard bounds of such a variable must sit half an integer outside its range: `LB = -0.5` and `UB = 10.5` for a variable that takes the values 0 to 10.
+A prior passed with `prior=` has to cover those bounds, so a uniform prior over the values 0 to 10 is `UniformBox(-0.5, 10.5)`, whose density is 1/11.
+
+What the option does, and what it does not do:
+
+- The points of the active-sampling search are snapped to the integer grid, so every new point evaluated after the initial design has integer values of those variables.
+- The initial design is *not* snapped, as in MATLAB VBMC, and neither is an `x0` provided for it. The first `options['fun_eval_start']` evaluations are therefore made off the grid unless you provide starting points for the whole design, all of them on it.
+- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing. With `options['max_repeated_observations']` above zero, a noisy target can also be evaluated again at a point of the initial design, which is repeated where it is, off the grid.
+
+Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in all its variables, the integer ones included: the Gaussian process interpolates between the values on the grid.
 
 (faq-output-arguments)=
 ## Output arguments
@@ -689,13 +705,17 @@ vp, results = continued.optimize()
 
 Here `1000` is the *total* budget, including evaluations already made. If
 the run reached its iteration limit, increase `max_iter` as well. Continue
-with the same model, data, prior and bounds, preferably in the same Python
-environment. See [`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
+with the same model, data, prior and bounds, and under the same minor
+version of Python (3.12, say) that saved the file: a saved run holds Python
+bytecode, so under another minor version it can be loaded and inspected but
+should not be continued or saved again, which can end the interpreter. See
+[`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
 
 If you only need to use the fitted posterior later, save it with
 `vp.save("posterior.pkl")` and load it with
-`VariationalPosterior.load("posterior.pkl")`. A saved posterior alone does
-not contain the full state needed to resume a run.
+`VariationalPosterior.load("posterior.pkl")`. A saved posterior holds no
+bytecode and moves between Python versions, but it does not contain the
+full state needed to resume a run.
 
 (faq-can-i-combine-the-posteriors-of-several-runs)=
 ### Can I combine the posteriors of several runs?

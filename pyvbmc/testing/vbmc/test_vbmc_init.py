@@ -17,7 +17,10 @@ from pyvbmc.priors import (
     SplineTrapezoidal,
     Trapezoidal,
     UniformBox,
+    UserFunction,
+    convert_to_prior,
 )
+from pyvbmc.vbmc.vbmc import _check_prior_covers_bounds
 
 priors = [UniformBox, Trapezoidal, SplineTrapezoidal, SmoothBox, SciPy]
 from scipy.stats import lognorm, multivariate_normal, multivariate_t, norm
@@ -153,6 +156,30 @@ def test_vbmc_bounds_check_scalars_are_replicated():
     ):
         assert bound.shape == (1, D)
         assert np.all(bound == value)
+
+
+def test_vbmc_scalar_plausible_bounds_without_x0_name_the_problem():
+    """Without a starting point the number of variables comes from the
+    plausible bounds, so two scalars leave it unknown, and the error says
+    that."""
+    with pytest.raises(ValueError, match="number of variables"):
+        VBMC(fun, None, -10, 10, -1, 1)
+    with pytest.raises(ValueError, match="number of variables"):
+        VBMC(fun, None, -10, 10, np.float64(-1), np.float64(1))
+
+
+def test_vbmc_one_scalar_plausible_bound_without_x0_is_replicated():
+    """One plausible bound with an entry per variable gives their number,
+    and the other, a scalar, is replicated as the docstring promises."""
+    D = 3
+    vbmc = VBMC(fun, None, -10, 10, np.full((1, D), -1.0), 1)
+    assert vbmc.D == D
+    assert vbmc.plausible_upper_bounds.shape == (1, D)
+    assert np.all(vbmc.plausible_upper_bounds == 1)
+
+    vbmc = VBMC(fun, None, -10, 10, -1, [1.0, 1.0, 1.0])
+    assert vbmc.D == D
+    assert np.all(vbmc.plausible_lower_bounds == -1)
 
 
 def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
@@ -740,6 +767,35 @@ def test_uncertainty_handling_rejects_other_values(value):
     assert "True or False" in message
 
 
+@pytest.mark.parametrize("value", [True, 1, np.True_, np.int64(1)])
+def test_specify_target_noise_true_takes_the_noise_the_target_returns(value):
+    """``specify_target_noise`` is a boolean, as ``SpecifyTargetNoise`` is in
+    MATLAB VBMC, and a target that returns its noise estimate is handled at
+    level 2."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 2
+
+
+@pytest.mark.parametrize("value", [False, 0, np.False_, np.int64(0)])
+def test_specify_target_noise_false_gives_a_noiseless_run(value):
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize(
+    "value", ["yes", "no", "off", [0], [1], 2, 1.0, None, [], np.array([])]
+)
+def test_specify_target_noise_rejects_other_values(value):
+    """A value that is not a boolean is refused, and the message names what
+    may be written instead: read by its truth, ``"no"`` or ``[0]`` would
+    turn the noise handling on."""
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    message = execinfo.value.args[0]
+    assert "specify_target_noise" in message
+    assert "True or False" in message
+
+
 def test_uncertainty_handling_off_with_specify_target_noise_raises():
     """``misc/setupoptions_vbmc.m:135-137`` refuses a target that supplies
     its own noise estimate while the noise handling is turned off."""
@@ -758,9 +814,15 @@ def test_uncertainty_handling_true_with_specify_target_noise_is_level_2():
 
 
 def test_vbmc_optimstate_acq_hedge():
+    """The portfolio of acquisition functions that ``acq_hedge`` asks for
+    is not ported, so the option is refused and no state is set up for it;
+    the test asserts the refusal, where it used to assert the empty
+    portfolio that construction left in ``optim_state``."""
     options = {"acq_hedge": True}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["hedge"] == []
+    with pytest.raises(NotImplementedError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert "acq_hedge" in execinfo.value.args[0]
+
     options = {"acq_hedge": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert "hedge" not in vbmc.optim_state
@@ -832,15 +894,15 @@ def test_vbmc_init_log_joint():
         sample_prior=sample_prior,
     )
     x = np.random.normal()
-    np.isclose(vbmc.log_joint(x), log_joint(x))
-    np.isclose(vbmc.function_logger.fun(x), log_joint(x))
+    assert np.isclose(vbmc.log_joint(x), log_joint(x))
+    assert np.isclose(vbmc.function_logger.fun(x), log_joint(x))
     assert vbmc.prior.sample is sample_prior
     assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
 
 def test_vbmc_init_log_joint_noisy():
-    options = {"specify_target_noise": 2}
+    options = {"specify_target_noise": True}
     D = 3
     lb = np.ones((1, D)) * -1
     ub = np.ones((1, D))
@@ -874,16 +936,24 @@ def test_vbmc_init_log_joint_noisy():
         options=options,
     )
     x = 5.6
-    np.isclose(vbmc.log_joint(x), log_joint(x))
-    np.isclose(vbmc.function_logger.fun(x), log_joint(x))
+    # A noisy log-joint returns the value and the noise estimate.
+    value, noise = vbmc.log_joint(x)
+    expected_value, expected_noise = log_joint(x)
+    assert np.isclose(value, expected_value)
+    assert np.isclose(noise, expected_noise)
+    logged_value, logged_noise = vbmc.function_logger.fun(x)
+    assert np.isclose(logged_value, expected_value)
+    assert np.isclose(logged_noise, expected_noise)
     assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
 
 def test_vbmc_init_log_joint_prior():
     D = 3
-    lb = np.full((1, D), -np.inf)
-    ub = np.full((1, D), np.inf)
+    # The generic priors of the bounded families live on [0, 1], and the
+    # hard bounds have to lie inside the support of the prior.
+    lb = np.zeros((1, D))
+    ub = np.ones((1, D))
     x0_array = np.full((1, D), 0.5)
     plb = np.full((1, D), 0.1)
     pub = np.full((1, D), 0.9)
@@ -913,7 +983,9 @@ def test_vbmc_init_log_joint_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(vbmc.log_joint(x), log_likelihood(x) + new_prior.log_pdf(x))
+        assert np.isclose(
+            vbmc.log_joint(x), log_likelihood(x) + new_prior.log_pdf(x)
+        )
     scipy_priors = [
         multivariate_normal(np.zeros(D)),
         multivariate_t(np.zeros(D), df=7),
@@ -937,16 +1009,18 @@ def test_vbmc_init_log_joint_prior():
             for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x), log_likelihood(x) + vbmc.prior.log_pdf(x)
         )
 
 
 def test_vbmc_init_log_joint_noisy_prior():
-    options = {"specify_target_noise": 2}
+    options = {"specify_target_noise": True}
     D = 3
-    lb = np.full((1, D), -np.inf)
-    ub = np.full((1, D), np.inf)
+    # The generic priors of the bounded families live on [0, 1], and the
+    # hard bounds have to lie inside the support of the prior.
+    lb = np.zeros((1, D))
+    ub = np.ones((1, D))
     x0_array = np.full((1, D), 0.5)
     plb = np.full((1, D), 0.1)
     pub = np.full((1, D), 0.9)
@@ -970,10 +1044,10 @@ def test_vbmc_init_log_joint_noisy_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
         # Init with prior and matching log_prior, sample_prior:
         vbmc = VBMC(
             log_likelihood,
@@ -988,10 +1062,10 @@ def test_vbmc_init_log_joint_noisy_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
     scipy_priors = [
         multivariate_normal(np.zeros(D)),
         multivariate_t(np.zeros(D), df=7),
@@ -1016,10 +1090,10 @@ def test_vbmc_init_log_joint_noisy_prior():
             for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + vbmc.prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
 
 
 def test_vbmc_init_error_handling():
@@ -1481,15 +1555,18 @@ class TrackingPrior(Prior):
         return cls(D)
 
 
-def _vectorized_vbmc(target, *, prior=None, options=None, D=2):
+def _vectorized_vbmc(target, *, prior=None, options=None, D=2, bounds=None):
     merged_options = {"vectorized_target": True}
     if options:
         merged_options.update(options)
+    if bounds is None:
+        bounds = (np.full((1, D), -np.inf), np.full((1, D), np.inf))
+    lower_bounds, upper_bounds = bounds
     return VBMC(
         target,
         np.zeros((1, D)),
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
+        lower_bounds,
+        upper_bounds,
         np.full((1, D), -1.0),
         np.full((1, D), 1.0),
         options=merged_options,
@@ -1578,7 +1655,9 @@ def test_vectorized_target_option_and_logger_mode():
 def test_vectorized_likelihood_with_builtin_prior_and_column_output():
     prior = UniformBox(np.full(2, -2.0), np.full(2, 2.0))
     vbmc = _vectorized_vbmc(
-        lambda x: np.sum(x, axis=1, keepdims=True), prior=prior
+        lambda x: np.sum(x, axis=1, keepdims=True),
+        prior=prior,
+        bounds=(np.full((1, 2), -2.0), np.full((1, 2), 2.0)),
     )
     points = np.array([[0.0, 0.0], [0.5, -0.5]])
 
@@ -1666,3 +1745,264 @@ def test_vectorized_prior_rejects_complex_scalar_with_row_context():
     )
     with pytest.raises(ValueError, match="finite real scalar for row 0"):
         vbmc.log_joint(np.zeros((2, 2)))
+
+
+def test_log_joint_with_a_user_function_marginal():
+    """A list of one-dimensional priors may hold a `UserFunction`, whose
+    density is the user's own callable and takes one point."""
+    lb = np.array([[-np.inf, 0.0]])
+    ub = np.array([[np.inf, 1.0]])
+    plb = np.array([[-1.0, 0.2]])
+    pub = np.array([[1.0, 0.8]])
+    x0_array = np.array([[0.0, 0.5]])
+
+    def log_likelihood(x):
+        return np.sum(x**2 + x + 1)
+
+    def log_marginal(x):
+        return -0.5 * float(x[0]) ** 2
+
+    box = UniformBox(0.0, 1.0, D=1)
+    vbmc = VBMC(
+        log_likelihood,
+        x0_array,
+        lb,
+        ub,
+        plb,
+        pub,
+        prior=[UserFunction(log_marginal, D=1), box],
+    )
+
+    x = np.array([[0.3, 0.4]])
+    expected = (
+        log_likelihood(x)
+        + log_marginal(x[0, :1])
+        + box.log_pdf(x[0, 1:]).item()
+    )
+    assert np.isclose(vbmc.log_joint(x).item(), expected)
+
+
+def _log_likelihood_for_prior_bounds(x):
+    return np.sum(x**2 + x + 1)
+
+
+def test_a_prior_narrower_than_the_hard_bounds_is_refused():
+    """The log-joint is ``-inf`` where the box reaches outside the support
+    of the prior, and a run would stop at the first evaluation it makes
+    there."""
+    D = 2
+    with pytest.raises(ValueError) as err:
+        VBMC(
+            _log_likelihood_for_prior_bounds,
+            np.full((1, D), 5.0),
+            np.zeros((1, D)),
+            np.full((1, D), 10.0),
+            np.full((1, D), 2.0),
+            np.full((1, D), 8.0),
+            prior=UniformBox(0.0, 1.0, D=D),
+        )
+    message = err.value.args[0]
+    assert "inside the support of `prior`" in message
+    assert "coordinate 0 has bounds [0.0, 10.0]" in message
+    assert "coordinate 1 has bounds [0.0, 10.0]" in message
+    assert "support [0.0, 1.0]" in message
+
+
+def test_a_prior_whose_support_covers_the_hard_bounds_is_taken():
+    """Equality is containment, a wider support is enough, and a prior
+    whose support is not finite covers any box."""
+    D = 2
+    x0_array = np.full((1, D), 5.0)
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    plb, pub = np.full((1, D), 2.0), np.full((1, D), 8.0)
+    unbounded_lb = np.full((1, D), -np.inf)
+    unbounded_ub = np.full((1, D), np.inf)
+
+    accepted = [
+        # The support is exactly the box.
+        (lb, ub, plb, pub, x0_array, UniformBox(0.0, 10.0, D=D)),
+        # A support wider than the box.
+        (lb, ub, plb, pub, x0_array, UniformBox(-1.0, 11.0, D=D)),
+        # A spline trapezoid built from the bounds, as example 5 builds it.
+        (
+            lb,
+            ub,
+            plb,
+            pub,
+            x0_array,
+            SplineTrapezoidal(lb, plb, pub, ub),
+        ),
+        # A product whose shifted marginal covers its coordinate.
+        (
+            lb,
+            ub,
+            plb,
+            pub,
+            x0_array,
+            [sp.stats.uniform(loc=-1, scale=12), sp.stats.norm()],
+        ),
+        # Unbounded parameters with a prior of unbounded support.
+        (
+            unbounded_lb,
+            unbounded_ub,
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            np.zeros((1, D)),
+            SmoothBox(-1.0, 1.0, 1.0, D=D),
+        ),
+        (
+            unbounded_lb,
+            unbounded_ub,
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            np.zeros((1, D)),
+            multivariate_normal(np.zeros(D)),
+        ),
+    ]
+    for lower, upper, p_lower, p_upper, x0, prior in accepted:
+        vbmc = VBMC(
+            _log_likelihood_for_prior_bounds,
+            x0,
+            lower,
+            upper,
+            p_lower,
+            p_upper,
+            prior=prior,
+        )
+        assert vbmc.prior is not None
+
+
+def _uniform_marginals(lower, upper):
+    """The list of marginals the FAQ builds from a pair of hard bounds."""
+    return [
+        sp.stats.uniform(loc=low, scale=high - low)
+        for low, high in zip(np.ravel(lower), np.ravel(upper))
+    ]
+
+
+_BOUND_GRID = np.round(np.arange(-20.0, 20.0 + 1e-9, 1.3), 1)
+
+
+def test_a_prior_built_from_the_hard_bounds_is_taken():
+    """A marginal built as ``uniform(loc=low, scale=high - low)`` has its
+    support edge a few units in the last place away from ``high``, and the
+    pair of hard bounds it was built from is inside it."""
+    for i, low in enumerate(_BOUND_GRID):
+        for high in _BOUND_GRID[i + 1 :]:
+            prior = convert_to_prior(_uniform_marginals([low], [high]))
+            _check_prior_covers_bounds(
+                prior, np.array([[low]]), np.array([[high]])
+            )
+
+
+def test_a_prior_built_from_random_hard_bounds_is_taken():
+    """The same construction on bounds computed from data, which carry no
+    round decimal."""
+    rng = np.random.default_rng(20260921)
+    for __ in range(300):
+        low, high = np.sort(rng.uniform(-20.0, 20.0, size=2))
+        prior = convert_to_prior(_uniform_marginals([low], [high]))
+        _check_prior_covers_bounds(
+            prior, np.array([[low]]), np.array([[high]])
+        )
+
+
+@pytest.mark.parametrize(
+    "lower, upper",
+    [(-20.0, 0.2), (-1.1, 3.4), (0.9401229776087456, 9.034701816518085)],
+)
+def test_a_vbmc_built_on_the_faq_prior_is_taken(lower, upper):
+    """The whole construction the FAQ recommends: the marginals and the
+    hard bounds come from the same pair of numbers."""
+    D = 2
+    lb, ub = np.full((1, D), lower), np.full((1, D), upper)
+    plb = lb + 0.25 * (ub - lb)
+    pub = ub - 0.25 * (ub - lb)
+    vbmc = VBMC(
+        _log_likelihood_for_prior_bounds,
+        0.5 * (lb + ub),
+        lb,
+        ub,
+        plb,
+        pub,
+        prior=_uniform_marginals(lb, ub),
+    )
+    assert vbmc.prior is not None
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_a_support_short_of_a_hard_bound_is_refused(side):
+    """The slack covers rounding alone: a support short of the box by a
+    millionth of its range is a prior that is narrower than the bounds."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    gap = 1e-6 * (ub[0, 0] - lb[0, 0])
+    if side == "lower":
+        support = UniformBox(lb[0, 0] + gap, ub[0, 0], D=D)
+    else:
+        support = UniformBox(lb[0, 0], ub[0, 0] - gap, D=D)
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(support, lb, ub)
+    assert "inside the support of `prior`" in err.value.args[0]
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_an_infinite_hard_bound_against_a_finite_support_is_refused(side):
+    """An infinite bound gets no slack, whatever the other bound is."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    if side == "lower":
+        lb = np.full((1, D), -np.inf)
+    else:
+        ub = np.full((1, D), np.inf)
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(UniformBox(0.0, 10.0, D=D), lb, ub)
+    assert "inside the support of `prior`" in err.value.args[0]
+
+
+def test_a_support_given_as_single_values_is_read_as_a_box():
+    """A ``Prior`` subclass may report its support as one value for every
+    coordinate, which the check reads as the box of the model."""
+
+    class _ScalarSupportPrior(Prior):
+        def __init__(self, D):
+            self.D = D
+
+        def _support(self):
+            return 0.0, 1.0
+
+        def _log_pdf(self, x):
+            return np.zeros((x.shape[0], 1))
+
+        def sample(self, n, rng=None):
+            return np.zeros((n, self.D))
+
+        @classmethod
+        def _generic(cls, D=1):
+            return cls(D)
+
+    D = 3
+    prior = _ScalarSupportPrior(D)
+    _check_prior_covers_bounds(prior, np.zeros((1, D)), np.ones((1, D)))
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(
+            prior, np.zeros((1, D)), np.full((1, D), 2.0)
+        )
+    message = err.value.args[0]
+    assert "inside the support of `prior`" in message
+    assert "coordinate 2 has bounds [0.0, 2.0]" in message
+
+
+def test_a_log_prior_callable_is_taken_whatever_the_hard_bounds():
+    """A callable states no support, so it covers any box."""
+    D = 2
+    vbmc = VBMC(
+        _log_likelihood_for_prior_bounds,
+        np.full((1, D), 5.0),
+        np.zeros((1, D)),
+        np.full((1, D), 10.0),
+        np.full((1, D), 2.0),
+        np.full((1, D), 8.0),
+        log_prior=lambda x: -0.5 * np.sum(np.asarray(x) ** 2),
+    )
+    assert vbmc.prior is not None

@@ -6,6 +6,7 @@ import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -321,14 +322,9 @@ class AbstractAcqFcn(ABC):
             # coordinates are written back in either shape.
             X_2d = X[None, :] if X.ndim == 1 else X
             X_temp = parameter_transformer.inverse(X_2d)
-            # MATLAB's `round` (misc/real2int_vbmc.m:7) sends a half away
-            # from zero; `np.around` sends it to the nearer even integer.
-            # The fractional part is exact, where `abs(x) + 0.5` rounds
-            # the largest number below a half up to one.
-            X_int = X_temp[:, integer_vars]
-            X_whole = np.trunc(X_int)
-            X_temp[:, integer_vars] = X_whole + np.sign(X_int) * (
-                np.abs(X_int - X_whole) >= 0.5
+            # `misc/real2int_vbmc.m:7` rounds with MATLAB's `round`.
+            X_temp[:, integer_vars] = round_half_away_from_zero(
+                X_temp[:, integer_vars]
             )
             X_temp = parameter_transformer(X_temp)
             X_2d[:, integer_vars] = X_temp[:, integer_vars]

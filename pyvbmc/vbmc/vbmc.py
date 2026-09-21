@@ -71,6 +71,73 @@ def _max_ignoring_nan(values):
     return np.amax(values)
 
 
+def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
+    """Check that the hard bounds lie inside the support of the prior.
+
+    Where the box of the hard bounds reaches outside the support the prior
+    has no density, so the log-joint is ``-inf`` there and the run stops at
+    the first evaluation it makes in that part of the box, in the function
+    logger, with a message that names neither the prior nor the bounds.
+
+    A coordinate whose two hard bounds are both finite is compared with a
+    slack of ``1e-9`` times its range. A support computed as ``loc +
+    scale``, which is how a bounded ``scipy.stats`` distribution built from
+    a pair of bounds reports its edges, lands a few units in the last place
+    away from the bound it was built from. A run stays further than that
+    from every hard bound: the acquisition search keeps ``tol_bound_x``
+    (1e-5 by default) times the range away, and the starting points and
+    the plausible box, in which the initial design is drawn, are kept a
+    thousandth of the range inside (``_bounds._effective_bounds``), so a
+    gap of the slack's size is never evaluated. Where a hard
+    bound is infinite the comparison is exact, so an infinite hard bound
+    against a finite support bound is refused.
+
+    Parameters
+    ----------
+    prior : pyvbmc.priors.Prior
+        The prior. Its ``support()`` is the box that has to contain the
+        hard bounds; a prior that reports no finite support contains every
+        box. A support given as one value per coordinate, or as a single
+        value for all of them, is read as a box of the model's dimension.
+    lower_bounds, upper_bounds : np.ndarray
+        The hard bounds, of shape `(1, D)`.
+
+    Raises
+    ------
+    ValueError
+        If the hard bounds reach outside the support of the prior in any
+        coordinate.
+    """
+    lb = np.asarray(lower_bounds, dtype=float).ravel()
+    ub = np.asarray(upper_bounds, dtype=float).ravel()
+    support_lb, support_ub = prior.support()
+    support_lb = np.broadcast_to(
+        np.asarray(support_lb, dtype=float).ravel(), lb.shape
+    )
+    support_ub = np.broadcast_to(
+        np.asarray(support_ub, dtype=float).ravel(), ub.shape
+    )
+
+    slack = np.zeros_like(lb)
+    both_finite = np.isfinite(lb) & np.isfinite(ub)
+    slack[both_finite] = 1e-9 * (ub[both_finite] - lb[both_finite])
+
+    outside = np.flatnonzero(
+        (lb < support_lb - slack) | (ub > support_ub + slack)
+    )
+    if outside.size > 0:
+        details = "; ".join(
+            f"coordinate {i} has bounds [{lb[i]}, {ub[i]}] against the "
+            f"support [{support_lb[i]}, {support_ub[i]}]"
+            for i in outside
+        )
+        raise ValueError(
+            "The hard bounds should lie inside the support of `prior`, but "
+            f"they reach outside it: {details}. Give hard bounds inside the "
+            "support of the prior, or a prior whose support covers them."
+        )
+
+
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
@@ -106,7 +173,9 @@ class VBMC:
         arrays with one value and positive standard deviation per row.
     x0 : np.ndarray, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
-        proximity of the mode of the posterior. Default is ``None``.
+        proximity of the mode of the posterior. Default is ``None``, in which
+        case the number of variables is read from the plausible bounds, one
+        of which then needs one entry per variable.
     lower_bounds, upper_bounds : np.ndarray, optional
         ``lower_bounds`` (`LB`) and ``upper_bounds`` (`UB`) define a set
         of strict lower and upper bounds for the coordinate vector, `x`, so
@@ -146,11 +215,16 @@ class VBMC:
         ``scipy.stats`` distributions. (see the documentation on priors for
         more details). If ``prior`` is not `None`, the argument ``log_density``
         is assumed to represent the log-likelihood (otherwise it is assumed to
-        represent the log-joint).
+        represent the log-joint). The hard bounds ``lower_bounds`` and
+        ``upper_bounds`` must lie inside the support of the prior. Within
+        them the prior is used as it is given: the model evidence reported is
+        that of the prior restricted to the hard bounds, not that of a prior
+        truncated to them and normalized again.
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
         ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
+        to represent the log-likelihood (otherwise it is assumed to represent
         the log-joint).
     sample_prior : callable, optional
         An optional function which accepts a single argument `n` and returns an
@@ -196,6 +270,11 @@ class VBMC:
         The target passed directly to this instance, or ``None`` when the
         instance was constructed from an ordinary callable. This attribute
         is read-only.
+    x0_orig : np.ndarray, shape (n0, D)
+        The starting points in the coordinates the caller gave them in.
+        ``x0`` holds the same points in the inference space the instance
+        was constructed with, which a later warp of that space leaves
+        behind.
 
     Raises
     ------
@@ -304,8 +383,22 @@ class VBMC:
                     """vbmc:UnknownDims If no starting point is
                  provided, PLB and PUB need to be specified."""
                 )
-            else:
-                x0 = np.full((plausible_lower_bounds.shape), np.nan)
+            # Without a starting point the number of variables is read
+            # from the plausible bounds, which a scalar does not give.
+            shapes = [
+                np.shape(bound)
+                for bound in (plausible_lower_bounds, plausible_upper_bounds)
+                if np.ndim(bound) > 0
+            ]
+            if len(shapes) == 0:
+                raise ValueError(
+                    "Without a starting point x0 the number of variables "
+                    "is read from the plausible bounds, so they cannot both "
+                    "be scalars: give plausible_lower_bounds or "
+                    "plausible_upper_bounds one entry per variable, or give "
+                    "x0."
+                )
+            x0 = np.full(shapes[0], np.nan)
 
         if x0.ndim == 1:
             logging.warning("Reshaping x0 to row vector.")
@@ -1043,10 +1136,6 @@ class VBMC:
             optim_state["uncertainty_handling_level"] = 2
         else:
             optim_state["uncertainty_handling_level"] = 1
-
-        # Empty hedge struct for acquisition functions
-        if self.options.get("acq_hedge"):
-            optim_state["hedge"] = []
 
         # List of points at the end of each iteration
         optim_state["iter_list"] = {}
@@ -1906,7 +1995,7 @@ class VBMC:
                 plot_data=True,
                 highlight_data=None,
                 plot_vp_centres=True,
-                title="VBMC final ({} iterations)".format(self.iteration),
+                title="VBMC final ({} iterations)".format(self.iteration + 1),
             )
             plt.show()
 
@@ -1974,9 +2063,9 @@ class VBMC:
         # Vector of maximum lower confidence bounds (LCB) of fcn values:
         # the sequence recomputed with the current Gaussian process where
         # there is one, the maxima each iteration recorded otherwise. A
-        # recomputed entry is NaN for an iteration none of whose points is
-        # still in the training set, and the maxima below pass over it as
-        # MATLAB's max does.
+        # recomputed entry is NaN for an iteration by whose end no logged
+        # point is still in the training set, and the maxima below pass
+        # over it as MATLAB's max does.
         recomputed = self.optim_state.get("lcb_max_vec")
         if recomputed is not None and np.size(recomputed) > 0:
             lcb_max_vec = np.asarray(recomputed)[: iteration + 1]
@@ -2439,8 +2528,9 @@ class VBMC:
         lcb_max_vec : np.ndarray, shape (n_recorded_iterations,)
             The recomputed maximum for each recorded iteration. An entry
             is NaN where the iteration's count of logged points is not
-            recorded, or where no logged point of that iteration is still
-            in the training set.
+            recorded, or where none of the points logged up to that
+            iteration is still in the training set; the maximum being
+            cumulative, such entries can only open the sequence.
         """
         n_logged = self.function_logger.Xn + 1
         in_training_set = self.function_logger.X_flag
@@ -2492,6 +2582,12 @@ class VBMC:
         changed_flag : bool
            Indicates if the final boost has taken place or not.
 
+        Raises
+        ------
+        ValueError
+            With ``variable_means`` off, when ``gp`` has fewer training
+            inputs than ``vp`` has components.
+
         Notes
         -----
         The guard compares the optimizer's stored pre- and post-boost ELBO
@@ -2523,6 +2619,14 @@ class VBMC:
             # as many of them as the GP has training inputs, as in every
             # iteration of the main loop after warm-up.
             K_new = gp.X.shape[0]
+            if K_new < vp.K:
+                raise ValueError(
+                    "With variable_means off, the components of the "
+                    "posterior sit at the training inputs of the GP, so a "
+                    f"posterior of {vp.K} components cannot be boosted with "
+                    f"a GP of {K_new} training inputs. Pass the GP that the "
+                    "posterior was fitted with."
+                )
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("ns_ent", {"K": K_new})
@@ -2887,18 +2991,19 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------
@@ -2935,18 +3040,19 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------
@@ -2987,7 +3093,7 @@ class VBMC:
             construction refuses.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
-            (``noise_shaping``, a ``gp_hyp_sampler`` other than
+            (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
             ``"slicesample"``, an acquisition function that asks for the MCMC
             step of the importance sampler).
         OSError
@@ -3063,6 +3169,20 @@ class VBMC:
             )
         if "show_tips" not in vbmc.options:
             vbmc.options.__setitem__("show_tips", True, force=True)
+        if "tol_elcbo_boost" not in vbmc.options:
+            # A run saved before the final boost had its guard was made with
+            # the unguarded boost, which None selects.
+            vbmc.options.__setitem__("tol_elcbo_boost", None, force=True)
+        if (
+            vbmc.D == 1
+            and vbmc.options.get("search_optimizer") == "Nelder-Mead"
+        ):
+            # Release 1.0.4 wrote this value into the options of every
+            # one-dimensional run, whether or not the caller asked for it,
+            # and the value has no effect there: a problem of one dimension
+            # is searched by a bounded scalar method. The stored value
+            # stands for the default such a run was made with.
+            vbmc.options.__setitem__("search_optimizer", "cmaes", force=True)
 
         calibration_override = None
         has_calibration_override = (
@@ -3081,6 +3201,10 @@ class VBMC:
 
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
+        # The limits on iterations and evaluations are what a continued run
+        # is most often given, and they are checked as construction checks
+        # them.
+        vbmc.options.validate_run_limits()
         vbmc._validate_option_values()
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
@@ -3094,9 +3218,17 @@ class VBMC:
             vbmc.precomputed_location_count = 0
         if not hasattr(vbmc, "x0_orig"):
             # Instances saved without the starting points in the caller's
-            # coordinates: the map of the restored iteration is the best
-            # available inverse of the transformed copy they do carry.
-            vbmc.x0_orig = vbmc.parameter_transformer.inverse(vbmc.x0)
+            # coordinates carry the transformed copy that construction made,
+            # with the map the run started with. The record of the first
+            # iteration holds that map, since the inference space is never
+            # warped before the second one; an instance without a history
+            # holds it itself.
+            first_map = vbmc.parameter_transformer
+            if hasattr(vbmc, "iteration_history"):
+                recorded_vps = vbmc.iteration_history["vp"]
+                if recorded_vps is not None and len(recorded_vps) > 0:
+                    first_map = recorded_vps[0].parameter_transformer
+            vbmc.x0_orig = first_map.inverse(vbmc.x0)
         vbmc._configured_max_fun_evals = vbmc.options.get("max_fun_evals")
         vbmc._effective_max_fun_evals = (
             vbmc._configured_max_fun_evals - vbmc.initialization_cost
@@ -3478,6 +3610,9 @@ class VBMC:
                 raise ValueError(
                     f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
                 )
+            _check_prior_covers_bounds(
+                prior, self.lower_bounds, self.upper_bounds
+            )
         if prior is not None and prior.log_pdf is not None:
             # Combine log-prior and log-likelihood:
             log_prior = prior.log_pdf
@@ -3559,6 +3694,9 @@ class VBMC:
         self._validate_noise_shaping_option()
         self._validate_gp_hyp_sampler_option()
         self._validate_search_acq_fcn_option()
+        self._validate_search_optimizer_option()
+        self._validate_acq_hedge_option()
+        self._validate_search_fraction_options()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3640,6 +3778,93 @@ class VBMC:
                 "flag asks for (MATLAB VBMC's "
                 "private/activeimportancesampling_vbmc.m, lines 57 to 92) "
                 "is not ported."
+            )
+
+    def _validate_search_optimizer_option(self):
+        """Check the local optimizer of the acquisition search."""
+        value = self.options.get("search_optimizer", "cmaes")
+        if value in ("cmaes", "none"):
+            return
+        message = (
+            "The option 'search_optimizer' must be 'cmaes' or 'none', not "
+            f"{value!r}."
+        )
+        if value == "Nelder-Mead":
+            message += (
+                " The Nelder-Mead search of the acquisition function is "
+                "not available; under 'cmaes' a problem of one variable is "
+                "searched by a bounded scalar method in place of CMA-ES. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'search_optimizer': "
+                "'cmaes'})."
+            )
+        raise ValueError(message)
+
+    def _validate_acq_hedge_option(self):
+        """Reject the portfolio of acquisition functions that is not
+        ported."""
+        if self.options.get("acq_hedge", False):
+            raise NotImplementedError(
+                "The option 'acq_hedge' must be False. The portfolio that "
+                "it names (MATLAB VBMC's private/acqhedge_vbmc.m, which "
+                "spreads the active sampling over several acquisition "
+                "functions and reweighs them by the improvement each "
+                "brings) is not ported, so turning the option on would "
+                "leave the acquisition of each step unchosen. An entry of "
+                "options['search_acq_fcn'] is picked at random instead. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'acq_hedge': False})."
+            )
+
+    def _validate_search_fraction_options(self):
+        """Check the fractions that divide the candidates of the
+        acquisition search among their sources."""
+        # The starting cache gives a share of the whole search set, which
+        # stands beside the five fractions and outside their sum. A negative
+        # share would count the rows to take from the end of the cache.
+        cache_frac = self.options.get("cache_frac", 0.0)
+        if not isinstance(cache_frac, Real) or not 0 <= cache_frac <= 1:
+            raise ValueError(
+                "options['cache_frac'], the share of the candidates of the "
+                "acquisition search that the starting cache gives, must be "
+                f"a number in [0, 1], not {cache_frac!r}. A saved run that "
+                "carries the value is continued with "
+                "VBMC.load(file, new_options={'cache_frac': 0.5})."
+            )
+        fractions = {
+            name: self.options.get(name, 0.0)
+            for name in (
+                "search_cache_frac",
+                "heavy_tail_search_frac",
+                "mvn_search_frac",
+                "hpd_search_frac",
+                "box_search_frac",
+            )
+        }
+        listed = ", ".join(
+            f"{name} = {value!r}" for name, value in fractions.items()
+        )
+        from_a_saved_run = (
+            " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'search_cache_frac': 0.25}) or "
+            "the like."
+        )
+        if not all(isinstance(value, Real) for value in fractions.values()):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each be a "
+                f"number in [0, 1]: {listed}." + from_a_saved_run
+            )
+        total = sum(fractions.values())
+        if any(not 0 <= value <= 1 for value in fractions.values()) or (
+            total > 1
+        ):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each lie in "
+                f"[0, 1] and must sum to at most 1: {listed}, summing to "
+                f"{total!r}. The share the fractions leave is drawn from "
+                "the variational posterior." + from_a_saved_run
             )
 
     def _ensure_runtime_tip_state(self):

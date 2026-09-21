@@ -13,6 +13,7 @@ from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.stats import get_hpd
 from pyvbmc.timer import main_timer
+from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
@@ -303,6 +304,71 @@ def test_one_dimensional_search_is_bounded(mocker):
     assert vbmc.options["search_optimizer"] == optimizer_before
 
 
+def test_one_dimensional_search_is_skipped_without_a_local_optimizer(mocker):
+    """``search_optimizer = "none"`` runs no local search, a problem of
+    one variable included: the acquired point is the best candidate of the
+    search set."""
+    vbmc, gp = _state_with_gp(
+        1, options={"search_optimizer": "none"}, seed=20260919
+    )
+    candidates = np.array([[0.7], [1.5], [-2.0]])
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch(
+        "scipy.optimize.minimize_scalar",
+        side_effect=AssertionError("a local search ran"),
+    )
+    mocker.patch("cma.fmin", side_effect=AssertionError("a local search ran"))
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert function_logger.X[function_logger.Xn] == candidates[0]
+
+
+def test_a_search_optimizer_forced_into_a_built_instance_is_named(mocker):
+    """Construction refuses every value but the two the option names, so
+    the chain of local searches reaches its last branch only for a value
+    written into the options of a built instance. It says which option
+    carries the value and which two values it takes."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, options={"ns_search": 4}, seed=20260921)
+    vbmc.options.__setitem__("search_optimizer", "fmincon", force=True)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    with pytest.raises(NotImplementedError) as execinfo:
+        active_sample(
+            gp,
+            1,
+            vbmc.optim_state,
+            vbmc.function_logger,
+            vbmc.iteration_history,
+            vbmc.vp,
+            vbmc.options,
+        )
+
+    message = execinfo.value.args[0]
+    assert "search_optimizer" in message
+    assert "'cmaes'" in message and "'none'" in message
+    assert "fmincon" in message
+
+
 def test_acquiring_a_cached_point_reuses_its_value(mocker):
     """A search point that comes from the cache is acquired with the
     value stored there, and leaves every cache array."""
@@ -316,6 +382,64 @@ def test_acquiring_a_cached_point_reuses_its_value(mocker):
         },
     )
     x_cached = np.array([[0.3, -0.2]])
+    y_cached = np.array([12.5])
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.copy(y_cached)
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    func_count_before = vbmc.function_logger.func_count
+    cache_count_before = vbmc.function_logger.cache_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The stored value was used instead of a target call.
+    assert function_logger.func_count == func_count_before
+    assert function_logger.cache_count == cache_count_before + 1
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert np.allclose(function_logger.y_orig[last], y_cached[0])
+
+    # The point is gone from the cache, which stays consistent.
+    assert optim_state["cache"]["x_orig"].shape == (0, D)
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
+
+
+@pytest.mark.parametrize(
+    "integer_vars, x_cached",
+    [
+        (np.array([True, False]), np.array([[2.0, 0.1]])),
+        (np.array([True, True]), np.array([[2.0, -4.0]])),
+    ],
+)
+def test_acquiring_a_cached_point_on_the_integer_grid_reuses_its_value(
+    mocker, integer_vars, x_cached
+):
+    """The candidate that a cached starting point becomes has been
+    through the transform, the snap to the integer grid and the inverse
+    transform, and the stored value belongs to it only where the three
+    left the point where it was. A point already on the grid is acquired
+    with its value, without a call to the target."""
+    D = 2
+    vbmc, gp, _, _ = _integer_var_state(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+            "integer_vars": integer_vars,
+        },
+    )
     y_cached = np.array([12.5])
     vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
     vbmc.optim_state["cache"]["y_orig"] = np.copy(y_cached)
@@ -393,6 +517,130 @@ def test_acquiring_a_cached_point_without_a_value_evaluates_it(mocker):
     assert optim_state["cache"]["x_orig"].shape == (0, D)
     assert optim_state["cache"]["y_orig"].shape == (0,)
     assert optim_state["cache"]["skip_logger"].shape == (0,)
+
+
+def test_two_steps_with_a_search_cache(mocker):
+    """The search cache holds the candidates of the previous step, so it
+    is empty at the first step of a run and full from the second. Its
+    share of the search set is taken from what the other fractions of the
+    sieve leave, and both steps complete."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 32,
+            "search_cache_frac": 0.25,
+            "search_optimizer": "none",
+        },
+        seed=20260921,
+    )
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state = vbmc.function_logger, vbmc.optim_state
+    calls = function_logger.func_count
+    assert np.size(optim_state["search_cache"]) == 0
+
+    for step in range(2):
+        function_logger, optim_state, _, gp = active_sample(
+            gp,
+            1,
+            optim_state,
+            function_logger,
+            vbmc.iteration_history,
+            vbmc.vp,
+            vbmc.options,
+        )
+        assert function_logger.func_count == calls + step + 1
+        assert np.shape(optim_state["search_cache"]) == (32, D)
+
+
+def _acquire_one_cached_point(mocker, vbmc, gp, x_cached, y_cached):
+    """One active-sampling step whose only candidate is the one row of the
+    starting cache, with a value stored for it."""
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.array([y_cached])
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = vbmc.function_logger.func_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    last = function_logger.Xn
+    # The target was called once, at the point that was recorded, and the
+    # value recorded is the one it returned there.
+    assert function_logger.func_count == calls_before + 1
+    recorded = function_logger.X_orig[last]
+    assert not np.allclose(recorded, x_cached[0])
+    assert np.isclose(function_logger.y_orig[last], fun(recorded))
+    assert not np.isclose(function_logger.y_orig[last], y_cached)
+
+    # The row is gone from the cache, so it cannot be drawn again.
+    assert optim_state["cache"]["x_orig"].shape[0] == 0
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
+    return recorded
+
+
+def test_a_cached_point_the_search_box_moved_is_evaluated(mocker):
+    """The sieve clips every candidate into the search box, so a cached
+    starting point outside it is offered to the acquisition at a point the
+    target has not been called at: the stored value does not belong to it,
+    and the target is called there instead."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+        seed=20260921,
+    )
+    x_cached = np.array([[50.0, 0.0]])
+    parameter_transformer = vbmc.function_logger.parameter_transformer
+    u_cached = parameter_transformer(x_cached)
+    lb_search = np.copy(vbmc.optim_state["lb_search"])
+    ub_search = np.copy(vbmc.optim_state["ub_search"])
+    assert np.any(u_cached > ub_search)
+    clipped = parameter_transformer.inverse(
+        np.minimum(np.maximum(u_cached, lb_search), ub_search)
+    )
+
+    recorded = _acquire_one_cached_point(
+        mocker, vbmc, gp, x_cached, fun(x_cached)
+    )
+    assert np.allclose(recorded, clipped[0])
+
+
+def test_a_cached_point_the_integer_grid_moved_is_evaluated(mocker):
+    """The acquisition snaps an integer coordinate to its grid, so a
+    cached starting point off the grid is offered at a point the target
+    has not been called at."""
+    vbmc, gp, _, _ = _integer_var_state(
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        }
+    )
+    x_cached = np.array([[2.4, 0.1]])
+
+    recorded = _acquire_one_cached_point(
+        mocker, vbmc, gp, x_cached, fun(x_cached)
+    )
+    assert recorded[0] == np.round(recorded[0])
+    assert np.isclose(recorded[1], x_cached[0, 1])
 
 
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
@@ -1453,42 +1701,206 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     assert np.all(np.isnan(idx_cache))
 
 
-def test_get_search_points_more_points_randomly_than_requested():
-    """
-    Test that ValueError is raised when options lead to more points sampled than
-    requested.
-    """
-    options = {
-        "cache_frac": 0,
-        "search_cache_frac": 0,
-        "heavy_tail_search_frac": 1,
-        "mvn_search_frac": 1,
-        "box_search_frac": 1,
-        "hpd_search_frac": 1,
-    }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
-    number_of_points = 100
-    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+class _SieveGenerator(np.random.Generator):
+    """A generator that keeps the number of rows of every draw the sieve
+    makes through it.
 
-    # record some samples in FunctionLogger
+    The multivariate normals are those of the ``mvn`` source (one draw)
+    and of the high-posterior-density source (one per fraction); the
+    two-dimensional uniform draw is the box source. The variational
+    posterior draws through methods of its own.
+    """
+
+    def __init__(self, bit_generator):
+        super().__init__(bit_generator)
+        self.mvn_sizes = []
+        self.box_rows = []
+
+    def multivariate_normal(self, mean, cov, size=None, *args, **kwargs):
+        self.mvn_sizes.append(int(size))
+        return super().multivariate_normal(mean, cov, size, *args, **kwargs)
+
+    def random(self, size=None, *args, **kwargs):
+        if isinstance(size, tuple) and len(size) == 2:
+            self.box_rows.append(int(size[0]))
+        return super().random(size, *args, **kwargs)
+
+
+def _record_vp_draws(mocker):
+    """Record the size and the degrees of freedom of every draw from the
+    variational posterior, and return the list they go into."""
+    calls = []
+    original = VariationalPosterior.sample
+
+    def recording(self, N, orig_flag=True, balance_flag=False, df=np.inf):
+        calls.append((int(N), float(df)))
+        return original(self, N, orig_flag, balance_flag, df)
+
+    mocker.patch(
+        "pyvbmc.variational_posterior.VariationalPosterior.sample", recording
+    )
+    return calls
+
+
+def _sieve_state(
+    options=None, D=3, n_cache=0, n_search_cache=0, seed=20260921
+):
+    """A ``VBMC`` whose state is ready for ``_get_search_points``: a
+    starting cache of `n_cache` rows, a search cache of `n_search_cache`
+    rows, ten training points and no search bounds."""
+    vbmc = create_vbmc(D, 3, -np.inf, np.inf, -500, 500, options)
+    vbmc.vp.rng = _SieveGenerator(np.random.PCG64(seed))
+    vbmc.optim_state["cache"]["x_orig"] = np.linspace(
+        (-1,) * D, (1,) * D, n_cache
+    )
+    vbmc.optim_state["search_cache"] = np.linspace(
+        (2,) * D, (4,) * D, n_search_cache
+    )
     for i in range(10):
-        vbmc.function_logger(np.ones(3) * i)
-    assert vbmc.function_logger.Xn == 9
+        vbmc.function_logger(np.ones(D) * i)
+    vbmc.optim_state["lb_search"] = np.full((1, D), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, D), np.inf)
+    return vbmc
 
-    # no search bounds for test
-    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
 
-    with pytest.raises(ValueError) as execinfo:
-        _get_search_points(
-            number_of_points=number_of_points,
-            optim_state=vbmc.optim_state,
-            function_logger=vbmc.function_logger,
-            vp=vbmc.vp,
-            options=vbmc.options,
-        )
+def _search_points(vbmc, number_of_points, D=3):
+    return _get_search_points(
+        number_of_points=number_of_points,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
 
-    assert "A maximum of 100 points" in execinfo.value.args[0]
+
+@pytest.mark.parametrize("number_of_points", range(1, 10))
+def test_the_sieve_returns_the_number_of_points_it_is_asked_for(
+    number_of_points,
+):
+    """The shipped fractions claim three quarters of the points to draw,
+    and each share is rounded with a half going away from zero, so the
+    shares can claim more than the whole: three shares of one point for
+    two points to draw. The sieve returns the number asked for."""
+    vbmc = _sieve_state()
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+
+
+@pytest.mark.parametrize("n_cache", [0, 1, 2, 3])
+def test_the_sieve_returns_the_points_asked_for_with_a_search_cache(n_cache):
+    """A quarter for the search cache beside the shipped quarters claims
+    the whole, and the starting cache leaves a number of points to draw
+    that the four rounded shares can overshoot."""
+    number_of_points = 16
+    vbmc = _sieve_state(
+        {"search_cache_frac": 0.25, "cache_frac": 1},
+        n_cache=n_cache,
+        n_search_cache=16,
+    )
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.sum(~np.isnan(idx_cache)) == n_cache
+
+
+@pytest.mark.parametrize("number_of_points", [7, 8, 9, 10])
+def test_two_halves_of_the_search_set_stay_within_it(number_of_points):
+    """Two fractions of a half claim one point more than the whole for an
+    odd count; the second source takes what the first left."""
+    vbmc = _sieve_state(
+        {
+            "search_cache_frac": 0,
+            "heavy_tail_search_frac": 0,
+            "mvn_search_frac": 0,
+            "hpd_search_frac": 0.5,
+            "box_search_frac": 0.5,
+        }
+    )
+    search_X, _ = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert len(vbmc.vp.rng.box_rows) == 1
+    assert vbmc.vp.rng.box_rows[0] == number_of_points // 2
+
+
+def test_a_share_of_half_a_point_goes_away_from_zero(mocker):
+    """The shipped fractions meet a tie whenever the starting cache
+    leaves a number of points to draw that is 2 modulo 4: a quarter of
+    ten points is two and a half, which ``private/activesample_vbmc.m``
+    rounds to three (``:565-605``, MATLAB's ``round``). Three of the
+    sources take three points each and the variational posterior draws
+    the one they leave."""
+    number_of_points = 16
+    vbmc = _sieve_state({"cache_frac": 1}, n_cache=6)
+    vp_draws = _record_vp_draws(mocker)
+
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+
+    assert search_X.shape == (number_of_points, 3)
+    assert np.sum(~np.isnan(idx_cache)) == 6
+    assert vp_draws == [(3, 3.0), (1, np.inf)]
+    assert vbmc.vp.rng.mvn_sizes == [3]
+    assert vbmc.vp.rng.box_rows == [3]
+
+
+def test_each_source_draws_its_rounded_share(mocker):
+    """Where the rounded shares leave room, every source draws the share
+    its fraction gives it of the points to draw, and the variational
+    posterior draws the points the five fractions leave."""
+    number_of_points = 100
+    vbmc = _sieve_state(
+        {
+            "search_cache_frac": 0.1,
+            "heavy_tail_search_frac": 0.2,
+            "mvn_search_frac": 0.15,
+            "hpd_search_frac": 0.25,
+            "box_search_frac": 0.2,
+        },
+        n_search_cache=40,
+    )
+    search_cache = np.copy(vbmc.optim_state["search_cache"])
+    vp_draws = _record_vp_draws(mocker)
+
+    search_X, _ = _search_points(vbmc, number_of_points)
+
+    assert search_X.shape == (number_of_points, 3)
+    # The search cache contributes its first rows, in order.
+    assert np.array_equal(search_X[:10], search_cache[:10])
+    # The heavy-tailed draw and the draw of the points the fractions left.
+    assert vp_draws == [(20, 3.0), (10, np.inf)]
+    # One multivariate normal for the mvn source, then one per
+    # high-posterior-density fraction.
+    assert vbmc.vp.rng.mvn_sizes[0] == 15
+    assert sum(vbmc.vp.rng.mvn_sizes[1:]) == 25
+    assert vbmc.vp.rng.box_rows == [20]
+
+
+def test_fractions_that_claim_more_than_the_whole_leave_later_sources_out(
+    mocker,
+):
+    """Fractions that claim more than the whole search set are refused at
+    construction, so the sieve meets them only from a caller that writes
+    them into the options of a built instance. The sources are served in
+    turn until the points to draw run out."""
+    vbmc = _sieve_state({"cache_frac": 0})
+    for name in (
+        "heavy_tail_search_frac",
+        "mvn_search_frac",
+        "box_search_frac",
+        "hpd_search_frac",
+    ):
+        vbmc.options.__setitem__(name, 1, force=True)
+    number_of_points = 100
+    vp_draws = _record_vp_draws(mocker)
+
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    # The heavy-tailed source, first in turn, takes every point.
+    assert vp_draws == [(100, 3.0)]
+    assert vbmc.vp.rng.mvn_sizes == []
+    assert vbmc.vp.rng.box_rows == []
 
 
 def test_repeated_observation_candidates(mocker):
@@ -1890,6 +2302,43 @@ def test_repeated_observation_skips_search_optimizer(mocker):
     )
     assert function_logger.Xn == Xn0 + 1
     assert fmin.call_count == 1
+
+
+def test_the_search_cache_holds_no_training_input(mocker):
+    """With repeated observations on, the training inputs are offered to
+    the acquisition of the step as candidates for a repeat. They stay out
+    of the search cache: coming back from it at a later step, a training
+    input would be an ordinary candidate, without the repeat flag that
+    caps consecutive repeats and that keeps the point an exact repeat."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "ns_search": 32,
+            "search_cache_frac": 0.25,
+            "max_repeated_observations": 3,
+            "search_optimizer": "none",
+        },
+        _cheap_acq,
+    )
+    X_train = function_logger.X[function_logger.X_flag].copy()
+    assert X_train.shape[0] > 0
+
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The training inputs joined the candidates of the step, and the cache
+    # holds the search set without them.
+    search_cache = np.asarray(optim_state["search_cache"])
+    assert search_cache.shape == (32, X_train.shape[1])
+    for row in X_train:
+        assert not np.any(np.all(search_cache == row, axis=1))
 
 
 def test_candidate_noise_is_one_observation_at_uncertainty_level_one(mocker):

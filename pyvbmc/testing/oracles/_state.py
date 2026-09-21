@@ -379,13 +379,15 @@ def build_logger(d, pt, fun=None):
 
 
 def build_options(user_options, D):
-    """Mirror ``VBMC.__init__``: basic, advanced, defaults, validation."""
+    """Mirror ``VBMC.__init__``: basic, advanced, run limits, defaults,
+    validation."""
     options = Options(
         BASIC_OPTIONS,
         evaluation_parameters={"D": D},
         user_options=_decode_user_options(user_options),
     )
     options.load_options_file(ADVANCED_OPTIONS, evaluation_parameters={"D": D})
+    options.validate_run_limits()
     options.update_defaults()
     options.validate_option_names([BASIC_OPTIONS, ADVANCED_OPTIONS])
     return options

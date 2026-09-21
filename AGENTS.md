@@ -138,9 +138,11 @@ around three numerical stages, repeated until termination:
   space; users see the original constrained space. `ParameterTransformer`
   (`__call__` forward, `.inverse()` back) mediates. `VariationalPosterior`
   methods take `orig_flag=True` by default and provide gradients only with
-  `orig_flag=False`; `vbmc.x0` is in the transformed space, `vbmc.x0_orig` in
-  the caller's. One transformer object is shared by `vbmc`, `vp` and
-  `function_logger`, during a run and after `load` (tests assert identity).
+  `orig_flag=False`; `vbmc.x0` is in the transformed space the run was
+  constructed with (a warp does not re-express it, so after one the run's
+  transformer no longer maps it back), `vbmc.x0_orig` in the caller's. One
+  transformer object is shared by `vbmc`, `vp` and `function_logger`, during
+  a run and after `load` (tests assert identity).
   No code mutates a transformer after construction (a warp installs a fresh
   copy), which is what makes sharing safe.
 - **Shapes are rigid.** VP: `w (1,K)`, `mu (D,K)`, `sigma (1,K)`,
@@ -219,12 +221,15 @@ around three numerical stages, repeated until termination:
   matching `load` tests read; a `load` test run alone fails.
 - `test_*_save_static.pkl` are pickled instances of the classes and cannot be
   regenerated without rerunning `optimize()`. Load the VBMC one, never save
-  it again: it holds the target function and PyVBMC's log-joint wrapper
-  pickled by value, as bytecode of the Python version that wrote the file,
-  and pickling such a function makes dill disassemble it, which corrupts
+  it again and never continue its run: it holds the target function,
+  PyVBMC's log-joint wrapper and the options whose value is a function
+  (`ns_ent`, `k_fun_max` and the like; every saved `VBMC` instance holds
+  these) pickled by value, as bytecode of the Python version that wrote the
+  file. Pickling such a function makes dill disassemble it, which corrupts
   memory on Python 3.11 (a segmentation fault in that test, in a later
-  garbage collection, or when the interpreter exits). A test that needs a
-  saved run with history makes a short run of its own.
+  garbage collection, or when the interpreter exits), and a continued run
+  calls the option functions in every iteration. A test that needs a saved
+  run with history makes a short run of its own.
 - A new test directory needs an `__init__.py`: without one, two test files
   with the same basename collide.
 
@@ -307,6 +312,9 @@ the result.
   record, or as close to it as its format allows. A note somewhere else is
   not a correction. A tracked document points at `dev/scripts/runs/LOCAL.md`
   and never says "this machine".
+- **Rounding.** Where MATLAB has `round`, call `round_half_away_from_zero`
+  (`pyvbmc/stats/_rounding.py`): Python's `round` and `np.round` send a half
+  to the even integer.
 - **Heavy computation.** Run one heavy process at a time (the full test
   suite, benchmark and campaign runs): concurrent VBMC runs, each
   multi-threaded, can bring a workstation down. Short gates (the oracles, one

@@ -97,6 +97,13 @@ _UNCERTAINTY_HANDLING_FORMS = (
     "leave the choice to specify_target_noise"
 )
 
+# How the specify_target_noise option may be written, named in the error
+# raised for any other value.
+_SPECIFY_TARGET_NOISE_FORMS = (
+    "True or False (the integers 1 and 0 and their NumPy equivalents are "
+    "also accepted)"
+)
+
 
 def _is_positive_integer_valued(value):
     """
@@ -111,6 +118,48 @@ def _is_positive_integer_valued(value):
     if not value > 0:
         return False
     return bool(np.isinf(value)) or float(value).is_integer()
+
+
+def _stated_boolean(value):
+    """
+    The boolean that a value states, or `None` when it states none.
+
+    A boolean, the integers 1 and 0 and their NumPy equivalents state one.
+    """
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
+        return bool(value)
+    return None
+
+
+def _specify_target_noise_flag(value):
+    """
+    Read the ``specify_target_noise`` option as a boolean.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    flag : bool
+        Whether the target returns its own noise estimate.
+
+    Raises
+    ------
+    ValueError
+        When the value is not a boolean.
+    """
+    flag = _stated_boolean(value)
+    if flag is None:
+        raise ValueError(
+            "The option specify_target_noise must be "
+            + _SPECIFY_TARGET_NOISE_FORMS
+            + f"; got {value!r}."
+        )
+    return flag
 
 
 def _uncertainty_handling_flag(value):
@@ -136,10 +185,9 @@ def _uncertainty_handling_flag(value):
     """
     if value is None:
         return None
-    if isinstance(value, (bool, np.bool_)):
-        return bool(value)
-    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
-        return bool(value)
+    flag = _stated_boolean(value)
+    if flag is not None:
+        return flag
     if isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0:
         return None
     raise ValueError(
@@ -315,13 +363,14 @@ class Options(MutableMapping, dict):
         ------
         ValueError
             When ``uncertainty_handling`` holds a value that is neither a
-            boolean nor empty, or when it is off while
-            ``specify_target_noise`` is set.
+            boolean nor empty, when ``specify_target_noise`` holds a value
+            that is not a boolean, or when ``uncertainty_handling`` is off
+            while ``specify_target_noise`` is set.
         """
         requested = _uncertainty_handling_flag(
             self.get("uncertainty_handling")
         )
-        if self.get("specify_target_noise"):
+        if _specify_target_noise_flag(self.get("specify_target_noise")):
             if requested is False:
                 raise ValueError(
                     "A target that returns its own noise estimate is a "
@@ -419,10 +468,17 @@ class Options(MutableMapping, dict):
         options_list = _read_config_file(options_path)
         loaded = set()
         for key, value, description in options_list:
-            if key not in self.get("useroptions") and key != "useroptions":
+            if key == "useroptions":
+                continue
+            if key not in self.get("useroptions"):
                 self[key] = eval(value, globals(), evaluation_parameters)
-                self.descriptions[key] = description
                 loaded.add(key)
+                if description or key not in self.descriptions:
+                    self.descriptions[key] = description
+            elif key not in self.descriptions:
+                # The description belongs to the option, whoever set its
+                # value.
+                self.descriptions[key] = description
         if as_user_options:
             self["useroptions"].update(loaded)
 
