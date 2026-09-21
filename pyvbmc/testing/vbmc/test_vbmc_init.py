@@ -758,9 +758,15 @@ def test_uncertainty_handling_true_with_specify_target_noise_is_level_2():
 
 
 def test_vbmc_optimstate_acq_hedge():
+    """The portfolio of acquisition functions that ``acq_hedge`` asks for
+    is not ported, so the option is refused and no state is set up for it;
+    the test asserts the refusal, where it used to assert the empty
+    portfolio that construction left in ``optim_state``."""
     options = {"acq_hedge": True}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["hedge"] == []
+    with pytest.raises(NotImplementedError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, options)
+    assert "acq_hedge" in execinfo.value.args[0]
+
     options = {"acq_hedge": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert "hedge" not in vbmc.optim_state

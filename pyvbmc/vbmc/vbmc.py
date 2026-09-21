@@ -2987,7 +2987,7 @@ class VBMC:
             construction refuses.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
-            (``noise_shaping``, a ``gp_hyp_sampler`` other than
+            (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
             ``"slicesample"``, an acquisition function that asks for the MCMC
             step of the importance sampler).
         OSError
@@ -3570,6 +3570,7 @@ class VBMC:
         self._validate_gp_hyp_sampler_option()
         self._validate_search_acq_fcn_option()
         self._validate_search_optimizer_option()
+        self._validate_acq_hedge_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3672,6 +3673,20 @@ class VBMC:
                 "'cmaes'})."
             )
         raise ValueError(message)
+
+    def _validate_acq_hedge_option(self):
+        """Reject the portfolio of acquisition functions that is not
+        ported."""
+        if self.options.get("acq_hedge", False):
+            raise NotImplementedError(
+                "The option 'acq_hedge' must be False. The portfolio that "
+                "it names (MATLAB VBMC's private/acqhedge_vbmc.m, which "
+                "spreads the active sampling over several acquisition "
+                "functions and reweighs them by the improvement each "
+                "brings) is not ported, so turning the option on would "
+                "leave the acquisition of each step unchosen. An entry of "
+                "options['search_acq_fcn'] is picked at random instead."
+            )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""

@@ -72,6 +72,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
     [
         ({"gp_hyp_sampler": "covsample"}, NotImplementedError, "slicesample"),
         ({"noise_shaping": True}, NotImplementedError, "noise_shaping"),
+        ({"acq_hedge": True}, NotImplementedError, "acq_hedge"),
         ({"search_acq_fcn": "AcqFcnLog()"}, ValueError, "search_acq_fcn"),
         (
             {"search_optimizer": "Nelder-Mead"},

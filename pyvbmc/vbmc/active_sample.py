@@ -319,7 +319,9 @@ def active_sample(
 
             if not options["acq_hedge"]:
                 # If multiple acquisition functions are provided and not
-                # following a "hedge" strategy, pick one at random
+                # following a "hedge" strategy, pick one at random. The
+                # hedge is not ported, and the option is refused at
+                # construction, so this is the branch every run takes.
                 idx_acq = rng.integers(len(SearchAcqFcn))
 
             ## Pre-computations for acquisition functions
