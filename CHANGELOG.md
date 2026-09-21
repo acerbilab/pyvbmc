@@ -764,8 +764,8 @@ its entry below.
   the high-posterior-density subset (`pyvbmc.stats.get_hpd(X, y, 0.1)` on 5
   points returns 1 point, where 1.0.4 returned none), the shares of the
   acquisition search among its sources, the number of GP hyperparameter
-  samples and of their burn-in steps, the number of starting points of
-  the GP hyperparameter search, and the bonus of mixture components
+  samples, the number of starting points of the GP hyperparameter
+  search, and the bonus of mixture components
   (`adaptive_k`). A run at the default options that starts from no more
   points than its initial design takes has no such tie; a run with
   another `hpd_frac`, with `hpd_search_frac` above zero or with more
