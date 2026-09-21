@@ -28,7 +28,8 @@ its entry below.
   cannot be read as a call. `search_optimizer` takes `"cmaes"` or
   `"none"` (the `"Nelder-Mead"` value is removed), `acq_hedge=True` raises
   an error, and so do fractions of the acquisition search that add up to
-  more than one. `integer_vars` given as a list of indices marks those
+  more than one and a `cache_frac` outside [0, 1]. `integer_vars` given as
+  a list of indices marks those
   variables, where 1.0.4 marked every variable.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
@@ -51,6 +52,8 @@ its entry below.
   `vp.mode()`, which no longer advances the random stream of the run,
   runs a search of its own when `n_opts` is given, and searches again
   after `vp.get_parameters()`, which discards the stored mode.
+  `vp.moments` and `vp.kl_div` refuse a number of samples that is not
+  whole, which 1.0.4 truncated.
   `vp.set_parameters(theta, raw_flag=False)` refuses a negative scale or
   weight and accepts negative means. `pyvbmc.stats.get_hpd` rounds the size
   of its subset away from zero at a tie. `pyvbmc.stats.kl_div_mvn`, and
@@ -446,9 +449,14 @@ its entry below.
     Each source takes its rounded share or what the sources before it
     left, whichever is smaller, and the variational posterior draws the
     rest. The descriptions of the five options give the range and the
-    sum.
-  - The errors that refuse a value of `search_optimizer`, `acq_hedge` or
-    the fractions say how a saved run that carries it is loaded:
+    sum. `cache_frac`, the share of the search set that the starting
+    cache gives, must lie in [0, 1] as well; it stands outside that
+    sum. 1.0.4 took any value: a negative one took all but so many
+    rows of the cache, and one above one could make the search set
+    larger than asked.
+  - The errors that refuse a value of `search_optimizer`, `acq_hedge`,
+    `cache_frac` or the fractions say how a saved run that carries it is
+    loaded:
     `VBMC.load(file, new_options={...})`.
   - Setting an option that has no effect gives a warning that names the
     option. Such options come from MATLAB VBMC and belong to features that
@@ -723,10 +731,12 @@ its entry below.
     negative component mean could be refused.
   - `vp.moments(cov_flag=True)` returns a 1-by-1 covariance matrix for a
     posterior of one parameter, where 1.0.4 returned a scalar array.
-    `vp.sample`, and through it `vp.kl_div(gauss_flag=False)` and `vp.mtv`,
+    `vp.sample`, and through it `vp.moments`, `vp.kl_div` and `vp.mtv`,
     accept a number of samples given as any scalar that holds a whole
     number, a float such as `1e5` included, and refuse another count
-    with a message that says so. The
+    with a message that says so. In 1.0.4 `vp.sample` failed on `1e5`,
+    and `vp.moments` and `vp.kl_div(gauss_flag=True)` truncated a
+    fractional count without a word. The
     component indices that `vp.sample` returns are a flat array of
     integers in every case. A negative `df`, which `vp.pdf` reads as a
     product of univariate `t` densities, is refused by `vp.sample` with a
