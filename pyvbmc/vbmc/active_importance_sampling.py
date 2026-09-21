@@ -230,8 +230,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                     )
                 weights = np.exp(ln_weights - ln_weights_max).ravel()
                 weights = weights / np.sum(weights)
-                # x0 = np.zeros((Walkers, D))
-                # Select x0 without replacement by weight:
+                # One starting point, for the one chain, drawn by weight.
                 index = rng.choice(a=len(weights), p=weights, replace=False)
                 x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(

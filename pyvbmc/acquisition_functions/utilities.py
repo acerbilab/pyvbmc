@@ -13,8 +13,8 @@ def string_to_acq(string):
     on its own or followed by parentheses holding literal positional and
     keyword arguments. ``"AcqFcnLog"``, ``"AcqFcnLog()"``,
     ``"AcqFcnVIQR(0.9)"`` and ``"AcqFcnVIQR(quantile=0.9,
-    loss='iqr_reduction')"`` are all accepted. Only literals are read:
-    no name is looked up and nothing is evaluated.
+    loss='iqr_reduction')"`` are all accepted. The arguments must be
+    literals: no name among them is looked up and nothing is evaluated.
 
     Parameters
     ----------
