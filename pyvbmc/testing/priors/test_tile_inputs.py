@@ -63,11 +63,13 @@ def test_tile_inputs_wrong_size():
     )
 
 
-def test_tile_inputs_shape_disagreeing_with_size():
-    """An array whose shape differs from `size` is refused even where its
-    number of elements would let `reshape` succeed."""
+@pytest.mark.parametrize("squeeze", [False, True])
+def test_tile_inputs_shape_disagreeing_with_size(squeeze):
+    """An array whose shape differs from `size` in more than its axes of
+    length one is refused even where its number of elements would let
+    `reshape` succeed."""
     with pytest.raises(ValueError) as e:
-        tile_inputs(np.zeros((2, 2)), np.ones((2, 2)), size=4)
+        tile_inputs(np.zeros((2, 2)), np.ones((2, 2)), size=4, squeeze=squeeze)
     assert (
         "All inputs should agree with size=(4,), but found an input with "
         "shape (2, 2)." in e.value.args[0]
@@ -76,6 +78,18 @@ def test_tile_inputs_shape_disagreeing_with_size():
     with pytest.raises(ValueError) as e:
         UniformBox(np.zeros((2, 2)), np.ones((2, 2)), D=4)
     assert "should agree with size=(4,)" in e.value.args[0]
+
+
+@pytest.mark.parametrize("squeeze", [False, True])
+@pytest.mark.parametrize("shape", [(3,), (1, 3), (3, 1), (1, 3, 1)])
+def test_tile_inputs_takes_a_shape_that_squeezes_to_size(squeeze, shape):
+    """A row, a column and a flat array of the right length all describe
+    the same `D` values, so all three agree with `size=D`."""
+    a, b = np.arange(3.0).reshape(shape), np.ones(shape)
+    x, y = tile_inputs(a, b, size=3, squeeze=squeeze)
+    assert x.shape == (3,) and y.shape == (3,)
+    assert np.array_equal(x, np.arange(3.0))
+    assert np.array_equal(y, np.ones(3))
 
 
 @pytest.mark.parametrize("shape", [(3,), (1, 3), (3, 1)])

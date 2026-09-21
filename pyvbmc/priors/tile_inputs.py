@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def _squeezed_shape(shape):
+    """The shape with its axes of length one dropped."""
+    return tuple(length for length in shape if length != 1)
+
+
 def tile_inputs(*args, size=None, squeeze=False):
     """Tile scalar inputs to have the same dimension as array inputs.
 
@@ -15,6 +20,11 @@ def tile_inputs(*args, size=None, squeeze=False):
         The desired size/shape of the output, default `(1,)`.
     squeeze : bool
         If `True`, then drop 1-d axes from inputs. Default `False`.
+
+    An argument agrees with `size` when the two hold the same lengths once
+    their axes of length one are dropped, so that a row, a column and a flat
+    array of `D` elements all agree with `size=D` while an array of another
+    layout, such as `(2, 2)` against `size=4`, does not.
 
     Raises
     ------
@@ -48,7 +58,7 @@ def tile_inputs(*args, size=None, squeeze=False):
         else:
             # Or use inferred shape
             size = shape
-    elif shape is not None and shape != size:
+    elif shape is not None and _squeezed_shape(shape) != _squeezed_shape(size):
         # `reshape` below accepts any array with the right number of
         # elements, which would map the parameters onto the wrong
         # coordinates.
