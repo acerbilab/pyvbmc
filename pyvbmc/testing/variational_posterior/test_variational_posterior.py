@@ -66,6 +66,18 @@ def test_sample_takes_a_whole_number_given_as_a_float():
         vp.sample(2.5)
 
 
+def test_sample_refuses_a_negative_df():
+    """A negative ``df`` asks for the product of univariate ``t``
+    densities, which ``pdf`` evaluates and ``sample`` cannot draw from."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    assert vp.pdf(np.full((1, 2), 5.0), df=-3) > 0
+
+    with pytest.raises(ValueError, match="product of univariate t"):
+        vp.sample(10, df=-3)
+
+
 def test_kl_div_and_mtv_take_a_whole_number_given_as_a_float():
     vp = VariationalPosterior(1, 1, np.array([[5]]))
     vp.rng = np.random.default_rng(20260921)

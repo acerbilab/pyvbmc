@@ -603,7 +603,9 @@ class VariationalPosterior:
             posterior, in which the multivariate normal components have been
             replaced by multivariate `t`-distributions with `df` degrees of
             freedom. The default is ``np.inf``, limit in which the
-            `t`-distribution becomes a multivariate normal.
+            `t`-distribution becomes a multivariate normal. A finite negative
+            `df` is refused: ``pdf`` reads it as the product of `D` univariate
+            `t` densities, a family this method cannot draw from.
 
         Returns
         -------
@@ -619,6 +621,9 @@ class VariationalPosterior:
         ------
         ValueError
             Raised if `N` is not a whole number of samples.
+        ValueError
+            Raised if `df` is finite and negative (the product of univariate
+            `t` densities has no sampler here).
 
         Notes
         -----
@@ -630,6 +635,13 @@ class VariationalPosterior:
                     f"N must be a whole number of samples, got {N}."
                 )
         N = int(N)
+
+        if np.isfinite(df) and df < 0:
+            raise ValueError(
+                f"df = {df}: a negative df stands for the product of "
+                "univariate t densities, which pdf evaluates but sample "
+                "cannot draw from."
+            )
 
         # missing to sample from gp
         gp_sample = False
