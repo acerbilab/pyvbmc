@@ -622,7 +622,11 @@ def active_sample(
                         xsearch_optim = np.atleast_1d(res.x)
                         f_val_optim = res.fun
                 else:
-                    raise NotImplementedError("Not implemented yet")
+                    raise NotImplementedError(
+                        "options['search_optimizer'] must be 'cmaes' or "
+                        "'none', not "
+                        f"{options['search_optimizer']!r}."
+                    )
 
                 if f_val_optim < f_val_old:
                     X_acq[0, :] = AbstractAcqFcn._real2int(

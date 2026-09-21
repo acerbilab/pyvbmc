@@ -303,6 +303,71 @@ def test_one_dimensional_search_is_bounded(mocker):
     assert vbmc.options["search_optimizer"] == optimizer_before
 
 
+def test_one_dimensional_search_is_skipped_without_a_local_optimizer(mocker):
+    """``search_optimizer = "none"`` runs no local search, a problem of
+    one variable included: the acquired point is the best candidate of the
+    search set."""
+    vbmc, gp = _state_with_gp(
+        1, options={"search_optimizer": "none"}, seed=20260919
+    )
+    candidates = np.array([[0.7], [1.5], [-2.0]])
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch(
+        "scipy.optimize.minimize_scalar",
+        side_effect=AssertionError("a local search ran"),
+    )
+    mocker.patch("cma.fmin", side_effect=AssertionError("a local search ran"))
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert function_logger.X[function_logger.Xn] == candidates[0]
+
+
+def test_a_search_optimizer_forced_into_a_built_instance_is_named(mocker):
+    """Construction refuses every value but the two the option names, so
+    the chain of local searches reaches its last branch only for a value
+    written into the options of a built instance. It says which option
+    carries the value and which two values it takes."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, options={"ns_search": 4}, seed=20260921)
+    vbmc.options.__setitem__("search_optimizer", "fmincon", force=True)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    with pytest.raises(NotImplementedError) as execinfo:
+        active_sample(
+            gp,
+            1,
+            vbmc.optim_state,
+            vbmc.function_logger,
+            vbmc.iteration_history,
+            vbmc.vp,
+            vbmc.options,
+        )
+
+    message = execinfo.value.args[0]
+    assert "search_optimizer" in message
+    assert "'cmaes'" in message and "'none'" in message
+    assert "fmincon" in message
+
+
 def test_acquiring_a_cached_point_reuses_its_value(mocker):
     """A search point that comes from the cache is acquired with the
     value stored there, and leaves every cache array."""

@@ -3793,8 +3793,8 @@ class VBMC:
         if value == "Nelder-Mead":
             message += (
                 " The Nelder-Mead search of the acquisition function is "
-                "not available, and a problem of one dimension is searched "
-                "by a bounded scalar method whatever the option holds. A "
+                "not available; under 'cmaes' a problem of one variable is "
+                "searched by a bounded scalar method in place of CMA-ES. A "
                 "saved run that carries the value is continued with "
                 "VBMC.load(file, new_options={'search_optimizer': "
                 "'cmaes'})."
