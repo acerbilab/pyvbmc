@@ -1699,7 +1699,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   should-fix items taken, with a list of optional ones.
 
   `dev-port-review-w2check` was merged first, as a fast-forward (`b1bab4d`;
-  its worktree removed, the branch name left). Two Opus agents on worktrees
+  its worktree removed, and the branch, which was never pushed, removed
+  later that day on the PI's word). Two Opus agents on worktrees
   cut there made thirteen commits (`fixes/wave5_check_agent_D.md`, priors;
   `wave5_check_agent_E.md`, active sampling, option checks and variational
   posterior), each fix with a test seen to fail on the code before it but
@@ -1852,8 +1853,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   State of the branch. `dev-port-review` and `dev-next` are one commit,
   pushed and green in CI: they hold waves 0 to 5 with the independent checks
   of the passes of waves 2 to 5. No agent and no run is in flight, and no
-  worktree of a fix agent is left. The branch name `dev-port-review-w2check`
-  is left, fully merged; removing it is the PI's call.
+  worktree of a fix agent is left.
   The reviewers' check scripts of waves 4 and 5, the raw reports of the six
   reviewers of the independent check of wave 5, the gate records and the
   logs are on the orchestrator's machine only (`dev/scripts/runs/LOCAL.md`,
