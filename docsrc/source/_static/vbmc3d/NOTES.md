@@ -15,8 +15,10 @@ that made the trace gives a byte-identical file.
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
 in the README, and exporting seed 22 again reproduces the sweep's run
-(ELBO, iterations and evaluations). The look of the finale has been settled
-only on stills; the owner has not seen it.
+(ELBO, iterations and evaluations). The owner has watched it in a desktop
+browser on the development machine; their feedback so far (a flash of the
+target's sheet as the story starts, and the finale's caption) has been
+acted on, and the rest of the finale's look is still theirs to steer.
 
 How it has been verified:
 
@@ -39,16 +41,18 @@ How it has been verified:
 
 What nobody has verified:
 
-- **The current version in motion.** The project owner watched earlier
-  versions on a real device and steered the look, the speed of the tremble
-  and the anchoring. Their last visual feedback was on the version whose
-  first fit looked pinched. The remedy for that (`drawable_samples`), the
-  slim trace and everything after have been seen only as stills.
+- **`index.html` in motion.** The project owner watched earlier versions on
+  a real device and steered the look, the speed of the tremble and the
+  anchoring. Their last visual feedback on this page was on the version
+  whose first fit looked pinched. The remedy for that (`drawable_samples`)
+  has been seen only as stills. (The rest of the page is shared with
+  `wordmark.html`, which the owner has watched.)
 - Frame rate on phones. Phones draw the full 64 x 64 mesh with half the
   segments per cell; no measurement exists.
-- `capture=1` as a recording: the hook has been driven frame by frame and
-  screenshotted, but no video or GIF has been encoded from it and checked
-  for pacing.
+- `capture=1` as a recording, in the repository: a throwaway driver
+  outside it recorded `wordmark.html`'s whole loop to video and its finale
+  to GIF (`TODO.md`, item 3, has the recipe and the numbers); no script in
+  the repository does it yet.
 - The multisampled render target on a real GPU (it runs under software
   rendering).
 
