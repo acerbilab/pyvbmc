@@ -2093,7 +2093,9 @@ class VBMC:
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.inf
-            order = np.argsort(y_temp * -1, axis=0)
+            # Among equal values the earlier point comes first, as in
+            # MATLAB's stable descending sort.
+            order = np.argsort(-y_temp, axis=0, kind="stable")
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn + 1)]
             ] = True
