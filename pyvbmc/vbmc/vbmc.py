@@ -2966,18 +2966,19 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------
@@ -3014,18 +3015,19 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------

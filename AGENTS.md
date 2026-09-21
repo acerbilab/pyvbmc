@@ -219,12 +219,15 @@ around three numerical stages, repeated until termination:
   matching `load` tests read; a `load` test run alone fails.
 - `test_*_save_static.pkl` are pickled instances of the classes and cannot be
   regenerated without rerunning `optimize()`. Load the VBMC one, never save
-  it again: it holds the target function and PyVBMC's log-joint wrapper
-  pickled by value, as bytecode of the Python version that wrote the file,
-  and pickling such a function makes dill disassemble it, which corrupts
+  it again and never continue its run: it holds the target function,
+  PyVBMC's log-joint wrapper and the options whose value is a function
+  (`ns_ent`, `k_fun_max` and the like; every saved `VBMC` instance holds
+  these) pickled by value, as bytecode of the Python version that wrote the
+  file. Pickling such a function makes dill disassemble it, which corrupts
   memory on Python 3.11 (a segmentation fault in that test, in a later
-  garbage collection, or when the interpreter exits). A test that needs a
-  saved run with history makes a short run of its own.
+  garbage collection, or when the interpreter exits), and a continued run
+  calls the option functions in every iteration. A test that needs a saved
+  run with history makes a short run of its own.
 - A new test directory needs an `__init__.py`: without one, two test files
   with the same basename collide.
 
