@@ -415,6 +415,64 @@ def test_acquiring_a_cached_point_reuses_its_value(mocker):
     assert optim_state["cache"]["skip_logger"].shape == (0,)
 
 
+@pytest.mark.parametrize(
+    "integer_vars, x_cached",
+    [
+        (np.array([True, False]), np.array([[2.0, 0.1]])),
+        (np.array([True, True]), np.array([[2.0, -4.0]])),
+    ],
+)
+def test_acquiring_a_cached_point_on_the_integer_grid_reuses_its_value(
+    mocker, integer_vars, x_cached
+):
+    """The candidate that a cached starting point becomes has been
+    through the transform, the snap to the integer grid and the inverse
+    transform, and the stored value belongs to it only where the three
+    left the point where it was. A point already on the grid is acquired
+    with its value, without a call to the target."""
+    D = 2
+    vbmc, gp, _, _ = _integer_var_state(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+            "integer_vars": integer_vars,
+        },
+    )
+    y_cached = np.array([12.5])
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.copy(y_cached)
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    func_count_before = vbmc.function_logger.func_count
+    cache_count_before = vbmc.function_logger.cache_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The stored value was used instead of a target call.
+    assert function_logger.func_count == func_count_before
+    assert function_logger.cache_count == cache_count_before + 1
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert np.allclose(function_logger.y_orig[last], y_cached[0])
+
+    # The point is gone from the cache, which stays consistent.
+    assert optim_state["cache"]["x_orig"].shape == (0, D)
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
+
+
 def test_acquiring_a_cached_point_without_a_value_evaluates_it(mocker):
     """A search point that comes from the cache without a stored value is
     evaluated through the target and leaves the cache like one with a
@@ -547,6 +605,7 @@ def test_a_cached_point_the_search_box_moved_is_evaluated(mocker):
             "cache_frac": 1,
             "search_optimizer": "none",
         },
+        seed=20260921,
     )
     x_cached = np.array([[50.0, 0.0]])
     parameter_transformer = vbmc.function_logger.parameter_transformer
