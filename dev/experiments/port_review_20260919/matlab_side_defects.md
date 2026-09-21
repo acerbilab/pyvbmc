@@ -6,9 +6,10 @@ port correctness review came across while comparing PyVBMC with it
 repository; none of them is a task for PyVBMC. Every entry rests on a
 reading of the MATLAB source, confirmed by the verification record it
 cites. **Nothing here was run in MATLAB**, so an entry says what the code
-reads as doing, and one entry marks the step that is inferred. Paths are
+reads as doing, and three entries (19, 21 and 22) mark the step that is
+inferred. Paths are
 relative to the MATLAB repository root. The list is brought up to date as
-the review's waves are verified; it stands at the end of wave 3 and of its
+the review's waves are verified; it stands at the end of wave 4 and of its
 fix pass.
 
 ## Defects
@@ -35,6 +36,10 @@ fix pass.
 | 18 | `misc/gptrain_vbmc.m:19-25` | The branch on `optimState.Warmup && options.BOWarmup` and its `else` call `vbmc_gphyp` with the same arguments; the commented-out lines beside them show the intent, a constant mean during that warm-up | `BOWarmup` never switches the GP mean function, and `vbmc.m:825-828` restores at the end of warm-up a mean function that never changed | No counterpart: the option is not ported (sheet) | `verification/wave3_P5.md`, MATLAB-side defects, 2 |
 | 19 | `misc/get_GPTrainOptions.m:112` | The burn-in of the `slicelite` sampler divides by `log(options.GPRetrainThreshold)`, which is `log(1) = 0` at the default. Inferred from the rules of the arithmetic, not run: in the branch's own region `rindex < 1` the quotient is minus infinity, and `max(1, ceil(-Inf))` is 1 | At the default threshold the burn-in is `Ns_gp` whatever the reliability index, so the scaling the formula is there for never happens | No counterpart since 2026-09-20: slice sampling is the only sampler (sheet); the transcription removed then had the division inside the logarithm | `verification/wave3_P5.md`, MATLAB-side defects, 1 |
 | 20 | `misc/gptrain_vbmc.m:33`, with `misc/get_GPTrainOptions.m:63` | For `GPHypSampler = 'covsample'` the widths are built as an `Nhyp` by `Nhyp` covariance, and the caller discards widths whose number of elements differs from `Nhyp` | The covariance never reaches `eissample_lite`: covariance sampling runs on the default widths | No counterpart since 2026-09-20 (as 19); the transcription had the same guard | `verification/wave3_P5.md`, MATLAB-side defects, 5 |
+| 21 | `acq/acqviqr_vbmc.m:25-28`, with `private/activeimportancesampling_vbmc.m:345-352` | The `'islogf'` branch of VIQR adds `vp`, its second argument, to the log-density; `log_isbasefun` passes `[]` there for an acquisition whose `importance_sampling_vp` is false, as VIQR's is. Inferred from the rules of the arithmetic, not run: `[] + x` is `[]` | The target density of the MCMC refinement comes out empty. Reachable through `mcmc_importance_sampling` alone, which no MATLAB acquisition sets | Not shared: `AcqFcnVIQR.is_log_full` returns the added term, with a base of zero. The refinement itself is not ported (sheet) | `verification/wave4_P3.md` and `wave4_P4.md`, MATLAB-side defects |
+| 22 | `private/activeimportancesampling_vbmc.m:208-214`, with the local `catrnd` (`:396-420`) | The loop that draws the walkers' starting points sets the weight of each drawn sample to zero and never renormalizes. Inferred, not run: once every remaining weight is zero, `catrnd` scales its uniform draw by a total of zero, every comparison is false and it returns index 1 | The remaining walkers all start at the first proposal sample. With `2(D+1)` walkers and the effective sample sizes of 1.5 to 2 measured on a stored state of PyVBMC, it is within reach | No counterpart: PyVBMC runs one chain from one starting point | `verification/wave4_P4.md`, MATLAB-side defects, 3; `verification/wave4.md`, W4-1 |
+| 23 | `gplite/gplite_post.m:76-79`, with `private/activesample_vbmc.m:481-484` | A requested rank-one update becomes a full recomputation whenever a noise variance is given, without a message | None for the numbers. The call site reads as if noisy observations were taken by rank one | Not shared: gpyreg extends the factors by rank one with the noise variance, which equals the recomputation to rounding (sheet, the rank-one GP update) | `verification/wave4_P4.md`, row P4-5 |
+| 24 | `acq/acqviqr_vbmc.m:107-108`, `acq/acqimiqr_vbmc.m:93-94` | A row of the log sum whose entries are all `-Inf` gives NaN, which `acq/acqwrapper_vbmc.m:47` turns into `-realmax` | None: the value is the right one for a candidate that leaves no interquantile range at any importance point | The same value, reached without the NaN (guards in the log sums) | `verification/wave4_P3.md`, MATLAB-side defects, 3 |
 
 ## Questionable, shared by both implementations
 
@@ -67,6 +72,16 @@ Found in wave 3 and left as they are in both implementations
 - `shared/warpvars_vbmc.m:763-765` adds `log(scale)` to the log-Jacobian,
   where `log(abs(scale))` is the term; a warp always produces a positive
   scale. PyVBMC validates a scale given to its public constructor.
+
+Found in wave 4 and left as it is in both implementations
+(`verification/wave4.md`, row W4-16):
+
+- `private/activesample_vbmc.m:165`: `S.^2 .* nevals`, the variance of one
+  observation recovered from the pooled one, is the harmonic mean of the
+  variances at a repeated input whose observations have different SDs, the
+  smallest of the plausible summaries, so the noisy acquisitions take a new
+  observation there to be more precise than the past ones were. It needs
+  repeats with unequal SDs at one input.
 
 The thresholded covariance of the warp, which need not be positive
 semi-definite (`misc/warp_input_vbmc.m:52-71`, and the recipe of the 2020
