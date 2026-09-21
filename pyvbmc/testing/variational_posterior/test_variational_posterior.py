@@ -369,6 +369,27 @@ def test_pdf_outside_bounds():
     assert np.all(np.isfinite(vp.log_pdf(ub - 0.5, orig_flag=True)))
 
 
+def test_pdf_whole_coordinates_given_as_integers():
+    """A point whose coordinates are whole numbers has the same density
+    however it is spelled: the transformed coordinates are computed in
+    full precision, not truncated to the caller's integer type."""
+    D = 2
+    vp = VariationalPosterior(
+        D,
+        2,
+        np.array([[3.0, 4.0]]),
+        ParameterTransformer(D, np.zeros((1, D)), np.full((1, D), 10.0)),
+    )
+    vp.sigma = np.ones((1, 2))
+
+    reference = vp.pdf(np.array([[3.0, 4.0]]))
+
+    assert reference > 0
+    assert vp.pdf(np.array([[3, 4]])) == reference
+    assert vp.pdf([[3, 4]]) == reference
+    assert vp.pdf(np.array([3, 4])) == vp.pdf(np.array([3.0, 4.0]))
+
+
 def test_pdf_duplicate_log_flag():
     D = 2
     lb = np.ones((1, D)) * -3

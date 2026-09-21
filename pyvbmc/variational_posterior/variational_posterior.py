@@ -809,7 +809,9 @@ class VariationalPosterior:
                 "Gradient computation in original space is not supported."
             )
 
-        x = x.copy()
+        # The transformed coordinates are written into this copy, which
+        # therefore holds them in full precision whatever the caller gave.
+        x = np.array(x, dtype=np.float64)
         N, D = x.shape
 
         # compute pdf only for points inside bounds in origspace
