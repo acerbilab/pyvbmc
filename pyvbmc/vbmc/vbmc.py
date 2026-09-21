@@ -3819,6 +3819,18 @@ class VBMC:
     def _validate_search_fraction_options(self):
         """Check the fractions that divide the candidates of the
         acquisition search among their sources."""
+        # The starting cache gives a share of the whole search set, which
+        # stands beside the five fractions and outside their sum. A negative
+        # share would count the rows to take from the end of the cache.
+        cache_frac = self.options.get("cache_frac", 0.0)
+        if not isinstance(cache_frac, Real) or not 0 <= cache_frac <= 1:
+            raise ValueError(
+                "options['cache_frac'], the share of the candidates of the "
+                "acquisition search that the starting cache gives, must be "
+                f"a number in [0, 1], not {cache_frac!r}. A saved run that "
+                "carries the value is continued with "
+                "VBMC.load(file, new_options={'cache_frac': 0.5})."
+            )
         fractions = {
             name: self.options.get(name, 0.0)
             for name in (

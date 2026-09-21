@@ -81,6 +81,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ),
         ({"search_optimizer": "bounded"}, ValueError, "search_optimizer"),
         ({"search_cache_frac": 0.5}, ValueError, "search_cache_frac"),
+        ({"cache_frac": 1.5}, ValueError, "cache_frac"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -107,6 +108,7 @@ def test_new_options_are_checked_as_at_construction(
         {"search_cache_frac": 0.5},
         {"search_cache_frac": "a quarter"},
         {"search_optimizer": "Nelder-Mead"},
+        {"cache_frac": -0.1},
     ],
 )
 def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
@@ -202,6 +204,26 @@ def test_a_search_fraction_outside_the_unit_interval_is_refused():
     assert "mvn_search_frac = -0.25" in message
     for name in SEARCH_FRACTIONS:
         assert name in message
+
+
+@pytest.mark.parametrize("value", [-0.1, 1.5, np.nan, "half"])
+def test_a_starting_cache_share_outside_the_unit_interval_is_refused(value):
+    """``cache_frac`` is the share of the whole search set that the starting
+    cache gives. A negative one counts the rows to take from the end of the
+    cache, and one above one asks for more candidates than the search has."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"cache_frac": value})
+    message = execinfo.value.args[0]
+    assert "cache_frac" in message
+    assert repr(value) in message
+
+
+@pytest.mark.parametrize("value", [0, 0.5, 1])
+def test_a_starting_cache_share_in_the_unit_interval_is_taken(value):
+    """The ends of the interval are shares like any other, and the share
+    stands beside the five fractions without entering their sum."""
+    vbmc = _vbmc(options={"cache_frac": value, "search_cache_frac": 0.25})
+    assert vbmc.options["cache_frac"] == value
 
 
 def test_the_shipped_search_fractions_leave_a_quarter_unclaimed():
