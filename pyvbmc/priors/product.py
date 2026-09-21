@@ -117,19 +117,24 @@ class Product(Prior):
         return rvs
 
     @classmethod
-    def _generic(cls, D=1):
-        """Return a generic instance of the class (used for tests)."""
+    def _generic(cls, D=1, rng=None):
+        """Return a generic instance of the class (used for tests).
+
+        The class of each marginal is drawn from ``rng`` (a generator or a
+        seed; if None a generator is derived from NumPy's global random
+        state).
+        """
+        rng = get_rng(rng)
+        classes = [
+            UniformBox,
+            Trapezoidal,
+            SplineTrapezoidal,
+            SmoothBox,
+            SciPy,
+        ]
         return Product(
             [
-                np.random.choice(
-                    [
-                        UniformBox,
-                        Trapezoidal,
-                        SplineTrapezoidal,
-                        SmoothBox,
-                        SciPy,
-                    ]
-                )._generic(1)
+                classes[rng.integers(len(classes))]._generic(1)
                 for __ in range(D)
             ]
         )
