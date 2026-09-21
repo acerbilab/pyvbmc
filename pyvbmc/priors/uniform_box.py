@@ -66,7 +66,11 @@ class UniformBox(Prior):
         log_norm_factor = np.sum(np.log(self.b - self.a))
         log_pdf = np.full((n, 1), -log_norm_factor)
 
-        mask = np.any((x < self.a) | (x > self.b), axis=1)
+        # A row is in the support when every coordinate is between the
+        # bounds, the bounds included. Asking for membership rather than for
+        # the two violations keeps a row with a NaN coordinate out, as it is
+        # in the other box families.
+        mask = np.any(~((x >= self.a) & (x <= self.b)), axis=1)
         log_pdf[mask] = -np.inf
 
         return log_pdf
