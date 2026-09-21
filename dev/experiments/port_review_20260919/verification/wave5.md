@@ -282,3 +282,129 @@ state, which is per thread (W5-36). Several line citations into `vbmc.py`,
 `active_importance_sampling.py` and `test_vbmc_init.py` have drifted since
 `f873556`; every citation into the files of the three slices held, but for the
 rounding of `get_hpd`, which `027e972` moved from line 36 to line 38.
+
+## Fix commits
+
+On `dev-port-review` after `a2104e6`, made on 2026-09-21. Three Opus agents
+on worktrees cut at `a2104e6` made thirty (reports `../fixes/wave5_agent_A.md`,
+`wave5_agent_B.md` and `wave5_agent_C.md`), one row each with a test written
+against the contract and seen to fail on the code before it; the orchestrator
+reviewed each diff and cherry-picked the commits, which applied without a
+conflict, and made the last two.
+
+| row | commit | |
+|---|---|---|
+| W5-25 | `4cc09cc` | the `"Nelder-Mead"` value of `search_optimizer` and its branch removed; the option checked at construction and in `load`, which replaces a stored `"Nelder-Mead"` by `"cmaes"` for a problem of one dimension and refuses it otherwise |
+| W5-23 | `06fd70e` | `acq_hedge=True` refused at construction and in `load` |
+| W5-24 | `a25fc73` | the five fractions of the sieve checked at construction and in `load`; the message of the guard in `_get_search_points`; the training rows left out of the search cache; a comment on the deletion that nothing reads |
+| W5-7 | `052c442` | the stored value of a cached starting point reused only for a candidate that is the cached point; the target called otherwise, and the row leaves the cache either way |
+| W5-6 | `8e2977a` | `pyvbmc/stats/_rounding.py`, a half away from zero from the exact fractional part, at the twelve sites and in `_real2int`, whose results are bit for bit what they were |
+| W5-26, W5-27 | `0fe371b` | the FAQ and the description of `integer_vars`: experimental, what is snapped and what is not, the repeats on a grid |
+| W5-9 | `7749ddb` | the mean of the samples per coordinate in `kl_div(samples=...)` |
+| W5-10 | `dfc3334` | the positivity check of `set_parameters(raw_flag=False)` on the entries that hold `sigma`, `lambd` and the weights, for the sixteen flag combinations |
+| W5-11, W5-12 | `1ea2f6d` | the mode of a one-dimensional posterior; the starting point clamped to the box the search runs in |
+| W5-13 | `eab21fa` | `get_parameters` clears the stored mode and documents its normalization; an explicit `n_opts` runs the search |
+| W5-14 | `13cb245` | the candidates of the mode search drawn from a copy of the posterior with a copy of its generator |
+| W5-15 | `6c38beb` | a 1-by-1 covariance from `moments` for one parameter; a whole float taken for `N`; the index array of `sample` flat and of integer dtype in every branch, the docstring brought to it |
+| W5-16 | `a5e66d2` | a negative `df` refused by `sample` with the reason |
+| W5-18 | `d40e9fd` | the working copy of `pdf` in float64 |
+| W5-21 | `b503ae6` | a single starting point given as a column |
+| W5-4 | `25a4bb4` | the guards of `kl_div(gauss_flag=False)` as MATLAB has them; the original-space density from the difference of the logs on the rows where the quotient fails, every other row bit for bit |
+| W5-2 | `a37945a` | the log determinants of `kl_div_mvn` from `slogdet` |
+| W5-30 | `24b07f4` | the support of a `SciPy` prior from the frozen distribution's `support()` |
+| W5-31 | `5c05678` | a prior reads its input as float64, in `Prior.log_pdf` |
+| W5-32 | `da12c24` | `UniformBox` tests membership, so a NaN coordinate has density zero |
+| W5-33 | `4a43731` | the four box constructors refuse an argument that is not finite |
+| W5-34 | `fa3df99` | `Product` applies a `UserFunction` marginal to one point at a time |
+| W5-38 | `70b8f2d` | `tile_inputs` checks an array argument against `size` |
+| W5-39 | `474b273` | a frozen univariate distribution with array-valued parameters refused |
+| W5-36 | `a652cd8` | `np.errstate` in both trapezoids |
+| W5-35 | `05e4934` | the documented shapes, `log_prior` in `convert_to_prior`, the sign in the spline's comment, the cut sentence of `log_prior` in `vbmc.py` |
+| W5-5 | `a613fe3` | a prior whose support does not cover the hard bounds refused at construction; the docstring of `prior` |
+| test notes | `48518c8`, `614cdfd` | a seeded Kolmogorov-Smirnov test of each box sampler against its distribution function, per column in `D = 3`, with a check that it sees a uniform sampler; the twelve statements of `test_vbmc_init.py` given their `assert` (two of them compared a pair with a pair and unpack it) |
+| W5-1 | `23d962a` | `np.sum` in the remainder weights of the balanced draw, last and alone |
+| test note | `a093f2e` | the docstring of `prepare_gp_for_acq` says that it transcribes the lines of `active_sample` and which oracle runs them (orchestrator) |
+
+Rows W5-14, W5-17, W5-19, W5-20, W5-23, W5-25 and W5-40 are also sheet
+entries, W5-22 and W5-29 lines under the sheet's settled non-differences, and
+W5-3, W5-8, W5-28 and W5-37 are left as they are. The requirement of W5-5 is
+in the FAQ answer on priors and on the API page of the priors as well
+(orchestrator, with the records).
+
+## Gates
+
+The baseline is `wave3_doublecheck/after_095c29e0.npz`, the four seeded runs
+of `scripts/wave2_fixpass_gate_runs.py` on the code of before the pass (the
+commits between `095c29e` and `a2104e6` touch tests, records and
+`Product._generic`).
+
+Gate 1, on `a37945a`, the seventeen commits of agents C and A without the
+sampler: the four runs bit for bit the baseline (92 arrays), and the exact
+oracle check, 11 of 11. The log determinants (W5-2) move not even the last
+digit of `sKL` in these runs. The twelve commits of agent B, which no run
+without a prior reaches, came after it.
+
+Gate 2, on `23d962a`, the thirty commits: the four runs bit for bit the
+record that `scripts/wave5_A1b_gate_runs_corrected_sampler.py` made during
+the verification with the corrected sampler and nothing else (92 arrays, 0
+differ), so the pass moves what W5-1 moves and no more: `sKL` and `r_index`
+of all four runs, by up to 2.5e-5 and 5.9e-4, and the whole of
+`rosenbrock_D2_noisy` (30 iterations and 150 evaluations for 32 and 155). The
+exact oracle check, 11 of 11 with nothing re-baselined: the oracles reach the
+balanced draw, in `active_sample_step` on six states with `K > 1`, and the
+acquired points are the same.
+
+On `a093f2e`, the head of the code of the pass: the whole default suite, 1843
+passed and 58 skipped with no reruns; with the Torch environment, the S-VBMC,
+variational-posterior, prior and statistics directories and the modules of
+the pass, 886 passed and 1 skipped, the seeded references of S-VBMC among
+them, which the balanced draw of `SVBMC.sample(balance_flag=True)` could have
+moved and does not; with the PyMC environment, the adapter's tests, 107
+passed. Each environment printed `pyvbmc.__file__` of this checkout. The logs
+and the two records of the seeded runs are kept on the machine that ran them
+(`dev/scripts/runs/LOCAL.md`).
+
+W5-1 moves default trajectories, one of the four seeded runs from iteration
+13 on (its 71st evaluation is the first that differs), with no statistical
+effect (a component's count
+changes by less than about one draw among thousands), so no sweep on
+benchmark targets was run; the golden references and the run pools, which
+describe the code of before the moving fixes of waves 1 to 3, are regenerated
+once, after the review's remaining fixes, as the plan has it. No fix of the
+pass moves an oracle reference. The changelog has the pass's lines, under
+Changed, Fixed and Removed and in its "Upgrading from 1.0.4" list.
+
+## Found during the fix pass
+
+- Release 1.0.4 wrote `"Nelder-Mead"` into the options of every
+  one-dimensional run, so a saved one-dimensional object carries the value
+  that W5-25 removes, and `load` checks the stored options: `load` replaces
+  it by `"cmaes"` there, where the option has no effect, before `new_options`
+  is applied, so that an explicit value still wins and an explicit
+  `"Nelder-Mead"` is refused. `test_vbmc_optimize.py` passed the value in a
+  one-dimensional test and no longer does.
+- One tie of W5-6 is within reach of the shipped options: with more starting
+  points than the initial design takes, the starting cache is not empty at an
+  active-sampling step, the number of random points can leave a remainder of
+  two on division by four, and the quarter shares of the sieve then differ by
+  one candidate from the old rounding (agent C). No gate has such a state.
+- `scripts/wave5_P2_2_search_cache.py` and
+  `wave5_P2_11_search_cache_frac_second_step.py` build `VBMC` objects with a
+  `search_cache_frac` of 0.5 or 1.0 beside the shipped fractions, which
+  construction refuses since `a25fc73`: they are records of the code of
+  `831acef` and no longer run against the package.
+- A density that does overflow a double is still infinite after W5-4: on the
+  probit unit box with an SD of 30 in the inference space a tenth of the
+  draws have one, and the corrected guard is what keeps `kl_div` finite
+  there. The quotient and its recovery run under `np.errstate`, so such a
+  density no longer emits NumPy's overflow warning (agent A).
+- `mode(n_opts=k)` runs the search and stores its result, which a later
+  `mode()` returns: the ruling's bypass is of the read (agent A).
+- `_rebuild_log_joint`, which `load(new_options={"vectorized_target": ...})`
+  reaches, calls `_init_log_joint` and so runs the check of W5-5 on a saved
+  object (agent B). No shipped example is refused by that check; the FAQ's
+  list of `uniform(loc=..., scale=...)` marginals is taken because W5-30
+  came first.
+- The two statements of `test_vbmc_init.py` that compared the noisy log
+  joint of the package with the test's own compared a pair with a pair; with
+  their `assert` they unpack the value and the noise (agent B).

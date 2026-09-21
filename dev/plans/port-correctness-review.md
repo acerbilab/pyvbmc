@@ -1572,6 +1572,61 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   took the one-dimensional search off it. `v1.0.4` wrote the value into the
   options of every one-dimensional run, so `load` has to meet it in a saved
   object; the row has the orchestrator's proposal.
+- [x] 2026-09-21: wave 5 ruled and fixed. The PI took the orchestrator's
+  proposals as they stood, ruled W5-25 during the verification (the
+  Nelder-Mead value of `search_optimizer` goes, with its code) and answered
+  three questions: `vp.mode()` draws from a copy of the generator (W5-14),
+  `integer_vars` is experimental and documented as such, with no refusal of
+  an `x0` off the grid (W5-26), and the trapezoid priors keep their refusal
+  of `u == v` and `v == b` (W5-40). The rulings are in the last column of
+  `verification/wave5.md`. Where the proposal for W5-7 left the choice open,
+  the orchestrator took the fix, which the PI can strike before the push.
+
+  Fixes: three Opus agents on worktrees cut at `a2104e6`, thirty commits, one
+  row each with a test written against the contract and seen to fail on the
+  code before it (`fixes/wave5_agent_A.md`, `wave5_agent_B.md`,
+  `wave5_agent_C.md`); the orchestrator reviewed each diff and cherry-picked
+  them, without a conflict, and made two more (a docstring of the oracle
+  harness, and the requirement of W5-5 in the FAQ and on the API page of the
+  priors). The variational posterior: the balanced draw, the mean of the
+  samples and the guards of `kl_div`, the check of `set_parameters`, `mode`
+  in one dimension, its store and its generator, the shapes and counts of
+  `sample` and `moments`, integer input and the density near the top of the
+  range in `pdf`, a column `x0`; `kl_div_mvn` from log determinants. The
+  priors: the support of a shifted SciPy distribution, float64 input,
+  `UniformBox` at a NaN coordinate, arguments that are not finite, a
+  `UserFunction` marginal of a `Product`, the shape check of `tile_inputs`,
+  a frozen distribution with vector parameters, `np.errstate`, the
+  docstrings, and in `VBMC` the refusal of a prior that does not cover the
+  hard bounds. The active sampling and the options: the Nelder-Mead value
+  removed, with `load` taking a stored one for a problem of one dimension,
+  where release 1.0.4 wrote it into every run, and refusing it otherwise;
+  `acq_hedge` refused; the fractions of the sieve checked and the training
+  rows kept out of the search cache; the stored value of a cached starting
+  point reused at that point alone; a half rounded away from zero at the
+  twelve sites where MATLAB has `round`, through `pyvbmc/stats/_rounding.py`;
+  the documentation of `integer_vars`. Tests beyond the fixes: a
+  Kolmogorov-Smirnov test of each box sampler, and the twelve statements of
+  `test_vbmc_init.py` that lacked their `assert`.
+
+  Gates. On the seventeen commits without the sampler, the four seeded runs
+  bit for bit the baseline (92 arrays) and the exact oracle check 11 of 11.
+  On the thirty, the four runs bit for bit the record that the verification
+  had made with the corrected sampler alone, so the pass moves what W5-1
+  moves and no more (`sKL` and `r_index` of all four runs in the fifth
+  digit, and the noisy Rosenbrock run from iteration 13 on); the exact
+  oracle check 11 of 11 with nothing re-baselined. On `a093f2e`: the default
+  suite, 1843 passed and 58 skipped with no reruns; the Torch environment,
+  886 passed and 1 skipped, the seeded references of S-VBMC among them; the
+  PyMC environment, 107 passed. W5-1 joins the moving fixes that the one
+  regeneration of the golden references waits for. Records brought to the
+  state of the code: the ledger (fix commits, gates, what the pass found),
+  the sheet (eight new entries, five amended, three bullets under the
+  settled non-differences, and its Python line citations carried to the
+  present lines), the list of MATLAB-side defects (entries 25 to 40),
+  `CHANGELOG.md`. Not pushed; the CI matrix has not run. The worktrees and
+  branches of the three agents are removed, `git cherry` showing every one
+  of their commits on the branch.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"
@@ -1582,10 +1637,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   verbatim under `experiments/port_review_20260919/reviews/`:
   `P7_internal.md` (15 findings), `P7_comparison.md` (11), `P9_internal.md`
   (11), `P9_comparison.md` (7) and `P2_internal.md` (10). The wave is
-  reported to the PI and verified (the worklog entries "wave 5 reported to
-  the PI" and "wave 5 verified" above); the ledger
-  `verification/wave5.md` has a proposed disposition for each of its 40 rows
-  and the PI's ruling for one, W5-25.
+  reported to the PI, verified, ruled and fixed (the worklog entries "wave 5
+  reported to the PI", "wave 5 verified" and "wave 5 ruled and fixed"
+  above); the ledger `verification/wave5.md` has the PI's ruling for each of
+  its 40 rows, the fix commits and the gates. The pass is not pushed.
   The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
   `831acef`; that entry names the two files of P7 and P9 that changed in
   between. Two things the P7 reports raise are fixed by the wave-4 pass
@@ -1606,14 +1661,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   2. Done on 2026-09-21: the wave verified, and the ledger
      `verification/wave5.md` written with a proposed disposition per row.
      The PI rules on the rows; the rulings go into the ledger's last column.
-  3. On the PI's rulings, fix: agents on worktrees cut at the head of
-     `dev-port-review`, one finding per commit with a test written against
-     the contract; the orchestrator reviews and cherry-picks. Then the
-     gates of "Fixes and gates", the sheet, the list of MATLAB-side defects,
-     `CHANGELOG.md`, and the worklog. After wave 4 the PI also asked for an
-     independent check of the pass by fresh reviewers (`/doublecheck`),
-     which found four false statements in the ledger; expect the same
-     request.
+  3. Done on 2026-09-21: the rulings, the fixes, the local gates and the
+     records. After wave 4 the PI also asked for an independent check of the
+     pass by fresh reviewers (`/doublecheck`), which found four false
+     statements in the ledger; expect the same request for this pass, before
+     or after the push.
   4. On the PI's word: push, the branch smoke, the full matrix, the merge
      into `dev-next` with the status line of `TODO.md` updated there.
 
@@ -1621,9 +1673,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   and the independent check of the wave-3 pass (merge commits `9d9c01b` and
   `5acd382`), and both stood at `831acef`, pushed, when the wave was
   reported: the merge after the rewrite of `AGENTS.md`, which
-  `plans/modernization-roadmap.md` records. The commits that record wave 5
-  follow it on `dev-port-review` and touch `dev/` alone. No agent and no run
-  is in flight. The reviewers' check scripts of waves 4 and 5, the gate
+  `plans/modernization-roadmap.md` records. The commits of wave 5, its
+  records and its fix pass, follow it on `dev-port-review`, not pushed. No
+  agent and no run is in flight. The reviewers' check scripts of waves 4 and 5, the gate
   records and the logs are on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
   writes its own checks and may use the scripts as leads. The golden

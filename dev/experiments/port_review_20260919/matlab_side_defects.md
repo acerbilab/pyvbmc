@@ -6,17 +6,17 @@ port correctness review came across while comparing PyVBMC with it
 repository; none of them is a task for PyVBMC. Every entry rests on a
 reading of the MATLAB source, confirmed by the verification record it
 cites. **Nothing here was run in MATLAB**, so an entry says what the code
-reads as doing, and three entries (19, 21 and 22) mark the step that is
-inferred. Paths are
-relative to the MATLAB repository root. The list is brought up to date as
-the review's waves are verified; it stands at the end of wave 4 and of its
-fix pass.
+reads as doing, and the entries that rest on MATLAB's documented semantics
+and not on its text alone (19, 21, 22, 26, 28, 33, 35 and 36) mark the step
+that is inferred. Paths are relative to the MATLAB repository root. The list
+is brought up to date as the review's waves are verified; it stands at the
+end of wave 5 and of its fix pass.
 
 ## Defects
 
 | # | Location | What the code does | Consequence | PyVBMC | Record |
 |---|---|---|---|---|---|
-| 1 | `shared/msmoothboxrnd.m:59`, `:66` | The Gaussian tails are drawn around `a(idx)` and `b(idx)`, a linear index into the first column, where line 72 of the same function uses `a(idx,d)` and `b(idx,d)` | For `D > 1` every dimension's tails are placed around the first dimension's bounds | `SmoothBox.sample` uses each dimension's own bounds | `reviews/M_comparison.md`, commit `c387612` |
+| 1 | `shared/msmoothboxrnd.m:59`, `:66` | The Gaussian tails are drawn around `a(idx)` and `b(idx)`, a linear index into the first column, where line 72 of the same function uses `a(idx,d)` and `b(idx,d)` | For `D > 1` every dimension's tails are placed around the first dimension's bounds | `SmoothBox.sample` uses each dimension's own bounds | `reviews/M_comparison.md`, commit `c387612`; measured on a transcription in `verification/wave5_P9.md`, M1 (marginal means `[-4.50, -1.65, 5.85]` for `[-4.5, 0.5, 11.0]`), where `test/test_pdfs_vbmc.m:101` histograms the first column alone |
 | 2 | `private/vbmc_output.m:5-9` | `output.problemtype` tests `optimState.LB` and `optimState.UB`, which `misc/setupvars_vbmc.m:49-50` fills with the transformed bounds; the transform sends a finite bound to infinity | Every problem is reported as `'unconstrained'`. A reported field only | Not shared since the wave-2 fixes: `results["problem_type"]` tests the original bounds (`verification/wave2.md`, W2-12) | `verification/wave2_B_loop.md`, B-3a |
 | 3 | `misc/warp_input_vbmc.m:8`, `:133` | The search bounds and the search cache, which live in the current inference space, are mapped back to the original space with `vp.trinfo` of the posterior handed in, which `vbmc.m:546-557` takes from `best_vbmc`; a posterior recorded before an earlier warp carries an older transform | After a second or later warp the search box can be grossly rescaled (8 to 12 times wider per coordinate in the reproduction on the Python side). Latent: it needs the best-ranked iteration to predate the previous warp | Not shared since the wave-2 fixes: `warp_input` inverts the search bounds and the search cache with the transform of the current inference space (W2-6) | `verification/wave2.md`, W2-6 |
 | 4 | `private/vbmc_warmup.m:39`, `:87` | With `TolStableWarmup <= FunEvalsPerIter` the window `max(4,end-T+1):end` is empty on the first call that passes the guard of line 35, so `max` returns `[]`, the comparison yields an empty logical, and `StableCountFlag && ...` on line 87 receives it. That MATLAB raises there is inferred from the rules of `&&` | A run with a one-iteration stability window fails at its third iteration | Not shared since the wave-2 fixes: an empty window means no stability count yet (W2-14); until then PyVBMC raised in `np.amax` | `verification/wave2_B_loop.md`, B-4 |
@@ -40,6 +40,22 @@ fix pass.
 | 22 | `private/activeimportancesampling_vbmc.m:208-214`, with the local `catrnd` (`:396-420`) | The loop that draws the walkers' starting points sets the weight of each drawn sample to zero and never renormalizes. Inferred, not run: once every remaining weight is zero, `catrnd` scales its uniform draw by a total of zero, every comparison is false and it returns index 1 | The remaining walkers all start at the first proposal sample. With `2(D+1)` walkers and the effective sample sizes of 1.5 to 2 measured on a stored state of PyVBMC, it is within reach | No counterpart: PyVBMC runs one chain from one starting point | `verification/wave4_P4.md`, MATLAB-side defects, 3; `verification/wave4.md`, W4-1 |
 | 23 | `gplite/gplite_post.m:76-79`, with `private/activesample_vbmc.m:481-484` | A requested rank-one update becomes a full recomputation whenever a noise variance is given, without a message | None for the numbers. The call site reads as if noisy observations were taken by rank one | Not shared: gpyreg extends the factors by rank one with the noise variance, which equals the recomputation to rounding (sheet, the rank-one GP update) | `verification/wave4_P4.md`, row P4-5 |
 | 24 | `acq/acqviqr_vbmc.m:107-108`, `acq/acqimiqr_vbmc.m:93-94` | A row of the log sum whose entries are all `-Inf` gives NaN, which `acq/acqwrapper_vbmc.m:47` turns into `-realmax` | None: the value is the right one for a candidate that leaves no interquantile range at any importance point | The same value, reached without the NaN (guards in the log sums) | `verification/wave4_P3.md`, MATLAB-side defects, 3 |
+| 25 | `shared/mtrapezlogpdf.m:50`, with `:57` and `:60` | `lnf = log(0.5) + log(b-a+v-u) + log(u-a)` folds a factor into the normalization that every branch cancels again. For `u == a` each cancellation is `-Inf - (-Inf)` | The log density is NaN on the whole of `[u, b)`, for a density that is well defined (the spline version, whose `lnf` has no such factor, computes it and integrates to one), and `mtrapezrnd`, whose bounding height is then NaN, draws uniformly on `[a, b]` | Not shared: `Trapezoidal` has no such cancellation, and its constructor refuses `u == a` (sheet) | `verification/wave5_P9.md`, MATLAB-side defects, M2 |
+| 26 | `shared/mtrapezrnd.m:22`, `shared/msplinetrapezrnd.m:22` | `if nargin < 3 \|\| isempty(n)` in functions of five inputs (`a,u,v,b,n`); `munifboxrnd.m:19` and `msmoothboxrnd.m:26` test the right count. Inferred, not run: with four arguments `nargin < 3` is false, so `isempty(n)` is evaluated on an argument that was not given | The documented four-argument call `MTRAPEZRND(A,U,V,B)` errors at that line. `test/test_pdfs_vbmc.m` uses the five-argument form | No counterpart: `sample(n)` always takes `n` | `verification/wave5_P9.md`, M3 |
+| 27 | `mtrapezlogpdf.m:40`, `msmoothboxlogpdf.m:27`, `:38`, `:47`, `munifboxrnd.m:33` | The error identifiers name another function (`mtrapezpdf:SizeError`, `msmoothboxpdf:...`, `munifboxpdf:OrderError`) | Cosmetic: a `catch` that matches on the identifier | No counterpart | `verification/wave5_P9.md`, M4 |
+| 28 | `vbmc_mode.m:21-28`, with `:35` | With more components than `nmax`, the starting means are ranked by `nlnpdf(vp.mu')`, the transformed-space means, while `nlnpdf` calls `vbmc_pdf` with `origflag = 1`, which warps its input as an original-space point; the means are converted at `:35`, afterwards. Inferred for a bounded variable: a transformed mean outside the original bounds makes the logit complex | With a transform that is not the identity and `K > 20`, the twenty starts are chosen by the density at the wrong points | Not shared: `mode` converts the component means before it scores them | `verification/wave5_P7.md`, MATLAB-side defects, 7 |
+| 29 | `vbmc_mode.m:3-10` | The help text documents `X = VBMC_PDF(VP,ORIGFLAG)` for the signature `vbmc_mode(vp,nmax,origflag)` | A user who follows it passes `origflag` as `nmax`, and with `origflag = 1` one basin is polished instead of up to twenty | Not shared: `mode(orig_flag, n_opts)` has the order the help text describes | `verification/wave5_P7.md`, 5 |
+| 30 | `vbmc_kldiv.m:44-52` | The analytical branch (`gaussflag` with `Ns == 0`) begins with `if origflag; error(...)`, and `origflag` is set to 1 at `:34` | Dead code: the documented `Ns = 0` mode does not exist | The behavior is shared (`kl_div` raises for `N == 0` with `gauss_flag`), the dead code is not | `verification/wave5_P7.md`, 2 |
+| 31 | `shared/kde1d.m:46-48` | `histc(data,xmesh)` takes the grid points for left bin edges, so a sample is credited to the grid point at or below it | The estimate sits half a grid step low: the mean of the estimate is `dx/2` below the sample mean at `n = 2^10`, `2^12` and `2^14`, measured on a transcription | Not shared: `kde_1d` credits the nearest grid point (sheet) | `verification/wave5_P7.md`, row P7-6b |
+| 32 | `shared/kde1d.m:74`; `vbmc_rnd.m:84`, `:88` | `bandwidth_cdf` is computed and neither returned nor used; `sigma(I(1:N))'` indexes the first `N` entries of an `I` that has `N` | None | Not shared | `verification/wave5_P7.md`, 3 and 4 |
+| 33 | `private/activesample_vbmc.m:22-26`, with `:144-148` and `:153` | `idxAcq` is assigned by the hedge only when `options.AcqHedge && numel(SearchAcqFcn) > 1`, and by `randi` only when `~options.AcqHedge`. Inferred, not run: with `AcqHedge` on and the shipped single acquisition neither runs, and `:153` reads an undefined variable | A run with `AcqHedge` and one acquisition function errors at its first active-sampling step, after the initial design | PyVBMC has no hedge and refuses the option at construction (sheet) | `verification/wave5_P2.md`, row P2-1 |
+| 34 | `private/acqhedge_vbmc.m:55` | `hedge.g` without a semicolon, in the `'upd'` action | The hedge values are printed at every iteration of a run with `AcqHedge` | No counterpart | `verification/wave5_P2.md`, MATLAB-side defects, 2 |
+| 35 | `private/activesample_vbmc.m:627-633` (`getSearchPoints`), with `:239` | When the fractions of the sieve add up to more than one, `Nvp = max(0, ...)` is zero and `Xrnd` is longer than `Nrnd`, so `Xsearch` has more rows than `idx_cache` has entries. Inferred: `idx_cache(idx)` for a winner in the surplus indexes past the end | An index error, or a wrong cache index, in a configuration that is not the default (`SearchCacheFrac > 0.25` with the shipped other fractions) | Not shared: PyVBMC checks the fractions at construction | `verification/wave5_P2.md`, row P2-2e |
+| 36 | `private/activesample_vbmc.m:382-386` | The call of the target sits in `try ... catch func_error` whose body is the comment `% pause` | An error of the target is swallowed; `ynew`, `optimState` and `idx_new` stay unset and the following lines fail on them, far from the cause | Not shared: the function logger raises the target's error with its context | `verification/wave5_P2.md`, MATLAB-side defects, 4 |
+| 37 | `shared/mvnkl.m:9-11` | `lndet = log(det(Sigma2) / det(Sigma1))` on raw determinants, which leave the range of a double for a well-conditioned covariance at moderate dimension: zero below an SD of about 8e-9 per coordinate at `D = 20`, infinite above about 5e7 | `vbmc_kldiv` returns `Inf` or NaN, and `max(kls,0)` with the `max(0, ...)` of the main loop turns a NaN into an `sKL` of zero, the value of a posterior that has stopped moving; with `Inf` the run is never stable | Not shared since 2026-09-21: `kl_div_mvn` takes the log determinants from `slogdet` | `verification/wave5.md`, row W5-2 |
+| 38 | `shared/munifboxlogpdf.m:51` | The rows out of the support are marked by `x < a \| x > b`, false at NaN | A row with a NaN coordinate gets the full density, where the other three log densities give `-Inf` | Not shared since 2026-09-21: `UniformBox` tests membership as its siblings do (sheet) | `verification/wave5_P9.md`, row P9-3 |
+| 39 | `munifboxlogpdf.m:44`, `msmoothboxlogpdf.m:26`, `:46`; `mtrapezlogpdf.m` and `msplinetrapezlogpdf.m`, which check nothing | Every argument check is a comparison that is false at NaN, and an infinity satisfies a strict order | NaN and infinite bounds, pivots and scales are taken; at a NaN pivot `mtrapezrnd` draws uniformly on `[a, b]` beside a density that is NaN on `[v, b)`, as a transcription shows | Not shared since 2026-09-21: the constructors refuse an argument that is not finite | `verification/wave5_P9.md`, row P9-4 |
+| 40 | `private/activesample_vbmc.m:555`, `:637`, `:219`, `:388` | A cached starting point is warped, clipped into the search box and snapped to the integer grid with the rest of the search set, keeps its cache index, and its stored value is added at the candidate as moved | A value recorded at a point it was not computed at. The clip is out of reach at the default `ActiveSearchBound`, the starting points lying in the plausible box; the snap needs `IntegerVars`, more starting points than the initial design takes, their values provided, and one of them off the grid | Not shared since 2026-09-21: the stored value is reused for a candidate that is the cached point itself, and the target is called otherwise | `verification/wave5.md`, row W5-7 |
 
 ## Questionable, shared by both implementations
 
@@ -61,7 +77,9 @@ Found in wave 3 and left as they are in both implementations
   every row, and a repeat at an input whose row the end of warm-up
   deactivated is pooled into that row, which stays inactive: the evaluation
   is paid for and seen by nothing. It needs `MaxRepeatedObservations > 0`
-  and a search cache that carries a training input across the trim.
+  and a search cache that carries a training input across the trim, or a
+  problem whose variables are all integers, in which the snap to the grid
+  can return such an input (`verification/wave5.md`, row W5-8).
 - `misc/warp_input_vbmc.m:164-167`, under the comment "Reset GP
   hyperparameters", clears the running average of the variational moments,
   which nothing reads. After a warp only `hypstruct.hyp` is warped
@@ -82,6 +100,16 @@ Found in wave 4 and left as it is in both implementations
   smallest of the plausible summaries, so the noisy acquisitions take a new
   observation there to be more precise than the past ones were. It needs
   repeats with unequal SDs at one input.
+
+Found in wave 5 and left as it is in both implementations
+(`verification/wave5.md`, row W5-3):
+
+- `ent/entmc_vbmc.m:63-67` and `ent/entlb_vbmc.m`: each entropy multiplies
+  a sum of logs of mixture densities by the component's weight, which for
+  a weight of exactly zero and components far enough apart is
+  `0 * (-Inf)`, NaN; the gradients are not finite from a weight of about
+  1e-322. A weight is exactly zero when its `eta` lies 745 below the
+  largest, out of the reach of an optimization on either side.
 
 The thresholded covariance of the warp, which need not be positive
 semi-definite (`misc/warp_input_vbmc.m:52-71`, and the recipe of the 2020
