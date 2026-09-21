@@ -1731,7 +1731,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   docstrings followed (`5c4fc87`). The report and its scripts are with those
   of R1 to R5; the ledger's section has what is left.
 
-  What the round left for the PI, and the decisions (2026-09-21). Two fixes,
+  What the round left for the PI, and the decisions (2026-09-21). Two fixes
+  before the merge,
   made by the orchestrator, each with a test seen to fail first: `moments`
   hands its count to `sample` as it is given, where its `int()` truncated a
   fractional one, in `vp.moments` and in `vp.kl_div(gauss_flag=True)`
@@ -1751,8 +1752,18 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the hard bounds, which reaches the slack, and a `SplineTrapezoidal` on
   them) joins the gate when the golden references and the run pools are
   regenerated, and `dev/TODO.md` gets the line at the merge into `dev-next`.
-  Carried to slice N2: `to_arviz` refuses a whole float such as `1e3`, which
-  `sample` takes, against its own docstring.
+  The count of `to_arviz`, which the ruling had left to slice N2: N2 has no
+  pass ahead of it, wave 0 having taken it, so the PI had it fixed after the
+  merge (`f9ab814`). The exports of the variational posterior and of the PyMC
+  target take the counts that `sample` takes, a whole float such as `1e3`
+  among them, through one private helper that `sample` uses too; a boolean and
+  a count below one stay refused, and a refused count draws nothing. Gates on
+  `f9ab814`: the four seeded runs bit for bit the record after the pass (92
+  arrays, 0 differ) and the exact oracle check 11 of 11, `sample` being on the
+  path of every run; the tests of the variational posterior in the default
+  environment (131 passed), of its directory in the environment that has
+  ArviZ, where the tests of the export run and do not skip (273 passed, 1
+  skipped), and of the adapter in the PyMC environment (110 passed).
 - [x] 2026-09-21: wave 5 through CI, and merged (PI: go). Pushed on
   `63a0808`; the branch smoke and the full matrix, nine cells, are green at
   the first attempt. `dev-port-review` merged into `dev-next` (merge commit

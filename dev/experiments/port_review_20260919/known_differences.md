@@ -1656,7 +1656,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `vp.pdf` refuses original-space gradients instead of returning a wrong one
-- Python: `pyvbmc/variational_posterior/variational_posterior.py:812-815`
+- Python: `pyvbmc/variational_posterior/variational_posterior.py:869-872`
   (`if orig_flag and grad_flag: raise NotImplementedError`).
 - MATLAB: `vbmc_pdf.m` divides the density by the transform Jacobian but
   returns the transformed-space gradient uncorrected in the non-log case, and
@@ -1673,8 +1673,8 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### The soft bounds are the box of the training inputs of the call
-- Python: `pyvbmc/variational_posterior/variational_posterior.py:344-350`, in
-  `get_bounds` (`:300`): `mu_lb` and `mu_ub` are the componentwise minimum
+- Python: `pyvbmc/variational_posterior/variational_posterior.py:406-412`, in
+  `get_bounds` (`:362`): `mu_lb` and `mu_ub` are the componentwise minimum
   and maximum of the training inputs passed in, and the log-scale bounds are
   the log of that box's width, down to a factor `tol_length`. The result is
   stored on the posterior, replacing any box of an earlier call.
@@ -1779,10 +1779,10 @@ fact inherited from MATLAB.
 
 ### The mode search starts from draws of the posterior
 - Python: `pyvbmc/variational_posterior/variational_posterior.py: mode`
-  (`:1255`). It runs `n_opts = ceil(sqrt(K))` optimizations, each started at
+  (`:1312`). It runs `n_opts = ceil(sqrt(K))` optimizations, each started at
   the point of highest density among 1e5 draws of the posterior, the
   component means joining the candidates of the first; the draws come from a
-  copy of the posterior that holds a copy of its generator (`:1326-1330`), so
+  copy of the posterior that holds a copy of its generator (`:1383-1387`), so
   a call leaves the stream of `vp.rng`, which a run shares, where it found
   it. The result is stored on the posterior whenever the mode is asked for
   in the original space; `mode()` without `n_opts` returns a stored mode, a
@@ -1810,14 +1810,14 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `vp.pdf` gives a point on or outside the original bounds a density of zero
-- Python: `pyvbmc/variational_posterior/variational_posterior.py:822-829`,
-  `:945-947`: a row that is not strictly inside `lb_orig` and `ub_orig` gets
+- Python: `pyvbmc/variational_posterior/variational_posterior.py:879-886`,
+  `:1002-1004`: a row that is not strictly inside `lb_orig` and `ub_orig` gets
   the density 0 (the log density `-inf`) and is neither transformed nor
   corrected by the Jacobian; a row with a NaN coordinate takes the same
   branch. Inside the bounds the density is the transformed-space density
   divided by the Jacobian, and where that quotient is not finite because
   the Jacobian underflows, the exponential of the difference of the logs
-  (`:958-971`).
+  (`:1015-1028`).
 - MATLAB: `vbmc_pdf.m:36-39` warps every row, and `:113-123` divides by
   `warpvars_vbmc(X,'prob',...)`.
 - What differs: on a bound MATLAB's transformed coordinate is `±Inf` and the
@@ -1860,7 +1860,7 @@ fact inherited from MATLAB.
 
 ### The interface of `vp.sample`
 - Python: `pyvbmc/variational_posterior/variational_posterior.py: sample`
-  (`:578`).
+  (`:637`).
 - MATLAB: `vbmc_rnd.m`.
 - What differs: the law of the draws is MATLAB's, the balanced draw with
   its remainder included. The interface differs in four places. The second
