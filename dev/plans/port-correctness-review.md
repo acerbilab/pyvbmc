@@ -1069,27 +1069,227 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `dev-port-review` fast-forwarded onto it. The worktrees and branches of
   the three fix agents and the orchestrator's own, which held the code from
   before the pass for the sweeps, are removed.
-- [ ] Pickup point (2026-09-20, after wave 3 was merged). Nothing is in
-  flight. The PI has decided the next wave (2026-09-20): wave 4 is P3 with
-  P4, both tracks, four fresh Opus reviewers by the reviewer brief, on the
-  code of `dev-port-review` as it stands; the rows of the two slices in the
-  slice table carry a first question on uncertainty level 1, the noise model
-  that the wave-3 fixes made work, which goes into the briefs of the two
-  comparison reviewers and of the two internal ones alike. The wave has not
-  been started. After it the orchestrator reports to the PI before anything
-  else, as after every wave. For the waves after the fourth the orchestrator
-  proposed, and the PI has not ruled on, P7 with P9 and the internal track
-  of P2, then G1 with G2, then O1 to O4.
-  A reviewer brief, a verification round and a fix pass go as waves 2 and 3
+- [x] 2026-09-20: wave 4 run and reported to the PI (PI decision of the same
+  day: P3 with P4, both tracks): P3 internal (9 findings), P3 comparison (4,
+  and five minor observations), P4 internal (8), P4 comparison (8); four
+  fresh Opus reviewers by the brief, code at `f873556`; reports saved
+  verbatim under `experiments/port_review_20260919/reviews/`. Every brief
+  carried the first question of its slice on uncertainty level 1, put to the
+  comparison reviewers as "as MATLAB's do" and to the internal ones as
+  "consistently with the GP's own noise model", and every report answers it
+  under its own heading. The sweeps before and after the wave were clean in
+  the three repositories. Nothing below is verified; the orchestrator read
+  the code sites of the first two defects and they are as described.
+
+  The first question. All four reviewers find the noise handled at level 1
+  as MATLAB handles it and consistently with the GP's model. The function
+  logger pools repeats to `S = 1/sqrt(n_evals)`, so `S**2 * n_evals` is 1 at
+  every training point and `sn2_new = exp(2*h0) + exp(h1)`, the variance of
+  one new observation, where the GP's own training rows carry the pooled
+  variance; on a state at level 1 the P3 comparison reviewer's transcription
+  of `private/activesample_vbmc.m:159-183` and of the acquisitions agrees
+  with the port bit for bit in `sn2_new`, in the length scale and in the four
+  pointwise acquisitions, and in VIQR and IMIQR up to the constant `u` below.
+  The noise of a newly acquired point is MATLAB's at each level, and gpyreg's
+  rank-one update with it equals a GP rebuilt from the enlarged training set
+  to about 1e-15 at the three levels (both P4 reviewers). What the answers
+  add: MATLAB never takes the rank-one path on a noisy target
+  (`gplite/gplite_post.m:76-79` turns the request into a full recomputation
+  whenever `s2` is given), so the sheet's entry on the rank-one update,
+  written with wave 1's fix, misdescribes MATLAB, while the results agree to
+  rounding. Three properties of both implementations weigh more at level 1
+  than elsewhere: the candidate's noise is averaged over the hyperparameter
+  samples before it enters each sample's formula (in one reviewer's level-1
+  fit of 8 samples it ran from 1.24 to 2.91); `sn2_new` leaves out the
+  `sn2_mult` of a retried Cholesky factorization, which the prediction and
+  the update apply; and the MCMC target of IMIQR asks for a prediction with
+  noise at a point that has no recorded noise, so at levels 1 and 2 it adds
+  the constant term alone. The multiplier's hard bounds, `[1e-3, 1e3]` on
+  the variance on both sides (`gplite/gplite_noisefun.m:114-115`), confine
+  the noise SD of a level-1 target to about `[0.03, 32]`.
+
+  Defects reported. In the MCMC step of the importance sampling, which
+  IMIQR alone reaches, the resampling weights that choose the chain's
+  starting point are built as a column and their maximum is taken along the
+  axis of length one, so they come out uniform where MATLAB draws in
+  proportion to the importance weights (`active_importance_sampling.py:240-251`
+  against `private/activeimportancesampling_vbmc.m:206-214`; both P4
+  reviewers, independently; never matched; the guard beside it raises when
+  any one candidate has zero weight). The two disagree on what it costs: the
+  comparison reviewer's chains in `D = 3` end in the same region after the
+  burn-in of 50, the internal reviewer expects a poor start to persist in a
+  chain of 100. `_real2int` indexes its input as two-dimensional and
+  `active_sample.py:624` hands it the one-dimensional result of the local
+  search, so a run with `integer_vars` set raises `IndexError` at the first
+  search that improves on the sieve (P3 internal; reproduced on the bare
+  call, no run made); `test_real2int` holds five comparisons and no `assert`
+  (both P3 reviewers), and the one `active_sample` test with an integer
+  variable sets `search_optimizer` to `none`. `string_to_acq` keeps the
+  space after a comma in the name of every keyword argument but the first,
+  so `"AcqFcnVIQR(quantile=0.9, loss='iqr')"` raises (P3 internal). Dormant:
+  `fess` with a number of samples for `X`, its documented default, raises
+  (both P4 reviewers; MATLAB's one caller of that form is not ported), and
+  the retained `mcmc_importance_sampling` branch raises on its first call,
+  gpyreg's sampler refusing the matrix of starting points that MATLAB's
+  ensemble sampler takes (both P4 reviewers), against the reason the sheet
+  gives for keeping it.
+
+  Differences from MATLAB that no sheet entry records: `u =
+  norm.ppf(quantile)` for MATLAB's literal `0.6745`, the whole of the
+  residual between the port and the transcription in VIQR (1.7e-5) and IMIQR
+  (8e-5), which falls to 1.6e-14 with the same constant (the port had the
+  literal until `70325a3` added the `quantile` argument); the log weights
+  normalized over the whole array, a constant shift that leaves every
+  comparison between candidates alone (three reviewers), beside which the P4
+  internal reviewer asks whether the rows of the MCMC branch, each drawn from
+  its own unnormalized density, are comparable at all, a question that holds
+  for MATLAB's raw weights alike; the search candidates drawn before the
+  importance samples, where MATLAB draws them after; `np.around`, which
+  rounds a half to even, for MATLAB's `round` in `_real2int`; an exception
+  in `active_sample_proposal_pdf` where MATLAB's weight becomes zero. All
+  four reviewers report that the sheet's entry on the removed VIQR losses is
+  wrong: `loss="iqr_reduction"` is shipped, tested and in the changelog, as
+  the message of the commit the entry cites says. Six defects of the MATLAB
+  side are listed for `matlab_side_defects.md`, one of them already there.
+  Test notes common to the reports: `test_active_importance_sampling`
+  asserts shapes alone, and no test or stored state below the GP fit is at
+  level 1.
+
+  The reviewers' check scripts, the transcription of the acquisition
+  functions among them, are kept on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`).
+- [x] 2026-09-20: wave 4 verified and fixed (PI, on the orchestrator's
+  recommendations given with the wave's report: one wave at a time, go ahead
+  with verification and fixes). The ledger is
+  `experiments/port_review_20260919/verification/wave4.md`, 22 rows from the
+  29 findings, with the first question's answer checked on both sides; the
+  orchestrator verified the three rows that stop a run or change what it
+  computes, and two read-only Opus verifiers, one per slice, the others
+  (`wave4_P3.md`, `wave4_P4.md`; 27 scripts under `verification/scripts/`).
+
+  What the verification settled. The uniform starting point of IMIQR's
+  chains is a port discrepancy from the file's first commit (`e38351a`,
+  2022), and what it costs is within the Monte Carlo error of the
+  acquisition: on the stored noisy state the error of the centred
+  acquisition is 0.0187 nats against 0.0150 with MATLAB's weighted start
+  (100 pairs, paired difference 0.0037, SE 0.0016), while the candidate
+  ranked best is, on the reference, 0.0043 (SE 0.0021) better with the
+  uniform start, both below the noise of either estimate there; on a
+  six-dimensional state the two agree, the burn-in absorbing the start. A run with
+  `integer_vars` and a search optimizer raises after its initial design, in
+  `v1.0.4` as well: integer variables never worked. `string_to_acq` fails on
+  any space around a keyword's name and drops a value that holds `=`. The
+  tie of `_real2int`'s rounding is reachable, from a starting point at the
+  midpoint of a box with an even number of integer levels. The spread of the
+  total weights of IMIQR's rows, 17 nats on the stored state, which the P4
+  internal reviewer read as an uneven average over the GP hyperparameter
+  samples and the P4 verifier as the noise of the uniform start, is neither:
+  it is as large with MATLAB's start, and every row's contribution to the
+  acquisition sits within 0.05 nats of the others, a row estimating the
+  relative reduction of its sample's interquantile range, as MATLAB's does
+  (W4-10). Shared with MATLAB by design, and left: the candidate's noise
+  averaged over the hyperparameter samples, `sn2_mult` left out of it, the
+  constant noise term in the target of IMIQR's MCMC step, the bounds of the
+  noise multiplier. Three sheet entries misdescribed the code or MATLAB (the
+  removed VIQR losses, the rank-one update on a noisy target, the dormant
+  MCMC branch) and are corrected; the verifiers found twelve errors in the
+  reports of each slice.
+
+  Fixes: one Opus agent on a worktree cut at `f873556`, ten commits, one row
+  each with a test written against the contract (`fixes/wave4_agent.md`);
+  the orchestrator reviewed and cherry-picked them and made two more, the
+  rounding from the exact fractional part (`floor(abs(x) + 0.5)` sends the
+  largest number below a half to one) and the re-baseline. `_real2int` takes
+  a single point and rounds a half away from zero; `string_to_acq` parses a
+  call; VIQR and IMIQR call the base constructor and refuse a quantile
+  outside (0.5, 1); `fess` with a number of samples; weight zero where the
+  proposal has density zero; an acquisition that sets
+  `mcmc_importance_sampling` refused at construction and in the importance
+  sampler, the branch removed (it had never run: gpyreg's sampler refuses
+  the matrix of walkers) and `active_importance_sampling_fess_thresh` inert;
+  the starting point of IMIQR's chains drawn by weight; a test of `sn2_new`
+  at uncertainty level 1 with a repeated row, the first test below the GP
+  fit at that level. Gates: the four seeded runs bit for bit against the
+  record on `f873556`; the exact oracle check with `acq_AcqFcnIMIQR` moved
+  and no other, re-baselined from the stored state with the reason in the
+  fixture (`2dc98ce`), then 11 of 11; on `2dc98ce` the default suite (1662
+  passed, 58 skipped, no reruns), the Torch environment (752 passed) and the
+  PyMC environment (107 passed); the run with an integer variable completes.
+  No default trajectory moves. Records brought to the state of the code: the
+  sheet, the list of MATLAB-side defects (entries 21 to 24), `CHANGELOG.md`,
+  `AGENTS.md` (the re-baseline). Not pushed; the CI matrix has not run.
+- [x] 2026-09-20: wave 5 run and saved, neither reported nor verified (PI
+  decision of the same day: P7 with P9, both tracks, launched while the
+  wave-4 pass was under way, five agents at a time allowed for it; another
+  session takes the wave from the saved reports): P7 internal (15 findings),
+  P7 comparison (11), P9 internal (11), P9 comparison (7); four fresh Opus
+  reviewers by the brief, reading `f873556` (the wave-4 pass changes no file
+  of the two slices); reports saved verbatim under
+  `experiments/port_review_20260919/reviews/`. The briefs carried first
+  questions that waves 0 to 4 had raised, which the reports answer under
+  their own heading. P7: where an underflowed `vp.pdf(log_flag=True)`, the
+  log of a sum of component densities, reaches, and whether each reader
+  treats it as its MATLAB counterpart does (comparison) or correctly
+  (internal); and whether every caller of `vp.sample` unpacks the pair it
+  returns, with the sampler itself against `vbmc_rnd.m` and against its
+  specification. Both P7 briefs put the class first, the statistics second
+  and the entropies last, which O2 reads again. P9: whether every sampler
+  draws from exactly the density its `log_pdf` defines, family by family, on
+  both sides. The sweep after the wave was clean in the three repositories.
+  The reviewers' check scripts are kept on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`).
+- [x] 2026-09-21: the wave-4 pass checked independently (PI: `/doublecheck`,
+  then apply what it finds). Four fresh Opus reviewers, read-only, without
+  the session's context: the commits of the acquisition side, those of the
+  importance sampling, the ledger against the reports, the sources and the
+  logs, and the user-facing and cross-document records. No defect in the
+  twelve commits; one reviewer showed that the rounding from the exact
+  fractional part is needed in a run, a coordinate saturated at the lower
+  bound -0.5 of an integer variable coming back as the largest number below
+  a half, negated. In the records: the ledger's evidence for W4-7 was the
+  VIQR oracle, which never reaches the changed function (a bitwise
+  comparison of the first step of the importance sampling before and after
+  takes its place, `verification/scripts/wave4_A7_proposal_pdf_bitwise.py`);
+  its statement on the best candidate under the weighted start went against
+  its own log; `renormalize_weights` dates from the file's second commit; a
+  disposition of W4-9 had not been carried out; and the changelog's sentence
+  on `mcmc_importance_sampling` held for some acquisitions alone. All are
+  corrected, with the sheet's stale line citations. Five commits follow
+  (`76ed8e9` to `601555e`): the constant in the docstring of `AcqFcnVIQR`;
+  the quantile taken as a real scalar of any type by one shared check;
+  `search_acq_fcn` checked to be a list of acquisitions or strings, its
+  description saying which strings are read; the state of the
+  integer-variable search test seeded; three sentences of documentation.
+  Each ran the focused tests of what it touches. The seeded runs, the exact
+  oracle check and the default suite on `601555e` were stopped by the machine
+  for lack of memory before they reported, and have not run on that head
+  (`verification/wave4.md`, "Gates").
+- [ ] Pickup point (2026-09-21). Wave 4 is verified and fixed on
+  `dev-port-review` (seventeen commits after `f873556`, head `601555e`). The
+  gates passed on `2dc98ce`, the twelfth; the five commits after it, which
+  follow the independent check, ran their focused tests only, so the four
+  seeded runs against `wave4_gates/before_f8735567.npz`, the exact oracle
+  check, the default suite and the Torch and PyMC environments are owed on
+  the head before anything else. The branch is not pushed, so the smoke, the
+  full CI matrix and the merge into `dev-next` are still to come, on the PI's
+  word. Wave 5 is saved and waits for its report to the PI, its
+  verification and the PI's rulings. Still to run: G1 with G2, both tracks;
+  the internal track of P2, which wave 1 did not run (the wave-4 pass changed
+  no line of `active_sample.py`, only `_real2int` and `string_to_acq`, which
+  it calls); O1 to O4. The order the orchestrator proposed, and the PI has
+  not ruled on: G1 with G2, with the P2 track as a fifth reviewer if the PI
+  allows a fifth agent again, as for wave 5 (the working rule is four), then
+  O1 to O4. The status line of `TODO.md` still describes the state after
+  wave 3: it is updated on `dev-next` when the branch is merged.
+  A reviewer brief, a verification round and a fix pass go as waves 2 to 4
   went; the gates of a pass are in "Fixes and gates", among them the tests
   that need Torch or PyMC and, for a pass that moves default trajectories,
   the sweep on benchmark targets. The golden references and the run pools
   describe the code from before the moving fixes of waves 1 to 3 and are
   regenerated once, after the review's remaining fixes.
-- [ ] Waves 4 to 7: P3, P4, P7, P9, G1, G2, both tracks (12 reviewers), and
-  the internal track of P2, which wave 1 did not run (its four slots went
-  to M, the P2 comparison and both P6 tracks); 13 reviewers, so the waves
-  have free slots for it.
+- [ ] Waves 6 and 7: G1 and G2, both tracks (4 reviewers), and the internal
+  track of P2, which wave 1 did not run (its four slots went to M, the P2
+  comparison and both P6 tracks).
 - [ ] Wave 8: O1 to O4.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
