@@ -103,7 +103,7 @@
   .corner.br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
 
   #fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--ink-dim); z-index: 3; }
-  body.clean .hud, body.clean .corner, body.clean .axis { display: none; }
+  body.clean .hud, body.clean #foot, body.clean .corner, body.clean .axis { display: none; }
   body.clean #gl { cursor: none; }
 </style>
 </head>
@@ -891,7 +891,7 @@ function placeLabel(el, x, z) {
 const hLog = (z) => { const d = ZREF - z; return d >= 0 ? 1 / (1 + d / S_SCALE) : 1 + 0.3 * (1 - Math.exp(d / (0.3 * S_SCALE))); };
 const hDen = (z) => { const e = Math.exp(Math.min(z - ZREF, 4)); return e <= 1 ? e : 1 + 0.5 * (1 - Math.exp(-2 * (e - 1))); };
 const activeSets = ITS.map((it) => new Set(it.active));
-let shown = { morph: 0, truth: 0 };
+let shown = { morph: 0, truth: 0, ts: -Infinity };
 
 function update(tau, dt, clock) {
   let ts = tau, fade = 1, sg;
@@ -906,9 +906,12 @@ function update(tau, dt, clock) {
   const rise = ease((ts - segGp0.t0) / 2.4);
   const wantMorph = ui.density ? 1 : ease((ts - segDen.t0) / 3.0);
   const wantTruth = ui.truth ? 1 : ease((ts - segReveal.t0) / 2.2);
-  const k = 1 - Math.exp(-dt * 6);
-  shown.morph += (wantMorph - shown.morph) * (scrubbing || dt === 0 ? 1 : k);
-  shown.truth += (wantTruth - shown.truth) * (scrubbing || dt === 0 ? 1 : k);
+  // Story time that goes back (the story starting after the title card, or a seek) is a cut: the levels
+  // start where the new time wants them instead of easing over from the old one.
+  const cut = ts < shown.ts; shown.ts = ts;
+  const k = scrubbing || dt === 0 || cut ? 1 : 1 - Math.exp(-dt * 6);
+  shown.morph += (wantMorph - shown.morph) * k;
+  shown.truth += (wantTruth - shown.truth) * k;
   const morph = shown.morph;
 
   gpSheet.set("tremble", reduced ? 0 : TREMBLE);

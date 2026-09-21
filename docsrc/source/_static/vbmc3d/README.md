@@ -92,7 +92,10 @@ evaluation drops and lands (`pointEv`), transitions between GP states
 (`gpTr`) and between posteriors (`vpTr`), and the intervals during which an
 acquisition surface shows (`acqEv`). `update(tau, dt, clock)` reads them and
 sets uniforms; it keeps no state except the smoothed camera and the smoothed
-morph and truth levels. That is what makes the timeline scrubbable and
+morph and truth levels, and those levels start at the new time's values
+whenever story time goes back (the story starting after the title card, a
+seek), so that nothing of the finished state eases into the opening. That
+is what makes the timeline scrubbable and
 `capture=1` reproducible. The loop starts on the finished state (the title
 card), fades it out and tells the story, so the end runs into the start.
 A caption about what the algorithm did in an iteration (rotating and
