@@ -44,7 +44,7 @@ class Prior(ABC):
             `float64`, whatever dtype the array carries.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
         Returns
         -------
@@ -80,7 +80,7 @@ class Prior(ABC):
             `D` is the distribution dimension.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
-            `(1, D)`, or discard them and return an array of shape `(D,)`.
+            `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
         returns
         -------

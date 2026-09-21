@@ -19,9 +19,9 @@ class UniformBox(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower bound(s), shape `(1, D)`.
+        The lower bound(s), shape `(D,)`.
     b : np.ndarray
-        The upper bound(s), shape `(1, D)`.
+        The upper bound(s), shape `(D,)`.
     """
 
     def __init__(self, a, b, D=None):

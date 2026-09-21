@@ -21,11 +21,11 @@ class SmoothBox(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower pivot(s), shape `(1, D)`.
+        The lower pivot(s), shape `(D,)`.
     b : np.ndarray
-        The upper pivot(s), shape `(1, D)`.
+        The upper pivot(s), shape `(D,)`.
     scale : np.ndarray
-        The standard deviation of the Gaussian tails, shape `(1, D)`.
+        The standard deviation of the Gaussian tails, shape `(D,)`.
     """
 
     def __init__(self, a, b, scale=1, D=None):

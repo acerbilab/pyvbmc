@@ -151,6 +151,7 @@ class VBMC:
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
         ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
+        to represent the log-likelihood (otherwise it is assumed to represent
         the log-joint).
     sample_prior : callable, optional
         An optional function which accepts a single argument `n` and returns an

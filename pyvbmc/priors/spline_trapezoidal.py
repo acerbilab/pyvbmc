@@ -34,13 +34,13 @@ class SplineTrapezoidal(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower bound(s), shape `(1, D)`.
+        The lower bound(s), shape `(D,)`.
     u : np.ndarray
-        The lower pivot(s), shape `(1, D)`.
+        The lower pivot(s), shape `(D,)`.
     v : np.ndarray
-        The upper pivot(s), shape `(1, D)`.
+        The upper pivot(s), shape `(D,)`.
     b : np.ndarray
-        The upper bound(s), shape `(1, D)`.
+        The upper bound(s), shape `(D,)`.
     """
 
     def __init__(self, a, u, v, b, D=None):
@@ -101,7 +101,7 @@ class SplineTrapezoidal(Prior):
         log_pdf = np.full_like(x, -np.inf)
         # a b c d
         # a u v b
-        # norm_factor = u - v + 0.5 * (b - v + u - a)
+        # norm_factor = v - u + 0.5 * (b - v + u - a)
         log_norm_factor = np.log(0.5 * (self.v - self.u + self.b - self.a))
 
         # The density is zero at the bounds, so the logarithm of zero at a
