@@ -1270,20 +1270,27 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   suite, 1687 passed and 58 skipped with no reruns; the Torch environment,
   777 passed; the PyMC environment, 107 passed. Pushed; the branch smoke and
   the full matrix, nine cells, are green at the first attempt.
-- [ ] Pickup point (2026-09-21). Wave 4 is verified, fixed, gated and
-  through CI on `dev-port-review`, pushed: seventeen commits of code, tests
-  and the re-baselined fixture after `f873556`, the last of them `601555e`,
-  and the records of waves 4 and 5 after it. The merge into `dev-next`, with
-  the status line of `TODO.md` updated there, waits for the PI's word.
-  Wave 5 is saved and waits for its report to the PI, its
+- [x] 2026-09-21: `dev-port-review` merged into `dev-next` (PI; merge commit
+  `9d9c01b`, on `dev-next` at `5e5fa18`, which had not moved since the merge
+  of the wave-3 pass), after the full CI matrix on `11fb766` was green in all
+  nine cells. The review's status in `TODO.md` was updated on `dev-next`
+  (`0f3015b`), and `dev-port-review` was fast-forwarded onto it. The worktree
+  and the branch of the fix agent had been removed once `git cherry` showed
+  its ten commits on the branch.
+- [ ] Pickup point (2026-09-21, after wave 4 was merged). Nothing of wave 4
+  is in flight except possibly the smoke run that the merge started on
+  `dev-next` (`gh run list --branch dev-next`), which tests code the full
+  matrix already passed: seventeen commits of code, tests and the
+  re-baselined fixture after `f873556`, the last of them `601555e`, with the
+  records of waves 4 and 5 after it. Wave 5 is saved and waits for its
+  report to the PI, its
   verification and the PI's rulings. Still to run: G1 with G2, both tracks;
   the internal track of P2, which wave 1 did not run (the wave-4 pass changed
   no line of `active_sample.py`, only `_real2int` and `string_to_acq`, which
   it calls); O1 to O4. The order the orchestrator proposed, and the PI has
   not ruled on: G1 with G2, with the P2 track as a fifth reviewer if the PI
   allows a fifth agent again, as for wave 5 (the working rule is four), then
-  O1 to O4. The status line of `TODO.md` still describes the state after
-  wave 3: it is updated on `dev-next` when the branch is merged.
+  O1 to O4.
   A reviewer brief, a verification round and a fix pass go as waves 2 to 4
   went; the gates of a pass are in "Fixes and gates", among them the tests
   that need Torch or PyMC and, for a pass that moves default trajectories,
