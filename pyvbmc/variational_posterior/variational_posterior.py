@@ -1041,9 +1041,10 @@ class VariationalPosterior:
         by its root mean square and ``sigma`` multiplied by it, and the
         weights are divided by their sum when they are being optimized.
         The two scales enter the density through their product alone, so
-        the distribution is unchanged, as it is for weights that already
-        sum to one. A mode stored by a previous call of ``mode()`` is
-        discarded, since it may have moved.
+        that rescaling leaves the distribution as it was; normalizing the
+        weights changes it where they did not already sum to one. A mode
+        stored by a previous call of ``mode()`` is discarded, as
+        ``misc/rescale_params.m:39-40`` discards it.
 
         Parameters
         ----------
@@ -1258,13 +1259,15 @@ class VariationalPosterior:
             Maximum number of optimization runs from different starting points
             to find the mode. By default `n_opts` is the square root of the
             number of mixture components K, that is
-            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call that gives
-            `n_opts` runs the search; a call that leaves it out returns the
-            mode found by an earlier call in the original space, if the
-            posterior still carries one.
+            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call that leaves
+            `n_opts` out returns the mode that an earlier such call found in
+            the original space, if the posterior still carries one, and
+            stores the mode it finds otherwise. A call that gives `n_opts`
+            runs the search and neither reads nor replaces that stored mode.
+
         Returns
         -------
-        mode: np.ndarray
+        mode : np.ndarray
             The mode of the variational posterior.
 
         Notes
@@ -1283,10 +1286,11 @@ class VariationalPosterior:
 
         The starting points of the optimization runs are drawn from a copy
         of ``self.rng``, so a call leaves the posterior's random stream
-        where it found it, and two calls on the same posterior give the
-        same answer.
+        where it found it, and two calls with nothing drawn from that
+        stream in between give the same answer.
         """
-        if orig_flag and n_opts is None and self._mode is not None:
+        default_search = n_opts is None
+        if orig_flag and default_search and self._mode is not None:
             return self._mode
 
         def neg_log_pdf(x0, orig_flag=orig_flag):
@@ -1349,11 +1353,12 @@ class VariationalPosterior:
             x_min[k] = res.x
             ff[k] = res.fun
 
-        # Get mode and store it
+        # Get mode and store it, where the search is the one a later call
+        # without `n_opts` stands for
         idx_min = np.argmin(ff.squeeze())
         x = x_min[idx_min]
 
-        if orig_flag:
+        if orig_flag and default_search:
             self._mode = x
 
         return x

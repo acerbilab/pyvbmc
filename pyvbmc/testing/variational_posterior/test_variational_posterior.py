@@ -832,6 +832,49 @@ def test_mode_is_recomputed_when_n_opts_is_given():
     assert np.allclose(computed, 5.0, atol=1e-3)
 
 
+def test_a_mode_search_with_n_opts_keeps_the_stored_mode():
+    """The store holds the mode of the search a call without ``n_opts``
+    makes, so a call that gives ``n_opts`` leaves what is stored alone."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp.sigma = np.ones((1, 2))
+    vp.rng = np.random.default_rng(20260921)
+    stale = np.full(3, 42.0)
+    vp._mode = stale.copy()
+
+    computed = vp.mode(n_opts=1)
+
+    assert not np.allclose(computed, stale)
+    assert np.array_equal(vp.mode(), stale)
+
+
+def test_a_mode_search_with_n_opts_stores_nothing(mocker):
+    """A posterior that carries no mode still carries none after a call
+    that gives ``n_opts``: the next call without one searches."""
+    K = 4
+    vp = VariationalPosterior(3, K, np.array([[5]]))
+    vp.sigma = np.ones((1, K))
+    vp.rng = np.random.default_rng(20260921)
+
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    runs = []
+    original_minimize = vp_module.minimize
+
+    def record(*args, **kwargs):
+        runs.append(kwargs["x0"])
+        return original_minimize(*args, **kwargs)
+
+    mocker.patch.object(vp_module, "minimize", record)
+
+    vp.mode(n_opts=1)
+    assert len(runs) == 1
+
+    runs.clear()
+    vp.mode()
+    assert len(runs) == int(np.ceil(np.sqrt(K)))
+
+
 def test_mode_leaves_the_random_stream_alone():
     """The candidates of the mode search come from a copy of the
     posterior's generator, so a call neither advances the stream a run
