@@ -704,13 +704,17 @@ vp, results = continued.optimize()
 
 Here `1000` is the *total* budget, including evaluations already made. If
 the run reached its iteration limit, increase `max_iter` as well. Continue
-with the same model, data, prior and bounds, preferably in the same Python
-environment. See [`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
+with the same model, data, prior and bounds, and under the same minor
+version of Python (3.12, say) that saved the file: a saved run holds Python
+bytecode, so under another minor version it can be loaded and inspected but
+should not be continued or saved again, which can end the interpreter. See
+[`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
 
 If you only need to use the fitted posterior later, save it with
 `vp.save("posterior.pkl")` and load it with
-`VariationalPosterior.load("posterior.pkl")`. A saved posterior alone does
-not contain the full state needed to resume a run.
+`VariationalPosterior.load("posterior.pkl")`. A saved posterior holds no
+bytecode and moves between Python versions, but it does not contain the
+full state needed to resume a run.
 
 (faq-can-i-combine-the-posteriors-of-several-runs)=
 ### Can I combine the posteriors of several runs?

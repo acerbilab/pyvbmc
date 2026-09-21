@@ -19,18 +19,23 @@ its entry below.
 - PyVBMC needs Python 3.10 or later, and no longer installs `pytest` and
   `plotly`.
 - Option values are checked: an unknown option name in an options file,
-  `uncertainty_handling=[1]` or an ambiguous `integer_vars` raises an error.
+  `uncertainty_handling=[1]`, a `specify_target_noise` that is not `True` or
+  `False`, an ambiguous `integer_vars`, or a `max_fun_evals` or `max_iter`
+  that is not a positive integer raises an error.
   So do a `gp_mean_fun` or a `gp_hyp_sampler` that PyVBMC does not implement,
   `f_vals` together with `specify_target_noise`, a `quantile` of `AcqFcnVIQR`
   or `AcqFcnIMIQR` outside (0.5, 1), and a `search_acq_fcn` string that
   cannot be read as a call. `search_optimizer` takes `"cmaes"` or
   `"none"` (the `"Nelder-Mead"` value is removed), `acq_hedge=True` raises
   an error, and so do fractions of the acquisition search that add up to
-  more than one.
+  more than one. `integer_vars` given as a list of indices marks those
+  variables, where 1.0.4 marked every variable.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
 - `results["iterations"]` is the number of iterations, one more than in 1.0.4.
+  `results["problem_type"]` is `"bounded"` for a problem with bounds, where
+  1.0.4 said `"unconstrained"` for every problem.
 - An entry of `vbmc.iteration_history["gp"]` cannot make predictions; call
   `vbmc.get_gp(iteration)`. An entry of
   `vbmc.iteration_history["gp_hyp_full"]` holds the hyperparameter samples
@@ -376,8 +381,10 @@ its entry below.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with
-    `specify_target_noise=True`. A script that sets only
-    `specify_target_noise` needs no change.
+    `specify_target_noise=True`. `specify_target_noise` takes `True` or
+    `False` as well (`1` and `0` are accepted); any other value was read by
+    its truth, so that `"no"` or `[0]` turned the noise handling on. A script
+    that sets only `specify_target_noise=True` needs no change.
   - `integer_vars` takes either a boolean mask with one entry per variable or
     the 0-based indices of the integer variables. In 1.0.4 a plain Python list
     made every variable an integer variable, without warning. An array of `D`
@@ -576,18 +583,26 @@ its entry below.
   type they come in. 1.0.4 converted integer inputs only, and kept `float32`
   or `float16` values in the state of the run and in the parameter transform.
 - A bound given as a single number applies to every variable, as documented.
-  It raised an error for problems with more than one variable.
+  It raised an error for problems with more than one variable. Without `x0`
+  the number of variables comes from the plausible bounds, so one of them
+  needs an entry per variable; two single numbers raise an error that says
+  so.
+- The title of the final plot (`plot=True`, `create_vbmc_animation`) gave one
+  iteration fewer than the run had performed.
 - After `VBMC.load`, the run, its posterior and its function logger share one
   parameter transformer, that of the loaded iteration. For a run that had
   warped its input space, `vbmc.parameter_transformer` was the transformer of
   a different iteration.
 - `print(vbmc)` shows the Gaussian process, the prior and the log-density,
   which always printed as `None`, and shows the starting point in original
-  coordinates, which was wrong after an input warp.
+  coordinates, which was wrong after an input warp. The starting points in
+  original coordinates are available as `vbmc.x0_orig`.
 - `entropy_switch=True` raised `TypeError` in the first iteration of any
   problem with five or more variables.
 - `variable_means=False` raised an error in the final boost of any run that
-  ended with fewer than `min_final_components` components.
+  ended with fewer than `min_final_components` components. With that
+  setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many
+  training inputs as `vp` has components, and says so otherwise.
 - A noisy target with `max_fun_evals=np.inf` raised `OverflowError`.
 - A `tol_stable_warmup` no larger than `fun_evals_per_iter` raised an error in
   the third iteration.
@@ -736,7 +751,9 @@ its entry below.
 - `warp_cov_reg` accepts any number, or a callable that receives the number
   of training points. Only a Python `int` or `float` worked.
 - Option descriptions are printed in full (`print(options)`,
-  `repr(options)`). Descriptions containing `:` or `=` were cut short.
+  `repr(options)`). Descriptions containing `:` or `=` were cut short, and
+  an option of the advanced set that the user had given showed `None` for
+  its description.
 
 ### Removed
 
