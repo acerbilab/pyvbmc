@@ -431,7 +431,15 @@ def active_sample(
 
             if options["search_cache_frac"] > 0:
                 inds = np.argsort(acq_fast)
-                optim_state["search_cache"] = X_search[inds]
+                # The training inputs at the head of the search set are
+                # candidates for a repeated observation of this step
+                # alone. They are kept out of the cache: a training input
+                # offered again at a later step comes back as an ordinary
+                # candidate, without the repeat flag that caps consecutive
+                # repeats and keeps the point an exact repeat.
+                optim_state["search_cache"] = X_search[
+                    inds[inds >= n_train_cand]
+                ]
                 idx = inds[0]
             else:
                 idx = np.argmin(acq_fast)
@@ -465,7 +473,11 @@ def active_sample(
                 X_acq, idx_cache_acq, repeat_flag = policy_selection
                 X_acq = np.asarray(X_acq, dtype=np.float64).reshape(1, gp.D)
 
-            # Remove selected points from search set
+            # Remove selected points from search set. Nothing reads either
+            # array again: the next step builds both afresh, and the search
+            # cache above was written before the deletion, so it keeps the
+            # acquired point as its first row. The two lines stand where
+            # `private/activesample_vbmc.m:242` has them.
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 
@@ -1040,11 +1052,9 @@ def _get_search_points(
         # ensure that maximum N_random_points are sampled.
         if N_random_points < random_Xs.shape[0]:
             raise ValueError(
-                "A maximum of {} points ".format(N_random_points),
-                "should be randomly sampled but {} ".format(
-                    random_Xs.shape[0]
-                ),
-                "were sampled. Please validate the provided options.",
+                f"A maximum of {N_random_points} points should be randomly "
+                f"sampled but {random_Xs.shape[0]} were sampled. Please "
+                "validate the provided options."
             )
 
         # remaining samples

@@ -3571,6 +3571,7 @@ class VBMC:
         self._validate_search_acq_fcn_option()
         self._validate_search_optimizer_option()
         self._validate_acq_hedge_option()
+        self._validate_search_fraction_options()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3686,6 +3687,40 @@ class VBMC:
                 "brings) is not ported, so turning the option on would "
                 "leave the acquisition of each step unchosen. An entry of "
                 "options['search_acq_fcn'] is picked at random instead."
+            )
+
+    def _validate_search_fraction_options(self):
+        """Check the fractions that divide the candidates of the
+        acquisition search among their sources."""
+        fractions = {
+            name: self.options.get(name, 0.0)
+            for name in (
+                "search_cache_frac",
+                "heavy_tail_search_frac",
+                "mvn_search_frac",
+                "hpd_search_frac",
+                "box_search_frac",
+            )
+        }
+        listed = ", ".join(
+            f"{name} = {value!r}" for name, value in fractions.items()
+        )
+        if not all(isinstance(value, Real) for value in fractions.values()):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each be a "
+                f"number in [0, 1]: {listed}."
+            )
+        total = sum(fractions.values())
+        if any(not 0 <= value <= 1 for value in fractions.values()) or (
+            total > 1
+        ):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each lie in "
+                f"[0, 1] and must sum to at most 1: {listed}, summing to "
+                f"{total!r}. The share the fractions leave is drawn from "
+                "the variational posterior."
             )
 
     def _ensure_runtime_tip_state(self):

@@ -395,6 +395,42 @@ def test_acquiring_a_cached_point_without_a_value_evaluates_it(mocker):
     assert optim_state["cache"]["skip_logger"].shape == (0,)
 
 
+def test_two_steps_with_a_search_cache(mocker):
+    """The search cache holds the candidates of the previous step, so it
+    is empty at the first step of a run and full from the second. Its
+    share of the search set is taken from what the other fractions of the
+    sieve leave, and both steps complete."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 32,
+            "search_cache_frac": 0.25,
+            "search_optimizer": "none",
+        },
+        seed=20260921,
+    )
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state = vbmc.function_logger, vbmc.optim_state
+    calls = function_logger.func_count
+    assert np.size(optim_state["search_cache"]) == 0
+
+    for step in range(2):
+        function_logger, optim_state, _, gp = active_sample(
+            gp,
+            1,
+            optim_state,
+            function_logger,
+            vbmc.iteration_history,
+            vbmc.vp,
+            vbmc.options,
+        )
+        assert function_logger.func_count == calls + step + 1
+        assert np.shape(optim_state["search_cache"]) == (32, D)
+
+
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     """A local search that raises costs one acquisition, not the run."""
     D = 2
@@ -1457,16 +1493,19 @@ def test_get_search_points_more_points_randomly_than_requested():
     """
     Test that ValueError is raised when options lead to more points sampled than
     requested.
+
+    Fractions that claim more than the whole search set are refused at
+    construction, so the guard is reached only by a caller that writes
+    them into the options of a built instance.
     """
-    options = {
-        "cache_frac": 0,
-        "search_cache_frac": 0,
-        "heavy_tail_search_frac": 1,
-        "mvn_search_frac": 1,
-        "box_search_frac": 1,
-        "hpd_search_frac": 1,
-    }
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
+    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, {"cache_frac": 0})
+    for name in (
+        "heavy_tail_search_frac",
+        "mvn_search_frac",
+        "box_search_frac",
+        "hpd_search_frac",
+    ):
+        vbmc.options.__setitem__(name, 1, force=True)
     number_of_points = 100
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
 
@@ -1890,6 +1929,43 @@ def test_repeated_observation_skips_search_optimizer(mocker):
     )
     assert function_logger.Xn == Xn0 + 1
     assert fmin.call_count == 1
+
+
+def test_the_search_cache_holds_no_training_input(mocker):
+    """With repeated observations on, the training inputs are offered to
+    the acquisition of the step as candidates for a repeat. They stay out
+    of the search cache: coming back from it at a later step, a training
+    input would be an ordinary candidate, without the repeat flag that
+    caps consecutive repeats and that keeps the point an exact repeat."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "ns_search": 32,
+            "search_cache_frac": 0.25,
+            "max_repeated_observations": 3,
+            "search_optimizer": "none",
+        },
+        _cheap_acq,
+    )
+    X_train = function_logger.X[function_logger.X_flag].copy()
+    assert X_train.shape[0] > 0
+
+    function_logger, optim_state, _, gp = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The training inputs joined the candidates of the step, and the cache
+    # holds the search set without them.
+    search_cache = np.asarray(optim_state["search_cache"])
+    assert search_cache.shape == (32, X_train.shape[1])
+    for row in X_train:
+        assert not np.any(np.all(search_cache == row, axis=1))
 
 
 def test_candidate_noise_is_one_observation_at_uncertainty_level_one(mocker):

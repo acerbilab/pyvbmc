@@ -80,6 +80,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
             "search_optimizer",
         ),
         ({"search_optimizer": "bounded"}, ValueError, "search_optimizer"),
+        ({"search_cache_frac": 0.5}, ValueError, "search_cache_frac"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -150,3 +151,44 @@ def test_a_stored_nelder_mead_that_new_options_replaces_loads(tmp_path):
     saved = _saved_carrying_nelder_mead(tmp_path, 2, "two.pkl")
     vbmc = VBMC.load(saved, new_options={"search_optimizer": "cmaes"})
     assert vbmc.options["search_optimizer"] == "cmaes"
+
+
+SEARCH_FRACTIONS = (
+    "search_cache_frac",
+    "heavy_tail_search_frac",
+    "mvn_search_frac",
+    "hpd_search_frac",
+    "box_search_frac",
+)
+
+
+def test_search_fractions_that_claim_more_than_the_whole_are_refused():
+    """The five fractions divide the candidates of the acquisition search
+    among their sources, and the share they leave is drawn from the
+    variational posterior, so together they cannot claim more than the
+    whole. With the shipped fractions the search set is complete from the
+    second step of an iteration on, and a share too large used to raise
+    there, one iteration into the run."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"search_cache_frac": 0.5})
+    message = execinfo.value.args[0]
+    for name in SEARCH_FRACTIONS:
+        assert name in message
+    assert "1.25" in message
+
+
+def test_a_search_fraction_outside_the_unit_interval_is_refused():
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"mvn_search_frac": -0.25})
+    message = execinfo.value.args[0]
+    assert "mvn_search_frac = -0.25" in message
+    for name in SEARCH_FRACTIONS:
+        assert name in message
+
+
+def test_the_shipped_search_fractions_leave_room_for_a_search_cache():
+    """0.25 each for the heavy-tailed, multivariate-normal and box shares,
+    none for the high-posterior-density share: a quarter is left."""
+    vbmc = _vbmc(options={"search_cache_frac": 0.25})
+    assert vbmc.options["search_cache_frac"] == 0.25
+    assert sum(vbmc.options[name] for name in SEARCH_FRACTIONS) == 1
