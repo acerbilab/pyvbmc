@@ -1334,9 +1334,15 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   skipped, with one rerun of `test_minimize_adam_matyas_with_noise`, an
   unseeded test that failed about one call in eight and that `b731fac` seeds
   and bounds by the directions of its target (PI: fix it before the push);
-  the Torch environment, TORCHN
-  passed; the PyMC environment, 107 passed. Not pushed; the CI matrix has
-  not run on it.
+  the Torch environment, 785 passed and 19 skipped; the PyMC environment,
+  107 passed.
+- [x] 2026-09-21: the check of the wave-3 pass through CI, and merged (PI:
+  fix the flaky test, then the push, the CI and the merge). Pushed on
+  `f0be99b`; the branch smoke and the full matrix, nine cells, are green at
+  the first attempt. `dev-port-review` merged into `dev-next` (merge commit
+  `5acd382`, on `dev-next` at `0f3015b`, which had not moved), the review's
+  status in `TODO.md` updated there (`24069e6`), and `dev-port-review`
+  fast-forwarded onto it.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9, and
   nothing else.** The other waves are decided by the PI after wave 5 is
   complete; they are listed under "After wave 5" below for the record, and
@@ -1386,13 +1392,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
      into `dev-next` with the status line of `TODO.md` updated there.
 
   State of the branch. `dev-port-review` and `dev-next` are pushed and hold
-  the wave-4 pass (merge commit `9d9c01b`). Locally `dev-port-review` is
-  ahead of its remote by the commits of the independent check of the wave-3
-  pass (the worklog entry above), which wait for the PI's word on the push,
-  the branch smoke, the full matrix and the merge. Nothing is in flight except
-  possibly the smoke run that the merge started on `dev-next`
+  the wave-4 pass and the independent check of the wave-3 pass (merge
+  commits `9d9c01b` and `5acd382`); `dev-port-review` is ahead of `dev-next`
+  by documentation commits only. Nothing is in flight except possibly the
+  smoke run that the merge started on `dev-next`
   (`gh run list --branch dev-next`), which tests code the full matrix
-  already passed on `11fb766`. The reviewers' check scripts of waves 4 and
+  already passed on `f0be99b`. The reviewers' check scripts of waves 4 and
   5, the gate records and the logs are on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
   writes its own checks and may use the scripts as leads. The golden
@@ -1409,6 +1414,19 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-21): every fix pass moves them. The stored oracle state at
   uncertainty level 1 is an item of `TODO.md` (PI, 2026-09-21).
+- [ ] A candidate from outside the slices, to be verified with the
+  accumulated findings. `load(new_options=)` validates the names it is
+  given, updates the options and checks single values
+  (`_validate_option_values`); it runs neither `Options.update_defaults`
+  nor `_init_optim_state`. An option that is read only at construction is
+  therefore accepted and takes no coherent effect:
+  `new_options={"uncertainty_handling": True}` leaves the noise model of
+  the GP, which `_init_optim_state` fixes, and the noiseless values of the
+  five noisy-target defaults as they were. Rows W2-7 and W2-8 of the wave-2
+  ledger cover those defaults at construction only. Found on 2026-09-21
+  while the statements of `AGENTS.md` were checked against the code, by
+  reading `load`; not reproduced by a run. A disposition to consider: `load`
+  refuses the options that are read only at construction.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
 - [ ] Fixes on `dev-port-review` with gates; durable sheet entries

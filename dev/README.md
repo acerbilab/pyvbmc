@@ -794,7 +794,9 @@ reason.
   `meta["rebaselined"]` in the `.json` (oracle, date, git SHA, reason,
   per-output max change: the thing to look for when reviewing such a
   diff), refuses the platform-bound oracles (`active_sample_step`,
-  `gp_fit`) off the generating platform, and runs one process at a time.
+  `gp_fit`, `gp_fit_history`) off the generating platform, where `--check`
+  skips them as the tests do (`PYVBMC_ORACLES_ALL=1` forces them), and runs
+  one process at a time.
   Since 2026-09-05 (item 8): `--expect-moving A,B` names the other
   oracles a change moves so the post-write check does not fail on them
   (a random-stream change moves every oracle that draws); `--add-oracle

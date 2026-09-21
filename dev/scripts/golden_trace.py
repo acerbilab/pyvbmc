@@ -48,6 +48,9 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
+# The package of this checkout, whichever checkout is installed: the traces
+# are labelled with this checkout's commit.
+sys.path.insert(0, str(REPO_ROOT))
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
 # Rough solo minutes per run, used only to order tasks longest-first when

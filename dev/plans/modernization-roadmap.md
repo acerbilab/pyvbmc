@@ -1155,6 +1155,32 @@ before publication.
 - [x] Add a thin [agent skill](../../skills/pyvbmc/SKILL.md) directing users'
   coding agents to existing documentation (2026-09-12). Scope and maintenance
   are recorded in the [skill note](../2026-09-02-user-agent-skill.md).
+- [x] Rewrite `AGENTS.md` as a statement of what holds (2026-09-21, PI's
+  criterion: what an agent must know before working in the repository and
+  would not meet at the point of need). Every claim of the old file was
+  first checked against the code by read-only reviewers, each dated clause
+  was traced to the plan, ledger or fixture metadata that records the same
+  history, and the new text was checked by two fresh reviewers, one against
+  the code and one against the criterion. The file opens with what it is
+  for, so that a change records itself in its plan and not there. What the
+  check found outside the file, fixed with it: `golden_replay.py`,
+  `golden_trace.py` and `profile_run.py` imported the installed checkout's
+  package from any other checkout while labelling their output with their
+  own commit, and now put their repository root first on `sys.path`, as
+  `make_oracle_fixtures.py` did; `make_oracle_fixtures.py --check` reported
+  the platform-bound oracles as failures off the generating platform and
+  now skips them as the tests do (on the generating platform `--check
+  --exact` passes on 11 of 11 after the change); the generator's docstring
+  and its entry in `dev/README.md` state the present gate and the three
+  platform-bound oracles; `Product._generic` takes a generator; `.coveragerc`
+  omits the test directory that exists; the MATLAB text fixtures and the two
+  static pickles have `FIXTURES.md` entries. Recorded and not fixed: a
+  candidate about `load(new_options=)` in the
+  [port review plan](port-correctness-review.md), and what the sdist ships
+  in `TODO.md` (an sdist built that day holds every tracked file but
+  `docsrc/`, so the rule of adding fixtures to `MANIFEST.in` by hand had no
+  effect and is not in the new file). `known_differences.md` of the port
+  review cites the old file by section, and says so in its header.
 - [ ] Sweep every tracked document and record before the release for
   acknowledgments of a wrong value or defect that the affected file does
   not itself carry as a correction or flag, and for statements that were
