@@ -2038,9 +2038,9 @@ class VBMC:
         # Vector of maximum lower confidence bounds (LCB) of fcn values:
         # the sequence recomputed with the current Gaussian process where
         # there is one, the maxima each iteration recorded otherwise. A
-        # recomputed entry is NaN for an iteration none of whose points is
-        # still in the training set, and the maxima below pass over it as
-        # MATLAB's max does.
+        # recomputed entry is NaN for an iteration by whose end no logged
+        # point is still in the training set, and the maxima below pass
+        # over it as MATLAB's max does.
         recomputed = self.optim_state.get("lcb_max_vec")
         if recomputed is not None and np.size(recomputed) > 0:
             lcb_max_vec = np.asarray(recomputed)[: iteration + 1]
@@ -2503,8 +2503,9 @@ class VBMC:
         lcb_max_vec : np.ndarray, shape (n_recorded_iterations,)
             The recomputed maximum for each recorded iteration. An entry
             is NaN where the iteration's count of logged points is not
-            recorded, or where no logged point of that iteration is still
-            in the training set.
+            recorded, or where none of the points logged up to that
+            iteration is still in the training set; the maximum being
+            cumulative, such entries can only open the sequence.
         """
         n_logged = self.function_logger.Xn + 1
         in_training_set = self.function_logger.X_flag
