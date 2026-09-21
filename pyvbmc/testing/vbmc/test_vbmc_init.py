@@ -889,8 +889,10 @@ def test_vbmc_init_log_joint_noisy():
 
 def test_vbmc_init_log_joint_prior():
     D = 3
-    lb = np.full((1, D), -np.inf)
-    ub = np.full((1, D), np.inf)
+    # The generic priors of the bounded families live on [0, 1], and the
+    # hard bounds have to lie inside the support of the prior.
+    lb = np.zeros((1, D))
+    ub = np.ones((1, D))
     x0_array = np.full((1, D), 0.5)
     plb = np.full((1, D), 0.1)
     pub = np.full((1, D), 0.9)
@@ -952,8 +954,10 @@ def test_vbmc_init_log_joint_prior():
 def test_vbmc_init_log_joint_noisy_prior():
     options = {"specify_target_noise": 2}
     D = 3
-    lb = np.full((1, D), -np.inf)
-    ub = np.full((1, D), np.inf)
+    # The generic priors of the bounded families live on [0, 1], and the
+    # hard bounds have to lie inside the support of the prior.
+    lb = np.zeros((1, D))
+    ub = np.ones((1, D))
     x0_array = np.full((1, D), 0.5)
     plb = np.full((1, D), 0.1)
     pub = np.full((1, D), 0.9)
@@ -1488,15 +1492,18 @@ class TrackingPrior(Prior):
         return cls(D)
 
 
-def _vectorized_vbmc(target, *, prior=None, options=None, D=2):
+def _vectorized_vbmc(target, *, prior=None, options=None, D=2, bounds=None):
     merged_options = {"vectorized_target": True}
     if options:
         merged_options.update(options)
+    if bounds is None:
+        bounds = (np.full((1, D), -np.inf), np.full((1, D), np.inf))
+    lower_bounds, upper_bounds = bounds
     return VBMC(
         target,
         np.zeros((1, D)),
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
+        lower_bounds,
+        upper_bounds,
         np.full((1, D), -1.0),
         np.full((1, D), 1.0),
         options=merged_options,
@@ -1585,7 +1592,9 @@ def test_vectorized_target_option_and_logger_mode():
 def test_vectorized_likelihood_with_builtin_prior_and_column_output():
     prior = UniformBox(np.full(2, -2.0), np.full(2, 2.0))
     vbmc = _vectorized_vbmc(
-        lambda x: np.sum(x, axis=1, keepdims=True), prior=prior
+        lambda x: np.sum(x, axis=1, keepdims=True),
+        prior=prior,
+        bounds=(np.full((1, 2), -2.0), np.full((1, 2), 2.0)),
     )
     points = np.array([[0.0, 0.0], [0.5, -0.5]])
 
@@ -1708,3 +1717,108 @@ def test_log_joint_with_a_user_function_marginal():
         + box.log_pdf(x[0, 1:]).item()
     )
     assert np.isclose(vbmc.log_joint(x).item(), expected)
+
+
+def _log_likelihood_for_prior_bounds(x):
+    return np.sum(x**2 + x + 1)
+
+
+def test_a_prior_narrower_than_the_hard_bounds_is_refused():
+    """The log-joint is ``-inf`` where the box reaches outside the support
+    of the prior, and a run would stop at the first evaluation it makes
+    there."""
+    D = 2
+    with pytest.raises(ValueError) as err:
+        VBMC(
+            _log_likelihood_for_prior_bounds,
+            np.full((1, D), 5.0),
+            np.zeros((1, D)),
+            np.full((1, D), 10.0),
+            np.full((1, D), 2.0),
+            np.full((1, D), 8.0),
+            prior=UniformBox(0.0, 1.0, D=D),
+        )
+    message = err.value.args[0]
+    assert "inside the support of `prior`" in message
+    assert "coordinate 0 has bounds [0.0, 10.0]" in message
+    assert "coordinate 1 has bounds [0.0, 10.0]" in message
+    assert "support [0.0, 1.0]" in message
+
+
+def test_a_prior_whose_support_covers_the_hard_bounds_is_taken():
+    """Equality is containment, a wider support is enough, and a prior
+    whose support is not finite covers any box."""
+    D = 2
+    x0_array = np.full((1, D), 5.0)
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    plb, pub = np.full((1, D), 2.0), np.full((1, D), 8.0)
+    unbounded_lb = np.full((1, D), -np.inf)
+    unbounded_ub = np.full((1, D), np.inf)
+
+    accepted = [
+        # The support is exactly the box.
+        (lb, ub, plb, pub, x0_array, UniformBox(0.0, 10.0, D=D)),
+        # A support wider than the box.
+        (lb, ub, plb, pub, x0_array, UniformBox(-1.0, 11.0, D=D)),
+        # A spline trapezoid built from the bounds, as example 5 builds it.
+        (
+            lb,
+            ub,
+            plb,
+            pub,
+            x0_array,
+            SplineTrapezoidal(lb, plb, pub, ub),
+        ),
+        # A product whose shifted marginal covers its coordinate.
+        (
+            lb,
+            ub,
+            plb,
+            pub,
+            x0_array,
+            [sp.stats.uniform(loc=-1, scale=12), sp.stats.norm()],
+        ),
+        # Unbounded parameters with a prior of unbounded support.
+        (
+            unbounded_lb,
+            unbounded_ub,
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            np.zeros((1, D)),
+            SmoothBox(-1.0, 1.0, 1.0, D=D),
+        ),
+        (
+            unbounded_lb,
+            unbounded_ub,
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            np.zeros((1, D)),
+            multivariate_normal(np.zeros(D)),
+        ),
+    ]
+    for lower, upper, p_lower, p_upper, x0, prior in accepted:
+        vbmc = VBMC(
+            _log_likelihood_for_prior_bounds,
+            x0,
+            lower,
+            upper,
+            p_lower,
+            p_upper,
+            prior=prior,
+        )
+        assert vbmc.prior is not None
+
+
+def test_a_log_prior_callable_is_taken_whatever_the_hard_bounds():
+    """A callable states no support, so it covers any box."""
+    D = 2
+    vbmc = VBMC(
+        _log_likelihood_for_prior_bounds,
+        np.full((1, D), 5.0),
+        np.zeros((1, D)),
+        np.full((1, D), 10.0),
+        np.full((1, D), 2.0),
+        np.full((1, D), 8.0),
+        log_prior=lambda x: -0.5 * np.sum(np.asarray(x) ** 2),
+    )
+    assert vbmc.prior is not None

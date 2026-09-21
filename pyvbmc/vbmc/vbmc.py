@@ -71,6 +71,49 @@ def _max_ignoring_nan(values):
     return np.amax(values)
 
 
+def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
+    """Check that the hard bounds lie inside the support of the prior.
+
+    Where the box of the hard bounds reaches outside the support the prior
+    has no density, so the log-joint is ``-inf`` there and the run stops at
+    the first evaluation it makes in that part of the box, in the function
+    logger, with a message that names neither the prior nor the bounds.
+
+    Parameters
+    ----------
+    prior : pyvbmc.priors.Prior
+        The prior. Its ``support()`` is the box that has to contain the
+        hard bounds; a prior that reports no finite support contains every
+        box.
+    lower_bounds, upper_bounds : np.ndarray
+        The hard bounds, of shape `(1, D)`.
+
+    Raises
+    ------
+    ValueError
+        If the hard bounds reach outside the support of the prior in any
+        coordinate.
+    """
+    support_lb, support_ub = prior.support()
+    support_lb = np.asarray(support_lb, dtype=float).ravel()
+    support_ub = np.asarray(support_ub, dtype=float).ravel()
+    lb = np.asarray(lower_bounds, dtype=float).ravel()
+    ub = np.asarray(upper_bounds, dtype=float).ravel()
+
+    outside = np.flatnonzero((lb < support_lb) | (ub > support_ub))
+    if outside.size > 0:
+        details = "; ".join(
+            f"coordinate {i} has bounds [{lb[i]}, {ub[i]}] against the "
+            f"support [{support_lb[i]}, {support_ub[i]}]"
+            for i in outside
+        )
+        raise ValueError(
+            "The hard bounds should lie inside the support of `prior`, but "
+            f"they reach outside it: {details}. Give hard bounds inside the "
+            "support of the prior, or a prior whose support covers them."
+        )
+
+
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
@@ -146,7 +189,11 @@ class VBMC:
         ``scipy.stats`` distributions. (see the documentation on priors for
         more details). If ``prior`` is not `None`, the argument ``log_density``
         is assumed to represent the log-likelihood (otherwise it is assumed to
-        represent the log-joint).
+        represent the log-joint). The hard bounds ``lower_bounds`` and
+        ``upper_bounds`` must lie inside the support of the prior. Within
+        them the prior is used as it is given: the model evidence reported is
+        that of the prior restricted to the hard bounds, not that of a prior
+        truncated to them and normalized again.
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
@@ -3489,6 +3536,9 @@ class VBMC:
                 raise ValueError(
                     f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
                 )
+            _check_prior_covers_bounds(
+                prior, self.lower_bounds, self.upper_bounds
+            )
         if prior is not None and prior.log_pdf is not None:
             # Combine log-prior and log-likelihood:
             log_prior = prior.log_pdf
