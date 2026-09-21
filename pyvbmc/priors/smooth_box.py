@@ -4,7 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
-from pyvbmc.priors.prior import check_finite
+from pyvbmc.priors.prior import _check_finite
 from pyvbmc.rng import get_rng
 
 
@@ -50,7 +50,7 @@ class SmoothBox(Prior):
             If any pivot or scale is not finite, if ``scale[i] <= 0``, or if
             ``a[i] >= b[i]``, for any `i`.
         """
-        check_finite({"a": a, "b": b, "scale": scale})
+        _check_finite({"a": a, "b": b, "scale": scale})
         self.a, self.b, self.scale = tile_inputs(
             a, b, scale, size=D, squeeze=True
         )

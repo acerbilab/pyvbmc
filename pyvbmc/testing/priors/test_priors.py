@@ -100,6 +100,19 @@ def test_an_argument_which_is_not_finite_is_refused(cls, arguments, bad):
         assert "should be finite" in err.value.args[0]
 
 
+def test_the_finiteness_check_is_private_to_the_subpackage():
+    """The helper the four box constructors share is not part of the
+    interface of `pyvbmc.priors`, which exports and documents its names."""
+    import pyvbmc.priors
+    from pyvbmc.priors.prior import _check_finite
+
+    assert not hasattr(pyvbmc.priors, "check_finite")
+    with pytest.raises(ValueError) as err:
+        _check_finite({"a": np.array([0.0, np.nan])})
+    assert "All elements of a=" in err.value.args[0]
+    assert "should be finite" in err.value.args[0]
+
+
 def test_infinite_hard_bounds_are_refused_by_a_uniform_box():
     """The message says why an unbounded problem's hard bounds do not make
     a uniform-box prior."""

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
-def check_finite(arguments, note=""):
+def _check_finite(arguments, note=""):
     """Check that the arguments defining a prior are finite.
 
     Every comparison with a NaN is false and an infinity satisfies a strict
