@@ -33,9 +33,12 @@ affine), so its covariance is ``M M^T``.
 Usage, from the repository root::
 
     python -u dev/scripts/export_animation_trace.py --seed 8
+    python -u dev/scripts/export_animation_trace.py --target banana --seed 22
 
-writes ``trace.js`` (``window.VBMC_TRACE = {...}``) next to the page. The
-fields are described in ``build_trace``.
+The first writes ``trace.js`` (``window.VBMC_TRACE = {...}``), the run
+that ``index.html`` plays; the second writes ``trace_wordmark.js``, the
+run that ``wordmark.html`` plays, whose target has no lobe (see
+``TARGETS``). The fields are described in ``build_trace``.
 """
 
 import argparse
@@ -55,7 +58,11 @@ import pyvbmc
 from pyvbmc import VBMC
 
 REPO = Path(__file__).resolve().parents[2]
-DEFAULT_OUT = REPO / "docsrc" / "source" / "_static" / "vbmc3d" / "trace.js"
+PAGE_DIR = REPO / "docsrc" / "source" / "_static" / "vbmc3d"
+DEFAULT_OUT = {
+    "lobe": PAGE_DIR / "trace.js",
+    "banana": PAGE_DIR / "trace_wordmark.js",
+}
 
 # Display window in the caller's coordinates (square, so that the floor of
 # the scene is not stretched).
@@ -75,9 +82,12 @@ SD_HALF = 1.0
 
 BANANA_SIG1 = 2.0
 BANANA_B = 0.5
-LOBE_W = 0.22
 LOBE_MU = np.array([0.0, 4.6])
 LOBE_SD = np.array([0.75, 0.6])
+# Weight of the lobe for each target that --target selects: "lobe" is the
+# run behind trace.js, "banana" the one behind trace_wordmark.js.
+TARGETS = {"lobe": 0.22, "banana": 0.0}
+LOBE_W = TARGETS["lobe"]
 
 
 def log_density_vec(X):
@@ -85,7 +95,8 @@ def log_density_vec(X):
 
     A twisted Gaussian (a banana opening upward; the twist has unit
     Jacobian, so the density is normalized) mixed with a Gaussian lobe
-    between its arms. The log normalizing constant is 0.
+    between its arms, of weight ``LOBE_W``. The log normalizing constant
+    is 0.
     """
     X = np.atleast_2d(np.asarray(X, dtype=float))
     z1 = X[:, 0]
@@ -138,6 +149,29 @@ def gskl(vp):
     mean, cov = vp.moments(orig_flag=True, cov_flag=True)
     true_mean, true_cov = true_moments()
     return float(0.5 * np.sum(kl_div_mvn(mean, cov, true_mean, true_cov)))
+
+
+def arm_coverage(X):
+    """How far a run's evaluations reach up the banana's arms, for the
+    worse of the two.
+
+    The share of points near the ridge with ``|x| > 3.2`` and below the
+    window's top edge (the arm tips, which a run that stays near the vertex
+    leaves bare) that have an evaluation within 0.75, about three grid
+    cells. The points are a fixed sample of the banana alone, drawn from
+    their own generator, so the score ignores the lobe and leaves the run's
+    random stream alone.
+    """
+    u = np.random.default_rng(0).standard_normal((20000, 2))
+    u = u[(np.abs(u[:, 1]) < 1.5) & (np.abs(u[:, 0]) > 1.6)]
+    x = u[:, 0] * BANANA_SIG1
+    tips = np.column_stack(
+        [x, u[:, 1] + BANANA_B * (x**2 - BANANA_SIG1**2)]
+    )
+    tips = tips[tips[:, 1] < Y_RANGE[1]]
+    dist = np.linalg.norm(tips[:, None, :] - X[None, :, :], axis=2)
+    near = dist.min(axis=1) < 0.75
+    return float(min(near[tips[:, 0] < 0].mean(), near[tips[:, 0] > 0].mean()))
 
 
 # --------------------------------------------------------------------------
@@ -591,7 +625,11 @@ def build_trace(vbmc, recorder, results, grid, n_grid, seed):
             "sd_half": SD_HALF,
             "acq_span": ACQ_SPAN,
             "ln_z_true": 0.0,
-            "target": "twisted Gaussian with a lobe",
+            "target": (
+                "twisted Gaussian with a lobe"
+                if LOBE_W
+                else "twisted Gaussian"
+            ),
             "seed": seed,
             "gskl": round(gskl(vbmc.vp), 5),
             "min_ell": round(run_min_length_scale(vbmc), 4),
@@ -619,6 +657,13 @@ def _finite(value):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument(
+        "--target",
+        choices=sorted(TARGETS),
+        default="lobe",
+        help="lobe: the banana with a lobe between its arms (trace.js); "
+        "banana: the banana alone (trace_wordmark.js)",
+    )
     parser.add_argument("--seed", type=int, default=8)
     parser.add_argument("--grid", type=int, default=64)
     parser.add_argument("--max-fun-evals", type=int, default=200)
@@ -628,16 +673,23 @@ def main(argv=None):
         default=8,
         help="iterations whose per-point acquisition and GP grids are kept",
     )
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument(
+        "--out",
+        type=Path,
+        help="where to write the trace (default: the target's file next "
+        "to the pages)",
+    )
     parser.add_argument(
         "--sweep",
         metavar="A:B",
         help="run seeds A to B - 1 (or a comma-separated list) and print "
-        "each run's ELBO, gsKL and smallest hyperparameter-sample length "
-        "scale instead of writing a trace (the target's log evidence is "
-        "0; see min_length_scale)",
+        "each run's ELBO, gsKL, smallest hyperparameter-sample length "
+        "scale and arm coverage instead of writing a trace (the target's "
+        "log evidence is 0; see min_length_scale and arm_coverage)",
     )
     args = parser.parse_args(argv)
+    global LOBE_W
+    LOBE_W = TARGETS[args.target]
 
     print(f"pyvbmc from {pyvbmc.__file__}", flush=True)
     if args.sweep:
@@ -647,17 +699,19 @@ def main(argv=None):
         else:
             seeds = [int(v) for v in args.sweep.split(",")]
         print(
-            "seed  iters  evals     elbo  elbo_sd     gskl  min_ell",
+            "seed  iters  evals     elbo  elbo_sd     gskl  min_ell  arms",
             flush=True,
         )
         for seed in seeds:
             vbmc = run(seed, args.max_fun_evals)
             vp, results = vbmc.optimize()
+            logger = vbmc.function_logger
             print(
                 f"{seed:4d}  {results['iterations']:5d}  "
                 f"{results['func_count']:5d}  {results['elbo']:7.3f}  "
                 f"{results['elbo_sd']:7.3f}  {gskl(vp):7.4f}  "
-                f"{run_min_length_scale(vbmc):7.3f}",
+                f"{run_min_length_scale(vbmc):7.3f}  "
+                f"{arm_coverage(logger.X_orig[logger.X_flag]):4.2f}",
                 flush=True,
             )
         return 0
@@ -686,10 +740,11 @@ def main(argv=None):
                 f"{total} hyperparameter samples",
                 flush=True,
             )
-    args.out.parent.mkdir(parents=True, exist_ok=True)
+    out = args.out or DEFAULT_OUT[args.target]
+    out.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(trace, separators=(",", ":"))
-    args.out.write_text(f"window.VBMC_TRACE={payload};\n", encoding="utf-8")
-    print(f"wrote {args.out} ({len(payload) / 1e6:.2f} MB)", flush=True)
+    out.write_text(f"window.VBMC_TRACE={payload};\n", encoding="utf-8")
+    print(f"wrote {out} ({len(payload) / 1e6:.2f} MB)", flush=True)
     return 0
 
 

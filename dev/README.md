@@ -808,9 +808,10 @@ reason.
   and `--check --exact --against DIR` compares with such a dump, for a
   change made while the references are known to lag.
 - `scripts/export_animation_trace.py` — exports one two-dimensional PyVBMC
-  run as the trace that the 3D animation page
-  (`docsrc/source/_static/vbmc3d/index.html`, three.js, no build step; the
-  `README.md` next to it explains the page) plays back: the GP mean and SD
+  run as the trace that a 3D animation page
+  (`docsrc/source/_static/vbmc3d/index.html` or `wordmark.html`, three.js,
+  no build step; the `README.md` next to them explains the pages) plays
+  back: the GP mean and SD
   and the acquisition function on a display grid in the caller's
   coordinates, every evaluation, and the components of the variational
   posterior, from which the page evaluates the posterior itself. The run is
@@ -825,15 +826,18 @@ reason.
   observation, and a grid draws that as a surrogate that misses its data
   (`drawable_samples`; each state records how many samples it shows). The
   acquisition function, the posterior and the numbers are the run's own. The
-  target is a twisted Gaussian with a Gaussian lobe between its arms,
-  normalized, with exact moments. `--sweep A:B` prints each seed's ELBO,
-  gsKL and smallest hyperparameter-sample length scale instead of writing a
-  trace, which is how the seed of the committed trace was chosen. Writes
-  `trace.js` next to the page, about 0.5 MB: the grids are one zlib block of
-  second differences, 16 bits for heights and 8 for SDs and acquisition
-  values. The trace is committed because a run is reproducible only on the
+  target is a twisted Gaussian, normalized, with exact moments: `--target
+  lobe` (the default) adds a Gaussian lobe between its arms and writes
+  `trace.js`, which `index.html` plays; `--target banana` writes
+  `trace_wordmark.js`, which `wordmark.html` plays. `--sweep A:B` prints
+  each seed's ELBO, gsKL, smallest hyperparameter-sample length scale and
+  arm coverage (how far the evaluations reach up the banana's arms) instead
+  of writing a trace, which is how the seeds of the committed traces were
+  chosen. A trace is about 0.5 MB: the grids are one zlib block of second
+  differences, 16 bits for heights and 8 for SDs and acquisition values.
+  The traces are committed because a run is reproducible only on the
   platform that made it, so a documentation build elsewhere could not
-  regenerate the chosen one. The page's query parameters are for captures
+  regenerate the chosen ones. The pages' query parameters are for captures
   and checks: `t`, `paused`, `speed`, `hud=0`, `capture=1` (frames on
   request), `debug=1` (a self-check of the anchoring, reported in the page
-  title), `tremble` and `wobble`.
+  title), `tremble` and `wobble`; `wordmark.html` adds `cam` and `wmview`.

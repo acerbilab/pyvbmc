@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PyVBMC in Wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=STIX+Two+Text:ital,wght@0,400;1,400&display=swap">
+<style>
+  /* One deliberate look: a dark instrument. Every color is painted here. */
+  :root {
+    --ground: #04070c;
+    --ink: #cfeaf5;
+    --ink-dim: #5f8196;
+    --ink-faint: #2c4556;
+    --gp: #4fd8e8;
+    --gp-hot: #ffb347;
+    --vp: #ff4fa3;
+    --acq: #e9ff5a;
+    --truth: #b9c8d8;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --serif: "STIX Two Text", "STIX Two Math", Georgia, "Times New Roman", serif;
+  }
+  html, body { height: 100%; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; overflow: hidden; background: var(--ground); color: var(--ink);
+    font-family: var(--mono); font-size: 13px; line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: relative; height: 100%; overflow: hidden; touch-action: none; }
+  #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+  #gl:active { cursor: grabbing; }
+
+  .hud { position: absolute; pointer-events: none; z-index: 2; }
+  .hud button, .hud input { pointer-events: auto; }
+
+  #head { top: clamp(14px, 3vh, 28px); left: clamp(16px, 3vw, 36px); right: clamp(16px, 3vw, 36px); max-width: 40ch; }
+  #mark { font-weight: 500; letter-spacing: 0.32em; font-size: 12px; color: var(--ink); }
+  #mark span { display: block; margin-top: 2px; }
+  #mark span { color: var(--ink-dim); letter-spacing: 0.12em; font-weight: 400; }
+  #tag { margin-top: clamp(10px, 2.2vh, 22px); font-size: 11px; letter-spacing: 0.2em; color: var(--gp); min-height: 1.4em; }
+  #tag::before { content: "\25B8\00a0"; }
+  #caption {
+    margin: 6px 0 0; font-family: var(--serif); font-style: italic;
+    font-size: clamp(16px, 1.1vw + 11px, 22px); line-height: 1.3; color: var(--ink);
+    text-wrap: balance; text-shadow: 0 0 18px rgba(4, 7, 12, 0.9);
+  }
+  #caption .rest { opacity: 0; }
+  #caption .done::after { content: ""; display: inline-block; width: 0.55em; height: 2px; margin-left: 3px; background: var(--gp); box-shadow: 0 0 8px var(--gp); animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .axis { position: absolute; z-index: 1; pointer-events: none; font-family: var(--serif); font-style: italic; font-size: 15px;
+    color: var(--ink-dim); transform: translate(-50%, -50%); text-shadow: 0 0 8px var(--ground); }
+  .axis sub { font-size: 0.7em; font-style: normal; }
+
+  #foot {
+    left: clamp(16px, 3vw, 36px); right: clamp(16px, 3vw, 36px);
+    bottom: calc(clamp(12px, 2.5vh, 24px) + env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  #row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+  #telemetry { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; font-variant-numeric: tabular-nums; }
+  #telemetry div { display: flex; flex-direction: column; }
+  #telemetry dt { font-size: 10px; letter-spacing: 0.18em; color: var(--ink-dim); }
+  #telemetry dd { margin: 0; font-size: clamp(15px, 0.6vw + 11px, 19px); font-weight: 500; color: var(--ink); white-space: nowrap; }
+  #telemetry dd small { font-size: 0.72em; font-weight: 400; color: var(--ink-dim); }
+  #telemetry .true dd { color: var(--truth); }
+  #telemetry .elbo dd { color: var(--vp); }
+
+  #chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font: inherit; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-dim);
+    background: rgba(8, 16, 24, 0.55); border: 1px solid var(--ink-faint);
+    padding: 5px 9px; border-radius: 2px; cursor: pointer;
+  }
+  .chip::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border: 1px solid currentColor; vertical-align: 0; }
+  .chip[aria-pressed="true"] { color: var(--c, var(--ink)); border-color: var(--c, var(--ink-dim)); }
+  .chip[aria-pressed="true"]::before { background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  #transport { display: flex; align-items: center; gap: 12px; }
+  .ctl {
+    font: inherit; font-size: 11px; letter-spacing: 0.1em; color: var(--ink);
+    background: rgba(8, 16, 24, 0.55); border: 1px solid var(--ink-faint);
+    min-width: 44px; height: 30px; padding: 0 10px; border-radius: 2px; cursor: pointer;
+  }
+  .ctl:hover, .chip:hover { border-color: var(--ink-dim); }
+  .ctl:focus-visible, .chip:focus-visible, #seek:focus-visible { outline: 1px solid var(--gp); outline-offset: 2px; }
+  #track { position: relative; flex: 1 1 0; min-width: 0; height: 30px; display: flex; align-items: center; }
+  #ticks { position: absolute; left: 0; right: 0; top: 50%; height: 9px; transform: translateY(-50%); pointer-events: none; }
+  #ticks i { position: absolute; top: 0; width: 1px; height: 100%; background: var(--ink-faint); }
+  #ticks i.major { background: var(--ink-dim); }
+  #seek { -webkit-appearance: none; appearance: none; width: 100%; min-width: 0; margin: 0; height: 30px; background: transparent; cursor: pointer; }
+  #seek::-webkit-slider-runnable-track { height: 1px; background: var(--ink-dim); }
+  #seek::-moz-range-track { height: 1px; background: var(--ink-dim); }
+  #seek::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 17px; margin-top: -8px; background: var(--gp); box-shadow: 0 0 10px var(--gp); border: 0; border-radius: 0; }
+  #seek::-moz-range-thumb { width: 3px; height: 17px; background: var(--gp); box-shadow: 0 0 10px var(--gp); border: 0; border-radius: 0; }
+
+  .corner { position: absolute; width: 14px; height: 14px; border: 0 solid var(--ink-faint); z-index: 1; pointer-events: none; }
+  .corner.tl { top: 8px; left: 8px; border-top-width: 1px; border-left-width: 1px; }
+  .corner.tr { top: 8px; right: 8px; border-top-width: 1px; border-right-width: 1px; }
+  .corner.bl { bottom: 8px; left: 8px; border-bottom-width: 1px; border-left-width: 1px; }
+  .corner.br { bottom: 8px; right: 8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  #fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--ink-dim); z-index: 3; }
+  body.clean .hud, body.clean #foot, body.clean .corner, body.clean .axis { display: none; }
+  body.clean #gl { cursor: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-label="Animated three-dimensional view of a PyVBMC run"></canvas>
+  <span class="axis" id="ax1">x<sub>1</sub></span><span class="axis" id="ax2">x<sub>2</sub></span>
+  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+
+  <div id="head" class="hud">
+    <div id="mark">PYVBMC <span>variational Bayesian Monte Carlo</span></div>
+    <div id="tag"></div>
+    <p id="caption"></p>
+  </div>
+
+  <div id="foot" class="hud">
+    <div id="row">
+      <dl id="telemetry">
+        <div><dt>ITER</dt><dd id="tIter">00</dd></div>
+        <div><dt>EVALS</dt><dd id="tEval">000</dd></div>
+        <div><dt>K</dt><dd id="tK">&ndash;</dd></div>
+        <div class="elbo"><dt>ELBO</dt><dd id="tElbo">&ndash;</dd></div>
+        <div class="true" id="trueBox" hidden><dt>TRUE LOG Z</dt><dd id="tTrue">0.000</dd></div>
+      </dl>
+      <div id="chips" role="group" aria-label="Layers">
+        <button class="chip" id="chipGp" style="--c: var(--gp)" aria-pressed="true">GP</button>
+        <button class="chip" id="chipVp" style="--c: var(--vp)" aria-pressed="true">q(x)</button>
+        <button class="chip" id="chipAcq" style="--c: var(--acq)" aria-pressed="true">ACQ</button>
+        <button class="chip" id="chipTruth" style="--c: var(--truth)" aria-pressed="false">TRUTH</button>
+        <button class="chip" id="chipDen" style="--c: var(--ink)" aria-pressed="false">DENSITY</button>
+      </div>
+    </div>
+    <div id="transport">
+      <button class="ctl" id="play" aria-label="Pause">II</button>
+      <div id="track"><div id="ticks"></div><input id="seek" type="range" min="0" max="100" step="0.01" value="0" aria-label="Timeline"></div>
+      <button class="ctl" id="speed" aria-label="Playback speed">1&times;</button>
+    </div>
+  </div>
+  <div id="fail" hidden>This animation needs WebGL 2, which this browser does not provide.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="trace_wordmark.js"></script>
+<script>
+// A recorded PyVBMC run played back as a 3D wireframe. README.md next to this file explains the
+// structure, the conventions and the display decisions; the trace format is defined by the docstrings
+// of dev/scripts/export_animation_trace.py. In short: the timeline section turns the trace into lists
+// of timed events, and update(tau, ...) draws the state at time tau from them and nothing else.
+(async () => {
+"use strict";
+const TR = window.VBMC_TRACE;
+const $ = (id) => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const qNum = (name, fallback) => { const v = parseFloat(Q.get(name)); return Number.isFinite(v) ? v : fallback; };
+if (Q.get("hud") === "0") document.body.classList.add("clean");
+
+// ---------------------------------------------------------------- renderer
+const canvas = $("gl");
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+} catch (e) { renderer = null; }
+if (!renderer || !renderer.capabilities.isWebGL2 || !TR || typeof DecompressionStream === "undefined") {
+  if (renderer && renderer.capabilities.isWebGL2) {
+    $("fail").textContent = TR ? "This animation needs a browser that can inflate its data (DecompressionStream)."
+                               : "The recorded run (trace.js) did not load.";
+  }
+  $("fail").hidden = false; return;
+}
+const PR = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(PR);
+renderer.setClearColor(0x04070c, 1);
+renderer.autoClear = true;
+
+// ---------------------------------------------------------------- trace
+const META = TR.meta, ITS = TR.iterations, NIT = ITS.length, PTS = TR.points, N = META.n;
+const XMID = (META.x_range[0] + META.x_range[1]) / 2, XH = (META.x_range[1] - META.x_range[0]) / 2;
+const YMID = (META.y_range[0] + META.y_range[1]) / 2, YH = (META.y_range[1] - META.y_range[0]) / 2;
+const toX = (x) => (x - XMID) / XH, toZ = (y) => -(y - YMID) / YH;
+const LZ = Math.log1p(META.z_span);
+
+// The grids come as one zlib block: every 16-bit grid (heights), then every 8-bit grid (SDs and
+// acquisition values), each stored as its second difference along x and y. A grid is named by its index.
+const N2 = N * N;
+const packed = Uint8Array.from(atob(TR.grids), (c) => c.charCodeAt(0));
+const block = await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer();
+const wide = new Uint16Array(block, 0, META.grids.u16 * N2), narrow = new Uint8Array(block, 2 * META.grids.u16 * N2, META.grids.u8 * N2);
+for (const a of [wide, narrow]) for (let o = 0; o < a.length; o += N2) {
+  for (let j = 1; j < N; j++) for (let i = 0; i < N; i++) a[o + j * N + i] += a[o + (j - 1) * N + i];
+  for (let j = 0; j < N; j++) for (let i = 1; i < N; i++) a[o + j * N + i] += a[o + j * N + i - 1];
+}
+function decodeZ(index) {
+  const z = new Float32Array(N2);
+  for (let i = 0; i < N2; i++) z[i] = META.z_top - Math.expm1((wide[index * N2 + i] / 65535) * LZ);
+  return z;
+}
+function decodeSd(index) {
+  const c = new Float32Array(N2);
+  for (let i = 0; i < N2; i++) c[i] = narrow[index * N2 + i] / 255;
+  return c;
+}
+function decodeAcq(index) {   // stored as 1 - sqrt(depth / span); the floor shader reads 1 - depth / span
+  const a = new Float32Array(N2);
+  for (let i = 0; i < N2; i++) { const r = 1 - narrow[index * N2 + i] / 255; a[i] = 1 - r * r; }
+  return a;
+}
+function makeTex(r, g) {
+  const data = new Float32Array(N * N * 4);
+  for (let i = 0; i < N * N; i++) { data[4 * i] = r[i]; data[4 * i + 1] = g ? g[i] : 0; }
+  return dataTex(data);
+}
+function dataTex(data) {
+  const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat, THREE.FloatType);
+  t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true;
+  return t;
+}
+const arrMax = (a) => { let m = -Infinity; for (let i = 0; i < a.length; i++) if (a[i] > m) m = a[i]; return m; };
+
+const truthZ = decodeZ(TR.truth);
+const ZREF = arrMax(truthZ), S_SCALE = 6.0, LIFT = 0.16, HGT = 0.95;
+const truthTex = makeTex(truthZ);
+
+// ---------------------------------------------------------------- anchored GP grids
+// An observation anchors the surrogate: there the mean is the observed value and the predictive SD
+// is zero. A 64 x 64 grid cannot show that, because an observation falls between its wires and the
+// SD recovers within a fraction of a cell. So each observation owns the nearest free wire crossing,
+// and every GP state is stored as a warped grid (texture channels: mean, SD, x and y displacement
+// in cells): a smooth local displacement carries each owned crossing onto its observation, the mean
+// there is corrected to the observed value, and the SD is capped by what conditioning on that one
+// observation alone leaves, sf sqrt(1 - exp(-rho2)): zero at the observation, and for one hyperparameter
+// sample an upper bound on the SD (more observations only lower it). Both corrections are sums of narrow bumps whose weights solve the small
+// linear system that makes them exact at every anchor of the state.
+const small = Math.min(window.innerWidth, window.innerHeight) < 560;
+const STRIDE = 1;                        // every grid line is a wire, so every grid node is a crossing that can anchor
+const BUMP = 0.75 * STRIDE, BUMP2 = 2 * BUMP * BUMP, REACH = Math.ceil(3 * BUMP);
+const bump = (dx, dy) => Math.exp(-(dx * dx + dy * dy) / BUMP2);
+const gridXY = PTS.map((q) => [((q[0] - META.x_range[0]) / (2 * XH)) * (N - 1), ((q[1] - META.y_range[0]) / (2 * YH)) * (N - 1)]);
+const anchor = new Int32Array(PTS.length).fill(-1);
+{
+  const taken = new Set();
+  PTS.forEach((q, i) => {
+    const [gx, gy] = gridXY[i];
+    if (gx < 0 || gy < 0 || gx > N - 1 || gy > N - 1) return;
+    const ci0 = Math.round(gx / STRIDE) * STRIDE, cj0 = Math.round(gy / STRIDE) * STRIDE;
+    let best = -1, bd = 1.6 * STRIDE;
+    for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
+      const ci = ci0 + di * STRIDE, cj = cj0 + dj * STRIDE;
+      if (ci < 0 || cj < 0 || ci >= N || cj >= N || taken.has(cj * N + ci)) continue;
+      const d = Math.hypot(ci - gx, cj - gy);
+      if (d < bd) { bd = d; best = cj * N + ci; }
+    }
+    if (best >= 0) { anchor[i] = best; taken.add(best); }
+    else console.warn(`vbmc3d: evaluation ${i} has no free wire crossing nearby and does not anchor the sheet`);
+  });
+}
+const crom = (p0, p1, p2, p3, f) => p1 + 0.5 * f * (p2 - p0 + f * (2 * p0 - 5 * p1 + 4 * p2 - p3 + f * (3 * (p1 - p2) + p3 - p0)));
+function sampleGrid(g, x, y) {
+  const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, cl = (v) => Math.min(Math.max(v, 0), N - 1);
+  const row = (jj) => { const o = cl(jj) * N; return crom(g[o + cl(i - 1)], g[o + cl(i)], g[o + cl(i + 1)], g[o + cl(i + 2)], fx); };
+  return crom(row(j - 1), row(j), row(j + 1), row(j + 2), fy);
+}
+// Weights w with sum_b w_b bump(anchor_a - anchor_b) = rhs_a for every anchor a, by Gauss-Seidel, which
+// converges for a symmetric positive definite matrix. A Gaussian kernel matrix is one; cutting the bump
+// off at REACH (where it is below 4e-4) keeps it so in practice: with every crossing of a 12 x 12 block
+// an anchor, the smallest eigenvalue is 0.06 and the iteration contracts by 0.86 per sweep. The matrix is
+// not diagonally dominant (off-diagonal row sums reach 2.5), so that is not the reason.
+function bumpWeights(ai, aj, rhs) {
+  const n = ai.length, nb = Array.from({ length: n }, () => []);
+  for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) {
+    const dx = ai[a] - ai[b], dy = aj[a] - aj[b];
+    if (Math.abs(dx) <= REACH && Math.abs(dy) <= REACH) { const v = bump(dx, dy); nb[a].push([b, v]); nb[b].push([a, v]); }
+  }
+  return rhs.map((r) => {
+    const w = Float64Array.from(r);
+    for (let sweep = 0; sweep < 120; sweep++) for (let a = 0; a < n; a++) { let v = r[a]; for (const [b, k] of nb[a]) v -= k * w[b]; w[a] = v; }
+    return w;
+  });
+}
+function splat(field, offset, ai, aj, w) {
+  for (let a = 0; a < ai.length; a++) for (let dj = -REACH; dj <= REACH; dj++) for (let di = -REACH; di <= REACH; di++) {
+    const i = ai[a] + di, j = aj[a] + dj;
+    if (i >= 0 && j >= 0 && i < N && j < N) field[4 * (j * N + i) + offset] += w[a] * bump(di, dj);
+  }
+}
+function anchoredGrid(z, sdc, k, has) {
+  const mem = []; for (let i = 0; i < PTS.length; i++) if (anchor[i] >= 0 && has(i)) mem.push(i);
+  const ai = mem.map((i) => anchor[i] % N), aj = mem.map((i) => Math.floor(anchor[i] / N));
+  const data = new Float32Array(N * N * 4);
+  // displacement: every anchor lands on its observation
+  const [wx, wy] = bumpWeights(ai, aj, [mem.map((i, a) => gridXY[i][0] - ai[a]), mem.map((i, a) => gridXY[i][1] - aj[a])]);
+  // A weight beyond 1.5 cells would fold the mesh; limiting it leaves that crossing short of its observation.
+  for (let a = 0; a < mem.length; a++) {
+    const m = Math.hypot(wx[a], wy[a]), lim = 1.5 * STRIDE;
+    if (m > lim) { wx[a] *= lim / m; wy[a] *= lim / m; console.warn(`vbmc3d: displacement of evaluation ${mem[a]} limited; its crossing is off the observation`); }
+  }
+  splat(data, 2, ai, aj, wx); splat(data, 3, ai, aj, wy);
+  // mean and SD where the wires now are
+  const sd = new Float32Array(N * N), half = META.sd_half;
+  for (let j = 0, n = 0; j < N; j++) for (let i = 0; i < N; i++, n++) {
+    const ux = data[4 * n + 2], uy = data[4 * n + 3], moved = ux !== 0 || uy !== 0;
+    data[4 * n] = moved ? sampleGrid(z, i + ux, j + uy) : z[n];
+    const c = Math.min(Math.max(moved ? sampleGrid(sdc, i + ux, j + uy) : sdc[n], 0), 0.996);   // the shader's ceiling
+    sd[n] = (half * c) / (1 - c);
+  }
+  // SD capped by the nearest observations; mean corrected to pass through them
+  const cellX = (2 * XH) / (N - 1), cellY = (2 * YH) / (N - 1), R = 5 * STRIDE;
+  for (let a = 0; a < mem.length; a++) for (let dj = -R; dj <= R; dj++) for (let di = -R; di <= R; di++) {
+    const i = ai[a] + di, j = aj[a] + dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
+    const n = j * N + i, dx = (i + data[4 * n + 2] - gridXY[mem[a]][0]) * cellX, dy = (j + data[4 * n + 3] - gridXY[mem[a]][1]) * cellY;
+    const cap = k[0] * Math.sqrt(Math.max(1 - Math.exp(-(k[1] * dx * dx + 2 * k[2] * dx * dy + k[3] * dy * dy)), 0));
+    if (cap < sd[n]) sd[n] = cap;
+  }
+  const fix = mem.map((i, a) => PTS[i][2] - data[4 * (aj[a] * N + ai[a])]);   // observed value minus the grid's mean there
+  const [wz] = bumpWeights(ai, aj, [fix]);
+  splat(data, 0, ai, aj, wz);
+  for (let n = 0; n < N * N; n++) data[4 * n + 1] = sd[n] / (sd[n] + half);
+  const tex = dataTex(data); tex.userData = { mem, fix };
+  return tex;
+}
+// A GP state's training set: the first `count` evaluations, less the ones that the iteration's
+// record lists as trimmed (warm-up trimming happens before the iteration acquires its points).
+const gpTex = [];
+function addGp(zb, sb, k, count, prevN, active) {
+  const has = (i) => i < count && (i >= prevN || active.has(i));
+  gpTex.push(anchoredGrid(decodeZ(zb), decodeSd(sb), k, has));
+  return gpTex.length - 1;
+}
+// A posterior is a Gaussian mixture in these coordinates (the problem is unbounded), so its grid is
+// computed here from its components: log q(x) + ELBO, the posterior's estimate of the log joint.
+const vpTex = [], vpMax = [], vpComp = [];
+function addVp(vp, elbo) {
+  const comps = vp.w.map((w, k) => {
+    const c = vp.c[k], m = vp.M[k];
+    return { x: c[0], y: c[1], w, sxx: m[0] * m[0] + m[1] * m[1], sxy: m[0] * m[2] + m[1] * m[3], syy: m[2] * m[2] + m[3] * m[3] };
+  });
+  const terms = comps.map((c) => { const det = c.sxx * c.syy - c.sxy * c.sxy; return { c, det, k: Math.log(c.w) - 0.5 * Math.log(det) - Math.log(2 * Math.PI) }; });
+  const z = new Float32Array(N2), e = new Float64Array(terms.length);
+  for (let j = 0, n = 0; j < N; j++) for (let i = 0; i < N; i++, n++) {
+    const x = META.x_range[0] + (2 * XH * i) / (N - 1), y = META.y_range[0] + (2 * YH * j) / (N - 1);
+    let top = -Infinity;
+    terms.forEach((t, k) => {
+      const dx = x - t.c.x, dy = y - t.c.y;
+      e[k] = t.k - 0.5 * (t.c.syy * dx * dx - 2 * t.c.sxy * dx * dy + t.c.sxx * dy * dy) / t.det;
+      if (e[k] > top) top = e[k];
+    });
+    let sum = 0; for (let k = 0; k < e.length; k++) sum += Math.exp(e[k] - top);
+    z[n] = Math.max(top + Math.log(sum) + elbo, -1e5);
+  }
+  vpTex.push(makeTex(z)); vpMax.push(arrMax(z)); vpComp.push(comps);
+  return vpTex.length - 1;
+}
+ITS.forEach((it, t) => {
+  const prevN = t ? ITS[t - 1].n_evals : 0, active = new Set(it.active);
+  it.gpEnd = addGp(it.gp_mean, it.gp_sd, it.gp_k, it.n_evals, it.n_evals, active);
+  it.vpIdx = addVp(it.vp, it.elbo);
+  it.sub.forEach((s, j) => { if (s.acq !== undefined) { s.gpIdx = addGp(s.gp_mean, s.gp_sd, s.gp_k, prevN + j, prevN, active); s.acqTex = makeTex(decodeAcq(s.acq)); } });
+});
+const VP_FINAL = addVp(TR.final.vp, TR.final.elbo);
+if (Q.get("debug") === "1") {
+  // Self-check of the anchors: over every GP state, how far each owned crossing is from its
+  // observation (cells), how far the mean there is from the observed value, and the SD there.
+  let ePos = 0, eZ = 0, eSd = 0, nAnch = 0, fold = 0;
+  const fixes = [], fixByState = [];
+  for (const tex of gpTex) {
+    const d = tex.image.data;
+    fixes.push(...tex.userData.fix.map(Math.abs)); fixByState.push(Math.max(0, ...tex.userData.fix.map(Math.abs)));
+    for (const i of tex.userData.mem) {
+      const n = anchor[i], ci = n % N, cj = Math.floor(n / N);
+      ePos = Math.max(ePos, Math.hypot(ci + d[4 * n + 2] - gridXY[i][0], cj + d[4 * n + 3] - gridXY[i][1]));
+      eZ = Math.max(eZ, Math.abs(d[4 * n] - PTS[i][2])); eSd = Math.max(eSd, d[4 * n + 1]); nAnch++;
+    }
+    for (let j = 0; j < N; j++) for (let i = 0; i + 1 < N; i++) {
+      const a = j * N + i;
+      if (i + 1 + d[4 * (a + 1) + 2] <= i + d[4 * a + 2]) fold++;
+    }
+    for (let j = 0; j + 1 < N; j++) for (let i = 0; i < N; i++) {
+      const a = j * N + i;
+      if (j + 1 + d[4 * (a + N) + 3] <= j + d[4 * a + 3]) fold++;
+    }
+  }
+  const free = anchor.reduce((c, a) => c + (a < 0 ? 1 : 0), 0);
+  fixes.sort((a, b) => a - b);
+  const worst = fixByState.map((v, k) => [v, k]).sort((a, b) => b[0] - a[0]).slice(0, 4).map(([v, k]) => `#${k}:${v.toFixed(2)}`).join(" ");
+  document.title = `mean corrections (log units): median ${fixes[fixes.length >> 1].toFixed(3)}, 95% ${fixes[Math.floor(0.95 * fixes.length)].toFixed(3)}, max ${fixes[fixes.length - 1].toFixed(2)}, worst states ${worst}; anchors ${nAnch} in ${gpTex.length} states; unanchored points ${free}/${PTS.length}; max pos err ${ePos.toExponential(2)} cells; max |mean - y| ${eZ.toExponential(2)}; max sd_c ${eSd.toExponential(2)}; folds ${fold}`;
+}
+
+// ---------------------------------------------------------------- timeline
+const ease = (x) => { x = Math.min(Math.max(x, 0), 1); return x * x * (3 - 2 * x); };
+const clamp01 = (x) => Math.min(Math.max(x, 0), 1);
+const segs = [], gpTr = [], vpTr = [], acqEv = [], hudKeys = [], iterTicks = [];
+const pointEv = PTS.map(() => ({ drop0: Infinity, land: Infinity }));
+let cur = 0;
+function seg(type, dur, tag, caption, extra) {
+  const s = Object.assign({ type, t0: cur, t1: cur + dur, tag, caption }, extra || {});
+  segs.push(s); cur += dur; return s;
+}
+const DROP = 0.75;
+const nEvalsTotal = PTS.length;
+
+const segTitle = seg("title", 3.0, "PYVBMC",
+  `A posterior and its evidence from ${nEvalsTotal} evaluations of a black-box target.`);
+const segReset = seg("reset", 1.4, "RESET", "Start again from nothing.");
+const T_STORY = cur;
+const segIntro = seg("intro", 2.4, "BLACK BOX",
+  "The target log density is a black box, and every evaluation is expensive.");
+const segInit = seg("init", 3.4, "INITIAL DESIGN", "Begin with a handful of evaluations inside the plausible box.");
+for (let i = 0; i < META.n_init; i++) {
+  const d0 = segInit.t0 + 0.2 + (i * (3.4 - 0.2 - DROP - 0.3)) / Math.max(META.n_init - 1, 1);
+  pointEv[i] = { drop0: d0, land: d0 + DROP };
+}
+const segGp0 = seg("gp0", 3.6, "GP SURROGATE",
+  "A Gaussian process models the log density. It trembles wherever it is unsure.");
+const segVp0 = seg("vp0", 3.4, "VARIATIONAL FIT",
+  "A mixture of Gaussians q(x) is fitted to the surrogate by maximizing the ELBO.");
+hudKeys.push({ t: segVp0.t0 + 2.0, it: 0 });
+iterTicks.push({ t: segInit.t0, major: true });
+
+const DP = [1.75, 1.25, 0.95, 0.8, 0.66, 0.56, 0.5, 0.45];
+const DF = [1.7, 1.4, 1.2, 1.0, 0.9, 0.85, 0.8, 0.75];
+for (let t = 1; t < NIT; t++) {
+  const it = ITS[t], subs = it.sub, detail = subs.length > 0 && subs[0].acqTex;
+  iterTicks.push({ t: cur, major: t % 5 === 0 });
+  if (detail) {
+    const dp = DP[Math.min(t - 1, DP.length - 1)], df = DF[Math.min(t - 1, DF.length - 1)];
+    subs.forEach((s, j) => {
+      const sg = seg("acq", dp, "ACTIVE SAMPLING",
+        "Active sampling: evaluate next where uncertainty meets posterior mass.", { iter: t });
+      const p = PTS[s.point], land = sg.t0 + 0.78 * dp;
+      pointEv[s.point] = { drop0: sg.t0 + 0.45 * dp, land };
+      acqEv.push({ t0: sg.t0, t1: sg.t1, land, tex: s.acqTex, x: toX(p[0]), z: toZ(p[1]) });
+      if (j + 1 < subs.length) gpTr.push({ t0: land, t1: sg.t1, from: s.gpIdx, to: subs[j + 1].gpIdx, sweep: false });
+    });
+    const sf = seg("fit", df, "REFIT", "Refit the surrogate, then refit q(x).", { iter: t });
+    gpTr.push({ t0: sf.t0, t1: sf.t0 + 0.5 * df, from: subs[subs.length - 1].gpIdx, to: it.gpEnd, sweep: true });
+    vpTr.push({ t0: sf.t0 + 0.35 * df, t1: sf.t1, from: ITS[t - 1].vpIdx, to: it.vpIdx });
+    hudKeys.push({ t: sf.t0 + 0.7 * df, it: t });
+  } else {
+    const dur = subs.length ? 1.25 : 0.9, actions = it.actions || [];
+    const warped = actions.some((a) => a === "rotoscale" || a === "warp") && !actions.some((a) => a.startsWith("undo"));
+    const sg = warped
+      ? seg("fast", dur, "ROTATE AND RESCALE", "The posterior suggests better axes: the working space is rotated and rescaled.", { iter: t })
+      : subs.length
+        ? seg("fast", dur, "ITERATE", "Repeat. The mixture gains components as the surrogate sharpens.", { iter: t })
+        : seg("fast", dur, "ITERATE", "An iteration without new evaluations: the surrogate and q(x) are refitted.", { iter: t });
+    subs.forEach((s, j) => {
+      const d0 = sg.t0 + (j * 0.3 * dur) / Math.max(subs.length - 1, 1);
+      pointEv[s.point] = { drop0: d0, land: d0 + 0.3 * dur };
+    });
+    gpTr.push({ t0: sg.t0 + 0.6 * dur, t1: sg.t0 + 0.85 * dur, from: ITS[t - 1].gpEnd, to: it.gpEnd, sweep: true });
+    vpTr.push({ t0: sg.t0 + 0.7 * dur, t1: sg.t1, from: ITS[t - 1].vpIdx, to: it.vpIdx });
+    hudKeys.push({ t: sg.t0 + 0.85 * dur, it: t });
+  }
+}
+const segBoost = seg("boost", 2.8, "FINAL BOOST", `A last, finer fit: the mixture grows to ${TR.final.K} components.`);
+vpTr.push({ t0: segBoost.t0 + 0.2, t1: segBoost.t1 - 0.4, from: ITS[NIT - 1].vpIdx, to: VP_FINAL });
+hudKeys.push({ t: segBoost.t1 - 0.6, it: -1 });
+const segReveal = seg("reveal", 4.0, "GROUND TRUTH", "The true target, revealed. It was never seen, only probed.");
+const segDen = seg("density", 7.0, "DENSITY",
+  "In density space: the posterior, and a lower bound on the log evidence.");
+// The title card's caption, so that it runs on into the title card without being typed again.
+const segWord = seg("wordmark", 6.0, "PYVBMC", segTitle.caption);
+const END = cur;
+iterTicks.push({ t: segBoost.t0, major: true });
+
+// Ellipse tracks of each VP transition: matched pairs morph, new components
+// split off their nearest neighbor, pruned ones shrink into theirs.
+function matchTracks(A, B) {
+  const pairs = [];
+  A.forEach((a, i) => B.forEach((b, j) => pairs.push({ i, j, d: Math.hypot(a.x - b.x, a.y - b.y) })));
+  pairs.sort((p, q) => p.d - q.d);
+  const ua = new Set(), ub = new Set(), tracks = [];
+  for (const p of pairs) if (!ua.has(p.i) && !ub.has(p.j)) { ua.add(p.i); ub.add(p.j); tracks.push({ a: A[p.i], b: B[p.j] }); }
+  const nearest = (c, L) => L.reduce((best, o) => (Math.hypot(o.x - c.x, o.y - c.y) < Math.hypot(best.x - c.x, best.y - c.y) ? o : best), L[0]);
+  B.forEach((b, j) => { if (!ub.has(j)) tracks.push({ a: Object.assign({}, nearest(b, A), { w: 0 }), b }); });
+  A.forEach((a, i) => { if (!ua.has(i)) tracks.push({ a, b: Object.assign({}, nearest(a, B), { w: 0 }) }); });
+  return tracks;
+}
+vpTr.forEach((tr) => { tr.tracks = matchTracks(vpComp[tr.from], vpComp[tr.to]); });
+const tracks0 = vpComp[0].map((c) => ({ a: c, b: c }));
+
+function lastBefore(list, t, key) {
+  let out = null;
+  for (const e of list) { if (e[key] <= t) out = e; else break; }
+  return out;
+}
+
+// ---------------------------------------------------------------- scene
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 50);
+const additive = { blending: THREE.AdditiveBlending, transparent: true, depthTest: false, depthWrite: false };
+
+const SHEET_VS = `
+uniform sampler2D texA; uniform sampler2D texB; uniform float mixAB;
+uniform float N, zref, sScale, morph, rise, time, tremble, shimmer, sdHalf, lift, hgt, camDist;
+varying float vH; varying float vHlog; varying float vSd; varying float vFog; varying float vU;
+vec4 fetchRG(sampler2D t, vec2 ij) { ij = clamp(ij, vec2(0.0), vec2(N - 1.0)); return texture2D(t, (ij + 0.5) / N); }
+vec4 cubicRG(sampler2D t, vec2 gp, float axis) {
+  vec2 dir = axis < 0.5 ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  float p = dot(gp, dir); float f = p - floor(p);
+  vec2 base = gp - dir * f;
+  vec4 p0 = fetchRG(t, base - dir), p1 = fetchRG(t, base), p2 = fetchRG(t, base + dir), p3 = fetchRG(t, base + 2.0 * dir);
+  return p1 + 0.5 * f * (p2 - p0 + f * (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3 + f * (3.0 * (p1 - p2) + p3 - p0)));
+}
+float hLog(float z) { float d = zref - z; return d >= 0.0 ? 1.0 / (1.0 + d / sScale) : 1.0 + 0.3 * (1.0 - exp(d / (0.3 * sScale))); }
+float hDen(float z) { float e = exp(min(z - zref, 4.0)); return e <= 1.0 ? e : 1.0 + 0.5 * (1.0 - exp(-2.0 * (e - 1.0))); }
+float wob(vec2 p, float t) {
+  return 0.25 * (sin(dot(p, vec2(5.1, 3.3)) + 1.7 * t) + sin(dot(p, vec2(-3.7, 6.2)) - 2.3 * t + 1.3)
+    + sin(dot(p, vec2(7.9, -2.1)) + 2.9 * t + 4.1) + sin(dot(p, vec2(2.2, 9.1)) - 1.3 * t + 0.7));
+}
+void main() {
+  vec2 gp = position.xy;
+  vec4 v = cubicRG(texA, gp, position.z);
+  if (mixAB > 0.001) v = mix(v, cubicRG(texB, gp, position.z), mixAB);
+  float z = v.x; float sd = clamp(v.y, 0.0, 1.0);
+  vec2 gw = gp + v.zw;   // the wire, displaced so that owned crossings sit on their observations
+  vec2 xz = vec2(-1.0 + 2.0 * gw.x / (N - 1.0), 1.0 - 2.0 * gw.y / (N - 1.0));
+  float sdv = sdHalf * sd / max(1.0 - sd, 0.004);   // predictive SD in log-density units (8 bits resolve up to here)
+  float h = 0.0;
+  if (tremble > 0.0) {
+    // The sheet shows mean + tremble * SD * (smooth unit noise), mapped to height like the mean.
+    float zt = z + tremble * sdv * wob(xz, time);
+    h = mix(hLog(zt), hDen(zt), morph) + shimmer * sd * wob(xz * 1.7 + 3.1, time * 1.3 + 2.0);
+  } else {
+    h = mix(hLog(z), hDen(z), morph);
+  }
+  float hl = hLog(z);
+  vec4 mv = modelViewMatrix * vec4(xz.x, lift + hgt * rise * h, xz.y, 1.0);
+  gl_Position = projectionMatrix * mv;
+  vH = h; vHlog = hl; vSd = sd; vU = gp.x / (N - 1.0);
+  vFog = mix(1.0, 0.28, smoothstep(camDist - 0.9, camDist + 1.3, -mv.z));
+}`;
+const SHEET_FS = `
+uniform vec3 colLow; uniform vec3 colHigh; uniform float useSd, alpha, fadeLow, fadeA, fadeB, sweep, gain;
+varying float vH; varying float vHlog; varying float vSd; varying float vFog; varying float vU;
+void main() {
+  float c = smoothstep(0.10, 0.80, vSd) * useSd;
+  vec3 col = mix(colLow, colHigh, c);
+  float b = 0.42 + 0.46 * smoothstep(0.0, 0.9, vH);
+  float low = mix(1.0, smoothstep(fadeA, fadeB, vHlog), fadeLow);
+  float sw = exp(-pow((vU - sweep) / 0.035, 2.0));
+  gl_FragColor = vec4(col * alpha * low * (gain * b * vFog + 1.1 * sw), 1.0);
+}`;
+
+// The sheet is drawn at mean + TREMBLE * SD * noise: a fraction of the SD, so that it still reads as the mean,
+// and the noise moves fast (WOBBLE times the base rate of about 0.3 Hz) so that it cannot be taken for the mean.
+const TREMBLE = qNum("tremble", 0.25), WOBBLE = qNum("wobble", 3.2);
+function sheetUniforms(o) {
+  return {
+    texA: { value: null }, texB: { value: null }, mixAB: { value: 0 },
+    N: { value: N }, zref: { value: ZREF }, sScale: { value: S_SCALE }, morph: { value: 0 },
+    rise: { value: 1 }, time: { value: 0 }, tremble: { value: o.tremble || 0 }, shimmer: { value: 0.025 },
+    sdHalf: { value: META.sd_half },
+    lift: { value: LIFT },
+    hgt: { value: HGT }, camDist: { value: 3.3 },
+    colLow: { value: new THREE.Color(o.low) }, colHigh: { value: new THREE.Color(o.high || o.low) },
+    useSd: { value: o.useSd ? 1 : 0 }, alpha: { value: 1 }, fadeLow: { value: o.fadeLow ? 1 : 0 },
+    fadeA: { value: o.fadeLow ? o.fadeLow[0] : 0 }, fadeB: { value: o.fadeLow ? o.fadeLow[1] : 1 },
+    sweep: { value: -1 }, gain: { value: o.gain || 1 },
+  };
+}
+function lineGeometry(stride, sub) {
+  const idx = []; for (let i = 0; i < N; i += stride) idx.push(i);
+  if (idx[idx.length - 1] !== N - 1) idx.push(N - 1);
+  const n = (N - 1) * sub, v = new Float32Array(idx.length * 2 * n * 6); let k = 0;
+  for (const j of idx) for (let s = 0; s < n; s++) { v[k++] = s / sub; v[k++] = j; v[k++] = 0; v[k++] = (s + 1) / sub; v[k++] = j; v[k++] = 0; }
+  for (const i of idx) for (let s = 0; s < n; s++) { v[k++] = i; v[k++] = s / sub; v[k++] = 1; v[k++] = i; v[k++] = (s + 1) / sub; v[k++] = 1; }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(v, 3)); return g;
+}
+function fillGeometry() {
+  const v = new Float32Array(N * N * 3), ix = [];
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { v[3 * (j * N + i)] = i; v[3 * (j * N + i) + 1] = j; }
+  for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) { const a = j * N + i; ix.push(a, a + 1, a + N, a + 1, a + N + 1, a + N); }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(v, 3)); g.setIndex(ix); return g;
+}
+function makeSheet(opts, stride, sub, withFill) {
+  const u = sheetUniforms(opts);
+  const mat = new THREE.ShaderMaterial(Object.assign({ uniforms: u, vertexShader: SHEET_VS, fragmentShader: SHEET_FS }, additive));
+  const lines = new THREE.LineSegments(lineGeometry(stride, sub), mat); lines.frustumCulled = false; scene.add(lines);
+  let fillU = null;
+  if (withFill) {
+    fillU = sheetUniforms(Object.assign({}, opts, { gain: 0.02 }));
+    const fm = new THREE.ShaderMaterial(Object.assign({ uniforms: fillU, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, side: THREE.DoubleSide }, additive));
+    const fill = new THREE.Mesh(fillGeometry(), fm); fill.frustumCulled = false; scene.add(fill);
+  }
+  return { u, fillU, set(name, value) { u[name].value = value; if (fillU) fillU[name].value = value; } };
+}
+const gpSheet = makeSheet({ low: 0x4fd8e8, high: 0xffb347, useSd: true, tremble: TREMBLE, gain: small ? 0.34 : 0.52 }, STRIDE, small ? 2 : 4, true);
+const vpSheet = makeSheet({ low: 0xff4fa3, fadeLow: [0.40, 0.66], gain: 0.5 }, 2, 4, false);
+const trSheet = makeSheet({ low: 0xb9c8d8, fadeLow: [0.30, 0.55], gain: 0.42 }, 2, 4, false);
+trSheet.set("texA", truthTex); trSheet.set("texB", truthTex);
+gpSheet.set("fadeA", 0.45); gpSheet.set("fadeB", 0.72);   // used by the finale, which turns fadeLow up
+
+// Floor: grid, plausible box, q(x) glow with contours, acquisition heat, pings.
+const floorU = {
+  vpA: { value: vpTex[0] }, vpB: { value: vpTex[0] }, vpMix: { value: 0 }, vpMaxA: { value: 0 }, vpMaxB: { value: 0 }, vpAlpha: { value: 0 },
+  acqTex: { value: vpTex[0] }, acqAlpha: { value: 0 }, acqSpan: { value: META.acq_span }, N: { value: N },
+  box: { value: new THREE.Vector4(toX(META.plausible[0][0]), toZ(META.plausible[1][1]), toX(META.plausible[1][0]), toZ(META.plausible[0][1])) },
+  boxAlpha: { value: 0 }, winAlpha: { value: 1 }, rings: { value: Array.from({ length: 8 }, () => new THREE.Vector3(0, 0, -1)) },
+  beacon: { value: new THREE.Vector3(0, 0, 0) }, gridC: { value: new THREE.Vector3(0, 0, 1) }, time: { value: 0 },
+};
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShaderMaterial(Object.assign({
+  uniforms: floorU, extensions: { derivatives: true },
+  vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+  fragmentShader: `
+  varying vec3 vW;
+  uniform sampler2D vpA; uniform sampler2D vpB; uniform sampler2D acqTex;
+  uniform float vpMix, vpMaxA, vpMaxB, vpAlpha, acqAlpha, acqSpan, N, boxAlpha, winAlpha, time;
+  uniform vec4 box; uniform vec3 rings[8]; uniform vec3 beacon; uniform vec3 gridC;
+  float bil(sampler2D t, vec2 uv) {
+    vec2 p = clamp(uv, 0.0, 1.0) * (N - 1.0); vec2 i = min(floor(p), vec2(N - 2.0)); vec2 f = p - i;
+    float a = texture2D(t, (i + vec2(0.5, 0.5)) / N).r, b = texture2D(t, (i + vec2(1.5, 0.5)) / N).r;
+    float c = texture2D(t, (i + vec2(0.5, 1.5)) / N).r, d = texture2D(t, (i + vec2(1.5, 1.5)) / N).r;
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  float iso(float v, float k) { float l = v * k; return 1.0 - min(abs(fract(l - 0.5) - 0.5) / max(fwidth(l), 1e-5), 1.0); }
+  float rectLine(vec2 p, vec4 b) {
+    vec2 lo = p - b.xy, hi = b.zw - p; float inside = step(0.0, min(min(lo.x, lo.y), min(hi.x, hi.y)));
+    float d = min(min(abs(lo.x), abs(lo.y)), min(abs(hi.x), abs(hi.y)));
+    float w = fwidth(d); vec2 q = clamp(p, b.xy, b.zw); float near = step(length(p - q), w * 1.5);
+    return (1.0 - smoothstep(0.0, w * 1.5, d)) * max(inside, near);
+  }
+  void main() {
+    vec2 p = vW.xz; float r = length(p);
+    vec2 g = p * 7.0; vec2 gl = abs(fract(g - 0.5) - 0.5) / fwidth(g);
+    float line = 1.0 - min(min(gl.x, gl.y), 1.0);
+    vec2 g5 = p * 1.4; vec2 gl5 = abs(fract(g5 - 0.5) - 0.5) / fwidth(g5);
+    float line5 = 1.0 - min(min(gl5.x, gl5.y), 1.0);
+    float fade = smoothstep(4.2 * gridC.z, 0.9 * gridC.z, length(p - gridC.xy));   // gridC: center and scale of the fade
+    vec3 col = vec3(0.07, 0.20, 0.30) * (0.55 * line + 0.9 * line5) * fade;
+    col += vec3(0.10, 0.34, 0.46) * winAlpha * rectLine(p, vec4(-1.0, -1.0, 1.0, 1.0));
+    float dash = step(0.5, fract((p.x + p.y) * 14.0 + time * 0.6));
+    col += vec3(0.31, 0.85, 0.91) * 0.55 * boxAlpha * dash * rectLine(p, box);
+    float inwin = step(abs(p.x), 1.0) * step(abs(p.y), 1.0);
+    vec2 uv = vec2(0.5 + 0.5 * p.x, 0.5 - 0.5 * p.y);
+    if (inwin > 0.5) {
+      float dq = mix(exp(min(bil(vpA, uv) - vpMaxA, 0.0)), exp(min(bil(vpB, uv) - vpMaxB, 0.0)), vpMix);
+      float qv = (0.30 * pow(dq, 0.8) + 0.70 * iso(sqrt(dq), 6.0) * smoothstep(0.004, 0.03, dq));
+      col += vec3(1.0, 0.31, 0.64) * qv * vpAlpha;
+      if (acqAlpha > 0.001) {
+        float rel = (bil(acqTex, uv) - 1.0) * acqSpan;   // log units below the maximum of the acquisition
+        float heat = exp(rel / 2.4);
+        float av = 0.60 * heat + 0.26 * iso(rel, 0.25) * smoothstep(-34.0, -4.0, rel) + 0.015 * smoothstep(-38.0, -2.0, rel);
+        col += vec3(0.91, 1.0, 0.35) * av * acqAlpha;
+      }
+    }
+    for (int i = 0; i < 8; i++) {
+      float age = rings[i].z; if (age < 0.0) continue;
+      float d = abs(length(p - rings[i].xy) - (0.03 + 0.42 * age));
+      col += vec3(0.85, 1.0, 1.0) * exp(-3.2 * age) * (1.0 - smoothstep(0.0, 0.012, d));
+    }
+    if (beacon.z > 0.001) {
+      float d = length(p - beacon.xy); float pr = 0.045 + 0.012 * sin(time * 9.0);
+      col += vec3(0.91, 1.0, 0.35) * beacon.z * ((1.0 - smoothstep(0.0, 0.01, abs(d - pr))) + 0.8 * (1.0 - smoothstep(0.0, 0.012, d)));
+    }
+    gl_FragColor = vec4(col, 1.0);
+  }`,
+}, additive)));
+floor.rotation.x = -Math.PI / 2; floor.frustumCulled = false; scene.add(floor);
+
+// Probes: nodes, stems, and the beacon that marks the next evaluation.
+const NP = PTS.length;
+const nodeGeo = new THREE.BufferGeometry();
+const nodePos = new Float32Array(NP * 3), nodeSize = new Float32Array(NP), nodeCol = new Float32Array(NP * 3);
+nodeGeo.setAttribute("position", new THREE.BufferAttribute(nodePos, 3));
+nodeGeo.setAttribute("aSize", new THREE.BufferAttribute(nodeSize, 1));
+nodeGeo.setAttribute("aCol", new THREE.BufferAttribute(nodeCol, 3));
+const nodeU = { pxScale: { value: 1 } };
+const nodes = new THREE.Points(nodeGeo, new THREE.ShaderMaterial(Object.assign({
+  uniforms: nodeU,
+  vertexShader: `attribute float aSize; attribute vec3 aCol; varying vec3 vCol; uniform float pxScale;
+    void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * pxScale / -mv.z; vCol = aCol; }`,
+  fragmentShader: `varying vec3 vCol; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float c = smoothstep(1.0, 0.0, d);
+    gl_FragColor = vec4(vCol * (c * c * 0.9 + 1.6 * smoothstep(0.35, 0.0, d)), 1.0); }`,
+}, additive)));
+nodes.frustumCulled = false; scene.add(nodes);
+
+const stemGeo = new THREE.BufferGeometry();
+const stemPos = new Float32Array(NP * 6), stemCol = new Float32Array(NP * 6);
+stemGeo.setAttribute("position", new THREE.BufferAttribute(stemPos, 3));
+stemGeo.setAttribute("color", new THREE.BufferAttribute(stemCol, 3));
+const stems = new THREE.LineSegments(stemGeo, new THREE.LineBasicMaterial(Object.assign({ vertexColors: true }, additive)));
+stems.frustumCulled = false; scene.add(stems);
+
+const beaconU = { alpha: { value: 0 } };
+const beacon = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 2.2), new THREE.ShaderMaterial(Object.assign({
+  uniforms: beaconU, side: THREE.DoubleSide,
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `varying vec2 vUv; uniform float alpha; void main(){ float x = abs(vUv.x - 0.5) * 2.0;
+    float core = exp(-x * x * 9.0); gl_FragColor = vec4(vec3(0.91, 1.0, 0.35) * core * alpha * (1.0 - vUv.y) * 1.4, 1.0); }`,
+}, additive)));
+beacon.frustumCulled = false; scene.add(beacon);
+
+// Mixture components: 1-sigma and 2-sigma ellipses on the floor.
+const MAXE = Math.max(TR.final.K, ...ITS.map((it) => it.K)), ESEG = 48;   // a transition shows at most max(K from, K to)
+const ellGeo = new THREE.BufferGeometry();
+const ellPos = new Float32Array(MAXE * 2 * ESEG * 6), ellCol = new Float32Array(MAXE * 2 * ESEG * 6);
+ellGeo.setAttribute("position", new THREE.BufferAttribute(ellPos, 3));
+ellGeo.setAttribute("color", new THREE.BufferAttribute(ellCol, 3));
+const ellipses = new THREE.LineSegments(ellGeo, new THREE.LineBasicMaterial(Object.assign({ vertexColors: true }, additive)));
+ellipses.frustumCulled = false; scene.add(ellipses);
+const COS = [], SIN = [];
+for (let s = 0; s <= ESEG; s++) { COS.push(Math.cos((2 * Math.PI * s) / ESEG)); SIN.push(Math.sin((2 * Math.PI * s) / ESEG)); }
+let ellKey = "";
+function updateEllipses(tracks, m, grow, alpha) {
+  const key = [tracks.length, tracks === tracks0 ? 0 : tracks[0].a.x, m.toFixed(4), grow.toFixed(3), alpha.toFixed(3)].join("|");
+  if (key === ellKey) return; ellKey = key;
+  let wmax = 1e-9;
+  for (const t of tracks) wmax = Math.max(wmax, t.a.w + (t.b.w - t.a.w) * m);
+  let k = 0;
+  const n = Math.min(tracks.length, MAXE);
+  for (let e = 0; e < n; e++) {
+    const a = tracks[e].a, b = tracks[e].b, L = (p, q) => p + (q - p) * m;
+    const cx = L(a.x, b.x), cy = L(a.y, b.y), sxx = L(a.sxx, b.sxx), sxy = L(a.sxy, b.sxy), syy = L(a.syy, b.syy), w = L(a.w, b.w);
+    const tr = 0.5 * (sxx + syy), df = Math.sqrt(Math.max(0.25 * (sxx - syy) * (sxx - syy) + sxy * sxy, 0));
+    const l1 = Math.sqrt(Math.max(tr + df, 1e-12)), l2 = Math.sqrt(Math.max(tr - df, 1e-12));
+    const th = 0.5 * Math.atan2(2 * sxy, sxx - syy), ct = Math.cos(th), st = Math.sin(th);
+    const bright = alpha * (0.18 + 0.82 * Math.sqrt(w / wmax)) * Math.min(w / wmax * 40, 1);
+    for (let ring = 1; ring <= 2; ring++) {
+      const rr = ring * grow, c = bright * (ring === 1 ? 1.0 : 0.38);
+      for (let s = 0; s < ESEG; s++) {
+        for (let q = 0; q < 2; q++) {
+          const ex = rr * l1 * COS[s + q], ey = rr * l2 * SIN[s + q];
+          ellPos[k] = toX(cx + ct * ex - st * ey); ellPos[k + 1] = 0.004; ellPos[k + 2] = toZ(cy + st * ex + ct * ey);
+          ellCol[k] = 1.0 * c; ellCol[k + 1] = 0.36 * c; ellCol[k + 2] = 0.68 * c; k += 3;
+        }
+      }
+    }
+  }
+  ellGeo.setDrawRange(0, k / 3);
+  ellGeo.attributes.position.needsUpdate = true; ellGeo.attributes.color.needsUpdate = true;
+}
+
+// ---------------------------------------------------------------- wordmark
+// The finale pulls back until the run's final posterior, seen from above, is the V of PyVBMC, and the
+// other letters appear on the floor beside it, drawn as the mesh that the sheets are made of. Nothing
+// is drawn for the V: it is the sheets of the last state. The far edge of the window is the cap line;
+// the baseline and the V's width at the cap line come from the final posterior.
+const WM_CAP_Z = -1;
+let WM_BASE_Z = toZ(META.y_range[0] + 0.4 * YH), WM_VHALF = 0.8;
+{
+  const z = vpTex[VP_FINAL].image.data, top = vpMax[VP_FINAL];
+  let jmin = N, xmax = 0;
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const d = top - z[4 * (j * N + i)], X = Math.abs(-1 + (2 * i) / (N - 1));
+    if (d <= 2.3) jmin = Math.min(jmin, j);                 // the bright bottom of the V
+    if (j >= N - 3 && d <= 5) xmax = Math.max(xmax, X);     // the arms where the window cuts them
+  }
+  if (jmin < N) WM_BASE_Z = toZ(META.y_range[0] + (2 * YH * jmin) / (N - 1));
+  if (xmax > 0) WM_VHALF = xmax;
+}
+const WM_CAPH = WM_BASE_Z - WM_CAP_Z;
+// The letters wait for their typeface for a moment and otherwise use a system serif.
+await Promise.race([document.fonts.load('400 100px "STIX Two Text"'), new Promise((r) => setTimeout(r, 2500))]).catch(() => {});
+const WM_FACE_OK = document.fonts.check('400 100px "STIX Two Text"');
+if (Q.get("debug") === "1") document.title += `; wordmark typeface ${WM_FACE_OK ? "STIX Two Text" : "fallback"}, from ${segWord.t0.toFixed(2)} s of ${END.toFixed(2)} s`;
+const wmU = { alpha: { value: 0 }, cell: { value: 2 / (N - 1) }, col: { value: new THREE.Color(0xffb347) } };
+const WM_FS = `
+  varying vec2 vUv; varying vec2 vP;
+  uniform sampler2D glyph; uniform float alpha, cell; uniform vec3 col;
+  void main() {
+    vec3 g = texture2D(glyph, vUv).rgb;   // r: the glyphs filled, g: their outline
+    vec2 q = (vP + 1.0) / cell; vec2 d = abs(fract(q - 0.5) - 0.5) / fwidth(q);
+    float wire = 1.0 - min(min(d.x, d.y), 1.0);   // the sheets' wires, continued across the floor
+    gl_FragColor = vec4(col * alpha * (0.6 * g.g + g.r * (0.04 + 0.32 * wire)), 1.0);
+  }`;
+function makeWord(text, side, x) {   // side "right": the ink's right edge at x; "left": its left edge
+  const cv = document.createElement("canvas"), g = cv.getContext("2d");
+  const face = (px) => `400 ${px}px "STIX Two Text", Georgia, "Times New Roman", serif`;
+  g.font = face(100);
+  const CAP_PX = 320, px = (CAP_PX * 100) / g.measureText("H").actualBoundingBoxAscent;
+  g.font = face(px);
+  const m = g.measureText(text), pad = Math.ceil(0.06 * px);
+  cv.width = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight) + 2 * pad;
+  cv.height = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) + 2 * pad;
+  const ox = pad + m.actualBoundingBoxLeft, oy = pad + m.actualBoundingBoxAscent;
+  g.font = face(px);   // resizing the canvas reset it
+  g.fillStyle = "#f00"; g.fillText(text, ox, oy);
+  g.globalCompositeOperation = "lighter"; g.lineJoin = "round";
+  g.strokeStyle = "#0f0"; g.lineWidth = Math.max(2, 0.012 * px); g.strokeText(text, ox, oy);
+  const s = WM_CAPH / CAP_PX;   // scene units per canvas pixel
+  const x0 = x - s * (side === "right" ? ox + m.actualBoundingBoxRight : ox - m.actualBoundingBoxLeft);
+  const z0 = WM_BASE_Z - s * oy;
+  const tex = new THREE.CanvasTexture(cv); tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const mat = new THREE.ShaderMaterial(Object.assign({
+    uniforms: { glyph: { value: tex }, alpha: wmU.alpha, cell: wmU.cell, col: wmU.col }, extensions: { derivatives: true },
+    vertexShader: `varying vec2 vUv; varying vec2 vP; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: WM_FS,
+  }, additive));
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(cv.width * s, cv.height * s), mat);
+  mesh.rotation.x = -Math.PI / 2; mesh.position.set(x0 + (cv.width * s) / 2, 0.003, z0 + (cv.height * s) / 2);
+  mesh.frustumCulled = false; scene.add(mesh);
+  return { left: x0 + s * (ox - m.actualBoundingBoxLeft), right: x0 + s * (ox + m.actualBoundingBoxRight), depth: z0 + s * (oy + m.actualBoundingBoxDescent) };
+}
+const WM_GAP = 0.05 * WM_CAPH;
+const wordPy = makeWord("Py", "right", -WM_VHALF - WM_GAP), wordBmc = makeWord("BMC", "left", WM_VHALF + WM_GAP);
+const WM = {
+  cx: (wordPy.left + wordBmc.right) / 2, width: wordBmc.right - wordPy.left,
+  cz: (WM_CAP_Z + Math.max(wordPy.depth, WM_BASE_Z)) / 2, height: Math.max(wordPy.depth, WM_BASE_Z) - WM_CAP_Z,
+  el: 1.38, r: 8,
+};
+// The V is drawn in the log view, where it has the body of a letter; ?wmview=density keeps the density
+// view that the story ends in.
+const WM_VIEW = Q.get("wmview") === "density" ? 1 : 0;
+
+// ---------------------------------------------------------------- post
+const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const quadGeo = new THREE.PlaneGeometry(2, 2);
+const QUAD_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+function pass(fragmentShader, uniforms) {
+  const s = new THREE.Scene(), m = new THREE.ShaderMaterial({ uniforms, vertexShader: QUAD_VS, fragmentShader, depthTest: false, depthWrite: false });
+  s.add(new THREE.Mesh(quadGeo, m)); return { scene: s, u: uniforms };
+}
+const blurPass = pass(`varying vec2 vUv; uniform sampler2D tex; uniform vec2 dir;
+  void main(){ vec4 c = texture2D(tex, vUv) * 0.2270270270;
+    c += (texture2D(tex, vUv + dir * 1.3846153846) + texture2D(tex, vUv - dir * 1.3846153846)) * 0.3162162162;
+    c += (texture2D(tex, vUv + dir * 3.2307692308) + texture2D(tex, vUv - dir * 3.2307692308)) * 0.0702702703;
+    gl_FragColor = c; }`, { tex: { value: null }, dir: { value: new THREE.Vector2() } });
+const finalPass = pass(`varying vec2 vUv; uniform sampler2D tex, b0, b1, b2, b3; uniform float bloom, time, pr, fade;
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+  void main(){
+    vec3 c = texture2D(tex, vUv).rgb;
+    c += bloom * (0.55 * texture2D(b0, vUv).rgb + 0.75 * texture2D(b1, vUv).rgb + 0.9 * texture2D(b2, vUv).rgb + 1.0 * texture2D(b3, vUv).rgb);
+    c = 1.0 - exp(-c * 1.05);
+    float v = length(vUv - 0.5) * 1.3; c *= 1.0 - 0.42 * v * v;
+    c *= 0.955 + 0.045 * sin(gl_FragCoord.y * 3.14159265 / pr);
+    c += (hash(gl_FragCoord.xy + fract(time) * 61.0) - 0.5) * 0.022;
+    gl_FragColor = vec4(c * fade, 1.0); }`,
+  { tex: { value: null }, b0: { value: null }, b1: { value: null }, b2: { value: null }, b3: { value: null },
+    bloom: { value: 0.44 }, time: { value: 0 }, pr: { value: PR }, fade: { value: 1 } });
+
+let rtScene = null; const rtBlur = [];
+const useMsaa = PR < 2 && Q.get("msaa") !== "0";
+function buildTargets(w, h) {
+  if (rtScene) rtScene.dispose(); rtBlur.forEach((p) => { p[0].dispose(); p[1].dispose(); }); rtBlur.length = 0;
+  const opt = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false };
+  rtScene = useMsaa ? new THREE.WebGLMultisampleRenderTarget(w, h, opt) : new THREE.WebGLRenderTarget(w, h, opt);
+  for (let i = 0, d = 2; i < 4; i++, d *= 2) {
+    const bw = Math.max(2, Math.round(w / d)), bh = Math.max(2, Math.round(h / d));
+    rtBlur.push([new THREE.WebGLRenderTarget(bw, bh, opt), new THREE.WebGLRenderTarget(bw, bh, opt)]);
+  }
+}
+function renderFrame() {
+  renderer.setRenderTarget(rtScene); renderer.render(scene, camera);
+  let src = rtScene.texture;
+  for (let i = 0; i < 4; i++) {
+    const [a, b] = rtBlur[i];
+    blurPass.u.tex.value = src; blurPass.u.dir.value.set(1 / a.width, 0);
+    renderer.setRenderTarget(a); renderer.render(blurPass.scene, quadCam);
+    blurPass.u.tex.value = a.texture; blurPass.u.dir.value.set(0, 1 / a.height);
+    renderer.setRenderTarget(b); renderer.render(blurPass.scene, quadCam);
+    src = b.texture;
+  }
+  finalPass.u.tex.value = rtScene.texture;
+  finalPass.u.b0.value = rtBlur[0][1].texture; finalPass.u.b1.value = rtBlur[1][1].texture;
+  finalPass.u.b2.value = rtBlur[2][1].texture; finalPass.u.b3.value = rtBlur[3][1].texture;
+  renderer.setRenderTarget(null); renderer.render(finalPass.scene, quadCam);
+}
+
+// ---------------------------------------------------------------- camera
+const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cam = { az: 0.65, el: 0.5, r: 3.4, elT: 0.5, rT: 3.4, userEl: 0, zoom: 1, fit: 1, held: false, idle: 10, wm: 0 };
+// ?cam=AZ,EL,R pins the camera (radians, radians, scene units), for stills.
+const CAM_FIX = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null;
+const CAM_BY_TYPE = {
+  title: [0.50, 3.25], reset: [0.50, 3.4], intro: [0.62, 3.6], init: [0.58, 3.5], gp0: [0.46, 3.3], vp0: [0.60, 3.3],
+  acq: [0.62, 3.15], fit: [0.50, 3.2], fast: [0.52, 3.3], boost: [0.70, 3.2], reveal: [0.56, 3.2], density: [0.44, 3.1],
+};
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  buildTargets(Math.round(w * PR), Math.round(h * PR));
+  const aspect = w / h; camera.aspect = aspect;
+  // Keep the floor inside the frame: hold the horizontal field of view on narrow screens.
+  const hf = THREE.MathUtils.degToRad(46);
+  const vf = aspect < 1.25 ? 2 * Math.atan(Math.tan(hf / 2) / aspect) : THREE.MathUtils.degToRad(38);
+  camera.fov = THREE.MathUtils.radToDeg(Math.min(vf, THREE.MathUtils.degToRad(80)));
+  cam.fit = aspect < 0.62 ? 1 + (0.62 - aspect) * 1.6 : 1;
+  // The wordmark's distance: its width, or its height, fills the frame with a margin.
+  const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  WM.r = Math.max((0.6 * WM.width) / (tv * aspect), (0.75 * WM.height) / tv);
+  camera.updateProjectionMatrix();
+  nodeU.pxScale.value = (h * PR) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 0.01;
+}
+window.addEventListener("resize", resize);
+
+const pointers = new Map(); let pinch0 = 0, zoom0 = 1;
+canvas.addEventListener("pointerdown", (e) => { canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]); cam.held = true;
+  if (pointers.size === 2) { const p = [...pointers.values()]; pinch0 = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]); zoom0 = cam.zoom; } });
+canvas.addEventListener("pointermove", (e) => {
+  if (!pointers.has(e.pointerId)) return;
+  const prev = pointers.get(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pointers.size === 1) { cam.az -= (e.clientX - prev[0]) * 0.006; cam.userEl = Math.min(Math.max(cam.userEl + (e.clientY - prev[1]) * 0.005, -0.45), 0.85); }
+  else if (pointers.size === 2) { const p = [...pointers.values()]; const d = Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]); cam.zoom = Math.min(Math.max(zoom0 * pinch0 / Math.max(d, 1), 0.5), 2.2); }
+});
+const release = (e) => { pointers.delete(e.pointerId); if (!pointers.size) { cam.held = false; cam.idle = 0; } };
+canvas.addEventListener("pointerup", release); canvas.addEventListener("pointercancel", release);
+canvas.addEventListener("wheel", (e) => { e.preventDefault(); cam.zoom = Math.min(Math.max(cam.zoom * Math.exp(e.deltaY * 0.001), 0.5), 2.2); }, { passive: false });
+canvas.addEventListener("dblclick", () => { cam.userEl = 0; cam.zoom = 1; });
+
+// ---------------------------------------------------------------- HUD
+const ui = { gp: true, vp: true, acq: true, truth: false, density: false };
+[["chipGp", "gp"], ["chipVp", "vp"], ["chipAcq", "acq"], ["chipTruth", "truth"], ["chipDen", "density"]].forEach(([id, key]) => {
+  $(id).addEventListener("click", () => { ui[key] = !ui[key]; $(id).setAttribute("aria-pressed", String(ui[key])); });
+});
+let playing = !reduced && Q.get("paused") !== "1", speed = qNum("speed", 1) || 1, tau = qNum("t", 0), scrubbing = false;
+const SPEEDS = [1, 2, 0.5];
+function setPlaying(p) { playing = p; $("play").textContent = p ? "II" : "▶"; $("play").setAttribute("aria-label", p ? "Pause" : "Play"); }
+setPlaying(playing);
+$("play").addEventListener("click", () => setPlaying(!playing));
+$("speed").addEventListener("click", () => { speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] || 1; $("speed").textContent = speed + "×"; });
+$("speed").textContent = speed + "×";
+const seek = $("seek"); seek.max = END.toFixed(2);
+seek.addEventListener("input", () => { tau = parseFloat(seek.value); scrubbing = true; });
+seek.addEventListener("change", () => { scrubbing = false; });
+seek.addEventListener("pointerup", () => { scrubbing = false; });
+window.addEventListener("keydown", (e) => {
+  if (e.target !== document.body && e.target !== canvas) return;
+  if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); }
+  else if (e.code === "ArrowRight") tau = Math.min(tau + 2, END - 0.01);
+  else if (e.code === "ArrowLeft") tau = Math.max(tau - 2, 0);
+  else if (e.key === "h") document.body.classList.toggle("clean");
+});
+iterTicks.forEach((k) => { const i = document.createElement("i"); if (k.major) i.className = "major"; i.style.left = (100 * k.t / END).toFixed(3) + "%"; $("ticks").appendChild(i); });
+
+const typed = { text: "", t0: 0, n: -1 };
+function typeCaption(clock) {
+  const c = $("caption");
+  if (!c.firstChild) c.innerHTML = '<span class="on"></span><span class="rest"></span>';
+  const n = reduced ? typed.text.length : Math.min(typed.text.length, Math.floor((clock - typed.t0) * 55));
+  if (n === typed.n) return; typed.n = n;
+  c.firstChild.textContent = typed.text.slice(0, n); c.lastChild.textContent = typed.text.slice(n);
+  c.firstChild.className = n < typed.text.length ? "on" : "on done";
+}
+const hud = { seg: null, iter: "", evals: "", K: "", elbo: "", showTrue: null };
+const pad = (n, w) => String(n).padStart(w, "0");
+const signed = (x, d) => (x < 0 ? "−" : "+") + Math.abs(x).toFixed(d);
+function setText(id, key, value, html) { if (hud[key] !== value) { hud[key] = value; if (html) $(id).innerHTML = value; else $(id).textContent = value; } }
+function updateHud(sg, ts, landed, clock) {
+  if (hud.seg !== sg) {
+    const changed = !hud.seg || hud.seg.caption !== sg.caption; hud.seg = sg; $("tag").textContent = sg.tag;
+    if (changed) { typed.text = sg.caption; typed.t0 = clock; typed.n = -1; }
+  }
+  typeCaption(clock);
+  const key = lastBefore(hudKeys, ts, "t");
+  const iterNow = sg.iter !== undefined ? sg.iter : key ? (key.it < 0 ? NIT - 1 : key.it) : 0;
+  setText("tIter", "iter", pad(iterNow, 2)); setText("tEval", "evals", pad(landed, 3));
+  if (!key) { setText("tK", "K", "–"); setText("tElbo", "elbo", "–"); }
+  else {
+    const src = key.it < 0 ? TR.final : ITS[key.it];
+    setText("tK", "K", String(src.K));
+    setText("tElbo", "elbo", `${signed(src.elbo, 3)} <small>± ${src.elbo_sd.toFixed(3)}</small>`, true);
+  }
+  const showTrue = ts >= segReveal.t0 + 1.2;
+  if (hud.showTrue !== showTrue) { hud.showTrue = showTrue; $("trueBox").hidden = !showTrue; $("tTrue").textContent = signed(META.ln_z_true, 3); }
+}
+
+// ---------------------------------------------------------------- update
+const ax1 = $("ax1"), ax2 = $("ax2"), proj = new THREE.Vector3();
+function placeLabel(el, x, z, alpha) {
+  proj.set(x, 0, z).project(camera);
+  el.style.left = ((proj.x * 0.5 + 0.5) * canvas.clientWidth).toFixed(1) + "px";
+  el.style.top = ((-proj.y * 0.5 + 0.5) * canvas.clientHeight).toFixed(1) + "px";
+  el.style.opacity = proj.z < 1 ? alpha.toFixed(3) : "0";
+}
+const hLog = (z) => { const d = ZREF - z; return d >= 0 ? 1 / (1 + d / S_SCALE) : 1 + 0.3 * (1 - Math.exp(d / (0.3 * S_SCALE))); };
+const hDen = (z) => { const e = Math.exp(Math.min(z - ZREF, 4)); return e <= 1 ? e : 1 + 0.5 * (1 - Math.exp(-2 * (e - 1))); };
+const activeSets = ITS.map((it) => new Set(it.active));
+let shown = { morph: 0, truth: 0, ts: -Infinity };
+
+function update(tau, dt, clock) {
+  let ts = tau, fade = 1, sg;
+  if (tau < segTitle.t1) { ts = END; sg = segTitle; }
+  else if (tau < T_STORY) { ts = END; sg = segReset; fade = 1 - ease((tau - segReset.t0) / (segReset.t1 - segReset.t0 - 0.2)); }
+  else { sg = segs.find((s) => tau < s.t1) || segs[segs.length - 1]; }
+
+  // Surrogate
+  const g = lastBefore(gpTr, ts, "t0");
+  let gA = ITS[0].gpEnd, gB = ITS[0].gpEnd, gMix = 0, sweep = -1;
+  if (g) { const f = clamp01((ts - g.t0) / (g.t1 - g.t0)); gA = g.from; gB = g.to; gMix = ease(f); if (g.sweep && f < 1) sweep = -0.1 + 1.2 * f; }
+  const rise = ease((ts - segGp0.t0) / 2.4);
+  // Finale: the surrogate's flat outskirts and the window's frame give way to the wordmark.
+  const wmT = ease((ts - segWord.t0) / 2.5);
+  const wantMorph = ui.density ? 1 : ease((ts - segDen.t0) / 3.0) * (1 - (1 - WM_VIEW) * wmT);
+  const wantTruth = ui.truth ? 1 : ease((ts - segReveal.t0) / 2.2);
+  // Story time that goes back (the story starting after the title card, or a seek) is a cut: the levels
+  // start where the new time wants them instead of easing over from the old one.
+  const cut = ts < shown.ts; shown.ts = ts;
+  const k = scrubbing || dt === 0 || cut ? 1 : 1 - Math.exp(-dt * 6);
+  shown.morph += (wantMorph - shown.morph) * k;
+  shown.truth += (wantTruth - shown.truth) * k;
+  const morph = shown.morph;
+  gpSheet.set("fadeLow", wmT); floorU.winAlpha.value = 1 - wmT;
+
+  gpSheet.set("tremble", reduced ? 0 : TREMBLE);
+  gpSheet.set("texA", gpTex[gA]); gpSheet.set("texB", gpTex[gB]); gpSheet.set("mixAB", gMix);
+  gpSheet.set("rise", rise); gpSheet.set("sweep", sweep); gpSheet.set("time", reduced ? 0 : clock * WOBBLE);
+  gpSheet.set("alpha", (ui.gp ? 1 : 0) * fade * Math.min(rise * 3, 1) * (1 - 0.35 * shown.truth));
+
+  // Variational posterior
+  const v = lastBefore(vpTr, ts, "t0");
+  let vA = 0, vB = 0, vMix = 0, tracks = tracks0, vSweep = -1;
+  if (v) { const f = clamp01((ts - v.t0) / (v.t1 - v.t0)); vA = v.from; vB = v.to; vMix = ease(f); tracks = v.tracks; if (f < 1) vSweep = -0.1 + 1.2 * f; }
+  const appear = ease((ts - segVp0.t0 - 0.2) / 2.2);
+  const vAlpha = (ui.vp ? 1 : 0) * fade * appear;
+  vpSheet.set("texA", vpTex[vA]); vpSheet.set("texB", vpTex[vB]); vpSheet.set("mixAB", vMix);
+  vpSheet.set("rise", appear); vpSheet.set("sweep", vSweep); vpSheet.set("alpha", vAlpha * 0.85);
+  updateEllipses(tracks, vMix, 0.15 + 0.85 * appear, vAlpha);
+  trSheet.set("alpha", shown.truth * fade);
+  for (const s of [gpSheet, vpSheet, trSheet]) { s.set("morph", morph); s.set("camDist", cam.r); }
+
+  // Acquisition
+  let aAlpha = 0, bAlpha = 0, ev = null;
+  if (ui.acq && fade === 1) {
+    ev = acqEv.find((e) => ts >= e.t0 && ts < e.t1) || null;
+    if (ev) { const f = (ts - ev.t0) / (ev.t1 - ev.t0); aAlpha = ease(f / 0.22) * (1 - ease((f - 0.8) / 0.2)); bAlpha = ease((f - 0.18) / 0.2) * (1 - ease((f - 0.8) / 0.18)); }
+  }
+  floorU.vpA.value = vpTex[vA]; floorU.vpB.value = vpTex[vB]; floorU.vpMix.value = vMix;
+  floorU.vpMaxA.value = vpMax[vA]; floorU.vpMaxB.value = vpMax[vB];
+  floorU.vpAlpha.value = vAlpha * (1 - 0.8 * aAlpha) * 0.8;
+  if (ev) { floorU.acqTex.value = ev.tex; floorU.beacon.value.set(ev.x, ev.z, bAlpha); beacon.position.set(ev.x, 1.1, ev.z); }
+  else floorU.beacon.value.z = 0;
+  floorU.acqAlpha.value = aAlpha; floorU.time.value = clock; beaconU.alpha.value = bAlpha; beacon.rotation.y = cam.az;
+  const tb = ts - segIntro.t0;
+  floorU.boxAlpha.value = fade * (1 - wmT) * ease(tb / 1.2) * (1 - 0.75 * ease((ts - segGp0.t0) / 2));
+
+  // Probes
+  const iterNow = sg.iter !== undefined ? sg.iter : ts >= segBoost.t0 ? NIT - 1 : 0;
+  const act = activeSets[iterNow], rings = [];
+  let landed = 0;
+  for (let i = 0; i < NP; i++) {
+    const p = PTS[i], e = pointEv[i], x = toX(p[0]), z = toZ(p[1]);
+    const yT = LIFT + HGT * (hLog(p[2]) * (1 - morph) + hDen(p[2]) * morph);
+    let y = yT, size = 0, flash = 0;
+    if (ts >= e.drop0) {
+      if (ts < e.land) { const f = (ts - e.drop0) / (e.land - e.drop0); y = 2.3 + (yT - 2.3) * f * f; size = 9; flash = 1; }
+      else { landed++; const age = ts - e.land; flash = Math.exp(-age / 0.55); size = 6.5 + 9 * flash; if (age < 1.1) rings.push([x, z, age]); }
+    }
+    const dim = (ts >= e.land && !act.has(i) && i < (iterNow ? ITS[iterNow - 1].n_evals : 0)) ? 0.3 : 1;
+    nodePos[3 * i] = x; nodePos[3 * i + 1] = y; nodePos[3 * i + 2] = z; nodeSize[i] = size * fade;
+    const c = dim * fade;
+    nodeCol[3 * i] = c * (0.62 + 0.38 * flash); nodeCol[3 * i + 1] = c * (0.95 + 0.05 * flash); nodeCol[3 * i + 2] = c * (1.0 - 0.45 * flash);
+    const s = size > 0 ? c * (0.30 + 0.7 * flash) : 0;
+    stemPos.set([x, 0, z, x, y, z], 6 * i);
+    stemCol.set([0.31 * s * 0.4, 0.85 * s * 0.4, 0.91 * s * 0.4, 0.31 * s, 0.85 * s, 0.91 * s], 6 * i);
+  }
+  nodeGeo.attributes.position.needsUpdate = nodeGeo.attributes.aSize.needsUpdate = nodeGeo.attributes.aCol.needsUpdate = true;
+  stemGeo.attributes.position.needsUpdate = stemGeo.attributes.color.needsUpdate = true;
+  rings.sort((a, b) => a[2] - b[2]);
+  floorU.rings.value.forEach((r, i) => { if (i < rings.length && fade === 1) r.set(rings[i][0], rings[i][1], rings[i][2]); else r.z = -1; });
+
+  // Wordmark: the letters come in once the camera has started to pull back.
+  wmU.alpha.value = fade * ease((ts - segWord.t0 - 1.6) / 2.4);
+
+  // Camera. On the wordmark and the title card it turns to face the V, rises and pulls back to frame the
+  // whole word; the first frame (dt = 0) starts where the segment wants the camera.
+  const wmOn = sg.type === "wordmark" || sg.type === "title";
+  const target = wmOn ? [WM.el, WM.r / cam.fit] : CAM_BY_TYPE[sg.type] || [0.5, 3.3];
+  const kc = dt === 0 ? 1 : 1 - Math.exp(-dt * 0.9);
+  cam.elT += (target[0] - cam.elT) * kc; cam.rT += (target[1] - cam.rT) * kc;
+  cam.wm += ((wmOn ? 1 : 0) - cam.wm) * kc;
+  cam.idle += dt;
+  if (wmOn) { const azT = 2 * Math.PI * Math.round(cam.az / (2 * Math.PI)); if (!cam.held) cam.az += (azT - cam.az) * (dt === 0 ? 1 : 1 - Math.exp(-dt * 1.1)); }
+  else if (!cam.held && !reduced) cam.az += dt * 0.13 * Math.min(cam.idle / 2.5, 1);
+  cam.el = Math.min(Math.max(cam.elT + cam.userEl + 0.035 * Math.sin(clock * 0.21), 0.08), 1.45);
+  cam.r = cam.rT * cam.zoom * cam.fit;
+  if (CAM_FIX) { cam.az = CAM_FIX[0]; cam.el = CAM_FIX[1]; cam.r = CAM_FIX[2]; }
+  const lx = WM.cx * cam.wm, ly = 0.42 + (0.1 - 0.42) * cam.wm, lz = WM.cz * cam.wm;
+  floorU.gridC.value.set(lx, lz, 1 + 1.4 * cam.wm);   // the floor grid follows the view out to the whole word
+  camera.position.set(lx + cam.r * Math.cos(cam.el) * Math.sin(cam.az), ly + cam.r * Math.sin(cam.el), lz + cam.r * Math.cos(cam.el) * Math.cos(cam.az));
+  camera.lookAt(lx, ly, lz);
+
+  camera.updateMatrixWorld();
+  placeLabel(ax1, 0, 1.13, 1 - wmT); placeLabel(ax2, 1.13, 0, 1 - wmT);
+  finalPass.u.time.value = clock;
+  updateHud(sg, ts, landed, clock);
+}
+
+// ---------------------------------------------------------------- loop
+resize();
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min((now - last) / 1000, 0.1); last = now;
+  if (playing && !scrubbing) { tau += dt * speed; if (tau >= END) tau -= END; }
+  if (!scrubbing) seek.value = tau.toFixed(2);
+  update(tau, dt, now / 1000);
+  renderFrame();
+  requestAnimationFrame(frame);
+}
+// With ?capture=1 nothing moves by itself: a driver calls vbmcCapture.frame(t, dt) for successive t.
+// No frame reads the wall clock, but the camera, the morph and truth levels and the caption typing carry
+// over from frame to frame, so a sequence is reproducible when stepped in order from the start with the
+// same dt, not when it seeks.
+if (Q.get("capture") === "1") {
+  cam.idle = 10;
+  window.vbmcCapture = { end: END, frame(t, dt) { tau = t % END; update(tau, dt, t); renderFrame(); } };
+  window.vbmcCapture.frame(tau, 0);
+} else { update(tau, 0, last / 1000); requestAnimationFrame(frame); }   // dt = 0: start where the segment wants the camera
+})();
+</script>
+</body>
+</html>

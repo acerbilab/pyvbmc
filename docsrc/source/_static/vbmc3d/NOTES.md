@@ -1,7 +1,7 @@
 # 3D animation: status and design record
 
-`README.md` in this folder explains how the page works and how to run,
-regenerate and check it; `TODO.md` lists what is left to do, in order. This
+`README.md` in this folder explains how the pages work and how to run,
+regenerate and check them; `TODO.md` lists what is left to do, in order. This
 file records where the work stands and why things are the way they are,
 including what was tried and set aside.
 
@@ -12,11 +12,24 @@ each other: the page's self-check (`?debug=1`) passes on the committed trace
 with the numbers quoted in the README, and exporting again on the machine
 that made the trace gives a byte-identical file.
 
+`wordmark.html` and `trace_wordmark.js` are a working first version of the
+wordmark finale: the self-check passes on the trace with the numbers quoted
+in the README, and exporting seed 22 again reproduces the sweep's run
+(ELBO, iterations and evaluations). The look of the finale has been settled
+only on stills; the owner has not seen it.
+
 How it has been verified:
 
-- Headless Chrome stills (software rendering) at 1280 x 720, 1600 x 900 and
-  390 x 844, at many points of the timeline; the self-check; `black`,
-  `isort`, `py_compile` on the exporter; `node --check` on the script.
+- Headless Chrome stills (software rendering) at 1280 x 720 and 1600 x 900,
+  at many points of the timeline; the self-check; `black`, `isort`,
+  `py_compile` on the exporter; `node --check` on the script. Stills
+  requested at 390 x 844 show a page laid out about 520 px wide and cropped
+  (README), so of the phone layout only `wordmark.html`'s title card has
+  been seen, at 540 x 1168.
+- `wordmark.html`'s finale and the loop back into the story, stepped
+  through `capture=1` at 10 frames per second by a throwaway driver over the
+  DevTools protocol (Node, no dependencies) and looked at as a contact
+  sheet.
 - One independent read-only review of the whole change, which re-derived the
   target's moments, decoded the trace itself, reproduced every number in the
   README, and confirmed that the recorder does not alter the run (the
@@ -33,7 +46,9 @@ What nobody has verified:
   slim trace and everything after have been seen only as stills.
 - Frame rate on phones. Phones draw the full 64 x 64 mesh with half the
   segments per cell; no measurement exists.
-- `capture=1` end to end: the page's hook exists, no driver has called it.
+- `capture=1` as a recording: the hook has been driven frame by frame and
+  screenshotted, but no video or GIF has been encoded from it and checked
+  for pacing.
 - The multisampled render target on a real GPU (it runs under software
   rendering).
 
@@ -110,7 +125,73 @@ posterior's grids are recomputed in the page from the mixture components,
 SDs and acquisition values take 8 bits, and the grids are one zlib block of
 second differences.
 
+**The wordmark.** Seen from above, the banana is a V, so the finale pulls
+back until it is the V of PyVBMC. The repository's logo (`logo.svg`) was the
+starting point, not a template: in it "Py" and "MC" are orange Times, the V
+is a one-dimensional GP with its band and observations, and the B is a
+two-dimensional posterior drawn as filled contours. The finale keeps one
+graphic letter, the V, made by the run; a B made of a posterior was judged
+weak by the owner. It keeps the warm letters against the cool graphic. What
+was decided:
+
+- *A separate page.* `index.html` and its run stay as they are;
+  `wordmark.html` started as a copy of it.
+- *The banana alone.* The lobe of `index.html`'s target sits between the
+  arms, in the V's counter. The banana's round bottom was a concern (a U,
+  not a V); the owner judged that it reads as a V, and the stills agree.
+  A target built to be a V (straight arms, even stroke) was sketched and not
+  pursued.
+- *The run fills the arms.* Many runs spend their evaluations near the
+  vertex and leave the arm tips bare, and the surrogate then only guesses
+  at the ends of the V. The owner asked for a run of 80 to 100 evaluations
+  that fills the tails; `arm_coverage` measures that (Seeds, below).
+- *The letters lie on the floor and are made of the mesh.* Drawn on the
+  floor, they go through the same bloom, grain and perspective as the V and
+  can be seen from the tilted camera. Filled with the sheets' wire grid,
+  they read as part of the scene rather than a caption. A flat overlay in
+  screen space would miss the post-processing; it was not tried in the
+  page. Flat mock-ups with the V as filled contours, a glow or a light
+  background, made while choosing the layout, were not kept.
+- *The log view for the V.* In the density view the arms are low and thin
+  next to the letters; in the log view the V has a letter's body.
+  `?wmview=density` shows the other.
+- *STIX Two Text Regular.* A Times-like face as in the logo, and the page
+  already loads STIX Two for its captions. The medium weight made the
+  letters outweigh the V.
+
 ## Seeds
+
+### `trace_wordmark.js`
+
+Seeds 0 to 59 on the banana alone, PyVBMC `1.0.5.dev156+g4d91a5e61`,
+default options, BLAS single-threaded, on the machine that made the trace:
+the runs of `--target banana --sweep 0:60` (the sweep itself was checked on
+seeds 22 and 2, which it reproduces). Here, evaluations are the ones still
+in the training set at the end; `--sweep` also counts the ones trimmed at
+the end of warm-up (95 for seed 22). `arms` is `arm_coverage`. The ELBO SD
+is 0.001 for every run. 25 runs ended with 80 to 100 evaluations; the table
+has the eight of them with the best arm coverage, and seeds 3 and 2, which
+leave the arm tips bare.
+
+| seed | iterations | evaluations | ELBO | gsKL | arms |
+|---:|---:|---:|---:|---:|---:|
+| **22** | 18 | 93 | -0.013 | 0.058 | 1.00 |
+| 50 | 18 | 92 | -0.025 | 0.084 | 0.97 |
+| 4 | 17 | 87 | -0.029 | 0.087 | 0.96 |
+| 6 | 16 | 84 | -0.026 | 0.105 | 0.96 |
+| 14 | 16 | 83 | -0.022 | 0.076 | 0.94 |
+| 47 | 16 | 82 | -0.025 | 0.099 | 0.92 |
+| 48 | 16 | 83 | -0.027 | 0.088 | 0.91 |
+| 41 | 18 | 93 | -0.032 | 0.096 | 0.91 |
+| 3 | 15 | 80 | -0.048 | 0.191 | 0.63 |
+| 2 | 15 | 80 | -0.050 | 0.168 | 0.57 |
+
+Within the range of evaluations, seed 22 has the best ELBO, gsKL and arm
+coverage; its ELBO is the best of all 60 runs. Its smallest hyperparameter
+length scale is 1.05 (seed 8 of `trace.js`: 0.010), so no GP state of its
+trace leaves a sample out (`drawable_samples`).
+
+### `trace.js`
 
 `--sweep` on the machine that made the trace, PyVBMC
 `1.0.5.dev156+g4d91a5e61`, default options. The target's log evidence is 0.
