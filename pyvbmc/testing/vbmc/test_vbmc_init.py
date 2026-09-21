@@ -8,7 +8,7 @@ import scipy as sp
 import scipy.stats
 
 from pyvbmc import VBMC
-from pyvbmc.acquisition_functions import AcqFcnVIQR
+from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.priors import (
     Prior,
     Product,
@@ -1537,6 +1537,18 @@ def test_an_acquisition_asking_for_mcmc_importance_sampling_is_rejected():
     message = execinfo.value.args[0]
     assert "mcmc_importance_sampling" in message
     assert "not ported" in message
+
+
+@pytest.mark.parametrize(
+    "value",
+    [AcqFcnLog(), "AcqFcnLog()", None, [], [AcqFcnLog(), 3]],
+)
+def test_search_acq_fcn_must_be_a_list_of_acquisitions(value):
+    """A single acquisition, its name outside a list, and an entry that is
+    neither an acquisition nor a string are refused at construction with a
+    message that names the option."""
+    with pytest.raises(ValueError, match="search_acq_fcn"):
+        create_vbmc(3, 3, 1, 5, 2, 4, options={"search_acq_fcn": value})
 
 
 def test_the_acquisitions_that_do_not_ask_for_it_are_accepted():

@@ -3594,9 +3594,24 @@ class VBMC:
             )
 
     def _validate_search_acq_fcn_option(self):
-        """Reject an acquisition that asks for the unported MCMC step of
-        the importance sampler."""
-        for acq_fcn in self.options.get("search_acq_fcn", []):
+        """Check the form of ``search_acq_fcn``, and reject an acquisition
+        that asks for the unported MCMC step of the importance sampler."""
+        search_acq_fcn = self.options.get("search_acq_fcn")
+        if (
+            not isinstance(search_acq_fcn, (list, tuple))
+            or len(search_acq_fcn) == 0
+            or not all(
+                isinstance(acq_fcn, str) or hasattr(acq_fcn, "acq_info")
+                for acq_fcn in search_acq_fcn
+            )
+        ):
+            raise ValueError(
+                "options['search_acq_fcn'] must be a list of acquisition "
+                "functions, each an object of one of the classes of "
+                "pyvbmc.acquisition_functions or a string that names one, "
+                f'such as "AcqFcnLog()"; it is {search_acq_fcn!r}.'
+            )
+        for acq_fcn in search_acq_fcn:
             acq_info = getattr(acq_fcn, "acq_info", None)
             if acq_info is None or not acq_info.get(
                 "mcmc_importance_sampling"
