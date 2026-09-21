@@ -871,7 +871,9 @@ class VBMC:
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("f_vals")).ravel()
-        if len(y_orig) > 0 and self.options.get("specify_target_noise"):
+        # A NaN entry asks for the point to be evaluated and supplies nothing.
+        supplies_values = len(y_orig) > 0 and not np.all(np.isnan(y_orig))
+        if supplies_values and self.options.get("specify_target_noise"):
             raise ValueError(
                 "options['f_vals'] supplies values without their noise, so "
                 "it cannot be used with options['specify_target_noise']. "
