@@ -428,8 +428,16 @@ changes the inference problem.
 (faq-does-vbmc-support-inference-with-integer-parameters)=
 ### Does VBMC support inference with integer parameters?
 
-No, VBMC does not support integer parameters (that is, variables forced to be integers — or, more in general, constrained to discrete values).
-Be aware that simple workarounds might break down the VBMC approximation, in particular the assumption that the underlying target function (the log posterior) is continuous and reasonably smooth.
+Only as an experimental feature. `options['integer_vars']` names the variables that are forced to take integer values, either as a boolean array with one entry per variable or as an array of their 0-based indices.
+The hard bounds of such a variable must sit half an integer outside its range: `LB = -0.5` and `UB = 10.5` for a variable that takes the values 0 to 10.
+
+What the option does, and what it does not do:
+
+- The points of the active-sampling search are snapped to the integer grid, so every evaluation after the initial design is made at integer values of those variables.
+- The initial design is *not* snapped, as in MATLAB VBMC, and neither is an `x0` provided for it. The first `options['fun_eval_start']` evaluations are therefore made off the grid unless you provide starting points for the whole design, all of them on it.
+- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing.
+
+Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in the variables that are not integers.
 
 (faq-output-arguments)=
 ## Output arguments
