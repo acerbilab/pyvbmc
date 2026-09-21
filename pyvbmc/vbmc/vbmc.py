@@ -83,9 +83,12 @@ def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
     slack of ``1e-9`` times its range. A support computed as ``loc +
     scale``, which is how a bounded ``scipy.stats`` distribution built from
     a pair of bounds reports its edges, lands a few units in the last place
-    away from the bound it was built from, and a run stays at least
-    ``tol_bound_x`` (1e-5 by default) times the range away from every hard
-    bound, so a gap of the slack's size is never evaluated. Where a hard
+    away from the bound it was built from. A run stays further than that
+    from every hard bound: the acquisition search keeps ``tol_bound_x``
+    (1e-5 by default) times the range away, and the starting points and
+    the plausible box, in which the initial design is drawn, are kept a
+    thousandth of the range inside (``_bounds._effective_bounds``), so a
+    gap of the slack's size is never evaluated. Where a hard
     bound is infinite the comparison is exact, so an infinite hard bound
     against a finite support bound is refused.
 

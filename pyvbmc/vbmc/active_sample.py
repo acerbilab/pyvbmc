@@ -935,7 +935,8 @@ def _get_search_points(
     ``search_cache_frac``, ``heavy_tail_search_frac``, ``mvn_search_frac``,
     ``hpd_search_frac``, ``box_search_frac``, each taking the rounded share
     its fraction gives it or what the sources before it left, whichever is
-    smaller. The variational posterior draws the points the five leave.
+    smaller. The search cache gives at most the rows it holds. The
+    variational posterior draws the points the five leave.
 
     Random draws use ``vp.rng``.
     """
