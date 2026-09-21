@@ -426,9 +426,18 @@ Left as they are:
 Gates on `095c29e`, the code of the check: the exact oracle check, 11 of 11
 with nothing re-baselined; the four seeded runs bit for bit those recorded
 on the wave-4 pass (92 arrays); the default suite, 1699 passed and 58
-skipped, with one rerun, of `test_minimize_adam_matyas_with_noise`, which
-draws its gradient noise from NumPy's global state without a seed and which
-the check does not touch (it fails 48 of 400 calls made with the global
-state seeded 0 to 399, so about one run of the suite in eight reruns it);
-the Torch environment, 785 passed and 19 skipped; the PyMC
+skipped, with one rerun, of `test_minimize_adam_matyas_with_noise`; the
+Torch environment, 785 passed and 19 skipped; the PyMC
 environment, 107 passed.
+
+The rerun led to one more commit (PI: fix it before the push). The test drew
+its gradient noise from NumPy's global state and failed 48 of 400 calls made
+with that state seeded 0 to 399, about one run of the suite in eight, which
+the reruns hid. The cause is its target: Matyas is `0.5 u^2 + 0.02 v^2`
+across and along the line `x[0] = x[1]`, noise of SD 3 swamps the slope
+along that valley, and the iterates random-walk there up to 2.8 while the
+position across it stays within 0.13; the test asked for `|x| < 1` in both
+directions. It draws from a generator of its own and bounds each direction,
+with a margin that holds on every one of 500 seeds, 200 of them not used to
+set the bounds (`b731fac`); the sphere test beside it, which never failed,
+gets its own generator as well.

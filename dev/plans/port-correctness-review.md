@@ -1332,7 +1332,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   check, 11 of 11 with nothing re-baselined; the four seeded runs bit for
   bit those of the wave-4 pass; the default suite, 1699 passed and 58
   skipped, with one rerun of `test_minimize_adam_matyas_with_noise`, an
-  unseeded test the check does not touch; the Torch environment, TORCHN
+  unseeded test that failed about one call in eight and that `b731fac` seeds
+  and bounds by the directions of its target (PI: fix it before the push);
+  the Torch environment, TORCHN
   passed; the PyMC environment, 107 passed. Not pushed; the CI matrix has
   not run on it.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9, and
