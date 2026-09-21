@@ -597,6 +597,31 @@ def test_batch_call_noisy_pair_and_unknown_noise():
     assert np.array_equal(sds, np.ones(2))
 
 
+def test_batch_call_refuses_a_cached_value_without_its_sd_at_level_2():
+    """At uncertainty handling level 2 the SD of an observation is the
+    caller's to provide, and ``f_vals`` has no place for one. The values
+    are refused before the target is called and before any row is
+    recorded; an all-NaN ``f_vals`` supplies nothing and is accepted."""
+    calls = []
+
+    def noisy_target(points):
+        calls.append(points)
+        return np.sum(points, axis=1), np.full(points.shape[0], 0.5)
+
+    x = np.array([[1.0, 2.0], [3.0, 4.0]])
+    f_logger = FunctionLogger(noisy_target, 2, True, 2, vectorized_target=True)
+    with pytest.raises(ValueError, match="without their SD"):
+        f_logger.batch_call(x, f_vals=np.array([np.nan, 1.0]))
+    assert calls == []
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+
+    values, sds, _ = f_logger.batch_call(x, f_vals=np.full(2, np.nan))
+    assert np.array_equal(values, [3.0, 7.0])
+    assert np.array_equal(sds, [0.5, 0.5])
+
+
 def test_batch_call_rejects_noisy_n_by_two_without_mutation():
     f_logger = FunctionLogger(
         lambda x: np.column_stack((np.sum(x, axis=1), np.ones(x.shape[0]))),
