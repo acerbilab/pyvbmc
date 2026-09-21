@@ -205,6 +205,22 @@ records its execution.
   See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
   and [reference record](golden/promotion_20260913/README.md).
 
+- [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
+  interactive three.js page that plays back a recorded two-dimensional run
+  as a rotating landscape of the log density: the GP surrogate, the
+  evaluations, the acquisition function while points are chosen, the
+  variational mixture and, at the end, the true target. A second page ends
+  with the final posterior as the V of the PyVBMC wordmark;
+  `scripts/record.mjs` records either page as MP4, GIF or PNG frames, and
+  `dev/scripts/export_animation_trace.py` writes the trace of a real run.
+  The work is ongoing on the branch `feat-3d-animation`, cut from `dev-next`
+  on 2026-09-20 and not merged back; its `README.md`, `NOTES.md` and
+  `TODO.md` under `docsrc/source/_static/vbmc3d/` hold the design and the
+  next actions. Bring it back into `dev-next` once it settles. Where the
+  visualization is shown is undecided (the documentation, the project page,
+  the README): on the branch it sits in the docs' static folder, which the
+  Sphinx build does not publish, and no page links to it.
+
 ## Outside 1.5 scope
 
 - **GP robustness on noisy unbounded targets.** Investigate controls on
