@@ -141,10 +141,16 @@ bookkeeping around three numerical stages, repeated until termination:
    Evaluations go through `FunctionLogger`.
 2. **GP training** (`vbmc/gaussian_process_train.py` → `gpyreg.GP.fit`):
    squared-exponential ARD kernel (hard-wired; several paths fail on anything
-   else), negative-quadratic mean, Gaussian noise with optional user-provided
-   noise estimates. Hyperparameters are optimized with L-BFGS-B then
-   slice-sampled; the number of samples `Ns` shrinks with `N` and drops to 0
-   once `N >= 200 + 10 D`.
+   else), negative-quadratic mean, Gaussian noise. The noise model follows
+   the uncertainty level: a constant term alone (level 0, one noise
+   hyperparameter); the constant plus the recorded noise of each point scaled
+   by a fitted multiplier (level 1, `uncertainty_handling` without
+   `specify_target_noise`, two noise hyperparameters); the constant plus the
+   noise the target provides (level 2, one). Code that indexes
+   hyperparameters by position goes through the `hyperparameter_count()` of
+   the covariance, noise and mean functions. Hyperparameters are optimized
+   with L-BFGS-B then slice-sampled; the number of samples `Ns` shrinks with
+   `N` and drops to 0 once `N >= 200 + 10 D`.
 3. **Variational optimization** (`vbmc/variational_optimization.py`): update
    `K`, sieve candidate posteriors, then Adam (`vbmc/minimize_adam.py`) on the
    negative ELCBO. The expected log joint under the mixture is analytic
@@ -266,7 +272,12 @@ Things you must hold in your head across files:
   what `optimize()` hands to `final_boost` and what `load` uses, and it
   copies a record that still
   carries its factors (files saved by versions that stored complete GPs)
-  as it is. The recorded `optim_state` leaves out the importance samples
+  as it is. `gp_hyp_full` records the hyperparameter samples of an
+  iteration before thinning (`gp_sample_thin` times `Ns` rows, or the one
+  optimized vector when the fit draws no samples); `_get_hyp_cov` builds the
+  widths of the slice sampler from these blocks and weighs each by its own
+  number of rows, so files that recorded the thinned samples mix in. The
+  recorded `optim_state` leaves out the importance samples
   of the noisy acquisitions (`active_importance_sampling`, drawn afresh
   every active-sampling step and not rebuildable from the record) unless
   the option `record_full_history_details` is set.
@@ -290,7 +301,9 @@ Things you must hold in your head across files:
   `max_iter` (positive integers, `max_iter` raised to `min_iter`),
   `gp_mean_fun` and `gp_hyp_sampler` (the values the package implements:
   `zero`, `const`, `negquad`; `slicesample`) and `f_vals` (not with
-  `specify_target_noise`) are checked at construction. Options are frozen
+  `specify_target_noise`) are checked at construction. The checks of single
+  option values (`_validate_option_values`) also run in `load`, on the
+  saved options with `new_options` applied. Options are frozen
   after init against assignment and removal; use `options.__setitem__(k, v,
   force=True)` and `options.__delitem__(k, force=True)`.
 - **Randomness goes through `numpy.random.Generator` objects.** `VBMC(seed=)`
@@ -421,8 +434,9 @@ Things you must hold in your head across files:
   `--check --exact`.
   On 2026-09-20 the port review's fixes of the hyperparameter fit (the
   window of past GPs, and the bounds of `mean_const` and of the noise left
-  to gpyreg's recommendation) moved `gp_fit`, `gp_fit_history` and the log
-  prior of `gp_nlZ`, by the change of the noise prior's normalization;
+  to gpyreg's recommendation) moved `gp_fit` and `gp_fit_history`, whose
+  fits draw their design inside those bounds, and the log prior of `gp_nlZ`,
+  by the normalization of the noise prior over its bounded range;
   the three were re-baselined from the stored states, and the one of the
   three authentic captures under `fixtures/gp_fit_history/` whose fit
   draws a design through `--rebaseline-gp-fit-history NAME --reason
