@@ -101,26 +101,29 @@ class Trapezoidal(Prior):
             self.b - self.a + self.v - self.u
         )
 
-        for d in range(D):
-            # Left tail
-            mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
-            log_pdf[mask, d] = (
-                np.log(x[mask, d] - self.a[d])
-                - np.log(self.u[d] - self.a[d])
-                - log_norm_factor[d]
-            )
+        # The density is zero at the bounds, so the logarithm of zero at a
+        # point on one of them is the answer and not a mishap.
+        with np.errstate(divide="ignore"):
+            for d in range(D):
+                # Left tail
+                mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
+                log_pdf[mask, d] = (
+                    np.log(x[mask, d] - self.a[d])
+                    - np.log(self.u[d] - self.a[d])
+                    - log_norm_factor[d]
+                )
 
-            # Plateau
-            mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            log_pdf[mask, d] = -log_norm_factor[d]
+                # Plateau
+                mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
+                log_pdf[mask, d] = -log_norm_factor[d]
 
-            # Right tail
-            mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
-            log_pdf[mask, d] = (
-                np.log(self.b[d] - x[mask, d])
-                - np.log(self.b[d] - self.v[d])
-                - log_norm_factor[d]
-            )
+                # Right tail
+                mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
+                log_pdf[mask, d] = (
+                    np.log(self.b[d] - x[mask, d])
+                    - np.log(self.b[d] - self.v[d])
+                    - log_norm_factor[d]
+                )
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 

@@ -104,27 +104,27 @@ class SplineTrapezoidal(Prior):
         # norm_factor = u - v + 0.5 * (b - v + u - a)
         log_norm_factor = np.log(0.5 * (self.v - self.u + self.b - self.a))
 
-        # ignore log(0) warnings here
-        old_settings = np.seterr(divide="ignore")
-        for d in range(D):
-            # Left tail
-            mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
-            z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
-            log_pdf[mask, d] = (
-                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
-            )
+        # The density is zero at the bounds, so the logarithm of zero at a
+        # point on one of them is the answer and not a mishap.
+        with np.errstate(divide="ignore"):
+            for d in range(D):
+                # Left tail
+                mask = (x[:, d] >= self.a[d]) & (x[:, d] < self.u[d])
+                z = (x[mask, d] - self.a[d]) / (self.u[d] - self.a[d])
+                log_pdf[mask, d] = (
+                    np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
+                )
 
-            # Plateau
-            mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
-            log_pdf[mask, d] = -log_norm_factor[d]
+                # Plateau
+                mask = (x[:, d] >= self.u[d]) & (x[:, d] < self.v[d])
+                log_pdf[mask, d] = -log_norm_factor[d]
 
-            # Right tail
-            mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
-            z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
-            log_pdf[mask, d] = (
-                np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
-            )
-        np.seterr(**old_settings)
+                # Right tail
+                mask = (x[:, d] >= self.v[d]) & (x[:, d] < self.b[d])
+                z = 1 - (x[mask, d] - self.v[d]) / (self.b[d] - self.v[d])
+                log_pdf[mask, d] = (
+                    np.log(-2 * z**3 + 3 * z**2) - log_norm_factor[d]
+                )
 
         return np.sum(log_pdf, axis=1, keepdims=True)
 

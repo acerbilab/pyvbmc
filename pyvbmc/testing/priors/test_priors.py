@@ -1,3 +1,4 @@
+import warnings
 from itertools import product
 
 import numpy as np
@@ -157,6 +158,32 @@ def test_log_pdf_of_an_integer_point_outside_the_support(cls):
     assert mixed.pdf(np.array([[20, 5, 5]])).item() == 0.0
     assert np.all(np.isneginf(mixed.log_pdf(np.array([[20, 20, 5]]))))
     assert mixed.pdf(np.array([[20, 20, 5]])).item() == 0.0
+
+
+@pytest.mark.parametrize("cls", [Trapezoidal, SplineTrapezoidal])
+def test_no_warning_at_a_bound(cls):
+    """The density of both trapezoids is zero at either bound, so the
+    logarithm of zero there is the answer and is reported as such, without
+    a warning, as MATLAB's ``log(0)`` is."""
+    prior = cls(0.0, 0.25, 0.75, 1.0, D=2)
+    for x in (np.zeros((1, 2)), np.ones((1, 2))):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            log_pdf = prior.log_pdf(x)
+        assert np.all(np.isneginf(log_pdf))
+
+
+def test_the_error_state_survives_a_failure_in_the_spline_loop():
+    """The suppression of the logarithm of zero is undone however the
+    density leaves, so a failure does not leave it installed."""
+    before = np.geterr()
+    prior = SplineTrapezoidal(0.0, 0.25, 0.75, 1.0, D=2)
+    # `_log_pdf` loops over the columns of `x` and indexes the prior's own
+    # bounds, so a point with more columns than the prior has dimensions
+    # fails inside the loop.
+    with pytest.raises(IndexError):
+        prior._log_pdf(np.full((2, 3), 0.5))
+    assert np.geterr() == before
 
 
 def test_shape():
