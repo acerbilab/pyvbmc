@@ -389,14 +389,17 @@ def _gp_hyp(
         pass
     elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
         # Lower maximum constant mean
-        bounds["mean_const"] = (np.nan, np.min(hpd_y))
+        bounds["mean_const"] = (bounds["mean_const"][0], np.min(hpd_y))
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gp_quadratic_mean_bound"]:
             delta_y = max(
                 options["tol_sd"],
                 min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
-            bounds["mean_const"] = (np.nan, np.max(hpd_y) + delta_y)
+            bounds["mean_const"] = (
+                bounds["mean_const"][0],
+                np.max(hpd_y) + delta_y,
+            )
     else:
         raise TypeError("The mean function is not supported by gpyreg.")
 
@@ -404,7 +407,7 @@ def _gp_hyp(
     if isinstance(gp.covariance, gpr.covariance_functions.SquaredExponential):
         bounds["covariance_log_outputscale"] = (
             cov_bounds_info["LB"][D],
-            np.nan,
+            bounds["covariance_log_outputscale"][1],
         )
         bounds["covariance_log_lengthscale"] = (
             cov_bounds_info["LB"][:D],
