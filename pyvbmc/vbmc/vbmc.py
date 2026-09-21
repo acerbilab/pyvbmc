@@ -1954,7 +1954,7 @@ class VBMC:
                 plot_data=True,
                 highlight_data=None,
                 plot_vp_centres=True,
-                title="VBMC final ({} iterations)".format(self.iteration),
+                title="VBMC final ({} iterations)".format(self.iteration + 1),
             )
             plt.show()
 

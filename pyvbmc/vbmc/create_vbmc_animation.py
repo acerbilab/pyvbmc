@@ -48,7 +48,6 @@ def create_vbmc_animation(
     images = []
     gp = None
     for i in range(0, len(vbmc.iteration_history["iter"]) + 1):
-
         if i >= len(vbmc.iteration_history["iter"]):
             vp = vbmc.vp
         else:
@@ -90,7 +89,9 @@ def create_vbmc_animation(
             raise ValueError(f"Unsupported suptitle option {suptitle}.")
 
         if i == len(vbmc.iteration_history["iter"]):
-            fig.suptitle("PyVBMC final ({} iterations)".format(i - 1))
+            # `i` is the number of recorded iterations here, the count that
+            # `results["iterations"]` reports.
+            fig.suptitle("PyVBMC final ({} iterations)".format(i))
 
         # make axis limits the same for all figures and subplots
         axes = np.array(fig.axes).reshape((vp.D, vp.D))
@@ -110,7 +111,7 @@ def create_vbmc_animation(
 
     if as_frames:
         stem = path.stem
-        for (i, img) in enumerate(images):
+        for i, img in enumerate(images):
             imageio.imsave(path.with_stem(f"{stem}-{i:03}"), img)
     else:
         imageio.mimsave(path, images, duration=0.5)
