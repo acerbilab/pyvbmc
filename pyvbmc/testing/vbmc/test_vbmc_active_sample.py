@@ -1764,6 +1764,26 @@ def test_two_halves_of_the_search_set_stay_within_it(number_of_points):
     assert vbmc.vp.rng.box_rows[0] == number_of_points // 2
 
 
+def test_a_share_of_half_a_point_goes_away_from_zero(mocker):
+    """The shipped fractions meet a tie whenever the starting cache
+    leaves a number of points to draw that is 2 modulo 4: a quarter of
+    ten points is two and a half, which ``private/activesample_vbmc.m``
+    rounds to three (``:565-605``, MATLAB's ``round``). Three of the
+    sources take three points each and the variational posterior draws
+    the one they leave."""
+    number_of_points = 16
+    vbmc = _sieve_state({"cache_frac": 1}, n_cache=6)
+    vp_draws = _record_vp_draws(mocker)
+
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+
+    assert search_X.shape == (number_of_points, 3)
+    assert np.sum(~np.isnan(idx_cache)) == 6
+    assert vp_draws == [(3, 3.0), (1, np.inf)]
+    assert vbmc.vp.rng.mvn_sizes == [3]
+    assert vbmc.vp.rng.box_rows == [3]
+
+
 def test_each_source_draws_its_rounded_share(mocker):
     """Where the rounded shares leave room, every source draws the share
     its fraction gives it of the points to draw, and the variational
