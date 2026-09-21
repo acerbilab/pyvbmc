@@ -138,9 +138,11 @@ around three numerical stages, repeated until termination:
   space; users see the original constrained space. `ParameterTransformer`
   (`__call__` forward, `.inverse()` back) mediates. `VariationalPosterior`
   methods take `orig_flag=True` by default and provide gradients only with
-  `orig_flag=False`; `vbmc.x0` is in the transformed space, `vbmc.x0_orig` in
-  the caller's. One transformer object is shared by `vbmc`, `vp` and
-  `function_logger`, during a run and after `load` (tests assert identity).
+  `orig_flag=False`; `vbmc.x0` is in the transformed space the run was
+  constructed with (a warp does not re-express it, so after one the run's
+  transformer no longer maps it back), `vbmc.x0_orig` in the caller's. One
+  transformer object is shared by `vbmc`, `vp` and `function_logger`, during
+  a run and after `load` (tests assert identity).
   No code mutates a transformer after construction (a warp installs a fresh
   copy), which is what makes sharing safe.
 - **Shapes are rigid.** VP: `w (1,K)`, `mu (D,K)`, `sigma (1,K)`,

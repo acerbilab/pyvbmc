@@ -246,6 +246,11 @@ class VBMC:
         The target passed directly to this instance, or ``None`` when the
         instance was constructed from an ordinary callable. This attribute
         is read-only.
+    x0_orig : np.ndarray, shape (n0, D)
+        The starting points in the coordinates the caller gave them in.
+        ``x0`` holds the same points in the inference space the instance
+        was constructed with, which a later warp of that space leaves
+        behind.
 
     Raises
     ------
