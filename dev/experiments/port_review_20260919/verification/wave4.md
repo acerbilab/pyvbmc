@@ -257,11 +257,12 @@ The five commits that follow the independent check (`76ed8e9` to `601555e`)
 ran the focused tests of what they touch: the quantile, `acq_info` and
 rounding tests (39 passed), `test_vbmc_init.py` with `test_options.py` (194),
 the two tests of `315919a` three times over, and `test_options.py` with
-`test_string_to_acq.py` and `test_active_importance_sampling.py` (109). The
-seeded runs, the exact oracle check and the default suite on `601555e` were
-started and stopped by the machine for lack of memory before they reported;
-they have not run on that head. The branch is not pushed, and the CI matrix
-has not run on the pass.
+`test_string_to_acq.py` and `test_active_importance_sampling.py` (109). On
+`601555e` the four seeded runs are bit for bit those of `f873556` (92
+arrays). The exact oracle check and the default suite that were to follow
+them on that head were stopped by the machine for lack of memory before
+they started, and have not run on it. The branch is not pushed, and the CI
+matrix has not run on the pass.
 
 ## The independent check of the pass
 

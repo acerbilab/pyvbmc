@@ -1260,17 +1260,20 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `search_acq_fcn` checked to be a list of acquisitions or strings, its
   description saying which strings are read; the state of the
   integer-variable search test seeded; three sentences of documentation.
-  Each ran the focused tests of what it touches. The seeded runs, the exact
-  oracle check and the default suite on `601555e` were stopped by the machine
-  for lack of memory before they reported, and have not run on that head
+  Each ran the focused tests of what it touches, and on `601555e` the four
+  seeded runs are bit for bit those of `f873556`. The exact oracle check and
+  the default suite that were to follow on that head were stopped by the
+  machine for lack of memory before they started, and have not run on it
   (`verification/wave4.md`, "Gates").
 - [ ] Pickup point (2026-09-21). Wave 4 is verified and fixed on
-  `dev-port-review` (seventeen commits after `f873556`, head `601555e`). The
-  gates passed on `2dc98ce`, the twelfth; the five commits after it, which
-  follow the independent check, ran their focused tests only, so the four
-  seeded runs against `wave4_gates/before_f8735567.npz`, the exact oracle
-  check, the default suite and the Torch and PyMC environments are owed on
-  the head before anything else. The branch is not pushed, so the smoke, the
+  `dev-port-review`: seventeen commits of code, tests and the re-baselined
+  fixture after `f873556`, the last of them `601555e`, and the records of
+  waves 4 and 5 committed after it. The gates passed on `2dc98ce`, the
+  twelfth; the five commits after it, which follow the independent check,
+  ran their focused tests, and the four seeded runs are bit for bit those of
+  `f873556` on `601555e`, so the exact oracle check, the default suite and
+  the Torch and PyMC environments are owed on the head before anything
+  else. The branch is not pushed, so the smoke, the
   full CI matrix and the merge into `dev-next` are still to come, on the PI's
   word. Wave 5 is saved and waits for its report to the PI, its
   verification and the PI's rulings. Still to run: G1 with G2, both tracks;
