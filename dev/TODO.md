@@ -103,8 +103,10 @@ records its execution.
   P8, P3 and P4) are reviewed, verified, ruled on and fixed, and merged into
   `dev-next`; several of the fixes of waves 1 to 3 move default trajectories,
   so the golden references and the production-reference pools describe the
-  code from before them. Wave 5 (P7 and P9) is reviewed, its reports saved,
-  and waits for verification and rulings. G1, G2, the internal track of P2
+  code from before them. The passes of waves 3 and 4 were each checked
+  afterwards by fresh reviewers without the session's context, and what the
+  checks found is fixed and merged as well. Wave 5 (P7 and P9) is reviewed,
+  its reports saved, and waits for verification and rulings. G1, G2, the internal track of P2
   and the third readers remain; the plan's pickup point says where to
   resume.
 
