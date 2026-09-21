@@ -707,6 +707,8 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     sys.path.insert(0, str(HERE))
+    # The package of this checkout, whichever checkout is installed.
+    sys.path.insert(0, str(REPO_ROOT))
     from golden_trace import _tag, load_population, parse_seeds, run_task
     from profile_run import git_info
 
