@@ -84,10 +84,12 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
         "max_fun_evals": 10,
         "min_fun_evals": 5,
         "min_iter": 101,
-        "max_iter": 100,
+        "max_iter": 200,
     }
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    vbmc.function_logger.func_count = 9
+    # The budget of evaluations is spent, so the run is to stop as soon as
+    # the minimum number of iterations lets it.
+    vbmc.function_logger.func_count = 10
     vbmc.optim_state["entropy_switch"] = True
     mocker.patch.object(
         vbmc,
@@ -98,7 +100,7 @@ def test_vbmc_check_termination_conditions_prevent_early_termination(mocker):
     vbmc.optim_state["iter"] = 99
     terminated, __ = vbmc._check_termination_conditions()
     assert not terminated
-    # The hundred-and-first meets it, and the maximum has been reached.
+    # The hundred-and-first meets it.
     vbmc.optim_state["iter"] = 100
     terminated, __ = vbmc._check_termination_conditions()
     assert terminated
