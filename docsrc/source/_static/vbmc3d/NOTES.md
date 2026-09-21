@@ -29,9 +29,11 @@ How it has been verified:
   (README), so of the phone layout only `wordmark.html`'s title card has
   been seen, at 540 x 1168.
 - `wordmark.html`'s finale and the loop back into the story, stepped
-  through `capture=1` at 10 frames per second by a throwaway driver over the
-  DevTools protocol (Node, no dependencies) and looked at as a contact
-  sheet.
+  through `capture=1` at 10 frames per second and looked at as a contact
+  sheet; the whole loop recorded to video and the finale to GIF.
+  `scripts/record.mjs`, a tidied version of the driver that made those
+  recordings, has since recorded PNG frames, a short MP4 and the finale GIF
+  (8.8 MB), not the whole loop.
 - One independent read-only review of the whole change, which re-derived the
   target's moments, decoded the trace itself, reproduced every number in the
   README, and confirmed that the recorder does not alter the run (the
@@ -49,10 +51,6 @@ What nobody has verified:
   `wordmark.html`, which the owner has watched.)
 - Frame rate on phones. Phones draw the full 64 x 64 mesh with half the
   segments per cell; no measurement exists.
-- `capture=1` as a recording, in the repository: a throwaway driver
-  outside it recorded `wordmark.html`'s whole loop to video and its finale
-  to GIF (`TODO.md`, item 3, has the recipe and the numbers); no script in
-  the repository does it yet.
 - The multisampled render target on a real GPU (it runs under software
   rendering).
 

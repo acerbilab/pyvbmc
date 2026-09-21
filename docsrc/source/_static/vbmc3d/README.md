@@ -21,6 +21,7 @@ names one.
 | `trace.js` | The run `index.html` plays (banana with a lobe, seed 8), `window.VBMC_TRACE = {...}`, about 0.5 MB. Generated; do not edit. |
 | `wordmark.html` | The wordmark page. |
 | `trace_wordmark.js` | The run `wordmark.html` plays (banana alone, seed 22), about 0.4 MB. Generated; do not edit. |
+| `scripts/record.mjs` | Records a page as an MP4, a GIF or PNG frames ("Recording" below). |
 | `dev/scripts/export_animation_trace.py` | Runs PyVBMC and writes a trace. Its docstrings define the trace format (`build_trace`, `Encoder`). |
 
 The Sphinx build does not publish this folder: `html_static_path` in
@@ -108,6 +109,40 @@ crossings are all taken does not anchor, and a displacement weight above
 1.5 cells is limited, which leaves its crossing short of the observation.
 The pace per acquired point is set for eight detailed iterations (`DP`,
 `DF`; later ones reuse the last entry).
+
+### Recording
+
+`scripts/record.mjs` records a page through `capture=1`, frame by frame, as
+an MP4, a GIF or a folder of PNG frames. It needs Node 22 or later and
+Chrome, and ffmpeg for the two encoded formats (`FFMPEG`, or `ffmpeg` on
+the `PATH`; `pip install --target DIR imageio-ffmpeg` puts one under
+`DIR/imageio_ffmpeg/binaries/` without touching an environment). It serves
+this folder itself, so no server needs to run. From this folder, with
+`OUT` a folder outside the repository (recordings are not tracked):
+
+```console
+node scripts/record.mjs wordmark.html OUT/loop.mp4                    # the whole loop, 1280 x 720, 30 fps
+node scripts/record.mjs "wordmark.html?hud=0" OUT/finale.gif \
+  --from 83.5 --to 94.45 --size 960x540                              # the finale as a 640 px GIF, 15 fps
+node scripts/record.mjs "wordmark.html?hud=0" OUT/frames --from 80 --to 82  # PNG frames, for checks
+```
+
+The header of the script lists its options. The playback controls are left
+out; `hud=0` leaves out the captions and telemetry too, and at 640 x 360
+the captions overlap the wordmark. Only a recording that starts at 0 shows
+the page as it plays: one that starts later begins with the camera where
+that segment wants it. A GIF of an excerpt cuts from its last frame to its
+first where it loops; a recording of the whole loop starts and ends on the
+wordmark.
+
+Under software rendering a frame takes about 0.18 s at 960 x 540 and
+0.45 s at 1280 x 720, so the whole loop at 30 fps (2744 frames) takes about
+20 minutes. The grain and scanlines of the post-processing change every
+pixel of every frame and dominate the size: the loop at 1280 x 720 is about
+118 MB at the default CRF 18 and about 37 MB with `--denoise 2:2:5:5
+--crf 24`. The finale GIF above is about 9 MB (21 MB without the
+denoising that GIFs get by default); `--gif-width 480 --fps 12 --colors 64
+--bayer 2` gives about 3 MB.
 
 ## How the page works
 
