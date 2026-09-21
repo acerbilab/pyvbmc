@@ -28,6 +28,23 @@ def get_matlab_vp():
     return vp
 
 
+def test_constructor_takes_one_starting_point_in_any_layout():
+    """A single starting point of `D` elements starts every component,
+    whether it is given as a row, a flat array or a column."""
+    D, K = 3, 4
+    seed = 20260921
+    point = np.array([1.0, -2.0, 0.5])
+
+    row = VariationalPosterior(D, K, point.reshape(1, -1), rng=seed)
+    flat = VariationalPosterior(D, K, point.copy(), rng=seed)
+    column = VariationalPosterior(D, K, point.reshape(-1, 1), rng=seed)
+
+    assert row.mu.shape == (D, K)
+    assert np.allclose(row.mu, point.reshape(-1, 1), atol=1e-5)
+    assert np.array_equal(flat.mu, row.mu)
+    assert np.array_equal(column.mu, row.mu)
+
+
 def test_sample_n_lower_1():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     x, i = vp.sample(0)

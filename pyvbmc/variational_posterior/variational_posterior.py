@@ -41,9 +41,11 @@ class VariationalPosterior:
     K : int, optional
         The number of mixture components, default 2.
     x0 : np.ndarray, optional
-        The starting vector for the mixture components means. It can be a
-        single array or multiple rows (up to `K`); missing rows are
-        duplicated by making copies of `x0`, default ``np.zeros``.
+        The starting points for the mixture component means, one per row.
+        A single point of `D` elements, given as a flat array, a row or a
+        column, starts every component; an `n0`-by-`D` matrix with `n0` up
+        to `K` starts the components at its rows, which are repeated in
+        order to fill the remaining components. By default ``np.zeros``.
     parameter_transformer : ParameterTransformer, optional
         The ``ParameterTransformer`` object specifying the transformation of
         the input space that leads to the current representation used by the
@@ -133,8 +135,8 @@ class VariationalPosterior:
         if x0 is None:
             x0 = np.zeros((D, K))
         elif x0.size == D:
-            x0.reshape(-1, 1)  # reshape to vertical array
-            x0 = np.tile(x0, (K, 1)).T  # copy vector
+            # One point, however it is laid out: it starts every component
+            x0 = np.tile(x0.reshape(-1, 1), (1, K))
         else:
             x0 = x0.T
             x0 = np.tile(x0, int(np.ceil(self.K / x0.shape[1])))
