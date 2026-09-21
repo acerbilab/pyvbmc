@@ -40,7 +40,7 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension. The point(s) are read as
+            `D` is the distribution dimension. The point(s) are read as
             `float64`, whatever dtype the array carries.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
@@ -82,7 +82,7 @@ class Prior(ABC):
             Whether to keep the input dimensions and return an array of shape
             `(n, 1)`, or discard them and return an array of shape `(n,)`.
 
-        returns
+        Returns
         -------
         pdf : np.ndarray
             The density of the prior at the input point(s), of dimension `(n,
@@ -124,7 +124,7 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `D` is the distribution dimension.
 
         Returns
         -------

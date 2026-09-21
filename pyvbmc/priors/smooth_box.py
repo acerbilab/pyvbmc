@@ -43,12 +43,16 @@ class SmoothBox(Prior):
             The standard deviation of the Gaussian tails, shape `(D,)` where
             `D` is the dimension (parameters of type ``float`` will be tiled to
             this shape).
+        D : int, optional
+            The distribution dimension. If given, will convert scalar `a`, `b`,
+            and `scale` to this dimension.
 
         Raises
         ------
         ValueError
-            If any pivot or scale is not finite, if ``scale[i] <= 0``, or if
-            ``a[i] >= b[i]``, for any `i`.
+            If any pivot or scale is not finite, if an array argument does not
+            agree in shape with the other arguments or with `D`, if
+            ``scale[i] <= 0``, or if ``a[i] >= b[i]``, for any `i`.
         """
         _check_finite({"a": a, "b": b, "scale": scale})
         self.a, self.b, self.scale = tile_inputs(

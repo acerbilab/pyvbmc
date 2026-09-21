@@ -35,11 +35,16 @@ class UniformBox(Prior):
         b : np.ndarray | float
             The upper bound(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
+        D : int, optional
+            The distribution dimension. If given, will convert scalar `a` and
+            `b` to this dimension.
 
         Raises
         ------
         ValueError
-            If any bound is not finite, or if ``a[i] >= b[i]``, for any `i`.
+            If any bound is not finite, if an array argument does not agree in
+            shape with the other arguments or with `D`, or if ``a[i] >= b[i]``,
+            for any `i`.
         """
         _check_finite(
             {"a": a, "b": b},

@@ -1,3 +1,5 @@
+import inspect
+import re
 import warnings
 from itertools import product
 
@@ -98,6 +100,39 @@ def test_an_argument_which_is_not_finite_is_refused(cls, arguments, bad):
             cls(**arrays)
         assert f"All elements of {name}=" in err.value.args[0]
         assert "should be finite" in err.value.args[0]
+
+
+def test_the_base_class_docstrings_use_the_numpydoc_section_headers():
+    """numpydoc reads a section by its header, so a header it does not
+    recognize drops the section from the documentation page."""
+    for method in (Prior.pdf, Prior.log_pdf, Prior.support):
+        assert re.search(r"^\s*Returns\s*$", method.__doc__, re.M), method
+        assert not re.search(r"^\s*returns\s*$", method.__doc__, re.M), method
+
+
+def test_the_base_class_docstrings_name_the_dimension_D():
+    """`D` is the name the classes and their arguments carry."""
+    for method in (Prior.log_pdf, Prior._log_pdf):
+        assert "`D` is the distribution dimension" in method.__doc__
+        assert "`d` is the distribution dimension" not in method.__doc__
+
+
+@pytest.mark.parametrize("cls, arguments", _BOX_ARGUMENTS)
+def test_a_box_constructor_documents_its_arguments_and_its_refusals(
+    cls, arguments
+):
+    """The constructor docstring is the published documentation of the
+    class: it names every argument a caller passes, `D` among them, and its
+    refusals include the one of an argument whose shape disagrees."""
+    documentation = cls.__init__.__doc__
+    documented = set(re.findall(r"^        (\w+) : ", documentation, re.M))
+    signature = inspect.signature(cls.__init__).parameters
+    assert documented == set(signature) - {"self"}
+
+    with pytest.raises(ValueError) as err:
+        cls(**{name: np.zeros((2, 2)) for name in arguments}, D=4)
+    assert "shape" in err.value.args[0]
+    assert "shape" in documentation.split("Raises")[1]
 
 
 def test_the_finiteness_check_is_private_to_the_subpackage():

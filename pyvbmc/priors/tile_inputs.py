@@ -12,6 +12,11 @@ def tile_inputs(*args, size=None, squeeze=False):
     If all inputs are given as scalars, returned arrays will have shape `size`
     if `size` is a tuple, or shape `(size,)` if `size` is an integer.
 
+    An argument agrees with `size` when the two hold the same lengths once
+    their axes of length one are dropped, so that a row, a column and a flat
+    array of `D` elements all agree with `size=D` while an array of another
+    layout, such as `(2, 2)` against `size=4`, does not.
+
     Parameters
     ----------
     *args : [Union[float, np.ndarray]]
@@ -20,11 +25,6 @@ def tile_inputs(*args, size=None, squeeze=False):
         The desired size/shape of the output, default `(1,)`.
     squeeze : bool
         If `True`, then drop 1-d axes from inputs. Default `False`.
-
-    An argument agrees with `size` when the two hold the same lengths once
-    their axes of length one are dropped, so that a row, a column and a flat
-    array of `D` elements all agree with `size=D` while an array of another
-    layout, such as `(2, 2)` against `size=4`, does not.
 
     Raises
     ------
