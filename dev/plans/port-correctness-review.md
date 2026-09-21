@@ -469,7 +469,28 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   do, after a fix pass whose gates have passed, the full CI matrix among
   them (first on 2026-09-20, after wave 2), and is then fast-forwarded onto
   `dev-next` so that the review goes on from the merged line. Only the
-  `TODO.md` status line is updated on `dev-next` directly.
+  `TODO.md` status line is updated on `dev-next` directly. The merge is made
+  in whichever checkout can hold `dev-next`: `git worktree list` says where
+  it is checked out, and the sibling checkout `../pyvbmc-stage3`, whose
+  environment has Torch, may be on another branch that belongs to other
+  work.
+- A gate is evidence for a change only if it reaches the changed code. The
+  oracle of an acquisition exercises the branch of the importance sampling
+  that the acquisition takes and no other (VIQR samples from the variational
+  posterior alone; IMIQR alone reaches the proposal density and the MCMC
+  step), so a ledger that cites an unmoved oracle first checks that the
+  oracle calls the function. Where two fixes meet in one oracle, a bitwise
+  comparison of the old and the new function on a stored state tells them
+  apart (`verification/scripts/wave4_A7_proposal_pdf_bitwise.py` reads the
+  old module from git).
+- The heavy gates run one after the other, unbuffered and straight into a
+  log file (a pipe through `grep` holds the output back until the process
+  ends), and each leaves a record that is checked before the next statement
+  about it is written: the machine stops a background run when memory is
+  short, and what the run had finished by then is in its records, not in
+  its log.
+- A script or a block of text that holds apostrophes is written to a file
+  and run from there; the shell tool's here-documents fail on them.
 
 ## Worklog
 
@@ -1277,30 +1298,78 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`0f3015b`), and `dev-port-review` was fast-forwarded onto it. The worktree
   and the branch of the fix agent had been removed once `git cherry` showed
   its ten commits on the branch.
-- [ ] Pickup point (2026-09-21, after wave 4 was merged). Nothing of wave 4
-  is in flight except possibly the smoke run that the merge started on
-  `dev-next` (`gh run list --branch dev-next`), which tests code the full
-  matrix already passed: seventeen commits of code, tests and the
-  re-baselined fixture after `f873556`, the last of them `601555e`, with the
-  records of waves 4 and 5 after it. Wave 5 is saved and waits for its
-  report to the PI, its
-  verification and the PI's rulings. Still to run: G1 with G2, both tracks;
-  the internal track of P2, which wave 1 did not run (the wave-4 pass changed
-  no line of `active_sample.py`, only `_real2int` and `string_to_acq`, which
-  it calls); O1 to O4. The order the orchestrator proposed, and the PI has
-  not ruled on: G1 with G2, with the P2 track as a fifth reviewer if the PI
-  allows a fifth agent again, as for wave 5 (the working rule is four), then
-  O1 to O4.
-  A reviewer brief, a verification round and a fix pass go as waves 2 to 4
-  went; the gates of a pass are in "Fixes and gates", among them the tests
-  that need Torch or PyMC and, for a pass that moves default trajectories,
-  the sweep on benchmark targets. The golden references and the run pools
-  describe the code from before the moving fixes of waves 1 to 3 and are
-  regenerated once, after the review's remaining fixes.
-- [ ] Waves 6 and 7: G1 and G2, both tracks (4 reviewers), and the internal
-  track of P2, which wave 1 did not run (its four slots went to M, the P2
-  comparison and both P6 tracks).
-- [ ] Wave 8: O1 to O4.
+- [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9, and
+  nothing else.** The other waves are decided by the PI after wave 5 is
+  complete; they are listed under "After wave 5" below for the record, and
+  a session that picks up here starts none of them and prepares none of
+  them.
+
+  Where wave 5 stands. The four reviewers have run and their reports are
+  saved verbatim, committed and pushed:
+  `experiments/port_review_20260919/reviews/P7_internal.md` (15 findings),
+  `P7_comparison.md` (11), `P9_internal.md` (11) and `P9_comparison.md` (7).
+  Nobody has read them for content: they are not summarized, not reported
+  to the PI, not verified, and no finding has a disposition. The worklog
+  entry "wave 5 run and saved" above has the briefs' first questions. The
+  reviewers read the code at `f873556`; the branch has since taken the
+  wave-4 pass, which changed no file of the two slices. One thing they
+  report is fixed by that pass already: `fess` taking the pair that
+  `vp.sample` returns for the array (`dd3d1d3`, W4-5). Two sites round a
+  half to even where MATLAB rounds away from zero, `stats/get_hpd.py` and
+  `np.round` in `active_sample.py`, and both P7 reports raise the first;
+  the wave-4 pass made `_real2int` round as MATLAB does from the exact
+  fractional part (`70ce067`), which is the expression to reuse if the PI
+  rules the same way there.
+
+  What to do, in this order, as waves 3 and 4 went (the worklog entries of
+  wave 4 and `verification/wave4.md` are the model):
+  1. Read the four reports and report the wave to the PI with enough
+     context to judge the findings: what is reported by both reviewers of a
+     slice, what can change what a run computes, where the reviewers
+     disagree, the first-question answers. Stop there: the PI decides what
+     follows (working rule, "one wave at a time").
+  2. On the PI's word, verify. The orchestrator takes the findings that can
+     change what a run computes, with scripts under
+     `verification/scripts/wave5_*`; read-only Opus verifiers, one per
+     slice, take the rest by the verifier brief of wave 4 (their reports
+     saved verbatim as `verification/wave5_P7.md` and `wave5_P9.md`). The
+     ledger is `verification/wave5.md`, rows W5-n, with a proposed
+     disposition per row and a column for the PI's.
+  3. On the PI's rulings, fix: agents on worktrees cut at the head of
+     `dev-port-review`, one finding per commit with a test written against
+     the contract; the orchestrator reviews and cherry-picks. Then the
+     gates of "Fixes and gates", the sheet, the list of MATLAB-side defects,
+     `CHANGELOG.md`, and the worklog. After wave 4 the PI also asked for an
+     independent check of the pass by fresh reviewers (`/doublecheck`),
+     which found four false statements in the ledger; expect the same
+     request.
+  4. On the PI's word: push, the branch smoke, the full matrix, the merge
+     into `dev-next` with the status line of `TODO.md` updated there.
+
+  State of the branch. `dev-port-review` and `dev-next` are pushed and hold
+  the wave-4 pass (merge commit `9d9c01b`); `dev-port-review` is ahead of
+  `dev-next` by documentation commits only. Nothing is in flight except
+  possibly the smoke run that the merge started on `dev-next`
+  (`gh run list --branch dev-next`), which tests code the full matrix
+  already passed on `11fb766`. The reviewers' check scripts of waves 4 and
+  5, the gate records and the logs are on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
+  writes its own checks and may use the scripts as leads. The golden
+  references and the run pools describe the code from before the moving
+  fixes of waves 1 to 3 and are regenerated once, after the review's
+  remaining fixes.
+- [ ] After wave 5, on the PI's decision and not before: G1 with G2, both
+  tracks (4 reviewers); the internal track of P2, which wave 1 did not run
+  (its four slots went to M, the P2 comparison and both P6 tracks; running
+  it beside G1 and G2 needs the PI's allowance for a fifth agent, which
+  wave 5 had once, the working rule being four); O1 to O4. Two things the
+  check of the wave-4 pass left for the time before the next comparison
+  reviewers receive the sheet: a mechanical re-check of every Python line
+  citation in `known_differences.md` (the pass corrected about twenty, and
+  the drift into `vbmc.py` is wider than what it touched), and the PI's
+  decision on a stored oracle state at uncertainty level 1, which needs a
+  level-1 variant of a benchmark target (`verification/wave4.md`, "Test
+  notes worth acting on").
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
 - [ ] Fixes on `dev-port-review` with gates; durable sheet entries
