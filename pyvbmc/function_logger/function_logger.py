@@ -365,7 +365,9 @@ class FunctionLogger:
             coordinates.
         f_vals : array-like, optional
             Already evaluated original-space values. It must have length
-            ``N``; NaN rows are evaluated by the target.
+            ``N``; NaN rows are evaluated by the target. At uncertainty
+            handling level 2 every row has to be NaN: a supplied value
+            comes without the SD that an observation needs at that level.
 
         Returns
         -------
@@ -384,8 +386,9 @@ class FunctionLogger:
             If this logger was not created with ``vectorized_target=True``.
         ValueError
             If the input or any supplied or returned value has an invalid
-            shape or value. Target outputs are fully validated before any
-            row is recorded.
+            shape or value, or if ``f_vals`` supplies a value at uncertainty
+            handling level 2. The supplied values are validated before the
+            target is called, and its outputs before any row is recorded.
         """
         if not getattr(self, "vectorized_target", False):
             raise RuntimeError(
@@ -409,6 +412,14 @@ class FunctionLogger:
                 "Cached function values",
                 allow_nan=True,
             )
+            if self.uncertainty_handling_level == 2 and not np.all(
+                np.isnan(cached_values)
+            ):
+                raise ValueError(
+                    "Cached function values come without their SD, which an "
+                    "observation needs at uncertainty handling level 2; add "
+                    "such a value with its SD through FunctionLogger.add."
+                )
 
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(x)
@@ -736,11 +747,15 @@ class FunctionLogger:
                     f_val + self.parameter_transformer.log_abs_det_jacobian(x)
                 )
             self.y[idx] = f_val
-            # An unknown evaluation time leaves the stored average alone.
+            # An unknown evaluation time leaves the stored average alone,
+            # and a known one takes the place of an average that is unknown.
             if not np.isnan(fun_eval_time):
-                self.fun_eval_time[idx] = (
-                    N * self.fun_eval_time[idx] + fun_eval_time
-                ) / (N + 1)
+                if np.isnan(self.fun_eval_time[idx, 0]):
+                    self.fun_eval_time[idx] = fun_eval_time
+                else:
+                    self.fun_eval_time[idx] = (
+                        N * self.fun_eval_time[idx] + fun_eval_time
+                    ) / (N + 1)
                 self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
             # The pooled value can move the maximum either way.

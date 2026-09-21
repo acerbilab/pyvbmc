@@ -29,16 +29,22 @@ its entry below.
   them.
 - `results["iterations"]` is the number of iterations, one more than in 1.0.4.
 - An entry of `vbmc.iteration_history["gp"]` cannot make predictions; call
-  `vbmc.get_gp(iteration)`.
+  `vbmc.get_gp(iteration)`. An entry of
+  `vbmc.iteration_history["gp_hyp_full"]` holds the hyperparameter samples
+  from before thinning, five times as many rows at the default
+  `gp_sample_thin`.
 - `vp.pdf(x, grad_flag=True)` raises an error in the original parameter space.
 - `results["rng_state"]` and `vbmc.random_state` hold the state of `vbmc.rng`.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
   input point and must not set `acq_info["mcmc_importance_sampling"]`.
-- `ParameterTransformer` and `FunctionLogger` used on their own: a variable
-  with one finite bound, a `scale` that is not positive, a noise flag that
-  contradicts the uncertainty handling level, and `add` without an SD for a
-  target that provides its noise raise an error.
+- `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
+  own: a variable with one finite bound, a `scale` that is not positive, a
+  noise flag that contradicts the uncertainty handling level, and `add`
+  without an SD for a target that provides its noise raise an error. The
+  logger returns a float for a repeated point, `unscent_warp` returns
+  floating-point values, and a transformer given a rotation or a scale
+  together with plausible bounds centres the plausible box differently.
 
 ### Added
 
@@ -282,9 +288,10 @@ its entry below.
   - The slice sampler of the GP hyperparameters takes its step widths from a
     weighted covariance of the samples of recent iterations. 1.0.4 computed
     that covariance wrongly, and from a fifth of the samples: each iteration
-    records the samples drawn before thinning, as MATLAB VBMC does, so
-    `vbmc.iteration_history["gp_hyp_full"]` holds `gp_sample_thin` times as
-    many rows as in 1.0.4.
+    records the samples drawn before thinning, as MATLAB VBMC does, so an
+    entry of `vbmc.iteration_history["gp_hyp_full"]` holds `gp_sample_thin`
+    times as many rows as in 1.0.4. An iteration whose fit draws no samples
+    records the one optimized vector, as in 1.0.4.
   - The fit of the GP hyperparameters starts as in MATLAB VBMC. Its starting
     points include the hyperparameters of the GPs of the later half of the
     iterations; 1.0.4 left out the oldest of them whenever an even number of
@@ -296,16 +303,20 @@ its entry below.
     `specify_target_noise`), the GP models the noise as MATLAB VBMC does: a
     constant term plus the noise recorded for each point, scaled by a fitted
     factor, so that a point evaluated several times weighs more than one
-    evaluated once. 1.0.4 fitted a single noise level for all points. The
-    difference shows with repeated observations
-    (`max_repeated_observations`).
+    evaluated once. 1.0.4 fitted a single noise level for all points. Every
+    run on such a target changes from its first GP fit, the model having one
+    more hyperparameter; the weighting shows with repeated observations
+    (`max_repeated_observations`), without which every point is recorded
+    with the same noise.
   - Points with exactly equal values of the target, which a quantized
     log-likelihood can return, are ordered as in MATLAB VBMC, the earlier
     one first, when PyVBMC selects the points of highest density
-    (`pyvbmc.stats.get_hpd`). 1.0.4 ordered them arbitrarily.
-  - In a run of more than 1000 evaluations, the number of starting points
-    tried in the fit of the GP hyperparameters goes down to zero, as in
-    MATLAB VBMC, where 1.0.4 kept nine.
+    (`pyvbmc.stats.get_hpd`) and when it keeps the best points at the end of
+    warm-up. So are iterations with equal scores when the best posterior of
+    a run is selected. 1.0.4 ordered them arbitrarily.
+  - In a long run, from about 1380 evaluations on, the number of starting
+    points tried in the fit of the GP hyperparameters goes down to zero, as
+    in MATLAB VBMC, where 1.0.4 kept nine.
   - The variational optimization puts no soft bound on the mixture weights.
     Small weights are still penalized (`weight_penalty`) and removed
     (`tol_weight`). The bound of 1.0.4 came with a gradient that did not
@@ -332,7 +343,8 @@ its entry below.
   - An option name that PyVBMC does not know raises an error wherever it is
     given: in the `options=` dictionary (as in 1.0.4), in an `options_path=`
     file, and in `VBMC.load(new_options=...)`. A misspelt name in an options
-    file used to be ignored.
+    file used to be ignored. The values given to `VBMC.load` are checked as
+    those given at construction are.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with
@@ -354,6 +366,7 @@ its entry below.
   - `f_vals` cannot be combined with `specify_target_noise`, because it
     carries no noise for the values it supplies; 1.0.4 gave them a noise of
     1. Pass such observations through the `precomputed_evaluations` argument.
+    An `f_vals` of NaN alone supplies no value and is accepted.
   - `AcqFcnVIQR` and `AcqFcnIMIQR` take a `quantile` strictly between 0.5 and
     1. 1.0.4 accepted any value; outside that range the values of VIQR were
     all NaN, or all the same, and the search took the first candidate it was
@@ -379,6 +392,23 @@ its entry below.
     implemented.
   - Once a `VBMC` object is constructed, its options cannot be removed (`del`,
     `pop`). Assigning to them was already an error.
+- **`ParameterTransformer` and `FunctionLogger` check what they are given.**
+  `VBMC` builds both with arguments that pass; the checks concern code that
+  uses the classes on its own.
+  - `ParameterTransformer` refuses a variable with one finite bound, for
+    which it has no transform. 1.0.4 treated such a variable as unbounded, so
+    the inverse transform could return a value beyond the bound. `VBMC`
+    refuses such bounds, as it did in 1.0.4.
+  - `scale=` must hold one finite positive number per variable. 1.0.4 stored
+    any value, and a zero or a negative one made the log-Jacobian infinite
+    or NaN.
+  - `FunctionLogger` refuses a `noise_flag` that contradicts
+    `uncertainty_handling_level`: the flag goes with levels 1 and 2. 1.0.4
+    accepted the pair, and with the flag at level 0 it recorded an SD of 1
+    for the values of a noiseless target.
+  - At uncertainty handling level 2, where the target provides its noise,
+    `FunctionLogger.add` needs the SD of the value it is given. 1.0.4
+    recorded an SD of 1.
 - **Defaults for noisy targets.** A noisy target gets its own defaults: a
   larger budget of evaluations, a larger stability count, updates of the GP
   and of the posterior within active sampling, and the VIQR acquisition
@@ -548,9 +578,11 @@ its entry below.
 - `FunctionLogger.finalize()` trims the count of evaluations per point along
   with the other arrays.
 - `FunctionLogger`: recording a repeated evaluation whose duration is unknown
-  leaves the stored average duration of that point as it is, where 1.0.4
-  replaced it with NaN; and the value returned for a repeated point is a
-  float, as for a new one, where 1.0.4 returned a one-element array.
+  leaves the stored average duration of that point as it is, and a known
+  duration takes the place of an unknown average; in 1.0.4 one unknown
+  duration left the point's average at NaN. The value returned for a
+  repeated point is a float, as for a new one, where 1.0.4 returned a
+  one-element array.
 - `ParameterTransformer` keeps copies of the bound, scale and rotation arrays
   it is given, so changing one of them afterwards does not change the
   transform. Built with a rotation or a scale and with plausible bounds, it

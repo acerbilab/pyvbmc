@@ -340,17 +340,7 @@ class VBMC:
         self.options.validate_option_names(
             [basic_options_path, advanced_options_path]
         )
-        self._validate_vectorized_target_option()
-        self._validate_show_tips_option()
-        self._validate_noise_shaping_option()
-        self._validate_gp_hyp_sampler_option()
-        self._validate_search_acq_fcn_option()
-        self._validate_performance_calibration_option(
-            self.options.get("performance_calibration")
-        )
-        self._validate_final_boost_tolerance(
-            self.options.get("tol_elcbo_boost")
-        )
+        self._validate_option_values()
 
         if precomputed_evaluations is _PRECOMPUTED_NOT_PROVIDED:
             precomputed_evaluations = None
@@ -881,7 +871,9 @@ class VBMC:
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("f_vals")).ravel()
-        if len(y_orig) > 0 and self.options.get("specify_target_noise"):
+        # A NaN entry asks for the point to be evaluated and supplies nothing.
+        supplies_values = len(y_orig) > 0 and not np.all(np.isnan(y_orig))
+        if supplies_values and self.options.get("specify_target_noise"):
             raise ValueError(
                 "options['f_vals'] supplies values without their noise, so "
                 "it cannot be used with options['specify_target_noise']. "
@@ -2093,7 +2085,9 @@ class VBMC:
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.inf
-            order = np.argsort(y_temp * -1, axis=0)
+            # Among equal values the earlier point comes first, as in
+            # MATLAB's stable descending sort.
+            order = np.argsort(-y_temp, axis=0, kind="stable")
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn + 1)]
             ] = True
@@ -2788,13 +2782,15 @@ class VBMC:
                     dtype=bool,
                 )
 
-                # Rank by ELCBO
+                # Rank by ELCBO. In this ranking and in the next, the
+                # earlier of two iterations with equal scores ranks first,
+                # as in MATLAB's stable sort.
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                order = elcbo.argsort()[::-1]
+                order = np.argsort(-elcbo, kind="stable")
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = r_index_iter.argsort()
+                order = np.argsort(r_index_iter, kind="stable")
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
@@ -2960,7 +2956,8 @@ class VBMC:
             A dictionary of options to change when loading the stored VBMC
             instance. Useful, for example, to continue a previous run with a
             larger budget of function evaluations and/or iterations. See the
-            documentation on PyVBMC's options for more details.
+            documentation on PyVBMC's options for more details. The values
+            of the options are checked as they are at construction.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -2986,7 +2983,13 @@ class VBMC:
         ------
         ValueError
             If the specified ``iteration`` is less than zero or larger than the
-            last stored iteration.
+            last stored iteration, or if an option has a value that
+            construction refuses.
+        NotImplementedError
+            If the options select a feature of MATLAB VBMC that is not ported
+            (``noise_shaping``, a ``gp_hyp_sampler`` other than
+            ``"slicesample"``, an acquisition function that asks for the MCMC
+            step of the importance sampler).
         OSError
             If the file cannot be found, or cannot be opened for other reasons.
         """
@@ -3078,14 +3081,7 @@ class VBMC:
 
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
-        vbmc._validate_vectorized_target_option()
-        vbmc._validate_show_tips_option()
-        vbmc._validate_performance_calibration_option(
-            vbmc.options.get("performance_calibration")
-        )
-        vbmc._validate_final_boost_tolerance(
-            vbmc.options.get("tol_elcbo_boost")
-        )
+        vbmc._validate_option_values()
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):
@@ -3550,6 +3546,25 @@ class VBMC:
             # Otherwise just use provided log-joint
             log_joint = log_density
         return log_joint, log_likelihood, prior
+
+    def _validate_option_values(self):
+        """Check the options whose values are checked one by one.
+
+        Construction calls it once every source of options has been read,
+        and ``load`` once the options given to it are in place, so that a
+        value is refused where it is given on either route.
+        """
+        self._validate_vectorized_target_option()
+        self._validate_show_tips_option()
+        self._validate_noise_shaping_option()
+        self._validate_gp_hyp_sampler_option()
+        self._validate_search_acq_fcn_option()
+        self._validate_performance_calibration_option(
+            self.options.get("performance_calibration")
+        )
+        self._validate_final_boost_tolerance(
+            self.options.get("tol_elcbo_boost")
+        )
 
     def _validate_vectorized_target_option(self):
         """Validate the opt-in target batching mode."""

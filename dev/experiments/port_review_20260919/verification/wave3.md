@@ -99,13 +99,17 @@ the log-Jacobian (W3-26).
 
 ## Sheet entries
 
-Made with the fix pass (`9c29ce1`). New entries: the lower bounds from the high-posterior-density subset
-(W3-11); the hyperparameter samplers other than slice sampling (W3-13); the
-half-bounded transform types (W3-23); the nudge, the clamp and the grouping
-in the bounded transforms (W3-33); the pooling fallback (W3-35). Extended
+Made with the fix pass (`9c29ce1`). Nine new entries: the lower bounds from
+the high-posterior-density subset (W3-11); the hyperparameter samplers other
+than slice sampling (W3-13); the evaluation times that are not carried onto
+the GP (W3-18); the covariance the warp keeps when its threshold would leave
+it indefinite (W3-6); the half-bounded transform types (W3-23); the nudge,
+the clamp and the grouping in the bounded transforms (W3-33); the pooling
+fallback (W3-35); the cached value that needs its SD (W3-28); the validation
+of `scale` and of the logger's noise flag (W3-26, W3-32). Three extended
 entries: NumPy's quantile convention, for the warp's plausible bounds
-(W3-36); posterior tempering, for the divisor `_record` lacks (W3-30). One
-line: `gp.t` (W3-18).
+(W3-36); posterior tempering, for the divisor `_record` lacks (W3-30); the
+mean functions, for the check at construction (W3-12).
 
 ## Test notes worth acting on
 
@@ -139,7 +143,10 @@ their reports. With the fixes above:
 The PI ruled on all 36 rows on 2026-09-20. The fixes are on
 `dev-port-review` after `fc8e561`, made by three Opus agents on worktrees
 (reports `../fixes/wave3_agent_A.md`, `_B.md`, `_C.md`), reviewed and
-cherry-picked by the orchestrator, which made four of the commits itself.
+cherry-picked by the orchestrator: 34 commits, the 32 of the agents landing
+as 31, since the guard of W3-2 for a history that holds no GP was squashed
+into the commit of its finding, and three made by the orchestrator
+(`74414ce`, `894a353`, `83ea3d8`).
 
 | row | commit | |
 |---|---|---|
@@ -169,7 +176,7 @@ cherry-picked by the orchestrator, which made four of the commits itself.
 | W3-28 | `fbe25b6`, `e7e27cf`, `74414ce` | `add` at level 2; `f_vals` with `specify_target_noise` at construction; the test that combined them |
 | W3-31 | `7f771b0`, `83ea3d8` | the decorator's docstring, and the names of its arguments there |
 | W3-32 | `5aa4e89` | the logger's flag and level |
-| W3-34 | `490daae` | the mask's comparison |
+| W3-34 | `490daae` | the mask's comparison, moved into a helper of its own, `_drop_low_correlations`, that is tested directly: a correlation that is not a number needs a variance that is not positive or not finite, and the guard of W3-6 then keeps the covariance, so the rule cannot be observed through `warp_input` |
 | test note | `23a69a9` | `test_gp_hyp` trains on the transformed plausible bounds |
 
 Rows W3-11, W3-18, W3-33, W3-35 and W3-36 are sheet entries, W3-30 a line
@@ -224,7 +231,7 @@ and six seeds can show:
 | `cigar_D4`, 6 seeds | before | 0.006 / 0.009 / 0.020 | 0.0003 / 0.0024 | 0.013 | 126.7 |
 | | after | 0.006 / 0.012 / 0.028 | 0.0004 / 0.0039 | 0.016 | 130.0 |
 
-At the PI's request the same sweep was run on seven more targets, a few
+At the PI's request the same sweep was run on six more targets, a few
 seeds each, against the code before the whole pass (`fc8e561`) where the
 table above has the code before its second phase; the means:
 
@@ -239,8 +246,8 @@ table above has the code before its second phase; the means:
 
 Every run is a good solution and the differences go both ways; on the
 noisy target every error of the ELBO lies within two of its reported SDs,
-about 0.11, and two of the four seeds are better after the pass. Nine
-targets and 35 seeded pairs show no regression. The final release
+about 0.11, and two of the four seeds are better after the pass. Eight
+targets and 32 seeded pairs show no regression. The final release
 benchmark, which regenerates the run pools, is the measure of the pass.
 
 **The oracles that moved**, three and no other: `gp_fit` and
@@ -313,6 +320,124 @@ the full matrix, nine cells, are green on `92eb2cc`.
   options bring about what the checks rely on: every component lighter
   than a fifth is pruned, and the warp needs no minimum of components and
   no reliability threshold (`92eb2cc`).
+- `scripts/wave3_P8_logger.py`, the verifier's evidence for rows P8-10 and
+  P8-14, builds loggers whose noise flag contradicts their level and adds
+  values without an SD at level 2. The fixes of W3-32 and W3-28 refuse both,
+  so the script shows the code as it was verified: on the fixed package it
+  stops at its first `add` without an SD. Noted by agent C.
 - The commits of the fix agents carried a `Claude-Session:` trailer, which
   the PI does not want; it was removed from the unpushed commits of the
   pass, and `AGENTS.md` says so for every later session.
+
+## The independent check of the pass
+
+Five fresh Opus reviewers, read-only, checked the pass on 2026-09-21 without
+the context of the session that made it: the inputs of the hyperparameter
+fit; its policy, the recorded chain and the option checks; slice P8; this
+ledger, the user-facing records and the re-baselined fixtures; and the
+consequences of the pass outside the lines it changed. What a reviewer had
+rated uncertain was verified before anything was acted on. They found no
+defect in what a run computes. Against a transcription of `vbmc_gphyp`,
+every bound, prior and starting value that `_gp_hyp` installs is MATLAB's at
+the three uncertainty levels, the lower bounds of W3-11 apart. A GP of
+level 1 passes through `train_gp`, the warp, `reupdate_gp`, the lean record
+and its restoration, the noise estimate, the candidate noise of active
+sampling and the expected log joint, every reader taking the layout of the
+hyperparameters from the model's own counts. A comparison of the fixtures
+key by key, before the pass and after it, has `gp_fit`, `gp_fit_history`,
+the log prior of `gp_nlZ` and the fit outputs of the one capture moved, and
+every other array bit-identical.
+
+In the code they found what ten commits follow up, each fix with a test
+that fails on the code before it:
+
+| commit | |
+|---|---|
+| `2ff2dfe` | the trim at the end of warm-up keeps the earlier of equal values (`private/vbmc_warmup.m:123`), the third site of W3-16 |
+| `06bc8d5` | `determine_best_vp` ranks the earlier of two iterations with equal scores first (`misc/best_vbmc.m:36`, `:40`) |
+| `027e972` | `get_hpd` orders integer values by value: the negation that W3-16 introduced wraps around for an unsigned zero and for the smallest value of a signed type |
+| `9b5213d` | `load` checks the option values as construction does; `noise_shaping`, `gp_hyp_sampler` and `search_acq_fcn` were checked at construction alone, which agent B had left open |
+| `a775bb6` | `batch_call` refuses a cached value at uncertainty level 2 before the target is called; since W3-28 it raised after recording the rows before it |
+| `0dfc282` | a known evaluation time takes the place of an unknown stored average, the other direction of W3-21; sheet entry |
+| `68f7984` | an `f_vals` of NaN alone, which supplies no value, passes the check of W3-28 |
+| `b00fe40` | the bound statements of `_gp_hyp` carry the other half of their pair over, as their comment says; the test of the mean constant pins the values MATLAB's recommendation fills in |
+| `791c51d` | the test of W3-19 runs on a bounded problem as well, where every row has its own log-Jacobian; `build_short` is defined once |
+| `095c29e` | the description of `gp_mean_fun` names the three values; the comment on the noise switches of an oracle state |
+
+In the records they found, and this check corrected:
+
+- `CHANGELOG.md` had no entry for the four refusals of `ParameterTransformer`
+  and `FunctionLogger` that its "Upgrading" list names; said of the level-1
+  noise model that the difference shows with repeated observations, where
+  every run at that level changes from its first fit; had no "Upgrading"
+  line for `gp_hyp_full` and for three changed return values; and put the
+  zero of the design schedule at 1000 evaluations for about 1380.
+- Entry 18 of `matlab_side_defects.md`, after the P5 verifier's report,
+  spoke of commented-out lines that `misc/gptrain_vbmc.m` does not have.
+  The entry is corrected and the report carries a flag under its header.
+- This ledger counted seven more targets, nine targets and 35 seeded pairs
+  for the six, eight and 32 of its own tables, which the logs of the sweeps
+  confirm, and the worklog 36 commits for 34; it listed five of the nine new
+  sheet entries, and said nothing of the helper of W3-34 or of the evidence
+  script that the fixes stopped.
+- The capture re-baseline mode of the oracle generator was missing from
+  `dev/README.md` and from the fixture plan.
+- `AGENTS.md` gave one cause for the three moved oracles, and recorded
+  neither the second noise hyperparameter of level 1 nor what `gp_hyp_full`
+  holds.
+- 83 of the 161 Python line citations of the known-differences sheet pointed
+  at other lines. Each was carried to its present line through the history
+  of the cited file, from the commit that last touched the citation, two of
+  them by hand; where an entry names a symbol beside its citation, the
+  symbol is at the cited line or around it. The sheet's entry on
+  `noise_shaping` said that `load` does not apply the check, which `9b5213d`
+  made false.
+
+One statement of a reviewer did not hold: the repeat pooled into a
+deactivated row (W3-20) gets no new route through the warp. The same input
+still has to be proposed again, which needs the search cache; the rewrite of
+the inactive rows only stops coordinates of an earlier space from hiding the
+match.
+
+Rulings (PI, 2026-09-21): the option checks run in `load`; the stable order
+goes into the trim and into both rankings of `determine_best_vp`; a stored
+oracle state at uncertainty level 1, which no fixture holds, is an item of
+`TODO.md` for the time after the review's remaining fixes.
+
+Left as they are:
+
+- The test of W3-6 for a positive definite matrix is a Cholesky
+  factorization without a tolerance, as the ruling words it.
+- `hyp_dict["logp"]` is `None` after a fit that draws no samples, where
+  MATLAB keeps a scalar that nothing reads.
+- `_gp_hyp` takes the minimum with the cap before it rounds the number of
+  samples, where `misc/gptrain_vbmc.m:321-327` rounds first; the two agree
+  at the default caps.
+- A file saved before the pass keeps an inert `runcov` key. A level-1 run
+  saved before the pass continues with the new noise model: its recorded
+  blocks, one hyperparameter short, are left out of the sampler widths
+  without a message.
+- The short run of `test_ending_warmup_clears_the_covariance_the_fit_reads`
+  stays, the reset being visible only through the loop. The new whitening
+  tests build their posterior without a generator of their own, and their
+  assertions do not depend on the draws. The stand-in histories of the
+  `gp_fit` oracles hold thinned blocks.
+
+Gates on `095c29e`, the code of the check: the exact oracle check, 11 of 11
+with nothing re-baselined; the four seeded runs bit for bit those recorded
+on the wave-4 pass (92 arrays); the default suite, 1699 passed and 58
+skipped, with one rerun, of `test_minimize_adam_matyas_with_noise`; the
+Torch environment, 785 passed and 19 skipped; the PyMC
+environment, 107 passed.
+
+The rerun led to one more commit (PI: fix it before the push). The test drew
+its gradient noise from NumPy's global state and failed 48 of 400 calls made
+with that state seeded 0 to 399, about one run of the suite in eight, which
+the reruns hid. The cause is its target: Matyas is `0.5 u^2 + 0.02 v^2`
+across and along the line `x[0] = x[1]`, noise of SD 3 swamps the slope
+along that valley, and the iterates random-walk there up to 2.8 while the
+position across it stays within 0.13; the test asked for `|x| < 1` in both
+directions. It draws from a generator of its own and bounds each direction,
+with a margin that holds on every one of 500 seeds, 200 of them not used to
+set the bounds (`b731fac`); the sphere test beside it, which never failed,
+gets its own generator as well.

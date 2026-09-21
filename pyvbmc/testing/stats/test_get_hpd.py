@@ -71,6 +71,21 @@ def test_get_hpd_breaks_a_tie_at_the_cut_by_index():
     assert np.all(hpd_y.flatten() == np.array([2.0, 2.0]))
 
 
+def test_get_hpd_orders_integer_targets_by_value():
+    """The subset holds the largest values whatever the dtype of ``y``. The
+    negation of an unsigned integer wraps around, zero staying zero, and so
+    does that of the smallest value of a signed type, so an order taken from
+    the negated integers would put those values first."""
+    X = np.reshape(np.arange(3.0), (-1, 1))
+    for values, dtype in (([3, 0, 2], np.uint8), ([-128, 0, 127], np.int8)):
+        y = np.reshape(np.array(values, dtype=dtype), (-1, 1))
+
+        __, hpd_y, __, indices = get_hpd(X, y, hpd_frac=1.0)
+
+        assert list(indices) == _descending_order(y)
+        assert hpd_y.dtype == dtype
+
+
 def test_get_hpd_hpd_frac_zero():
     """
     Test that function also works with hpd_frac = 0.

@@ -638,6 +638,38 @@ def test_setup_vbmc_after_warmup_no_false_alarm_still_keep_points():
     assert vbmc.optim_state.get("data_trim_list")[-1] == 1
 
 
+def test_setup_vbmc_after_warmup_keeps_the_earlier_of_equal_values():
+    """When fewer than D + 1 points lie within the threshold of the maximum,
+    the points of highest value make up the D + 1 that are kept. MATLAB VBMC
+    takes them from a descending ``sort`` (``private/vbmc_warmup.m:123``),
+    which is stable: among equal values the earlier point comes first."""
+    options = {
+        "fun_evals_per_iter": 5,
+        "stop_warmup_thresh": 0,
+        "warmup_no_impro_threshold": 0,
+        "skip_active_sampling_after_warmup": False,
+    }
+    vbmc = create_vbmc(2, 3, 1, 5, 2, 4, options)
+    vbmc.optim_state["iter"] = 100
+    vbmc.function_logger.func_count = 5
+    vbmc.optim_state["N"] = 100
+    vbmc.optim_state["data_trim_list"] = np.ones(101)
+    vbmc.iteration_history["lcb_max"] = np.ones(101)
+    vbmc.iteration_history["elbo"] = np.ones(101)
+    vbmc.iteration_history["elbo_sd"] = np.ones(101) * 1e-4
+    vbmc.iteration_history["func_count"] = np.ones(101)
+    vbmc.iteration_history["r_index"] = np.ones(101) * 1e-4
+    # Thirty points of one value, as a quantized target returns them, and
+    # then the maximum, far above them.
+    for i in range(30):
+        vbmc.function_logger.add(np.array([2.0 + 0.05 * i, 3.0]), 0.0)
+    vbmc.function_logger.add(np.array([4.0, 4.0]), 9000.0)
+    vbmc._setup_vbmc_after_warmup()
+
+    kept = np.flatnonzero(vbmc.function_logger.X_flag)
+    assert np.array_equal(kept, [0, 1, 30])
+
+
 def test_setup_vbmc_after_warmup_starts_the_warping_clocks():
     """Ending warm-up starts the two clocks that hold the input warping
     and the stability termination back, so the first warp comes no sooner

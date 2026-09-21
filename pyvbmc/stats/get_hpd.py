@@ -31,8 +31,10 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
 
     # Subsample high posterior density dataset.
     # Sort by descending order, not ascending, keeping points of equal
-    # target value in the order they were given.
-    order = np.argsort(-y, axis=None, kind="stable")
+    # target value in the order they were given. The values are negated
+    # as floating-point numbers: the negation of an unsigned integer, or
+    # of the smallest value of a signed type, wraps around.
+    order = np.argsort(-np.asarray(y, dtype=float), axis=None, kind="stable")
     hpd_N = round(hpd_frac * N)
     indices = order[0:hpd_N]
     hpd_X = X[indices]

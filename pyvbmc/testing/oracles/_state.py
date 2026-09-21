@@ -193,8 +193,9 @@ def snapshot_from_objects(
         "cov_fun": encode(optim_state["gp_cov_fun"], "gp/cov_fun", arrays),
         "mean_fun": optim_state["gp_mean_fun"],
         # The noise function's own switches (constant, user-provided or
-        # scaled user-provided, output-dependent), not the option triple
-        # they were derived from: the two can disagree.
+        # scaled user-provided, output-dependent), which are what the
+        # rebuilt GP has to reproduce. The option triple that `train_gp`
+        # derives them from is stored beside them.
         "noise_parameters": [int(v) for v in np.ravel(gp.noise.parameters)],
         "noise_fun": [int(v) for v in optim_state["gp_noise_fun"]],
     }

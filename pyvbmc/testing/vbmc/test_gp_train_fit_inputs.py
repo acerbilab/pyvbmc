@@ -19,6 +19,8 @@ from pyvbmc import VBMC
 from pyvbmc.stats import get_hpd
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
 
+from .test_vbmc_loop_state import build_short
+
 
 def build_trained_state(
     options: dict = None,
@@ -170,26 +172,6 @@ def capture_starting_points(monkeypatch, init_N: int):
     monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
     monkeypatch.setattr(gp_train_module, "_estimate_noise", lambda gp: 0.0)
     return seen
-
-
-def build_short(options: dict, seed: int = 20260920, D: int = 2):
-    """A seeded spherical-Gaussian problem, ready to run."""
-    settings = {
-        "display": "off",
-        "plot": False,
-        "print_iteration_header": False,
-    }
-    settings.update(options)
-    return VBMC(
-        lambda x: -0.5 * np.sum(x**2),
-        np.zeros((1, D)),
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
-        np.full((1, D), -1.0),
-        np.full((1, D), 1.0),
-        options=settings,
-        seed=seed,
-    )
 
 
 def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):
@@ -408,7 +390,10 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     says nothing about the smallest (MATLAB VBMC,
     ``misc/gptrain_vbmc.m:174-188``, which assigns into vectors of NaN);
     ``gplite/gplite_train.m:120-127`` then fills what is still unset with
-    the recommendation of the full training set."""
+    the recommendation of the full training set: the smallest training
+    value for the negative-quadratic mean, and half the range of the
+    values below it for the constant mean (``gplite/gplite_meanfun.m:182``,
+    ``:156``)."""
     vbmc = build_trained_state()
     X, y = training_data(vbmc)
     D = X.shape[1]
@@ -423,6 +408,7 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert bounds["mean_const"][1] == np.max(hpd_y) + delta_y
     recommended = gp.get_recommended_bounds()
     assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][0] == np.min(y)
     assert filled["mean_const"][1] == np.max(hpd_y) + delta_y
 
     # A constant mean, whose maximum is lowered to a different value.
@@ -437,7 +423,32 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert bounds["mean_const"][1] == np.min(hpd_y)
     recommended = gp.get_recommended_bounds()
     assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][0] == np.min(y) - 0.5 * (np.max(y) - np.min(y))
     assert filled["mean_const"][1] == np.min(hpd_y)
+
+
+def test_a_bound_the_gp_already_carries_survives():
+    """``_gp_hyp`` replaces the bounds VBMC has a value for and leaves the
+    other half of each pair as the GP carries it, as MATLAB VBMC assigns
+    single entries of its bound vectors (``misc/gptrain_vbmc.m:174-188``).
+    A GP handed over with a smallest mean constant, a largest output scale
+    and a largest observation noise of its own keeps them."""
+    vbmc = build_trained_state()
+    gp = default_gp(vbmc)
+    own = gp.get_bounds()
+    own["mean_const"] = (-123.0, own["mean_const"][1])
+    own["covariance_log_outputscale"] = (
+        own["covariance_log_outputscale"][0],
+        4.5,
+    )
+    own["noise_log_scale"] = (own["noise_log_scale"][0], 3.5)
+    gp.set_bounds(own)
+
+    _, _, bounds, _ = install_hyperparameters(vbmc, gp)
+
+    assert bounds["mean_const"][0] == -123.0
+    assert bounds["covariance_log_outputscale"][1] == 4.5
+    assert bounds["noise_log_scale"][1] == 3.5
 
 
 def test_the_scale_of_the_observation_noise_keeps_an_upper_bound():

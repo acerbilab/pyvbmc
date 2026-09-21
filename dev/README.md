@@ -806,4 +806,12 @@ reason.
   the current numerics at the end of Stage 2 (2026-09-06); `--dump-outputs
   DIR` writes the current code's outputs of every oracle on every snapshot
   and `--check --exact --against DIR` compares with such a dump, for a
-  change made while the references are known to lag.
+  change made while the references are known to lag. The authentic
+  captures of the hyperparameter fit under `fixtures/gp_fit_history/` have
+  their own modes: `--capture-gp-fit-history` writes them and refuses to
+  replace one, `--check-gp-fit-history` compares them, and
+  `--rebaseline-gp-fit-history NAME --reason "..."` replays one capture on
+  its stored inputs after a deliberate change of the fit and replaces the
+  outputs of the fit and the sampler widths alone, on the generating
+  platform only, with the captured inputs and the portable references
+  asserted bit-identical and an audit entry in the capture's `.json`.

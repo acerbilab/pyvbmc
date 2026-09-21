@@ -108,6 +108,31 @@ records its execution.
   and the third readers remain; the plan's pickup point says where to
   resume.
 
+- [ ] **An oracle state at uncertainty level 1.** No fixture under
+  `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
+  `uncertainty_handling=True` and no `specify_target_noise`: nine are
+  noiseless and two come from targets that provide their noise. At that
+  level the GP has the noise model of MATLAB VBMC, a constant plus the
+  recorded noise of each point scaled by a fitted multiplier, since the port
+  review's wave-3 pass (row W3-1 of the
+  [ledger](experiments/port_review_20260919/verification/wave3.md)), and the
+  unit tests of the fit's inputs and of the candidate noise in active
+  sampling are what pins it. Add one level-1 state: a new recipe of
+  `dev/scripts/make_oracle_fixtures.py` on a level-1 variant of a benchmark
+  target, with `max_repeated_observations` above 0 so that the recorded
+  noise differs between points, generated alone (`--only`) so that the
+  existing fixtures stay bit-identical. To be done once the port review's
+  remaining fixes are in, since slices G1, G2 and O4 may still move the GP
+  fit (PI, 2026-09-21).
+
+- [ ] **`AGENTS.md` as a statement of what holds.** The file that every
+  agent reads has taken on dated notes and the history of single changes,
+  most of them under "Things you must hold in your head across files" and
+  "Testing conventions and traps". Rewrite it from the subject: the
+  invariants, the procedures and the traps as they stand, with the history
+  left to the plans, the ledgers and the fixture metadata that hold it. A
+  session of its own does it (PI, 2026-09-21).
+
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
