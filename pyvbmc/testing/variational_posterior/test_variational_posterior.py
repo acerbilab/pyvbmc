@@ -635,6 +635,26 @@ def test_mode_is_recomputed_when_n_opts_is_given():
     assert np.allclose(computed, 5.0, atol=1e-3)
 
 
+def test_mode_leaves_the_random_stream_alone():
+    """The candidates of the mode search come from a copy of the
+    posterior's generator, so a call neither advances the stream a run
+    shares nor depends on where that stream stands."""
+    vp = get_matlab_vp()
+    vp.rng = np.random.default_rng(20260921)
+    state = vp.rng.bit_generator.state
+
+    first = vp.mode(n_opts=2)
+
+    assert vp.rng.bit_generator.state == state
+    second = vp.mode(n_opts=2)
+    assert np.array_equal(first, second)
+
+    # The posterior draws as if the mode had never been computed.
+    after = vp.sample(5, orig_flag=False)[0]
+    vp.rng = np.random.default_rng(20260921)
+    assert np.array_equal(vp.sample(5, orig_flag=False)[0], after)
+
+
 def test_get_parameters_clears_the_stored_mode():
     """``get_parameters`` normalizes the parameters in place and drops the
     stored mode, as ``misc/rescale_params.m:39-40`` does."""

@@ -1237,6 +1237,11 @@ class VariationalPosterior:
         the input space, so the mode in the original space and the mode in the
         transformed (unconstrained) space will generally be in different
         locations (even after applying the appropriate transformations).
+
+        The starting points of the optimization runs are drawn from a copy
+        of ``self.rng``, so a call leaves the posterior's random stream
+        where it found it, and two calls on the same posterior give the
+        same answer.
         """
         if orig_flag and n_opts is None and self._mode is not None:
             return self._mode
@@ -1260,9 +1265,15 @@ class VariationalPosterior:
         x_min = np.zeros((n_opts, self.D))
         ff = np.full((n_opts, 1), np.inf)
 
+        # The candidates are drawn from a copy of the posterior, holding a
+        # copy of the generator: the search leaves the stream of this
+        # posterior, which a run shares, where it found it.
+        candidate_source = copy.deepcopy(self)
+        candidate_source.rng = copy.deepcopy(self.rng)
+
         for k in range(n_opts):
             # Random initial set of points to choose starting point
-            x0_mat, _ = self.sample(n_samples, orig_flag)
+            x0_mat, _ = candidate_source.sample(n_samples, orig_flag)
 
             # Add centers of components to initial set for first optimization
             if k == 0:
