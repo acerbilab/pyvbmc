@@ -24,6 +24,7 @@ INERT_OPTIONS = frozenset(
     {
         "acq_hedge_decay",
         "acq_hedge_iter_window",
+        "active_importance_sampling_fess_thresh",
         "active_sample_fess_thresh",
         "active_variational_samples",
         "adaptive_entropy_alpha",

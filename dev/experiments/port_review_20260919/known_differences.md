@@ -134,8 +134,7 @@ fact inherited from MATLAB.
 ### gpyreg's `SliceSampler` replaces MATLAB's two samplers
 - Python: `gpyreg/slice_sample.py` (`SliceSampler`), used by
   `gpyreg/gaussian_process.py: fit` for hyperparameter sampling and by
-  `pyvbmc/vbmc/active_importance_sampling.py:106,259` for the IMIQR MCMC
-  step.
+  `pyvbmc/vbmc/active_importance_sampling.py:243` for the IMIQR MCMC step.
 - MATLAB: `gplite/private/slicesamplebnd.m` (hyperparameter sampling in
   `gplite/gplite_train.m`) and `gplite/private/eissample_lite.m` (the
   elliptical-slice/ensemble sampler used by
@@ -211,7 +210,7 @@ fact inherited from MATLAB.
 ### `predict(..., return_cross_covariance=True)` and the VIQR kernel reuse
 - Python: `gpyreg/gaussian_process.py: predict` (the
   `_ZERO_COPY_CROSS_COVARIANCE_COMPUTES` path) and
-  `pyvbmc/acquisition_functions/acq_fcn_viqr.py:144`.
+  `pyvbmc/acquisition_functions/acq_fcn_viqr.py:144-148`.
 - MATLAB: no counterpart; `acq/acqviqr_vbmc.m` recomputes the cross-kernel.
 - What differs: gpyreg 1.2.0 added an API that hands the latent cross-kernel
   matrices back to the caller so VIQR does not recompute them. The returned
@@ -323,7 +322,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### Slice sampling is the only sampler of the GP hyperparameters
-- Python: `pyvbmc/vbmc/vbmc.py:3583` (`_validate_gp_hyp_sampler_option`)
+- Python: `pyvbmc/vbmc/vbmc.py:3584` (`_validate_gp_hyp_sampler_option`)
   refuses at construction every `gp_hyp_sampler` but `"slicesample"`, and
   `_get_gp_training_options` holds the policy of that sampler alone;
   `cov_sample_thresh`, which only covariance sampling read, is an inert
@@ -395,7 +394,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `results["overhead"]` is not implemented
-- Python: `pyvbmc/vbmc/vbmc.py:3279` (`output["overhead"] = np.nan`).
+- Python: `pyvbmc/vbmc/vbmc.py:3291` (`output["overhead"] = np.nan`).
 - MATLAB: `private/vbmc_output.m`.
 - What differs: PyVBMC returns `NaN` where MATLAB returns the fractional
   overhead (total running time / total function time − 1).
@@ -405,7 +404,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `results["rng_state"]` is a generator snapshot, not MATLAB's `rng` state
-- Python: `pyvbmc/vbmc/vbmc.py:3170` (`_get_random_state`, returning
+- Python: `pyvbmc/vbmc/vbmc.py:3182` (`_get_random_state`, returning
   `{"generator": <bit generator state>}`), `:3280`, `:3207`
   (`_set_random_state`).
 - MATLAB: `private/vbmc_output.m` stores `rng` (the global generator state).
@@ -424,7 +423,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `results["problem_type"]` tests the original bounds; MATLAB's never reports bounds
-- Python: `pyvbmc/vbmc/vbmc.py:3233` (`_create_result_dict`), `:3245-3252`:
+- Python: `pyvbmc/vbmc/vbmc.py:3245` (`_create_result_dict`), `:3259-3264`:
   the field is `"unconstrained"` when every original bound
   (`optim_state["lb_orig"]`, `["ub_orig"]`) is infinite and `"bounded"`
   otherwise.
@@ -458,7 +457,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### The true-posterior diagnostic draws from a copy of the generator
-- Python: `pyvbmc/vbmc/vbmc.py:3175` (`_compute_true_diagnostic`): the
+- Python: `pyvbmc/vbmc/vbmc.py:3187` (`_compute_true_diagnostic`): the
   10^6 samples behind `sKL_true` are drawn on a deep copy of the posterior
   whose generator is a deep copy too (`:3201-3202`), so the run's stream is
   where it would be without the diagnostic.
@@ -529,7 +528,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### MATLAB's `samples` output struct has no counterpart in `results`
-- Python: `pyvbmc/vbmc/vbmc.py:3233` (`_create_result_dict`) builds a results
+- Python: `pyvbmc/vbmc/vbmc.py:3245` (`_create_result_dict`) builds a results
   dict with no equivalent key. The arrays it would hold live on the run's
   `FunctionLogger` (`X_orig`, `y_orig`, `S`, `X_flag`, `n_evals`), which
   `finalize()` trims to the filled rows.
@@ -624,7 +623,12 @@ fact inherited from MATLAB.
   still fixes a run; deriving it draws four integers from that state, which
   advances it, and that construction is the only contact with it.
   Consequently no Python draw sequence can be compared point by point with a
-  MATLAB draw sequence.
+  MATLAB draw sequence. The order of the draws differs in one place as well:
+  in an active-sampling step of a noisy run PyVBMC draws the search
+  candidates (`active_sample.py:379-381`) before the importance samples
+  (`:414-417`), and MATLAB after them (`private/activesample_vbmc.m:208-218`).
+  Neither routine changes what the other reads, so the order changes the
+  stream and nothing else.
 - Why: `AGENTS.md` §"Randomness goes through `numpy.random.Generator`
   objects" (with the dates: the global-state reseeding ended 2026-09-05, the
   IMIQR path 2026-09-10); `dev/plans/stage1-rng-generator.md`;
@@ -653,7 +657,7 @@ fact inherited from MATLAB.
 - Kind: Python-only addition.
 
 ### The iteration history omits the noisy acquisitions' importance samples
-- Python: `pyvbmc/vbmc/vbmc.py:3149` (`_optim_state_record`, setting
+- Python: `pyvbmc/vbmc/vbmc.py:3161` (`_optim_state_record`, setting
   `record["active_importance_sampling"] = None` at `:3167`); option
   `record_full_history_details = False`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:337`).
@@ -703,8 +707,8 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `integer_vars` takes a boolean mask or 0-based indices
-- Python: `pyvbmc/vbmc/options.py:201` (`integer_vars_mask`), read at
-  `pyvbmc/vbmc/vbmc.py:902`. A boolean array of length `D` is a mask; an
+- Python: `pyvbmc/vbmc/options.py:203` (`integer_vars_mask`), read at
+  `pyvbmc/vbmc/vbmc.py:911`. A boolean array of length `D` is a mask; an
   integer array holds 0-based indices, distinct and in range; an integer
   array of length `D` holding only zeros and ones reads as either and is
   refused with a message asking for a boolean mask.
@@ -721,7 +725,7 @@ fact inherited from MATLAB.
 ### PyVBMC does not reproduce two defects of MATLAB's input checks
 - Python: `pyvbmc/vbmc/_bounds.py` (`_normalize_bounds`) repairs every
   coordinate whose estimated plausible bounds coincide;
-  `pyvbmc/vbmc/vbmc.py:902-915` checks that the hard bounds of an integer
+  `pyvbmc/vbmc/vbmc.py:911-924` checks that the hard bounds of an integer
   variable are finite and half an integer outside its range.
 - MATLAB: `misc/boundscheck_vbmc.m:27-30` computes `idx = any(PLB == PUB)`,
   one logical, and repairs the first coordinate only;
@@ -736,7 +740,7 @@ fact inherited from MATLAB.
 ### `display` takes `"off"`, `"iter"` and `"full"`
 - Python: `display = "iter"`
   (`pyvbmc/vbmc/option_configs/basic_vbmc_options.ini:3`);
-  `pyvbmc/vbmc/vbmc.py:3375` (`_init_logger`, `:3394-3398`): `"off"` logs
+  `pyvbmc/vbmc/vbmc.py:3387` (`_init_logger`, `:3406-3411`): `"off"` logs
   warnings only, `"iter"` one line per iteration, `"full"` debugging detail;
   any other value is taken as `"iter"`.
 - MATLAB: `defopts.Display = 'iter'` with `'iter'`, `'notify'`, `'final'`
@@ -779,7 +783,10 @@ fact inherited from MATLAB.
   history always keeps a lean GP, with `record_full_history_details` as the
   nearest knob), `active_sample_fess_thresh`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:299`, where
-  `pyvbmc/vbmc/active_sample.py:737` fixes `fESS_thresh = 1`) and
+  `pyvbmc/vbmc/active_sample.py:737` fixes `fESS_thresh = 1`),
+  `active_importance_sampling_fess_thresh` (`:301`, the threshold of the
+  MCMC refinement of the variational importance samples, which is not
+  ported; see the P4 entry) and
   `search_cmaes_best` (`:185`, see the P2 entry on the `cma` package).
 - Why: commits `a63b17a` "docs(options): mark the declared options that
   nothing reads" and `0d9a422` "fix(options): leave a callable inert default
@@ -1005,13 +1012,28 @@ fact inherited from MATLAB.
   a GP training row for an input that `optimState.X` holds once, because
   `misc/funlogger_vbmc.m:229-248` pools a repeat into the existing row
   without incrementing `Xn`; PyVBMC recomputes the posterior from the
-  logger's training set. On a noisy target the observation's noise variance
-  goes into the rank-one update on both sides.
+  logger's training set. On a noisy target the two paths differ in every
+  cell: `gplite/gplite_post.m:76-79` refuses a rank-one update whenever a
+  noise variance is supplied, so at uncertainty levels 1 and 2 MATLAB
+  appends the row and recomputes every posterior with `gplite_core`, while
+  PyVBMC extends the factors by rank one with `s2_new`. gpyreg's extension
+  is the generalization of MATLAB's to unequal noise (it keeps the scale of
+  the factorization, `sl`, where MATLAB takes the scale to be the new
+  point's effective noise) and reproduces a rebuild at the same
+  hyperparameters to about 1e-15 in `alpha`, in the predictions and in the
+  `C_tmp` that the noisy acquisitions read, also for a new point whose noise
+  lies below every existing one. What is left is the cost of a step, O(N^2)
+  against O(N^3), and one difference of state: after a retried Cholesky
+  factorization the rank-one update keeps the stored `sn2_mult`, where a
+  recomputation derives it again.
 - Why: commit `510a493` (2026-09-19) "fix(active_sample): rank-one GP update
   for a fresh noisy observation". Transcribing MATLAB's condition literally
   would import the duplicate training row, which
   `dev/experiments/port_review_20260919/verification/wave1_M_P2.md` (P2 F8)
-  identifies as a MATLAB-side defect.
+  identifies as a MATLAB-side defect. The equivalence of the two paths on a
+  noisy target: `verification/wave4.md`, W4-11, with
+  `verification/scripts/wave4_P4_5_rank_one_update.py` and
+  `wave4_P4_5b_sn2_mult.py`.
 - Kind: deliberate change.
 
 ### The acquisition-portfolio hedge (`acqhedge_vbmc.m`) is not ported
@@ -1062,14 +1084,16 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `AbstractAcqFcn._real2int` snaps its input in place
-- Python: `pyvbmc/acquisition_functions/abstract_acq_fcn.py:261`
-  (`X[:, integer_vars] = X_temp[:, integer_vars]` writes into the caller's
-  array); called from `pyvbmc/vbmc/active_sample.py:383`, `:624` and from
+- Python: `pyvbmc/acquisition_functions/abstract_acq_fcn.py:293`, `:334`
+  (`X_2d[:, integer_vars] = X_temp[:, integer_vars]` writes into the
+  caller's array, a single point `(D,)` through a two-dimensional view of
+  it); called from `pyvbmc/vbmc/active_sample.py:383`, `:624` and from
   `AbstractAcqFcn.__call__` (`abstract_acq_fcn.py:85`).
 - MATLAB: `misc/real2int_vbmc.m` returns a new array.
 - What differs: through the `Xs[None, :]` view of a 1-D input, the pointwise
   CMA-ES objective snapped CMA-ES's own solution arrays to the integer grid.
-  The batched objective reproduces that side effect deliberately.
+  The batched objective reproduces that side effect deliberately. The
+  rounding itself is MATLAB's `round`, a half away from zero.
 - Why: `dev/2026-09-02-modernization-discussion.md` §9 ("an undocumented side
   effect that the batched objective now reproduces deliberately");
   `dev/plans/latent-bug-fixes.md` §"Supporting fixes and closed entries"
@@ -1081,21 +1105,65 @@ fact inherited from MATLAB.
 
 ## Slice P3 — acquisition functions
 
-### The EIG acquisition and the experimental VIQR losses were removed
-- Python: absent from `pyvbmc/acquisition_functions/`. The implementation
-  (`acq_fcn_eig.py`, and the `loss` variants `iqr_reduction`,
-  `var_reduction`, `sd_reduction` of `AcqFcnVIQR`) is retained on the branch
-  `retain/experimental-acquisitions` at `fa6922f`.
-- MATLAB: `acq/acqeig_vbmc.m` and its helper `misc/intkernel.m`.
-- What differs: the package has no expected-information-gain acquisition and
-  `AcqFcnVIQR` offers only the standard `loss="iqr"`.
+### The EIG acquisition and two experimental VIQR losses were removed
+- Python: `AcqFcnEIG` and its module `acq_fcn_eig.py` are absent from
+  `pyvbmc/acquisition_functions/`, and `AcqFcnVIQR` has no `loss` variants
+  `var_reduction` and `sd_reduction`. `acq_fcn_viqr.py:122`:
+  `LOSSES = ("iqr", "iqr_reduction")`. The branch
+  `retain/experimental-acquisitions` at `fa6922f` holds the EIG acquisition
+  and all four losses.
+- MATLAB: `acq/acqeig_vbmc.m` and its helper `misc/intkernel.m`;
+  `acq/acqviqr_vbmc.m` has the one loss.
+- What differs: the package has no expected-information-gain acquisition.
+  `AcqFcnVIQR` offers `loss="iqr"`, the default and MATLAB's acquisition,
+  and `loss="iqr_reduction"`, which has no MATLAB counterpart and is
+  documented, validated, tested
+  (`pyvbmc/testing/acquisition_functions/test_acq_fcn_viqr_losses.py`) and
+  listed in `CHANGELOG.md`. It is the one path of VIQR that reads the
+  importance weights (`_log_iqr_reduction`); the `iqr` loss ignores them, as
+  the commented-out `lnw` lines of `acqviqr_vbmc.m:103-105` do.
 - Why: PI decision 2026-09-13, recorded in
   `dev/plans/modernization-roadmap.md:58-67` and `dev/TODO.md`
   §"Outside 1.5 scope"; the measurements are in
   `dev/results/2026-09-08-noisy-acquisition-experiments.md` (scalar EIG poor,
   per-component EIG mixed, neither robustly better than default VIQR). The
-  removal took effect 2026-09-14.
+  removal took effect 2026-09-14 (`fd9c7e8`, whose message names the two
+  losses that stay).
 - Kind: removed feature.
+
+### The quantile of VIQR and IMIQR is an argument, and `u` is computed from it
+- Python: `pyvbmc/acquisition_functions/acq_fcn_viqr.py:139` and
+  `acq_fcn_imiqr.py:35`: `self.u = norm.ppf(quantile)`, 0.6744897501960817
+  at the default `quantile=0.75`; both constructors refuse a quantile that is
+  not strictly between 0.5 and 1 (`abstract_acq_fcn.py:261`,
+  `_check_quantile`).
+- MATLAB: `acq/acqviqr_vbmc.m:4` and `acq/acqimiqr_vbmc.m:4`:
+  `u = 0.6745; % norminv(0.75)`.
+- What differs: MATLAB's literal is the value the port computes, rounded to
+  four decimals, 1.5e-5 above it in relative terms. It is the whole
+  difference between the port and MATLAB's formulas of the two acquisitions:
+  on the stored noisy state of the oracles the values move by up to 1.7e-5
+  (VIQR) and 8e-5 (IMIQR), with the same best candidate, and with the same
+  constant on both sides the port agrees with a transcription of the MATLAB
+  files to 2e-14.
+- Why: pull request 80 (`70325a3`, 2022-06-02), "The quantile for VIQR/IMIQR
+  acquisition functions can now be specified as an argument (default is
+  0.75)"; the port had the literal until then. A literal cannot serve a
+  quantile that the user chooses. `verification/wave4.md`, W4-8.
+- Kind: deliberate change.
+
+### A NaN acquisition value stays a NaN
+- Python: `pyvbmc/acquisition_functions/abstract_acq_fcn.py:178`:
+  `np.maximum(acq, -realmax)`, which lets a NaN through.
+- MATLAB: `acq/acqwrapper_vbmc.m:47`: `max(acq,-realmax)`, which drops a NaN
+  and returns `-realmax`, the most attractive value for the search.
+- What differs: only what happens to a NaN. No shipped acquisition returns
+  one: the quantiles of VIQR and IMIQR that did are refused at construction,
+  and a row of a log sum that is all `-inf` gives `-inf` in the port, which
+  becomes the same `-realmax` that MATLAB reaches through a NaN.
+- Why: `verification/wave4.md`, W4-22: MATLAB's answer would make the point
+  with the NaN the best candidate of the search.
+- Kind: deliberate change.
 
 ### `misc/intkernel.m` has no standalone Python counterpart
 - Python: no counterpart. The removed EIG implementation on
@@ -1111,8 +1179,8 @@ fact inherited from MATLAB.
 - Kind: unported feature (and the only caller is now a removed feature).
 
 ### VIQR's integrated-mean-function branches are not ported
-- Python: `pyvbmc/acquisition_functions/acq_fcn_viqr.py:293` ("Missing port,
-  integrated mean function, lines 49 to 57") and `:360` ("Missing port,
+- Python: `pyvbmc/acquisition_functions/acq_fcn_viqr.py:296` ("Missing port,
+  integrated mean function, lines 49 to 57") and `:363` ("Missing port,
   integrated meanfun").
 - MATLAB: `acq/acqviqr_vbmc.m`, the `gp.intmeanfun` branches.
 - What differs: PyVBMC's VIQR omits the extra mean and covariance terms
@@ -1145,33 +1213,67 @@ fact inherited from MATLAB.
 ## Slice P4 — noisy importance sampling
 
 ### The IMIQR MCMC step uses gpyreg's `SliceSampler`
-- Python: `pyvbmc/vbmc/active_importance_sampling.py:106`, `:259`
-  (`gpr.slice_sample.SliceSampler`, seeded from `vp.rng`), `:409`
+- Python: `pyvbmc/vbmc/active_importance_sampling.py:243`
+  (`gpr.slice_sample.SliceSampler`, seeded from `vp.rng`), `:402`
   (`get_mcmc_opts`).
 - MATLAB: `private/activeimportancesampling_vbmc.m` calls
   `eissample_lite` (`gplite/private/eissample_lite.m`,
   `utils/eissample_lite.m`).
 - What differs: a coordinate-wise bounded slice sampler replaces MATLAB's
   ensemble slice sampler. The samples, their correlation structure and the
-  random stream all differ; only the target density is shared.
+  random stream all differ; only the target density is shared. PyVBMC runs
+  one chain per GP hyperparameter sample, from one starting point drawn
+  among the proposal samples in proportion to their importance weights,
+  where MATLAB draws `2(D+1)` walkers the same way, without replacement
+  (`private/activeimportancesampling_vbmc.m:206-214`).
 - Why: `dev/plans/port-correctness-review.md` §Slices, P4. Also
   `AGENTS.md` §"Randomness ..." (the IMIQR path moved onto `vp.rng` on
   2026-09-10, when the `acq_AcqFcnIMIQR` oracle was re-baselined).
 - Kind: substituted library.
 
-### The MCMC branch of importance sampling is a retained but dormant hook
-- Python: `pyvbmc/vbmc/active_importance_sampling.py:86`
-  (`if acq_fcn.acq_info.get("mcmc_importance_sampling")`), which no built-in
-  acquisition sets.
-- MATLAB: `private/activeimportancesampling_vbmc.m` selects the branch from
-  the acquisition's own `acqInfo`.
-- What differs: the branch is unreachable with the shipped acquisition
-  functions, and is kept so that a user-supplied acquisition object can still
-  request it.
-- Why: `dev/2026-09-02-modernization-discussion.md` §9 ("the MCMC branch of
-  `active_importance_sampling` is unreachable"); decision D5 in
-  `dev/plans/latent-bug-fixes.md` §"Approved decisions" ("Retain dormant
-  compatibility hooks ... Do not delete custom acquisition hooks").
+### The MCMC refinement of the variational importance samples is not ported
+- Python: no counterpart. An acquisition that sets
+  `acq_info["mcmc_importance_sampling"]` is refused with a
+  `NotImplementedError`, at construction for the objects of
+  `options["search_acq_fcn"]` (`pyvbmc/vbmc/vbmc.py:3596`,
+  `_validate_search_acq_fcn_option`) and in
+  `pyvbmc/vbmc/active_importance_sampling.py:50` for any other caller. The
+  option `active_importance_sampling_fess_thresh`, which the branch alone
+  read, is registered as inert.
+- MATLAB: `private/activeimportancesampling_vbmc.m:57-92`: when the
+  acquisition's `acqInfo` sets the flag and the fractional effective sample
+  size of the samples drawn from the variational posterior falls below
+  `ActiveImportanceSamplingfESSThresh`, one step of the ensemble sampler
+  `eissample_lite` moves all `Na` samples, as `Na` walkers. No MATLAB
+  acquisition sets the flag.
+- What differs: PyVBMC has no such step. Until the port review's wave 4 the
+  module held a transcription of the branch that handed gpyreg's
+  `SliceSampler` the matrix of walkers; the sampler takes one starting point
+  and raised whenever the branch was reached, in every revision since the
+  branch was written (`e38351a`, 2022-05-23). Reaching it took an acquisition
+  that set `variational_importance_sampling` as well and a fractional
+  effective sample size below the threshold; with the flag alone the run
+  went on as if the flag were not there. The step itself never ran.
+- Why: PI, 2026-09-20 (`verification/wave4.md`, W4-6). Decision D5 of
+  `dev/plans/latent-bug-fixes.md` ("Do not delete custom acquisition hooks")
+  kept the branch on the premise that it worked.
+- Kind: unported feature.
+
+### The importance log weights are normalized
+- Python: `pyvbmc/vbmc/active_importance_sampling.py:313`, `:490`
+  (`renormalize_weights`): one log-sum-exp over the whole `(Ns_gp, Na)` array
+  is subtracted from the log weights before they are returned.
+- MATLAB: `private/activeimportancesampling_vbmc.m` stores `lnw` as computed.
+- What differs: a constant. The value of IMIQR, and of VIQR with
+  `loss="iqr_reduction"`, differs from MATLAB's by that constant (6.16 on the
+  stored noisy state of the oracles; `log(Ns_gp * Na)` for VIQR). Everything
+  that is added to or compared with an acquisition value afterwards is
+  unchanged by it: the variance regularization, the masks, the ranking of the
+  candidates, the acceptance of the local search's result and the tolerances
+  of the search.
+- Why: present since `70325a3` (2022-06-02, pull request 80), the file's
+  second commit, without a recorded reason; kept because it moves no
+  decision (`verification/wave4.md`, W4-9).
 - Kind: deliberate change.
 
 ---
@@ -2025,3 +2127,38 @@ them. They are *not* differences from MATLAB.
   (commits `261b9ae`, `b3ad32b`; minor observations B-M3 and B-M5 of
   `verification/wave2.md`). The recorded posteriors therefore never carry
   the stability flag, on either side.
+- **The noise of a candidate point is one value for all GP hyperparameter
+  samples.** `active_sample.py:351` stores the mean over the samples of the
+  noise at each training point, and VIQR, IMIQR and `AcqFcnNoisy` put that
+  one value into each sample's own formula, as
+  `private/activesample_vbmc.m:174` (`gp.sn2new = mean(sn2new,2)`) and the
+  three MATLAB acquisitions do. §C.1 of the appendix of the 2020 paper
+  defines the noise of a candidate as one function of the input, that of its
+  nearest training point. At uncertainty level 1, where the fitted multiplier
+  carries the noise, the per-sample values spread (1.4 to 3.7 around 1.9 in a
+  fit of 26 points); a noise per sample would be a change of the algorithm.
+  The value also leaves out the `sn2_mult` of a retried Cholesky
+  factorization on both sides (`private/activesample_vbmc.m:172`), which the
+  prediction with noise and the GP update apply. (Rows W4-14 and W4-15 of
+  `verification/wave4.md`.)
+- **The target of IMIQR's MCMC step includes the constant noise term, as
+  MATLAB's does.** `is_log_full` predicts with `add_noise=True` and no `s2`
+  at the test point, so at uncertainty levels 1 and 2 the constant term alone
+  is added, about 1e-5 at the shipped noise floor, while the resampling
+  weights and every other density of the importance sampling use the latent
+  variance. `log_isbasefun` takes the first two outputs of `gplite_pred`, the
+  prediction with noise, and the stored MATLAB output of
+  `compare_MATLAB/log_isbasefun.npz` matches the value with noise to 1.4e-4
+  and the latent one to 4.8e-2. The estimator is unbiased under either
+  choice, the weights using the sampler's own log-densities. (Row W4-13.)
+- **Each row of IMIQR's MCMC weights estimates a relative reduction.** A row
+  belongs to one GP hyperparameter sample and to a chain drawn from that
+  sample's unnormalized density, so it carries the factor `1/Z_s`, `Z_s`
+  being the sample's integrated interquantile range before the new point;
+  what the row contributes to the acquisition is `N` times the ratio of that
+  range after and before. MATLAB's raw rows carry the same factor. The total
+  weights of the rows spread widely (17 nats on the stored noisy state of the
+  oracles) while their contributions to the acquisition sit within 0.05 nats
+  of one another: a chain that stays where the GP is uncertain has small
+  weights `1/(2 sinh(u s))` and large terms `2 sinh(u s_pred)`. (Row W4-10,
+  `verification/scripts/wave4_A1c_isr_row_totals.py`.)

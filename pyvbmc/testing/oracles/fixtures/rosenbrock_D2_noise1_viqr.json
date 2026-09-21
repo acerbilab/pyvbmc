@@ -352,6 +352,18 @@
     },
     "oracle": "gp_nlZ",
     "reason": "Port review, wave 3 (PI, 2026-09-20): the noise prior is truncated at the upper bound gpyreg recommends, log(max(y) - min(y)), where _gp_hyp had written +inf (W3-7); lp moves by the change of the prior's log normalization, log(1 - cdf_lb) - log(cdf_ub - cdf_lb), checked on the eight states, and dlp, lZ and dlZ are bit-identical"
+   },
+   {
+    "date": "2026-09-20 23:55:51",
+    "git": {
+     "dirty": true,
+     "sha": "70ce0673"
+    },
+    "max_abs_change": {
+     "acq": 0.2382148650362046
+    },
+    "oracle": "acq_AcqFcnIMIQR",
+    "reason": "Port review W4-1 (53ad16aa): the MCMC step of the importance sampling draws the starting point of each chain in proportion to the importance weights, as MATLAB does, where the weights came out uniform; the chain of every GP hyperparameter sample starts elsewhere and the IMIQR importance samples change. No other oracle moves (checked --exact on 70ce0673)."
    }
   ],
   "recipe": "rosenbrock_D2_noise1_viqr",

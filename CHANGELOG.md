@@ -21,7 +21,9 @@ its entry below.
 - Option values are checked: an unknown option name in an options file,
   `uncertainty_handling=[1]` or an ambiguous `integer_vars` raises an error.
   So do a `gp_mean_fun` or a `gp_hyp_sampler` that PyVBMC does not implement,
-  and `f_vals` together with `specify_target_noise`.
+  `f_vals` together with `specify_target_noise`, a `quantile` of `AcqFcnVIQR`
+  or `AcqFcnIMIQR` outside (0.5, 1), and a `search_acq_fcn` string that
+  cannot be read as a call.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
@@ -32,7 +34,7 @@ its entry below.
 - `results["rng_state"]` and `vbmc.random_state` hold the state of `vbmc.rng`.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
-  input point.
+  input point and must not set `acq_info["mcmc_importance_sampling"]`.
 - `ParameterTransformer` and `FunctionLogger` used on their own: a variable
   with one finite bound, a `scale` that is not positive, a noise flag that
   contradicts the uncertainty handling level, and `add` without an SD for a
@@ -352,6 +354,24 @@ its entry below.
   - `f_vals` cannot be combined with `specify_target_noise`, because it
     carries no noise for the values it supplies; 1.0.4 gave them a noise of
     1. Pass such observations through the `precomputed_evaluations` argument.
+  - `AcqFcnVIQR` and `AcqFcnIMIQR` take a `quantile` strictly between 0.5 and
+    1. 1.0.4 accepted any value; outside that range the values of VIQR were
+    all NaN, or all the same, and the search took the first candidate it was
+    offered, without a message.
+  - An entry of `search_acq_fcn` given as a string, such as
+    `"AcqFcnVIQR(quantile=0.9, loss='iqr_reduction')"`, is read as Python
+    reads a call with literal arguments. 1.0.4 failed on a space around the
+    name of a keyword and dropped a value that held an `=` without a message.
+    A string that cannot be read raises an error that quotes it.
+  - An acquisition function of your own that sets
+    `acq_info["mcmc_importance_sampling"]` is refused when the `VBMC` object
+    is created. The step it asks for, MATLAB VBMC's refinement of the
+    importance samples by an ensemble sampler, is not ported: in 1.0.4 the
+    flag either did nothing or, together with
+    `variational_importance_sampling`, made the run fail part-way through.
+    `search_acq_fcn` itself must be a list, of acquisition objects or of
+    strings; a single acquisition outside a list raises an error that names
+    the option.
   - Setting an option that has no effect gives a warning that names the
     option. Such options come from MATLAB VBMC and belong to features that
     PyVBMC does not have; their descriptions in the options files say so.
@@ -437,6 +457,14 @@ its entry below.
   point PyVBMC works with a single set of GP hyperparameters, and one variance
   term kept a dimension too many, which earlier versions of NumPy accepted
   with a deprecation warning.
+- **Integer variables.** A run with `integer_vars` and a search optimizer,
+  the default one included, raised `IndexError` right after its initial
+  design: the point that the local search returned could not be snapped to
+  the integer grid. Such runs complete. A coordinate exactly halfway between
+  two integers is rounded away from zero, as in MATLAB VBMC.
+- With `AcqFcnIMIQR`, each chain of the importance sampler starts from a
+  sample drawn in proportion to its importance weight, as in MATLAB VBMC. The
+  draw was uniform. Runs with `AcqFcnIMIQR` give different results.
 - The penalty that keeps the width of the mixture components within its soft
   bounds has the right gradient. In 1.0.4 the entries of that gradient were in
   the wrong order, so the variational optimization followed a wrong gradient

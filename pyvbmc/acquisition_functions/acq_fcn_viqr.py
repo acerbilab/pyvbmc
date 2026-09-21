@@ -82,8 +82,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
     Parameters
     ----------
     quantile : float, optional
-        The upper quantile :math:`p_u` of the interquantile range; the
-        default 0.75 gives :math:`u = \Phi^{-1}(0.75)`.
+        The upper quantile :math:`p_u` of the interquantile range, a number
+        strictly between 0.5 and 1; the default 0.75 gives
+        :math:`u = \Phi^{-1}(0.75)`.
     loss : {"iqr", "iqr_reduction"}, optional
         The loss whose expectation under the variational posterior the
         acquisition minimizes. Both losses share the same look-ahead
@@ -105,11 +106,12 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         :math:`w_a` are the importance weights, normalized over the
         hyperparameter samples and the importance points together (so the
-        reduction acquisition carries a constant :math:`\log N_s` that does
-        not move the minimizer) and uniform under the simple Monte Carlo of
-        VIQR. The reduction is non-negative, so ``"iqr_reduction"`` is
-        ``+inf`` where the candidate reduces the interquantile range at no
-        importance point.
+        reduction acquisition carries a constant, :math:`\log (N_s N_a)`
+        for :math:`N_s` hyperparameter samples and :math:`N_a` importance
+        points, that does not move the minimizer) and uniform under the
+        simple Monte Carlo of VIQR. The reduction is non-negative, so
+        ``"iqr_reduction"`` is ``+inf`` where the candidate reduces the
+        interquantile range at no importance point.
 
     References
     ----------
@@ -124,7 +126,8 @@ class AcqFcnVIQR(AbstractAcqFcn):
             raise ValueError(
                 f"Unknown loss {loss!r}; expected one of {self.LOSSES}."
             )
-        self.acq_info = {}
+        quantile = self._check_quantile(quantile)
+        super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False

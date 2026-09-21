@@ -15,10 +15,18 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
     Approximates the Integrated Median Interquantile Range (IMIQR) via
     importance samples from the GP surrogate.
+
+    Parameters
+    ----------
+    quantile : float, optional
+        The upper quantile :math:`p_u` of the interquantile range, a number
+        strictly between 0.5 and 1; the default 0.75 gives
+        :math:`u = \Phi^{-1}(0.75)`.
     """
 
     def __init__(self, quantile=0.75):
-        self.acq_info = {}
+        quantile = self._check_quantile(quantile)
+        super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
         self.acq_info["importance_sampling_vp"] = False

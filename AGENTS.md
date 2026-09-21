@@ -413,9 +413,12 @@ Things you must hold in your head across files:
   the same holds for `gp_fit` (a slice-sampling chain), and a change to
   the random stream moves both, so `--expect-moving` names the second
   while the first is re-baselined. The `acq_AcqFcnIMIQR` reference moves
-  when the importance sampler's random stream changes. After the 2026-09-10
-  RNG fix, it was re-baselined from the stored state on the original Windows
-  generating machine on 2026-09-11; all 11 fixtures pass `--check --exact`.
+  when the importance sampler's random stream or its MCMC chains change.
+  After the 2026-09-10 RNG fix, it was re-baselined from the stored state on
+  the original Windows generating machine on 2026-09-11, and again on
+  2026-09-20, when the port review made the starting point of each chain a
+  draw in proportion to the importance weights; all 11 fixtures pass
+  `--check --exact`.
   On 2026-09-20 the port review's fixes of the hyperparameter fit (the
   window of past GPs, and the bounds of `mean_const` and of the noise left
   to gpyreg's recommendation) moved `gp_fit`, `gp_fit_history` and the log
