@@ -13,7 +13,8 @@ class Prior(ABC):
         ----------
         x : np.ndarray
             The array of input point(s), of dimension `(D,)` or `(n, D)`, where
-            `d` is the distribution dimension.
+            `d` is the distribution dimension. The point(s) are read as
+            `float64`, whatever dtype the array carries.
         keepdims : bool
             Whether to keep the input dimensions and return an array of shape
             `(1, D)`, or discard them and return an array of shape `(D,)`.
@@ -25,6 +26,9 @@ class Prior(ABC):
             `(n, 1)` or `(n,)` (depending on ``keepdims``).
         """
         x_orig_shape = x.shape
+        # The densities accumulate in the dtype of the input, so an integer
+        # or a narrower float input would truncate or wrap the result.
+        x = x.astype(np.float64, copy=False)
         x = np.atleast_2d(x)
         n, D = x.shape
         if self.D == 1 and n == 1:

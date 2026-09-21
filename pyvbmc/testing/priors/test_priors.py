@@ -66,6 +66,60 @@ def test_unit_integral_shifted_scipy():
     assert np.isclose(integrate(product), 1.0)
 
 
+def _dtype_cases():
+    """One instance of each class, with a point whose coordinates are whole
+    numbers, so that the three dtypes hold the same point exactly."""
+    return [
+        UniformBox(0.0, 10.0, D=2),
+        Trapezoidal(0.0, 2.0, 8.0, 10.0, D=2),
+        SmoothBox(0.0, 10.0, 1.0, D=2),
+        SplineTrapezoidal(0.0, 2.0, 8.0, 10.0, D=2),
+        SciPy(multivariate_normal(np.zeros(2))),
+        Product([UniformBox(0.0, 10.0), Trapezoidal(0.0, 2.0, 8.0, 10.0)]),
+    ]
+
+
+@pytest.mark.parametrize("dtype", [np.int64, np.int32, np.float32])
+def test_log_pdf_is_float64_whatever_the_input_dtype(dtype):
+    """The log-density is a double whatever the input is (MATLAB's
+    ``-inf(size(x))`` and its arithmetic are), so a narrower input gives the
+    float64 value and not a truncated or a narrower one."""
+    point = np.array([[3, 5]])
+    for prior in _dtype_cases():
+        expected = prior.log_pdf(point.astype(np.float64))
+        assert expected.dtype == np.float64
+
+        y = prior.log_pdf(point.astype(dtype))
+        assert y.dtype == np.float64, f"Failed for {type(prior).__name__}!"
+        assert np.array_equal(
+            y, expected
+        ), f"Failed for {type(prior).__name__}!"
+
+        p = prior.pdf(point.astype(dtype))
+        assert p.dtype == np.float64
+        assert np.array_equal(p, prior.pdf(point.astype(np.float64)))
+
+
+@pytest.mark.parametrize("cls", [Trapezoidal, SplineTrapezoidal])
+def test_log_pdf_of_an_integer_point_outside_the_support(cls):
+    """Outside the support the log-density is ``-inf`` and the density is
+    zero, for a point of integer dtype as for one of floats: the fill is a
+    double and its sum over the coordinates cannot wrap."""
+    for D in (1, 2, 3, 4):
+        prior = cls(0.0, 0.25, 0.75, 1.0, D=D)
+        x = np.full((1, D), 20)
+        assert x.dtype.kind == "i"
+        assert np.all(np.isneginf(prior.log_pdf(x))), f"Failed for D={D}!"
+        assert prior.pdf(x).item() == 0.0, f"Failed for D={D}!"
+
+    # A point with some coordinates inside the support and some outside.
+    mixed = cls(0.0, 2.0, 8.0, 10.0, D=3)
+    assert np.all(np.isneginf(mixed.log_pdf(np.array([[20, 5, 5]]))))
+    assert mixed.pdf(np.array([[20, 5, 5]])).item() == 0.0
+    assert np.all(np.isneginf(mixed.log_pdf(np.array([[20, 20, 5]]))))
+    assert mixed.pdf(np.array([[20, 20, 5]])).item() == 0.0
+
+
 def test_shape():
     for cls in classes:
         for D in [1, 4]:
