@@ -25,6 +25,12 @@ class Product(Prior):
         The dimension of the product distribution.
     marginals : pyvbmc.priors.Prior
         The underlying marginal prior distribution(s).
+    a : np.ndarray
+        The lower bound(s) of the support, shape `(D,)`, read from the
+        marginals.
+    b : np.ndarray
+        The upper bound(s) of the support, shape `(D,)`, read from the
+        marginals.
     """
 
     def __init__(self, marginals):
@@ -49,8 +55,6 @@ class Product(Prior):
                 f"`Product` should be initialized from a list of distributions, but received type {type(marginals)}."
             )
         self.D = len(marginals)
-        self.a = np.full(self.D, -np.inf)
-        self.b = np.full(self.D, np.inf)
         self.marginals = []
         for m, marginal in enumerate(marginals):
             if is_valid_scipy_dist(marginal):
@@ -63,8 +67,6 @@ class Product(Prior):
                 raise ValueError(
                     f"All marginals of a product distribution should have dimension 1, but marginal {marginal} has dimension {marginal.D}"
                 )
-            a_m, b_m = marginal.support()
-            self.a[m], self.b[m] = a_m.item(), b_m.item()
             self.marginals.append(marginal)
 
     def _log_pdf(self, x):
@@ -146,6 +148,37 @@ class Product(Prior):
             ]
         )
 
+    def _support_box(self):
+        """The box of the support, read from ``self.marginals``.
+
+        The box is read at every call, so an object restored from a file
+        describes the marginals it carries whatever the file stored beside
+        them.
+
+        Returns
+        -------
+        a, b : tuple(np.ndarray, np.ndarray)
+            The lower and upper bounds of the support, each of shape `(D,)`
+            and of dtype `float64`.
+        """
+        a = np.empty(self.D, dtype=np.float64)
+        b = np.empty(self.D, dtype=np.float64)
+        for m, marginal in enumerate(self.marginals):
+            a_m, b_m = marginal.support()
+            a[m] = np.asarray(a_m, dtype=np.float64).item()
+            b[m] = np.asarray(b_m, dtype=np.float64).item()
+        return a, b
+
+    @property
+    def a(self):
+        """np.ndarray: The lower bound(s) of the support, shape `(D,)`."""
+        return self._support_box()[0]
+
+    @property
+    def b(self):
+        """np.ndarray: The upper bound(s) of the support, shape `(D,)`."""
+        return self._support_box()[1]
+
     def _support(self):
         """Returns the support of the distribution.
 
@@ -159,7 +192,7 @@ class Product(Prior):
             A tuple of lower and upper bounds of the support, such that
             [``a[i]``, ``b[i]``] bounds the support of the `i`th marginal.
         """
-        return self.a, self.b
+        return self._support_box()
 
     def __str__(self):
         """Print a string summary."""

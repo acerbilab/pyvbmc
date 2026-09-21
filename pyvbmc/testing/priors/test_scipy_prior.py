@@ -1,3 +1,4 @@
+import pickle
 from copy import deepcopy
 
 import numpy as np
@@ -12,11 +13,13 @@ from scipy.stats import (
     multivariate_t,
     norm,
     t,
+    truncnorm,
     uniform,
     wishart,
 )
 
 from pyvbmc.priors import Product, SciPy
+from pyvbmc.vbmc.vbmc import _check_prior_covers_bounds
 
 
 def test_scipy_support_follows_loc_and_scale():
@@ -34,6 +37,91 @@ def test_scipy_support_follows_loc_and_scale():
     # An unshifted distribution keeps the support of its standard form.
     a, b = SciPy(norm()).support()
     assert np.all(np.isneginf(a)) and np.all(np.isposinf(b))
+
+
+def _store_standardized_support(prior):
+    """Put into the object's dictionary the support a file written by an
+    older release holds: the one of the standardized distribution, which
+    ignores ``loc`` and ``scale``."""
+    vars(prior)["a"] = np.atleast_1d(prior.distribution.dist.a)
+    vars(prior)["b"] = np.atleast_1d(prior.distribution.dist.b)
+    return prior
+
+
+def test_a_stored_support_does_not_stand_for_the_distribution():
+    """Restoring an object from a file writes its dictionary without
+    calling the constructor, so the support has to be read from the
+    distribution the object carries."""
+    prior = _store_standardized_support(SciPy(uniform(loc=2, scale=3)))
+
+    a, b = prior.support()
+    assert np.array_equal(a, [2.0]) and np.array_equal(b, [5.0])
+    assert np.array_equal(prior.a, [2.0]) and np.array_equal(prior.b, [5.0])
+
+    summary = str(prior)
+    assert f"lower bounds = {np.array([2.0])}" in summary
+    assert f"upper bounds = {np.array([5.0])}" in summary
+    assert f"self.a = {np.array([2.0])}" in prior.__repr__()
+
+    # The same object as a marginal of a product.
+    product = Product([prior, beta(2, 3, loc=-1, scale=4)])
+    a, b = product.support()
+    assert np.allclose(a, [2.0, -1.0]) and np.allclose(b, [5.0, 3.0])
+
+
+def test_a_stored_support_does_not_refuse_the_hard_bounds():
+    """A run restored from such a file is checked against the support of
+    the distribution, which covers the hard bounds it was built with."""
+    prior = _store_standardized_support(SciPy(uniform(loc=2, scale=3)))
+    _check_prior_covers_bounds(prior, np.array([[2.0]]), np.array([[5.0]]))
+    _check_prior_covers_bounds(
+        Product([prior, prior]),
+        np.array([[2.0, 2.0]]),
+        np.array([[5.0, 5.0]]),
+    )
+
+
+def test_a_prior_that_went_through_a_file_keeps_its_support(tmp_path):
+    """A pickle round trip of a shifted prior, with the dictionary of an
+    older file."""
+    path = tmp_path / "prior.pkl"
+    with open(path, "wb") as file:
+        pickle.dump(
+            _store_standardized_support(SciPy(uniform(loc=2, scale=3))), file
+        )
+    with open(path, "rb") as file:
+        restored = pickle.load(file)
+
+    a, b = restored.support()
+    assert np.array_equal(a, [2.0]) and np.array_equal(b, [5.0])
+
+    with open(path, "wb") as file:
+        pickle.dump(
+            Product(
+                [_store_standardized_support(SciPy(uniform(loc=2, scale=3)))]
+            ),
+            file,
+        )
+    with open(path, "rb") as file:
+        restored = pickle.load(file)
+    a, b = restored.support()
+    assert np.array_equal(a, [2.0]) and np.array_equal(b, [5.0])
+
+
+@pytest.mark.parametrize(
+    "distribution",
+    [truncnorm(-1, 2, loc=1, scale=2), uniform(loc=2, scale=3), norm()],
+)
+def test_the_support_is_float64(distribution):
+    """The bounds of the support are float64, whatever the parameters of
+    the distribution are written as."""
+    prior = SciPy(distribution)
+    for bounds in (prior.a, prior.b, *prior.support()):
+        assert bounds.dtype == np.float64
+
+    product = Product([distribution])
+    for bounds in (product.a, product.b, *product.support()):
+        assert bounds.dtype == np.float64
 
 
 def test_product_support_follows_loc_and_scale_of_its_marginals():
