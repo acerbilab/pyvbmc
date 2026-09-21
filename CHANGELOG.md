@@ -23,7 +23,10 @@ its entry below.
   So do a `gp_mean_fun` or a `gp_hyp_sampler` that PyVBMC does not implement,
   `f_vals` together with `specify_target_noise`, a `quantile` of `AcqFcnVIQR`
   or `AcqFcnIMIQR` outside (0.5, 1), and a `search_acq_fcn` string that
-  cannot be read as a call.
+  cannot be read as a call. `search_optimizer` takes `"cmaes"` or
+  `"none"` (the `"Nelder-Mead"` value is removed), `acq_hedge=True` raises
+  an error, and so do fractions of the acquisition search that add up to
+  more than one.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
@@ -34,6 +37,23 @@ its entry below.
   from before thinning, five times as many rows at the default
   `gp_sample_thin`.
 - `vp.pdf(x, grad_flag=True)` raises an error in the original parameter space.
+- Other methods of the variational posterior return something else in
+  some calls: `vp.kl_div(samples=...)`, `vp.kl_div(gauss_flag=False)` with
+  densities that are not finite, `vp.pdf` at integer coordinates,
+  `vp.moments` of a posterior of one parameter (a 1-by-1 covariance), the
+  component indices of `vp.sample` (always a flat array of integers), and
+  `vp.mode()`, which no longer advances the random stream of the run and
+  runs its search again when `n_opts` is given.
+  `vp.set_parameters(theta, raw_flag=False)` refuses a negative scale or
+  weight and accepts negative means. `pyvbmc.stats.get_hpd` rounds the size
+  of its subset away from zero at a tie.
+- Priors: `VBMC` refuses a prior whose support does not cover the hard
+  bounds. The prior classes refuse a bound, a pivot or a scale that is NaN
+  or infinite, an array argument whose shape disagrees with `D`, and a
+  one-dimensional `scipy.stats` distribution whose parameters are arrays.
+  `support()` of a shifted or scaled SciPy prior, the density of a prior at
+  integer or float32 points, and the density of `UniformBox` at a point
+  with a NaN coordinate return other values.
 - `results["rng_state"]` and `vbmc.random_state` hold the state of `vbmc.rng`.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
@@ -321,6 +341,14 @@ its entry below.
     Small weights are still penalized (`weight_penalty`) and removed
     (`tol_weight`). The bound of 1.0.4 came with a gradient that did not
     match it.
+  - A balanced draw from a variational posterior whose components have
+    unequal weights takes the samples that are left over, once every
+    component has its whole share, in proportion to the fractional parts of
+    those shares, as MATLAB VBMC does, so that a component contributes
+    `w * N` draws on average. 1.0.4 drew them from other probabilities, and
+    a component could count up to about one draw more or fewer on average.
+    The candidates of every acquisition search and the Monte Carlo moments
+    of the posterior come from such draws.
   - Smaller changes: the initial widths of the components in the variational
     optimization; the entropy of a posterior with a single component, which
     is computed exactly; and which posterior is returned when no iteration
@@ -385,6 +413,19 @@ its entry below.
     `search_acq_fcn` itself must be a list, of acquisition objects or of
     strings; a single acquisition outside a list raises an error that names
     the option.
+  - `search_optimizer` takes `"cmaes"` or `"none"`. See Removed for the
+    `"Nelder-Mead"` value.
+  - `acq_hedge` must be `False`: the portfolio of acquisition functions it
+    asks for (MATLAB VBMC's `acqhedge_vbmc.m`) is not ported. In 1.0.4 a
+    run with the option ended in an `UnboundLocalError` at its first
+    active-sampling step, after the initial design.
+  - The five fractions that divide the candidates of the acquisition search
+    among their sources (`search_cache_frac`, `heavy_tail_search_frac`,
+    `mvn_search_frac`, `hpd_search_frac`, `box_search_frac`) must each lie
+    in [0, 1] and add up to at most one. In 1.0.4 fractions that claimed
+    more than the whole raised an error part-way through the run, with the
+    default values of the others as soon as `search_cache_frac` exceeded
+    0.25.
   - Setting an option that has no effect gives a warning that names the
     option. Such options come from MATLAB VBMC and belong to features that
     PyVBMC does not have; their descriptions in the options files say so.
@@ -392,6 +433,26 @@ its entry below.
     implemented.
   - Once a `VBMC` object is constructed, its options cannot be removed (`del`,
     `pop`). Assigning to them was already an error.
+- **Priors are checked.**
+  - `VBMC` refuses a prior whose support does not cover the hard bounds,
+    with a message that names the coordinates, the two intervals and the
+    remedy: hard bounds inside the support of the prior. In 1.0.4 such a
+    run stopped at its first evaluation outside the support with
+    `FunctionLogger:InvalidFuncValue`, which named neither the prior nor
+    the bounds. Inside the hard bounds the prior is used as it is given:
+    the model evidence is that of the prior restricted to the hard bounds,
+    not of a prior truncated to them and normalized again.
+  - `UniformBox`, `Trapezoidal`, `SplineTrapezoidal` and `SmoothBox` refuse
+    a bound, a pivot or a scale that is NaN or infinite, and an array
+    argument whose shape disagrees with the `D` given. Such arguments used
+    to build a prior whose density is not a density, or one whose
+    parameters sat on the wrong coordinates. A uniform prior needs finite
+    bounds; for an unbounded parameter use `SmoothBox` or a `scipy.stats`
+    distribution.
+  - A one-dimensional `scipy.stats` distribution whose parameters are
+    arrays, such as `norm(loc=[0, 10, 100])`, is refused as a prior. For
+    several variables give a list of one-dimensional distributions or a
+    multivariate one.
 - **`ParameterTransformer` and `FunctionLogger` check what they are given.**
   `VBMC` builds both with arguments that pass; the checks concern code that
   uses the classes on its own.
@@ -491,7 +552,15 @@ its entry below.
   the default one included, raised `IndexError` right after its initial
   design: the point that the local search returned could not be snapped to
   the integer grid. Such runs complete. A coordinate exactly halfway between
-  two integers is rounded away from zero, as in MATLAB VBMC.
+  two integers is rounded away from zero, as in MATLAB VBMC. The feature is
+  experimental, and the FAQ and the description of the option say what it
+  does: the points of the active-sampling search are snapped to the integer
+  grid; the initial design and a provided `x0` are not, as in MATLAB VBMC;
+  and on a grid the search can return a point that has been evaluated
+  already, which on a noiseless target spends an evaluation and adds
+  nothing. A starting point with a provided value that the grid, or the
+  search box, moves is evaluated where it lands; 1.0.4 recorded its value
+  at the moved point.
 - With `AcqFcnIMIQR`, each chain of the importance sampler starts from a
   sample drawn in proportion to its importance weight, as in MATLAB VBMC. The
   draw was uniform. Runs with `AcqFcnIMIQR` give different results.
@@ -574,7 +643,77 @@ its entry below.
   its dimension.
 - `pyvbmc.stats.kl_div_mvn` accepts its means and covariances as 1-D or 2-D
   arrays, by position or by keyword. In 1.0.4 a call that gave all four as
-  keywords failed.
+  keywords failed. It works from the log determinants of the two
+  covariances, and with it the symmetrized KL divergence between the
+  posteriors of successive iterations, which a run reports and tests for
+  stability. The determinants themselves leave the range of a double for a
+  problem of ten to twenty parameters whose posterior standard deviations
+  are all below about 1e-8 or above about 1e7; 1.0.4 then reported an
+  infinite divergence, so that the run was never stable, or zero, the value
+  of a posterior that has stopped moving.
+- **Methods of the variational posterior.**
+  - `vp.kl_div(samples=..., gauss_flag=True)` compares the posterior with
+    the mean of the samples in each coordinate. 1.0.4 used one average over
+    the whole sample matrix for every coordinate.
+  - `vp.kl_div(gauss_flag=False)` sets aside a density that is infinite or
+    NaN, as it sets aside a zero one, and returns a number where 1.0.4
+    returned NaN. `vp.pdf` in the original space keeps a density near the
+    top of the range of a double, which 1.0.4 reported as infinite.
+  - `vp.pdf` and `vp.log_pdf` evaluate the density at the point they are
+    given when its coordinates are integers. In the original space 1.0.4
+    truncated the transformed coordinates to the integer type and reported
+    the density of another point.
+  - `vp.mode()` works for a posterior of one parameter, where it raised an
+    `AxisError`. It draws its starting points from a copy of the random
+    generator, so a call leaves the random stream of a run where it was and
+    two calls return the same mode. `vp.mode(n_opts=...)` runs the search
+    instead of returning a mode stored by an earlier call, and
+    `vp.get_parameters()` discards a stored mode, which its normalization
+    of the parameters may have moved.
+  - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
+    hold `sigma`, `lambd` and the weights to be positive, and those alone.
+    1.0.4 checked other entries: a negative scale could pass, and a
+    negative component mean could be refused.
+  - `vp.moments(cov_flag=True)` returns a 1-by-1 covariance matrix for a
+    posterior of one parameter, where 1.0.4 returned a scalar array.
+    `vp.sample`, and through it `vp.kl_div(gauss_flag=False)` and `vp.mtv`,
+    accept a number of samples written as a whole float such as `1e5`. The
+    component indices that `vp.sample` returns are a flat array of
+    integers in every case. A negative `df`, which `vp.pdf` reads as a
+    product of univariate `t` densities, is refused by `vp.sample` with a
+    message that says so.
+  - `VariationalPosterior(D, K, x0)` accepts a single starting point given
+    as a column.
+- **Priors.**
+  - `support()` of a `SciPy` prior built from a shifted or scaled
+    one-dimensional `scipy.stats` distribution, and the bounds of a
+    `Product` that holds one, give the interval the distribution lives on.
+    1.0.4 gave the interval of its standard form: `uniform(loc=2, scale=3)`
+    reported `[0, 1]`.
+  - The density of a prior is computed in double precision whatever the
+    type of the point. In 1.0.4 an array of integers truncated the log
+    density, and gave a trapezoidal or spline-trapezoidal prior a density
+    of one, or an infinite one, at points outside its support; a float32
+    array gave a float32 result.
+  - A point with a NaN coordinate has density zero under `UniformBox`, as
+    under the other box priors. 1.0.4 gave it the full density.
+  - A list of one-dimensional priors that holds a `UserFunction` works as a
+    prior. In 1.0.4 the first evaluation of the target raised a
+    `TypeError`.
+  - `Trapezoidal` no longer warns of a division by zero at a point on its
+    lower bound, and neither trapezoid leaves NumPy's floating-point error
+    settings changed when an error interrupts it.
+  - The documentation of the priors gives the shapes that the code uses,
+    `convert_to_prior` documents `log_prior`, and the description of the
+    `log_prior` argument of `VBMC` is complete.
+- A quantity exactly halfway between two integers is rounded away from
+  zero, as in MATLAB VBMC, wherever PyVBMC sizes something from a fraction:
+  the high-posterior-density subset (`pyvbmc.stats.get_hpd(X, y, 0.1)` on 5
+  points returns 1 point, where 1.0.4 returned none), the shares of the
+  acquisition search among its sources, and the number of GP hyperparameter
+  samples. No run at the default options has such a tie; a run with another
+  `hpd_frac`, with `hpd_search_frac` above zero or with more starting points
+  than the initial design takes can.
 - `FunctionLogger.finalize()` trims the count of evaluations per point along
   with the other arrays.
 - `FunctionLogger`: recording a repeated evaluation whose duration is unknown
@@ -604,5 +743,14 @@ its entry below.
 - The separate search GP (`separate_search_gp=True`). It never worked: a run
   with it failed in its second iteration. The option is still accepted, with a
   warning, and has no effect.
+- The `"Nelder-Mead"` value of `search_optimizer`, with the search it named.
+  That search ignored the search bounds and `search_max_fun_evals`, and on
+  an unbounded variable it could return a point far outside the search box.
+  1.0.4 used it for every problem of one variable, which is searched by a
+  bounded one-dimensional method whatever the option holds; for more
+  variables only a script that set the option reached it. A file saved by
+  1.0.4 for a problem of one variable holds the value and loads as before.
+  A saved run of more variables that set it is refused by `VBMC.load`, which
+  says how to continue it: `new_options={"search_optimizer": "cmaes"}`.
 
 [Unreleased]: https://github.com/acerbilab/pyvbmc/compare/v1.0.4...HEAD

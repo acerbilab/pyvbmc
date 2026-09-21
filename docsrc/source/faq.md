@@ -269,7 +269,14 @@ also supply a custom `log_prior=` callable. See the
 [prior documentation](api/classes/priors.rst) for details.
 
 The hard bounds constrain where PyVBMC evaluates the target; they do not
-by themselves add or normalize a prior.
+by themselves add or normalize a prior. A prior passed with `prior=` must
+have a support that covers the hard bounds, since the log joint would be
+`-inf` wherever the box reaches outside it; `VBMC` refuses a prior that does
+not. Inside the hard bounds the prior is used as it is given: the model
+evidence is that of the prior restricted to the hard bounds, not of a prior
+truncated to them and normalized again, so for a proper evidence choose hard
+bounds that hold essentially all of the prior's mass, or the support itself
+for a bounded prior.
 
 (faq-my-target-function-requires-additional-datainputs-how-do-i-pass-them-to-vbmc)=
 ### My target function requires additional data/inputs. How do I pass them to VBMC?
