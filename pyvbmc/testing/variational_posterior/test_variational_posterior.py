@@ -386,6 +386,61 @@ def test_pdf_outside_bounds():
     assert np.all(np.isfinite(vp.log_pdf(ub - 0.5, orig_flag=True)))
 
 
+def _probit_posterior(D, mean, sd, seed):
+    """One component of the given scale under a probit transform of the
+    unit box, whose density in the original space grows very large."""
+    parameter_transformer = ParameterTransformer(
+        D, np.zeros((1, D)), np.ones((1, D)), transform_type="probit"
+    )
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)), parameter_transformer)
+    vp.mu = np.full((D, 1), mean)
+    vp.sigma = np.array([[sd]])
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(seed)
+    return vp
+
+
+def test_pdf_original_space_density_holds_its_representable_values():
+    """The density in the original space is the density in the
+    transformed space over the Jacobian. Where the Jacobian underflows,
+    the quotient is infinite although the density itself is a number a
+    double holds, and the density is the number."""
+    vp = _probit_posterior(2, 0.0, 4.5, 20260921)
+    x = vp.parameter_transformer.inverse(np.array([[-27.3, -27.3]]))
+
+    log_density = vp.pdf(x, log_flag=True)
+    density = vp.pdf(x)
+
+    assert np.all(np.isfinite(log_density))
+    assert np.all(density == np.exp(log_density))
+    assert density > 1e306
+
+
+def test_pdf_original_space_density_is_the_quotient_where_that_holds():
+    """Every row on which the quotient is a number is that quotient,
+    to the last digit."""
+    D = 2
+    parameter_transformer = ParameterTransformer(
+        D, np.zeros((1, D)), np.ones((1, D))
+    )
+    vp = VariationalPosterior(
+        D, 3, np.full((1, D), 0.3), parameter_transformer, rng=20260921
+    )
+    vp.sigma = np.array([[0.5, 0.7, 0.9]])
+    axis = np.linspace(0.05, 0.95, 7)
+    x = np.array([[a, b] for a in axis for b in axis])
+
+    density = vp.pdf(x)
+
+    transformed = parameter_transformer(x)
+    quotient = vp.pdf(transformed, orig_flag=False) / np.exp(
+        parameter_transformer.log_abs_det_jacobian(transformed)[:, np.newaxis]
+    )
+    assert np.all(np.isfinite(quotient))
+    assert np.array_equal(density, quotient)
+
+
 def test_pdf_whole_coordinates_given_as_integers():
     """A point whose coordinates are whole numbers has the same density
     however it is spelled: the transformed coordinates are computed in
@@ -1010,6 +1065,43 @@ def test_kl_div_two_vp_no_gauss_flag():
     vp2.sigma = np.ones((1, 1))
     kl_divs = vp.kl_div(vp2=vp2, gauss_flag=False, N=int(1e6))
     assert np.all(np.isclose(50, kl_divs, atol=5e-1))
+
+
+def test_kl_div_ignores_a_density_that_is_zero_or_not_finite(mocker):
+    """A density that is zero or not finite, NaN included, is replaced
+    before its logarithm is taken (``vbmc_kldiv.m:75-76``, ``:82-83``)."""
+    values = np.array([[0.0], [1.0], [np.inf], [np.nan], [0.5]])
+    vp = VariationalPosterior(1, 1, np.zeros((1, 1)), rng=20260921)
+    vp2 = VariationalPosterior(1, 1, np.zeros((1, 1)), rng=20260922)
+    mocker.patch.object(
+        VariationalPosterior,
+        "pdf",
+        lambda self, *args, **kwargs: values.copy(),
+    )
+
+    kl_divs = vp.kl_div(vp2=vp2, N=values.size, gauss_flag=False)
+
+    ignored = (values == 0) | ~np.isfinite(values)
+    kept = np.where(ignored, 1.0, values)
+    floored = np.where(ignored, np.finfo(float).tiny, values)
+    expected = np.maximum(
+        0, -np.mean(np.log(floored) - np.log(kept))
+    ) * np.ones(2)
+    assert np.array_equal(kl_divs, expected)
+
+
+def test_kl_div_is_a_number_when_a_density_overflows():
+    """Under a probit transform a wide posterior has draws whose density
+    in the original space is beyond the range of a double; those points
+    are ignored rather than carried into the average."""
+    vp = _probit_posterior(1, 0.0, 30.0, 20260921)
+    vp2 = _probit_posterior(1, 0.5, 30.0, 20260922)
+    x, _ = vp.sample(int(1e4))
+    assert np.any(np.isinf(vp.pdf(x)))
+
+    kl_divs = vp.kl_div(vp2=vp2, N=int(1e4), gauss_flag=False)
+
+    assert np.all(np.isfinite(kl_divs))
 
 
 def test_kl_div_no_samples_gauss_flag():

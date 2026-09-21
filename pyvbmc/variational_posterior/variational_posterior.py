@@ -945,16 +945,27 @@ class VariationalPosterior:
 
         # apply jacobian correction
         if orig_flag:
+            log_jacobian = self.parameter_transformer.log_abs_det_jacobian(
+                x[mask]
+            )[:, np.newaxis]
             if log_flag:
-                y[mask] -= self.parameter_transformer.log_abs_det_jacobian(
-                    x[mask]
-                )[:, np.newaxis]
+                y[mask] -= log_jacobian
             else:
-                y[mask] /= np.exp(
-                    self.parameter_transformer.log_abs_det_jacobian(x[mask])[
-                        :, np.newaxis
-                    ]
-                )
+                y_inside = y[mask]
+                jacobian = np.exp(log_jacobian)
+                # Where the Jacobian underflows the quotient is infinite
+                # although the density has a value a double can hold:
+                # there, exponentiate the difference of the logarithms.
+                with np.errstate(
+                    divide="ignore", over="ignore", invalid="ignore"
+                ):
+                    corrected = y_inside / jacobian
+                    lost = ~np.isfinite(corrected) | (jacobian == 0)
+                    if np.any(lost):
+                        corrected[lost] = np.exp(
+                            np.log(y_inside[lost]) - log_jacobian[lost]
+                        )
+                y[mask] = corrected
 
         if grad_flag:
             return y, dy
@@ -1539,15 +1550,16 @@ class VariationalPosterior:
             xx1, _ = self.sample(N, True, True)
             q1 = self.pdf(xx1, True)
             q2 = vp2.pdf(xx1, True)
-            q1[q1 == 0 | np.isinf(q1)] = 1.0
-            q2[q2 == 0 | np.isinf(q2)] = minp
+            # Ignore the points where a density is zero or not finite
+            q1[(q1 == 0) | ~np.isfinite(q1)] = 1.0
+            q2[(q2 == 0) | ~np.isfinite(q2)] = minp
             kl1 = -np.mean(np.log(q2) - np.log(q1))
 
             xx2, _ = vp2.sample(N, True, True)
             q1 = self.pdf(xx2, True)
             q2 = vp2.pdf(xx2, True)
-            q1[q1 == 0 | np.isinf(q1)] = minp
-            q2[q2 == 0 | np.isinf(q2)] = 1.0
+            q1[(q1 == 0) | ~np.isfinite(q1)] = minp
+            q2[(q2 == 0) | ~np.isfinite(q2)] = 1.0
             kl2 = -np.mean(np.log(q1) - np.log(q2))
             kls = np.concatenate((kl1, kl2), axis=None)
 
