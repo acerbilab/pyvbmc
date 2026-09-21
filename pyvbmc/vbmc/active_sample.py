@@ -10,6 +10,7 @@ from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc.active_importance_sampling import active_importance_sampling
@@ -959,7 +960,7 @@ def _get_search_points(
         N_random_points = number_of_points - search_X.shape[0]
         random_Xs = np.full((0, D), np.nan)
 
-        N_search_cache = round(
+        N_search_cache = round_half_away_from_zero(
             options.get("search_cache_frac") * N_random_points
         )
         if N_search_cache > 0:  # Take points from search cache
@@ -977,7 +978,7 @@ def _get_search_points(
                 axis=0,
             )
 
-        N_heavy = round(
+        N_heavy = round_half_away_from_zero(
             options.get("heavy_tail_search_frac") * N_random_points
         )
         if N_heavy > 0:
@@ -986,7 +987,9 @@ def _get_search_points(
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
 
-        N_mvn = round(options.get("mvn_search_frac") * N_random_points)
+        N_mvn = round_half_away_from_zero(
+            options.get("mvn_search_frac") * N_random_points
+        )
         if N_mvn > 0:
             mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = rng.multivariate_normal(
@@ -994,7 +997,9 @@ def _get_search_points(
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
 
-        N_hpd = round(options.get("hpd_search_frac") * N_random_points)
+        N_hpd = round_half_away_from_zero(
+            options.get("hpd_search_frac") * N_random_points
+        )
         if N_hpd > 0:
             hpd_min = options.get("hpd_frac") / 8
             hpd_max = options.get("hpd_frac")
@@ -1007,7 +1012,9 @@ def _get_search_points(
                 )
             )
             N_hpd_vec = np.diff(
-                np.round(np.linspace(0, N_hpd, len(hpd_fracs) + 1))
+                round_half_away_from_zero(
+                    np.linspace(0, N_hpd, len(hpd_fracs) + 1)
+                )
             )
 
             X = function_logger.X[function_logger.X_flag]
@@ -1039,7 +1046,9 @@ def _get_search_points(
                 )
                 random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
 
-        N_box = round(options.get("box_search_frac") * N_random_points)
+        N_box = round_half_away_from_zero(
+            options.get("box_search_frac") * N_random_points
+        )
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
