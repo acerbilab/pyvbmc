@@ -35,11 +35,14 @@ after the ``acq_*`` oracles have confirmed the acquisition itself.
 and adds its references, leaving every existing array bit-identical (the
 recipes are not rerun, so the snapshots keep pinning what they pin).
 ``--check --exact`` compares bit for bit instead of at the tolerances. The
-committed references pin the numerics of the day they were made (several
-outputs have since moved within tolerance, Stage 2 items 1–3), so the gate
-for an identity-preserving refactor is ``--dump-outputs DIR`` on the code
-just before it and ``--check --exact --against DIR`` after. Plan and
-worklog: ``dev/plans/fixture-generator-and-oracles.md``.
+committed references equal the current numerics on the generating platform,
+so ``--check --exact`` against them is the gate for a change that must move
+nothing; ``--dump-outputs DIR`` before a change and ``--check --exact
+--against DIR`` after it serve a change made while the references are known
+to lag. Off the generating platform ``--check`` skips the platform-bound
+oracles, as the tests do (``PYVBMC_ORACLES_ALL=1`` forces them); a dump is
+compared in full. Plan and worklog:
+``dev/plans/fixture-generator-and-oracles.md``.
 
 The authentic GP-history capture mode runs only until it has observed an
 early sampled fit, a later fit whose stored sample counts differ, and a noisy
@@ -763,13 +766,32 @@ def check(names, verbose, exact=False, against=None):
     failures = {}
     for name in names:
         path = FIXTURES / name
-        fun = target_for(load_snapshot(path)["meta"])
+        snap = load_snapshot(path)
+        fun = target_for(snap["meta"])
         reference = None if against is None else load_dump(against, name)
+        # The committed references of the platform-bound oracles hold on the
+        # generating platform only, so elsewhere they are skipped, as the
+        # tests skip them. A dump is compared in full: it is made on the
+        # machine that checks against it.
+        skip = ()
+        if (
+            reference is None
+            and not same_platform(snap)
+            and not os.environ.get("PYVBMC_ORACLES_ALL")
+        ):
+            skip = tuple(sorted(PLATFORM_BOUND & set(snap["ref"])))
         bad = check_one(
-            path, fun, exact=exact, verbose=verbose, reference=reference
+            path,
+            fun,
+            exact=exact,
+            verbose=verbose,
+            reference=reference,
+            skip=skip,
         )
+        skipped = f" (platform-bound, skipped: {', '.join(skip)})"
         print(
-            f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}",
+            f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}"
+            f"{skipped if skip else ''}",
             flush=True,
         )
         if bad:
