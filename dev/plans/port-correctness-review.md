@@ -1817,9 +1817,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   scripts are kept on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`). Nothing below is verified; where it says
   that the orchestrator read a code site, the site is as the report
-  describes it. The line citations of the internal G1 report into
-  `gaussian_process.py` are off by up to 35 lines (`:1474` for `:1441`,
-  `:1234` for `:1243`); those of the comparison report hold.
+  describes it. The line citations of both G1 reports into
+  `gaussian_process.py` have drifted, the internal one's by up to 37 lines
+  (`:1494` for `:1457`) and the comparison one's by up to 14; the G1
+  verifier's report gives the present line for each (corrected on the day:
+  the entry had the comparison report's citations holding, which was true of
+  the five that the orchestrator had looked up).
 
   The first questions. `uuinv`: the comparison reviewer finds `1d1f20d`
   carried line for line in the three branches (`f_min_fill.py:192-255`),
@@ -2005,11 +2008,82 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   refuses eigenvalues of rounding size; `gplite_post.m:250`, which leaves
   `gp.s2` shorter than `gp.X` after a rank-one update without `s2`;
   `gplite_train.m:298` with `Ninit == 0`; the comment of `uuinv`.
-- [ ] **Pickup point (2026-09-21): wave 6, the two gpyreg slices G1 and G2
-  on both tracks (four reviewers), by the PI's decision of 2026-09-21, is
-  run and reported (the entry above): steps 1 and 2 below are done, and the
-  next is step 3, on the PI's word.** No verification has started. The
-  session starts no other wave.
+- [x] 2026-09-21: wave 6 verified (PI: go, on the orchestrator's plan: the
+  verification alone, no wave beside it). The ledger is
+  `experiments/port_review_20260919/verification/wave6.md`, 37 rows with a
+  proposed disposition each and the PI's column empty. The orchestrator took
+  the four rows that can change what a run computes
+  (`verification/scripts/wave6_A*.py`, with `wave6_per_column_patch.py`), two
+  read-only Opus verifiers the rest, one per slice (`verification/wave6_G1.md`
+  and `wave6_G2.md`, saved verbatim, their scripts as
+  `scripts/wave6_G1_*.py` and `wave6_G2_*.py`); the G1 verifier also took the
+  candidate on `load(new_options=)`. The verifiers ran first and the
+  orchestrator's seeded runs after them. The sweep after the verifiers was
+  clean in gpyreg and in vbmc.
+
+  Part 1. W6-1, the recommendations pooled over the dimensions, is larger
+  than either reviewer had it and reaches every run: the pooled statistics
+  mix the locations of the columns with their spreads (in the cigar states a
+  pooled SD of 35.7 for 0.5 to 2.5 per column, starting length scales 15 to
+  74 times gplite's, one hard box `[-107, 113]` for the mean's location in
+  every dimension). `x0` reaches the first GP training of a run alone; the
+  hard and the plausible bounds of the mean's location and scale, which
+  `_gp_hyp` leaves to gpyreg, reach every fit. With the statistics per
+  column, in the process alone, the `gp_fit` oracle gives other samples in
+  the seven stored states that sample (it reproduces its reference bit for
+  bit with gpyreg as it is), stored samples lie outside gplite's hard box in
+  five of the eight states, and the four seeded runs of the gates differ from
+  their record from the first evaluation after the initial design (82 of 92
+  arrays). Never matched, no revision of gpyreg ever had the axis, no record
+  of a reason. Proposed: fix in gpyreg, last and alone, read for accuracy on
+  the benchmark targets before and after. W6-2, the window of the burn-in
+  statistics: MATLAB's defect, as the reviewer has it; with MATLAB's window
+  installed by an edit of the source, a burn-in of 16 gives gpyreg's samples
+  bit for bit and the burn-in of 15 that every stored state records makes
+  MATLAB's estimate negative in 5 to 11 coordinates in each of the seven
+  states that sample, so MATLAB always discards its adapted widths there.
+  No fix; a sheet entry and a line of the MATLAB-side list. W6-3, the floor
+  at zero under that estimate: with a burn-in of 2 or 3 gpyreg's window
+  holds one iteration, every width is zero and the chain returns one point
+  (the G1 verifier's observation, run again by the orchestrator); a user's
+  `gp_sample_thin = 1` makes the burn-in 3. W6-4, equal targets: the
+  `KeyError` needs a problem without hard bounds, the log Jacobian making the
+  targets differ otherwise, and there a log joint that is constant over the
+  ten points of the initial design is enough; the pair `(-inf, -inf)` comes
+  from formulas that gplite has as well.
+
+  Part 2, 33 rows, none of which changes a number of a PyVBMC run at a
+  shipped option. Of the findings of the four reports none is refuted
+  outright; three that the internal G1 report takes for gpyreg's are MATLAB's
+  as well (the variance clamp before the rank-one update, the order of the
+  base widths of the sampler, the split of an odd number of samples), and
+  its `update` without hyperparameters does not raise but returns NaN
+  factors. The verifiers' own: `sp.linalg.eig` breaks the fallback of
+  `__robust_cholesky` before any sign flip, so the fix takes `eigh` as well
+  (both verifiers); `pL` is computed before the test for a failed
+  factorization in the low-noise branch; MATLAB's own rank-one extension is
+  wrong under noise that varies by point, by 0.116 relative, latent in VBMC;
+  the fix of `uuinv` was gpyreg's first (`00d9406`, nine days before
+  `1d1f20d`, same author), and the wrong sentence on the mixture with it;
+  `load(new_options=)` passes by the checks of `_init_optim_state` beside
+  taking no effect (`gp_mean_fun="nonsense"` is accepted). Thirteen new rows
+  for the MATLAB-side list, one entry of the sheet replaced, two amended and
+  six new, a seventh depending on the ruling on W6-19. The rows on which the orchestrator asks the PI and does not only
+  propose: W6-1 (the moving fix), W6-4 (refuse equal targets, or take a range
+  of one), W6-8 (a draw on a dense grid), W6-19 (exceptions of the objective:
+  loud as now, or MATLAB's tolerance), W6-21 (the Metropolis step that never
+  ran: repaired or removed).
+- [ ] **Pickup point (2026-09-21): wave 6 is run, reported and verified (the
+  two entries above); the next step is the PI's ruling on the 37 rows of
+  `verification/wave6.md`, then step 4 below.** No fix has started, and how
+  an agent works on gpyreg is proposed and not yet settled with the PI (the
+  orchestrator's proposal of the day: a worktree of `../gpyreg` made by
+  hand, `../gpyreg-port-review`, on a branch cut from gpyreg's `main`; one
+  fix agent there for the rows of part 2, one finding per commit, `python -m
+  pytest` from the worktree root with `gpyreg.__file__` printed once, no
+  push; W6-1 by the orchestrator, last and alone, with the PyVBMC gates run
+  under `PYTHONPATH` naming that worktree; one branch and one pull request,
+  the moving fix as its last commit). The session starts no other wave.
 
   Why this wave. G1 and G2 are the only slices that no reviewer has read,
   and what they find can still move the GP fit, on which the stored oracle
