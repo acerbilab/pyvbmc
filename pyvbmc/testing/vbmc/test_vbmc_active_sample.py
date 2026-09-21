@@ -431,6 +431,93 @@ def test_two_steps_with_a_search_cache(mocker):
         assert np.shape(optim_state["search_cache"]) == (32, D)
 
 
+def _acquire_one_cached_point(mocker, vbmc, gp, x_cached, y_cached):
+    """One active-sampling step whose only candidate is the one row of the
+    starting cache, with a value stored for it."""
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.array([y_cached])
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = vbmc.function_logger.func_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    last = function_logger.Xn
+    # The target was called once, at the point that was recorded, and the
+    # value recorded is the one it returned there.
+    assert function_logger.func_count == calls_before + 1
+    recorded = function_logger.X_orig[last]
+    assert not np.allclose(recorded, x_cached[0])
+    assert np.isclose(function_logger.y_orig[last], fun(recorded))
+    assert not np.isclose(function_logger.y_orig[last], y_cached)
+
+    # The row is gone from the cache, so it cannot be drawn again.
+    assert optim_state["cache"]["x_orig"].shape[0] == 0
+    assert optim_state["cache"]["y_orig"].shape == (0,)
+    assert optim_state["cache"]["skip_logger"].shape == (0,)
+    return recorded
+
+
+def test_a_cached_point_the_search_box_moved_is_evaluated(mocker):
+    """The sieve clips every candidate into the search box, so a cached
+    starting point outside it is offered to the acquisition at a point the
+    target has not been called at: the stored value does not belong to it,
+    and the target is called there instead."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+    )
+    x_cached = np.array([[50.0, 0.0]])
+    parameter_transformer = vbmc.function_logger.parameter_transformer
+    u_cached = parameter_transformer(x_cached)
+    lb_search = np.copy(vbmc.optim_state["lb_search"])
+    ub_search = np.copy(vbmc.optim_state["ub_search"])
+    assert np.any(u_cached > ub_search)
+    clipped = parameter_transformer.inverse(
+        np.minimum(np.maximum(u_cached, lb_search), ub_search)
+    )
+
+    recorded = _acquire_one_cached_point(
+        mocker, vbmc, gp, x_cached, fun(x_cached)
+    )
+    assert np.allclose(recorded, clipped[0])
+
+
+def test_a_cached_point_the_integer_grid_moved_is_evaluated(mocker):
+    """The acquisition snaps an integer coordinate to its grid, so a
+    cached starting point off the grid is offered at a point the target
+    has not been called at."""
+    vbmc, gp, _, _ = _integer_var_state(
+        options={
+            "ns_search": 1,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        }
+    )
+    x_cached = np.array([[2.4, 0.1]])
+
+    recorded = _acquire_one_cached_point(
+        mocker, vbmc, gp, x_cached, fun(x_cached)
+    )
+    assert recorded[0] == np.round(recorded[0])
+    assert np.isclose(recorded[1], x_cached[0, 1])
+
+
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     """A local search that raises costs one acquisition, not the run."""
     D = 2

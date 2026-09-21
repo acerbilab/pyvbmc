@@ -686,7 +686,20 @@ def active_sample(
                 y_orig = np.nan
             else:
                 idx = int(idx)
-                y_orig = optim_state["cache"]["y_orig"][idx]
+                # The stored value belongs to the point the cache holds.
+                # The sieve clips every candidate into the search box and
+                # the acquisition snaps integer coordinates to their grid,
+                # so a candidate that either of the two moved is a point
+                # the target has not been called at: it is evaluated. The
+                # comparison is exact and in the inference space, where
+                # both the clip and the snap act.
+                x_cached = parameter_transformer(
+                    optim_state["cache"]["x_orig"][[idx]]
+                )
+                if np.array_equal(x_cached[0], xnew[0]):
+                    y_orig = optim_state["cache"]["y_orig"][idx]
+                else:
+                    y_orig = np.nan
             if selection_policy is not None:
                 selection_policy.finish(
                     selected=xnew,
