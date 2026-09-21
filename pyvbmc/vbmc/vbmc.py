@@ -3139,6 +3139,10 @@ class VBMC:
 
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
+        # The limits on iterations and evaluations are what a continued run
+        # is most often given, and they are checked as construction checks
+        # them.
+        vbmc.options.validate_run_limits()
         vbmc._validate_option_values()
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0

@@ -232,6 +232,48 @@ def test_resumed_run_schedules_the_gp_fit_as_a_fresh_run(monkeypatch):
         ) == _gp_fit_starting_points(fresh, n_eff)
 
 
+@pytest.mark.parametrize(
+    "new_options",
+    [
+        {"max_iter": 0},
+        {"max_iter": 7.5},
+        {"max_fun_evals": -5},
+        {"max_fun_evals": 120.5},
+    ],
+)
+def test_load_refuses_the_run_limits_that_construction_refuses(
+    tmp_path, new_options
+):
+    """A limit given to ``load`` is checked as one given at construction.
+
+    ``max_fun_evals`` and ``max_iter`` are the options a continued run is
+    most often given, and both have to be positive integers on either
+    route.
+    """
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros((1, 2)),
+            options={**new_options, "display": "off"},
+        )
+
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC.load(path, new_options=new_options)
+
+
+def test_load_raises_max_iter_to_min_iter_as_construction_does(tmp_path):
+    """A ``max_iter`` below ``min_iter`` is raised to it on either route."""
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    loaded = VBMC.load(path, new_options={"max_iter": 2, "min_iter": 7})
+    assert loaded.options["max_iter"] == 7
+
+    unchanged = VBMC.load(path, new_options={"max_iter": 9, "min_iter": 7})
+    assert unchanged.options["max_iter"] == 9
+
+
 def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
     """One transformer is shared, and it is the chosen iteration's.
 
