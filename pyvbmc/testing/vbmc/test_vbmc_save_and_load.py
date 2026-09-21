@@ -340,6 +340,50 @@ def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
     )
 
 
+def test_load_recovers_the_starting_point_of_a_file_saved_without_it(tmp_path):
+    """``x0_orig`` of an older file is the starting point the caller gave.
+
+    A file saved before ``x0_orig`` existed carries the starting point in
+    the inference space of construction alone. When the run has warped
+    that space since, the map of the restored iteration is another one, and
+    the starting point has to come back through the map the run started
+    with.
+    """
+    D = 2
+    x0 = np.array([[3.5, 0.0]])
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        x0,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.array([[2.0, -3.0]]),
+        np.array([[4.0, 5.0]]),
+        options={"max_iter": 2, "display": "off"},
+        seed=1,
+    )
+    vbmc.optimize()
+    assert vbmc.iteration == 1
+
+    # The state a warp at the second iteration leaves: its map on the
+    # record of that iteration and on the live objects, the first record
+    # untouched.
+    warped = copy.deepcopy(vbmc.parameter_transformer)
+    warped.mu = np.zeros(D)
+    warped.delta = np.ones(D)
+    assert not np.allclose(warped.inverse(vbmc.x0), x0)
+    vbmc.iteration_history["vp"][1].parameter_transformer = warped
+    vbmc.vp.parameter_transformer = warped
+    vbmc.parameter_transformer = warped
+    vbmc.function_logger.parameter_transformer = warped
+    del vbmc.x0_orig
+    older = tmp_path / "older"
+    vbmc.save(older)
+
+    for iteration in (None, 0, 1):
+        loaded = VBMC.load(older, iteration=iteration)
+        assert np.allclose(loaded.x0_orig, x0)
+
+
 def test_vbmc_save_load_error_handling():
     vbmc = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
     with pytest.raises(FileExistsError) as err:

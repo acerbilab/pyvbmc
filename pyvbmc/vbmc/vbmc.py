@@ -3156,9 +3156,17 @@ class VBMC:
             vbmc.precomputed_location_count = 0
         if not hasattr(vbmc, "x0_orig"):
             # Instances saved without the starting points in the caller's
-            # coordinates: the map of the restored iteration is the best
-            # available inverse of the transformed copy they do carry.
-            vbmc.x0_orig = vbmc.parameter_transformer.inverse(vbmc.x0)
+            # coordinates carry the transformed copy that construction made,
+            # with the map the run started with. The record of the first
+            # iteration holds that map, since the inference space is never
+            # warped before the second one; an instance without a history
+            # holds it itself.
+            first_map = vbmc.parameter_transformer
+            if hasattr(vbmc, "iteration_history"):
+                recorded_vps = vbmc.iteration_history["vp"]
+                if recorded_vps is not None and len(recorded_vps) > 0:
+                    first_map = recorded_vps[0].parameter_transformer
+            vbmc.x0_orig = first_map.inverse(vbmc.x0)
         vbmc._configured_max_fun_evals = vbmc.options.get("max_fun_evals")
         vbmc._effective_max_fun_evals = (
             vbmc._configured_max_fun_evals - vbmc.initialization_cost
