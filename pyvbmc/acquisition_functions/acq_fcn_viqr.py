@@ -108,11 +108,12 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         :math:`w_a` are the importance weights, normalized over the
         hyperparameter samples and the importance points together (so the
-        reduction acquisition carries a constant :math:`\log N_s` that does
-        not move the minimizer) and uniform under the simple Monte Carlo of
-        VIQR. The reduction is non-negative, so ``"iqr_reduction"`` is
-        ``+inf`` where the candidate reduces the interquantile range at no
-        importance point.
+        reduction acquisition carries a constant, :math:`\log (N_s N_a)`
+        for :math:`N_s` hyperparameter samples and :math:`N_a` importance
+        points, that does not move the minimizer) and uniform under the
+        simple Monte Carlo of VIQR. The reduction is non-negative, so
+        ``"iqr_reduction"`` is ``+inf`` where the candidate reduces the
+        interquantile range at no importance point.
 
     References
     ----------
