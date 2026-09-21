@@ -997,6 +997,14 @@ class VariationalPosterior:
         Return all the active ``VariationalPosterior`` parameters
         flattened as a 1D (numpy) array, possibly transformed.
 
+        The parameters are first normalized in place: ``lambd`` is divided
+        by its root mean square and ``sigma`` multiplied by it, and the
+        weights are divided by their sum when they are being optimized.
+        The two scales enter the density through their product alone, so
+        the distribution is unchanged, as it is for weights that already
+        sum to one. A mode stored by a previous call of ``mode()`` is
+        discarded, since it may have moved.
+
         Parameters
         ----------
         raw_flag : bool, optional
@@ -1018,7 +1026,8 @@ class VariationalPosterior:
         if self.optimize_weights:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
-        # remove mode (at least this is done in Matlab)
+        # The mode may have moved.
+        self._mode = None
 
         if self.optimize_mu:
             theta = self.mu.ravel(order="F")
@@ -1206,7 +1215,10 @@ class VariationalPosterior:
             Maximum number of optimization runs from different starting points
             to find the mode. By default `n_opts` is the square root of the
             number of mixture components K, that is
-            :math:`n\_opts = \lceil \sqrt{K} \rceil`.
+            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call that gives
+            `n_opts` runs the search; a call that leaves it out returns the
+            mode found by an earlier call in the original space, if the
+            posterior still carries one.
         Returns
         -------
         mode: np.ndarray
@@ -1226,7 +1238,7 @@ class VariationalPosterior:
         transformed (unconstrained) space will generally be in different
         locations (even after applying the appropriate transformations).
         """
-        if orig_flag and self._mode is not None:
+        if orig_flag and n_opts is None and self._mode is not None:
             return self._mode
 
         def neg_log_pdf(x0, orig_flag=orig_flag):

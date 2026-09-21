@@ -620,6 +620,32 @@ def test_mode_exists_already():
     assert np.all(mode2 == vp._mode)
 
 
+def test_mode_is_recomputed_when_n_opts_is_given():
+    """A stored mode answers a call that gives no ``n_opts``; a call that
+    gives one runs the search."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp.sigma = np.ones((1, 2))
+    vp.rng = np.random.default_rng(20260921)
+    stale = np.full(3, 42.0)
+    vp._mode = stale.copy()
+
+    assert np.all(vp.mode() == stale)
+
+    computed = vp.mode(n_opts=1)
+    assert np.allclose(computed, 5.0, atol=1e-3)
+
+
+def test_get_parameters_clears_the_stored_mode():
+    """``get_parameters`` normalizes the parameters in place and drops the
+    stored mode, as ``misc/rescale_params.m:39-40`` does."""
+    vp = VariationalPosterior(3, 2, np.array([[5]]))
+    vp._mode = np.ones(3)
+
+    vp.get_parameters()
+
+    assert vp._mode is None
+
+
 def test_mode_no_orig_flag():
     vp = get_matlab_vp()
     assert np.all(
