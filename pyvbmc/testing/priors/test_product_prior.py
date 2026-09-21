@@ -132,10 +132,44 @@ def test_product_sample_rng():
 
 def test_product_sample_user_function_marginal():
     # A UserFunction marginal samples with the user's own callable, which
-    # takes only `n`; Product.sample must not pass it `rng`.
-    user_prior = UserFunction(lambda x: 0.0, lambda n: np.zeros((n, 1)), D=1)
-    prior = Product([user_prior, UniformBox(0.0, 1.0, D=1)])
+    # takes only `n`; Product.sample must not pass it `rng`. Its density is
+    # the user's own callable too, which takes one point and no keyword.
+    def log_marginal(x):
+        return -0.5 * float(x[0]) ** 2
+
+    user_prior = UserFunction(log_marginal, lambda n: np.zeros((n, 1)), D=1)
+    box = UniformBox(0.0, 1.0, D=1)
+    prior = Product([user_prior, box])
     rvs = prior.sample(4, rng=np.random.default_rng(0))
     assert rvs.shape == (4, 2)
     assert np.all(rvs[:, 0] == 0.0)
     assert np.all((rvs[:, 1] >= 0.0) & (rvs[:, 1] <= 1.0))
+
+    x = np.array([[-1.0, 0.25], [0.0, 0.5], [2.0, 0.75]])
+    log_pdf = prior.log_pdf(x)
+    assert log_pdf.shape == (3, 1)
+    for row in range(x.shape[0]):
+        expected = log_marginal(x[row, :1]) + box.log_pdf(x[row, 1:]).item()
+        assert np.isclose(log_pdf[row, 0], expected), f"Failed for row {row}!"
+
+
+def test_product_calls_a_user_function_marginal_once_per_point():
+    # A callable that tolerates a keyword would otherwise be called once,
+    # with the column of every point, and its single return value given to
+    # every row.
+    calls = []
+
+    def log_marginal(x, **kwargs):
+        calls.append(np.asarray(x).copy())
+        return -0.5 * float(x[0]) ** 2
+
+    prior = Product(
+        [UserFunction(log_marginal, D=1), UniformBox(0.0, 1.0, D=1)]
+    )
+    x = np.array([[-1.0, 0.25], [0.0, 0.5], [2.0, 0.75]])
+    log_pdf = prior.log_pdf(x)
+
+    assert len(calls) == x.shape[0]
+    assert all(call.shape == (1,) for call in calls)
+    assert np.allclose([call.item() for call in calls], x[:, 0])
+    assert np.allclose(log_pdf[:, 0], -0.5 * x[:, 0] ** 2)

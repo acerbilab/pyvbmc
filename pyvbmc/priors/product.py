@@ -85,7 +85,14 @@ class Product(Prior):
         n, D = x.shape
         log_pdf = np.zeros((n, D))
         for m, marginal in enumerate(self.marginals):
-            log_pdf[:, m] = marginal.log_pdf(x[:, m], keepdims=False)
+            if isinstance(marginal, UserFunction):
+                # `log_pdf` is the user's own callable, which takes one
+                # point as a one-dimensional array and returns its
+                # log-density.
+                for row in range(n):
+                    log_pdf[row, m] = marginal.log_pdf(x[row, m : m + 1])
+            else:
+                log_pdf[:, m] = marginal.log_pdf(x[:, m], keepdims=False)
         log_pdf = np.sum(log_pdf, axis=1, keepdims=True)
         return log_pdf
 

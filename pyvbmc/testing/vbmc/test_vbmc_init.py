@@ -17,6 +17,7 @@ from pyvbmc.priors import (
     SplineTrapezoidal,
     Trapezoidal,
     UniformBox,
+    UserFunction,
 )
 
 priors = [UniformBox, Trapezoidal, SplineTrapezoidal, SmoothBox, SciPy]
@@ -1672,3 +1673,38 @@ def test_vectorized_prior_rejects_complex_scalar_with_row_context():
     )
     with pytest.raises(ValueError, match="finite real scalar for row 0"):
         vbmc.log_joint(np.zeros((2, 2)))
+
+
+def test_log_joint_with_a_user_function_marginal():
+    """A list of one-dimensional priors may hold a `UserFunction`, whose
+    density is the user's own callable and takes one point."""
+    lb = np.array([[-np.inf, 0.0]])
+    ub = np.array([[np.inf, 1.0]])
+    plb = np.array([[-1.0, 0.2]])
+    pub = np.array([[1.0, 0.8]])
+    x0_array = np.array([[0.0, 0.5]])
+
+    def log_likelihood(x):
+        return np.sum(x**2 + x + 1)
+
+    def log_marginal(x):
+        return -0.5 * float(x[0]) ** 2
+
+    box = UniformBox(0.0, 1.0, D=1)
+    vbmc = VBMC(
+        log_likelihood,
+        x0_array,
+        lb,
+        ub,
+        plb,
+        pub,
+        prior=[UserFunction(log_marginal, D=1), box],
+    )
+
+    x = np.array([[0.3, 0.4]])
+    expected = (
+        log_likelihood(x)
+        + log_marginal(x[0, :1])
+        + box.log_pdf(x[0, 1:]).item()
+    )
+    assert np.isclose(vbmc.log_joint(x).item(), expected)
