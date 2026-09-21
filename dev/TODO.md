@@ -98,17 +98,17 @@ records its execution.
   decisions (gpyreg in scope, comparison against the latest MATLAB
   `master`, Opus reviewers, no MATLAB run unless a finding's disposition
   depends on one), the slice map, the reviewer brief and the worklog. Status
-  on 2026-09-21: waves 0 to 4 (the subsystems without a MATLAB counterpart,
-  the MATLAB changes since the port, the P2 comparison, P6, P1a, P1b, P5,
-  P8, P3 and P4) are reviewed, verified, ruled on and fixed, and merged into
-  `dev-next`; several of the fixes of waves 1 to 3 move default trajectories,
-  so the golden references and the production-reference pools describe the
-  code from before them. The passes of waves 3 and 4 were each checked
-  afterwards by fresh reviewers without the session's context, and what the
-  checks found is fixed and merged as well. Wave 5 (P7 and P9) is reviewed,
-  its reports saved, and waits for verification and rulings. G1, G2, the internal track of P2
-  and the third readers remain; the plan's pickup point says where to
-  resume.
+  on 2026-09-21: waves 0 to 5 (the subsystems without a MATLAB counterpart,
+  the MATLAB changes since the port, and every P slice on both tracks: P1a,
+  P1b and P2 to P9) are reviewed, verified, ruled on and fixed, and merged
+  into `dev-next`; several of the fixes of waves 1 to 3 and one of wave 5,
+  the balanced draw of the variational posterior, move default
+  trajectories, so the golden references and the production-reference pools
+  describe the code from before them. The passes of waves 2 to 5 were each
+  checked afterwards by fresh reviewers without the session's context, and
+  what the checks found is fixed and merged as well. G1, G2 and the third
+  readers remain, on the PI's decision; the plan's pickup point says where
+  to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
@@ -126,6 +126,21 @@ records its execution.
   existing fixtures stay bit-identical. To be done once the port review's
   remaining fixes are in, since slices G1, G2 and O4 may still move the GP
   fit (PI, 2026-09-21).
+
+- [ ] **A seeded gate run with a prior.** None of the four seeded runs that
+  gate the port review's fix passes
+  (`experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`)
+  is given a prior with `prior=`, so what a run does with a prior object
+  rests on unit tests: the check of its support against the hard bounds,
+  and the support that `SciPy` and `Product` read from their distribution
+  at every call. Add two runs: one with the FAQ's list of `uniform`
+  marginals built from the hard bounds, which reaches the slack of that
+  check, and one with a `SplineTrapezoidal` on them. To be done when the
+  golden references and the run pools are regenerated after the review's
+  remaining fixes, which is when the gate's records are made anew (PI,
+  2026-09-21; the wave-5
+  [ledger](experiments/port_review_20260919/verification/wave5.md), "The
+  independent check of the pass").
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the

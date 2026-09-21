@@ -1753,11 +1753,17 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   regenerated, and `dev/TODO.md` gets the line at the merge into `dev-next`.
   Carried to slice N2: `to_arviz` refuses a whole float such as `1e3`, which
   `sample` takes, against its own docstring.
-- [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
-  the internal track of P2, and nothing else.** The other waves are decided
-  by the PI after wave 5 is complete; they are listed under "After wave 5"
-  below for the record, and a session that picks up here starts none of
-  them and prepares none of them.
+- [x] 2026-09-21: wave 5 through CI, and merged (PI: go). Pushed on
+  `63a0808`; the branch smoke and the full matrix, nine cells, are green at
+  the first attempt. `dev-port-review` merged into `dev-next` (merge commit
+  `03a8d46`, on `dev-next` at `831acef`, which had not moved), the
+  review's status in `TODO.md` updated there with the item on a seeded gate
+  run with a prior, and `dev-port-review` fast-forwarded onto it.
+- [ ] **Pickup point (2026-09-21): wave 5, slices P7 and P9 with the
+  internal track of P2, is complete and merged.** The other waves are
+  decided by the PI; they are listed under "After wave 5" below for the
+  record, and a session that picks up here starts none of them and prepares
+  none of them without the PI's word.
 
   Where wave 5 stands. Five reviewers have run and their reports are saved
   verbatim under `experiments/port_review_20260919/reviews/`:
@@ -1767,7 +1773,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   reported to the PI", "wave 5 verified" and "wave 5 ruled and fixed"
   above); the ledger `verification/wave5.md` has the PI's ruling for each of
   its 40 rows, the fix commits, the gates and the independent check of the
-  pass with its fix round. The pass is not pushed.
+  pass with its fix round. The pass is pushed, green in CI and merged into
+  `dev-next`.
   The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
   `831acef`; that entry names the two files of P7 and P9 that changed in
   between. Two things the P7 reports raise are fixed by the wave-4 pass
@@ -1792,8 +1799,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
      records; then, on the PI's `/doublecheck`, the independent check of the
      pass by fresh reviewers, its fix round, the gates again and one fresh
      reviewer on the round (the worklog entry above).
-  4. On the PI's word: push, the branch smoke, the full matrix, the merge
-     into `dev-next` with the status line of `TODO.md` updated there.
+  4. Done on 2026-09-21, on the PI's word: the push, the branch smoke, the
+     full matrix, the merge into `dev-next` with the status line of
+     `TODO.md` updated there.
 
   State of the branch. `dev-port-review` and `dev-next` hold the wave-4 pass
   and the independent check of the wave-3 pass (merge commits `9d9c01b` and
@@ -1801,8 +1809,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   reported: the merge after the rewrite of `AGENTS.md`, which
   `plans/modernization-roadmap.md` records. The commits of wave 5 (its
   records, its fix pass, the merged `dev-port-review-w2check` and the fix
-  round of the independent check) follow it on `dev-port-review`, not
-  pushed; step 4 waits for the PI's word. No agent and no run is in flight.
+  round of the independent check) follow it, pushed, green in CI and merged
+  into `dev-next`, with `dev-port-review` fast-forwarded onto it. No agent
+  and no run is in flight.
   The reviewers' check scripts of waves 4 and 5, the gate records and the
   logs are on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
