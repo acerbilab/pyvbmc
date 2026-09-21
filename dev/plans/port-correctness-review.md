@@ -1260,22 +1260,22 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `search_acq_fcn` checked to be a list of acquisitions or strings, its
   description saying which strings are read; the state of the
   integer-variable search test seeded; three sentences of documentation.
-  Each ran the focused tests of what it touches, and on `601555e` the four
-  seeded runs are bit for bit those of `f873556`. The exact oracle check and
-  the default suite that were to follow on that head were stopped by the
-  machine for lack of memory before they started, and have not run on it
-  (`verification/wave4.md`, "Gates").
-- [ ] Pickup point (2026-09-21). Wave 4 is verified and fixed on
-  `dev-port-review`: seventeen commits of code, tests and the re-baselined
-  fixture after `f873556`, the last of them `601555e`, and the records of
-  waves 4 and 5 committed after it. The gates passed on `2dc98ce`, the
-  twelfth; the five commits after it, which follow the independent check,
-  ran their focused tests, and the four seeded runs are bit for bit those of
-  `f873556` on `601555e`, so the exact oracle check, the default suite and
-  the Torch and PyMC environments are owed on the head before anything
-  else. The branch is not pushed, so the smoke, the
-  full CI matrix and the merge into `dev-next` are still to come, on the PI's
-  word. Wave 5 is saved and waits for its report to the PI, its
+  Each ran the focused tests of what it touches. A first run of the gates on
+  the new head was stopped by the machine for lack of memory after the
+  seeded runs; the second completed.
+- [x] 2026-09-21: the wave-4 pass gated and through CI (PI: run the gates,
+  push, the smoke, and the full matrix if it is green). On `11fb766`, the
+  code of `601555e` with the records: the four seeded runs bit for bit those
+  of `f873556` (92 arrays); the exact oracle check, 11 of 11; the default
+  suite, 1687 passed and 58 skipped with no reruns; the Torch environment,
+  777 passed; the PyMC environment, 107 passed. Pushed; the branch smoke and
+  the full matrix, nine cells, are green at the first attempt.
+- [ ] Pickup point (2026-09-21). Wave 4 is verified, fixed, gated and
+  through CI on `dev-port-review`, pushed: seventeen commits of code, tests
+  and the re-baselined fixture after `f873556`, the last of them `601555e`,
+  and the records of waves 4 and 5 after it. The merge into `dev-next`, with
+  the status line of `TODO.md` updated there, waits for the PI's word.
+  Wave 5 is saved and waits for its report to the PI, its
   verification and the PI's rulings. Still to run: G1 with G2, both tracks;
   the internal track of P2, which wave 1 did not run (the wave-4 pass changed
   no line of `active_sample.py`, only `_real2int` and `string_to_acq`, which

@@ -259,10 +259,15 @@ rounding tests (39 passed), `test_vbmc_init.py` with `test_options.py` (194),
 the two tests of `315919a` three times over, and `test_options.py` with
 `test_string_to_acq.py` and `test_active_importance_sampling.py` (109). On
 `601555e` the four seeded runs are bit for bit those of `f873556` (92
-arrays). The exact oracle check and the default suite that were to follow
-them on that head were stopped by the machine for lack of memory before
-they started, and have not run on it. The branch is not pushed, and the CI
-matrix has not run on the pass.
+arrays). On `11fb766`, which adds the records to that code: the exact oracle
+check, 11 of 11; the whole default suite, 1687 passed and 58 skipped with no
+reruns; the Torch environment, 777 passed and 1 skipped; the PyMC
+environment, 107 passed.
+
+**CI.** On `11fb766` the branch smoke (Ubuntu, Python 3.12, with Torch) and
+the full matrix, nine cells, are green at the first attempt. The cells of
+macOS and Ubuntu compare the re-baselined reference of `acq_AcqFcnIMIQR`,
+computed on Windows, within the oracle's tolerance.
 
 ## The independent check of the pass
 
