@@ -1,11 +1,9 @@
-# 3D animation: status, open decisions and design record
+# 3D animation: status and design record
 
 `README.md` in this folder explains how the page works and how to run,
-regenerate and check it. This file records where the work stands, what is
-still to be decided, and why things are the way they are, including what was
-tried and set aside. The work lives on the branch `feat-3d-animation` and is
-kept apart from the repository's trackers (`dev/TODO.md`, the roadmap, the
-plans): nothing there refers to it.
+regenerate and check it; `TODO.md` lists what is left to do, in order. This
+file records where the work stands and why things are the way they are,
+including what was tried and set aside.
 
 ## Status
 
@@ -38,38 +36,6 @@ What nobody has verified:
 - `capture=1` end to end: the page's hook exists, no driver has called it.
 - The multisampled render target on a real GPU (it runs under software
   rendering).
-
-## Where to resume
-
-In this order; the first two are decisions for the project owner.
-
-1. **Look at the first 30 seconds in motion and settle what the sheet shows
-   after the first fit.** The displayed GP leaves out hyperparameter samples
-   thinner than two grid cells (README, "What the sheet is"). This departs
-   from the GP that VBMC averages, and was adopted without the owner's
-   explicit confirmation. The alternatives considered are listed below.
-2. **Decide how the documentation shows the page**: a link next to the
-   corner-plot GIF on the index page, or the page embedded as the hero. Then
-   publish the folder (`html_static_path` or `html_extra_path` in
-   `docsrc/source/conf.py`; the Markdown files here must stay excluded from
-   the sources) and link it from `docsrc/source/index.rst`. Publishing makes
-   the change noticeable to users, so it is the moment for an entry in
-   `CHANGELOG.md`; until then the changelog policy asks for none.
-3. **Write the recording script** for video and GIF (README hero, talks,
-   social): a driver that opens the page with `capture=1&hud=...`, calls
-   `vbmcCapture.frame(t, dt)` for successive frames from the start, grabs
-   each frame and encodes them. The development machine has Chrome and Node
-   but no `ffmpeg`; the `imageio-ffmpeg` package bundles one. Formats differ
-   by destination: a README GIF has to be a short, small excerpt, a talk
-   wants the whole loop as video.
-4. **Pacing.** The loop lasts about 95 s. The durations are the `seg(...)`
-   calls and the `DP` / `DF` arrays of the timeline section.
-5. Possibly **reconsider the seed** (see "Seeds").
-
-The branch is based on `5e5fa188`; `dev-next` has moved since. Outside this
-folder it touches `dev/scripts/export_animation_trace.py` (new),
-`dev/README.md` (one entry appended to the scripts list) and
-`docsrc/source/conf.py` (the exclusion of this folder's Markdown files).
 
 ## Decisions, and what was set aside
 

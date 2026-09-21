@@ -194,7 +194,6 @@ These are display decisions. Each has one home, named here.
 
 ## Status
 
-`NOTES.md` in this folder records where the work stands, the decisions that
-are still open (how the documentation shows the page, the recording script,
-the pacing), and why the page is the way it is, including what was tried
-and set aside.
+`TODO.md` in this folder lists what is left to do, in order, and the
+constraints on the work. `NOTES.md` records where the work stands and why
+the page is the way it is, including what was tried and set aside.
