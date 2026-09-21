@@ -573,13 +573,24 @@ two files were run again on it, 262 passed. The logs and the record of
 the seeded runs are kept on the machine that ran them
 (`dev/scripts/runs/LOCAL.md`).
 
+Two fixes followed, on the PI's word (2026-09-21), made by the orchestrator,
+each with a test seen to fail on the code before it.
+
+| Finding | Commit | What it does |
+|---|---|---|
+| R1-3, the part no ruling had covered | `6d492a2` | `moments` converted its count with `int()` before it called `sample`, so `vp.moments(N=2.5)` and `vp.kl_div(gauss_flag=True, N=2.5)`, which computes its moments through it, truncated the count where `sample`, `mtv` and `kl_div(gauss_flag=False)` refuse it. The count goes to `sample` as it is given; a whole number draws what it drew. As 1.0.4 had it (`variational_posterior.py:788` there) |
+| noted by agent E | `6dcd027` | `cache_frac`, the share of the whole search set that the starting cache gives, is checked to lie in `[0, 1]` with the five fractions, at construction and in `load`, outside their sum. Nothing checked it, in 1.0.4 (`active_sample.py:699-703` there) or in MATLAB (`private/activesample_vbmc.m:552-554`): above one, with a starting cache of more rows than the search has candidates, the search set came out larger than asked; a negative one made `N_cache` negative, which as the end of a slice takes all but that many rows of the cache (read in the code, not run; MATLAB's `randperm` is given the negative count there, and what it does with it was not looked up) |
+
+The changelog and the sheet have both. Gates on `6dcd027`: the four seeded
+runs bit for bit the record after the pass once more (92 arrays, 0 differ),
+the exact oracle check 11 of 11, and the modules of the files touched, 131 and
+347 passed. No caller in the package hands `moments` or `kl_div` a count that
+is not whole (`Nkl = int(1e5)`, `vbmc.py:1317`; `1e6` in the diagnostics).
+
 Left as they are:
 
-- R1-3, the rest of it. `to_arviz` refuses a whole float such as `1e3`, which
-  `sample` takes (slice N2, by the ruling). `vp.moments(N=2.5)` and
-  `vp.kl_div(gauss_flag=True, N=2.5)` truncate the count through `int(N)`
-  where `sample` refuses it; no ruling covers them and no commit changes
-  them.
+- R1-3, the part of slice N2, by the ruling: `to_arviz` refuses a whole
+  float such as `1e3`, which `sample` takes.
 - R1-6: the `0/0` row of `pdf`, where the transformed density and the
   Jacobian both underflow, is NaN in both branches. R1-7: `np.errstate`
   around the quotient hides NumPy's warning for a density that does overflow.
@@ -597,8 +608,7 @@ Left as they are:
   references did not move. R5-21: the sentence of `AGENTS.md` on
   `__deepcopy__` is true of `__deepcopy__` and does not say that `mode()`
   copies the generator on purpose.
-- Noted by the agents of the round: `cache_frac` above one overfills the
-  search set, no check refusing it (E); a support of the wrong length raises
+- Noted by the agents of the round: a support of the wrong length raises
   NumPy's broadcast error and not the check's own message (D); a pickle of a
   `SciPy` or `Product` prior written from now on carries no `a` and `b` in
   its dictionary, so release 1.0.4 cannot read them from it (D);

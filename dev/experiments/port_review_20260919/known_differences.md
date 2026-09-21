@@ -1013,7 +1013,9 @@ fact inherited from MATLAB.
 - Python: `pyvbmc/vbmc/vbmc.py: _validate_search_fraction_options` checks at
   construction and in `load` that `search_cache_frac`,
   `heavy_tail_search_frac`, `mvn_search_frac`, `hpd_search_frac` and
-  `box_search_frac` each lie in `[0, 1]` and sum to at most 1;
+  `box_search_frac` each lie in `[0, 1]` and sum to at most 1, and that
+  `cache_frac`, the share of the whole search set that the starting cache
+  gives, lies in `[0, 1]`;
   `pyvbmc/vbmc/active_sample.py: _get_search_points` (`capped_share`)
   gives each source its rounded share or what the sources before it
   left, whichever is smaller, in the order search cache, heavy-tailed,
@@ -1025,6 +1027,8 @@ fact inherited from MATLAB.
 - MATLAB: `private/activesample_vbmc.m:565-633` (`getSearchPoints`) checks
   nothing: fractions that add up to more than one give a search set longer
   than its vector of cache indices (`matlab_side_defects.md`, entry 35).
+  `CacheFrac` is unchecked too (`:552-554`): above one, with a starting
+  cache of more rows than `NSsearch`, the search set is larger than asked.
   The shares are rounded and not capped (`:627`,
   `Nvp = max(0, ...)`), so fractions that sum to one do the same where
   the rounded shares claim more than `Nrnd`: three quarter-shares of two
@@ -1775,10 +1779,10 @@ fact inherited from MATLAB.
 
 ### The mode search starts from draws of the posterior
 - Python: `pyvbmc/variational_posterior/variational_posterior.py: mode`
-  (`:1247`). It runs `n_opts = ceil(sqrt(K))` optimizations, each started at
+  (`:1255`). It runs `n_opts = ceil(sqrt(K))` optimizations, each started at
   the point of highest density among 1e5 draws of the posterior, the
   component means joining the candidates of the first; the draws come from a
-  copy of the posterior that holds a copy of its generator (`:1318-1322`), so
+  copy of the posterior that holds a copy of its generator (`:1326-1330`), so
   a call leaves the stream of `vp.rng`, which a run shares, where it found
   it. The result is stored on the posterior whenever the mode is asked for
   in the original space; `mode()` without `n_opts` returns a stored mode, a

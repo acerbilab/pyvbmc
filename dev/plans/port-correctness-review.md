@@ -1731,16 +1731,28 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   docstrings followed (`5c4fc87`). The report and its scripts are with those
   of R1 to R5; the ledger's section has what is left.
 
-  For the PI. The count of samples of `vp.moments(N=2.5)` and of
-  `vp.kl_div(gauss_flag=True, N=2.5)` is truncated through `int(N)` where
-  `vp.sample` refuses it (the rest of R1-3; no ruling covers it). W5-7 can
-  still be struck before the push. A `SciPy` or `Product` prior pickled from
-  now on carries no `a` and `b` in its dictionary, which concerns a file
-  written here and read by 1.0.4 alone. `cache_frac` above one overfills
-  the search set and no check refuses it. None of the seeded gate runs is
-  given a prior; one with `prior=` is a candidate for the gate of the
-  release. Carried to slice N2: `to_arviz` refuses a whole float such as
-  `1e3`, which `sample` takes, against its own docstring.
+  What the round left for the PI, and the decisions (2026-09-21). Two fixes,
+  made by the orchestrator, each with a test seen to fail first: `moments`
+  hands its count to `sample` as it is given, where its `int()` truncated a
+  fractional one, in `vp.moments` and in `vp.kl_div(gauss_flag=True)`
+  (`6d492a2`; the part of R1-3 that no ruling had covered), and `cache_frac`
+  is checked to lie in [0, 1] with the five fractions, at construction and in
+  `load` (`6dcd027`; above one it could overfill the search set, and a
+  negative one took all but so many rows of the starting cache); the
+  changelog, the sheet and the ledger have both. Gates on `6dcd027`: the four
+  seeded runs bit for bit the record after the pass (92 arrays, 0 differ),
+  the exact oracle check 11 of 11, the modules of the files touched. W5-7
+  stays: with it the worst case is one evaluation that was not needed,
+  without it a provided value recorded at a point that the grid or the
+  search box moved. A `SciPy` or `Product` prior pickled from now on carries
+  no `a` and `b` in its dictionary, which concerns a file written here and
+  read by 1.0.4 alone: no action. None of the seeded gate runs is given a
+  prior: one with `prior=` (the FAQ's list of `uniform` marginals built from
+  the hard bounds, which reaches the slack, and a `SplineTrapezoidal` on
+  them) joins the gate when the golden references and the run pools are
+  regenerated, and `dev/TODO.md` gets the line at the merge into `dev-next`.
+  Carried to slice N2: `to_arviz` refuses a whole float such as `1e3`, which
+  `sample` takes, against its own docstring.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"
