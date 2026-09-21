@@ -470,10 +470,10 @@ def active_sample(
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: the scalar and Nelder-Mead
-                searches, or CMA-ES's rejection path) returns a float; a
-                list of points (one CMA-ES generation) is evaluated in a
-                single batched call and returns a list.
+                One point (a 1-D array: the bounded scalar search, or
+                CMA-ES's rejection path) returns a float; a list of points
+                (one CMA-ES generation) is evaluated in a single batched
+                call and returns a list.
                 With integer variables the acquisition snaps its input to
                 the integer grid in place (`AbstractAcqFcn._real2int`), and
                 the pointwise call let that reach CMA-ES's own solution
@@ -606,17 +606,6 @@ def active_sample(
                     else:
                         xsearch_optim = np.atleast_1d(res.x)
                         f_val_optim = res.fun
-                elif search_optimizer == "Nelder-Mead":
-                    from scipy.optimize import minimize
-
-                    try:
-                        res = minimize(
-                            acq_fun, x0, method="Nelder-Mead", tol=tol_fun
-                        )
-                    except Exception as exc:
-                        _log_search_failure(logger, exc)
-                    else:
-                        xsearch_optim, f_val_optim = res.x, res.fun
                 else:
                     raise NotImplementedError("Not implemented yet")
 

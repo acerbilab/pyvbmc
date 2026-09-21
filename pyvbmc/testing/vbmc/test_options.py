@@ -415,9 +415,9 @@ def test_description_keeps_the_whole_comment_line(tmp_path):
     [
         (
             "search_optimizer",
-            'Local optimizer of the acquisition search: "cmaes", '
-            '"Nelder-Mead" or "none" (no local search); with one variable '
-            "a bounded scalar search is used instead of either",
+            'Local optimizer of the acquisition search: "cmaes" or "none" '
+            "(no local search); with one variable a bounded scalar search "
+            "is used whatever the option holds",
         ),
         (
             "stable_gp_samples",

@@ -15,16 +15,20 @@ def log_joint(x):
     return -0.5 * np.sum(x**2)
 
 
-def _vbmc(**kwargs):
+def _vbmc_of_dimension(dimension, **kwargs):
     return VBMC(
         log_joint,
-        np.zeros((1, D)),
-        np.full((1, D), -10.0),
-        np.full((1, D), 10.0),
-        np.full((1, D), -1.0),
-        np.full((1, D), 1.0),
+        np.zeros((1, dimension)),
+        np.full((1, dimension), -10.0),
+        np.full((1, dimension), 10.0),
+        np.full((1, dimension), -1.0),
+        np.full((1, dimension), 1.0),
         **kwargs,
     )
+
+
+def _vbmc(**kwargs):
+    return _vbmc_of_dimension(D, **kwargs)
 
 
 def test_unknown_name_in_the_options_dictionary_raises():
@@ -69,6 +73,12 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"gp_hyp_sampler": "covsample"}, NotImplementedError, "slicesample"),
         ({"noise_shaping": True}, NotImplementedError, "noise_shaping"),
         ({"search_acq_fcn": "AcqFcnLog()"}, ValueError, "search_acq_fcn"),
+        (
+            {"search_optimizer": "Nelder-Mead"},
+            ValueError,
+            "search_optimizer",
+        ),
+        ({"search_optimizer": "bounded"}, ValueError, "search_optimizer"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -86,3 +96,56 @@ def test_new_options_are_checked_as_at_construction(
     with pytest.raises(error) as at_load:
         VBMC.load(saved, new_options=new_options)
     assert at_load.value.args[0] == at_construction.value.args[0]
+
+
+@pytest.mark.parametrize("value", ["Nelder-Mead", "bounded", "fmincon", ""])
+def test_a_search_optimizer_outside_the_two_values_is_refused(value):
+    """``search_optimizer`` names one of the two local searches of the
+    acquisition; every other value is refused, the internal ``"bounded"``
+    of the one-dimensional search among them."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"search_optimizer": value})
+    message = execinfo.value.args[0]
+    assert "search_optimizer" in message
+    assert "'cmaes'" in message and "'none'" in message
+
+
+@pytest.mark.parametrize("value", ["cmaes", "none"])
+def test_the_two_search_optimizers_are_accepted(value):
+    assert (
+        _vbmc(options={"search_optimizer": value}).options["search_optimizer"]
+        == value
+    )
+
+
+def _saved_carrying_nelder_mead(tmp_path, dimension, name):
+    """A file whose stored options hold the value that release 1.0.4 wrote
+    into every one-dimensional run."""
+    vbmc = _vbmc_of_dimension(dimension)
+    vbmc.options.__setitem__("search_optimizer", "Nelder-Mead", force=True)
+    saved = tmp_path.joinpath(name)
+    vbmc.save(saved)
+    return saved
+
+
+def test_a_one_dimensional_run_that_stored_nelder_mead_loads(tmp_path):
+    """With one variable the option has no effect, the acquisition being
+    searched by a bounded scalar method, so the stored value stands for the
+    default and the file loads with it."""
+    saved = _saved_carrying_nelder_mead(tmp_path, 1, "one.pkl")
+    assert VBMC.load(saved).options["search_optimizer"] == "cmaes"
+
+
+def test_a_wider_run_that_stored_nelder_mead_is_refused(tmp_path):
+    """With more than one variable the value was the caller's own, and it
+    named a search PyVBMC does not run."""
+    saved = _saved_carrying_nelder_mead(tmp_path, 2, "two.pkl")
+    with pytest.raises(ValueError) as execinfo:
+        VBMC.load(saved)
+    assert "new_options" in execinfo.value.args[0]
+
+
+def test_a_stored_nelder_mead_that_new_options_replaces_loads(tmp_path):
+    saved = _saved_carrying_nelder_mead(tmp_path, 2, "two.pkl")
+    vbmc = VBMC.load(saved, new_options={"search_optimizer": "cmaes"})
+    assert vbmc.options["search_optimizer"] == "cmaes"

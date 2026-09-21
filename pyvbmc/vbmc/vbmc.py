@@ -3063,6 +3063,16 @@ class VBMC:
             )
         if "show_tips" not in vbmc.options:
             vbmc.options.__setitem__("show_tips", True, force=True)
+        if (
+            vbmc.D == 1
+            and vbmc.options.get("search_optimizer") == "Nelder-Mead"
+        ):
+            # Release 1.0.4 wrote this value into the options of every
+            # one-dimensional run, whether or not the caller asked for it,
+            # and the value has no effect there: a problem of one dimension
+            # is searched by a bounded scalar method. The stored value
+            # stands for the default such a run was made with.
+            vbmc.options.__setitem__("search_optimizer", "cmaes", force=True)
 
         calibration_override = None
         has_calibration_override = (
@@ -3559,6 +3569,7 @@ class VBMC:
         self._validate_noise_shaping_option()
         self._validate_gp_hyp_sampler_option()
         self._validate_search_acq_fcn_option()
+        self._validate_search_optimizer_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3641,6 +3652,26 @@ class VBMC:
                 "private/activeimportancesampling_vbmc.m, lines 57 to 92) "
                 "is not ported."
             )
+
+    def _validate_search_optimizer_option(self):
+        """Check the local optimizer of the acquisition search."""
+        value = self.options.get("search_optimizer", "cmaes")
+        if value in ("cmaes", "none"):
+            return
+        message = (
+            "The option 'search_optimizer' must be 'cmaes' or 'none', not "
+            f"{value!r}."
+        )
+        if value == "Nelder-Mead":
+            message += (
+                " The Nelder-Mead search of the acquisition function is "
+                "not available, and a problem of one dimension is searched "
+                "by a bounded scalar method whatever the option holds. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'search_optimizer': "
+                "'cmaes'})."
+            )
+        raise ValueError(message)
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""
