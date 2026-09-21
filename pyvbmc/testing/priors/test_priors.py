@@ -3,6 +3,8 @@ from itertools import product
 
 import numpy as np
 import pytest
+import scipy as sp
+import scipy.stats
 from scipy.integrate import nquad
 from scipy.stats import beta, multivariate_normal, uniform
 
@@ -234,6 +236,122 @@ def test_sample():
 
         lb, ub = prior.support()
         assert np.all(samples > lb) and np.all(samples < ub)
+
+
+# Bounds, pivots and scales that differ in every dimension, so that a
+# sampler which mixed up its coordinates would show.
+_A = np.array([-3.0, 0.0, 10.0])
+_U = np.array([-2.0, 0.5, 11.0])
+_V = np.array([1.0, 0.75, 18.0])
+_B = np.array([2.0, 4.0, 20.0])
+_SCALE = np.array([0.2, 1.0, 5.0])
+
+
+def _uniform_box_cdf(x, a, b):
+    return np.clip((x - a) / (b - a), 0.0, 1.0)
+
+
+def _trapezoidal_cdf(x, a, u, v, b):
+    """The integral of the trapezoidal density, ramp by ramp."""
+    nf = 0.5 * (b - a + v - u)
+    mass_left = (u - a) / (2 * nf)
+    mass_plateau = mass_left + (v - u) / nf
+    left = (x - a) ** 2 / (2 * (u - a) * nf)
+    plateau = mass_left + (x - u) / nf
+    right = mass_plateau + ((b - v) ** 2 - (b - x) ** 2) / (2 * (b - v) * nf)
+    return np.select(
+        [x < a, x < u, x < v, x < b],
+        [0.0, left, plateau, right],
+        default=1.0,
+    )
+
+
+def _spline_trapezoidal_cdf(x, a, u, v, b):
+    """The integral of the spline-trapezoidal density. Its ramp is
+    ``-2 z**3 + 3 z**2``, whose integral over ``z`` is ``-z**4 / 2 + z**3``,
+    one half over the whole ramp."""
+    nf = 0.5 * (v - u + b - a)
+    mass_left = (u - a) / (2 * nf)
+    mass_plateau = mass_left + (v - u) / nf
+    z_left = (x - a) / (u - a)
+    left = (u - a) / nf * (-(z_left**4) / 2 + z_left**3)
+    plateau = mass_left + (x - u) / nf
+    z_right = 1 - (x - v) / (b - v)
+    right = mass_plateau + (b - v) / nf * (
+        0.5 - (-(z_right**4) / 2 + z_right**3)
+    )
+    return np.select(
+        [x < a, x < u, x < v, x < b],
+        [0.0, left, plateau, right],
+        default=1.0,
+    )
+
+
+def _smooth_box_cdf(x, a, b, scale):
+    """The integral of the smooth-box density: half a Gaussian, a plateau,
+    and half a Gaussian."""
+    height = 1 / ((b - a) + np.sqrt(2 * np.pi) * scale)
+    tail_mass = height * np.sqrt(2 * np.pi) * scale
+    left = tail_mass * sp.stats.norm.cdf((x - a) / scale)
+    plateau = tail_mass / 2 + height * (x - a)
+    right = (
+        tail_mass / 2
+        + height * (b - a)
+        + tail_mass * (sp.stats.norm.cdf((x - b) / scale) - 0.5)
+    )
+    return np.select([x < a, x <= b], [left, plateau], default=right)
+
+
+_SAMPLER_CASES = [
+    (
+        UniformBox(_A, _B),
+        lambda x, d: _uniform_box_cdf(x, _A[d], _B[d]),
+    ),
+    (
+        Trapezoidal(_A, _U, _V, _B),
+        lambda x, d: _trapezoidal_cdf(x, _A[d], _U[d], _V[d], _B[d]),
+    ),
+    (
+        SplineTrapezoidal(_A, _U, _V, _B),
+        lambda x, d: _spline_trapezoidal_cdf(x, _A[d], _U[d], _V[d], _B[d]),
+    ),
+    (
+        SmoothBox(_A, _B, _SCALE),
+        lambda x, d: _smooth_box_cdf(x, _A[d], _B[d], _SCALE[d]),
+    ),
+]
+_SAMPLER_IDS = ["UniformBox", "Trapezoidal", "SplineTrapezoidal", "SmoothBox"]
+_SAMPLER_SEED = 20260926
+_SAMPLER_N = 20000
+
+
+@pytest.mark.parametrize("prior, cdf", _SAMPLER_CASES, ids=_SAMPLER_IDS)
+def test_sampler_draws_from_its_own_distribution(prior, cdf):
+    """Each marginal of a draw is compared with the distribution function
+    of the family, derived from the density by hand."""
+    samples = prior.sample(
+        _SAMPLER_N, rng=np.random.default_rng(_SAMPLER_SEED)
+    )
+    assert samples.shape == (_SAMPLER_N, 3)
+    for d in range(3):
+        p = sp.stats.kstest(samples[:, d], lambda x, d=d: cdf(x, d)).pvalue
+        assert p > 1e-3, f"Failed for column {d} (p = {p})!"
+
+
+@pytest.mark.parametrize(
+    "cdf",
+    [case[1] for case in _SAMPLER_CASES[1:3]],
+    ids=_SAMPLER_IDS[1:3],
+)
+def test_the_sampler_check_sees_a_uniform_draw(cdf):
+    """Uniform draws on the bounding box are what the rejection sampler of
+    either trapezoid would give if its rejection test never fired, and the
+    check refuses them."""
+    rng = np.random.default_rng(_SAMPLER_SEED)
+    for d in range(3):
+        samples = rng.uniform(_A[d], _B[d], size=_SAMPLER_N)
+        p = sp.stats.kstest(samples, lambda x, d=d: cdf(x, d)).pvalue
+        assert p < 1e-3, f"Failed for column {d} (p = {p})!"
 
 
 def test__str__and__repr__():
