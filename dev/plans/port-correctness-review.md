@@ -1518,6 +1518,60 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   hedge, a search cache through `active_sample`, or the initial design with
   an integer variable. Ten defects of the MATLAB side are listed, of which
   `msmoothboxrnd` changes what a MATLAB user draws.
+- [x] 2026-09-21: wave 5 verified (PI: go ahead). The ledger is
+  `experiments/port_review_20260919/verification/wave5.md`, 40 rows from the
+  54 findings of the five reports, each with a proposed disposition and an
+  empty column for the PI's; the orchestrator verified the eight rows that
+  can change what a run computes (scripts `verification/scripts/wave5_A*`),
+  and three read-only Opus verifiers, one per slice, the others
+  (`wave5_P7.md`, `wave5_P9.md`, `wave5_P2.md`, saved verbatim, with their 43
+  scripts). The reports describe the code as it is, with the corrections
+  that the ledger's last section lists, and one row alone touches a run at
+  the default options. The sweep after the verifiers was clean in the three
+  repositories.
+
+  What the verification settled. The remainder of the balanced draw (W5-1)
+  is a port discrepancy from 2021 that biases the count of a component by up
+  to about one draw at any `N`. The corrected line moves no oracle reference
+  and the acquired point of no stored state; in the four seeded gate runs it
+  moves `sKL` and `r_index` of all four in the fifth digit, leaves three
+  otherwise bit for bit and moves the noisy Rosenbrock run altogether, so it
+  is a moving fix without statistical effect. `kl_div_mvn` on raw
+  determinants (W5-2) is shared with `mvnkl.m`: at `D = 20` a posterior SD
+  below 8e-9 gives `sKL = inf` and a run that is never stable, one above 5e7
+  gives NaN, which `max(0, nan)` turns into `sKL = 0`. Both entropies, not
+  the Monte Carlo one alone, are NaN at a weight of exactly zero (W5-3), out
+  of a run's reach. The guard of `kl_div(gauss_flag=False)` against infinite
+  densities is a regression of 2022 (W5-4), and the two reviewers'
+  disagreement on its reach is settled: under a probit transform no density
+  is infinite up to an SD of 8 in the inference space, and they appear from
+  10. The rounding of a half to even (W5-6) has no tie at the defaults; the
+  same convention stands at twelve sites where MATLAB has `round`. Of the
+  two P2 findings that can misplace an evaluation, the value of a cached
+  starting point recorded at a moved point (W5-7) is shared with MATLAB, its
+  clip out of reach, the search box holding the plausible box with a margin
+  of 0.385 box widths through a warp; the point pooled into a row that is off
+  (W5-8) is W3-20, which the PI ruled to leave, reached by a second route.
+  Among the verifiers' rows: three properties that the internal P7 report
+  read as Python's are MATLAB's; the mode search, the mask of `pdf` outside
+  the bounds, `kde_1d` and the argument checks of the trapezoid priors are
+  deliberate differences that the sheet lacks, and its entry on `qtrapz` is
+  wrong; the MATLAB fix of the weight gradient of the Monte Carlo entropy is
+  present, to 1.8e-15; most of the minor P2 findings are MATLAB's own lines;
+  `acq_hedge=True` raises at the first acquisition and MATLAB's own default
+  fails alike; `search_cache_frac` above 0.25 raises at the second
+  active-sampling step, which the fix of wave 1 for the first step had left
+  standing; the documentation of `integer_vars` contradicts itself, the FAQ
+  saying that integer parameters are not supported. Twelve defects of the
+  MATLAB side are new and five are shared; the one that changes what a
+  MATLAB user draws, `msmoothboxrnd.m` for `D > 1`, is entry 1 of
+  `matlab_side_defects.md` already, and is now measured on a transcription.
+
+  Ruled so far (PI, 2026-09-21): the Nelder-Mead value of `search_optimizer`
+  goes, with its code (W5-25). No default path has reached it since wave 1
+  took the one-dimensional search off it. `v1.0.4` wrote the value into the
+  options of every one-dimensional run, so `load` has to meet it in a saved
+  object; the row has the orchestrator's proposal.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"
@@ -1528,8 +1582,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   verbatim under `experiments/port_review_20260919/reviews/`:
   `P7_internal.md` (15 findings), `P7_comparison.md` (11), `P9_internal.md`
   (11), `P9_comparison.md` (7) and `P2_internal.md` (10). The wave is
-  reported to the PI (the worklog entry "wave 5 reported to the PI" above
-  holds the report); nothing is verified and no finding has a disposition.
+  reported to the PI and verified (the worklog entries "wave 5 reported to
+  the PI" and "wave 5 verified" above); the ledger
+  `verification/wave5.md` has a proposed disposition for each of its 40 rows
+  and the PI's ruling for one, W5-25.
   The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
   `831acef`; that entry names the two files of P7 and P9 that changed in
   between. Two things the P7 reports raise are fixed by the wave-4 pass
@@ -1547,16 +1603,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   1. Done on 2026-09-21: the wave reported to the PI with enough context to
      judge the findings. The PI decides what follows (working rule, "one
      wave at a time").
-  2. On the PI's word, verify. The orchestrator takes the findings that can
-     change what a run computes, with scripts under
-     `verification/scripts/wave5_*`; read-only Opus verifiers, one per
-     slice, take the rest by the verifier brief of wave 4 (their reports
-     saved verbatim as `verification/wave5_P2.md`, `wave5_P7.md` and
-     `wave5_P9.md`). The verifier of P2 also reads the slice's comparison
-     report and its rows in `verification/wave1_M_P2.md`, so that a finding
-     the wave-1 pass ruled on is not ruled on twice. The ledger is
-     `verification/wave5.md`, rows W5-n, with a proposed disposition per
-     row and a column for the PI's.
+  2. Done on 2026-09-21: the wave verified, and the ledger
+     `verification/wave5.md` written with a proposed disposition per row.
+     The PI rules on the rows; the rulings go into the ledger's last column.
   3. On the PI's rulings, fix: agents on worktrees cut at the head of
      `dev-port-review`, one finding per commit with a test written against
      the contract; the orchestrator reviews and cherry-picks. Then the
