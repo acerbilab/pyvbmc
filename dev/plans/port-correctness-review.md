@@ -353,7 +353,11 @@ fix phase can be run from this file:
   where a script may need it, and one line in the section's "Upgrading from"
   list for a change that can stop such a script or change what it returns. A
   fix to a feature that no release has shipped goes into that feature's
-  entry.
+  entry. A fix agent proposes its sentences against the branch it worked
+  on, so the orchestrator checks each against the tag of the last release
+  before writing it (`git show v1.0.4:<path>`): a defect that an earlier
+  commit of the same pass brought in never reached a user, and the
+  sentence that reports its fix describes nothing a user can notice.
 - After a fix pass, the full CI matrix on the branch, dispatched once the
   branch smoke is green (`gh workflow run tests.yml --ref dev-port-review`).
   The smoke that a push starts is one cell, Ubuntu with the newest Python, and
@@ -456,9 +460,17 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   last string of the agent's own output that holds the report's title.
   `experiments/port_review_20260919/extract_report.py` does that and writes
   the file under a given header (`<agent.jsonl> <title substring> <header
-  file> <out file>`). The `tasks/<id>.output` file that the harness names
+  file> <out file>`). An agent that hands its report back through a tool
+  call and then closes with a short message under the same title leaves
+  two such strings, the report first: the script lists every candidate
+  with its length, and a fifth argument names the one to take (`0` for the
+  first), so the length printed is checked against the report received.
+  The `tasks/<id>.output` file that the harness names
   when it launches an agent stayed empty in wave 3; the transcript is the
   source.
+- A ruling that leaves an item to a slice leaves it to a pass that exists:
+  the worklog says whether that slice still has one ahead. An item left to
+  a slice that has been taken gets its own line in `TODO.md`, or is fixed.
 - The pre-commit hooks rewrite files (formatting, unused imports) and then
   abort the commit; the rewritten files are staged again and the commit is
   repeated.
@@ -1777,74 +1789,92 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   commit `1563053`, on `dev-next` at `e71c667`, which holds the item of
   `TODO.md` on the branch `feat-3d-animation`), and `dev-port-review`
   fast-forwarded onto it.
-- [ ] **Pickup point (2026-09-21): wave 5, slices P7 and P9 with the
-  internal track of P2, is complete and merged.** The other waves are
-  decided by the PI; they are listed under "After wave 5" below for the
-  record, and a session that picks up here starts none of them and prepares
-  none of them without the PI's word.
+- [ ] **Pickup point (2026-09-21): the next task is wave 6, the two gpyreg
+  slices G1 and G2 on both tracks (four reviewers), by the PI's decision of
+  2026-09-21.** Nothing of it has started: no reviewer has run and no brief
+  is written. The session launches the reviewers on the PI's word in that
+  session, and starts no other wave.
 
-  Where wave 5 stands. Five reviewers have run and their reports are saved
-  verbatim under `experiments/port_review_20260919/reviews/`:
-  `P7_internal.md` (15 findings), `P7_comparison.md` (11), `P9_internal.md`
-  (11), `P9_comparison.md` (7) and `P2_internal.md` (10). The wave is
-  reported to the PI, verified, ruled and fixed (the worklog entries "wave 5
-  reported to the PI", "wave 5 verified" and "wave 5 ruled and fixed"
-  above); the ledger `verification/wave5.md` has the PI's ruling for each of
-  its 40 rows, the fix commits, the gates and the independent check of the
-  pass with its fix round. The pass is pushed, green in CI and merged into
-  `dev-next`.
-  The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
-  `831acef`; that entry names the two files of P7 and P9 that changed in
-  between. Two things the P7 reports raise are fixed by the wave-4 pass
-  already: `fess` taking the pair that `vp.sample` returns for the array
-  (`dd3d1d3`, W4-5), and the proposal density of the importance sampling
-  raising on a log density of `-inf` (`799852a`, W4-7). Two sites round a
-  half to even where MATLAB rounds away from zero, the built-in `round` of
-  `stats/get_hpd.py` and `np.round` at `active_sample.py:994`, and both P7
-  reports raise the first; the wave-4 pass made `_real2int` round as MATLAB
-  does from the exact fractional part (`70ce067`), which is the expression
-  to reuse if the PI rules the same way there.
+  Why this wave. G1 and G2 are the only slices that no reviewer has read,
+  and what they find can still move the GP fit, on which the stored oracle
+  state at uncertainty level 1 and the regeneration of the golden references
+  wait (`TODO.md`). The third readers O1 to O4 follow as wave 7: they go over
+  code that two reviewers and the finite-difference gates have covered, and
+  O4, the GP marginal likelihood and its gradient, overlaps G1, so it reads
+  that code after the fixes of G1.
 
-  What to do, in this order, as waves 3 and 4 went (the worklog entries of
-  wave 4 and `verification/wave4.md` are the model):
-  1. Done on 2026-09-21: the wave reported to the PI with enough context to
-     judge the findings. The PI decides what follows (working rule, "one
-     wave at a time").
-  2. Done on 2026-09-21: the wave verified, and the ledger
-     `verification/wave5.md` written with a proposed disposition per row.
-     The PI rules on the rows; the rulings go into the ledger's last column.
-  3. Done on 2026-09-21: the rulings, the fixes, the local gates and the
-     records; then, on the PI's `/doublecheck`, the independent check of the
-     pass by fresh reviewers, its fix round, the gates again and one fresh
-     reviewer on the round (the worklog entry above).
-  4. Done on 2026-09-21, on the PI's word: the push, the branch smoke, the
-     full matrix, the merge into `dev-next` with the status line of
-     `TODO.md` updated there.
+  What the reviewers read. gpyreg in `../gpyreg`: the code under `gpyreg/` is
+  that of the pinned revision `9e70e6b` (the checkout stands at `fdbafdf`,
+  three commits further, which change workflow files alone). MATLAB's
+  `gplite` in `../vbmc/gplite/` at `396d649`. The rows G1 and G2 under
+  "Slices" name the files and carry two first questions: whether
+  `f_min_fill.py` has the `uuinv` fix of `1d1f20d`, and whether gpyreg's
+  prediction has the predictive log-density with the total predictive
+  variance that `gplite_pred.m` computes since `68a197b`. The brief is the
+  section "Reviewer brief", with its warning that gpyreg's `AGENTS.md`
+  misdescribes three MATLAB mappings. The comparison reviewers receive
+  `known_differences.md`: its citations into `pyvbmc/` are carried to
+  `f9ab814`, since which no file under `pyvbmc/` has changed, and its two
+  citations into gpyreg, which `refresh_citations.py` does not carry, were
+  read by hand on 2026-09-21 and hold at the pin.
 
-  State of the branch. `dev-port-review` and `dev-next` hold the wave-4 pass
-  and the independent check of the wave-3 pass (merge commits `9d9c01b` and
-  `5acd382`), and both stood at `831acef`, pushed, when the wave was
-  reported: the merge after the rewrite of `AGENTS.md`, which
-  `plans/modernization-roadmap.md` records. The commits of wave 5 (its
-  records, its fix pass, the merged `dev-port-review-w2check` and the fix
-  round of the independent check) follow it, pushed, green in CI and merged
-  into `dev-next`, with `dev-port-review` fast-forwarded onto it. No agent
-  and no run is in flight.
-  The reviewers' check scripts of waves 4 and 5, the gate records and the
-  logs are on the orchestrator's machine only
-  (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
-  writes its own checks and may use the scripts as leads. The golden
-  references and the run pools describe the code from before the moving
-  fixes of waves 1 to 3 and are regenerated once, after the review's
-  remaining fixes.
-- [ ] After wave 5, on the PI's decision and not before: G1 with G2, both
-  tracks (4 reviewers); O1 to O4. With the internal track of P2, which wave
-  1 had left out and wave 5 took in, every P slice has both reports. Before
-  the next comparison reviewers receive `known_differences.md`, its Python
-  line citations are carried to the present lines again
+  What to do, in this order, as waves 4 and 5 went (the worklog entries of
+  wave 5 and `verification/wave5.md` are the model):
+  1. Launch the four reviewers (G1 internal, G1 comparison, G2 internal, G2
+     comparison): fresh general-purpose Opus agents, read-only, each with a
+     scratchpad directory of its own. Save each report verbatim under
+     `experiments/port_review_20260919/reviews/` with `extract_report.py`,
+     then `git status --porcelain --ignored` in the three repositories.
+  2. Report the wave to the PI with enough context to judge the findings.
+     The PI decides what follows (working rule, "one wave at a time").
+  3. On the PI's word: the verification (the orchestrator takes the findings
+     that can change a run, read-only Opus verifiers the rest) and the
+     ledger `verification/wave6.md` with a proposed disposition per row; the
+     PI rules on the rows. The candidate from outside the slices, below
+     (`load(new_options=)`), goes to a verifier of this wave.
+  4. On the rulings: the fixes, one finding per commit with a test seen to
+     fail on the code before it. A fix to gpyreg goes to gpyreg on a branch
+     and a pull request of its own, passes gpyreg's suite, and moves
+     `GPYREG_PIN` and, after a gpyreg release, the minimum version in
+     `pyproject.toml` ("Fixes and gates"). No fix of the review has touched
+     gpyreg yet, and the harness's isolated worktree is one of this
+     repository: how an agent works on gpyreg (a worktree of `../gpyreg`
+     made by hand, or the orchestrator alone) is settled with the PI before
+     the first such fix. Then the gates, the sheet, `matlab_side_defects.md`,
+     the changelog and the worklog.
+  5. After each of the passes of waves 2 to 5 the PI asked for an independent
+     check by fresh reviewers (`/doublecheck`), and after wave 5 for one more
+     fresh reviewer on the fix round of that check. Each found errors that
+     the session had not, the orchestrator's own among them. Expect the same.
+  6. On the PI's word: the push, the branch smoke, the full matrix, the merge
+     into `dev-next` with the status line of `TODO.md` updated there.
+
+  State of the branch. `dev-port-review` and `dev-next` are one commit,
+  pushed and green in CI: they hold waves 0 to 5 with the independent checks
+  of the passes of waves 2 to 5. No agent and no run is in flight, and no
+  worktree of a fix agent is left. The branch name `dev-port-review-w2check`
+  is left, fully merged; removing it is the PI's call.
+  The reviewers' check scripts of waves 4 and 5, the raw reports of the six
+  reviewers of the independent check of wave 5, the gate records and the
+  logs are on the orchestrator's machine only (`dev/scripts/runs/LOCAL.md`,
+  "Port correctness review"); a verifier writes its own checks and may use
+  the scripts as leads. The record that a pass of wave 6 is compared with is
+  there too, `wave5_gates/after_pass_23d962a1.npz`, which every head since
+  has matched bit for bit; on another machine the four seeded runs are made
+  anew on the starting commit
+  (`verification/scripts/wave2_fixpass_gate_runs.py` with `--out`). The
+  golden references and the run pools describe the code from before the
+  moving fixes of waves 1 to 3 and of wave 5, and are regenerated once,
+  after the review's remaining fixes.
+- [ ] After wave 6, on the PI's decision and not before: O1 to O4, the third
+  readers, with O4 after the fixes of G1. With the internal track of P2,
+  which wave 1 had left out and wave 5 took in, every P slice has both
+  reports. Before comparison reviewers receive `known_differences.md`, its
+  Python line citations are carried to the present lines again
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-21): every fix pass moves them. The stored oracle state at
-  uncertainty level 1 is an item of `TODO.md` (PI, 2026-09-21).
+  uncertainty level 1 and the seeded gate run with a prior are items of
+  `TODO.md` (PI, 2026-09-21).
 - [ ] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values

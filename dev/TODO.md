@@ -106,9 +106,10 @@ records its execution.
   trajectories, so the golden references and the production-reference pools
   describe the code from before them. The passes of waves 2 to 5 were each
   checked afterwards by fresh reviewers without the session's context, and
-  what the checks found is fixed and merged as well. G1, G2 and the third
-  readers remain, on the PI's decision; the plan's pickup point says where
-  to resume.
+  what the checks found is fixed and merged as well. Next, by the PI's
+  decision of 2026-09-21: wave 6, the two gpyreg slices (G1 with G2, both
+  tracks); the third readers (O1 to O4) after it. The plan's pickup point
+  says where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
