@@ -16,7 +16,9 @@ relative to the PyVBMC repository root. Paths beginning `gpyreg/` are
 relative to the gpyreg repository root. Bare MATLAB paths (`vbmc.m`,
 `misc/...`, `acq/...`, `gplite/...`, `private/...`, `shared/...`,
 `utils/...`, `ent/...`) are relative to the MATLAB VBMC repository root at
-the comparison revision `396d649`.
+the comparison revision `396d649`. Citations of PyVBMC's `AGENTS.md` by
+section name or by quotation refer to that file at revision `feadb6fe`; the
+file was rewritten afterwards and does not hold every section cited.
 
 **Kinds.** `deliberate change` (both sides implement the thing, differently
 and on purpose), `unported feature` (MATLAB has it, Python never did),
