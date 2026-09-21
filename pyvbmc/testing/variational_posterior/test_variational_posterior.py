@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats import kl_div_mvn
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -701,6 +702,39 @@ def test_kl_div_two_vp_samples_gauss_flag():
     samples, _ = vp2.sample(int(1e6))
     kl_divs = vp.kl_div(samples=samples, gauss_flag=True, N=int(1e6))
     assert np.all(np.isclose(np.ones(2) * 0.1244, kl_divs, atol=1e-2))
+
+
+def test_kl_div_samples_mean_is_taken_per_coordinate():
+    """The moments of the given samples are those of the sample matrix:
+    one mean per coordinate, as ``mean(vp2,1)`` in ``vbmc_kldiv.m:63``."""
+    D = 3
+    seed = 20260921
+    N = int(2e4)
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)))
+    vp.parameter_transformer = ParameterTransformer(D)
+    vp.mu = np.array([[10.0], [-5.0], [2.0]])
+    vp.sigma = np.ones((1, 1))
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+
+    # Samples of the posterior itself: both divergences are near zero.
+    vp.rng = np.random.default_rng(seed)
+    samples, _ = vp.sample(N)
+    kl_divs = vp.kl_div(samples=samples, N=N, gauss_flag=True)
+    assert np.all(kl_divs < 1e-2)
+
+    # Samples of a shifted Gaussian: the divergence of the posterior's
+    # moments from the sample moments, coordinate by coordinate.
+    shifted = samples + np.array([0.5, -1.0, 2.0])
+    vp.rng = np.random.default_rng(seed + 1)
+    kl_divs = vp.kl_div(samples=shifted, N=N, gauss_flag=True)
+    vp.rng = np.random.default_rng(seed + 1)
+    q1mu, q1sigma = vp.moments(N, True, True)
+    expected = kl_div_mvn(
+        q1mu, q1sigma, np.mean(shifted, axis=0), np.cov(shifted.T)
+    )
+    assert np.array_equal(kl_divs, np.maximum(0, expected))
+    assert np.all(kl_divs > 1e-2)
 
 
 def test_kl_div_two_vp_identical_no_gauss_flag():

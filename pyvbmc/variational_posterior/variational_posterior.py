@@ -1479,7 +1479,7 @@ class VariationalPosterior:
                 if vp2 is not None:
                     q2mu, q2sigma = vp2.moments(N, True, True)
                 else:
-                    q2mu = np.mean(samples)
+                    q2mu = np.mean(samples, axis=0)
                     q2sigma = np.cov(samples.T)
 
             kls = kl_div_mvn(q1mu, q1sigma, q2mu, q2sigma)
