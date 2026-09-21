@@ -98,13 +98,15 @@ records its execution.
   decisions (gpyreg in scope, comparison against the latest MATLAB
   `master`, Opus reviewers, no MATLAB run unless a finding's disposition
   depends on one), the slice map, the reviewer brief and the worklog. Status
-  on 2026-09-20: waves 0 to 3 (the subsystems without a MATLAB counterpart,
-  the MATLAB changes since the port, the P2 comparison, P6, P1a, P1b, P5 and
-  P8) are reviewed, verified, ruled on and fixed, and merged into `dev-next`;
-  several of the fixes move default trajectories, so the golden references
-  and the production-reference pools describe the code from before them. P3,
-  P4, P7, P9, G1, G2, the internal track of P2 and the third readers remain;
-  the plan's pickup point says where to resume.
+  on 2026-09-21: waves 0 to 4 (the subsystems without a MATLAB counterpart,
+  the MATLAB changes since the port, the P2 comparison, P6, P1a, P1b, P5,
+  P8, P3 and P4) are reviewed, verified, ruled on and fixed, and merged into
+  `dev-next`; several of the fixes of waves 1 to 3 move default trajectories,
+  so the golden references and the production-reference pools describe the
+  code from before them. Wave 5 (P7 and P9) is reviewed, its reports saved,
+  and waits for verification and rulings. G1, G2, the internal track of P2
+  and the third readers remain; the plan's pickup point says where to
+  resume.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
