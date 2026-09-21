@@ -19,7 +19,7 @@ Priors
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=scipy.stats.multivariate_normal(mu, cov))
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=[UniformBox(0, 1), scipy.stats.norm()])
 
-  The hard bounds ``lb`` and ``ub`` must lie inside the support of the prior (a ``UniformBox(0, 1, D=2)`` goes with hard bounds inside the unit square); ``VBMC`` refuses a prior whose support does not cover them. Within the hard bounds the prior is used as given, without being normalized again over them.
+  The support of the prior must cover the hard bounds ``lb`` and ``ub``, which may coincide with its ends (a ``UniformBox(0, 1, D=2)`` goes with hard bounds on or inside the unit square); ``VBMC`` refuses a prior whose support does not cover them. Within the hard bounds the prior is used as given, without being normalized again over them.
 
   For more details on (1), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (2), (3), and using a function as a ``log_prior``, see the documentation on :ref:`\`\`SciPy\`\` priors`, :ref:`\`\`Product\`\` priors`, and :ref:`\`\`UserFunction\`\` priors` below. (keyword arguments of these types will be converted to instances of these classes).
 

@@ -437,14 +437,15 @@ changes the inference problem.
 
 Only as an experimental feature. `options['integer_vars']` names the variables that are forced to take integer values, either as a boolean array with one entry per variable or as an array of their 0-based indices.
 The hard bounds of such a variable must sit half an integer outside its range: `LB = -0.5` and `UB = 10.5` for a variable that takes the values 0 to 10.
+A prior passed with `prior=` has to cover those bounds, so a uniform prior over the values 0 to 10 is `UniformBox(-0.5, 10.5)`, whose density is 1/11.
 
 What the option does, and what it does not do:
 
-- The points of the active-sampling search are snapped to the integer grid, so every evaluation after the initial design is made at integer values of those variables.
+- The points of the active-sampling search are snapped to the integer grid, so every new point evaluated after the initial design has integer values of those variables.
 - The initial design is *not* snapped, as in MATLAB VBMC, and neither is an `x0` provided for it. The first `options['fun_eval_start']` evaluations are therefore made off the grid unless you provide starting points for the whole design, all of them on it.
-- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing.
+- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing. With `options['max_repeated_observations']` above zero, a noisy target can also be evaluated again at a point of the initial design, which is repeated where it is, off the grid.
 
-Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in the variables that are not integers.
+Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in all its variables, the integer ones included: the Gaussian process interpolates between the values on the grid.
 
 (faq-output-arguments)=
 ## Output arguments
