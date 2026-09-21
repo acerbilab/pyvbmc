@@ -79,12 +79,23 @@ def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
     the first evaluation it makes in that part of the box, in the function
     logger, with a message that names neither the prior nor the bounds.
 
+    A coordinate whose two hard bounds are both finite is compared with a
+    slack of ``1e-9`` times its range. A support computed as ``loc +
+    scale``, which is how a bounded ``scipy.stats`` distribution built from
+    a pair of bounds reports its edges, lands a few units in the last place
+    away from the bound it was built from, and a run stays at least
+    ``tol_bound_x`` (1e-5 by default) times the range away from every hard
+    bound, so a gap of the slack's size is never evaluated. Where a hard
+    bound is infinite the comparison is exact, so an infinite hard bound
+    against a finite support bound is refused.
+
     Parameters
     ----------
     prior : pyvbmc.priors.Prior
         The prior. Its ``support()`` is the box that has to contain the
         hard bounds; a prior that reports no finite support contains every
-        box.
+        box. A support given as one value per coordinate, or as a single
+        value for all of them, is read as a box of the model's dimension.
     lower_bounds, upper_bounds : np.ndarray
         The hard bounds, of shape `(1, D)`.
 
@@ -94,13 +105,23 @@ def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
         If the hard bounds reach outside the support of the prior in any
         coordinate.
     """
-    support_lb, support_ub = prior.support()
-    support_lb = np.asarray(support_lb, dtype=float).ravel()
-    support_ub = np.asarray(support_ub, dtype=float).ravel()
     lb = np.asarray(lower_bounds, dtype=float).ravel()
     ub = np.asarray(upper_bounds, dtype=float).ravel()
+    support_lb, support_ub = prior.support()
+    support_lb = np.broadcast_to(
+        np.asarray(support_lb, dtype=float).ravel(), lb.shape
+    )
+    support_ub = np.broadcast_to(
+        np.asarray(support_ub, dtype=float).ravel(), ub.shape
+    )
 
-    outside = np.flatnonzero((lb < support_lb) | (ub > support_ub))
+    slack = np.zeros_like(lb)
+    both_finite = np.isfinite(lb) & np.isfinite(ub)
+    slack[both_finite] = 1e-9 * (ub[both_finite] - lb[both_finite])
+
+    outside = np.flatnonzero(
+        (lb < support_lb - slack) | (ub > support_ub + slack)
+    )
     if outside.size > 0:
         details = "; ".join(
             f"coordinate {i} has bounds [{lb[i]}, {ub[i]}] against the "

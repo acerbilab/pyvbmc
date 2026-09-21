@@ -18,7 +18,9 @@ from pyvbmc.priors import (
     Trapezoidal,
     UniformBox,
     UserFunction,
+    convert_to_prior,
 )
+from pyvbmc.vbmc.vbmc import _check_prior_covers_bounds
 
 priors = [UniformBox, Trapezoidal, SplineTrapezoidal, SmoothBox, SciPy]
 from scipy.stats import lognorm, multivariate_normal, multivariate_t, norm
@@ -1868,6 +1870,127 @@ def test_a_prior_whose_support_covers_the_hard_bounds_is_taken():
             prior=prior,
         )
         assert vbmc.prior is not None
+
+
+def _uniform_marginals(lower, upper):
+    """The list of marginals the FAQ builds from a pair of hard bounds."""
+    return [
+        sp.stats.uniform(loc=low, scale=high - low)
+        for low, high in zip(np.ravel(lower), np.ravel(upper))
+    ]
+
+
+_BOUND_GRID = np.round(np.arange(-20.0, 20.0 + 1e-9, 1.3), 1)
+
+
+def test_a_prior_built_from_the_hard_bounds_is_taken():
+    """A marginal built as ``uniform(loc=low, scale=high - low)`` has its
+    support edge a few units in the last place away from ``high``, and the
+    pair of hard bounds it was built from is inside it."""
+    for i, low in enumerate(_BOUND_GRID):
+        for high in _BOUND_GRID[i + 1 :]:
+            prior = convert_to_prior(_uniform_marginals([low], [high]))
+            _check_prior_covers_bounds(
+                prior, np.array([[low]]), np.array([[high]])
+            )
+
+
+def test_a_prior_built_from_random_hard_bounds_is_taken():
+    """The same construction on bounds computed from data, which carry no
+    round decimal."""
+    rng = np.random.default_rng(20260921)
+    for __ in range(300):
+        low, high = np.sort(rng.uniform(-20.0, 20.0, size=2))
+        prior = convert_to_prior(_uniform_marginals([low], [high]))
+        _check_prior_covers_bounds(
+            prior, np.array([[low]]), np.array([[high]])
+        )
+
+
+@pytest.mark.parametrize(
+    "lower, upper",
+    [(-20.0, 0.2), (-1.1, 3.4), (0.9401229776087456, 9.034701816518085)],
+)
+def test_a_vbmc_built_on_the_faq_prior_is_taken(lower, upper):
+    """The whole construction the FAQ recommends: the marginals and the
+    hard bounds come from the same pair of numbers."""
+    D = 2
+    lb, ub = np.full((1, D), lower), np.full((1, D), upper)
+    plb = lb + 0.25 * (ub - lb)
+    pub = ub - 0.25 * (ub - lb)
+    vbmc = VBMC(
+        _log_likelihood_for_prior_bounds,
+        0.5 * (lb + ub),
+        lb,
+        ub,
+        plb,
+        pub,
+        prior=_uniform_marginals(lb, ub),
+    )
+    assert vbmc.prior is not None
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_a_support_short_of_a_hard_bound_is_refused(side):
+    """The slack covers rounding alone: a support short of the box by a
+    millionth of its range is a prior that is narrower than the bounds."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    gap = 1e-6 * (ub[0, 0] - lb[0, 0])
+    if side == "lower":
+        support = UniformBox(lb[0, 0] + gap, ub[0, 0], D=D)
+    else:
+        support = UniformBox(lb[0, 0], ub[0, 0] - gap, D=D)
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(support, lb, ub)
+    assert "inside the support of `prior`" in err.value.args[0]
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_an_infinite_hard_bound_against_a_finite_support_is_refused(side):
+    """An infinite bound gets no slack, whatever the other bound is."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.full((1, D), 10.0)
+    if side == "lower":
+        lb = np.full((1, D), -np.inf)
+    else:
+        ub = np.full((1, D), np.inf)
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(UniformBox(0.0, 10.0, D=D), lb, ub)
+    assert "inside the support of `prior`" in err.value.args[0]
+
+
+def test_a_support_given_as_single_values_is_read_as_a_box():
+    """A ``Prior`` subclass may report its support as one value for every
+    coordinate, which the check reads as the box of the model."""
+
+    class _ScalarSupportPrior(Prior):
+        def __init__(self, D):
+            self.D = D
+
+        def _support(self):
+            return 0.0, 1.0
+
+        def _log_pdf(self, x):
+            return np.zeros((x.shape[0], 1))
+
+        def sample(self, n, rng=None):
+            return np.zeros((n, self.D))
+
+        @classmethod
+        def _generic(cls, D=1):
+            return cls(D)
+
+    D = 3
+    prior = _ScalarSupportPrior(D)
+    _check_prior_covers_bounds(prior, np.zeros((1, D)), np.ones((1, D)))
+    with pytest.raises(ValueError) as err:
+        _check_prior_covers_bounds(
+            prior, np.zeros((1, D)), np.full((1, D), 2.0)
+        )
+    message = err.value.args[0]
+    assert "inside the support of `prior`" in message
+    assert "coordinate 2 has bounds [0.0, 2.0]" in message
 
 
 def test_a_log_prior_callable_is_taken_whatever_the_hard_bounds():
