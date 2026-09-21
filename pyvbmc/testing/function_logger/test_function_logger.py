@@ -249,6 +249,29 @@ def test_record_duplicate_unknown_time_keeps_the_stored_average():
     assert f_logger.total_fun_eval_time == 4.0
 
 
+def test_record_duplicate_known_time_replaces_an_unknown_average():
+    """A point added without an evaluation time has none on record. The
+    time of a later repeat is then the only one known for the point and
+    becomes its average, where averaging it with the unknown one would
+    leave the point without a time for good."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger.add(x, 9.0)
+    assert np.isnan(f_logger.fun_eval_time[0])
+
+    f_logger._record(x, x, 1, None, 2.0)
+
+    assert f_logger.n_evals[0] == 2
+    assert f_logger.fun_eval_time[0] == 2.0
+    assert f_logger.total_fun_eval_time == 2.0
+
+    # From there on the known times are averaged as before.
+    f_logger._record(x, x, 1, None, 5.0)
+    assert f_logger.fun_eval_time[0] == (2 * 2.0 + 5.0) / 3
+
+
 def test_record_duplicate_f_sd():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(
