@@ -136,7 +136,8 @@ def test_sample_takes_a_boolean_as_the_count_it_stands_for():
 
 
 @pytest.mark.parametrize(
-    "N", [np.array([7]), [7], (7,), np.full((1, 1), 7), "7", None]
+    "N",
+    [np.array([7]), [7], (7,), np.full((1, 1), 7), "7", None, [[7], [7, 7]]],
 )
 def test_sample_refuses_what_is_not_a_scalar_count(N):
     """A count is one number: a sequence, an array of one row and a value
