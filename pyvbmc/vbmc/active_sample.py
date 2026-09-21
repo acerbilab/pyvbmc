@@ -926,14 +926,15 @@ def _get_search_points(
     idx_cache : ndarray, shape (number_of_points,)
         The indicies of the search points if coming from the cache.
 
-    Raises
-    ------
-    ValueError
-        When the options lead to more points sampled than requested, that means
-        `search_X`.shape[0]` would be greater than `number_of_points``.
-
     Notes
     -----
+    The starting cache contributes its own share (``cache_frac``) of the
+    points; the rest are drawn from five sources in the order
+    ``search_cache_frac``, ``heavy_tail_search_frac``, ``mvn_search_frac``,
+    ``hpd_search_frac``, ``box_search_frac``, each taking the rounded share
+    its fraction gives it or what the sources before it left, whichever is
+    smaller. The variational posterior draws the points the five leave.
+
     Random draws use ``vp.rng``.
     """
     rng = vp.rng
@@ -964,9 +965,23 @@ def _get_search_points(
         N_random_points = number_of_points - search_X.shape[0]
         random_Xs = np.full((0, D), np.nan)
 
-        N_search_cache = round_half_away_from_zero(
-            options.get("search_cache_frac") * N_random_points
-        )
+        # What the sources drawn so far have left of the points to draw.
+        N_left = N_random_points
+
+        def capped_share(fraction):
+            """The rounded share of the points to draw that one source
+            takes, capped at what the sources before it left.
+
+            The rounded shares can claim more than the whole even where
+            the fractions sum to one, a half going away from zero: three
+            quarters of two points are three points. MATLAB has no cap
+            and builds a search set larger than it asked for
+            (``private/activesample_vbmc.m:627-633``).
+            """
+            share = round_half_away_from_zero(fraction * N_random_points)
+            return int(min(N_left, max(0, share)))
+
+        N_search_cache = capped_share(options.get("search_cache_frac"))
         if N_search_cache > 0:  # Take points from search cache
             # The search cache holds the candidates of the previous step,
             # ranked by acquisition value; it is empty until one has run.
@@ -981,29 +996,26 @@ def _get_search_points(
                 search_cache[:N_search_cache],
                 axis=0,
             )
+        N_left -= N_search_cache
 
-        N_heavy = round_half_away_from_zero(
-            options.get("heavy_tail_search_frac") * N_random_points
-        )
+        N_heavy = capped_share(options.get("heavy_tail_search_frac"))
         if N_heavy > 0:
             heavy_Xs, _ = vp.sample(
                 N=N_heavy, orig_flag=False, balance_flag=True, df=3
             )
             random_Xs = np.append(random_Xs, heavy_Xs, axis=0)
+        N_left -= N_heavy
 
-        N_mvn = round_half_away_from_zero(
-            options.get("mvn_search_frac") * N_random_points
-        )
+        N_mvn = capped_share(options.get("mvn_search_frac"))
         if N_mvn > 0:
             mubar, sigmabar = vp.moments(orig_flag=False, cov_flag=True)
             mvn_Xs = rng.multivariate_normal(
                 np.ravel(mubar), sigmabar, size=N_mvn
             )
             random_Xs = np.append(random_Xs, mvn_Xs, axis=0)
+        N_left -= N_mvn
 
-        N_hpd = round_half_away_from_zero(
-            options.get("hpd_search_frac") * N_random_points
-        )
+        N_hpd = capped_share(options.get("hpd_search_frac"))
         if N_hpd > 0:
             hpd_min = options.get("hpd_frac") / 8
             hpd_max = options.get("hpd_frac")
@@ -1049,10 +1061,9 @@ def _get_search_points(
                     mubar, sigmabar, size=int(N_hpd_vec[idx])
                 )
                 random_Xs = np.append(random_Xs, hpd_Xs, axis=0)
+        N_left -= N_hpd
 
-        N_box = round_half_away_from_zero(
-            options.get("box_search_frac") * N_random_points
-        )
+        N_box = capped_share(options.get("box_search_frac"))
         if N_box > 0:
             X = function_logger.X[function_logger.X_flag]
             X_diam = np.amax(X, axis=0) - np.amin(X, axis=0)
@@ -1074,20 +1085,10 @@ def _get_search_points(
             box_Xs = rng.random((N_box, D)) * (box_ub - box_lb) + box_lb
 
             random_Xs = np.append(random_Xs, box_Xs, axis=0)
-
-        # ensure that maximum N_random_points are sampled.
-        if N_random_points < random_Xs.shape[0]:
-            raise ValueError(
-                f"A maximum of {N_random_points} points should be randomly "
-                f"sampled but {random_Xs.shape[0]} were sampled. Please "
-                "validate the provided options."
-            )
+        N_left -= N_box
 
         # remaining samples
-        N_vp = max(
-            0,
-            N_random_points - N_search_cache - N_heavy - N_mvn - N_box - N_hpd,
-        )
+        N_vp = N_left
         if N_vp > 0:
             vp_Xs, _ = vp.sample(N=N_vp, orig_flag=False, balance_flag=True)
             random_Xs = np.append(random_Xs, vp_Xs, axis=0)

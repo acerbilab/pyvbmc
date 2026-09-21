@@ -186,9 +186,10 @@ def test_a_search_fraction_outside_the_unit_interval_is_refused():
         assert name in message
 
 
-def test_the_shipped_search_fractions_leave_room_for_a_search_cache():
+def test_the_shipped_search_fractions_leave_a_quarter_unclaimed():
     """0.25 each for the heavy-tailed, multivariate-normal and box shares,
-    none for the high-posterior-density share: a quarter is left."""
+    none for the high-posterior-density share: a quarter of the search set
+    is left, which a search cache can be given."""
     vbmc = _vbmc(options={"search_cache_frac": 0.25})
     assert vbmc.options["search_cache_frac"] == 0.25
     assert sum(vbmc.options[name] for name in SEARCH_FRACTIONS) == 1

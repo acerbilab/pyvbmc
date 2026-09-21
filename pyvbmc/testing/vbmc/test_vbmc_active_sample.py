@@ -13,6 +13,7 @@ from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.stats import get_hpd
 from pyvbmc.timer import main_timer
+from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
@@ -1641,16 +1642,168 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
     assert np.all(np.isnan(idx_cache))
 
 
-def test_get_search_points_more_points_randomly_than_requested():
-    """
-    Test that ValueError is raised when options lead to more points sampled than
-    requested.
+class _SieveGenerator(np.random.Generator):
+    """A generator that keeps the number of rows of every draw the sieve
+    makes through it.
 
-    Fractions that claim more than the whole search set are refused at
-    construction, so the guard is reached only by a caller that writes
-    them into the options of a built instance.
+    The multivariate normals are those of the ``mvn`` source (one draw)
+    and of the high-posterior-density source (one per fraction); the
+    two-dimensional uniform draw is the box source. The variational
+    posterior draws through methods of its own.
     """
-    vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, {"cache_frac": 0})
+
+    def __init__(self, bit_generator):
+        super().__init__(bit_generator)
+        self.mvn_sizes = []
+        self.box_rows = []
+
+    def multivariate_normal(self, mean, cov, size=None, *args, **kwargs):
+        self.mvn_sizes.append(int(size))
+        return super().multivariate_normal(mean, cov, size, *args, **kwargs)
+
+    def random(self, size=None, *args, **kwargs):
+        if isinstance(size, tuple) and len(size) == 2:
+            self.box_rows.append(int(size[0]))
+        return super().random(size, *args, **kwargs)
+
+
+def _record_vp_draws(mocker):
+    """Record the size and the degrees of freedom of every draw from the
+    variational posterior, and return the list they go into."""
+    calls = []
+    original = VariationalPosterior.sample
+
+    def recording(self, N, orig_flag=True, balance_flag=False, df=np.inf):
+        calls.append((int(N), float(df)))
+        return original(self, N, orig_flag, balance_flag, df)
+
+    mocker.patch(
+        "pyvbmc.variational_posterior.VariationalPosterior.sample", recording
+    )
+    return calls
+
+
+def _sieve_state(
+    options=None, D=3, n_cache=0, n_search_cache=0, seed=20260921
+):
+    """A ``VBMC`` whose state is ready for ``_get_search_points``: a
+    starting cache of `n_cache` rows, a search cache of `n_search_cache`
+    rows, ten training points and no search bounds."""
+    vbmc = create_vbmc(D, 3, -np.inf, np.inf, -500, 500, options)
+    vbmc.vp.rng = _SieveGenerator(np.random.PCG64(seed))
+    vbmc.optim_state["cache"]["x_orig"] = np.linspace(
+        (-1,) * D, (1,) * D, n_cache
+    )
+    vbmc.optim_state["search_cache"] = np.linspace(
+        (2,) * D, (4,) * D, n_search_cache
+    )
+    for i in range(10):
+        vbmc.function_logger(np.ones(D) * i)
+    vbmc.optim_state["lb_search"] = np.full((1, D), -np.inf)
+    vbmc.optim_state["ub_search"] = np.full((1, D), np.inf)
+    return vbmc
+
+
+def _search_points(vbmc, number_of_points, D=3):
+    return _get_search_points(
+        number_of_points=number_of_points,
+        optim_state=vbmc.optim_state,
+        function_logger=vbmc.function_logger,
+        vp=vbmc.vp,
+        options=vbmc.options,
+    )
+
+
+@pytest.mark.parametrize("number_of_points", range(1, 10))
+def test_the_sieve_returns_the_number_of_points_it_is_asked_for(
+    number_of_points,
+):
+    """The shipped fractions claim three quarters of the points to draw,
+    and each share is rounded with a half going away from zero, so the
+    shares can claim more than the whole: three shares of one point for
+    two points to draw. The sieve returns the number asked for."""
+    vbmc = _sieve_state()
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+
+
+@pytest.mark.parametrize("n_cache", [0, 1, 2, 3])
+def test_the_sieve_returns_the_points_asked_for_with_a_search_cache(n_cache):
+    """A quarter for the search cache beside the shipped quarters claims
+    the whole, and the starting cache leaves a number of points to draw
+    that the four rounded shares can overshoot."""
+    number_of_points = 16
+    vbmc = _sieve_state(
+        {"search_cache_frac": 0.25, "cache_frac": 1},
+        n_cache=n_cache,
+        n_search_cache=16,
+    )
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    assert np.sum(~np.isnan(idx_cache)) == n_cache
+
+
+@pytest.mark.parametrize("number_of_points", [7, 8, 9, 10])
+def test_two_halves_of_the_search_set_stay_within_it(number_of_points):
+    """Two fractions of a half claim one point more than the whole for an
+    odd count; the second source takes what the first left."""
+    vbmc = _sieve_state(
+        {
+            "search_cache_frac": 0,
+            "heavy_tail_search_frac": 0,
+            "mvn_search_frac": 0,
+            "hpd_search_frac": 0.5,
+            "box_search_frac": 0.5,
+        }
+    )
+    search_X, _ = _search_points(vbmc, number_of_points)
+    assert search_X.shape == (number_of_points, 3)
+    assert len(vbmc.vp.rng.box_rows) == 1
+    assert vbmc.vp.rng.box_rows[0] == number_of_points // 2
+
+
+def test_each_source_draws_its_rounded_share(mocker):
+    """Where the rounded shares leave room, every source draws the share
+    its fraction gives it of the points to draw, and the variational
+    posterior draws the points the five fractions leave."""
+    number_of_points = 100
+    vbmc = _sieve_state(
+        {
+            "search_cache_frac": 0.1,
+            "heavy_tail_search_frac": 0.2,
+            "mvn_search_frac": 0.15,
+            "hpd_search_frac": 0.25,
+            "box_search_frac": 0.2,
+        },
+        n_search_cache=40,
+    )
+    search_cache = np.copy(vbmc.optim_state["search_cache"])
+    vp_draws = _record_vp_draws(mocker)
+
+    search_X, _ = _search_points(vbmc, number_of_points)
+
+    assert search_X.shape == (number_of_points, 3)
+    # The search cache contributes its first rows, in order.
+    assert np.array_equal(search_X[:10], search_cache[:10])
+    # The heavy-tailed draw and the draw of the points the fractions left.
+    assert vp_draws == [(20, 3.0), (10, np.inf)]
+    # One multivariate normal for the mvn source, then one per
+    # high-posterior-density fraction.
+    assert vbmc.vp.rng.mvn_sizes[0] == 15
+    assert sum(vbmc.vp.rng.mvn_sizes[1:]) == 25
+    assert vbmc.vp.rng.box_rows == [20]
+
+
+def test_fractions_that_claim_more_than_the_whole_leave_later_sources_out(
+    mocker,
+):
+    """Fractions that claim more than the whole search set are refused at
+    construction, so the sieve meets them only from a caller that writes
+    them into the options of a built instance. The sources are served in
+    turn until the points to draw run out."""
+    vbmc = _sieve_state({"cache_frac": 0})
     for name in (
         "heavy_tail_search_frac",
         "mvn_search_frac",
@@ -1659,27 +1812,16 @@ def test_get_search_points_more_points_randomly_than_requested():
     ):
         vbmc.options.__setitem__(name, 1, force=True)
     number_of_points = 100
-    vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
+    vp_draws = _record_vp_draws(mocker)
 
-    # record some samples in FunctionLogger
-    for i in range(10):
-        vbmc.function_logger(np.ones(3) * i)
-    assert vbmc.function_logger.Xn == 9
+    search_X, idx_cache = _search_points(vbmc, number_of_points)
 
-    # no search bounds for test
-    vbmc.optim_state["lb_search"] = np.full((1, 3), -np.inf)
-    vbmc.optim_state["ub_search"] = np.full((1, 3), np.inf)
-
-    with pytest.raises(ValueError) as execinfo:
-        _get_search_points(
-            number_of_points=number_of_points,
-            optim_state=vbmc.optim_state,
-            function_logger=vbmc.function_logger,
-            vp=vbmc.vp,
-            options=vbmc.options,
-        )
-
-    assert "A maximum of 100 points" in execinfo.value.args[0]
+    assert search_X.shape == (number_of_points, 3)
+    assert idx_cache.shape == (number_of_points,)
+    # The heavy-tailed source, first in turn, takes every point.
+    assert vp_draws == [(100, 3.0)]
+    assert vbmc.vp.rng.mvn_sizes == []
+    assert vbmc.vp.rng.box_rows == []
 
 
 def test_repeated_observation_candidates(mocker):
