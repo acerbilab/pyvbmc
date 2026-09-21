@@ -436,6 +436,34 @@ def test_shipped_descriptions_are_stored_in_full(name, description):
     assert options.descriptions[name] == description
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "heavy_tail_search_frac",
+        "mvn_search_frac",
+        "hpd_search_frac",
+        "box_search_frac",
+        "search_cache_frac",
+    ],
+)
+def test_the_search_fractions_are_described_with_their_range_and_sum(name):
+    """The comment above an option is its user documentation, and the
+    five fractions of the acquisition search are refused outside [0, 1]
+    or claiming more than the whole search set together."""
+    description = _shipped_options({}).descriptions[name]
+    assert "[0, 1]" in description
+    assert "at most 1" in description
+    assert "variational posterior" in description
+
+
+def test_integer_variables_are_described_with_the_prior_they_need():
+    """A prior given with ``prior=`` has to cover the hard bounds, which
+    for an integer variable sit half an integer outside its range."""
+    description = _shipped_options({}).descriptions["integer_vars"]
+    assert "prior=" in description
+    assert "UniformBox(-0.5, 10.5)" in description
+
+
 def test_an_option_the_user_set_keeps_its_description():
     """The description belongs to the option, whoever set its value.
 
