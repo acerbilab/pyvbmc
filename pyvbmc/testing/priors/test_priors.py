@@ -3,7 +3,7 @@ from itertools import product
 import numpy as np
 import pytest
 from scipy.integrate import nquad
-from scipy.stats import multivariate_normal
+from scipy.stats import beta, multivariate_normal, uniform
 
 from pyvbmc.priors import (
     Prior,
@@ -54,6 +54,16 @@ def test_unit_integral_2d():
         prior = cls._generic(D=2)
         integral = integrate(prior)
         assert np.isclose(integral, 1.0)
+
+
+def test_unit_integral_shifted_scipy():
+    """``integrate`` covers the density over ``support()``, so a shifted or
+    scaled SciPy marginal integrates to one only where it lives."""
+    prior = SciPy(uniform(loc=2, scale=3))
+    assert np.isclose(integrate(prior), 1.0)
+
+    product = Product([uniform(loc=2, scale=3), beta(2, 3, loc=-1, scale=4)])
+    assert np.isclose(integrate(product), 1.0)
 
 
 def test_shape():

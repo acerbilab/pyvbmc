@@ -6,15 +6,43 @@ from scipy.special import gamma
 from scipy.stats import (
     beta,
     binom,
+    expon,
     lognorm,
     multivariate_normal,
     multivariate_t,
     norm,
     t,
+    uniform,
     wishart,
 )
 
-from pyvbmc.priors import SciPy
+from pyvbmc.priors import Product, SciPy
+
+
+def test_scipy_support_follows_loc_and_scale():
+    """The support of a univariate marginal is the interval the
+    distribution lives on, so a shift or a scale moves it."""
+    a, b = SciPy(uniform(loc=2, scale=3)).support()
+    assert np.allclose(a, [2.0]) and np.allclose(b, [5.0])
+
+    a, b = SciPy(beta(2, 3, loc=-1, scale=4)).support()
+    assert np.allclose(a, [-1.0]) and np.allclose(b, [3.0])
+
+    a, b = SciPy(expon(loc=5)).support()
+    assert np.allclose(a, [5.0]) and np.all(np.isposinf(b))
+
+    # An unshifted distribution keeps the support of its standard form.
+    a, b = SciPy(norm()).support()
+    assert np.all(np.isneginf(a)) and np.all(np.isposinf(b))
+
+
+def test_product_support_follows_loc_and_scale_of_its_marginals():
+    """A `Product` reads the support of each marginal, so a shifted or
+    scaled marginal contributes the interval it lives on."""
+    prior = Product([uniform(loc=2, scale=3), beta(2, 3, loc=-1, scale=4)])
+    a, b = prior.support()
+    assert np.allclose(a, [2.0, -1.0])
+    assert np.allclose(b, [5.0, 3.0])
 
 
 def test_scipy_mv_normal_pdf():

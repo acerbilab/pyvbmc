@@ -66,8 +66,12 @@ class SciPy(Prior):
             self.b = np.full(self.D, np.inf)
         elif distribution_kind == "univariate":
             self.D = 1
-            self.a = np.atleast_1d(distribution.a)
-            self.b = np.atleast_1d(distribution.b)
+            # The ``a`` and ``b`` attributes of a frozen distribution are
+            # those of the standardized one, so they ignore ``loc`` and
+            # ``scale``; ``support()`` applies both.
+            support_a, support_b = distribution.support()
+            self.a = np.atleast_1d(support_a)
+            self.b = np.atleast_1d(support_b)
         else:
             raise TypeError(
                 f'A SciPy prior should be initialized from a "frozen" multivariate normal, multivariate t, or univariate SciPy distribution, but got `distribution` of type {type(distribution)}.'
