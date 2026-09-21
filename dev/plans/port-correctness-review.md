@@ -1627,6 +1627,41 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `CHANGELOG.md`. Not pushed; the CI matrix has not run. The worktrees and
   branches of the three agents are removed, `git cherry` showing every one
   of their commits on the branch.
+- [x] 2026-09-21: the wave-2 pass checked independently (PI: `/doublecheck`,
+  read-only, by a second session while the wave-5 pass was closed in the
+  main checkout; then, on the PI's word, fix what matters). Six fresh Opus
+  reviewers without the session's context, on the head of the branch 144
+  commits after the pass: the fixes of the warm-up, the termination and the
+  initial posterior; the rest of the loop, the warp branch and the final
+  boost; the options and inputs; `load`, the state and the pickling; the
+  ledger and the developer records; the user-facing records and the
+  consequences outside the changed lines. All 47 commits hold and no later
+  pass undid one. What they found is fixed in 18 commits on the branch
+  `dev-port-review-w2check`, cut at `0bf7963` in a worktree of its own so
+  that the gates of the wave-5 pass ran on an untouched checkout, ten of
+  them code or tests: `load` checks the limits on iterations and evaluations
+  (three reviewers, independently; the check of the wave-3 pass had left
+  them out of `load`); the `x0_orig` of a file saved without it comes back
+  through the map of construction; the fixed-means boost refuses a GP with
+  too few inputs; an option the user set keeps its description;
+  `specify_target_noise` is read as a boolean, made under the PI's rule for
+  input handling and not ruled on by itself; the titles of the final plots
+  count the iterations; plausible bounds without `x0`; a test of the
+  minimum-iteration guard that tested nothing; two back-fills. In the
+  records: the note of `save` and `load` said that a saved run holds
+  bytecode only for a target that cannot be pickled by name, where the nine
+  options whose value is a function are stored by value in every file;
+  `refresh_citations.py` had carried three citations of MATLAB and ini files
+  through Python files that day (`9f6f0c7`) and is corrected, with an audit
+  of the 112 citations it rewrote; the counterpart map, the header of the
+  MATLAB-side defects, the changelog's "Upgrading" list, the FAQ on
+  continuing a run and the stored output of example 2.
+  `verification/wave2.md`, "The independent check of the pass", has the
+  findings, what is left for the PI and the gates: the tests of every module
+  touched, 413 passed; the oracle tests, 143 passed; the exact oracle check,
+  11 of 11 with nothing re-baselined. The whole suite, the four seeded runs,
+  the Torch and PyMC environments and the CI matrix have not run on the
+  branch, which waits to be brought onto `dev-port-review`.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"

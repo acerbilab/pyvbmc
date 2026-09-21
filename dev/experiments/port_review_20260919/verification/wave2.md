@@ -159,3 +159,138 @@ the worktree branches. The hashes below are the cherry-picked commits.
 | W2-28 | fix agent B | `Options.update_defaults` computes all five noisy-target defaults before it checks which of them the user set, so a noisy run with `max_fun_evals = np.inf` raises `OverflowError` from `ceil(inf * 1.5)` although the user's budget would have been kept | confirmed Python-only defect; older than the pass | no | reproduced by the test of the fix, which fails without it | fix (`1421759`) |
 | W2-29 | fix agent A | With `variable_means=False`, `final_boost` asks for `max(vp.K, min_final_components)` components while the candidates of the sieve keep the posterior's `vp.K` fixed means, and `_gp_log_joint` raises a broadcast error. A fixed-means run past warm-up holds one component per training input, so it is affected only while it has fewer than `min_final_components` (50) of them; a run that ends during warm-up always is, with its two components | confirmed shared defect, by a reading of MATLAB: `misc/finalboost_vbmc.m:6` takes `Knew = max(MinFinalComponents, vp.K)` and `misc/vbinit_vbmc.m:132-136` keeps `mu0` beside `Knew` weights and scales; older than the pass | no; only with `variable_means=False` | `scripts/wave2_variable_means_boost.py` (the boost raises, the same run without a boost completes); both sources read | fix (`73d2a81`): the boost of a posterior with fixed means places its components at the training inputs of the GP it is handed, one each, as the main loop does after warm-up |
 | W2-30 | the CI matrix, on a test of the fix pass | `ParameterTransformer` keeps its bounded transforms as functions defined inside `_set_bounded_transforms`, in an instance attribute, so dill pickles them by value, as bytecode of the Python version that writes the file. Every saved variational posterior, every saved `VBMC` instance and every pickled `SVBMC` object carries them. Under another minor version of Python the file loads, and for a bounded problem the first call of the transformer (`vp.sample`, `vp.pdf`, the construction of an `SVBMC`) ends the interpreter, with a segmentation fault or "Illegal instruction"; an unbounded problem never calls them, which is why the two static fixtures never showed it. Pickling a loaded function again makes dill disassemble it, which corrupted memory on the Python 3.11 cells of the CI (the symptom that led here) | confirmed Python-only defect; older than the pass | yes, for a posterior of a bounded problem used under another Python version than the one that saved it | `scripts/wave2_xver_*.py` and `scripts/wave2_pickled_functions*.py`, with two interpreters on the orchestrator's machine, 3.11.9 and 3.12.6, one process per step: a short bounded run saved under each and sampled, evaluated and saved again under the other, in both directions (every use crashed; with the fix every step works, on the files written before it); the whole S-VBMC path (three converged bounded runs saved under 3.12 by the code before the fix, stacked, optimized, sampled and saved under 3.11, loaded back under 3.12 with the same ELBO); dill's trace, which shows these three functions as the only ones a posterior file or an `SVBMC` object stores by value | fix (PI, 2026-09-20): the transformer pickles and copies without the functions and rebuilds them from `bounded_types` when restored, which also rescues files written before. A saved `VBMC` instance still holds the target and the log-joint wrapper by value: under another Python version it can be inspected, not continued or saved again, and the `save` and `load` docstrings say so |
+
+## The independent check of the pass
+
+Six fresh Opus reviewers, read-only, checked the pass on 2026-09-21 without
+the context of the session that made it, on the head of the branch 144
+commits after the pass (`a093f2e`, and `0bf7963` once the records of wave 5
+were committed; `pyvbmc/` is the same in both): the fixes of the warm-up, the
+termination and the initial posterior; the rest of the loop, the warp branch,
+the results and the final boost; the options and the inputs; `load`, the
+state and the pickling; this ledger and the developer records; and the
+user-facing records with the consequences of the pass outside the lines it
+changed. Each judged whether a fix was right when made and whether it still
+holds. All 47 commits hold, and nothing in the passes of waves 3 to 5 undid
+one. `_check_warmup_end_conditions` agrees with a 1-based transcription of
+`private/vbmc_warmup.m` on 300 random histories (48 of them with the empty
+window, none a mismatch), and `_recompute_lcb_max` with
+`private/recompute_lcbmax.m` line by line. The transform that `warp_input`
+inverts the search state with (W2-6) survives the rewrite of `whitening.py`
+by the wave-3 pass. A transformer restored by `dill`, by `pickle` or by a
+copy gives `__call__`, `inverse` and `log_abs_det_jacobian` bit for bit, for
+the four bounded types with and without a rotation and a scale, and no
+attribute has joined the class since W2-30. No reader of
+`results["iterations"]` still adds or subtracts one, and no notebook,
+generated script, script of `dev/scripts/` or test helper gives an option in
+a form the pass refuses, by a scan of every `VBMC(` call against the declared
+names. The ledger accounts for all 43 findings of the four reports; the 21
+MATLAB line ranges opened, the datings and the 35 pairs of the table of fix
+commits are right, and every disposition traced was carried out with its
+secondary clauses.
+
+In the code they found what these commits follow up, each fix with a test
+against the contract:
+
+| commit | |
+|---|---|
+| `b7a2cd0` | `load` checks the limits on iterations and evaluations as construction does. `validate_run_limits` (W2-26) had its one call in the constructor, and the check of the wave-3 pass that gave `load` the value checks (`9b5213d`) left it out, so `load(new_options=)` took `max_iter = 0`, a fractional or negative `max_fun_evals`, and a `max_iter` below `min_iter`, against the docstring of `load` and the changelog. Found by three reviewers independently |
+| `ce59fbe` | the `x0_orig` that `load` fills in for a file saved without it (W2-21) comes back through the map of the first recorded iteration, the map of construction, since `x0` is kept in that space. It was inverted with the map of the restored iteration, which gave another point for a run that had warped (`[6.78, 0.66]` for `[4.0, 0.3]` on the reviewer's doctored run), and the fix agent's report says that nothing better could be recovered. The test of the pass asserted the expression `load` used |
+| `6aab88a` | `final_boost` with `variable_means` off refuses a GP with fewer training inputs than the posterior has components. Since W2-29 the number of components comes from the GP handed in, and a smaller one ended in the broadcast error of the sieve; `optimize` cannot reach the case |
+| `3f85501` | an option the user set keeps its description. `load_options_file` stored a description only with a value it loaded, so `print(options)`, which lists the user's options, showed `None` for every option of the advanced file, the surface that W2-23 had repaired for the cut-off texts. Older than the pass |
+| `37c32ec` | `specify_target_noise` is read as a boolean, as its partner is since W2-18: `"no"`, `"off"` and `[0]` turned the noise handling on without a word, and an empty array raised NumPy's own error. MATLAB reads the option through `evalbool`. Made under the PI's rule for the input rows of part 2 and not ruled on by itself; two tests gave the option the value 2 |
+| `98a8a91` | the final plot of `optimize` and the last frame of `create_vbmc_animation` count the iterations in their title; both printed the index of the last one, which W2-13 left one below `results["iterations"]` |
+| `57c5631` | without `x0`, two scalar plausible bounds raise an error that names the problem, where the shape lookup raised `AttributeError` or `IndexError` under a docstring that promises the replication of W2-19; one plausible bound with an entry per variable gives the number of variables, and a list is accepted |
+| `2d3f876` | the first case of `test_vbmc_check_termination_conditions_prevent_early_termination` set `max_iter` below `min_iter`, which W2-26 raises, so nothing asked the run to stop and its assertion held whatever the guard of W2-5 did; the budget is now spent |
+| `8afeebf` | `load` states `tol_elcbo_boost = None` for a file saved before the option existed; the unguarded boost of such a file had rested on the default of a lookup |
+| `c1e1634` | `build_options` of the oracle harness, which says it mirrors the constructor, runs the check of the run limits; no fixture changes |
+
+In the records they found, and this check corrected:
+
+- The note of `VBMC.save` and `VBMC.load` (`1c0d0d3`) tied the bytecode in a
+  saved instance to a target that cannot be pickled by name. The nine options
+  whose value is a function (`ns_ent`, `k_fun_max` and the like) are
+  evaluated from the ini files, so dill stores them by value in every saved
+  instance, the stored functions of `test_vbmc_save_static.pkl` hold bytecode
+  of another Python version, and a continued run calls them in every
+  iteration. The note, the trap in `AGENTS.md`, the fixtures sheet and the
+  FAQ on continuing a run say so (`1f9d872`, `82dbfa5`). Whether `load`
+  should rebuild them from the ini files is a question for the PI, below.
+- `known_differences.md`: three citations of MATLAB and ini files that
+  `refresh_citations.py` had carried through Python files on the day of the
+  check (`9f6f0c7`: `private/vbmc_warmup.m:97-102` written as `:140-145`, in
+  a file of 134 lines, and two lines of `advanced_vbmc_options.ini`). The
+  script took a bare `:N` for a continuation of the last Python path unless
+  a file of another kind had been cited with a line number of its own; a
+  named file now ends the run either way, a bare citation beyond the end of
+  its file is reported, and so is a Python file cited without its path
+  (`895ced8`). An audit of the 112 citations that commit rewrote found those
+  three, one range that overran its block and, passed over by the script,
+  three stale Python citations. Also corrected: the count of the inert
+  options (twenty-seven, with `cov_sample_thresh` named), the range of the
+  `display` switch, what the entry on `results["rng_state"]` cites, and the
+  NaN condition of the recomputed maxima, which is a condition on the points
+  logged up to an iteration, in the sheet, the docstring and the comment
+  (`224c7a1`). The sheet gains the line on MATLAB's total run time that row
+  B-M13 of `wave2_B_loop.md` had asked for.
+- `counterpart_map.md`: the 17 Python citations of the eleven rows the pass
+  changed pointed up to 120 lines away, and the header dated them to the
+  wave-1 refresh. The other rows keep the lines of that refresh.
+- `matlab_side_defects.md`: the header listed the entries that mark an
+  inferred step and left out entries 4 and 14 of this wave; it no longer
+  lists them.
+- This ledger: where observation B-M11 was settled, and the commit without a
+  test. `wave2_B_loop.md`: a flag under its header on the agent's inference
+  that the corrected running average (W2-11) would change nothing.
+- `CHANGELOG.md`: its "Upgrading" list had no line for
+  `results["problem_type"]`, for the run limits or for what a list of
+  `integer_vars` indices means; `vbmc.x0_orig` was in no record a user reads
+  and is now an attribute of the class docstring (`4f9e3d6`).
+- The stored `print(vbmc)` of example 2 showed the starting point in
+  transformed coordinates and the initial means in original ones, the two
+  defects of W2-21 and W2-4 (`f40da0a`; three lines, not run again).
+- The porting log named `_is_finished()` for
+  `_check_termination_conditions()`; the docstring of
+  `scripts/wave2_initial_vp_mu.py` cited `:66`, `:84` for
+  `misc/setupvars_vbmc.m:65`, `:82`; the `n_iterations` of the eight oracle
+  fixtures that record it holds the index that `results["iterations"]` was
+  before W2-13, which a comment at the generator's line now says.
+
+Left for the PI:
+
+- The option functions of a saved run. Rebuilding them from the ini files in
+  `load`, for the options the user did not set, would let a run with an
+  importable target continue under another minor version of Python. It needs
+  the two-interpreter experiment of W2-30, and a rule for a default that
+  changes between releases.
+- `vbmc.x0` stays in the inference space of construction when the run warps
+  that space; `AGENTS.md` and the class docstring now say so. Nothing reads
+  it after construction but the back-fill of `load`.
+- `optim_state["last_warmup"] = 0` for a run without warm-up is MATLAB's
+  1-based value in a 0-based field, masked at every default
+  (`active_sample_full_update_threshold`); the fallback of
+  `.get("last_successful_warping", 0)` is an iteration index where the key
+  starts at minus infinity.
+- The main loop sizes its sieve at `self.vp.K` where the warp branch and the
+  boost use the count they optimize; with `variable_means` off that is the
+  count of the iteration before. The sheet's entry covers free means alone.
+- `validate_run_limits` checks neither the sign nor the integrality of
+  `min_iter`, as MATLAB does not. The guard of the inert options runs one
+  way: `warp_nonlinear`, `varactivesample` and `skip_elbo_variance` are read
+  through the options and declared nowhere. The warnings of `Options` go to
+  the root logger and miss `log_file_name`.
+- `_normalized_hard_bound` of the `PyMCTarget` route does not replicate a
+  scalar bound. The tests of `_recompute_lcb_max` reach neither its wiring
+  into the loop, nor the noisy branch, nor `add_noise=False`.
+- The changelog has no entry for W2-16 and W2-11, no "Upgrading" line for
+  the copies that `determine_best_vp` and `final_boost` now work on or for
+  the frozen `pop` and `del`, and says of the budget keys of the results
+  that each is present "only when its argument was used", where W2-27 made
+  it the values.
+
+Gates, on the branch of the check (`dev-port-review-w2check`, cut at
+`0bf7963`), with the package of that checkout: the tests of every module
+touched, 413 passed; the oracle tests, 143 passed; and
+`make_oracle_fixtures.py --check --exact`, 11 of 11 with nothing
+re-baselined. Not run: the whole suite, the four seeded runs, the Torch and
+PyMC environments and the CI matrix.
