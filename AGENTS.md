@@ -307,6 +307,9 @@ the result.
   record, or as close to it as its format allows. A note somewhere else is
   not a correction. A tracked document points at `dev/scripts/runs/LOCAL.md`
   and never says "this machine".
+- **Rounding.** Where MATLAB has `round`, call `round_half_away_from_zero`
+  (`pyvbmc/stats/_rounding.py`): Python's `round` and `np.round` send a half
+  to the even integer.
 - **Heavy computation.** Run one heavy process at a time (the full test
   suite, benchmark and campaign runs): concurrent VBMC runs, each
   multi-threaded, can bring a workstation down. Short gates (the oracles, one
