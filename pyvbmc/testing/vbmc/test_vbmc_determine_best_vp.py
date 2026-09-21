@@ -285,3 +285,43 @@ def test_rank_penalty_equals_the_number_of_iterations():
     )
     __, __, __, idx_best = vbmc.determine_best_vp(rank_criterion_flag=True)
     assert idx_best == 0
+
+
+def test_equal_elcbo_ranks_the_earlier_iteration_first():
+    """MATLAB VBMC ranks the iterations by ELCBO with a descending ``sort``
+    (``misc/best_vbmc.m:36``), which is stable: of two iterations with the
+    same ELCBO the earlier one gets the better rank. With three iterations,
+    none of them stable, the first then totals 3 + 1 + 1 and the second
+    2 + 2 + 2, so the first is selected; with the ranks of the tie exchanged
+    the second would be."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(
+        vbmc,
+        elbo=[1.0, 1.0, 0.0],
+        elbo_sd=[0.1] * 3,
+        r_index=[1.0, 2.0, 3.0],
+        stable=[False] * 3,
+    )
+    __, __, __, idx_best = vbmc.determine_best_vp(rank_criterion_flag=True)
+    assert idx_best == 0
+
+
+def test_equal_reliability_ranks_the_earlier_iteration_first():
+    """The ranking by reliability index is an ascending ``sort``
+    (``misc/best_vbmc.m:40``), stable as well. A run records an infinite
+    index for its first two iterations, so they tie for the last two ranks.
+    With 22 iterations of which only those two are stable, the first totals
+    22 + 1 + 21 + 1 = 45 and the second 21 + 2 + 22 + 1 = 46, and every
+    other iteration at least 46 with its penalty of 22; with the ranks of
+    the tie exchanged the second would total 45 and be selected."""
+    n = 22
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(
+        vbmc,
+        elbo=[float(n - i) for i in range(n)],
+        elbo_sd=[0.0] * n,
+        r_index=[np.inf, np.inf] + [float(i) for i in range(2, n)],
+        stable=[True, True] + [False] * (n - 2),
+    )
+    __, __, __, idx_best = vbmc.determine_best_vp(rank_criterion_flag=True)
+    assert idx_best == 0

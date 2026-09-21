@@ -2790,13 +2790,15 @@ class VBMC:
                     dtype=bool,
                 )
 
-                # Rank by ELCBO
+                # Rank by ELCBO. In this ranking and in the next, the
+                # earlier of two iterations with equal scores ranks first,
+                # as in MATLAB's stable sort.
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                order = elcbo.argsort()[::-1]
+                order = np.argsort(-elcbo, kind="stable")
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = r_index_iter.argsort()
+                order = np.argsort(r_index_iter, kind="stable")
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
