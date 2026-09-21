@@ -45,6 +45,39 @@ def test_product_support_follows_loc_and_scale_of_its_marginals():
     assert np.allclose(b, [5.0, 3.0])
 
 
+def test_a_univariate_distribution_over_several_variables_is_refused():
+    """A frozen univariate distribution with array-valued parameters stands
+    for one distribution per element, so its sampler and its density
+    describe different things."""
+    with pytest.raises(ValueError) as err:
+        SciPy(norm(loc=np.array([0.0, 10.0, 100.0])))
+    message = err.value.args[0]
+    assert "loc holds 3 values" in message
+    assert "should be scalars" in message
+
+    with pytest.raises(ValueError) as err:
+        SciPy(t(np.array([3.0, 7.0])))
+    assert "positional parameter 0 holds 2 values" in err.value.args[0]
+
+    # The same distribution as a marginal of a product.
+    with pytest.raises(ValueError) as err:
+        Product([norm(loc=np.array([0.0, 10.0])), norm()])
+    assert "should be scalars" in err.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "distribution",
+    [norm(loc=0.0), norm(loc=np.array(0.0)), norm(loc=np.array([0.0]))],
+)
+def test_a_scalar_parameter_is_taken_however_it_is_written(distribution):
+    """SciPy treats a 0-d array and a one-element array as scalars, and so
+    does the prior built from them."""
+    prior = SciPy(distribution)
+    assert prior.D == 1
+    assert prior.log_pdf(np.zeros((4, 1))).shape == (4, 1)
+    assert prior.sample(4, rng=np.random.default_rng(0)).shape == (4, 1)
+
+
 def test_scipy_mv_normal_pdf():
     D = np.random.randint(1, 21)
 

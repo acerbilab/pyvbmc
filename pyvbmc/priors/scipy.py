@@ -19,6 +19,41 @@ _MULTIVARIATE_FROZEN_TYPES = (
 _UNIVARIATE_FROZEN_TYPE = type(norm())
 
 
+def _check_univariate_parameters(distribution):
+    """Check that a frozen univariate distribution describes one variable.
+
+    A frozen univariate distribution accepts array-valued parameters, and
+    then stands for one distribution per element: it draws one point from
+    each and its density has one column per element. Such an object is not a
+    one-dimensional distribution, and a prior built from it would sample and
+    evaluate two different things.
+
+    Parameters
+    ----------
+    distribution : frozen scipy.stats distribution
+        The univariate distribution to check.
+
+    Raises
+    ------
+    ValueError
+        If any parameter of the distribution holds more than one value.
+    """
+    parameters = {
+        f"positional parameter {i}": value
+        for i, value in enumerate(distribution.args)
+    }
+    parameters.update(distribution.kwds)
+    for name, value in parameters.items():
+        if np.size(value) != 1:
+            raise ValueError(
+                "The parameters of a univariate SciPy distribution used as a "
+                f"one-dimensional prior should be scalars, but {name} holds "
+                f"{np.size(value)} values. A prior over several variables is "
+                "a list of one-dimensional distributions, or a multivariate "
+                "distribution."
+            )
+
+
 def _scipy_distribution_kind(distribution):
     """Classify the supported frozen SciPy distributions."""
     if isinstance(distribution, _MULTIVARIATE_FROZEN_TYPES):
@@ -58,6 +93,9 @@ class SciPy(Prior):
         ------
         TypeError
             If the provided distribution is not of the appropriate type.
+        ValueError
+            If a univariate distribution carries a parameter which is not a
+            scalar, so that it stands for more than one variable.
         """
         distribution_kind = _scipy_distribution_kind(distribution)
         if distribution_kind == "multivariate":
@@ -65,6 +103,7 @@ class SciPy(Prior):
             self.a = np.full(self.D, -np.inf)
             self.b = np.full(self.D, np.inf)
         elif distribution_kind == "univariate":
+            _check_univariate_parameters(distribution)
             self.D = 1
             # The ``a`` and ``b`` attributes of a frozen distribution are
             # those of the standardized one, so they ignore ``loc`` and
