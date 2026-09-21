@@ -741,6 +741,35 @@ def test_uncertainty_handling_rejects_other_values(value):
     assert "True or False" in message
 
 
+@pytest.mark.parametrize("value", [True, 1, np.True_, np.int64(1)])
+def test_specify_target_noise_true_takes_the_noise_the_target_returns(value):
+    """``specify_target_noise`` is a boolean, as ``SpecifyTargetNoise`` is in
+    MATLAB VBMC, and a target that returns its noise estimate is handled at
+    level 2."""
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 2
+
+
+@pytest.mark.parametrize("value", [False, 0, np.False_, np.int64(0)])
+def test_specify_target_noise_false_gives_a_noiseless_run(value):
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    assert vbmc.optim_state["uncertainty_handling_level"] == 0
+
+
+@pytest.mark.parametrize(
+    "value", ["yes", "no", "off", [0], [1], 2, 1.0, None, [], np.array([])]
+)
+def test_specify_target_noise_rejects_other_values(value):
+    """A value that is not a boolean is refused, and the message names what
+    may be written instead: read by its truth, ``"no"`` or ``[0]`` would
+    turn the noise handling on."""
+    with pytest.raises(ValueError) as execinfo:
+        create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
+    message = execinfo.value.args[0]
+    assert "specify_target_noise" in message
+    assert "True or False" in message
+
+
 def test_uncertainty_handling_off_with_specify_target_noise_raises():
     """``misc/setupoptions_vbmc.m:135-137`` refuses a target that supplies
     its own noise estimate while the noise handling is turned off."""
@@ -847,7 +876,7 @@ def test_vbmc_init_log_joint():
 
 
 def test_vbmc_init_log_joint_noisy():
-    options = {"specify_target_noise": 2}
+    options = {"specify_target_noise": True}
     D = 3
     lb = np.ones((1, D)) * -1
     ub = np.ones((1, D))
@@ -960,7 +989,7 @@ def test_vbmc_init_log_joint_prior():
 
 
 def test_vbmc_init_log_joint_noisy_prior():
-    options = {"specify_target_noise": 2}
+    options = {"specify_target_noise": True}
     D = 3
     # The generic priors of the bounded families live on [0, 1], and the
     # hard bounds have to lie inside the support of the prior.
