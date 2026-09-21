@@ -436,6 +436,35 @@ def test_shipped_descriptions_are_stored_in_full(name, description):
     assert options.descriptions[name] == description
 
 
+def test_an_option_the_user_set_keeps_its_description():
+    """The description belongs to the option, whoever set its value.
+
+    ``print(options)`` lists the options the user set, so those are the
+    descriptions a user reads, for the options of either shipped file.
+    """
+    defaults = _shipped_options({})
+    options = _shipped_options({"max_fun_evals": 120, "tol_skl": 0.02})
+    for name in ("max_fun_evals", "tol_skl"):
+        assert defaults.descriptions[name]
+        assert options.descriptions[name] == defaults.descriptions[name]
+        assert f"({defaults.descriptions[name]})" in str(options)
+    assert "(None)" not in str(options)
+
+
+def test_a_user_file_without_comments_keeps_the_shipped_descriptions(
+    tmp_path,
+):
+    """An options file of the user need not repeat the descriptions."""
+    path = tmp_path.joinpath("mine.ini")
+    path.write_text("[Mine]\ntol_skl = 0.02\n")
+    defaults = _shipped_options({})
+    options = Options(basic_options_path, {"D": 2})
+    options.load_options_file(advanced_options_path, {"D": 2})
+    options.load_options_file(path, {"D": 2}, as_user_options=True)
+    assert options["tol_skl"] == 0.02
+    assert options.descriptions["tol_skl"] == defaults.descriptions["tol_skl"]
+
+
 def test__str__and__repr__():
     default_options_path = options_path.joinpath("test_options.ini")
     options = Options(default_options_path, {"D": 2})

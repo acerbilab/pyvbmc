@@ -419,10 +419,17 @@ class Options(MutableMapping, dict):
         options_list = _read_config_file(options_path)
         loaded = set()
         for key, value, description in options_list:
-            if key not in self.get("useroptions") and key != "useroptions":
+            if key == "useroptions":
+                continue
+            if key not in self.get("useroptions"):
                 self[key] = eval(value, globals(), evaluation_parameters)
-                self.descriptions[key] = description
                 loaded.add(key)
+                if description or key not in self.descriptions:
+                    self.descriptions[key] = description
+            elif key not in self.descriptions:
+                # The description belongs to the option, whoever set its
+                # value.
+                self.descriptions[key] = description
         if as_user_options:
             self["useroptions"].update(loaded)
 
