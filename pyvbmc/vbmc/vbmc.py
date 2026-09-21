@@ -2540,6 +2540,12 @@ class VBMC:
         changed_flag : bool
            Indicates if the final boost has taken place or not.
 
+        Raises
+        ------
+        ValueError
+            With ``variable_means`` off, when ``gp`` has fewer training
+            inputs than ``vp`` has components.
+
         Notes
         -----
         The guard compares the optimizer's stored pre- and post-boost ELBO
@@ -2571,6 +2577,14 @@ class VBMC:
             # as many of them as the GP has training inputs, as in every
             # iteration of the main loop after warm-up.
             K_new = gp.X.shape[0]
+            if K_new < vp.K:
+                raise ValueError(
+                    "With variable_means off, the components of the "
+                    "posterior sit at the training inputs of the GP, so a "
+                    f"posterior of {vp.K} components cannot be boosted with "
+                    f"a GP of {K_new} training inputs. Pass the GP that the "
+                    "posterior was fitted with."
+                )
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("ns_ent", {"K": K_new})
