@@ -1790,11 +1790,226 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   commit `1563053`, on `dev-next` at `e71c667`, which holds the item of
   `TODO.md` on the branch `feat-3d-animation`), and `dev-port-review`
   fast-forwarded onto it.
-- [ ] **Pickup point (2026-09-21): the next task is wave 6, the two gpyreg
-  slices G1 and G2 on both tracks (four reviewers), by the PI's decision of
-  2026-09-21.** Nothing of it has started: no reviewer has run and no brief
-  is written. The session launches the reviewers on the PI's word in that
-  session, and starts no other wave.
+- [x] 2026-09-21: wave 6 run and reported to the PI (PI: go, on the briefs
+  as the session showed them): G1 internal (12 findings and 13 minor
+  observations), G1 comparison (7 and 14), G2 internal (6 and 15), G2
+  comparison (11 and 10); four fresh Opus reviewers by the brief, read-only,
+  reading gpyreg at `fdbafdf`, whose code under `gpyreg/` is that of the pin
+  `9e70e6b`, with PyVBMC at `8af5daac` as the caller and, on the comparison
+  track, `gplite/` of MATLAB VBMC at `396d649`; reports saved verbatim under
+  `experiments/port_review_20260919/reviews/`. What the briefs added to the
+  section "Reviewer brief": the comparison reviewers were told that gpyreg's
+  copy under `matlab/gplite/` is not the reference, and the internal ones
+  not to open it; every brief listed how PyVBMC uses gpyreg, and every
+  finding says whether a default run reaches it; a GP fit on a few dozen
+  points counted as a small check, every script with BLAS single-threaded;
+  the reading order put last what O4 reads again (the gradient of the
+  marginal likelihood in G1, the `compute_grad=True` branches of the
+  components in G2). First questions. G1: the plan's on `uuinv`, put to the
+  comparison reviewer with `46b6f5e` and `fcf2674` beside `1d1f20d` and to
+  the internal one as whether the inverse is right in every configuration of
+  the four bounds; and one that the orchestrator added, whether the rank-one
+  extension of `update` equals a full recomputation in every state that
+  `update` accepts. G2: the plan's on the predictive log-density, spelled
+  out over the noise parameterizations and over the noise-inclusive outputs
+  of `predict`, `predict_full` and `quad`. The sweeps before and after the
+  wave were clean in the three repositories, and the reviewers' check
+  scripts are kept on the orchestrator's machine only
+  (`dev/scripts/runs/LOCAL.md`). Nothing below is verified; where it says
+  that the orchestrator read a code site, the site is as the report
+  describes it. The line citations of the internal G1 report into
+  `gaussian_process.py` are off by up to 35 lines (`:1474` for `:1441`,
+  `:1234` for `:1243`); those of the comparison report hold.
+
+  The first questions. `uuinv`: the comparison reviewer finds `1d1f20d`
+  carried line for line in the three branches (`f_min_fill.py:192-255`),
+  the out-of-range guard that sits in the general branch alone included,
+  `46b6f5e` carried by construction and `fcf2674` carried
+  (`slice_sample.py:452-453`). The internal reviewer finds the inverse exact
+  to 2e-16 in every configuration of the bounds for the mixture that the
+  body implements, which is not the one the docstring names: the body
+  spreads `1 - w` over the two tails in proportion to their lengths, the
+  docstring gives each tail `(1 - w)/2`. The docstring's sentence is the
+  comment that `1d1f20d` added to `fminfill.m` (the orchestrator's reading
+  of the commit), so the code agrees on both sides and the sentence is wrong
+  on both. The rank-one update: both reviewers derived the two branches
+  again and find a rebuild reproduced to 1e-15 (comparison) and 1e-13
+  (internal) in `alpha` with `L_chol` true, at the three noise
+  parameterizations, with and without `s2_new`, with several samples and
+  over consecutive updates; with `hyp` passed `update` recomputes in full,
+  bit for bit a rebuild. A stored `sn2_mult` of 10 to 1000, which the
+  internal reviewer forced through a patched Cholesky factorization, is
+  carried correctly (7e-14); the comparison reviewer could not produce one
+  with any noise floor. With `L_chol` false the agreement is 2e-10 at a
+  noise variance of 1e-7, and with an exact duplicate at a noise of `eps`
+  `alpha` is wrong by O(1) with no warning, the guard `sqrt_arg <= 0`
+  standing in the other branch alone (G1 internal F4). No PyVBMC run has
+  `L_chol` false: `_gp_hyp` bounds the noise variance from below at 1e-5,
+  against the threshold 1e-6 (both). The predictive log-density: both G2
+  reviewers find the total variance, `max(s2, 0) + sn2_star * sn2_mult`
+  (`gaussian_process.py:2032`), in every parameterization, with and without
+  `s2_star` and whatever `add_noise`; it entered gpyreg in that form with
+  `9b3d46b` (2022-06-02), 23 days before `68a197b`, so MATLAB's fix brought
+  MATLAB to gpyreg. `predict` reproduces a transcription of `gplite_pred.m`
+  to 8e-14 over the parameterizations, the flags, one and three samples and
+  both representations of `L`, and the mean of `quad` that of
+  `gplite_quad.m` bit for bit. `sn2_mult` multiplies the whole noise of a
+  test point on both sides (checked at 10 and 1e7 by the internal reviewer),
+  and `quad` adds no noise. One difference of kind: with
+  `separate_samples=False` gpyreg returns the log density of the
+  moment-matched Gaussian where MATLAB returns the matrix per sample; the
+  docstring says so, the sheet does not, and no PyVBMC caller passes
+  `return_lpd`.
+
+  What a default run reaches. (1) Recommendations pooled over the
+  dimensions, both G2 reviewers independently; the orchestrator read the
+  sites on both sides. `covariance_functions.py:451` starts every length
+  scale at the log of one standard deviation taken over all entries of `X`,
+  where `width`, nine lines above, is taken with `axis=0` and
+  `gplite_covfun.m:126` has `log(std(X))`, one per column; and
+  `mean_functions.py:488`, `:511-524` take `w`, `min`, `max`, `median` and
+  `std` over all entries for the bounds, the plausible bounds and the
+  starting values of the location and the scale of the negative quadratic
+  mean, where `gplite_meanfun.m:142`, `:220-230` has them per column (the
+  comparison reviewer alone has the bounds). PyVBMC puts both `x0` into
+  `hyp0` (`gaussian_process_train.py:334-365`) and leaves the bounds of the
+  mean's location and scale to gpyreg, which fills them at every fit (no
+  statement of `:371-416` sets them; the orchestrator's reading). On
+  coordinates with SDs of 0.4, 1
+  and 4 the comparison reviewer measures a starting length scale seven
+  times MATLAB's in the narrow dimension and one box for the mean's
+  location where MATLAB has three; the internal reviewer calls the effect on
+  PyVBMC small, the transformed coordinates being comparably scaled, and
+  limits the reach of `x0` to a fit with no earlier fit to start from. The
+  reach and the size on a PyVBMC state are for the verification. Since the
+  port on both counts; the sheet's entry on the quantile and
+  standard-deviation conventions calls the difference small and dependent
+  on `N`, which both reviewers contest: `ddof=1` is MATLAB's normalization
+  already, and what differs is the axis. A fix moves the GP fit of a
+  default run. (2) The window of the burn-in statistics of the slice
+  sampler, G1 comparison F1; the orchestrator read both sites.
+  `slicesamplebnd.m:362` accumulates over `ii > burn/2` and divides by
+  `floor(burn/2)`, one term more than the divisor when the burn-in is odd,
+  so that its variance estimate is negative wherever a coordinate's SD is
+  small against its mean, the square root complex, and `:371` then discards
+  the adapted widths of every coordinate; `slice_sample.py:562` accumulates
+  `floor(burn/2)` terms and has a variance. PyVBMC's burn-in is odd in a
+  large part of its fits (`thin * 3 = 15`, and `thin * gp_s_N` for an odd
+  count of samples), as MATLAB's is (`get_GPTrainOptions.m:108`). For an
+  even burn-in the reviewer's line-by-line transcription of
+  `slicesamplebnd.m` and gpyreg's sampler are bit for bit the same, samples
+  and widths, which settles every other line of the sampler; at `burn = 15`
+  on a 34-point GP the adapted widths differ by up to a factor of 19. The
+  defect is MATLAB's and gpyreg is the consistent side: a sheet entry and a
+  line of `matlab_side_defects.md`, no fix, if the verification bears it
+  out. Beside it, gpyreg floors a negative estimate at zero, which leaves a
+  coordinate a width of zero (the reviewer's M6). (3) G1 internal F9: a
+  training set whose targets are all equal gives the output scale the
+  bounds `(-inf, -inf)`, which L-BFGS-B answers with a `KeyError`; a run
+  reaches it with a log joint that is constant over the training inputs.
+  (4) The variance over the hyperparameter samples has `ddof=1`
+  (`gaussian_process.py:2049`, behind `lcb_max`), which the internal G2
+  reviewer passes to the comparison track: `gplite_pred.m:157-160` divides
+  by `Ns - 1` as well (the orchestrator's reading), so it is MATLAB's
+  convention.
+
+  Without effect on a default PyVBMC run, in gpyreg's public interface. All
+  four reviewers: the eigenvalue fallback of `__robust_cholesky`
+  (`gaussian_process.py:2620-2622`) flips single entries of the eigenvector
+  matrix where `gplite_rnd.m:97-99` flips columns, so `T'T` is not the
+  matrix (errors of the size of the matrix itself; two identical test
+  points drawn with correlation -0.76), and with a negative eigenvalue of
+  rounding size left, the ordinary case on a dense grid, it returns zeros,
+  so that `random_function` returns the predictive mean without a word
+  where MATLAB fails on the sizes (G2 comparison F6). Both G2 reviewers:
+  `predict_full(add_noise=True)` adds a column broadcast over the rows, not
+  a diagonal, for noise that varies by point (`:1852`); the variance of
+  `quad` derives the scale of the factorization anew from the training
+  noise where `Posterior.sl` stores it, and collapses to `eps` after a
+  rank-one update with a point of lower noise (`:2188-2196`, in the fix of
+  `cec1f85`); `RationalQuadraticARD.get_bounds_info` writes the plausible
+  upper bound of the shape into the slot of the output scale
+  (`covariance_functions.py:414`); the isotropic bounds take `min` and
+  `max` of a scalar and the log of the mean width where
+  `gplite_covfun.m:112-119` has the mean of the logs. Both G1 reviewers:
+  `df == 0 | ~np.isfinite(df)` binds as `df == (0 | ...)` in the masks of
+  the hyperpriors (`:1441`, `:1457`), so a prior with `df = inf`, the
+  Gaussian of `gplite_nlZ.m`'s header, is dropped while its normalization
+  constant is still subtracted, `__recompute_normalization_constants`
+  having the test right (the slip of W5-4 again); `fit` writes its low-noise
+  start through a view into the design and takes the default sampler widths
+  from the design so altered (`:1243`, `:1259`, `:1262`), after the write
+  where `gplite_train.m:206-207` takes them before, from a copy: gpyreg's
+  own default options reach it, PyVBMC's never (`opts_N` of 0 or 1, or no
+  samples); a single-point `update` on posteriors that `clean()` has
+  emptied takes the rank-one path and raises. G1 internal alone: the
+  normalization constant of a smooth-box prior is not masked to the
+  coordinates it multiplies, so a smooth box over two or more
+  hyperparameters gives twice the log prior or raises (F2); `fit` reads
+  `options["sampler"]` and documents `sampler_name` (F5); `log_likelihood`
+  and `log_posterior` raise on the dictionary their docstrings offer (F6);
+  an infinite width passes the check of `SliceSampler` and returns after
+  burn-in through `base_widths` (F10); a free parameter that never moved is
+  flagged only if its constant value averages without rounding, 0 and 1,
+  the two values the tests use (F11). G1 comparison alone: the test for no
+  prior has `and` where `gplite_hypprior.m:35` and `fminfill.m:73` have
+  `||`, which the smooth-box families need, and leaves MATLAB's documented
+  flat prior, `sigma = Inf`, a log posterior of NaN (F4); the noise
+  gradient for a constant total noise with more than one noise
+  hyperparameter indexes `dsn2` along the wrong axis and raises, where
+  `gplite_core.m:252-253` reads the wrong entry by linear indexing, no run
+  reaching it since level 1 always has `s2` (F6); neither the design nor
+  the optimizer loop catches an exception of the objective, where MATLAB
+  catches in three places (F7). G2 comparison alone: the gradient of the
+  Matern kernel of degree 1 is NaN on the diagonal on both sides, MATLAB
+  carrying the repair as a commented-out line (F11). On the PyVBMC side,
+  G1 comparison M2: `hyp_dict["logp"]` is given `res["log_priors"]`, an
+  array of zeros, where `gptrain_vbmc.m:66` stores the thinned log
+  posterior; nothing reads it on either side.
+
+  The sheet. Contested: the entry on the quantile and standard-deviation
+  conventions (above). The figure of 1e-15 in the entry on the rank-one
+  update holds for `L_chol` true, the one representation a run has, and a
+  second difference of state stands beside the `sn2_mult` it names: a new
+  point whose noise falls below 1e-6 leaves `L_chol` true where a rebuild
+  has false. Without an entry: the variance of `quad` since `cec1f85`,
+  which is right where `gplite_quad.m:66-67` normalizes by the constant
+  noise term alone and clamps to `eps` under heteroskedastic noise (2001
+  grid points against both); the averaged log density; the three additions
+  to the hyperprior (the smooth-box families, the renormalization over the
+  bounds, the fixed prior) with the `and` they need; the window of the
+  burn-in; the stability guard of the rank-one update and the zero fill of
+  `s2`; the default `hyp0` of `fit`.
+
+  Tests. `test_predict_lpd` and its isotropic twin zero their `s2_star`
+  and hand `update`, which does not check the width, a row of 12
+  hyperparameters for a GP of 11, so that the noise entry is read as the
+  mean's constant: they pin the log density at a total noise of `eps`
+  alone (both G2 reviewers). No test reads `PLB`, `PUB` or `x0` of any
+  component, and `test_setting_bounds` compares the assembler with the
+  components' own values; `random_function` is tested for shapes; the
+  Matern gradient tests have degree 3 alone; no test of the sampler has an
+  odd burn-in or compares a chain with a reference; the tests of the
+  rank-one update assert `L_chol`, use one sample and `sn2_mult = 1`;
+  `test_uuinv` asserts the length-weighted masses of the body; the two
+  tests of a frozen chain pass on 0 and 1 alone; the fixture of the priors
+  puts each smooth box on a single hyperparameter, the one case that F2
+  leaves right. Well tested, against the specification: `quad` with noise
+  against Gauss-Hermite quadrature of `predict_full` (on a fresh posterior
+  only), the cross-covariance interface, `_solve_triangular`.
+
+  The MATLAB side, for `matlab_side_defects.md` after verification: the
+  burn-in window of `slicesamplebnd.m`; the variance of `gplite_quad.m`
+  under heteroskedastic noise; the linear index of `gplite_core.m:252-253`;
+  the Matern gradient of degree 1; the tolerance of `robustchol`, which
+  refuses eigenvalues of rounding size; `gplite_post.m:250`, which leaves
+  `gp.s2` shorter than `gp.X` after a rank-one update without `s2`;
+  `gplite_train.m:298` with `Ninit == 0`; the comment of `uuinv`.
+- [ ] **Pickup point (2026-09-21): wave 6, the two gpyreg slices G1 and G2
+  on both tracks (four reviewers), by the PI's decision of 2026-09-21, is
+  run and reported (the entry above): steps 1 and 2 below are done, and the
+  next is step 3, on the PI's word.** No verification has started. The
+  session starts no other wave.
 
   Why this wave. G1 and G2 are the only slices that no reviewer has read,
   and what they find can still move the GP fit, on which the stored oracle
