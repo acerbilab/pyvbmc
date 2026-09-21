@@ -1075,15 +1075,17 @@ class VariationalPosterior:
         theta = theta.copy()
 
         # check if sigma, lambda and weights are positive when raw_flag = False
+        # They occupy the tail of the vector, after the means, which are
+        # unconstrained; an empty tail leaves nothing to check.
         if not raw_flag:
-            check_idx = 0
-            if self.optimize_weights:
-                check_idx -= self.K
-            if self.optimize_lambd:
-                check_idx -= self.D
+            n_constrained = 0
             if self.optimize_sigma:
-                check_idx -= self.K
-            if np.any(theta[-check_idx:] < 0.0):
+                n_constrained += self.K
+            if self.optimize_lambd:
+                n_constrained += self.D
+            if self.optimize_weights:
+                n_constrained += self.K
+            if n_constrained > 0 and np.any(theta[-n_constrained:] < 0.0):
                 raise ValueError(
                     """sigma, lambda and weights must be positive
                     when raw_flag = False"""

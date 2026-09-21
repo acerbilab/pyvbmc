@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import numpy as np
@@ -387,15 +388,60 @@ def test_set_parameters_not_raw():
 
 
 def test_set_parameters_not_raw_negative_error():
+    """The entries that hold ``sigma``, ``lambd`` and the weights must be
+    positive. The means are left positive here, so that the refusal can
+    only come from those entries."""
     K = 2
     D = 3
     vp = VariationalPosterior(D, K, np.array([[5]]))
     vp.optimize_weights = True
     theta_size = D * K + 2 * K + D
-    rng = np.random.default_rng()
-    theta = rng.random(theta_size) * -1
-    with pytest.raises(ValueError):
+    rng = np.random.default_rng(20260921)
+    theta = rng.random(theta_size)
+    theta[D * K :] *= -1
+    with pytest.raises(ValueError, match="must be positive"):
         vp.set_parameters(theta, raw_flag=False)
+
+
+@pytest.mark.parametrize("D, K", [(3, 4), (2, 2)])
+@pytest.mark.parametrize(
+    "optimize_mu, optimize_sigma, optimize_lambd, optimize_weights",
+    list(itertools.product([True, False], repeat=4)),
+)
+def test_set_parameters_not_raw_checks_the_constrained_entries(
+    D, K, optimize_mu, optimize_sigma, optimize_lambd, optimize_weights
+):
+    """With ``raw_flag=False`` every entry that holds ``sigma``, ``lambd``
+    or a weight is required to be positive, and those entries alone: the
+    means are unconstrained, and a vector that carries none of the three
+    leaves nothing to check."""
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_mu = optimize_mu
+    vp.optimize_sigma = optimize_sigma
+    vp.optimize_lambd = optimize_lambd
+    vp.optimize_weights = optimize_weights
+
+    blocks = []
+    if optimize_mu:
+        blocks.append(np.full(D * K, -1.0))
+    n_unconstrained = int(sum(block.size for block in blocks))
+    if optimize_sigma:
+        blocks.append(np.full(K, 0.5))
+    if optimize_lambd:
+        blocks.append(np.full(D, 2.0))
+    if optimize_weights:
+        blocks.append(np.full(K, 1.0 / K))
+    theta = np.concatenate(blocks) if blocks else np.array([])
+
+    # Negative means are taken.
+    vp.set_parameters(theta.copy(), raw_flag=False)
+
+    # A single negative scale or weight is refused, wherever it sits.
+    for idx in range(n_unconstrained, theta.size):
+        negative = theta.copy()
+        negative[idx] = -negative[idx]
+        with pytest.raises(ValueError, match="must be positive"):
+            vp.set_parameters(negative, raw_flag=False)
 
 
 def test_get_parameters_raw():
