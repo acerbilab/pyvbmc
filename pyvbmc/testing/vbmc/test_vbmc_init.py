@@ -839,8 +839,8 @@ def test_vbmc_init_log_joint():
         sample_prior=sample_prior,
     )
     x = np.random.normal()
-    np.isclose(vbmc.log_joint(x), log_joint(x))
-    np.isclose(vbmc.function_logger.fun(x), log_joint(x))
+    assert np.isclose(vbmc.log_joint(x), log_joint(x))
+    assert np.isclose(vbmc.function_logger.fun(x), log_joint(x))
     assert vbmc.prior.sample is sample_prior
     assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
@@ -881,8 +881,14 @@ def test_vbmc_init_log_joint_noisy():
         options=options,
     )
     x = 5.6
-    np.isclose(vbmc.log_joint(x), log_joint(x))
-    np.isclose(vbmc.function_logger.fun(x), log_joint(x))
+    # A noisy log-joint returns the value and the noise estimate.
+    value, noise = vbmc.log_joint(x)
+    expected_value, expected_noise = log_joint(x)
+    assert np.isclose(value, expected_value)
+    assert np.isclose(noise, expected_noise)
+    logged_value, logged_noise = vbmc.function_logger.fun(x)
+    assert np.isclose(logged_value, expected_value)
+    assert np.isclose(logged_noise, expected_noise)
     assert vbmc.prior.log_pdf is log_prior
     assert vbmc.log_likelihood is log_lklhd
 
@@ -922,7 +928,9 @@ def test_vbmc_init_log_joint_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(vbmc.log_joint(x), log_likelihood(x) + new_prior.log_pdf(x))
+        assert np.isclose(
+            vbmc.log_joint(x), log_likelihood(x) + new_prior.log_pdf(x)
+        )
     scipy_priors = [
         multivariate_normal(np.zeros(D)),
         multivariate_t(np.zeros(D), df=7),
@@ -946,7 +954,7 @@ def test_vbmc_init_log_joint_prior():
             for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x), log_likelihood(x) + vbmc.prior.log_pdf(x)
         )
 
@@ -981,10 +989,10 @@ def test_vbmc_init_log_joint_noisy_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
         # Init with prior and matching log_prior, sample_prior:
         vbmc = VBMC(
             log_likelihood,
@@ -999,10 +1007,10 @@ def test_vbmc_init_log_joint_noisy_prior():
         )
         assert vbmc.prior == new_prior
         x = new_prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + new_prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
     scipy_priors = [
         multivariate_normal(np.zeros(D)),
         multivariate_t(np.zeros(D), df=7),
@@ -1027,10 +1035,10 @@ def test_vbmc_init_log_joint_noisy_prior():
             for m, marginal in enumerate(vbmc.prior.marginals):
                 assert marginal.distribution is prior[m]
         x = vbmc.prior.sample(1)
-        np.isclose(
+        assert np.isclose(
             vbmc.log_joint(x)[0], log_likelihood(x)[0] + vbmc.prior.log_pdf(x)
         )
-        np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
+        assert np.isclose(vbmc.log_joint(x)[1], log_likelihood(x)[1])
 
 
 def test_vbmc_init_error_handling():
