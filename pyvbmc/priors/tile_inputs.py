@@ -48,6 +48,14 @@ def tile_inputs(*args, size=None, squeeze=False):
         else:
             # Or use inferred shape
             size = shape
+    elif shape is not None and shape != size:
+        # `reshape` below accepts any array with the right number of
+        # elements, which would map the parameters onto the wrong
+        # coordinates.
+        raise ValueError(
+            f"All inputs should agree with size={size}, but found an input "
+            f"with shape {shape}."
+        )
 
     for i, arg in enumerate(args):
         if np.isscalar(arg):
