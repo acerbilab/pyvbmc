@@ -667,7 +667,7 @@ class VariationalPosterior:
                     if N > i.shape[0]:
                         w_extra = self.w * N - repeats
                         repeats_extra = np.ceil(np.sum(w_extra))
-                        w_extra += self.w * (repeats_extra - sum(w_extra))
+                        w_extra += self.w * (repeats_extra - np.sum(w_extra))
                         w_extra /= np.sum(w_extra)
                         i_extra = rng.choice(
                             range(self.K),

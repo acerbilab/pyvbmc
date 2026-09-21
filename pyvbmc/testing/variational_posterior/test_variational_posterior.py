@@ -135,6 +135,47 @@ def test_sample_balance_extra():
     assert np.all(np.isin(counts, np.array([N // 2, N // 2 + 1])))
 
 
+class _RecordingGenerator(np.random.Generator):
+    """A generator that keeps the probabilities of each weighted draw."""
+
+    def __init__(self, bit_generator):
+        super().__init__(bit_generator)
+        self.recorded_p = []
+
+    def choice(self, *args, **kwargs):
+        if kwargs.get("p") is not None:
+            self.recorded_p.append(np.array(kwargs["p"], copy=True))
+        return super().choice(*args, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "w, N, expected",
+    [
+        ([0.7, 0.2, 0.1], 13, [0.1, 0.6, 0.3]),
+        ([1 / 3, 2 / 3], 10, [1 / 3, 2 / 3]),
+    ],
+)
+def test_sample_balance_remainder_follows_the_fractional_parts(w, N, expected):
+    """A balanced draw takes ``floor(w * N)`` samples from each component
+    and draws the remainder in proportion to the fractional parts of
+    ``w * N`` (``vbmc_rnd.m:67-71``)."""
+    w = np.atleast_2d(np.asarray(w, dtype=float))
+    K = w.size
+    vp = VariationalPosterior(1, K, np.zeros((1, 1)))
+    vp.w = w.copy()
+    vp.mu = np.linspace(-10, 10, K).reshape(1, K)
+    vp.sigma = np.ones((1, K))
+    vp.lambd = np.ones((1, 1))
+    rng = _RecordingGenerator(np.random.PCG64(20260921))
+    vp.rng = rng
+    assert vp.rng is rng
+
+    vp.sample(N, orig_flag=False, balance_flag=True)
+
+    assert len(rng.recorded_p) == 1
+    assert np.allclose(rng.recorded_p[0], expected, rtol=0, atol=1e-12)
+
+
 def test_sample_one_k():
     vp = VariationalPosterior(3, 1, np.array([[5]]))
     N = 11
