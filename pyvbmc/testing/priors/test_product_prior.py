@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from pytest import raises
 from scipy.special import gamma
 from scipy.stats import (
@@ -151,6 +152,52 @@ def test_product_sample_user_function_marginal():
     for row in range(x.shape[0]):
         expected = log_marginal(x[row, :1]) + box.log_pdf(x[row, 1:]).item()
         assert np.isclose(log_pdf[row, 0], expected), f"Failed for row {row}!"
+
+
+@pytest.mark.parametrize(
+    "wrap",
+    [
+        lambda value: float(value),
+        lambda value: np.array(value),
+        lambda value: np.array([value]),
+        lambda value: np.array([[value]]),
+    ],
+    ids=["float", "0-d array", "(1,) array", "(1, 1) array"],
+)
+def test_a_user_function_marginal_may_return_its_value_as_an_array(wrap):
+    """The user's callable returns one value, which it may write as a float
+    or as an array of one element: a one-dimensional density written with
+    `scipy.stats` returns the shape it was given."""
+
+    def log_marginal(x):
+        return wrap(-0.5 * float(x[0]) ** 2)
+
+    box = UniformBox(0.0, 1.0, D=1)
+    prior = Product([UserFunction(log_marginal, D=1), box])
+
+    x = np.array([[-1.0, 0.25], [0.0, 0.5], [2.0, 0.75]])
+    log_pdf = prior.log_pdf(x)
+    assert log_pdf.shape == (3, 1)
+    for row in range(x.shape[0]):
+        expected = -0.5 * x[row, 0] ** 2 + box.log_pdf(x[row, 1:]).item()
+        assert np.isclose(log_pdf[row, 0], expected), f"Failed for row {row}!"
+
+
+def test_a_user_function_marginal_that_returns_several_values_is_refused():
+    """A callable that returns more than one value for one point is a
+    density of the wrong shape, and the refusal names where it happened."""
+    prior = Product(
+        [
+            UniformBox(0.0, 1.0, D=1),
+            UserFunction(lambda x: np.zeros(2), D=1),
+        ]
+    )
+    with raises(ValueError) as err:
+        prior.log_pdf(np.array([[0.25, 0.5], [0.75, 0.5]]))
+    message = err.value.args[0]
+    assert "marginal 1" in message
+    assert "one value for row 0" in message
+    assert "shape (2,)" in message
 
 
 def test_product_calls_a_user_function_marginal_once_per_point():

@@ -90,9 +90,17 @@ class Product(Prior):
             if isinstance(marginal, UserFunction):
                 # `log_pdf` is the user's own callable, which takes one
                 # point as a one-dimensional array and returns its
-                # log-density.
+                # log-density as one value, written as a float or as an
+                # array of one element.
                 for row in range(n):
-                    log_pdf[row, m] = marginal.log_pdf(x[row, m : m + 1])
+                    value = np.asarray(marginal.log_pdf(x[row, m : m + 1]))
+                    if value.size != 1:
+                        raise ValueError(
+                            f"The log density of marginal {m} must return "
+                            f"one value for row {row}, but returned an "
+                            f"array of shape {value.shape}."
+                        )
+                    log_pdf[row, m] = value.item()
             else:
                 log_pdf[:, m] = marginal.log_pdf(x[:, m], keepdims=False)
         log_pdf = np.sum(log_pdf, axis=1, keepdims=True)
