@@ -1430,8 +1430,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `(inf, inf)` on the default route of `sKL` (`D = 40` at SD 1e-8; six
   digits left at `D = 20`), the formula being `mvnkl.m`'s; `entmc_vbmc`
   returns NaN when a weight is exactly zero and the components are
-  separated, which needs `eta` 745 below the largest, the soft bound on
-  `eta` being gone, and MATLAB has the same structure; the guard of
+  separated, which needs `eta` more than 745 below the largest, the soft bound
+  on `eta` being gone, and MATLAB has the same structure; the guard of
   `kl_div(gauss_flag=False)` against infinite densities never fires,
   `q == 0 | np.isinf(q)` binding as `q == (0 | isinf(q))` (both reviewers;
   correct in the first port, rewritten by `4a071d8c`, 2022-09-13), and
@@ -1505,10 +1505,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   configurations with the draws injected, the weight gradient of `1b72896`
   included; the comparison reviewer has no finding in them.
 
-  Tests. The tests of the four defects that both P7 reviewers found are
-  blind by construction: equal weights, for which the balanced error
+  Tests. The tests of the three defects that both P7 reviewers found are
+  blind by construction (equal weights, for which the balanced error
   cancels; one mean for every coordinate; a parameter vector negative
-  throughout; the mode in `D = 2` under an identity transform. No sampler
+  throughout), and so are those of the mode, in `D = 2` under an identity
+  transform. No sampler
   of a prior has a test of its distribution, which MATLAB's
   `test_pdfs_vbmc.m` has for all four (both P9 reviewers). Six statements
   of `test_vbmc_init.py` compare the log joint with the likelihood plus the
@@ -1582,10 +1583,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `verification/wave5.md`. Where the proposal for W5-7 left the choice open,
   the orchestrator took the fix, which the PI can strike before the push.
 
-  Fixes: three Opus agents on worktrees cut at `a2104e6`, thirty commits, one
-  row each with a test written against the contract and seen to fail on the
-  code before it (`fixes/wave5_agent_A.md`, `wave5_agent_B.md`,
-  `wave5_agent_C.md`); the orchestrator reviewed each diff and cherry-picked
+  Fixes: three Opus agents on worktrees cut at `a2104e6`, thirty commits
+  (`fixes/wave5_agent_A.md`, `wave5_agent_B.md`, `wave5_agent_C.md`):
+  twenty-six fixes, each with a test written against the contract and seen
+  to fail on the code before it, two commits of documentation and two of
+  tests; the orchestrator reviewed each diff and cherry-picked
   them, without a conflict, and made two more (a docstring of the oracle
   harness, and the requirement of W5-5 in the FAQ and on the API page of the
   priors). The variational posterior: the balanced draw, the mean of the
@@ -1662,6 +1664,100 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   11 of 11 with nothing re-baselined. The whole suite, the four seeded runs,
   the Torch and PyMC environments and the CI matrix have not run on the
   branch, which waits to be brought onto `dev-port-review`.
+- [ ] **In flight, wave 5 (2026-09-21, late): the independent check of the
+  pass and its fix round.** Read this before the pickup point below, which
+  it supersedes for the state of the branch.
+
+  Done. `dev-port-review-w2check` is merged into `dev-port-review` as a
+  fast-forward (`b1bab4d`; its worktree removed, the branch name left). On
+  the merged head the four seeded runs are bit for bit those after the
+  wave-5 pass (`verification_logs/wave5_gates/gate3_*`, against
+  `after_pass_23d962a1.npz`). The pass was checked by five fresh read-only
+  Opus reviewers (PI: `/doublecheck`): R1 the commits on the variational
+  posterior, R2 the priors, R3 the active sampling and options with the
+  reach of the pass, R4 the ledger against its sources, R5 the user-facing
+  texts and the records. Their raw reports and scripts are on the
+  orchestrator's machine, `dev/scripts/runs/port_review_20260919/wave5_doublecheck/`
+  (`R1.md` to `R5.md`). Three findings had to be fixed: the check of a prior
+  against the hard bounds compared exactly and refused the FAQ's own
+  `uniform(loc=low, scale=high - low)` for about a quarter of decimal
+  bounds; the sentence "with one variable a bounded scalar search is used
+  whatever the option holds" is false for `search_optimizer="none"` (option
+  description, refusal message, changelog, sheet); and the ledger's W5-6
+  said that the rounding moves nothing at the defaults, where a starting
+  cache that leaves a number of random points 2 modulo 4 reaches a tie.
+
+  PI rulings on the check (2026-09-21): a slack of `1e-9 * (ub - lb)` in the
+  support check, none at an infinite bound; the sieve caps each source at
+  what is left of its budget, the sum check at construction staying;
+  `mode(n_opts=k)` neither reads nor writes the stored mode; the sample
+  count of `to_arviz` waits for slice N2; W5-7 stays; every should-fix item
+  is taken, with these optional ones: `sample` takes a 0-d `N`, the
+  unreachable `else` of the search chain names the option, the dead
+  `optim_state["hedge"]` line, the `new_options` hint in two refusal
+  messages, a scalar support broadcast, `SciPy.a`/`.b` as float, the
+  rounding helper in `test_gp_training_policy.py`, the dead `jacobian == 0`
+  clause. Left, with a line in the ledger: `np.errstate` hiding a genuine
+  overflow warning in `pdf`, the `0/0` row of the density, `mode()`
+  returning the stored array itself, the platform risk of the
+  Kolmogorov-Smirnov test, the sentence of `AGENTS.md` on `__deepcopy__`.
+
+  The fix round. Agent D (priors) is finished and reviewed, and NOT yet
+  cherry-picked: six commits on the branch
+  `worktree-agent-ad4a8ebc373a9f8f3` (`ef5617c` the slack and the broadcast,
+  `d78573c` `SciPy` and `Product` read their support from the distribution
+  at every call, `a` and `b` becoming read-only float64 properties,
+  `7ee2030` a one-element return of a `UserFunction` marginal, `2d74c6d`
+  `tile_inputs` judged by the squeezed shape, `264fb7e` `_check_finite`,
+  `5072f99` docstrings); its report is `fixes/wave5_check_agent_D.md`. Agent
+  E (the false sentence, the sieve cap, a test of the reachable tie, a test
+  of an on-grid cached point, the store of `mode`, the small items, the
+  option descriptions) was still running on the worktree
+  `.claude/worktrees/agent-ae7473ad5def2bdc3` (branch
+  `worktree-agent-ae7473ad5def2bdc3`) when this was written; its final
+  message is in the session transcript
+  (`subagents/agent-ae7473ad5def2bdc3.jsonl` of session `bac5e0b4-...`), to
+  be saved with `extract_report.py` as `fixes/wave5_check_agent_E.md` under
+  a header like agent D's.
+
+  Committed with this entry: the corrections of R4 and R5 to the ledger, to
+  `matlab_side_defects.md` and to this worklog, and the corrected FAQ answer
+  on integer parameters, API page of the priors and README of the
+  variational posterior.
+
+  What is left, in order. (1) Review agent E's diffs; cherry-pick D's
+  commits, then E's, onto `dev-port-review`; run the focused tests
+  (`pyvbmc/testing/priors`, `test_vbmc_init.py`, `test_vbmc_active_sample.py`,
+  `test_vbmc_option_names.py`, `test_options.py`,
+  `test_variational_posterior.py`, `test_gp_training_policy.py`). (2) The
+  texts that waited for the code. `CHANGELOG.md`: the scales at which the
+  determinants leave the range of a double are 8e-9 and 5e7 at twenty
+  parameters (2e-11 and 2e10 at fifteen), not "ten to twenty, 1e-8, 1e7";
+  the sentence that gives 1.0.4 a threshold of 0.25 for `search_cache_frac`
+  contradicts the entry that says any positive value failed at the first
+  step in 1.0.4; the training inputs kept out of the search cache belong to
+  the unreleased entry on repeated observations; `tile_inputs`; a float32
+  input of `pdf`; the "Upgrading" list lacks `kl_div_mvn` with `sKL`,
+  `get_parameters` discarding a stored mode, and the read-only `a` and `b`;
+  the rounding entry lacks the bonus of components, the burn-in and the
+  initial training points; "whatever the option holds" under Removed; and
+  the sentences of agents D and E. The sheet: the same false sentence in the
+  entry on `search_optimizer`, `check_finite` renamed, the citations
+  `trapezoidal.py:74-80` and `spline_trapezoidal.py:76-82` one line low, a
+  line on the sieve cap (a departure from MATLAB, which oversizes the set)
+  and on the slack; then `refresh_citations.py` (the version that w2check
+  brought). The ledger: a section "The independent check of the pass" (the
+  five reviewers, what they found, the rulings, the commits of the round,
+  the gates), and the statement in "Found during the fix pass" that the
+  FAQ's list of `uniform` marginals "is taken", true only since the slack
+  (`fixes/wave5_agent_B.md` says the same and gets a flag). A worklog entry,
+  and `dev/scripts/runs/LOCAL.md`. (3) The gates, once for w2check and the
+  round together: the four seeded runs bit for bit against
+  `wave5_gates/after_pass_23d962a1.npz`, the exact oracle check, the default
+  suite, the Torch and the PyMC environments. (4) One fresh Opus reviewer on
+  the fix round alone. (5) Report to the PI; push, smoke, matrix and the
+  merge into `dev-next` on the PI's word; the two worktrees and branches
+  removed once `git cherry` shows their commits on the branch.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"
