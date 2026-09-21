@@ -9,6 +9,13 @@ cherry-picked the commits onto `dev-port-review`, where they have other
 hashes (`../verification/wave5.md`, "Fix commits"). The text below the rule
 is the agent's final message, unedited.
 
+Flag (2026-09-21). The report's statement that the FAQ's
+`[uniform(loc=low, scale=high - low) for low, high in zip(LB, UB)]` "is
+accepted" by the support check held only for bounds whose `loc + scale` is
+exact: the check compared exactly and refused that list for about a
+quarter of decimal bounds, until the slack of `42c3942`
+(`../verification/wave5.md`, "The independent check of the pass").
+
 ---
 
 # Wave 5 fix pass: report of fix agent B

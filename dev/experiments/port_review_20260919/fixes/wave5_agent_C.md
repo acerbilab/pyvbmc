@@ -9,6 +9,13 @@ cherry-picked the commits onto `dev-port-review`, where they have other
 hashes (`../verification/wave5.md`, "Fix commits"). The text below the rule
 is the agent's final message, unedited.
 
+Flag (2026-09-21). The report says twice that a problem of one variable
+"is searched by a bounded scalar method whatever the option holds". That
+is false for `search_optimizer="none"`, under which no local search runs,
+one variable included; the sentence came from the orchestrator's brief
+and was corrected in the code and the texts by `d66ddf2`
+(`../verification/wave5.md`, "The independent check of the pass").
+
 ---
 
 # Wave 5 fix pass: report of fix agent C

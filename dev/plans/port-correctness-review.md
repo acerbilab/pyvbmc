@@ -1664,100 +1664,83 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   11 of 11 with nothing re-baselined. The whole suite, the four seeded runs,
   the Torch and PyMC environments and the CI matrix have not run on the
   branch, which waits to be brought onto `dev-port-review`.
-- [ ] **In flight, wave 5 (2026-09-21, late): the independent check of the
-  pass and its fix round.** Read this before the pickup point below, which
-  it supersedes for the state of the branch.
-
-  Done. `dev-port-review-w2check` is merged into `dev-port-review` as a
-  fast-forward (`b1bab4d`; its worktree removed, the branch name left). On
-  the merged head the four seeded runs are bit for bit those after the
-  wave-5 pass (`verification_logs/wave5_gates/gate3_*`, against
-  `after_pass_23d962a1.npz`). The pass was checked by five fresh read-only
-  Opus reviewers (PI: `/doublecheck`): R1 the commits on the variational
-  posterior, R2 the priors, R3 the active sampling and options with the
+- [x] **2026-09-21, wave 5: the independent check of the pass, and its fix
+  round.** On the PI's instruction (`/doublecheck`) five fresh read-only Opus
+  reviewers read the pass on `0bf7963`: R1 the commits on the variational
+  posterior, R2 the priors, R3 the active sampling and the options with the
   reach of the pass, R4 the ledger against its sources, R5 the user-facing
-  texts and the records. Their raw reports and scripts are on the
-  orchestrator's machine, `dev/scripts/runs/port_review_20260919/wave5_doublecheck/`
-  (`R1.md` to `R5.md`). Three findings had to be fixed: the check of a prior
-  against the hard bounds compared exactly and refused the FAQ's own
-  `uniform(loc=low, scale=high - low)` for about a quarter of decimal
-  bounds; the sentence "with one variable a bounded scalar search is used
-  whatever the option holds" is false for `search_optimizer="none"` (option
-  description, refusal message, changelog, sheet); and the ledger's W5-6
-  said that the rounding moves nothing at the defaults, where a starting
-  cache that leaves a number of random points 2 modulo 4 reaches a tie.
+  texts and the records; 68 findings, their raw reports on the
+  orchestrator's machine (`dev/scripts/runs/LOCAL.md`). Three had to be
+  fixed. The check of a prior against the hard bounds compared exactly and
+  refused the FAQ's own `uniform(loc=low, scale=high - low)` for about a
+  quarter of decimal bounds. The sentence "with one variable a bounded
+  scalar search is used whatever the option holds", which came from the
+  orchestrator's brief, is false for `search_optimizer="none"`. And the
+  ledger's W5-6 said that the rounding fires in no run at the defaults,
+  where a starting cache reaches a tie, at which the rounded shares of the
+  sieve could claim more than the whole and end the run with a `ValueError`.
 
-  PI rulings on the check (2026-09-21): a slack of `1e-9 * (ub - lb)` in the
-  support check, none at an infinite bound; the sieve caps each source at
-  what is left of its budget, the sum check at construction staying;
-  `mode(n_opts=k)` neither reads nor writes the stored mode; the sample
-  count of `to_arviz` waits for slice N2; W5-7 stays; every should-fix item
-  is taken, with these optional ones: `sample` takes a 0-d `N`, the
-  unreachable `else` of the search chain names the option, the dead
-  `optim_state["hedge"]` line, the `new_options` hint in two refusal
-  messages, a scalar support broadcast, `SciPy.a`/`.b` as float, the
-  rounding helper in `test_gp_training_policy.py`, the dead `jacobian == 0`
-  clause. Left, with a line in the ledger: `np.errstate` hiding a genuine
-  overflow warning in `pdf`, the `0/0` row of the density, `mode()`
-  returning the stored array itself, the platform risk of the
-  Kolmogorov-Smirnov test, the sentence of `AGENTS.md` on `__deepcopy__`.
+  PI rulings: a slack of `1e-9 * (ub - lb)` in the support check, none at an
+  infinite bound; the sieve caps each source at what is left, the check at
+  construction staying; `mode(n_opts=k)` neither reads nor writes the stored
+  mode; the sample count of `to_arviz` waits for slice N2; W5-7 stays; the
+  should-fix items taken, with a list of optional ones.
 
-  The fix round. Agent D (priors) is finished and reviewed, and NOT yet
-  cherry-picked: six commits on the branch
-  `worktree-agent-ad4a8ebc373a9f8f3` (`ef5617c` the slack and the broadcast,
-  `d78573c` `SciPy` and `Product` read their support from the distribution
-  at every call, `a` and `b` becoming read-only float64 properties,
-  `7ee2030` a one-element return of a `UserFunction` marginal, `2d74c6d`
-  `tile_inputs` judged by the squeezed shape, `264fb7e` `_check_finite`,
-  `5072f99` docstrings); its report is `fixes/wave5_check_agent_D.md`. Agent
-  E (the false sentence, the sieve cap, a test of the reachable tie, a test
-  of an on-grid cached point, the store of `mode`, the small items, the
-  option descriptions) was still running on the worktree
-  `.claude/worktrees/agent-ae7473ad5def2bdc3` (branch
-  `worktree-agent-ae7473ad5def2bdc3`) when this was written; its final
-  message is in the session transcript
-  (`subagents/agent-ae7473ad5def2bdc3.jsonl` of session `bac5e0b4-...`), to
-  be saved with `extract_report.py` as `fixes/wave5_check_agent_E.md` under
-  a header like agent D's.
+  `dev-port-review-w2check` was merged first, as a fast-forward (`b1bab4d`;
+  its worktree removed, the branch name left). Two Opus agents on worktrees
+  cut there made thirteen commits (`fixes/wave5_check_agent_D.md`, priors;
+  `wave5_check_agent_E.md`, active sampling, option checks and variational
+  posterior), each fix with a test seen to fail on the code before it but
+  for two commits of tests, two removals of dead code and the docstrings;
+  the orchestrator reviewed the diffs, cherry-picked them without a conflict
+  and wrote the texts: the FAQ, the API page of the priors and the README of
+  the variational posterior, the changelog (against 1.0.4, which is why it
+  does not follow the agents' sentences where those describe the branch),
+  the sheet with its citations carried by the `refresh_citations.py` that
+  w2check brought, entry 35 of `matlab_side_defects.md`, and the ledger:
+  `verification/wave5.md`, "The independent check of the pass", has each
+  finding with its commit, what is left and why, and the argument that the
+  tie of the starting cache is the only one within reach of the shipped
+  options. `extract_report.py` takes a chosen candidate, since an agent that
+  hands its report back through a tool call and then closes under the same
+  title leaves two.
 
-  Committed with this entry: the corrections of R4 and R5 to the ledger, to
-  `matlab_side_defects.md` and to this worklog, and the corrected FAQ answer
-  on integer parameters, API page of the priors and README of the
-  variational posterior.
+  Gates on `f86d373`, once for the merge and the round: the four seeded runs
+  bit for bit the record after the pass (92 arrays, 0 differ), as on the
+  merged head before the round; the exact oracle check, 11 of 11 with
+  nothing re-baselined; the default suite, 1961 passed and 58 skipped with
+  no reruns; the Torch environment, 1009 passed and 1 skipped; the PyMC
+  environment, 107 passed.
 
-  What is left, in order. (1) Review agent E's diffs; cherry-pick D's
-  commits, then E's, onto `dev-port-review`; run the focused tests
-  (`pyvbmc/testing/priors`, `test_vbmc_init.py`, `test_vbmc_active_sample.py`,
-  `test_vbmc_option_names.py`, `test_options.py`,
-  `test_variational_posterior.py`, `test_gp_training_policy.py`). (2) The
-  texts that waited for the code. `CHANGELOG.md`: the scales at which the
-  determinants leave the range of a double are 8e-9 and 5e7 at twenty
-  parameters (2e-11 and 2e10 at fifteen), not "ten to twenty, 1e-8, 1e7";
-  the sentence that gives 1.0.4 a threshold of 0.25 for `search_cache_frac`
-  contradicts the entry that says any positive value failed at the first
-  step in 1.0.4; the training inputs kept out of the search cache belong to
-  the unreleased entry on repeated observations; `tile_inputs`; a float32
-  input of `pdf`; the "Upgrading" list lacks `kl_div_mvn` with `sKL`,
-  `get_parameters` discarding a stored mode, and the read-only `a` and `b`;
-  the rounding entry lacks the bonus of components, the burn-in and the
-  initial training points; "whatever the option holds" under Removed; and
-  the sentences of agents D and E. The sheet: the same false sentence in the
-  entry on `search_optimizer`, `check_finite` renamed, the citations
-  `trapezoidal.py:74-80` and `spline_trapezoidal.py:76-82` one line low, a
-  line on the sieve cap (a departure from MATLAB, which oversizes the set)
-  and on the slack; then `refresh_citations.py` (the version that w2check
-  brought). The ledger: a section "The independent check of the pass" (the
-  five reviewers, what they found, the rulings, the commits of the round,
-  the gates), and the statement in "Found during the fix pass" that the
-  FAQ's list of `uniform` marginals "is taken", true only since the slack
-  (`fixes/wave5_agent_B.md` says the same and gets a flag). A worklog entry,
-  and `dev/scripts/runs/LOCAL.md`. (3) The gates, once for w2check and the
-  round together: the four seeded runs bit for bit against
-  `wave5_gates/after_pass_23d962a1.npz`, the exact oracle check, the default
-  suite, the Torch and the PyMC environments. (4) One fresh Opus reviewer on
-  the fix round alone. (5) Report to the PI; push, smoke, matrix and the
-  merge into `dev-next` on the PI's word; the two worktrees and branches
-  removed once `git cherry` shows their commits on the branch.
+  One more fresh Opus reviewer, read-only (R6), read the round alone on
+  `f86d373`, with the ledger's section: nothing that had to be fixed. It
+  re-derived that the sieve returns the number of points asked for in every
+  case and draws what it drew wherever no cap binds, that a point in the gap
+  of the slack is never evaluated, that a property shadows the `a` and `b`
+  left in the dictionary of an older pickle, the changelog's statements on
+  1.0.4 at the tag, the sets of `Nrnd` at which MATLAB's rounded shares
+  overshoot, and the argument on the other rounding sites, in which it found
+  one error of the orchestrator's: the burn-in is the thinning times the
+  count of samples after it is rounded, a whole number, and not
+  `400 / sqrt(N)`, so its rounding meets no tie at all and the changelog no
+  longer lists it. Its four other should-fix findings were records: this
+  worklog's in-flight entry, stale once the commits were on the branch; the
+  false sentence on the one-variable search in agent C's raw report, which
+  carries a flag; a sentence of the sheet on what the search cache keeps;
+  and R1-13, which the ledger's section named under R4-11 alone. Two
+  docstrings followed (`5c4fc87`). The report and its scripts are with those
+  of R1 to R5; the ledger's section has what is left.
+
+  For the PI. The count of samples of `vp.moments(N=2.5)` and of
+  `vp.kl_div(gauss_flag=True, N=2.5)` is truncated through `int(N)` where
+  `vp.sample` refuses it (the rest of R1-3; no ruling covers it). W5-7 can
+  still be struck before the push. A `SciPy` or `Product` prior pickled from
+  now on carries no `a` and `b` in its dictionary, which concerns a file
+  written here and read by 1.0.4 alone. `cache_frac` above one overfills
+  the search set and no check refuses it. None of the seeded gate runs is
+  given a prior; one with `prior=` is a candidate for the gate of the
+  release. Carried to slice N2: `to_arviz` refuses a whole float such as
+  `1e3`, which `sample` takes, against its own docstring.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
   the internal track of P2, and nothing else.** The other waves are decided
   by the PI after wave 5 is complete; they are listed under "After wave 5"
@@ -1771,7 +1754,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   reported to the PI, verified, ruled and fixed (the worklog entries "wave 5
   reported to the PI", "wave 5 verified" and "wave 5 ruled and fixed"
   above); the ledger `verification/wave5.md` has the PI's ruling for each of
-  its 40 rows, the fix commits and the gates. The pass is not pushed.
+  its 40 rows, the fix commits, the gates and the independent check of the
+  pass with its fix round. The pass is not pushed.
   The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
   `831acef`; that entry names the two files of P7 and P9 that changed in
   between. Two things the P7 reports raise are fixed by the wave-4 pass
@@ -1793,10 +1777,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
      `verification/wave5.md` written with a proposed disposition per row.
      The PI rules on the rows; the rulings go into the ledger's last column.
   3. Done on 2026-09-21: the rulings, the fixes, the local gates and the
-     records. After wave 4 the PI also asked for an independent check of the
-     pass by fresh reviewers (`/doublecheck`), which found four false
-     statements in the ledger; expect the same request for this pass, before
-     or after the push.
+     records; then, on the PI's `/doublecheck`, the independent check of the
+     pass by fresh reviewers, its fix round, the gates again and one fresh
+     reviewer on the round (the worklog entry above).
   4. On the PI's word: push, the branch smoke, the full matrix, the merge
      into `dev-next` with the status line of `TODO.md` updated there.
 
@@ -1804,10 +1787,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   and the independent check of the wave-3 pass (merge commits `9d9c01b` and
   `5acd382`), and both stood at `831acef`, pushed, when the wave was
   reported: the merge after the rewrite of `AGENTS.md`, which
-  `plans/modernization-roadmap.md` records. The commits of wave 5, its
-  records and its fix pass, follow it on `dev-port-review`, not pushed. No
-  agent and no run is in flight. The reviewers' check scripts of waves 4 and 5, the gate
-  records and the logs are on the orchestrator's machine only
+  `plans/modernization-roadmap.md` records. The commits of wave 5 (its
+  records, its fix pass, the merged `dev-port-review-w2check` and the fix
+  round of the independent check) follow it on `dev-port-review`, not
+  pushed; step 4 waits for the PI's word. No agent and no run is in flight.
+  The reviewers' check scripts of waves 4 and 5, the gate records and the
+  logs are on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
   writes its own checks and may use the scripts as leads. The golden
   references and the run pools describe the code from before the moving

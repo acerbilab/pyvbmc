@@ -412,9 +412,212 @@ Changed, Fixed and Removed and in its "Upgrading from 1.0.4" list.
   `mode()` returns: the ruling's bypass is of the read (agent A).
 - `_rebuild_log_joint`, which `load(new_options={"vectorized_target": ...})`
   reaches, calls `_init_log_joint` and so runs the check of W5-5 on a saved
-  object (agent B). No shipped example is refused by that check; the FAQ's
-  list of `uniform(loc=..., scale=...)` marginals is taken because W5-30
-  came first.
+  object (agent B). No shipped example is refused by that check. The FAQ's
+  list of `uniform(loc=..., scale=...)` marginals needs W5-30, which came
+  first, and the slack of `42c3942`: while the check compared exactly it
+  refused that list for about a quarter of decimal bounds ("The
+  independent check of the pass").
 - The two statements of `test_vbmc_init.py` that compared the noisy log
   joint of the package with the test's own compared a pair with a pair; with
   their `assert` they unpack the value and the noise (agent B).
+
+## The independent check of the pass
+
+On the PI's instruction (`/doublecheck`, 2026-09-21) the pass was read by five
+fresh Opus reviewers, read-only, on `0bf7963`: R1 the commits on the
+variational posterior, R2 the priors, R3 the active sampling and the options,
+with the reach of the pass, R4 this ledger against its sources, R5 the
+user-facing texts and the records. They returned 13, 13, 6, 15 and 21
+findings. Their reports and scripts are kept on the machine that ran them
+(`dev/scripts/runs/LOCAL.md`). `dev-port-review-w2check`, the fixes of the
+independent check of wave 2, was merged as a fast-forward (`b1bab4d`) before
+the round, and the round's worktrees were cut there.
+
+Three findings had to be fixed.
+
+- The check of W5-5 compared exactly (R2-1, R5-1, independently). A support
+  computed as `loc + scale` ends a few units in the last place inside the
+  bound it was built from (`uniform(loc=-20, scale=20.2).support()` ends at
+  0.1999999999999993), so `VBMC` refused the FAQ's own
+  `[uniform(loc=low, scale=high - low) for low, high in zip(LB, UB)]` for
+  about a quarter of decimal bounds (R2: 20 000 random and 40 000 decimal
+  pairs). The statement under "Found during the fix pass" that the FAQ's list
+  "is taken because W5-30 came first" was therefore false when written
+  (R2-8) and is corrected there; it holds since `42c3942`.
+  `../fixes/wave5_agent_B.md`, a raw report, says the same and carries a
+  flag in its header.
+- "With one variable a bounded scalar search is used whatever the option
+  holds" is false for `search_optimizer = "none"`, under which no local
+  search runs (R5-2). The sentence came from the orchestrator's brief and
+  stood in the option's description, the refusal of `"Nelder-Mead"`, the
+  changelog and the sheet.
+- W5-6 said that the rounding fires in no run at the defaults, against this
+  ledger's own last section (R4-1); and the tie it describes did more than
+  move a count (R3-1, R3-5): with a half going away from zero, three
+  quarter-shares of two points are three points, and the sieve raised its
+  `ValueError` part-way through a run, with the shipped fractions where two
+  points were left to draw, and with a quarter for the search cache wherever
+  the starting cache left 2 or 3 points modulo 4. The check of the fractions
+  at construction (W5-24) did not close that. Release 1.0.4 has the same
+  guard and rounds a half to even, which gives those two points no share, so
+  there the error needs fractions that add up to one.
+
+PI rulings (2026-09-21): a slack of `1e-9 * (ub - lb)` in the support check,
+none at an infinite bound; the sieve caps each source at what is left, the
+check at construction staying; `mode(n_opts=k)` neither reads nor writes the
+stored mode; the sample count of `to_arviz` (part of R1-3) waits for slice
+N2; W5-7 stays; the should-fix items are taken, with these optional ones: a
+0-d `N` in `sample` (R1-8), the last `else` of the search chain naming the
+option, the dead `optim_state["hedge"]` line, the `new_options` hint in the
+two other refusals, the comment above the two `np.delete` calls and the
+unseeded test (all R3-6), a scalar support broadcast (R2-9), `a` and `b` of
+`SciPy` as float64 (R2-10), the helper in `test_gp_training_policy.py`
+(R5-18), the dead `jacobian == 0` clause (R1-5).
+
+| Finding | Commit | What it does |
+|---|---|---|
+| R2-1, R5-1, R2-9 | `42c3942` | the slack, where both hard bounds are finite; a support given as a scalar is broadcast to the bounds |
+| R2-2, R2-10 | `cc909c8` | `SciPy` and `Product` read their support from what they hold at every call (`_support_box`), so a prior unpickled from a file of 1.0.4 reports the interval its distribution lives on and `load(new_options={"vectorized_target": ...})` no longer refuses it; `a` and `b` are read-only float64 properties |
+| R2-3 | `a0bb6c2` | a `UserFunction` marginal may return a float or an array of one element; more values raise a message that names the marginal and the row |
+| R2-5 | `b79a127` | `tile_inputs` judges an argument by its squeezed shape, so a row given with `squeeze=False` builds as it did in 1.0.4 |
+| R2-7, R5-17 | `3468704` | `_check_finite`, a private name for a helper that is neither exported nor documented |
+| R2-6, R5-16 | `02fc9e6` | the docstrings that `05e4934` left wrong, the `Returns` header of `Prior.pdf` among them |
+| R5-2, R3-6 | `d66ddf2` | the description of `search_optimizer` and the refusal of `"Nelder-Mead"` say what the two values do; the last `else` of the search chain names the option and its values |
+| R3-1 | `94638fe` | `capped_share`: each source takes its rounded share or what the sources before it left, in the order in which they are drawn, the variational posterior drawing the rest; the guard that raised is gone. Where no cap binds the draws are what they were: the agent compared `_get_search_points` before and after over five option sets at one and three variables, 24 of 24 arrays and the state of the generator after the draws byte for byte |
+| R3-5, R5-18 | `3b07758` | a test of the tie that the shipped fractions reach (a starting cache that leaves ten points: 3, 3, 3 and 1); `_matlab_n_init` of `test_gp_training_policy.py` uses the helper |
+| R3-4, R3-6 | `7d5c29a` | a test that a cached point on the integer grid keeps its stored value, with no target call; the unseeded `_state_with_gp` call is seeded |
+| R1-1, R1-2, R5-14, R5-15 | `a188c31` | `mode(n_opts=k)` leaves the stored mode alone; the `Returns` section of `mode` parses; the docstrings of `mode` and `get_parameters` say what holds |
+| R1-5, R1-8, R1-10, R3-6 | `bc0ab84` | `sample` takes any scalar that holds a whole number; the dead clause and the dead line are gone; the `x0` docstring covers the single element and the rows past the `K`-th; the two refusals say how a saved run is loaded; the comment above the `np.delete` calls is true |
+| R5-8, R2-4 | `7500dba` | the descriptions of the five fractions give the range and the sum; that of `integer_vars` says that a prior given with `prior=` must cover the half-integer hard bounds |
+
+The reports are `../fixes/wave5_check_agent_D.md` (priors; the first six
+rows) and `wave5_check_agent_E.md`. Every fix came with a test seen to fail
+on the code before it, but for `3b07758` and `7d5c29a`, which are tests of
+code that was right, the two removals of dead code in `bc0ab84` and the
+docstrings. The orchestrator reviewed the diffs and cherry-picked the
+thirteen commits, which applied without a conflict.
+
+The texts are the orchestrator's. `851fd17`: the FAQ on integer parameters
+(R3-2, R3-3, R5-7, R2-4), the API page of the priors (R5-20) and the README
+of the variational posterior (R1-4, R5-6). `7411919`: the corrections of R4
+to this ledger (its fifteen findings, each in the row or the sentence it
+names; R1-13 is R4-11) and of R5 to `matlab_side_defects.md` (R5-9,
+R5-10). `09d0310`: the
+changelog (R5-3, R5-4, R5-5, R5-12, R5-19, R1-9, R2-5, and the sentences of
+the round). `f86d373`: the sheet (R5-2, R5-11) with the cap of the sieve and
+the slack, entry 35 of the MATLAB-side list, which the rounded shares
+extend to fractions that add up to at most one, and the citations carried
+to the present lines. The changelog is written against 1.0.4, so it does
+not follow the two agents' sentences where those describe the branch: the
+sieve's error with the shipped fractions, and the row that `tile_inputs`
+refused, never reached a release.
+
+The round was then read by one more fresh Opus reviewer, read-only (R6), on
+`f86d373` with this section as it stood; its report and scripts are kept
+with those of R1 to R5. Nothing had to be fixed. It re-derived, from the code
+and with probes of its own, that the sieve returns the number of points it
+is asked for in every case it could build (a search cache of 0, 1, 2, 3 and
+20 rows against a share of 4, the key absent, one to nine points, every
+fraction forced to one) and draws what it drew wherever no cap binds; that a
+point in the gap of the slack is never evaluated; that a property shadows
+the `a` and `b` left in the dictionary of an older pickle, in `support()`,
+`str` and `repr`, and that `pickle`, `dill` and `deepcopy` take the two
+classes; that nothing tracked assigns to `prior.a` or `prior.b`; the
+changelog's statements on 1.0.4, at the tag; and the sets of `Nrnd` at which
+MATLAB's rounded shares overshoot (entry 35), up to 500. Five findings to
+fix and six optional ones:
+
+- R6-1: the in-flight entry of the worklog described a state that the
+  cherry-picks had ended. It is replaced by the entry of the round.
+- R6-2: `../fixes/wave5_agent_C.md` says twice that one variable is searched
+  by a bounded scalar method whatever the option holds. A raw report: it
+  carries a flag in its header, as agent B's does.
+- R6-3: the sheet's entry on the fractions said without condition that the
+  search cache keeps the acquired point in first place, against the comment
+  that `bc0ab84` corrected in the code. Qualified: where a cache is kept,
+  and unless the point is a training input.
+- R6-4: the argument below on the other rounding sites gave the burn-in as
+  `400 / sqrt(N)`. The code multiplies the thinning by the count of samples
+  after it is rounded, so the burn-in is a whole number and its rounding
+  meets no tie; corrected below, and the changelog no longer lists the
+  burn-in among the quantities a tie can move.
+- R6-5: R1-13 was carried under R4-11 alone. Named above.
+- Taken of the optional ones: the notes of `_get_search_points` say that the
+  search cache gives at most the rows it holds (R6-6), and the docstring of
+  the support check names both things that keep a run off a hard bound, the
+  acquisition search's `tol_bound_x` and the thousandth of the range of
+  `_effective_bounds` (R6-9), in `5c4fc87`; the range of `D` that the
+  argument below assumes (R6-10).
+- Left: `a` and `b` of `SciPy` and `Product` will render twice on the API
+  page of the priors, from the `Attributes` block of the class and as
+  properties (R6-7); the `new_options` hint of the fractions' refusal names
+  `search_cache_frac` whichever fraction is at fault (R6-8); the changelog's
+  2e-11 is 1.67e-11 at one digit, as its 8e-9 is 8.27e-9 (R6-11).
+
+Gates, once for the merge of `dev-port-review-w2check` and the round
+together, on `f86d373`. The four seeded runs of
+`scripts/wave2_fixpass_gate_runs.py` are bit for bit the record after the
+pass, `after_pass_23d962a1.npz` (92 arrays, 0 differ), as they were on the
+merged head `b1bab4d` before the round: neither moves a default trajectory.
+The exact oracle check, 11 of 11 with nothing re-baselined. The whole
+default suite, 1961 passed and 58 skipped with no reruns. With the Torch
+environment, the S-VBMC, variational-posterior, prior and statistics
+directories and the modules of the round, 1009 passed and 1 skipped; with
+the PyMC environment, the adapter's tests, 107 passed. Each environment
+printed `pyvbmc.__file__` of this checkout. None of the four seeded runs
+is given a prior with `prior=`, so the slack and the support read at every
+call rest on the tests of the suite; a seeded run with a prior is a
+candidate for the gate of the release.
+The two docstrings of `5c4fc87` came after these gates; the modules of the
+two files were run again on it, 262 passed. The logs and the record of
+the seeded runs are kept on the machine that ran them
+(`dev/scripts/runs/LOCAL.md`).
+
+Left as they are:
+
+- R1-3, the rest of it. `to_arviz` refuses a whole float such as `1e3`, which
+  `sample` takes (slice N2, by the ruling). `vp.moments(N=2.5)` and
+  `vp.kl_div(gauss_flag=True, N=2.5)` truncate the count through `int(N)`
+  where `sample` refuses it; no ruling covers them and no commit changes
+  them.
+- R1-6: the `0/0` row of `pdf`, where the transformed density and the
+  Jacobian both underflow, is NaN in both branches. R1-7: `np.errstate`
+  around the quotient hides NumPy's warning for a density that does overflow.
+  R1-11: `mode()` returns the stored array itself, so a caller that writes
+  into it writes into the store. R1-12: half of
+  `test_kl_div_samples_mean_is_taken_per_coordinate` recomputes the
+  implementation.
+- R2-11: a 0-d array argument of a box prior is refused with a message that
+  names a shape the caller did not pass. R2-12: only `UniformBox` points an
+  unbounded problem to another prior. R2-13: the rejection samplers behind
+  the seeded Kolmogorov-Smirnov test may draw differently on another
+  platform (smallest p 0.268 against 1e-3 here).
+- R5-13: the changelog's sentence on the balanced draws does not name
+  `SVBMC.sample(balance_flag=True)`; S-VBMC is in no release and its seeded
+  references did not move. R5-21: the sentence of `AGENTS.md` on
+  `__deepcopy__` is true of `__deepcopy__` and does not say that `mode()`
+  copies the generator on purpose.
+- Noted by the agents of the round: `cache_frac` above one overfills the
+  search set, no check refusing it (E); a support of the wrong length raises
+  NumPy's broadcast error and not the check's own message (D); a pickle of a
+  `SciPy` or `Product` prior written from now on carries no `a` and `b` in
+  its dictionary, so release 1.0.4 cannot read them from it (D);
+  `tile_inputs` has no `Returns` section (D).
+
+W5-6, completed. The row records that of the five sites outside the search
+the orchestrator had looked at one. None of them has a tie at the shipped
+options. The number of hyperparameter samples is `80 / sqrt(N)`, whose
+half-integers are at `N = 1024` and `N = 25600`, and sampling stops at
+`N >= 200 + 10 D`, which is at most 400 for the twenty variables PyVBMC is
+meant for (the two meet at `D = 83`). The burn-in is the thinning, 5,
+times that number after it is rounded, or times 3
+(`gaussian_process_train.py:113`, `:607`, `:614`): a whole number, which
+its rounding leaves alone. The number of starting
+points of the hyperparameter search is `64 + 960 u^3` with `u = m / (10 r)`
+for whole `m` and `r`, since the budget and `fun_eval_start` are multiples
+of ten; a half-integer needs `240 t^3 / r^3` odd with `m = 5 t`, that is
+`4 + 3 v(t) = 3 v(r)` for the powers of two in `t` and `r`, which no whole
+numbers satisfy, and the nearest value is further from a half than rounding
+can carry it. The bonus of components is `round(2)`. So the tie of the
+starting cache is the one within reach of the shipped options, as the row
+says.
