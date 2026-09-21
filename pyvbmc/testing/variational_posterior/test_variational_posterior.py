@@ -31,10 +31,49 @@ def get_matlab_vp():
 def test_sample_n_lower_1():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     x, i = vp.sample(0)
-    assert np.all(x.shape == np.zeros((0, 3)).shape)
-    assert np.all(i.shape == np.zeros((0, 1)).shape)
-    assert np.all(x == np.zeros((0, 3)))
-    assert np.all(i == np.zeros((0, 1)))
+    assert x.shape == (0, 3)
+    assert i.shape == (0,)
+    assert np.issubdtype(i.dtype, np.integer)
+
+
+@pytest.mark.parametrize("K", [1, 2])
+@pytest.mark.parametrize("balance_flag", [False, True])
+def test_sample_index_array_has_one_integer_per_row(K, balance_flag):
+    """The second return value of ``sample`` holds, for each drawn row,
+    the index of the component that generated it."""
+    N = 11
+    vp = VariationalPosterior(3, K, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(N, balance_flag=balance_flag)
+
+    assert x.shape == (N, 3)
+    assert i.shape == (N,)
+    assert np.issubdtype(i.dtype, np.integer)
+
+
+def test_sample_takes_a_whole_number_given_as_a_float():
+    """``1e5``, the documented default of ``kl_div`` and ``mtv``, is a
+    float; a count with a fractional part is refused."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(1e3)
+    assert x.shape == (1000, 2)
+    assert i.shape == (1000,)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.sample(2.5)
+
+
+def test_kl_div_and_mtv_take_a_whole_number_given_as_a_float():
+    vp = VariationalPosterior(1, 1, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+    vp2 = VariationalPosterior(1, 1, np.array([[5]]))
+    vp2.rng = np.random.default_rng(20260922)
+
+    assert np.all(np.isfinite(vp.kl_div(vp2=vp2, N=1e4, gauss_flag=False)))
+    assert np.all(np.isfinite(vp.mtv(vp2=vp2, N=1e4)))
 
 
 def test_sample_default():
@@ -572,6 +611,18 @@ def test_moments_orig_flag():
     assert np.all(np.isclose(mubar, np.mean(x2, axis=0)))
     assert sigma.shape == (3, 3)
     assert np.all(np.isclose(sigma, np.cov(x2.T)))
+
+
+def test_moments_orig_flag_one_dimensional_covariance():
+    """The covariance of one parameter is a 1-by-1 matrix, as it is for
+    every other number of parameters."""
+    vp = VariationalPosterior(1, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    mubar, cov = vp.moments(N=int(1e4), orig_flag=True, cov_flag=True)
+
+    assert mubar.shape == (1, 1)
+    assert cov.shape == (1, 1)
 
 
 def test_moments_no_orig_flag():

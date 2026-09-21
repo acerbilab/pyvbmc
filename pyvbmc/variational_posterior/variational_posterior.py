@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 import sys
-from numbers import Integral
+from numbers import Integral, Real
 from pathlib import Path
 from textwrap import indent
 from typing import Optional
@@ -584,7 +584,8 @@ class VariationalPosterior:
         Parameters
         ----------
         N : int
-            Number of samples to draw.
+            Number of samples to draw. A whole number given as a float,
+            such as ``1e5``, is taken as that number of samples.
         orig_flag : bool, optional
             If `orig_flag` is ``True``, the random vectors are returned
             in the original parameter space. If ``False``, they are returned in
@@ -610,19 +611,31 @@ class VariationalPosterior:
             `X` is an `N`-by-`D` matrix of random vectors drawn from the
             variational posterior.
         I : np.ndarray
-            `I` is an `N`-by-1 array such that the `i`-th element of `I`
-            indicates the index of the variational mixture component from which
-            the `i`-th row of X has been generated.
+            `I` is an `N`-element array of integers such that the `i`-th
+            element of `I` indicates the index of the variational mixture
+            component from which the `i`-th row of X has been generated.
+
+        Raises
+        ------
+        ValueError
+            Raised if `N` is not a whole number of samples.
 
         Notes
         -----
         Random draws use ``self.rng``.
         """
+        if not isinstance(N, Integral):
+            if not isinstance(N, Real) or not float(N).is_integer():
+                raise ValueError(
+                    f"N must be a whole number of samples, got {N}."
+                )
+        N = int(N)
+
         # missing to sample from gp
         gp_sample = False
         if N < 1:
             x = np.zeros((0, self.D))
-            i = np.zeros((0, 1))
+            i = np.zeros(0, dtype=int)
             return x, i
         elif gp_sample:
             pass
@@ -687,7 +700,7 @@ class VariationalPosterior:
                         * rng.standard_normal((N, self.D))
                         * self.sigma
                     )
-                i = np.zeros(N)
+                i = np.zeros(N, dtype=int)
             if orig_flag:
                 x = self.parameter_transformer.inverse(x)
         return x, i
@@ -1170,15 +1183,18 @@ class VariationalPosterior:
         Returns
         -------
         mean: np.ndarray
-            The mean of the variational posterior.
+            The mean of the variational posterior, of shape ``(1, D)``.
         cov: np.ndarray
-            If `cov_flag` is ``True``, returns the covariance matrix as well.
+            If `cov_flag` is ``True``, returns the covariance matrix as
+            well, of shape ``(D, D)``.
         """
         if orig_flag:
             x, _ = self.sample(int(N), orig_flag=True, balance_flag=True)
             mubar = np.mean(x, axis=0)
             if cov_flag:
-                cov = np.cov(x.T)
+                # One parameter gives a single variance, returned as the
+                # 1-by-1 covariance matrix it is.
+                cov = np.atleast_2d(np.cov(x.T))
         else:
             mubar = np.sum(self.w * self.mu, axis=1)
 
