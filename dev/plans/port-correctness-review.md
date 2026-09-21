@@ -1770,6 +1770,13 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `03a8d46`, on `dev-next` at `831acef`, which had not moved), the
   review's status in `TODO.md` updated there with the item on a seeded gate
   run with a prior, and `dev-port-review` fast-forwarded onto it.
+- [x] 2026-09-21: the count of the ArviZ exports through CI, and merged (PI:
+  push). Pushed on `0c67e30`; the branch smoke, whose cell has the extras and
+  so runs the tests of the exports, and the full matrix, nine cells, are
+  green at the first attempt. `dev-port-review` merged into `dev-next` (merge
+  commit `1563053`, on `dev-next` at `e71c667`, which holds the item of
+  `TODO.md` on the branch `feat-3d-animation`), and `dev-port-review`
+  fast-forwarded onto it.
 - [ ] **Pickup point (2026-09-21): wave 5, slices P7 and P9 with the
   internal track of P2, is complete and merged.** The other waves are
   decided by the PI; they are listed under "After wave 5" below for the
