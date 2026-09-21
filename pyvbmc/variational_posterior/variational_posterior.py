@@ -24,6 +24,68 @@ from pyvbmc.rng import get_rng
 from pyvbmc.stats import kde_1d, kl_div_mvn
 
 
+def _whole_number(value):
+    """Return the whole number that a scalar holds, or ``None``.
+
+    A number of samples may be written as a Python or NumPy integer, as a
+    float that holds a whole number (``1e5``), as a NumPy scalar or as a 0-D
+    array; a boolean stands for 0 or 1. Anything else gives ``None``: a
+    fractional, infinite or NaN value, a sequence, an array with an axis, a
+    string, ``None``.
+
+    Parameters
+    ----------
+    value : object
+        The value given as a count.
+
+    Returns
+    -------
+    number : int or None
+        The count as an ``int``, or ``None`` if `value` holds none.
+    """
+    try:
+        if np.ndim(value) == 0 and not isinstance(value, Real):
+            # A NumPy scalar or a 0-D array stands for the number in it.
+            value = np.asarray(value).item()
+    except ValueError:
+        # A nested sequence of uneven lengths has no number of axes.
+        return None
+    if not isinstance(value, Real) or not float(value).is_integer():
+        return None
+    return int(value)
+
+
+def _positive_draw_count(n_samples):
+    """Return the number of draws of an export as an ``int``.
+
+    The exports take the counts that ``VariationalPosterior.sample`` takes
+    (`_whole_number`), but for a boolean and a count below one. The check
+    draws nothing, so a refused count leaves the generator where it was.
+
+    Parameters
+    ----------
+    n_samples : object
+        The value given as the number of draws.
+
+    Returns
+    -------
+    n_samples : int
+        The number of draws.
+
+    Raises
+    ------
+    ValueError
+        If `n_samples` is not a positive whole number, or is a boolean.
+    """
+    count = _whole_number(n_samples)
+    is_boolean = isinstance(n_samples, (bool, np.bool_)) or (
+        isinstance(n_samples, np.ndarray) and n_samples.dtype == np.bool_
+    )
+    if is_boolean or count is None or count < 1:
+        raise ValueError("n_samples must be a positive integer.")
+    return count
+
+
 class VariationalPosterior:
     r"""
     The variational posterior class used in PyVBMC.
@@ -449,7 +511,9 @@ class VariationalPosterior:
         Parameters
         ----------
         n_samples : int, optional
-            Positive number of independent draws, default 1000.
+            Positive number of independent draws, default 1000, as any
+            scalar that holds a whole number (see `sample`); a boolean is
+            refused.
         var_names : sequence of str, optional
             Unique names for the D scalar parameters, default ``x_0``,
             ``x_1``, and so on. Names must differ from ``chain`` and ``draw``.
@@ -501,12 +565,7 @@ class VariationalPosterior:
         according to `orig_flag`; ``"model"`` denotes exports assembled in
         model-variable coordinates by an integration.
         """
-        if (
-            isinstance(n_samples, (bool, np.bool_))
-            or not isinstance(n_samples, Integral)
-            or n_samples < 1
-        ):
-            raise ValueError("n_samples must be a positive integer.")
+        n_samples = _positive_draw_count(n_samples)
 
         from ._arviz import (
             _structured_layout,
@@ -634,12 +693,10 @@ class VariationalPosterior:
         -----
         Random draws use ``self.rng``.
         """
-        if np.ndim(N) == 0 and not isinstance(N, Real):
-            # A NumPy scalar or a 0-D array stands for the number in it.
-            N = np.asarray(N).item()
-        if not isinstance(N, Real) or not float(N).is_integer():
+        count = _whole_number(N)
+        if count is None:
             raise ValueError(f"N must be a whole number of samples, got {N}.")
-        N = int(N)
+        N = count
 
         if np.isfinite(df) and df < 0:
             raise ValueError(

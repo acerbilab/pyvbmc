@@ -94,6 +94,20 @@ def test_invalid_export_does_not_advance_posterior_rng(vector_target):
 
     valid = _posterior(target, 32)
     state = copy.deepcopy(valid.rng.bit_generator.state)
-    with pytest.raises(ValueError, match="positive integer"):
-        target.to_arviz(valid, 0)
-    assert valid.rng.bit_generator.state == state
+    for count in (0, 2.5, True, np.array(True), "5", None):
+        with pytest.raises(ValueError, match="positive integer"):
+            target.to_arviz(valid, count)
+        assert valid.rng.bit_generator.state == state
+
+
+@pytest.mark.parametrize("count", [5.0, np.float64(5), np.array(5)])
+def test_export_takes_a_whole_number_in_any_scalar(vector_target, count):
+    """The export takes the counts that ``vp.sample`` takes, a whole number
+    written as a float among them, and draws what the integer draws."""
+    _, target = vector_target
+    expected = target.to_arviz(_posterior(target, 33), 5)
+    data = target.to_arviz(_posterior(target, 33), count)
+    assert data["posterior"].beta.shape == expected["posterior"].beta.shape
+    np.testing.assert_array_equal(
+        data["posterior"].beta.values, expected["posterior"].beta.values
+    )

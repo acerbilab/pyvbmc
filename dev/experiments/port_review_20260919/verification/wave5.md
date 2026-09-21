@@ -573,13 +573,14 @@ two files were run again on it, 262 passed. The logs and the record of
 the seeded runs are kept on the machine that ran them
 (`dev/scripts/runs/LOCAL.md`).
 
-Two fixes followed, on the PI's word (2026-09-21), made by the orchestrator,
-each with a test seen to fail on the code before it.
+Three fixes followed, on the PI's word (2026-09-21), made by the
+orchestrator, each with a test seen to fail on the code before it.
 
 | Finding | Commit | What it does |
 |---|---|---|
 | R1-3, the part no ruling had covered | `6d492a2` | `moments` converted its count with `int()` before it called `sample`, so `vp.moments(N=2.5)` and `vp.kl_div(gauss_flag=True, N=2.5)`, which computes its moments through it, truncated the count where `sample`, `mtv` and `kl_div(gauss_flag=False)` refuse it. The count goes to `sample` as it is given; a whole number draws what it drew. As 1.0.4 had it (`variational_posterior.py:788` there) |
 | noted by agent E | `6dcd027` | `cache_frac`, the share of the whole search set that the starting cache gives, is checked to lie in `[0, 1]` with the five fractions, at construction and in `load`, outside their sum. Nothing checked it, in 1.0.4 (`active_sample.py:699-703` there) or in MATLAB (`private/activesample_vbmc.m:552-554`): above one, with a starting cache of more rows than the search has candidates, the search set came out larger than asked; a negative one made `N_cache` negative, which as the end of a slice takes all but that many rows of the cache (read in the code, not run; MATLAB's `randperm` is given the negative count there, and what it does with it was not looked up) |
+| R1-3, the count of the exports | `f9ab814` | `to_arviz` of the variational posterior and of the PyMC target refused a whole number of draws written as a float, a NumPy float or a 0-D array (`1e3`), which `sample` takes, against the note of its own docstring that it draws as `sample` does. One private helper, `_whole_number`, reads a count for `sample` and for both exports, which ends the separate checks R1-3 counted; the exports keep what their tests pin through `_positive_draw_count`: a boolean and a count below one are refused, and a refused count draws nothing. `sample` answers a nested sequence of uneven lengths with its own message, where NumPy's came through. The exports are in no release, and the changelog's entries on them say nothing of the count, so it has no sentence |
 
 The changelog and the sheet have both. Gates on `6dcd027`: the four seeded
 runs bit for bit the record after the pass once more (92 arrays, 0 differ),
@@ -587,10 +588,18 @@ the exact oracle check 11 of 11, and the modules of the files touched, 131 and
 347 passed. No caller in the package hands `moments` or `kl_div` a count that
 is not whole (`Nkl = int(1e5)`, `vbmc.py:1317`; `1e6` in the diagnostics).
 
+The third came after the merge of the wave into `dev-next`: the ruling had
+left the count of `to_arviz` to slice N2, and N2 has no pass ahead of it, wave
+0 having taken it. Gates on `f9ab814`: the four seeded runs bit for bit the
+record after the pass (92 arrays, 0 differ) and the exact oracle check 11 of
+11, `sample` being on the path of every run; the tests of the variational
+posterior in the default environment (131 passed), of its directory in the
+environment that has ArviZ, where the tests of the export run and do not skip
+(273 passed, 1 skipped), and of the adapter in the PyMC environment (110
+passed).
+
 Left as they are:
 
-- R1-3, the part of slice N2, by the ruling: `to_arviz` refuses a whole
-  float such as `1e3`, which `sample` takes.
 - R1-6: the `0/0` row of `pdf`, where the transformed density and the
   Jacobian both underflow, is NaN in both branches. R1-7: `np.errstate`
   around the quotient hides NumPy's warning for a density that does overflow.
