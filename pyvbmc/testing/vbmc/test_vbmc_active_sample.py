@@ -47,9 +47,15 @@ def _cheap_acq(self, x, *args):
     return np.sum(np.atleast_2d(x) ** 2, axis=1)
 
 
-def _state_with_gp(D: int, options: dict = None, seed: int = None):
+def _state_with_gp(
+    D: int,
+    options: dict = None,
+    seed: int = None,
+    lower_bound: float = -np.inf,
+    upper_bound: float = np.inf,
+):
     """Build a VBMC instance and a GP trained on one initial design."""
-    vbmc = create_vbmc(D, 0.0, -np.inf, np.inf, -3, 3, options)
+    vbmc = create_vbmc(D, 0.0, lower_bound, upper_bound, -3, 3, options)
     if seed is not None:
         vbmc.vp.rng = np.random.default_rng(seed)
     function_logger, optim_state, _, _ = active_sample(
@@ -1781,7 +1787,7 @@ def test_repeated_observation_is_exact_with_integer_vars(mocker):
     assert np.array_equal(function_logger.X[function_logger.X_flag], X_train)
 
 
-def _integer_var_state(D=2, options=None):
+def _integer_var_state(D=2, options=None, seed=20260920):
     """A ``VBMC`` whose first variable is an integer, with its initial
     design drawn and a GP trained on it."""
     user_options = {
@@ -1790,32 +1796,10 @@ def _integer_var_state(D=2, options=None):
         "active_sample_vp_update": False,
         **(options or {}),
     }
-    vbmc = create_vbmc(D, 0.0, -10.5, 10.5, -3, 3, user_options)
-    function_logger, optim_state, _, _ = active_sample(
-        gp=None,
-        sample_count=10,
-        optim_state=vbmc.optim_state,
-        function_logger=vbmc.function_logger,
-        iteration_history=vbmc.iteration_history,
-        vp=vbmc.vp,
-        options=vbmc.options,
+    vbmc, gp = _state_with_gp(
+        D, user_options, seed=seed, lower_bound=-10.5, upper_bound=10.5
     )
-    optim_state["N"] = function_logger.Xn + 1
-    optim_state["n_eff"] = np.sum(
-        function_logger.n_evals[function_logger.X_flag]
-    )
-    gp, _, _, hyp_dict = train_gp(
-        {},
-        optim_state,
-        function_logger,
-        vbmc.iteration_history,
-        vbmc.options,
-        vbmc.plausible_lower_bounds,
-        vbmc.plausible_upper_bounds,
-        rng=vbmc.vp.rng,
-    )
-    optim_state["hyp_dict"] = hyp_dict
-    return vbmc, gp, function_logger, optim_state
+    return vbmc, gp, vbmc.function_logger, vbmc.optim_state
 
 
 def test_search_result_is_snapped_with_integer_vars(mocker):

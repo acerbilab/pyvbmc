@@ -260,7 +260,7 @@ def test_the_mcmc_chain_starts_at_a_sample_drawn_by_its_weight():
     acq_fcn = AcqFcnIMIQR()
 
     rng = _RecordingGenerator(np.random.PCG64(20260920))
-    vp._rng = rng  # the setter would rebuild a plain generator from it
+    vp.rng = rng
     assert vp.rng is rng
     active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
 
