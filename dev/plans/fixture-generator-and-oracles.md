@@ -56,6 +56,20 @@ refuses existing destination pairs: a deliberate refresh requires inspecting
 and preserving the existing evidence first. Execution results are recorded
 in [the main-loop work note](../results/2026-09-08-main-loop-fixes.md).
 
+A deliberate change of the hyperparameter fit moves the outputs of a capture
+whose fit draws a design, while its captured inputs stay what the run
+produced. `--rebaseline-gp-fit-history NAME --reason "..."` (2026-09-20)
+replays such a capture on its stored inputs and replaces the references
+under `capture/ref/fit/` and `capture/ref/sampler_widths/` alone. It runs on
+the generating platform only, checks first that the portable references
+reproduce exactly, asserts after the write that every other array is
+bit-identical and that the top-level fixtures keep their hashes, reruns the
+exact check of the captures, and records the reason, the date, the revision
+and the largest change of each reference in the capture's `.json`. Its first
+use was `noisy_nonuniform_weights`, after the port review's fixes of the
+bounds that `_gp_hyp` installs
+([ledger](../experiments/port_review_20260919/verification/wave3.md), "Gates").
+
 ## Phase 4 acquisition references (2026-09-08)
 
 New VBMC state uses `variance_regularized_acq_fcn`. Existing snapshots and

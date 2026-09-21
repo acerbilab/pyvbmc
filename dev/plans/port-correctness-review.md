@@ -1031,9 +1031,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   that their hunks do not overlap (the inputs of the fit; its policy and
   option values; slice P8), made 32 commits, one finding each with a test
   written against the contract; the orchestrator reviewed and cherry-picked
-  them and made four more (a test that combined `f_vals` with a noisy
-  target, which construction now refuses; the dead-branch bound and the
-  unreachable `npv` block; two docstrings). Their reports are
+  them, 31 on the branch since the guard of W3-2 for a history that holds no
+  GP was squashed into the commit of its finding, and made three more (a
+  test that combined `f_vals` with a noisy target, which construction now
+  refuses; the dead-branch bound and the unreachable `npv` block; two
+  docstrings): 34 commits. Their reports are
   `fixes/wave3_agent_A.md`, `_B.md` and `_C.md`, and the ledger lists the
   commit of every row, the gates and what was found on the way.
 
@@ -1079,10 +1081,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   third smoke and the full matrix, nine cells, are green on `92eb2cc`.
 
   Before the merge the PI asked for a wider check against a regression. On
-  seven more benchmark targets with known truth, a few seeds each, before
+  six more benchmark targets with known truth, a few seeds each, before
   the pass and after it, every run is a good solution and the differences
-  go both ways: with the two targets of the first sweep, nine targets and
-  35 seeded pairs (`verification/wave3.md`, "Gates"). The final release
+  go both ways: with the two targets of the first sweep, eight targets and
+  32 seeded pairs (`verification/wave3.md`, "Gates"). The final release
   benchmark remains the measure of the pass.
 
   `dev-port-review` merged into `dev-next` (merge commit `82aee90`), the
@@ -1298,6 +1300,41 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`0f3015b`), and `dev-port-review` was fast-forwarded onto it. The worktree
   and the branch of the fix agent had been removed once `git cherry` showed
   its ten commits on the branch.
+- [x] 2026-09-21: the wave-3 pass checked independently (PI: `/doublecheck`,
+  read-only while wave 4 ran in the same checkout; then, on the PI's word,
+  apply what it found). Five fresh Opus reviewers without the session's
+  context: the inputs of the hyperparameter fit; its policy, the recorded
+  chain and the option checks; slice P8; the ledger, the user-facing records
+  and the re-baselined fixtures; the consequences of the pass outside the
+  lines it changed. No defect in what a run computes. Ten commits of code
+  and tests follow (`2ff2dfe` to `095c29e`), each fix with a test that fails
+  on the code before it: the stable order of equal values in the trim at the
+  end of warm-up and in both rankings of `determine_best_vp`; `get_hpd` on
+  integer values; the option checks in `load`; `batch_call` and a cached
+  value at uncertainty level 2; the evaluation time of a repeat whose first
+  time is unknown; an `f_vals` of NaN alone; the bound statements of
+  `_gp_hyp`; two tests and two descriptions. PI rulings of the day: the
+  checks run in `load`, the stable order goes into all three sites, and a
+  stored oracle state at uncertainty level 1 is an item of `TODO.md` for
+  after the review. Corrected in the records: the changelog (an entry
+  missing under its "Upgrading" list, the sentence on the level-1 noise
+  model, three lines of that list, the evaluation count of the design
+  schedule), entry 18 of the MATLAB-side defects with a flag in the P5
+  verifier's report, the counts of the ledger and of this worklog (six more
+  targets, eight targets and 32 pairs; 34 commits), the ledger's list of
+  sheet entries, the capture re-baseline mode in `dev/README.md` and the
+  fixture plan, `AGENTS.md`, and the sheet: 83 of its 161 Python line
+  citations carried to their present lines by
+  `experiments/port_review_20260919/refresh_citations.py`, which takes each
+  citation from the commit that last touched it through the history of the
+  cited file. `verification/wave3.md`, "The independent check of the pass",
+  has the findings, what was left and why, and the gates: the exact oracle
+  check, 11 of 11 with nothing re-baselined; the four seeded runs bit for
+  bit those of the wave-4 pass; the default suite, 1699 passed and 58
+  skipped, with one rerun of `test_minimize_adam_matyas_with_noise`, an
+  unseeded test the check does not touch; the Torch environment, TORCHN
+  passed; the PyMC environment, 107 passed. Not pushed; the CI matrix has
+  not run on it.
 - [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9, and
   nothing else.** The other waves are decided by the PI after wave 5 is
   complete; they are listed under "After wave 5" below for the record, and
@@ -1347,8 +1384,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
      into `dev-next` with the status line of `TODO.md` updated there.
 
   State of the branch. `dev-port-review` and `dev-next` are pushed and hold
-  the wave-4 pass (merge commit `9d9c01b`); `dev-port-review` is ahead of
-  `dev-next` by documentation commits only. Nothing is in flight except
+  the wave-4 pass (merge commit `9d9c01b`). Locally `dev-port-review` is
+  ahead of its remote by the commits of the independent check of the wave-3
+  pass (the worklog entry above), which wait for the PI's word on the push,
+  the branch smoke, the full matrix and the merge. Nothing is in flight except
   possibly the smoke run that the merge started on `dev-next`
   (`gh run list --branch dev-next`), which tests code the full matrix
   already passed on `11fb766`. The reviewers' check scripts of waves 4 and
@@ -1362,14 +1401,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   tracks (4 reviewers); the internal track of P2, which wave 1 did not run
   (its four slots went to M, the P2 comparison and both P6 tracks; running
   it beside G1 and G2 needs the PI's allowance for a fifth agent, which
-  wave 5 had once, the working rule being four); O1 to O4. Two things the
-  check of the wave-4 pass left for the time before the next comparison
-  reviewers receive the sheet: a mechanical re-check of every Python line
-  citation in `known_differences.md` (the pass corrected about twenty, and
-  the drift into `vbmc.py` is wider than what it touched), and the PI's
-  decision on a stored oracle state at uncertainty level 1, which needs a
-  level-1 variant of a benchmark target (`verification/wave4.md`, "Test
-  notes worth acting on").
+  wave 5 had once, the working rule being four); O1 to O4. Before the next
+  comparison reviewers receive `known_differences.md`, its Python line
+  citations are carried to the present lines again
+  (`experiments/port_review_20260919/refresh_citations.py`, last run on
+  2026-09-21): every fix pass moves them. The stored oracle state at
+  uncertainty level 1 is an item of `TODO.md` (PI, 2026-09-21).
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
 - [ ] Fixes on `dev-port-review` with gates; durable sheet entries
