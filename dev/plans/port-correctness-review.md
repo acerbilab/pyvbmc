@@ -1343,43 +1343,220 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `5acd382`, on `dev-next` at `0f3015b`, which had not moved), the review's
   status in `TODO.md` updated there (`24069e6`), and `dev-port-review`
   fast-forwarded onto it.
-- [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9, and
-  nothing else.** The other waves are decided by the PI after wave 5 is
-  complete; they are listed under "After wave 5" below for the record, and
-  a session that picks up here starts none of them and prepares none of
-  them.
+- [x] 2026-09-21: wave 5 reported to the PI, with the internal track of P2
+  added to it (PI decision of the same day: the one reviewer that wave 1
+  left out runs now, and its findings are verified, ruled on and fixed with
+  those of P7 and P9 in one pass). P2 internal: one fresh Opus reviewer by
+  the brief, reading `831acef`, the head of the branch after the fix passes
+  of waves 1 to 4, without sight of the slice's comparison report; 10
+  findings; saved verbatim as `reviews/P2_internal.md`. Its first question:
+  with `integer_vars` set, whether every path by which a point reaches the
+  target or the GP training set delivers it on the integer grid and inside
+  the bounds, and whether the acquisition value that was compared belongs
+  to the point that is then evaluated. The sweep after it was clean in the
+  three repositories, and its check scripts are kept on the orchestrator's
+  machine only (`dev/scripts/runs/LOCAL.md`). Since `f873556`, which the P7
+  and P9 reviewers read, two files of their slices have changed, neither in
+  the lines a finding cites: `stats/get_hpd.py` (`027e972`, the order of
+  equal and of integer values; the rounding is now at line 38) and
+  `priors/product.py` (`b693e42`, `Product._generic` alone). Nothing below
+  is verified; the orchestrator read the balanced sampler, the rounding of
+  `get_hpd` and the callers that set `balance_flag`, and they are as
+  described.
 
-  Where wave 5 stands. The four reviewers have run and their reports are
-  saved verbatim, committed and pushed:
-  `experiments/port_review_20260919/reviews/P7_internal.md` (15 findings),
-  `P7_comparison.md` (11), `P9_internal.md` (11) and `P9_comparison.md` (7).
-  Nobody has read them for content: they are not summarized, not reported
-  to the PI, not verified, and no finding has a disposition. The worklog
-  entry "wave 5 run and saved" above has the briefs' first questions. The
-  reviewers read the code at `f873556`; the branch has since taken the
-  wave-4 pass, which changed no file of the two slices. One thing they
-  report is fixed by that pass already: `fess` taking the pair that
-  `vp.sample` returns for the array (`dd3d1d3`, W4-5). Two sites round a
-  half to even where MATLAB rounds away from zero, `stats/get_hpd.py` and
-  `np.round` in `active_sample.py`, and both P7 reports raise the first;
-  the wave-4 pass made `_real2int` round as MATLAB does from the exact
-  fractional part (`70ce067`), which is the expression to reuse if the PI
-  rules the same way there.
+  The first questions. P7, the underflowed log density: `pdf` takes the log
+  of a linear sum, as `vbmc_pdf.m:107-110` does, exact down to about -744
+  and `-inf` beyond. The acquisitions and `fess` floor it at the log of the
+  smallest positive float as their MATLAB counterparts do, so a log-sum-exp
+  evaluation changes nothing there while the floors stand; the mode search
+  starts at samples and component means, never at such a point; `mtv` reads
+  no density; the entropies take the log of their own sums with no floor on
+  either side; at the default `kl_gauss=True` the main loop reads no
+  density. `kl_div(gauss_flag=False)` replaces a zero density by the
+  smallest positive float, which caps the divergence near 707 without a
+  message. The one reader that raised, the proposal density of the
+  importance sampling, is W4-7, fixed by the wave-4 pass. In original space
+  the Jacobian has the right sign and the density integrates to one;
+  PyVBMC sets the rows on or outside the bounds to zero where MATLAB
+  returns complex values or NaN. P7, the pair of `vp.sample`: every caller
+  unpacks it but `fess` (W4-5, `dd3d1d3`); the sampler has the mixture's law
+  in every case tried (plain and balanced, `K = 1`, zero weights, both
+  spaces, the `df` variant) and follows `vbmc_rnd.m` line by line, except
+  in the remainder of the balanced draw. P9: every sampler draws from the
+  density of its class, on both sides (Kolmogorov-Smirnov at 200 000 draws
+  for the four families, and per dimension with different parameters), and
+  the classes reproduce a transcription of the twelve MATLAB functions to
+  7e-15 in the log density with the same `-inf` sets; the exception is
+  MATLAB's `msmoothboxrnd`, which for `D > 1` puts the tails of every
+  dimension at the pivots of the first. No run calls `prior.sample`, in
+  MATLAB either, and `_init_log_joint` combines prior and likelihood as
+  `lpostfun.m` does. P2: every branch of the search delivers a point on the
+  grid, the acquisition snapping what it values and the snap being
+  idempotent. Off the grid are the whole initial design (the provided `x0`,
+  both designs, the cache rows the design consumes), by omission and
+  undocumented, the FAQ saying that integer parameters are not supported at
+  all, and a repeated observation, on purpose. The Nelder-Mead branch keeps
+  no bounds. On a grid the search routinely lands on an input that is in
+  the training set already, which costs an evaluation and adds no training
+  point.
+
+  What can change what a run computes. At defaults, one finding, made by
+  both P7 reviewers independently. The remainder of the balanced draw
+  (`variational_posterior.py:643`): the builtin `sum` of a `(1, K)` array
+  returns the row, so the correction that `vbmc_rnd.m:68-72` applies with
+  the total is applied element by element, and the remainder is drawn from
+  other probabilities; never matched (`42a0deef`, 2021-03-14). Every
+  active-sampling step with `K > 1` draws its posterior and heavy-tailed
+  candidates that way (`active_sample.py:968`, `:1065`), and so do
+  `moments` in original space, behind `sKL`, and `mtv`. With
+  `w = [0.7, 0.2, 0.1]` and `N = 13` the frequencies are `[0.724, 0.183,
+  0.093]`; on the `K = 50` weights of the MATLAB fixture at `N = 100` a
+  quarter of the draws are remainder draws, at a total variation of 0.20
+  from MATLAB's; the bias is about one sample per component, nothing at
+  `N = 1e5`. A fix leaves the number of draws alone and changes an index
+  now and then, so it moves default trajectories and the
+  `active_sample_step` oracle (the orchestrator's reading). In extreme or
+  non-default conditions, one reviewer each unless said. `get_hpd` rounds a
+  half to even where `misc/gethpd_vbmc.m:10` rounds away from zero (both P7
+  reviewers). The default fraction 0.8, which every default call passes,
+  cannot produce a tie: `4N/5` is never a half-integer, and the internal
+  report's `N = 5, 15, 25` is wrong. A tie needs `hpd_search_frac > 0`, zero
+  by default, whose Gaussians take fractions that include the exact 0.1
+  (`active_sample.py:983-1004`): one point fewer than MATLAB at `N = 5, 25,
+  45` live points, and an empty subset at `N = 5`. `np.round` at
+  `active_sample.py:994` sits in the same branch, and `70ce067` has the
+  expression to reuse. `kl_div_mvn` tests and divides raw determinants, which
+  underflow for a well-conditioned covariance of small scale, and returns
+  `(inf, inf)` on the default route of `sKL` (`D = 40` at SD 1e-8; six
+  digits left at `D = 20`), the formula being `mvnkl.m`'s; `entmc_vbmc`
+  returns NaN when a weight is exactly zero and the components are
+  separated, which needs `eta` 745 below the largest, the soft bound on
+  `eta` being gone, and MATLAB has the same structure; the guard of
+  `kl_div(gauss_flag=False)` against infinite densities never fires,
+  `q == 0 | np.isinf(q)` binding as `q == (0 | isinf(q))` (both reviewers;
+  correct in the first port, rewritten by `4a071d8c`, 2022-09-13), and
+  `np.isinf` misses the NaN that MATLAB's `~isfinite` catches; nothing
+  relates the support of a prior to the hard bounds, so a narrower prior
+  stops the run in the function logger with a message that names neither,
+  and a wider one leaves the evidence of a truncated prior that is not
+  normalized again. In P2: the value of a cached starting point is recorded
+  at the point the sieve has moved, by the clip to the search bounds (after
+  a warp, which resets them) or by the snap to the grid (an off-grid `x0`
+  with a value), and needs valued starting points beyond the initial
+  design; an acquired point equal to a row that the trim of warm-up
+  switched off is pooled into that row and reaches neither the GP nor
+  `y_max`, the duplicate scan of the function logger covering the rows
+  that are not live, within reach on a grid alone.
+
+  Without effect on a default run. Both P7 reviewers: `kl_div(samples=,
+  gauss_flag=True)` takes the mean of all entries for the mean vector (a
+  divergence of 9 comes out as 3e-4; never matched `vbmc_kldiv.m:63`); the
+  positivity check of `set_parameters(raw_flag=False)` slices from the
+  wrong end, refusing most posteriors of `D >= 3`, `K >= 3` with a negative
+  mean and accepting a negative `sigma` at `D = 2`, `K = 2` (Python-only
+  check). P7 internal: `vp.mode()`, the documented default call, raises for
+  every one-dimensional posterior; the box of the mode search is offset by
+  an absolute `sqrt(eps)`; the mode cache ignores `n_opts` and outlives a
+  direct assignment to `mu`; `y / exp(logJ)` loses about 36 nats of range;
+  `get_parameters` rescales the posterior it reads; four shape and type
+  inconsistencies of `sample` and `moments`; `kde_1d` integrates to
+  `n/(n-1)`, which `mtv` normalizes away; the two entropies differ in the
+  weight gradient of one component, which the softmax Jacobian sends to
+  zero. P7 comparison: `vp.pdf` of an integer array truncates the
+  transformed coordinates, the same trap as the `np.full_like` of three
+  priors (both P9 reviewers: a truncated log density, density one with an
+  even number of coordinates out of the support, float32 returned for
+  float32). Both P9 reviewers: `SciPy.support()` reads the standardized
+  `.a` and `.b` and ignores `loc` and `scale`, and `Product` copies the
+  box; `Product.log_pdf` raises on a `UserFunction` marginal, a combination
+  the documentation offers, whose test calls `sample` alone; `Trapezoidal`
+  warns at its lower bound and the `np.seterr` pair of the spline is not
+  exception-safe; documented shapes, a parameter named twice, a sign in a
+  comment. P9 internal: a NaN coordinate has full density in `UniformBox`;
+  NaN and infinite constructor arguments pass every check, and with a NaN
+  pivot the sampler is uniform while the density is zero everywhere;
+  `sample_prior` passes the guard of the PyMC target; `tile_inputs`
+  reshapes an argument that disagrees with `size`; a frozen distribution
+  with vector parameters is taken for one dimension. P9 comparison: the
+  classes refuse `u == v`, the tent prior, and `v == b`, which MATLAB
+  computes and normalizes correctly. P2 internal, all behind options that
+  are off by default: `acq_hedge=True` raises `UnboundLocalError` at the
+  first acquisition, the option being neither inert nor refused;
+  the deletion of the acquired point from the search set is dead code, and
+  the search cache keeps that point in first place (`search_cache_frac`);
+  the Nelder-Mead branch has no bounds, ignores `search_max_fun_evals` and
+  takes a tolerance of the value for one of the step; the evaluations of
+  the initial design are not timed; `recompute_var_post` is saved and
+  restored around a block that never writes it; two normalizations of the
+  covariance and a literal 3 for `active_search_bound` in unreachable
+  branches of `_get_search_points`; the snap after the clip can leave a
+  candidate outside the search box.
+
+  The sheet. No entry records the mode search, which since `ba8116fa`
+  (2022-11-03) starts `ceil(sqrt(K))` optimizations at the best of 1e5
+  draws where `vbmc_mode.m` starts one at each of up to 20 component means
+  and draws nothing; the mask of `pdf` outside the bounds; or `kde_1d`,
+  an independent implementation that bins on the centres of the grid where
+  `kde1d.m` bins on left edges, half a bin low, and falls back on another
+  rule. The entry on `qtrapz` is wrong: the two trapezoid rules are the
+  same formula, to the last bit. The entry on the hedge says that
+  `idx_acq` is never chosen, not that the run raises. Both entropies
+  reproduce transcriptions of the MATLAB files to 9e-16 over eight
+  configurations with the draws injected, the weight gradient of `1b72896`
+  included; the comparison reviewer has no finding in them.
+
+  Tests. The tests of the four defects that both P7 reviewers found are
+  blind by construction: equal weights, for which the balanced error
+  cancels; one mean for every coordinate; a parameter vector negative
+  throughout; the mode in `D = 2` under an identity transform. No sampler
+  of a prior has a test of its distribution, which MATLAB's
+  `test_pdfs_vbmc.m` has for all four (both P9 reviewers). Six statements
+  of `test_vbmc_init.py` compare the log joint with the likelihood plus the
+  prior and lack their `assert`. `prepare_gp_for_acq` of the oracles copies
+  the lines of `active_sample` that it stands for, so the oracles through it
+  pin that block against itself; no test runs the Nelder-Mead branch, the
+  hedge, a search cache through `active_sample`, or the initial design with
+  an integer variable. Ten defects of the MATLAB side are listed, of which
+  `msmoothboxrnd` changes what a MATLAB user draws.
+- [ ] **Pickup point (2026-09-21): the task is wave 5, slices P7 and P9 with
+  the internal track of P2, and nothing else.** The other waves are decided
+  by the PI after wave 5 is complete; they are listed under "After wave 5"
+  below for the record, and a session that picks up here starts none of
+  them and prepares none of them.
+
+  Where wave 5 stands. Five reviewers have run and their reports are saved
+  verbatim under `experiments/port_review_20260919/reviews/`:
+  `P7_internal.md` (15 findings), `P7_comparison.md` (11), `P9_internal.md`
+  (11), `P9_comparison.md` (7) and `P2_internal.md` (10). The wave is
+  reported to the PI (the worklog entry "wave 5 reported to the PI" above
+  holds the report); nothing is verified and no finding has a disposition.
+  The reviewers of P7 and P9 read the code at `f873556`, the one of P2 at
+  `831acef`; that entry names the two files of P7 and P9 that changed in
+  between. Two things the P7 reports raise are fixed by the wave-4 pass
+  already: `fess` taking the pair that `vp.sample` returns for the array
+  (`dd3d1d3`, W4-5), and the proposal density of the importance sampling
+  raising on a log density of `-inf` (`799852a`, W4-7). Two sites round a
+  half to even where MATLAB rounds away from zero, the built-in `round` of
+  `stats/get_hpd.py` and `np.round` at `active_sample.py:994`, and both P7
+  reports raise the first; the wave-4 pass made `_real2int` round as MATLAB
+  does from the exact fractional part (`70ce067`), which is the expression
+  to reuse if the PI rules the same way there.
 
   What to do, in this order, as waves 3 and 4 went (the worklog entries of
   wave 4 and `verification/wave4.md` are the model):
-  1. Read the four reports and report the wave to the PI with enough
-     context to judge the findings: what is reported by both reviewers of a
-     slice, what can change what a run computes, where the reviewers
-     disagree, the first-question answers. Stop there: the PI decides what
-     follows (working rule, "one wave at a time").
+  1. Done on 2026-09-21: the wave reported to the PI with enough context to
+     judge the findings. The PI decides what follows (working rule, "one
+     wave at a time").
   2. On the PI's word, verify. The orchestrator takes the findings that can
      change what a run computes, with scripts under
      `verification/scripts/wave5_*`; read-only Opus verifiers, one per
      slice, take the rest by the verifier brief of wave 4 (their reports
-     saved verbatim as `verification/wave5_P7.md` and `wave5_P9.md`). The
-     ledger is `verification/wave5.md`, rows W5-n, with a proposed
-     disposition per row and a column for the PI's.
+     saved verbatim as `verification/wave5_P2.md`, `wave5_P7.md` and
+     `wave5_P9.md`). The verifier of P2 also reads the slice's comparison
+     report and its rows in `verification/wave1_M_P2.md`, so that a finding
+     the wave-1 pass ruled on is not ruled on twice. The ledger is
+     `verification/wave5.md`, rows W5-n, with a proposed disposition per
+     row and a column for the PI's.
   3. On the PI's rulings, fix: agents on worktrees cut at the head of
      `dev-port-review`, one finding per commit with a test written against
      the contract; the orchestrator reviews and cherry-picks. Then the
@@ -1391,26 +1568,24 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   4. On the PI's word: push, the branch smoke, the full matrix, the merge
      into `dev-next` with the status line of `TODO.md` updated there.
 
-  State of the branch. `dev-port-review` and `dev-next` are pushed and hold
-  the wave-4 pass and the independent check of the wave-3 pass (merge
-  commits `9d9c01b` and `5acd382`); `dev-port-review` is ahead of `dev-next`
-  by documentation commits only. Nothing is in flight except possibly the
-  smoke run that the merge started on `dev-next`
-  (`gh run list --branch dev-next`), which tests code the full matrix
-  already passed on `f0be99b`. The reviewers' check scripts of waves 4 and
-  5, the gate records and the logs are on the orchestrator's machine only
+  State of the branch. `dev-port-review` and `dev-next` hold the wave-4 pass
+  and the independent check of the wave-3 pass (merge commits `9d9c01b` and
+  `5acd382`), and both stood at `831acef`, pushed, when the wave was
+  reported: the merge after the rewrite of `AGENTS.md`, which
+  `plans/modernization-roadmap.md` records. The commits that record wave 5
+  follow it on `dev-port-review` and touch `dev/` alone. No agent and no run
+  is in flight. The reviewers' check scripts of waves 4 and 5, the gate
+  records and the logs are on the orchestrator's machine only
   (`dev/scripts/runs/LOCAL.md`, "Port correctness review"); a verifier
   writes its own checks and may use the scripts as leads. The golden
   references and the run pools describe the code from before the moving
   fixes of waves 1 to 3 and are regenerated once, after the review's
   remaining fixes.
 - [ ] After wave 5, on the PI's decision and not before: G1 with G2, both
-  tracks (4 reviewers); the internal track of P2, which wave 1 did not run
-  (its four slots went to M, the P2 comparison and both P6 tracks; running
-  it beside G1 and G2 needs the PI's allowance for a fifth agent, which
-  wave 5 had once, the working rule being four); O1 to O4. Before the next
-  comparison reviewers receive `known_differences.md`, its Python line
-  citations are carried to the present lines again
+  tracks (4 reviewers); O1 to O4. With the internal track of P2, which wave
+  1 had left out and wave 5 took in, every P slice has both reports. Before
+  the next comparison reviewers receive `known_differences.md`, its Python
+  line citations are carried to the present lines again
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-21): every fix pass moves them. The stored oracle state at
   uncertainty level 1 is an item of `TODO.md` (PI, 2026-09-21).
