@@ -1134,10 +1134,6 @@ class VBMC:
         else:
             optim_state["uncertainty_handling_level"] = 1
 
-        # Empty hedge struct for acquisition functions
-        if self.options.get("acq_hedge"):
-            optim_state["hedge"] = []
-
         # List of points at the end of each iteration
         optim_state["iter_list"] = {}
         optim_state["iter_list"]["u"] = []
@@ -3812,7 +3808,9 @@ class VBMC:
                 "functions and reweighs them by the improvement each "
                 "brings) is not ported, so turning the option on would "
                 "leave the acquisition of each step unchosen. An entry of "
-                "options['search_acq_fcn'] is picked at random instead."
+                "options['search_acq_fcn'] is picked at random instead. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'acq_hedge': False})."
             )
 
     def _validate_search_fraction_options(self):
@@ -3831,11 +3829,16 @@ class VBMC:
         listed = ", ".join(
             f"{name} = {value!r}" for name, value in fractions.items()
         )
+        from_a_saved_run = (
+            " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'search_cache_frac': 0.25}) or "
+            "the like."
+        )
         if not all(isinstance(value, Real) for value in fractions.values()):
             raise ValueError(
                 "The options that divide the candidates of the "
                 "acquisition search among their sources must each be a "
-                f"number in [0, 1]: {listed}."
+                f"number in [0, 1]: {listed}." + from_a_saved_run
             )
         total = sum(fractions.values())
         if any(not 0 <= value <= 1 for value in fractions.values()) or (
@@ -3846,7 +3849,7 @@ class VBMC:
                 "acquisition search among their sources must each lie in "
                 f"[0, 1] and must sum to at most 1: {listed}, summing to "
                 f"{total!r}. The share the fractions leave is drawn from "
-                "the variational posterior."
+                "the variational posterior." + from_a_saved_run
             )
 
     def _ensure_runtime_tip_state(self):

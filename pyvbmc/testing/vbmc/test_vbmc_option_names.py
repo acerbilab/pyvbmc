@@ -100,6 +100,24 @@ def test_new_options_are_checked_as_at_construction(
     assert at_load.value.args[0] == at_construction.value.args[0]
 
 
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"acq_hedge": True},
+        {"search_cache_frac": 0.5},
+        {"search_cache_frac": "a quarter"},
+        {"search_optimizer": "Nelder-Mead"},
+    ],
+)
+def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
+    """A value that construction refuses is refused by ``load`` too, so
+    the refusal says which argument of ``load`` replaces it."""
+    with pytest.raises((ValueError, NotImplementedError)) as execinfo:
+        _vbmc(options=options)
+    message = execinfo.value.args[0]
+    assert "VBMC.load(file, new_options=" in message
+
+
 @pytest.mark.parametrize("value", ["Nelder-Mead", "bounded", "fmincon", ""])
 def test_a_search_optimizer_outside_the_two_values_is_refused(value):
     """``search_optimizer`` names one of the two local searches of the

@@ -476,9 +476,11 @@ def active_sample(
 
             # Remove selected points from search set. Nothing reads either
             # array again: the next step builds both afresh, and the search
-            # cache above was written before the deletion, so it keeps the
-            # acquired point as its first row. The two lines stand where
-            # `private/activesample_vbmc.m:242` has them.
+            # cache above, where one is kept, was written before the
+            # deletion, so it still holds the acquired point unless that
+            # point is a training input, which the cache leaves out. The
+            # two lines stand where `private/activesample_vbmc.m:242` has
+            # them.
             X_search = np.delete(X_search, idx, 0)
             idx_cache = np.delete(idx_cache, idx, 0)
 

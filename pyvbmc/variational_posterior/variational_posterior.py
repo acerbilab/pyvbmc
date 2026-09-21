@@ -43,9 +43,11 @@ class VariationalPosterior:
     x0 : np.ndarray, optional
         The starting points for the mixture component means, one per row.
         A single point of `D` elements, given as a flat array, a row or a
-        column, starts every component; an `n0`-by-`D` matrix with `n0` up
-        to `K` starts the components at its rows, which are repeated in
-        order to fill the remaining components. By default ``np.zeros``.
+        column, starts every component; a single element starts every
+        coordinate of every component; an `n0`-by-`D` matrix starts the
+        components at its rows, repeated in order where `n0` is below `K`
+        and cut after the `K`-th row where it is above. By default
+        ``np.zeros``.
     parameter_transformer : ParameterTransformer, optional
         The ``ParameterTransformer`` object specifying the transformation of
         the input space that leads to the current representation used by the
@@ -586,8 +588,9 @@ class VariationalPosterior:
         Parameters
         ----------
         N : int
-            Number of samples to draw. A whole number given as a float,
-            such as ``1e5``, is taken as that number of samples.
+            Number of samples to draw, as any scalar that holds a whole
+            number: a float such as ``1e5``, a NumPy scalar or a 0-D
+            array is taken as that number of samples.
         orig_flag : bool, optional
             If `orig_flag` is ``True``, the random vectors are returned
             in the original parameter space. If ``False``, they are returned in
@@ -622,7 +625,7 @@ class VariationalPosterior:
         Raises
         ------
         ValueError
-            Raised if `N` is not a whole number of samples.
+            Raised if `N` is not a scalar holding a whole number of samples.
         ValueError
             Raised if `df` is finite and negative (the product of univariate
             `t` densities has no sampler here).
@@ -631,11 +634,11 @@ class VariationalPosterior:
         -----
         Random draws use ``self.rng``.
         """
-        if not isinstance(N, Integral):
-            if not isinstance(N, Real) or not float(N).is_integer():
-                raise ValueError(
-                    f"N must be a whole number of samples, got {N}."
-                )
+        if np.ndim(N) == 0 and not isinstance(N, Real):
+            # A NumPy scalar or a 0-D array stands for the number in it.
+            N = np.asarray(N).item()
+        if not isinstance(N, Real) or not float(N).is_integer():
+            raise ValueError(f"N must be a whole number of samples, got {N}.")
         N = int(N)
 
         if np.isfinite(df) and df < 0:
@@ -960,7 +963,7 @@ class VariationalPosterior:
                     divide="ignore", over="ignore", invalid="ignore"
                 ):
                     corrected = y_inside / jacobian
-                    lost = ~np.isfinite(corrected) | (jacobian == 0)
+                    lost = ~np.isfinite(corrected)
                     if np.any(lost):
                         corrected[lost] = np.exp(
                             np.log(y_inside[lost]) - log_jacobian[lost]

@@ -45,6 +45,31 @@ def test_constructor_takes_one_starting_point_in_any_layout():
     assert np.array_equal(column.mu, row.mu)
 
 
+def test_constructor_broadcasts_one_element_over_every_coordinate():
+    """A starting point of a single element starts every coordinate of
+    every component there."""
+    D, K = 3, 4
+    vp = VariationalPosterior(D, K, np.array([[5.0]]), rng=20260921)
+
+    assert vp.mu.shape == (D, K)
+    assert np.allclose(vp.mu, 5.0, atol=1e-5)
+
+
+def test_constructor_drops_the_starting_points_past_the_components():
+    """An `n0`-by-`D` matrix starts the components at its rows; where
+    there are more rows than components the rows past the `K`-th are
+    dropped, and where there are fewer the rows repeat in order."""
+    D, K = 2, 3
+    many = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]])
+
+    over = VariationalPosterior(D, K, many, rng=20260921)
+    under = VariationalPosterior(D, K, many[:2], rng=20260921)
+
+    assert over.mu.shape == (D, K)
+    assert np.allclose(over.mu, many[:K].T, atol=1e-5)
+    assert np.allclose(under.mu, many[[0, 1, 0]].T, atol=1e-5)
+
+
 def test_sample_n_lower_1():
     vp = VariationalPosterior(3, 2, np.array([[5]]))
     x, i = vp.sample(0)
@@ -81,6 +106,46 @@ def test_sample_takes_a_whole_number_given_as_a_float():
 
     with pytest.raises(ValueError, match="whole number"):
         vp.sample(2.5)
+
+
+@pytest.mark.parametrize(
+    "N", [7, 7.0, np.int32(7), np.float64(7.0), np.array(7), np.array(7.0)]
+)
+def test_sample_takes_any_scalar_holding_a_whole_number(N):
+    """A count reaches ``sample`` from every corner of the package and of
+    NumPy: a NumPy scalar and a zero-dimensional array stand for the
+    number they hold, as a Python number does."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    x, i = vp.sample(N)
+
+    assert x.shape == (7, 2)
+    assert i.shape == (7,)
+
+
+def test_sample_takes_a_boolean_as_the_count_it_stands_for():
+    """``True`` counts as one sample, whether it is Python's or NumPy's."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    for value in (True, np.bool_(True)):
+        x, i = vp.sample(value)
+        assert x.shape == (1, 2)
+        assert i.shape == (1,)
+
+
+@pytest.mark.parametrize(
+    "N", [np.array([7]), [7], (7,), np.full((1, 1), 7), "7", None]
+)
+def test_sample_refuses_what_is_not_a_scalar_count(N):
+    """A count is one number: a sequence, an array of one row and a value
+    that is no number at all are refused."""
+    vp = VariationalPosterior(2, 2, np.array([[5]]))
+    vp.rng = np.random.default_rng(20260921)
+
+    with pytest.raises(ValueError, match="whole number"):
+        vp.sample(N)
 
 
 def test_sample_refuses_a_negative_df():
