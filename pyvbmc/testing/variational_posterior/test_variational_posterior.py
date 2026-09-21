@@ -1,3 +1,4 @@
+import importlib
 import itertools
 from pathlib import Path
 
@@ -631,6 +632,70 @@ def test_mode_orig_flag():
     assert np.all(
         np.isclose([0.0540, -0.1818], vp.mode(orig_flag=True), atol=1e-4)
     )
+
+
+@pytest.mark.parametrize("bounded", [False, True])
+def test_mode_one_dimensional(bounded):
+    """``mode()`` of a one-dimensional posterior returns one point of the
+    original space, where the density is at its highest."""
+    if bounded:
+        parameter_transformer = ParameterTransformer(
+            1, np.array([[-3.0]]), np.array([[3.0]])
+        )
+        grid = np.linspace(-2.99, 2.99, 4001).reshape(-1, 1)
+    else:
+        parameter_transformer = ParameterTransformer(1)
+        grid = np.linspace(-3.0, 4.0, 4001).reshape(-1, 1)
+    vp = VariationalPosterior(1, 1, np.zeros((1, 1)))
+    vp.parameter_transformer = parameter_transformer
+    vp.mu = np.array([[0.7]])
+    vp.sigma = np.array([[0.5]])
+    vp.lambd = np.ones((1, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(20260921)
+
+    mode = vp.mode()
+
+    assert mode.shape == (1,)
+    best = grid[np.argmax(vp.pdf(grid))]
+    assert np.isclose(mode, best, atol=1e-2)
+    assert vp.pdf(mode) >= vp.pdf(best)
+    if not bounded:
+        # Of a single component, the mode is its mean.
+        assert np.isclose(mode, 0.7, atol=1e-4)
+
+
+def test_mode_starts_inside_the_box_it_searches(mocker):
+    """The starting point is clamped to the box handed to the optimizer,
+    the original bounds shrunk by ``sqrt(eps)`` (``vbmc_mode.m:39-41``)."""
+    D = 2
+    lb, ub = np.zeros((1, D)), np.ones((1, D))
+    vp = VariationalPosterior(D, 1, np.zeros((1, D)))
+    vp.parameter_transformer = ParameterTransformer(D, lb, ub)
+    vp.mu = np.full((D, 1), -40.0)
+    vp.sigma = np.array([[1.0]])
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.ones((1, 1))
+    vp.rng = np.random.default_rng(20260921)
+
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    starting_points = []
+    original_minimize = vp_module.minimize
+
+    def record(*args, **kwargs):
+        starting_points.append(np.array(kwargs["x0"], copy=True))
+        return original_minimize(*args, **kwargs)
+
+    mocker.patch.object(vp_module, "minimize", record)
+    vp.mode()
+
+    offset = np.sqrt(np.finfo(float).eps)
+    assert len(starting_points) == 1
+    x0 = starting_points[0]
+    assert np.all(x0 >= lb.ravel() + offset)
+    assert np.all(x0 <= ub.ravel() - offset)
 
 
 def test_mtv_not_enough_arguments():

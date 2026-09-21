@@ -1268,20 +1268,13 @@ class VariationalPosterior:
 
             bounds = None
             if orig_flag:
-                bounds = np.stack(
-                    (
-                        self.parameter_transformer.lb_orig.squeeze()
-                        + np.sqrt(np.finfo(float).eps),
-                        self.parameter_transformer.ub_orig.squeeze()
-                        - np.sqrt(np.finfo(float).eps),
-                    ),
-                    axis=1,
-                )
-                x0 = np.minimum(
-                    self.parameter_transformer.ub_orig,
-                    np.maximum(x0, self.parameter_transformer.lb_orig),
-                )
-                x0 = x0.squeeze()
+                # The search box sits inside the original bounds, on which
+                # the density is zero and its logarithm infinite.
+                offset = np.sqrt(np.finfo(float).eps)
+                lb = self.parameter_transformer.lb_orig.reshape(-1) + offset
+                ub = self.parameter_transformer.ub_orig.reshape(-1) - offset
+                bounds = np.stack((lb, ub), axis=1)
+                x0 = np.minimum(ub, np.maximum(x0, lb))
 
             # fun provides gradient (jac=True) when orig_flag is False:
             res = minimize(
