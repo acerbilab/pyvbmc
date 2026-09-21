@@ -1,3 +1,5 @@
+from fractions import Fraction
+
 import gpyreg as gpr
 import numpy as np
 import pytest
@@ -63,9 +65,25 @@ def test_a_quantile_outside_its_range_is_refused(quantile):
         string_to_acq(f"AcqFcnIMIQR({quantile})")
 
 
-def test_a_quantile_that_is_not_a_number_is_refused():
+@pytest.mark.parametrize(
+    "quantile",
+    ["0.9", None, True, Fraction(9, 10), np.array([0.6, 0.9]), np.nan],
+)
+def test_a_quantile_that_is_not_a_number_is_refused(quantile):
     with pytest.raises(ValueError, match="quantile"):
-        AcqFcnIMIQR(quantile="0.9")
+        AcqFcnIMIQR(quantile=quantile)
+
+
+@pytest.mark.parametrize(
+    "quantile",
+    [0.9, np.float64(0.9), np.float32(0.9), np.array(0.9), np.array([0.9])],
+)
+def test_a_quantile_is_taken_as_a_float(quantile):
+    """A real scalar of any type, or an array with one element."""
+    acqf = AcqFcnIMIQR(quantile=quantile)
+    assert type(acqf.acq_info["quantile"]) is float
+    assert np.ndim(acqf.u) == 0
+    assert np.isclose(sps.norm.cdf(acqf.u), 0.9)
 
 
 def test_a_quantile_inside_its_range_is_accepted():

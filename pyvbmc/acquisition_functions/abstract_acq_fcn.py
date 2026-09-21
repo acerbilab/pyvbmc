@@ -258,6 +258,38 @@ class AbstractAcqFcn(ABC):
         """
 
     @staticmethod
+    def _check_quantile(quantile):
+        """
+        The upper quantile of an interquantile range, as a float.
+
+        Parameters
+        ----------
+        quantile : float
+            A real number strictly between 0.5 and 1: a Python or NumPy
+            scalar, or an array with one element.
+
+        Returns
+        -------
+        quantile : float
+            The quantile as a Python float.
+
+        Raises
+        ------
+        ValueError
+            If ``quantile`` is not one real number strictly between 0.5
+            and 1.
+        """
+        value = np.asarray(quantile)
+        if value.size == 1 and value.dtype.kind in "fiu":
+            value = float(value.reshape(-1)[0])
+            if 0.5 < value < 1:
+                return value
+        raise ValueError(
+            "The quantile must be a number strictly between 0.5 and "
+            f"1, not {quantile!r}."
+        )
+
+    @staticmethod
     def _real2int(
         X: np.ndarray,
         parameter_transformer: ParameterTransformer,

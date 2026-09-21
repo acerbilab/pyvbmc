@@ -1,5 +1,3 @@
-from numbers import Real
-
 import gpyreg as gpr
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -128,11 +126,7 @@ class AcqFcnVIQR(AbstractAcqFcn):
             raise ValueError(
                 f"Unknown loss {loss!r}; expected one of {self.LOSSES}."
             )
-        if not isinstance(quantile, Real) or not 0.5 < quantile < 1:
-            raise ValueError(
-                "The quantile must be a number strictly between 0.5 and "
-                f"1, not {quantile!r}."
-            )
+        quantile = self._check_quantile(quantile)
         super().__init__()
         self.acq_info["log_flag"] = True
         self.acq_info["importance_sampling"] = True
