@@ -6,9 +6,9 @@ port correctness review came across while comparing PyVBMC with it
 repository; none of them is a task for PyVBMC. Every entry rests on a
 reading of the MATLAB source, confirmed by the verification record it
 cites. **Nothing here was run in MATLAB**, so an entry says what the code
-reads as doing, and the entries that rest on MATLAB's documented semantics
-and not on its text alone (19, 21, 22, 26, 28, 33, 35 and 36) mark the step
-that is inferred. Paths are relative to the MATLAB repository root. The list
+reads as doing, and an entry that rests on MATLAB's documented semantics
+and not on its text alone says which step is inferred or was read and not
+run. Paths are relative to the MATLAB repository root. The list
 is brought up to date as the review's waves are verified; it stands at the
 end of wave 5 and of its fix pass.
 

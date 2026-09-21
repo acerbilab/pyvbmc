@@ -87,7 +87,8 @@ to be fixed (PI, 2026-09-20):
 
 Left to slice P8 (PI, 2026-09-20): the warp re-transforms only the active rows of the function
 logger where `misc/warp_input_vbmc.m:112-119` re-transforms every row
-(B-M11). Faithful ports, not defects: the recorded posteriors lacking the
+(B-M11). Both P8 reviewers found it without being told, and it is row W3-19
+of `wave3.md` (P8-1 of `wave3_P8.md`), fixed in `9ebaa48`. Faithful ports, not defects: the recorded posteriors lacking the
 stability flag (B-M1) and a non-finite entry of `x0` replacing the whole
 starting set (C-M9).
 
@@ -110,7 +111,7 @@ starting set (C-M9).
 
 The fixes of 2026-09-20 on `dev-port-review`, one commit per finding, each
 with a test written against the contract (the MATLAB lines, the docstring or
-the ruling). Three Opus agents made them in worktrees; their reports are
+the ruling); `d5b2139`, which changes two types in a docstring, has none. Three Opus agents made them in worktrees; their reports are
 `../fixes/wave2_agent_A.md`, `_B.md` and `_C.md`, whose hashes are those of
 the worktree branches. The hashes below are the cherry-picked commits.
 

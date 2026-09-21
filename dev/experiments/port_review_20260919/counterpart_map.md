@@ -3,9 +3,15 @@
 Every `.m` file of the MATLAB VBMC repository at revision `396d649`, with
 its Python counterpart in PyVBMC or in gpyreg (`main`, `9e70e6b`), the slice
 of the review plan that names the MATLAB file, and a status. The map was
-built against PyVBMC `f91fdf0`; its Python line numbers were refreshed on
+built against PyVBMC `f91fdf0`. Its Python line numbers were refreshed on
 2026-09-19 against `80204f7` on `dev-port-review`, the last of the wave-1
-fixes.
+fixes, and those of the eleven rows that the wave-2 pass changed
+(`boundscheck_vbmc.m`, `proposal_vbmc.m`, `setupoptions_vbmc.m`,
+`setupvars_vbmc.m`, `vptrain2real.m`, `warp_gpandvp_vbmc.m`,
+`warp_input_vbmc.m`, `recompute_lcbmax.m`, `vbmc_output.m`,
+`vbmc_termination.m` and `vbmc_warmup.m`) on 2026-09-21, after the
+independent check of that pass; the line numbers of the other rows are
+those of `80204f7`.
 
 Demos, plots, examples, tests and `install.m` are excluded; they are listed
 at the end so that nothing is silently dropped.
@@ -68,11 +74,11 @@ third readers layered on top.
 | `misc/intkernel.m` | none | P3 | unported | Only caller is `acq/acqeig_vbmc.m`, itself removed. |
 | `misc/negelcbo_vbmc.m` | `pyvbmc/vbmc/variational_optimization.py:1103: _neg_elcbo` | P6, O1 | partial | The eta soft bound is deliberately removed and the caller's `theta` is not mutated; the weight-only branches are unported (known-differences sheet, P6). |
 | `misc/noiseshaping_vbmc.m` | none (the `noise_shaping*` options exist and are inert) | P3 | unported | Default off on both sides, and `VBMC.__init__` rejects `noise_shaping=True` (known-differences sheet, P5). |
-| `misc/proposal_vbmc.m` | none; the option value is the placeholder string `"@(x)proposal_vbmc"` (`pyvbmc/vbmc/vbmc.py:986`) | P2 | unported | `optimState.ProposalFcn` is set in `misc/setupvars_vbmc.m` but read nowhere in MATLAB either. |
+| `misc/proposal_vbmc.m` | none; the option value is the placeholder string `"@(x)proposal_vbmc"` (`pyvbmc/vbmc/vbmc.py:1057`) | P2 | unported | `optimState.ProposalFcn` is set in `misc/setupvars_vbmc.m` but read nowhere in MATLAB either. |
 | `misc/real2int_vbmc.m` | `pyvbmc/acquisition_functions/abstract_acq_fcn.py:261: AbstractAcqFcn._real2int` | P8 | ported | The Python function lives in a P3 file and snaps its input in place. See REPORT.md. |
 | `misc/rescale_params.m` | `pyvbmc/variational_posterior/variational_posterior.py: VariationalPosterior.set_parameters` | P7 | ported | |
 | `misc/setupoptions_vbmc.m` | `pyvbmc/vbmc/options.py: Options` (`validate_run_limits` for `:109-119`, `update_defaults` for `:127-163`); `pyvbmc/vbmc/option_configs/basic_vbmc_options.ini`, `advanced_vbmc_options.ini` | P1b | partial | The defaults themselves come from `vbmc.m`'s `defopts` block, not from this file. The checks of `MaxFunEvals` and `MaxIter` and the noisy defaults at either uncertainty-handling level are ported since the wave-2 fixes (`17badf9`, `0ba7680`); the `MinFunEvals` branch (`:120-124`) and `OptimToolbox` (`:98-106`) have no counterpart. |
-| `misc/setupvars_vbmc.m` | `pyvbmc/vbmc/vbmc.py:875: _init_optim_state`; `VBMC.__init__` for the transformer, the transformed `x0` and the initial variational posterior (`:65`, `:82`) | P1b | ported | MATLAB commits `74b046e`/`f3e5d76` (2022) changed the bounded transform here; slice M checks it. `integer_vars` takes a boolean mask or 0-based indices where `:14-17` reads 1-based indices, `Temperature` (`:249-255`) is not ported, and the initial variational means are built from the transformed `x0` since the wave-2 fixes (`8cd4bbc`); known-differences sheet, P1b and P7. |
+| `misc/setupvars_vbmc.m` | `pyvbmc/vbmc/vbmc.py:936: _init_optim_state`; `VBMC.__init__` for the transformer, the transformed `x0` and the initial variational posterior (`:65`, `:82`) | P1b | ported | MATLAB commits `74b046e`/`f3e5d76` (2022) changed the bounded transform here; slice M checks it. `integer_vars` takes a boolean mask or 0-based indices where `:14-17` reads 1-based indices, `Temperature` (`:249-255`) is not ported, and the initial variational means are built from the transformed `x0` since the wave-2 fixes (`8cd4bbc`); known-differences sheet, P1b and P7. |
 | `misc/testpdf.m` | none | none | unported | Test helper (excluded category; listed because it sits in `misc/`). |
 | `misc/vbinit_vbmc.m` | `pyvbmc/vbmc/variational_optimization.py:860: _vb_init` | P6 | ported | The dormant type-3 frozen-sigma case follows a Python-only convention (known-differences sheet, P6). |
 | `misc/vbmc_gphyp.m` | `pyvbmc/vbmc/gaussian_process_train.py:279: _gp_hyp` | none | ported | The `.m` file is zero bytes at `396d649`; the function is a local subfunction of `misc/gptrain_vbmc.m:109`. |
@@ -82,17 +88,17 @@ third readers layered on top.
 | `misc/vpoptimizeweights_vbmc.m` | none | P6 | unported | Its only MATLAB call site (`vbmc.m:717`) is itself commented out. |
 | `misc/vpsample_vbmc.m` | none | P6 | unported | Variational-parameter sampling. |
 | `misc/vpsieve_vbmc.m` | `pyvbmc/vbmc/variational_optimization.py:705: _sieve` | P6 | partial | `vp_repo` and `ELCBOWeight` are unported. |
-| `misc/vptrain2real.m` | none; the call is commented out at `pyvbmc/vbmc/vbmc.py:1379`, `:1540` | P7 | unported | Only active for `vp.temperature` in `{2,3,4,5}`; identity at the default temperature. |
-| `misc/warp_gpandvp_vbmc.m` | `pyvbmc/whitening/whitening.py:268: warp_gp_and_vp` | P8, O3 | partial | Rotoscaling only; the output-warping line is a comment (`whitening.py:311-313`). |
-| `misc/warp_input_vbmc.m` | `pyvbmc/whitening/whitening.py:80: warp_input` | P8 | partial | Nonlinear warping unported. MATLAB commits `f9c04bc`/`a5240d2` (2021-02-02) changed warp robustness; slice M checks it. PyVBMC maps the search state back with the transform of the current inference space where `:8`, `:133` use the handed posterior's (known-differences sheet, P8). |
+| `misc/vptrain2real.m` | none; the call is commented out at `pyvbmc/vbmc/vbmc.py:1438`, `:1599` | P7 | unported | Only active for `vp.temperature` in `{2,3,4,5}`; identity at the default temperature. |
+| `misc/warp_gpandvp_vbmc.m` | `pyvbmc/whitening/whitening.py:338: warp_gp_and_vp` | P8, O3 | partial | Rotoscaling only; the output-warping line is a comment (`whitening.py:381-383`). |
+| `misc/warp_input_vbmc.m` | `pyvbmc/whitening/whitening.py:143: warp_input` | P8 | partial | Nonlinear warping unported. MATLAB commits `f9c04bc`/`a5240d2` (2021-02-02) changed warp robustness; slice M checks it. PyVBMC maps the search state back with the transform of the current inference space where `:8`, `:133` use the handed posterior's (known-differences sheet, P8). |
 | `private/acqhedge_vbmc.m` | none | P2 | unported | `acq_hedge = True` leaves `idx_acq` unset in `pyvbmc/vbmc/active_sample.py:320-323`. |
 | `private/activeimportancesampling_vbmc.m` | `pyvbmc/vbmc/active_importance_sampling.py:10: active_importance_sampling`, `:333 active_sample_proposal_pdf`, `:409 get_mcmc_opts`, `:497 renormalize_weights` | P4 | partial | The sampler is substituted (see `gplite/private/eissample_lite.m`); the integrated-mean-function branch is unported; the MCMC branch is a dormant hook. |
 | `private/activesample_vbmc.m` | `pyvbmc/vbmc/active_sample.py:41: active_sample`, `:877 _get_search_points` | P2 | partial | Seven "Missing port" markers remain (`:343`, `:365`, `:632`, `:677`, `:722`, `:735`, `:785`). MATLAB commit `68a197b` (2022-06-25) added the `slicesample` branch of the acquisition search here, which is unported (known-differences sheet, P2). |
-| `private/recompute_lcbmax.m` | `pyvbmc/vbmc/vbmc.py:2431: _recompute_lcb_max` | P1a | ported | Ported on 2026-09-20 (`8e591ff`); until then the function returned an empty array that nothing read, and this row said "ported" all the same (`verification/wave2.md`, W2-2). |
+| `private/recompute_lcbmax.m` | `pyvbmc/vbmc/vbmc.py:2492: _recompute_lcb_max` | P1a | ported | Ported on 2026-09-20 (`8e591ff`); until then the function returned an empty array that nothing read, and this row said "ported" all the same (`verification/wave2.md`, W2-2). |
 | `private/updateK.m` | `pyvbmc/vbmc/variational_optimization.py:20: update_K` | P1a | ported | The Python function lives in a P6 file. See REPORT.md. |
-| `private/vbmc_output.m` | `pyvbmc/vbmc/vbmc.py:3233: _create_result_dict` | none | partial | `overhead` is `NaN`; `rng_state` is a generator snapshot; `problem_type` tests the original bounds where `:5-9` tests the transformed ones. See REPORT.md and the known-differences sheet, P1a. |
-| `private/vbmc_termination.m` | `pyvbmc/vbmc/vbmc.py:2116: _check_termination_conditions`, `:2236 _compute_reliability_index`, `:2294 _check_gp_sampling_stop`, `:2304 _is_gp_sampling_finished`, `:2359 _ensure_gp_sampling_history` | P1a | ported | |
-| `private/vbmc_warmup.m` | `pyvbmc/vbmc/vbmc.py:1952: _check_warmup_end_conditions`, `:2045 _setup_vbmc_after_warmup` | P1a | ported | The recent-improvement window, the preference for the recomputed LCB maxima and the warping clocks follow MATLAB since the wave-2 fixes (`c918d12`, `8e591ff`, `fb8a12e`). |
+| `private/vbmc_output.m` | `pyvbmc/vbmc/vbmc.py:3353: _create_result_dict` | none | partial | `overhead` is `NaN`; `rng_state` is a generator snapshot; `problem_type` tests the original bounds where `:5-9` tests the transformed ones. See REPORT.md and the known-differences sheet, P1a. |
+| `private/vbmc_termination.m` | `pyvbmc/vbmc/vbmc.py:2177: _check_termination_conditions`, `:2297 _compute_reliability_index`, `:2355 _check_gp_sampling_stop`, `:2365 _is_gp_sampling_finished`, `:2420 _ensure_gp_sampling_history` | P1a | ported | |
+| `private/vbmc_warmup.m` | `pyvbmc/vbmc/vbmc.py:2011: _check_warmup_end_conditions`, `:2104 _setup_vbmc_after_warmup` | P1a | ported | The recent-improvement window, the preference for the recomputed LCB maxima and the warping clocks follow MATLAB since the wave-2 fixes (`c918d12`, `8e591ff`, `fb8a12e`). |
 | `shared/kde1d.m` | `pyvbmc/stats/kde_1d.py:144: kde_1d` | P7 | ported | |
 | `shared/msmoothboxlogpdf.m` | `pyvbmc/priors/smooth_box.py: SmoothBox._log_pdf` | P9 | ported | |
 | `shared/msmoothboxpdf.m` | `pyvbmc/priors/prior.py: Prior.pdf` over `pyvbmc/priors/smooth_box.py: SmoothBox._log_pdf` | P9 | ported | |

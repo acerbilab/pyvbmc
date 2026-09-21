@@ -23,6 +23,18 @@ row gives, the shared hyperparameter struct. The same script confirms row
 B-1 inside the loop: `entropy_switch=True` at `D = 5` raises the
 `TypeError` at `vbmc.py:1226` before any iteration is recorded.
 
+A second correction, from the independent check of the pass (2026-09-21).
+Under B-2 the agent infers, from every recorded `optim_state` of the static
+run holding `last_run_avg == N`, that "`Nnew` would be 0 and `wRun` 1 even if
+the `else` branch ran". The observation holds and the inference does not:
+`last_run_avg` is set to the current `N` at the end of the block that
+averages the moments, and the state is recorded after that, so every record
+shows the two equal, while the value the block reads in an iteration is the
+`N` of the iteration before. `Nnew` is the number of evaluations of the
+iteration, positive in every iteration, and the corrected guard does smooth
+the moments (the test of commit `ab5c603` asserts `Nnew > 0`). Row W2-11 of
+the ledger does not repeat the inference.
+
 ---
 
 # Wave-2 verification, group B (P1a loop / termination / results)
