@@ -156,6 +156,30 @@ def test_vbmc_bounds_check_scalars_are_replicated():
         assert np.all(bound == value)
 
 
+def test_vbmc_scalar_plausible_bounds_without_x0_name_the_problem():
+    """Without a starting point the number of variables comes from the
+    plausible bounds, so two scalars leave it unknown, and the error says
+    that."""
+    with pytest.raises(ValueError, match="number of variables"):
+        VBMC(fun, None, -10, 10, -1, 1)
+    with pytest.raises(ValueError, match="number of variables"):
+        VBMC(fun, None, -10, 10, np.float64(-1), np.float64(1))
+
+
+def test_vbmc_one_scalar_plausible_bound_without_x0_is_replicated():
+    """One plausible bound with an entry per variable gives their number,
+    and the other, a scalar, is replicated as the docstring promises."""
+    D = 3
+    vbmc = VBMC(fun, None, -10, 10, np.full((1, D), -1.0), 1)
+    assert vbmc.D == D
+    assert vbmc.plausible_upper_bounds.shape == (1, D)
+    assert np.all(vbmc.plausible_upper_bounds == 1)
+
+    vbmc = VBMC(fun, None, -10, 10, -1, [1.0, 1.0, 1.0])
+    assert vbmc.D == D
+    assert np.all(vbmc.plausible_lower_bounds == -1)
+
+
 def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
     """A starting set without width leaves the plausible box without
     width, and the hard bounds take its place, which needs the replicated

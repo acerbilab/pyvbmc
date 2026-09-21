@@ -149,7 +149,9 @@ class VBMC:
         arrays with one value and positive standard deviation per row.
     x0 : np.ndarray, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
-        proximity of the mode of the posterior. Default is ``None``.
+        proximity of the mode of the posterior. Default is ``None``, in which
+        case the number of variables is read from the plausible bounds, one
+        of which then needs one entry per variable.
     lower_bounds, upper_bounds : np.ndarray, optional
         ``lower_bounds`` (`LB`) and ``upper_bounds`` (`UB`) define a set
         of strict lower and upper bounds for the coordinate vector, `x`, so
@@ -352,8 +354,22 @@ class VBMC:
                     """vbmc:UnknownDims If no starting point is
                  provided, PLB and PUB need to be specified."""
                 )
-            else:
-                x0 = np.full((plausible_lower_bounds.shape), np.nan)
+            # Without a starting point the number of variables is read
+            # from the plausible bounds, which a scalar does not give.
+            shapes = [
+                np.shape(bound)
+                for bound in (plausible_lower_bounds, plausible_upper_bounds)
+                if np.ndim(bound) > 0
+            ]
+            if len(shapes) == 0:
+                raise ValueError(
+                    "Without a starting point x0 the number of variables "
+                    "is read from the plausible bounds, so they cannot both "
+                    "be scalars: give plausible_lower_bounds or "
+                    "plausible_upper_bounds one entry per variable, or give "
+                    "x0."
+                )
+            x0 = np.full(shapes[0], np.nan)
 
         if x0.ndim == 1:
             logging.warning("Reshaping x0 to row vector.")
