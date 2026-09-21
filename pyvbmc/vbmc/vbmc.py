@@ -3149,6 +3149,10 @@ class VBMC:
             )
         if "show_tips" not in vbmc.options:
             vbmc.options.__setitem__("show_tips", True, force=True)
+        if "tol_elcbo_boost" not in vbmc.options:
+            # A run saved before the final boost had its guard was made with
+            # the unguarded boost, which None selects.
+            vbmc.options.__setitem__("tol_elcbo_boost", None, force=True)
         if (
             vbmc.D == 1
             and vbmc.options.get("search_optimizer") == "Nelder-Mead"

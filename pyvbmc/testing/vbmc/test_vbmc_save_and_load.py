@@ -179,6 +179,17 @@ class _ReachedFirstIteration(Exception):
     """Raised to leave ``optimize()`` once it is about to iterate."""
 
 
+def test_load_gives_an_older_run_the_final_boost_it_was_made_with():
+    """A run saved before ``tol_elcbo_boost`` existed keeps the unguarded
+    final boost of its day, which the option states as ``None``."""
+    with open(base_path.joinpath("test_vbmc_save_static.pkl"), "rb") as f:
+        assert "tol_elcbo_boost" not in dill.load(f).options
+
+    loaded = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
+    assert "tol_elcbo_boost" in loaded.options
+    assert loaded.options["tol_elcbo_boost"] is None
+
+
 def test_load_with_a_larger_budget_schedules_the_gp_fit_as_a_fresh_run():
     """The hyperparameter fit follows the budget the run was loaded with.
 
