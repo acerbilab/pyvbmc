@@ -17,6 +17,7 @@ from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
+from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 # The module, for patching its names. Inside the package the name
 # `pyvbmc.vbmc.active_sample` is the function the package exports, and a
@@ -641,6 +642,159 @@ def test_a_cached_point_the_integer_grid_moved_is_evaluated(mocker):
     )
     assert recorded[0] == np.round(recorded[0])
     assert np.isclose(recorded[1], x_cached[0, 1])
+
+
+def _warped_state_with_gp(D: int, options: dict = None, seed: int = None):
+    """A state whose inference space a rotoscaling warp has rotated, as the
+    main loop warps it: the initial design drawn and a GP trained on it, the
+    warp computed from a variational posterior with correlated coordinates,
+    and a GP trained again in the warped space."""
+    vbmc, gp = _state_with_gp(D, options, seed=seed)
+    vp = vbmc.vp
+    K = vp.K
+    vp.mu = np.outer(np.linspace(1.0, -0.6, D), np.linspace(-1.0, 1.0, K))
+    vp.sigma = np.full((1, K), 0.3)
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.full((1, K), 1 / K)
+    parameter_transformer, optim_state, function_logger, _ = warp_input(
+        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+    )
+    vp, _ = warp_gp_and_vp(parameter_transformer, gp, vp, vbmc)
+    vp.parameter_transformer = parameter_transformer
+    vbmc.vp = vp
+    vbmc.parameter_transformer = parameter_transformer
+    vbmc.function_logger = function_logger
+    vbmc.optim_state = optim_state
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        optim_state["plb_tran"],
+        optim_state["pub_tran"],
+        rng=vp.rng,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    return vbmc, gp
+
+
+def test_a_cached_point_nothing_moved_keeps_its_value_after_a_warp(mocker):
+    """Once a warp has rotated the inference space the transform is a
+    matrix product, and a row of a product can round differently according
+    to the rows computed with it: a cached point transformed alone need not
+    equal, bit for bit, the row that the sieve made of it among the other
+    cached points. A cached point that neither the clip into the search box
+    nor the snap to the integer grid moved is still the point the cache
+    holds, and it is acquired with its stored value, without a target call.
+    A cached point that the clip moved is evaluated."""
+    D = 3
+    n_cache = 7
+    vbmc, gp = _warped_state_with_gp(
+        D,
+        options={
+            "ns_search": n_cache,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+        seed=20260922,
+    )
+    function_logger = vbmc.function_logger
+    optim_state = vbmc.optim_state
+    parameter_transformer = function_logger.parameter_transformer
+    assert parameter_transformer.R_mat is not None
+
+    # Cached points inside the search box, with stored values that the
+    # target would not return there.
+    x_cached = np.random.default_rng(3).uniform(-1.5, 1.5, (n_cache, D))
+    y_cached = 100.0 + np.arange(n_cache)
+    u_cached = parameter_transformer(x_cached)
+    assert np.all(u_cached > optim_state["lb_search"])
+    assert np.all(u_cached < optim_state["ub_search"])
+    optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    optim_state["cache"]["y_orig"] = np.copy(y_cached)
+    optim_state["cache"]["skip_logger"] = np.zeros(n_cache, dtype=bool)
+
+    def prefer_a_row_a_new_transform_moves(
+        self, Xs, gp, vp, function_logger, optim_state
+    ):
+        """Every candidate is a cached point; the first one that differs
+        from a transform of its point alone scores best, where the
+        platform's matrix product gives one."""
+        Xs = np.atleast_2d(Xs)
+        alone = [
+            parameter_transformer(x[None, :])[0]
+            for x in optim_state["cache"]["x_orig"]
+        ]
+        return np.array(
+            [
+                0.0 if not any(np.array_equal(x, a) for a in alone) else 1.0
+                for x in Xs
+            ]
+        )
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__",
+        prefer_a_row_a_new_transform_moves,
+    )
+    calls_before = function_logger.func_count
+    cache_count_before = function_logger.cache_count
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The stored value was used instead of a target call.
+    assert function_logger.func_count == calls_before
+    assert function_logger.cache_count == cache_count_before + 1
+    last = function_logger.Xn
+    acquired = int(
+        np.argmin(np.sum((x_cached - function_logger.X_orig[last]) ** 2, 1))
+    )
+    assert np.allclose(function_logger.X_orig[last], x_cached[acquired])
+    assert function_logger.y_orig[last] == y_cached[acquired]
+    assert optim_state["cache"]["x_orig"].shape == (n_cache - 1, D)
+
+    # A cached point that the clip moves into the search box is evaluated,
+    # at the point the clip moved it to.
+    x_far = np.array([[50.0, 0.0, 0.0]])
+    u_far = parameter_transformer(x_far)
+    lb_search = np.copy(optim_state["lb_search"])
+    ub_search = np.copy(optim_state["ub_search"])
+    assert np.any(u_far > ub_search) or np.any(u_far < lb_search)
+    clipped = parameter_transformer.inverse(
+        np.minimum(np.maximum(u_far, lb_search), ub_search)
+    )
+    vbmc.options.__setitem__("ns_search", 1, force=True)
+    optim_state["cache"]["x_orig"] = np.copy(x_far)
+    optim_state["cache"]["y_orig"] = np.array([100.0])
+    optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = function_logger.func_count
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.func_count == calls_before + 1
+    recorded = function_logger.X_orig[function_logger.Xn]
+    assert np.allclose(recorded, clipped[0])
+    assert np.isclose(
+        function_logger.y_orig[function_logger.Xn], fun(recorded)
+    )
+    assert optim_state["cache"]["x_orig"].shape[0] == 0
 
 
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):

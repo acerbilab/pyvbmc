@@ -379,8 +379,14 @@ def active_sample(
                     optim_state=optim_state,
                     options=options,
                 )
+            cache_rows = {}
             X_search, idx_cache = _get_search_points(
-                options["ns_search"], optim_state, function_logger, vp, options
+                options["ns_search"],
+                optim_state,
+                function_logger,
+                vp,
+                options,
+                cache_rows=cache_rows,
             )
 
             X_search = AbstractAcqFcn._real2int(
@@ -698,12 +704,14 @@ def active_sample(
                 # the acquisition snaps integer coordinates to their grid,
                 # so a candidate that either of the two moved is a point
                 # the target has not been called at: it is evaluated. The
-                # comparison is exact and in the inference space, where
-                # both the clip and the snap act.
-                x_cached = parameter_transformer(
-                    optim_state["cache"]["x_orig"][[idx]]
-                )
-                if np.array_equal(x_cached[0], xnew[0]):
+                # candidate is compared, exactly and in the inference space
+                # where both act, with the row the sieve made of the cached
+                # point before its clip. A new transform of the point is
+                # no reference: once a warp has rotated the space the
+                # transform is a matrix product, and a row of a product can
+                # round differently according to the rows computed with it.
+                x_cached = cache_rows.get(idx)
+                if x_cached is not None and np.array_equal(x_cached, xnew[0]):
                     y_orig = optim_state["cache"]["y_orig"][idx]
                 else:
                     y_orig = np.nan
@@ -903,6 +911,7 @@ def _get_search_points(
     function_logger: FunctionLogger,
     vp: VariationalPosterior,
     options: Options,
+    cache_rows: dict = None,
 ):
     """
     Get search points from starting cache or randomly generated.
@@ -920,6 +929,12 @@ def _get_search_points(
         from.
     options : Options
         Options from the VBMC instance this function is called from.
+    cache_rows : dict, optional
+        When given, it receives the rows that the starting cache
+        contributes, keyed by their cache index, as the transform into the
+        inference space made them and before the clip into the search box.
+        The caller tells by them whether a candidate is still the point the
+        cache holds.
 
     Returns
     -------
@@ -962,6 +977,11 @@ def _get_search_points(
         idx_cache = rng.permutation(x0.shape[0])[: min(N_cache, x0.shape[0])]
 
         search_X = parameter_transformer(x0[idx_cache])
+        if cache_rows is not None:
+            cache_rows.update(
+                (int(index), np.copy(row))
+                for index, row in zip(idx_cache, search_X)
+            )
 
     # Randomly sample the points the cache did not provide
     if search_X.shape[0] < number_of_points:
