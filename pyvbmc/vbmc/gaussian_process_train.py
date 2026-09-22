@@ -67,8 +67,6 @@ def train_gp(
         hyp_dict["hyp"] = None
     if "warp" not in hyp_dict:
         hyp_dict["warp"] = None
-    if "logp" not in hyp_dict:
-        hyp_dict["logp"] = None
     if "full" not in hyp_dict:
         hyp_dict["full"] = None
     if "run_cov" not in hyp_dict:
@@ -172,10 +170,8 @@ def train_gp(
     )
 
     if res is not None:
-        # Pre-thinning GP hyperparameters, with the log prior density of
-        # each of them.
+        # Pre-thinning GP hyperparameters.
         hyp_dict["full"] = res["samples"]
-        hyp_dict["logp"] = res["log_priors"]
 
         # Missing port: currently not used since we do
         # not support samplers other than slice sampling.
@@ -189,10 +185,8 @@ def train_gp(
         # end
     else:
         # A fit that draws no samples returns the optimized hyperparameters
-        # alone, and they take the place of the chain. The fit reports no
-        # density for them, so there is none to keep.
+        # alone, and they take the place of the chain.
         hyp_dict["full"] = np.atleast_2d(hyp_dict["hyp"]).copy()
-        hyp_dict["logp"] = None
 
     # Update running average of GP hyperparameter covariance (coarse)
     if hyp_dict["full"] is not None and hyp_dict["full"].shape[0] > 1:

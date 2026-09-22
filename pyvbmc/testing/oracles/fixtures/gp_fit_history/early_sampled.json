@@ -271,7 +271,6 @@
    "gp_s_N": "@@npz:capture/ref/fit/gp_s_N",
    "hyp_dict_full": "@@npz:capture/ref/fit/hyp_dict_full",
    "hyp_dict_hyp": "@@npz:capture/ref/fit/hyp_dict_hyp",
-   "hyp_dict_logp": "@@npz:capture/ref/fit/hyp_dict_logp",
    "hyp_dict_run_cov": "@@npz:capture/ref/fit/hyp_dict_run_cov",
    "prediction_mean": "@@npz:capture/ref/fit/prediction_mean",
    "prediction_variance": "@@npz:capture/ref/fit/prediction_variance",

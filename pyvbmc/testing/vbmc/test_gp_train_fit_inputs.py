@@ -221,7 +221,7 @@ def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):
     assert during_warmup[-1]["run_cov"] is not None
     assert after_warmup[0]["run_cov"] is None
     # The summary statistics carry no key beyond the ones the fit manages.
-    assert set(vbmc.hyp_dict) <= {"hyp", "warp", "logp", "full", "run_cov"}
+    assert set(vbmc.hyp_dict) <= {"hyp", "warp", "full", "run_cov"}
 
 
 def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
@@ -250,7 +250,26 @@ def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
     # The covariance of a single vector is not defined, and the chain of
     # the earlier fit is not folded into it once more.
     assert hyp_dict["run_cov"] is None
-    assert hyp_dict["logp"] is None
+
+
+def test_the_fit_keeps_no_log_density_of_the_hyperparameter_samples():
+    """The summary statistics carry no log density of the hyperparameter
+    samples. MATLAB VBMC keeps one (``misc/gptrain_vbmc.m:66`` stores the
+    thinned log posterior of the chain), for a branch of ``gplite_train.m``
+    that is not ported and a reader that is commented out
+    (``gptrain_vbmc.m:32``); PyVBMC has no reader either, so the field is
+    not kept. A dictionary that arrives with the key, as one saved by an
+    earlier version does, is left as it is: the fit neither reads it nor
+    writes it."""
+    vbmc = build_trained_state()
+
+    _, gp_s_N, _, hyp_dict = fit_the_gp(vbmc, {})
+    assert gp_s_N > 1
+    assert "logp" not in hyp_dict
+
+    stale = dict(hyp_dict, logp=np.zeros(3))
+    _, _, _, carried = fit_the_gp(vbmc, stale)
+    np.testing.assert_array_equal(carried["logp"], np.zeros(3))
 
 
 def test_output_dependent_noise_is_bounded_by_the_training_values():
