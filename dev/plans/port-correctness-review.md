@@ -2080,43 +2080,89 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   of one for equal targets, with a warning; W6-8 both parts; W6-19 left
   loud, with a sheet entry; W6-21 the Metropolis step removed. The thirteen
   rows of the MATLAB side are entries 41 to 53 of `matlab_side_defects.md`.
-- [ ] **Pickup point (2026-09-22): the wave-6 fix pass is in flight.** How
-  an agent works on gpyreg, settled with the PI on 2026-09-22: worktrees of
-  `../gpyreg` made by hand, on branches cut from gpyreg's `main` at
-  `fdbafdf` (the code of the pin): `../gpyreg-port-review-A` (branch
-  `port-review-wave6-A`, fix agent A: `gaussian_process.py` and its tests),
-  `../gpyreg-port-review-B` (`port-review-wave6-B`, fix agent B: the other
-  modules and `docsrc/`), and `../gpyreg-port-review` (`port-review-wave6`),
-  onto which the orchestrator cherry-picks both after reviewing each diff
-  and where W6-1 is made last and alone. A third agent, C, works on a
-  harness worktree of PyVBMC for the two PyVBMC-side rows, W6-23 and W6-37.
-  The three were launched on 2026-09-22 with briefs that hold the rulings
-  row by row, one commit per row with a test seen to fail first, one test
-  file at a time and no suite (the orchestrator runs the suites), no push;
-  the agents propose release-note and changelog sentences, which the
-  orchestrator writes. gpyreg's suite on the untouched worktree: 222 passed,
-  1 failed, `test_slice_sample.py::test_multivariate_normal`, an unseeded
-  statistical test (agent B seeds that file's distributional tests, a `test:`
-  commit). Not yet done, in this order: the agents' reports saved under
-  `experiments/port_review_20260919/fixes/wave6_agent_{A,B,C}.md`; the
-  cherry-picks onto `port-review-wave6` (gpyreg) and `dev-port-review`
-  (PyVBMC); gpyreg's suite on the assembled branch; the PyVBMC gates against
-  the assembled gpyreg branch before W6-1 (`PYTHONPATH` naming
-  `../gpyreg-port-review`, `pyvbmc.__file__` and `gpyreg.__file__` printed):
-  the exact oracle check and the four seeded runs must be bit for bit, no
-  part-2 row changing a number of a run; then W6-1 by the orchestrator (the
-  eight lines of `verification/scripts/wave6_per_column_patch.py` and the
-  copy in the rational quadratic kernel, with a test of each
-  recommendation), the exact oracle check to see which references move, the
-  seeded runs, the benchmark sweep before and after over several seeds
-  (`verification/scripts/wave3_gate_benchmark_sweep.py`) as the deciding
-  gate, then the targeted re-baselines with the reason recorded; the
-  records (the sheet, drafted on the orchestrator's machine as
-  `records_sheet.py` in the wave's scratchpad, run after the pass; the
-  changelog of PyVBMC and the release notes of gpyreg; this worklog); the
-  independent check of the pass; the gpyreg pull request, its CI, the
-  merge, `GPYREG_PIN`; the PyVBMC push, smoke and matrix, and the merge into
-  `dev-next`. The session starts no other wave.
+- [x] 2026-09-22: the wave-6 fix pass, part 2 (PI: go ahead, on the
+  orchestrator's plan). How an agent works on gpyreg, settled with the PI:
+  worktrees of `../gpyreg` made by hand on branches cut from gpyreg's `main`
+  at `fdbafdf`, the code of the pin. Three Opus agents, one commit per row
+  with a test seen to fail first, one test file at a time, no push: A on
+  `../gpyreg-port-review-A` (`gaussian_process.py` and its tests, 19
+  commits), B on `../gpyreg-port-review-B` (the other modules, their tests,
+  `docsrc/`, 13 commits, the seeding of the sampler's unseeded tests among
+  them), C on a harness worktree of PyVBMC (W6-23 and W6-37, 2 commits).
+  Reports saved verbatim under `experiments/port_review_20260919/fixes/`.
+  The orchestrator reviewed the diffs and cherry-picked: C's onto
+  `dev-port-review` (`4d3c1515`, `e657eba8`, with the audit entries of the
+  three fit-history captures through the generator's rebaseline mode, every
+  replayed output moved by zero, `0a6682fc`); B's then A's onto gpyreg's
+  `port-review-wave6` in `../gpyreg-port-review` (32 commits, no conflict,
+  hashes in `verification/wave6.md`, "Fix commits"). W6-38, an inverted
+  plausible pair in `fit` that B found on the way, is fixed as the last
+  commit of that branch, unruled, for the PI to strike. gpyreg's suite on
+  the assembled branch, 293 passed. Gate 1 against it, `PYTHONPATH` naming
+  the worktree: the exact oracle check 11 of 11, the four seeded runs bit
+  for bit the record after the wave-5 pass, so no part-2 row changes a
+  number of a run. The benchmark sweep before W6-1 is recorded (eight
+  targets; the log on the orchestrator's machine). C's worktree is removed;
+  A's and B's stand until `git cherry` has been read once more before the
+  pull request.
+- [ ] **Pickup point (2026-09-22): W6-1, the moving fix, is the next step;
+  everything before it is done and gated.** The state: `dev-port-review` at
+  the head of this entry's commit, unpushed since `8af5daac` (the wave-6
+  reports, the ledger, the rulings, C's fixes); gpyreg's `port-review-wave6`
+  at `caacbc1` in `../gpyreg-port-review`, unpushed, with `port-review-wave6-A`
+  and `-B` beside it. In this order:
+  1. W6-1 by the orchestrator, on `port-review-wave6`, last and alone: `axis=0`
+     in the statistics of `X` of `covariance_functions._bounds_info_helper`
+     (the length scales' `x0`, and its copy in `RationalQuadraticARD`) and of
+     `mean_functions._bounds_info_helper` (`w`, `min`, `max`, `median`, `std`),
+     which `verification/scripts/wave6_per_column_patch.py` spells out (its
+     source lines have moved: B's `_target_spread` renamed `np.std(y, ddof=1)`
+     to `y_std` and the isotropic helper's `x0` is per column already, so the
+     patch's text no longer matches; use it as the list of edits, not as a
+     patch), with a test of each recommendation on inputs whose columns
+     differ in location and spread.
+  2. Its gates, each with `PYTHONPATH` naming `../gpyreg-port-review` and
+     `gpyreg.__file__` printed: the exact oracle check to see which
+     references move (expected `gp_fit`, `gp_fit_history`,
+     `active_sample_step`, and `gp_nlZ` through `_install_hyperprior`, which
+     fills the mean's bounds from the recommendation); the four seeded runs
+     (`wave2_fixpass_gate_runs.py --out`, compared with
+     `wave5_gates/after_pass_23d962a1.npz`; they will differ from the first
+     evaluation after the initial design); the after-sweep,
+     `wave3_gate_benchmark_sweep.py` with the same eight targets and seed
+     counts as the before-sweep (rosenbrock_D2 10, cigar_D4 6, corr_D5 3,
+     lumpy_D4 3, student_D4 3, banana_D2 3, halfnormal_D2 3,
+     rosenbrock_D2_noise1 3; about 40 minutes, run in the background
+     unbuffered into a log). The comparison of the two sweeps decides
+     whether W6-1 is taken (PI's ruling): if accuracy holds or improves it
+     is taken, if it is worse on some targets it returns to triage.
+  3. If taken: the targeted re-baselines of the references that moved
+     (`--rebaseline ORACLE --reason`, `--rebaseline-gp-fit-history NAME
+     --reason`, on this machine with BLAS single-threaded), never the recipes.
+  4. The records: the sheet, with the script kept on the orchestrator's
+     machine (`dev/scripts/runs/LOCAL.md`, the wave's scratchpad copy,
+     `records_sheet.py`), written in the after-fix form and to be read once
+     more before it runs; the changelog of PyVBMC (agent C's sentences for
+     W6-37 in its report, checked against `v1.0.4`; a sentence for the
+     GP-fit change that the pin move brings, and for the fit-history logp
+     key if the PI wants one); gpyreg's release notes (the agents' sentences
+     in their reports, marked for what moves numbers); the ledger's
+     "Fix commits" and "Gates" completed; `matlab_side_defects.md` entries 45,
+     46, 47, 48, 53, which say "until the wave-6 pass", checked against the
+     branch as merged; this worklog.
+  5. The independent check of the pass (`/doublecheck`, fresh read-only
+     reviewers; after every pass so far it found errors, the orchestrator's
+     own among them), and its fix round.
+  6. On the PI's word: the gpyreg pull request from `port-review-wave6` (one
+     branch, W6-1 its last commit), gpyreg's CI, the merge, then
+     `GPYREG_PIN` in `.github/workflows/test-matrix.yml`, the push of
+     `dev-port-review`, the smoke, the full matrix, the merge into
+     `dev-next` with the status line of `TODO.md`; after a gpyreg release,
+     the minimum version in `pyproject.toml`. The sheet's citations into
+     gpyreg are at the pin and move with it; `refresh_citations.py` does not
+     carry them. The worktrees of A and B are removed once `git cherry`
+     shows every commit on `port-review-wave6`.
+  The session starts no other wave.
 
   Why this wave. G1 and G2 are the only slices that no reviewer has read,
   and what they find can still move the GP fit, on which the stored oracle

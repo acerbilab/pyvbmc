@@ -100,6 +100,12 @@ all, by a run or by gpyreg's own defaults, the column says with what effect.
 |---|---|---|---|---|---|---|---|
 | W6-37 | the orchestrator's candidate of 2026-09-21, from reading `load` (the worklog of the plan); verifier row G1-X | `VBMC.load(new_options=)` checks the names, updates the options and runs `_validate_option_values` (`vbmc.py:3197-3208`); it runs neither `Options.update_defaults` nor `_init_optim_state`. An option that is read at construction alone is taken and does nothing coherent, and the checks that live in `_init_optim_state` are passed by: `gp_mean_fun="nonsense"` is accepted where construction raises | Python-only defect, sharper than the candidate had it: a missing check beside the missing effect. W2-7 and W2-8 settled the order at construction and did not touch `load`, whose docstring says that the values are checked as at construction | whenever a user loads with such an option: `uncertainty_handling`, `specify_target_noise`, `gp_mean_fun`, `integer_vars`, `warmup`, `k_warmup`, `entropy_switch`, `active_search_bound`, `tol_bound_x` and the others that G1-X lists by reader | `scripts/wave6_G1_X_load_new_options.py`, on an object saved without a run: with `uncertainty_handling=True` the option is `True`, the level stays 0, the noise model of the GP `[1, 0, 0]`, `max_fun_evals` 200 for the 300 of construction, the search acquisition the noiseless one; `integer_vars=[True, False]` is accepted and the state keeps `[False, False]`; `max_iter` and `max_fun_evals`, the documented use, take effect | stricter interface: `load` refuses an option that is read at construction alone, with a message that says to construct a new object; the checks of `gp_mean_fun` and `integer_vars` move into `_validate_option_values`, so that both paths run them; the docstring corrected. In PyVBMC, one commit, with the changelog | as proposed |
 
+### Found during the fix pass
+
+| id | reports | statement | verdict (class) | fires at defaults? | how verified | proposed | PI |
+|---|---|---|---|---|---|---|---|
+| W6-38 | found by fix agent B while making W6-4 (`../fixes/wave6_agent_B.md`), fixed by fix agent A on the orchestrator's instruction; the PI has not ruled on it | `fit` clips the plausible bounds into the hard bounds one side at a time (`PLB = min(max(PLB, LB), UB)`, `PUB = max(min(PUB, UB), LB)`), which leaves the pair inverted where the plausible box lies outside the hard box: with training targets whose standard deviation is below `tol` = 1e-6 while their range is above it, the noise's plausible lower bound is clipped down to its hard upper bound and its plausible upper bound, `log(std(y))`, stays below that; the space-filling design then fails `uuinv`'s ordering assertion | Python-only defect, latent (both clips are gpyreg's; `gplite_train.m:141-142` orders the hard pair alone and `fminfill.m` takes the plausible pair as given) | no: a run's targets span far more than 1e-6. A training set of twenty targets spanning 1e-4 with a standard deviation below 1e-6 reaches it (agent A's test); targets spanning 1e-8 do not, the hard pair collapsing first | agent A's `test_fit_with_targets_of_a_tiny_range`, seen to fail with the `AssertionError` of `uuinv` | fix, made as the last commit of the assembled branch: an inverted pair collapses onto its clipped upper bound, which the clip left inside the hard box. For the PI to strike before the pull request | |
+
 ## The first questions
 
 **G1, `uuinv` and the three MATLAB commits of the slice.** gpyreg has all
@@ -263,3 +269,89 @@ opening sentence, which has the internal report off by up to 18, is
 contradicted by its list. The worklog entry of the wave said that the
 citations of the comparison report hold, which was true of the five the
 orchestrator had looked up; it is corrected there.
+
+## Fix commits
+
+Made on 2026-09-22. Three Opus agents on worktrees: A and B on worktrees of
+gpyreg made by hand (`../gpyreg-port-review-A`, `-B`, branches
+`port-review-wave6-A`, `-B`, cut from gpyreg's `main` at `fdbafdf`, the code
+of the pin), A for `gaussian_process.py` and its tests, B for the other
+modules, their tests and `docsrc/`; C on a harness worktree of PyVBMC
+fast-forwarded to `b7622e51`. Their reports are `../fixes/wave6_agent_A.md`,
+`wave6_agent_B.md` and `wave6_agent_C.md`. Each fix came with a test seen
+to fail on the code before it, but for the two commits of tests alone and
+the three of documentation. The orchestrator reviewed each diff and
+cherry-picked the commits: C's onto `dev-port-review`, B's and then A's onto
+gpyreg's `port-review-wave6` (worktree `../gpyreg-port-review`), where they
+applied without a conflict and have the hashes below. W6-1 is not among
+them: it is made last and alone, by the orchestrator, after the gates below.
+
+On `dev-port-review`:
+
+| row | commit | |
+|---|---|---|
+| W6-23 | `4d3c1515` | `hyp_dict` no longer carries `logp`; the reference name removed from the three fit-history captures, whose sidecars carry an audit entry from the generator's rebaseline mode with every replayed output moved by zero (`0a6682fc`) |
+| W6-37 | `e657eba8` | `load` refuses a construction-only option (`_CONSTRUCTION_ONLY_OPTIONS`, nineteen names, `bounded_transform` and `cache_size` beside the review's seventeen; `noise_shaping` is read in every iteration and is not one); the checks of `gp_mean_fun` and of the form of `integer_vars` moved into `_validate_option_values`, run before the names are weighed; the docstring and the FAQ. A saved run whose stored `integer_vars` has a form the current code refuses now fails to load (agent C's note 7) |
+
+On gpyreg's `port-review-wave6`, in order:
+
+| row | commit | |
+|---|---|---|
+| W6-3 | `8dfbae4` | a coordinate whose burn-in variance estimate is not positive keeps its width; a window of fewer than two iterations adapts nothing; a test pins the window of the statistics (`floor(burn/2)` iterations) |
+| W6-14 | `d07c849` | `base_widths` copied after an infinite width is replaced |
+| W6-15 | `a29d0cf` | a frozen free parameter is recognized by its range, with `R` and `eff_N` NaN; the pairing of the autocorrelations kept at lag 0 and documented (agent B's note 3: it is the pairing of BDA3 and Stan, which differ from gpyreg only in taking the first pair unconditionally, with the same estimate under the floor); the two tests over several constants |
+| W6-21 | `919742e` | the Metropolis step, its call sites, its options and attributes removed |
+| W6-22, B's part | `9b282da` | a `thin` or `burn` that is not whole refused; `gammaln` in the two normalizers of `f_min_fill.py` |
+| W6-16 | `3983eb3` | the docstring of `uuinv`, the comment on the half of the design, the mark of `p` outside `[0, 1]` in every return path |
+| W6-4 | `c3e1901` | equal targets take a range of one and the standard deviation of a unit range (agent B's note 1: the range alone leaves the noise's plausible upper bound `log(std(y))` below its lower bound and the design fails), through `_target_spread` in the four helpers and the mean's, with one warning |
+| W6-28 | `0ed8cfb` | the shape's plausible upper bound at `[-1]` |
+| W6-29 | `4ac63a1` | the isotropic bounds take the means of the logs, `x0` the mean of the per-column log SDs |
+| W6-32 | `7c382c4` | the degree-1 Matern gradient zero where two inputs coincide, both kernels; the tests run degree 1 and assert finite values |
+| W6-34, B's part | `b291d21` | the kernels refuse `compute_diag=True` with `compute_grad=True` |
+| W6-35, B's part | `97ac1c2` | the `(N, 1)` diagonal, the nugget, the page of the isotropic kernels |
+| test note | `4415940` | the eight distributional tests of the slice sampler seeded (`test_multivariate_normal` failed once on the untouched worktree) |
+| W6-26 | `f803be0` | `predict_full` adds the noise on the diagonal |
+| W6-27 | `003d75d` | `quad` reads the stored `sl`; the assertion in the rank-one test |
+| W6-33 | `e542794` | the `LinAlgError` of a failed factorization in both branches |
+| W6-7 | `d96a602` | the sign flip per column and `eigh` |
+| W6-8 | `2682a49` | a surviving negative eigenvalue within `10 * n * eps * max|D|` counts as zero, one beyond it raises; MATLAB's drop tolerance kept for which eigenvalues carry the matrix (agent A's first version widened it and moved every draw through the fallback; amended). Agent A's note 3: a covariance whose largest eigenvalue has collapsed with its negatives is not absorbed by a relative band and now raises with the value where it returned the mean |
+| W6-9 | `4267466` | the low-noise rank-one branch warns and recomputes where `v_star <= sn2_eff`, the analogue of the other branch's test; agent A's note 4: a tiny positive latent variance still proceeds, and the branch stays inaccurate in that band, as the Cholesky branch does for a tiny positive `sqrt_arg` |
+| W6-13 | `e4a5aac` | the rank-one path asks the posteriors for their factors |
+| W6-5 | `1e19aa9` | the parentheses of the two masks; the comments of `set_priors`; a test of the log prior against the documented densities |
+| W6-6 | `5a0ede8` | the normalization constants subscripted; `get_priors` with `np.all` |
+| W6-17, W6-22 | `836af5d` | `set_priors` refuses a `sigma` that is not finite and positive, naming `None`; unknown names refused by `set_priors` and `set_bounds`; `get_recommended_bounds` takes any array_like, names `upper_bounds`, refuses a user pair given inverted (a recommended pair that comes out inverted is still collapsed, as `gplite_train.m:142` collapses it); `update` refuses unset hyperparameters by name; `fit` fills `df_base` into a copy, installed for the fit and restored in a `finally` (the objectives read `self.hyper_priors`; `git diff -w` is 84 lines) |
+| W6-22 | `e0a057d` | `gammaln` in `__prior_masks`, the smooth-box-t normalizer the row's evidence cites; `nll` starts at `+inf` |
+| W6-10 | `69b59f4` | `sampler_name` read first, `sampler` second; the `"laplace"` clause gone |
+| W6-11 | `70a76d0` | the dictionary form of `log_likelihood` and `log_posterior` |
+| W6-12 | `3f9d258` | the starting points a copy of the design |
+| W6-18 | `ff1f14d` | `dsn2[0, i]` |
+| W6-34 | `5ff9353` | `quad` refuses a GP without data or factors and an unsupported mean, and reads a one-dimensional measure as one of `D` dimensions (`gplite_quad.m:26`); `_convert_shapes` takes any number and 0-d array, checks the row count of `s2`, raises `ValueError`; `update(hyp=)` checks the width; `test_predict_lpd` and its twin repaired (a row of the right width, two samples that differ, `s2_star` not zeroed, the factor `np.pi` gone) |
+| W6-35, W6-31 | `a077e70` | the docstrings of `predict`, `predict_full`, `quad` and `log_posterior` |
+| test notes | `3faeaa9` | `test_split_update` seeded; `test_fitting_options` asserts |
+| W6-38 | `caacbc1` | an inverted plausible pair collapses onto its clipped upper bound; for the PI to strike |
+
+Two things the agents found beyond the rows, for the record: gpyreg's
+`test_fitting`, in both of A's test files, is an unseeded statistical test
+that failed 2 of 6 runs on the untouched revision and 1 of 6 on A's branch
+(a test note for a later wave; A's note 2); and `_convert_shapes`' type
+annotation still names the narrower types (A's note 5).
+
+## Gates
+
+Gate 1, on the assembled branch (`caacbc1`, the 32 commits) and PyVBMC at
+`28bf945f`, with `PYTHONPATH` naming `../gpyreg-port-review` and
+`gpyreg.__file__` printed from it: the exact oracle check, 11 of 11 with
+nothing re-baselined; the four seeded runs bit for bit the record after the
+wave-5 pass, `wave5_gates/after_pass_23d962a1.npz` (92 arrays, 0 differ).
+So the part-2 commits change no number of a PyVBMC run, as this ledger says.
+gpyreg's suite on the assembled branch: 293 passed (222 passed and 1 failed
+on the untouched worktree, the unseeded test). The focused tests of C's
+files in PyVBMC: 388 passed, 15 skipped (the platform-bound oracles under
+their skip). The logs are kept on the machine that ran them
+(`dev/scripts/runs/LOCAL.md`).
+
+The benchmark sweep before W6-1 is recorded: eight targets, gpyreg at the
+pin (`wave3_gate_benchmark_sweep.py`, rosenbrock_D2 over 10 seeds, cigar_D4
+over 6, corr_D5, lumpy_D4, student_D4, banana_D2, halfnormal_D2 and
+rosenbrock_D2_noise1 over 3), the log on the same machine. The rest of the
+gates, W6-1 and everything after it, are not made.
