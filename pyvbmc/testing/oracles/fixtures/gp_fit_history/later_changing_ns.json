@@ -40,6 +40,32 @@
   "problem": "normal",
   "problem_seed": 0,
   "python": "3.12.6",
+  "rebaselined": [
+   {
+    "date": "2026-09-22 07:32:19",
+    "git": {
+     "dirty": true,
+     "sha": "e657eba8"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 0.0,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 0.0,
+     "fit/hyp_dict_hyp": 0.0,
+     "fit/hyp_dict_run_cov": 0.0,
+     "fit/prediction_mean": 0.0,
+     "fit/prediction_variance": 0.0,
+     "fit/sn2_hpd": 0.0,
+     "sampler_widths/effective_widths": 0.0,
+     "sampler_widths/widths_default": 0.0
+    },
+    "reason": "W6-23: hyp_dict no longer carries the logp entry, an array of zeros that nothing read; the reference name was removed from the sidecar and the fit is replayed to record that no output moved",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
+   }
+  ],
   "role": "later_changing_ns",
   "seed": 0,
   "sources": {
