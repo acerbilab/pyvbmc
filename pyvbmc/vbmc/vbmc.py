@@ -4062,8 +4062,7 @@ class VBMC:
         training inputs rounded as MATLAB rounds
         (`misc/gethpd_vbmc.m:10`), and sets the bounds from their spread,
         which a single point does not have: a value that leaves fewer than
-        two points of the initial design makes the first fit fail, in
-        MATLAB VBMC as in PyVBMC.
+        two points of the initial design makes the first fit fail.
         """
         value = self.options.get("hpd_frac")
         fun_eval_start = self.options.get("fun_eval_start")
