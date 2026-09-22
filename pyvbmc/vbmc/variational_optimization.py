@@ -134,6 +134,13 @@ def optimize_vp(
     pruned : int
         Number of pruned components.
 
+    Raises
+    ======
+    ValueError
+        If the full ELCBO evaluation of every optimized solution returns
+        NaN, so that no variational parameters can be selected, or if the
+        option ``stochastic_optimizer`` is not ``"adam"``.
+
     Notes
     =====
     Random draws (starting points, Monte Carlo entropy, choice of the
@@ -174,6 +181,10 @@ def optimize_vp(
     theta_N = np.size(vp0_vec[0].get_parameters())
     Ns = np.size(gp.posteriors)
     elbo_stats = _initialize_full_elcbo(slow_opts_N * 2, theta_N, K, Ns)
+    # The slots of elbo_stats that a full ELCBO evaluation filled: the
+    # midpoint slots stay empty in the deterministic optimization and when
+    # `elcbo_midpoint` is off.
+    evaluated = np.full((slow_opts_N * 2,), False)
 
     # For the moment no gradient available for variance
     gradient_available = compute_var == 0
@@ -293,8 +304,13 @@ def optimize_vp(
 
                 if options["elcbo_midpoint"]:
                     # Recompute ELCBO at best midpoint with full variance
-                    # and more precision.
-                    idx_mid = np.argmin(f_val_lst)
+                    # and more precision. The best midpoint skips NaN
+                    # values, as MATLAB's `min` does, and is the first
+                    # iterate when every value is NaN.
+                    if np.all(np.isnan(f_val_lst)):
+                        idx_mid = 0
+                    else:
+                        idx_mid = np.nanargmin(f_val_lst)
                     elbo_stats = _eval_full_elcbo(
                         i_mid,
                         theta_lst[:, idx_mid],
@@ -304,6 +320,7 @@ def optimize_vp(
                         elcbo_beta,
                         options,
                     )
+                    evaluated[i_mid] = True
             else:
                 raise ValueError("Unknown stochastic optimizer!")
 
@@ -311,18 +328,22 @@ def optimize_vp(
         elbo_stats = _eval_full_elcbo(
             i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options
         )
+        evaluated[i_end] = True
 
         vp0_fine[i_mid] = copy.deepcopy(vp0)
         vp0_fine[i_end] = copy.deepcopy(vp0)  # Parameters get assigned later
 
     ## Finalize optimization by taking variational parameters with best ELCBO
 
-    if np.all(np.isnan(elbo_stats["nelcbo"])):
+    # The candidates are the evaluated slots whose value is not NaN; of
+    # equal values, the first slot is taken.
+    candidates = np.flatnonzero(evaluated & ~np.isnan(elbo_stats["nelcbo"]))
+    if np.size(candidates) == 0:
         raise ValueError(
             "Every full ELCBO evaluation of the variational optimization "
             "returned NaN, so no variational parameters can be selected."
         )
-    idx = np.nanargmin(elbo_stats["nelcbo"])
+    idx = candidates[np.argmin(elbo_stats["nelcbo"][candidates])]
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]

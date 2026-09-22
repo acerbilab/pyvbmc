@@ -800,6 +800,149 @@ def test_optimize_vp_passes_over_a_nan_evaluation(mocker):
     assert np.isfinite(optimized.stats["elbo"])
 
 
+def _replace_full_elcbo(mocker, nelcbo=None):
+    """Make every full ELCBO evaluation store the negative ELBO and ELCBO
+    ``nelcbo[idx]`` in its slot ``idx`` (NaN for every slot if ``nelcbo``
+    is not given), after evaluating the rest as usual. Returns the list of
+    the slots evaluated and their parameters, in the order of evaluation."""
+    evaluated = []
+    evaluate = _eval_full_elcbo
+
+    def replaced(idx, theta, vp_arg, gp_arg, stats, beta, options_arg):
+        stats = evaluate(idx, theta, vp_arg, gp_arg, stats, beta, options_arg)
+        value = np.nan if nelcbo is None else nelcbo[idx]
+        stats["nelbo"][idx] = value
+        stats["nelcbo"][idx] = value
+        evaluated.append((idx, np.copy(theta)))
+        return stats
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._eval_full_elcbo",
+        side_effect=replaced,
+    )
+    return evaluated
+
+
+@pytest.mark.parametrize("slow_opts_N", [1, 2])
+def test_optimize_vp_raises_if_every_deterministic_evaluation_is_nan(
+    mocker, slow_opts_N
+):
+    """A single component is optimized with the deterministic entropy,
+    which evaluates the endpoint of each optimization and no midpoint. If
+    every one of those evaluations is NaN, no parameters can be selected,
+    and the slots of the midpoints, which were never evaluated, are not
+    candidates."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 1, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker)
+
+    with pytest.raises(ValueError, match="returned NaN"):
+        optimize_vp(options, optim_state, vp, gp, 6, slow_opts_N)
+
+    assert [idx for idx, _ in evaluated] == list(range(1, 2 * slow_opts_N, 2))
+
+
+def test_optimize_vp_raises_if_every_evaluation_is_nan_without_midpoints(
+    mocker,
+):
+    """With ``elcbo_midpoint`` off, the stochastic optimization evaluates
+    only its endpoint; if that evaluation is NaN, the optimization raises
+    rather than select the slot of the midpoint, which was never
+    evaluated."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(
+        D, {"elcbo_midpoint": False, "max_iter_stochastic": 40}
+    )
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker)
+
+    with pytest.raises(ValueError, match="returned NaN"):
+        optimize_vp(options, optim_state, vp, gp, 6, 1)
+
+    assert [idx for idx, _ in evaluated] == [1]
+
+
+@pytest.mark.parametrize(
+    "K, user_options, nelcbo, expected",
+    [
+        # Stochastic optimizations, midpoints and endpoints evaluated.
+        (2, {"max_iter_stochastic": 40}, [np.nan, 3.0, 1.0, np.nan], 2),
+        # Deterministic optimizations, endpoints (odd slots) evaluated.
+        (1, {}, {1: 4.0, 3: np.nan}, 1),
+        # An infinite value is still an evaluation, and the empty slots of
+        # the midpoints are not candidates.
+        (1, {}, {1: np.nan, 3: np.inf}, 3),
+    ],
+)
+def test_optimize_vp_selects_the_best_evaluation_that_is_not_nan(
+    mocker, K, user_options, nelcbo, expected
+):
+    """Among evaluations of which some are NaN, the optimization selects
+    the evaluated one with the smallest negative ELCBO that is not NaN,
+    with its parameters and statistics."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D, user_options)
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker, nelcbo)
+
+    optimized, _, _ = optimize_vp(options, optim_state, vp, gp, 6, 2)
+
+    mu = {
+        idx: np.reshape(theta[: D * K], (D, K), order="F")
+        for idx, theta in evaluated
+    }
+    assert all(
+        not np.array_equal(mu[idx], mu[expected])
+        for idx in mu
+        if idx != expected
+    )
+    assert np.array_equal(optimized.mu, mu[expected])
+    assert optimized.stats["elbo"] == -nelcbo[expected]
+
+
+@pytest.mark.parametrize(
+    "f_val_lst, expected",
+    [([3.0, np.nan, 1.0, 2.0], 2), ([np.nan] * 4, 0)],
+)
+def test_optimize_vp_midpoint_skips_nan(mocker, f_val_lst, expected):
+    """The midpoint of a stochastic optimization is the iterate with the
+    smallest objective value that is not NaN, as MATLAB VBMC's ``min``
+    (``misc/vpoptimize_vbmc.m:133``) takes it, and the first iterate when
+    every value is NaN."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    assert options["elcbo_midpoint"]
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(3))
+    iterates = []
+
+    def fake_adam(f, x0, **kwargs):
+        steps = 0.1 * np.arange(len(f_val_lst))
+        x_tab = np.reshape(x0, (-1, 1)) + steps
+        iterates.append(x_tab)
+        return x_tab[:, -1].copy(), 0.0, x_tab, np.array(f_val_lst), 4
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization.minimize_adam",
+        side_effect=fake_adam,
+    )
+    evaluated = _replace_full_elcbo(mocker, [1.0, 2.0])
+
+    optimize_vp(options, optim_state, vp, gp, 6, 1)
+
+    assert len(iterates) == 1
+    assert evaluated[0][0] == 0
+    assert np.array_equal(evaluated[0][1], iterates[0][:, expected])
+
+
 def test_vb_init_candidates():
     """Sieve candidates share the base posterior's generator and parameter
     transformer, own their variational parameters, start with no bounds
