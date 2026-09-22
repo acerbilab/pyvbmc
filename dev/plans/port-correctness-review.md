@@ -2073,17 +2073,50 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   of one), W6-8 (a draw on a dense grid), W6-19 (exceptions of the objective:
   loud as now, or MATLAB's tolerance), W6-21 (the Metropolis step that never
   ran: repaired or removed).
-- [ ] **Pickup point (2026-09-21): wave 6 is run, reported and verified (the
-  two entries above); the next step is the PI's ruling on the 37 rows of
-  `verification/wave6.md`, then step 4 below.** No fix has started, and how
-  an agent works on gpyreg is proposed and not yet settled with the PI (the
-  orchestrator's proposal of the day: a worktree of `../gpyreg` made by
-  hand, `../gpyreg-port-review`, on a branch cut from gpyreg's `main`; one
-  fix agent there for the rows of part 2, one finding per commit, `python -m
-  pytest` from the worktree root with `gpyreg.__file__` printed once, no
-  push; W6-1 by the orchestrator, last and alone, with the PyVBMC gates run
-  under `PYTHONPATH` naming that worktree; one branch and one pull request,
-  the moving fix as its last commit). The session starts no other wave.
+- [x] 2026-09-22: wave 6 ruled (PI: the orchestrator's recommendations on
+  the five open rows, and the proposals on the rest, written into the PI
+  column of `verification/wave6.md`, `b7622e5`): W6-1 fixed, with the
+  benchmark sweep as the gate that decides whether it is taken; W6-4 a range
+  of one for equal targets, with a warning; W6-8 both parts; W6-19 left
+  loud, with a sheet entry; W6-21 the Metropolis step removed. The thirteen
+  rows of the MATLAB side are entries 41 to 53 of `matlab_side_defects.md`.
+- [ ] **Pickup point (2026-09-22): the wave-6 fix pass is in flight.** How
+  an agent works on gpyreg, settled with the PI on 2026-09-22: worktrees of
+  `../gpyreg` made by hand, on branches cut from gpyreg's `main` at
+  `fdbafdf` (the code of the pin): `../gpyreg-port-review-A` (branch
+  `port-review-wave6-A`, fix agent A: `gaussian_process.py` and its tests),
+  `../gpyreg-port-review-B` (`port-review-wave6-B`, fix agent B: the other
+  modules and `docsrc/`), and `../gpyreg-port-review` (`port-review-wave6`),
+  onto which the orchestrator cherry-picks both after reviewing each diff
+  and where W6-1 is made last and alone. A third agent, C, works on a
+  harness worktree of PyVBMC for the two PyVBMC-side rows, W6-23 and W6-37.
+  The three were launched on 2026-09-22 with briefs that hold the rulings
+  row by row, one commit per row with a test seen to fail first, one test
+  file at a time and no suite (the orchestrator runs the suites), no push;
+  the agents propose release-note and changelog sentences, which the
+  orchestrator writes. gpyreg's suite on the untouched worktree: 222 passed,
+  1 failed, `test_slice_sample.py::test_multivariate_normal`, an unseeded
+  statistical test (agent B seeds that file's distributional tests, a `test:`
+  commit). Not yet done, in this order: the agents' reports saved under
+  `experiments/port_review_20260919/fixes/wave6_agent_{A,B,C}.md`; the
+  cherry-picks onto `port-review-wave6` (gpyreg) and `dev-port-review`
+  (PyVBMC); gpyreg's suite on the assembled branch; the PyVBMC gates against
+  the assembled gpyreg branch before W6-1 (`PYTHONPATH` naming
+  `../gpyreg-port-review`, `pyvbmc.__file__` and `gpyreg.__file__` printed):
+  the exact oracle check and the four seeded runs must be bit for bit, no
+  part-2 row changing a number of a run; then W6-1 by the orchestrator (the
+  eight lines of `verification/scripts/wave6_per_column_patch.py` and the
+  copy in the rational quadratic kernel, with a test of each
+  recommendation), the exact oracle check to see which references move, the
+  seeded runs, the benchmark sweep before and after over several seeds
+  (`verification/scripts/wave3_gate_benchmark_sweep.py`) as the deciding
+  gate, then the targeted re-baselines with the reason recorded; the
+  records (the sheet, drafted on the orchestrator's machine as
+  `records_sheet.py` in the wave's scratchpad, run after the pass; the
+  changelog of PyVBMC and the release notes of gpyreg; this worklog); the
+  independent check of the pass; the gpyreg pull request, its CI, the
+  merge, `GPYREG_PIN`; the PyVBMC push, smoke and matrix, and the merge into
+  `dev-next`. The session starts no other wave.
 
   Why this wave. G1 and G2 are the only slices that no reviewer has read,
   and what they find can still move the GP fit, on which the stored oracle
