@@ -902,9 +902,18 @@ def active_sample(
             if (np.size(theta0) != np.size(theta)) or (
                 np.any(theta0 != theta)
             ):
-                NSentFineK = math.ceil(
-                    options.eval("ns_ent_fine_active", {"K": vp0.K}) / vp0.K
-                )
+                # The two ELBOs are compared on one entropy estimator. The
+                # reported ELBO of a one-component posterior takes the exact
+                # entropy of a Gaussian (`_eval_full_elcbo`), which
+                # `_neg_elcbo` returns when it is given no entropy samples;
+                # for more components both sides estimate it by sampling.
+                if vp0.K == 1:
+                    NSentFineK = 0
+                else:
+                    NSentFineK = math.ceil(
+                        options.eval("ns_ent_fine_active", {"K": vp0.K})
+                        / vp0.K
+                    )
                 elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
                 )[0]

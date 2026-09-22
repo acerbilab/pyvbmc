@@ -2971,3 +2971,57 @@ def test_a_scalar_count_option_reaches_the_in_loop_update(mocker):
         vbmc.options["ns_elbo_incr"] * 50 * K
     )
     assert seen["entropy_samples"] == math.ceil(200 * K / K)
+
+
+def test_in_loop_comparison_scores_one_component_with_its_exact_entropy(
+    mocker,
+):
+    """Where the in-loop variational update has moved the posterior, the
+    posterior from before the step is scored again and kept if its ELBO is
+    the higher. The reported ELBO of the moved posterior takes the exact
+    entropy of a Gaussian when it has one component, and so does the score
+    of a one-component posterior from before the step, so that both sides
+    of the comparison use one estimator."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "active_sample_vp_update": True,
+            "k_warmup": 1,
+        },
+        acq=_cheap_acq,
+    )
+    vp0 = copy.deepcopy(vbmc.vp)
+    assert vp0.K == 1
+
+    def fake_optimize_vp(options, optim_state, vp, gp, fast_opts_N, **kwargs):
+        moved = copy.deepcopy(vp)
+        moved.mu = moved.mu + 0.1
+        moved.stats = {"elbo": -1e9}
+        return moved, 0.0, 0
+
+    mocker.patch.object(
+        _active_sample_module, "optimize_vp", side_effect=fake_optimize_vp
+    )
+    score = mocker.spy(_active_sample_module, "_neg_elcbo")
+
+    active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # No entropy samples: the deterministic entropy, which is the exact
+    # entropy of a single Gaussian.
+    assert score.call_count == 1
+    assert score.call_args.args[4] == 0
+    entropy = score.spy_return[3]
+    D = vp0.D
+    exact = 0.5 * D * (1 + np.log(2 * np.pi)) + np.sum(
+        np.log(vp0.sigma[0, 0] * vp0.lambd)
+    )
+    assert np.isclose(entropy, exact, rtol=1e-12, atol=1e-12)
