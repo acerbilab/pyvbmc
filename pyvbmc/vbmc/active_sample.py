@@ -598,10 +598,12 @@ def active_sample(
                     # only when every entry is positive and finite. A zero
                     # entry, from a coordinate without spread, leaves the
                     # search to start isotropic at `sigma0`, the largest
-                    # entry. A non-finite entry is not handled: it makes
-                    # `sigma0` non-finite, and cma does not return from
-                    # such a start.
-                    if np.all(np.isfinite(insigma)) and np.all(insigma > 0):
+                    # entry. An entry that is not finite makes `sigma0` not
+                    # finite, and cma does not return from such a start, so
+                    # the search is not started and fails as a search that
+                    # raises does.
+                    finite_start = np.all(np.isfinite(insigma))
+                    if finite_start and np.all(insigma > 0):
                         cma_options["CMA_stds"] = insigma / sigma0
 
                     # The population of each generation is evaluated in one
@@ -612,18 +614,27 @@ def active_sample(
                     # samples are fixed while the search runs, so the
                     # acquisition is deterministic and the search needs no
                     # noise handling: one generation costs one population.
-                    try:
-                        res = cma.fmin(
-                            acq_fun,
-                            x0,
-                            sigma0,
-                            options=cma_options,
-                            parallel_objective=acq_fun,
+                    if not finite_start:
+                        _log_search_failure(
+                            logger,
+                            ValueError(
+                                "the initial step sizes of the CMA-ES "
+                                f"search are not finite: {insigma}"
+                            ),
                         )
-                    except Exception as exc:
-                        _log_search_failure(logger, exc)
                     else:
-                        xsearch_optim, f_val_optim = res[:2]
+                        try:
+                            res = cma.fmin(
+                                acq_fun,
+                                x0,
+                                sigma0,
+                                options=cma_options,
+                                parallel_objective=acq_fun,
+                            )
+                        except Exception as exc:
+                            _log_search_failure(logger, exc)
+                        else:
+                            xsearch_optim, f_val_optim = res[:2]
                 elif search_optimizer == "bounded":
                     from scipy.optimize import minimize_scalar
 

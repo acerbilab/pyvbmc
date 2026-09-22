@@ -996,6 +996,46 @@ def test_cmaes_search_with_a_zero_scale_starts_isotropic(mocker, caplog):
     assert function_logger.Xn == Xn_before + 1
 
 
+@pytest.mark.parametrize("bad", [np.nan, np.inf])
+def test_cmaes_search_with_a_scale_that_is_not_finite_fails(
+    mocker, caplog, bad
+):
+    """A search covariance with an entry that is not finite gives a step
+    size that is not finite, and cma does not return from such a start.
+    The search is not started: it fails as a search that raises does, and
+    the sieve's best candidate is acquired, with the warning."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, seed=20260922)
+    vp = vbmc.vp
+    Sigma = np.array([[1.0, 0.0], [0.0, bad]])
+    mocker.patch.object(vp, "moments", return_value=(np.zeros((1, D)), Sigma))
+    candidates = np.array([[0.5, 0.5], [2.0, 2.0], [-3.0, 1.0]])
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    fmin = mocker.patch("cma.fmin")
+    caplog.set_level(logging.WARNING)
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vp,
+        vbmc.options,
+    )
+
+    assert fmin.call_count == 0
+    assert "Active search failed" in caplog.text
+    assert np.array_equal(function_logger.X[function_logger.Xn], candidates[0])
+
+
 def test_active_uncertainty_sampling(mocker):
     def rosen(self, x, *args):
         x = np.atleast_2d(x)
