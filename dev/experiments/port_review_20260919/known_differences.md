@@ -41,8 +41,8 @@ fact inherited from MATLAB.
 ## Slices G1, G2, P5 — the GP layer (gpyreg and `gaussian_process_train.py`)
 
 ### Integrated mean function (`intmeanfun`) never ported
-- Python: no counterpart. `pyvbmc/vbmc/gaussian_process_train.py:909`
-  ("Missing port: intmean part") and `:435` ("Missing port: hyperprior over
+- Python: no counterpart. `pyvbmc/vbmc/gaussian_process_train.py:903`
+  ("Missing port: intmean part") and `:429` ("Missing port: hyperprior over
   mixture of quadratics mean function"); `gpyreg/gaussian_process.py` has no
   `intmeanfun` concept.
 - MATLAB: `gplite/gplite_intmeanfun.m`; branches in
@@ -58,7 +58,7 @@ fact inherited from MATLAB.
   marginal likelihood and the acquisition functions. Python has none of it.
   PyVBMC keeps the option (`gp_int_mean_fun = 0`,
   `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:111`) and copies it
-  into `optim_state["int_mean_fun"]` (`pyvbmc/vbmc/vbmc.py:1203`), where
+  into `optim_state["int_mean_fun"]` (`pyvbmc/vbmc/vbmc.py:1246`), where
   nothing reads it.
 - Why: gpyreg never ported the feature. `gplite_intmeanfun.m` is absent from
   gpyreg's reference copy under `gpyreg/matlab/gplite/`, and every one of the
@@ -70,7 +70,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### GP output warping never ported
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:337`, `:367`, `:459`, `:477`
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:331`, `:361`, `:453`, `:471`
   ("Missing port: output warping hyperparameters not implemented",
   "Missing port: priors and bounds for output warping hyperparameters");
   `pyvbmc/whitening/whitening.py:381-383` keeps the MATLAB line as a comment.
@@ -83,7 +83,7 @@ fact inherited from MATLAB.
   bookkeeping options (`fitness_shaping`, `out_warp_thresh_base`,
   `out_warp_thresh_mult`, `out_warp_thresh_tol` in
   `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:248-255`, and
-  `optim_state["out_warp_delta"]` in `pyvbmc/vbmc/vbmc.py:1208`, `:1771`)
+  `optim_state["out_warp_delta"]` in `pyvbmc/vbmc/vbmc.py:1251`, `:1814`)
   but there is no warping function behind them.
 - Why: gpyreg's `AGENTS.md` §"Relation to the MATLAB reference" states the
   `outwarp_*.m` functions are not ported; the PyVBMC comments record the same
@@ -92,9 +92,9 @@ fact inherited from MATLAB.
 
 ### Only three of gplite's mean functions exist in gpyreg
 - Python: `gpyreg/mean_functions.py` defines `ZeroMean`, `ConstantMean`,
-  `NegativeQuadratic`. `pyvbmc/vbmc/gaussian_process_train.py:388`
+  `NegativeQuadratic`. `pyvbmc/vbmc/gaussian_process_train.py:382`
   ("Missing port: we only implement the mean functions that gpyreg
-  supports"), `:475` ("Missing port: meanfun == 14 hyperprior case").
+  supports"), `:469` ("Missing port: meanfun == 14 hyperprior case").
 - MATLAB: `gplite/gplite_meanfun.m` switches over 24 identifiers
   (`zero`, `const`, `linear`, `quad`, `negquad`, `posquad`, `se`, `negse`,
   `negquadse`, `posquadse`, `negquadfixiso`, ..., `posquadmix`).
@@ -103,7 +103,8 @@ fact inherited from MATLAB.
   the hyperpriors PyVBMC would need for them, have no Python counterpart.
   `pyvbmc/vbmc/gaussian_process_train.py:_meanfun_name_to_mean_function`
   accepts only the three that exist, and `VBMC` refuses the other names of
-  `misc/setupvars_vbmc.m:287` at construction (`pyvbmc/vbmc/vbmc.py:1195`);
+  `misc/setupvars_vbmc.m:287` at construction and in `load`
+  (`pyvbmc/vbmc/vbmc.py:3839`);
   until 2026-09-20 it accepted all twelve and failed in the first GP
   training. VBMC's default (`negquad`) is ported.
 - Why: recorded in the two "Missing port" comments above and in gpyreg's
@@ -238,7 +239,7 @@ fact inherited from MATLAB.
 - Kind: Python-only addition (performance; arithmetic unchanged).
 
 ### `_get_hyp_cov` anchors the hyperparameter dimension on the current model
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:638` (`_get_hyp_cov`,
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:632` (`_get_hyp_cov`,
   parameter `hyp_n`).
 - MATLAB: `misc/get_GPTrainOptions.m`, local function `GetHypCov`
   (lines 126-160).
@@ -260,7 +261,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `gpsample_vbmc.m` (GP-surrogate sampling) not ported
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:208` ("Missing port: sample
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:202` ("Missing port: sample
   for GP for debug (not used)"); `VariationalPosterior.sample` takes a
   boolean `balance_flag` only.
 - MATLAB: `misc/gpsample_vbmc.m`, called from `vbmc_rnd.m:49` when
@@ -272,21 +273,21 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### Noise shaping is not ported, and `noise_shaping=True` is rejected
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:770` and
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:764` and
   `pyvbmc/vbmc/active_sample.py:346` ("Missing port: noise_shaping"). The
   options `noise_shaping`, `noise_shaping_threshold`, `noise_shaping_factor`
   exist (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:261-265`,
   default off). `VBMC.__init__` and `VBMC.load` raise `NotImplementedError`
-  when `noise_shaping` is set (`pyvbmc/vbmc/vbmc.py:436` and `:3208`, both
-  through `_validate_option_values`, `:3685`, which calls
-  `_validate_noise_shaping_option`, `:3724`).
+  when `noise_shaping` is set (`pyvbmc/vbmc/vbmc.py:488` and `:3275`, both
+  through `_validate_option_values`, `:3754`, which calls
+  `_validate_noise_shaping_option`, `:3795`).
 - MATLAB: `misc/noiseshaping_vbmc.m`, called from
   `misc/get_traindata_vbmc.m`, `misc/gpsample_vbmc.m` and
   `private/activesample_vbmc.m`; `defopts.NoiseShaping = 'no'` (`vbmc.m:320`).
 - What differs: MATLAB inflates the observation noise of training points far
   below the maximum observed density; PyVBMC does not. What the option does
   reach in PyVBMC is the rest of MATLAB's setting: an input-dependent GP
-  noise function (`pyvbmc/vbmc/vbmc.py:1186-1190`) and no rank-one GP update
+  noise function (`pyvbmc/vbmc/vbmc.py:1238-1242`) and no rank-one GP update
   inside active sampling (`pyvbmc/vbmc/active_sample.py:826-829`). A run with
   those two and no shaping is a configuration of neither toolbox, so
   construction refuses it and names the missing MATLAB feature.
@@ -304,8 +305,8 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### The iteration history stores GPs without their posterior factors
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:820` (`_lean_gp`),
-  `:858` (`_restore_gp_posteriors`), `pyvbmc/vbmc/vbmc.py:2941`
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:814` (`_lean_gp`),
+  `:852` (`_restore_gp_posteriors`), `pyvbmc/vbmc/vbmc.py:2984`
   (`get_gp`).
 - MATLAB: `vbmc.m`, `save_stats` (stores `stats.gp` in full).
 - What differs: PyVBMC records training data, hyperparameter samples and the
@@ -321,7 +322,7 @@ fact inherited from MATLAB.
 
 ### The lower bounds of the length scales and of the output scale come from
     the high-posterior-density subset
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:407` (`_gp_hyp`): the lower
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:401` (`_gp_hyp`): the lower
   bounds of `covariance_log_lengthscale` and `covariance_log_outputscale` are
   the recommendations of gpyreg's kernel computed on the high-posterior-density
   subset of the training set (`hpd_frac`, 0.8).
@@ -339,7 +340,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### Slice sampling is the only sampler of the GP hyperparameters
-- Python: `pyvbmc/vbmc/vbmc.py:3737` (`_validate_gp_hyp_sampler_option`)
+- Python: `pyvbmc/vbmc/vbmc.py:3856` (`_validate_gp_hyp_sampler_option`)
   refuses at construction every `gp_hyp_sampler` but `"slicesample"`, and
   `_get_gp_training_options` holds the policy of that sampler alone;
   `cov_sample_thresh`, which only covariance sampling read, is an inert
@@ -357,7 +358,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### The evaluation times are not carried onto the GP
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:906` ("Missing port: gp.t =
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:900` ("Missing port: gp.t =
   t_train"); `train_gp` drops `t_train` as well.
 - MATLAB: `misc/gpreupdate.m:8`, `misc/gptrain_vbmc.m:76`,
   `private/activesample_vbmc.m:484`.
@@ -635,9 +636,9 @@ fact inherited from MATLAB.
 ## Slice P1a — main loop, warmup, termination, final boost
 
 ### Final boost is guarded; MATLAB accepts its result unconditionally
-- Python: `pyvbmc/vbmc/vbmc.py:2562` (`final_boost`), `:2770`
-  (`_validate_final_boost_tolerance`), `:2786`
-  (`_is_valid_final_boost_score`), `:2799`
+- Python: `pyvbmc/vbmc/vbmc.py:2605` (`final_boost`), `:2813`
+  (`_validate_final_boost_tolerance`), `:2829`
+  (`_is_valid_final_boost_score`), `:2842`
   (`_accept_final_boost_candidate`); option `tol_elcbo_boost = 0.1`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:51`).
 - MATLAB: `misc/finalboost_vbmc.m` (no acceptance test).
@@ -675,7 +676,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `results["overhead"]` is not implemented
-- Python: `pyvbmc/vbmc/vbmc.py:3419` (`output["overhead"] = np.nan`).
+- Python: `pyvbmc/vbmc/vbmc.py:3488` (`output["overhead"] = np.nan`).
 - MATLAB: `private/vbmc_output.m`.
 - What differs: PyVBMC returns `NaN` where MATLAB returns the fractional
   overhead (total running time / total function time − 1).
@@ -685,8 +686,8 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `results["rng_state"]` is a generator snapshot, not MATLAB's `rng` state
-- Python: `pyvbmc/vbmc/vbmc.py:3310` (`_get_random_state`, returning
-  `{"generator": <bit generator state>}`), `:3420`, `:3347`
+- Python: `pyvbmc/vbmc/vbmc.py:3379` (`_get_random_state`, returning
+  `{"generator": <bit generator state>}`), `:3489`, `:3416`
   (`_set_random_state`).
 - MATLAB: `private/vbmc_output.m` stores `rng` (the global generator state).
 - What differs: PyVBMC snapshots the instance's own `numpy.random.Generator`
@@ -704,7 +705,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `results["problem_type"]` tests the original bounds; MATLAB's never reports bounds
-- Python: `pyvbmc/vbmc/vbmc.py:3373` (`_create_result_dict`), `:3387-3392`:
+- Python: `pyvbmc/vbmc/vbmc.py:3442` (`_create_result_dict`), `:3456-3461`:
   the field is `"unconstrained"` when every original bound
   (`optim_state["lb_orig"]`, `["ub_orig"]`) is infinite and `"bounded"`
   otherwise.
@@ -722,14 +723,14 @@ fact inherited from MATLAB.
   the run time up to the end of each iteration
   (`stats.timer(iter).totalruntime`, `vbmc.m:880`, `:964`); the timers that
   PyVBMC records per iteration hold no such total, of which only the
-  commented-out line at `pyvbmc/vbmc/vbmc.py:1677` remains.
+  commented-out line at `pyvbmc/vbmc/vbmc.py:1720` remains.
 - Why: `dev/experiments/port_review_20260919/verification/wave2.md`, rows
   W2-12 and W2-13, with the PI's dispositions; the MATLAB side is entry 2 of
   `dev/experiments/port_review_20260919/matlab_side_defects.md`.
 - Kind: deliberate change.
 
 ### An empty warm-up stability window means no stability count yet
-- Python: `pyvbmc/vbmc/vbmc.py:2031` (`_check_warmup_end_conditions`): with
+- Python: `pyvbmc/vbmc/vbmc.py:2074` (`_check_warmup_end_conditions`): with
   `tol_stable_warmup <= fun_evals_per_iter` the window of recent ELCBO
   values is empty on the first check, and `stable_count_flag` stays `False`.
 - MATLAB: `private/vbmc_warmup.m:39` reaches the same empty window, `max`
@@ -742,9 +743,9 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### The true-posterior diagnostic draws from a copy of the generator
-- Python: `pyvbmc/vbmc/vbmc.py:3315` (`_compute_true_diagnostic`): the
+- Python: `pyvbmc/vbmc/vbmc.py:3384` (`_compute_true_diagnostic`): the
   10^6 samples behind `sKL_true` are drawn on a deep copy of the posterior
-  whose generator is a deep copy too (`:3341-3342`), so the run's stream is
+  whose generator is a deep copy too (`:3410-3411`), so the run's stream is
   where it would be without the diagnostic.
 - MATLAB: `vbmc.m:772-777` (`vbmc_moments(vp_real,1,1e6)`), drawing from the
   global stream.
@@ -773,7 +774,7 @@ fact inherited from MATLAB.
 - Kind: removed feature.
 
 ### The closing display line is computed at every display level, on a copy of the generator
-- Python: `pyvbmc/vbmc/vbmc.py:1902-1942`, after the loop of `optimize`:
+- Python: `pyvbmc/vbmc/vbmc.py:1945-1985`, after the loop of `optimize`:
   whenever the returned posterior is not the one the loop ended on (it
   comes from an earlier iteration, or the final boost changed it), the
   symmetrized KL divergence between the two is estimated from 2 x 10^5
@@ -794,7 +795,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### The final boost of a posterior with fixed means keeps its components at the training inputs
-- Python: `pyvbmc/vbmc/vbmc.py:2562` (`final_boost`): with
+- Python: `pyvbmc/vbmc/vbmc.py:2605` (`final_boost`): with
   `variable_means=False` the boost takes the number of training inputs of
   the GP it is handed as the number of components and sets the means to
   those inputs, as the main loop does for such a posterior in every
@@ -813,7 +814,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### MATLAB's `samples` output struct has no counterpart in `results`
-- Python: `pyvbmc/vbmc/vbmc.py:3373` (`_create_result_dict`) builds a results
+- Python: `pyvbmc/vbmc/vbmc.py:3442` (`_create_result_dict`) builds a results
   dict with no equivalent key. The arrays it would hold live on the run's
   `FunctionLogger` (`X_orig`, `y_orig`, `S`, `X_flag`, `n_evals`), which
   `finalize()` trims to the filled rows.
@@ -877,7 +878,7 @@ fact inherited from MATLAB.
   options are settled after every source has been read. A name that neither
   shipped file declares raises on every route (the dict, the file,
   `load(new_options=)`; `pyvbmc/vbmc/options.py:485`,
-  `pyvbmc/vbmc/vbmc.py:433`, `:3197`), and options are frozen after
+  `pyvbmc/vbmc/vbmc.py:485`, `:3262`), and options are frozen after
   initialization against assignment and removal
   (`options.__setitem__(k, v, force=True)` and
   `options.__delitem__(k, force=True)` override). MATLAB silently accepts
@@ -922,9 +923,9 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### Vectorized targets, precomputed evaluations and the initialization cost
-- Python: `pyvbmc/vbmc/vbmc.py:705` (`_validate_initialization_cost`),
-  `:757` (`_initialize_precomputed_evaluations`), `:930`
-  (`_fresh_evaluations_for_batch`), `:3707`
+- Python: `pyvbmc/vbmc/vbmc.py:757` (`_validate_initialization_cost`),
+  `:809` (`_initialize_precomputed_evaluations`), `:982`
+  (`_fresh_evaluations_for_batch`), `:3778`
   (`_validate_vectorized_target_option`);
   `pyvbmc/function_logger/function_logger.py: batch_call`; option
   `vectorized_target = False`
@@ -943,8 +944,8 @@ fact inherited from MATLAB.
 - Kind: Python-only addition.
 
 ### The iteration history omits the noisy acquisitions' importance samples
-- Python: `pyvbmc/vbmc/vbmc.py:3289` (`_optim_state_record`, setting
-  `record["active_importance_sampling"] = None` at `:3307`); option
+- Python: `pyvbmc/vbmc/vbmc.py:3358` (`_optim_state_record`, setting
+  `record["active_importance_sampling"] = None` at `:3376`); option
   `record_full_history_details = False`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:337`).
 - MATLAB: `vbmc.m`, `save_stats`.
@@ -994,7 +995,7 @@ fact inherited from MATLAB.
 
 ### `integer_vars` takes a boolean mask or 0-based indices
 - Python: `pyvbmc/vbmc/options.py:251` (`integer_vars_mask`), read at
-  `pyvbmc/vbmc/vbmc.py:996`. A boolean array of length `D` is a mask; an
+  `pyvbmc/vbmc/vbmc.py:1048`. A boolean array of length `D` is a mask; an
   integer array holds 0-based indices, distinct and in range; an integer
   array of length `D` holding only zeros and ones reads as either and is
   refused with a message asking for a boolean mask.
@@ -1011,7 +1012,7 @@ fact inherited from MATLAB.
 ### PyVBMC does not reproduce two defects of MATLAB's input checks
 - Python: `pyvbmc/vbmc/_bounds.py` (`_normalize_bounds`) repairs every
   coordinate whose estimated plausible bounds coincide;
-  `pyvbmc/vbmc/vbmc.py:996-1009` checks that the hard bounds of an integer
+  `pyvbmc/vbmc/vbmc.py:1048-1061` checks that the hard bounds of an integer
   variable are finite and half an integer outside its range.
 - MATLAB: `misc/boundscheck_vbmc.m:27-30` computes `idx = any(PLB == PUB)`,
   one logical, and repairs the first coordinate only;
@@ -1026,7 +1027,7 @@ fact inherited from MATLAB.
 ### `display` takes `"off"`, `"iter"` and `"full"`
 - Python: `display = "iter"`
   (`pyvbmc/vbmc/option_configs/basic_vbmc_options.ini:3`);
-  `pyvbmc/vbmc/vbmc.py:3515` (`_init_logger`, `:3534-3539`): `"off"` logs
+  `pyvbmc/vbmc/vbmc.py:3584` (`_init_logger`, `:3603-3608`): `"off"` logs
   warnings only, `"iter"` one line per iteration, `"full"` debugging detail;
   any other value is taken as `"iter"`.
 - MATLAB: `defopts.Display = 'iter'` with `'iter'`, `'notify'`, `'final'`
@@ -1094,7 +1095,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change.
 
 ### `misc/vbmc_gphyp.m` is an empty file in the comparison target
-- Python: `pyvbmc/vbmc/gaussian_process_train.py:282` (`_gp_hyp`).
+- Python: `pyvbmc/vbmc/gaussian_process_train.py:276` (`_gp_hyp`).
 - MATLAB: `misc/vbmc_gphyp.m` is zero bytes at `396d649`; the function
   `vbmc_gphyp` is a local subfunction of `misc/gptrain_vbmc.m:109`.
 - What differs: nothing in behavior, but a reviewer looking for
@@ -1626,7 +1627,7 @@ fact inherited from MATLAB.
 - Python: no counterpart. An acquisition that sets
   `acq_info["mcmc_importance_sampling"]` is refused with a
   `NotImplementedError`, at construction for the objects of
-  `options["search_acq_fcn"]` (`pyvbmc/vbmc/vbmc.py:3749`,
+  `options["search_acq_fcn"]` (`pyvbmc/vbmc/vbmc.py:3868`,
   `_validate_search_acq_fcn_option`) and in
   `pyvbmc/vbmc/active_importance_sampling.py:50` for any other caller. The
   option `active_importance_sampling_fess_thresh`, which the branch alone
@@ -1795,7 +1796,7 @@ fact inherited from MATLAB.
 - Kind: deliberate change (a dormant path; unreachable in production).
 
 ### The sieve asks for candidates in proportion to the current `K`
-- Python: `pyvbmc/vbmc/vbmc.py:1587-1589`, in the main loop:
+- Python: `pyvbmc/vbmc/vbmc.py:1630-1632`, in the main loop:
   `N_fastopts = math.ceil(self.options.eval("ns_elbo", {"K": self.vp.K}))`,
   with `ns_elbo = lambda K : 50 * K`
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:65`).
@@ -1813,8 +1814,8 @@ fact inherited from MATLAB.
   passes the current `K`, which is what the declaration describes;
   `dev/experiments/port_review_20260919/verification/wave1_P6.md` (row
   "cmp F3") establishes that `vbmc.m:459` is the only assignment to MATLAB's
-  `K`. PyVBMC's warp branch (`pyvbmc/vbmc/vbmc.py:1435-1437`) and final
-  boost (`:2672`) evaluate the option at the new number of components, as
+  `K`. PyVBMC's warp branch (`pyvbmc/vbmc/vbmc.py:1478-1480`) and final
+  boost (`:2715`) evaluate the option at the new number of components, as
   `vbmc.m:584` and `misc/finalboost_vbmc.m:33` do; until commit `d7c7887`
   (2026-09-20) the warp branch evaluated it at `vp.K`, which differs from
   the new number only with `variable_means=False`
@@ -1898,7 +1899,7 @@ fact inherited from MATLAB.
 ## Slice P7 — variational posterior, entropies, VP statistics
 
 ### Posterior tempering (`vbmc_power`, `vptrain2real`) is not ported
-- Python: no counterpart. `pyvbmc/vbmc/vbmc.py:1458` and `:1619` keep
+- Python: no counterpart. `pyvbmc/vbmc/vbmc.py:1501` and `:1662` keep
   `# vp_real = vp.vptrain2real(0, self.options)` commented out with
   `vp_real = self.vp`. The option `temperature = 1` is declared
   (`pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:257`), registered
@@ -2219,7 +2220,7 @@ fact inherited from MATLAB.
 ### The default bounded transform is probit, not logit
 - Python: `pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini:311`
   (`bounded_transform = "probit"`), handed to `ParameterTransformer` at
-  `pyvbmc/vbmc/vbmc.py:505`;
+  `pyvbmc/vbmc/vbmc.py:557`;
   `pyvbmc/parameter_transformer/parameter_transformer.py:141-146` maps
   `"probit"` and `"norminv"` to one transform type and `"logit"` and
   `"student4"` to their own.
@@ -2378,7 +2379,7 @@ fact inherited from MATLAB.
 - Kind: Python-only addition.
 
 ### A cached value of a target that provides its noise needs its SD
-- Python: `pyvbmc/vbmc/vbmc.py:969` refuses an `f_vals` that holds a value
+- Python: `pyvbmc/vbmc/vbmc.py:1021` refuses an `f_vals` that holds a value
   together with `specify_target_noise` at construction (NaN entries mark
   points still to be evaluated and supply nothing), and
   `pyvbmc/function_logger/function_logger.py:552` (`add`) raises without an
@@ -2708,8 +2709,8 @@ them. They are *not* differences from MATLAB.
   not declare it either. Neither branch can execute.
 - **The returned posterior is selected with the options that govern it.**
   `rank_criterion`, `best_safe_sd` and `best_frac_back` name the three
-  choices `determine_best_vp` (`pyvbmc/vbmc/vbmc.py:2812`) makes when the
-  last iteration is not stable, and both call sites (`:1371`, `:1905`) pass
+  choices `determine_best_vp` (`pyvbmc/vbmc/vbmc.py:2855`) makes when the
+  last iteration is not stable, and both call sites (`:1414`, `:1948`) pass
   them, as `vbmc.m:547` and `:888` pass `RankCriterion`, `BestSafeSD` and
   `BestFracBack` to `misc/best_vbmc.m`. The defaults agree
   (`True`/`yes`, 5, 0.25;
@@ -2725,7 +2726,7 @@ them. They are *not* differences from MATLAB.
   `misc/best_vbmc.m:58-59` takes `BackIter = ceil(idx*FracBack)` and
   `idx_start = max(1,idx-BackIter)` from the 1-based iteration index, which
   is also the number of iterations, and `:44` penalizes a non-stable
-  iteration by that same count. `pyvbmc/vbmc/vbmc.py:2915-2919` and `:2902`
+  iteration by that same count. `pyvbmc/vbmc/vbmc.py:2958-2962` and `:2945`
   use the number of iterations, `max_idx + 1`, where `max_idx` is the
   0-based index of the last one. Commit `4892fe3` (2026-09-19) "fix(vbmc):
   count iterations, not the last index, in the best-posterior rules" made
@@ -2739,7 +2740,7 @@ them. They are *not* differences from MATLAB.
   recent iterations of the no-recent-improvement test starts at
   `iteration + 1 - T` in 0-based terms, MATLAB's `iter - T + 1`
   (`private/vbmc_warmup.m:60-65`; commit `c918d12`). `_recompute_lcb_max`
-  (`pyvbmc/vbmc/vbmc.py:2512`) ports `private/recompute_lcbmax.m`, and
+  (`pyvbmc/vbmc/vbmc.py:2555`) ports `private/recompute_lcbmax.m`, and
   `_check_warmup_end_conditions` prefers the recomputed vector to the
   recorded maxima as `private/vbmc_warmup.m:46-50` does; an entry is `NaN`
   for an iteration by whose end none of the logged points is still in the
@@ -2752,7 +2753,7 @@ them. They are *not* differences from MATLAB.
   counterpart.
 - **The initial variational means are in transformed coordinates.**
   `VBMC.__init__` transforms `x0` before it builds the variational posterior
-  from it (`pyvbmc/vbmc/vbmc.py:511`), as `misc/setupvars_vbmc.m:65` and
+  from it (`pyvbmc/vbmc/vbmc.py:563`), as `misc/setupvars_vbmc.m:65` and
   `:82` do. Until commit `8cd4bbc` (2026-09-20) the posterior was built from
   the untransformed `x0` (`verification/wave2.md`, row W2-4).
 - **The iteration limits are MATLAB's.** The minimum-iteration guard of
