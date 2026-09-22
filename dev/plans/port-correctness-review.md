@@ -2106,11 +2106,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   A's and B's stand until `git cherry` has been read once more before the
   pull request.
 - [ ] **Pickup point (2026-09-22): W6-1, the moving fix, is the next step;
-  everything before it is done and gated.** The state: `dev-port-review` at
-  the head of this entry's commit, unpushed since `8af5daac` (the wave-6
-  reports, the ledger, the rulings, C's fixes); gpyreg's `port-review-wave6`
-  at `caacbc1` in `../gpyreg-port-review`, unpushed, with `port-review-wave6-A`
-  and `-B` beside it. In this order:
+  everything before it is done and gated.** The state: `dev-port-review`
+  pushed at `55c875b5` (the wave-6 reports, the ledger, the rulings, C's
+  fixes; the push starts the branch smoke, which runs against gpyreg at the
+  pin); gpyreg's `port-review-wave6` pushed at `caacbc1` (PI: push both,
+  2026-09-22), checked out in `../gpyreg-port-review`, with the agents'
+  local branches `port-review-wave6-A` and `-B` beside it. In this order:
   1. W6-1 by the orchestrator, on `port-review-wave6`, last and alone: `axis=0`
      in the statistics of `X` of `covariance_functions._bounds_info_helper`
      (the length scales' `x0`, and its copy in `RationalQuadraticARD`) and of
