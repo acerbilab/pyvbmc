@@ -2905,3 +2905,69 @@ def test_in_loop_gp_refit_reads_the_counts_after_the_evaluation(mocker):
     for N, n_eff, logger_N, logger_n_eff in seen:
         assert N == logger_N
         assert n_eff == logger_n_eff
+
+
+def _record_in_loop_variational_update(mocker):
+    """Stand in for the in-loop variational optimization and for the ELBO
+    of the posterior from before the step, recording the number of fast
+    optimizations and of entropy samples each is asked for. The updated
+    posterior is moved and scores low, so the comparison with the old one
+    runs and keeps the old one."""
+    seen = {}
+
+    def fake_optimize_vp(options, optim_state, vp, gp, fast_opts_N, **kwargs):
+        seen["fast_opts_N"] = fast_opts_N
+        moved = copy.deepcopy(vp)
+        moved.mu = moved.mu + 0.1
+        moved.stats = {"elbo": -1e9}
+        return moved, 0.0, 0
+
+    def fake_neg_elcbo(theta, gp, vp, beta, Ns, *args, **kwargs):
+        seen["entropy_samples"] = Ns
+        return (0.0,)
+
+    mocker.patch.object(
+        _active_sample_module, "optimize_vp", side_effect=fake_optimize_vp
+    )
+    mocker.patch.object(
+        _active_sample_module, "_neg_elcbo", side_effect=fake_neg_elcbo
+    )
+    return seen
+
+
+def test_a_scalar_count_option_reaches_the_in_loop_update(mocker):
+    """``ns_elbo`` and ``ns_ent_fine_active`` may be numbers as well as
+    functions of the number of components, as construction and
+    ``Options.eval`` allow. The in-loop variational update reads both, and
+    a number gives the count that the shipped function gives at the same
+    number of components."""
+    K = 2
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "active_sample_vp_update": True,
+            "k_warmup": K,
+            "ns_elbo": 50 * K,
+            "ns_ent_fine_active": 200 * K,
+        },
+        acq=_cheap_acq,
+    )
+    assert vbmc.vp.K == K
+    seen = _record_in_loop_variational_update(mocker)
+
+    active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The shipped functions are 50 * K and 200 * K.
+    assert seen["fast_opts_N"] == math.ceil(
+        vbmc.options["ns_elbo_incr"] * 50 * K
+    )
+    assert seen["entropy_samples"] == math.ceil(200 * K / K)

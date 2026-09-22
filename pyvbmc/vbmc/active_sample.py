@@ -810,7 +810,7 @@ def active_sample(
                             # Decide number of fast optimizations
                             N_fastopts = math.ceil(
                                 options_update["ns_elbo_incr"]
-                                * options_update["ns_elbo"](vp.K)
+                                * options_update.eval("ns_elbo", {"K": vp.K})
                             )
                             if options["update_random_alpha"]:
                                 optim_state["entropy_alpha"] = 1 - np.sqrt(
@@ -903,7 +903,7 @@ def active_sample(
                 np.any(theta0 != theta)
             ):
                 NSentFineK = math.ceil(
-                    options["ns_ent_fine_active"](vp0.K) / vp0.K
+                    options.eval("ns_ent_fine_active", {"K": vp0.K}) / vp0.K
                 )
                 elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
