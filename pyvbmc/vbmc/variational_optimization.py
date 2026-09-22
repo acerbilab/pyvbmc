@@ -115,7 +115,9 @@ def optimize_vp(
         The Gaussian process surrogate of the log-posterior, against which to
         optimize the VP.
     fast_opts_N : int
-        Number of fast optimizations.
+        Number of fast optimizations. Zero starts the optimization from
+        the given VP alone, and then requires ``slow_opts_N = 1``, as in
+        MATLAB.
     slow_opts_N : int
         Number of slow optimizations.
     K : int, optional
@@ -130,7 +132,8 @@ def optimize_vp(
         Spread of the expected log joint across the GP hyperparameter
         samples: the sample variance of its value from sample to sample
         plus the sample standard deviation of its per-sample variances.
-        Zero with a single hyperparameter sample.
+        Zero with a single hyperparameter sample, and when the variance of
+        the expected log joint is not computed.
     pruned : int
         Number of pruned components.
 
@@ -749,7 +752,12 @@ def _sieve(
     gp : GP
         Current GP from optimization.
     init_N : int, optional
-        Number of initial starting points.
+        Number of initial starting points, by default ``ceil(ns_elbo(K))``.
+        With ``init_N = 0`` no candidates are generated or evaluated, and
+        the given VP is the only candidate, of type 1, whatever ``best_N``.
+        A single candidate supports a single slow optimization, so
+        ``fast_opts_N = 0`` in ``optimize_vp`` requires ``slow_opts_N = 1``,
+        as in MATLAB.
     best_N : int, defaults to 1
         Specifies the design pattern for new starting parameters. ``best_N==1``
         means use the old variational parameters as a starting point for new
@@ -766,9 +774,10 @@ def _sieve(
 
     Returns
     =======
-    vp0_vec : np.ndarray, shape (init_N,)
-        Vector of candidate variational posteriors.
-    vp0_type : np.ndarray, shape (init_N,)
+    vp0_vec : np.ndarray, shape (max(init_N, 1),)
+        Vector of candidate variational posteriors, sorted by their
+        quickly estimated negative ELCBO.
+    vp0_type : np.ndarray, shape (max(init_N, 1),)
         Vector of types of candidate variational posteriors.
     elcbo_beta : float
         Confidence weight.
@@ -1183,7 +1192,8 @@ def _neg_elcbo(
         Spread of the expected variational log joint across the GP
         hyperparameter samples: the sample variance of its value from
         sample to sample plus the sample standard deviation of its
-        per-sample variances. Zero with a single hyperparameter sample.
+        per-sample variances. Zero with a single hyperparameter sample,
+        and when ``compute_var`` is False.
     varG : float
         Variance of the expected variational log joint
         probability.
@@ -1433,7 +1443,8 @@ def _gp_log_joint(
         Spread of ``G`` across the GP hyperparameter samples: the sample
         variance of its value from sample to sample plus the sample
         standard deviation of the per-sample variances. Zero with a single
-        hyperparameter sample.
+        hyperparameter sample, and when ``compute_var`` or ``avg_flag`` is
+        False.
     I_sk : np.ndarray
         The contribution to ``G`` per GP hyperparameter sample and per VP
         component.
