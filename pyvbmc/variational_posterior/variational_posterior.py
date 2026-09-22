@@ -1240,11 +1240,14 @@ class VariationalPosterior:
             self.w = self.w.reshape(1, -1) / np.sum(self.w)
 
         # Keep the softmax parametrization of the weights in step with them.
+        # A zero weight has an eta of minus infinity, which the softmax
+        # maps back to zero.
         if self.optimize_weights and raw_flag:
             eta = theta[-self.K :]
             self.eta = np.reshape(eta - np.amax(eta), (1, -1))
         else:
-            self.eta = np.log(self.w).reshape(1, -1)
+            with np.errstate(divide="ignore"):
+                self.eta = np.log(self.w).reshape(1, -1)
 
         # remove mode
         self._mode = None

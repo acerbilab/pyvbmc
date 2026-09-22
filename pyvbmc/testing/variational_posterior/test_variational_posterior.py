@@ -1,5 +1,6 @@
 import importlib
 import itertools
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -814,6 +815,32 @@ def test_set_parameters_eta_matches_weights(raw_flag, optimize_weights):
     vp.set_parameters(theta, raw_flag=raw_flag)
 
     assert vp.eta.shape == (1, K)
+    softmax = np.exp(vp.eta - np.amax(vp.eta))
+    softmax /= np.sum(softmax)
+    assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
+
+
+@pytest.mark.parametrize("optimize_weights", [True, False])
+def test_set_parameters_zero_weight(optimize_weights):
+    """A zero weight, given with ``raw_flag=False`` or kept because the
+    weights are not optimized, has an ``eta`` of minus infinity, so that
+    ``softmax(eta)`` is still ``w``, and setting it emits no warning."""
+    K = 3
+    D = 2
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_weights = optimize_weights
+    w = np.array([[0.0, 0.4, 0.6]])
+    vp.w = w.copy()
+    theta = vp.get_parameters(raw_flag=False)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        vp.set_parameters(theta, raw_flag=False)
+
+    assert np.array_equal(vp.w, w)
+    assert vp.eta.shape == (1, K)
+    assert vp.eta[0, 0] == -np.inf
+    assert np.array_equal(vp.eta[0, 1:], np.log(w[0, 1:]))
     softmax = np.exp(vp.eta - np.amax(vp.eta))
     softmax /= np.sum(softmax)
     assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
