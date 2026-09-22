@@ -141,11 +141,15 @@ def test_best_safe_sd_changes_the_selection():
     )
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     recorded_history(vbmc, **scores)
-    __, __, __, idx_unpenalized = vbmc.determine_best_vp(safe_sd=0)
+    __, __, __, idx_unpenalized = vbmc.determine_best_vp(
+        safe_sd=0, rank_criterion_flag=False
+    )
 
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     recorded_history(vbmc, **scores)
-    __, __, __, idx_penalized = vbmc.determine_best_vp(safe_sd=5)
+    __, __, __, idx_penalized = vbmc.determine_best_vp(
+        safe_sd=5, rank_criterion_flag=False
+    )
 
     assert idx_unpenalized == 5
     assert idx_penalized == 4
