@@ -81,10 +81,9 @@ _CONSTRUCTION_ONLY_OPTIONS = (
     # handling level the GP noise model and the function logger follow.
     "uncertainty_handling",
     "specify_target_noise",
-    # ``_init_optim_state``: the GP mean functions, the starting values and
+    # ``_init_optim_state``: the GP mean function, the starting values and
     # the bound tolerance of the transformed box.
     "gp_mean_fun",
-    "gp_int_mean_fun",
     "f_vals",
     "tol_bound_x",
     # ``_init_optim_state``, through ``Options.integer_vars_mask``.
@@ -97,7 +96,6 @@ _CONSTRUCTION_ONLY_OPTIONS = (
     "det_entropy_min_d",
     "det_entropy_alpha",
     "tol_gp_var",
-    "proposal_fcn",
     "fitness_shaping",
     "out_warp_thresh_base",
     # ``_init_optim_state``: the search bounds, which every iteration then
@@ -1128,12 +1126,6 @@ class VBMC:
         # with small increment
         optim_state["warmup_stable_count"] = 0
 
-        # Proposal function for search
-        if self.options.get("proposal_fcn") is None:
-            optim_state["proposal_fcn"] = "@(x)proposal_vbmc"
-        else:
-            optim_state["proposal_fcn"] = self.options.get("proposal_fcn")
-
         # Quality of the variational posterior
         optim_state["R"] = np.inf
 
@@ -1243,7 +1235,6 @@ class VBMC:
 
         # The value was checked by `_validate_gp_mean_fun_option`.
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab
 
         # Starting threshold on y for output warping

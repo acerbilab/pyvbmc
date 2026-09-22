@@ -145,6 +145,21 @@ def test_load_takes_an_option_a_continued_run_reads(tmp_path):
     assert loaded.options["max_iter"] == 9
 
 
+@pytest.mark.parametrize(
+    "name, value",
+    [("gp_int_mean_fun", 1), ("proposal_fcn", "@(x)my_proposal")],
+)
+def test_load_takes_an_option_that_has_no_effect(tmp_path, name, value):
+    """An option that no module reads is taken by ``load`` as it is by
+    construction: refusing it as an option that only construction reads
+    would advise a new ``VBMC`` object, where the value has no effect
+    either."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    loaded = VBMC.load(saved, new_options={name: value})
+    assert loaded.options[name] == value
+
+
 def test_load_refuses_a_gp_mean_fun_construction_refuses(tmp_path):
     """A value that construction refuses is refused by ``load`` with the
     same message, before the name of the option is weighed: the check of

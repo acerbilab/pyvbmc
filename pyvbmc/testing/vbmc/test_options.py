@@ -479,6 +479,25 @@ def test_separate_search_gp_is_inert(caplog):
     )
 
 
+@pytest.mark.parametrize(
+    "name, value", [("gp_int_mean_fun", 1), ("proposal_fcn", print)]
+)
+def test_the_integrated_mean_and_the_proposal_function_are_inert(
+    caplog, name, value
+):
+    """The integrated mean function of MATLAB VBMC's GP is not ported, and
+    its proposal function for the search is an option that MATLAB VBMC
+    stores and never reads, so a value given for either has no effect and
+    is reported as having none."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({name: value})
+    assert options[name] is value
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        name in message and "no effect" in message for message in messages
+    )
+
+
 def test_inert_option_at_its_default_does_not_warn(caplog):
     """Repeating the default of an inert option changes nothing and is
     silent, so that an option dictionary recorded by an earlier run loads
