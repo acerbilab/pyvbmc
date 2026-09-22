@@ -39,7 +39,7 @@ can move a PyVBMC gate.
 
 | id | reports | statement | verdict (class) | fires at defaults? | how verified | proposed | PI |
 |---|---|---|---|---|---|---|---|
-| W6-1 | G2 internal F6, G2 comparison F3 and F4, independently; verifier row G2-7 | gpyreg's bound recommendations take the statistics of the training inputs over all `N * D` entries of `X` where gplite takes them per column: the starting value of every length scale, `np.log(np.std(X, ddof=1))` (`covariance_functions.py:451`, and `:401` for the rational quadratic kernel) against `log(std(X))` (`gplite_covfun.m:126`), although `width`, nine lines above, has `axis=0`; and in the negative quadratic mean `w`, `min`, `max`, `median` and `std` (`mean_functions.py:488`, `:511-524`) against `gplite_meanfun.m:142`, `:220-230`, which gives the location and the scale of the mean one hard box, one plausible box and one starting value for all dimensions. The pooled statistics mix the locations of the columns with their spreads | confirmed port discrepancy, unintended; never matched. The pooled forms are in the first revision of the bound code (`16c441d`, 2021-05-31), no revision of gpyreg ever had the axis (the G2 verifier searched every revision of the three files), and the MATLAB lines date from 2019-06-17 and 2020-05-08. No commit, pull request or release note speaks of it; the comment at `mean_functions.py:522-523`, which the sheet's entry rests on, is about the normalization, and `ddof=1` is MATLAB's already | yes, every run. The two reports disagree on the reach and each has half (G2 verifier, by reading and by instrumenting `GP.fit`): `x0` enters `hyp_dict["hyp"]` while that is `None` (`gaussian_process_train.py:117-118`), the first GP training of a run, as `gptrain_vbmc.m:28` has it; `_gp_hyp` sets no bound of the mean's location and scale (`:371-416`), so `GP.fit` fills their hard bounds, and the plausible bounds of every hyperparameter, from its own recommendation on the whole training set at every fit (`gaussian_process.py:1157-1196`). The hard bounds confine the optimizer and the slice sampler; the plausible bounds shape the space-filling design and, with `init_N == 0`, are the default sampler widths | `scripts/wave6_A1_pooled_recommendations.py`, on the eight stored oracle states. In the two cigar states the transformed coordinates lie at about 0.9, 10.5, -48 and 52 with SDs of 0.5 to 2.5, and the pooled SD is 35.7: the starting length scales are 15 to 74 times gplite's, the mean's location starts at 8.2 in every dimension, and its hard box is `[-107, 113]` in every dimension where gplite's are `[-16, 17]`, `[7.6, 14.2]`, `[-55, -44]`, `[47, 62]`; in the other states the starting length scales differ by factors of 1.1 to 2.6. gpyreg's box always contains gplite's, and the stored fits use the room: samples with a mean location outside gplite's hard box, 5 of 7 (cigar), 6 of 8 (warped), 4 of 8 (noisy Rosenbrock), 1 of 10 (half-normal), none in the three states of the two-dimensional normal. `scripts/wave6_A1b_gp_fit_per_column.py`: the `gp_fit` oracle, whose start is the stored `hyp_dict` and not `x0`, reproduces its stored reference bit for bit in the eight states with gpyreg as it is, and with the statistics per column (`scripts/wave6_per_column_patch.py`, eight lines of the two helpers, in the process alone) gives other samples in the seven states that sample, by about the spread of the samples (cigar: the SD of the mean's location in the long dimension 15.5 for 8.6); the state that does not sample is identical. `scripts/wave6_A1c_gate_runs_per_column.py`: the four seeded runs of the gates differ from the record `wave5_gates/after_pass_23d962a1.npz` from the first evaluation after the initial design, the eleventh, in all four (82 of 92 arrays): 25 iterations for 21, 17 for 19, 32 for 30, 17 and 17; final ELBO -1.7959 for -1.7903, 1.2272 for 1.2315, -1.445 +- 0.101 for -1.635 +- 0.114, 1.356 +- 0.080 for 1.430 +- 0.081. The runs are a fingerprint and say nothing of accuracy | fix in gpyreg: `axis=0` in the statistics of `X` of the two helpers (the eight lines of the patch) and in the copy of the rational quadratic kernel, last and alone on the gpyreg branch, with a test of each recommendation on inputs whose columns differ in location and in spread. It moves every sampled GP fit of every run, so it is read for accuracy on the targets of `benchmark_targets.py` over several seeds before and after (`wave3_gate_benchmark_sweep.py`) before it is taken, and the oracles that run a fit (`gp_fit`, `gp_fit_history`, `active_sample_step`) are re-baselined on purpose with it, the reason recorded in the fixtures; the one regeneration of the golden references waits for it. The sheet's entry is replaced (below). The alternative, to keep the pooled form and record it as deliberate, has nothing in the record behind it | fix, as proposed; the benchmark sweep before and after is the gate that decides whether it is taken. Taken on the sweep, reopened when the independent check of the pass corrected the orchestrator's reading of it, and kept after the ten-seed sweep and the probe of the mean's bounds (PI, 2026-09-22; "Gates") |
+| W6-1 | G2 internal F6, G2 comparison F3 and F4, independently; verifier row G2-7 | gpyreg's bound recommendations take the statistics of the training inputs over all `N * D` entries of `X` where gplite takes them per column: the starting value of every length scale, `np.log(np.std(X, ddof=1))` (`covariance_functions.py:451`, and `:401` for the rational quadratic kernel) against `log(std(X))` (`gplite_covfun.m:126`), although `width`, nine lines above, has `axis=0`; and in the negative quadratic mean `w`, `min`, `max`, `median` and `std` (`mean_functions.py:488`, `:511-524`) against `gplite_meanfun.m:142`, `:220-230`, which gives the location and the scale of the mean one hard box, one plausible box and one starting value for all dimensions. The pooled statistics mix the locations of the columns with their spreads | confirmed port discrepancy, unintended; never matched. The pooled forms are in the first revision of the bound code (`16c441d`, 2021-05-31), no revision of gpyreg ever had the axis (the G2 verifier searched every revision of the three files), and the MATLAB lines date from 2019-06-17 and 2020-05-08. No commit, pull request or release note speaks of it; the comment at `mean_functions.py:522-523`, which the sheet's entry rests on, is about the normalization, and `ddof=1` is MATLAB's already | yes, every run. The two reports disagree on the reach and each has half (G2 verifier, by reading and by instrumenting `GP.fit`): `x0` enters `hyp_dict["hyp"]` while that is `None` (`gaussian_process_train.py:117-118`), the first GP training of a run, as `gptrain_vbmc.m:28` has it; `_gp_hyp` sets no bound of the mean's location and scale (`:371-416`), so `GP.fit` fills their hard bounds, and the plausible bounds of every hyperparameter, from its own recommendation on the whole training set at every fit (`gaussian_process.py:1157-1196`). The hard bounds confine the optimizer and the slice sampler; the plausible bounds shape the space-filling design and, with `init_N == 0`, are the default sampler widths | `scripts/wave6_A1_pooled_recommendations.py`, on the eight stored oracle states. In the two cigar states the transformed coordinates lie at about 0.9, 10.5, -48 and 52 with SDs of 0.5 to 2.5, and the pooled SD is 35.7: the starting length scales are 15 to 74 times gplite's, the mean's location starts at 8.2 in every dimension, and its hard box is `[-107, 113]` in every dimension where gplite's are `[-16, 17]`, `[7.6, 14.2]`, `[-55, -44]`, `[47, 62]`; in the other states the starting length scales differ by factors of 1.1 to 2.6. gpyreg's box always contains gplite's, and the stored fits use the room: samples with a mean location outside gplite's hard box, 5 of 7 (cigar), 6 of 8 (warped), 4 of 8 (noisy Rosenbrock), 1 of 10 (half-normal), none in the three states of the two-dimensional normal. `scripts/wave6_A1b_gp_fit_per_column.py`: the `gp_fit` oracle, whose start is the stored `hyp_dict` and not `x0`, reproduces its stored reference bit for bit in the eight states with gpyreg as it is, and with the statistics per column (`scripts/wave6_per_column_patch.py`, eight lines of the two helpers, in the process alone) gives other samples in the seven states that sample, by about the spread of the samples (cigar: the SD of the mean's location in the long dimension 15.5 for 8.6); the state that does not sample is identical. `scripts/wave6_A1c_gate_runs_per_column.py`: the four seeded runs of the gates differ from the record `wave5_gates/after_pass_23d962a1.npz` from the first evaluation after the initial design, the eleventh, in all four (82 of 92 arrays): 25 iterations for 21, 17 for 19, 32 for 30, 17 and 17; final ELBO -1.7959 for -1.7903, 1.2272 for 1.2315, -1.445 +- 0.101 for -1.635 +- 0.114, 1.356 +- 0.080 for 1.430 +- 0.081. The runs are a fingerprint and say nothing of accuracy | fix in gpyreg: `axis=0` in the statistics of `X` of the two helpers (the eight lines of the patch) and in the copy of the rational quadratic kernel, last and alone on the gpyreg branch, with a test of each recommendation on inputs whose columns differ in location and in spread. It moves every sampled GP fit of every run, so it is read for accuracy on the targets of `benchmark_targets.py` over several seeds before and after (`wave3_gate_benchmark_sweep.py`) before it is taken, and the oracles that run a fit (`gp_fit`, `gp_fit_history`, `active_sample_step`) are re-baselined on purpose with it, the reason recorded in the fixtures; the one regeneration of the golden references waits for it. The sheet's entry is replaced (below). The alternative, to keep the pooled form and record it as deliberate, has nothing in the record behind it | fix, as proposed; the benchmark sweep before and after is the gate that decides whether it is taken. Taken on the sweep, reopened when the independent check of the pass corrected the orchestrator's reading of it, and kept after the sweep was extended to ten seeds on four targets and after the probe of the mean's bounds (PI, 2026-09-22; "Gates") |
 | W6-2 | G1 comparison F1 | The adapted widths of the slice sampler come from the sums of the second half of the burn-in. `slicesamplebnd.m:362` accumulates over `ii > burn/2` (`ii` from 1) and divides by `floor(burn/2)` (`:367-368`): with an odd burn-in that is one term more than the divisor, so `xx_sqsum/k - (xx_sum/k).^2` is no variance, and where it is negative the square root is complex and `:371` keeps the old widths of every coordinate. `slice_sample.py:562` accumulates `floor(burn/2)` terms for the same divisor | confirmed MATLAB-side defect; gpyreg is the consistent side, so an intentional difference in effect, missing from the sheet. The MATLAB lines predate gpyreg's history; `fcf2674` touched the bracket alone | yes, where the burn-in is odd: `thin * 3 = 15` in every fit that does not recompute the variational posterior, the burn-in of every stored oracle state, and `thin * gp_s_N` for an odd number of samples (`gaussian_process_train.py:607`, `:614`), as `get_GPTrainOptions.m:108` has it | `scripts/wave6_A2_burn_in_window.py`. Part 1 counts the terms: equal for an even burn-in, one more in MATLAB for an odd one (8 for 7 at 15). Part 2 installs MATLAB's window and its answer to a negative estimate by an edit of the source of `SliceSampler.sample`, in the process alone, and runs the `gp_fit` oracle on the stored states: at a burn-in of 16 the two give the same samples bit for bit in the seven states that sample, so the edit changes nothing else; at 15 MATLAB's estimate is negative in 5 to 11 of the 9 to 18 free coordinates in every one of the seven, so MATLAB keeps the widths of the shrinking phase, 1 to 74 times gpyreg's adapted ones, and the samples differ. Both are valid slice samplers: the widths change the chain, not the law it draws from | no fix. A sheet entry, and a line of `matlab_side_defects.md`. gpyreg's test of the sampler gets a case with an odd burn-in that pins the window (test note) | as proposed |
 | W6-3 | G1 comparison M6; the closing note of the G1 verifier | gpyreg floors the variance estimate of W6-2 at zero (`slice_sample.py:574`), and a width of zero stops a coordinate for the rest of the chain: the bracket has no extent and the point is accepted where it stands. With a burn-in of 2 or 3 the window holds one iteration, the estimate is exactly zero in every coordinate, and the chain returns one point as many times as it is asked for samples, with no message | Python-only defect. MATLAB has no floor (a negative estimate discards the adaptation, W6-2), and at a burn-in of 3 its window holds two iterations | not at the shipped options: no estimate is near zero in the stored states (smallest adapted width 0.018), and the smallest burn-in of a run is `thin * 1 = 5`. A user's `gp_sample_thin = 1` makes the burn-in 3 in every fit that does not recompute the variational posterior (`gaussian_process_train.py:614`), and every hyperparameter sample of those fits the same point | `scripts/wave6_A2_burn_in_window.py`, part 3: a standard normal in two dimensions, burn-in of 2 and of 3, widths `[0, 0]` and 1 distinct sample of 6; of 4, 5 and 15, 6 of 6. The reach through `gp_sample_thin` is read, not run | fix in gpyreg: a coordinate whose estimate is not positive keeps the width it has, and a window of fewer than two iterations adapts nothing; a test at a burn-in of 3. Moves no run at the shipped options | as proposed |
 | W6-4 | G1 internal F9; the G1 verifier's closing note, the G2 verifier's row G2-20 | The recommended bounds of the output scale and the upper bound of the noise come from the range of the targets, `height = max(y) - min(y)` (`covariance_functions.py:453-454`, `noise_functions.py:131`). With equal targets they are `-inf`, `ub = np.maximum(lb, ub)` (`gaussian_process.py:428`) leaves the pair `(-inf, -inf)`, and L-BFGS-B answers it with `KeyError: (-inf, -inf)` from `scipy/optimize/_lbfgsb_py.py:388` | the pair is shared, `gplite_covfun.m:130-131`, `gplite_noisefun.m:104` and `gplite_train.m:142` being the same formulas; what `fmincon` does with it was not looked up. That nothing on the way to the optimizer refuses or repairs the pair is Python's to decide | not on a problem with hard bounds, where the log Jacobian of the transform makes the training targets differ. Without hard bounds a log joint that is constant over the ten points of the initial design is enough, a plateau or a clipped floor of the likelihood for one: the run stops at its first GP training (`gaussian_process_train.py:170`) | `scripts/wave6_A3_constant_target.py`: gpyreg alone, equal targets, the `KeyError`; two values, the fit completes. PyVBMC at 25 evaluations: with hard bounds both a constant log joint and one that is constant over the initial design alone complete; without hard bounds both raise the `KeyError` | for the PI to weigh: gpyreg refuses a training set of equal targets in `fit` with a message that says so (the smaller change, and no departure from MATLAB), or takes a range of one for it, as both sides already do for a single target (`if np.size(y) <= 1`), so that such a run goes on. Either leaves every run that works today as it is | gpyreg takes a range of one for equal targets, as both sides do for a single target, with a warning; the run goes on |
@@ -72,7 +72,7 @@ all, by a run or by gpyreg's own defaults, the column says with what effect.
 | W6-18 | G1 comparison F6 | With a constant total noise and more than one noise hyperparameter (`scale_user_provided` without `s2`) the gradient loop takes `dsn2[i]`, a row, and raises (`:2812-2819`); `gplite_core.m:244` takes `dsn2(i)`, a linear index, and returns the wrong entry. `dsn2[0, i]` is meant | confirmed shared defect (G1-13) | no: uncertainty level 1 always has `s2` | G1-13: gpyreg raises; the finite-difference gradient is `[-3.996, 0]`, MATLAB's index gives 0.2707 for the 0 | fix, with a gradient test of that configuration; `matlab_side_defects.md` | as proposed |
 | W6-19 | G1 comparison F7 and M9 | Neither the design loop of `f_min_fill` nor the optimizer loop of `fit` catches an exception of the objective, where `fminfill.m:104-110`, `gplite_train.m:276-296` and `gp_objfun` do, leaving `Inf`, the starting point and NaN. `np.argsort` is not stable where MATLAB's `sort` is, which shows only among tied values | confirmed port discrepancies (G1-14, G1-36); a NaN value is handled alike on both sides, a raised exception is not | no: nothing raises at the defaults, the noise floor keeping the factorization from failing ten times | G1-14 | for the PI: leave it loud, as it is, with a sheet entry; or take MATLAB's tolerance with a warning and a stable sort. The orchestrator proposes to leave it: a failed factorization that ends a run is seen, one that costs a start in silence is not | leave it loud; a sheet entry |
 | W6-20 | G1 comparison, departures of `update` from `gplite_post.m`, and M14 | The sheet's entry on the rank-one update names one difference of state, the kept `sn2_mult`; a second is a new point whose noise falls below 1e-6, where the rank-one path keeps `L_chol = True` and a rebuild has `False` (the numbers agree to 1e-13). Its figure of 1e-15 holds for `L_chol` true, the one representation a run has | the entry is incomplete (G1-15, G1-38) | no | G1-15. The G1 verifier also settles the `sn2_mult` on which the two reports differ: forced to 100, the extension is exact for the stored multiplier (4e-16) and 0.75 in `alpha` from a rebuild that needs none, which is the difference the entry names | the entry amended in the verifier's words | as proposed |
-| W6-21 | G1 internal M-B; the G1 verifier's addition | The option of the Metropolis step is read as `"metopolis_rnd"` (`slice_sample.py:238`), so the step never runs; and the flag is an `and` of the two options where `slicesamplebnd.m:189` has an `or` and then asserts both | Python-only defect (G1-18); the step has never run in gpyreg | no: nothing sets either key | G1-18 | for the PI: the spelling corrected and the two keys documented, or the dead step removed. The orchestrator proposes the removal: no caller, no test, no documentation (one test did set the three attributes and ran the step, `test_serialized_sampler_continues_stream` at the pin; found by the independent check of the pass, R3-3, after which the PI kept the removal) | the step and its options removed |
+| W6-21 | G1 internal M-B; the G1 verifier's addition | The option of the Metropolis step is read as `"metopolis_rnd"` (`slice_sample.py:238`), so the step never runs; and the flag is an `and` of the two options where `slicesamplebnd.m:189` has an `or` and then asserts both | Python-only defect (G1-18); the step's options never turned it on in gpyreg, while setting its three attributes directly did (one test did so, R3-3) | no: nothing sets either key | G1-18 | for the PI: the spelling corrected and the two keys documented, or the dead step removed. The orchestrator proposes the removal: no caller, no test, no documentation (one test did set the three attributes and ran the step, `test_serialized_sampler_continues_stream` at the pin; found by the independent check of the pass, R3-3, after which the PI kept the removal) | the step and its options removed |
 | W6-22 | G1 internal M-D, M-E, M-F, M-H, M-K, M-L, M-M; G1 comparison M7, M11 | Inputs that are not checked, and texts against the code: `set_priors` and `set_bounds` take an unknown name in silence, the first against its docstring; `get_recommended_bounds` raises on a tuple, names the wrong argument in a message and repairs an inverted bound in silence; a negative `sigma` gives a prior from its absolute value and a design from its raw value; `fit` writes `df_base` into the GP's own priors, so a second `fit` with another value changes nothing; `nll` starts at `-inf` where `gplite_train.m:250` has `Inf`; `sp.special.gamma` overflows from a `df` of 343; `update` on a GP without hyperparameters completes with NaN factors (the report has it raising); a `thin` or `burn` that is not whole raises in `range` | Python-only defects, latent (G1-20, 21, 22, 24, 27, 28, 29, 34); the `abs` of `sigma` and `UB = max(LB, UB)` are MATLAB's as well | no | G1-9 of the verifier's scripts (`wave6_G1_9_api_minors.py`), one check each | fix as one commit of input checks and one of texts: an unknown name, a `sigma` that is not positive, a bound pair that is inverted and hyperparameters that are NaN are refused with a message; `df_base` fills a copy; `gammaln`; `+inf`; a count that is not whole is refused | as proposed |
 | W6-23 | G1 comparison M2 | `hyp_dict["logp"]` is given `res["log_priors"]` (`gaussian_process_train.py:178`), zeros where no `log_prior` callable is given, where `gptrain_vbmc.m:66` stores the thinned log posterior, `res["f_vals"]` in gpyreg | Python-only defect of PyVBMC (G1-31), without effect: nothing reads the key, and MATLAB's one reader is commented out | every iteration of every run writes it; no reader | G1-31 | remove the key and its comment (it feeds a branch of `gplite_train.m` that is not ported). In PyVBMC, one commit | as proposed |
 | W6-24 | G1 comparison M5 and M8 | Without a MATLAB counterpart and without a sheet entry: the two smooth-box hyperprior families; the renormalization of the prior over the bounds (`lp -= masks["log_norm"]`, `:1649`), a constant in the hyperparameters; the prior of a fixed hyperparameter, `-inf` off its value (`:1519-1523`); the default `hyp0` of `fit`, the current hyperparameters or the middle of the plausible box where `gplite_train.m:98` has zeros | intentional differences, missing from the sheet (G1-33, G1-35) | the renormalization in every fit, without effect on the optimizer or the sampler | G1-33: `log_norm = -0.747` in the case measured | sheet entries, in the verifier's words | as proposed |
@@ -169,7 +169,7 @@ far; the thirteen rows below are new.
 | `gplite/gplite_covfun.m:198`, `:218-219` | the gradient of the Matern kernel of degree 1 is `Inf * 0` on the diagonal; the repair is commented out below | the gradient of the marginal likelihood is NaN and the kernel cannot be trained (W6-32) | shared |
 | `gplite/gplite_rnd.m:102-105`, `:110`, `:61` | `robustchol` lets eigenvalues of rounding size through its tolerance and refuses the factor when one of them is negative | `gplite_rnd` fails on array sizes on a dense one-dimensional grid (W6-8) | the trigger shared; gpyreg returns the mean in silence |
 | `gplite/private/slicesamplebnd.m:168`, `:176`, `:198`, `:377` | the base widths are copied before an infinite width is replaced, the check runs after | an infinite width returns after the burn-in and the chain is NaN (W6-14) | shared |
-| `gplite/private/fminfill.m:133-136`, `:77`, `:169` | the comment of `uuinv` names equal weights for the two tails above a body that weights them by length; "half of all starting points" holds per coordinate without a prior; `p` outside `[0, 1]` is marked in one of three branches | a reader has the wrong design in hand (W6-16) | shared |
+| `gplite/private/fminfill.m:133-136`, `:77`, `:169` | the comment of `uuinv` names equal weights for the two tails above a body that weights them by length; "half of all starting points" holds for the whole design when no coordinate has a prior and every bound is finite, each coordinate taking the weight `w = 0.5^(1/nvars)` (this row said "per coordinate", corrected with row W6-16); `p` outside `[0, 1]` is marked in one of three branches | a reader has the wrong design in hand (W6-16) | shared |
 | `gplite/gplite_meanfun.m:142`, `:220-230`, `gplite/gplite_covfun.m:105` | `max`, `min`, `median` and `std` act along the row of a single training input | with one training point and `D > 1` the bounds come from the range across the dimensions. A direct call alone reaches it | the mean's bounds coincide there with gpyreg's pooled ones |
 | `gplite/gplite_train.m:180`, `:250-256`, `:298` | `nll` keeps entries that no optimization wrote, and `min(nll)` searches them | none in practice | not shared |
 | `gplite/gplite_post.m:250` | `gp.s2` is extended only when the new point comes with `s2` | `gp.s2` shorter than `gp.X` after a rank-one update without it | not shared (gpyreg fills with zero) |
@@ -190,25 +190,28 @@ against `quantile1.m`, +0.05 and -0.12 on a 30-point set); its half on the
 standard deviation was wrong, the difference being the axis (W6-1).
 Amended: the rank-one update (W6-20, with the guard of W6-9 as made); the
 isotropic and rational quadratic kernels, whose MATLAB paragraph missed the
-bounds branch of `isoflag` (W6-29); "no prior is `None`", with the
-coordinates of a block that have no prior. New: the window of the burn-in
+bounds branch of `isoflag` (W6-29). New: the window of the burn-in
 statistics (W6-2, W6-3); the variance of `quad` (W6-30); the pooling of the
 log density over the samples (W6-31); the two smooth-box hyperprior
 families, the renormalization over the bounds with the prior of a fixed
-hyperparameter, and "no prior is `None`, not an infinite scale" (W6-24,
-W6-17); the exceptions of the objective, left as they are by the ruling on
+hyperparameter, and "no prior is `None`, not an infinite scale", with the
+coordinates of a block that have no prior (W6-24, W6-17); the exceptions of
+the objective, left as they are by the ruling on
 W6-19; the default starting point of `fit` (W6-24); equal targets (W6-4);
 the negative eigenvalues of `random_function` (W6-7, W6-8); an infinite
 width of the slice sampler (W6-14); the degree-1 Matern gradient (W6-32);
-the removal of the Metropolis step (W6-21). Lines under the settled
+the noise gradient where the total noise is a scalar (W6-18); the removal
+of the Metropolis step (W6-21). Lines under the settled
 non-differences: `ddof=1` over the hyperparameter samples, the quiet
 omissions of the noise function (W6-36), and `f_min_fill` with no more
 evaluations than provided points (W6-25). The sheet states that its line
 citations into gpyreg are at the pin and that the entries citing gpyreg by
-function describe the branch. Written by two record scripts kept with the
-wave's scratchpad copy (`dev/scripts/runs/LOCAL.md`): `records_sheet.py`
+function describe the branch. Written by the record scripts kept with
+the wave's scratchpad copy (`dev/scripts/runs/LOCAL.md`): `records_sheet.py`
 once W6-1 was first taken, `records_sheet_check.py` after the independent
-check of the pass.
+check of the pass, `records_round_check_1.py` and `_2.py` after the check of
+its fix round; its citations into `pyvbmc/` carried by
+`refresh_citations.py`, one moved by hand (`1e6bf5e4`).
 
 ## Test notes worth acting on
 
@@ -302,7 +305,7 @@ On `dev-port-review`:
 | row | commit | |
 |---|---|---|
 | W6-23 | `4d3c1515` | `hyp_dict` no longer carries `logp`; the reference name removed from the three fit-history captures, whose sidecars carry an audit entry from the generator's rebaseline mode with every replayed output moved by zero (`0a6682fc`) |
-| W6-37 | `e657eba8` | `load` refuses a construction-only option (`_CONSTRUCTION_ONLY_OPTIONS`, nineteen names, `bounded_transform` and `cache_size` beside the review's seventeen; `noise_shaping` is read in every iteration and is not one); the checks of `gp_mean_fun` and of the form of `integer_vars` moved into `_validate_option_values`, run before the names are weighed; the docstring and the FAQ. A saved run whose stored `integer_vars` has a form the current code refuses now fails to load (agent C's note 7) |
+| W6-37 | `e657eba8` | `load` refuses a construction-only option (`_CONSTRUCTION_ONLY_OPTIONS`, nineteen names, `bounded_transform` and `cache_size` beside the review's seventeen; `noise_shaping` is read in every iteration and is not one); the checks of `gp_mean_fun` and of the form of `integer_vars` moved into `_validate_option_values`, run before the names are weighed; the docstring and the FAQ. A saved run whose stored `integer_vars` has a form the current code refuses now fails to load (agent C's note 7; since `edc42739` and `b2d7c6e8` such a file opens, the option taking the mask the run was made with) |
 
 On gpyreg's `port-review-wave6`, in order:
 
@@ -311,7 +314,7 @@ On gpyreg's `port-review-wave6`, in order:
 | W6-3 | `8dfbae4` | a coordinate whose burn-in variance estimate is not positive keeps its width; a window of fewer than two iterations adapts nothing; a test pins the window of the statistics (`floor(burn/2)` iterations) |
 | W6-14 | `d07c849` | `base_widths` copied after an infinite width is replaced |
 | W6-15 | `a29d0cf` | a frozen free parameter is recognized by its range, with `R` and `eff_N` NaN; the pairing of the autocorrelations kept at lag 0 and documented (agent B's note 3 compared it with BDA3 and Stan; the independent check of the pass found that comparison overstated, R3-8, and the docstring no longer makes it, `f1415de`); the two tests over several constants |
-| W6-21 | `919742e` | the Metropolis step, its call sites, its options and attributes removed |
+| W6-21 | `919742e` | the Metropolis step, its call sites, its options and attributes removed (the commit's message says that no test covered them; one did, R3-3) |
 | W6-22, B's part | `9b282da` | a `thin` or `burn` that is not whole refused; `gammaln` in the two normalizers of `f_min_fill.py` |
 | W6-16 | `3983eb3` | the docstring of `uuinv`, the comment on the half of the design, the mark of `p` outside `[0, 1]` in every return path |
 | W6-4 | `c3e1901` | equal targets take a range of one and the standard deviation of a unit range (agent B's note 1: the range alone leaves the noise's plausible upper bound `log(std(y))` below its lower bound and the design fails), through `_target_spread` in the four helpers and the mean's, with one warning |
@@ -339,7 +342,7 @@ On gpyreg's `port-review-wave6`, in order:
 | W6-34 | `5ff9353` | `quad` refuses a GP without data or factors and an unsupported mean, and reads a one-dimensional measure as one of `D` dimensions (`gplite_quad.m:26`); `_convert_shapes` takes any number and 0-d array, checks the row count of `s2`, raises `ValueError`; `update(hyp=)` checks the width; `test_predict_lpd` and its twin repaired (a row of the right width, two samples that differ, `s2_star` not zeroed, the factor `np.pi` gone) |
 | W6-35, W6-31 | `a077e70` | the docstrings of `predict`, `predict_full`, `quad` and `log_posterior` |
 | test notes | `3faeaa9` | `test_split_update` seeded; `test_fitting_options` asserts |
-| W6-38 | `caacbc1` | an inverted plausible pair collapses onto its clipped upper bound; kept by the PI's ruling |
+| W6-38 | `caacbc1` | an inverted plausible pair collapses onto its clipped upper bound; kept by the PI's ruling (the commit's message gives the clip as the cause, which the independent check of the pass found wrong, R1-2; the row W6-38 and the comment of `a4f7969` give the mechanism) |
 | test note | `8dec795` | `test_fitting` in both GP test files seeded (agent A's note 2); the fit lands within 0.042 of the generating hyperparameters, a margin of 0.46 to the tolerance of 0.5 (the commit's message calls the distance a margin; found by the independent check of the pass, R2-7) |
 | W6-1 | `f76eca2` | `axis=0` in the statistics of `X` of the two helpers and of the rational quadratic kernel's copy, nine lines, and the comment beside the mean's `std` removed; four tests in `test_bounds_info.py` on inputs whose columns differ in location and spread, seen to fail on the pooled code |
 | release notes | `dc2a930` | `docsrc/source/release_notes.rst`, a `1.3.0 (unreleased)` section, one point per change a user of 1.2.1 can see, from the agents' sentences |
@@ -371,18 +374,24 @@ Gate 2, on the branch with W6-1 (`f76eca2`) and PyVBMC at `b2e858cd`, the
 same way: gpyreg's suite on the working tree of the commit, 297 passed; the
 exact oracle check, 1 of 11 fixtures ok, `gp_fit` and `gp_fit_history` moved
 in the seven states that sample and the three fit-history captures moved,
-`active_sample_step` and `gp_nlZ` bit for bit in every state, where both
-had been expected to move; the four seeded runs
+`active_sample_step` and `gp_nlZ` bit for bit in every state, though the
+plan had expected both to move, the second through `_install_hyperprior`,
+which fills the mean's bounds from the recommendation; the four seeded runs
 differ from `wave5_gates/after_pass_23d962a1.npz` from the first evaluation
 after the initial design, 82 of 92 arrays, and are bit for bit the record
 of the verifier's prototype, `wave6_A/A1c_per_column.npz`
-(`gate2_compare_prototype_f76eca2.log`: 92 arrays, 0 differ; 25, 17, 32 and
-17 iterations; final ELBO -1.7959, 1.2272, -1.445 +- 0.101 and
+(`gate2_compare_prototype_f76eca2.log`: 92 arrays, 0 differ; the runs in
+`gate2_seeded_runs_w6_1_f76eca2.log`: 25, 17, 32 and 17 iterations; final
+ELBO -1.7959, 1.2272, -1.445 +- 0.101 and
 1.356 +- 0.080), so the commit is the patch the row was verified with.
 
 The benchmark sweep (`wave3_gate_benchmark_sweep.py`, eight targets, the
 same seeds before and after; before with gpyreg at the pin, after with the
-branch at `f76eca2`; the logs `w6_1_sweep_before_*`, `w6_1_sweep_after_*`
+branch at `f76eca2`, the added seeds at `dc2a930`, which differs from it in
+the release notes alone; PyVBMC at `ac039528`, `b2e858cd` and `a3d4a70d`
+across the runs, which compute the same, as gate 1's seeded runs and the
+repeated seeds of corr_D5 show; the logs `w6_1_sweep_before_*`,
+`w6_1_sweep_after_*`
 and, for the added seeds, `w6_1_sweep_more_before_*` and
 `w6_1_sweep_more_after_*` on the orchestrator's machine). It first ran
 rosenbrock_D2 over 10 seeds, cigar_D4 over 6 and the other six targets over
@@ -409,49 +418,64 @@ Means over the paired seeds, before -> after:
 | rosenbrock_D2_noise1 | 10 | 0.0971 -> 0.1004 | 0.0299 -> 0.0863 | 0.0339 -> 0.0517 | 4 / 4 / 4 |
 | all | 59 | | | | 24 / 27 / 30 |
 
-Over 59 seeds the fix is better on about as many seeds as it is worse. It
-costs corr_D5 a little on all three metrics and cigar_D4 on the ELBO error,
-by thousandths of a nat, and it gives the noisy Rosenbrock two seeds whose
-gsKL (0.24, 0.31) and MMTV (0.11) no seed before reached. The PI's rule for
-the gate returns such a result to triage; the PI took the per-column form
-to be the right one and asked why the pooled form scored better.
+Over the 59 seeds the fix is better on 24 and worse on 35 by the ELBO
+error, better on 27 and worse on 30 by gsKL (two tied), and better on 30
+and worse on 29 by MMTV. Its means are worse on corr_D5, cigar_D4 and the
+noisy Rosenbrock on all three metrics and on lumpy_D4 in the ELBO error;
+the noisy Rosenbrock's gsKL and MMTV are carried by two seeds whose gsKL
+(0.24, 0.31) and MMTV (0.11) no seed before reached. They are better on
+student_D4 and banana_D2 on all three, on rosenbrock_D2 and half-normal in
+the ELBO error and gsKL, and on lumpy_D4 in gsKL and MMTV. The losses are
+thousandths of a nat of ELBO error and up to 0.06 of mean gsKL. The PI's
+rule for the gate returns such a result to triage; the PI took the
+per-column form to be the right one and asked why the pooled form scored
+better. As first written, this paragraph said that the fix was better on
+about as many seeds as it was worse and left out the losses on cigar_D4's
+gsKL and MMTV, lumpy_D4's ELBO error and the noisy Rosenbrock's means (the
+independent check of the fix round, F3-3).
 
-The probe of the mean's bounds (`scripts/wave6_A1d_mean_bounds_probe.py`,
-read with `scripts/wave6_A1d_read.py`; the records
-`wave6_A/A1d_pooled_1790104477.npz` and `A1d_per_column_1790104477.npz`
-on the orchestrator's machine) repeats the sweep's runs on corr_D5, cigar_D4
+The probe of the mean's bounds (`scripts/wave6_A1d_mean_bounds_probe.py`;
+`scripts/wave6_A1d_read.py` prints every number below from the records
+`wave6_A/A1d_pooled_1790104477.npz` and `A1d_per_column_1790104477.npz` on
+the orchestrator's machine) repeats the sweep's runs on corr_D5, cigar_D4
 and lumpy_D4 over seeds 1 to 4 and on the noisy Rosenbrock over seeds 1 to
-4 and 9, with `GP.fit` wrapped to record the hyperparameter vectors each fit
-returns, the training inputs and the bounds in effect, and draws nothing:
-every run reproduces the sweep's result for its seed. With the pooled
-bounds, the mean's location lies outside gplite's per-column box in up to a
-third of the vectors of some dimensions (cigar_D4 12 to 33%, the noisy
-Rosenbrock 25% in one dimension, corr_D5 2 to 26%, lumpy_D4 1 to 8%), at
-the median 0.04 to 0.9 column widths beyond it on three targets and 0.4 to
-1.8 on cigar_D4, with a tail to 1 to 3 widths (to 27 on cigar_D4). The mean's log scale almost never leaves its box. The
-vectors outside are of two kinds. In lumpy_D4, the noisy Rosenbrock and two
-dimensions of cigar_D4 the quadratic is flat, 0.9 to 7 column widths wide
-at the median, and 6 to 26% of those vectors wider than gplite's cap of e^3
-widths; its term changes by 0.05 to 3 nats across the data, so the location
-is barely identified and drifts. In corr_D5 and the other two
-dimensions of cigar_D4 the quadratic is nearly as narrow as inside the box
-(0.14 to 0.3 widths, 0.7 in one dimension of corr_D5) and falls by 15 to 90
-nats across the data (3 in that dimension), a one-sided slope with its peak
-just past the data. With the per-column bounds the
-location does not crowd the edge of its box: the outer 2% of the box holds
-at most 3% of the vectors where the pooled runs had up to a third outside it,
-and the displaced share lands within the span of the data (corr_D5
-dimension 0 from 47% to 60%, cigar_D4 dimension 0 from 46% to 64%). The box
-removes a region the pooled posterior reached as a separate mode of a
-misspecified mean; it does not truncate a posterior that presses against
-it. The length scales and the output scale sit at their upper bounds, which
-are the same in both forms (`log(10 w_d)`, `log(10 range(y))`), as often
-with either form: corr_D5's length scales 0.30 -> 0.30 and 0.36 -> 0.39 of
-the vectors, its output scale 0.37 -> 0.41; cigar_D4's length scales in two
-dimensions near half of the vectors in both. The runs diverge after their
-first iterations, so these shares mix different training sets; which of
-the modes a fit took, or the divergence itself, is what separates the
-accuracies, and the probe does not say which. PI's ruling of 2026-09-22:
+4 and 9, with `GP.fit` wrapped to record, after each fit, the
+hyperparameter vectors it returns, the number of training points, gplite's
+per-column box of the mean computed from the training inputs, and the hard
+bounds in effect; it draws nothing, and every run reproduces the sweep's
+result for its seed. With the pooled bounds, the mean's location lies
+outside gplite's per-column box in up to a third of the vectors of some
+dimensions (cigar_D4 12 to 33%, the noisy Rosenbrock 25% in one dimension,
+corr_D5 2 to 26%, lumpy_D4 1 to 8.5%), at the median 0.04 to 0.9 column
+widths beyond it on three targets and 0.4 to 1.8 on cigar_D4, with a tail
+to 1 to 3 widths (to 27 on cigar_D4). The mean's log scale leaves its box
+less often, and only upward: in up to 9.3% of the vectors of a dimension on
+cigar_D4, 5.9% on the noisy Rosenbrock, 3.5% on corr_D5 and 2.4% on
+lumpy_D4. The vectors whose location lies outside are of two kinds. In
+lumpy_D4, the noisy Rosenbrock and two dimensions of cigar_D4 the
+quadratic is wide, 0.9 to 7 column widths at the median against 0.13 to
+0.23 inside the box, and up to 26% of those vectors are wider than
+gplite's cap of e^3 widths; its term changes by 0.05 to 3 nats across the
+data, so the location is barely identified and drifts. In corr_D5 and the
+other two dimensions of cigar_D4 the quadratic is narrow, 0.14 to 0.3
+widths at the median (0.7 in one dimension of corr_D5), up to twice as
+wide as inside the box, and falls by 15 to 90 nats across the data (3 in
+that dimension): a one-sided slope with its peak just past the data. With
+the per-column bounds the location does not crowd the edge of its box: the
+outer 2% of the box holds at most 3.3% of the vectors, where the pooled
+runs had up to a third outside it, and the displaced share lands within
+the span of the data (corr_D5 dimension 0 from 47% to 60%, cigar_D4
+dimension 0 from 46% to 64%). The length scales and the output scale sit
+at their upper bounds, which are the same in both forms (`log(10 w_d)`,
+`log(10 range(y))`), as often with either form: corr_D5's length scales
+0.30 -> 0.30 and 0.36 -> 0.39 of the vectors, its output scale 0.37 ->
+0.41; cigar_D4's length scales in two dimensions near half of the vectors
+in both. The orchestrator's reading, which the probe does not test: the box
+removes a region that the pooled fits reached with a differently shaped
+quadratic, a separate mode of a misspecified mean, rather than truncating a
+posterior that presses against it. The runs diverge after their first
+iterations, so these shares mix different training sets, and the probe
+does not say what separates the accuracies. PI's ruling of 2026-09-22:
 W6-1 kept.
 
 The targeted re-baselines, on the generating machine with BLAS
@@ -474,9 +498,11 @@ third, and the exact check, passed. Committed on `dev-port-review` as
 Gate 3, on the branch with the fix round of the independent check
 (`d93f03c`, below) and PyVBMC at `326c7676`, with `PYTHONPATH` naming the
 worktree and `gpyreg.__file__` printed: gpyreg's suite, 313 passed;
-PyVBMC's suite against the branch, 1990 passed, 58 skipped; the exact oracle check,
-11 of 11; the four seeded runs, bit for bit gate 2's record `after_w6_1_f76eca2.npz` (92 arrays, 0 differ), so the round changes no number of a PyVBMC run. The logs are
-`gate3_*_d93f03c.log` on the orchestrator's machine.
+PyVBMC's suite against the branch, 1990 passed, 58 skipped; the exact
+oracle check, 11 of 11; the four seeded runs, bit for bit gate 2's record
+`after_w6_1_f76eca2.npz` (92 arrays, 0 differ), so the round changes no
+number of a PyVBMC run. The logs are `gate3_*_d93f03c.log` on the
+orchestrator's machine.
 
 ## The independent check of the pass
 
@@ -517,8 +543,8 @@ What had to be fixed:
   (R3-3); the claim of W6-16 on half of the design (R3-1); the margin of the
   seeded `test_fitting` (R2-7); the comparison with BDA3 and Stan under
   W6-15 (R3-8); the account of gate 1 (R4-2); citations and claims of the
-  sheet, its history phrasing, and five entries it lacked (R5-3 to R5-13,
-  R5-26); the changelog's gpyreg requirement, which named a version not yet
+  sheet, its history phrasing, and five entries it lacked (R5-3 to R5-8,
+  R5-10 to R5-13, R5-26); the changelog's gpyreg requirement, which named a version not yet
   released (R4-4, R5-22); entries 41 and 49 to 52 of
   `matlab_side_defects.md` (R5-24, R5-30).
 
@@ -541,7 +567,7 @@ pass left for later").
 Fix agent D, on a worktree of gpyreg made by hand
 (`../gpyreg-port-review-D`, branch `port-review-wave6-D`, from `dc2a930`),
 made the gpyreg side, one commit per finding, with a test seen to fail
-first for every change of code (`../fixes/wave6_check_agent_D.md`). The
+first for every change of behaviour (`../fixes/wave6_check_agent_D.md`). The
 orchestrator reviewed the diffs and took the branch onto `port-review-wave6`
 as a fast-forward, so the hashes stand, and made the PyVBMC side.
 
@@ -559,12 +585,12 @@ On gpyreg's `port-review-wave6`, in order:
 | R1-3 | `2d5796d` | the test of the low-noise duplicate fires the guard by construction (tests alone) |
 | R1-6 | `4994bbe` | the tiny-range test asserts on the plausible pair the design receives (tests alone) |
 | R1-2, R5-2, R5-14 | `a4f7969` | the mechanism of an inverted plausible pair, in `fit`'s comment and the test's docstring |
-| R1-4, R2-4, R2-9, R2-11, R5-29 | `51e492f` | `predict`'s pooled variance, the `Raises` sections of `update`, `get_recommended_bounds` and `fit`, three comments |
+| R1-4, R2-4, R2-9, R2-11, R5-29 | `51e492f` | `predict`'s pooled variance, the `Raises` sections of `update`, `get_recommended_bounds` and `fit`, three comments, and the wording of `update`'s refusal of unset hyperparameters, a message no test pins |
 | R2-5 | `7a48db8` | the comment in the test of the documented densities |
 | R3-1 | `c36bada` | the weight of the plausible box in the space-filling design |
 | R3-6, R3-8 | `f1415de` | the Notes of the effective sample size |
 | R3-9 | `39ef329` | what the isotropic kernels take from each parent |
-| R2-3, R3-2, R3-3, R3-4, R3-7, R5-9, R5-15 | `d93f03c` | the release notes, true point by point, with the Upgrading lines of the new refusals |
+| R1-2, R1-3, R2-3, R3-2, R3-3, R3-4, R3-7, R5-9, R5-14, R5-15 | `d93f03c` | the release notes, true point by point, with the Upgrading lines of the new refusals |
 
 On `dev-port-review`:
 
@@ -576,3 +602,87 @@ On `dev-port-review`:
 Found by agent D on the way and left for triage: `set_priors` takes a NaN
 location beside a finite `sigma`, which gives a NaN log prior, the mirror of
 R4-1 (`TODO.md`). Gate 3, under "Gates", is the gate of the round.
+
+## The independent check of the fix round
+
+On the PI's instruction (`/doublecheck`, 2026-09-22) the fix round of the
+check was read by three fresh Opus reviewers, read-only: F1 fix agent D's
+16 gpyreg commits and the release notes, F2 PyVBMC's `edc42739` and
+`326c7676` with their changelog lines, F3 the records `262d5d3d` and
+`1e6bf5e4` and the probe scripts. They returned 8, 8 and 27 findings. Their
+reports and probes are kept on the machine that ran them
+(`dev/scripts/runs/LOCAL.md`).
+
+What had to be fixed:
+
+- `random_function` still raised `LinAlgError` whenever the posterior is
+  in its low-noise representation (a smallest noise variance below 1e-6),
+  inside the data and outside it (F1-1). The posterior holds the negative
+  inverse of the training covariance there, and the predictive covariance
+  formed from it carries a rounding that grows like the inverse of the
+  noise: negative eigenvalues from -7e-11 to -2e-2 against a band of
+  3e-13, at noise standard deviations from just below 1e-3 to 1e-6. A
+  default fit on noiseless targets ends there. The band of the round
+  reached the Cholesky representation alone, and the test sat two ulps
+  above the switch between the two.
+- Three records of the round were wrong: the reading of the sweep said the
+  fix was better on about as many seeds as it was worse, where by the ELBO
+  error it is worse on 35 of 59, and left out losses (F3-3); the probe
+  paragraph said that the mean's log scale almost never left its box, where
+  it does in up to 9.3% of the vectors of a dimension (F3-2); and the
+  correction of W6-16 was not carried to the table of MATLAB-side defects
+  and to entry 48 of `matlab_side_defects.md` (F3-1). All three are
+  corrected where they stand.
+
+The PI's rulings of 2026-09-22: `random_function` forms the covariance of a
+low-noise posterior from a Cholesky factor; `load` gives the option the
+run's mask wherever its reading differs from it, not only where the check
+refuses it; the changelog names the gpyreg version it requires together
+with the minimum version of `pyproject.toml`, after gpyreg's release, and
+the sheet's header moves with the pin; the small findings no record held
+go to `TODO.md`. The other findings were corrected as the orchestrator
+proposed: the release notes (F1-2 to F1-4, F1-8, and the other changed
+exception types that fix agent E found), the docstrings and comments (F1-5,
+F1-7), the scan test and the comment of the tuple (F2-1, F2-2, F2-4, F2-5),
+the `Raises` of `load`, the test of the all-zero form and the `logp` lines
+(F2-6 to F2-8), and the records (F3-4 to F3-27; the probe's numbers are
+printed by `scripts/wave6_A1d_read.py`).
+
+Fix agent E, on a worktree of gpyreg made by hand
+(`../gpyreg-port-review-E`, branch `port-review-wave6-E`, from `d93f03c`),
+made the gpyreg side (`../fixes/wave6_check_round_agent_E.md`); the
+orchestrator reviewed the diffs, added one commit of text, and took the
+branch onto `port-review-wave6` as a fast-forward, so the hashes stand.
+
+On gpyreg's `port-review-wave6`, in order:
+
+| finding | commit | |
+|---|---|---|
+| F1-1 | `5db2255` | `random_function` factors the training covariance of a low-noise posterior, with its kernel, noise and multiplier, through the factorization and retry that compute the posterior, moved into a helper that `__core_computation` calls (its results bit for bit, over 51 arrays); the dense-grid test states its representation and covers the low-noise one, inside and outside the data; a test of two hyperparameter samples with and without `add_noise` |
+| F1-5, F1-7 | `2938581` | the reading of a NaN `df` gplite shares, and the weight of the plausible box in the design |
+| F1-1 to F1-4, F1-8 | `dd12db3` | the release notes: low-noise draws, the refusals of inputs 1.2.1 took and of inputs it failed on, `thin` and `burn` of any whole type, the remedy of `update` on unset hyperparameters, the change of the shape checks' exception, one dimension |
+| F1-5, F1-8 | `ec0f085` | the orchestrator's: the rule for no prior and the smooth-box reading stated as gpyreg's own at the three sites left, and the other changed exception types in the Upgrading line |
+
+On `dev-port-review`:
+
+| finding | commit | |
+|---|---|---|
+| F2-3, F2-6 to F2-8 | `b2d7c6e8` | `load` gives a stored `integer_vars` the run's mask wherever its reading differs from it; the test covers an array of zeros and the list `[1]`; the `Raises` of `load`; the changelog's lines on `integer_vars` and `logp` |
+| F2-1, F2-2, F2-4, F2-5 | `503562d7` | the scan takes any name that contains `options`, matches its set-aside reads by site and names the sites of a difference; the comment of the tuple states the rule (tests alone apart from the comment) |
+
+Found by fix agent E on the way and left for triage (`TODO.md`): `predict`
+and `predict_full` form the low-noise covariance from the same explicit
+inverse, as `gplite_pred.m:102-104` does, so their variances there carry
+the rounding (1.9e-3 against true variances of about 1e-12 inside the data
+at a noise standard deviation of 1e-6), and the low-noise rank-one update
+divides by such a variance; no PyVBMC run reaches the low-noise
+representation, its noise standard deviation being at least
+`tol_gp_noise`. And `fit` with a whole float `thin` still raises
+`TypeError`.
+
+Gate 4, on the branch with E's round (`ec0f085`) and PyVBMC at `503562d7`,
+with `PYTHONPATH` naming the worktree and `gpyreg.__file__` printed:
+gpyreg's suite, 319 passed; PyVBMC's suite against the branch,
+1992 passed, 58 skipped; the exact oracle check, 11 of 11; the four seeded runs,
+bit for bit gate 2's record `after_w6_1_f76eca2.npz` (92 arrays, 0 differ). The logs are `gate4_*_ec0f085.log` on the orchestrator's
+machine.

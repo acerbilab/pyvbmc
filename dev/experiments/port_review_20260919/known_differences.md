@@ -20,8 +20,8 @@ the comparison revision `396d649`. Line citations into gpyreg are at
 `9e70e6b` (release 1.2.1, the revision PyVBMC's CI installs). Entries that
 cite gpyreg by function name describe its branch `port-review-wave6`
 (`dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
-commits"), to be released as gpyreg 1.3.0; their line citations are brought
-to that release when PyVBMC moves to it. Citations of PyVBMC's `AGENTS.md` by
+commits"), which is to be released; their line citations are brought to
+that release when PyVBMC moves to it. Citations of PyVBMC's `AGENTS.md` by
 section name or by quotation refer to that file at revision `feadb6fe`; the
 file was rewritten afterwards and does not hold every section cited.
 
@@ -515,9 +515,9 @@ fact inherited from MATLAB.
   prior: `_gp_hyp` gives every coordinate that has a prior a finite `mu` and
   `sigma`, and leaves both NaN where there is none.
 - Why: the `and` is required by the smooth-box families of `27f8d66`
-  (2021-06-11); the refusal: `verification/wave6.md`, W6-17, with
-  `wave6_G1.md`, row G1-12, and the coordinates without a prior, "The
-  independent check of the pass".
+  (2021-06-11). The refusal is row W6-17 of `verification/wave6.md`, with
+  `verification/wave6_G1.md`, row G1-12; the coordinates without a prior
+  are in the ledger's section "The independent check of the pass".
 - Kind: deliberate change.
 
 ### An exception of the hyperparameter objective ends the fit
@@ -581,13 +581,19 @@ fact inherited from MATLAB.
   one, which the draw then multiplies against a vector of another size; on a
   dense one-dimensional grid the kept set holds eigenvalues of rounding size
   and of both signs, and the draw fails. gpyreg takes a negative eigenvalue
-  within `10 * n * eps` times the prior variance at the test points, the
-  scale of the terms whose difference the predictive covariance is, for a
-  zero, and raises `LinAlgError` for one beyond it. No PyVBMC code calls
-  `random_function`.
-- Why: `verification/wave6.md`, W6-7 and W6-8, and "The independent check
-  of the pass" for the scale of the band; entry 46 of
-  `matlab_side_defects.md`.
+  within `10 * n * eps` times the larger of the largest prior variance at
+  the test points and the largest eigenvalue for a zero, since the
+  predictive covariance is a difference of terms of the size of the prior
+  variance, and raises `LinAlgError` for one beyond it. Where the posterior
+  holds the negative inverse of the training covariance (the low-noise
+  representation, a smallest noise variance below 1e-6), MATLAB forms the
+  predictive covariance from that inverse (`gplite_rnd.m:50`), whose
+  rounding grows like the inverse of the noise; gpyreg forms it from a
+  Cholesky factor of the training covariance, as in the other
+  representation. No PyVBMC code calls `random_function`.
+- Why: `verification/wave6.md`, W6-7 and W6-8, and the sections on the
+  independent check of the pass and of its fix round for the band and the
+  low-noise representation; entry 46 of `matlab_side_defects.md`.
 - Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
 
 ### An infinite width of the slice sampler does not return after the burn-in
@@ -605,8 +611,8 @@ fact inherited from MATLAB.
 
 ### The degree-1 Matern gradient is zero where two inputs coincide
 - Python: `gpyreg/covariance_functions.py: Matern.compute`, the gradient
-  with respect to the length scales at degree 1, which
-  `gpyreg/isotropic_covariance_functions.py: MaternIsotropic` shares.
+  with respect to the length scales at degree 1, and its copy in
+  `gpyreg/isotropic_covariance_functions.py: MaternIsotropic.compute`.
 - MATLAB: `gplite/gplite_covfun.m:198`, `:218-219`.
 - What differs: at degree 1 MATLAB's derivative factor is `1./t`, so the
   length-scale gradient is `Inf * 0 = NaN` on the diagonal and wherever two
@@ -615,6 +621,22 @@ fact inherited from MATLAB.
   gpyreg sets the gradient to zero there, its value. Degrees 3 and 5 agree,
   and PyVBMC uses the squared exponential.
 - Why: `verification/wave6.md`, W6-32; entry 45 of
+  `matlab_side_defects.md`.
+- Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
+
+### The noise gradient where the total noise is a scalar
+- Python: `gpyreg/gaussian_process.py: __core_computation`, the gradient
+  with respect to the noise hyperparameters where the total noise variance
+  is one value for all points.
+- MATLAB: `gplite/private/gplite_core.m:244`.
+- What differs: with a constant total noise and more than one noise
+  hyperparameter (a scale for user-provided variances that are never
+  given), MATLAB takes `dsn2(i)` by linear index into an `N`-by-`Nnoise`
+  array and returns a wrong entry for every hyperparameter after the first
+  (0.2707 where the finite-difference gradient is 0); gpyreg takes the
+  entry of the row, `dsn2[0, i]`. PyVBMC does not reach it: at uncertainty
+  level 1 a run always has `s2`.
+- Why: `verification/wave6.md`, W6-18; entry 43 of
   `matlab_side_defects.md`.
 - Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
 
@@ -2628,7 +2650,8 @@ them. They are *not* differences from MATLAB.
   `gplite/gplite_train.m:142` repair an inverted pair of recommended bounds
   alike, with `UB = max(LB, UB)` (W6-36). A training set of one point is a
   difference, entry 49 of `matlab_side_defects.md`, and equal targets are
-  the entry "A training set of equal targets takes a range of one". `f_min_fill` with no more evaluations than provided
+  the entry "A training set of equal targets takes a range of one".
+  `f_min_fill` with no more evaluations than provided
   starting points evaluates and returns the first `N` of them, as
   `gplite/private/fminfill.m:98-114` does since `46b6f5e` (W6-25).
 - **The `_get_hyp_cov` decay denominator matches MATLAB.** PyVBMC divides

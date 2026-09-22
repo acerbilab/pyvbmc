@@ -155,14 +155,48 @@ records its execution.
     same lines that a method of `Posterior` could hold.
   - gpyreg: a `fit` on a single training point ends with the `KeyError` of
     L-BFGS-B, since the width of every input column is zero and the
-    length-scale bounds are `(-inf, -inf)`; gplite fits there, its `max`
-    and `min` running along the single row (entry 49 of
+    length-scale bounds are `(-inf, -inf)`; gplite's bounds are finite
+    there, its `max` and `min` running along the single row (read from its
+    source, not run) (entry 49 of
     `experiments/port_review_20260919/matlab_side_defects.md`). A candidate
     for triage, as the constant targets of row W6-4 were.
   - gpyreg: `set_priors` takes a NaN location beside a finite `sigma` (a
     Gaussian prior with `mu` NaN, a smooth box with `a` NaN), and the log
     prior is then NaN; the mirror of a NaN `sigma` beside a set location,
     which it refuses. A candidate for triage.
+  - gpyreg: `get_priors` returns `None` for a Student's t block with mixed
+    degrees of freedom, such as `[0, nan]` or `[0, 3]`, which `set_priors`
+    writes, so `set_priors(get_priors())` drops it; and for a smooth-box
+    coordinate written directly into `hyper_priors` with finite `a` and `b`
+    and a NaN `sigma` it can return a block that `set_priors` refuses.
+  - gpyreg: `set_priors` sets `no_prior` to false before its checks, so a
+    refused call leaves it false on a GP without priors; `np.abs(sigma)` in
+    the prior code is dead, `set_priors` refusing a negative `sigma`; the
+    `Raises` section of `fit` names neither the `ValueError` it passes on
+    from `get_recommended_bounds` nor those from `update`; `set_bounds`
+    takes an inverted pair, which only `fit` and `get_recommended_bounds`
+    refuse.
+  - gpyreg's tests: `test_split_update` fixes two hyperparameter samples
+    where it drew one or two; the test of the documented prior densities
+    runs without bounds, so the renormalization over them is not checked
+    against the truncated densities.
+  - PyVBMC: `load` refuses a construction-only option even when its value
+    equals the stored one, so passing back the original options with a
+    new `max_fun_evals` raises.
+  - gpyreg: in the low-noise representation of the posterior (a smallest
+    noise variance below 1e-6), `predict` and `predict_full` form the
+    predictive covariance from the explicit negative inverse the posterior
+    holds, as `gplite_pred.m:102-104` does (read, not run), so its
+    rounding grows like the inverse of the noise: at a noise standard
+    deviation of 1e-6 the variances inside the data are off by up to
+    1.9e-3 where they are about 1e-12, and `predict_full`'s covariance has
+    eigenvalues down to -1.8e-2. The low-noise rank-one update divides by
+    such a variance. `random_function` forms it from a Cholesky factor
+    instead. No PyVBMC run reaches the representation. A candidate for
+    triage, and for the list of MATLAB-side defects.
+  - gpyreg: `fit` with a whole float `thin`, 2.0 for one, raises
+    `TypeError` from its own use of it, where `SliceSampler.sample` takes
+    it.
   - PyVBMC: `ns_gp_max` is read at every fit, but `_init_optim_state` also
     derives `stop_sampling` from it, so raising it from zero at `load` is
     stored and leaves the hyperparameters unsampled.

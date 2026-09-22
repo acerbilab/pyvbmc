@@ -12,8 +12,9 @@ gpyreg's recommendation at every fit:
     log omega_d: [log w_d + log 1e-6, log w_d + 3]
 
 with `min_d`, `max_d` and the width `w_d = max_d - min_d` of column `d`
-(per column) or of all entries (pooled); the pooled box contains the
-per-column one. Every other hard bound is the same in both forms: the
+(per column) or of all entries (pooled). The pooled box of the location
+contains the per-column one; the pooled box of the log scale lies above
+it, its lower bound never below gplite's. Every other hard bound is the same in both forms: the
 kernel's were per column already (only the starting value of the length
 scales, which enters the first fit alone, changes), and those of the output
 scale, the noise and the mean's constant come from the targets. The other

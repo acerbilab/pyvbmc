@@ -130,3 +130,100 @@ for label in pooled:
                 + f"; median distance beyond, {unit}: "
                 + " ".join(f"{x:.2f}" for x in far)
             )
+
+
+# The mean's location, per target and dimension: in the pooled form, the
+# share of the vectors outside gplite's per-column box and how far beyond
+# it (median, 90th percentile and maximum, in column widths); the width of
+# the quadratic, exp(log omega_d) / w_d, at the median for the vectors
+# inside the box and for those outside, and the share of the latter wider
+# than gplite's cap of e^3 widths; the change of the quadratic term across
+# the data, 0.5 * ((x - xm_d) / omega_d)^2 between the column's minimum and
+# maximum, at the median for the vectors outside; and, in each form, where
+# the location lies in the box (0 its lower bound, 1 its upper, the data
+# spanning 0.25 to 0.75): outside it, in its outer 2% and 10%, and within
+# the span of the data. And the share of the pooled form's log scale above
+# and below gplite's per-column box.
+print("\n== the mean's location, per target and dimension")
+for label in pooled:
+    rows_a, rows_b = pooled[label], per_column.get(label, [])
+    if "xm_index" not in rows_a[0]:
+        continue
+    for d in range(len(rows_a[0]["xm_index"])):
+        beyond, ratio_in, ratio_out, change, pos_a = [], [], [], [], []
+        for r in rows_a:
+            h = np.atleast_2d(r["hyp"])
+            xm, lw = h[:, r["xm_index"][d]], h[:, r["lw_index"][d]]
+            lb, ub = r["col_xm_lb"][d], r["col_xm_ub"][d]
+            w = (ub - lb) / 2
+            low, high = lb + 0.5 * w, ub - 0.5 * w
+            ratio = np.exp(lw) / w
+            out = (xm < lb) | (xm > ub)
+            beyond.extend(np.where(xm < lb, lb - xm, xm - ub)[out] / w)
+            ratio_in.extend(ratio[~out])
+            ratio_out.extend(ratio[out])
+            term = lambda x: 0.5 * ((x - xm[out]) / np.exp(lw[out])) ** 2
+            change.extend(np.abs(term(low) - term(high)))
+            pos_a.extend((xm - lb) / (ub - lb))
+        lw_vals = np.concatenate(
+            [np.atleast_2d(r["hyp"])[:, r["lw_index"][d]] for r in rows_a]
+        )
+        lw_lb = np.concatenate(
+            [
+                np.full(np.atleast_2d(r["hyp"]).shape[0], r["col_lw_lb"][d])
+                for r in rows_a
+            ]
+        )
+        lw_ub = np.concatenate(
+            [
+                np.full(np.atleast_2d(r["hyp"]).shape[0], r["col_lw_ub"][d])
+                for r in rows_a
+            ]
+        )
+        pos_b = []
+        for r in rows_b:
+            xm = np.atleast_2d(r["hyp"])[:, r["xm_index"][d]]
+            lb, ub = r["col_xm_lb"][d], r["col_xm_ub"][d]
+            pos_b.extend((xm - lb) / (ub - lb))
+
+        def where(p):
+            p = np.asarray(p)
+            inside = (p >= 0) & (p <= 1)
+            return (
+                (~inside).mean(),
+                (inside & ((p < 0.02) | (p > 0.98))).mean(),
+                (inside & ((p < 0.1) | (p > 0.9))).mean(),
+                ((p >= 0.25) & (p <= 0.75)).mean(),
+            )
+
+        b, ro = np.asarray(beyond), np.asarray(ratio_out)
+        n = len(pos_a)
+        print(
+            f"  {label} location[{d}]: outside {b.size}/{n} "
+            f"({b.size / n:.3f})",
+            end="",
+        )
+        if b.size:
+            print(
+                f"; beyond, column widths: median {np.median(b):.2f}, "
+                f"90th {np.quantile(b, 0.9):.2f}, max {b.max():.2f}; width "
+                f"inside {np.median(ratio_in):.2f}, outside "
+                f"{np.median(ro):.2f}, outside above e^3 "
+                f"{np.mean(ro > np.exp(3)):.3f}; change across the data, "
+                f"outside {np.median(change):.2f} nats",
+                end="",
+            )
+        print()
+        print(
+            f"    log scale of the pooled form: above its per-column box "
+            f"{np.mean(lw_vals > lw_ub):.3f}, below "
+            f"{np.mean(lw_vals < lw_lb):.3f}"
+        )
+        print(
+            "    outside | outer 2% | outer 10% | within the data span "
+            "(pooled -> per column): "
+            + " | ".join(
+                f"{x:.3f} -> {y:.3f}"
+                for x, y in zip(where(pos_a), where(pos_b))
+            )
+        )

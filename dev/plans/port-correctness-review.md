@@ -2119,8 +2119,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   agents' sentences, the number for the PI to confirm). Gate 2 against the
   branch, `PYTHONPATH` naming the worktree: the exact check moved `gp_fit`
   and `gp_fit_history` in the seven states that sample and the three
-  fit-history captures, and `active_sample_step` and `gp_nlZ`, which had
-  been expected to move, not at all; the four seeded runs
+  fit-history captures, and `active_sample_step` and `gp_nlZ`, which the
+  previous pickup point expected to move, not at all; the four seeded runs
   differ from the wave-5 record in 82 of 92 arrays and are bit for bit the
   verifier's prototype record. The after-sweep on the same eight targets
   and seeds as the before-sweep, the run after better on 15, 18 and 19 of
@@ -2158,9 +2158,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   its seed spread, where four are); the PI reopened the ruling, the four
   targets in question were run to ten seeds, and a probe of the mean's
   bounds (`verification/scripts/wave6_A1d_mean_bounds_probe.py`) found that
-  gplite's per-column box removes a separate mode of a misspecified
-  quadratic mean rather than truncating a posterior that presses on it; the
-  PI kept W6-1. The fix round: agent D on a worktree of gpyreg made by hand
+  the location of the mean leaves gplite's per-column box with a
+  differently shaped quadratic and does not crowd the box's edge when
+  confined, which the orchestrator reads as the box removing a separate
+  mode of a misspecified mean rather than truncating a posterior that
+  presses on it; the PI kept W6-1. The fix round: agent D on a worktree of gpyreg made by hand
   (`../gpyreg-port-review-D`, from `dc2a930`), 16 commits taken onto
   `port-review-wave6` as a fast-forward (`c4a441e` to `d93f03c`), its report
   `experiments/port_review_20260919/fixes/wave6_check_agent_D.md`; the
@@ -2179,37 +2181,67 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `matlab_side_defects.md` entries 41 and 49 to 52, `TODO.md` (what the
   check left for later), the sheet's PyVBMC citations carried by
   `refresh_citations.py`, `dev/scripts/runs/LOCAL.md`.
-- [ ] **Pickup point (2026-09-22, after the fix round of the independent
-  check): the pull request of gpyreg's branch, on the PI's word.** The
-  state: gpyreg's `port-review-wave6` at `d93f03c` in `../gpyreg-port-review`
-  (51 commits over `fdbafdf`; pushed at `caacbc1`, the commits after it
-  not); the agents' worktrees `../gpyreg-port-review-A`, `-B` and `-D`
-  standing, every commit of theirs on `port-review-wave6`; `dev-port-review`
-  ahead of its origin (the re-baselined fixtures, the two commits of the
-  round, the records), not pushed. The references of `gp_fit` and
-  `gp_fit_history` hold against the branch and not against gpyreg at the
-  pin: where the installed gpyreg is the pin (`../gpyreg` on the
-  orchestrator's machine), `pytest pyvbmc/testing/oracles` and
+- [x] 2026-09-22: the independent check of the fix round, and its fix
+  round (PI: `/doublecheck`; then the four decisions and the corrections as
+  the orchestrator proposed them). Three fresh read-only Opus reviewers (F1
+  agent D's gpyreg commits and the release notes; F2 PyVBMC's `edc42739`
+  and `326c7676`; F3 the records) returned 8, 8 and 27 findings;
+  `verification/wave6.md`, "The independent check of the fix round", has
+  the account, and the raw reports are on the orchestrator's machine. What
+  had to be fixed: `random_function` still raised in the low-noise
+  representation of the posterior, where a default fit on noiseless
+  targets ends (the band of the round reached the Cholesky representation
+  alone); and three records, the orchestrator's reading of the sweep among
+  them, which still understated the losses (the ELBO error is worse after
+  on 35 of the 59 seeds). Fix agent E on `../gpyreg-port-review-E` (from
+  `d93f03c`): `5db2255` (the low-noise covariance from a Cholesky factor,
+  through a helper that the posterior's computation shares, bit for bit),
+  `2938581` and `dd12db3` (texts, release notes), with the orchestrator's
+  `ec0f085` (texts); taken onto `port-review-wave6` as a fast-forward; its
+  report `experiments/port_review_20260919/fixes/wave6_check_round_agent_E.md`.
+  The orchestrator's `b2d7c6e8` (`load` gives the run's mask wherever the
+  stored `integer_vars` reads otherwise) and `503562d7` (the scan test reads
+  more forms and names its sites). Gate 4 against `ec0f085`: gpyreg's suite
+  319 passed; PyVBMC's suite 1992 passed, 58 skipped; the exact oracle check
+  11 of 11; the four seeded runs bit for bit gate 2's record `after_w6_1_f76eca2.npz` (92 arrays, 0 differ). The records: the ledger
+  (the corrections of F3, the section on the check of the fix round), the
+  sheet (the entries of W6-8 and W6-18, four corrections), the MATLAB-side
+  list (entry 48), `TODO.md` (the findings left for later, E's two among
+  them), the reader of the probe, which prints every number the ledger
+  quotes, `dev/scripts/runs/LOCAL.md`.
+- [ ] **Pickup point (2026-09-22, after the check of the fix round): the
+  pull request of gpyreg's branch, on the PI's word.** The state: gpyreg's
+  `port-review-wave6` at `ec0f085` in `../gpyreg-port-review` (55 commits
+  over `fdbafdf`; pushed at `caacbc1`, the commits after it not); the
+  agents' worktrees `../gpyreg-port-review-A`, `-B`, `-D` and `-E` standing,
+  every commit of theirs on `port-review-wave6`; `dev-port-review` ahead of
+  its origin (the re-baselined fixtures, the four commits of the two rounds
+  on `load` and the scan test, the records), not pushed. The references of
+  `gp_fit` and `gp_fit_history` hold against the branch and not against
+  gpyreg at the pin: where the installed gpyreg is the pin (`../gpyreg` on
+  the orchestrator's machine), `pytest pyvbmc/testing/oracles` and
   `make_oracle_fixtures.py --check --exact` fail unless `PYTHONPATH` names
   `../gpyreg-port-review` (in CI those oracles skip, platform-bound). In
   this order, on the PI's word:
   1. The push of gpyreg's branch and its pull request (one branch; the
      release notes' heading `1.3.0 (unreleased)` dated at the release, the
      version number the PI's), gpyreg's CI, the merge.
-  2. `GPYREG_PIN` in `.github/workflows/test-matrix.yml` moved to the merge,
-     and in the same commit the changelog's requirement, drafted for the
-     PI to read: "gpyreg 1.3.0 or later. gpyreg 1.3.0 takes the bounds of
+  2. `GPYREG_PIN` in `.github/workflows/test-matrix.yml` moved to the
+     merge, and in the same commit the sheet's header, whose revision of the
+     gpyreg citations then changes, with those line citations brought to the
+     merge by hand (`refresh_citations.py` carries PyVBMC's alone). Then the
+     push of `dev-port-review`, the smoke, the full matrix, the merge into
+     `dev-next` with the status line of `TODO.md`.
+  3. After gpyreg's release, in one commit, the minimum version in
+     `pyproject.toml` and the changelog's requirement, drafted for the PI to
+     read: "gpyreg <version> or later. gpyreg <version> takes the bounds of
      the location and scale of the GP mean function, and the starting
      length scales, per input dimension, where it pooled the statistics of
      the training inputs over all dimensions; the hyperparameter samples of
      every GP fit that samples, and with them the results of every run,
      move. See the release notes of gpyreg for the rest of what changed
-     there." Then the push of `dev-port-review`, the smoke, the full
-     matrix, the merge into `dev-next` with the status line of `TODO.md`;
-     after gpyreg's release, the minimum version in `pyproject.toml`. The
-     sheet's line citations into gpyreg are at the pin and are brought to
-     the release by hand (`refresh_citations.py` carries PyVBMC's alone).
-  3. The worktrees of A, B and D removed once `git cherry` has been read
+     there."
+  4. The worktrees of A, B, D and E removed once `git cherry` has been read
      once more.
   The session starts no other wave.
 
