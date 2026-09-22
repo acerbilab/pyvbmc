@@ -192,8 +192,10 @@ def active_sample(
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
             skip_logger = np.copy(skip_logger_cache[:sample_count])
             # Only the points the initial design consumes leave the cache;
-            # the rest stay there with their values, as candidates of the
-            # search sieve that are acquired without a target call.
+            # the rest stay there as candidates of the search sieve. One
+            # acquired later at the point the cache holds is recorded with
+            # the value that `f_vals` stored for it, without a target call;
+            # one without a stored value is evaluated.
             idx_remove = np.full(provided_sample_count, False)
             idx_remove[:sample_count] = True
             logger.info(
@@ -502,8 +504,10 @@ def active_sample(
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: the bounded scalar search, or
-                CMA-ES's rejection path) returns a float; a list of points
+                One point (a 1-D array: the bounded scalar search,
+                CMA-ES's rejection path, or the final mean that cma
+                evaluates once at the end of every CMA-ES search, its
+                option `eval_final_mean`) returns a float; a list of points
                 (one CMA-ES generation) is evaluated in a single batched
                 call and returns a list.
                 With integer variables the acquisition snaps its input to
@@ -531,8 +535,9 @@ def active_sample(
             ):
                 search_optimizer = options["search_optimizer"]
                 if gp.D == 1:
-                    # A one-dimensional acquisition is minimized over the
-                    # whole search interval by a bounded scalar search.
+                    # A one-dimensional acquisition is searched by SciPy's
+                    # bounded scalar method, a local search that the search
+                    # interval brackets.
                     search_optimizer = "bounded"
 
                 f_val_old = acq_fast[idx]
@@ -586,9 +591,13 @@ def active_sample(
                     # deviations `insigma`: `sigma0` is the overall step size
                     # and `CMA_stds` the coordinate scaling, which cma keeps
                     # in a non-adapting `sigma_vec` while `C` starts at the
-                    # identity and adapts on top of it. A coordinate scaling
-                    # needs every entry positive and finite; otherwise the
-                    # search starts isotropic at `sigma0`.
+                    # identity and adapts on top of it. The scaling is set
+                    # only when every entry is positive and finite. A zero
+                    # entry, from a coordinate without spread, leaves the
+                    # search to start isotropic at `sigma0`, the largest
+                    # entry. A non-finite entry is not handled: it makes
+                    # `sigma0` non-finite, and cma does not return from
+                    # such a start.
                     if np.all(np.isfinite(insigma)) and np.all(insigma > 0):
                         cma_options["CMA_stds"] = insigma / sigma0
 
