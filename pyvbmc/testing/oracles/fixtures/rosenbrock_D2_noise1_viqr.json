@@ -364,6 +364,35 @@
     },
     "oracle": "acq_AcqFcnIMIQR",
     "reason": "Port review W4-1 (53ad16aa): the MCMC step of the importance sampling draws the starting point of each chain in proportion to the importance weights, as MATLAB does, where the weights came out uniform; the chain of every GP hyperparameter sample starts elsewhere and the IMIQR importance samples change. No other oracle moves (checked --exact on 70ce0673)."
+   },
+   {
+    "date": "2026-09-22 20:48:59",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 29.534905762072945,
+     "sn2_hpd": 3.6627056942961644e-10
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg takes the statistics of the training inputs per column in its bound recommendations, as gplite does, where it pooled them over all entries of X (W6-1, gpyreg f76eca2 on port-review-wave6): the hard and plausible bounds of the location and scale of the negative quadratic mean, and with them the space-filling design and the box of the slice sampler, change in every fit that samples, so hyp and sn2_hpd move in the seven states that sample and the state that does not is bit-identical; taken on the benchmark sweep before and after (verification/wave6.md, Gates)"
+   },
+   {
+    "date": "2026-09-22 20:49:15",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 13.897024442969055,
+     "sn2_hpd": 7.802357214092837e-06,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the fit of the recorded GP history as they move gp_fit: hyp and sn2_hpd in the seven states that sample, the sampler widths and the state that does not sample bit-identical"
    }
   ],
   "recipe": "rosenbrock_D2_noise1_viqr",

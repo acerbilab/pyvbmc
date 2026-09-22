@@ -80,6 +80,30 @@
      "fit",
      "sampler_widths"
     ]
+   },
+   {
+    "date": "2026-09-22 20:49:22",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 77.41865578506592,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 86.43318291975615,
+     "fit/hyp_dict_hyp": 77.41865578506592,
+     "fit/hyp_dict_run_cov": 117.98917492676856,
+     "fit/prediction_mean": 0.34141789491681607,
+     "fit/prediction_variance": 0.14292560035446844,
+     "fit/sn2_hpd": 4.398894613899529e-06,
+     "sampler_widths/effective_widths": 0.030987878838153182,
+     "sampler_widths/widths_default": 0.030987878838153182
+    },
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the fit that this capture replays, through the bounds of the mean's location and scale that the recommendation fills; the captured inputs and the portable references are bit-identical",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
    }
   ],
   "role": "noisy_nonuniform_weights",

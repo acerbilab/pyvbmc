@@ -429,6 +429,35 @@
     },
     "oracle": "gp_nlZ",
     "reason": "Port review, wave 3 (PI, 2026-09-20): the noise prior is truncated at the upper bound gpyreg recommends, log(max(y) - min(y)), where _gp_hyp had written +inf (W3-7); lp moves by the change of the prior's log normalization, log(1 - cdf_lb) - log(cdf_ub - cdf_lb), checked on the eight states, and dlp, lZ and dlZ are bit-identical"
+   },
+   {
+    "date": "2026-09-22 20:48:51",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 23.097185588027365,
+     "sn2_hpd": 3.9264943561426334e-08
+    },
+    "oracle": "gp_fit",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg takes the statistics of the training inputs per column in its bound recommendations, as gplite does, where it pooled them over all entries of X (W6-1, gpyreg f76eca2 on port-review-wave6): the hard and plausible bounds of the location and scale of the negative quadratic mean, and with them the space-filling design and the box of the slice sampler, change in every fit that samples, so hyp and sn2_hpd move in the seven states that sample and the state that does not is bit-identical; taken on the benchmark sweep before and after (verification/wave6.md, Gates)"
+   },
+   {
+    "date": "2026-09-22 20:49:06",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "gp_s_N": 0.0,
+     "hyp": 12.66942455994402,
+     "sn2_hpd": 1.6202824393518828e-08,
+     "widths": 0.0
+    },
+    "oracle": "gp_fit_history",
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the fit of the recorded GP history as they move gp_fit: hyp and sn2_hpd in the seven states that sample, the sampler widths and the state that does not sample bit-identical"
    }
   ],
   "recipe": "cigar_D4_largeK",

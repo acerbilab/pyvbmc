@@ -55,6 +55,30 @@
      "fit",
      "sampler_widths"
     ]
+   },
+   {
+    "date": "2026-09-22 20:49:17",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 0.0,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 0.0,
+     "fit/hyp_dict_hyp": 0.0,
+     "fit/hyp_dict_run_cov": 0.0,
+     "fit/prediction_mean": 0.0,
+     "fit/prediction_variance": 0.0,
+     "fit/sn2_hpd": 0.0,
+     "sampler_widths/effective_widths": 0.0,
+     "sampler_widths/widths_default": 0.09747467241319652
+    },
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the space-filling design of the fit that this capture replays, through the bounds of the mean's location and scale that the recommendation fills, and with it the default widths of the sampler; the fit's own outputs replay bit for bit, and the captured inputs and the portable references are bit-identical",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
    }
   ],
   "role": "early_sampled",
