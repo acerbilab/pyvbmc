@@ -243,7 +243,9 @@ its entry below.
   `VBMC(..., precomputed_evaluations=(X, y))` gives a run target values that
   were computed beforehand (`(X, y, y_sd)` with `specify_target_noise`). They
   enter as observations, they are independent of `x0`, and they do not count
-  as function evaluations of the run. `VBMC(..., initialization_cost=k)`
+  as function evaluations of the run. With a separate prior, `y` holds
+  log-likelihood values and VBMC adds the prior; `options["f_vals"]`, the
+  values at `x0`, holds log-joint values, as in 1.0.4. `VBMC(..., initialization_cost=k)`
   charges `k` evaluations against `max_fun_evals` for work done before the
   run. `results` reports the first in `precomputed_observations` and
   `precomputed_locations`, and the second in `evaluation_budget`; each key is

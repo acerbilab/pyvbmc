@@ -305,7 +305,9 @@ class VBMC:
         when ``options["specify_target_noise"]`` is true. ``X`` has shape
         ``(N, D)`` in the target's original coordinates and the other arrays
         have shape ``(N,)``. If a separate prior is supplied, ``y`` contains
-        log-likelihood values; VBMC adds the prior once. Inputs are copied to
+        log-likelihood values; VBMC adds the prior once. (The values of
+        ``options["f_vals"]``, given at ``x0``, are log-joint values, with
+        the prior already added.) Inputs are copied to
         float64 storage. Exact duplicate points must agree within four
         float64 ULPs at their value scale and are retained once; noisy repeats
         remain independent observations and are pooled by the logger.
