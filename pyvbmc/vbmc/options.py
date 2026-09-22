@@ -537,7 +537,7 @@ class Options(MutableMapping, dict):
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
 
-    def _warn_inert_options(self, options_paths: list):
+    def _warn_inert_options(self, options_paths: list, names=None):
         """
         Warn about the options of :data:`INERT_OPTIONS` that the user set to
         a value other than the default declared in the ini files.
@@ -551,8 +551,13 @@ class Options(MutableMapping, dict):
         ----------
         options_paths : list of str
             A list of paths to the ini files that declare the defaults.
+        names : iterable of str, optional
+            The names of the options to weigh. Default the options the user
+            set (``useroptions``).
         """
-        supplied = set(self.get("useroptions")) & INERT_OPTIONS
+        if names is None:
+            names = self.get("useroptions")
+        supplied = set(names) & INERT_OPTIONS
         if len(supplied) == 0:
             return
 

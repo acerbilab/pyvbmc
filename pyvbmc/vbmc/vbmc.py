@@ -44,7 +44,7 @@ from .gaussian_process_train import (
     train_gp,
 )
 from .iteration_history import IterationHistory
-from .options import Options
+from .options import SHIPPED_OPTIONS_PATHS, Options
 from .variational_optimization import optimize_vp, update_K
 
 
@@ -3147,7 +3147,9 @@ class VBMC:
             value would take no effect, and running with another value means
             constructing a new ``VBMC`` object. ``uncertainty_handling``,
             ``gp_mean_fun``, ``integer_vars`` and ``warmup`` are such
-            options; the refusal names the ones it applies to.
+            options; the refusal names the ones it applies to. An option
+            that has no effect in PyVBMC is taken with the warning that
+            construction gives for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3296,6 +3298,9 @@ class VBMC:
             vbmc.options.validate_supplied_option_names(new_options)
             vbmc.options.is_initialized = False
             vbmc.options.update(new_options)
+            # The names join the options the user set, as they do when
+            # given to construction.
+            vbmc.options["useroptions"].update(new_options.keys())
             vbmc.options.is_initialized = True
 
         if "vectorized_target" not in vbmc.options:
@@ -3309,6 +3314,11 @@ class VBMC:
         vbmc._validate_option_values()
         if new_options is not None:
             vbmc._refuse_construction_only_options(new_options)
+            # An option without effect among them is named as such, as
+            # construction names it.
+            vbmc.options._warn_inert_options(
+                SHIPPED_OPTIONS_PATHS, names=new_options.keys()
+            )
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):

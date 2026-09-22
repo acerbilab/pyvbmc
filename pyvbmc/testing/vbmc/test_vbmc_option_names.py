@@ -3,6 +3,8 @@ it was supplied: in the ``options`` dictionary, in the file of
 ``options_path``, or in the ``new_options`` of :py:meth:`VBMC.load`. The
 same holds for an option value that construction refuses."""
 
+import logging
+
 import numpy as np
 import pytest
 
@@ -150,15 +152,66 @@ def test_load_takes_an_option_a_continued_run_reads(tmp_path):
     "name, value",
     [("gp_int_mean_fun", 1), ("proposal_fcn", "@(x)my_proposal")],
 )
-def test_load_takes_an_option_that_has_no_effect(tmp_path, name, value):
+def test_load_takes_an_option_that_has_no_effect(
+    tmp_path, caplog, name, value
+):
     """An option that no module reads is taken by ``load`` as it is by
-    construction: refusing it as an option that only construction reads
-    would advise a new ``VBMC`` object, where the value has no effect
-    either."""
+    construction, with the same warning: refusing it as an option that only
+    construction reads would advise a new ``VBMC`` object, where the value
+    has no effect either."""
     saved = tmp_path.joinpath("run.pkl")
     _vbmc().save(saved)
+    caplog.set_level(logging.WARNING)
     loaded = VBMC.load(saved, new_options={name: value})
     assert loaded.options[name] == value
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        name in message and "no effect" in message for message in messages
+    )
+
+
+def _warnings_naming(caplog, name):
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno >= logging.WARNING and name in record.getMessage()
+    ]
+
+
+def test_load_warns_of_an_option_that_has_no_effect(tmp_path, caplog):
+    """A value that ``load`` is given for an option without effect is named
+    as having none, as construction names it, and the option joins those
+    the user set. A repeated default is silent, and so is any value of an
+    option whose default is a function, which cannot be told apart from
+    the default by value."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    caplog.set_level(logging.WARNING)
+
+    loaded = VBMC.load(saved, new_options={"double_gp": True})
+    warned = _warnings_naming(caplog, "double_gp")
+    assert len(warned) == 1 and "no effect" in warned[0]
+    assert "double_gp" in loaded.options["useroptions"]
+
+    caplog.clear()
+    VBMC.load(saved, new_options={"double_gp": False})
+    VBMC.load(
+        saved, new_options={"annealed_gp_mean": lambda N, NMAX: 5 * N / NMAX}
+    )
+    assert _warnings_naming(caplog, "double_gp") == []
+    assert _warnings_naming(caplog, "annealed_gp_mean") == []
+
+
+def test_load_warns_only_of_the_options_it_is_given(tmp_path, caplog):
+    """A value given at construction was named there; loading the run
+    with other options does not name it again."""
+    saved = tmp_path.joinpath("run.pkl")
+    caplog.set_level(logging.WARNING)
+    _vbmc(options={"double_gp": True}).save(saved)
+    assert len(_warnings_naming(caplog, "double_gp")) == 1
+    caplog.clear()
+    VBMC.load(saved, new_options={"max_iter": 9})
+    assert _warnings_naming(caplog, "double_gp") == []
 
 
 def test_load_refuses_a_gp_mean_fun_construction_refuses(tmp_path):
