@@ -31,6 +31,12 @@ its entry below.
   more than one and a `cache_frac` outside [0, 1]. `integer_vars` given as
   a list of indices marks those
   variables, where 1.0.4 marked every variable.
+- `VBMC.load(file, new_options=...)` raises for an option that only
+  construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
+  `warmup` and their kin; the message names them), where such a value used
+  to be stored and ignored; construct a new `VBMC` object to run with one.
+  A saved run whose stored `gp_mean_fun` or `integer_vars` holds a value
+  PyVBMC refuses now raises on `load` as it does at construction.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
@@ -276,8 +282,14 @@ its entry below.
 ### Changed
 
 - **Requirements.** PyVBMC needs Python 3.10 or later (1.0.4 accepted 3.9),
-  SciPy 1.15 or later and gpyreg 1.2.1 or later; see the release notes of
-  gpyreg for what changed there. `filelock`, `platformdirs` and
+  SciPy 1.15 or later and gpyreg 1.3.0 or later. gpyreg 1.3.0 takes the
+  recommended bounds and starting values of the GP hyperparameters per
+  input dimension, where it pooled the statistics of the training inputs
+  over all dimensions and gave every length scale, and the location and
+  scale of the mean function in every dimension, one number built from the
+  widest gap between the dimensions; the hyperparameter samples of every
+  GP fit, and with them the results of every run, move. See the release
+  notes of gpyreg for the rest of what changed there. `filelock`, `platformdirs` and
   `threadpoolctl` are new dependencies, used by the machine calibration.
   `pytest`, its plugins and `plotly` are no longer installed with PyVBMC: they
   are in the extras `test` and `examples`. `plotly` is used by example
@@ -329,6 +341,10 @@ its entry below.
     entry of `vbmc.iteration_history["gp_hyp_full"]` holds `gp_sample_thin`
     times as many rows as in 1.0.4. An iteration whose fit draws no samples
     records the one optimized vector, as in 1.0.4.
+  - `vbmc.hyp_dict` no longer carries a `logp` entry. It held an array of
+    zeros, the log prior densities the GP hyperparameter sampler
+    reports rather than the log posterior MATLAB VBMC keeps there, and
+    nothing read it.
   - The fit of the GP hyperparameters starts as in MATLAB VBMC. Its starting
     points include the hyperparameters of the GPs of the later half of the
     iterations; 1.0.4 left out the oldest of them whenever an even number of
@@ -390,6 +406,17 @@ its entry below.
     file, and in `VBMC.load(new_options=...)`. A misspelt name in an options
     file used to be ignored. The values given to `VBMC.load` are checked as
     those given at construction are.
+  - `VBMC.load(file, new_options=...)` refuses an option that PyVBMC reads
+    only while it builds a `VBMC` object (`uncertainty_handling`,
+    `specify_target_noise`, `gp_mean_fun`, `integer_vars`, `warmup`,
+    `k_warmup`, `entropy_switch`, `active_search_bound` and their kin) with
+    a message that names it and says to construct a new `VBMC` object: the
+    saved run carries the state that was built from such an option, so a
+    value given to `load` was stored and then ignored, leaving the options
+    and the state in disagreement. The options a continued run reads,
+    `max_fun_evals` and `max_iter` among them, are taken as before, and
+    `gp_mean_fun` and `integer_vars` are checked for a value no run can use
+    whichever way they are supplied.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with
