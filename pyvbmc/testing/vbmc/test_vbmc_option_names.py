@@ -172,6 +172,36 @@ def test_load_refuses_an_integer_vars_construction_refuses(tmp_path):
 
 
 @pytest.mark.parametrize(
+    "stored", [np.array([1, 0]), np.array([1.0, 0.0])], ids=["int", "float"]
+)
+def test_load_reads_the_integer_vars_mask_of_release_1_0_4(tmp_path, stored):
+    """Release 1.0.4 read ``integer_vars`` through ``integer_vars != 0``,
+    so a run it saved can store a form that is refused when it is given:
+    an array of one zero or one per variable, which reads both as a mask
+    and as a list of indices, or an array of floats. ``load`` gives the
+    option the mask the run was made with, which the run's state holds,
+    so the file opens and the run goes on as it was."""
+    vbmc = VBMC(
+        log_joint,
+        np.array([[0.0, 0.3]]),
+        np.array([[-5.5, -5.0]]),
+        np.array([[5.5, 5.0]]),
+        np.array([[-2.5, -2.0]]),
+        np.array([[2.5, 2.0]]),
+        options={"integer_vars": np.array([True, False])},
+    )
+    vbmc.options.__setitem__("integer_vars", stored, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+
+    loaded = VBMC.load(saved)
+
+    assert np.array_equal(loaded.options["integer_vars"], [True, False])
+    assert loaded.options["integer_vars"].dtype == bool
+    assert np.array_equal(loaded.optim_state["integer_vars"], [True, False])
+
+
+@pytest.mark.parametrize(
     "options",
     [
         {"acq_hedge": True},

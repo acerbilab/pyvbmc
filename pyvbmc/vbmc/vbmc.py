@@ -3234,6 +3234,20 @@ class VBMC:
             # is searched by a bounded scalar method. The stored value
             # stands for the default such a run was made with.
             vbmc.options.__setitem__("search_optimizer", "cmaes", force=True)
+        try:
+            vbmc.options.integer_vars_mask(vbmc.D)
+        except ValueError:
+            # Release 1.0.4 read this option through ``integer_vars != 0``,
+            # so a run it saved can store a form that is refused when it is
+            # given, such as one zero or one per variable, which reads both
+            # as a mask and as a list of indices. The run's state holds the
+            # mask the run was made with, and the option takes it.
+            mask = vbmc.optim_state.get("integer_vars")
+            if mask is None:
+                raise
+            vbmc.options.__setitem__(
+                "integer_vars", np.asarray(mask, dtype=bool), force=True
+            )
 
         calibration_override = None
         has_calibration_override = (

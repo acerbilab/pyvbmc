@@ -35,8 +35,8 @@ its entry below.
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
   `warmup` and their kin; the message names them), where such a value used
   to be stored and ignored; construct a new `VBMC` object to run with one.
-  A saved run whose stored `gp_mean_fun` or `integer_vars` holds a value
-  PyVBMC refuses now raises on `load` as it does at construction.
+  A saved run whose stored `gp_mean_fun` names a mean function PyVBMC does
+  not implement raises on `load` as it does at construction.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
@@ -416,7 +416,9 @@ its entry below.
     and the state in disagreement. The options a continued run reads,
     `max_fun_evals` and `max_iter` among them, are taken as before, and
     `gp_mean_fun` and `integer_vars` are checked for a value no run can use
-    whichever way they are supplied.
+    whichever way they are supplied. A run saved by 1.0.4 whose stored
+    `integer_vars` has a form that is now refused, such as an array of
+    zeros and ones, loads with the mask the run was made with.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with
