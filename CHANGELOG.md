@@ -47,7 +47,8 @@ its entry below.
   `vbmc.get_gp(iteration)`. An entry of
   `vbmc.iteration_history["gp_hyp_full"]` holds the hyperparameter samples
   from before thinning, five times as many rows at the default
-  `gp_sample_thin`. `vbmc.hyp_dict` has no `logp` entry.
+  `gp_sample_thin`. The `vbmc.hyp_dict` of a run started by this release
+  has no `logp` entry.
 - `vp.pdf(x, grad_flag=True)` raises an error in the original parameter space.
 - Other methods of the variational posterior return something else in
   some calls: `vp.kl_div(samples=...)`, `vp.kl_div(gauss_flag=False)` with
@@ -338,7 +339,8 @@ its entry below.
   - `vbmc.hyp_dict` no longer carries a `logp` entry. It held an array of
     zeros, the log prior densities the GP hyperparameter sampler
     reports rather than the log posterior MATLAB VBMC keeps there, and
-    nothing read it.
+    nothing read it. A run loaded from a file saved by 1.0.4 keeps the
+    entry it was saved with.
   - The fit of the GP hyperparameters starts as in MATLAB VBMC. Its starting
     points include the hyperparameters of the GPs of the later half of the
     iterations; 1.0.4 left out the oldest of them whenever an even number of
@@ -411,8 +413,8 @@ its entry below.
     `max_fun_evals` and `max_iter` among them, are taken as before, and
     `gp_mean_fun` and `integer_vars` are checked for a value no run can use
     whichever way they are supplied. A run saved by 1.0.4 whose stored
-    `integer_vars` has a form that is now refused, such as an array of
-    zeros and ones, loads with the mask the run was made with.
+    `integer_vars` is refused now or read otherwise than 1.0.4 read it, an
+    array of zeros for one, loads with the mask the run was made with.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with

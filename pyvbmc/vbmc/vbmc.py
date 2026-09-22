@@ -3140,8 +3140,9 @@ class VBMC:
         ValueError
             If the specified ``iteration`` is less than zero or larger than the
             last stored iteration, if an option has a value that construction
-            refuses, or if ``new_options`` names an option that only
-            construction reads.
+            refuses (a stored ``integer_vars`` aside, which takes the mask
+            the run was made with), or if ``new_options`` names an option
+            that only construction reads.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
             (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
@@ -3234,17 +3235,24 @@ class VBMC:
             # is searched by a bounded scalar method. The stored value
             # stands for the default such a run was made with.
             vbmc.options.__setitem__("search_optimizer", "cmaes", force=True)
+        # Release 1.0.4 read this option through ``integer_vars != 0``, so a
+        # run it saved can store a form that is refused when it is given,
+        # such as one zero or one per variable, which reads both as a mask
+        # and as a list of indices, or a form that is read otherwise, such as
+        # a list of indices, which 1.0.4 took for every variable. The run's
+        # state holds the mask the run was made with, and the option takes
+        # it wherever its reading differs; a run built by the current code
+        # stores a mask equal to the reading of its option.
+        mask = vbmc.optim_state.get("integer_vars")
         try:
-            vbmc.options.integer_vars_mask(vbmc.D)
+            reading = vbmc.options.integer_vars_mask(vbmc.D)
         except ValueError:
-            # Release 1.0.4 read this option through ``integer_vars != 0``,
-            # so a run it saved can store a form that is refused when it is
-            # given, such as one zero or one per variable, which reads both
-            # as a mask and as a list of indices. The run's state holds the
-            # mask the run was made with, and the option takes it.
-            mask = vbmc.optim_state.get("integer_vars")
             if mask is None:
                 raise
+            reading = None
+        if mask is not None and (
+            reading is None or not np.array_equal(reading, mask)
+        ):
             vbmc.options.__setitem__(
                 "integer_vars", np.asarray(mask, dtype=bool), force=True
             )
