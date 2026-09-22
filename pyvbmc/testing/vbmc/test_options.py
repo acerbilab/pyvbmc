@@ -1,3 +1,4 @@
+import ast
 import copy
 import logging
 import re
@@ -12,6 +13,7 @@ from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.options import INERT_OPTIONS
+from pyvbmc.vbmc.vbmc import _CONSTRUCTION_ONLY_OPTIONS
 
 options_path = Path(__file__).parent.parent.parent.joinpath(
     "vbmc", "option_configs"
@@ -324,6 +326,131 @@ def test_inert_options_are_the_declared_options_nothing_reads():
         is None
     }
     assert unread == set(INERT_OPTIONS)
+
+
+# The functions that run while a ``VBMC`` object is built, and the value
+# checks that construction and ``load`` share. An option whose every read
+# lies in them is read at construction alone.
+_CONSTRUCTION_SITES = {
+    "VBMC.__init__",
+    "VBMC._init_optim_state",
+    "VBMC._initialize_precomputed_evaluations",
+    "Options.update_defaults",
+}
+# The two ``Options`` methods that read an option on their caller's behalf:
+# a call of one is a read of these options at the site of the call.
+_READS_BY_METHOD = {
+    "uncertainty_handling_on": (
+        "uncertainty_handling",
+        "specify_target_noise",
+    ),
+    "integer_vars_mask": ("integer_vars",),
+}
+# Reads that no run acts on: ``active_sample`` reads the option into two
+# locals that nothing uses, and ``load`` reads the stored ``integer_vars``
+# to rewrite the form that release 1.0.4 wrote.
+_READS_THAT_DO_NOT_COUNT = {
+    ("active_search_bound", "active_sample"),
+    ("integer_vars", "load"),
+}
+
+
+def _option_read_sites(names):
+    """Map each option name to the functions of the package that read it.
+
+    A read is ``options[name]``, ``options.get(name)`` or
+    ``options.eval(name, ...)`` on a mapping whose name ends in
+    ``options``, the same on ``self`` inside :class:`Options`, or a call of
+    one of the methods of ``_READS_BY_METHOD``. The site is the function
+    that holds the read, as ``Class.method``, or the name of a module-level
+    function."""
+    package_path = options_path.parent.parent
+    sites = {name: set() for name in names}
+
+    def is_options(node, in_options_class):
+        if isinstance(node, ast.Name):
+            return node.id.endswith("options") or (
+                in_options_class and node.id == "self"
+            )
+        if isinstance(node, ast.Attribute):
+            return node.attr.endswith("options")
+        return False
+
+    for path in package_path.rglob("*.py"):
+        if "testing" in path.relative_to(package_path).parts:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        def visit(node, class_name, site):
+            if isinstance(node, ast.ClassDef):
+                for child in node.body:
+                    visit(child, node.name, None)
+                return
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and site is None
+            ):
+                site = f"{class_name}.{node.name}" if class_name else node.name
+                if class_name == "Options" and node.name in _READS_BY_METHOD:
+                    # The method's own reads are counted at its callers.
+                    return
+            in_options_class = class_name == "Options"
+            read = None
+            if isinstance(node, ast.Subscript) and is_options(
+                node.value, in_options_class
+            ):
+                read = node.slice
+            elif (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.args
+            ):
+                if node.func.attr in ("get", "eval") and is_options(
+                    node.func.value, in_options_class
+                ):
+                    read = node.args[0]
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr in _READS_BY_METHOD
+                and site is not None
+            ):
+                for name in _READS_BY_METHOD[node.func.attr]:
+                    sites[name].add(site)
+            if (
+                isinstance(read, ast.Constant)
+                and read.value in sites
+                and site is not None
+            ):
+                sites[read.value].add(site)
+            for child in ast.iter_child_nodes(node):
+                visit(child, class_name, site)
+
+        visit(tree, None, None)
+    return sites
+
+
+def test_construction_only_options_are_the_options_only_construction_reads():
+    """``_CONSTRUCTION_ONLY_OPTIONS``, the options that ``VBMC.load``
+    refuses, lists exactly the declared options whose every read is made
+    while a ``VBMC`` object is built or by a value check: an option that a
+    later iteration starts to read, or a new option read at construction
+    alone, fails here."""
+    names = _declared_option_names() - set(INERT_OPTIONS)
+    sites = _option_read_sites(names)
+    construction_only = set()
+    for name, readers in sites.items():
+        readers = {
+            site
+            for site in readers
+            if (name, site.split(".")[-1]) not in _READS_THAT_DO_NOT_COUNT
+        }
+        if readers and all(
+            site in _CONSTRUCTION_SITES or site.startswith("VBMC._validate_")
+            for site in readers
+        ):
+            construction_only.add(name)
+    assert construction_only == set(_CONSTRUCTION_ONLY_OPTIONS)
 
 
 def test_inert_option_away_from_its_default_warns(caplog):
