@@ -186,38 +186,50 @@ In the records they found, and this check corrected:
   entry 6. `counterpart_map.md`: the preparatory report named by its file,
   and the `noise_shaping` row. The Stage 2 plan on MATLAB's noise handling.
 
-Left for the PI:
+The items the round left, and the PI's rulings on them of the same day, as
+the orchestrator proposed them. Fixed, each with a test that fails on the
+code before it but for the two texts:
+
+| commit | |
+|---|---|
+| `3d71b00` | the search set is sorted stably when a search cache is kept, as MATLAB's `sort` is (`private/activesample_vbmc.m:231-233`), so that of tied candidates, as candidates snapped to one point of an integer grid are, the earlier is acquired and the cache keeps their order; P2's third minor observation, and a fourth site of the stable order the check of wave 3 put into three |
+| `2d8448e` | `Options` built from the options of another run, an `Options` object or a dict copied from one, keeps a set of user options of its own; it took over the other's and added every option name to it, so building a second run from `vbmc.options` changed the first (older than wave 1) |
+| `e4ffa60` | a CMA-ES search whose step size is not finite is not started, and fails as a search that raises does; cma does not return from such a start. No known path of a run produces one |
+| `422f774` | `get_parameters(raw_flag=True)` gives a zero weight the raw parameter minus infinity without NumPy's warning, as `set_parameters` does for `eta` |
+| `f18a6c1` | `hpd_frac` is checked at construction and in `load`: a real fraction in `(0, 1]` that leaves at least two points of the initial design. Of ten points, a value below 0.15 left none or one, and the first GP fit failed, on an empty array or on the slice sampler's zero widths (both measured) |
+| `ba0234c` | the texts say that `options["f_vals"]` are log-joint values, the prior already added when a separate prior is given, as in 1.0.4 and as MATLAB's `Fvals` are values of the function VBMC is given, where the `precomputed_evaluations` argument takes log-likelihood values and adds the prior. Changing `f_vals` instead would move, without a word, the results of a script that passes log-joint values |
+| `f5b7efc` | `dev/scripts/pymc_setup_probe.py` says that its `max(D, 10)` is the ordinary initial design of the code its experiment ran on; the experiment sets the option explicitly and its report rests on those counts, so the number stays |
+
+Kept as they are:
 
 - Type 3 of `_vb_init` draws its permutation only when the means are
-  optimized, where `vbinit_vbmc.m:86` draws it always; with
-  `variable_means=False` the random streams part.
-- The sort of the search set's fast acquisition values
-  (`active_sample.py`, `np.argsort(acq_fast)`) is not stable, where
-  MATLAB's `sort` is; P2's third minor observation. The stable order went
-  into the three sites that the check of wave 3 found.
-- `Options(..., user_options=<an Options object>)` shares and changes the
-  source's set of user options, so passing one run's options to a new `VBMC`
-  changes the first (older than wave 1). The test that recomputes
-  `INERT_OPTIONS` counts a quoted `options["name"]` in a string as a read and
-  accepts any mapping whose name ends in `options`; it matches the registry
-  exactly today.
-- A non-finite entry of `insigma` starts a CMA-ES search that does not
-  return; the comment says so, and no reachable path produces one. A tiny
-  `hpd_frac` makes `train_gp` raise, and construction does not check it.
-- `get_parameters(raw_flag=True)` warns of a division by zero for a zero
-  weight. After a warp with integer variables, the snap's round trip through
-  the rotated transform changes an on-grid cached point in its last bits, so
-  the point is evaluated rather than given its stored value, as before the
-  check.
-- Whether `f_vals` include the prior when `prior=` is given is documented
-  nowhere. `dev/scripts/pymc_setup_probe.py` hard-codes `max(D, 10)` as the
-  design size, and the source hashes of `dev/scripts/torch_vi_step.py` are
-  stale, a guard that fails closed.
+  optimized, where `vbinit_vbmc.m:86` draws it always. PyVBMC's random
+  stream is not comparable draw for draw with MATLAB's in any case (the
+  sheet's entry on randomness), and the draw would be unused; the case
+  needs `variable_means=False`.
+- After a warp with integer variables, the snap's round trip through the
+  rotated transform changes an on-grid cached point in its last bits, so the
+  point is evaluated rather than given its stored value. It needs integer
+  variables, surplus starting points with values and a warp at once; a
+  tolerance in the comparison would reopen the question W5-7 settled, which
+  moved points may keep a stored value, for one evaluation.
+- The test that recomputes `INERT_OPTIONS` counts a quoted
+  `options["name"]` in a string as a read and accepts any mapping whose name
+  ends in `options`; it matches the registry exactly today, and an AST scan
+  in its place waits until the test is touched for another reason.
+- The source hashes of `dev/scripts/torch_vi_step.py` are stale, a guard of
+  parked scaffolding that fails closed; they are refreshed if that
+  scaffolding is taken up again.
 - The porting log `pyvbmc/vbmc/README.md` has no entry for the differences
-  of slice P2; the durable entries of the sheet are to be consolidated there
-  at the end of the review.
+  of slice P2; the durable entries of the sheet are consolidated there at
+  the end of the review.
 - The evidence of the wave-1 gates ("every module suite touched", the
-  exact oracle check) was not kept, apart from the log of the options tests.
+  exact oracle check) was not kept, apart from the log of the options tests;
+  the gates of this check stand in for it.
+- The accuracy of the refreshed counts (`6590ea4`), which move noisy
+  trajectories, is read on the noisy half of the benchmark sweep
+  (`scripts/wave3_gate_benchmark_sweep.py`) once the branch is on
+  `dev-port-review` and no other heavy process runs.
 
 Gates, on the branch of the check (`dev-port-review-w1check`, cut at
 `326c7676`), with the package of that checkout and gpyreg `main`:

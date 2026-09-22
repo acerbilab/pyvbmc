@@ -2176,14 +2176,22 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `../pyvbmc-w1check`, so that the main checkout stays wave 6's: two Opus
   fix agents on worktrees of their own (`fixes/wave1_check_agent_A.md` and
   `_B.md`), 19 commits cherry-picked after review, and a test, three
-  option descriptions and the records by the orchestrator. One of them moves noisy trajectories: `N` and `n_eff` follow
-  every evaluation of active sampling, as in MATLAB. The raw reports of the
-  six reviewers and the logs of the gates are on the orchestrator's machine
-  (`dev/scripts/runs/LOCAL.md`). To do when the branch is brought onto
-  `dev-port-review`: the whole suite, the Torch and PyMC environments, the
-  refresh of the sheet's Python line citations against the merged code, the
-  CI matrix; the worktrees and branches of the two fix agents are removed
-  once `git cherry` shows their commits on `dev-port-review`.
+  option descriptions and the records by the orchestrator. One of them
+  moves noisy trajectories: `N` and `n_eff` follow every evaluation of
+  active sampling, as in MATLAB. On the PI's rulings of the same day on
+  the items the round left, seven more commits by the orchestrator: the
+  stable sort of the search set, the set of user options of options built
+  from another run's, a CMA-ES start that is not finite, the warning of
+  `get_parameters` on a zero weight, the check of `hpd_frac`, and two texts
+  (`f_vals` are log-joint values; the design size of the PyMC setup
+  probe). The raw reports of the six reviewers and the logs of the gates
+  are on the orchestrator's machine (`dev/scripts/runs/LOCAL.md`). To do
+  when the branch is brought onto `dev-port-review`: the whole suite, the
+  Torch and PyMC environments, the refresh of the sheet's Python line
+  citations against the merged code, the CI matrix, and the noisy half of
+  the benchmark sweep for the refreshed counts; the worktrees and branches
+  of the two fix agents are removed once `git cherry` shows their commits
+  on `dev-port-review`.
 - [ ] **Pickup point (2026-09-22, after the records): the independent
   check of the wave-6 pass is next, then the pull request on the PI's
   word.** The state: gpyreg's `port-review-wave6` at `dc2a930` in

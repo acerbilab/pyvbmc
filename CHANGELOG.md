@@ -34,7 +34,9 @@ its entry below.
   a list of indices marks those
   variables, where 1.0.4 marked every variable. A `warp_cov_reg` that is
   neither a finite number nor a function (`True`, which 1.0.4 read as 1,
-  among them) raises an error.
+  among them) raises an error, and so does an `hpd_frac` that is not a
+  fraction in (0, 1] or that leaves fewer than two points of the initial
+  design.
 - `VBMC.load(file, new_options=...)` raises for an option that only
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
   `warmup` and their kin; the message names them), where such a value used
@@ -383,7 +385,10 @@ its entry below.
     one first, when PyVBMC selects the points of highest density
     (`pyvbmc.stats.get_hpd`) and when it keeps the best points at the end of
     warm-up. So are iterations with equal scores when the best posterior of
-    a run is selected. 1.0.4 ordered them arbitrarily. In that selection an
+    a run is selected, and candidates of the acquisition search with equal
+    values when a search cache is kept (`search_cache_frac`), which
+    candidates snapped to one point of an integer grid can have. 1.0.4
+    ordered them arbitrarily. In that selection an
     iteration whose ELCBO or reliability index is NaN ranks last, and
     without the ranking criterion an iteration whose ELCBO is NaN is passed
     over; if the ELCBO of every candidate iteration is NaN, the last
@@ -532,6 +537,10 @@ its entry below.
     options (`print(vbmc.options)`).
   - Once a `VBMC` object is constructed, its options cannot be removed (`del`,
     `pop`). Assigning to them was already an error.
+  - The options of one run can be given to another, `VBMC(...,
+    options=vbmc.options)`, without changing the first: 1.0.4 shared their
+    set of user options, and building the second made the first list every
+    option as set by the user.
 - **Priors are checked.**
   - `VBMC` refuses a prior whose support does not cover the hard bounds,
     with a message that names the coordinates, the two intervals and the
@@ -745,6 +754,10 @@ its entry below.
   `10 * ceil((D + 1) / 10)` points, `max_fun_evals=20` does this for `D` from
   10 to 19. The fit now starts without the space-filling design of the GP
   hyperparameters, as in MATLAB VBMC.
+- An `hpd_frac` that leaves fewer than two points of the initial design, below
+  0.15 of ten points, made the first GP fit fail with an error about an
+  empty array or zero widths; such a value is refused at construction, with
+  a message that names the option, and so is one outside (0, 1].
 - After a second or later input warp, the bounds of the acquisition search
   could be mapped through the transform of an earlier iteration. We have not
   seen this happen in a run.
@@ -815,7 +828,8 @@ its entry below.
     it did in 1.0.4, and does not replace it, so `vp.mode()` keeps
     answering with the result of the default search.
     `vp.get_parameters()` discards a stored mode, which its normalization
-    of the weights may have moved.
+    of the weights may have moved, and gives a zero weight the raw
+    parameter minus infinity without NumPy's warning of a division by zero.
   - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
     hold `sigma`, `lambd` and the weights to be positive, and those alone.
     1.0.4 checked other entries: a negative scale could pass, and a

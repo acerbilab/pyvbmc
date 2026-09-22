@@ -335,6 +335,23 @@ fact inherited from MATLAB.
   `verification/wave3.md`, row W3-11, finds that the reason holds.
 - Kind: deliberate change.
 
+### `hpd_frac` is checked
+- Python: `pyvbmc/vbmc/vbmc.py: _validate_hpd_frac_option`, run at
+  construction and in `load`, refuses an `hpd_frac` that is not a real
+  fraction in `(0, 1]`, or that leaves fewer than two of the
+  `fun_eval_start` points of the initial design.
+- MATLAB: `misc/gethpd_vbmc.m:10` sizes the subset as
+  `round(HPDFrac*N)`, with no check of the option.
+- What differs: PyVBMC refuses, with a message that names the option, a
+  value from which its first GP fit cannot set the bounds of the entry
+  above: a subset of no point fails in gpyreg on an empty array, and one of
+  a single point, which has no spread, in the slice sampler's zero widths.
+  MATLAB takes any value; whether its fit fails on such a subset was not
+  looked up.
+- Why: commit `f18a6c1` (2026-09-22, `verification/wave1.md`), on the PI's
+  rule that a fix may make an interface stricter.
+- Kind: deliberate change.
+
 ### Slice sampling is the only sampler of the GP hyperparameters
 - Python: `pyvbmc/vbmc/vbmc.py:3737` (`_validate_gp_hyp_sampler_option`)
   refuses at construction every `gp_hyp_sampler` but `"slicesample"`, and
