@@ -252,7 +252,14 @@ Gates, on the branch of the check (`dev-port-review-w1check`, cut at
   -1.722 ± 0.111 (the noisy Rosenbrock, whose warm-up now ends at iteration
   6 where it ended at 7) and from 1.430 ± 0.081 to 1.308 ± 0.079. The
   targets of these runs have no recorded truth, so the accuracy of the
-  change was not measured.
+  change was not measured;
+- after the commits on the items the round left: the test files they
+  touch, 613 passed and 2 skipped on `f18a6c1`, and the option tests, 81
+  passed, after the texts that follow it; at `35606cb`, the exact oracle check
+  against the dump of the base, the eight state fixtures bit-identical and
+  the replays of the three `gp_fit_history` fixtures identical to the
+  base's; and the four seeded runs bit for bit those of `2d931a6`, 92
+  arrays and none different.
 
 Not run on the branch, which waits to be brought onto `dev-port-review`:
 the whole suite, the Torch and PyMC environments, the CI matrix, and the
