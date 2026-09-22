@@ -2157,6 +2157,33 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   requirement with the GP-fit change the pin move brings, the `logp` key,
   which the PI may strike); `matlab_side_defects.md` entries 45 to 48 and
   53 checked against the branch, unchanged; `dev/scripts/runs/LOCAL.md`.
+- [x] **2026-09-22, the independent check of the wave-1 pass, and its fix
+  round** (PI: `/doublecheck`, read-only, by a second session while wave 6
+  was closed in the main checkout; then, on the PI's word, the fixes as the
+  orchestrator proposed them). The pass of wave 1 was the one pass no fresh
+  reviewer had read. Six fresh read-only Opus reviewers read it on
+  `a3d4a70d`, and `verification/wave1.md` has what they read, what holds,
+  what they found, the disposition of every finding of the wave (its two
+  verifiers' ledgers have no column for it) and the gates. No later pass
+  undid a wave-1 fix. In the code: `optimize_vp` could return a posterior
+  of NaN without an error, the check of W5-7 dropped the stored value of a
+  cached starting point after a warp, and `determine_best_vp` ranked NaN
+  scores anywhere; in the records, the wave-1 ledgers' premise about
+  MATLAB's rank-one update and their correction of the reason for the
+  one-dimensional search were wrong, and the changelog lacked the
+  "Upgrading" line for `noise_shaping`. The fix round runs on the branch
+  `dev-port-review-w1check`, cut at `326c7676` in the worktree
+  `../pyvbmc-w1check`, so that the main checkout stays wave 6's: two Opus
+  fix agents on worktrees of their own (`fixes/wave1_check_agent_A.md` and
+  `_B.md`), 19 commits cherry-picked after review, and a test, three
+  option descriptions and the records by the orchestrator. One of them moves noisy trajectories: `N` and `n_eff` follow
+  every evaluation of active sampling, as in MATLAB. The raw reports of the
+  six reviewers and the logs of the gates are on the orchestrator's machine
+  (`dev/scripts/runs/LOCAL.md`). To do when the branch is brought onto
+  `dev-port-review`: the whole suite, the Torch and PyMC environments, the
+  refresh of the sheet's Python line citations against the merged code, the
+  CI matrix; the worktrees and branches of the two fix agents are removed
+  once `git cherry` shows their commits on `dev-port-review`.
 - [ ] **Pickup point (2026-09-22, after the records): the independent
   check of the wave-6 pass is next, then the pull request on the PI's
   word.** The state: gpyreg's `port-review-wave6` at `dc2a930` in
