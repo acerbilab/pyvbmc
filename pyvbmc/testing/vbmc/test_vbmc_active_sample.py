@@ -570,6 +570,54 @@ def test_two_steps_with_a_search_cache(mocker):
         assert np.shape(optim_state["search_cache"]) == (32, D)
 
 
+def test_the_search_cache_orders_tied_candidates_stably(mocker):
+    """With a search cache the candidates are sorted by their acquisition
+    value, and the first of them is acquired. MATLAB's `sort` is stable
+    (`private/activesample_vbmc.m:231-233`), so of candidates with equal
+    values the earlier comes first: the point acquired is the first
+    candidate with the smallest value, as `min` gives it without a search
+    cache, and the cache keeps tied candidates in the order of the search
+    set."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 256,
+            "search_cache_frac": 0.25,
+            "search_optimizer": "none",
+        },
+        seed=20260922,
+    )
+    searched = []
+
+    def tied_acq(self, x, *args):
+        # Five values interleaved along the search set, so that every
+        # candidate ties with a fifth of the others.
+        x = np.atleast_2d(x)
+        searched.append(np.copy(x))
+        return (np.arange(x.shape[0]) * 7 % 5).astype(float)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", tied_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    X_search = searched[0]
+    values = (np.arange(X_search.shape[0]) * 7 % 5).astype(float)
+    order = np.argsort(values, kind="stable")
+    acquired = function_logger.X[function_logger.Xn]
+    assert np.array_equal(acquired, X_search[np.argmin(values)])
+    assert np.array_equal(optim_state["search_cache"], X_search[order])
+
+
 def _acquire_one_cached_point(mocker, vbmc, gp, x_cached, y_cached):
     """One active-sampling step whose only candidate is the one row of the
     starting cache, with a value stored for it."""

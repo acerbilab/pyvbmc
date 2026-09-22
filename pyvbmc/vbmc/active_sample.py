@@ -448,7 +448,10 @@ def active_sample(
             acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
 
             if options["search_cache_frac"] > 0:
-                inds = np.argsort(acq_fast)
+                # A stable sort, as MATLAB's: of candidates with equal
+                # values the earlier comes first, so the point acquired is
+                # the one `argmin` takes without a search cache.
+                inds = np.argsort(acq_fast, kind="stable")
                 # The training inputs at the head of the search set are
                 # candidates for a repeated observation of this step
                 # alone. They are kept out of the cache: a training input
