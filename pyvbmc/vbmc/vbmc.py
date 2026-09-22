@@ -26,6 +26,7 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.rng import get_rng
 from pyvbmc.stats import kl_div_mvn
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
@@ -3813,6 +3814,7 @@ class VBMC:
         self._validate_acq_hedge_option()
         self._validate_search_fraction_options()
         self._validate_warp_cov_reg_option()
+        self._validate_hpd_frac_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -4048,6 +4050,34 @@ class VBMC:
             _WARP_COV_REG_REFUSAL.format(value)
             + " A saved run that carries such a value is continued with "
             "VBMC.load(file, new_options={'warp_cov_reg': 0})."
+        )
+
+    def _validate_hpd_frac_option(self):
+        """Check the fraction of the training inputs from which the bounds
+        of the GP hyperparameters are set.
+
+        The fit takes the points of highest density, `hpd_frac` of the
+        training inputs rounded as MATLAB rounds
+        (`misc/gethpd_vbmc.m:10`), and sets the bounds from their spread,
+        which a single point does not have: a value that leaves fewer than
+        two points of the initial design makes the first fit fail, in
+        MATLAB VBMC as in PyVBMC.
+        """
+        value = self.options.get("hpd_frac")
+        fun_eval_start = self.options.get("fun_eval_start")
+        if (
+            _is_finite_real_number(value)
+            and 0 < value <= 1
+            and round_half_away_from_zero(value * fun_eval_start) >= 2
+        ):
+            return
+        raise ValueError(
+            "The option 'hpd_frac' must be a fraction in (0, 1] that leaves "
+            "at least two of the fun_eval_start = "
+            f"{fun_eval_start} points of the initial design, from which the "
+            "bounds of the GP hyperparameters are set; it is "
+            f"{value!r}. A saved run that carries such a value is continued "
+            "with VBMC.load(file, new_options={'hpd_frac': 0.8})."
         )
 
     def _ensure_runtime_tip_state(self):

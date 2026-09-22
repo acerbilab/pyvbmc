@@ -85,6 +85,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"search_cache_frac": 0.5}, ValueError, "search_cache_frac"),
         ({"cache_frac": 1.5}, ValueError, "cache_frac"),
         ({"warp_cov_reg": np.nan}, ValueError, "warp_cov_reg"),
+        ({"hpd_frac": 0.1}, ValueError, "hpd_frac"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -486,3 +487,37 @@ def test_a_warp_cov_reg_that_is_a_finite_number_or_a_function_is_taken(
     weight into the interval, as MATLAB VBMC does."""
     vbmc = _vbmc(options={"warp_cov_reg": value})
     assert vbmc.options["warp_cov_reg"] is value
+
+
+@pytest.mark.parametrize(
+    "value",
+    [0, 0.04, 0.1, -0.5, 1.5, np.nan, True, "0.8", None],
+    ids=[
+        "zero",
+        "empty-subset",
+        "one-point",
+        "negative",
+        "above-one",
+        "nan",
+        "bool",
+        "str",
+        "None",
+    ],
+)
+def test_an_hpd_frac_that_leaves_too_few_points_is_refused(value):
+    """``hpd_frac`` is the fraction of the training inputs, those of
+    highest density, from which the bounds of the GP hyperparameters are
+    set. Of the initial design of ten points, 0.04 leaves none and 0.1
+    leaves one, from which no bound can be set, and the first GP fit
+    fails. Such a value, and one that is not a fraction, is refused at
+    construction, naming the option."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"hpd_frac": value})
+    assert "hpd_frac" in execinfo.value.args[0]
+
+
+@pytest.mark.parametrize("value", [0.15, 0.8, 1, np.float64(0.5)])
+def test_an_hpd_frac_that_leaves_two_points_or_more_is_taken(value):
+    """Two points of the initial design are enough for the GP fit."""
+    vbmc = _vbmc(options={"hpd_frac": value})
+    assert vbmc.options["hpd_frac"] is value

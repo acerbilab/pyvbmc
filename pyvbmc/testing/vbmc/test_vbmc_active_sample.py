@@ -2024,10 +2024,13 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
         "mvn_search_frac": 0,
         "box_search_frac": 0,
         "hpd_search_frac": 1,
-        "hpd_frac": 0,
     }
 
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
+    # Construction refuses an `hpd_frac` that leaves the GP fit too few
+    # points; the search points take fractions of it down to an eighth,
+    # which can leave none, and zero reaches that branch at once.
+    vbmc.options.__setitem__("hpd_frac", 0, force=True)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
