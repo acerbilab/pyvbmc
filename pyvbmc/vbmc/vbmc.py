@@ -2891,6 +2891,14 @@ class VBMC:
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
             The index of the iteration with the best VariationalPosterior.
+
+        Notes
+        -----
+        A NaN ELCBO (``elbo - safe_sd * elbo_sd``) or reliability index
+        ranks last in the ranking criterion, and a NaN ELCBO is skipped
+        without it. If the ELCBO of every candidate iteration is NaN, the
+        last iteration considered is selected, which with the default
+        ``max_idx`` is the posterior the run ended on.
         """
 
         # Check up to this iteration (default, last)
@@ -2911,18 +2919,21 @@ class VBMC:
                 # Rank by position
                 rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
-                # The history stores object-dtype arrays, so the scores
-                # and the flags are read through `asarray`: the flags have
-                # to be booleans to index with, and the scores have to be
-                # an array to sort.
+                # The history stores object-dtype arrays. The flags are
+                # read as booleans to index with, and the scores as floats:
+                # an object array sorts with Python's comparisons, to which
+                # NaN is incomparable, while a float sort places NaN last.
                 lnZ_iter = np.asarray(
-                    self.iteration_history.get("elbo")[: max_idx + 1]
+                    self.iteration_history.get("elbo")[: max_idx + 1],
+                    dtype=float,
                 )
                 lnZsd_iter = np.asarray(
-                    self.iteration_history.get("elbo_sd")[: max_idx + 1]
+                    self.iteration_history.get("elbo_sd")[: max_idx + 1],
+                    dtype=float,
                 )
                 r_index_iter = np.asarray(
-                    self.iteration_history.get("r_index")[: max_idx + 1]
+                    self.iteration_history.get("r_index")[: max_idx + 1],
+                    dtype=float,
                 )
                 stable_iter = np.asarray(
                     self.iteration_history.get("stable")[: max_idx + 1],
@@ -2931,7 +2942,8 @@ class VBMC:
 
                 # Rank by ELCBO. In this ranking and in the next, the
                 # earlier of two iterations with equal scores ranks first,
-                # as in MATLAB's stable sort.
+                # as in MATLAB's stable sort, and a NaN score ranks last.
+                # (MATLAB's descending sort ranks a NaN ELCBO first.)
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 order = np.argsort(-elcbo, kind="stable")
                 rank[order, 1] = np.arange(1, max_idx + 2)
@@ -2945,7 +2957,10 @@ class VBMC:
                 rank[:, 3] = max_idx + 1
                 rank[stable_iter, 3] = 1
 
-                idx_best = np.argmin(np.sum(rank, 1))
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = np.argmin(np.sum(rank, 1))
 
             else:
                 # Find recent solution with best ELCBO
@@ -2963,14 +2978,24 @@ class VBMC:
                 else:
                     idx_start = np.ravel(laststable)[-1]
 
-                lnZ_iter = self.iteration_history.get("elbo")[
-                    idx_start : max_idx + 1
-                ]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    idx_start : max_idx + 1
-                ]
+                lnZ_iter = np.asarray(
+                    self.iteration_history.get("elbo")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
+                lnZsd_iter = np.asarray(
+                    self.iteration_history.get("elbo_sd")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                idx_best = idx_start + np.argmax(elcbo)
+                # The best ELCBO skips NaN, as MATLAB's `max` does.
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = idx_start + np.nanargmax(elcbo)
 
         # Return best variational posterior, its ELBO and SD. The
         # stability flag goes on the copy: the iteration history describes
