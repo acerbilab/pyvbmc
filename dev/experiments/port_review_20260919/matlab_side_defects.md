@@ -11,7 +11,8 @@ and not on its text alone says which step is inferred or was read and not
 run. Paths are relative to the MATLAB repository root. The list
 is brought up to date as the review's waves are verified; it stands at the
 end of the verification of wave 6, the gpyreg slices, whose rows (41 to 53)
-concern `gplite/`, the GP layer that gpyreg ports.
+concern `gplite/`, the GP layer that gpyreg ports. Rows 54 and 55 come from
+the independent check of the wave-1 pass.
 
 ## Defects
 
@@ -70,6 +71,8 @@ concern `gplite/`, the GP layer that gpyreg ports.
 | 51 | `gplite/gplite_post.m:250` | `gp.s2` is extended only `if ~isempty(s2)`, so a rank-one update of a GP that stores `s2` and is given none leaves `gp.s2` shorter than `gp.X` | The stored noise no longer aligns with the training inputs. Latent in VBMC, which passes `s2` on a noisy target and stores none on a noiseless one | Not shared: gpyreg fills the new row with zero (`gaussian_process.py:963-972`) | `wave6_G1.md`, row G1-16 |
 | 52 | `gplite/private/slicesamplebnd.m:506`; `utils/slicesamplebnd.m:462`, `utils/slicesample_vbmc.m:516`, `utils/malasample_vbmc.m:436` | The convergence diagnostics call `psrf`, which is in no file of the repository (these four call sites are its only occurrences) | The diagnostics fail for an undefined function unless GPstuff or MCMCDIAG is on the path (inferred); `gplite_train` passes `Diagnostics = false`, so no VBMC run reaches it | Not shared: gpyreg has its own Gelman-Rubin and effective-sample-size code (the sheet, under the sampler) | `wave6_G1.md`, MATLAB-side table |
 | 53 | `gplite/gplite_train.m:142`, with `gplite/gplite_covfun.m:130-131`, `gplite/gplite_noisefun.m:104` | The upper bounds of the output scale and of the noise are `log(height*10)` and `log(height)` with `height = max(y) - min(y)`, and `UB = max(LB,UB)` repairs an inverted pair but not an infinite one | A training set whose targets are all equal gives a bound pair `(-Inf, -Inf)`, which reaches `fmincon`; what it does with it was not looked up. gpyreg's optimizer answers the same pair with a `KeyError` | Shared until the wave-6 pass, which takes a range of one for equal targets, as both sides do for a single target | `verification/wave6.md`, row W6-4 |
+| 54 | `misc/best_vbmc.m:36`, with `:66` | `[~,ord] = sort(elcbo,'descend')` places NaN first, MATLAB's default for a descending sort; `max(elcbo)` at `:66` returns the first element when every value is NaN. Rests on MATLAB's documented `sort` and `max`, not run | With `RankCriterion` on (`vbmc.m:201`, the default), an iteration whose ELBO or ELBO SD is NaN takes the best ELCBO rank and can be returned as the best posterior; without it, a look-back window whose ELCBOs are all NaN returns its first iteration | Not shared: a NaN ELCBO ranks last, and the last iteration is taken when every candidate is NaN (sheet, "A NaN score ranks last in the selection of the returned posterior") | `verification/wave1.md`; `fixes/wave1_check_agent_A.md` |
+| 55 | `misc/vpoptimize_vbmc.m:176`, with `:271-272` and `:189` | `[~,idx] = min(elbostats.nelcbo)` runs over every slot, those of the midpoints included, which no evaluation writes when `NSentK == 0` or `ELCBOmidpoint` is off and which keep `nelcbo = Inf` and a `theta` of NaN; `min` skips NaN | When every evaluated slot is NaN, `min` returns an empty slot, and `rescale_params` at `:189` receives a `theta` of NaN; the returned posterior has NaN parameters, with `elbo = -Inf` and `elbo_sd = NaN` | Not shared: the selection runs over the evaluated slots, and raises when all of them are NaN | `verification/wave1.md`; `fixes/wave1_check_agent_A.md` |
 
 ## Questionable, shared by both implementations
 
