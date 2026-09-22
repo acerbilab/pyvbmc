@@ -58,6 +58,58 @@ _PRECOMPUTED_NOT_PROVIDED = _OmittedArgument("None")
 _INITIALIZATION_COST_NOT_PROVIDED = _OmittedArgument("0")
 _PRECOMPUTED_DUPLICATE_ULPS = 4
 
+# The options that are read while a ``VBMC`` object is built and never
+# again, so that a value given to ``VBMC.load`` would be stored and never
+# consulted: the run's own state already holds what construction made of
+# them. ``load`` refuses these names rather than take them.
+#
+# The list was derived by searching ``pyvbmc/`` for every read of each
+# option (``options[...]``, ``options.get(...)``, and the two ``Options``
+# methods that read one, ``uncertainty_handling_on`` and
+# ``integer_vars_mask``), and keeping the options whose every read is in
+# ``VBMC.__init__``, in the ``_init_optim_state`` and
+# ``_initialize_precomputed_evaluations`` it calls, or in
+# ``Options.update_defaults``. A read of the ``optim_state`` entry that
+# carries the same name is a read of the state, not of the option, and
+# does not count; the comment above each group of names below says which
+# site reads them. An option that a later iteration reads,
+# ``noise_shaping`` and ``max_fun_evals`` among them, is not here.
+_CONSTRUCTION_ONLY_OPTIONS = (
+    # Read by ``Options.update_defaults``, which settles the defaults for a
+    # noisy target, and by ``_init_optim_state`` through
+    # ``Options.uncertainty_handling_on``, which sets the uncertainty
+    # handling level the GP noise model and the function logger follow.
+    "uncertainty_handling",
+    "specify_target_noise",
+    # ``_init_optim_state``: the GP mean functions, the starting values and
+    # the bound tolerance of the transformed box.
+    "gp_mean_fun",
+    "gp_int_mean_fun",
+    "f_vals",
+    "tol_bound_x",
+    # ``_init_optim_state``, through ``Options.integer_vars_mask``.
+    "integer_vars",
+    # ``_init_optim_state`` and ``__init__``: the state the first iteration
+    # starts from.
+    "warmup",
+    "k_warmup",
+    "entropy_switch",
+    "det_entropy_min_d",
+    "det_entropy_alpha",
+    "tol_gp_var",
+    "proposal_fcn",
+    "fitness_shaping",
+    "out_warp_thresh_base",
+    # ``_init_optim_state``: the search bounds, which every iteration then
+    # widens from. (``active_sample`` reads the option too, into two locals
+    # that nothing uses.)
+    "active_search_bound",
+    # ``__init__``: the parameter transformer and the size of the function
+    # logger's arrays, both built once.
+    "bounded_transform",
+    "cache_size",
+)
+
 
 def _max_ignoring_nan(values):
     """The largest entry that is not NaN, as MATLAB's ``max`` returns it.
@@ -1189,17 +1241,8 @@ class VBMC:
         ):
             optim_state["gp_noise_fun"][1] = 1
 
+        # The value was checked by `_validate_gp_mean_fun_option`.
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        # The mean functions the GP backend can build. MATLAB VBMC names
-        # nine more that gpyreg does not provide.
-        valid_gp_mean_funs = ["zero", "const", "negquad"]
-
-        if not optim_state["gp_mean_fun"] in valid_gp_mean_funs:
-            raise ValueError(
-                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
-                f"{optim_state['gp_mean_fun']!r}. Supported mean functions "
-                "are 'zero', 'const' and 'negquad'."
-            )
         optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab
 
@@ -3062,8 +3105,15 @@ class VBMC:
             A dictionary of options to change when loading the stored VBMC
             instance. Useful, for example, to continue a previous run with a
             larger budget of function evaluations and/or iterations. See the
-            documentation on PyVBMC's options for more details. The values
-            of the options are checked as they are at construction.
+            documentation on PyVBMC's options for more details. Each name is
+            checked against the options PyVBMC declares and each value
+            against the checks construction makes of it. An option that
+            PyVBMC reads only while it builds a ``VBMC`` object is refused:
+            the stored state already holds what was built from it, so a new
+            value would take no effect, and running with another value means
+            constructing a new ``VBMC`` object. ``uncertainty_handling``,
+            ``gp_mean_fun``, ``integer_vars`` and ``warmup`` are such
+            options; the refusal names the ones it applies to.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3089,8 +3139,9 @@ class VBMC:
         ------
         ValueError
             If the specified ``iteration`` is less than zero or larger than the
-            last stored iteration, or if an option has a value that
-            construction refuses.
+            last stored iteration, if an option has a value that construction
+            refuses, or if ``new_options`` names an option that only
+            construction reads.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
             (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
@@ -3203,9 +3254,13 @@ class VBMC:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
         # The limits on iterations and evaluations are what a continued run
         # is most often given, and they are checked as construction checks
-        # them.
+        # them. The value checks come before the names are weighed below,
+        # so that a value no run can use is reported as such whichever
+        # option carries it.
         vbmc.options.validate_run_limits()
         vbmc._validate_option_values()
+        if new_options is not None:
+            vbmc._refuse_construction_only_options(new_options)
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):
@@ -3692,6 +3747,8 @@ class VBMC:
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
         self._validate_noise_shaping_option()
+        self._validate_gp_mean_fun_option()
+        self._validate_integer_vars_option()
         self._validate_gp_hyp_sampler_option()
         self._validate_search_acq_fcn_option()
         self._validate_search_optimizer_option()
@@ -3733,6 +3790,54 @@ class VBMC:
                 "and disable the rank-one GP update, a configuration of "
                 "neither toolbox."
             )
+
+    def _refuse_construction_only_options(self, new_options):
+        """Refuse the names that only construction reads.
+
+        Called by ``load`` on the options it was given.
+        """
+        refused = [
+            name for name in _CONSTRUCTION_ONLY_OPTIONS if name in new_options
+        ]
+        if not refused:
+            return
+        listed = ", ".join(repr(name) for name in refused)
+        if len(refused) == 1:
+            subject = f"the option {listed}"
+        else:
+            subject = f"the options {listed}"
+        raise ValueError(
+            f"VBMC.load cannot change {subject}. PyVBMC reads such an "
+            "option only while it builds a VBMC object, and a saved run "
+            "carries the state that was built from it, which load "
+            "restores as it stands, so a value given here would be "
+            "stored and never take effect. To run with another value, "
+            "construct a new VBMC object and pass the option in its "
+            "options dictionary."
+        )
+
+    def _validate_gp_mean_fun_option(self):
+        """Check the GP mean function against the ones that can be built.
+
+        The GP backend provides three; MATLAB VBMC names nine more.
+        """
+        value = self.options.get("gp_mean_fun", "negquad")
+        if value not in ("zero", "const", "negquad"):
+            raise ValueError(
+                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
+                f"{value!r}. Supported mean functions "
+                "are 'zero', 'const' and 'negquad'."
+            )
+
+    def _validate_integer_vars_option(self):
+        """Check the form of the option that names the integer variables.
+
+        Reading it as a mask is the check; the mask itself is built again
+        where it is needed. That the hard bounds of an integer variable sit
+        at half-integers is checked in ``_init_optim_state``, which has the
+        bounds.
+        """
+        self.options.integer_vars_mask(self.D)
 
     def _validate_gp_hyp_sampler_option(self):
         """Reject the GP hyperparameter samplers that are not ported."""

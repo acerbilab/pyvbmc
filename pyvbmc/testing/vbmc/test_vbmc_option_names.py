@@ -102,6 +102,76 @@ def test_new_options_are_checked_as_at_construction(
 
 
 @pytest.mark.parametrize(
+    "new_options",
+    [
+        {"uncertainty_handling": True},
+        {"specify_target_noise": True},
+        {"gp_mean_fun": "const"},
+        {"integer_vars": [0]},
+        {"warmup": False},
+        {"k_warmup": 7},
+        {"entropy_switch": True},
+        {"active_search_bound": 4},
+        {"tol_bound_x": 1e-3},
+        {"cache_size": 1000},
+        {"k_warmup": 7, "max_iter": 9},
+    ],
+)
+def test_load_refuses_an_option_only_construction_reads(tmp_path, new_options):
+    """An option that PyVBMC reads only while it builds a ``VBMC`` object
+    cannot be changed by ``load``: the saved run carries the state that was
+    built from it, and ``load`` restores that state, so a value given here
+    would be stored and never consulted. The refusal says so, rather than
+    let the run continue with an option and a state that disagree."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    with pytest.raises(ValueError) as execinfo:
+        VBMC.load(saved, new_options=new_options)
+    message = execinfo.value.args[0]
+    assert "construct a new VBMC object" in message
+    for name in new_options:
+        if name == "max_iter":
+            continue
+        assert repr(name) in message
+    assert "'max_iter'" not in message
+
+
+def test_load_takes_an_option_a_continued_run_reads(tmp_path):
+    """The budget of a continued run is what ``load`` is most often given,
+    and it takes effect."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    loaded = VBMC.load(saved, new_options={"max_iter": 9})
+    assert loaded.options["max_iter"] == 9
+
+
+def test_load_refuses_a_gp_mean_fun_construction_refuses(tmp_path):
+    """A value that construction refuses is refused by ``load`` with the
+    same message, before the name of the option is weighed: the check of
+    ``gp_mean_fun`` is run by both routes."""
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc(options={"gp_mean_fun": "nonsense"})
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={"gp_mean_fun": "nonsense"})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+    assert "vbmc:UnknownGPmean" in at_load.value.args[0]
+
+
+def test_load_refuses_an_integer_vars_construction_refuses(tmp_path):
+    """The form of ``integer_vars`` is checked by both routes as well."""
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc(options={"integer_vars": np.array([1, 0])})
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={"integer_vars": np.array([1, 0])})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+    assert "integer_vars" in at_load.value.args[0]
+
+
+@pytest.mark.parametrize(
     "options",
     [
         {"acq_hedge": True},
