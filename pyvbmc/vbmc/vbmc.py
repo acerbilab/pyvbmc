@@ -29,6 +29,10 @@ from pyvbmc.stats import kl_div_mvn
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
+from pyvbmc.whitening.whitening import (
+    _WARP_COV_REG_REFUSAL,
+    _is_finite_real_number,
+)
 
 from ._bounds import _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
@@ -3798,6 +3802,7 @@ class VBMC:
         self._validate_search_optimizer_option()
         self._validate_acq_hedge_option()
         self._validate_search_fraction_options()
+        self._validate_warp_cov_reg_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -4015,6 +4020,23 @@ class VBMC:
                 f"{total!r}. The share the fractions leave is drawn from "
                 "the variational posterior." + from_a_saved_run
             )
+
+    def _validate_warp_cov_reg_option(self):
+        """Check the weight of the regularization of the covariance of the
+        warp towards its diagonal.
+
+        A number outside ``[0, 1]`` passes: the warp clamps the weight into
+        the interval. What a function returns is checked at the warp, where
+        the number of training points it is given is known.
+        """
+        value = self.options.get("warp_cov_reg", 0)
+        if callable(value) or _is_finite_real_number(value):
+            return
+        raise ValueError(
+            _WARP_COV_REG_REFUSAL.format(value)
+            + " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'warp_cov_reg': 0})."
+        )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""

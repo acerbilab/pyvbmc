@@ -82,6 +82,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"search_optimizer": "bounded"}, ValueError, "search_optimizer"),
         ({"search_cache_frac": 0.5}, ValueError, "search_cache_frac"),
         ({"cache_frac": 1.5}, ValueError, "cache_frac"),
+        ({"warp_cov_reg": np.nan}, ValueError, "warp_cov_reg"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -224,6 +225,7 @@ def test_load_reads_the_integer_vars_mask_of_release_1_0_4(tmp_path, stored):
         {"search_cache_frac": "a quarter"},
         {"search_optimizer": "Nelder-Mead"},
         {"cache_frac": -0.1},
+        {"warp_cov_reg": True},
     ],
 )
 def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
@@ -348,3 +350,62 @@ def test_the_shipped_search_fractions_leave_a_quarter_unclaimed():
     vbmc = _vbmc(options={"search_cache_frac": 0.25})
     assert vbmc.options["search_cache_frac"] == 0.25
     assert sum(vbmc.options[name] for name in SEARCH_FRACTIONS) == 1
+
+
+@pytest.mark.parametrize(
+    "value",
+    [None, "0.5", 0.5 + 0.1j, True, np.True_, np.nan, np.inf, [0.5]],
+    ids=[
+        "None",
+        "str",
+        "complex",
+        "bool",
+        "numpy-bool",
+        "nan",
+        "inf",
+        "list",
+    ],
+)
+def test_a_warp_cov_reg_that_is_not_a_finite_number_is_refused(value):
+    """``warp_cov_reg`` weighs the regularization of the covariance of the
+    warp towards its diagonal: a finite real number or a function of the
+    number of training points. Any other value is refused at construction,
+    naming the option, where it would otherwise fail, or be read as a
+    number it is not, at the first warp, after the warm-up."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"warp_cov_reg": value})
+    assert "warp_cov_reg" in execinfo.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        0,
+        0.5,
+        np.float64(0.5),
+        np.float32(0.5),
+        np.int64(1),
+        np.array(0.5),
+        -1.0,
+        2,
+        lambda N: 0.5,
+    ],
+    ids=[
+        "int",
+        "float",
+        "float64",
+        "float32",
+        "int64",
+        "0-d-array",
+        "below-zero",
+        "above-one",
+        "function",
+    ],
+)
+def test_a_warp_cov_reg_that_is_a_finite_number_or_a_function_is_taken(
+    value,
+):
+    """A number outside ``[0, 1]`` is taken as well: the warp clamps the
+    weight into the interval, as MATLAB VBMC does."""
+    vbmc = _vbmc(options={"warp_cov_reg": value})
+    assert vbmc.options["warp_cov_reg"] is value
