@@ -589,12 +589,25 @@ def _get_gp_training_options(
         # cover part of that design. At that point the finite end-of-horizon
         # training schedule is the meaningful limiting value.
         x = 1.0
+    elif schedule_span == 0:
+        # A budget equal to the initial design leaves the schedule no span
+        # to run over, and MATLAB divides by zero here
+        # (`misc/get_GPTrainOptions.m:98`). The count of the first fit
+        # equals `fun_eval_start`, and 0/0 is NaN; a count past it gives an
+        # infinite `x`, at which the terms of the cubic cancel to NaN. A
+        # count short of it, which the trimming of the warm-up can leave,
+        # sends MATLAB's cubic to infinity and its space-filling design to
+        # an error; it is given the value of the other two.
+        x = np.nan
     else:
         x = (optim_state["n_eff"] - options["fun_eval_start"]) / schedule_span
         if optim_state.get("budget_active", False):
             x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
-    init_N = max(round_half_away_from_zero(f(x)), 0)
+    # MATLAB's `max` ignores NaN, so a NaN schedule asks for no
+    # space-filling points.
+    f_x = f(x)
+    init_N = 0 if np.isnan(f_x) else max(round_half_away_from_zero(f_x), 0)
 
     # Set other hyperparameter fitting parameters
     if optim_state["recompute_var_post"]:
