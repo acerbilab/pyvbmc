@@ -216,7 +216,11 @@ def test_cmaes_search_runs_without_noise_handling(mocker):
 
 def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     """With a non-finite search bound the local search is bounded by the
-    training inputs and the starting point, one bound per coordinate."""
+    training inputs and the starting point, one bound per coordinate, a
+    tenth of the range of the training inputs beyond them, as
+    ``private/activesample_vbmc.m:253-254`` bounds it:
+    ``min([gp.X; x0]) - 0.1*xrange`` and ``max([gp.X; x0]) + 0.1*xrange``
+    with ``xrange = max(gp.X) - min(gp.X)``."""
     D = 2
     vbmc, gp = _state_with_gp(D)
     vbmc.optim_state["ub_search"][0, 0] = np.inf
@@ -225,6 +229,7 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     captured = {}
 
     def fake_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["x0"] = np.asarray(x0, dtype=float)
         captured["options"] = dict(options)
         # A rejected search result: the sieve's point is kept.
         return np.asarray(x0, dtype=float), np.inf
@@ -247,16 +252,23 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     lb_search, ub_search = captured["options"]["bounds"]
     assert np.shape(lb_search) == (D,)
     assert np.shape(ub_search) == (D,)
-    assert np.all(lb_search <= gp.X.min(0))
-    assert np.all(ub_search >= gp.X.max(0))
+    X_and_x0 = np.vstack((gp.X, captured["x0"]))
+    xrange = gp.X.max(0) - gp.X.min(0)
+    assert np.array_equal(lb_search, X_and_x0.min(0) - 0.1 * xrange)
+    assert np.array_equal(ub_search, X_and_x0.max(0) + 0.1 * xrange)
 
 
 def test_one_dimensional_search_is_bounded(mocker):
-    """A one-dimensional acquisition is minimized over the search
-    interval, within the search budget, and the acquired point is no
-    worse than the best candidate of the search set."""
+    """A one-dimensional acquisition is searched within the search
+    interval, which is the one the CMA-ES search of more dimensions takes,
+    ``[min(x0, lb_search), max(x0, ub_search)]`` with ``x0`` the best
+    candidate of the search set, within the search budget, and the
+    acquired point is no worse than that candidate."""
     vbmc, gp = _state_with_gp(1, seed=20260919)
     candidates = np.array([[0.7], [1.5], [-2.0]])
+    lb_search = vbmc.optim_state["lb_search"][0, 0]
+    ub_search = vbmc.optim_state["ub_search"][0, 0]
+    assert np.isfinite(lb_search) and np.isfinite(ub_search)
     captured = {}
     real_minimize_scalar = scipy.optimize.minimize_scalar
 
@@ -290,7 +302,9 @@ def test_one_dimensional_search_is_bounded(mocker):
 
     lb, ub = captured["bounds"]
     assert captured["method"] == "bounded"
-    assert lb < ub
+    # The best candidate under `_cheap_acq` is 0.7.
+    assert lb == min(0.7, lb_search)
+    assert ub == max(0.7, ub_search)
     assert (
         captured["options"]["maxiter"] == vbmc.options["search_max_fun_evals"]
     )
@@ -834,6 +848,104 @@ def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     assert "Active search failed" in caplog.text
     assert "RuntimeError" in caplog.text
     assert "no search today" in caplog.text
+
+
+def test_one_dimensional_search_failure_keeps_the_sieve_point_and_index(
+    mocker, caplog
+):
+    """A bounded one-dimensional search that raises costs one acquisition
+    too: the sieve's point is acquired with its cache index, so a cached
+    starting point keeps its stored value and leaves the cache, and the
+    failure is logged."""
+    vbmc, gp = _state_with_gp(
+        1, options={"ns_search": 1, "cache_frac": 1}, seed=20260919
+    )
+    x_cached = np.array([[0.4]])
+    y_cached = 12.5
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.array([y_cached])
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = vbmc.function_logger.func_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    search = mocker.patch(
+        "scipy.optimize.minimize_scalar",
+        side_effect=RuntimeError("no search today"),
+    )
+    caplog.set_level(logging.WARNING)
+
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert search.call_count == 1
+    assert function_logger.func_count == calls_before
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert function_logger.y_orig[last] == y_cached
+    assert optim_state["cache"]["x_orig"].shape == (0, 1)
+    assert "Active search failed" in caplog.text
+    assert "no search today" in caplog.text
+
+
+def test_cmaes_search_with_a_zero_scale_starts_isotropic(mocker, caplog):
+    """A coordinate along which the search covariance has no spread gives
+    a zero entry of the per-coordinate scales, which cma's ``CMA_stds``
+    cannot take. The search then starts isotropic at the largest scale and
+    runs without error."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, seed=20260919)
+    vp = vbmc.vp
+    vp.mu = np.vstack([np.linspace(-1.0, 1.0, vp.K), np.zeros(vp.K)])
+    vp.sigma = np.ones((1, vp.K))
+    vp.lambd = np.array([[1.0], [0.0]])
+    _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
+    insigma = np.sqrt(np.diag(Sigma))
+    assert insigma[1] == 0 and insigma[0] > 0
+    candidates = np.array([[0.5, 0.5], [2.0, 2.0], [-3.0, 1.0]])
+
+    captured = {}
+    real_fmin = cma.fmin
+
+    def recording_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["sigma0"] = sigma0
+        captured["options"] = dict(options)
+        return real_fmin(objective, x0, sigma0, options=options, **kwargs)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch("cma.fmin", side_effect=recording_fmin)
+    caplog.set_level(logging.WARNING)
+    Xn_before = vbmc.function_logger.Xn
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vp,
+        vbmc.options,
+    )
+
+    assert "CMA_stds" not in captured["options"]
+    assert captured["sigma0"] == insigma.max()
+    assert "Active search failed" not in caplog.text
+    assert function_logger.Xn == Xn_before + 1
 
 
 def test_active_uncertainty_sampling(mocker):
