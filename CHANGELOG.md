@@ -47,7 +47,7 @@ its entry below.
   `vbmc.get_gp(iteration)`. An entry of
   `vbmc.iteration_history["gp_hyp_full"]` holds the hyperparameter samples
   from before thinning, five times as many rows at the default
-  `gp_sample_thin`.
+  `gp_sample_thin`. `vbmc.hyp_dict` has no `logp` entry.
 - `vp.pdf(x, grad_flag=True)` raises an error in the original parameter space.
 - Other methods of the variational posterior return something else in
   some calls: `vp.kl_div(samples=...)`, `vp.kl_div(gauss_flag=False)` with
@@ -282,14 +282,8 @@ its entry below.
 ### Changed
 
 - **Requirements.** PyVBMC needs Python 3.10 or later (1.0.4 accepted 3.9),
-  SciPy 1.15 or later and gpyreg 1.3.0 or later. gpyreg 1.3.0 takes the
-  recommended bounds and starting values of the GP hyperparameters per
-  input dimension, where it pooled the statistics of the training inputs
-  over all dimensions and gave every length scale, and the location and
-  scale of the mean function in every dimension, one number built from the
-  widest gap between the dimensions; the hyperparameter samples of every
-  GP fit, and with them the results of every run, move. See the release
-  notes of gpyreg for the rest of what changed there. `filelock`, `platformdirs` and
+  SciPy 1.15 or later and gpyreg 1.2.1 or later; see the release notes of
+  gpyreg for what changed there. `filelock`, `platformdirs` and
   `threadpoolctl` are new dependencies, used by the machine calibration.
   `pytest`, its plugins and `plotly` are no longer installed with PyVBMC: they
   are in the extras `test` and `examples`. `plotly` is used by example

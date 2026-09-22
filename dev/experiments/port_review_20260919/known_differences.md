@@ -16,7 +16,12 @@ relative to the PyVBMC repository root. Paths beginning `gpyreg/` are
 relative to the gpyreg repository root. Bare MATLAB paths (`vbmc.m`,
 `misc/...`, `acq/...`, `gplite/...`, `private/...`, `shared/...`,
 `utils/...`, `ent/...`) are relative to the MATLAB VBMC repository root at
-the comparison revision `396d649`. Citations of PyVBMC's `AGENTS.md` by
+the comparison revision `396d649`. Line citations into gpyreg are at
+`9e70e6b` (release 1.2.1, the revision PyVBMC's CI installs). Entries that
+cite gpyreg by function name describe its branch `port-review-wave6`
+(`dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
+commits"), to be released as gpyreg 1.3.0; their line citations are brought
+to that release when PyVBMC moves to it. Citations of PyVBMC's `AGENTS.md` by
 section name or by quotation refer to that file at revision `feadb6fe`; the
 file was rewritten afterwards and does not hold every section cited.
 
@@ -182,7 +187,7 @@ fact inherited from MATLAB.
 - Python: `gpyreg/mean_functions.py:498-501` and `:508` (comment: "For future
   reference note that quantile behaviour in MATLAB and NumPy is slightly
   different").
-- MATLAB: `gplite/gplite_meanfun.m:157-160` and `:215-217`, via
+- MATLAB: `gplite/gplite_meanfun.m:157-160` and `:186`, via
   `gplite/private/quantile1.m`.
 - What differs: `np.quantile` interpolates between order statistics at
   `(i-1)/(N-1)`, while `quantile1.m` uses the `(i-0.5)/N` convention, so the
@@ -192,13 +197,11 @@ fact inherited from MATLAB.
   targets span 24 nats. The same holds for the plausible bounds that
   `warp_input` takes after a warp (`pyvbmc/whitening/whitening.py:266` against
   `misc/warp_input_vbmc.m:85-86`, MATLAB's own `quantile`), by about 1e-4 on
-  its 1e5 draws. The standard deviation beside it, which an earlier version
-  of this entry also called a convention, differed in its axis and not in its
-  normalization (`ddof=1` is MATLAB's): gpyreg took `np.std`, `np.max`,
-  `np.min` and `np.median` of the training inputs over all their entries
-  where gplite takes them per column, a port discrepancy from the first
-  revision of the bound code, corrected in the wave-6 pass
-  (`dev/experiments/port_review_20260919/verification/wave6.md`, W6-1).
+  its 1e5 draws. The statistics of the training inputs beside them, the
+  standard deviation (with `ddof=1`, as MATLAB's `std`), the minimum, the
+  maximum and the median, are taken per column, as gplite takes them; gpyreg
+  1.2.1 took them over all the entries of `X` (`verification/wave6.md`,
+  W6-1).
 - Why: the code comment records the choice explicitly.
 - Kind: deliberate change.
 
@@ -215,9 +218,9 @@ fact inherited from MATLAB.
   from a default run. MATLAB's `seiso` identifier does have a
   bound-recommendation branch (`gplite/gplite_covfun.m:112-118`, the mean of
   the per-dimension log widths), which `gpyreg/isotropic_covariance_functions.py`
-  reproduces since the wave-6 pass; before it gpyreg took the log of the
-  arithmetic mean of the widths, an upward shift of the four length-scale
-  bounds by `log(mean w) - mean(log w)` (`verification/wave6.md`, W6-29).
+  reproduces; gpyreg 1.2.1 took the log of the arithmetic mean of the
+  widths, an upward shift of the four length-scale bounds by
+  `log(mean w) - mean(log w)` (`verification/wave6.md`, W6-29).
 - Why: gpyreg's `AGENTS.md` ("Isotropic kernels are a Python-only addition").
 - Kind: Python-only addition.
 
@@ -378,23 +381,24 @@ fact inherited from MATLAB.
   mean, and the complex square root makes `:371` keep the widths of the
   shrinking phase for every coordinate. PyVBMC's burn-in is odd in every fit
   that does not recompute the variational posterior (`thin * 3 = 15`,
-  `pyvbmc/vbmc/gaussian_process_train.py:614`, as
+  `pyvbmc/vbmc/gaussian_process_train.py:608`, as
   `misc/get_GPTrainOptions.m:108` has it) and whenever the number of
   hyperparameter samples is odd, so MATLAB's adaptation is discarded as a
   rule there, and its widths are 1 to 74 times gpyreg's on the stored oracle
   states. Both are valid slice samplers: the widths change the chain, not
-  the law it draws from. gpyreg's own floor under the estimate (a width of
-  zero, which stopped a coordinate, reached at a burn-in of 2 or 3) went in
-  the wave-6 pass.
+  the law it draws from. Where its estimate is not positive, gpyreg keeps
+  the width a coordinate has, and a window of fewer than two iterations
+  adapts nothing (`verification/wave6.md`, W6-3).
 - Why: the MATLAB defect is entry 41 of `matlab_side_defects.md`; gpyreg's
   window matches its own divisor (`verification/wave6.md`, W6-2 and W6-3,
   with `verification/scripts/wave6_A2_burn_in_window.py`).
-- Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
+- Kind: deliberate change (gpyreg's window is consistent with its divisor;
+  MATLAB's is the defect).
 
 ### `GP.quad`'s integral variance is normalized by the total training noise
 - Python: `gpyreg/gaussian_process.py: quad`, the scale of the Cholesky
-  solves of the variance (`Posterior.sl` since the wave-6 pass; the minimum
-  of the total training noise times `sn2_mult` since 1.2.1).
+  solves of the variance, the noise scale `Posterior.sl` that the stored
+  factor carries.
 - MATLAB: `gplite/gplite_quad.m:66-67`, `:101`.
 - What differs: MATLAB normalizes the Cholesky solves of the integral
   variance by `exp(2*hyp(Ncov+1)) * sn2_mult`, the constant noise
@@ -434,10 +438,11 @@ fact inherited from MATLAB.
   gpyreg has done so since `acerbilab/gpyreg`'s `9b3d46b` (2022-06-02),
   three weeks before MATLAB's `68a197b` (2022-06-25) replaced a line that
   used the noise variance alone.
-- Why: the docstring of `predict` ("If separate_samples is `False`, returns
-  the lpd of the corresponding mean approximation"; since the wave-6 pass it
-  names the moment matching). No PyVBMC call site passes `return_lpd`
-  (`verification/wave6.md`, W6-31).
+- Why: the docstring of `predict` (with `separate_samples` `False`, "the
+  log density of a Gaussian whose mean is the mean of the per-sample means
+  and whose variance is the mean of the per-sample predictive variances plus
+  the sample variance (``ddof=1``) of the per-sample means"). No PyVBMC call
+  site passes `return_lpd` (`verification/wave6.md`, W6-31).
 - Kind: deliberate change.
 
 ### Two smooth-box hyperprior families are Python-only
@@ -452,15 +457,14 @@ fact inherited from MATLAB.
 - What differs: gpyreg offers two hyperprior families with no MATLAB
   counterpart, flat over `[a, b]` with Gaussian or Student-t tails, and
   identifies them by a non-finite `mu` with a finite `sigma`, which is why
-  the mask for no prior is an `and` where `gplite_hypprior.m:35` is an `||`
-  (the entry below).
+  the mask for no prior is an `and` where `gplite_hypprior.m:35` is an
+  element-wise `|` (the entry below).
 - Why: the families and their distribution functions arrived together in
   `27f8d66` (2021-06-11) and `b0c5cde` (2021-06-14), before the option
   surface was settled; PyVBMC sets only `student_t` priors
   (`pyvbmc/vbmc/gaussian_process_train.py: _gp_hyp`), so no PyVBMC run
-  evaluates them. Until the wave-6 pass a smooth box over more than one
-  hyperparameter returned twice its log prior or raised, which no caller had
-  met (`verification/wave6.md`, W6-6).
+  evaluates them. A smooth box over a block of hyperparameters has one
+  normalization constant per coordinate (`verification/wave6.md`, W6-6).
 - Kind: Python-only addition.
 
 ### The hyperprior is renormalized to the bounds, and a fixed hyperparameter gets a prior
@@ -490,9 +494,11 @@ fact inherited from MATLAB.
 - Python: `gpyreg/gaussian_process.py: set_priors` takes the value `None`
   for a hyperparameter with no prior and leaves its `mu`, `sigma` and `df`
   NaN; the uniform mask is `u_idx = ~np.isfinite(mu) & ~np.isfinite(sigma)`,
-  and `gpyreg/f_min_fill.py` has the matching `and`. Since the wave-6 pass
-  `set_priors` refuses a `sigma` that is not finite and positive, with a
-  message that names `None`.
+  and `gpyreg/f_min_fill.py` has the matching `and`. Within a block, a
+  coordinate whose location (`mu`, or `a` and `b` for the smooth-box
+  families) and `sigma` are both NaN has no prior; `set_priors` refuses a
+  `sigma` that is not finite and positive on every other coordinate, with a
+  message that says how no prior is written.
 - MATLAB: `gplite/gplite_hypprior.m:35` is
   `uidx = ~isfinite(mu) | ~isfinite(sigma)`, and `gplite/gplite_nlZ.m:13`
   documents "Set HPRIOR.sigma(i) = Inf to have a (non-normalized) flat prior
@@ -503,13 +509,14 @@ fact inherited from MATLAB.
   documented way of asking for a flat prior. gpyreg requires both, because a
   non-finite `mu` with a finite `sigma` is how it identifies its own
   smooth-box families (the entry above). A prior written MATLAB's way is
-  refused; until the wave-6 pass it was taken for a Student's t and gave a
-  log posterior of `-inf` or NaN and a design column of NaN. PyVBMC never
-  writes such a prior (`_gp_hyp` gives every prior a finite `mu` and `sigma`,
-  and leaves both NaN where there is none).
+  refused (gpyreg 1.2.1 took it for a Student's t, with a log posterior of
+  `-inf` or NaN and a design column of NaN). PyVBMC never writes such a
+  prior: `_gp_hyp` gives every coordinate that has a prior a finite `mu` and
+  `sigma`, and leaves both NaN where there is none.
 - Why: the `and` is required by the smooth-box families of `27f8d66`
-  (2021-06-11); the refusal is the wave-6 pass (`verification/wave6.md`,
-  W6-17, with `wave6_G1.md`, row G1-12).
+  (2021-06-11); the refusal: `verification/wave6.md`, W6-17, with
+  `wave6_G1.md`, row G1-12, and the coordinates without a prior, "The
+  independent check of the pass".
 - Kind: deliberate change.
 
 ### An exception of the hyperparameter objective ends the fit
@@ -542,6 +549,88 @@ fact inherited from MATLAB.
 - Why: `dbc91d6` (2021-06-24) and later; a plausible midpoint rather than
   the origin (`verification/wave6.md`, W6-24).
 - Kind: deliberate change.
+
+### A training set of equal targets takes a range of one
+- Python: `gpyreg/covariance_functions.py: _target_spread`, which the bound
+  recommendations of the kernels, the noise and the mean take the scale of
+  the targets from.
+- MATLAB: `gplite/gplite_covfun.m:130-131`, `gplite/gplite_noisefun.m:104`,
+  `gplite/gplite_train.m:142`.
+- What differs: with targets that are all equal, the range
+  `max(y) - min(y)` is zero on both sides, and the recommended bounds of the
+  output scale and the upper bound of the noise are `-inf`; `UB = max(LB,
+  UB)` leaves the pair `(-Inf, -Inf)`, which gplite hands to `fmincon`.
+  gpyreg gives such a training set the range and the standard deviation of a
+  unit range, with a warning, as both sides do for a single target, and the
+  fit completes. A PyVBMC run without hard bounds reaches it when the log
+  joint is constant over the initial design.
+- Why: `verification/wave6.md`, W6-4 (the PI's ruling); entry 53 of
+  `matlab_side_defects.md`.
+- Kind: deliberate change (gpyreg's repair of a defect of both sides).
+
+### `random_function` takes negative eigenvalues of rounding size for zeros
+- Python: `gpyreg/gaussian_process.py: random_function` and
+  `__robust_cholesky`.
+- MATLAB: `gplite/gplite_rnd.m:61`, `:97-110`.
+- What differs: where the Cholesky factorization of the predictive
+  covariance fails, both sides factor it through its eigendecomposition,
+  keep the eigenvalues above MATLAB's drop tolerance (`gplite_rnd.m:102`)
+  and flip whole eigenvectors to one sign convention (`:97-99`). MATLAB
+  refuses a factor when a kept eigenvalue is negative and returns an empty
+  one, which the draw then multiplies against a vector of another size; on a
+  dense one-dimensional grid the kept set holds eigenvalues of rounding size
+  and of both signs, and the draw fails. gpyreg takes a negative eigenvalue
+  within `10 * n * eps` times the prior variance at the test points, the
+  scale of the terms whose difference the predictive covariance is, for a
+  zero, and raises `LinAlgError` for one beyond it. No PyVBMC code calls
+  `random_function`.
+- Why: `verification/wave6.md`, W6-7 and W6-8, and "The independent check
+  of the pass" for the scale of the band; entry 46 of
+  `matlab_side_defects.md`.
+- Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
+
+### An infinite width of the slice sampler does not return after the burn-in
+- Python: `gpyreg/slice_sample.py: SliceSampler`, which copies the base
+  widths after an infinite width is replaced.
+- MATLAB: `gplite/private/slicesamplebnd.m:168`, `:176`, `:377`.
+- What differs: MATLAB copies `basewidths = widths` before `:176` replaces
+  an infinite width by 10, and `:377` recombines the adapted widths with
+  `sqrt(newwidths.*basewidths)`, so an infinite width comes back after the
+  burn-in and the chain is NaN from then on. gpyreg copies after the
+  replacement. `gplite_train` and PyVBMC pass finite widths.
+- Why: `verification/wave6.md`, W6-14; entry 47 of
+  `matlab_side_defects.md`.
+- Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
+
+### The degree-1 Matern gradient is zero where two inputs coincide
+- Python: `gpyreg/covariance_functions.py: Matern.compute`, the gradient
+  with respect to the length scales at degree 1, which
+  `gpyreg/isotropic_covariance_functions.py: MaternIsotropic` shares.
+- MATLAB: `gplite/gplite_covfun.m:198`, `:218-219`.
+- What differs: at degree 1 MATLAB's derivative factor is `1./t`, so the
+  length-scale gradient is `Inf * 0 = NaN` on the diagonal and wherever two
+  inputs coincide, and the gradient of the marginal likelihood is NaN for
+  every length scale; the repair stands commented out below the line.
+  gpyreg sets the gradient to zero there, its value. Degrees 3 and 5 agree,
+  and PyVBMC uses the squared exponential.
+- Why: `verification/wave6.md`, W6-32; entry 45 of
+  `matlab_side_defects.md`.
+- Kind: deliberate change (gpyreg's repair of a MATLAB-side defect).
+
+### The slice sampler has no Metropolis step
+- Python: `gpyreg/slice_sample.py: SliceSampler` has no Metropolis step, no
+  option and no attribute for one.
+- MATLAB: `gplite/private/slicesamplebnd.m:189`, the options `MetropolisPdf`
+  and `MetropolisRnd`, and the step that interleaves proposals from them
+  with the slice moves.
+- What differs: MATLAB's sampler can interleave Metropolis moves with a user
+  density; gpyreg's cannot. gpyreg 1.2.1 read the option under a misspelt
+  key, so its options never turned the step on, while setting its three
+  attributes directly did. Neither `gplite_train` nor PyVBMC sets the
+  options.
+- Why: the step had no caller and no documentation, and one test set its
+  attributes; the PI ruled its removal (`verification/wave6.md`, W6-21).
+- Kind: removed feature.
 
 ## Slice P1a — main loop, warmup, termination, final boost
 
@@ -1299,8 +1388,9 @@ fact inherited from MATLAB.
   the same hyperparameters to about 1e-15 in `alpha`, in the predictions and
   in the `C_tmp` that the noisy acquisitions read, in the Cholesky
   representation, the only one a PyVBMC run enters (the noise variance of a
-  run is at least `tol_gp_noise` = 1e-5, the representation's threshold
-  1e-6), also for a new point whose noise lies below every existing one.
+  run is at least `tol_gp_noise**2` = 1e-5, the option being a floor on the
+  standard deviation, and the representation's threshold is 1e-6), also for
+  a new point whose noise lies below every existing one.
   What is left is the cost of a step, O(N^2) against O(N^3), and two
   differences of state: after a retried Cholesky factorization the rank-one
   update keeps the stored `sn2_mult`, where a recomputation derives it again
@@ -1310,8 +1400,12 @@ fact inherited from MATLAB.
   above it, the rank-one update keeps the Cholesky representation and the
   stored `sl` where a rebuild takes the other representation (the numbers
   agree, to 1e-13 in `alpha`). In that other representation the extension
-  was unguarded until the wave-6 pass, which recomputes there as the
-  Cholesky branch already did (`verification/wave6.md`, W6-9).
+  recomputes in full, with a warning, where the predictive variance of the
+  new point is at or below its noise, that is, where rounding drove the
+  latent variance to zero or below and `predict` clamped it, the analogue of
+  the Cholesky branch's test; a tiny positive latent variance proceeds, and
+  the extension is inaccurate there, as the Cholesky branch is for a tiny
+  positive argument of its square root (`verification/wave6.md`, W6-9).
 - Why: commit `510a493` (2026-09-19) "fix(active_sample): rank-one GP update
   for a fresh noisy observation". Transcribing MATLAB's condition literally
   would import the duplicate training row, which
@@ -2529,11 +2623,11 @@ them. They are *not* differences from MATLAB.
   (`gplite/gplite_noisefun.m:186-194`), the output-dependent term is dropped
   when no target is given (`:198`), `random_function` and `gplite_rnd.m:67`
   evaluate the noise at the test points with neither target nor variance,
-  and a training set of one point gives infinite recommended bounds on both
-  sides, which `gpyreg/gaussian_process.py: get_recommended_bounds` and
-  `gplite/gplite_train.m:141` repair alike with `UB = max(LB, UB)` where the
-  pair is inverted (W6-36; equal targets, whose pair is `(-inf, -inf)` on
-  both sides, are W6-4). `f_min_fill` with no more evaluations than provided
+  and `gpyreg/gaussian_process.py: get_recommended_bounds` and
+  `gplite/gplite_train.m:142` repair an inverted pair of recommended bounds
+  alike, with `UB = max(LB, UB)` (W6-36). A training set of one point is a
+  difference, entry 49 of `matlab_side_defects.md`, and equal targets are
+  the entry "A training set of equal targets takes a range of one". `f_min_fill` with no more evaluations than provided
   starting points evaluates and returns the first `N` of them, as
   `gplite/private/fminfill.m:98-114` does since `46b6f5e` (W6-25).
 - **The `_get_hyp_cov` decay denominator matches MATLAB.** PyVBMC divides

@@ -143,6 +143,35 @@ records its execution.
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
   independent check of the pass").
 
+- [ ] **What the independent check of the wave-6 pass left for later.**
+  None changes a number of a run at the shipped options; the raw reports of
+  the check are on the machine that ran it (`scripts/runs/LOCAL.md`, "Port
+  correctness review").
+  - gpyreg: `RationalQuadraticARD.get_bounds_info` carries a full copy of
+    the bounds helper of `covariance_functions.py`, and every change of the
+    recommendations has had to patch both; it can call the helper and
+    override the shape's entries. `GP.update` and `GP.quad` each recover the
+    noise scale `sl` of a posterior pickled without it, in two copies of the
+    same lines that a method of `Posterior` could hold.
+  - gpyreg: a `fit` on a single training point ends with the `KeyError` of
+    L-BFGS-B, since the width of every input column is zero and the
+    length-scale bounds are `(-inf, -inf)`; gplite fits there, its `max`
+    and `min` running along the single row (entry 49 of
+    `experiments/port_review_20260919/matlab_side_defects.md`). A candidate
+    for triage, as the constant targets of row W6-4 were.
+  - gpyreg: `set_priors` takes a NaN location beside a finite `sigma` (a
+    Gaussian prior with `mu` NaN, a smooth box with `a` NaN), and the log
+    prior is then NaN; the mirror of a NaN `sigma` beside a set location,
+    which it refuses. A candidate for triage.
+  - PyVBMC: `ns_gp_max` is read at every fit, but `_init_optim_state` also
+    derives `stop_sampling` from it, so raising it from zero at `load` is
+    stored and leaves the hyperparameters unsampled.
+  - PyVBMC: the three captures under
+    `pyvbmc/testing/oracles/fixtures/gp_fit_history/` still hold the arrays
+    `capture/ref/fit/hyp_dict_logp`, which no sidecar names since
+    `hyp_dict` lost its `logp`; prune them the next time a capture is
+    rewritten.
+
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated and the code review above is complete, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
