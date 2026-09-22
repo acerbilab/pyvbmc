@@ -3847,7 +3847,9 @@ class VBMC:
                 "extremely low-density regions) is not ported, so turning "
                 "the option on would only replace the GP noise function "
                 "and disable the rank-one GP update, a configuration of "
-                "neither toolbox."
+                "neither toolbox. A saved run that carries the value is "
+                "continued with "
+                "VBMC.load(file, new_options={'noise_shaping': False})."
             )
 
     def _refuse_construction_only_options(self, new_options):

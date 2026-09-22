@@ -290,6 +290,30 @@ def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
     assert "VBMC.load(file, new_options=" in message
 
 
+def test_a_saved_run_that_carries_noise_shaping_is_loaded_as_the_refusal_says(
+    tmp_path,
+):
+    """Release 1.0.4 took ``noise_shaping = True``, which is now refused at
+    construction and when a saved run that carries it is loaded. The
+    refusal names the argument of ``load`` that replaces the value, and
+    the run loads with it."""
+    vbmc = _vbmc()
+    vbmc.options.__setitem__("noise_shaping", True, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+    remedy = "VBMC.load(file, new_options={'noise_shaping': False})"
+
+    with pytest.raises(NotImplementedError) as at_construction:
+        _vbmc(options={"noise_shaping": True})
+    assert remedy in at_construction.value.args[0]
+    with pytest.raises(NotImplementedError) as at_load:
+        VBMC.load(saved)
+    assert remedy in at_load.value.args[0]
+
+    loaded = VBMC.load(saved, new_options={"noise_shaping": False})
+    assert loaded.options["noise_shaping"] is False
+
+
 @pytest.mark.parametrize("value", ["Nelder-Mead", "bounded", "fmincon", ""])
 def test_a_search_optimizer_outside_the_two_values_is_refused(value):
     """``search_optimizer`` names one of the two local searches of the
