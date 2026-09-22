@@ -64,6 +64,25 @@ def test_options_user_options():
     assert "foo" in options.get("useroptions")
 
 
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_options_built_from_another_options_leave_it_alone(as_dict):
+    """The options of one run can be given as the user options of another,
+    as an `Options` object or a dict copied from one. Each keeps a set of
+    user options of its own: building the second leaves the first's set as
+    it was, and the name `useroptions` is not an option the user set."""
+    default_options_path = options_path.joinpath("test_options.ini")
+    options_1 = Options(default_options_path, {"D": 2}, {"foo": "iter2"})
+    before = set(options_1["useroptions"])
+
+    source = dict(options_1) if as_dict else options_1
+    options_2 = Options(default_options_path, {"D": 2}, source)
+
+    assert options_1["useroptions"] == before
+    assert options_2["useroptions"] is not options_1["useroptions"]
+    assert "useroptions" not in options_2["useroptions"]
+    assert options_2.get("foo") == "iter2"
+
+
 def test_init_from_existing_options():
     default_options_path = options_path.joinpath("test_options.ini")
     user_options = {"foo": "iter2"}

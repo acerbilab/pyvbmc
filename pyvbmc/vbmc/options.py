@@ -245,10 +245,16 @@ class Options(MutableMapping, dict):
         # load options from file
         self.load_options_file(default_options_path, evaluation_parameters)
 
-        # User options
+        # User options. They may be the options of another run, as an
+        # `Options` object or a dict copied from one, whose set of user
+        # options is left out: taken over, it would be shared between the
+        # two, and the names added here would change the other run's.
         if user_options is not None:
-            self.update(user_options)
-            self["useroptions"].update(user_options.keys())
+            supplied = {
+                k: v for k, v in user_options.items() if k != "useroptions"
+            }
+            self.update(supplied)
+            self["useroptions"].update(supplied.keys())
 
     def integer_vars_mask(self, D: int):
         """
