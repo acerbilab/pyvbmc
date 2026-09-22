@@ -29,6 +29,19 @@ from .options import Options
 _selection_policy_callback = None
 
 
+def _refresh_training_counts(optim_state, function_logger):
+    """Write the counts of the training set into ``optim_state``.
+
+    ``N`` is the number of training inputs and ``n_eff`` the number of
+    evaluations over the live rows, where a repeated observation pooled
+    into its row counts once more. The GP training reads both.
+    """
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+
+
 def _log_search_failure(logger, exc):
     """Report a local acquisition search that raised."""
     logger.warning(
@@ -217,6 +230,7 @@ def active_sample(
                     function_logger(Xs[idx])
                 else:
                     function_logger.add(Xs[idx], ys[idx])
+        _refresh_training_counts(optim_state, function_logger)
 
     else:
         # active uncertainty sampling
@@ -304,12 +318,7 @@ def active_sample(
 
         ## Active sampling loop (sequentially acquire Ns new points)
         for i in range(sample_count):
-            optim_state["N"] = (
-                function_logger.Xn + 1
-            )  # Number of training inputs
-            optim_state["n_eff"] = np.sum(
-                function_logger.n_evals[function_logger.X_flag]
-            )
+            _refresh_training_counts(optim_state, function_logger)
             ###
             # if options.ActiveVariationalSamples > 0 % Unused
             ###
@@ -737,6 +746,10 @@ def active_sample(
                             optim_state["cache"][key], idx, 0
                         )
             timer.stop_timer("fun_time")
+            # The counts follow each evaluation, as in MATLAB, where the
+            # function logger refreshes them (`misc/funlogger_vbmc.m:278-279`):
+            # the GP refit below reads them before the next acquisition.
+            _refresh_training_counts(optim_state, function_logger)
 
             if hasattr(function_logger, "S"):
                 s2new = function_logger.S[idx_new] ** 2

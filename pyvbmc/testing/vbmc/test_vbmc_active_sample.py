@@ -2806,7 +2806,7 @@ def test_in_loop_variational_update_keeps_no_repository(mocker):
 
 def test_active_sample_refreshes_n_eff(mocker):
     """Each acquisition refreshes the effective training-set count, which
-    the in-loop updates read, to the number of evaluations over the live
+    the in-loop GP refit reads, to the number of evaluations over the live
     rows of the function logger."""
     vbmc, gp, function_logger, optim_state = _noisy_run(
         mocker,
@@ -2846,3 +2846,62 @@ def test_active_sample_refreshes_n_eff(mocker):
     # A repeated observation is pooled into its row, so the count is not
     # the number of rows.
     assert any(n_eff > n_rows for n_eff, _, n_rows in seen)
+
+
+def test_in_loop_gp_refit_reads_the_counts_after_the_evaluation(mocker):
+    """The GP refit between two acquisitions reads the number of training
+    inputs and the number of evaluations over them, and it reads them as
+    they stand after the evaluation just logged: MATLAB refreshes both
+    after every logged evaluation (``misc/funlogger_vbmc.m:278-279``). A
+    repeated observation raises the second count alone, a fresh point
+    both."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "max_repeated_observations": 1,
+            "active_sample_gp_update": True,
+        },
+        acq=_prefer_training,
+    )
+    seen = []
+
+    def recording_train_gp(
+        hyp_dict, optim_state, logger, history, options, *a, **k
+    ):
+        seen.append(
+            (
+                optim_state["N"],
+                optim_state["n_eff"],
+                logger.Xn + 1,
+                np.sum(logger.n_evals[logger.X_flag]),
+            )
+        )
+        return train_gp(
+            hyp_dict, optim_state, logger, history, options, *a, **k
+        )
+
+    mocker.patch.object(
+        _active_sample_module, "train_gp", side_effect=recording_train_gp
+    )
+    N0 = function_logger.Xn + 1
+    n_eff0 = np.sum(function_logger.n_evals[function_logger.X_flag])
+    active_sample(
+        gp,
+        3,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # One refit after each acquisition but the last: the first acquisition
+    # repeats a training input, the second is a fresh point.
+    assert [(N, n_eff) for N, n_eff, _, _ in seen] == [
+        (N0, n_eff0 + 1),
+        (N0 + 1, n_eff0 + 2),
+    ]
+    for N, n_eff, logger_N, logger_n_eff in seen:
+        assert N == logger_N
+        assert n_eff == logger_n_eff

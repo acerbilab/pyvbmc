@@ -32,7 +32,7 @@ from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 from ._bounds import _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
-from .active_sample import active_sample
+from .active_sample import _refresh_training_counts, active_sample
 from .gaussian_process_train import (
     _lean_gp,
     _restore_gp_posteriors,
@@ -1580,11 +1580,10 @@ class VBMC:
                     )
                     self.hyp_dict = self.optim_state["hyp_dict"]
 
-            # Number of training inputs
-            self.optim_state["N"] = self.function_logger.Xn + 1
-            self.optim_state["n_eff"] = np.sum(
-                self.function_logger.n_evals[self.function_logger.X_flag]
-            )
+            # The counts of the training set, which active sampling refreshes
+            # after each evaluation; an iteration that acquires no point
+            # still needs them to follow the trimming of the warm-up.
+            _refresh_training_counts(self.optim_state, self.function_logger)
 
             timer.stop_timer("active_sampling")
 
