@@ -414,3 +414,60 @@ def test_every_elcbo_nan_selects_the_last_iteration():
             )
             expected = 3 if max_idx is None else max_idx
             assert idx_best == expected, (rank_criterion_flag, stable)
+
+
+def test_determine_best_vp_defaults_to_the_run_options():
+    """Called without selection arguments, ``determine_best_vp`` uses the
+    run's options ``best_safe_sd``, ``best_frac_back`` and
+    ``rank_criterion``, so that on a finished run it returns the iteration
+    the run selected. In both histories below the last iteration is not
+    stable."""
+    ranked = dict(
+        elbo=[2.0, 0.0, 1.0, 3.0],
+        elbo_sd=[0.0, 0.0, 0.0, 0.1],
+        r_index=[0.0, 3.0, 2.0, 1.0],
+        stable=[True, False, False, False],
+    )
+    unstable = dict(
+        elbo=[4.0, 3.0, 2.0, 1.0, 0.0],
+        elbo_sd=[0.0] * 5,
+        r_index=[1.0] * 5,
+        stable=[False] * 5,
+    )
+    cases = [
+        # The ranking criterion, on by default, selects the stable first
+        # iteration, as in test_rank_penalty_equals_the_number_of_iterations.
+        (ranked, {}, 0),
+        # Without it, the look-back since that iteration selects the last
+        # one, whose ELCBO is the best,
+        (ranked, {"rank_criterion": False}, 3),
+        # unless a larger penalty on its uncertainty makes the first one
+        # the best.
+        (ranked, {"rank_criterion": False, "best_safe_sd": 20}, 0),
+        # Without a stable iteration, the look-back window covers the
+        # fraction best_frac_back of the iterations.
+        (unstable, {"rank_criterion": False}, 2),
+        (unstable, {"rank_criterion": False, "best_frac_back": 1.0}, 0),
+    ]
+    for scores, options, expected in cases:
+        vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
+        recorded_history(vbmc, **scores)
+        __, __, __, idx_default = vbmc.determine_best_vp()
+        __, __, __, idx_options = vbmc.determine_best_vp(
+            safe_sd=vbmc.options["best_safe_sd"],
+            frac_back=vbmc.options["best_frac_back"],
+            rank_criterion_flag=vbmc.options["rank_criterion"],
+        )
+        assert idx_default == idx_options == expected, options
+
+    # An argument given explicitly overrides the option. The defaults of
+    # the arguments in release 1.0.4, an ELCBO penalty of 5, a quarter of
+    # the iterations and no ranking criterion, select another iteration of
+    # the first history than the default options do.
+    vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
+    recorded_history(vbmc, **ranked)
+    assert vbmc.options["rank_criterion"]
+    __, __, __, idx_best = vbmc.determine_best_vp(
+        safe_sd=5, frac_back=0.25, rank_criterion_flag=False
+    )
+    assert idx_best == 3

@@ -2855,27 +2855,36 @@ class VBMC:
     def determine_best_vp(
         self,
         max_idx: int = None,
-        safe_sd: float = 5,
-        frac_back: float = 0.25,
-        rank_criterion_flag: bool = False,
+        safe_sd: float = None,
+        frac_back: float = None,
+        rank_criterion_flag: bool = None,
     ):
         """
         Return the best VariationalPosterior found during the optimization of
         VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
+
+        Called without the selection arguments, the method uses the run's
+        options, so that on a finished run it returns the iteration the run
+        selected.
 
         Parameters
         ----------
         max_idx : int, optional
             Check up to this iteration, by default None which means last iter.
         safe_sd : float, optional
-            Penalization for uncertainty, by default 5.
+            Penalization for uncertainty: the multiple of the ELBO_SD
+            subtracted from the ELBO to give the ELCBO. By default None,
+            which means the option ``best_safe_sd`` (5 unless set).
         frac_back : float, optional
             If no past stable iteration, go back up to this fraction of
-            iterations, by default 0.25.
+            iterations. Used only without the ranking criterion. By default
+            None, which means the option ``best_frac_back`` (0.25 unless
+            set).
         rank_criterion_flag : bool, optional
             If True use new ranking criterion method to pick best solution.
-            It finds a solution that combines ELCBO, stability, and recency,
-            by default False.
+            It finds a solution that combines ELCBO, stability, and recency.
+            By default None, which means the option ``rank_criterion``
+            (True unless set).
 
         Returns
         -------
@@ -2904,6 +2913,12 @@ class VBMC:
         # Check up to this iteration (default, last)
         if max_idx is None:
             max_idx = self.iteration_history.get("iter")[-1]
+        if safe_sd is None:
+            safe_sd = self.options["best_safe_sd"]
+        if frac_back is None:
+            frac_back = self.options["best_frac_back"]
+        if rank_criterion_flag is None:
+            rank_criterion_flag = self.options["rank_criterion"]
 
         if self.iteration_history.get("stable")[max_idx]:
             # If the current iteration is stable, return it
