@@ -63,17 +63,24 @@ _PRECOMPUTED_DUPLICATE_ULPS = 4
 # consulted: the run's own state already holds what construction made of
 # them. ``load`` refuses these names rather than take them.
 #
-# The list was derived by searching ``pyvbmc/`` for every read of each
-# option (``options[...]``, ``options.get(...)``, and the two ``Options``
-# methods that read one, ``uncertainty_handling_on`` and
-# ``integer_vars_mask``), and keeping the options whose every read is in
+# An option belongs here when every read of it in ``pyvbmc/`` lies in
 # ``VBMC.__init__``, in the ``_init_optim_state`` and
-# ``_initialize_precomputed_evaluations`` it calls, or in
-# ``Options.update_defaults``. A read of the ``optim_state`` entry that
-# carries the same name is a read of the state, not of the option, and
-# does not count; the comment above each group of names below says which
-# site reads them. An option that a later iteration reads,
-# ``noise_shaping`` and ``max_fun_evals`` among them, is not here.
+# ``_initialize_precomputed_evaluations`` it calls, in
+# ``Options.update_defaults``, or in a value check, a ``VBMC._validate_*``
+# method, which construction and ``load`` share. Two reads are not reads a
+# run acts on: ``load``'s rewrite of the ``integer_vars`` that release 1.0.4
+# stored, and ``active_sample``'s read of ``active_search_bound`` into two
+# locals that nothing uses. A read of the ``optim_state`` entry that carries
+# the same name is a read of the state, not of the option. The test
+# ``test_construction_only_options_are_the_options_only_construction_reads``
+# (``pyvbmc/testing/vbmc/test_options.py``) holds the tuple to this rule. It
+# sees reads written as ``options[...]``, ``options.get(...)`` or
+# ``options.eval(...)`` with a quoted name, on a name that contains
+# ``options``, and calls of ``Options.uncertainty_handling_on`` and
+# ``Options.integer_vars_mask``; a read written otherwise escapes it. An
+# option that a later iteration reads, ``noise_shaping`` and
+# ``max_fun_evals`` among them, is not here; the comment above each group
+# of names below says which site reads them.
 _CONSTRUCTION_ONLY_OPTIONS = (
     # Read by ``Options.update_defaults``, which settles the defaults for a
     # noisy target, and by ``_init_optim_state`` through

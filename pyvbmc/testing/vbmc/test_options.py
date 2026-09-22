@@ -346,12 +346,12 @@ _READS_BY_METHOD = {
     ),
     "integer_vars_mask": ("integer_vars",),
 }
-# Reads that no run acts on: ``active_sample`` reads the option into two
-# locals that nothing uses, and ``load`` reads the stored ``integer_vars``
-# to rewrite the form that release 1.0.4 wrote.
+# Reads that no run acts on, by option and site: ``active_sample`` reads
+# the option into two locals that nothing uses, and ``load`` reads the
+# stored ``integer_vars`` to rewrite the forms that release 1.0.4 wrote.
 _READS_THAT_DO_NOT_COUNT = {
     ("active_search_bound", "active_sample"),
-    ("integer_vars", "load"),
+    ("integer_vars", "VBMC.load"),
 }
 
 
@@ -359,9 +359,11 @@ def _option_read_sites(names):
     """Map each option name to the functions of the package that read it.
 
     A read is ``options[name]``, ``options.get(name)`` or
-    ``options.eval(name, ...)`` on a mapping whose name ends in
-    ``options``, the same on ``self`` inside :class:`Options`, or a call of
-    one of the methods of ``_READS_BY_METHOD``. The site is the function
+    ``options.eval(name, ...)`` with a quoted name, on a mapping whose name
+    contains ``options``, the same on ``self`` inside :class:`Options`, or
+    a call of one of the methods of ``_READS_BY_METHOD``. A read written
+    otherwise, through a variable key, an alias whose name lacks
+    ``options`` or ``__getitem__``, is not seen. The site is the function
     that holds the read, as ``Class.method``, or the name of a module-level
     function."""
     package_path = options_path.parent.parent
@@ -369,11 +371,11 @@ def _option_read_sites(names):
 
     def is_options(node, in_options_class):
         if isinstance(node, ast.Name):
-            return node.id.endswith("options") or (
+            return "options" in node.id or (
                 in_options_class and node.id == "self"
             )
         if isinstance(node, ast.Attribute):
-            return node.attr.endswith("options")
+            return "options" in node.attr
         return False
 
     for path in package_path.rglob("*.py"):
@@ -443,14 +445,20 @@ def test_construction_only_options_are_the_options_only_construction_reads():
         readers = {
             site
             for site in readers
-            if (name, site.split(".")[-1]) not in _READS_THAT_DO_NOT_COUNT
+            if (name, site) not in _READS_THAT_DO_NOT_COUNT
         }
+        sites[name] = readers
         if readers and all(
             site in _CONSTRUCTION_SITES or site.startswith("VBMC._validate_")
             for site in readers
         ):
             construction_only.add(name)
-    assert construction_only == set(_CONSTRUCTION_ONLY_OPTIONS)
+    differing = construction_only ^ set(_CONSTRUCTION_ONLY_OPTIONS)
+    assert not differing, "; ".join(
+        f"{name}: {'in' if name in _CONSTRUCTION_ONLY_OPTIONS else 'not in'}"
+        f" the tuple, read at {sorted(sites.get(name, ()))}"
+        for name in sorted(differing)
+    )
 
 
 def test_inert_option_away_from_its_default_warns(caplog):
