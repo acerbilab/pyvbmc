@@ -1153,7 +1153,11 @@ class VariationalPosterior:
             )
 
         if raw_flag:
-            return np.concatenate((theta, np.log(constrained_parameters)))
+            # A zero weight has the raw parameter minus infinity, which
+            # `set_parameters` maps back to zero.
+            with np.errstate(divide="ignore"):
+                log_parameters = np.log(constrained_parameters)
+            return np.concatenate((theta, log_parameters))
         else:
             return np.concatenate((theta, constrained_parameters))
 

@@ -846,6 +846,24 @@ def test_set_parameters_zero_weight(optimize_weights):
     assert np.allclose(softmax, vp.w, rtol=0, atol=1e-12)
 
 
+def test_get_parameters_raw_zero_weight():
+    """The raw parameter of a zero weight is minus infinity, taken without a
+    warning, and setting the raw parameters back gives the weights again."""
+    K = 3
+    D = 2
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    w = np.array([[0.0, 0.4, 0.6]])
+    vp.w = w.copy()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        theta = vp.get_parameters(raw_flag=True)
+
+    assert theta[-K] == -np.inf
+    vp.set_parameters(theta, raw_flag=True)
+    assert np.allclose(vp.w, w, rtol=0, atol=1e-15)
+
+
 def test_set_parameters_reference_regression():
     K = 2
     D = 2
