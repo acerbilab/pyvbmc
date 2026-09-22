@@ -856,8 +856,10 @@ def test_active_uncertainty_sampling(mocker):
         "active_sample_gp_update": True,
     }
     # The search stops by its own tolerance (`tolfun = 1e-2` on a log
-    # acquisition), which on about one stream in seven halts it on the
-    # valley floor short of the minimum; the seed fixes one that reaches it.
+    # acquisition), which on some streams halts it on the valley floor
+    # short of the minimum. Every draw below comes from the run's
+    # generator, the GP fit's included, so the seed fixes the stream, and
+    # it is one on which the search reaches the minimum.
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, options, seed=0)
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
     N_init = 10
@@ -882,6 +884,7 @@ def test_active_uncertainty_sampling(mocker):
         vbmc.options,
         vbmc.plausible_lower_bounds,
         vbmc.plausible_upper_bounds,
+        rng=vbmc.vp.rng,
     )
     optim_state["hyp_dict"] = hyp_dict
     sample_count = 2
@@ -2229,18 +2232,36 @@ def test_repeated_observation_candidates_off_by_default(mocker):
 
 
 def _noisy_run(
-    mocker, user_options, acq=None, lower_bounds=None, upper_bounds=None
+    mocker,
+    user_options,
+    acq=None,
+    lower_bounds=None,
+    upper_bounds=None,
+    noise_sd=1.0,
+    uncertainty_level=2,
 ):
     """A noisy ``VBMC`` on a quadratic target with the given options, its
     initial design drawn and a GP trained; ``acq`` replaces the
-    acquisition wrapper (``AbstractAcqFcn.__call__``) when given."""
+    acquisition wrapper (``AbstractAcqFcn.__call__``) when given.
+
+    The noise of the target has the standard deviation ``noise_sd``. At
+    uncertainty level 2 the target returns it with each value
+    (``specify_target_noise``); at level 1 it returns the value alone and
+    the run infers the noise (``uncertainty_handling``)."""
     D = 2
     rng = np.random.default_rng(0)
 
     def noisy_target(x):
         x = np.atleast_2d(x)
-        return -0.5 * np.sum(x**2) + rng.normal(), 1.0
+        value = -0.5 * np.sum(x**2) + noise_sd * rng.normal()
+        if uncertainty_level == 2:
+            return value, noise_sd
+        return value
 
+    if uncertainty_level == 2:
+        noise_options = {"specify_target_noise": True}
+    else:
+        noise_options = {"uncertainty_handling": True}
     vbmc = VBMC(
         noisy_target,
         np.zeros((1, D)),
@@ -2249,12 +2270,13 @@ def _noisy_run(
         np.full((1, D), -3.0),
         np.full((1, D), 3.0),
         {
-            "specify_target_noise": True,
+            **noise_options,
             "active_sample_gp_update": False,
             "active_sample_vp_update": False,
             **user_options,
         },
     )
+    assert vbmc.optim_state["uncertainty_handling_level"] == uncertainty_level
     if acq is not None:
         mocker.patch(
             "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", acq
@@ -2695,12 +2717,25 @@ def test_compute_var_log_joint_hook_through_active_sample(mocker):
     assert function_logger.Xn == Xn0 + 2
 
 
-def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
+@pytest.mark.parametrize("uncertainty_level", [1, 2])
+def test_noisy_fresh_point_takes_the_rank_one_gp_update(
+    mocker, uncertainty_level
+):
     """On a noisy target a first observation at a new input extends the GP
-    posterior by rank one, reaching the factors of a full recomputation."""
+    posterior by rank one, with the noise variance of the observation,
+    reaching the factors of a full recomputation. At uncertainty level 2
+    the target gives the standard deviation of its noise, here 0.3, and
+    the variance passed is its square; at level 1 the function logger
+    records a standard deviation of 1 for every observation."""
+    noise_sd = 0.3
     vbmc, gp, function_logger, optim_state = _noisy_run(
-        mocker, {"max_repeated_observations": 0}, acq=_cheap_acq
+        mocker,
+        {"max_repeated_observations": 0},
+        acq=_cheap_acq,
+        noise_sd=noise_sd,
+        uncertainty_level=uncertainty_level,
     )
+    Xn0 = function_logger.Xn
 
     # The step takes that branch, with the observation's noise variance,
     # instead of recomputing the posterior.
@@ -2719,7 +2754,12 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
     )
     assert reupdate_spy.call_count == 0
     assert update_spy.call_count == 1
-    assert update_spy.call_args.kwargs["s2_new"] is not None
+    first = Xn0 + 1
+    assert function_logger.n_evals[first] == 1
+    s2_new = update_spy.call_args.kwargs["s2_new"]
+    assert np.allclose(s2_new, function_logger.S[first] ** 2)
+    recorded_sd = noise_sd if uncertainty_level == 2 else 1.0
+    assert np.allclose(s2_new, recorded_sd**2)
 
     # The rank-one extension by the last acquired point, which the GP has
     # not seen yet, agrees with recomputing the posterior from the whole
