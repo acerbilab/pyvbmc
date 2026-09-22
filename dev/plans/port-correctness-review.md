@@ -2112,6 +2112,21 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   pin); gpyreg's `port-review-wave6` pushed at `caacbc1` (PI: push both,
   2026-09-22), checked out in `../gpyreg-port-review`, with the agents'
   local branches `port-review-wave6-A` and `-B` beside it. In this order:
+  0. Three rulings the PI has not made, put to the PI before anything runs:
+     (a) W6-38, the inverted plausible pair of `fit`, fixed as the last
+     commit of the gpyreg branch (`caacbc1`) without a ruling
+     (`verification/wave6.md`, "Found during the fix pass"): keep it, or
+     strike it (drop the commit before the pull request). (b) gpyreg's
+     `test_fitting`, in `test_gaussian_process.py` and its isotropic twin,
+     is an unseeded statistical test that failed 2 of 6 runs on the untouched
+     revision and 1 of 6 on agent A's branch (agent A's note 2): seed it in
+     this pass as a `test:` commit, or leave it with a line in `TODO.md`.
+     (c) W6-9 as made guards the low-noise rank-one update only where the
+     variance clamp bit (`v_star <= sn2_eff`), the analogue of the other
+     branch's test; a tiny positive latent variance still proceeds and the
+     branch stays inaccurate there (agent A's note 4). Nothing to change
+     unless the PI wants a wider guard; otherwise the sheet's rank-one entry
+     says so (the drafted `records_sheet.py` does).
   1. W6-1 by the orchestrator, on `port-review-wave6`, last and alone: `axis=0`
      in the statistics of `X` of `covariance_functions._bounds_info_helper`
      (the length scales' `x0`, and its copy in `RationalQuadraticARD`) and of
