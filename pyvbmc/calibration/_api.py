@@ -114,6 +114,11 @@ def _print_fallback_summary(
 ) -> None:
     if outcome == "is busy":
         print(f"Calibration did not start: {reason}.")
+    elif outcome == "refused":
+        print(
+            f"Calibration finished in {elapsed:.0f} seconds, but its "
+            f"results cannot be used: {reason}."
+        )
     else:
         print(
             "Calibration could not complete after "
@@ -210,8 +215,10 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
                 _validate_report(dict(report), settings)
             except ValueError as error:
                 status = "invalid"
+                outcome = "refused"
                 reason = f"campaign results failed validation ({error})"
         else:
+            outcome = status
             reason = str(report.get("reason", f"campaign status: {status}"))
 
         if status != "complete":
@@ -223,7 +230,7 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
             if verbose:
                 _print_fallback_summary(
                     profile,
-                    outcome=status,
+                    outcome=outcome,
                     reason=reason,
                     elapsed=elapsed,
                 )
@@ -250,19 +257,25 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
                     report=report,
                     elapsed_seconds=elapsed,
                 )
-                written_path = write_record(record)
             except (OSError, ValueError) as error:
-                persistence_reason = f"cache write failed ({error})"
-            else:
-                cache_path = str(written_path)
-                provenance = dict(record["provenance"])
-                provenance.update(
-                    {
-                        "kernel_revision": KERNEL_REVISION,
-                        "workload_revision": WORKLOAD_REVISION,
-                    }
+                persistence_reason = (
+                    f"cache record could not be built ({error})"
                 )
-                persistence = "saved"
+            else:
+                try:
+                    written_path = write_record(record)
+                except (OSError, ValueError) as error:
+                    persistence_reason = f"cache write failed ({error})"
+                else:
+                    cache_path = str(written_path)
+                    provenance = dict(record["provenance"])
+                    provenance.update(
+                        {
+                            "kernel_revision": KERNEL_REVISION,
+                            "workload_revision": WORKLOAD_REVISION,
+                        }
+                    )
+                    persistence = "saved"
 
         if persistence != "saved":
             provenance["persistence"] = persistence_reason or "unavailable"

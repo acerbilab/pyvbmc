@@ -275,7 +275,9 @@ def test_complete_campaign_with_invalid_report_falls_back(
     assert "discovery" in profile.provenance["reason"]
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
-    assert "Calibration could not complete after" in output
+    assert "Calibration finished in" in output
+    assert "but its results cannot be used" in output
+    assert "could not complete" not in output
     assert "results failed validation" in output
     assert "Using the standard settings." in output
 
@@ -300,8 +302,55 @@ def test_complete_campaign_with_invalid_settings_falls_back(
     assert "pdf_chunk_elements" in profile.provenance["reason"]
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
+    assert "but its results cannot be used" in output
+    assert "could not complete" not in output
     assert "results failed validation" in output
     assert "Using the standard settings." in output
+
+
+def test_record_that_cannot_be_built_keeps_success_in_memory(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    # A second backend that reports no threads: the identity is fit for
+    # reuse, and the validation of cache records refuses it.
+    data = identity()
+    data["backends"].append(
+        dict(data["backends"][0], num_threads=0, internal_api="other")
+    )
+    assert _cache.identity_reuse_reason(data) is None
+    install_guard(
+        monkeypatch,
+        _cache.CampaignGuard(
+            acquired=True,
+            persistent=True,
+            reason=None,
+            identity=data,
+            fingerprint=_cache.fingerprint(data),
+            path=_cache.cache_path(_cache.fingerprint(data)),
+        ),
+    )
+    value = complete_result()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+    monkeypatch.setattr(
+        _api,
+        "write_record",
+        lambda record: pytest.fail("a record that was not built was written"),
+    )
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "complete"
+    assert profile.source == "memory"
+    assert profile.settings == value["settings"]
+    assert profile.cache_path is None
+    persistence = profile.provenance["persistence"]
+    assert persistence.startswith("cache record could not be built")
+    assert "thread count" in persistence
+    output = capsys.readouterr().out
+    assert "Results could not be saved. Attempted location:" in output
+    assert "cache record could not be built" in output
+    assert "write failed" not in output
 
 
 def test_record_refused_by_the_cache_keeps_success_in_memory(
