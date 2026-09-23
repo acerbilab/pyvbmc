@@ -8,7 +8,9 @@ other than those the orchestrator verified itself (`wave5.md`, part 1),
 without `optimize()` runs. Its scripts are kept as `scripts/wave5_P7_*.py`,
 under the names the report gives them with `wave5_` in front. The text
 below the rule is the agent's final message, unedited; `wave5.md` holds the
-consolidated ledger and the dispositions.
+consolidated ledger and the dispositions. Its check Q1 of the readers of the
+log density leaves out that the optimizer of `mode` reaches the underflowed
+region at its first trial step on a narrow posterior (`wave7.md`, W7-3).
 
 ---
 

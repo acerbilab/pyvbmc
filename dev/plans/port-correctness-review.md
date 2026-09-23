@@ -554,7 +554,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   object works through `dill` and gets `save`/`load` methods as a
   `TODO.md` item; the core transformer's loss of precision near a
   nonzero bound waits for slices P8 and O3 to say whether MATLAB shares
-  it.
+  it. (Answered by wave 7, `verification/wave7.md`, W7-6: MATLAB shares it,
+  and the loss is at an upper bound with `abs(b) < b - a`, worst at
+  `b = 0`, not at a nonzero bound; a lower bound keeps full precision. Left
+  as it is in both.)
 - [x] 2026-09-19: chunk-independent Monte Carlo entropy (PI decision).
   Every chunk budget reproduces the default budget's output bit for bit:
   the mixture densities and every sum over samples and components are
@@ -1400,7 +1403,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   and `-inf` beyond. The acquisitions and `fess` floor it at the log of the
   smallest positive float as their MATLAB counterparts do, so a log-sum-exp
   evaluation changes nothing there while the floors stand; the mode search
-  starts at samples and component means, never at such a point; `mtv` reads
+  starts at samples and component means, never at such a point, but on a
+  narrow posterior the first trial step of its optimizer lands at one, and
+  the start is returned unrefined (corrected by wave 7,
+  `verification/wave7.md`, W7-3); `mtv` reads
   no density; the entropies take the log of their own sums with no floor on
   either side; at the default `kl_gauss=True` the main loop reads no
   density. `kl_div(gauss_flag=False)` replaces a zero density by the

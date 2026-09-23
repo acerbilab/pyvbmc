@@ -5,6 +5,9 @@ for use by maintainers and coding agents working on this repository. Copied
 from the lab publication archive [acerbilab/pubs-llms](https://github.com/acerbilab/pubs-llms).
 Each paper is split into `_main` (core text), `_appendix` (supplementary material), `_backmatter`
 (references and acknowledgments.
+Where a transcribed equation disagrees with its derivation and with the code,
+a quotation beginning **Maintainers' note** beside it says so; the rest of
+each file is the archive's text.
 
 | Key | Paper | What it defines |
 |---|---|---|
