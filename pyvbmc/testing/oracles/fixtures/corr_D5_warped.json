@@ -458,6 +458,22 @@
     },
     "oracle": "gp_fit_history",
     "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the fit of the recorded GP history as they move gp_fit: hyp and sn2_hpd in the seven states that sample, the sampler widths and the state that does not sample bit-identical"
+   },
+   {
+    "date": "2026-09-23 12:07:29",
+    "git": {
+     "dirty": true,
+     "sha": "129f53d6"
+    },
+    "max_abs_change": {
+     "dlogpdf": 0.8327826001422736,
+     "dpdf": 0.0,
+     "logpdf": 0.3094891831184441,
+     "pdf": 0.0,
+     "pdf_orig": 0.0
+    },
+    "oracle": "vp_pdf",
+    "reason": "Wave 7 of the port correctness review, row W7-3 (PI, 2026-09-23): the log density of the variational posterior and its gradient are computed by log-sum-exp where the mixture density is below the smallest normal double; the stored references held -inf and NaN at those rows of cigar_D4_boosted, cigar_D4_largeK and corr_D5_warped, and every other entry is unchanged."
    }
   ],
   "recipe": "corr_D5_warped",
