@@ -537,11 +537,11 @@ def _option_read_sites(names):
 
 
 def test_construction_only_options_are_the_options_only_construction_reads():
-    """``_CONSTRUCTION_ONLY_OPTIONS``, the options that ``VBMC.load``
-    refuses, lists exactly the declared options whose every read is made
-    while a ``VBMC`` object is built or by a value check: an option that a
-    later iteration starts to read, or a new option read at construction
-    alone, fails here."""
+    """``_CONSTRUCTION_ONLY_OPTIONS``, the options of which ``VBMC.load``
+    takes only the value the run stores, lists exactly the declared options
+    whose every read is made while a ``VBMC`` object is built or by a value
+    check: an option that a later iteration starts to read, or a new option
+    read at construction alone, fails here."""
     names = _declared_option_names() - set(INERT_OPTIONS)
     sites = _option_read_sites(names)
     construction_only = set()

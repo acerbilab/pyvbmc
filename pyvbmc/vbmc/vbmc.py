@@ -74,7 +74,9 @@ _PRECOMPUTED_DUPLICATE_ULPS = 4
 # The options that are read while a ``VBMC`` object is built and never
 # again, so that a value given to ``VBMC.load`` would be stored and never
 # consulted: the run's own state already holds what construction made of
-# them. ``load`` refuses these names rather than take them.
+# them. ``load`` takes back the value the run stores for one of them, in
+# any form that construction reads alike, and refuses any other value
+# rather than store it.
 #
 # An option belongs here when every read of it in ``pyvbmc/`` lies in
 # ``VBMC.__init__``, in the ``_init_optim_state`` and
