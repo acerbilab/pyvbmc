@@ -62,6 +62,9 @@ its entry below.
   `gp_sample_thin`. The `vbmc.hyp_dict` of a run started by this release
   has no `logp` entry.
 - `vp.pdf(x, grad_flag=True)` raises an error in the original parameter space.
+  `vp.pdf` and `vp.log_pdf` raise an error for an `x` whose rows do not have
+  `D` coordinates; for a posterior of one parameter, several points are
+  passed as a column (`x.reshape(-1, 1)`).
 - Other methods of the variational posterior return something else in
   some calls: `vp.kl_div(samples=...)`, `vp.kl_div(gauss_flag=False)` with
   densities that are not finite, `vp.pdf` at integer or float32
@@ -69,8 +72,12 @@ its entry below.
   `vp.moments` of a posterior of one parameter (a 1-by-1 covariance), the
   component indices of `vp.sample` (always a flat array of integers), and
   `vp.mode()`, which no longer advances the random stream of the run,
-  runs a search of its own when `n_opts` is given, and searches again
-  after `vp.get_parameters()`, which discards the stored mode.
+  runs a search of its own when `n_opts` is given, searches again
+  after `vp.get_parameters()`, which discards the stored mode, and refines
+  its starting point on a narrow posterior. `vp.log_pdf` is finite far in
+  the tails, where 1.0.4 returned `-inf`, and `vp.set_parameters` leaves
+  `sigma` or `lambd` as it is when its `optimize_sigma` or `optimize_lambd`
+  flag is off.
   `vp.moments` and `vp.kl_div` refuse a number of samples that is not
   whole, which 1.0.4 truncated.
   `vp.set_parameters(theta, raw_flag=False)` refuses a negative scale or
@@ -770,6 +777,17 @@ its entry below.
   expressed in the new coordinates for every recorded evaluation. The points
   set aside at the end of warm-up kept the coordinates of the space the run
   had left.
+- With `gp_mean_fun="zero"`, a run with two or more variables stopped with
+  `ValueError` ("Unsupported GP mean function for input warping.") at its
+  first input warp. The warp re-expresses the length scales of a zero-mean
+  GP as it does for the other mean functions, and the GP fit that follows
+  the warp adapts the rest.
+- `VBMC.load(file, iteration=k)` at an iteration that kept an input warp,
+  and `VBMC.load(file)` of a run that stopped on one, restore that
+  iteration's GP hyperparameters, from which a resumed run starts its GP
+  fit. The record of such an iteration held the hyperparameters of the
+  iteration before, from before the warp; files saved by earlier versions
+  keep that record.
 - `upper_gp_length_factor` caps the length scales of the GP, as documented.
   In 1.0.4 it had no effect.
 - With `weighted_hyp_cov=False`, the running covariance of the GP
@@ -821,6 +839,19 @@ its entry below.
     the density of another point. A float32 point is transformed in
     double precision, which moves its density in the last digits of
     single precision.
+  - `vp.log_pdf`, and `vp.pdf` with `log_flag=True`, are finite far in the
+    tails of the posterior, where the density is too small for a double:
+    there the log density and its gradient are computed over the
+    components in log space. 1.0.4 returned `-inf` with a NaN gradient, and
+    lost precision just before. `vp.mode()` therefore refines its starting
+    point on a narrow posterior (a standard deviation below about 0.01 in
+    the units of the parameters), where 1.0.4 returned the starting point
+    unrefined, with a NumPy `RuntimeWarning`.
+  - `vp.pdf` and `vp.log_pdf` raise `ValueError` when the rows of `x` do
+    not have `D` coordinates. For a posterior of one parameter, 1.0.4 read
+    a flat array of several points as a single point and failed with an
+    obscure error or, in the transformed space with a finite `df`, returned
+    one meaningless number.
   - `vp.mode()` works for a posterior of one parameter, where it raised an
     `AxisError`. It draws its starting points from a copy of the random
     generator, so a call leaves the random stream of a run where it was and
@@ -831,6 +862,12 @@ its entry below.
     `vp.get_parameters()` discards a stored mode, which its normalization
     of the weights may have moved, and gives a zero weight the raw
     parameter minus infinity without NumPy's warning of a division by zero.
+  - `vp.set_parameters` rescales `sigma` and `lambd` against each other
+    only when both are optimized; a scale whose `optimize_sigma` or
+    `optimize_lambd` flag is off keeps its value. 1.0.4 rescaled whatever
+    the flags, so that with `sigma` fixed and `lambd` optimized the
+    variational optimization inflated the fixed `sigma` at every evaluation
+    of its objective.
   - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
     hold `sigma`, `lambd` and the weights to be positive, and those alone.
     1.0.4 checked other entries: a negative scale could pass, and a

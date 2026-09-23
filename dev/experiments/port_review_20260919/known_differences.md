@@ -2346,6 +2346,52 @@ fact inherited from MATLAB.
 - Why: mechanical; recorded so the missing file is not reported.
 - Kind: deliberate change.
 
+### The log density is taken in log space where the density underflows
+- Python: `pyvbmc/variational_posterior/variational_posterior.py: _pdf`,
+  under `log_flag`: a row whose mixture density is below the smallest
+  normal double takes its log density as a log-sum-exp of the components'
+  log densities and its gradient from their responsibilities; every other
+  row takes the log of the linear sum, as before.
+- MATLAB: `vbmc_pdf.m:58-66`, `:107-110` takes the log of the linear sum
+  and the gradient `dy./y` at every point (`matlab_side_defects.md`, row
+  58).
+- What differs: beyond about 38.6 standard deviations from every component
+  MATLAB returns `-Inf` with a NaN gradient and PyVBMC finite values. The
+  acquisitions floor the log density at `log(realmin)` on both sides, so no
+  run moves; `vp.mode()` refines its start on a narrow posterior, where the
+  first trial point of its optimizer lands in that region. The Student-t
+  branches (`df` finite) take the log of their linear sum on both sides; they
+  underflow only far beyond any point a run evaluates.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-3.
+- Kind: deliberate change.
+
+### `pdf` refuses points whose width is not the dimension
+- Python: `_pdf` raises `ValueError` when the rows of `x` do not have `D`
+  coordinates; the decorator reads a flat array as one point.
+- MATLAB: `vbmc_pdf.m:41` does not check the width
+  (`matlab_side_defects.md`, row 60).
+- What differs: for a posterior of one parameter, a row of several points
+  is refused in PyVBMC and gives one number in MATLAB.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-4.
+- Kind: deliberate change (interface).
+
+### `set_parameters` rescales the two scales only when both are optimized
+- Python: `VariationalPosterior.set_parameters` divides `lambd` by its root
+  mean square and multiplies `sigma` by it only when `optimize_sigma` and
+  `optimize_lambd` are both true; `_neg_elcbo` assigns θ through it.
+- MATLAB: `misc/rescale_params.m` rescales whatever the flags;
+  `misc/negelcbo_vbmc.m:33-48` assigns θ to a by-value copy without
+  rescaling, and `misc/vpoptimize_vbmc.m:189` calls `rescale_params` on the
+  result.
+- What differs: with both scales optimized, as every run has them on both
+  sides, nothing. With one not optimized, the objective is a function of θ
+  alone on both sides, and the posterior that `optimize_vp` returns keeps
+  the fixed scale where MATLAB's is rescaled, with the same density.
+  `get_parameters` normalizes whatever the flags, as `rescale_params.m`
+  does.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-8.
+- Kind: deliberate change (a dormant configuration).
+
 ---
 
 ## Slice P8 — parameter transformer, warping, function logger
@@ -2616,6 +2662,20 @@ fact inherited from MATLAB.
   log-Jacobian or a singular map, and a logger whose two routes disagreed.
 - Why: the PI's rulings on W3-26 and W3-32.
 - Kind: Python-only addition.
+
+### A zero-mean GP is warped
+- Python: `pyvbmc/whitening/whitening.py: warp_gp_and_vp` re-expresses the
+  zero, constant and negative quadratic means; for a zero mean it warps the
+  length scales and leaves the constant shift of the stored log joint to the
+  refit that follows every warp.
+- MATLAB: `misc/warp_gpandvp_vbmc.m:37-66` catches the zero mean (code 0)
+  in the case commented "Warp constant mean" and reads past the end of its
+  hyperparameters; the constant mean (code 1) falls to `otherwise`, which
+  errors (`matlab_side_defects.md`, row 57).
+- What differs: a run with `gp_mean_fun` set to `"zero"` or `"const"` warps
+  in PyVBMC and stops at its first warp in MATLAB.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-1.
+- Kind: deliberate change.
 
 ---
 
@@ -3030,3 +3090,15 @@ them. They are *not* differences from MATLAB.
   of one another: a chain that stays where the GP is uncertain has small
   weights `1/(2 sinh(u s))` and large terms `2 sinh(u s_pred)`. (Row W4-10,
   `verification/scripts/wave4_A1c_isr_row_totals.py`.)
+- **Three behaviors of the warps and the transforms are MATLAB's.** After a
+  warp the search box is the minimum and maximum of 1000 uniform draws of
+  the old box, mapped (`whitening.py: warp_input`, `warp_input_vbmc.m:143-148`),
+  whose extent per coordinate falls short of the exact image more as the
+  dimension grows, with a volume lost of at most about `2D/1001`; every
+  bounded transform resolves the distance to an upper bound only to
+  `(b - a) eps/2`, a loss beyond the representation of the point where
+  `abs(b) < b - a`, while a lower bound keeps full precision
+  (`warpvars_vbmc.m:106-108`, `:256-258`, `:442-459`); and the Student-t(4)
+  forward transform loses up to about 1.6e-8 near the midpoint by
+  cancellation (`warpvars_vbmc.m:265-269`). All three are left as they are
+  in both (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-5 to W7-7; `matlab_side_defects.md`).
