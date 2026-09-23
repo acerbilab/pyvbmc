@@ -43,7 +43,9 @@ its entry below.
   An `active_importance_sampling_mcmc_samples` that is neither a finite
   number nor a function (`True` and NaN among them) raises an error, also
   for a run that does not read it and when `VBMC.load` finds it in a saved
-  run.
+  run. So does a `gp_sample_thin` that is not a whole number greater than
+  zero, whatever `ns_gp_max`: 1.0.4 ran a boolean as its integer, and any
+  value with `ns_gp_max=0`.
   A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
   non-negative integer raises an error, also when no `log_file_name` is
   given; `None` and `False`, with which 1.0.4 wrote no log file, are among
@@ -885,6 +887,14 @@ its entry below.
   was replaced by `tol_gp_noise` without a word. Any other value is
   refused at construction and by `VBMC.load`, with a message that names
   the option, as MATLAB VBMC refuses a value that is not positive.
+- `gp_sample_thin` takes a whole number greater than zero, of an integer or
+  a floating-point type (`5.0` is read as 5). Any other value is refused at
+  construction and by `VBMC.load`, whatever `ns_gp_max`, with a message
+  that names the option. 1.0.4 raised an error at the first GP fit that
+  sampled the hyperparameters, after the evaluations of the initial design,
+  for a value such as 0, 2.5 or 5.0, ran a boolean as its integer, and took
+  any value with `ns_gp_max=0`, which fits the hyperparameters without
+  sampling them.
 - After a second or later input warp, the bounds of the acquisition search
   could be mapped through the transform of an earlier iteration. We have not
   seen this happen in a run.

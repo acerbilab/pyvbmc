@@ -4041,6 +4041,7 @@ class VBMC:
         self._validate_warp_cov_reg_option()
         self._validate_hpd_frac_option()
         self._validate_noise_size_option()
+        self._validate_gp_sample_thin_option()
         self._validate_mcmc_samples_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
@@ -4328,6 +4329,32 @@ class VBMC:
         uncertainty level: ``_noise_size_reading`` says which values it
         takes, and the GP fit reads the option through it."""
         _noise_size_reading(self.options.get("noise_size"))
+
+    def _validate_gp_sample_thin_option(self):
+        """Check the thinning of the GP hyperparameter samples.
+
+        The GP fit keeps one sample in ``gp_sample_thin``: a whole number
+        greater than zero, of an integer or a floating-point type and not a
+        boolean, as the fit of gpyreg takes its ``thin``. The check does
+        not depend on ``ns_gp_max``: the fit checks the value whether or
+        not it samples, and ``load`` can give a positive ``ns_gp_max`` to a
+        run built without sampling.
+        """
+        value = self.options.get("gp_sample_thin")
+        if (
+            isinstance(value, Real)
+            and _is_finite_real_number(value)
+            and value >= 1
+            and value == math.floor(value)
+        ):
+            return
+        raise ValueError(
+            "The option gp_sample_thin must be a whole number greater than "
+            "zero, of an integer or a floating-point type (not a boolean); "
+            f"it is {value!r}. A saved run that carries such a value is "
+            "continued with VBMC.load(file, new_options="
+            "{'gp_sample_thin': 5})."
+        )
 
     def _validate_mcmc_samples_option(self):
         """Check the number of importance samples of the noisy acquisitions,

@@ -1071,3 +1071,78 @@ def test_a_saved_importance_sample_count_of_true_loads_as_the_refusal_says(
     assert remedy in at_load.value.args[0]
     loaded = VBMC.load(saved, new_options={_MCMC_SAMPLES: 100})
     assert loaded.options[_MCMC_SAMPLES] == 100
+
+
+@pytest.mark.parametrize("ns_gp_max", [80, 0])
+@pytest.mark.parametrize(
+    "value",
+    [0, -1, 2.5, np.nan, np.inf, True, np.bool_(True), "5", None, np.array(5)],
+    ids=[
+        "zero",
+        "negative",
+        "fractional",
+        "nan",
+        "inf",
+        "bool",
+        "numpy-bool",
+        "str",
+        "None",
+        "0-d-array",
+    ],
+)
+def test_a_gp_sample_thin_that_is_not_a_whole_number_above_zero_is_refused(
+    tmp_path, value, ns_gp_max
+):
+    """The GP fit keeps one hyperparameter sample in ``gp_sample_thin``, a
+    whole number greater than zero, of an integer or a floating-point type,
+    as the fit of gpyreg takes it. Any other value is refused at
+    construction and by ``load``, whatever ``ns_gp_max``, with the same
+    message, which names the option, where it would otherwise fail at the
+    first GP fit, after the initial design has been evaluated."""
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc(options={"gp_sample_thin": value, "ns_gp_max": ns_gp_max})
+    assert "gp_sample_thin" in at_construction.value.args[0]
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc(options={"ns_gp_max": ns_gp_max}).save(saved)
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={"gp_sample_thin": value})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [1, 5, 5.0, np.int64(3), np.float64(2.0)],
+    ids=["one", "int", "whole-float", "int64", "whole-float64"],
+)
+def test_a_gp_sample_thin_that_is_a_whole_number_above_zero_is_taken(
+    tmp_path, value
+):
+    """A whole number greater than zero is taken, of an integer or a
+    floating-point type, at construction and by ``load``."""
+    vbmc = _vbmc(options={"gp_sample_thin": value})
+    assert vbmc.options["gp_sample_thin"] is value
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    loaded = VBMC.load(saved, new_options={"gp_sample_thin": value})
+    assert loaded.options["gp_sample_thin"] is value
+
+
+def test_a_saved_gp_sample_thin_of_true_loads_as_the_refusal_says(tmp_path):
+    """Release 1.0.4 took ``True`` for ``gp_sample_thin`` and ran it as 1,
+    and took any value with ``ns_gp_max=0``, which fits the GP without
+    sampling. Such a value is refused when a saved run that carries it is
+    loaded, and the refusal names the argument of ``load`` that replaces
+    it."""
+    vbmc = _vbmc(options={"ns_gp_max": 0})
+    vbmc.options.__setitem__("gp_sample_thin", True, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+    remedy = "VBMC.load(file, new_options={'gp_sample_thin': 5})"
+
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved)
+    assert remedy in at_load.value.args[0]
+    loaded = VBMC.load(saved, new_options={"gp_sample_thin": 5})
+    assert loaded.options["gp_sample_thin"] == 5
