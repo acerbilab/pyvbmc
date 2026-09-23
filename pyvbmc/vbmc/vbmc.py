@@ -625,6 +625,7 @@ class VBMC:
         self.precomputed_location_count = 0
         self._initialize_precomputed_evaluations(precomputed_evaluations)
         self._validate_initial_fresh_budget()
+        self._validate_initial_design_spread()
 
         # The starting points in the coordinates the caller gave them in.
         # The transformed copy belongs to the inference space of this
@@ -989,6 +990,41 @@ class VBMC:
                 "for the initial design: "
                 f"{self._effective_max_fun_evals} fresh calls remain, but "
                 f"{required} are required."
+            )
+
+    def _validate_initial_design_spread(self):
+        """Refuse starting points that leave a coordinate of the initial
+        design without spread.
+
+        With at least ``fun_eval_start`` starting points, the initial design
+        is the first ``fun_eval_start`` of them (``active_sample``); with
+        fewer, the rest is drawn from the plausible box. A coordinate that
+        takes one value across a design made of starting points alone gives
+        the GP no width to scale its length scale by: its recommended bounds
+        are infinite, and the first fit fails after the design's evaluations
+        are spent.
+
+        Raises
+        ------
+        ValueError
+            If at least ``fun_eval_start`` starting points are given and a
+            coordinate takes one value across the first ``fun_eval_start``
+            of them.
+        """
+        sample_count = int(self.options.get("fun_eval_start"))
+        x_orig = self.optim_state["cache"]["x_orig"]
+        if x_orig.shape[0] < sample_count:
+            return
+        design = x_orig[:sample_count]
+        flat = np.flatnonzero(np.all(design == design[0], axis=0))
+        if flat.size:
+            raise ValueError(
+                f"The initial design is the first fun_eval_start = "
+                f"{sample_count} starting points, and they take one value "
+                f"in coordinate(s) {flat.tolist()}, which leaves the GP no "
+                "width to fit there. Give starting points that vary in every "
+                f"coordinate, or fewer than {sample_count} of them: the rest "
+                "of the initial design is then drawn from the plausible box."
             )
 
     def _fresh_evaluations_for_batch(self, requested):

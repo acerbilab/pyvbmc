@@ -194,6 +194,49 @@ def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
     assert np.all(vbmc.plausible_lower_bounds < vbmc.plausible_upper_bounds)
 
 
+def _bounds_2d():
+    D = 2
+    return (
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -3.0),
+        np.full((1, D), 3.0),
+    )
+
+
+def test_vbmc_refuses_a_design_of_starting_points_without_spread():
+    """With at least ``fun_eval_start`` starting points, the initial design
+    is the first ``fun_eval_start`` of them. A coordinate that takes one
+    value across them leaves the GP no width there, and the first fit would
+    fail after the design's evaluations are spent (row W7-17 of the port
+    review), so construction refuses them."""
+    lb, ub, plb, pub = _bounds_2d()
+    shared = np.column_stack([np.linspace(-2, 2, 12), np.full(12, 0.5)])
+    for n in (10, 12):
+        with pytest.raises(ValueError, match=r"coordinate\(s\) \[1\]"):
+            VBMC(fun, shared[:n], lb, ub, plb, pub)
+    # A later point that varies does not help: the design is the first ten.
+    later = shared.copy()
+    later[-1, 1] = 1.5
+    with pytest.raises(ValueError, match="fun_eval_start = 10"):
+        VBMC(fun, later, lb, ub, plb, pub)
+    # The size of the design is the one the run uses.
+    with pytest.raises(ValueError, match="fun_eval_start = 5"):
+        VBMC(fun, shared[:5], lb, ub, plb, pub, options={"fun_eval_start": 5})
+
+
+def test_vbmc_takes_starting_points_that_leave_the_design_spread():
+    """Fewer than ``fun_eval_start`` starting points that share a
+    coordinate are taken, since the rest of the design is drawn from the
+    plausible box, and so are starting points that vary in every
+    coordinate."""
+    lb, ub, plb, pub = _bounds_2d()
+    shared = np.column_stack([np.linspace(-2, 2, 6), np.full(6, 0.5)])
+    VBMC(fun, shared, lb, ub, plb, pub)
+    rng = np.random.default_rng(0)
+    VBMC(fun, rng.uniform(-2, 2, size=(10, 2)), lb, ub, plb, pub)
+
+
 def test_vbmc_bounds_check_not_vectors():
     D = 3
     lb = np.ones((1, D)) * -2
