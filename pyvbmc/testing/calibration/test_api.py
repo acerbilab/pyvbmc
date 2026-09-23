@@ -61,8 +61,9 @@ def result(status="complete"):
     }
 
 
-def complete_result():
+def complete_result(**settings):
     value = result()
+    value["settings"].update(settings)
     record = make_test_record(identity(), **value["settings"])
     value["report"] = record["report"]
     return value
@@ -102,7 +103,7 @@ def test_every_quiet_call_runs_fresh_campaign(monkeypatch, capsys):
 
     def fake_campaign(*, progress, deadline):
         calls.append((progress, deadline))
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -124,7 +125,7 @@ def test_watchdog_is_five_minutes_from_api_entry(monkeypatch):
 
     def fake_campaign(*, progress, deadline):
         seen["deadline"] = deadline
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -254,6 +255,55 @@ def test_persistence_failure_keeps_success_in_memory(monkeypatch, capsys):
     assert "Future runs will use these settings automatically." not in output
 
 
+def test_complete_campaign_with_invalid_report_falls_back(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = complete_result()
+    # A workload missing from one group's timings, as when the campaign's
+    # recipe and the validator's tables disagree.
+    value["report"]["groups"]["pdf"]["discovery"].pop()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.settings == {name: 2**16 for name in value["settings"]}
+    assert profile.source == "default"
+    assert "report failed validation" in profile.provenance["reason"]
+    assert "discovery" in profile.provenance["reason"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Calibration could not complete after" in output
+    assert "report failed validation" in output
+    assert "Using the standard settings." in output
+
+
+def test_record_refused_by_the_cache_keeps_success_in_memory(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    guard_value = guard(persistent=True, reason=None)
+    install_guard(monkeypatch, guard_value)
+    value = complete_result()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+    monkeypatch.setattr(_cache, "MAX_CACHE_BYTES", 1024)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "complete"
+    assert profile.source == "memory"
+    assert profile.settings == value["settings"]
+    assert profile.cache_path is None
+    assert "size limit" in profile.provenance["persistence"]
+    assert _cache._load_report(profile) == value["report"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Results could not be saved. Attempted location:" in output
+    assert "These settings are available in this process." in output
+
+
 def test_verbose_feedback_reports_progress_values_and_location(
     monkeypatch, capsys
 ):
@@ -269,7 +319,7 @@ def test_verbose_feedback_reports_progress_values_and_location(
                 "message": "synthetic inputs ready",
             }
         )
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -290,8 +340,7 @@ def test_verbose_feedback_reports_progress_values_and_location(
 
 def test_verbose_default_completion_uses_plain_summary(monkeypatch, capsys):
     install_guard(monkeypatch, guard())
-    value = result()
-    value["settings"] = {name: 2**16 for name in value["settings"]}
+    value = complete_result(**{name: 2**16 for name in result()["settings"]})
     monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
 

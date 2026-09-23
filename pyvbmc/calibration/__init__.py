@@ -29,10 +29,10 @@ def calibrate(*, verbose=True):
     held-out measurements that justify them are in the JSON report named by
     its ``cache_path``. A campaign takes tens of seconds, an estimate rather
     than a deadline. A five-minute watchdog stops further work only after a
-    numerical call returns. If another calibration is active or the campaign
-    is incomplete, this function returns a compatible prior profile or
-    historical defaults with the outcome recorded in its ``status`` and
-    ``provenance``.
+    numerical call returns. If another calibration is active, or the
+    campaign is incomplete or its results fail validation, this function
+    returns a compatible prior profile or historical defaults with the
+    outcome recorded in its ``status`` and ``provenance``.
     """
     from ._api import calibrate as _calibrate
 
