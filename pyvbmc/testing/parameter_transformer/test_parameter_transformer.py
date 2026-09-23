@@ -638,6 +638,10 @@ def test_inverse_type3_max_space():
     X = parameter_transformer.inverse(Y)
     assert np.allclose(X, np.ones((10, D)) * 10)
 
+    # The inverse keeps its result strictly inside the bounds: a point whose
+    # image rounds onto the upper bound comes back as the largest number
+    # below it. The tail of the Student's t is polynomial, so its points
+    # round onto the bound much farther out than those of the probit.
     for t in [12, 13]:  # probit, student4
         parameter_transformer = ParameterTransformer(
             D=D,
@@ -645,9 +649,9 @@ def test_inverse_type3_max_space():
             ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
-        Y = np.ones((10, D)) * -500
+        Y = np.ones((10, D)) * 1e6
         X = parameter_transformer.inverse(Y)
-        assert np.allclose(X, np.ones((1, D)) * -10)
+        assert np.all(X == np.nextafter(10, -np.inf))
 
 
 def test_transform_direct_inverse():
