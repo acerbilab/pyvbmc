@@ -496,8 +496,10 @@ def test_neg_elcbo_default_variance_follows_beta():
     if ``beta`` is nonzero, a ``beta`` that is not finite being taken as
     zero; ``varF`` is 0.0 when the variance is not computed.
     ``misc/negelcbo_vbmc.m`` also computes it when the caller takes
-    ``varF``, which Python cannot see (wave 7 of the port review, row
-    W7-9)."""
+    ``varF`` and passes ``compute_grad = 0`` (with its default
+    ``compute_grad`` such a call stops in ``misc/gplogjoint.m``); Python
+    cannot see which outputs a caller takes (wave 7 of the port review,
+    row W7-9)."""
     vp, gp = _gp_log_joint_fixture()
     theta = vp.get_parameters()
 

@@ -1170,7 +1170,8 @@ def _neg_elcbo(
         approximation, which ``_gp_log_joint`` does not implement and
         refuses. If not given, the variance is computed if and only if
         ``beta`` is nonzero. ``varF`` is 0.0 when the variance is not
-        computed.
+        computed. The variance has no gradient, so a variance together
+        with ``compute_grad`` raises (see Raises).
     theta_bnd : dict, optional
         Soft bounds for theta.
     _entropy_alpha : float, defaults to 0.0
@@ -1210,6 +1211,17 @@ def _neg_elcbo(
     J_sjk : np.ndarray
         The contribution to ``varG`` per GP hyperparameter sample and per pair
         of VP components.
+
+    Raises
+    ======
+    NotImplementedError
+        With ``compute_grad`` and a nonzero ``beta`` (the gradient of the
+        confidence term, which needs the gradient of the variance), with
+        ``compute_grad`` and ``compute_var`` 1 (``_gp_log_joint`` has no
+        gradient of the full variance), and with ``compute_var`` 2 (the
+        diagonal approximation of the variance is not implemented).
+    ValueError
+        With ``compute_grad`` and ``separate_K`` together.
     """
     if not np.isfinite(beta):
         beta = 0
