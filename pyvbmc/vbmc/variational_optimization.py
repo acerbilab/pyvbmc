@@ -1158,14 +1158,15 @@ def _neg_elcbo(
     vp : VariationalPosterior
         Variational posterior for which to evaluate NELCBO.
     beta : float, defaults to 0.0
-        Confidence weight.
+        Confidence weight. A value that is not finite is taken as 0.
     Ns : int, defaults to 0
         Number of samples for entropy.
     compute_grad : bool, defaults to True
         Whether to compute gradient.
     compute_var : bool, optional
-        Whether to compute variance. If not given this is
-        determined automatically.
+        Whether to compute variance. If not given, the variance is computed
+        if and only if ``beta`` is nonzero. ``varF`` is 0.0 when the
+        variance is not computed.
     theta_bnd : dict, optional
         Soft bounds for theta.
     entropy_alpha : float, defaults to 0.0

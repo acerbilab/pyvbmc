@@ -405,6 +405,33 @@ def test_neg_elcbo():
     assert np.allclose(dF, matlab_dF)
 
 
+def test_neg_elcbo_default_variance_follows_beta():
+    """Left as ``None``, ``compute_var`` computes the variance if and only
+    if ``beta`` is nonzero, a ``beta`` that is not finite being taken as
+    zero; ``varF`` is 0.0 when the variance is not computed.
+    ``misc/negelcbo_vbmc.m`` also computes it when the caller takes
+    ``varF``, which Python cannot see (wave 7 of the port review, row
+    W7-9)."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+
+    def evaluate(beta, compute_var=None):
+        return _neg_elcbo(
+            theta, gp, copy.deepcopy(vp), beta, 0, False, compute_var
+        )
+
+    F0, _, _, _, varF0 = evaluate(0.0)
+    assert isinstance(varF0, float) and varF0 == 0.0
+    F_inf, _, _, _, varF_inf = evaluate(np.inf)
+    assert F_inf == F0 and varF_inf == 0.0
+
+    _, _, _, _, varF_full = evaluate(0.0, compute_var=True)
+    assert varF_full > 0.0
+    F2, _, _, _, varF2 = evaluate(2.0)
+    assert varF2 == varF_full
+    assert np.isclose(F2, F0 + 2.0 * np.sqrt(varF_full))
+
+
 def test_vp_bound_loss():
     D = 2
     K = 2
