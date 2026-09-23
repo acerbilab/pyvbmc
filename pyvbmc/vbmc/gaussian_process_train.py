@@ -10,7 +10,7 @@ from pyvbmc.stats import get_hpd
 from pyvbmc.stats._rounding import round_half_away_from_zero
 
 from .iteration_history import IterationHistory
-from .options import Options
+from .options import Options, _noise_size_reading
 
 
 def train_gp(
@@ -334,16 +334,18 @@ def _gp_hyp(
 
     noise_x0 = noise_bounds_info["x0"]
     min_noise = options["tol_gp_noise"]
+    # `None` when the option is empty, which leaves it unset.
+    given_noise_size = _noise_size_reading(options["noise_size"])
     noise_mult = None
     if optim_state["uncertainty_handling_level"] == 0:
-        if options["noise_size"] != []:
-            noise_size = max(options["noise_size"], min_noise)
+        if given_noise_size is not None:
+            noise_size = max(given_noise_size, min_noise)
         else:
             noise_size = min_noise
         noise_std = 0.5
     elif optim_state["uncertainty_handling_level"] == 1:
-        if options["noise_size"] != []:
-            noise_mult = max(options["noise_size"], min_noise)
+        if given_noise_size is not None:
+            noise_mult = max(given_noise_size, min_noise)
             noise_mult_std = np.log(10) / 2
         else:
             noise_mult = 1

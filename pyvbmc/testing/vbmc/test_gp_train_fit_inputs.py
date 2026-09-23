@@ -12,6 +12,7 @@ import math
 
 import gpyreg as gpr
 import numpy as np
+import pytest
 
 import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 import pyvbmc.vbmc.vbmc as vbmc_module
@@ -591,3 +592,76 @@ def test_the_noise_multiplier_starts_where_matlab_starts_it(monkeypatch):
         assert kind == "student_t"
         assert mu == np.log(vbmc.options["tol_gp_noise"])
         assert sigma == np.log(10) and df == 3
+
+
+def noise_starting_point_and_priors(options: dict):
+    """The noise hyperparameters ``_gp_hyp`` starts the fit from, with the
+    hyperpriors it sets on them, for a state built with ``options``."""
+    vbmc = build_trained_state(options)
+    flags = vbmc.optim_state["gp_noise_fun"]
+    gp = gpr.GP(
+        D=vbmc.D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=flags[0] == 1,
+            user_provided_add=flags[1] > 0,
+            scale_user_provided=flags[1] == 2,
+        ),
+    )
+    gp, hyp0, _, _ = install_hyperparameters(vbmc, gp)
+    cov_N = gp.covariance.hyperparameter_count(gp.D)
+    noise_N = gp.noise.hyperparameter_count()
+    priors = gp.get_priors()
+    names = [name for name, _ in gp.noise.hyperparameter_info()]
+    return (
+        vbmc,
+        hyp0[cov_N : cov_N + noise_N],
+        {name: priors[name] for name in names},
+    )
+
+
+@pytest.mark.parametrize(
+    "empty", [None, [], np.array([])], ids=["None", "list", "array"]
+)
+@pytest.mark.parametrize(
+    "level_options",
+    [{}, {"uncertainty_handling": True}],
+    ids=["level_0", "level_1"],
+)
+def test_an_empty_noise_size_leaves_the_noise_defaults(empty, level_options):
+    """An empty ``noise_size`` states no noise size, as an empty
+    ``NoiseSize`` does in MATLAB VBMC, where ``max([], MinNoise)`` is empty
+    (``misc/gptrain_vbmc.m:146-165``): the fit starts the noise where it
+    starts it without the option, and centres the hyperpriors there."""
+    _, default_hyp0, default_priors = noise_starting_point_and_priors(
+        level_options
+    )
+    _, hyp0, priors = noise_starting_point_and_priors(
+        {**level_options, "noise_size": empty}
+    )
+    assert np.array_equal(hyp0, default_hyp0)
+    assert priors == default_priors
+
+
+@pytest.mark.parametrize(
+    "value",
+    [0.1, np.float64(0.1), np.array(0.1)],
+    ids=["float", "float64", "0-d-array"],
+)
+def test_a_noise_size_starts_the_noise_of_a_noiseless_target(value):
+    """Without uncertainty handling the constant noise term starts at
+    ``log(max(NoiseSize, TolGPNoise))``, with a Student-t hyperprior
+    centred there, of scale 0.5 and three degrees of freedom (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:147-150``, ``:164``, ``:210`` and
+    ``:213-214``)."""
+    _, hyp0, priors = noise_starting_point_and_priors({"noise_size": value})
+    assert hyp0[0] == np.log(0.1)
+    kind, (mu, sigma, df) = priors["noise_log_scale"]
+    assert kind == "student_t"
+    assert mu == np.log(0.1) and sigma == 0.5 and df == 3
+
+    vbmc, hyp0, priors = noise_starting_point_and_priors({"noise_size": 1e-12})
+    floor = np.log(vbmc.options["tol_gp_noise"])
+    assert hyp0[0] == floor
+    assert priors["noise_log_scale"][1][0] == floor

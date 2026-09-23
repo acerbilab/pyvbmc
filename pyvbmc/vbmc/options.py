@@ -15,6 +15,7 @@ import numpy as np
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
+from pyvbmc.whitening.whitening import _is_finite_real_number
 
 #: Options declared in the ``.ini`` files that no PyVBMC module reads. They
 #: are kept so that option dictionaries recorded by earlier runs still load,
@@ -106,6 +107,14 @@ _SPECIFY_TARGET_NOISE_FORMS = (
     "also accepted)"
 )
 
+# How the noise_size option may be written, named in the error raised for
+# any other value.
+_NOISE_SIZE_FORMS = (
+    "a positive finite number (a Python or NumPy integer or floating-point "
+    "number, or a 0-d array that holds one; not a boolean), or an empty "
+    "value ([], an empty array or None) to leave it unset"
+)
+
 
 def _is_positive_integer_valued(value):
     """
@@ -184,6 +193,51 @@ def _is_empty_value(value):
     if value is None:
         return True
     return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0
+
+
+def _noise_size_reading(value):
+    """
+    Read the ``noise_size`` option.
+
+    An empty value leaves the option unset. Any other value has to be a
+    positive finite number, as ``misc/setupoptions_vbmc.m:131-132``
+    requires, since the GP fit starts its noise from the logarithm of the
+    value. A 0-d array counts as the number it holds, as it does for the
+    other options that take one number; an array with an axis, even of one
+    entry, does not.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    noise_size : float or None
+        The value as a float, or `None` when the option is empty.
+
+    Raises
+    ------
+    ValueError
+        When the value is neither empty nor a positive finite number.
+    """
+    if _is_empty_value(value):
+        return None
+    if _is_finite_real_number(value) and value > 0:
+        return float(value)
+    message = (
+        "The option noise_size must be "
+        + _NOISE_SIZE_FORMS
+        + f"; got {value!r}. A saved run that carries such a value is "
+        "continued with VBMC.load(file, new_options={'noise_size': []})."
+    )
+    if _is_finite_real_number(value):
+        message += (
+            " Release 1.0.4 ran a value that is not positive as the value "
+            "of the option tol_gp_noise, which new_options can give "
+            "instead."
+        )
+    raise ValueError(message)
 
 
 def _uncertainty_handling_flag(value):
@@ -736,7 +790,9 @@ class Options(MutableMapping, dict):
         With ``specify_target_noise`` on, the GP takes the noise of each
         observation from the target and does not read ``noise_size``, as
         MATLAB VBMC warns (``misc/setupoptions_vbmc.m:139-140``). An empty
-        value states no noise size and is left alone.
+        value states no noise size and is left alone, and so is a value
+        that is not a noise size, which the check of the option values
+        refuses (:func:`_noise_size_reading`).
 
         Parameters
         ----------
@@ -749,7 +805,10 @@ class Options(MutableMapping, dict):
         if "noise_size" not in names:
             return
         noise_size = self.get("noise_size")
-        if _is_empty_value(noise_size):
+        try:
+            if _noise_size_reading(noise_size) is None:
+                return
+        except ValueError:
             return
         if _stated_boolean(self.get("specify_target_noise")) is not True:
             return

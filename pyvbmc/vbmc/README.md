@@ -152,6 +152,14 @@ defect *n*" is entry *n* of
   that leaves fewer than two points of the initial design, from which the
   first GP fit cannot set its bounds; `misc/gethpd_vbmc.m:10` takes any
   value.
+- **`noise_size` is checked** (deliberate change). `VBMC` refuses, at
+  construction and in `load` and whatever the uncertainty level, a value
+  that is neither empty (`[]`, an empty array or `None`) nor a positive
+  finite number, a 0-d array counting as the number it holds.
+  `misc/setupoptions_vbmc.m:131-132` refuses a first entry that is not
+  positive and takes NaN, infinity and a vector, which
+  `misc/gptrain_vbmc.m:148`, `:152` and `:164-165` then pass through `max`
+  with `TolGPNoise` into the starting noise.
 - **Slice sampling is the only sampler of the GP hyperparameters**
   (unported feature). `VBMC` refuses every `gp_hyp_sampler` but
   `"slicesample"` at construction and in `load`; `misc/get_GPTrainOptions.m:18-91` and

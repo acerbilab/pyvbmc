@@ -37,7 +37,10 @@ its entry below.
   neither a finite number nor a function (`True`, which 1.0.4 read as 1,
   among them) raises an error, and so does an `hpd_frac` that is not a
   fraction in (0, 1] or that leaves fewer than two points of the initial
-  design. A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
+  design. A `noise_size` that is neither empty nor a positive finite number
+  (zero or a negative value, which 1.0.4 read as `tol_gp_noise`, among
+  them) raises an error, also when `VBMC.load` finds it in a saved run.
+  A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
   non-negative integer raises an error, also when no `log_file_name` is
   given; `None` and `False`, with which 1.0.4 wrote no log file, are among
   them. `log_file_level=0` writes the log file, where 1.0.4 wrote none.
@@ -833,6 +836,14 @@ its entry below.
   0.15 of ten points, made the first GP fit fail with an error about an
   empty array or zero widths; such a value is refused at construction, with
   a message that names the option, and so is one outside (0, 1].
+- `noise_size` takes a positive finite number of any numeric type, or an
+  empty value (`[]`, an empty array or `None`) that leaves it unset. `None`
+  raised `TypeError` at the first GP fit; an empty array or a NumPy number
+  raised `ValueError` there with NumPy 2.2 or later, and with earlier
+  versions of NumPy a NumPy number was ignored; zero or a negative value
+  was replaced by `tol_gp_noise` without a word. Any other value is
+  refused at construction and by `VBMC.load`, with a message that names
+  the option, as MATLAB VBMC refuses a value that is not positive.
 - After a second or later input warp, the bounds of the acquisition search
   could be mapped through the transform of an earlier iteration. We have not
   seen this happen in a run.

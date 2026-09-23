@@ -712,3 +712,130 @@ def test_an_hpd_frac_that_leaves_two_points_or_more_is_taken(value):
     """Two points of the initial design are enough for the GP fit."""
     vbmc = _vbmc(options={"hpd_frac": value})
     assert vbmc.options["hpd_frac"] is value
+
+
+_NOT_NOISE_SIZES = [
+    0,
+    0.0,
+    -1,
+    np.float64(-0.5),
+    np.nan,
+    np.inf,
+    True,
+    np.bool_(True),
+    [0.1, 0.2],
+    np.array([0.1]),
+    "0.1",
+]
+_NOT_NOISE_SIZE_IDS = [
+    "zero",
+    "zero-float",
+    "negative",
+    "negative-float64",
+    "nan",
+    "inf",
+    "bool",
+    "numpy-bool",
+    "list",
+    "one-entry-array",
+    "str",
+]
+
+
+@pytest.mark.parametrize("value", _NOT_NOISE_SIZES, ids=_NOT_NOISE_SIZE_IDS)
+def test_a_noise_size_that_is_not_a_positive_number_is_refused(
+    tmp_path, value
+):
+    """``noise_size``, if given, needs to be a positive number
+    (``misc/setupoptions_vbmc.m:131-132``): the GP fit starts the noise
+    from its logarithm. Any other value, save an empty one, is refused at
+    construction and by ``load`` with the same message, which names the
+    option, where the first GP fit would otherwise fail on it or replace
+    it without a word."""
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc_with_noise({"noise_size": value})
+    assert "noise_size" in at_construction.value.args[0]
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc_with_noise({}).save(saved)
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={"noise_size": value})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "options",
+    [{"uncertainty_handling": True}, {"specify_target_noise": True}],
+    ids=["level_1", "level_2"],
+)
+def test_a_noise_size_is_checked_at_every_uncertainty_level(caplog, options):
+    """The check does not depend on the uncertainty level. With
+    ``specify_target_noise`` the value is refused, as MATLAB VBMC refuses
+    it before it warns that the option has no effect
+    (``misc/setupoptions_vbmc.m:131-140``), and it is not also named as a
+    value that is accepted and ignored."""
+    caplog.set_level(logging.WARNING)
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc_with_noise({**options, "noise_size": 0})
+    assert "noise_size" in execinfo.value.args[0]
+    assert _warnings_naming(caplog, "noise_size") == []
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        None,
+        [],
+        np.array([]),
+        0.1,
+        np.float64(0.1),
+        np.float32(0.1),
+        2,
+        np.int64(2),
+        np.array(0.1),
+        1e-12,
+    ],
+    ids=[
+        "None",
+        "empty-list",
+        "empty-array",
+        "float",
+        "float64",
+        "float32",
+        "int",
+        "int64",
+        "0-d-array",
+        "below-tol-gp-noise",
+    ],
+)
+def test_a_noise_size_that_is_empty_or_a_positive_number_is_taken(
+    tmp_path, value
+):
+    """An empty value leaves the option unset, and a positive finite
+    number of any numeric type is taken, at construction and by
+    ``load``."""
+    vbmc = _vbmc_with_noise({"noise_size": value})
+    assert vbmc.options["noise_size"] is value
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc_with_noise({}).save(saved)
+    loaded = VBMC.load(saved, new_options={"noise_size": value})
+    assert loaded.options["noise_size"] is value
+
+
+def test_a_saved_noise_size_of_zero_loads_as_the_refusal_says(tmp_path):
+    """Release 1.0.4 took a ``noise_size`` that is not positive and ran it
+    as ``tol_gp_noise``. Such a value is refused when a saved run that
+    carries it is loaded, and the refusal names the argument of ``load``
+    that replaces it."""
+    vbmc = _vbmc_with_noise({})
+    vbmc.options.__setitem__("noise_size", 0, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+    remedy = "VBMC.load(file, new_options={'noise_size': []})"
+
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved)
+    assert remedy in at_load.value.args[0]
+    loaded = VBMC.load(saved, new_options={"noise_size": []})
+    assert loaded.options["noise_size"] == []

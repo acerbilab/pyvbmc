@@ -45,7 +45,12 @@ from .gaussian_process_train import (
     train_gp,
 )
 from .iteration_history import IterationHistory
-from .options import SHIPPED_OPTIONS_PATHS, Options, _states_the_stored_value
+from .options import (
+    SHIPPED_OPTIONS_PATHS,
+    Options,
+    _noise_size_reading,
+    _states_the_stored_value,
+)
 from .variational_optimization import optimize_vp, update_K
 
 
@@ -3975,6 +3980,7 @@ class VBMC:
         self._validate_search_fraction_options()
         self._validate_warp_cov_reg_option()
         self._validate_hpd_frac_option()
+        self._validate_noise_size_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -4255,6 +4261,12 @@ class VBMC:
             f"{value!r}. A saved run that carries such a value is continued "
             "with VBMC.load(file, new_options={'hpd_frac': 0.8})."
         )
+
+    def _validate_noise_size_option(self):
+        """Check the base observation noise of the GP, whatever the
+        uncertainty level: ``_noise_size_reading`` says which values it
+        takes, and the GP fit reads the option through it."""
+        _noise_size_reading(self.options.get("noise_size"))
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""
