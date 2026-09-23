@@ -17,12 +17,12 @@ relative to the gpyreg repository root. Bare MATLAB paths (`vbmc.m`,
 `misc/...`, `acq/...`, `gplite/...`, `private/...`, `shared/...`,
 `utils/...`, `ent/...`) are relative to the MATLAB VBMC repository root at
 the comparison revision `396d649`. Line citations into gpyreg are at
-`v1.3.0` (`0186d89`), the release that brought the port review's wave 6 to
-gpyreg's `main` and the revision PyVBMC's CI installs; the commits it
-brought are listed in
-`dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
-commits". Where an entry says what gpyreg 1.2.1 did, it describes the
-revision before that merge. Citations of PyVBMC's `AGENTS.md` by
+`v1.3.1` (`1dbbfc5`), the release that brought the port review's waves 6
+and 7 to gpyreg's `main` and the revision PyVBMC's CI installs; the commits
+they brought are listed in
+`dev/experiments/port_review_20260919/verification/wave6.md` and
+`wave7.md`, "Fix commits". Where an entry says what gpyreg 1.2.1 or 1.3.0
+did, it describes the revision before the merge of wave 6 or of wave 7. Citations of PyVBMC's `AGENTS.md` by
 section name or by quotation refer to that file at revision `feadb6fe`; the
 file was rewritten afterwards and does not hold every section cited.
 
@@ -113,7 +113,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `gplite_qpred.m` (quantile prediction) not ported
-- Python: no counterpart; `gpyreg/gaussian_process.py:2530` records
+- Python: no counterpart; `gpyreg/gaussian_process.py:2580` records
   "quantile doesn't work, requires gplite_qpred implementation" in `GP.plot`.
 - MATLAB: `gplite/gplite_qpred.m`.
 - What differs: gpyreg cannot produce predictive quantiles, and the
@@ -493,6 +493,12 @@ fact inherited from MATLAB.
   subtracts the sum of their logs (`lp -= masks["log_norm"]`). The mask
   `f_idx` of the coordinates whose two bounds are equal sets the log prior
   to `-inf` where such a coordinate is not exactly at its bound.
+  The mass is `cdf(ub) - cdf(lb)` where the lower bound is at or below the
+  prior's centre (`mu`, or `(a + b)/2` for a smooth box) and
+  `sf(lb) - sf(ub)` above it, and the space-filling design of `fit` draws
+  through the same functions; a fixed coordinate's entry of the prior's
+  gradient is that of its own prior, zero where it has none or where its
+  value lies inside its smooth box, and the design gives it its value.
 - MATLAB: `gplite/gplite_hypprior.m` has neither: its priors are
   unnormalized over the bounds, and every coordinate contributes what its
   prior gives (a zero value and a zero gradient where it has none), whatever
@@ -500,23 +506,19 @@ fact inherited from MATLAB.
 - What differs: gpyreg's `log_posterior` differs from `gplite_nlZ`'s by the
   sum of the log truncation constants (0.747 in the case measured). The sum
   is constant in `hyp`, so the optimizer and the slice sampler do not see it
-  while each mass is a positive double. No PyVBMC number moves: PyVBMC's
-  priors put 0.44 to 0.94 of their mass inside the bounds it fills, with the
-  lower bound at or below the prior's centre, and its one pair of equal
-  bounds, the noise's for a target whose range is below `tol_gp_noise`,
-  carries a Student's t prior.
-- Two defects of this code at the sheet's revision, 1.3.0, are fixed on
-  gpyreg's branch `w7-fixes` for release 1.3.1
+  while each mass is a positive double, which it stays to about 37.7
+  scales of a Gaussian prior on either side. No PyVBMC
+  number moves: PyVBMC's priors put 0.44 to 0.94 of their mass inside the
+  bounds it fills, with the lower bound at or below the prior's centre, and
+  its one pair of equal bounds, the noise's for a target whose range is
+  below `tol_gp_noise`, carries a Student's t prior. Up to 1.3.0 the mass
+  was `cdf(ub) - cdf(lb)` everywhere, 0 with both bounds beyond about 8.3
+  scales in the upper tail of a Gaussian prior, where `log_posterior` was
+  `+inf` at every point, and `f_idx` wrote NaN into the gradient of a fixed
+  coordinate that its prior's branch left unset, which stopped `GP.fit`
+  within an iteration whenever another coordinate had a prior
   (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-14 and
-  W7-15). In 1.3.0 the mass is `cdf(ub) - cdf(lb)`, which is 0 with both
-  bounds beyond about 8.3 scales in the upper tail of a Gaussian prior, and
-  `log_posterior` is then `+inf` at every point; and `f_idx` writes NaN into
-  the gradient of every fixed coordinate that its prior's branch leaves
-  unset (no prior, or a smooth box around its value), which reaches
-  `GP.fit` whenever another coordinate has a prior, where L-BFGS-B stops
-  within an iteration. 1.3.1 takes the mass, and the space-filling design,
-  from the survival function where the lower bound lies above the prior's
-  centre, and leaves such a gradient at zero, as MATLAB does.
+  W7-15).
 - Why: the fixed prior came in `6754f01` (2021-06-22) as a prior type that
   set equal bounds; `0ca35b3` (2021-06-28) moved the bounds out of the
   priors, and `f_idx` has read the GP's bounds since. The renormalization
@@ -547,12 +549,11 @@ fact inherited from MATLAB.
   smooth-box families (the entry above). Of MATLAB's two ways of writing no
   prior, `sigma = Inf` is refused (gpyreg 1.2.1 took it for a Student's t,
   with a log posterior of `-inf` or NaN and a design column of NaN). The
-  other, a location that is not finite beside a finite `sigma`, is taken by
-  1.3.0, and the log posterior is then `-inf` without finite bounds and NaN
-  with the bounds that `fit` fills. gpyreg's branch `w7-fixes` refuses it
-  for release 1.3.1, and also a smooth box with an infinite or NaN end or
-  with `a > b`; a box of zero width, the Gaussian or Student's t centred at
-  `a`, is taken. PyVBMC never writes such a prior: `_gp_hyp` gives every
+  other, a location that is not finite beside a finite `sigma`, is refused
+  too (1.3.0 took it, and the log posterior was then `-inf` without finite
+  bounds and NaN with the bounds that `fit` fills), and so are a smooth box
+  with an infinite or NaN end and one with `a > b`; a box of zero width, the
+  Gaussian or Student's t centred at `a`, is taken. PyVBMC never writes such a prior: `_gp_hyp` gives every
   coordinate that has a prior a finite `mu` and `sigma`, and leaves both NaN
   where there is none.
 - Why: the `and` is required by the smooth-box families of `27f8d66`

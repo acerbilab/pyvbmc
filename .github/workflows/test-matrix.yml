@@ -23,12 +23,12 @@ on:
         default: ''
 
 env:
-  # gpyreg v1.3.0: the GP mean's bounds per input dimension and the other
-  # fixes of the port review's wave 6 (acerbilab/gpyreg#50). The pin is the
-  # tagged commit, so setuptools_scm reads 1.3.0, the minimum in
-  # pyproject.toml; an untagged commit before it reads lower, and pip would
-  # install gpyreg from PyPI over the pinned checkout.
-  GPYREG_PIN: 0186d89518f956df0de8510fcf9252c39445f513
+  # gpyreg v1.3.1: the fixes of the port review's waves 6 and 7
+  # (acerbilab/gpyreg#50, #52). The pin is the tagged commit, so
+  # setuptools_scm reads 1.3.1, the minimum in pyproject.toml; an untagged
+  # commit before it reads lower, and pip would install gpyreg from PyPI over
+  # the pinned checkout.
+  GPYREG_PIN: 1dbbfc5f8785d514a3d5774026810af5ed44a093
 
 jobs:
   tests:
