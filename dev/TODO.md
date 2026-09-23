@@ -102,7 +102,7 @@ records its execution.
   the MATLAB changes since the port, every P slice on both tracks, and the
   two gpyreg slices G1 and G2) are reviewed, verified, ruled on and fixed,
   and merged into `dev-next`; wave 6's fixes to gpyreg shipped in gpyreg
-  1.3.0, which PyVBMC requires. Several of the fixes of waves 1 to 3, one
+  1.3.0. Several of the fixes of waves 1 to 3, one
   of wave 5 (the balanced draw of the variational posterior) and one of
   wave 6 (the GP mean's bounds per input dimension, W6-1) move default
   trajectories, and so does one fix of the check of wave 1 (the noise
@@ -112,13 +112,19 @@ records its execution.
   checked afterwards by fresh reviewers without the session's context, and
   what the checks found is fixed and merged as well. Wave 7, the third
   readers O1 to O4, is reviewed, verified, ruled on and fixed, and its pass
-  checked by fresh reviewers (`verification/wave7.md`); none of its fixes
-  moves a default trajectory, and its fixes to gpyreg shipped in gpyreg
-  1.3.1, which PyVBMC requires; all of it is merged into `dev-next`, with
+  checked by fresh reviewers
+  (`experiments/port_review_20260919/verification/wave7.md`); none of its
+  fixes moves a default trajectory, and its fixes to gpyreg shipped in
+  gpyreg 1.3.1, which PyVBMC requires; all of it is merged into `dev-next`, with
   the two runs that closed it (W7-17, refused at construction, and the
-  measure of W7-2 on a resume). Next: the closing ledger under `results/`
-  and the consolidation of the sheet's durable entries into the porting
-  log. The plan's pickup point says where to resume.
+  measure of W7-2 on a resume). Every finding of the review is ruled on
+  and fixed or left with its disposition recorded, so the items below that
+  wait for the review's fixes (the oracle state at uncertainty level 1, the
+  seeded gate run with a prior) can start. What closes this item: the
+  closing ledger under `results/` and the consolidation of the sheet's
+  durable entries into the porting log `pyvbmc/vbmc/README.md`, then an
+  independent check of both. The plan's pickup point says where to
+  resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
