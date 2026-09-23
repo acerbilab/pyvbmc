@@ -40,9 +40,10 @@ its entry below.
   design. A `noise_size` that is neither empty nor a positive finite number
   (zero or a negative value, which 1.0.4 read as `tol_gp_noise`, among
   them) raises an error, also when `VBMC.load` finds it in a saved run.
-  An `active_importance_sampling_mcmc_samples` that is not a finite number
-  (`True` and NaN among them) raises an error at the first importance
-  sampling of a noisy run.
+  An `active_importance_sampling_mcmc_samples` that is neither a finite
+  number nor a function (`True` and NaN among them) raises an error, also
+  for a run that does not read it and when `VBMC.load` finds it in a saved
+  run.
   A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
   non-negative integer raises an error, also when no `log_file_name` is
   given; `None` and `False`, with which 1.0.4 wrote no log file, are among
@@ -570,9 +571,9 @@ its entry below.
   - `noise_shaping=True` raises an error, because noise shaping is not
     implemented.
   - The errors that refuse a value of `search_optimizer`, `acq_hedge`,
-    `noise_shaping`, `warp_cov_reg`, `cache_frac` or the fractions say how
-    a saved run that carries it is loaded:
-    `VBMC.load(file, new_options={...})`.
+    `noise_shaping`, `warp_cov_reg`, `cache_frac`, the fractions or
+    `active_importance_sampling_mcmc_samples` say how a saved run that
+    carries it is loaded: `VBMC.load(file, new_options={...})`.
   - Setting an option that has no effect gives a warning that names the
     option, whether it is given at construction or to
     `VBMC.load(new_options=...)`. Most such options come from MATLAB VBMC
@@ -745,9 +746,11 @@ its entry below.
   with `AcqFcnVIQR`). Both raised `TypeError` in the first step of active
   sampling. The function receives `K`, `n_vars` and `D` as
   keyword arguments, and the description of the option says what the
-  number is under each acquisition. A value that is not a finite number, or
-  a function that does not return one, raises an error that names the
-  option; 1.0.4 read `True` as 1 with `AcqFcnVIQR`, and NaN as 0 with
+  number is under each acquisition. A value that is neither a finite number
+  nor a function is refused at construction and by `VBMC.load`, and a
+  function that does not return a finite number raises an error at the
+  first importance sampling, each with a message that names the option;
+  1.0.4 read `True` as 1 with `AcqFcnVIQR`, and NaN as 0 with
   `AcqFcnIMIQR`, which leaves out the MCMC step.
 - The penalty that keeps the width of the mixture components within its soft
   bounds has the right gradient. In 1.0.4 the entries of that gradient were in

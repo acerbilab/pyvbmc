@@ -965,3 +965,109 @@ def test_a_saved_noise_size_of_zero_loads_as_the_refusal_says(tmp_path):
     assert remedy in at_load.value.args[0]
     loaded = VBMC.load(saved, new_options={"noise_size": []})
     assert loaded.options["noise_size"] == []
+
+
+_MCMC_SAMPLES = "active_importance_sampling_mcmc_samples"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        np.bool_(True),
+        np.nan,
+        np.inf,
+        "100",
+        None,
+        [100],
+        np.array([100]),
+    ],
+    ids=[
+        "bool",
+        "numpy-bool",
+        "nan",
+        "inf",
+        "str",
+        "None",
+        "list",
+        "one-entry-array",
+    ],
+)
+def test_an_importance_sample_count_that_is_not_a_finite_number_is_refused(
+    tmp_path, value
+):
+    """``active_importance_sampling_mcmc_samples`` is a finite number, or a
+    function of ``K``, ``n_vars`` and ``D`` that returns one, which both
+    branches of the importance sampling of the noisy acquisitions round up.
+    A value that is neither is refused at construction and by ``load``,
+    whatever the acquisition function, with the same message, which names
+    the option, where it would otherwise be refused at the first importance
+    sampling, after the initial design has been evaluated."""
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc(options={_MCMC_SAMPLES: value})
+    assert _MCMC_SAMPLES in at_construction.value.args[0]
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={_MCMC_SAMPLES: value})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        100,
+        0,
+        -5,
+        2.5,
+        np.float64(50.0),
+        np.int64(10),
+        np.array(20),
+        lambda K, n_vars, D: 3 * K,
+    ],
+    ids=[
+        "int",
+        "zero",
+        "negative",
+        "float",
+        "float64",
+        "int64",
+        "0-d-array",
+        "function",
+    ],
+)
+def test_an_importance_sample_count_that_is_a_number_or_a_function_is_taken(
+    tmp_path, value
+):
+    """A finite number of any numeric type is taken, zero and a negative
+    one included, which leave out the MCMC step of ``AcqFcnIMIQR``, and so
+    is a function, whose result is checked where it is evaluated."""
+    options = {"uncertainty_handling": True, _MCMC_SAMPLES: value}
+    vbmc = _vbmc_with_noise(options)
+    assert vbmc.options[_MCMC_SAMPLES] is value
+
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc_with_noise({"uncertainty_handling": True}).save(saved)
+    loaded = VBMC.load(saved, new_options={_MCMC_SAMPLES: value})
+    assert loaded.options[_MCMC_SAMPLES] is value
+
+
+def test_a_saved_importance_sample_count_of_true_loads_as_the_refusal_says(
+    tmp_path,
+):
+    """Release 1.0.4 took ``True`` for the number of importance samples and
+    read it as 1 with ``AcqFcnVIQR``. Such a value is refused when a saved
+    run that carries it is loaded, and the refusal names the argument of
+    ``load`` that replaces it."""
+    vbmc = _vbmc_with_noise({"uncertainty_handling": True})
+    vbmc.options.__setitem__(_MCMC_SAMPLES, True, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+    remedy = f"VBMC.load(file, new_options={{'{_MCMC_SAMPLES}': 100}})"
+
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved)
+    assert remedy in at_load.value.args[0]
+    loaded = VBMC.load(saved, new_options={_MCMC_SAMPLES: 100})
+    assert loaded.options[_MCMC_SAMPLES] == 100

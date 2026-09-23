@@ -8,6 +8,13 @@ from scipy.linalg import solve_triangular
 
 from pyvbmc.whitening.whitening import _is_finite_real_number
 
+# How the active_importance_sampling_mcmc_samples option may be written,
+# named in the errors raised for any other value.
+_MCMC_SAMPLES_FORMS = (
+    "a finite number, or a function of the keywords K, n_vars and D that "
+    "returns one"
+)
+
 
 def _sample_count(options, K, D):
     """
@@ -46,10 +53,9 @@ def _sample_count(options, K, D):
     )
     if not _is_finite_real_number(count):
         raise ValueError(
-            "The option active_importance_sampling_mcmc_samples must be a "
-            "finite number, or a function of the keywords K, n_vars and D "
-            f"that returns one; it gives {count!r} for K = {K} and "
-            f"D = {D}."
+            "The option active_importance_sampling_mcmc_samples must be "
+            + _MCMC_SAMPLES_FORMS
+            + f"; it gives {count!r} for K = {K} and D = {D}."
         )
     return ceil(count)
 

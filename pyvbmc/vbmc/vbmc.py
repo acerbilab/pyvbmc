@@ -37,6 +37,7 @@ from pyvbmc.whitening.whitening import (
 
 from ._bounds import _expand_scalar_bound, _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
+from .active_importance_sampling import _MCMC_SAMPLES_FORMS
 from .active_sample import _refresh_training_counts, active_sample
 from .gaussian_process_train import (
     _lean_gp,
@@ -4026,6 +4027,7 @@ class VBMC:
         self._validate_warp_cov_reg_option()
         self._validate_hpd_frac_option()
         self._validate_noise_size_option()
+        self._validate_mcmc_samples_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -4312,6 +4314,26 @@ class VBMC:
         uncertainty level: ``_noise_size_reading`` says which values it
         takes, and the GP fit reads the option through it."""
         _noise_size_reading(self.options.get("noise_size"))
+
+    def _validate_mcmc_samples_option(self):
+        """Check the number of importance samples of the noisy acquisitions,
+        ``active_importance_sampling_mcmc_samples``.
+
+        A number has to be finite, as both branches of
+        ``active_importance_sampling`` require of the count they round up.
+        What a function returns is checked there, where the number of
+        components and of variables it is given are known.
+        """
+        value = self.options.get("active_importance_sampling_mcmc_samples")
+        if callable(value) or _is_finite_real_number(value):
+            return
+        raise ValueError(
+            "The option active_importance_sampling_mcmc_samples must be "
+            + _MCMC_SAMPLES_FORMS
+            + f"; it is {value!r}. A saved run that carries such a value is "
+            "continued with VBMC.load(file, new_options="
+            "{'active_importance_sampling_mcmc_samples': 100})."
+        )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""
