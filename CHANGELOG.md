@@ -731,8 +731,10 @@ its entry below.
 - With `AcqFcnIMIQR`, a function given for
   `active_importance_sampling_mcmc_samples` sets the length of the MCMC
   chains of the importance sampler, as it sets the number of samples drawn
-  from the posterior with `AcqFcnVIQR`; it raised `TypeError` in the first
-  step of active sampling. The function receives `K`, `n_vars` and `D` as
+  from the posterior with `AcqFcnVIQR`. So does a count given as a
+  floating-point number (`100.0`, or `50.5`, which is rounded up to 51, as
+  with `AcqFcnVIQR`). Both raised `TypeError` in the first step of active
+  sampling. The function receives `K`, `n_vars` and `D` as
   keyword arguments, and the description of the option says what the
   number is under each acquisition. A value that is not a finite number, or
   a function that does not return one, raises an error that names the
