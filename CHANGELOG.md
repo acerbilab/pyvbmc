@@ -53,9 +53,15 @@ its entry below.
 - `vbmc.determine_best_vp()` without arguments follows the options
   `rank_criterion` (on by default), `best_safe_sd` and `best_frac_back`, so
   it can return another iteration than in 1.0.4 when the last iteration is
-  not stable. A variational optimization in which every candidate has a NaN
-  ELBO raises `ValueError`, where 1.0.4 went on with a posterior whose ELBO
-  was NaN.
+  not stable. It returns a copy of the selected posterior, so changing that
+  posterior no longer changes the one recorded in
+  `vbmc.iteration_history["vp"]`, and `vbmc.final_boost(vp, gp)` leaves
+  `vbmc.optim_state` as it is, where 1.0.4 changed it. A variational
+  optimization in which every candidate has a NaN ELBO raises `ValueError`,
+  where 1.0.4 went on with a posterior whose ELBO was NaN.
+- Once a `VBMC` object is constructed, `del vbmc.options[name]` and
+  `vbmc.options.pop(name)` raise an error, as assigning to an option already
+  did in 1.0.4.
 - `results["iterations"]` is the number of iterations, one more than in 1.0.4.
   `results["problem_type"]` is `"bounded"` for a problem with bounds, where
   1.0.4 said `"unconstrained"` for every problem.
@@ -268,8 +274,9 @@ its entry below.
   values at `x0`, holds log-joint values, as in 1.0.4. `VBMC(..., initialization_cost=k)`
   charges `k` evaluations against `max_fun_evals` for work done before the
   run. `results` reports the first in `precomputed_observations` and
-  `precomputed_locations`, and the second in `evaluation_budget`; each key is
-  present only when its argument was used.
+  `precomputed_locations`, present when at least one evaluation was given,
+  and the second in `evaluation_budget`, present when `initialization_cost`
+  is above zero.
 - **Machine calibration (optional).** `pyvbmc.calibrate()` measures, on your
   machine, the block sizes that PyVBMC uses when it evaluates the posterior
   density and the Monte Carlo entropy, and saves them in a cache that later
@@ -767,6 +774,11 @@ its entry below.
   ended with fewer than `min_final_components` components. With that
   setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many
   training inputs as `vp` has components, and says so otherwise.
+- With `variable_means=False`, the variational fit that follows an input warp,
+  and decides whether the warp is kept, tries a number of candidate
+  posteriors (`ns_elbo`) in proportion to the number of components it
+  optimizes, one per training input, as MATLAB VBMC does. 1.0.4 sized it by
+  the number of components of the posterior from before the warp.
 - A noisy target with `max_fun_evals=np.inf` raised `OverflowError`.
 - A `tol_stable_warmup` no larger than `fun_evals_per_iter` raised an error in
   the third iteration.
