@@ -177,6 +177,13 @@ defect *n*" is entry *n* of
   the iteration count is below it, so a fractional minimum acts as the
   integer above it, a negative one as none, and an infinite one keeps the
   run from stopping.
+- **`gp_sample_thin` is checked** (deliberate change). `VBMC` refuses, at
+  construction and in `load` and whatever `ns_gp_max`, a value that is not
+  a whole number greater than zero, of an integer or a floating type (not
+  a boolean), as gpyreg's `fit` takes its `thin`.
+  `misc/setupoptions_vbmc.m:43` evaluates `GPSampleThin` unchecked, and
+  `misc/get_GPTrainOptions.m:8` passes it to `gplite/gplite_train.m` as
+  the thinning of its sampler.
 - **Slice sampling is the only sampler of the GP hyperparameters**
   (unported feature). `VBMC` refuses every `gp_hyp_sampler` but
   `"slicesample"` at construction and in `load`; `misc/get_GPTrainOptions.m:18-91` and
@@ -612,7 +619,8 @@ defect *n*" is entry *n* of
   that string.
   PyVBMC takes a number or a function of the keywords `K`, `n_vars` and
   `D`, evaluated and rounded up in both branches, the MCMC branch that
-  IMIQR takes included.
+  IMIQR takes included; a value that is neither a finite number nor a
+  function is refused at construction and in `load`.
 - **The importance log weights are normalized** (deliberate change): one
   log-sum-exp over the whole array is subtracted, a constant that moves the
   values of IMIQR and of VIQR with `loss="iqr_reduction"` and no comparison
