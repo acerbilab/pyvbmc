@@ -611,7 +611,13 @@ defect *n*" is entry *n* of
   (`dev/plans/latent-bug-fixes.md`, Q3).
 - **The sieve asks for candidates in proportion to the current `K`**
   (deliberate change): `ns_elbo` is evaluated at `vp.K`, 500 candidates at
-  `K = 10`. `vbmc.m:699` evaluates it at a `K` that `vbmc.m:459` sets once to
+  `K = 10`. In the main loop `vp.K` is the number of components of the
+  posterior entering the optimization, not the count `Knew` that the
+  optimization is asked for, whether the means are free or fixed to the
+  training inputs: `update_K` returns the new count without changing the
+  posterior, and fixed means are replaced by the training inputs without
+  changing `vp.K`. `vbmc.m:699` evaluates `NSelbo` at a `K` that
+  `vbmc.m:459` sets once to
   `Kwarmup` and never changes, so MATLAB's main loop always asks for 100 (10
   on an incremental iteration); the two agree through warm-up. The warp
   branch and the final boost use the new number of components on both sides
