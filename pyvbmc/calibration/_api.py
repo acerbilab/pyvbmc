@@ -203,14 +203,14 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
             settings = result["settings"]
             if not isinstance(settings, Mapping):
                 raise ValueError("calibration campaign settings are invalid")
-            settings = _validate_settings(dict(settings))
-            # A report that fails the validation of cache records
-            # invalidates the campaign, as failed baseline numerics do.
+            # Settings or a report that fail the validation of cache records
+            # invalidate the campaign, as failed baseline numerics do.
             try:
+                settings = _validate_settings(dict(settings))
                 _validate_report(dict(report), settings)
             except ValueError as error:
                 status = "invalid"
-                reason = f"campaign report failed validation ({error})"
+                reason = f"campaign results failed validation ({error})"
         else:
             reason = str(report.get("reason", f"campaign status: {status}"))
 

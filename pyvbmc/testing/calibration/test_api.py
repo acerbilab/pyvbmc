@@ -271,12 +271,36 @@ def test_complete_campaign_with_invalid_report_falls_back(
     assert profile.status == "invalid"
     assert profile.settings == {name: 2**16 for name in value["settings"]}
     assert profile.source == "default"
-    assert "report failed validation" in profile.provenance["reason"]
+    assert "results failed validation" in profile.provenance["reason"]
     assert "discovery" in profile.provenance["reason"]
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
     assert "Calibration could not complete after" in output
-    assert "report failed validation" in output
+    assert "results failed validation" in output
+    assert "Using the standard settings." in output
+
+
+def test_complete_campaign_with_invalid_settings_falls_back(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = complete_result()
+    # A budget outside the validator's candidates, as when the campaign's
+    # candidates and the validator's tables disagree.
+    value["settings"]["pdf_chunk_elements"] = 12345
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.settings == {name: 2**16 for name in value["settings"]}
+    assert profile.source == "default"
+    assert "results failed validation" in profile.provenance["reason"]
+    assert "pdf_chunk_elements" in profile.provenance["reason"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "results failed validation" in output
     assert "Using the standard settings." in output
 
 
