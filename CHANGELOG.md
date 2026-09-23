@@ -283,8 +283,13 @@ its entry below.
 ### Changed
 
 - **Requirements.** PyVBMC needs Python 3.10 or later (1.0.4 accepted 3.9),
-  SciPy 1.15 or later and gpyreg 1.2.1 or later; see the release notes of
-  gpyreg for what changed there. `filelock`, `platformdirs` and
+  SciPy 1.15 or later and gpyreg 1.3.0 or later. gpyreg 1.3.0 takes the
+  bounds of the location and scale of the GP mean function, and the
+  starting length scales, per input dimension, where it pooled the
+  statistics of the training inputs over all dimensions; the
+  hyperparameter samples of every GP fit that samples, and with them the
+  results of every run, move. See the release notes of gpyreg for the rest
+  of what changed there. `filelock`, `platformdirs` and
   `threadpoolctl` are new dependencies, used by the machine calibration.
   `pytest`, its plugins and `plotly` are no longer installed with PyVBMC: they
   are in the extras `test` and `examples`. `plotly` is used by example

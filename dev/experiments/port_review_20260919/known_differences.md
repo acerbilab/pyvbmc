@@ -17,8 +17,9 @@ relative to the gpyreg repository root. Bare MATLAB paths (`vbmc.m`,
 `misc/...`, `acq/...`, `gplite/...`, `private/...`, `shared/...`,
 `utils/...`, `ent/...`) are relative to the MATLAB VBMC repository root at
 the comparison revision `396d649`. Line citations into gpyreg are at
-`a4c2cc0`, the merge of the port review's wave 6 into gpyreg's `main` and
-the revision PyVBMC's CI installs; the commits it brought are listed in
+`v1.3.0` (`0186d89`), the release that brought the port review's wave 6 to
+gpyreg's `main` and the revision PyVBMC's CI installs; the commits it
+brought are listed in
 `dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
 commits". Where an entry says what gpyreg 1.2.1 did, it describes the
 revision before that merge. Citations of PyVBMC's `AGENTS.md` by
