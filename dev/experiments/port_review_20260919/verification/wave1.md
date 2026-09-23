@@ -227,9 +227,9 @@ Kept as they are:
   exact oracle check) was not kept, apart from the log of the options tests;
   the gates of this check stand in for it.
 - The accuracy of the refreshed counts (`6590ea4`), which move noisy
-  trajectories, is read on the noisy half of the benchmark sweep
-  (`scripts/wave3_gate_benchmark_sweep.py`) once the branch is on
-  `dev-port-review` and no other heavy process runs.
+  trajectories, is read on a benchmark sweep of noisy targets once the
+  branch is on `dev-port-review` ("The merge into `dev-port-review`",
+  below).
 
 Gates, on the branch of the check (`dev-port-review-w1check`, cut at
 `326c7676`), with the package of that checkout and gpyreg `main`:
@@ -261,8 +261,79 @@ Gates, on the branch of the check (`dev-port-review-w1check`, cut at
   base's; and the four seeded runs bit for bit those of `2d931a6`, 92
   arrays and none different.
 
-Not run on the branch, which waits to be brought onto `dev-port-review`:
-the whole suite, the Torch and PyMC environments, the CI matrix, and the
-refresh of the sheet's Python line citations
+Not run on the branch: the whole suite, the Torch and PyMC environments,
+the CI matrix, and the refresh of the sheet's Python line citations
 (`refresh_citations.py`, 125 to carry and 14 to read by hand on the
-branch), which is to run against the merged code.
+branch). All but the CI matrix, which runs with the push, ran on the
+merged code (below).
+
+## The merge into `dev-port-review`
+
+The branch was merged into `dev-port-review` on 2026-09-23 as `e86bbb1c`,
+after wave 6 had finished there and gpyreg 1.3.0, the release that carries
+wave 6's fixes to gpyreg, was installed. Two files conflicted: the sheet,
+where both sides had appended entries at the end of one section and both
+were kept, and the plan, where the branch's worklog entry was put in date
+order and the pickup point it had carried from its cut was dropped. The
+sheet's Python line citations were then carried to the merged code
+(`68e37d3e`): 113 by `refresh_citations.py` and six by hand, among them the
+entry on the integrated mean function, whose copy into `optim_state`
+`375df34` removed.
+
+Gates, on `68e37d3e`, whose package code is the merge's, with gpyreg 1.3.0
+and BLAS single-threaded:
+
+- the four seeded runs of `scripts/wave2_fixpass_gate_runs.py`, recorded
+  first on `403fb678`, the head of `dev-port-review` before the merge,
+  where they are bit for bit the last record of wave 6 (92 arrays, 0
+  differ), and then on the merged head: the two noiseless runs
+  bit-identical, the two noisy ones moved in 40 of the 92 arrays, all
+  theirs. The noisy Rosenbrock run ends after 31 iterations and 155
+  evaluations, where it ended after 32 and 165, with a final ELBO of
+  -1.669 +- 0.105 for -1.445 +- 0.101; the noisy two-blob run keeps its 17
+  iterations and 90 evaluations, 1.249 +- 0.082 for 1.356 +- 0.080. On
+  gpyreg 1.2.1 the same commits moved 36 arrays and left both runs their
+  counts ("Gates" above); under 1.3.0 the runs start from other
+  trajectories, its GP fit differing from 1.2.1's on every run (W6-1 of
+  `wave6.md`);
+- the exact oracle check, 11 of 11;
+- the default suite, 2073 passed and 58 skipped, without reruns; the tests
+  of the optional integrations, 841 passed and 19 skipped in the Torch
+  selection (`svbmc`, `variational_posterior`, `parameter_transformer`,
+  `function_logger`, `whitening`) and 110 passed in the PyMC adapter's,
+  with the same counts in the two environments that ran them until then
+  and in the one environment, holding Torch, ArviZ and PyMC, that replaced
+  both;
+- a benchmark sweep of noisy targets (`scripts/wave3_gate_benchmark_sweep.py`),
+  before on `403fb678` and after on the merged head (its added seeds on
+  `a65b96f4`, which differs from `68e37d3e` in the plan alone), with the
+  same seeds on both sides: `rosenbrock_D2_noise1` over 10 seeds, and
+  `rosenbrock_D2_noise3` and `logreg_D5_noise3` over 5 and then, on the
+  PI's request after the losses at 5 seeds, over 10.
+
+Means over the paired seeds of the sweep, before -> after:
+
+| target | seeds | abs(ELBO - lnZ) | gsKL | MMTV | evaluations | seeds better / worse after (ELBO, gsKL, MMTV) |
+|---|---|---|---|---|---|---|
+| `rosenbrock_D2_noise1` | 10 | 0.1004 -> 0.0862 | 0.0863 -> 0.0817 | 0.0517 -> 0.0490 | 126.0 -> 127.5 | 7/3, 7/3, 7/3 |
+| `rosenbrock_D2_noise3` | 10 | 0.1511 -> 0.1763 | 0.4548 -> 0.1718 | 0.1449 -> 0.0917 | 174.0 -> 173.5 | 4/6, 6/4, 6/4 |
+| `logreg_D5_noise3` | 10 | 0.3776 -> 0.1426 | 0.4255 -> 0.4067 | 0.1723 -> 0.1688 | 239.0 -> 252.5 | 10/0, 5/5, 5/5 |
+
+Over the 30 seeds the merge is better on 21 and worse on 9 by the error of
+the ELBO, and better on 18 and worse on 12 by gsKL and by MMTV; two runs
+of `rosenbrock_D2_noise3` end without a stable solution on each side. The
+losses: on `rosenbrock_D2_noise3` the mean error of the ELBO, by 0.025 nats
+against a reported ELBO SD of about 0.3, worse on 6 of the 10 seeds, while
+its largest error is smaller (0.52 -> 0.41); on `rosenbrock_D2_noise1`
+seed 10, whose gsKL goes from 0.004 to 0.57, above the largest before
+(0.31, seed 9, which goes to 0.010); and on `logreg_D5_noise3` 13.5 more
+evaluations on average. At 5 seeds `logreg_D5_noise3` was worse after on 4
+of 5 by gsKL and by MMTV (means 0.345 -> 0.438 and 0.144 -> 0.180), which
+seeds 6 to 10 did not bear out. On `logreg_D5_noise3` and
+`rosenbrock_D2_noise3` the worst seed after is better than the worst
+before by every metric (gsKL 0.69 -> 0.59 and 1.35 -> 0.83). The sweep
+measures the merge as a whole; of its commits, `6590ea4` and `831b024` are
+the ones that move a noisy run. The code before the merge reproduces
+exactly the numbers of `rosenbrock_D2_noise1` that the after-sweep of W6-1
+recorded. PI's ruling of 2026-09-23: the merge taken as it is. The logs
+are on the orchestrator's machine (`dev/scripts/runs/LOCAL.md`).
