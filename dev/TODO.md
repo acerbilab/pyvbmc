@@ -114,11 +114,11 @@ records its execution.
   readers O1 to O4, is reviewed, verified, ruled on and fixed, and its pass
   checked by fresh reviewers (`verification/wave7.md`); none of its fixes
   moves a default trajectory, and its fixes to gpyreg shipped in gpyreg
-  1.3.1, which PyVBMC requires; all of it is merged into `dev-next`. Next:
-  the capped run of row W7-17 and the run that measures W7-2 on a resume,
-  then the closing ledger under `results/` and the consolidation of the
-  sheet's durable entries into the porting log. The plan's pickup point
-  says where to resume.
+  1.3.1, which PyVBMC requires; all of it is merged into `dev-next`, with
+  the two runs that closed it (W7-17, refused at construction, and the
+  measure of W7-2 on a resume). Next: the closing ledger under `results/`
+  and the consolidation of the sheet's durable entries into the porting
+  log. The plan's pickup point says where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
@@ -171,8 +171,9 @@ records its execution.
     for triage, as the constant targets of row W6-4 were. Row W7-17 of
     `experiments/port_review_20260919/verification/wave7.md` finds the same
     mechanism in a set of distinct points that share one coordinate, which
-    PyVBMC reaches from such starting points; the PI rules on the two
-    together after a capped run from such points.
+    PyVBMC reached from such starting points, and which PyVBMC refuses at
+    construction (PI, 2026-09-23). This gpyreg item stays for triage: PyVBMC
+    never fits on fewer than `fun_eval_start` points.
   - gpyreg: `get_priors` returns `None` for a Student's t block with mixed
     degrees of freedom, such as `[0, nan]` or `[0, 3]`, which `set_priors`
     writes, so `set_priors(get_priors())` drops it; and for a smooth-box

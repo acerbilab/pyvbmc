@@ -86,6 +86,10 @@ its entry below.
   with it the `sKL` of a run, is finite for covariances whose
   determinants leave the range of a double, where 1.0.4 gave zero or
   infinity.
+- `VBMC` refuses at least `fun_eval_start` starting points (10 up to nine
+  variables) that take one value in a coordinate across the first
+  `fun_eval_start` of them; give points that vary in every coordinate, or
+  fewer of them.
 - Priors: `VBMC` refuses a prior whose support does not cover the hard
   bounds. The prior classes refuse a bound, a pivot or a scale that is NaN
   or infinite, an array argument whose shape disagrees with `D` (as
@@ -704,6 +708,12 @@ its entry below.
 - `x0` and the bounds are converted to double precision whatever floating-point
   type they come in. 1.0.4 converted integer inputs only, and kept `float32`
   or `float16` values in the state of the run and in the parameter transform.
+- With at least `fun_eval_start` starting points, the initial design is the
+  first `fun_eval_start` of them. When they took one value in a coordinate,
+  the run stopped at its first GP fit with `KeyError: (-inf, -inf)`, after
+  the evaluations of the design. `VBMC` refuses such starting points at
+  construction, with a message that names the coordinates and says that
+  fewer points leave the rest of the design to the plausible box.
 - A bound given as a single number applies to every variable, as documented.
   It raised an error for problems with more than one variable. Without `x0`
   the number of variables comes from the plausible bounds, so one of them

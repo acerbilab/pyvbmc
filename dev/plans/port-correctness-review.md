@@ -2475,30 +2475,34 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   having shown every commit of theirs on `dev-port-review` or on gpyreg's
   `main`; gpyreg's remote branch `w7-fixes` stands. `dev-next`
   fast-forwarded to `dev-port-review`, with the status line of `TODO.md`.
-- [ ] **Pickup point (2026-09-23, wave 7 in `dev-next`): the close of the
-  review.** The state: `dev-next` and `dev-port-review` are one commit,
-  pushed and green in CI, and hold every wave of the review (0 to 7) with
-  the independent check of each fix pass; gpyreg 1.3.1 is on PyPI and
-  required. No worktree of the review is left. What closes the `TODO.md`
-  item, in this order, one heavy process at a time:
-  1. The capped run from starting points that share one coordinate (row
-     W7-17 of `verification/wave7.md`), and the PI's ruling on it together
-     with the `TODO.md` item on a fit on a single training point.
-  2. The run that measures what W7-2's fix changes for a run resumed at a
-     kept warp (`verification/wave7.md`, "Runs for when the heavy slot is
-     free").
-  3. The closing ledger, `dev/results/<date>-port-correctness-review.md`:
-     every finding of waves 0 to 7 with its disposition and fix commit, the
-     intentional differences found, the sheet entries withdrawn and the
-     test notes acted on, pointing at the per-wave ledgers under
-     `experiments/port_review_20260919/verification/`; and the durable
-     entries of the known-differences sheet consolidated into the porting
-     log `pyvbmc/vbmc/README.md`, as the section "Verification and the
-     findings ledger" above describes. An independent check of both, then the
-     three generic checkboxes below ticked and the `TODO.md` item closed.
-  The `TODO.md` items that wait for the review's fixes to be in (the oracle
-  state at uncertainty level 1, the seeded gate run with a prior, the triage
-  list left by the check of wave 6, the regeneration of the golden
+- [x] 2026-09-23: the two runs of the close (PI: do the two runs; then the
+  refusal of W7-17 as proposed). W7-17: a capped run from ten, and from
+  twelve, starting points that share one coordinate stops at its first GP
+  fit with L-BFGS-B's `KeyError` after the ten evaluations of its design,
+  where ten generic points run; `VBMC` refuses such starting points at
+  construction (`8921845f`), and the `TODO.md` item on a single training
+  point stays for triage. W7-2: a resume at a kept warp reproduces the
+  uninterrupted run exactly with the record the fix writes, and departs
+  from it with the record of before the fix (final ELBO 1.641 against
+  1.623, 0.00058 against 0.00042 of KL to the truth).
+  `verification/wave7.md`, "The two runs of the close".
+- [ ] **Pickup point (2026-09-23, the two runs made): the close of the
+  review.** The state: `dev-port-review` holds wave 7, its two runs and the
+  refusal of W7-17, whose gates (the default suite, the exact oracle check)
+  and CI come before the push into `dev-next`; gpyreg 1.3.1 is on PyPI and
+  required. What closes the `TODO.md` item: the closing ledger,
+  `dev/results/<date>-port-correctness-review.md`, with every finding of
+  waves 0 to 7, its disposition and fix commit, the intentional differences
+  found, the sheet entries withdrawn and the test notes acted on, pointing
+  at the per-wave ledgers under
+  `experiments/port_review_20260919/verification/`; and the durable entries
+  of the known-differences sheet consolidated into the porting log
+  `pyvbmc/vbmc/README.md`, as the section "Verification and the findings
+  ledger" above describes. An independent check of both, then the three
+  generic checkboxes below ticked and the `TODO.md` item closed. The
+  `TODO.md` items that wait for the review's fixes to be in (the oracle
+  state at uncertainty level 1, the seeded gate run with a prior, the
+  triage list left by the check of wave 6, the regeneration of the golden
   references and the run pools for the release gate) can start once the
   PI decides.
 - [x] A candidate from outside the slices, to be verified with the

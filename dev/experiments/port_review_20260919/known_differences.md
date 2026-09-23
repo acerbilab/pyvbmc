@@ -1655,6 +1655,26 @@ fact inherited from MATLAB.
   its current behavior").
 - Kind: deliberate change.
 
+### Starting points that leave the initial design without spread are refused
+- Python: `pyvbmc/vbmc/vbmc.py: VBMC._validate_initial_design_spread`, at
+  construction: with at least `fun_eval_start` starting points, the initial
+  design is the first `fun_eval_start` of them (`active_sample.py`), and a
+  coordinate that takes one value across them raises `ValueError`.
+- MATLAB: `misc/initdesign_vbmc.m` takes the starting points as the design
+  when there are no more of them than its size, and picks it by k-means
+  over all of them when there are more; nothing checks the spread.
+  `gplite/gplite_covfun.m:105`, `:121-124` then give the length scale of a
+  coordinate without spread infinite bounds (`matlab_side_defects.md`, row
+  61).
+- What differs: a run whose design of starting points takes one value in a
+  coordinate is refused before any evaluation in PyVBMC; in MATLAB it
+  reaches the first GP fit with infinite bounds (what `fmincon` does with
+  them was not looked up). PyVBMC stopped there with L-BFGS-B's `KeyError`
+  after the evaluations of the design.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`,
+  W7-17.
+- Kind: deliberate change (interface).
+
 ---
 
 ## Slice P3 — acquisition functions
