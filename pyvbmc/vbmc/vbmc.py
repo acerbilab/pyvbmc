@@ -2433,8 +2433,7 @@ class VBMC:
                 else:
                     # Allow termination only if distant from last warping
                     if (
-                        iteration
-                        - self.optim_state.get("last_successful_warping", 0)
+                        iteration - self.optim_state["last_successful_warping"]
                         >= tol_stable_iters / 3
                     ):
                         is_finished_flag = True
