@@ -2563,8 +2563,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the code from before them; the oracle state at uncertainty level 1 and
   the seeded gate run with a prior, which can start when the PI decides; the
   triage of the findings without a recorded ruling and of what the check of
-  the wave-6 pass left for later. The commits of the close are on
-  `dev-port-review`, not pushed; `dev-next` takes them on the PI's word.
+  the wave-6 pass left for later. `dev-port-review` was pushed at
+  `047147a9`, its branch smoke green, and `dev-next` fast-forwarded to it
+  with this line (PI: go).
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
