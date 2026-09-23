@@ -797,3 +797,144 @@ def test_warp_gp_and_vp():
             np.array([11.0521101052146, 1.00626951493545]),
         )
     )
+
+
+def _bounded_warp_state(mean_function):
+    """A state to warp on a bounded problem, built without a run.
+
+    The problem has two bounded coordinates and an unbounded one, under the
+    default bounded transform, and a correlated Gaussian target. The
+    function logger holds 25 points, the posterior five components, and the
+    GP one hyperparameter sample under the mean function named by
+    ``mean_function`` (``"zero"``, ``"const"`` or ``"negquad"``). The state
+    is otherwise the same whatever the mean function.
+
+    Returns
+    -------
+    vbmc : VBMC
+        The instance holding the options, ``optim_state`` and the function
+        logger.
+    vp : VariationalPosterior
+        The posterior the whitening is computed from.
+    gp : gpyreg.GP
+        The GP to warp.
+    """
+    D = 3
+    lb = np.array([[-2.0, 0.0, -np.inf]])
+    ub = np.array([[4.0, 5.0, np.inf]])
+    plb = np.array([[-1.0, 1.0, -2.0]])
+    pub = np.array([[3.0, 4.0, 3.0]])
+    target_mean = np.array([1.0, 2.0, 0.5])
+    target_precision = np.linalg.inv(
+        np.array([[1.0, 0.5, 0.2], [0.5, 1.2, -0.3], [0.2, -0.3, 1.5]])
+    )
+
+    def log_density(x):
+        d = np.ravel(x) - target_mean
+        return -0.5 * d @ target_precision @ d
+
+    vbmc = VBMC(log_density, target_mean.reshape(1, D), lb, ub, plb, pub)
+    rng = np.random.default_rng(3)
+    spread = np.array([[0.4, 0.0, 0.0], [0.3, 0.25, 0.0], [-0.1, 0.15, 0.3]])
+    for u in rng.standard_normal((25, D)) @ spread.T:
+        vbmc.function_logger(u)
+
+    K = 5
+    vp = VariationalPosterior(
+        D,
+        K,
+        np.zeros((1, D)),
+        parameter_transformer=vbmc.parameter_transformer,
+        rng=np.random.default_rng(13),
+    )
+    vp.mu = (rng.standard_normal((K, D)) @ spread.T).T
+    vp.sigma = rng.uniform(0.1, 0.2, (1, K))
+    lambd = rng.uniform(0.6, 1.4, (D, 1))
+    vp.lambd = lambd / np.sqrt(np.mean(lambd**2))
+    vp.w = np.full((1, K), 1.0 / K)
+
+    mean, mean_hyp = {
+        "zero": (gpyreg.mean_functions.ZeroMean(), []),
+        "const": (gpyreg.mean_functions.ConstantMean(), [-1.5]),
+        "negquad": (
+            gpyreg.mean_functions.NegativeQuadratic(),
+            [0.7, 0.1, 0.0, -0.1, *np.log([0.5, 0.6, 0.9])],
+        ),
+    }[mean_function]
+    gp = gpyreg.GP(
+        D,
+        gpyreg.covariance_functions.SquaredExponential(),
+        mean,
+        gpyreg.noise_functions.GaussianNoise(constant_add=True),
+    )
+    hyp = np.concatenate(
+        [np.log([0.6, 0.5, 0.8]), [np.log(2.0)], [np.log(1e-3)], mean_hyp]
+    )
+    logger = vbmc.function_logger
+    gp.update(
+        X_new=logger.X[logger.X_flag],
+        y_new=logger.y[logger.X_flag],
+        hyp=hyp.reshape(1, -1),
+        compute_posterior=True,
+    )
+    return vbmc, vp, gp
+
+
+def _warp(vbmc, vp, gp):
+    """Warp the state as ``VBMC.optimize`` does: the inference space, the
+    search state and the logger first, then the GP hyperparameters and the
+    posterior."""
+    (
+        parameter_transformer_warp,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        __,
+    ) = warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+    return warp_gp_and_vp(parameter_transformer_warp, gp, vp, vbmc)
+
+
+@pytest.mark.parametrize("mean_function", ["const", "negquad"])
+def test_warp_gp_and_vp_moves_the_mean_with_the_stored_log_joint(
+    mean_function,
+):
+    """The warp is an affine map of the inference space, so it shifts every
+    stored log joint by one constant, the change of the log Jacobian, even
+    on a bounded problem where the log Jacobian differs from point to
+    point. The constant of the GP mean moves by the same amount."""
+    vbmc, vp, gp = _bounded_warp_state(mean_function)
+    filled = slice(0, vbmc.function_logger.Xn + 1)
+    y = np.copy(vbmc.function_logger.y[filled, 0])
+
+    __, hyp_warped = _warp(vbmc, vp, gp)
+
+    shift = vbmc.function_logger.y[filled, 0] - y
+    assert np.ptp(shift) < 1e-12
+    # The warp does move the stored log joint.
+    assert abs(shift[0]) > 0.1
+    m0_index = (
+        gp.covariance.hyperparameter_count(vp.D)
+        + gp.noise.hyperparameter_count()
+    )
+    m0_shift = hyp_warped[0, m0_index] - gp.posteriors[0].hyp[m0_index]
+    assert np.isclose(m0_shift, np.mean(shift), rtol=0, atol=1e-12)
+
+
+def test_warp_gp_and_vp_warps_a_zero_mean_gp():
+    """A zero mean has no hyperparameter to follow the shift of the stored
+    log joint, and the GP is warped without one: the refit that follows
+    every warp takes the shift up. The kernel and noise hyperparameters are
+    warped as they are under a constant mean, and so is the posterior."""
+    vbmc, vp, gp = _bounded_warp_state("zero")
+    vp_zero, hyp_zero = _warp(vbmc, vp, gp)
+    vp_const, hyp_const = _warp(*_bounded_warp_state("const"))
+
+    n_kernel_noise = (
+        gp.covariance.hyperparameter_count(vp.D)
+        + gp.noise.hyperparameter_count()
+    )
+    assert hyp_zero.shape == (1, n_kernel_noise)
+    assert np.array_equal(hyp_zero, hyp_const[:, :n_kernel_noise])
+    # The warp does move the length scales.
+    assert not np.allclose(hyp_zero[0, : vp.D], gp.posteriors[0].hyp[: vp.D])
+    for name in ("mu", "sigma", "lambd", "w"):
+        assert np.array_equal(getattr(vp_zero, name), getattr(vp_const, name))
