@@ -104,7 +104,47 @@ def test_logger_setup_keeps_handlers_of_other_kinds(
 def test_unknown_log_file_level_is_reported(tmp_path, restored_loggers):
     """An unusable file logging level is refused with a legible message."""
     log_file = tmp_path / "run.log"
-    with pytest.raises(
-        ValueError, match="not a recognized string or logging level"
-    ):
-        _vbmc(log_file, log_file_level=logging.DEBUG + 5)
+    with pytest.raises(ValueError, match="log_file_level"):
+        _vbmc(log_file, log_file_level="verbose")
+
+
+@pytest.mark.parametrize(
+    "level, expected",
+    [
+        ("off", logging.WARNING),
+        ("iter", logging.INFO),
+        ("full", logging.DEBUG),
+        (logging.DEBUG, logging.DEBUG),
+        (logging.DEBUG + 5, 15),
+        (np.int64(25), 25),
+        (logging.NOTSET, logging.NOTSET),
+    ],
+)
+def test_log_file_is_written_at_any_logging_level(
+    tmp_path, restored_loggers, level, expected
+):
+    """With ``log_file_name`` set the log file is written, at the level
+    ``log_file_level`` gives: one of the three strings, or a level of the
+    ``logging`` module, which takes any non-negative integer, custom levels
+    and ``logging.NOTSET`` included."""
+    log_file = tmp_path / "run.log"
+    _vbmc(log_file, log_file_level=level)
+    handlers = _file_handlers_for(logging.getLogger("VBMC_init"), log_file)
+    assert len(handlers) == 1
+    assert handlers[0].level == expected
+
+
+@pytest.mark.parametrize(
+    "level", [None, True, False, -1, 2.5, float(logging.INFO), "verbose"]
+)
+def test_log_file_level_that_is_no_level_is_refused(
+    tmp_path, restored_loggers, level
+):
+    """Any other value of ``log_file_level`` is refused at construction,
+    with a message that names the forms it takes."""
+    log_file = tmp_path / "run.log"
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(log_file, log_file_level=level)
+    message = execinfo.value.args[0]
+    assert "log_file_level" in message
+    assert '"iter"' in message and "non-negative integer" in message

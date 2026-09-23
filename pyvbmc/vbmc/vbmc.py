@@ -124,6 +124,52 @@ _CONSTRUCTION_ONLY_OPTIONS = (
 )
 
 
+# The levels of the log file that ``log_file_level`` names by a string, the
+# names that ``display`` gives the levels of the screen.
+_LOG_FILE_LEVEL_NAMES = {
+    "off": logging.WARN,
+    "iter": logging.INFO,
+    "full": logging.DEBUG,
+}
+
+
+def _log_file_level(value):
+    """The level of the log file that the option ``log_file_level`` gives.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option: ``"off"``, ``"iter"`` or ``"full"``, or a
+        level of the ``logging`` module, which takes any non-negative
+        integer (a Python or a NumPy integer, not a boolean).
+
+    Returns
+    -------
+    level : int
+        The level of the file handler.
+
+    Raises
+    ------
+    ValueError
+        When the value is none of these, ``None`` and booleans included.
+    """
+    if isinstance(value, str) and value in _LOG_FILE_LEVEL_NAMES:
+        return _LOG_FILE_LEVEL_NAMES[value]
+    if (
+        isinstance(value, (int, np.integer))
+        and not isinstance(value, bool)
+        and value >= 0
+    ):
+        return int(value)
+    raise ValueError(
+        'The option log_file_level must be "off", "iter" or "full", or a '
+        "level of the logging module, that is a non-negative integer such "
+        f"as logging.DEBUG; got {value!r}. A saved run that carries such a "
+        "value is continued with "
+        "VBMC.load(file, new_options={'log_file_level': 'iter'})."
+    )
+
+
 def _max_ignoring_nan(values):
     """The largest entry that is not NaN, as MATLAB's ``max`` returns it.
 
@@ -3752,28 +3798,16 @@ class VBMC:
                 ):
                     logger.removeHandler(handler)
 
-        if self.options.get("log_file_name") and self.options.get(
-            "log_file_level"
-        ):
-            file_handler = logging.FileHandler(
-                filename=self.options["log_file_name"], mode=log_file_mode
+        # The log file is written whenever it is named, at the level that
+        # log_file_level gives, logging.NOTSET included.
+        if log_file_name:
+            log_file_level = _log_file_level(
+                self.options.get("log_file_level", logging.INFO)
             )
-
-            # Set file logger level according to string or logging level:
-            log_file_level = self.options.get("log_file_level", logging.INFO)
-            if log_file_level == "off":
-                file_handler.setLevel(logging.WARN)
-            elif log_file_level == "iter":
-                file_handler.setLevel(logging.INFO)
-            elif log_file_level == "full":
-                file_handler.setLevel(logging.DEBUG)
-            elif log_file_level in [0, 10, 20, 30, 40, 50]:
-                file_handler.setLevel(log_file_level)
-            else:
-                raise ValueError(
-                    "Log file logging level is not a recognized "
-                    "string or logging level."
-                )
+            file_handler = logging.FileHandler(
+                filename=log_file_name, mode=log_file_mode
+            )
+            file_handler.setLevel(log_file_level)
 
             # Add a filter to ignore messages sent to logger.stream_only:
             def log_file_filter(record):
@@ -3879,6 +3913,7 @@ class VBMC:
         """
         self._validate_vectorized_target_option()
         self._validate_show_tips_option()
+        self._validate_log_file_level_option()
         self._validate_noise_shaping_option()
         self._validate_gp_mean_fun_option()
         self._validate_integer_vars_option()
@@ -3912,6 +3947,11 @@ class VBMC:
         value = self.options.get("show_tips", True)
         if not isinstance(value, (bool, np.bool_)):
             raise ValueError("The option 'show_tips' must be boolean.")
+
+    def _validate_log_file_level_option(self):
+        """Check the level of the log file, whether or not a log file is
+        named: ``_log_file_level`` says which values it takes."""
+        _log_file_level(self.options.get("log_file_level", logging.INFO))
 
     def _validate_noise_shaping_option(self):
         """Reject the half-configured noise-shaping mode."""

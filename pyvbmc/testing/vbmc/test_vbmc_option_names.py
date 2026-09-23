@@ -86,6 +86,7 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"cache_frac": 1.5}, ValueError, "cache_frac"),
         ({"warp_cov_reg": np.nan}, ValueError, "warp_cov_reg"),
         ({"hpd_frac": 0.1}, ValueError, "hpd_frac"),
+        ({"log_file_level": None}, ValueError, "log_file_level"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(

@@ -36,7 +36,10 @@ its entry below.
   neither a finite number nor a function (`True`, which 1.0.4 read as 1,
   among them) raises an error, and so does an `hpd_frac` that is not a
   fraction in (0, 1] or that leaves fewer than two points of the initial
-  design.
+  design. A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
+  non-negative integer raises an error, also when no `log_file_name` is
+  given; `None` and `False`, with which 1.0.4 wrote no log file, are among
+  them. `log_file_level=0` writes the log file, where 1.0.4 wrote none.
 - `VBMC.load(file, new_options=...)` raises for an option that only
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
   `warmup` and their kin; the message names them), where such a value used
@@ -768,6 +771,13 @@ its entry below.
 - With `log_file_name` set, a handler on the `"VBMC"` logger that was not a
   file handler raised `AttributeError`, and duplicate file handlers could be
   left behind.
+- With `log_file_name` set, the log file is written at the level that
+  `log_file_level` gives: `"off"`, `"iter"`, `"full"`, or any level of the
+  `logging` module, that is any non-negative integer, custom levels and
+  `logging.NOTSET` (0) included. 1.0.4 refused a level other than 0, 10, 20,
+  30, 40 and 50, and wrote no log file for 0, `None` or `False`. Any other
+  value raises an error at construction and in `VBMC.load`, whether or not a
+  log file is named.
 - Active sampling:
   - With `search_cache_frac` above 0 (it is 0 by default), the first step of
     active sampling raised an error, because the cache of search points is
