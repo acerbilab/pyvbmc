@@ -27,17 +27,25 @@ alone. Slice M checked the MATLAB commits made since the port began, and
 four third readers (O1 to O4) re-derived the critical numerical paths and
 compared them with MATLAB.
 
-Every finding was verified before it was ruled on, by a small script, a
-finite-difference check or a second reading of the MATLAB source by another
-agent. No MATLAB was run (PI, 2026-09-20): a statement about MATLAB rests on
-its source at `396d649`, or on a Python transcription of it. The PI ruled on
-the verified findings before any fix was made. Each fix is one commit per
-finding with a test written against the contract, and a fix pass was gated
-by the exact oracle check (`make_oracle_fixtures.py --check --exact`), the
-four seeded gate runs, the whole suite in the default environment and in the
-environment that holds Torch, ArviZ and PyMC, and the full CI matrix. A pass
-that moves default trajectories was also read for accuracy on benchmark
-targets whose truth is known. The fix passes of waves 1 to 7 were each read
+Every finding was verified, by a small script, a finite-difference check
+or a second reading of the MATLAB source by another agent. No MATLAB was run
+(PI, 2026-09-20): a statement about MATLAB rests on its source at `396d649`,
+or on a Python transcription of it. The PI ruled on the verified findings
+before their fixes, except in wave 4, where the PI ruled on the
+orchestrator's recommendations before the verification, which amended them
+(`verification/wave4.md`); a few fixes were made during a pass for the PI to
+confirm or strike (W5-7, W6-38, and the items found during the passes). Each
+fix is one commit per finding, with a test written against the contract
+where it changes code. The gates of a fix pass grew with the review. From
+wave 2 on they were the exact oracle check (`make_oracle_fixtures.py --check
+--exact`), the four seeded gate runs, the whole suite in the default
+environment, the tests of the optional integrations in the environments that
+hold them (selections of them; in wave 6, the extras cell of the CI matrix
+alone) and the full CI matrix; wave 0 was gated by the tests of each module,
+and wave 1 by the tests of the modules it touched and the exact oracle
+check. From wave 3 on, a pass that moves default trajectories was read for
+accuracy on benchmark targets whose truth is known, but for W5-1 and W5-6,
+which move a draw now and then. The fix passes of waves 1 to 7 were each read
 afterwards by fresh reviewers without the session's context, and what they
 found was ruled on and fixed in its turn. The fixes of wave 0 had no such
 check.
@@ -66,8 +74,11 @@ in one row, so does this one.
   `N2r` is the rerun of the N2 review, `N2s` the static one). Wave 1 uses the
   labels of `wave1.md` and the rows `O-1` to `O-6` of `wave1_options.md`.
   Items that a per-wave ledger lists without a number carry labels given
-  here: `W3-FPn`, `W4-FPn` and `W5-FPn` for what was found during a fix
-  pass, `C4-n` for the findings of the independent check of the wave-4 pass.
+  here: `W3-FPn` to `W7-FPn` for what was found during a fix pass or its
+  round, `C4-n` for the findings of the independent check of the wave-4
+  pass. In the tables of the checks, R1 to R6, F1 to F3, G, P and R are the
+  check's reviewers as its paragraph lists them; in wave 7's, O1, O2 and S1
+  to S3 label its reviewers' findings, not slices.
 - **where**: the Python and the MATLAB locations as the per-wave ledger or
   the report cites them. Python and gpyreg line numbers are those of the
   code the wave read, which the head of each wave below names where the
@@ -80,12 +91,16 @@ in one row, so does this one.
 - **disposition**: the PI's ruling or the recorded outcome, with later
   changes. "As proposed" means that the PI took the orchestrator's proposal
   as it stood.
-- **fix**: the commits. A gpyreg commit is marked "gpyreg". "check:" marks a
-  commit of the independent check of the pass and "round:" one of the fix
-  round that followed a check. In wave 1, "check table:" marks a commit that
-  `wave1.md` lists under its check for this finding without naming it in the
-  dispositions table. "(git)" marks a commit that no record names, found in
-  the history. Every PyVBMC commit cited here is an ancestor of `c228cc2e`,
+- **fix**: the commits. A gpyreg commit is marked "gpyreg". The checks read
+  and reported; "check:" marks a commit made on the findings of the
+  independent check of the pass, and in wave 6 "round:" one made on the
+  findings of the check of that first round and "that check:" one made on
+  the check for substantial errors. In wave 1, "check table:" marks a commit
+  that `wave1.md` lists under its check for this finding without naming it
+  in the dispositions table, and "ruling:" one made on the PI's rulings after
+  the check. A row's id followed by a colon ("W7-16:") names the commit of
+  that row. "(git)" and "git `abc`" mark a commit that no record names, found
+  in the history. Every PyVBMC commit cited here is an ancestor of `c228cc2e`,
   but for `29c822d`, a fix agent's commit that the branch took as `e48fade`,
   and every gpyreg commit is an ancestor of `v1.3.1`.
 
@@ -93,14 +108,14 @@ in one row, so does this one.
 
 | Wave | Dates | Slices | Findings reported | Per-wave ledger | Fixes | Into `dev-next` |
 |---|---|---|---|---|---|---|
-| 0 | 2026-09-19 | N1, N2, N3 (internal track), and the preparatory agent's sheet and map | 24: N1 5, N2 9 over two reports, N3 10 | `wave0.md`, 23 rows | 18 commits (git) | `57cbfb4`, with waves 1 and 2 |
-| 1 | 2026-09-19; check 09-22 | M; P6 on both tracks; P2 on the comparison track | 44: M 5, P6 13 and 10, P2 16 | `wave1.md`, with `wave1_P6.md`, `wave1_M_P2.md` and `wave1_options.md` | 35 commits; the check's round 19, and those that followed the PI's rulings | `57cbfb4`; the check merged into `dev-port-review` as `e86bbb1c` |
-| 2 | 2026-09-20; check 09-21 | P1a, P1b, both tracks | 43 | `wave2.md`, W2-1 to W2-30 and 13 minor observations | 47 commits, the CI fixes and W2-30 included; check 18 | `57cbfb4` |
-| 3 | 2026-09-20; check 09-21 | P5, P8, both tracks | 48 | `wave3.md`, W3-1 to W3-36 | 34 commits; check 10 | `82aee90`; check `5acd382` |
-| 4 | 2026-09-20; check 09-21 | P3, P4, both tracks | 29, and 5 minor observations | `wave4.md`, W4-1 to W4-22 | 12 commits; check 5 | `9d9c01b` |
-| 5 | 2026-09-21 | P7, P9, both tracks; P2, internal track | 54 | `wave5.md`, W5-1 to W5-40 | 32 commits; check 13, and `6d492a2`, `6dcd027`, `f9ab814` | `03a8d46`; `1563053` |
+| 0 | 2026-09-19 | N1, N2, N3 (internal track), and the preparatory agent's sheet and map | 24: N1 5, N2 9 over two reports, N3 10 | `wave0.md`, 23 rows | 18 commits, 16 of them found in git | `57cbfb4`, with waves 1 and 2 |
+| 1 | 2026-09-19; check 09-22 | M; P6 on both tracks; P2 on the comparison track | 44: M 5, P6 13 and 10, P2 16 | `wave1.md`, with `wave1_P6.md`, `wave1_M_P2.md` and `wave1_options.md` | 35 commits after `6c151cb`, with `cb2d513` before them; the check's round 22 (19 by its fix agents), then 7 on the PI's rulings | `57cbfb4`; the check merged into `dev-port-review` as `e86bbb1c` |
+| 2 | 2026-09-20; check 09-21 | P1a, P1b, both tracks | 43 | `wave2.md`, W2-1 to W2-30 and 14 minor observations | 47 commits in all, the CI fixes, W2-30 and records included; check 18 | `57cbfb4`; the check with wave 5, `03a8d46` |
+| 3 | 2026-09-20; check 09-21 | P5, P8, both tracks | 48 | `wave3.md`, W3-1 to W3-36 | 34 commits; check 11, `b731fac` included | `82aee90`; check `5acd382` |
+| 4 | 2026-09-20; check 09-21 | P3, P4, both tracks | 29, 5 minor observations and an adjacent one (W4-17) | `wave4.md`, W4-1 to W4-22 | 12 commits; check 5 | `9d9c01b` |
+| 5 | 2026-09-21 | P7, P9, both tracks; P2, internal track | 54 | `wave5.md`, W5-1 to W5-40 | 32 commits; check 13, and `5c4fc87`, `6d492a2`, `6dcd027`, `f9ab814` | `03a8d46`; `1563053` |
 | 6 | 2026-09-21 to 09-23 | G1, G2 (gpyreg), both tracks | 36, and 52 minor observations | `wave6.md`, W6-1 to W6-38 | gpyreg: 56 commits in `acerbilab/gpyreg#50`; PyVBMC: 8 | gpyreg 1.3.0; `dev-next` fast-forwarded |
-| 7 | 2026-09-23 | O1 to O4, third readers | 14, and an observation | `wave7.md`, W7-1 to W7-17 | PyVBMC: 19, then 3 in the round of its check and `8921845f`; gpyreg: 12 | gpyreg 1.3.1; `dev-next` fast-forwarded |
+| 7 | 2026-09-23 | O1 to O4, third readers | 14, two observations, and a verifier's candidate (W7-17) | `wave7.md`, W7-1 to W7-17 | PyVBMC: 19, then 3 in the round of its check and `8921845f`; gpyreg: 12 | gpyreg 1.3.1; `dev-next` fast-forwarded |
 
 What the review changed:
 
@@ -108,7 +123,7 @@ What the review changed:
   the level-1 noise model of the GP (W3-1), which had silently been level
   0's; the warm-up end, the LCB maxima and the minimum-iteration guard of the
   main loop (W2-1 to W2-5); the inputs of the GP hyperparameter fit (W3-2 to
-  W3-7) and the statistics of gpyreg's bound recommendations, pooled over
+  W3-5, W3-7) and the statistics of gpyreg's bound recommendations, pooled over
   the dimensions (W6-1); the remainder of the balanced draw of the
   variational posterior (W5-1); the CMA-ES search's per-coordinate scales
   and the size of the initial design (wave 1); and the saved files that
@@ -145,7 +160,7 @@ compositions of the S-VBMC shrinkage.
 |---|---|---|---|
 | 1 | `cb2d513` | P2 F2 = M F1 | runs with `D >= 10` (`fun_eval_start` is `10*ceil((D+1)/10)`) |
 | 1 | `4d1d984`, `d617d99` | P2 F1, P2 F5 | every CMA-ES search with `D > 1` (per-coordinate scales, no noise handler) |
-| 1 | `bd47856` | O-3, O-4 | runs that end without a stable iteration (the ranking criterion) |
+| 1 | `bd47856`, `4892fe3` | O-3 to O-5 | runs that end without a stable iteration (the ranking criterion and its counts), and the posterior an input warp starts from |
 | 1 | `7331841` | P6 int F3 | runs with `K = 1`: the reported ELBO, the ranking of the optimizations, the pruning, the draws of the Monte Carlo estimate |
 | 1 | `be38570` | P6 int F1 + cmp F1 | `D > 1` with two slow candidates (the type-2 starting widths) |
 | 1 | `cb8a51d` | P2 F9 | `D = 1` (the bounded scalar search) |
@@ -159,21 +174,28 @@ compositions of the S-VBMC shrinkage.
 | 2 | `fb8a12e` | W2-3 | the first warp and the earliest stable termination |
 | 2 | `8cd4bbc` | W2-4 | the first variational optimization of a run whose `x0` the transform moves |
 | 2 | `567444f` | W2-5 | runs on which `min_iter` binds |
-| 3 | `14a01e2`, `6e135f2`, `1268d69`, `720c416`, `992f7cb` | W3-2, W3-3, W3-4, W3-5, W3-7 | the starting points, the space-filling design and the sampler widths of every GP hyperparameter fit |
-| 3 | `095c82c` | W3-1 | runs at uncertainty level 1 (not a shipped default) |
-| 5 | `23d962a` | W5-1 | every draw of a balanced sample with `K > 1`: `sKL` and `r_index` of every run, and noisy runs from the first draw that differs |
+| 3 | `14a01e2`, `6e135f2`, `1268d69`, `720c416`, `992f7cb` | W3-2, W3-3, W3-4, W3-5, W3-7 | the design and the starting points of every fit that draws a design, the sampler widths of the fits that sample (W3-4), and the cap of the noise (W3-7) |
+| 5 | `23d962a` | W5-1 | the remainder of every balanced draw with `K > 1`: `sKL` and `r_index` of every run, and a trajectory now and then, where a moved candidate is acquired |
+| 5 | `8e2977a`, `94638fe` | W5-6, R3-1 | runs with more starting points than the initial design takes, where the sieve's rounded shares meet a half |
 | 6 | gpyreg `f76eca2` | W6-1 | every sampled GP fit of every run (the mean's boxes, the design, the optimizer's box, the sampler's widths) |
 
-No fix of waves 0, 4 and 7 moves a default trajectory. The moving fixes
-were read for accuracy on benchmark targets whose truth is known: the wave-3 pass on eight targets and 32 seeded pairs,
-with differences both ways (`verification/wave3.md`, "Gates"); W6-1 on eight
-targets and 59 seeded pairs, better on 24, 27 and 30 seeds by the ELBO
-error, gsKL and MMTV and worse in mean on three targets, kept after the
-ruling was reopened (`verification/wave6.md`, "Gates"); the wave-1 check's
-counts on noisy targets, better by the ELBO error on 21 of 30 seeds and
-worse on `rosenbrock_D2_noise3` by 0.025 nats of mean ELBO error
-(`verification/wave1.md`, "The merge into `dev-port-review`"). W5-1 was not
-swept: it moves a draw now and then, with no statistical effect.
+No fix of waves 0, 4 and 7 moves a default trajectory; W3-1 (`095c82c`)
+changes runs at uncertainty level 1, which is not a default. The moving
+fixes of the wave-1 and wave-2 passes were not read for accuracy, the
+benchmark sweep becoming a gate in wave 3; the release benchmark is their
+measure. The later ones were read on benchmark targets whose truth is known:
+the wave-3 pass on eight targets and 32 seeded pairs, with differences both
+ways (`verification/wave3.md`, "Gates"); W6-1 on eight targets and 59 seeded
+pairs, better on 24 and worse on 35 by the ELBO error, better on 27 and worse
+on 30 by gsKL (two tied), better on 30 and worse on 29 by MMTV, its means
+worse on `corr_D5`, `cigar_D4` and the noisy Rosenbrock on all three metrics
+and on `lumpy_D4` in the ELBO error, kept after the ruling was reopened and
+the mean's bounds were probed (`verification/wave6.md`, "Gates"); and the
+merge of the wave-1 check, of whose commits `6590ea4` and `831b024` move
+noisy runs, better by the ELBO error on 21 of 30 seeds and worse on
+`rosenbrock_D2_noise3` by 0.025 nats of mean ELBO error
+(`verification/wave1.md`, "The merge into `dev-port-review`"). W5-1 and W5-6
+were not swept: they move a draw now and then.
 
 ## Oracle re-baselines
 
@@ -200,8 +222,9 @@ round after the check of that round, and `286b595`. Its GitHub release
 uploaded the wheel and the source archive to PyPI. It carries W6-1, W6-3
 to W6-18, W6-21, W6-22, W6-26 to W6-29, W6-31 to W6-35 and W6-38, the
 documentation of W6-24, and the check findings fixed in the two rounds
-(below); its release notes have an "Upgrading" list for the inputs it refuses and the Metropolis step
-it removes. PyVBMC moved its pin to `a4c2cc0` (`4196649a`), then to the tag,
+(below); its release notes have "Upgrading" points for the inputs it
+refuses, the Metropolis step it removes, `df_base` after `fit`, the kernels'
+diagonal with the gradient and the exception types that changed. PyVBMC moved its pin to `a4c2cc0` (`4196649a`), then to the tag,
 with `gpyreg >= 1.3.0` (`2dc2a6c3`).
 
 **1.3.1** (2026-09-23): the annotated tag `v1.3.1` on `1dbbfc5`, the merge of
@@ -215,8 +238,9 @@ pin to the tag with `gpyreg >= 1.3.1` (`9068f2d0` (git)).
 
 ## Findings without a recorded ruling
 
-The records give no ruling for these findings, and the code they describe
-is unchanged at `c228cc2e`. None changes what a run computes. They are in
+The records give neither a ruling nor any other outcome for these
+findings, and the code they describe is unchanged at `c228cc2e`. None
+changes what a run at the shipped options computes. They are in
 `dev/TODO.md` for the PI's triage ("The findings of the port review without
 a recorded ruling").
 
@@ -228,9 +252,17 @@ a recorded ruling").
 | 0 | N3 F6 | an incomplete calibration campaign discards the groups that finished; a test pins it | design choice |
 | 0 | N3 F8 | `sieve_gradient` times a gradient call of 8192 rows that the package makes one point at a time | defect (performance only) |
 | 0 | N3 F9 | the key of the calibration cache omits the package version | design choice |
-| 1 | P2 F16 (c) | the overlapping timers of active sampling are not subtracted from each other | diagnostics only; W5-28 rules on parts (a) and (b) alone |
 | 2 | C-M8 | `VBMC(x0=...)` with a list or a float raises `AttributeError` from `x0.ndim` (`verification/wave2_C_setup.md`) | Python-only defect, a hard failure with an unhelpful message |
 | 2 | C-C7 | `Options.eval` calls a callable option by keyword where MATLAB's `evaloption_vbmc` calls it positionally, so `ns_ent` given as `lambda n: ...` raises `TypeError` at its first use (`verification/wave2_C_setup.md`) | Python-only interface difference |
+| 2 | C-C2, its second half | MATLAB warns when `NoiseSize` is given with `SpecifyTargetNoise` (`misc/setupoptions_vbmc.m:139-140`); PyVBMC ports the error on the contradictory configuration (`1a9f37a`) and not the warning | Python-only difference |
+| 2 | C-M2, its second half | `log_file_level` refuses every level outside `{0, 10, 20, 30, 40, 50}`; `658ecb8` fixed the handler loop of the same row alone | Python-only defect, leftover-grade |
+| 2, check | left for the PI | the option functions of a saved run are not rebuilt from the `.ini` files in `load`, which would let a run with an importable target continue under another minor version of Python | open question |
+| 2, check | left for the PI | `vbmc.x0` stays in the inference space of construction when the run warps; `AGENTS.md` and the class docstring say so | documented |
+| 2, check | left for the PI | `optim_state["last_warmup"] = 0` for a run without warm-up is MATLAB's 1-based value in a 0-based field, masked at every default; the fallback of `.get("last_successful_warping", 0)` is an iteration index where the key starts at minus infinity | latent |
+| 2, check | left for the PI | the main loop sizes its sieve at `self.vp.K`, which with `variable_means` off is the count of the iteration before | non-default option |
+| 2, check | left for the PI | `validate_run_limits` checks neither the sign nor the integrality of `min_iter`; the guard of the inert options runs one way; the warnings of `Options` go to the root logger and miss `log_file_name` | input checks, logging |
+| 2, check | left for the PI | `_normalized_hard_bound` of the `PyMCTarget` route does not replicate a scalar bound; the tests of `_recompute_lcb_max` reach neither its wiring into the loop, nor the noisy branch, nor `add_noise=False` | input check, tests |
+| 2, check | left for the PI | `CHANGELOG.md` has no entry for W2-16 and W2-11, no "Upgrading" line for the copies that `determine_best_vp` and `final_boost` work on or for the frozen `pop` and `del`, and says of the budget keys of the results that each is present "only when its argument was used" | documentation |
 
 ## The findings, wave by wave
 
@@ -240,7 +272,11 @@ Verified by the orchestrator on 2026-09-19 at `0e4e27a`, whose package code
 is that of `f91fdf0` (`verification/wave0.md`); these slices have no MATLAB
 counterpart, and the classes are defect, as specified, documentation,
 cleanup and design choice. The PI ruled the same day; three Opus agents made
-the fixes, whose commits no record names (found in `f91fdf0..57cbfb4`). The
+the fixes, whose commits the records name only for the Monte Carlo entropy
+(`f3ba8d3`, `7c7972f`); the others were found in `f91fdf0..57cbfb4`. The
+rulings also gave `dev/TODO.md` an item on saving and loading an `SVBMC`
+object, which `dill` serializes (worklog, 2026-09-19), answering no numbered
+finding. The
 preparatory agent wrote the known-differences sheet (67 entries) and the
 counterpart map (124 rows) before any comparison reviewer ran
 (`prep_report.md`).
@@ -248,13 +284,13 @@ counterpart map (124 rows) before any comparison reviewer ran
 | id | slice | where | category | finding | class; dating | evidence | disposition | fix |
 |---|---|---|---|---|---|---|---|---|
 | N1 F1 | N1 | `svbmc/svbmc.py:57` `_validate_posteriors` (effect `_entropy.py:91`); no counterpart | cross-module | Runs whose original-space boxes differ are accepted. Draws outside a narrower run's box give NaN, so the ELBO, entropy and weights are silently NaN. | defect; not dated | wave0.md; `n1_f1_f2_f3_svbmc.py` part 1 | fixed: construction compares every run's original-space hard bounds and raises | `a7cc1f91` (git) |
-| N1 F2 | N1 | `svbmc.py:605` reads `self.w`, `:747` overwrites it; no counterpart | state/caching | A second `optimize()` starts its logits from the first solution rather than the runs' own weights, so repeated calls drift (both versions). | defect; not dated | same script, part 2 | fixed: every `optimize()` starts from the runs' own weights; first call bit-identical | `b742a9bb` (git) |
-| N1 F3 | N1 | `svbmc/_elbo_shrinkage.py:159`; no counterpart | formula/gradient | The two shrinkage stages do not compose to the shrunk run level: the between-run shift is added to the within-shrunk components. | as specified (step 5 of `plans/svbmc-shrinkage-estimator.md`); not dated | same script, part 3 | PI: stays as devised; a comparison of the two compositions added to the headline-selection item of `TODO.md` | — (TODO text in `7ddf79b0`, git log) |
+| N1 F2 | N1 | `svbmc.py:605` reads `self.w`, `:747` overwrites it; no counterpart | state/caching | A second `optimize()` starts its logits from the first solution rather than the runs' own weights, so repeated calls drift (the `"all-weights"` and `"posterior-only"` modes). | defect; not dated | same script, part 2 | fixed: every `optimize()` starts from the runs' own weights; first call bit-identical | `b742a9bb` (git) |
+| N1 F3 | N1 | `svbmc/_elbo_shrinkage.py:159`; no counterpart | formula/gradient | The two shrinkage stages do not compose to the shrunk run level: the between-run shift is added to the within-shrunk components. | as specified (step 5 of `plans/svbmc-shrinkage-estimator.md`); not dated | same script, part 3 | PI: stays as devised; a comparison of the two compositions added to the headline-selection item of `TODO.md` | — (TODO text in `7ddf79b0` (git)) |
 | N1 F4 | N1 | `svbmc.py:846` (docstring), `:889`; no counterpart | control flow | `sample(balance_flag=True)` does not keep every component count within one draw. The within-run split delegates to `VariationalPosterior.sample`, which places its remainder at random. | documentation; not dated | `n1_f4_balance.py` | the docstring, the API page and Example 7 state the bound that holds; code unchanged | `b8ca3d6a`, `a601b761` (git) |
 | N1 F5 | N1 | `svbmc.py:467` (with `:428`, `:552-558`); no counterpart | cross-module | The docstring of `stacked_entropy` says `stacked_ELBO` subtracts the Jacobian corrections. The subtraction happens once, in `__init__`. | documentation; not dated | reading | docstring corrected | `7395a36d` (git) |
 | N2r F1 | N2 | `pymc/_target.py:349` (effect `:1133`); no counterpart | formula/gradient (support derivation) + control flow | The support is inferred from the transform kind: a log transform is read as (0, inf). `pm.Wald(alpha=2)` then reports a wrong support, and a run aborts on a non-finite density. | defect; not dated | `n2r_f1_wald_support.py`, `n2r_f1_wald_abort.py` | fixed: a kept log transform is checked by a probe ladder on the variable's own prior density; a shifted support is rejected at construction | `3a9da43e` (git) |
 | N2r F2 | N2 | `_target.py:836`, `:859`; no counterpart | control flow | Only two of PyTensor's no-gradient signals are caught. `MethodNotDefined` (`pm.Rice`) escapes construction instead of taking the gradient-free route. | defect; not dated | `n2r_f2_rice_gradient.py` | fixed: a missing pullback is treated as an absent derivative | `12645aa9` (git) |
-| N2r F3 | N2 | `variational_posterior/_torch.py:147`; `parameter_transformer.py:515`; no counterpart | formula/gradient | Near a hard bound the Torch export's density differs from `vp.pdf`. The NumPy transformer loses precision there (2e-2 within 2 ulp); the Torch inverse is exact. | defect of the core transformer's precision near a nonzero bound (Torch the accurate side); not dated in wave 0; W7-6: shared with MATLAB | `n2r_f3_near_bound.py`; W7-6: `wave7_O3_F3_F4_precision.py` | waited for P8 and O3. W3-33 found MATLAB's expressions the same. W7-6: the loss is at an upper bound with `abs(b) < b - a`; left as it is in both | — |
+| N2r F3 | N2 | `variational_posterior/_torch.py:147`; `parameter_transformer.py:515`; no counterpart | formula/gradient | Near a hard bound the Torch export's density differs from `vp.pdf`. The NumPy transformer loses precision there (2e-2 within 2 ulp); the Torch inverse is exact. | defect of the core transformer's precision near a bound (Torch the accurate side); W7-6: at an upper bound with `abs(b) < b - a`, worst at `b = 0`, shared with MATLAB | `n2r_f3_near_bound.py`; W7-6: `wave7_O3_F3_F4_precision.py` | waited for P8 and O3. W3-33 found MATLAB's expressions the same. W7-6: the loss is at an upper bound with `abs(b) < b - a`; left as it is in both | — |
 | N2r F4 + N2s F2 | N2 | `_target.py:1093-1102` `to_model_variables`, reached from `to_arviz` `:1252`; no counterpart | control flow (boundary condition) | One backward-map value that rounds onto its finite support bound rejects the whole export batch (found by both reviewers). | as specified (the plan requires strict interior), with a reachable boundary case the plan did not consider; not dated | `n2r_f4_onesided_absorb.py` | fixed: such a coordinate is returned as the adjacent value inside the support; non-finite and out-of-support values are still rejected | `ee67d225` (git) |
 | N2s F1 | N2 | `_target.py:664`, `_plausible.py:289-292`, `_target.py:968-984`; no counterpart | defaults | Every default construction takes 4000 prior draws, used only for a location warning when no curvature fallback is needed. | as specified (`plans/pymc-target-adapter.md`); not dated | `n2s_f1_prior_draws.py` | PI: the draws at construction stay; the arguments that avoid them are documented | `acb6424a` (git) |
 | N2s F3 | N2 | `_target.py:608-612`, `_compat.py:16`; no counterpart | control flow | `UnsupportedModel` (a `ValueError`) raised inside the mode search is relabelled as a mode-search failure and loses its type. | defect (diagnostics only); not dated | reading | fixed: `UnsupportedModel` passes through unchanged | `007ddaeb` (git) |
@@ -273,9 +309,10 @@ counterpart map (124 rows) before any comparison reviewer ran
 
 ### Wave 1: the MATLAB changes since the port (M), the variational optimization (P6), the active-sampling search (P2)
 
-Verified on 2026-09-19 on `dev-port-review`, whose package code was that of
-`f91fdf0` (`verification/wave1_P6.md` and `wave1_M_P2.md`, whose headers
-carry their corrections, and
+Verified on 2026-09-19: P6 at `e024b1b`, M and P2 at `cb2d513`, the options
+at `0d24698`, the package code of `f91fdf0` with the wave-0 fixes, the
+chunk-independent entropy and `cb2d513` (`verification/wave1_P6.md` and
+`wave1_M_P2.md`, whose headers carry their corrections, and
 `wave1_options.md`, a pass over the options surface that grew out of M F2).
 `verification/wave1.md` gives the disposition of every finding.
 
@@ -291,7 +328,7 @@ carry their corrections, and
 | P6 int F4, F6, F13a | P6 | `minimize_adam.py:87`, `:101`; `variational_optimization.py:1645`; `:484`; `utils/fminadam.m:48`, `:63`; `misc/gplogjoint.m:404`; `misc/vpoptimize_vbmc.m:281` | indexing/shape; formula/gradient; state/caching | F4: `x_tab` and `y_tab` are offset by one. F6: `var_ss` adds an SD of variances to a variance of means. F13a: `"skip_elbo_variance" in options` is always false. | not defects: F4 shared with MATLAB; F6 an exact port (MATLAB line since `a1680e3`, 2018-05-04); F13a a faithful port of a dead MATLAB guard | wave1_P6.md | not defects; F6 documented | `d54266c`; check table: `5b7881c` |
 | P6 int F8, F9 | P6 | `variational_optimization.py:551-561`; `:771-775` | state/caching; defaults | F8: `eta` is excluded from the soft-bound loss while `get_bounds` still computes its bounds. F9: `elcbo_beta` is hard-coded to 0. | intentional differences (F8: PI decision of 2026-09-08; F9: unported, inactive at MATLAB defaults) | wave1_P6.md (reading) | already on the sheet | — |
 | P6 int F11, F12 | P6 | `minimize_adam.py:63`, `variational_optimization.py:261-268`, `:49-65`; `utils/fminadam.m:23`, `private/updateK.m:16-26` | defaults; defaults/control flow | F11: Adam's `β₂` and step sizes differ from the paper. F12: `update_K` masks the two oldest window entries, with a window of 6 against the paper's 4. | paper-versus-code differences shared with MATLAB | wave1_P6.md | no action | — |
-| P6 cmp F3 | P6 | `vbmc/vbmc.py:1504-1506`; `vbmc.m:699` with `:459` | control flow (and defaults) | The sieve's candidate count is `50·vp.K`. MATLAB's main loop evaluates `NSelbo` at a stale `K = Kwarmup`, always 100. | confirmed port discrepancy (PyVBMC's value the more sensible); MATLAB line since `c476ab9` (2019-01-10) | wave1_P6.md (grep) | sheet entry; MATLAB-side defect, entry 8 | — |
+| P6 cmp F3 | P6 | `vbmc/vbmc.py:1504-1506`; `vbmc.m:699` with `:459` | control flow (and defaults) | The sieve's candidate count is `50·vp.K`. MATLAB's main loop evaluates `NSelbo` at a stale `K = Kwarmup`, always 100. | confirmed port discrepancy (PyVBMC's value the more sensible); MATLAB line since `c476ab9` (2019-01-10) | wave1_P6.md (grep) | sheet entry; MATLAB-side defect, entry 8; the warp-branch paragraph corrected by W2-16 | — |
 | P6 cmp F5 | P6 | `variational_optimization.py:1476-1479`, `:1499-1503`, `:1588-1592`; `misc/gplogjoint.m:86-90`, `setupvars_vbmc.m:247` | formula/gradient | The GP-smoothing bandwidth (`vp.delta`, `Bandwidth`) is missing from `tau` and `nu`. | intentional difference in effect / unported feature, inactive at MATLAB defaults | wave1_P6.md | sheet (unported) | — |
 | P6 cmp F7 | P6 | `variational_optimization.py:45`, `options.py:248-251`; `private/updateK.m:10` | cross-module (and defaults) | `adaptive_k` is evaluated with the keyword `unkn`, so a callable cannot be called; the `round` semantics also differ. | confirmed port discrepancy; MATLAB unchanged | wave1_P6.md | fixed: the keyword by wave 1, the rounding by wave 5 (W5-6) | `06f9b03`; `8e2977a`; check table: `1443b39` |
 | P6 cmp F10a, F10b | P6 | `variational_optimization.py:821`, `:313`; `misc/vpsieve_vbmc.m:81`, `vpoptimize_vbmc.m:176` | control flow | The sort is unstable where MATLAB's `sort` is stable, and `argmin` selects a NaN where MATLAB's `min` skips it. | confirmed port discrepancy (ties only; needs a NaN evaluation); MATLAB unchanged | wave1_P6.md | fixed, with the second unstable sort the verifier found; empty slots and the midpoint by the check | `81e21bf`; check: `43dfb7b` |
@@ -307,7 +344,7 @@ carry their corrections, and
 | P2 F6 | P2 | `active_sample.py:544`, `.ini:185`; `cmaes_modded.m:1708-1721`, `activesample_vbmc.m:282-290` | defaults/control flow | `search_cmaes_best` is never read. PyVBMC returns the best-ever solution; MATLAB returns the best of the last generation. | confirmed port discrepancy; MATLAB unchanged | wave1_M_P2.md; `cmaes_side_by_side/` | PI: stays inert (the acquisition is deterministic during the search) | `a63b17a`; sheet, `cma` entry |
 | P2 F7 | P2 | `active_sample.py:871-880`, `vbmc.py:1011`; `activesample_vbmc.m:565-568` | control flow | `search_cache_frac > 0` raises on the first active-sampling step, because the search cache starts as `[]`. | confirmed Python-only defect; MATLAB unchanged | wave1_M_P2.md | fixed; since wave 5 (W5-24), a value above 0.25 with the shipped fractions is refused | `9abeb10`; wave 5: `a25fc73` |
 | P2 F8 = M F3 | P2, M | `active_sample.py:730-733`; `activesample_vbmc.m:481` (M cited `:468`) | control flow | The rank-one GP update is gated with `and` where MATLAB has `or`. | confirmed port discrepancy; the header says the verdict fails on noisy targets, where MATLAB recomputes (`gplite_post.m:76-79`); since the original port | wave1_M_P2.md; W4-11: `wave4_P4_5_rank_one_update.py`, `wave4_P4_5b_sn2_mult.py` | changed by `510a493` (rank one for a fresh noisy observation, away from MATLAB); the PI ruled in wave 4 (W4-11) that it stays | `510a493`; check table: `e71eab2` |
-| P2 F9 | P2 | `active_sample.py:484-488`, `:545-551`; `activesample_vbmc.m:265-316` | control flow/defaults | At `D == 1` the search switches permanently to an unbounded SciPy Nelder-Mead with SciPy's default budget. | confirmed port discrepancy (Python-only substitution); M's stated cause, and `wave1_M_P2.md`'s correction of it, do not hold (its header); since `4949c82` (2021-11-04) | wave1_M_P2.md | fixed (bounded scalar search over its interval); the `"Nelder-Mead"` value removed in wave 5 (W5-25) | `cb8a51d`; check table: `3bc079f`, `73fb89c`; wave 5: `4cc09cc` |
+| P2 F9 | P2 | `active_sample.py:484-488`, `:545-551`; `activesample_vbmc.m:265-316` | control flow/defaults | At `D == 1` the search switches permanently to an unbounded SciPy Nelder-Mead with SciPy's default budget. | confirmed port discrepancy (Python-only substitution); M's stated cause holds (`cma` does not support `D = 1`, and with bounds it raises); `wave1_M_P2.md`'s correction of it does not (its header); since `4949c82` (2021-11-04) | wave1_M_P2.md | fixed (bounded scalar search over its interval); the `"Nelder-Mead"` value removed in wave 5 (W5-25) | `cb8a51d`; check table: `3bc079f`, `73fb89c`; wave 5: `4cc09cc` |
 | P2 F10 | P2 | `active_sample.py:293-295`; `activesample_vbmc.m:84`, `funlogger_vbmc.m:279` | state/caching | `active_sample` writes `optim_state["N_eff"]`; its readers use `n_eff`. | confirmed Python-only defect; "no effect at defaults" holds at the noiseless defaults only (header) | wave1_M_P2.md | fixed for the name; the check adds the refresh after every evaluation | `118626e`; check: `6590ea4` |
 | P2 F11 | P2 | `active_sample.py:327`, `:733`, `vbmc.py:1073`; `misc/noiseshaping_vbmc.m` | cross-module | `noise_shaping` is a live switch whose shaping is never applied. | confirmed port discrepancy (unported feature, partially live option) | wave1_M_P2.md | refused when true; the check makes the message name the `load` remedy | `bb6ab65`; check: `497d15e` |
 | P2 F12 | P2 | `active_sample.py:500-502`; `activesample_vbmc.m:253-254` | indexing/shape | The non-finite fallback builds `(N, D)` search bounds instead of one per coordinate. | confirmed Python-only defect, latent (practically unreachable) | wave1_M_P2.md | fixed | `659e83c`; check table: `3bc079f` |
@@ -315,13 +352,13 @@ carry their corrections, and
 | P2 F14 | P2 | `active_sample.py:665-668`, `.ini:299`; `activesample_vbmc.m:436-443` | defaults | `active_sample_fess_thresh` is declared and never read. | confirmed port discrepancy (inert option) | wave1_M_P2.md | registered as inert | `a63b17a` |
 | P2 F15 | P2 | `active_sample.py:715-720`; `activesample_vbmc.m:468` | state/caching | The `vp_repo` append is a discarded expression. | confirmed Python-only defect, inert; the reviewer's reasoning is wrong | wave1_M_P2.md | removed | `1564769` |
 | P2 F16 | P2 | `active_sample.py:669-691`, `:192-202`; `activesample_vbmc.m:446-457`, `:533-535`, `initdesign_vbmc.m:50-57` | control flow (diagnostics only) | (a) One `gp_train` timer is unbalanced; (b) the initial design is untimed; (c) the overlapping timers are not subtracted. | confirmed Python-only defect (diagnostics) | wave1_M_P2.md | (a) fixed; (b) and (c) left by a ruling of wave 5 (W5-28) | `a719de6` |
-| P2 minor observations (8) | P2 | `active_sample.py:490`, `:415`, `:699`, `:787`, `:481`, `:632-637`; `stats/get_hpd.py:35` | — | The eight: `f_val_old` reused from the batch; half-to-even rounding; unstable `argsort` of the search set; direct option calls; case-sensitive `"none"`; draw order; `gp_length_scale` shape; `skip_logger` left in the cache. | all confirmed (the header corrects "seven" to eight) | wave1_M_P2.md | `f_val_old`: Stage 2 plan. Rounding: W5-6. `argsort`: ruled and fixed. Direct calls: check. `"none"`: W5-25. Draws: sheet. Shape: no action. `skip_logger`: fixed | `a7f323e`; `8e2977a`; check table: `179406c`; ruling: `3d71b00` |
+| P2 minor observations (8) | P2 | `active_sample.py:490`, `:415`, `:699`, `:787`, `:481`, `:632-637`; `stats/get_hpd.py:35` | — | The eight: `f_val_old` reused from the batch; half-to-even rounding; unstable `argsort` of the search set; direct option calls; case-sensitive `"none"`; draw order; `gp_length_scale` shape; `skip_logger` left in the cache. | all confirmed (the header corrects "seven" to eight) | wave1_M_P2.md | `f_val_old`: Stage 2 plan. Rounding: W5-6. `argsort`: ruled and fixed. Direct calls: check. `"none"`: W5-25. Draws: sheet. Shape: no action. `skip_logger`: fixed, and an acquired cached point leaves the cache in every case (MATLAB-side defect 6) | `a7f323e`; `8e2977a`; check table: `179406c`; ruling: `3d71b00` |
 | P2 §4 sheet notes | P2 | `active_sample.py:28` (`_selection_policy_callback`); sheet | — | The sheet lacks the `_selection_policy_callback` seam and (per P2) any `vp_repo` entry. | — | wave1.md | the seam is a developer hook, inert unless installed; no action. P2's `vp_repo` statement is wrong: the entry existed | — |
 | M F2 | M | `.ini:135`, `:231`, `:233`, `:235`, `:305`, `:313`; `vbmc.m` defopts, `misc/setupoptions_vbmc.m` | defaults (option surface) | Six options that MATLAB deleted in 2021 survive as dead `.ini` entries, accepted and ignored. | confirmed port discrepancy (surface only); MATLAB changed after the port, `2044530` (2021-06-18) | wave1_M_P2.md (grep) | registered as inert | `a63b17a` |
 | M F4 | M | `vbmc.py:3097-3158` `_create_result_dict`; `vbmc.m:942-956` | cross-module (public output surface) | MATLAB's `samples` output struct has no counterpart in `results`. | confirmed port discrepancy (public surface; line citation off); MATLAB changed after the port, `48c82e0` (2021-03-27) | wave1_M_P2.md | sheet (unported) | — |
 | M F5 | M | `whitening/whitening.py:151-158`; `misc/warp_input_vbmc.m:59-63` | control flow | The non-numeric branch of `warp_cov_reg` cannot execute: it uses attribute access and indexes where MATLAB calls. | confirmed Python-only defect; not dated (no MATLAB change in the range caused it) | wave1_M_P2.md | fixed; the check adds the check at construction and in `load` | `1d99936`; check: `cc0ef2f` |
-| M sheet notes | M | `counterpart_map.md` rows `initdesign_vbmc.m`, `gplite_pred.m`; sheet | — | `46b6f5e` is misattributed; the `gplite_pred` note; missing entries for the probit default, `SearchOptimizer` values, the D == 1 override, the inert options, `samples`, and two MATLAB-side defects. | all confirmed except the stated cause of the D == 1 override | wave1_M_P2.md | counterpart map corrected; the prediction's log density is slice G2's; the one-dimensional override as P2 F9 | `583ef86`; `wave6.md` |
-| verifier items 1-2 | P2 | `cma.fmin` settings; `cmaes_modded.m:207`, `setupoptions_vbmc.m:170` | — | MATLAB evaluates `x0` inside CMA-ES (`EvalInitialX`), and `TolHistFun = 1e-13` against cma's `1e-12`. | settings differences (same class as F1, F5, F6) | wave1_M_P2.md | PI: cma's defaults stay | — (sheet, `cma` entry) |
+| M sheet notes | M | `counterpart_map.md` rows `initdesign_vbmc.m`, `gplite_pred.m`; sheet | — | `46b6f5e` is misattributed; the `gplite_pred` note; missing entries for the probit default, `SearchOptimizer` values, the D == 1 override, the inert options, `samples`, and two MATLAB-side defects. | all confirmed (the verifier's exception, the cause of the D == 1 override, is withdrawn by the header of `wave1_M_P2.md`) | wave1_M_P2.md | counterpart map corrected; the prediction's log density is slice G2's; the one-dimensional override as P2 F9 | `583ef86`; `wave6.md` |
+| verifier items 1-2 | P2 | `cma.fmin` settings; `cmaes_modded.m:207`, `setupoptions_vbmc.m:170` | — | MATLAB evaluates `x0` inside CMA-ES (`EvalInitialX`), and `TolHistFun = 1e-13` against cma's `1e-12`. | settings differences (same class as F1, F5, F6) | wave1_M_P2.md | PI: cma's defaults stay, and so does cma's absolute `tolx` (worklog, 2026-09-19) | — (sheet, `cma` entry) |
 | verifier item 3 | P2 | `funlogger_vbmc.m:232-247` with `activesample_vbmc.m:481` | — | On a noiseless repeat, MATLAB's `or` path appends a duplicate GP training row. | MATLAB-side defect | wave1_M_P2.md | MATLAB-side defect, entry 5 | — |
 | verifier item 4 | P2 | `function_logger.py:347`; `funlogger_vbmc.m:279` | — | MATLAB refreshes `Neff` after every logged evaluation; the Python refresh is commented out. | the other half of P2 F10 | wave1_M_P2.md | fixed by the check | check: `6590ea4` |
 | verifier items 5-6 | P2 | `active_sample.py:397-404`; `activesample_vbmc.m:152-157`; tests | — | The pre-computation order differs, with no stream effect; the reports' test-adequacy claims hold. | no action | wave1_M_P2.md | no action | — |
@@ -378,10 +415,11 @@ and `_B.md`).
 
 ### Wave 2: the main loop (P1a) and the setup, options and state (P1b)
 
-Verified on 2026-09-20 on `dev-port-review`, after the wave-1 fixes; the
-fixes of the pass follow `2f2bc94` (`verification/wave2.md`, with `wave2_B_loop.md`, `wave2_C_setup.md` and
-`wave2_warmup_history.md`). Rows W2-1 to W2-6 fire at the defaults and can
-change a run.
+Read at `51451dc` and verified at `d6c3827` on 2026-09-20, the package code
+of `2f2bc94`, after the wave-1 fixes (`verification/wave2.md`, with
+`wave2_B_loop.md`, `wave2_C_setup.md` and `wave2_warmup_history.md`). Rows
+W2-1 to W2-6 fire at the defaults, W2-6 latently (it needs a best posterior
+from before an earlier warp).
 
 | id | slice | where | category | finding | class; dating | evidence | disposition | fix |
 |---|---|---|---|---|---|---|---|---|
@@ -397,7 +435,7 @@ change a run.
 | W2-10 (with B-M12) | both (P1a int F1, cmp F5; P1b int F2, cmp F2) | `optimize` (`vbmc.py:1226`, `:2169`); `vbmc.m:524-525`, `private/vbmc_termination.m:80` | cross-module (int); state/caching (cmp) | `optimize` reads `optim_state["entropy_force_switch"]`, which nothing writes, where MATLAB reads the option. `entropy_switch=True` with `D >= 5` raises `TypeError`, and the stability branch lacks MATLAB's `isfinite` test. | port discrepancy (B-1, B-M12); since `ec94eba` (2021-06-08) | B-1 (`wave2_B_f1_entropy_force_switch.py`); `wave2_two_option_runs.py` | fix, both sites | `e71f97b` |
 | W2-11 | both (P1a int F2, cmp F7; P1b int F5) | `optimize` (`vbmc.py:1580-1582`); `vbmc.m:781` | control flow | `len(run_cov == 0)` stands for `len(run_cov) == 0`, so the running average of the variational moments is never taken and `moments_run_weight` has no effect. | port discrepancy (B-2); since `ec94eba` (2021-06-08, per B-2); only the recorded state differs | B-2 (`wave2_B_f2_run_moments_guard.py`) | fix | `ab5c603` |
 | W2-12 | P1a | `_create_result_dict`; `private/vbmc_output.m:5-9` | cross-module (int); state/caching (cmp) | `results["problem_type"]` tests the transformed bounds, which are infinite for a bounded variable too, so it always reports "unconstrained". | shared defect (B-3a); the field dates from `c477a7b` (2021-11-01) and always matched MATLAB | B-3a (`wave2_B_f3_result_fields.py`) | fix in PyVBMC (test the original bounds); MATLAB's defect goes on the sheet | `41ea8b1` |
-| W2-13 | P1a | `_create_result_dict`; `private/vbmc_output.m:10` | indexing/shape | `results["iterations"]` holds the 0-based index of the last iteration, where MATLAB's `output.iterations` is the count. | port discrepancy (B-3b); since `c477a7b` (2021-11-01), never matched | B-3b (`wave2_B_f3_result_fields.py`) | fix: the field is the count and is documented so; `best_iter` stays an index | `4822ae1`; check: `98a8a91` |
+| W2-13 | P1a | `_create_result_dict`; `private/vbmc_output.m:10` | indexing/shape | `results["iterations"]` holds the 0-based index of the last iteration, where MATLAB's `output.iterations` is the count. | port discrepancy (B-3b); since `c477a7b` (2021-11-01), never matched | B-3b (`wave2_B_f3_result_fields.py`) | fix: the field is the count and is documented so; `best_iter` stays an index | `4822ae1`, `bf027a7` (the stored output of example 3); check: `98a8a91` |
 | W2-14 | P1a | `_check_warmup_end_conditions`; `private/vbmc_warmup.m:39`, `:87` | indexing/shape | When `tol_stable_warmup <= fun_evals_per_iter`, the check takes the maximum of an empty slice and raises. | shared defect (B-4; that MATLAB raises is inferred, not run); present form since `e38351a` (2022-05-23), exposure older (`35be58b`, `d407462`) | B-4 (`wave2_B_f4_warmup_empty_slice.py`) | fix | `54f0f19` |
 | W2-15 | P1a | search-GP branch of `optimize`; `vbmc.m:471`, `:638-648` | state/caching | With `separate_search_gp=True`, the constant-mean search GP trains from and overwrites the main `hyp_dict` and `sn2_hpd`. The run fails in the search GP's own training call, iteration 1. | port discrepancy (B-5); `aa45473` (2021-07-26), never matched | B-5 (`wave2_B_f5_separate_search_gp.py`); `wave2_two_option_runs.py` | remove the branch (a development option of MATLAB VBMC); the option stays declared and inert; sheet entry | `c7a01f3` |
 | W2-16 | P1a | warp-undo refit (`vbmc.py:1326-1328`); `vbmc.m:584` | control flow | The warp-undo refit sizes its sieve at `vp.K` where MATLAB uses `Knew`; the two differ only with `variable_means=False`. | port discrepancy (B-6); `2df0d7e` (2022-09-20) replaced the stale `k_warmup` with `vp.K`, although issue 98 named `Knew` | B-6 (`wave2_B_f6_sieve_warp_branch.py`) | fix; correct the sheet entry and `wave1_P6.md` | `d7c7887` |
@@ -405,9 +443,9 @@ change a run.
 | W2-18 | P1b | `vbmc.py:1016-1021`; `misc/setupvars_vbmc.m:230-236` | control flow | `uncertainty_handling` is tested by length: `True`, `1`, `0`, `False` and `None` raise, while `[0]`, `'no'` and `'off'` select level 1. | port discrepancy (C-2); length test since `489598a`, its polarity corrected in `aa45473` (2021-07-26) | C-2 (`wave2_C_f2_uncertainty_handling.py`) | fix, type-strict boolean; other values raise; description rewritten; MATLAB's error when it is off with `specify_target_noise` on | `1a9f37a`; check: `37c32ec` |
 | W2-19 (with C-M6) | P1b | `_bounds.py` `_normalize_bounds` (`:136-157`); `misc/boundscheck_vbmc.m:6-10` | defaults (int); indexing/shape (cmp) | Scalar bounds raise for `D > 1`, with an unformatted message, although the docstring and MATLAB replicate them. | port discrepancy (C-3, C-M6); promised by the docstring since `489598a`; message unformatted since `dd0e17e` (2022-11-23) | C-3 (`wave2_C_f3_scalar_bounds.py`) | fix | `477226b`; check: `57c5631` |
 | W2-20 | P1b | `Options.validate_option_names`, `load(new_options=)`; MATLAB validates no name (`misc/setupoptions_vbmc.m:9-26`) | control flow | Option names are validated for `options=` but not for an `options_path=` file or `load(new_options=)`, where a misspelt budget is accepted and ignored. | Python-only inconsistency (C-4); `4b94e1e` (2021-07-17), `ad96d50` (2023-03-08) | C-4 (`wave2_C_f4_f5_options_path_and_load.py`) | fix: an unknown name raises on both routes; validated against the two shipped files | `972bbf4` |
-| W2-21 | P1b | `load`, `VBMC.__str__` | state/caching | After `load` of a run with history, `vbmc`, `vp` and `function_logger` hold three equal transformer objects, not the chosen iteration's. `__str__` inverts `x0` with the current transformer, which is wrong after any warp. | Python-only defect (C-5); `load` has restored from the history since `ad96d50` (2023-03-08) | C-5 (`wave2_C_f4_f5_options_path_and_load.py`, `wave2_C_f5b_warp_x0.py`) | fix, the `x0` line of `__str__` included | `6bb129c` (adds `x0_orig`); check: `ce59fbe`, `4f9e3d6`, `f40da0a` |
+| W2-21 | P1b | `load`, `VBMC.__str__` | state/caching | After `load` of a run with history, `vbmc`, `vp` and `function_logger` hold three distinct transformer objects, equal by value, and `vbmc.parameter_transformer` is not the chosen iteration's. `__str__` inverts `x0` with the current transformer, which is wrong after any warp. | Python-only defect (C-5); `load` has restored from the history since `ad96d50` (2023-03-08) | C-5 (`wave2_C_f4_f5_options_path_and_load.py`, `wave2_C_f5b_warp_x0.py`) | fix, the `x0` line of `__str__` included | `6bb129c` (adds `x0_orig`); check: `ce59fbe`, `4f9e3d6`, `f40da0a` |
 | W2-22 | both (P1a int F9; P1b int F8; P1b cmp F6, F10) | `INERT_OPTIONS`, the guard test (`test_options.py:183-205`), `whitening.py`; `misc/setupvars_vbmc.m:249-255`, `vbmc.m:805`, `:961` | defaults (int, cmp F10); state/caching (cmp F6) | `temperature`, `diagnostics` and `entropy_force_switch` are read through no options object and are missing from `INERT_OPTIONS`, and the guard test cannot see them. The tempering sheet entry is wrong. | confirmed (C-6); both options are knobs of unported MATLAB features; the registry dates from `a63b17a`/`0d9a422` (2026-09-19) | C-6 (`wave2_C_f6_inert_options.py`) | register `temperature` and `diagnostics` as inert; the guard counts reads through an options object; correct two sheet entries | `82c624c` |
-| W2-23 | P1b | `_read_config_file` | defaults | `_read_config_file` cuts each description at its first `=` or `:` (8 of 183 options); two descriptions are also wrong in the file itself. | Python-only defect (C-7); parser since `d72c7df` (2021-05-29) | C-7 (`wave2_C_f7_descriptions.py`) | fix the parser and the two texts | `3722210` (also 17 other "on"→"True" texts); check: `3f85501` |
+| W2-23 | P1b | `_read_config_file` | defaults | `_read_config_file` cuts each description at its first `=` or `:` (8 of 183 options); two descriptions are also wrong in the file itself. | Python-only defect (C-7); parser since `d72c7df` (2021-05-29) | C-7 (`wave2_C_f7_descriptions.py`) | fix the parser and the two texts | `3722210` (it also restores "on" in 17 texts where a substitution had written "True"); check: `3f85501` |
 | W2-24 | P1b | `pyvbmc/rng.py: get_rng`, the `seed` docstring | random draws | `VBMC(seed=None)` draws four integers from NumPy's global state, against the `seed` docstring's "never written". | documentation defect (C-8); the behavior is a recorded decision (`stage1-rng-generator.md` §3; `d02c517`, 2026-09-02) | C-8 (`wave2_C_f8_f11_rng_and_minors.py`) | docstring only, and the phrase in the generator plan | `77575b1` |
 | W2-25 | P1b | default `search_acq_fcn`; `vbmc.m:213` | defaults | The default search acquisition is `AcqFcnLog` where MATLAB has `acqf_vbmc`; the two rank identically in exact arithmetic, and the plain form underflows. | intentional difference, missing from the sheet (C-9); `e20d081` (2022-09-21, PR 102) | C-9 (`wave2_C_f9_acq_forms.py`) | keep; sheet entry | — |
 | W2-26 | P1b | option validation; `misc/setupoptions_vbmc.m:109-124` | defaults | Non-positive or non-integer `max_fun_evals`/`max_iter` are not rejected, `max_iter` is not raised to `min_iter`, and a low `max_iter` is overridden silently at run time. | port discrepancy, validation only (C-10a); PyVBMC never had the checks | C-10a (`wave2_C_f10_budget_and_maxiter.py`) | fix, together with W2-5 | `17badf9`; check: `b7a2cd0`, `c1e1634` |
@@ -436,7 +474,8 @@ The verifiers' files hold further minor observations that `wave2.md` does
 not name: B-M6, B-M7, B-M8 and B-M10 (leftovers or faithful ports); C-M3,
 C-M4, C-M7, C-M10 and C-M11 (leftovers, cost only, or shared wording); C-M8
 and C-C7 (above, "Findings without a recorded ruling"); and C-C1 to C-C12 of
-the comparison track, of which C-C2 is ported in `1a9f37a`, C-C3, C-C4, C-C5
+the comparison track, of which C-C2's error is ported in `1a9f37a` and its
+warning is not (above), C-C3, C-C4, C-C5
 and C-C12 are entries 12, 13, 11 and 10 of the MATLAB-side list (C-C5 and
 C-C12 on the sheet as well), C-C8 is the sheet's entry on `display` and
 C-C11 an item of the MATLAB-side list of state written and never read.
@@ -457,7 +496,11 @@ inputs; `load`, the state and the pickling; `wave2.md` and the developer
 records; the user-facing records and the consequences outside the changed
 lines. All 47 commits of the pass hold. The fixes are 18 commits on the
 branch `dev-port-review-w2check`, cut at `0bf7963` and brought onto
-`dev-port-review` as a fast-forward (`b1bab4d`).
+`dev-port-review` as a fast-forward (`b1bab4d`), and into `dev-next` with wave
+5 (`03a8d46`). On its branch the check was gated by the tests of every
+module touched (413 passed), the oracle tests (143) and the exact oracle
+check; the whole suite, the seeded runs, the extras and CI ran with the
+wave-5 round (`f86d373`, `63a0808`).
 
 | finding | statement | disposition | fix |
 |---|---|---|---|
@@ -478,15 +521,17 @@ branch `dev-port-review-w2check`, cut at `0bf7963` and brought onto
 | `wave2.md`; `wave2_B_loop.md` | `wave2.md` misstated where B-M11 was settled and missed the commit without a test; the verifier's inference on W2-11 does not hold. | corrected; flag under the file's header | git `910d250` |
 | `CHANGELOG.md` | Upgrading lines were missing for `problem_type`, the run limits and `integer_vars` indices; `x0_orig` was undocumented. | corrected; `x0_orig` is now in the class docstring | `4f9e3d6`; changelog: git `82dbfa5` |
 | example 2 output | The stored `print(vbmc)` showed the W2-21 and W2-4 defects. | three lines edited, not rerun | `f40da0a` |
-| porting log, script docstring, oracle `n_iterations` | Wrong function name; wrong `:66`/`:84` citations; the pre-W2-13 index. | corrected; a comment at the generator's line | git `910d250` |
+| porting log, script docstring, oracle `n_iterations` | Wrong function name; wrong `:66`/`:84` citations; the pre-W2-13 index. | corrected; a comment at the generator's line | git `910d250`, `b1bab4d` |
 
 Left for the PI, in `wave2.md`, "Left for the PI": rebuilding the option
 functions of a saved run in `load`; `vbmc.x0` staying in the space of
-construction; `last_warmup = 0` and its `.get` fallback; the main-loop sieve
-at `self.vp.K` with fixed means; `validate_run_limits` not checking
-`min_iter`, the one-way inert-option guard and the `Options` warnings on the
-root logger; `_normalized_hard_bound`, the reach of the `_recompute_lcb_max`
-tests and gaps of the changelog.
+construction; `last_warmup = 0`, and the fallback of
+`.get("last_successful_warping", 0)`; the main-loop sieve at `self.vp.K`
+with fixed means; `validate_run_limits` not checking `min_iter`, the one-way
+inert-option guard and the `Options` warnings on the root logger;
+`_normalized_hard_bound`, the reach of the `_recompute_lcb_max` tests and
+gaps of the changelog. No record rules on them; they are among the findings
+without a recorded ruling (above).
 
 ### Wave 3: the GP training policy (P5) and the transformer, warping and function logger (P8)
 
@@ -503,12 +548,12 @@ computes. The fixes were made by three Opus agents on worktrees cut at
 | W3-4 | P5 (cmp F7) | `vbmc.py:1610`; `misc/gptrain_vbmc.m:65`, `vbmc.m:804`, `:1041` | state/caching | `gp_hyp_full` records the thinned samples where MATLAB records the chain before thinning, so the sampler widths come from a fifth of the draws. | port discrepancy; never matched (`aa45473`; MATLAB's record from 2019, `d9822e3`) | `wave3_A_stored_runs.py` (732 blocks) | fix, with W3-2 | `1268d69` |
 | W3-5 | P5 (cmp F3, mean part) | `_gp_hyp` (`gpt.py:389`, `:382`); `misc/gptrain_vbmc.m:174-188`, `gplite_train.m:120-127` | defaults (bound propagation) | The lower bound of `mean_const` is written as `-inf` where MATLAB leaves `min(y)`, so the design stays inside the plausible box and the fit has no lower bound. | port discrepancy; never matched (`aa45473`) | `wave3_A5_mean_const_bound.py`; `git log -L` | fix, with W3-2 | `720c416`, `894a353`; check: `b00fe40` |
 | W3-6 | P8 (int F7) | `warp_input` (`whitening.py:154-182`); `misc/warp_input_vbmc.m:52-71`; paper appendix §B.2 | formula | Zeroing correlations of at most 0.05 can leave the covariance indefinite from `D = 3`; the SVD then misses unit variance along one direction (1.01, 0.96, 0.097). | shared by both implementations and by the paper's recipe; not dated; latent (none of the 990 population posteriors) | `wave3_A6_threshold_population.py`, `wave3_A_stored_runs.py`, `wave3_A5_mean_const_bound.py` | the guard: keep the covariance as it was when the thresholded one is not positive definite; sheet entry | `61a7325` |
-| W3-7 | P5 (int F6, cmp F3, noise part) | `_gp_hyp:374-375`; `misc/gptrain_vbmc.m:180` | defaults | The noise bounds are written as `(log(tol_gp_noise), +inf)`, which loses the recommended upper bound `log(max(y) - min(y))`. | port discrepancy (P5-6a); never matched (`aa45473`); issue 99 and PR 116 fixed the same confusion elsewhere | P5-6a (`wave3_P5_1_and_6_gp_hyp_bounds.py`) | fix, with W3-2 | `992f7cb`; check: `b00fe40` |
+| W3-7 | P5 (int F6, cmp F3, noise part) | `_gp_hyp:374-375`; `misc/gptrain_vbmc.m:180` | defaults | The noise bounds are written as `(log(tol_gp_noise), +inf)`, which loses the recommended upper bound `log(max(y) - min(y))`. | port discrepancy (P5-6a); never matched (`aa45473`); issue 99 and PR 116 fixed the same confusion elsewhere | P5-6a (`wave3_P5_1_and_6_gp_hyp_bounds.py`) | fix, with W3-2 | `992f7cb` |
 | W3-8 | P5 (int F1, cmp F2) | `_gp_hyp:368-373`, `:399-402`; `misc/gptrain_vbmc.m:177-179` | control flow | The length-scale upper bound from `upper_gp_length_factor` is overwritten 26 lines later, so the option has no effect at any value. | port discrepancy (P5-1); regression: matched MATLAB from `aa45473` until `5f09709` (2022-11-11, PR 116) | P5-1 (same script) | as proposed: fix with W3-5, with a test that sets the option | `de7a99b`; check: `b00fe40` |
 | W3-9 | P5 (int F4, F2; cmp F9, F8) | `vbmc.py:1657`, `train_gp:195`, `hyp_dict["full"]`; `vbmc.m:831`, `misc/gptrain_vbmc.m:65`, `:83` | state/caching; indexing/shape (int F2) | Three defects of `run_cov`: the reset writes an unread `runcov` key, the guard tests the hyperparameter count rather than the sample count, and a fit that does not sample keeps the last chain. | port discrepancies (P5-2 to P5-4); the key was mistyped in `4949c82` (2021-11-04), the other two date from `aa45473` | P5-2 to P5-4 (`wave3_P5_3_and_4_runcov_and_full.py`) | as proposed: fix the three together | `f954c63`, `bf081c2` |
 | W3-10 | P5 (int F5, cmp F14) | `_gp_hyp:427`; `misc/gptrain_vbmc.m:236` | formula (API misuse) | `np.min(a, b)` stands for `np.minimum(a, b)` in the output-dependent noise bound and raises `TypeError`. | Python-only defect, unreachable (P5-5); `aa45473` | P5-5 (`wave3_P5_5_np_min_branch.py`) | as proposed: fix (two characters) | `dd41323` |
 | W3-11 | P5 (cmp F4) | `_gp_hyp` (`:331`, `:393-405`); MATLAB leaves these bounds to `gplite_train` | defaults | The lower bounds of the length scales and the output scale come from the HPD subset, where MATLAB uses the full training set. | intentional difference, missing from the sheet; the justification holds (P5-7; issue 99 / PR 116, `5f09709`) | P5-7 (same script) | as proposed: keep; sheet entry | — (sheet, `9c29ce1`) |
-| W3-12 | P5 (int F7) | `vbmc.py:1103-1123`; `misc/setupvars_vbmc.m:287` | control flow (validation placement) | Construction accepts 12 `gp_mean_fun` names but `train_gp` implements 3. The other nine fail at the first GP training, and the message misspells `negquad`. | port discrepancy of the validation (P5-8); not dated in `wave3.md` | P5-8 (`wave3_P5_8_gp_mean_fun.py`) | as proposed: stricter interface; construction rejects the nine; message corrected | `d9e3cc9`; check: `9b5213d`, `095c29e` |
+| W3-12 | P5 (int F7) | `vbmc.py:1103-1123`; `misc/setupvars_vbmc.m:287` | control flow (validation placement) | Construction accepts 12 `gp_mean_fun` names but `train_gp` implements 3. The other nine fail at the first GP training, and the message misspells `negquad`. | port discrepancy of the validation (P5-8); the list of names since `d9bfe16` (2022-08-28) | P5-8 (`wave3_P5_8_gp_mean_fun.py`) | as proposed: stricter interface; construction rejects the nine; message corrected | `d9e3cc9`; check: `095c29e`; in `load` since W6-37 (`e657eba8`) |
 | W3-13 | P5 (cmp F12, F13) | `_get_gp_training_options` (`:603-604`, `:657-673`); `misc/get_GPTrainOptions.m:71-74`, `:112` | control flow / cross-module; formula (F13) | `gp_hyp_sampler` accepts seven values but gpyreg runs only `slicesample`. The `covsample` fall-through and the `slicelite` burn-in also differ from MATLAB. | port discrepancies in code that cannot complete a fit (P5-11, P5-12); `aa45473` | P5-11 (reading); P5-12 (`wave3_P5_12_slicelite_burnin.py`) | reject at construction and remove the branches | `bee1866`, `894a353`; check: `9b5213d` |
 | W3-14 | P5 (cmp F10) | `_get_gp_training_options:639`; `misc/get_GPTrainOptions.m:100` | defaults | The design size is floored at 9 where MATLAB floors it at 0, which also stops the collection of past samples. | port discrepancy (P5-9); in the module's first commit | P5-9 (`wave3_P5_9_and_10_training_options.py`) | fix: the floor is 0 | `3b8b26c` |
 | W3-15 | P5 (cmp F11) | `:651` (against `:534`); `misc/get_GPTrainOptions.m:5`, `:109` | indexing (0- vs 1-based) | The retrain-threshold branch tests `iteration > 1` where the same function translates the same predicate as `iteration > 0`. | port discrepancy without effect (P5-10); `aa45473` | P5-10 (same script) | as proposed: fix, with a boundary test | `175629a` |
@@ -538,7 +583,7 @@ Found during the fix pass (an unnumbered list in `wave3.md`):
 
 | id | found by | finding | disposition / fix |
 |---|---|---|---|
-| W3-FP1 | review of W3-28 | `test_vectorized_initial_design_matches_scalar` gave both arms an `f_vals` value, which construction now refuses for the noisy arm. | the cached value stays in the noiseless arm: `74414ce` |
+| W3-FP1 | agent C (fixing W3-28) | `test_vectorized_initial_design_matches_scalar` gave both arms an `f_vals` value, which construction now refuses for the noisy arm. | the cached value stays in the noiseless arm: `74414ce` |
 | W3-FP2 | agent A | The second parameter of the output-dependent noise had infinite bounds: the defect of W3-5 and W3-7 in the unreachable branch. | `894a353` |
 | W3-FP3 | agent A | The W3-2 window read the last entry of an empty array when the history holds no GP; the `gp_fit` oracle's stand-in history produces that case. | squashed into `14a01e2` |
 | W3-FP4 | agent C | The docstring of `handle_0D_1D_input` named `kwarg` and `argpos`; the `f_vals` description did not say what it cannot carry. | `83ea3d8` |
@@ -559,22 +604,23 @@ lines. No defect in what a run computes; the gates ran on `095c29e`.
 | warm-up trim (W3-16) | The trim at the end of warm-up now keeps the earlier of equal values (`private/vbmc_warmup.m:123`). | PI ruling 2026-09-21: the stable order goes into all three sites | `2ff2dfe` |
 | `determine_best_vp` ties (W3-16) | The earlier of two iterations with equal scores ranks first (`misc/best_vbmc.m:36`, `:40`). | PI ruling (both rankings) | `06bc8d5` |
 | `get_hpd` on integers (W3-16) | The negation W3-16 introduced wraps around for unsigned zero and for the smallest signed value. | applied | `027e972` |
-| option checks in `load` (W3-12, W3-13) | `noise_shaping`, `gp_hyp_sampler` and `search_acq_fcn` were checked only at construction. | PI ruling: the checks run in `load` | `9b5213d` |
+| option checks in `load` (W3-13) | `noise_shaping`, `gp_hyp_sampler` and `search_acq_fcn` were checked only at construction. | PI ruling: the checks run in `load` | `9b5213d` |
 | `batch_call` at level 2 (W3-28) | It refused a cached value only after recording the rows before it; it now refuses before calling the target. | applied | `a775bb6` |
 | evaluation time (W3-21) | A known time now replaces an unknown stored average, the other direction of W3-21. | applied; sheet entry | `0dfc282` |
 | `f_vals` of NaN alone (W3-28) | It supplies no value and now passes the check. | applied | `68f7984` |
-| `_gp_hyp` bound statements (W3-5, W3-7, W3-8) | Each statement now carries the other half of its pair over; the mean-constant test pins MATLAB's recommended values. | applied | `b00fe40` |
+| `_gp_hyp` bound statements (W3-5, W3-8; the output scale) | Each statement now carries the other half of its pair over; the mean-constant test pins MATLAB's recommended values. | applied | `b00fe40` |
 | W3-19 test | Now also runs on a bounded problem; `build_short` is defined once. | applied | `791c51d` |
 | descriptions | The `gp_mean_fun` description names the three values; a comment explains the noise switches of an oracle state. | applied | `095c29e` |
 | flaky ADAM test (from the gate rerun) | `test_minimize_adam_matyas_with_noise` failed 48 of 400 seeded calls. | PI: fix it before the push | `b731fac` |
 | records | Corrected: four `CHANGELOG.md` items; entry 18 of `matlab_side_defects.md`, with a flag in `wave3_P5.md`; `wave3.md`'s counts, its sheet list, the W3-34 helper and the stopped script; the capture mode in `dev/README.md` and the fixture plan; `AGENTS.md`; 83 of 161 sheet citations; the `noise_shaping` entry. | corrected | `8a33203`, `99e787c` (git) |
 | reviewer statement on W3-20 | A new route through the warp was claimed. | did not hold | — |
-| stored oracle state at level 1 | No fixture holds one. | PI ruling: an item of `TODO.md` after the review (present at `dev/TODO.md:129`) | — |
+| stored oracle state at level 1 | No fixture holds one. | PI ruling: an item of `TODO.md` after the review (`dev/TODO.md`, "An oracle state at uncertainty level 1") | — |
 
 Left as they are (`wave3.md`, "Left as they are"): the Cholesky test of W3-6
 has no tolerance; `hyp_dict["logp"]` after a fit without samples; the order
-of `min` and rounding in `_gp_hyp`; old files keep a `runcov` key and level-1
-saves drop their recorded blocks; the short test run, the whitening tests
+of `min` and rounding in `_gp_hyp`; old files keep a `runcov` key, and a
+level-1 run saved before the pass continues with its recorded blocks left
+out of the sampler widths; the short test run, the whitening tests
 without a generator of their own, the thinned stand-in histories.
 
 ### Wave 4: the acquisition functions (P3) and the noisy importance sampling (P4)
@@ -615,8 +661,8 @@ sides: it is MATLAB's and consistent with the GP's noise model
 | W4-FP3 | P4 | `vbmc.py: _validate_search_acq_fcn_option` | — | The check runs at construction only. A flagged acquisition that arrives through `load(new_options=)` is refused in `active_importance_sampling` instead. | — | wave4.md | not acted on in the pass; `load` runs the check since the check of the wave-3 pass | `9b5213d` |
 
 **The independent check of the pass** (2026-09-21, `wave4.md`). Four fresh
-read-only reviewers: the commits of the acquisitions, those of the
-importance sampling, `wave4.md` against its sources, and the user-facing and
+read-only reviewers, one of whom ran tests: the commits of the
+acquisitions, those of the importance sampling, `wave4.md` against its sources, and the user-facing and
 cross-document records. No defect in the twelve commits.
 
 | finding | statement | disposition | fix |
@@ -625,7 +671,7 @@ cross-document records. No defect in the twelve commits.
 | C4-2 | `wave4.md` said the weighted start ranks the best candidate no worse; the log has it 0.0043 worse, within noise. | corrected | records |
 | C4-3 | The dating of `renormalize_weights`: it is from the file's second commit. | corrected | records |
 | C4-4 | A disposition of W4-9 (the docstring's constant) had not been carried out. | carried out | `76ed8e9` |
-| C4-5 | A changelog sentence on `mcmc_importance_sampling` held for some acquisitions only. | corrected | changelog (no commit named) |
+| C4-5 | A changelog sentence on `mcmc_importance_sampling` held for some acquisitions only. | corrected | changelog, `e63a7f33` (git) |
 | C4-6 | One reviewer showed `70ce067` is needed in a run: a coordinate saturated at the lower bound -0.5 comes back as the largest number below a half, negated, and `floor(abs(x)+0.5)` rounds it to -1. That point is outside the box, and its forward transform is NaN. | confirms the fix | `70ce067` |
 | C4-7 | Code follow-ups. | the quantile taken as a real scalar of any type (or a one-element array) by one shared check | `c14a6b9` |
 | C4-8 | | `search_acq_fcn` must be a list of acquisition objects or strings; its description says which strings are read | `44c1973` |
@@ -775,7 +821,7 @@ worktrees of gpyreg and PyVBMC (`fixes/wave6_agent_A.md`, `_B.md`, `_C.md`).
 | W6-13 | G1 | gpyreg `gaussian_process.py:815-824` (`update`); MATLAB `gplite_post.m` (`update1` from the caller) | control flow (G1 internal F8) | `update` chooses the rank-one path from the argument shapes without checking for factors. It raises `TypeError` after `clean()` and after `update(..., compute_posterior=False)`. | confirmed port discrepancy (G1-8); the shape test dates from `9b0ea12` (2021-06-18), and `cec1f85` added `hyp is None` to it | G1-8 (`wave6_G1_4_rank_one.py`) | Fix: the rank-one path asks for the factors and falls through without them (as proposed). | gpyreg `e4a5aac` |
 | W6-14 | G1 | gpyreg `slice_sample.py:186`, `:188`, `:213-220`, `:590-592`; MATLAB `slicesamplebnd.m:168`, `:176`, `:198`, `:377` | defaults (G1 internal F10) | `base_widths` is copied before an infinite width is replaced by 10. The infinity returns after the burn-in and the chain is NaN. | confirmed shared defect (G1-9); shared from the first Python version (`2bf7f10`, 2021-06-08) | G1-9 (`wave6_G1_6_slice_sampler.py`) | Fix: copy after the replacement (as proposed). | gpyreg `d07c849` |
 | W6-15 | G1 | gpyreg `slice_sample.py:683-685`, `:926-930`; MATLAB `slicesamplebnd.m:506` (`psrf`, in no file of the repository) | control flow (G1 internal F11) | A frozen free parameter is recognized only if its constant has an exact mean: 0.3 gives `exit_flag = -1`, not -3. The autocorrelations are paired from lag 0, not lag 1. | Python-only defects (G1-10, G1-26); both from `cec1f85` (release 1.2.1) | G1-10, G1-26 (`wave6_G1_6_slice_sampler.py`, `wave6_G1_10_test_claims.py`) | Detect the frozen chain by its range; pair from lag 1 or document it (it was kept at lag 0 and documented); test over several constants (as proposed). | gpyreg `a29d0cf`; check: `f1415de` (R3-6, R3-8) |
-| W6-16 | G1 | gpyreg `f_min_fill.py:193-214`, `:218-250`, `:130-132`, `:252-253` (`uuinv`); MATLAB `fminfill.m:133-136`, `:77`, `:169` | formula/gradient (G1 internal F12) | The docstring gives the two tails equal weight where the body weights them by length. "Half of all starting points" holds only for the whole design, with no prior, finite bounds and no fixed coordinate. An out-of-range `p` is marked in one of three paths. | confirmed shared defects of the wording (G1-11, 17, 19); the body is right; gpyreg's sentence came first (`96f1090`, 2022-01-22; MATLAB `1d1f20d`, 2022-01-30) | G1-11/17/19 (`wave6_G1_7_uuinv.py`) | Fix the three texts and add a line to the MATLAB-side list (as proposed). "Per coordinate" was corrected (R3-1), and the fixed coordinates were added by the check for substantial errors. | gpyreg `3983eb3`; check: `c36bada`; round: `2938581` |
+| W6-16 | G1 | gpyreg `f_min_fill.py:193-214`, `:218-250`, `:130-132`, `:252-253` (`uuinv`); MATLAB `fminfill.m:133-136`, `:77`, `:169` | formula/gradient (G1 internal F12) | The docstring gives the two tails equal weight where the body weights them by length. "Half of all starting points" holds only for the whole design, with no prior, finite bounds and no fixed coordinate. An out-of-range `p` is marked in one of three paths. | confirmed shared defects of the wording (G1-11, 17, 19); the body is right; gpyreg's sentence came first (`96f1090`, 2022-01-22; MATLAB `1d1f20d`, 2022-01-30) | G1-11/17/19 (`wave6_G1_7_uuinv.py`) | Fix the three texts and add a line to the MATLAB-side list (as proposed). "Per coordinate" was corrected (R3-1); gpyreg's comment gained the fixed coordinates in the round's `2938581`, and the row of `wave6.md` after the check for substantial errors (R-2). | gpyreg `3983eb3`; check: `c36bada`; round: `2938581` |
 | W6-17 | G1 | gpyreg `gaussian_process.py:1453`, `f_min_fill.py:119`; MATLAB `gplite_hypprior.m:35`, `fminfill.m:73`, `gplite_nlZ.m:13` | control flow (G1 comparison F4) | The no-prior mask is `~isfinite(mu) & ~isfinite(sigma)` where MATLAB has `\|`. MATLAB's flat prior, `sigma = Inf`, then gives a log posterior of `-inf` or NaN and a NaN design column. | intentional difference with a defect left in it, missing from the sheet (G1-12); never agreed (`27f8d66`, 2021-06-11) | G1-12 (`wave6_G1_1_prior_masks.py`) | Stricter: `set_priors` refuses a `sigma` that is not finite and positive and names `None`; sheet entry (as proposed). Check: a block coordinate whose location and `sigma` are both NaN has no prior (R4-1, R2-2). The remainder was closed by W7-16. | gpyreg `836af5d`; check: `c4a441e`; W7-16: `5499b59` |
 | W6-18 | G1 | gpyreg `gaussian_process.py:2812-2819`; MATLAB `gplite_core.m:244` | indexing/shape (G1 comparison F6) | With a scalar total noise and more than one noise hyperparameter, the gradient loop takes the row `dsn2[i]` and raises. MATLAB's linear index returns a wrong entry. | confirmed shared defect (G1-13); both wrong from the start (`c7d3541`, 2021-06-01) | G1-13 (`wave6_G1_8_noise_grad.py`) | Fix (`dsn2[0, i]`), with a gradient test; a MATLAB-side list entry (as proposed). | gpyreg `ff1f14d` |
 | W6-19 | G1 | gpyreg `f_min_fill.py:184-185`, `gaussian_process.py:1305-1321`; MATLAB `fminfill.m:104-110`, `gplite_train.m:276-296`, `gp_objfun` | control flow (G1 comparison F7) | Neither the design loop nor the optimizer loop catches an exception of the objective, where MATLAB does in both places. `np.argsort` is not stable where MATLAB's `sort` is. | confirmed port discrepancies (G1-14, G1-36); never agreed, from the first implementation (2021-05-31) | G1-14 (`wave6_G1_5_fit_details.py`) | PI: leave it loud, with a sheet entry. | — |
@@ -783,7 +829,7 @@ worktrees of gpyreg and PyVBMC (`fixes/wave6_agent_A.md`, `_B.md`, `_C.md`).
 | W6-21 | G1 | gpyreg `slice_sample.py:238`; MATLAB `slicesamplebnd.m:189` | — (G1 internal M-B) | The Metropolis option is read as `"metopolis_rnd"`, so the options never turn the step on. The flag is an `and` of the two options where MATLAB has an `or`. | Python-only defect (G1-18); `2ccea65` (2021-06-03); setting the three attributes directly did run the step (one test did, R3-3) | G1-18 (`wave6_G1_6_slice_sampler.py`) | PI: the step and its options removed. The removal was kept after R3-3 corrected the premise. | gpyreg `919742e` |
 | W6-22 | G1 | gpyreg `set_priors`, `set_bounds`, `get_recommended_bounds`, `fit`, `update`, `slice_sample.py`, `f_min_fill.py`; MATLAB `gplite_train.m:250` | — (minor observations) | Unchecked inputs, and texts that disagree with the code: unknown names taken silently, a tuple of bounds raises, an inverted bound silently repaired, a negative `sigma`, `df_base` written into the GP's priors, `nll` starting at `-inf`, `gamma` overflow, NaN factors, a `thin` or `burn` that is not whole. | Python-only defects, latent (G1-20, 21, 22, 24, 27, 28, 29, 34); `abs(sigma)` and `UB = max(LB, UB)` are MATLAB's too; each item is dated in wave6_G1.md | `wave6_G1_9_api_minors.py` | Fix as one commit of input checks and one of texts (as proposed). | gpyreg `9b282da`, `836af5d`, `e0a057d`; check: `ad685ef` (R3-11) |
 | W6-23 | G1 | PyVBMC `gaussian_process_train.py:178`; MATLAB `gptrain_vbmc.m:66` | — (G1 comparison M2) | `hyp_dict["logp"]` receives `res["log_priors"]`, which is zeros, where MATLAB stores the thinned log posterior. Nothing reads it. | Python-only defect of PyVBMC, without effect (G1-31); not dated | G1-31 (`wave6_G1_9_api_minors.py`) | Remove the key and its comment (as proposed). | `4d3c1515`; oracles `0a6682fc` |
-| W6-24 | G1 | gpyreg `gaussian_process.py:1649`, `:1519-1523`, `fit`'s `hyp0`; MATLAB `gplite_train.m:98` | — (G1 comparison M5, M8) | These have neither a MATLAB counterpart nor a sheet entry: the smooth-box families, the renormalization of the prior over the bounds, the `-inf` prior of a fixed hyperparameter off its value, and `fit`'s default `hyp0`. | intentional differences, missing from the sheet (G1-33, G1-35); the families date from `27f8d66` and `b0c5cde` (2021-06); flagged later: the renormalization fails far in the upper tail (W7-15) | G1-33, G1-35 (`wave6_G1_9_api_minors.py`, `wave6_G1_5_fit_details.py`) | Sheet entries in the verifier's words (as proposed). | — |
+| W6-24 | G1 | gpyreg `gaussian_process.py:1649`, `:1519-1523`, `fit`'s `hyp0`; MATLAB `gplite_train.m:98` | — (G1 comparison M5, M8) | These have neither a MATLAB counterpart nor a sheet entry: the smooth-box families, the renormalization of the prior over the bounds, the `-inf` prior of a fixed hyperparameter off its value, and `fit`'s default `hyp0`. | intentional differences, missing from the sheet (G1-33, G1-35); the families date from `27f8d66` and `b0c5cde` (2021-06); flagged later: the renormalization fails far in the upper tail (W7-15) | G1-33, G1-35 (`wave6_G1_9_api_minors.py`, `wave6_G1_5_fit_details.py`) | Sheet entries in the verifier's words (as proposed). | gpyreg `a077e70` (the docstring on the renormalization) |
 | W6-25 | G1 | gpyreg `f_min_fill`, `fit` (`res.x`); MATLAB `gplite_train.m:298`, `gplite_post.m:250` | — (minor observations) | `f_min_fill` with no more evaluations than points returns the first `N`. `fit` does not clamp `res.x` one `eps` inside the bounds. MATLAB's `nll` search reads unwritten entries, and MATLAB's `gp.s2` falls shorter than `gp.X`. | not defects of the port (G1-23, G1-30, G1-37, G1-16): the first is MATLAB's own (`46b6f5e`), the second has no effect, the last two are MATLAB's and avoided | G1-23, G1-30 | None; the last two go to the MATLAB-side list (as proposed). | — |
 | W6-26 | G2 | gpyreg `gaussian_process.py:1852` (`predict_full`) | indexing/shape (both G2 reports) | `predict_full(add_noise=True)` adds per-point noise as a column broadcast over the rows. The result is neither symmetric nor a covariance. | Python-only defect (G2-1); `3b39954` (2021-07-02) | G2-1 (`wave6_G2_1_predict_full_noise.py`) | Fix (`np.diag`), with a test on noise that varies by point (as proposed). | gpyreg `f803be0` |
 | W6-27 | G2 | gpyreg `gaussian_process.py:2193-2196` (`quad`) | state/caching (G2 internal: with a formula consequence) | `quad` recomputes the factor's scale where `Posterior.sl` stores it. After a rank-one update with a point of lower noise the variance is clamped to `eps`. | Python-only defect (G2-2); introduced by `cec1f85` (release 1.2.1) | G2-2 (`wave6_G2_2_quad_scale.py`, `wave6_G2_9_rank_one_test_gap.py`) | Fix (use the stored `sl`), with one `quad(compute_var=True)` in the rank-one test (as proposed). | gpyreg `003d75d` |
@@ -798,6 +844,8 @@ worktrees of gpyreg and PyVBMC (`fixes/wave6_agent_A.md`, `_B.md`, `_C.md`).
 | W6-36 | G2 | gpyreg `predict:2049`, `quad:2248`, `random_function`, the noise functions; MATLAB `gplite_pred.m:158`, `:160`, `gplite_quad.m:115`, `gplite_rnd.m:67`, `gplite_noisefun.m:186-198` | — (minor observations) | Not differences: `ddof=1` over the samples, the noise omissions, `s2_star` ignored, degenerate recommendations, an empty lpd, no Matern default. Every ported formula and gradient agrees with MATLAB. | not defects (G2-12, 16, 17, 18, 20, 28, 29, 31 to 37); MATLAB's conventions | G2-0 §E (`wave6_G2_0_predict_lpd.py`), `wave6_G2_7_minor.py` | None; two lines under the sheet's settled non-differences (as proposed). | — |
 | W6-37 | outside the slices | PyVBMC `vbmc.py:3197-3208` (`VBMC.load(new_options=)`) | — | `load` checks the names and runs `_validate_option_values`, but not `update_defaults` or `_init_optim_state`. A construction-only option therefore takes no coherent effect and bypasses checks: `gp_mean_fun="nonsense"` is accepted. | Python-only defect; not dated (W2-7 and W2-8 did not touch `load`) | G1-X (`wave6_G1_X_load_new_options.py`) | Stricter: `load` refuses construction-only options; the checks of `gp_mean_fun` and `integer_vars` move into `_validate_option_values`; docstring and changelog (as proposed). Check: 1.0.4's `integer_vars` (R4-3) and a scan test (R4-5). Round: the run's mask wherever the reading differs (F2-3). | `e657eba8`; check: `edc42739`, `326c7676`; round: `b2d7c6e8`, `503562d7` |
 | W6-38 | found during the fix pass (agent B, while making W6-4; fixed by agent A) | gpyreg `noise_functions.py`, `fit`'s clips of the plausible bounds; MATLAB `gplite_noisefun.m:105-106`, `gplite_train.m:157-158` | — | The noise's recommended plausible pair is inverted for targets whose SD is below 1e-3. The clips keep it inverted (unless the range is below 1e-6), and the design fails `uuinv`'s ordering assertion. | Python-only defect, latent: the inversion and the clips are gplite's, and only gpyreg's `uuinv` asserts the order; statement, verdict and reach corrected after R1-2 and R5-2; not dated | fixes/wave6_agent_A.md: `test_fit_with_targets_of_a_tiny_range` (seen to fail); the check's probe (no script under `verification/scripts/`) | Fix made as the last commit, for the PI to strike; kept (PI, 2026-09-22). | gpyreg `caacbc1`; check: `a4f7969`, `4994bbe` (R1-6) |
+| W6-FP1 | G1 | gpyreg's GP tests (`test_fitting`) | — | `test_fitting`, in both GP test files, was an unseeded statistical test that failed 2 of 6 runs on the untouched revision | found by fix agent A (its note 2) | `wave6.md`, "Fix commits" | seeded in the pass (PI's ruling) | gpyreg `8dec795` |
+| W6-FP2 | G2 | gpyreg `_convert_shapes` | — | its type annotation still names the narrower types | found by fix agent A (its note 5) | `wave6.md`, "Fix commits" | left as it stands | — |
 
 **The independent check of the pass** (2026-09-22, `wave6.md`). Five fresh
 read-only reviewers on gpyreg `dc2a930` and PyVBMC `a3d4a70d` (R1 the
@@ -806,9 +854,9 @@ R2 the priors, the bounds of `fit` and its interface; R3 the other modules,
 W6-1 and the release notes; R4 PyVBMC's commits and their coupling with the
 branch; R5 the records) returned 7, 13, 11, 9 and 30 findings. Fix agent D
 made the gpyreg side (`fixes/wave6_check_agent_D.md`), the orchestrator the
-PyVBMC side; the findings taken as proposed and not listed here are in
-`dev/TODO.md`, "What the independent check of the wave-6 pass left for
-later".
+PyVBMC side; the other findings were taken as the orchestrator proposed,
+and those left for later are in `dev/TODO.md`, "What the independent check
+of the wave-6 pass left for later".
 
 | finding | statement | disposition | fix |
 |---|---|---|---|
@@ -819,9 +867,9 @@ later".
 | R4-3 | `load` refused a file saved by 1.0.4 whose `integer_vars` has a form the check refuses. | PI: the stored value that fails the check gets the mask the run was made with. | `edc42739` |
 | R5-1, R5-16 | The orchestrator's summary of the sweep, on which the PI had taken W6-1, was wrong. | PI reopened W6-1: 10 seeds on four targets, then the probe; W6-1 kept. | records ("Gates") |
 | R1-2, R5-2, R5-14 | W6-38's mechanism, verdict and reach were wrong. | Corrected. | gpyreg `a4f7969` (comment and test docstring); `d93f03c` (release notes) |
-| R3-3 | W6-21's premise was wrong: one test set the three attributes and ran the step. | The removal stands, with its record corrected. | records; `d93f03c` |
+| R3-3 | W6-21's premise was wrong: one test set the three attributes and ran the step. | The removal stands, with its record corrected. | records; gpyreg `d93f03c` |
 | R3-1 | W6-16's claim on half of the design ("per coordinate"). | Corrected. | gpyreg `c36bada` |
-| R2-7 | The margin of the seeded `test_fitting`. | `8dec795`'s message stands, with its error flagged in "Fix commits". | records |
+| R2-7 | The margin of the seeded `test_fitting`. | gpyreg `8dec795`'s message stands, with its error flagged in "Fix commits". | records |
 | R3-6, R3-8 | The comparison with BDA3 and Stan under W6-15 was overstated. | The docstring no longer makes it. | gpyreg `f1415de` |
 | R5-3 to R5-8, R5-10 to R5-13, R5-26 | Citations and claims of the sheet, its history phrasing, and five entries it lacked. | PI: the sheet states the revisions of its gpyreg citations and states facts. | records |
 | R4-4, R5-22 | The changelog's gpyreg requirement named a version not yet released. | Corrected. | records |
@@ -843,9 +891,10 @@ later".
 fresh read-only reviewers (F1 agent D's commits and the release notes; F2
 PyVBMC's `edc42739` and `326c7676`; F3 the records) returned 8, 8 and 27
 findings. Fix agent E made the gpyreg side
-(`fixes/wave6_check_round_agent_E.md`). What it left is in the same
-`TODO.md` item: the rounding of `predict` and `predict_full` in the
-low-noise representation, and `fit` with a whole float `thin`.
+(`fixes/wave6_check_round_agent_E.md`). The PI sent the small findings that
+no record held to the same `TODO.md` item, where fix agent E's two are too:
+the rounding of `predict` and `predict_full` in the low-noise
+representation, and `fit` with a whole float `thin`.
 
 | finding | statement | disposition | fix |
 |---|---|---|---|
@@ -876,8 +925,8 @@ three errors, all corrected; it left nothing.
 
 Read in a worktree frozen at `a65b96f4`, with gpyreg at `v1.3.0`; verified
 on 2026-09-23 (`verification/wave7.md`, with `wave7_O1.md` to `wave7_O4.md`).
-Every answer to the first questions held (`wave7.md`, "The first
-questions"). Four Opus agents made the fixes (`fixes/wave7_agent_A.md` to
+Every answer to the first questions held, O2's apart from the tail case of
+W7-3 (`wave7.md`, "The first questions"). Four Opus agents made the fixes (`fixes/wave7_agent_A.md` to
 `_D.md`, with agent D's later rounds).
 
 | id | slice | where | category | finding | class; dating | evidence | disposition | fix |
@@ -892,13 +941,20 @@ questions"). Four Opus agents made the fixes (`fixes/wave7_agent_A.md` to
 | W7-8 | O1 | `variational_optimization.py:1228`, `variational_posterior.py:1237-1240` (`set_parameters`), `:615`; MATLAB `misc/negelcbo_vbmc.m:33-48` | state/caching | With `sigma` frozen and `lambd` optimized, `set_parameters` rescales the frozen `sigma` on every call, which ruins the optimization (0.78 to 34648). The mirror case gives two values of the objective at one θ. | confirmed port discrepancy (MATLAB right); regression of `abf5c3ec` (2021-10-31, a shape fix) | O1-1; `wave7_O1_F1_frozen_sigma.py` (with `wave7_O1_common.py`) | Fix: rescale only when both are optimized; finite-difference and repeated-call tests (as proposed). | `047a75ee` |
 | W7-9 | O1 | `variational_optimization.py:1211-1212` (`_neg_elcbo`); MATLAB `negelcbo_vbmc.m:10`, `:16`, `gplogjoint.m:25-29` | defaults | `compute_var=None` computes the variance only for a nonzero `beta`, which is undocumented. The reviewer's statement that MATLAB's default computes it is wrong: MATLAB's call stops. | documentation only; the MATLAB default is a dormant MATLAB-side defect; the Python line dates from `9267816c` (2021-08-25), never matched | O1-2; `wave7_O1_F2_F3_defaults_docstrings.py` | Docstring, sheet entry, MATLAB-side entry 56 (as proposed). | `fa10366c`; check: `a087961d` |
 | W7-10 | O1 | the docstrings of `_initialize_full_elcbo` and `_neg_elcbo` | indexing/shape | The docstrings misdescribe `D`, `Ns` (twice), `entropy_alpha` and the type of `compute_var`. | documentation only; since `9267816c` (2021-08-25) | O1-3; the same script | Docstring edits (as proposed). | `58d68a3d` |
-| W7-11 | O2 | `papers/acerbi2018variational_appendix.md:88`, `:113` | — (O2 §2) | The transcription has `(σ_k λ)^2` where the derivative gives `(σ_l λ)^2`, and a factor `1/K^2` at line 113. The code and MATLAB are right. The published PDF was not checked. | documentation only; not dated | O2-3; reading | A note beside each line (as proposed). | — |
+| W7-11 | O2 | `papers/acerbi2018variational_appendix.md:88`, `:113` | — (O2 §2) | The transcription has `(σ_k λ)^2` where the derivative gives `(σ_l λ)^2`, and a factor `1/K^2` at line 113. The code and MATLAB are right. The published PDF was not checked. | documentation only; not dated | O2-3; reading | A note beside each line (as proposed). | `25787c80` (git) |
 | W7-12 | O3 | the sheet entry; MATLAB `warpvars_vbmc.m` action `'g'`, `vbmc_pdf.m:119` | cross-module | The sheet says `'g'` returns the gradient of the log Jacobian. It returns derivatives of the inverse map, its one caller is dead, and no PyVBMC path needs that gradient. | documentation only (plus one dead MATLAB line); not dated (the entry's premise came from the plan's O3 row, `0e4e27a5`) | O3-1; `wave7_O3_F1_log_jacobian_gradient.py` | Replace the entry; the dead line goes into the MATLAB-side list (as proposed). | — |
 | W7-13 | O3 | the sheet entry on the probit default | defaults | The sheet's reason cites `AGENTS.md`, which only ever said "probit by default". The default comes from `6cee9bb5` (2022-11-24). | documentation only; not dated | O3-7; `git log -S`, `git show 6cee9bb5` | Correct the "Why" (as proposed). | — |
 | W7-14 | O4 | gpyreg `gaussian_process.py:1716-1720` (`__compute_log_priors`); MATLAB `gplite_hypprior.m` | formula/gradient | A NaN is written into the prior's gradient for every coordinate with equal bounds and survives where no family branch overwrites it. It reaches `log_posterior(compute_grad=True)`, and it stops L-BFGS-B when another coordinate has a prior. | confirmed Python-only defect; the sheet entry does not hold as written; never agreed (gpyreg `6754f01`, 2021-06-22) | O4-1; `wave7_O4_F1_fixed_bound_gradient.py`, `_fixed_with_smoothbox.py`, `_tiny_range_gpyreg.py`, `_pyvbmc_reach.py` | Fix in gpyreg (0 where no branch sets it), a test assertion, the sheet entry replaced, a patch release (as proposed). | gpyreg `e5b7238` |
 | W7-15 | O4 | gpyreg `gaussian_process.py:1592-1607`, `f_min_fill.py:300`, `:337` | formula/gradient (the value only) | The prior's mass inside its bounds is `cdf(ub) - cdf(lb)`, which is 0 with both bounds far in the upper tail. `log_posterior` is then `+inf` everywhere, and a fit returns a poor point. | confirmed Python-only defect in the listed renormalization; the sheet and W6-24 fail in that regime; `64dc49d` (2021-06-29) | O4-2; `wave7_O4_F2_prior_mass_upper_tail.py` | Fix: the survival function in the upper tail, bit-identical for PyVBMC's priors; a test; the sheet entry qualified; W6-24 flagged (as proposed). | gpyreg `5ae1c44`; check: `c81063c` (a test) |
 | W7-16 | O4 | gpyreg `set_priors`; MATLAB `gplite_hypprior.m:35` | defaults | `set_priors` validates `sigma` alone. A non-finite location or smooth-box end is accepted, and the log posterior is NaN or `-inf`. MATLAB reads a non-finite location as no prior. | confirmed Python-only defect (input validation); never agreed (the location was never validated, since `6754f01`/`b0c5cde`) | O4-3; `wave7_O4_F3_nonfinite_prior_location.py` | Fix, stricter: refuse a non-finite location. This closes the `TODO.md` NaN-location item and W6-17's remainder; the sheet entry on `None` is corrected (as proposed). | gpyreg `5499b59` |
 | W7-17 | outside the slices (O4 verifier §9) | gpyreg's recommended length-scale bounds; PyVBMC `active_sample.py:127-185`; MATLAB `gplite_covfun.m:105`, `:121-124` | — | An input column of zero width makes the length-scale bounds `(-inf, -inf)`, and `fit` ends with `KeyError`. PyVBMC reaches it when at least `fun_eval_start` starting points share one coordinate. | candidate: measured on a PyVBMC-built GP, the path from `x0` read from the code and confirmed by the capped run of the close; not dated | `wave7_O4_F1_pyvbmc_reach.py`; the close: `wave7_A_w7_17_shared_coordinate_run.py` | The capped run first, then a ruling together with the `TODO.md` item on a single training point. After the run: refusal at construction (2026-09-23). The TODO item stays for triage. | `8921845f` |
+| W7-FP1 | fix round (agent D) | gpyreg `f_min_fill.py`, the design of `fit` | — | The space-filling design maps its draws through `cdf(lb) + (cdf(ub) - cdf(lb)) S`, which is `+inf` for almost every draw with both bounds far in a prior's upper tail; a fit with hyperparameter samples then raises. | a candidate of the kind of W7-15; PyVBMC does not reach it | `wave7.md`, "Found during the fix round" | fixed in 1.3.1 (PI, 2026-09-23) | gpyreg `0cf27e1` |
+| W7-FP2 | fix round (agent D) | gpyreg `set_priors` | — | `set_priors` takes an inverted smooth box (`a > b`), whose log prior is then a wrong finite value or NaN. | a candidate of the kind of W7-16; PyVBMC does not reach it | same | fixed in 1.3.1: refused, and a box of zero width taken | gpyreg `201b52b` |
+| W7-FP3 | fix round | the docstrings of `_gp_log_joint`, `warp_gp_and_vp`, `log_pdf` | — | `_gp_log_joint`'s `compute_var` takes 2; `warp_gp_and_vp` returns an array, not a dictionary; `log_pdf` returns the log density. | documentation | same | corrected | `72a39732` |
+| W7-FP4 | fix round | `optimize_vp` with one scale not optimized | — | It returns scales that MATLAB's `rescale_params` would rescale, with the same density. | a difference of form | same | recorded in the sheet's entry on `set_parameters` | — |
+| W7-FP5 | fix round | `_vb_init`, type 2; `misc/vbinit_vbmc.m:32` | — | The type-2 starting points overwrite a `sigma` that is not optimized, as MATLAB's do. | shared | same | left as it is | — |
+| W7-FP6 | fix round | `_pdf` | — | Where `nf w / sigma^D` overflows, at component scales near 1e-16 in 20 dimensions, `_pdf` gives `inf` or NaN, outside the ruling of W7-3. | — | same | left as it is | — |
+| W7-FP7 | fix round | the warp block of `optimize` | — | An exception inside the warp block other than the one W7-1 removes still leaves the instance half-warped. | — | same | left as it is | — |
 
 **The independent check of the pass** (2026-09-23, `wave7.md`). Five fresh
 read-only reviewers: the warps and the resume; the density and the entropy;
@@ -939,14 +995,21 @@ state of the code; its entries are consolidated into the porting log
 
 | Wave | Entry as it stood | What was wrong | Now |
 |---|---|---|---|
-| 1 | "Noise shaping is an unported stub" | the option is refused since `bb6ab65` | "Noise shaping is not ported, and `noise_shaping=True` is rejected" |
+| 1 | "Noise shaping is an unported stub" | it said the option only flipped a noise-function flag; the option is refused since `bb6ab65` | "Noise shaping is not ported, and `noise_shaping=True` is rejected" |
+| 1 | "`vp.stats["J_sjk"]` is pruned on both component axes" | its account of MATLAB was false (P6 cmp sheet note 1) | the entry, corrected |
+| 1, check | "`search_optimizer` takes different values, and `D == 1` is a scalar search"; "The initial design does not cluster surplus starting points" | the first gave `cma.fmin` running at `D = 1` as its reason; the second said a surplus point needed no target call, which holds only with `f_vals` | both entries, corrected |
+| 2 | "The sieve asks for candidates in proportion to the current `K`"; "Posterior tempering (`vbmc_power`, `vptrain2real`) is not ported" | the first misread the warp branch (W2-16), the second the reach of `temperature` (W2-22) | both entries, corrected |
 | 4 | "The EIG acquisition and the experimental VIQR losses were removed" | `loss="iqr_reduction"` is shipped (W4-21) | "The EIG acquisition and two experimental VIQR losses were removed" |
 | 4 | "The rank-one GP update is taken for a fresh observation, noisy or not" | MATLAB recomputes whenever a noise variance is given (W4-11) | the entry, corrected |
 | 4 | "The MCMC branch of importance sampling is a retained but dormant hook" | the branch had never run (W4-6) | "The MCMC refinement of the variational importance samples is not ported" |
 | 5 | "`qtrapz.m` is replaced by SciPy's trapezoid rule" | the two rules are the same formula (W5-20) | the entry, corrected |
+| 5 | "The acquisition-portfolio hedge (`acqhedge_vbmc.m`) is not ported" | it said PyVBMC picks one acquisition at random, while `acq_hedge=True` raised (W5-23) | the entry, corrected |
+| 6 | "The rank-one GP update is taken for a fresh observation, noisy or not"; "Isotropic kernels and the rational-quadratic kernel are Python-only" | the first's 1e-15 held only with `L_chol` true (W6-20); the second missed MATLAB's bound branch of `seiso` (W6-29) | both entries, amended |
 | 6 | "NumPy quantile and standard-deviation conventions in GP bound recommendations" | what differed for the statistics was the axis, not the normalization (W6-1) | "NumPy's quantile convention in the GP mean-function bound recommendations" |
 | 7 | "The gradient of the log Jacobian is not ported" | MATLAB's `'g'` action returns the derivatives of the inverse map (W7-12) | "MATLAB's `'g'` action of `warpvars_vbmc.m` is not ported" |
 | 7 | "The hyperprior is renormalized to the bounds, and a fixed hyperparameter gets a prior" | a fixed coordinate's gradient was NaN, and the mass vanished in the upper tail (W7-14, W7-15) | "The hyperprior is renormalized to the bounds, and a hyperparameter with equal bounds is held at its value" |
+| 7 | "The default bounded transform is probit, not logit"; "'No prior' is expressed by `None`, not by an infinite scale"; "The mode search starts from draws of the posterior" | the first's reason cited `AGENTS.md`, which held none (W7-13); the second took a non-finite location beside a finite `sigma` (W7-16); the third named L-BFGS-B for `orig_flag=False`, which uses BFGS | the three entries, corrected |
+| close | seven entries, listed in the sheet's header | found wrong in part by the independent check of the porting log | corrected in the porting log and flagged in the sheet |
 
 **Entries added**, by wave, under their titles in the sheet (the porting log
 names them by the same subjects):
@@ -964,13 +1027,15 @@ names them by the same subjects):
 - Wave 2 (`7f9a26c`): `results["problem_type"]`; the empty warm-up window;
   the true-posterior diagnostic on a copy of the generator; the separate
   search GP; the log form of the search acquisition; `integer_vars` as a
-  mask or indices; two MATLAB input checks that PyVBMC does as written;
+  mask or indices; two defects of MATLAB's input checks that PyVBMC does not
+  reproduce;
   `display`; `warp_input` with the current transform; the closing display
   line; the final boost with fixed means; and seven settled
   non-differences.
 - Wave 3 (`9c29ce1`): the lower bounds from the HPD subset; slice sampling as
   the only hyperparameter sampler; the evaluation times not on the GP; the
-  warp keeping an indefinite thresholded covariance; one finite bound
+  warp keeping its covariance where the correlation threshold would leave it
+  indefinite; one finite bound
   refused; points within rounding of a bound; the pooling fallback for
   extreme SDs; a cached value needing its SD; `scale` and the noise flag
   checked; and, from the check, the evaluation time of a repeat.
@@ -998,33 +1063,40 @@ names them by the same subjects):
 
 ## Test notes acted on
 
-Every fix carries a test written against the contract (the MATLAB lines, the
-docstring or the ruling), seen to fail on the code before it except where a
-fix report says otherwise. Beyond those, the reviewers' notes on tests that
+Every fix that changes code carries a test written against the contract
+(the MATLAB lines, the docstring or the ruling), seen to fail on the code
+before it except where a per-wave ledger or a fix report says otherwise;
+fixes of documentation carry none. The reviewers' notes on tests that
 mirrored the implementation or could not see a defect were acted on as
-follows.
+follows; from wave 3 on, each per-wave ledger has a section on them.
 
-- Wave 0: the tests of each fix, among them an equality test of the Monte
-  Carlo entropy across chunk budgets (`f3ba8d3`).
-- Wave 1: the `INERT_OPTIONS` scan test (`a63b17a`), which recomputes the set
-  of options that nothing reads; two flaky tests made deterministic
-  (`e48fade`, `39ad28a`); on the CI matrix, the mock targets that Python 3.10
-  resolves differently (`99fdb2f`) and a tolerance set to one machine
-  (`8e1df32`); from the check, `e71eab2`, `3bc079f`, `c469ba5`, `893d0ba`.
-- Wave 2: the minimum-iteration test that asserted the defect (`567444f`,
-  with `2d3f876` from the check); a test that re-saved the static VBMC pickle
-  and crashed Python 3.11 (`e3ccd0e`).
+- Waves 0 and 1 kept no separate list of test notes: the reports' notes were
+  acted on through the tests of the fixes (for instance `181a63b`, which
+  replaced a test of P2 that passed without seeing its defect), M F2's note
+  by the scan test of `INERT_OPTIONS` (`a63b17a`), which recomputes the set
+  of options that nothing reads, and the check's by `e71eab2`, `3bc079f`,
+  `c469ba5`, `893d0ba`. Outside the notes, two flaky tests were made
+  deterministic (`e48fade`, `39ad28a`), and the CI matrix led to `99fdb2f`
+  (mock targets that Python 3.10 resolves differently) and `8e1df32` (a
+  tolerance set to one machine).
+- Wave 2 kept no separate list: the minimum-iteration test that asserted the
+  defect (`567444f`, with `2d3f876` from the check), the guard test of the
+  inert options (`82c624c`), and `ce59fbe` from the check. Outside the
+  notes, the CI matrix led to `e3ccd0e` (a test that re-saved the static
+  VBMC pickle crashed Python 3.11).
 - Wave 3: `test_gp_hyp` on the transformed bounds (`23a69a9`); the sampler
   and schedule tests (`bee1866`, `3b8b26c`, `175629a`); the first GP at
   uncertainty level 1 (`095c82c`); `train_gp` called twice (`bf081c2`);
   warps on a logger with evaluations (`9ebaa48`, `791c51d`); `scale`
   (`dea6b29`); `add` at level 2 (`fbe25b6`); a repeat with an unknown time
-  (`490ea14`); a flaky Adam test (`b731fac`).
+  (`490ea14`); the specification test of W3-25's note (`b74c65c`); a flaky
+  Adam test (`b731fac`).
 - Wave 4: `test_real2int` asserting MATLAB's values (`3c088ab`); the first
   value test of IMIQR's MCMC step (`53ad16a`); `fess` with a count
   (`dd3d1d3`); the `acq_info` tests (`4554135`); the quantile range
   (`0477a2f`); `sn2_new` at level 1 with a repeated row, the first test below
-  the GP fit at that level (`9d5d682`).
+  the GP fit at that level, with the dead lines of `test_acq_log_f` removed
+  (`9d5d682`).
 - Wave 5: tests that see the defects the old tests were blind to
   (`23d962a`, `7749ddb`, `dfc3334`, `1ea2f6d`); a Kolmogorov-Smirnov test of
   each box sampler (`48518c8`); twelve comparisons in `test_vbmc_init.py`
@@ -1040,19 +1112,25 @@ follows.
 - Wave 7: `_gp_log_joint` with the zero and constant means and the other
   gaps of slice O1 (`fee60c43`, `3dfa93eb`, `de876410`, `91122ff0`,
   `9f18f491`); the exact check of the Monte Carlo entropy, with the two
-  asserted fixed-draw checks kept (`eaac0349`); `e060c768`, `24669ad9`,
-  `005256f3`, `601efaee`; a warp test on a bounded state (`58c4be10`); in
+  asserted fixed-draw checks kept (`eaac0349`); a budget that splits one
+  component's samples and agreement across the gradient flags (`e060c768`);
+  the linear density's gradient without Torch (`24669ad9`); the upper
+  saturation of probit and Student-t(4) (`005256f3`); the large-`N`
+  transform tests on distinct rows (`601efaee`); a warp test on a bounded state (`58c4be10`); in
   gpyreg, `e5b7238`, `14736b5`, `dcaea44`, `8be6ee4`.
 
-The notes left, with their reasons, are in each per-wave ledger's section on
-test notes.
+The notes left are in the per-wave ledgers' sections on test notes;
+`wave4.md` gives its reasons, while wave 5's note on a reference for
+`test_kde1d.py` and wave 6's on the rank-one tests with one sample and
+`sn2_mult = 1` have no recorded outcome.
 
 ## Defects on the MATLAB side
 
 `experiments/port_review_20260919/matlab_side_defects.md` holds what the
 review found wrong in MATLAB VBMC, from a reading of its source and, where
 the entry says so, a Python transcription; nothing was run in MATLAB.
-Entries 1 to 14 come from waves 0 to 2, 15 to 20 from wave 3, 21 to 24 from
+Entries 1 to 14 come from waves 1 and 2 (entry 9 from a plan that predates
+the review), 15 to 20 from wave 3, 21 to 24 from
 wave 4, 25 to 40 from wave 5 (37 to 40 shared defects that PyVBMC no longer
 shares), 41 to 53 from wave 6 (the GP layer, `gplite/`), 54 and 55 from the
 check of the wave-1 pass, and 56 to 61 from wave 7. The one that changes
@@ -1063,15 +1141,19 @@ declares and never reads.
 
 ## Gates, CI and merges
 
-Every fix pass passed its gates before it was merged, and each is recorded
-in its per-wave ledger's section "Gates" and in the plan's worklog.
+Every fix pass passed its gates before it was merged; each is recorded in
+the plan's worklog and, from wave 3 on, in its per-wave ledger's section
+"Gates".
 
 | Wave | Gates recorded | CI | Into `dev-next` |
 |---|---|---|---|
-| 0 to 2 | the exact oracle check 11 of 11 at every batch (wave 1 after the re-baseline of `dd89374`); the four seeded runs bit for bit at every batch that had to leave trajectories alone; the default suite 1540 passed and 58 skipped after W2-30; the S-VBMC tests with Torch, 227 passed | full matrix, nine cells, green on `ae4e651` (the third run) | merge `57cbfb4` (2026-09-20) |
+| 0 | the tests of each module touched (calibration 86, S-VBMC with Torch 226, PyMC 107); for the chunk-independent entropy, the exact oracle check 11 of 11 | with wave 2 | merge `57cbfb4` (2026-09-20) |
+| 1 | the tests of every module touched; the exact oracle check 11 of 11 after the re-baseline of `dd89374`; the evidence was not kept (`wave1.md`) | with wave 2 | `57cbfb4` |
+| 2 | the four seeded runs, made for this pass, bit for bit at every batch that had to leave trajectories alone; the exact oracle check 11 of 11 at every batch; the default suite 1540 passed and 58 skipped after W2-30; the S-VBMC tests with Torch, 227 passed | full matrix, nine cells: green on `e3ccd0e` (the third run), and on `ae4e651` after W2-30 | `57cbfb4` |
+| 2, check | the tests of every module touched, 413; the oracle tests, 143; the exact oracle check 11 of 11; the rest with the wave-5 round | with wave 5 (`63a0808`) | `03a8d46` |
 | 3 | exact 11 of 11 after the re-baselines; suite 1608 passed; Torch 739, PyMC 107; eight benchmark targets, 32 seeded pairs; the check: suite 1699 passed, Torch 785, PyMC 107 | green on `92eb2cc`; the check on `f0be99b` | `82aee90`; the check `5acd382` |
 | 4 | exact 11 of 11 after the re-baseline; seeded runs bit for bit; suite 1687 passed; Torch 777, PyMC 107 | green on `11fb766` | `9d9c01b` |
 | 5 | seeded runs bit for bit except what W5-1 moves; exact 11 of 11 with nothing re-baselined; the check round: suite 1961 passed, Torch 1009, PyMC 107 | green on `63a0808`; the ArviZ count on `0c67e30` | `03a8d46`; `1563053` |
-| 6 | gates 1 to 4 against gpyreg's branch with `PYTHONPATH` naming it: gpyreg's suite (293 to 320 passed), PyVBMC's suite (1992 passed at gate 4), exact 11 of 11 after the re-baselines, the seeded runs bit for bit after W6-1; the benchmark sweep on eight targets | green against the pin at `a4c2cc0` and at `v1.3.0` (`647a886a`) | fast-forward |
+| 6 | gates 1 to 4 against gpyreg's branch with `PYTHONPATH` naming it: gpyreg's suite (293 passed at gate 1 to 319 at gate 4, and 320 on `286b595`), PyVBMC's suite (1992 passed at gate 4), exact 11 of 11 after the re-baselines, the seeded runs bit for bit after W6-1; the benchmark sweep on eight targets | green against the pin at `a4c2cc0` and at `v1.3.0` (`647a886a`) | fast-forward |
 | 1, check | exact 11 of 11; suite 2073 passed; Torch 841, PyMC 110; the noisy seeded runs moved in 40 of 92 arrays; the noisy benchmark sweep | green on `0d09e63d` | merge `e86bbb1c` into `dev-port-review`, then fast-forward |
-| 7 | exact 11 of 11 after the re-baseline of `83a592c6`; seeded runs bit for bit; suite 2143 passed; extras 973; the same against gpyreg's `w7-fixes`, with gpyreg's suite 386 passed; W7-17's refusal: suite 2145 passed | green on `acdbfd01`, `6ef6a084`, `3fb370cd` (gpyreg 1.3.1) and `6e1082d8` | fast-forward |
+| 7 | exact 11 of 11 after the re-baseline of `83a592c6`; seeded runs bit for bit; suite 2143 passed; extras 973; the same against gpyreg's `w7-fixes`, with gpyreg's suite 386 passed; W7-17's refusal: suite 2145 passed | the branch smoke on `acdbfd01` and the full matrix on `6ef6a084`; both on `3fb370cd` (gpyreg 1.3.1) and on `6e1082d8` | fast-forward |

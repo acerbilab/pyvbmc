@@ -369,9 +369,9 @@ of the pass, with `PYTHONPATH` naming `../gpyreg-w7`: gpyreg's own suite,
 386 passed; PyVBMC's exact oracle check, 11 of 11; the four seeded runs
 against those of the pass on gpyreg 1.3.0, 92 arrays compared, 0 differ;
 the default suite, 2143 passed and 58 skipped; the extras selections, 973
-passed and 19 skipped. The CI matrix: the branch smoke and the full matrix
-(nine jobs) green on `acdbfd01` and on `6ef6a084`, and again on `3fb370cd`
-with the pin at gpyreg `v1.3.1`.
+passed and 19 skipped. The CI: the branch smoke green on `acdbfd01`, the
+full matrix (nine jobs) on `6ef6a084`, which adds the PI's edit of the
+README, and both again on `3fb370cd` with the pin at gpyreg `v1.3.1`.
 
 ## The two runs of the close
 

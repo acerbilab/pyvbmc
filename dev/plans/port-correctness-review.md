@@ -786,12 +786,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   trim can drop every point an early iteration logged, `movmax` then leaves
   that iteration's entry `NaN`, and the maxima of the warm-up check pass
   over it as MATLAB's `max` does, where `np.amax` made the check raise.
-  Last, the block that **moves default trajectories**, with the empty
-  stability window among it, which does not fire at the defaults (row W2-14
-  of the ledger): the recent-improvement window, the recomputed LCB maxima with the
-  branch that consumes them, the warping clocks at the end of warm-up, the
+  Last, the block that **moves default trajectories**: the
+  recent-improvement window, the recomputed LCB maxima with the branch that
+  consumes them, the warping clocks at the end of warm-up, the
   minimum-iteration guard, and the initial variational means in transformed
-  coordinates.
+  coordinates; the empty stability window (row W2-14 of
+  `verification/wave2.md`) is in it but does not fire at the defaults.
 
   Gates. Before the first cherry-pick: four short seeded runs at the
   default options (`verification/scripts/wave2_fixpass_gate_runs.py`:
@@ -1588,10 +1588,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   densities is a regression of 2022 (W5-4), and the two reviewers'
   disagreement on its reach is settled: under a probit transform no density
   is infinite up to an SD of 8 in the inference space, and they appear from
-  10. The rounding of a half to even (W5-6) has no tie at the defaults; the
-  same convention stands at twelve sites where MATLAB has `round`
+  10. The rounding of a half to even (W5-6) has no tie at the defaults
   (corrected by the independent check of the pass, R4-1: a starting cache
-  reaches a tie at the shipped options, `verification/wave5.md`, W5-6). Of the
+  reaches a tie at the shipped options, `verification/wave5.md`, W5-6); the
+  same convention stands at twelve sites where MATLAB has `round`. Of the
   two P2 findings that can misplace an evaluation, the value of a cached
   starting point recorded at a moved point (W5-7) is shared with MATLAB, its
   clip out of reach, the search box holding the plausible box with a margin
@@ -2497,32 +2497,74 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   passed, with gpyreg 1.3.1; `dev-port-review` pushed at `6e1082d8`, its
   smoke and full matrix (nine jobs) green; `dev-next` fast-forwarded to it,
   with the status line of `TODO.md`.
-- [ ] **Pickup point (2026-09-23, every wave in `dev-next`): the close of the
-  review, in a fresh session.** The state: `dev-next` and `dev-port-review`
-  are one commit, pushed and green in CI, and hold every wave of the review
-  (0 to 7), the independent check of each fix pass, and the two runs of
-  wave 7's close; gpyreg 1.3.1 is on PyPI and required. No worktree or
-  agent of the review is left. What closes the `TODO.md` item, from a fresh
-  session that reads the records as they stand:
-  1. The closing ledger, `dev/results/<date>-port-correctness-review.md`:
-     every finding of waves 0 to 7 with its disposition and fix commit, the
-     intentional differences found, the sheet entries withdrawn and the
-     test notes acted on, pointing at the per-wave ledgers under
-     `experiments/port_review_20260919/verification/` (`wave0.md` to
-     `wave7.md`, with their verifier reports) and at the gpyreg releases
-     1.3.0 and 1.3.1.
-  2. The durable entries of the known-differences sheet
-     (`experiments/port_review_20260919/known_differences.md`) consolidated
-     into the porting log `pyvbmc/vbmc/README.md`, as the section
-     "Verification and the findings ledger" above describes, so that the
-     catalogue of deliberate differences outlives the review.
-  3. An independent check of both by fresh reviewers; then the three generic
-     checkboxes below ticked, and the `TODO.md` item closed.
-  The `TODO.md` items that wait for the review's fixes to be in (the oracle
-  state at uncertainty level 1, the seeded gate run with a prior, the
-  triage list left by the check of wave 6, the regeneration of the golden
-  references and the run pools for the release gate) can start once the
-  PI decides.
+- [x] **2026-09-23, the close of the review** (the pickup point of the same
+  day, in a fresh session; the PI: Opus agents as needed).
+  1. **The closing ledger**, `results/2026-09-23-port-correctness-review.md`.
+     Four read-only Opus agents extracted waves 0 and 1, 2 and 3, 4 and 5,
+     and 6 and 7 from the per-wave ledgers, the reports, the fix reports,
+     this worklog and git into one row format, and the orchestrator
+     assembled their tables with the sections that span the waves: the
+     summary, the fixes that move default trajectories, the oracle
+     re-baselines, gpyreg 1.3.0 and 1.3.1, the findings without a recorded
+     ruling, the sheet entries withdrawn and added, the test notes acted on,
+     the MATLAB-side list and the gates. A script checked every hash the
+     ledger cites: each resolves, every PyVBMC commit is an ancestor of
+     `c228cc2e` but `29c822d`, which the ledger names, and every gpyreg
+     commit is an ancestor of `v1.3.1`. The extraction found records wrong,
+     corrected where they stood: the commits of W2-30 in
+     `verification/wave2.md`; a sentence on W3-6 in `wave3.md`; the dates of
+     wave 4's fix commits and the fate of an item of its pass in `wave4.md`;
+     the pointer of `wave5.md`'s first question to W7-3; the CI, the branch
+     of two fix commits and five sheet entries in `wave7.md`; three
+     sentences of this worklog.
+  2. **The porting log** `pyvbmc/vbmc/README.md`, rewritten as the catalogue
+     of the deliberate differences from MATLAB: every entry of the sheet
+     that states a difference from MATLAB at `396d649`, by area, with its
+     kind, what differs, why and the deciding record, cited by module and
+     function; the behaviors that look like differences and are MATLAB's;
+     the notes of the port still open; the MATLAB references, with the
+     names that had moved. `AGENTS.md` makes it the catalogue to check and
+     to keep current, and the headers of the sheet, the counterpart map and
+     the MATLAB-side list mark those files as records of the review.
+     Commits `d7ce0c7b` (the porting log) and `973e1da1` (the ledger and the
+     corrections).
+  3. **The independent check of both.** Four fresh read-only Opus reviewers
+     read `973e1da1`: the ledger's waves 0 to 3; its waves 4 to 7 and its
+     opening sections; the porting log's first half; its second half with
+     the records that point at the log and the ledger. They returned 30,
+     15, 17 and 26 findings. The orchestrator checked against the sources
+     those that change a statement's substance, and applied them; in the porting
+     log, the lean GP history moved among the behaviors that are MATLAB's
+     (MATLAB's `savestats` records `gplite_clean(gp)`), the MATLAB side of
+     the overhead, the hedge and the outer search limits corrected, the
+     `eta` bound placed in `_vp_bound_loss`, the history of `optim_state`
+     classed as a Python-only addition, and some forty statements of
+     precision, records and paths, the sheet's header flagging the seven of
+     its entries that carried the same errors; in the ledger, the method
+     section, which overstated the order of the rulings and the gates of
+     the early passes, the fixes that move default trajectories and their
+     reads for accuracy (W3-1 changes no default; W5-6 added; the passes of
+     waves 1 and 2 were not swept; W6-1's losses stated), the gates by wave,
+     rows for the items found during the wave-6 pass and the wave-7 fix
+     round, the sheet entries corrected in waves 1, 2 and 5 to 7, and the
+     list of findings without a recorded ruling, which loses P2 F16 (c),
+     ruled by W5-28, and gains the seven items that the check of the wave-2
+     pass left for the PI and the halves of C-C2 and C-M2 that no fix
+     reached, seventeen in all; and `TODO.md`, `dev/README.md`, `wave0.md`,
+     `wave3.md`, `wave7.md`, the counterpart map's row on the MCMC branch of
+     the importance sampling, and two sentences of this worklog. Left as the
+     reviewers marked them optional: the class of W3-33 and the dating of
+     W3-32 in the ledger, the MATLAB-side entry numbers of some wave-1 rows,
+     and the modules of the functions in the porting log's list of MATLAB
+     references. The reports of the eight agents are on the orchestrator's
+     machine (`dev/scripts/runs/LOCAL.md`, "Port correctness review").
+  The `TODO.md` item of the review is closed. What remains of it is in
+  `TODO.md`: the golden references, which the moving fixes leave describing
+  the code from before them; the oracle state at uncertainty level 1 and
+  the seeded gate run with a prior, which can start when the PI decides; the
+  triage of the findings without a recorded ruling and of what the check of
+  the wave-6 pass left for later. The commits of the close are on
+  `dev-port-review`, not pushed; `dev-next` takes them on the PI's word.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
@@ -2539,9 +2581,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   and fixed as W6-37 (`e657eba8`, `verification/wave6.md`): `load` refuses
   such an option, and the checks of `gp_mean_fun` and `integer_vars` run on
   both paths.
-- [ ] Verification of the accumulated findings; ledger written.
-- [ ] PI triage.
-- [ ] Fixes on `dev-port-review` with gates; durable sheet entries
+- [x] Verification of the accumulated findings; ledger written.
+- [x] PI triage.
+- [x] Fixes on `dev-port-review` with gates; durable sheet entries
   consolidated into the porting log; the list of MATLAB-side defects
   (`experiments/port_review_20260919/matlab_side_defects.md`) brought up
   to date.

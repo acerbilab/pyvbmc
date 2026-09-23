@@ -5,8 +5,10 @@ PyVBMC is a port of the MATLAB VBMC toolbox
 gpyreg is a port of the toolbox's `gplite`. This log records where the Python
 code deliberately differs from MATLAB, the behaviors that look like
 differences and are MATLAB's own, the notes left open from the port, and the
-MATLAB counterparts of the functions of this subpackage. The other
-subpackages keep notes of their own in their `README.md` files.
+MATLAB counterparts of the main functions of this subpackage. Several
+other subpackages keep notes of their own in their `README.md` files, and
+`dev/experiments/port_review_20260919/counterpart_map.md` pairs every
+MATLAB file with its Python counterpart.
 
 The MATLAB reference is the `master` branch of acerbilab/vbmc at `396d649`
 (2023-05-03). A MATLAB citation `file:line` is at that revision, relative to
@@ -16,15 +18,20 @@ gpyreg as of release 1.3.1.
 The catalogue was consolidated from the known-differences sheet of the port
 correctness review of September 2026,
 [`dev/experiments/port_review_20260919/known_differences.md`](../../dev/experiments/port_review_20260919/known_differences.md).
-For each entry, the sheet holds the line citations at the revisions its
-header names, the history of the difference and the evidence. Beside it,
-`counterpart_map.md` pairs every MATLAB file with its Python counterpart.
-The review's findings and their dispositions are in its closing ledger,
+For each entry, the sheet holds the history of the difference, the
+evidence and line citations: those of MATLAB and gpyreg at the revisions
+its header names, those of PyVBMC from the review's branch, which can be
+off at later revisions. The review's findings and their dispositions are
+in its closing ledger,
 [`dev/results/2026-09-23-port-correctness-review.md`](../../dev/results/2026-09-23-port-correctness-review.md),
-which also lists the places where the port was brought back into agreement
-with MATLAB. This log is the catalogue that is kept current: a change that
-creates, removes or alters a deliberate difference updates its entry here.
-The sheet stays as the review left it.
+whose per-wave tables record the discrepancies that were fixed to MATLAB's
+behavior; corrections of that kind made before the review (the uniform
+draws of the search box, the decay of `_get_hyp_cov`, the key of the
+variance regularization, the GP-sampling termination) are in the sheet's
+"Settled non-differences". This log is the catalogue that is kept
+current: a change that creates, removes or alters a deliberate difference
+updates its entry here. The sheet stays as the review left it, with a
+list of the entries that this log corrects.
 
 Each entry names its kind: a *deliberate change* (both sides implement the
 thing, differently and on purpose), an *unported feature* (MATLAB has it,
@@ -101,16 +108,19 @@ defect *n*" is entry *n* of
 - **Isotropic kernels and the rational-quadratic kernel are Python-only**
   (Python-only addition): `SquaredExponentialIsotropic`, `MaternIsotropic`
   and `RationalQuadraticARD`. PyVBMC hard-wires the ARD squared exponential,
-  so no run reaches them. The isotropic bound recommendations take the mean
-  of the per-dimension log widths, as the `seiso` branch of
+  so no run reaches them. MATLAB declares `seiso` and gives it bound
+  recommendations, but `gplite/gplite_covfun.m` has no branch that computes
+  that kernel. The isotropic bound recommendations take the mean of the
+  per-dimension log widths, as the `seiso` branch of
   `gplite/gplite_covfun.m:112-118` does.
 - **`GP.predict(return_cross_covariance=True)` hands VIQR the latent
   cross-kernel** (Python-only addition), so VIQR does not recompute it as
-  `acq/acqviqr_vbmc.m` does; the returned matrices are read-only. Arithmetic
+  `acq/acqviqr_vbmc.m` does; the caller must treat the returned matrices as
+  read-only. Arithmetic
   unchanged (`dev/results/2026-09-13-viqr-kernel-production.md`).
 - **`_get_hyp_cov` anchors the hyperparameter dimension on the current
   model** (deliberate change). `misc/get_GPTrainOptions.m`, local function
-  `GetHypCov` (lines 126-160), lets the first historical block fix the
+  `GetHypCov`, lets the first historical block fix the
   width it accepts; `gaussian_process_train.py: _get_hyp_cov` takes the width
   from the current GP, skips historical blocks of another width and returns
   `None` when no usable samples remain or the covariance would rest on one
@@ -129,12 +139,6 @@ defect *n*" is entry *n* of
   sampling, is a configuration of neither toolbox, so `VBMC` refuses it at
   construction and in `load` with a `NotImplementedError` that names the
   missing feature (`verification/wave1_options.md`, row O-2).
-- **The iteration history stores GPs without their posterior factors**
-  (deliberate change). `_lean_gp` keeps the training data, the
-  hyperparameter samples and the model, and `VBMC.get_gp` rebuilds identical
-  factors on demand, where `save_stats` in `vbmc.m` stores `stats.gp` in
-  full; the history then does not grow as `Ns` times the square of the
-  training set (`dev/plans/stage2-memory.md`).
 - **The lower bounds of the length scales and of the output scale come from
   the high-posterior-density subset** (deliberate change). `_gp_hyp` takes
   gpyreg's recommendations on the `hpd_frac` subset of the training set,
@@ -150,7 +154,7 @@ defect *n*" is entry *n* of
   value.
 - **Slice sampling is the only sampler of the GP hyperparameters**
   (unported feature). `VBMC` refuses every `gp_hyp_sampler` but
-  `"slicesample"` at construction; `misc/get_GPTrainOptions.m:18-91` and
+  `"slicesample"` at construction and in `load`; `misc/get_GPTrainOptions.m:18-91` and
   `gplite/gplite_train.m:316-457` also offer `npv`, `mala`, `slicelite`,
   `splitsample`, `covsample` and `laplace`. `cov_sample_thresh`, read only by
   covariance sampling, is inert (`verification/wave3.md`, W3-13).
@@ -175,7 +179,7 @@ defect *n*" is entry *n* of
 - **`GP.quad`'s integral variance is normalized by the scale the factor
   carries** (deliberate change, the fix of MATLAB-side defect 42).
   `gplite/gplite_quad.m:66-67` normalizes by the constant noise
-  hyperparameter while `gplite_core.m:82` scales the factor by the minimum
+  hyperparameter while `gplite/private/gplite_core.m:82` scales the factor by the minimum
   total noise, so with user-provided or output-dependent noise MATLAB's
   variance collapses to `eps`; gpyreg uses `Posterior.sl` (gpyreg 1.2.1,
   `acerbilab/gpyreg#49`). The mean agrees on both sides. No PyVBMC code calls
@@ -190,7 +194,7 @@ defect *n*" is entry *n* of
 - **Two smooth-box hyperprior families are Python-only** (Python-only
   addition): `"smoothbox"` and `"smoothbox_student_t"`, flat over `[a, b]`
   with Gaussian or Student's t tails, which `gplite/gplite_hypprior.m` and
-  `fminfill.m` do not have. They are identified by a non-finite `mu` beside a
+  `gplite/private/fminfill.m` do not have. They are identified by a non-finite `mu` beside a
   finite `sigma`, which is why gpyreg's mask for no prior is an `and` (next
   entries). PyVBMC sets only Student's t priors.
 - **The hyperprior is renormalized to the bounds, and a hyperparameter with
@@ -213,13 +217,13 @@ defect *n*" is entry *n* of
   finite and one with `a > b` (a box of zero width is taken).
   `gplite/gplite_hypprior.m:35` reads either a non-finite location or a
   non-finite `sigma` as no prior, and `gplite/gplite_nlZ.m:13` documents
-  `sigma = Inf` as the flat prior; gpyreg cannot, since a non-finite location
-  with a finite `sigma` names its smooth boxes (`verification/wave6.md`,
+  `sigma = Inf` as the flat prior; gpyreg cannot, since a non-finite `mu`
+  beside a finite `sigma` names its smooth boxes (`verification/wave6.md`,
   W6-17; `verification/wave7.md`, W7-16).
 - **An exception of the hyperparameter objective ends the fit** (deliberate
   change). gpyreg lets it propagate from the design and from the optimizer
-  loop, where `fminfill.m:104-110`, `gplite_train.m:276-296` and `gp_objfun`
-  catch it and lose a starting point in silence. NaN values are handled
+  loop, where `gplite/private/fminfill.m:104-110`,
+  `gplite/gplite_train.m:276-296` and its `gp_objfun` catch it and lose a starting point in silence. NaN values are handled
   alike on both sides. Kept so that a failed factorization that ends a run is
   seen (`verification/wave6.md`, W6-19).
 - **The default starting point of `GP.fit`** (deliberate change): with no
@@ -230,8 +234,8 @@ defect *n*" is entry *n* of
   change, a repair of a defect of both sides). With all targets equal the
   range is zero, and the recommended bounds of the output scale and the upper
   bound of the noise are `-inf` on both sides
-  (`gplite/gplite_covfun.m:130-131`, `gplite_noisefun.m:104`,
-  `gplite_train.m:142`); gpyreg gives such a set the spread of a unit range,
+  (`gplite/gplite_covfun.m:130-131`, `gplite/gplite_noisefun.m:104`,
+  `gplite/gplite_train.m:142`); gpyreg gives such a set the spread of a unit range,
   with a warning, as both sides do for a single target (MATLAB-side defect
   53; `verification/wave6.md`, W6-4).
 - **`random_function` takes negative eigenvalues of rounding size for
@@ -239,13 +243,14 @@ defect *n*" is entry *n* of
   Cholesky factorization of the predictive covariance fails, both sides fall
   back on its eigendecomposition; `gplite/gplite_rnd.m:97-110` refuses a
   factor with a negative eigenvalue and the draw then fails on the sizes,
-  while gpyreg takes one within `10 * n * eps` of the prior variance for a
-  zero and raises `LinAlgError` beyond it. In the low-noise representation
-  gpyreg forms the covariance from a Cholesky factor, where
-  `gplite_rnd.m:50` uses the stored inverse. No PyVBMC code calls it.
+  while gpyreg takes a negative eigenvalue above `-10 * n * eps` times the
+  larger of the largest prior variance at the test points and the largest
+  eigenvalue for a zero, and raises `LinAlgError` below it. In the low-noise
+  representation gpyreg forms the covariance from a Cholesky factor, where
+  `gplite/gplite_rnd.m:50` uses the stored inverse. No PyVBMC code calls it.
 - **An infinite width of the slice sampler stays replaced** (deliberate
-  change, a repair of MATLAB-side defect 47): `slicesamplebnd.m:168`, `:176`,
-  `:377` copy the base widths before replacing an infinite one, so it comes
+  change, a repair of MATLAB-side defect 47):
+  `gplite/private/slicesamplebnd.m:168`, `:176`, `:377` copy the base widths before replacing an infinite one, so it comes
   back after the burn-in; gpyreg copies after.
 - **The degree-1 Matern gradient is zero where two inputs coincide**
   (deliberate change, a repair of MATLAB-side defect 45), where
@@ -257,15 +262,18 @@ defect *n*" is entry *n* of
   linear index and returns a wrong entry for every hyperparameter after the
   first; gpyreg reads the row.
 - **The slice sampler has no Metropolis step** (removed feature):
-  `slicesamplebnd.m:189` can interleave Metropolis moves from
+  `gplite/private/slicesamplebnd.m:189` can interleave Metropolis moves from
   `MetropolisPdf`/`MetropolisRnd`; neither `gplite_train` nor PyVBMC sets
   them (`verification/wave6.md`, W6-21).
 - **A schedule of space-filling points without span asks for none**
   (deliberate change). When `min(max_fun_evals, 1e3)` equals
-  `fun_eval_start`, `_get_gp_training_options` gives no space-filling
-  starting points, which is what `misc/get_GPTrainOptions.m:98-100` computes
-  wherever it gives a number; short of the span MATLAB's count is `Inf` and
-  its design fails (inferred, not run).
+  `fun_eval_start` and no evaluation budget is active,
+  `_get_gp_training_options` gives no space-filling starting points, which
+  is what `misc/get_GPTrainOptions.m:98-100` computes wherever it gives a
+  number; at an evaluation count below `fun_eval_start`, which the warm-up
+  trim can leave, MATLAB's count is `Inf` and its design fails (inferred,
+  not run), where PyVBMC gives 0. With an active budget the schedule takes
+  its end point.
 
 ### The main loop, warm-up, termination and final boost (`vbmc.py`)
 
@@ -278,14 +286,18 @@ defect *n*" is entry *n* of
   unguarded boost (`dev/results/2026-09-04-final-boost-failure.md`;
   `dev/plans/latent-bug-fixes.md`, Phase 2).
 - **The final boost runs without the weight penalty and without pruning**
-  (deliberate change): `finalboost_vbmc.m` sets `TolWeight = 0` and leaves
-  the small-weight shrinkage on; PyVBMC also sets `weight_penalty = 0`
+  (deliberate change): `misc/finalboost_vbmc.m` sets `TolWeight = 0` and
+  leaves the small-weight shrinkage on; PyVBMC also sets
+  `weight_penalty = 0` while the guard is on, and `tol_elcbo_boost = None`,
+  like a saved run without the key, keeps the penalty, as MATLAB does
   (`dev/plans/latent-bug-fixes.md`, Phase 2 and Q1).
-- **`results["overhead"]` is not implemented** (unported feature): NaN, where
-  `private/vbmc_output.m` returns the fractional overhead (FAQ).
+- **`results["overhead"]` is not implemented** (unported feature): NaN,
+  where `vbmc.m:937-939` replaces the NaN that `private/vbmc_output.m:21`
+  sets by the fractional overhead, the total running time over the total
+  time of the function evaluations minus one (FAQ).
 - **`results["rng_state"]` is a snapshot of the run's generator**
   (deliberate change), taken at return time as `{"generator": ...}`, where
-  `vbmc_output.m` stores the global `rng`.
+  `private/vbmc_output.m` stores the global `rng`.
 - **`results["problem_type"]` tests the original bounds** (deliberate
   change): `"bounded"` unless every original bound is infinite.
   `private/vbmc_output.m:5-9` tests the transformed bounds, which are always
@@ -350,7 +362,7 @@ defect *n*" is entry *n* of
   `eval`'d with `D` bound. An option set in the file counts as set by the
   user, and dependent defaults are settled after every source is read. An
   undeclared name raises on every route, and options are frozen after
-  validation. MATLAB (`misc/setupoptions_vbmc.m`, `evaloption_vbmc.m`,
+  validation. MATLAB (`misc/setupoptions_vbmc.m`, `misc/evaloption_vbmc.m`,
   `utils/evalbool.m`) accepts unknown fields silently and `'yes'`/`'no'`
   strings; `uncertainty_handling` is a boolean (`verification/wave2.md`,
   W2-8, W2-18, W2-20, C-M5).
@@ -369,9 +381,12 @@ defect *n*" is entry *n* of
   `misc/funlogger_vbmc.m` evaluates one point at a time
   (`dev/plans/stage3-pipeline-features.md`,
   `dev/plans/pymc-target-adapter.md`).
-- **The iteration history omits the noisy acquisitions' importance samples**
-  (deliberate change), which are drawn afresh at every step and cannot be
-  rebuilt; `record_full_history_details` keeps them.
+- **The iteration history records `optim_state`, without the noisy
+  acquisitions' importance samples** (Python-only addition). MATLAB's
+  `savestats` (`vbmc.m:1021-1052`) records no `optimState`; PyVBMC records
+  it at every iteration and leaves out the importance samples, which are
+  drawn afresh at every step and cannot be rebuilt;
+  `record_full_history_details` keeps them.
 - **Python-only options of the interface and the infrastructure**
   (Python-only addition): `show_tips`, `print_iteration_header`, the
   `log_file_*` options, `performance_calibration` (a machine-local chunk
@@ -403,7 +418,9 @@ defect *n*" is entry *n* of
   `advanced_vbmc_options.ini` says why it is inert. They cover options that
   MATLAB deleted in 2021 (`2044530`), options MATLAB declares and never reads
   (`AnnealedGPMean`, `ConstrainedGPMean`, `OutputFcn`, `NonlinearScaling`,
-  `ProposalFcn`), and the knobs of features PyVBMC never ported. A test
+  `ProposalFcn`), and the knobs of features PyVBMC never ported; a few more,
+  such as `diagnostics` and `active_sample_fess_thresh`, which MATLAB reads,
+  have no reader in PyVBMC's design, as their `.ini` lines explain. A test
   recomputes the set by scanning the package for option reads.
 
 ### Initial design and active sampling (`active_sample.py`)
@@ -417,10 +434,11 @@ defect *n*" is entry *n* of
   `1e-11*max(insigma)`) and `tolfunhist` (1e-12 against 1e-13), both far
   below `tolfun`; the starting point unevaluated inside cma (its value is the
   sieve's, and the result is kept only when it beats it); and the best-ever
-  point returned, which makes `search_cmaes_best` inert. Differing in form:
-  cma runs an isotropic search where an entry of `insigma` is zero, where
-  MATLAB refuses such an `insigma` or a ratio above 1e6 and keeps the sieve's
-  point; cma folds candidates into the bounds and caps each coordinate's step
+  point returned, where MATLAB returns the best point of the last generation
+  (`utils/cmaes_modded.m:1708`), which makes `search_cmaes_best` inert.
+  Differing in form: PyVBMC starts the search isotropic at `max(insigma)`
+  where an entry of `insigma` is zero, where MATLAB refuses such an
+  `insigma` or a ratio above 1e6 and keeps the sieve's point; cma folds candidates into the bounds and caps each coordinate's step
   at a third of its range; and its `tolfacupx` scales per coordinate
   (`utils/cmaes_modded.m`; `verification/wave1_M_P2.md`;
   `verification/cmaes_side_by_side/`).
@@ -468,12 +486,15 @@ defect *n*" is entry *n* of
   `private/activesample_vbmc.m:565-633` checks nothing and rounds without a
   cap, so its search set can be longer than asked, and at the first step it
   is a quarter short with `search_cache_frac = 0.25` (MATLAB-side defect
-  35; `verification/wave5.md`, W5-24).
+  35; `verification/wave5.md`, W5-24). With repeated observations on, the
+  training inputs that head the search set as repeat candidates are kept
+  out of `optim_state["search_cache"]`; MATLAB never puts a training input
+  into its search set.
 - **Repeated observations are selected inside the sieve** (deliberate
   change). With `max_repeated_observations > 0` on a noisy target the
   training inputs join the search set and a chosen repeat is pooled into its
   row; MATLAB compares the best training input with the search result after
-  the search (`private/activesample_vbmc.m:330-364`), so
+  the search (`private/activesample_vbmc.m:334-365`), so
   `RepeatedAcqDiscount` and the cost model `t_algoperfuneval` have no
   counterpart. Off by default on both sides.
 - **The rank-one GP update is taken for a fresh observation, noisy or not**
@@ -489,9 +510,10 @@ defect *n*" is entry *n* of
 - **The acquisition-portfolio hedge is not ported** (unported feature).
   `acq_hedge=True` is refused at construction and in `load`; with several
   entries of `search_acq_fcn` PyVBMC picks one uniformly at random per step,
-  where `private/acqhedge_vbmc.m` tracks each one's improvement. MATLAB's own
-  default, one acquisition with the hedge on, reads an unset variable
-  (MATLAB-side defect 33).
+  where `private/acqhedge_vbmc.m` tracks each one's improvement. MATLAB
+  itself, with the hedge turned on (`AcqHedge` defaults to `'no'`,
+  `vbmc.m:323`) and its default single acquisition, never sets `idxAcq`
+  and reads it unset (MATLAB-side defect 33).
 - **Variational active sampling (`VarActiveSample`) is not ported**
   (unported feature; `misc/vpsample_vbmc.m`, marked unused in `vbmc.m:652`).
 - **`AbstractAcqFcn._real2int` snaps its input in place** (deliberate
@@ -503,8 +525,8 @@ defect *n*" is entry *n* of
   starting points, a coordinate that takes one value across the first
   `fun_eval_start` of them raises `ValueError` at construction; MATLAB
   reaches the first GP fit with infinite length-scale bounds
-  (`gplite/gplite_covfun.m:105`, `:121-124`; `verification/wave7.md`,
-  W7-17).
+  (`gplite/gplite_covfun.m:105`, `:121-124`; MATLAB-side defect 61;
+  `verification/wave7.md`, W7-17).
 
 ### Acquisition functions
 
@@ -517,10 +539,12 @@ defect *n*" is entry *n* of
   (`dev/results/2026-09-08-noisy-acquisition-experiments.md`).
 - **The quantile of VIQR and IMIQR is an argument, and `u` is computed from
   it** (deliberate change): `u = norm.ppf(quantile)`, a quantile strictly
-  between 0.5 and 1, where `acq/acqviqr_vbmc.m:4` and `acqimiqr_vbmc.m:4`
-  have the literal `0.6745`. The literal accounts for the whole difference
-  between the two implementations' values (up to 8e-5), with the same best
-  candidate (pull request 80; `verification/wave4.md`, W4-8).
+  between 0.5 and 1, where `acq/acqviqr_vbmc.m:4` and
+  `acq/acqimiqr_vbmc.m:4` have the literal `0.6745`. The literal accounts
+  for the whole difference between the two implementations' values: on the
+  stored noisy state of the oracles they move by up to 1.7e-5 (VIQR) and
+  8e-5 (IMIQR), with the same best candidate (pull request 80;
+  `verification/wave4.md`, W4-8).
 - **A NaN acquisition value stays NaN** (deliberate change), where
   `acq/acqwrapper_vbmc.m:47` turns it into `-realmax`, the best value for the
   search. No shipped acquisition returns one (`verification/wave4.md`,
@@ -554,8 +578,8 @@ defect *n*" is entry *n* of
 ### Variational optimization and the ELBO (`variational_optimization.py`)
 
 - **The soft bound on the weights' `eta` was removed** (deliberate change).
-  `_neg_elcbo` passes bounds with infinite `eta` entries, so the `eta` loss is
-  zero, where `misc/vpbndloss.m` penalizes `eta` against `[log(0.5
+  `_vp_bound_loss` replaces the `eta` entries of the bounds with infinities
+  in a private copy, so the `eta` loss and its gradient are zero, where `misc/vpbndloss.m` penalizes `eta` against `[log(0.5
   TolWeight), 0]`; the location and scale losses and the small-weight
   penalty match MATLAB, and neither `theta` nor the bounds are modified.
   MATLAB's absolute-`eta` bounds penalize differently vectors that represent
@@ -566,7 +590,10 @@ defect *n*" is entry *n* of
   gradient of the variance (`misc/gplogjoint.m`, its `dvarG` accumulators).
 - **The weight-only fast paths are not ported** (unported feature):
   `misc/gplogjoint_weights.m` and `misc/vpoptimizeweights_vbmc.m`, a speed
-  optimization; the general routine gives the same result.
+  optimization. MATLAB takes them only with the means and both scales
+  frozen (`misc/negelcbo_vbmc.m:54`), which only `vpoptimizeweights_vbmc.m`
+  sets, and its one call site (`vbmc.m:716-718`) is commented out, so no
+  MATLAB run reaches them.
 - **`ELCBOWeight` is not ported; `elcbo_beta` is 0** (unported feature,
   inactive at MATLAB's default of 0).
 - **The repository of earlier variational posteriors (`vp_repo`) is not
@@ -597,17 +624,21 @@ defect *n*" is entry *n* of
   `misc/vpoptimize_vbmc.m:279`, `:288-289` estimates it from 4096 samples.
   The comparison of the variational update inside active sampling uses the
   same estimator on both of its sides, where
-  `private/activesample_vbmc.m:525-526` samples.
+  `private/activesample_vbmc.m:525-526` samples (commits `7331841`,
+  `831b024`; the sampling error removed is measured in
+  `verification/wave1_P6.md`, section (b)).
 - **The deterministic-entropy optimization is SciPy's BFGS** (substituted
   library): `tol=det_entropy_tol_opt` acts as a gradient tolerance where
   MATLAB's `TolFun` is a tolerance of the value, there is no cap of
   `50*(D+2)` evaluations and no CMA-ES fallback, and a non-success keeps the
-  iterate with a warning (`misc/vpoptimize_vbmc.m:73-101`).
+  iterate with a warning (`misc/vpoptimize_vbmc.m:73-101`; commit `04d15ff`;
+  `verification/wave1_P6.md`, int F7 + cmp F4).
 - **The variance of `_neg_elcbo` is computed by default only for a nonzero
   `beta`** (deliberate change, interface). Python has no `nargout`; MATLAB's
   default (`misc/negelcbo_vbmc.m:10`, `:16`) computes it for a caller that
   takes it and passes `compute_grad = 0` (MATLAB-side defect 56). Every
-  caller on both sides passes `compute_var`.
+  caller on both sides passes `compute_var` (`verification/wave7.md`,
+  W7-9).
 
 ### Variational posterior, entropies and statistics
 
@@ -628,26 +659,31 @@ defect *n*" is entry *n* of
   MATLAB's never shrinks after the warm-up trim or a warp. The fitted
   posteriors stay within a small margin of the rebuilt box
   (`verification/scripts/soft_bounds_trace.py`).
-- **`kl_div_mvn` takes its inputs directly and uses log determinants**
-  (deliberate change). The formula is `shared/mvnkl.m`'s, but the log
+- **`kl_div_mvn` takes the log determinants from `slogdet`** (deliberate
+  change). The formula is `shared/mvnkl.m`'s, but the log
   determinants come from `np.linalg.slogdet`, where MATLAB's raw
   determinants underflow or overflow for a well-conditioned covariance at
   moderate dimension (MATLAB-side defect 37; `verification/wave5.md`, W5-2).
 - **`vp.stats["J_sjk"]` is pruned on both component axes** (deliberate
   change), keeping its shape `(Ns, K, K)`; `misc/vpoptimize_vbmc.m:237`
-  prunes the last axis only.
+  prunes the last axis only (`dev/plans/latent-bug-fixes.md`, Phase 1;
+  `verification/wave1_P6.md`, cmp sheet note 1).
 - **The corner plot uses the `corner` package** (substituted library) for
   `vbmc_plot.m`, `utils/cornerplot.m` and `utils/kde2d.m`.
 - **`qtrapz.m` is SciPy's trapezoid rule** (substituted library), the same
-  formula; `mtv` agrees with `vbmc_mtv.m` to the order of the sum.
+  formula: `mtv` integrates with `scipy.integrate.trapezoid`, which agrees
+  with `shared/qtrapz.m` bit for bit on short vectors and to about 1e-14 on
+  thousands of points, by the order of the sum
+  (`verification/wave5_P7.md`, P7-10).
 - **The mode search starts from draws of the posterior** (deliberate
   change). `mode` runs `ceil(sqrt(K))` optimizations, each from the densest
   of 1e5 draws (the component means among the candidates of the first),
   drawn with a copy of the generator; L-BFGS-B with finite differences in the
   original space, BFGS with the analytic gradient in the transformed space.
   `vbmc_mode.m:21-47` starts one optimization at each of up to 20 component
-  means. PyVBMC stores the original-space mode and returns it to a call
-  without `n_opts`; `set_parameters` and `get_parameters` clear it
+  means. A call without `n_opts` returns a stored original-space mode, or
+  searches and stores one; a call with `n_opts` neither reads nor writes
+  the store; `set_parameters` and `get_parameters` clear it
   (pull request 115, 2022; `verification/wave5.md`, W5-14).
 - **`vp.pdf` gives a point on or outside the original bounds a density of
   zero** (deliberate change), where `vbmc_pdf.m` returns NaN or a complex
@@ -659,18 +695,23 @@ defect *n*" is entry *n* of
   `shared/kde1d.m` bins half a step low (MATLAB-side defect 31), falls back
   on Scott's rule where MATLAB minimizes, and floors at 0; `mtv` normalizes
   both, and the two estimates are 2e-4 apart in total variation at
-  `nkde = 2^13`.
+  `nkde = 2^13` (`verification/wave5_P7.md`, P7-6a to P7-6d).
 - **The interface of `vp.sample`** (deliberate change; the draws are
   MATLAB's). The component indices are a 0-based `(N,)` array; a whole float
   count is taken and a fractional one refused; a negative `df` is refused;
   weights that do not sum to one raise (`verification/wave5.md`, W5-15,
   W5-16).
-- **`vbmc_isavp.m` has no counterpart**: Python checks the class.
+- **`vbmc_isavp.m` has no counterpart** (deliberate change): Python checks
+  the class.
 - **The log density is taken in log space where the density underflows**
-  (deliberate change). Under `log_flag`, a row whose mixture density is
-  below the smallest normal double takes a log-sum-exp of the components and
-  its gradient from their responsibilities; `vbmc_pdf.m:107-110` returns
-  `-Inf` with a NaN gradient there (MATLAB-side defect 58). The acquisitions
+  (deliberate change). Under `log_flag`, a row whose Gaussian-mixture
+  density is below the smallest normal double takes a log-sum-exp of the
+  components and its gradient from their responsibilities;
+  `vbmc_pdf.m:58-66`, `:107-110` takes the log of the linear sum, which
+  loses precision among subnormal densities and gives `-Inf` with a NaN
+  gradient beyond about 38.6 standard deviations from every component
+  (MATLAB-side defect 58). The Student-t branches (finite `df`) take the
+  log of the linear sum on both sides. The acquisitions
   floor the log density at `log(realmin)`, and the proposal of the active
   importance sampling takes the log of the density as it is held, so no run
   changes; `vp.mode()` refines its start on narrow posteriors
@@ -690,7 +731,8 @@ defect *n*" is entry *n* of
 
 - **`warp_cov_reg` is checked** (deliberate change): a function or a finite
   real number, refused otherwise at construction and in `load`, where
-  `misc/warp_input_vbmc.m:59-64` checks nothing.
+  `misc/warp_input_vbmc.m:59-64` checks nothing (commit `cc0ef2f`;
+  `verification/wave1.md`).
 - **Nonlinear input warping is not ported** (unported feature): only
   `warp_rotoscaling`; MATLAB's `WarpNonlinear` has no counterpart.
 - **`warp_input` maps the search state back with the current transform**
@@ -703,7 +745,8 @@ defect *n*" is entry *n* of
   available on both sides. Commit `6cee9bb5` (2022-11-24) records the change
   and no reason beyond it.
 - **MATLAB's `'g'` action of `warpvars_vbmc.m` is not ported** (unported
-  feature, dead in MATLAB). It returns the derivatives of the coordinate-wise
+  feature, dead in MATLAB). The action of `shared/warpvars_vbmc.m` returns
+  the derivatives of the coordinate-wise
   inverse map, not the gradient of the log Jacobian, and its one caller,
   `vbmc_pdf.m:119`, follows an unconditional `error` (MATLAB-side defect 59).
   No PyVBMC computation needs the gradient of the log Jacobian
@@ -712,11 +755,15 @@ defect *n*" is entry *n* of
   taken to be one** (deliberate change): a non-orthogonal or singular
   `R_mat` is refused at construction (`dev/plans/latent-bug-fixes.md`,
   Phase 1).
-- **`ParameterTransformer` equality compares `scale`, and the logit
-  log-Jacobian is evaluated stably in its tail** (deliberate change).
+- **Transformers compare equal only with equal `scale`, and the logit
+  log-Jacobian stays finite in its tail** (deliberate change). MATLAB's
+  transforms are structs with no equality, and `shared/warpvars_vbmc.m:500`
+  evaluates `-log1p(exp(-y))`, which overflows to `-Inf` below
+  `y = -709.78`; PyVBMC switches to a stable form there
+  (`dev/plans/latent-bug-fixes.md`, Phase 1).
 - **`FunctionLogger.finalize()` is explicit** (deliberate change):
   `optimize` does not call it, so a continued run needs no reallocation; it
-  trims every row array, `n_evals` included (`dev/plans/latent-bug-fixes.md`,
+  trims every row array of the logger (`dev/plans/latent-bug-fixes.md`,
   decision D4).
 - **The warp keeps the covariance when its thresholded form is not positive
   definite** (deliberate change), where `misc/warp_input_vbmc.m:52-71` takes
@@ -729,25 +776,32 @@ defect *n*" is entry *n* of
 - **Points within rounding of a bound** (deliberate change). The direct
   transform moves a unit-interval image that rounds to 0 or 1 to the
   adjacent number, where MATLAB returns an infinity (pull request 89); the
-  clamp of the inverse uses `nextafter` for `eps(bound)`, and the Student-t
-  inverse groups one product differently, one ulp each. Everything else in
-  the bounded transforms is bit-identical to a transcription of
-  `warpvars_vbmc.m` (`verification/wave3_P8.md`, P8-15).
+  clamp of the inverse uses `nextafter` where MATLAB uses `eps(bound)`, one
+  ulp apart at a bound that is a power of two and identical elsewhere; and
+  the Student-t inverse groups one product differently, one ulp. Everything
+  else in the bounded transforms is bit-identical to a transcription of
+  `shared/warpvars_vbmc.m` (`verification/wave3_P8.md`, P8-15).
 - **The pooling of a repeated noisy observation has a fallback for extreme
   SDs** (Python-only addition): relative weights where the precisions
   overflow (an SD below about 1e-154), where `misc/funlogger_vbmc.m:234-238`
-  gives Inf or NaN.
+  gives Inf or NaN; the ordinary path is MATLAB's arithmetic (commit
+  `6769a9a`; `dev/plans/pymc-target-adapter.md`).
 - **A cached value of a target that provides its noise needs its SD**
-  (deliberate change): `f_vals` with `specify_target_noise` is refused, and
-  `FunctionLogger.add` raises without an SD at uncertainty level 2;
-  `precomputed_evaluations` carries SDs (`verification/wave3.md`, W3-28).
+  (deliberate change): an `f_vals` that holds a value is refused with
+  `specify_target_noise`, and `FunctionLogger.add` raises without an SD at
+  uncertainty level 2; `precomputed_evaluations` carries SDs.
+  `misc/funlogger_vbmc.m:159-162` means to record SD 1 for a missing SD at
+  every noisy level but raises before that line, since both of its callers
+  pass the value alone (MATLAB-side defect 16; `verification/wave3.md`,
+  W3-28).
 - **The evaluation time of a repeated point leaves out unknown times**
   (deliberate change): an unknown time is NaN and stays out of the average,
   where `misc/funlogger_vbmc.m:187`, `:245` records 0. Nothing reads the
-  times of single points on either side.
+  times of single points on either side (`verification/wave3.md`, W3-21).
 - **`scale` and the logger's noise flag are checked** (Python-only
   addition): a finite positive `scale` per dimension, and a `noise_flag`
-  true exactly above uncertainty level 0.
+  true exactly above uncertainty level 0 (`verification/wave3.md`, W3-26,
+  W3-32).
 - **A zero-mean GP is warped** (deliberate change): `warp_gp_and_vp` warps
   the length scales whatever the mean and re-expresses the hyperparameters
   of a constant and a negative quadratic mean; `misc/warp_gpandvp_vbmc.m:37-66`
@@ -771,8 +825,9 @@ defect *n*" is entry *n* of
 - **The prior classes check their arguments, and `VBMC` checks a prior
   against the hard bounds** (deliberate change, stricter). The constructors
   refuse non-finite arguments and, for the trapezoids, `a >= u`, `u >= v`
-  and `v >= b` (including the tent prior `u == v` and `v == b`, which MATLAB
-  computes correctly; kept by the PI); `VBMC` refuses a prior whose support
+  and `v >= b`. Of these limits MATLAB computes the tent prior `u == v` and
+  `v == b` correctly and returns NaN for `u == a`; the PI kept the refusal
+  of all three. `VBMC` refuses a prior whose support
   does not contain the hard bounds, with a slack of `1e-9` of the range at
   finite bounds. MATLAB checks less and has no prior object to hold against
   the bounds (MATLAB-side defects 25 and 39; `verification/wave5.md`, W5-5,
@@ -780,8 +835,6 @@ defect *n*" is entry *n* of
 - **A NaN coordinate has density zero in every box prior** (deliberate
   change), where `shared/munifboxlogpdf.m:51` gives it the full density
   (MATLAB-side defect 38; `verification/wave5.md`, W5-32).
-- **`pyvbmc/priors/__init__.py` has a fixed import order** (`# isort:skip`),
-  which avoids circular imports.
 
 ### Additions with no MATLAB counterpart
 
@@ -796,12 +849,15 @@ the Python line (`dev/plans/svbmc-integration.md`,
 
 - **`misc/vbmc_gphyp.m` is an empty file**; `vbmc_gphyp` is a local function
   of `misc/gptrain_vbmc.m:109`, and `_gp_hyp` is its counterpart.
-- **The two entropies differ in the weight gradient of one component on both
-  sides**, rightly (the Monte Carlo one estimates the derivative of the total
-  mass), and both return NaN for a weight of exactly zero with separated
-  components (`ent/entlb_vbmc.m:45-47`, `ent/entmc_vbmc.m:96-101`). MATLAB's
-  fix of the weight gradient of the Monte Carlo entropy (`1b72896`) is in the
-  Python.
+- **The two entropies differ in the weight gradient of one component, on
+  both sides.** Without the Jacobian, `entlb_vbmc` returns 0 and
+  `entmc_vbmc` returns `H - 1` for `K = 1` (`ent/entlb_vbmc.m:45-47`,
+  `ent/entmc_vbmc.m:96-101`); every production caller sets the Jacobian
+  flag, under which both are zero. The Monte Carlo gradient keeps its extra
+  term rightly: it estimates the derivative of the mixture's total mass.
+  MATLAB's fix of that gradient (`1b72896`) is in the Python. Both
+  entropies return NaN for a weight of exactly zero with separated
+  components, on both sides (`verification/wave5.md`, W5-3, W5-22).
 - **Lines of `active_sample.py` that read as defects are MATLAB's own**:
   `recompute_var_post` saved and restored around a block that never writes
   it; `cov(X_hpd, 1)` with the fallback `cov(X)`; the unreachable fallback box
@@ -810,23 +866,30 @@ the Python line (`dev/plans/svbmc-integration.md`,
   an initial design that is not snapped to the integer grid; and training
   inputs not kept out of the candidates (`private/activesample_vbmc.m`,
   `misc/initdesign_vbmc.m`; `verification/wave5.md`, W5-26, W5-27, W5-29).
-- **The outer search limits are unused on both sides**: MATLAB's
-  assignments of `LB_searchmin` and `UB_searchmin` are commented out
-  (`private/activesample_vbmc.m:420-427`).
+- **The outer search limits are unused on both sides**: MATLAB computes
+  `LB_searchmin` and `UB_searchmin` and comments out their assignment to
+  the search bounds (`private/activesample_vbmc.m:503-508`); `active_sample`
+  computes them and uses them nowhere.
 - **The spread of the per-sample means in `predict` and `quad` divides by
-  `N - 1`**, as `gplite/gplite_pred.m:158`, `:160` and `gplite_quad.m:115`
+  `Ns - 1`**, the number of hyperparameter samples less one, as `gplite/gplite_pred.m:158`, `:160` and `gplite_quad.m:115`
   do; it reaches `lcb_max`.
 - **The quiet omissions of the noise function are MATLAB's**: `s2_star`
-  ignored without a user-provided noise feature, the output-dependent term
-  dropped without a target, and an inverted pair of recommended bounds
-  repaired by `UB = max(LB, UB)` (`gplite/gplite_noisefun.m:186-198`,
-  `gplite_train.m:142`); `f_min_fill` with no more evaluations than starting
-  points returns the first of them, as `fminfill.m:98-114` does.
+  ignored without a user-provided noise feature and the output-dependent
+  term dropped without a target (`gplite/gplite_noisefun.m:186-198`), the
+  noise evaluated at the test points with neither target nor variance by
+  `random_function`, as by `gplite/gplite_rnd.m:67`, and an inverted pair of
+  recommended bounds repaired by `UB = max(LB, UB)`
+  (`gplite/gplite_train.m:142`). `f_min_fill` with no more evaluations than
+  starting points evaluates the first `N` of them and returns those, sorted
+  by value, as `gplite/private/fminfill.m:98-114` does
+  (`verification/wave6.md`, W6-25, W6-36).
 - **`optim_state["N"]` counts the logged distinct locations**, rows made
   inactive by the warm-up trim included, as `vbmc.m` sets `N` from `Xn`, and
-  the GP-sampling termination is `private/vbmc_termination.m:42-47`; the
-  counts are refreshed after every evaluation, as
-  `misc/funlogger_vbmc.m:278-279` refreshes them.
+  the GP-sampling termination is `private/vbmc_termination.m:42-47`, with
+  guards of PyVBMC's own: `N` is back-filled for older saves, and a missing
+  or non-finite history never stops the sampling. The counts are refreshed
+  after every evaluation, as `misc/funlogger_vbmc.m:278-279` refreshes
+  them.
 - **`AbstractAcqFcn._sq_dist` centres both point sets on their size-weighted
   mean**, as `gplite/private/sq_dist.m` does.
 - **`minimize_adam`'s point and value tables are offset by one iteration**,
@@ -842,10 +905,22 @@ the Python line (`dev/plans/svbmc-integration.md`,
   of its two oldest entries is MATLAB's.
 - **The `skip_elbo_variance` guard is dead on both sides**: no declared
   option holds the key (`misc/vpoptimize_vbmc.m:281`).
-- **The recorded posteriors never carry the stability flag**:
-  `determine_best_vp` returns a copy with the flag, and `final_boost` works
-  on a copy of `optim_state`, as `misc/best_vbmc.m` and
-  `misc/finalboost_vbmc.m` work on by-value structs.
+- **`final_boost` and `determine_best_vp` leave the run's state alone**, as
+  `misc/finalboost_vbmc.m` and `misc/best_vbmc.m` work on by-value structs:
+  `final_boost` works on a copy of `optim_state`, and `determine_best_vp`
+  returns a copy of the recorded posterior with the stability flag written
+  into the copy, so the recorded posteriors never carry the flag, on
+  either side.
+- **The iteration history stores GPs without their posterior factors**, as
+  MATLAB's does: `savestats` in `vbmc.m` records `gplite_clean(gp)`
+  (`vbmc.m:1044`), which keeps the hyperparameter samples and empties
+  `alpha`, `sW`, `L`, `sn2_mult` and `Lchol`, and
+  `misc/finalboost_vbmc.m:36` rebuilds them with `gplite_post`. `_lean_gp`
+  keeps the training data, the hyperparameter samples and the model, and
+  `VBMC.get_gp` rebuilds identical factors on demand
+  (`dev/plans/stage2-memory.md`). MATLAB removes the GPs from the returned
+  `stats` unless `Diagnostics` is set (`vbmc.m:959-966`); PyVBMC's history
+  keeps them, and `diagnostics` is inert.
 - **The noise of a candidate point is one value for all GP hyperparameter
   samples**, their mean, and leaves out the `sn2_mult` of a retried
   factorization, as `private/activesample_vbmc.m:172-174` does
@@ -878,11 +953,12 @@ the Python line (`dev/plans/svbmc-integration.md`,
 
 - `VBMC` exposes `final_boost` and `determine_best_vp`, which `optimize` calls
   as steps of a run, beside the user interface (the constructor, `optimize`,
-  which continues a saved run, `save`, `load` and `get_gp`). Whether they
-  should stay public, or the steps of a run should be opened to users in a
-  designed way, is open.
-- The logging feature is not working perfectly yet; a logging concept is to
-  be worked out. Open points have been discussed on Slack.
+  which continues a finished or a loaded run, `save`, `load` and `get_gp`).
+  Whether they should stay public, or the steps of a run should be opened to
+  users in a designed way, is open.
+- The logging was noted during the port as not working well, to be
+  redesigned around a logging concept; its shortcomings are not recorded in
+  this repository.
 
 ## Design notes
 
@@ -895,9 +971,18 @@ the Python line (`dev/plans/svbmc-integration.md`,
   without error. This mean also adding a custom `Options.deepcopy()` method,
   and for completeness I added a similar `Options.copy()` method. I added
   simple tests for these copy methods, but am adding a warning here in case
-  something breaks down the line. (Bobby H., 23.03.2022)
+  something breaks down the line. (Bobby H., 23.03.2022) In the code the
+  copy methods are `__copy__` and `__deepcopy__`, and the freeze also
+  covers removal, through `__delitem__`.
+- **The import order of `pyvbmc/priors/__init__.py`** is fixed by
+  `# isort:skip` markers, which avoid circular imports; it is not to be
+  reordered.
 
 ## MATLAB references
+
+The main functions of this subpackage and their MATLAB counterparts; the
+links point at MATLAB's `master` branch, which is at `396d649`, and
+`dev/experiments/port_review_20260919/counterpart_map.md` has the full map.
 
 ### active_sample.py
 - active_sample(): [activesample_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/private/activesample_vbmc.m)
@@ -905,7 +990,7 @@ the Python line (`dev/plans/svbmc-integration.md`,
 - _get_search_points(): getSearchPoints in [activesample_vbmc.m](https://github.com/acerbilab/vbmc/blob/master/private/activesample_vbmc.m)
 
 ### iteration_history.py
-- function save_stats in: [vbmc.m](https://github.com/acerbilab/vbmc/blob/master/vbmc.m)
+- the local function savestats in: [vbmc.m](https://github.com/acerbilab/vbmc/blob/master/vbmc.m)
 
 ### vbmc.py and related functions
 - initialization:

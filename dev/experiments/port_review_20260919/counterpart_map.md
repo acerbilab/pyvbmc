@@ -13,6 +13,11 @@ fixes, and those of the eleven rows that the wave-2 pass changed
 independent check of that pass; the line numbers of the other rows are
 those of `80204f7`.
 
+The map is a record of the port correctness review and stands as the
+review left it at its close (2026-09-23); its line numbers are those of the
+revisions above. The porting log `pyvbmc/vbmc/README.md` is the catalogue of
+deliberate differences that is kept current.
+
 Demos, plots, examples, tests and `install.m` are excluded; they are listed
 at the end so that nothing is silently dropped.
 
@@ -92,7 +97,7 @@ third readers layered on top.
 | `misc/warp_gpandvp_vbmc.m` | `pyvbmc/whitening/whitening.py:338: warp_gp_and_vp` | P8, O3 | partial | Rotoscaling only; the output-warping line is a comment (`whitening.py:381-383`). |
 | `misc/warp_input_vbmc.m` | `pyvbmc/whitening/whitening.py:143: warp_input` | P8 | partial | Nonlinear warping unported. MATLAB commits `f9c04bc`/`a5240d2` (2021-02-02) changed warp robustness; slice M checks it. PyVBMC maps the search state back with the transform of the current inference space where `:8`, `:133` use the handed posterior's (known-differences sheet, P8). |
 | `private/acqhedge_vbmc.m` | none | P2 | unported | `acq_hedge = True` leaves `idx_acq` unset in `pyvbmc/vbmc/active_sample.py:320-323`. |
-| `private/activeimportancesampling_vbmc.m` | `pyvbmc/vbmc/active_importance_sampling.py:10: active_importance_sampling`, `:333 active_sample_proposal_pdf`, `:409 get_mcmc_opts`, `:497 renormalize_weights` | P4 | partial | The sampler is substituted (see `gplite/private/eissample_lite.m`); the integrated-mean-function branch is unported; the MCMC branch is a dormant hook. |
+| `private/activeimportancesampling_vbmc.m` | `pyvbmc/vbmc/active_importance_sampling.py:10: active_importance_sampling`, `:333 active_sample_proposal_pdf`, `:409 get_mcmc_opts`, `:497 renormalize_weights` | P4 | partial | The sampler is substituted (see `gplite/private/eissample_lite.m`); the integrated-mean-function branch is unported; the MCMC refinement of the variational importance samples is not ported, and an acquisition that asks for it is refused (since wave 4, `verification/wave4.md`, W4-6). |
 | `private/activesample_vbmc.m` | `pyvbmc/vbmc/active_sample.py:41: active_sample`, `:877 _get_search_points` | P2 | partial | Seven "Missing port" markers remain (`:343`, `:365`, `:632`, `:677`, `:722`, `:735`, `:785`). MATLAB commit `68a197b` (2022-06-25) added the `slicesample` branch of the acquisition search here, which is unported (known-differences sheet, P2). |
 | `private/recompute_lcbmax.m` | `pyvbmc/vbmc/vbmc.py:2492: _recompute_lcb_max` | P1a | ported | Ported on 2026-09-20 (`8e591ff`); until then the function returned an empty array that nothing read, and this row said "ported" all the same (`verification/wave2.md`, W2-2). |
 | `private/updateK.m` | `pyvbmc/vbmc/variational_optimization.py:20: update_K` | P1a | ported | The Python function lives in a P6 file. See `prep_report.md`. |

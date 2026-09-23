@@ -5,10 +5,37 @@ code and the MATLAB original. Its purpose is narrow: a reviewer who finds
 one of these should not report it as a new finding.
 
 The sheet is a record of the port correctness review and stands as the
-review left it at its close (2026-09-23). Its entries were consolidated
-into the catalogue of the porting log `pyvbmc/vbmc/README.md`, which is the
+review left it at its close (2026-09-23). Its durable entries were
+consolidated into the catalogue of the porting log `pyvbmc/vbmc/README.md`, which is the
 one kept current; the review's findings and dispositions are in
 `dev/results/2026-09-23-port-correctness-review.md`.
+
+The independent check of that consolidation found seven entries here
+wrong in part; the porting log holds the corrected text:
+
+- "The iteration history stores GPs without their posterior factors" is no
+  difference: MATLAB's `savestats` records `gplite_clean(gp)` (`vbmc.m:1044`),
+  which empties the factors too, and `misc/finalboost_vbmc.m:36` rebuilds
+  them. What differs is that MATLAB removes the GPs from the returned
+  `stats` unless `Diagnostics` is set (`vbmc.m:959-966`).
+- "`results["overhead"]` is not implemented": `private/vbmc_output.m:21`
+  sets NaN; `vbmc.m:937-939` computes the overhead.
+- "The iteration history omits the noisy acquisitions' importance samples":
+  MATLAB's `savestats` records no `optimState`; recording it is PyVBMC's
+  addition, and leaving the samples out is its policy for that record.
+- "The acquisition-portfolio hedge (`acqhedge_vbmc.m`) is not ported":
+  MATLAB's default has the hedge off (`vbmc.m:323`); entry 33 of
+  `matlab_side_defects.md` is the hedge turned on with the default single
+  acquisition.
+- "The eta soft bound was removed, and `_neg_elcbo` no longer mutates
+  `theta`": the bounds with infinite `eta` entries are made in
+  `_vp_bound_loss`, from a copy; `_neg_elcbo` passes its bounds unchanged.
+- "Final boost runs without weight penalty and without pruning": the weight
+  penalty is set to zero only while the guard is on; with
+  `tol_elcbo_boost = None` the boost keeps it.
+- Under "Settled non-differences", "The unused outer search limits are
+  unused in MATLAB too": the MATLAB lines are
+  `private/activesample_vbmc.m:503-508`, not `:420-427`.
 
 **Every entry is a claim a reviewer may challenge.** The sheet says what not
 to report as new, not what is beyond question. If the code does not match an

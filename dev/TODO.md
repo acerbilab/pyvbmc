@@ -86,9 +86,12 @@ records its execution.
   artifacts") describe the code from before them, so
   `scripts/golden_replay.py` compares a run with trajectories the code no
   longer follows. Regenerate them with the release code after assessment,
-  preserving the old ones (the working rule below); the seeded gate run
-  with a prior (below) joins the gate's records when they are made anew.
-  The item can start when the PI decides.
+  preserving the old ones (the working rule below). The moving fixes of the
+  wave-1 and wave-2 passes, W5-1 and W5-6 were not read for accuracy on the
+  benchmark targets (the ledger, "The fixes that move default
+  trajectories"). The seeded gate run with a prior (below) joins the release
+  gate's records when they are made anew. The item can start when the PI
+  decides.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
@@ -103,9 +106,9 @@ records its execution.
   `dev/scripts/make_oracle_fixtures.py` on a level-1 variant of a benchmark
   target, with `max_repeated_observations` above 0 so that the recorded
   noise differs between points, generated alone (`--only`) so that the
-  existing fixtures stay bit-identical. It was to wait for the port
-  review's fixes, which could still move the GP fit (PI, 2026-09-21); the
-  review closed with all of them in on 2026-09-23.
+  existing fixtures stay bit-identical. It waited for the port review's
+  fixes, which could move the GP fit (PI, 2026-09-21); they are all in
+  (2026-09-23), and the item can start when the PI decides.
 
 - [ ] **A seeded gate run with a prior.** None of the four seeded runs that
   gate the port review's fix passes
@@ -116,9 +119,9 @@ records its execution.
   at every call. Add two runs: one with the FAQ's list of `uniform`
   marginals built from the hard bounds, which reaches the slack of that
   check, and one with a `SplineTrapezoidal` on them. To be done when the
-  golden references and the run pools are regenerated (the item on the
-  golden references above), which is when the gate's records are made anew
-  (PI, 2026-09-21; the wave-5
+  release gate's records are made anew: the golden references (the item
+  above) and the run pools of the final large-scale check (below) (PI,
+  2026-09-21; the wave-5
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
   independent check of the pass").
 
@@ -186,9 +189,11 @@ records its execution.
     `hyp_dict` lost its `logp`; prune them the next time a capture is
     rewritten.
 
-- [ ] **The findings of the port review without a recorded ruling.** Nine
-  verified findings have no ruling in the records, and the code they
-  describe is unchanged; none changes what a run computes. The
+- [ ] **The findings of the port review without a recorded ruling.**
+  Seventeen verified findings and items have neither a ruling nor any other
+  outcome in the records, and the code they describe is unchanged; none
+  changes what a run at the shipped options computes, so the triage need not
+  precede the release gate. The
   [ledger](results/2026-09-23-port-correctness-review.md), "Findings
   without a recorded ruling", gives each with its class. For triage (fix,
   or leave with the reason recorded in the ledger's row):
@@ -199,17 +204,25 @@ records its execution.
     a held-out gate that needs all four rounds; N3 F6, the finished groups
     of an incomplete campaign discarded; N3 F9, a cache key without the
     package version;
-  - active sampling, wave 1: part (c) of P2 F16, the overlapping timers
-    not subtracted from each other (diagnostics only);
   - setup, wave 2
     (`experiments/port_review_20260919/verification/wave2_C_setup.md`):
     C-M8, a list or a float `x0` raising `AttributeError`; C-C7, a
     callable option called by keyword, so that a user's `lambda n: ...` for
-    `ns_ent` raises at its first use.
+    `ns_ent` raises at its first use; the warning of C-C2 on `noise_size`
+    with `specify_target_noise`, whose error is ported; the refusal of a
+    `log_file_level` outside the standard levels, the rest of C-M2;
+  - the seven items that the independent check of the wave-2 pass left for
+    the PI (`experiments/port_review_20260919/verification/wave2.md`, "Left
+    for the PI"): rebuilding the option functions of a saved run in `load`;
+    `vbmc.x0` in the space of construction after a warp; `last_warmup = 0`
+    and the fallback of `.get("last_successful_warping", 0)`; the main-loop
+    sieve at `self.vp.K` with fixed means; the checks of `min_iter`, the
+    one-way guard of the inert options and the warnings of `Options` on the
+    root logger; the scalar bound of `_normalized_hard_bound` and the reach
+    of the tests of `_recompute_lcb_max`; and gaps of the changelog.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated (the port correctness review closed on 2026-09-23),
-  regenerate the
+  1.5 is consolidated, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
   (about 100 runs per condition as in the
   [campaign](plans/svbmc-benchmark-campaign.md),
@@ -409,14 +422,7 @@ timing and multisensory at ten) exist locally under
 run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
 and after its stop; the
 [efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
-records their provenance. The independent correctness review of PyVBMC,
-gpyreg and the MATLAB port is complete (2026-09-19 to 09-23): its
-[ledger](results/2026-09-23-port-correctness-review.md) holds every finding
-with its disposition and fix, the [plan](plans/port-correctness-review.md)
-the design, the PI's rulings and the worklog, and the porting log
-`pyvbmc/vbmc/README.md` the catalogue of the deliberate differences from
-MATLAB; its fixes to gpyreg shipped in gpyreg 1.3.0 and 1.3.1, which
-PyVBMC requires.
+records their provenance.
 
 Raw traces, boost captures, run pools, captured states and frozen
 worktrees are gitignored under `dev/scripts/runs/` and exist only on the
