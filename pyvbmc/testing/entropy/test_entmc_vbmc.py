@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import numpy as np
@@ -396,7 +397,10 @@ _NO_GRADS = (False, False, False, False)
 # below that figure splits a component's samples.  The extra budgets of each
 # case are below the smallest candidate and leave partial blocks: 2600 with
 # (4, 20, 38) gives sample blocks of 32 and 6, 800 with (3, 7, 12) component
-# blocks of 3, 3 and 1, and 110 sample blocks of 5, 5 and 2.
+# blocks of 3, 3 and 1, and 110 sample blocks of 5, 5 and 2. (8, 20, 738) is
+# a gradient call of the size a run makes (738 samples per component at
+# K = 20), in which the canonical blocks themselves split each component's
+# samples, into 409 and 329.
 _BUDGET_CASES = (
     (4, 20, 38, _ALL_GRADS, (2600, 1000, 300)),
     (15, 50, 56, _ALL_GRADS, (7000, 2000, 400)),
@@ -408,6 +412,7 @@ _BUDGET_CASES = (
     (4, 20, 38, (False, True, False, False), (2600, 1000, 300)),
     (4, 20, 38, (False, False, True, False), (2600, 1000, 300)),
     (4, 20, 38, (False, False, False, True), (2600, 1000, 300)),
+    (8, 20, 738, _ALL_GRADS, (7777, 3000, 1000)),
 )
 
 
@@ -427,6 +432,27 @@ def test_entmc_vbmc_is_independent_of_the_chunk_budget(
         assert np.array_equal(H, H_ref), budget
         assert np.array_equal(dH, dH_ref), budget
         assert state == state_ref, budget
+
+
+@pytest.mark.parametrize("jacobian_flag", [False, True])
+@pytest.mark.parametrize("D, K, Ns", [(4, 5, 60), (8, 20, 738)])
+def test_entmc_vbmc_blocks_do_not_depend_on_the_other_flags(
+    D, K, Ns, jacobian_flag
+):
+    """The estimate and each gradient block are the bits of the call that
+    requests every block, whichever blocks a call requests, none
+    included."""
+    vp = _budget_case_vp(D, K, seed=1000 * D + K)
+    sizes = (D * K, K, D, K)
+    H_all, dH_all = entmc_vbmc(vp, Ns, _ALL_GRADS, jacobian_flag, rng=404)
+    blocks = np.split(dH_all, np.cumsum(sizes)[:-1])
+    for grad_flags in itertools.product((False, True), repeat=4):
+        H, dH = entmc_vbmc(vp, Ns, grad_flags, jacobian_flag, rng=404)
+        requested = [b for b, flag in zip(blocks, grad_flags) if flag]
+        assert np.array_equal(H, H_all), grad_flags
+        assert np.array_equal(
+            dH, np.concatenate(requested) if requested else np.empty(0)
+        ), grad_flags
 
 
 if __name__ == "__main__":
