@@ -98,17 +98,20 @@ records its execution.
   decisions (gpyreg in scope, comparison against the latest MATLAB
   `master`, Opus reviewers, no MATLAB run unless a finding's disposition
   depends on one), the slice map, the reviewer brief and the worklog. Status
-  on 2026-09-21: waves 0 to 5 (the subsystems without a MATLAB counterpart,
-  the MATLAB changes since the port, and every P slice on both tracks: P1a,
-  P1b and P2 to P9) are reviewed, verified, ruled on and fixed, and merged
-  into `dev-next`; several of the fixes of waves 1 to 3 and one of wave 5,
-  the balanced draw of the variational posterior, move default
-  trajectories, so the golden references and the production-reference pools
-  describe the code from before them. The passes of waves 2 to 5 were each
-  checked afterwards by fresh reviewers without the session's context, and
-  what the checks found is fixed and merged as well. Next, by the PI's
-  decision of 2026-09-21: wave 6, the two gpyreg slices (G1 with G2, both
-  tracks); the third readers (O1 to O4) after it. The plan's pickup point
+  on 2026-09-23: waves 0 to 6 (the subsystems without a MATLAB counterpart,
+  the MATLAB changes since the port, every P slice on both tracks, and the
+  two gpyreg slices G1 and G2) are reviewed, verified, ruled on and fixed,
+  and merged into `dev-next`; wave 6's fixes to gpyreg shipped in gpyreg
+  1.3.0, which PyVBMC requires. Several of the fixes of waves 1 to 3, one
+  of wave 5 (the balanced draw of the variational posterior) and one of
+  wave 6 (the GP mean's bounds per input dimension, W6-1) move default
+  trajectories, so the golden references and the production-reference
+  pools describe the code from before them. The passes of waves 2 to 6
+  were each checked afterwards by fresh reviewers without the session's
+  context, and what the checks found is fixed and merged as well. An
+  independent check of the wave-1 pass, made in a parallel session, waits
+  on `dev-port-review-w1check` to be merged. Next, on the PI's decision:
+  that merge, then the third readers (O1 to O4). The plan's pickup point
   says where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under

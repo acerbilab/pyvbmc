@@ -2236,26 +2236,55 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the changelog's requirement, the sheet citing gpyreg at the tag. Locally,
   `../gpyreg` fetched with its tags and reinstalled editable (it reads
   1.3.0, and `pip check` finds no broken requirement).
-- [ ] **Pickup point (2026-09-23, gpyreg 1.3.0 released): the merge into
-  `dev-next`, then the wave-1 branch; each on the PI's word.** The state:
-  gpyreg's `main` at `v1.3.0` (`0186d89`), on PyPI; `dev-port-review`
-  requires it and pins CI at it. The agents' worktrees
-  `../gpyreg-port-review-A`, `-B`, `-D` and `-E` stand, every commit of
-  theirs on gpyreg's `main`. Beside `dev-port-review` stands
-  `dev-port-review-w1check`, a parallel session's check of wave 1, cut at
-  `326c7676` in `../pyvbmc-w1check` (with `../pyvbmc-w1check-A` and `-B`),
-  not pushed, sharing seven files with wave 6's commits since `326c7676`
-  (`CHANGELOG.md`, the sheet, the MATLAB-side list, this plan,
-  `pyvbmc/vbmc/vbmc.py` and the two option test modules). In this order:
-  1. The merge of `dev-port-review` into `dev-next` (a fast-forward), with
-     the status line of `TODO.md`, once the smoke of `2dc2a6c3` is green.
-     Wave 6 is then finished.
-  2. The wave-1 branch brought onto `dev-port-review`: the seven shared
-     files merged by hand, its gates rerun on the result (its plan entry
-     lists them), and the gates of wave 6 with them; one of its commits
-     moves the noisy seeded runs, so their record is made anew there.
-  3. The worktrees of A, B, D and E removed once `git cherry` has been read
-     once more.
+- [x] 2026-09-23: wave 6 finished (PI: go). The full matrix on `647a886a`
+  (the pin at `v1.3.0`, `gpyreg >= 1.3.0`), nine jobs, green, with its
+  smoke; `dev-port-review` fast-forwarded into `dev-next`, with the status
+  line of `TODO.md`. `AGENTS.md` states two traps this wave met: a raised
+  gpyreg minimum puts the pin at the release's tagged commit, and a change
+  to gpyreg is gated by PyVBMC's whole suite run against it.
+- [ ] **Pickup point (2026-09-23, wave 6 finished): the wave-1 branch onto
+  `dev-port-review`, on the PI's word.** The state: `dev-next` and
+  `dev-port-review` are one commit, pushed; gpyreg 1.3.0 is on PyPI,
+  required by `pyproject.toml` and pinned in CI at its tag; `../gpyreg`
+  stands at `v1.3.0`, installed editable, so the oracles and the gates need
+  no `PYTHONPATH`. gpyreg's worktrees `../gpyreg-port-review-A`, `-B`, `-D`
+  and `-E` stand, every commit of theirs on gpyreg's `main`. The wave-1
+  branch is `dev-port-review-w1check` (head `ab0a688b`, cut at `326c7676`),
+  in `../pyvbmc-w1check`, with its agents' `../pyvbmc-w1check-A` (detached
+  at `326c7676`) and `../pyvbmc-w1check-B` (branch `w1check-agent-B`) and
+  the local branch `w1check-agent-A`, none pushed; its own worklog entries,
+  on that branch, list its fixes, its rulings and its gates. In this order:
+  1. The merge of `dev-port-review-w1check` into `dev-port-review`, in the
+     main checkout. Seven files carry both sides' changes: `CHANGELOG.md`,
+     the sheet, `matlab_side_defects.md`, this plan,
+     `pyvbmc/vbmc/vbmc.py`, `pyvbmc/testing/vbmc/test_options.py` and
+     `test_vbmc_option_names.py`. Both sides are kept: wave 6's back-fill
+     of the `integer_vars` of release 1.0.4 in `load` and the scan test of
+     `_CONSTRUCTION_ONLY_OPTIONS`, wave 1's changes, and both worklogs in
+     the order of their dates.
+  2. What the merge can break without a conflict, to be read after it: the
+     scan test (`test_construction_only_options_are_the_options_only_
+     construction_reads`) holds `_CONSTRUCTION_ONLY_OPTIONS` to the
+     package's reads of the options, so where wave 1 adds or moves a read
+     the tuple and its comment are corrected (the test's message names the
+     sites), not the test, and the scan of `INERT_OPTIONS` likewise; the
+     sheet's PyVBMC citations move with wave 1's code
+     (`refresh_citations.py`, then by hand the ones it reports); a wave-1
+     commit moves the noisy seeded runs, so gate 4's record
+     `after_second_round_ec0f085.npz` no longer holds for them and a new
+     record is made (`wave2_fixpass_gate_runs.py --out`), the wave-1
+     entries saying which runs its commits move; and the exact oracle check
+     on the merged head, where an oracle that a wave-1 change moves is
+     re-baselined with the generator's targeted modes and a reason, never by
+     rerunning the recipes.
+  3. The gates of both on the merged head: PyVBMC's whole suite, the Torch
+     and PyMC environments, the exact oracle check, the seeded runs, and
+     wave 1's own gates from its entries (the noisy half of the benchmark
+     sweep among them); then the push, the smoke, the full matrix (the
+     `tests` workflow dispatched on `dev-port-review`), and the
+     fast-forward into `dev-next` with the status line of `TODO.md`.
+  4. The worktrees removed: gpyreg's A, B, D and E once `git cherry` has
+     been read once more; wave 1's once its branch is merged.
   The session starts no other wave.
 
   Why this wave. G1 and G2 are the only slices that no reviewer has read,
