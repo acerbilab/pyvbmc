@@ -39,7 +39,8 @@ caching, and cross-module behavior.
 - Reviewers are Opus agents. Fable is used only on request, for a critical
   or suspicious part where Opus is not confident, and each such use is
   asked for separately.
-- At most four agents run at a time.
+- At most four agents run at a time, as a guide against runaway fan-outs
+  rather than a hard limit (2026-09-23).
 - Agents may run small checks (short scripts, single function calls,
   finite differences, one test function). They may not run test suites,
   `optimize()` runs, installs, or anything else that competes for the one
@@ -2339,7 +2340,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   4. The worktrees removed: gpyreg's A, B, D and E once `git cherry` has
      been read once more; wave 1's once its branch is merged.
   The session starts no other wave.
-- [ ] After wave 6, on the PI's decision and not before: O1 to O4, the third
+- [x] After wave 6, on the PI's decision and not before: O1 to O4, the third
   readers, with O4 after the fixes of G1. With the internal track of P2,
   which wave 1 had left out and wave 5 took in, every P slice has both
   reports. Before comparison reviewers receive `known_differences.md`, its
@@ -2347,7 +2348,52 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-21): every fix pass moves them. The stored oracle state at
   uncertainty level 1 and the seeded gate run with a prior are items of
-  `TODO.md` (PI, 2026-09-21).
+  `TODO.md` (PI, 2026-09-21). Run as wave 7, the entry below; the sheet's
+  citations had been carried to the merged code in `68e37d3e`.
+- [x] **2026-09-23, wave 7: the third readers O1 to O4, run and verified
+  beside the gates of the merged waves** (PI: the exploration and the
+  verification of wave 7 can run now, read-only or light, while the other
+  session gates the merge of the wave-1 check; the limit of four agents is a
+  guide against runaway fan-outs, not a hard limit). Four fresh Opus
+  reviewers by the brief, O1 to O4, each combining both tracks: re-derive
+  every formula of the slice first, then compare the code with the
+  derivation, then with MATLAB. They read PyVBMC in the worktree
+  `../pyvbmc-wave7`, frozen at `a65b96f4` on the branch
+  `dev-port-review-w7` so that the work in the main checkout could not move
+  the code under them, gpyreg at `v1.3.0` and MATLAB at `396d649`; their
+  checks ran with BLAS single-threaded and `PYTHONPATH` naming the
+  worktree, with no test function and no `optimize()` run, the heavy slot
+  being the other session's. What the briefs added to the section
+  "Reviewer brief": the interpreter's path in the prompt (the worktree has
+  no `LOCAL.md`); a table of derivations as a part of the report, one row
+  per formula and gradient, so that a report without findings says what it
+  checked; and first questions. O1 and O2: which configurations the
+  finite-difference tests leave out, and whether each gradient holds there.
+  O3: the three questions earlier waves had left to it (whether any path
+  needs the gradient of the log Jacobian, the precision near a bound, the
+  re-expression at a warp). O4: the gradient in every configuration PyVBMC
+  builds, the multiplier of level 1 and the low-noise representation
+  included. Reports: O1 (3 findings), O2 (1, and an observation on the
+  input shape), O3 (7), O4 (3), saved verbatim under
+  `experiments/port_review_20260919/reviews/O<n>_third_reader.md`. Four
+  read-only Opus verifiers followed, one per slice, as the reports came in
+  (`verification/wave7_O1.md` to `wave7_O4.md`, their scripts
+  `verification/scripts/wave7_O<n>_*.py`), and the consolidated ledger
+  `verification/wave7.md` holds seventeen rows: W7-1 to W7-7 are met by a
+  user at a shipped option (a zero-mean run stops at its first warp; a run
+  resumed at a kept warp starts its GP fit from pre-warp hyperparameters;
+  `log_pdf` and `vp.mode()` where the density underflows; a flat array for
+  a one-dimensional posterior; three behaviors shared with MATLAB and of no
+  consequence), W7-8 to W7-17 are not (a frozen `sigma` drifting in the
+  objective, reached only by hand; documentation; three gpyreg defects in
+  its prior code that PyVBMC does not reach; a candidate from outside the
+  slices). Every first-question answer held. The reviewers' check scripts
+  are kept on the orchestrator's machine only (`dev/scripts/runs/LOCAL.md`).
+  The sweeps before and after the wave found nothing left in the worktree,
+  in gpyreg or in `../vbmc`. Next: the PI's triage of
+  `verification/wave7.md`. The fixes wait for it and for the merged head to
+  have passed its gates, and are made on `dev-port-review` once
+  `dev-port-review-w7` is merged into it.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
