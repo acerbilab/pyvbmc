@@ -350,6 +350,57 @@ def test_neg_elcbo_grad_fd_deterministic_entropy():
         assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
 
 
+@pytest.mark.parametrize("D_vp, K_vp", [(2, 1), (1, 1), (1, 2), (2, 3)])
+def test_neg_elcbo_grad_fd_one_component_one_dimension_weight_penalty(
+    D_vp, K_vp
+):
+    """dF with the entropy lower bound at ``K = 1`` and at ``D = 1``, with
+    the soft bounds on a mean and a log scale active and, for ``K >= 2``,
+    one weight below the threshold of the weight penalty, so that the
+    penalty and its softmax Jacobian enter the gradient."""
+    gp = _random_gp(D_vp, N=18, Ns=2, seed=51 + D_vp)
+    rng = np.random.default_rng(52 + 10 * D_vp + K_vp)
+    theta_bnd = VariationalPosterior(D_vp, K_vp, rng=0).get_bounds(
+        gp.X, OPTIONS, K_vp
+    )
+    eta = 0.4 * rng.standard_normal(K_vp)
+    if K_vp > 1:
+        eta[0] = np.max(eta[1:]) - 3.5
+    theta = np.concatenate(
+        [
+            rng.uniform(-1.0, 1.0, size=D_vp * K_vp),
+            np.log(0.4 + 0.5 * rng.random(K_vp)),
+            np.log(0.7 + 0.6 * rng.random(D_vp)),
+            eta,
+        ]
+    )
+    theta[0] = theta_bnd["lb"][0] - 0.3  # a mean below its soft bound
+    theta[D_vp * K_vp] = 1.9  # ln sigma_1: a log scale above its bound
+
+    L, _ = _vp_bound_loss(
+        VariationalPosterior(D_vp, K_vp, rng=0),
+        theta,
+        theta_bnd,
+        theta_bnd["tol_con"],
+    )
+    assert L > 0.0, "soft-bound penalty should be active"
+    if K_vp > 1:
+        w = np.exp(eta - np.max(eta))
+        w /= np.sum(w)
+        assert w[0] < theta_bnd["weight_threshold"]
+
+    def f(th):
+        vp = VariationalPosterior(D_vp, K_vp, rng=0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, False, False, theta_bnd)[0]
+
+    def grad(th):
+        vp = VariationalPosterior(D_vp, K_vp, rng=0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[1]
+
+    assert grad(theta).shape == theta.shape
+    assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
+
+
 def test_neg_elcbo_grad_fd_mc_entropy():
     """dF with the Monte Carlo entropy (``Ns > 0``), using common random
     numbers so the objective is a deterministic function of theta.
