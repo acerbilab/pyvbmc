@@ -58,6 +58,126 @@ def entmc_vbmc_wrapper(theta, D, K, Ns=1e5, ret="H"):
         return dH
 
 
+def _draws(K, Ns, D, seed):
+    """The antithetic standard normal draws of a call seeded with `seed`,
+    as a `(K, Ns, D)` array."""
+    Ns = int(np.ceil(Ns / 2)) * 2
+    half = np.random.default_rng(seed).standard_normal((K, Ns // 2, D))
+    return np.concatenate([half, -half], axis=1)
+
+
+def _estimate(epsilon, samples, density, components=None):
+    """The Monte Carlo estimate of the entropy at the draws `epsilon`.
+
+    The samples are built from ``samples = (mu, sigma, lambd)`` and
+    evaluated under the mixture ``density = (mu, sigma, lambd, w)``, whose
+    weights also weight the average; only the terms of the components in
+    `components` (all by default) are summed. Complex arguments give the
+    complex-step derivative.
+    """
+    K, Ns, D = epsilon.shape
+    mu_s, sigma_s, lambd_s = samples
+    mu_d, sigma_d, lambd_d, w_d = density
+    norm = w_d / ((2 * np.pi) ** (D / 2) * np.prod(lambd_d) * sigma_d**D)
+    scale = sigma_d[:, np.newaxis] * lambd_d  # (K, D)
+    H = 0.0
+    for j in range(K) if components is None else components:
+        x = mu_s[:, j] + sigma_s[j] * lambd_s * epsilon[j]  # (Ns, D)
+        d2 = np.sum(((x[:, np.newaxis, :] - mu_d.T) / scale) ** 2, axis=2)
+        H = H - w_d[j] * np.sum(np.log(np.exp(-0.5 * d2) @ norm)) / Ns
+    return H
+
+
+def _estimate_and_path_derivative(vp, Ns, jacobian_flag, seed):
+    """The entropy estimate of a call seeded with `seed` and the gradient
+    it returns, computed independently: with the draws fixed, the location
+    and scale parameters move the samples while the density they are
+    evaluated under stays fixed (the reparameterization gradient), and the
+    weights move the density and the average, not the samples. The
+    derivatives are taken by complex step, with respect to ``log sigma``,
+    ``log lambda`` and the softmax parameters where `jacobian_flag` is set.
+    """
+    D, K = vp.mu.shape
+    mu = np.asarray(vp.mu, dtype=float)
+    sigma = np.asarray(vp.sigma, dtype=float).ravel()
+    lambd = np.asarray(vp.lambd, dtype=float).ravel()
+    w = np.asarray(vp.w, dtype=float).ravel()
+    epsilon = _draws(K, Ns, D, seed)
+    density = (mu, sigma, lambd, w)
+    h = 1e-30
+
+    def derivative(f, t):
+        return np.imag(f(t + 1j * h)) / h
+
+    def unpack(t):
+        return np.exp(t) if jacobian_flag else t
+
+    def pack(value):
+        return np.log(value) if jacobian_flag else value
+
+    dmu = np.zeros((D, K))
+    dsigma = np.zeros(K)
+    dlambd = np.zeros(D)
+    dw = np.zeros(K)
+    for j in range(K):
+        for d in range(D):
+
+            def f(t, j=j, d=d):
+                moved = mu.astype(complex)
+                moved[d, j] = t
+                return _estimate(epsilon, (moved, sigma, lambd), density, [j])
+
+            dmu[d, j] = derivative(f, mu[d, j])
+
+        def f(t, j=j):
+            moved = sigma.astype(complex)
+            moved[j] = unpack(t)
+            return _estimate(epsilon, (mu, moved, lambd), density, [j])
+
+        dsigma[j] = derivative(f, pack(sigma[j]))
+    for d in range(D):
+
+        def f(t, d=d):
+            moved = lambd.astype(complex)
+            moved[d] = unpack(t)
+            return _estimate(epsilon, (mu, sigma, moved), density)
+
+        dlambd[d] = derivative(f, pack(lambd[d]))
+    eta = np.log(w)
+    for j in range(K):
+
+        def f(t, j=j):
+            if jacobian_flag:
+                moved_eta = eta.astype(complex)
+                moved_eta[j] = t
+                moved = np.exp(moved_eta) / np.sum(np.exp(moved_eta))
+            else:
+                moved = w.astype(complex)
+                moved[j] = t
+            return _estimate(
+                epsilon, (mu, sigma, lambd), (mu, sigma, lambd, moved)
+            )
+
+        dw[j] = derivative(f, eta[j] if jacobian_flag else w[j])
+    H = _estimate(epsilon, (mu, sigma, lambd), density)
+    return H, np.concatenate([dmu.ravel("F"), dsigma, dlambd, dw])
+
+
+def _assert_is_the_path_derivative(vp, Ns, jacobian_flag, seed):
+    H, dH = entmc_vbmc(
+        vp,
+        Ns,
+        grad_flags=(True,) * 4,
+        jacobian_flag=jacobian_flag,
+        rng=seed,
+    )
+    H_ref, dH_ref = _estimate_and_path_derivative(vp, Ns, jacobian_flag, seed)
+    assert np.isclose(H, H_ref, rtol=1e-13, atol=0.0)
+    assert np.allclose(
+        dH, dH_ref, rtol=1e-11, atol=1e-13 * np.max(np.abs(dH_ref))
+    )
+
+
 def test_entmc_vbmc_single_gaussian():
     # Check with a single Gaussian. For K = 1 the numerical gradient of the
     # sample-based entropy is exact, while the reparameterization gradient
@@ -116,16 +236,11 @@ def test_entmc_vbmc_nonoverlapping_mixture():
             assert np.isclose(H, H_appro, rtol=0.01, atol=0.01)
             assert np.allclose(dH, dH_appro, rtol=0.01, atol=0.01)
 
-            # Check gradients
-            theta0 = np.concatenate(
-                [
-                    x.flatten()
-                    for x in [vp.mu.transpose(), vp.sigma, vp.lambd, vp.w]
-                ]
-            )
-            f = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "H")
-            f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
-            check_grad(f, f_grad, theta0, rtol=0.01)
+            # The gradient is the reparameterization gradient at the
+            # call's draws. The derivative of the estimate at fixed draws,
+            # which also moves the density, agrees with it only in
+            # expectation (about 1% apart at this Ns).
+            _assert_is_the_path_derivative(vp, Ns, False, seed=42)
 
 
 def test_entmc_vbmc_overlapping_mixture():
@@ -148,6 +263,64 @@ def test_entmc_vbmc_overlapping_mixture():
     f_grad = lambda theta: entmc_vbmc_wrapper(theta, D, K, Ns, "dH")
     np.random.set_state(state)
     assert check_grad(f, f_grad, theta0, rtol=0.01, atol=0.01)
+
+
+def _mixture(mu, sigma, lambd, w):
+    mu = np.asarray(mu, dtype=float)
+    D, K = mu.shape
+    vp = VariationalPosterior(D, K, rng=20260923)
+    vp.mu = mu
+    vp.sigma = np.asarray(sigma, dtype=float).reshape(1, K)
+    vp.lambd = np.asarray(lambd, dtype=float).reshape(D, 1)
+    w = np.asarray(w, dtype=float).reshape(1, K)
+    vp.w = w / w.sum()
+    vp.eta = np.log(vp.w)
+    return vp
+
+
+_rs = np.random.default_rng(11)
+_PATH_CASES = {
+    "K1_D1": ([[0.2]], [0.8], [1.3], [1.0]),
+    "D1_K3": ([[0.0, 0.9, -1.4]], [1.0, 0.6, 0.8], [0.7], [0.2, 0.5, 0.3]),
+    "D5_K6": (
+        _rs.normal(size=(5, 6)),
+        _rs.uniform(0.5, 1.5, 6),
+        _rs.uniform(0.5, 1.5, 5),
+        _rs.dirichlet(np.ones(6)),
+    ),
+    "weight_1e-10": (
+        _rs.normal(size=(3, 3)) * 0.3,
+        [1.0, 0.8, 1.2],
+        [1.0, 1.0, 1.0],
+        [0.5, 0.5, 1e-10],
+    ),
+    "near_coincident": (
+        [[0.0, 1e-7, 0.5], [0.0, 0.0, 0.2]],
+        [1.0, 1.0, 0.9],
+        [1.0, 1.0],
+        [0.3, 0.3, 0.4],
+    ),
+    "coincident": ([[0.2, 0.2], [0.1, 0.1]], [1, 1], [1, 1], [0.4, 0.6]),
+    "scales_1e-3_to_1e3": (
+        [[0.0, 0.001, 5.0], [0.0, 0.0, 1.0]],
+        [1e-3, 1.0, 1e3],
+        [1.0, 1.0],
+        [0.3, 0.3, 0.4],
+    ),
+    "40_sd_apart": ([[0.0, 40.0], [0.0, 0.0]], [1, 1], [1, 1], [0.5, 0.5]),
+}
+
+
+@pytest.mark.parametrize("jacobian_flag", [False, True])
+@pytest.mark.parametrize("case", sorted(_PATH_CASES))
+def test_entmc_vbmc_gradient_is_the_path_derivative(case, jacobian_flag):
+    """The estimate and its gradient are those of an independent
+    implementation of the estimator at the same draws, to rounding: the
+    reparameterization gradient with the density held fixed, and the full
+    derivative for the weights. Checked with and without the
+    reparameterization of the scales and the weights."""
+    vp = _mixture(*_PATH_CASES[case])
+    _assert_is_the_path_derivative(vp, 40, jacobian_flag, seed=404)
 
 
 def test_entmc_vbmc_matlab():
