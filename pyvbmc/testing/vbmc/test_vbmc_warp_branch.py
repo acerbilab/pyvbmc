@@ -22,10 +22,10 @@ from pyvbmc import VBMC
 D = 2
 
 
-@pytest.fixture(scope="module")
-def warped_run():
-    """One short run that warps, with every ``optimize_vp`` call recorded."""
-    options = {
+def _warp_options():
+    """Options of a short run that warps at the first iteration that allows
+    it and keeps the warp."""
+    return {
         "max_iter": 4,
         "min_iter": 1,
         "max_fun_evals": 100,
@@ -55,7 +55,10 @@ def warped_run():
         "plot": False,
         "print_iteration_header": False,
     }
-    vbmc = VBMC(
+
+
+def _warp_vbmc(options):
+    return VBMC(
         lambda x: -0.5 * np.sum(x**2),
         np.zeros((1, D)),
         np.full((1, D), -np.inf),
@@ -65,6 +68,12 @@ def warped_run():
         options=options,
         seed=20260920,
     )
+
+
+@pytest.fixture(scope="module")
+def warped_run():
+    """One short run that warps, with every ``optimize_vp`` call recorded."""
+    vbmc = _warp_vbmc(_warp_options())
 
     calls = []
     unwired = vbmc_module.optimize_vp
@@ -155,6 +164,42 @@ def test_record_of_a_kept_warp_holds_the_warped_hyperparameters(warped_run):
     assert kept
 
     for iteration in kept:
+        recorded = vbmc.iteration_history["optim_state"][iteration]["hyp_dict"]
+        assert np.array_equal(
+            recorded["hyp"],
+            vbmc.get_gp(iteration).get_hyperparameters(as_array=True),
+        )
+        assert np.array_equal(
+            recorded["full"], vbmc.iteration_history["gp_hyp_full"][iteration]
+        )
+
+
+@pytest.fixture(scope="module")
+def undone_run():
+    """The run of ``warped_run`` with its warp undone: no ELBO after the
+    refit clears an improvement of infinity."""
+    vbmc = _warp_vbmc({**_warp_options(), "warp_tol_improvement": np.inf})
+    vbmc.optimize()
+    return vbmc
+
+
+def test_record_of_an_undone_warp_holds_the_iteration_fit(undone_run):
+    """An undone warp restores the ``optim_state`` and the ``hyp_dict`` of
+    before the warp, and the iteration then fits the GP in the space it
+    started in. Its recorded ``optim_state`` holds the hyperparameters of
+    that fit, which ``VBMC.load(file, iteration=k)`` pairs with
+    ``get_gp(k)``."""
+    vbmc = undone_run
+    undone = [
+        iteration
+        for iteration, actions in enumerate(
+            vbmc.iteration_history["logging_action"]
+        )
+        if "undo rotoscale" in actions
+    ]
+    assert undone
+
+    for iteration in undone:
         recorded = vbmc.iteration_history["optim_state"][iteration]["hyp_dict"]
         assert np.array_equal(
             recorded["hyp"],
