@@ -531,8 +531,12 @@ defect *n*" is entry *n* of
   `vbmc.m:323`) and its default single acquisition, never sets `idxAcq`
   and reads it unset (MATLAB-side defect 33).
 - **Variational active sampling (`VarActiveSample`) is not ported**
-  (unported feature; `misc/vpsample_vbmc.m`, marked unused in `vbmc.m:652`),
-  and PyVBMC declares no option for it.
+  (unported feature). The branch the option selects, marked unused at
+  `vbmc.m:652-655`, calls `variationalactivesample_vbmc`, which the MATLAB
+  repository does not hold, and PyVBMC declares no counterpart of the
+  option. `ActiveVariationalSamples` (`active_variational_samples`) is
+  another option, which belongs to the sampling of the variational
+  parameters (below).
 - **`AbstractAcqFcn._real2int` snaps its input in place** (deliberate
   change), where `misc/real2int_vbmc.m` returns a new array; the batched
   CMA-ES objective reproduces the side effect deliberately. The rounding is
