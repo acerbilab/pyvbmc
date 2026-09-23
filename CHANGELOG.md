@@ -852,8 +852,8 @@ its entry below.
 - `noise_size` takes a positive finite number of any numeric type, or an
   empty value (`[]`, an empty array or `None`) that leaves it unset. `None`
   raised `TypeError` at the first GP fit; an empty array or a NumPy number
-  raised `ValueError` there with NumPy 2.2 or later, and with earlier
-  versions of NumPy a NumPy number was ignored; zero or a negative value
+  raised `ValueError` there with recent versions of NumPy, and older ones
+  ignored a NumPy number; zero or a negative value
   was replaced by `tol_gp_noise` without a word. Any other value is
   refused at construction and by `VBMC.load`, with a message that names
   the option, as MATLAB VBMC refuses a value that is not positive.
