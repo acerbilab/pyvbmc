@@ -14,12 +14,15 @@ Parameterization note: the checks use the raw parameterization
 what ``_neg_elcbo`` uses in production; one check takes ``jacobian_flag=False``
 and differentiates with respect to ``(mu, sigma, lambd, w)`` directly (until
 2026-09-04 that path returned only the ``mu`` block of the gradient, devlog
-section 9). ``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
+section 9). When both scales are optimized,
+``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
 ``||lambd|| = sqrt(D)`` and rescales ``sigma`` to compensate; the objective is
 invariant along that ray, so finite differences in raw coordinates agree with
-the analytic gradient evaluated at the renormalized point.
+the analytic gradient evaluated at the renormalized point. A scale that is
+not optimized is kept as it is.
 """
 
+import copy
 from pathlib import Path
 
 import gpyreg as gpr
@@ -344,6 +347,108 @@ def test_neg_elcbo_grad_fd_mc_entropy():
     theta0[D * K] = 1.0
     theta0[-K:] -= 20.0
     assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
+
+
+def _fixed_scale_problem(fixed):
+    """A posterior with ``sigma`` or ``lambd`` not optimized, a raw
+    parameter vector for it and soft bounds that one of its log scales
+    ``ln sigma_k + ln lambd_d`` exceeds.
+
+    The fixed scale has a value that a rescaling to unit root mean square of
+    ``lambd`` would change: ``lambd`` is fixed away from unit root mean
+    square, and a fixed ``sigma`` goes with an optimized ``lambd`` of root
+    mean square 1.45 in ``theta``."""
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = _load("mu.txt")
+    vp.sigma = np.array([[0.6, 0.4]])
+    mu = vp.mu.ravel(order="F")
+    eta = np.array([0.3, 0.0])
+    if fixed == "sigma":
+        vp.optimize_sigma = False
+        theta = np.concatenate([mu, [0.5, 0.2], eta])
+    else:
+        vp.lambd = np.array([[1.8], [0.9]])
+        vp.optimize_lambd = False
+        theta = np.concatenate([mu, np.log([0.6, 0.4]), eta])
+    theta_bnd = vp.get_bounds(_load("X.txt"), OPTIONS, K)
+    return vp, theta, theta_bnd
+
+
+@pytest.mark.parametrize("fixed", ["sigma", "lambd"])
+def test_neg_elcbo_grad_fd_scale_not_optimized(fixed):
+    """dF with ``sigma`` or ``lambd`` not optimized and a soft bound on the
+    log scales active, each evaluation on a fresh copy of the posterior.
+    The soft-bound loss reads the fixed scale from the posterior, which
+    ``set_parameters`` rescaled by the root mean square of ``lambd`` until
+    2026-09-23 (wave 7 of the port review, row W7-8): with ``sigma``
+    fixed, the loss read a log scale off by the log of that factor, and its
+    gradient left out the factor's dependence on ``lambd``."""
+    gp, _ = _fixture_gp()
+    vp0, theta, theta_bnd = _fixed_scale_problem(fixed)
+
+    L, dL = _vp_bound_loss(
+        copy.deepcopy(vp0), theta, theta_bnd, theta_bnd["tol_con"]
+    )
+    assert L > 0.0, "soft-bound penalty should be active"
+    assert np.any(dL[D * K : D * K + D] != 0.0)
+
+    def f(th):
+        vp = copy.deepcopy(vp0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, False, False, theta_bnd)[0]
+
+    def grad(th):
+        vp = copy.deepcopy(vp0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[1]
+
+    assert grad(theta).shape == theta.shape
+    assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
+
+
+@pytest.mark.parametrize("fixed", ["sigma", "lambd"])
+def test_neg_elcbo_is_a_function_of_theta_with_a_scale_not_optimized(fixed):
+    """With ``sigma`` or ``lambd`` not optimized, the objective is a
+    function of ``theta`` alone, as ``misc/negelcbo_vbmc.m`` makes it by
+    assigning ``theta`` to a copy of the posterior: repeated calls on one
+    posterior, which ``optimize_vp`` reuses, give the value of the first,
+    the fixed scale stays as it was given, and the soft-bound loss is that
+    of the posterior's own fixed scale. A fixed ``sigma`` used to grow by
+    the root mean square of ``lambd`` on every call, and a fixed ``lambd``
+    lost its root mean square on the first (wave 7 of the port review, row
+    W7-8)."""
+    gp, _ = _fixture_gp()
+    vp0, theta, theta_bnd = _fixed_scale_problem(fixed)
+    other = theta.copy()
+    other[D * K : D * K + D] += np.array([0.4, -0.2])
+    fixed_value = copy.deepcopy(getattr(vp0, fixed))
+
+    vp = copy.deepcopy(vp0)
+    F_first, dF_first = _neg_elcbo(
+        theta, gp, vp, 0.0, 0, True, False, theta_bnd
+    )[:2]
+    for th in (theta, other, other, theta):
+        F, dF = _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[:2]
+    assert F == F_first
+    assert np.array_equal(dF, dF_first)
+    assert np.array_equal(getattr(vp, fixed), fixed_value)
+
+    # The soft-bound loss added to the objective is that of the posterior
+    # as given, with the weight penalty turned off.
+    no_weight_penalty = dict(theta_bnd, weight_penalty=0.0)
+    F_bounded = _neg_elcbo(
+        theta, gp, copy.deepcopy(vp0), 0.0, 0, False, False, no_weight_penalty
+    )[0]
+    F_free = _neg_elcbo(
+        theta, gp, copy.deepcopy(vp0), 0.0, 0, False, False, None
+    )[0]
+    L = _vp_bound_loss(
+        copy.deepcopy(vp0),
+        theta,
+        theta_bnd,
+        theta_bnd["tol_con"],
+        compute_grad=False,
+    )
+    assert L > 0.0
+    assert np.isclose(F_bounded - F_free, L, rtol=1e-12, atol=1e-12)
 
 
 def test_vp_bound_loss_grad_fd():

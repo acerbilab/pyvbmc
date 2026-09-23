@@ -1170,6 +1170,15 @@ class VariationalPosterior:
         parametrization of the mixture weights, is set alongside ``w``, so
         that ``softmax(eta)`` is the resulting ``w``.
 
+        When both ``sigma`` and ``lambd`` are optimized, ``lambd`` is then
+        divided by its root mean square and ``sigma`` multiplied by it. The
+        two scales enter the density through their product alone, so that
+        rescaling leaves the distribution as it was. A scale that is not
+        optimized keeps its value and the other takes the value in
+        ``theta``, so that the parameters set are a function of ``theta``
+        alone. The weights are divided by their sum when they are being
+        optimized.
+
         Parameters
         ----------
         theta : np.ndarray
@@ -1234,10 +1243,18 @@ class VariationalPosterior:
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lambd**2) / self.D)
-
-        self.lambd = self.lambd.reshape(-1, 1) / nl
-        self.sigma = self.sigma.reshape(1, -1) * nl
+        # The product of sigma and lambd leaves their common scale free when
+        # both are optimized; lambd is then given unit root mean square, as
+        # `misc/rescale_params.m` gives it. A scale that is not optimized
+        # keeps its value, so that the parameters are a function of theta
+        # alone, as `misc/negelcbo_vbmc.m` assigns theta without rescaling.
+        if self.optimize_sigma and self.optimize_lambd:
+            nl = np.sqrt(np.sum(self.lambd**2) / self.D)
+            self.lambd = self.lambd.reshape(-1, 1) / nl
+            self.sigma = self.sigma.reshape(1, -1) * nl
+        else:
+            self.lambd = self.lambd.reshape(-1, 1)
+            self.sigma = self.sigma.reshape(1, -1)
 
         # Ensure that weights are normalized
         if self.optimize_weights:

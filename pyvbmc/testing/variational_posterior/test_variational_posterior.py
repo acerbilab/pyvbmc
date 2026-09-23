@@ -716,6 +716,58 @@ def test_set_parameters_not_raw_checks_the_constrained_entries(
             vp.set_parameters(negative, raw_flag=False)
 
 
+@pytest.mark.parametrize("raw_flag", [True, False])
+@pytest.mark.parametrize(
+    "optimize_sigma, optimize_lambd",
+    [(False, True), (True, False), (False, False)],
+)
+def test_set_parameters_keeps_a_scale_that_is_not_optimized(
+    optimize_sigma, optimize_lambd, raw_flag
+):
+    """``sigma`` and ``lambd`` are rescaled against each other only when
+    both are optimized. A scale that is not optimized keeps the value it
+    was given, however often the parameters are set, and an optimized scale
+    takes the value in ``theta``: the parameters are a function of
+    ``theta`` alone."""
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_sigma = optimize_sigma
+    vp.optimize_lambd = optimize_lambd
+    sigma = np.array([[0.6, 0.4]])
+    # A root mean square other than one, which a rescaling would change.
+    lambd = np.array([[3.0], [1.5], [0.5]])
+    vp.sigma = sigma.copy()
+    vp.lambd = lambd.copy()
+
+    rng = np.random.default_rng(20260923)
+    sigma_block = rng.uniform(0.3, 1.5, K)
+    lambd_block = rng.uniform(0.3, 1.5, D)
+    blocks = [rng.standard_normal(D * K)]
+    if optimize_sigma:
+        blocks.append(sigma_block)
+    if optimize_lambd:
+        blocks.append(lambd_block)
+    blocks.append(np.full(K, 1.0 / K))
+    theta = np.concatenate(blocks)
+    to_value = np.exp if raw_flag else np.asarray
+    if optimize_sigma:
+        expected_sigma = to_value(sigma_block).reshape(1, -1)
+    else:
+        expected_sigma = sigma
+    if optimize_lambd:
+        expected_lambd = to_value(lambd_block).reshape(-1, 1)
+    else:
+        expected_lambd = lambd
+
+    for _ in range(3):
+        vp.set_parameters(theta, raw_flag=raw_flag)
+        assert vp.sigma.shape == (1, K)
+        assert vp.lambd.shape == (D, 1)
+        assert np.array_equal(vp.sigma, expected_sigma)
+        assert np.array_equal(vp.lambd, expected_lambd)
+
+
 def test_get_parameters_raw():
     K = 2
     D = 3
