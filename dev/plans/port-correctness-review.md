@@ -223,13 +223,12 @@ Each reviewer receives:
   allowed, test suites, `optimize()` runs and installs are not; tests may
   be read to judge whether they would catch an error, but a test is not
   the specification.
-- the interpreters for small checks, since no single environment holds
-  every optional dependency: `.venv/Scripts/python.exe` (core, gpyreg);
-  `dev/scripts/runs/pymc_feasibility_20260914/venv/Scripts/python.exe`
-  (PyMC 6.3.2, PyTensor 3.3.1, ArviZ 1.3.0; documented in the gitignored
-  `dev/scripts/runs/LOCAL.md`); `../pyvbmc-stage3/.venv/Scripts/python.exe`
-  (Torch 2.7 CPU, ArviZ 1.3.0). The N2 reviewer of wave 0 was not told
-  this and reviewed the PyMC adapter statically.
+- the interpreters for small checks: the core environment, which holds no
+  optional integration, and the extras environment, which holds Torch,
+  ArviZ and PyMC as CI's extras cell installs them; their paths are in the
+  gitignored `dev/scripts/runs/LOCAL.md`, section "Python environments".
+  The N2 reviewer of wave 0 was not told this and reviewed the PyMC adapter
+  statically.
 - two warnings about documents they receive: gpyreg's `AGENTS.md`
   misdescribes three MATLAB mappings (`gplite_quad.m` is ported as
   `GP.quad`; `slice_sample.py` ports `gplite/private/slicesamplebnd.m`, not
