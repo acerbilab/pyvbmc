@@ -168,6 +168,15 @@ defect *n*" is entry *n* of
   positive and takes NaN, infinity and a vector, which
   `misc/gptrain_vbmc.m:148`, `:152` and `:164-165` then pass through `max`
   with `TolGPNoise` into the starting noise.
+- **`min_iter` is checked** (deliberate change). `VBMC` refuses, at
+  construction and in `load`, a value that is not a finite non-negative
+  integer, a floating value that lands on an integer counting as that
+  integer and 0 setting no minimum. `misc/setupoptions_vbmc.m:115-119` takes
+  any `MinIter` and raises `MaxIter` to it, and
+  `private/vbmc_termination.m:98-101` holds back every termination while
+  the iteration count is below it, so a fractional minimum acts as the
+  integer above it, a negative one as none, and an infinite one keeps the
+  run from stopping.
 - **Slice sampling is the only sampler of the GP hyperparameters**
   (unported feature). `VBMC` refuses every `gp_hyp_sampler` but
   `"slicesample"` at construction and in `load`; `misc/get_GPTrainOptions.m:18-91` and
