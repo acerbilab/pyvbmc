@@ -164,6 +164,14 @@ def _specify_target_noise_flag(value):
     return flag
 
 
+def _is_empty_value(value):
+    """Whether an option holds an empty value (``None``, ``[]``, an empty
+    tuple or an empty array), which states nothing."""
+    if value is None:
+        return True
+    return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0
+
+
 def _uncertainty_handling_flag(value):
     """
     Read the ``uncertainty_handling`` option as a boolean.
@@ -539,6 +547,7 @@ class Options(MutableMapping, dict):
                 raise ValueError("The option {} does not exist.".format(key))
 
         self._warn_inert_options(options_paths)
+        self._warn_ignored_noise_size()
 
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
@@ -590,6 +599,38 @@ class Options(MutableMapping, dict):
                 key,
                 self[key],
             )
+
+    def _warn_ignored_noise_size(self, names=None):
+        """
+        Warn when the user set ``noise_size`` for a target that returns its
+        own noise estimates.
+
+        With ``specify_target_noise`` on, the GP takes the noise of each
+        observation from the target and does not read ``noise_size``, as
+        MATLAB VBMC warns (``misc/setupoptions_vbmc.m:139-140``). An empty
+        value states no noise size and is left alone.
+
+        Parameters
+        ----------
+        names : iterable of str, optional
+            The names of the options to weigh. Default the options the user
+            set (``useroptions``).
+        """
+        if names is None:
+            names = self.get("useroptions")
+        if "noise_size" not in names:
+            return
+        noise_size = self.get("noise_size")
+        if _is_empty_value(noise_size):
+            return
+        if _stated_boolean(self.get("specify_target_noise")) is not True:
+            return
+        logging.warning(
+            "The option noise_size has no effect with specify_target_noise, "
+            "because the target returns its own noise estimates: the value "
+            "%s is accepted and ignored.",
+            noise_size,
+        )
 
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization

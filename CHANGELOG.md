@@ -552,6 +552,11 @@ its entry below.
     name behavior that PyVBMC always has. Their descriptions in the options
     files say which. Options given to `load` are listed with the user's
     options (`print(vbmc.options)`).
+  - A `noise_size` given together with `specify_target_noise` has no effect,
+    since the target returns the noise of each evaluation, and gives a
+    warning that says so, at construction and in
+    `VBMC.load(new_options=...)`, as MATLAB VBMC warns. 1.0.4 ignored it
+    silently.
   - Once a `VBMC` object is constructed, its options cannot be removed (`del`,
     `pop`). Assigning to them was already an error.
   - The options of one run can be given to another, `VBMC(...,

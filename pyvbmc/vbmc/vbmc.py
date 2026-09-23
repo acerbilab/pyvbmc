@@ -71,8 +71,9 @@ _PRECOMPUTED_DUPLICATE_ULPS = 4
 # An option belongs here when every read of it in ``pyvbmc/`` lies in
 # ``VBMC.__init__``, in the ``_init_optim_state`` and
 # ``_initialize_precomputed_evaluations`` it calls, in
-# ``Options.update_defaults``, or in a value check, a ``VBMC._validate_*``
-# method, which construction and ``load`` share. Two reads are not reads a
+# ``Options.update_defaults``, or in a check that construction and ``load``
+# share: a value check, a ``VBMC._validate_*`` method, or
+# ``Options._warn_ignored_noise_size``. Two reads are not reads a
 # run acts on: ``load``'s rewrite of the ``integer_vars`` that release 1.0.4
 # stored, and ``active_sample``'s read of ``active_search_bound`` into two
 # locals that nothing uses. A read of the ``optim_state`` entry that carries
@@ -91,6 +92,8 @@ _CONSTRUCTION_ONLY_OPTIONS = (
     # noisy target, and by ``_init_optim_state`` through
     # ``Options.uncertainty_handling_on``, which sets the uncertainty
     # handling level the GP noise model and the function logger follow.
+    # ``specify_target_noise`` is also read by the warning that a
+    # ``noise_size`` given with it has no effect.
     "uncertainty_handling",
     "specify_target_noise",
     # ``_init_optim_state``: the GP mean function, the starting values and
@@ -3210,8 +3213,9 @@ class VBMC:
             constructing a new ``VBMC`` object. ``uncertainty_handling``,
             ``gp_mean_fun``, ``integer_vars`` and ``warmup`` are such
             options; the refusal names the ones it applies to. An option
-            that has no effect in PyVBMC is taken with the warning that
-            construction gives for it.
+            that has no effect in PyVBMC, or a ``noise_size`` for a target
+            that returns its own noise estimates, is taken with the warning
+            that construction gives for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3389,6 +3393,7 @@ class VBMC:
             vbmc.options._warn_inert_options(
                 SHIPPED_OPTIONS_PATHS, names=new_options.keys()
             )
+            vbmc.options._warn_ignored_noise_size(names=new_options.keys())
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):

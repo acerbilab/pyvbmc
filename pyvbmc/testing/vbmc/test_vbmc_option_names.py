@@ -215,6 +215,77 @@ def test_load_warns_only_of_the_options_it_is_given(tmp_path, caplog):
     assert _warnings_naming(caplog, "double_gp") == []
 
 
+def _noisy_log_joint(x):
+    return -0.5 * np.sum(x**2), 1.0
+
+
+def _vbmc_with_noise(options):
+    """A run whose target returns its noise when the options say so."""
+    noisy = options.get("specify_target_noise", False)
+    return VBMC(
+        _noisy_log_joint if noisy else log_joint,
+        np.zeros((1, D)),
+        np.full((1, D), -10.0),
+        np.full((1, D), 10.0),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+    )
+
+
+@pytest.mark.parametrize("noise_size", [0.1, np.float64(0.1)])
+def test_noise_size_with_specify_target_noise_warns(caplog, noise_size):
+    """``misc/setupoptions_vbmc.m:139-140`` warns that ``NoiseSize`` is
+    ignored when ``SpecifyTargetNoise`` is active: the target returns the
+    noise of each evaluation, and the GP noise model does not read
+    ``noise_size``."""
+    caplog.set_level(logging.WARNING)
+    _vbmc_with_noise({"specify_target_noise": True, "noise_size": noise_size})
+    warned = _warnings_naming(caplog, "noise_size")
+    assert len(warned) == 1
+    assert "no effect" in warned[0] and "specify_target_noise" in warned[0]
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"specify_target_noise": True},
+        {"specify_target_noise": True, "noise_size": []},
+        {"specify_target_noise": True, "noise_size": None},
+        {"uncertainty_handling": True, "noise_size": 0.1},
+        {"noise_size": 0.1},
+    ],
+    ids=["default", "empty", "none", "level_1", "level_0"],
+)
+def test_noise_size_is_silent_where_it_is_read_or_empty(caplog, options):
+    """An empty ``noise_size`` states nothing, and without
+    ``specify_target_noise`` the GP noise model reads the value."""
+    caplog.set_level(logging.WARNING)
+    _vbmc_with_noise(options)
+    assert _warnings_naming(caplog, "noise_size") == []
+
+
+def test_load_warns_of_noise_size_with_specify_target_noise(tmp_path, caplog):
+    """A ``noise_size`` given to ``load`` for a run whose target returns its
+    own noise estimates is named as having no effect, as construction names
+    it; for a run that infers its noise it is read and is silent."""
+    noisy = tmp_path.joinpath("noisy.pkl")
+    _vbmc_with_noise({"specify_target_noise": True}).save(noisy)
+    inferred = tmp_path.joinpath("inferred.pkl")
+    _vbmc_with_noise({"uncertainty_handling": True}).save(inferred)
+    caplog.set_level(logging.WARNING)
+
+    loaded = VBMC.load(noisy, new_options={"noise_size": 0.1})
+    assert loaded.options["noise_size"] == 0.1
+    warned = _warnings_naming(caplog, "noise_size")
+    assert len(warned) == 1 and "no effect" in warned[0]
+
+    caplog.clear()
+    VBMC.load(noisy, new_options={"max_iter": 9})
+    VBMC.load(inferred, new_options={"noise_size": 0.1})
+    assert _warnings_naming(caplog, "noise_size") == []
+
+
 def test_load_refuses_a_gp_mean_fun_construction_refuses(tmp_path):
     """A value that construction refuses is refused by ``load`` with the
     same message, before the name of the option is weighed: the check of

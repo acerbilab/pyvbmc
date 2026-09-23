@@ -348,13 +348,14 @@ def test_inert_options_are_the_declared_options_nothing_reads():
 
 
 # The functions that run while a ``VBMC`` object is built, and the value
-# checks that construction and ``load`` share. An option whose every read
-# lies in them is read at construction alone.
+# checks and warnings that construction and ``load`` share. An option whose
+# every read lies in them is read at construction alone.
 _CONSTRUCTION_SITES = {
     "VBMC.__init__",
     "VBMC._init_optim_state",
     "VBMC._initialize_precomputed_evaluations",
     "Options.update_defaults",
+    "Options._warn_ignored_noise_size",
 }
 # The two ``Options`` methods that read an option on their caller's behalf:
 # a call of one is a read of these options at the site of the call.
