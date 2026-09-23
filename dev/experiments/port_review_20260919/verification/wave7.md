@@ -139,8 +139,8 @@ draws of the posterior", the optimizer of `orig_flag=False`, which is BFGS
 with the analytic gradient, not L-BFGS-B (O2 verifier, §8). To add: the
 default of `compute_var` (W7-9). The texts are in the verifier reports,
 §8. All are made; the two entries on gpyreg (W7-14 to W7-16) only after the
-independent check of the pass found them still wrong, and they are to be
-brought to the text of release 1.3.1 when PyVBMC's pin moves to it.
+independent check of the pass found them still wrong, and they were brought
+to the text of release 1.3.1 when PyVBMC's pin moved to it.
 
 ## Test notes worth acting on
 
@@ -189,7 +189,10 @@ Made by four Opus fix agents on worktrees of their own
 each fix with a test seen to fail on the code before it except where the
 report says otherwise; the PyVBMC commits reviewed by the orchestrator and
 cherry-picked onto `dev-port-review-w7`, the gpyreg commits kept on
-gpyreg's branch `w7-fixes` until its pull request. The agents ran only the
+gpyreg's branch `w7-fixes` until its pull request, `acerbilab/gpyreg#52`,
+merged as `1dbbfc5` and released as gpyreg 1.3.1 (the tag `v1.3.1` on the
+merge, whose GitHub release uploaded the wheel and the source archive to
+PyPI). The agents ran only the
 test functions they added or changed, while another session held the heavy
 slot; the gates of the pass follow ("Gates"), and the commits made after its
 independent check are listed there.

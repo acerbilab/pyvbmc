@@ -2452,26 +2452,31 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   points, by agent D in a third round. The records corrected where they
   held the errors, the sheet's two entries on gpyreg among them.
   `verification/wave7.md`, "The independent check of the pass".
-- [ ] **Pickup point (2026-09-23, the round after the independent check,
-  gated): the push and CI.** The state: `dev-port-review` holds the wave-7
-  pass and the round after its check, not pushed; `dev-next` and
-  `origin/dev-port-review` stand at `bad56bc3`. gpyreg's fixes, twelve
-  commits, are on `w7-fixes` in `../gpyreg-w7` (head `c81063c`), not pushed.
-  The gates of the round have passed on `265348e7` with gpyreg 1.3.0 and
-  against `w7-fixes` at `c81063c` (`verification/wave7.md`, "The independent
-  check of the pass"). The worktrees `../pyvbmc-wave7`
-  (`dev-port-review-w7`) and `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to
-  `-C`) stand; every commit of theirs is on `dev-port-review` (`git cherry`).
-  In this order:
-  1. The push of `dev-port-review`, the branch smoke and the full matrix
-     (`gh workflow run tests.yml --ref dev-port-review`).
-  2. On the PI's word: gpyreg's pull request of `w7-fixes` and release
-     1.3.1 (dating its release notes, the tag, the GitHub release that
-     uploads to PyPI); PyVBMC's `GPYREG_PIN` and minimum at its tag, the
-     sheet's gpyreg citations and its two gpyreg entries brought to the text
-     of 1.3.1, the `TODO.md` line on a NaN location removed; the matrix
-     again; the fast-forward of `dev-next`, with the status line of
-     `TODO.md`; the worktrees removed.
+- [x] 2026-09-23: the wave-7 pass through CI, and gpyreg 1.3.1 (PI: go, once
+  the matrix is green). `dev-port-review` pushed at `acdbfd01`, then with the
+  PI's edit of the README (`6ef6a084`); the branch smoke (one job) and the
+  full matrix (nine jobs) green. gpyreg's `w7-fixes`, with its release notes
+  dated, merged as `acerbilab/gpyreg#52` (`1dbbfc5`; merged with admin
+  rights, `main` asking for a review the author cannot give) after its ten
+  checks and, on `main`, its build and docs workflows passed; the annotated
+  tag `v1.3.1` on the merge and its GitHub release, whose workflow uploaded
+  the wheel and the source archive to PyPI. `../gpyreg` brought to the tag,
+  and gpyreg reinstalled editable in the three environments that install it,
+  each reading 1.3.1. PyVBMC: `GPYREG_PIN` at the tagged commit,
+  `gpyreg >= 1.3.1` in `pyproject.toml`, the changelog's requirement, the
+  sheet's gpyreg citations and its two gpyreg entries at 1.3.1, the
+  `TODO.md` line on a NaN location removed.
+- [ ] **Pickup point (2026-09-23, gpyreg 1.3.1 required): CI, then
+  `dev-next`.** The state: `dev-port-review` holds the wave-7 pass, the
+  round after its check and the move to gpyreg 1.3.1. In this order:
+  1. The exact oracle check and the default suite against the installed
+     gpyreg 1.3.1; the push, the smoke and the full matrix.
+  2. The fast-forward of `dev-next` to `dev-port-review`, with the status
+     line of `TODO.md`.
+  3. The worktrees removed once `git cherry` has been read: `../pyvbmc-wave7`
+     (`dev-port-review-w7`), `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to
+     `-C`) with their local branches, and gpyreg's `../gpyreg-w7`
+     (`w7-fixes`, whose remote branch stays).
   Open beside it: the ruling on W7-17 with the `TODO.md` item on a single
   training point, after a capped run from starting points that share a
   coordinate, and the run that measures W7-2's effect on a resume
