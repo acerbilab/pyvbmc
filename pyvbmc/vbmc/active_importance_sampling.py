@@ -129,7 +129,7 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
 
         Na = _sample_count(options, vp.K, D)
 
-        if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
+        if Na <= 0:
             raise ValueError(
                 "options['active_importance_sampling_mcmc_samples'] "
                 + "should evaluate to a positive integer."
