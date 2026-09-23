@@ -168,14 +168,6 @@ def _workloads() -> tuple[_Workload, ...]:
     return (
         _Workload("pdf", "small_value", 4, 20, 8),
         _Workload("pdf", "sieve_value", 4, 20, 8192),
-        _Workload(
-            "pdf",
-            "sieve_gradient",
-            4,
-            20,
-            8192,
-            (True, True, True, True),
-        ),
         _Workload("pdf", "large_density", 15, 26, 100_000),
         _Workload(
             "entropy_grad",

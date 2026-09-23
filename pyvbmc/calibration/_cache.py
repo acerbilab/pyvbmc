@@ -124,12 +124,7 @@ _REPORT_FIELDS = frozenset(
     }
 )
 _GROUP_WORKLOADS = {
-    "pdf": (
-        "small_value",
-        "sieve_value",
-        "sieve_gradient",
-        "large_density",
-    ),
+    "pdf": ("small_value", "sieve_value", "large_density"),
     "entropy_grad": ("adam_d4_k20", "boost_d4_k50", "boost_d15_k50"),
     "entropy_value": ("active_d4_k20", "fine_d4_k20", "fine_d15_k26"),
 }
@@ -141,7 +136,6 @@ _GROUP_SETTINGS = {
 _WORKLOAD_SHAPES = {
     "small_value": (4, 20, 8, 8),
     "sieve_value": (4, 20, 8192, 8192),
-    "sieve_gradient": (4, 20, 8192, 8192),
     "large_density": (15, 26, 100_000, 100_000),
     "adam_d4_k20": (4, 20, 37, 38),
     "boost_d4_k50": (4, 50, 55, 56),

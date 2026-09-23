@@ -420,12 +420,12 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
     """The analytical bound covers the retained allocator diagnostics."""
     workloads = {workload.name: workload for workload in campaign._workloads()}
     # Incremental tracemalloc peaks with each workload preallocated, recorded
-    # in dev/scripts/runs/calibration_integration_20260909/ and, for the
-    # value-only active_d4_k20, in
+    # in dev/scripts/runs/calibration_integration_20260909/ and, for
+    # sieve_value and the value-only active_d4_k20, in
     # dev/scripts/runs/calibration_recipe_v2_20260923/.
     measured = (
         ("small_value", 2**16, 24_200),
-        ("sieve_gradient", 2**16, 2_568_064),
+        ("sieve_value", 2**16, 2_181_680),
         ("boost_d4_k50", 2**18, 7_512_096),
         ("boost_d15_k50", 2**18, 6_861_480),
         ("active_d4_k20", 2**16, 1_384_376),
@@ -499,6 +499,40 @@ def test_entropy_workloads_time_calls_the_package_makes():
             f"{'with' if with_gradients else 'without'} gradients; the "
             f"package's counts for such calls at K={workload.K} are {counts}"
         )
+
+
+def test_density_workloads_time_value_only_calls():
+    """The density workloads time calls without gradients.
+
+    The package requests the gradient of the density only in
+    ``VariationalPosterior.mode`` in the transformed space, which no step of
+    the algorithm calls. Its optimizer evaluates the density at one point at
+    a time, and one point has one block layout at every candidate budget,
+    so no setting changes how that call runs. Its screen of starting points
+    evaluates the density on a draw of 100,000 points and keeps only the
+    values.
+    """
+    density = [
+        workload
+        for workload in campaign._workloads()
+        if workload.group == "pdf"
+    ]
+    assert density
+    for workload in density:
+        assert workload.grad_flags is None, workload.name
+
+    for workload in density:
+        one_point = campaign._Workload(
+            "pdf",
+            f"{workload.name}_one_point_gradient",
+            workload.D,
+            workload.K,
+            1,
+            (True, True, True, True),
+        )
+        aliases = campaign._layout_aliases(one_point)
+        assert set(aliases) == set(campaign.CANDIDATE_BUDGETS)
+        assert set(aliases.values()) == {campaign.DEFAULT_BUDGET}
 
 
 def test_record_validator_agrees_with_the_shipped_recipe():
