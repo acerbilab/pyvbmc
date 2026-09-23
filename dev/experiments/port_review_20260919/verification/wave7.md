@@ -379,7 +379,8 @@ machine (`dev/scripts/runs/LOCAL.md`, "Port correctness review").
   across the first `fun_eval_start` of them raises `ValueError`; fewer
   points, whose design the plausible box completes, are taken. Its gates on
   `40701e3d` with gpyreg 1.3.1: the exact oracle check, 11 of 11; the
-  default suite, 2145 passed and 58 skipped.
+  default suite, 2145 passed and 58 skipped; on `6e1082d8`, the branch
+  smoke and the full matrix, nine jobs, green.
 - **W7-2.** A seeded run on a correlated Gaussian in `D = 3` keeps a warp at
   iteration 10 of 15 and is resumed there three ways, each to its end. A
   resume at the ordinary iteration 8, and one at the kept warp with the

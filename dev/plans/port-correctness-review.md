@@ -2486,21 +2486,33 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   from it with the record of before the fix (final ELBO 1.641 against
   1.623, 0.00058 against 0.00042 of KL to the truth).
   `verification/wave7.md`, "The two runs of the close".
-- [ ] **Pickup point (2026-09-23, the two runs made): the close of the
-  review.** The state: `dev-port-review` holds wave 7, its two runs and the
-  refusal of W7-17, whose gates (the default suite, the exact oracle check)
-  and CI come before the push into `dev-next`; gpyreg 1.3.1 is on PyPI and
-  required. What closes the `TODO.md` item: the closing ledger,
-  `dev/results/<date>-port-correctness-review.md`, with every finding of
-  waves 0 to 7, its disposition and fix commit, the intentional differences
-  found, the sheet entries withdrawn and the test notes acted on, pointing
-  at the per-wave ledgers under
-  `experiments/port_review_20260919/verification/`; and the durable entries
-  of the known-differences sheet consolidated into the porting log
-  `pyvbmc/vbmc/README.md`, as the section "Verification and the findings
-  ledger" above describes. An independent check of both, then the three
-  generic checkboxes below ticked and the `TODO.md` item closed. The
-  `TODO.md` items that wait for the review's fixes to be in (the oracle
+- [x] 2026-09-23: the refusal of W7-17 through its gates and CI, and into
+  `dev-next`. The exact oracle check, 11 of 11, and the default suite, 2145
+  passed, with gpyreg 1.3.1; `dev-port-review` pushed at `6e1082d8`, its
+  smoke and full matrix (nine jobs) green; `dev-next` fast-forwarded to it,
+  with the status line of `TODO.md`.
+- [ ] **Pickup point (2026-09-23, every wave in `dev-next`): the close of the
+  review, in a fresh session.** The state: `dev-next` and `dev-port-review`
+  are one commit, pushed and green in CI, and hold every wave of the review
+  (0 to 7), the independent check of each fix pass, and the two runs of
+  wave 7's close; gpyreg 1.3.1 is on PyPI and required. No worktree or
+  agent of the review is left. What closes the `TODO.md` item, from a fresh
+  session that reads the records as they stand:
+  1. The closing ledger, `dev/results/<date>-port-correctness-review.md`:
+     every finding of waves 0 to 7 with its disposition and fix commit, the
+     intentional differences found, the sheet entries withdrawn and the
+     test notes acted on, pointing at the per-wave ledgers under
+     `experiments/port_review_20260919/verification/` (`wave0.md` to
+     `wave7.md`, with their verifier reports) and at the gpyreg releases
+     1.3.0 and 1.3.1.
+  2. The durable entries of the known-differences sheet
+     (`experiments/port_review_20260919/known_differences.md`) consolidated
+     into the porting log `pyvbmc/vbmc/README.md`, as the section
+     "Verification and the findings ledger" above describes, so that the
+     catalogue of deliberate differences outlives the review.
+  3. An independent check of both by fresh reviewers; then the three generic
+     checkboxes below ticked, and the `TODO.md` item closed.
+  The `TODO.md` items that wait for the review's fixes to be in (the oracle
   state at uncertainty level 1, the seeded gate run with a prior, the
   triage list left by the check of wave 6, the regeneration of the golden
   references and the run pools for the release gate) can start once the
