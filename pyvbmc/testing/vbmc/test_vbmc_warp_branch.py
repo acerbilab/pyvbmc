@@ -3,11 +3,12 @@
 The branch warps the inference space, refits the Gaussian process and the
 variational posterior there, and keeps the warp only if the ELBO improves.
 It is reached through the loop, so the checks below drive one short seeded
-run whose options bring a warp forward: no warm-up, variational components
-fixed to the training inputs, and a cheap sieve. What the checks rely on, a
-warp and an incoming posterior with fewer components than the training set,
-follows from the options and not from the course the seeded run happens to
-take, which differs between platforms.
+run whose options bring a warp forward and keep it: no warm-up, variational
+components fixed to the training inputs, a cheap sieve, and tolerances that
+no refit can fail. What the checks rely on, a kept warp and an incoming
+posterior with fewer components than the training set, follows from the
+options and not from the course the seeded run happens to take, which
+differs between platforms.
 """
 
 import math
@@ -43,6 +44,10 @@ def warped_run():
         # index.
         "warp_min_k": 1,
         "warp_tol_reliability": np.inf,
+        # The warp is kept whatever the ELBO and its uncertainty after the
+        # refit.
+        "warp_tol_improvement": -np.inf,
+        "warp_tol_sd_base": np.inf,
         # Components fixed to the training inputs cannot be boosted to a
         # larger count afterwards.
         "do_final_boost": False,
@@ -130,3 +135,31 @@ def test_warp_refit_gets_its_own_copy_of_the_training_inputs(warped_run):
     assert not any(call["mu_aliases_gp_X"] for call in refits)
     # The same step of an ordinary iteration is the comparison.
     assert not any(call["mu_aliases_gp_X"] for call in calls)
+
+
+def test_record_of_a_kept_warp_holds_the_warped_hyperparameters(warped_run):
+    """The ``optim_state`` recorded at an iteration that keeps a warp holds
+    the GP hyperparameters that the iteration fitted in the warped space, as
+    the record of every other iteration holds its own. ``VBMC.load(file,
+    iteration=k)`` resumes from that record, pairing its ``hyp_dict`` with
+    ``get_gp(k)``, and the resumed run starts its GP fit from those
+    hyperparameters."""
+    vbmc, __ = warped_run
+    kept = [
+        iteration
+        for iteration, actions in enumerate(
+            vbmc.iteration_history["logging_action"]
+        )
+        if "rotoscale" in actions and "undo rotoscale" not in actions
+    ]
+    assert kept
+
+    for iteration in kept:
+        recorded = vbmc.iteration_history["optim_state"][iteration]["hyp_dict"]
+        assert np.array_equal(
+            recorded["hyp"],
+            vbmc.get_gp(iteration).get_hyperparameters(as_array=True),
+        )
+        assert np.array_equal(
+            recorded["full"], vbmc.iteration_history["gp_hyp_full"][iteration]
+        )

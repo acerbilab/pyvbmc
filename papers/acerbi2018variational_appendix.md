@@ -89,6 +89,15 @@ $$
 \end{aligned}
 $$
 
+> **Maintainers' note.** In the last row above, the denominator inside the
+> sum over $l$ reads $(\sigma_{k} \lambda^{(i)})^{2}$ where the derivative of
+> $\mathcal{N}(\boldsymbol{\xi}_{s, k} ; \boldsymbol{\mu}_{l}, \sigma_{l}^{2} \boldsymbol{\Sigma})$
+> gives $(\sigma_{l} \lambda^{(i)})^{2}$, as in the equations below. Whether
+> the slip is the paper's or the transcription's was not checked against the
+> published PDF. PyVBMC (`pyvbmc/entropy/entmc_vbmc.py`) and MATLAB
+> (`ent/entmc_vbmc.m`) use $\sigma_{l}$
+> (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-11).
+
 where from the second to the third row we used the fact that the expected value of the score is zero, $\mathbb{E}_{q(\boldsymbol{\xi})}\left[\frac{\partial}{\partial \phi} \log q(\boldsymbol{\xi})\right]=0$.
 
 ---
@@ -113,6 +122,14 @@ $$
 & =\frac{w_{j}}{K^{2} N_{\mathrm{s}}} \sum_{s=1}^{N_{\mathrm{s}}} \frac{1}{q\left(\boldsymbol{\xi}_{s, j}\right)} \sum_{i=1}^{D} \lambda^{(i)} \varepsilon_{s, j}^{(i)} \sum_{l=1}^{K} w_{l} \frac{\xi_{s, j}^{(i)}-\mu_{l}^{(i)}}{\left(\sigma_{l} \lambda^{(i)}\right)^{2}} \mathcal{N}\left(\boldsymbol{\xi}_{s, j} ; \boldsymbol{\mu}_{l}, \sigma_{l}^{2} \boldsymbol{\Sigma}\right)
 \end{aligned}
 $$
+
+> **Maintainers' note.** The factor $1/K^{2}$ in the second row above has no
+> source in the derivation, which gives $w_{j}/N_{\mathrm{s}}$, as in the
+> gradient with respect to $\mu_{j}^{(m)}$. Whether the slip is the paper's
+> or the transcription's was not checked against the published PDF. PyVBMC
+> (`pyvbmc/entropy/entmc_vbmc.py`) and MATLAB (`ent/entmc_vbmc.m`) use
+> $w_{j}/N_{\mathrm{s}}$
+> (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-11).
 
 where we used that fact that $\frac{d \xi_{s, k}^{(i)}}{d \sigma_{j}}=\lambda^{(i)} \varepsilon_{s, j}^{(i)} \delta_{j k}$.
 For $\phi=\lambda^{(m)}$, with $1 \leq m \leq D$,

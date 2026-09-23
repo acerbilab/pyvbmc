@@ -800,7 +800,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -810,7 +812,11 @@ class VariationalPosterior:
             `orig_flag` is `False`.
         log_flag : bool, optional
             If `log_flag` is ``True`` return the logarithm of the pdf,
-            by default ``False``.
+            by default ``False``. Where the density of the mixture of
+            normal components is below the smallest normal double, its
+            logarithm and the gradient of the logarithm are computed by
+            log-sum-exp over the components, so that they stay finite in
+            the far tails.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
             by default ``False``. Gradients are available only in transformed
@@ -832,6 +838,8 @@ class VariationalPosterior:
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
@@ -875,6 +883,12 @@ class VariationalPosterior:
         # therefore holds them in full precision whatever the caller gave.
         x = np.array(x, dtype=np.float64)
         N, D = x.shape
+        if D != self.D:
+            raise ValueError(
+                f"x has {D} columns but the posterior has D = {self.D}: "
+                "each row of x is one point (for D = 1, the points form a "
+                "column, x.reshape(-1, 1))."
+            )
 
         # compute pdf only for points inside bounds in origspace
         if orig_flag:
@@ -893,6 +907,9 @@ class VariationalPosterior:
         y = np.zeros((N, 1))
         if grad_flag:
             dy = np.zeros((N, D))
+        # Rows of `y` and `dy` that hold the log density and its gradient
+        # directly (see below).
+        tail = np.zeros(N, dtype=bool)
 
         if not np.isfinite(df) or df == 0:
             # compute pdf of variational posterior
@@ -919,6 +936,22 @@ class VariationalPosterior:
             w_k = (nf * self.w / self.sigma**D).reshape(1, K)
             if grad_flag:
                 scale2 = lambd_d**2 * sigma_k**2
+            if log_flag:
+                # Where the sum falls below the smallest normal number, its
+                # logarithm loses precision and then becomes -inf, and the
+                # gradient dy / y becomes 0 / 0. There the log density is a
+                # log-sum-exp of the components' log densities, and its
+                # gradient the components' gradients weighted by their
+                # responsibilities. Every other row is left to the linear
+                # sum.
+                tiny = np.finfo(np.float64).tiny
+                with np.errstate(divide="ignore"):
+                    log_w_k = (
+                        np.log(self.w.reshape(1, K))
+                        - 0.5 * D * np.log(2 * np.pi)
+                        - np.sum(np.log(lamd_row))
+                        - D * np.log(self.sigma.reshape(1, K))
+                    )
             step = max(1, int(chunk_elements) // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))
@@ -930,6 +963,26 @@ class VariationalPosterior:
                     dy[rows] = -np.sum(
                         nn[:, :, np.newaxis] * diff / scale2, axis=1
                     )
+                if log_flag:
+                    low = (y[rows, 0] < tiny) & mask[rows]
+                    if np.any(low):
+                        idx = i0 + np.flatnonzero(low)
+                        log_nn = log_w_k - 0.5 * d2[low]  # (m, K)
+                        top = np.max(log_nn, axis=1, keepdims=True)
+                        # A row whose every term is -inf stays at -inf
+                        top[np.isneginf(top)] = 0.0
+                        r = np.exp(log_nn - top)
+                        r_sum = np.sum(r, axis=1, keepdims=True)
+                        with np.errstate(divide="ignore"):
+                            y[idx] = top + np.log(r_sum)
+                        if grad_flag:
+                            dy[idx] = -np.sum(
+                                (r / r_sum)[:, :, np.newaxis]
+                                * diff[low]
+                                / scale2,
+                                axis=1,
+                            )
+                        tail[idx] = True
 
         else:
             # Compute pdf of heavy-tailed variant of variational posterior
@@ -992,12 +1045,16 @@ class VariationalPosterior:
                         )
 
         if log_flag:
+            # The rows of `tail` hold the log density and its gradient already
+            head = ~tail
             if grad_flag:
-                dy = dy / y
+                dy[head] = dy[head] / y[head]
+            y_head = y[head]
             # Avoid log(0):
-            zero_mask = y == 0
-            y[zero_mask] = -np.inf
-            y[~zero_mask] = np.log(y[~zero_mask])
+            zero_mask = y_head == 0
+            y_head[zero_mask] = -np.inf
+            y_head[~zero_mask] = np.log(y_head[~zero_mask])
+            y[head] = y_head
             # PDF is 0 outside original bounds:
             y[~mask] = -np.inf
         else:
@@ -1052,7 +1109,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -1081,6 +1140,8 @@ class VariationalPosterior:
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
@@ -1170,6 +1231,15 @@ class VariationalPosterior:
         parametrization of the mixture weights, is set alongside ``w``, so
         that ``softmax(eta)`` is the resulting ``w``.
 
+        When both ``sigma`` and ``lambd`` are optimized, ``lambd`` is then
+        divided by its root mean square and ``sigma`` multiplied by it. The
+        two scales enter the density through their product alone, so that
+        rescaling leaves the distribution as it was. A scale that is not
+        optimized keeps its value and the other takes the value in
+        ``theta``, so that the parameters set are a function of ``theta``
+        alone. The weights are divided by their sum when they are being
+        optimized.
+
         Parameters
         ----------
         theta : np.ndarray
@@ -1234,10 +1304,18 @@ class VariationalPosterior:
             else:
                 self.w = eta.T[:, np.newaxis]
 
-        nl = np.sqrt(np.sum(self.lambd**2) / self.D)
-
-        self.lambd = self.lambd.reshape(-1, 1) / nl
-        self.sigma = self.sigma.reshape(1, -1) * nl
+        # The product of sigma and lambd leaves their common scale free when
+        # both are optimized; lambd is then given unit root mean square, as
+        # `misc/rescale_params.m` gives it. A scale that is not optimized
+        # keeps its value, so that the parameters are a function of theta
+        # alone, as `misc/negelcbo_vbmc.m` assigns theta without rescaling.
+        if self.optimize_sigma and self.optimize_lambd:
+            nl = np.sqrt(np.sum(self.lambd**2) / self.D)
+            self.lambd = self.lambd.reshape(-1, 1) / nl
+            self.sigma = self.sigma.reshape(1, -1) * nl
+        else:
+            self.lambd = self.lambd.reshape(-1, 1)
+            self.sigma = self.sigma.reshape(1, -1)
 
         # Ensure that weights are normalized
         if self.optimize_weights:

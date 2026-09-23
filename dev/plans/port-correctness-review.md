@@ -39,7 +39,8 @@ caching, and cross-module behavior.
 - Reviewers are Opus agents. Fable is used only on request, for a critical
   or suspicious part where Opus is not confident, and each such use is
   asked for separately.
-- At most four agents run at a time.
+- At most four agents run at a time, as a guide against runaway fan-outs
+  rather than a hard limit (2026-09-23).
 - Agents may run small checks (short scripts, single function calls,
   finite differences, one test function). They may not run test suites,
   `optimize()` runs, installs, or anything else that competes for the one
@@ -553,7 +554,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   object works through `dill` and gets `save`/`load` methods as a
   `TODO.md` item; the core transformer's loss of precision near a
   nonzero bound waits for slices P8 and O3 to say whether MATLAB shares
-  it.
+  it. (Answered by wave 7, `verification/wave7.md`, W7-6: MATLAB shares it,
+  and the loss is at an upper bound with `abs(b) < b - a`, worst at
+  `b = 0`, not at a nonzero bound; a lower bound keeps full precision. Left
+  as it is in both.)
 - [x] 2026-09-19: chunk-independent Monte Carlo entropy (PI decision).
   Every chunk budget reproduces the default budget's output bit for bit:
   the mixture densities and every sum over samples and components are
@@ -1399,7 +1403,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   and `-inf` beyond. The acquisitions and `fess` floor it at the log of the
   smallest positive float as their MATLAB counterparts do, so a log-sum-exp
   evaluation changes nothing there while the floors stand; the mode search
-  starts at samples and component means, never at such a point; `mtv` reads
+  starts at samples and component means, never at such a point, but on a
+  narrow posterior the first trial step of its optimizer lands at one, and
+  the start is returned unrefined (corrected by wave 7,
+  `verification/wave7.md`, W7-3); `mtv` reads
   no density; the entropies take the log of their own sums with no floor on
   either side; at the default `kl_gauss=True` the main loop reads no
   density. `kl_div(gauss_flag=False)` replaces a zero density by the
@@ -2335,18 +2342,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   gpyreg's `main` or on `dev-port-review`; gpyreg's remote branch
   `port-review-wave6` stands. `dev-next` fast-forwarded to
   `dev-port-review`, with the status line of `TODO.md`.
-- [ ] **Pickup point (2026-09-23, the wave-1 branch in `dev-next`): wave 7,
-  on the PI's decision.** The state: `dev-next` and `dev-port-review` are one
-  commit, pushed and green in CI; they hold waves 0 to 6 and the independent
-  checks of the passes of waves 1 to 6. No worktree of the review is left.
-  Next is the item below: O1 to O4, the third readers, with
-  the sheet's Python citations carried to the present lines before the
-  comparison reviewers receive it. The record that the seeded runs of a
-  later pass are compared with is `wave1_merge/seeded_merged_68e37d3e.npz`
-  on the orchestrator's machine (`dev/scripts/runs/LOCAL.md`); on another
-  machine the four seeded runs are made anew on the starting commit
-  (`verification/scripts/wave2_fixpass_gate_runs.py` with `--out`).
-- [ ] After wave 6, on the PI's decision and not before: O1 to O4, the third
+- [x] After wave 6, on the PI's decision and not before: O1 to O4, the third
   readers, with O4 after the fixes of G1. With the internal track of P2,
   which wave 1 had left out and wave 5 took in, every P slice has both
   reports. Before comparison reviewers receive `known_differences.md`, its
@@ -2354,7 +2350,109 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`experiments/port_review_20260919/refresh_citations.py`, last run on
   2026-09-23): every fix pass moves them. The stored oracle state at
   uncertainty level 1 and the seeded gate run with a prior are items of
-  `TODO.md` (PI, 2026-09-21).
+  `TODO.md` (PI, 2026-09-21). Run as wave 7, the entry below; the sheet's
+  citations had been carried to the merged code in `68e37d3e`.
+- [x] **2026-09-23, wave 7: the third readers O1 to O4, run and verified
+  beside the gates of the merged waves** (PI: the exploration and the
+  verification of wave 7 can run now, read-only or light, while the other
+  session gates the merge of the wave-1 check; the limit of four agents is a
+  guide against runaway fan-outs, not a hard limit). Four fresh Opus
+  reviewers by the brief, O1 to O4, each combining both tracks: re-derive
+  every formula of the slice first, then compare the code with the
+  derivation, then with MATLAB. They read PyVBMC in the worktree
+  `../pyvbmc-wave7`, frozen at `a65b96f4` on the branch
+  `dev-port-review-w7` so that the work in the main checkout could not move
+  the code under them, gpyreg at `v1.3.0` and MATLAB at `396d649`; their
+  checks ran with BLAS single-threaded and `PYTHONPATH` naming the
+  worktree, with no test function and no `optimize()` run, the heavy slot
+  being the other session's. What the briefs added to the section
+  "Reviewer brief": the interpreter's path in the prompt (the worktree has
+  no `LOCAL.md`); a table of derivations as a part of the report, one row
+  per formula and gradient, so that a report without findings says what it
+  checked; and first questions. O1 and O2: which configurations the
+  finite-difference tests leave out, and whether each gradient holds there.
+  O3: the three questions earlier waves had left to it (whether any path
+  needs the gradient of the log Jacobian, the precision near a bound, the
+  re-expression at a warp). O4: the gradient in every configuration PyVBMC
+  builds, the multiplier of level 1 and the low-noise representation
+  included. Reports: O1 (3 findings), O2 (1, and an observation on the
+  input shape), O3 (7), O4 (3), saved verbatim under
+  `experiments/port_review_20260919/reviews/O<n>_third_reader.md`. Four
+  read-only Opus verifiers followed, one per slice, as the reports came in
+  (`verification/wave7_O1.md` to `wave7_O4.md`, their scripts
+  `verification/scripts/wave7_O<n>_*.py`), and the consolidated ledger
+  `verification/wave7.md` holds seventeen rows: W7-1 to W7-7 are met by a
+  user at a shipped option (a zero-mean run stops at its first warp; a run
+  resumed at a kept warp starts its GP fit from pre-warp hyperparameters;
+  `log_pdf` and `vp.mode()` where the density underflows; a flat array for
+  a one-dimensional posterior; three behaviors shared with MATLAB and of no
+  consequence), W7-8 to W7-17 are not (a frozen `sigma` drifting in the
+  objective, reached only by hand; documentation; three gpyreg defects in
+  its prior code that PyVBMC does not reach; a candidate from outside the
+  slices). Every first-question answer held. The reviewers' check scripts
+  are kept on the orchestrator's machine only (`dev/scripts/runs/LOCAL.md`).
+  The sweeps before and after the wave found nothing left in the worktree,
+  in gpyreg or in `../vbmc`. Next: the PI's triage of
+  `verification/wave7.md`. The fixes wait for it and for the merged head to
+  have passed its gates, and are made on `dev-port-review` once
+  `dev-port-review-w7` is merged into it.
+- [x] **2026-09-23, wave 7 ruled and fixed** (PI: every row as proposed,
+  the test notes worth acting on included; then the fixes, light work only,
+  while the other session finished its gates). Four Opus fix agents on
+  worktrees made by hand (`../pyvbmc-w7-A`, `-B`, `-C`, cut from
+  `dev-port-review-w7`, and `../gpyreg-w7`, cut from gpyreg's `main` at
+  `v1.3.0`), one commit per row or test note, each fix with a test seen to
+  fail before it except the test of W7-2, which needs a run; they ran only
+  the test functions they added or changed. The reports are
+  `fixes/wave7_agent_A.md` to `_D.md`, and `verification/wave7.md`, "Fix
+  commits", lists the commits: sixteen of PyVBMC's, reviewed and
+  cherry-picked onto `dev-port-review-w7`, and six of gpyreg's on its branch
+  `w7-fixes` with a section `1.3.1 (unreleased)` of its release notes. Where
+  the rulings said that no number moves, the agents compared the fixed code
+  with the unfixed on many inputs: bit-identical everywhere, for gpyreg on
+  2,304 GPs built as PyVBMC builds them, except the `vp_pdf` oracle, which
+  W7-3 moves on three fixtures at the rows whose density was below the
+  smallest normal number, where the reference held `-inf` and NaN. On the
+  PI's word of the same day: that reference replaced with the generator's
+  targeted mode and a reason; the two gpyreg candidates that agent D found
+  on the way (the space-filling design in a prior's upper tail, an inverted
+  smooth box) fixed in 1.3.1 as well, by agent D on the same branch; W7-2
+  kept as ruled, so that a file saved before it keeps its record. The
+  records that the rulings correct were corrected on the branch (the sheet,
+  the MATLAB-side list, rows 56 to 60 and the items left as they are in
+  both, the notes beside two lines of the paper's transcription, the answer
+  to the wave-0 question on the precision near a bound, the record of P7's
+  first question), and `dev-port-review-w7` was merged into
+  `dev-port-review` at `bad56bc3`, which holds the merged waves 1 to 6, in
+  the main checkout; the package code the reviewers read, `a65b96f4`, is
+  that of `bad56bc3`.
+- [ ] **Pickup point (2026-09-23, wave 7 merged into `dev-port-review`): the
+  gates of the wave-7 fix pass.** The state: `dev-port-review` holds the
+  merge of `dev-port-review-w7`, not yet pushed; `dev-next` stands at
+  `bad56bc3`. gpyreg's fixes are on `w7-fixes` in `../gpyreg-w7`, not
+  pushed. The worktrees `../pyvbmc-wave7` (branch `dev-port-review-w7`) and
+  `../pyvbmc-w7-A`, `-B`, `-C` stand until `git cherry` has been read once
+  more. In this order, one heavy process at a time:
+  1. The test of W7-2 seen to fail with the relink reverted, then the whole
+     of `test_vbmc_warp_branch.py`.
+  2. The exact oracle check: `vp_pdf` alone moves, on `cigar_D4_boosted`,
+     `cigar_D4_largeK` and `corr_D5_warped`; its reference replaced with
+     `--rebaseline vp_pdf` and a reason; the check again, 11 of 11.
+  3. The four seeded runs against `wave1_merge/seeded_merged_68e37d3e.npz`
+     (`dev/scripts/runs/LOCAL.md`): bit for bit expected, since no fix of
+     the pass moves a default trajectory.
+  4. PyVBMC's default suite; the Torch and PyMC tests in the extras
+     environment.
+  5. Against gpyreg's `w7-fixes` once agent D's second round is in: gpyreg's
+     suite, PyVBMC's default suite and the exact oracle check with
+     `PYTHONPATH` naming `../gpyreg-w7`.
+  6. The changelog's lines, the porting log's line for W7-8, the sheet's
+     entries on the renormalized hyperprior and on `None` for the fixed
+     gpyreg, the `TODO.md` line on a NaN location removed with W7-16, and
+     `LOCAL.md`'s entries for the scripts and logs of wave 7.
+  7. The push, the smoke and the full matrix; then, on the PI's word,
+     gpyreg's pull request and release 1.3.1, the pin and the minimum at
+     its tag, the matrix again, and the fast-forward into `dev-next`.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values

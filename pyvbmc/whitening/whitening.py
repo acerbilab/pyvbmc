@@ -397,6 +397,12 @@ def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
     hyp_warped : dict
         An updated copy of the dictionary of original GP hyperparameters, with
         the warping transformation applied.
+
+    Raises
+    ------
+    ValueError
+        If the mean function of the GP is none of the zero, constant and
+        negative quadratic means.
     """
     vp_old = copy.deepcopy(vp_old)
 
@@ -432,7 +438,12 @@ def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
         hyp_warped[0 : vbmc.D, s] = np.mean(np.log(ell_new), axis=0)
 
         # We assume relatively no change to GP output and noise scales
-        if isinstance(gp_old.mean, gpr.mean_functions.ConstantMean):
+        if isinstance(gp_old.mean, gpr.mean_functions.ZeroMean):
+            # No mean hyperparameter to warp. The warp shifts the stored log
+            # joint by a constant, which a zero mean cannot follow; the GP
+            # refit that follows every warp takes it up.
+            pass
+        elif isinstance(gp_old.mean, gpr.mean_functions.ConstantMean):
             # Warp constant mean
             m0 = hyp[Ncov + Nnoise]
             dy_old = vp_old.parameter_transformer.log_abs_det_jacobian(

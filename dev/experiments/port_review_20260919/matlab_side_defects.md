@@ -12,7 +12,8 @@ run. Paths are relative to the MATLAB repository root. The list
 is brought up to date as the review's waves are verified; it stands at the
 end of the verification of wave 6, the gpyreg slices, whose rows (41 to 53)
 concern `gplite/`, the GP layer that gpyreg ports. Rows 54 and 55 come from
-the independent check of the wave-1 pass.
+the independent check of the wave-1 pass, and rows 56 to 60 from the
+verification of wave 7, the third readers of the critical numerical paths.
 
 ## Defects
 
@@ -73,6 +74,11 @@ the independent check of the wave-1 pass.
 | 53 | `gplite/gplite_train.m:142`, with `gplite/gplite_covfun.m:130-131`, `gplite/gplite_noisefun.m:104` | The upper bounds of the output scale and of the noise are `log(height*10)` and `log(height)` with `height = max(y) - min(y)`, and `UB = max(LB,UB)` repairs an inverted pair but not an infinite one | A training set whose targets are all equal gives a bound pair `(-Inf, -Inf)`, which reaches `fmincon`; what it does with it was not looked up. gpyreg's optimizer answers the same pair with a `KeyError` | Shared until the wave-6 pass, which takes a range of one for equal targets, as both sides do for a single target | `verification/wave6.md`, row W6-4 |
 | 54 | `misc/best_vbmc.m:36`, with `:66` | `[~,ord] = sort(elcbo,'descend')` places NaN first, MATLAB's default for a descending sort; `max(elcbo)` at `:66` returns the first element when every value is NaN. Rests on MATLAB's documented `sort` and `max`, not run | With `RankCriterion` on (`vbmc.m:201`, the default), an iteration whose ELBO or ELBO SD is NaN takes the best ELCBO rank and can be returned as the best posterior; without it, a look-back window whose ELCBOs are all NaN returns its first iteration | Not shared: a NaN ELCBO ranks last, and the last iteration is taken when every candidate is NaN (sheet, "A NaN score ranks last in the selection of the returned posterior") | `verification/wave1.md`; `fixes/wave1_check_agent_A.md` |
 | 55 | `misc/vpoptimize_vbmc.m:176`, with `:271-272` and `:189` | `[~,idx] = min(elbostats.nelcbo)` runs over every slot, those of the midpoints included, which no evaluation writes when `NSentK == 0` or `ELCBOmidpoint` is off and which keep `nelcbo = Inf` and a `theta` of NaN; `min` skips NaN | When every evaluated slot is NaN, `min` returns an empty slot, and `rescale_params` at `:189` receives a `theta` of NaN; the returned posterior has NaN parameters, with `elbo = -Inf` and `elbo_sd = NaN` | Not shared: the selection runs over the evaluated slots, and raises when all of them are NaN | `verification/wave1.md`; `fixes/wave1_check_agent_A.md` |
+| 56 | `misc/negelcbo_vbmc.m:10`, `:16`, `:21`, with `misc/gplogjoint.m:25-29` | The defaults `compute_grad = nargout > 1` and `compute_var = beta ~= 0 \|\| nargout > 4` combine so that a call that takes `varF` also asks for the gradient of the full variance, which `gplogjoint` refuses (`gplogjoint:FullVarianceGradient`); the guard at `:21` catches the combination only for `beta ~= 0` | `[F,dF,G,H,varF] = negelcbo_vbmc(theta,0,vp,gp)` stops instead of returning the variance; the automatic default computes the variance only with an explicit `compute_grad = 0`. Dormant: every MATLAB caller passes both arguments | Not shared: PyVBMC's default ignores the outputs asked for and returns `varF = 0.0` for `beta = 0` (sheet, "The variance of `_neg_elcbo` is computed by default only for a nonzero `beta`") | `verification/wave7.md`, W7-9 |
+| 57 | `misc/warp_gpandvp_vbmc.m:37-66`, with `gplite/gplite_meanfun.m:57-62` and `gplite/gplite_post.m:120-121` | The mean function is stored as a number (0 zero, 1 constant, 4 negative quadratic); `case 0`, commented "Warp constant mean", catches the zero mean and reads `hyp(Ncov+Nnoise+1)`, one past the end of a zero-mean hyperparameter vector, and the constant mean falls to `otherwise`, which raises an error | A run with `gpMeanFun = 'const'` (accepted by `misc/setupvars_vbmc.m:286-291`) stops at its first warp; a run with `'zero'` stops on the index past the end, or, with an output warp, reads that warp's first hyperparameter as the constant and writes the warped value into it. The index error is inferred from MATLAB's documented indexing | Constant mean: not shared, PyVBMC warps it exactly. Zero mean: shared, PyVBMC raising at the warp, until the fix of W7-1 (ruled 2026-09-23) | `verification/wave7.md`, W7-1 |
+| 58 | `vbmc_pdf.m:58-66`, `:107-110` | The log density is the log of the mixture density summed in the linear domain, and its gradient `dy./y` | Beyond about 38.6 standard deviations from every component (a log density below about -745) the log density is `-Inf` and its gradient NaN, both finite in truth, and in the subnormal band before that both lose precision. `vbmc_mode.m` meets it at the first trial point of its optimizer on a narrow posterior; whether `fmincon` and `fminunc` recover from the `+Inf` objective there was not run | Shared until the fix of W7-3 (ruled 2026-09-23), which takes the log-sum-exp where the linear sum is not a normal number | `verification/wave7.md`, W7-3 |
+| 59 | `vbmc_pdf.m:116-120` | After an unconditional `error` (`:117-118`), line 119 would subtract the output of `warpvars_vbmc(...,'g',...)`, the derivatives of the coordinate-wise inverse map at the coordinates before the rotation, from the gradient of a log density | Dead code. Had it run, it would subtract quantities that are not the gradient of the log Jacobian, in other coordinates | Not shared: PyVBMC refuses original-space gradients (sheet, "MATLAB's `'g'` action of `warpvars_vbmc.m` is not ported") | `verification/wave7.md`, W7-12 |
+| 60 | `vbmc_pdf.m:41` | The width of `X` is not checked against the posterior's dimension | For a one-dimensional posterior a 1-by-N row returns one number, the weighted sum over components of the product of each component's densities along the row. A user's error under MATLAB's convention of one point per row | Shared in effect until the fix of W7-4 (ruled 2026-09-23): PyVBMC reads a flat array as one point | `verification/wave7.md`, W7-4 |
 
 ## Questionable, shared by both implementations
 
@@ -127,6 +133,28 @@ Found in wave 5 and left as it is in both implementations
   `0 * (-Inf)`, NaN; the gradients are not finite from a weight of about
   1e-322. A weight is exactly zero when its `eta` lies more than 745 below
   the largest, out of the reach of an optimization on either side.
+
+Found in wave 7 and left as they are in both implementations
+(`verification/wave7.md`, rows W7-5, W7-6 and W7-7):
+
+- `misc/warp_input_vbmc.m:143-148`: after a warp the search box is the
+  minimum and maximum of 1000 uniform draws of the old box, mapped and
+  widened by a thousandth of the range, where the exact image of the box
+  under the affine warp has half-width `abs(A)*h`. The extent per
+  coordinate falls short of the exact one more as the dimension grows
+  (median 0.74 at `D = 10`), but the volume lost is at most about `2D/1001`
+  of the box, all in far corners, and the loss does not compound across
+  warps.
+- `shared/warpvars_vbmc.m:106-108`, `:256-258`, `:442-459`: every bounded
+  transform goes through `(x - a)/(b - a)`, which resolves the distance to
+  the upper bound only to `(b - a)*eps/2`, a loss beyond the representation
+  of `x` where `abs(b) < b - a`, worst at `b = 0`; the lower bound keeps full
+  precision, and the log-Jacobian as a function of the transformed variable
+  is exact.
+- `shared/warpvars_vbmc.m:265-269`: the Student-t(4) forward transform forms
+  `q - 1` by cancellation near the midpoint of the interval, an absolute
+  error of up to about 1.6e-8 in the transformed variable, and 0 within
+  about 6e-9 of the midpoint.
 
 The thresholded covariance of the warp, which need not be positive
 semi-definite (`misc/warp_input_vbmc.m:52-71`, and the recipe of the 2020

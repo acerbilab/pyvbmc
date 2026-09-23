@@ -450,11 +450,11 @@ def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
     max_idx : int
         Maximum number of full ELCBO evaluations.
     D : int
-        The dimension.
+        The length of the vector of variational parameters ``theta``.
     K : int
         Number of mixture components.
     Ns : int
-        Number of samples for entropy approximation.
+        Number of GP hyperparameter samples.
 
     Returns
     =======
@@ -1158,17 +1158,22 @@ def _neg_elcbo(
     vp : VariationalPosterior
         Variational posterior for which to evaluate NELCBO.
     beta : float, defaults to 0.0
-        Confidence weight.
+        Confidence weight. A value that is not finite is taken as 0.
     Ns : int, defaults to 0
-        Number of samples for entropy.
+        Number of samples per component for the Monte Carlo approximation
+        of the entropy; 0 takes the deterministic lower bound instead.
     compute_grad : bool, defaults to True
         Whether to compute gradient.
-    compute_var : bool, optional
-        Whether to compute variance. If not given this is
-        determined automatically.
+    compute_var : int or bool, optional
+        Whether to compute variance: 0 (or ``False``) skips it, 1 (or
+        ``True``) computes the full variance, and 2 asks for its diagonal
+        approximation, which ``_gp_log_joint`` does not implement and
+        refuses. If not given, the variance is computed if and only if
+        ``beta`` is nonzero. ``varF`` is 0.0 when the variance is not
+        computed.
     theta_bnd : dict, optional
         Soft bounds for theta.
-    entropy_alpha : float, defaults to 0.0
+    _entropy_alpha : float, defaults to 0.0
         (currently unused) Parameter for lower/upper deterministic entropy
         interpolation.
     separate_K : bool, defaults to False

@@ -24,6 +24,8 @@ from pyvbmc.vbmc.variational_optimization import (
     update_K,
 )
 
+from .test_variational_optimization_grad_fd import _random_gp
+
 
 @pytest.fixture(autouse=True)
 def _restore_global_rng(request):
@@ -277,6 +279,47 @@ def test_gp_log_joint_separate_K_without_variance():
     assert dG.shape == (vp.D * vp.K + vp.K + vp.D + vp.K,)
 
 
+def test_gp_log_joint_variance_against_quadrature():
+    """The covariance of the expected log joint between components,
+    ``J_sjk``, and its variance ``varG`` at ``K = 3`` with separated
+    components of different widths, against a grid quadrature of gpyreg's
+    latent posterior covariance (``predict_full``) in one dimension. The
+    MATLAB reference of ``test_gp_log_joint`` holds two components at one
+    point with one width, so it pins no pair of separated components."""
+    D, K = 1, 3
+    gp = _random_gp(D, N=15, Ns=2, seed=43)
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = np.array([[-1.5, 0.2, 1.6]])
+    vp.sigma = np.array([[0.25, 0.9, 0.5]])
+    vp.lambd = np.array([[1.0]])
+    vp.w = np.array([[0.5, 0.3, 0.2]])
+    vp.eta = np.log(vp.w)
+
+    G_s, _, varG_s, _, _, _, J_sjk = _gp_log_joint(
+        vp, gp, False, False, True, True, True
+    )
+
+    mu = vp.mu.ravel()
+    scales = (vp.sigma * vp.lambd).ravel()
+    x = np.linspace(np.min(mu - 8 * scales), np.max(mu + 8 * scales), 401)
+    Q = norm.pdf(x[:, None], mu[None, :], scales[None, :]) * (x[1] - x[0])
+    _, C = gp.predict_full(x[:, None], add_noise=False)  # (M, M, Ns)
+    J_ref = np.einsum("mj,mns,nk->sjk", Q, C, Q)
+    assert np.allclose(
+        J_sjk, J_ref, rtol=1e-9, atol=1e-12 * np.max(np.abs(J_ref))
+    )
+    w = vp.w.ravel()
+    varG_ref = np.einsum("sjk,j,k->s", J_ref, w, w)
+    assert np.allclose(varG_s, varG_ref, rtol=1e-9, atol=0.0)
+
+    # Averaged over the hyperparameter samples: the mean of their variances
+    # plus the sample variance of their expected log joints.
+    _, _, varG, _, _ = _gp_log_joint(vp, gp, False, True, True, True)
+    assert np.isclose(
+        varG, np.mean(varG_ref) + np.var(G_s, ddof=1), rtol=1e-9, atol=0.0
+    )
+
+
 def test_gp_log_joint_variance_non_cholesky_branch():
     """gpyreg stores a posterior as ``L = -(K + sn2 I)^{-1}`` when the noise
     variance is below 1e-6 (``L_chol=False``), a regime a VBMC run never
@@ -341,6 +384,49 @@ def test_gp_log_joint_variance_non_cholesky_branch():
     assert np.isclose(var_ss0, var_ss1, rtol=1e-6)
 
 
+def _gauss_hermite_nodes(D, n):
+    """Nodes and weights of a tensor Gauss-Hermite rule for the standard
+    normal measure in ``D`` dimensions, ``n`` nodes per dimension."""
+    t, weights = np.polynomial.hermite_e.hermegauss(n)
+    weights = weights / np.sum(weights)
+    nodes = np.stack(np.meshgrid(*([t] * D), indexing="ij"), axis=-1)
+    node_weights = np.stack(
+        np.meshgrid(*([weights] * D), indexing="ij"), axis=-1
+    )
+    return nodes.reshape(-1, D), np.prod(node_weights.reshape(-1, D), axis=1)
+
+
+@pytest.mark.parametrize("D", [1, 2])
+@pytest.mark.parametrize("mean", ["zero", "const", "negquad"])
+def test_gp_log_joint_value_against_quadrature(mean, D):
+    """The expected log joint per hyperparameter sample and component,
+    ``I_sk``, against a Gauss-Hermite quadrature of gpyreg's posterior mean
+    under each component, for each mean function that ``VBMC`` offers
+    (``gp_mean_fun``); ``G`` is their weighted sum."""
+    K = 2
+    gp = _random_gp(D, N=18, Ns=3, seed=41 + D, mean=mean)
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = np.array([[-0.8, 0.9], [0.4, -0.3]])[:D]
+    vp.sigma = np.array([[0.3, 0.6]])
+    vp.lambd = np.array([[1.2], [0.8]])[:D]
+    vp.w = np.array([[0.4, 0.6]])
+    vp.eta = np.log(vp.w)
+
+    G, _, _, _, _, I_sk, _ = _gp_log_joint(
+        vp, gp, False, False, True, False, True
+    )
+
+    nodes, node_weights = _gauss_hermite_nodes(D, 60)
+    scales = vp.sigma * vp.lambd  # (D, K)
+    I_ref = np.zeros((len(gp.posteriors), K))
+    for k in range(K):
+        x = vp.mu[:, k] + nodes * scales[:, k]
+        f_mu, _ = gp.predict(x, separate_samples=True)
+        I_ref[:, k] = node_weights @ f_mu
+    assert np.allclose(I_sk, I_ref, rtol=1e-10, atol=1e-10)
+    assert np.allclose(G, I_sk @ vp.w.ravel(), rtol=1e-13, atol=1e-13)
+
+
 def test_gp_log_joint_variance_gradient_not_implemented():
     """The gradient of the variance and the diagonal variance approximation
     are unported; both requests raise instead of returning something."""
@@ -403,6 +489,43 @@ def test_neg_elcbo():
     )
 
     assert np.allclose(dF, matlab_dF)
+
+
+def test_neg_elcbo_default_variance_follows_beta():
+    """Left as ``None``, ``compute_var`` computes the variance if and only
+    if ``beta`` is nonzero, a ``beta`` that is not finite being taken as
+    zero; ``varF`` is 0.0 when the variance is not computed.
+    ``misc/negelcbo_vbmc.m`` also computes it when the caller takes
+    ``varF``, which Python cannot see (wave 7 of the port review, row
+    W7-9)."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+
+    def evaluate(beta, compute_var=None):
+        return _neg_elcbo(
+            theta, gp, copy.deepcopy(vp), beta, 0, False, compute_var
+        )
+
+    F0, _, _, _, varF0 = evaluate(0.0)
+    assert isinstance(varF0, float) and varF0 == 0.0
+    F_inf, _, _, _, varF_inf = evaluate(np.inf)
+    assert F_inf == F0 and varF_inf == 0.0
+
+    _, _, _, _, varF_full = evaluate(0.0, compute_var=True)
+    assert varF_full > 0.0
+    F2, _, _, _, varF2 = evaluate(2.0)
+    assert varF2 == varF_full
+    assert np.isclose(F2, F0 + 2.0 * np.sqrt(varF_full))
+
+
+@pytest.mark.parametrize("compute_grad", [False, True])
+def test_neg_elcbo_refuses_the_diagonal_variance(compute_grad):
+    """``compute_var=2`` asks for the diagonal approximation of the
+    variance, which is not implemented."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+    with pytest.raises(NotImplementedError, match="Diagonal approximation"):
+        _neg_elcbo(theta, gp, vp, 0.0, 0, compute_grad, 2)
 
 
 def test_vp_bound_loss():

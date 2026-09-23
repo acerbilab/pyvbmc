@@ -2039,6 +2039,22 @@ fact inherited from MATLAB.
   cap.
 - Kind: substituted library.
 
+### The variance of `_neg_elcbo` is computed by default only for a nonzero `beta`
+- Python: `pyvbmc/vbmc/variational_optimization.py: _neg_elcbo` sets
+  `compute_var = beta != 0` when the argument is `None`, and always returns
+  `varF`, 0.0 when the variance is not computed.
+- MATLAB: `misc/negelcbo_vbmc.m:16`, `compute_var = beta ~= 0 || nargout >
+  4`, with `compute_grad = nargout > 1` at `:10`. A call that takes `varF`
+  with the default `compute_grad` stops in `misc/gplogjoint.m:25-29`, so
+  MATLAB's default computes the variance only when the caller also passes
+  `compute_grad = 0` (`matlab_side_defects.md`, row 56).
+- What differs: a caller that leaves out `compute_var` and passes
+  `compute_grad=False` receives `varF = 0.0` where MATLAB computes the
+  variance. Every caller on both sides passes `compute_var`.
+- Why: Python has no counterpart of `nargout`
+  (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-9).
+- Kind: deliberate change (interface).
+
 ---
 
 ## Slice P7 — variational posterior, entropies, VP statistics
@@ -2236,9 +2252,11 @@ fact inherited from MATLAB.
   for, and `misc/rescale_params.m:39-40` removes it.
 - What differs: the starting points and their number (8 optimizations for
   `K = 50` against MATLAB's 20; PyVBMC chooses its starts globally, MATLAB
-  polishes more basins), the optimizer (`scipy.optimize.minimize`, L-BFGS-B
-  within the bounds, for `fmincon` and `fminunc`), and the unconditional
-  store. The box of the search is MATLAB's, the original bounds moved in by
+  polishes more basins), the optimizer (`scipy.optimize.minimize`: L-BFGS-B
+  within the bounds with finite-difference gradients in the original space,
+  for `fmincon`; BFGS with the analytic gradient of the log density in the
+  transformed space, for `fminunc`, which MATLAB runs without a gradient),
+  and the unconditional store. The box of the search is MATLAB's, the original bounds moved in by
   an absolute `sqrt(eps)`, and the starting point is clamped to it on both
   sides.
 - Why: `ba8116fa` (2022-11-03, pull request 115, "fix vp.mode() function")
@@ -2396,21 +2414,32 @@ fact inherited from MATLAB.
   variational posterior's parameters of a bounded problem are not MATLAB's.
   Both transforms are implemented on both sides and either can be selected by
   the option.
-- Why: `AGENTS.md` §"Two coordinate spaces" ("probit by default").
+- Why: commit `6cee9bb5` (2022-11-24, pull request 119, "Pre public"), one
+  of whose items reads "feat: change default bounded variable transform to
+  probit"; every release from 1.0.0 (2023-03-16) ships it. No reason is
+  recorded beyond that line
+  (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-13).
 - Kind: deliberate change.
 
-### The gradient of the log Jacobian is not ported
-- Python: `pyvbmc/parameter_transformer/parameter_transformer.py` provides
-  `log_abs_det_jacobian` but not its derivative.
-- MATLAB: `shared/warpvars_vbmc.m` also returns the gradient of the log
-  Jacobian.
-- What differs: PyVBMC has no access to the derivative of the log Jacobian
-  with respect to the transformed variables.
-- Why: `dev/plans/port-correctness-review.md` §Slices, O3 ("MATLAB's
-  `warpvars_vbmc.m` also provides the gradient of the log Jacobian, which
-  PyVBMC lacks"). Whether any Python path needs it is an open question for
-  the O3 reader, not a settled matter.
-- Kind: unported feature.
+### MATLAB's `'g'` action of `warpvars_vbmc.m` is not ported
+- Python: `pyvbmc/parameter_transformer/parameter_transformer.py` has no
+  counterpart; `log_abs_det_jacobian` returns the log determinant only.
+- MATLAB: `shared/warpvars_vbmc.m:463-477`, `:763-768`. The `'g'` action
+  shares the branch of `'p'` and `'l'`, leaves out `log(scale)` and the sum
+  over coordinates, and exponentiates: it returns the N-by-D matrix of the
+  derivatives of the coordinate-wise inverse map, at the coordinates before
+  the rotation and the rescaling, which is not the gradient of the log
+  Jacobian. Its one caller, `vbmc_pdf.m:119`, follows an unconditional
+  `error` (`:117-118`) and never runs (`matlab_side_defects.md`, row 59).
+- What differs: nothing that a computation reads. No PyVBMC computation
+  needs the gradient of the log Jacobian: the GP, the acquisitions and the
+  ELBO work in the transformed space, where the log Jacobian enters only as
+  data in the stored log joint; `vp.pdf` refuses original-space gradients;
+  the original-space mode search takes no analytic gradient on either side;
+  and the Torch export differentiates its own log Jacobian by autograd.
+- Why: `dev/experiments/port_review_20260919/verification/wave7.md`,
+  W7-12.
+- Kind: unported feature (dead in MATLAB).
 
 ### Rotation matrices are validated as orthogonal, and their determinant is
     taken to be one

@@ -5,6 +5,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.optimize import minimize
+from scipy.special import logsumexp
+from scipy.stats import multivariate_normal
 
 from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.stats import kl_div_mvn
@@ -589,6 +592,140 @@ def test_pdf_whole_coordinates_given_as_integers():
     assert vp.pdf(np.array([3, 4])) == vp.pdf(np.array([3.0, 4.0]))
 
 
+def _log_density_by_log_sum_exp(vp, u):
+    """The log density of `vp` at the rows of `u` (transformed space) and
+    its gradient: a log-sum-exp of the components' log densities, and the
+    components' gradients weighted by their responsibilities."""
+    u = np.atleast_2d(u)
+    scales = vp.sigma.reshape(-1, 1) * vp.lambd.reshape(1, -1)  # (K, D)
+    log_terms = np.stack(
+        [
+            np.log(vp.w[0, k])
+            + multivariate_normal.logpdf(
+                u, vp.mu[:, k], np.diag(scales[k] ** 2)
+            )
+            for k in range(vp.K)
+        ],
+        axis=-1,
+    ).reshape(u.shape[0], vp.K)
+    log_q = logsumexp(log_terms, axis=1)
+    responsibilities = np.exp(log_terms - log_q[:, np.newaxis])
+    gradients = -(u[:, np.newaxis, :] - vp.mu.T) / scales**2  # (N, K, D)
+    return log_q, np.einsum("nk,nkd->nd", responsibilities, gradients)
+
+
+def _tail_posterior():
+    vp = VariationalPosterior(2, 2, np.zeros((1, 2)), rng=20260923)
+    vp.mu = np.array([[0.0, 1.5], [0.0, -0.5]])
+    vp.sigma = np.array([[1.0, 0.7]])
+    vp.lambd = np.array([[1.0], [0.6]])
+    vp.w = np.array([[0.6, 0.4]])
+    return vp
+
+
+def test_log_pdf_holds_where_the_density_underflows():
+    """Far enough in the tails the density falls below the smallest normal
+    double, and then below the smallest double. Its logarithm and the
+    gradient of the logarithm are numbers there, those of a log-sum-exp
+    over the components."""
+    vp = _tail_posterior()
+    direction = np.array([1.0, 0.3]) / np.linalg.norm([1.0, 0.3])
+    t = np.array([0, 5, 30, 35, 35.5, 36, 37, 38, 45, 100, 1e3, 1e5])
+    u = t[:, np.newaxis] * direction
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        log_y, dlog_y = vp.log_pdf(u, orig_flag=False, grad_flag=True)
+        log_y_2, dlog_y_2 = vp.pdf(
+            u, orig_flag=False, log_flag=True, grad_flag=True
+        )
+        y = vp.pdf(u, orig_flag=False)
+
+    log_y_ref, dlog_y_ref = _log_density_by_log_sum_exp(vp, u)
+    assert np.all(np.isfinite(log_y)) and np.all(np.isfinite(dlog_y))
+    assert np.allclose(log_y.ravel(), log_y_ref, rtol=1e-13, atol=1e-13)
+    assert np.allclose(dlog_y, dlog_y_ref, rtol=1e-11, atol=1e-12)
+    assert np.array_equal(log_y_2, log_y)
+    assert np.array_equal(dlog_y_2, dlog_y)
+    # The points span the band of subnormal densities and the zeros.
+    assert 0 < y[4, 0] < np.finfo(float).tiny and y[6, 0] == 0
+    assert not [w for w in caught if issubclass(w.category, RuntimeWarning)]
+
+
+def test_log_pdf_in_the_original_space_holds_where_the_density_underflows():
+    """In the original space the log density is the log density of the
+    transformed point minus the log Jacobian, also where the density of
+    the transformed point underflows."""
+    D = 2
+    parameter_transformer = ParameterTransformer(
+        D,
+        np.zeros((1, D)),
+        np.ones((1, D)),
+        np.full((1, D), 0.1),
+        np.full((1, D), 0.9),
+    )
+    vp = _tail_posterior()
+    vp.parameter_transformer = parameter_transformer
+    vp.mu = vp.mu * 0.01
+    vp.lambd = vp.lambd * 0.01
+    x = np.column_stack(
+        [np.linspace(0.5, 0.95, 10), np.linspace(0.5, 0.2, 10)]
+    )
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        log_p = vp.log_pdf(x)
+
+    u = parameter_transformer(x)
+    log_q_ref, __ = _log_density_by_log_sum_exp(vp, u)
+    log_p_ref = log_q_ref - parameter_transformer.log_abs_det_jacobian(u)
+    assert np.count_nonzero(log_q_ref < np.log(np.finfo(float).tiny)) >= 3
+    assert np.all(np.isfinite(log_p))
+    assert np.allclose(log_p.ravel(), log_p_ref, rtol=1e-13, atol=1e-13)
+    assert not [w for w in caught if issubclass(w.category, RuntimeWarning)]
+
+
+@pytest.mark.parametrize("orig_flag", [True, False])
+@pytest.mark.parametrize("df", [np.inf, 3, -3])
+def test_pdf_refuses_points_whose_width_is_not_the_dimension(orig_flag, df):
+    """Each row of `x` is one point, and a flat array is one point. For a
+    one-dimensional posterior a flat array of several numbers is therefore
+    a point of the wrong width, and is refused; a column of points is
+    evaluated point by point."""
+    vp = VariationalPosterior(1, 2, np.zeros((1, 1)), rng=20260923)
+    vp.mu = np.array([[-0.2, 0.3]])
+    vp.sigma = np.array([[0.5, 0.8]])
+    points = np.array([-0.3, 0.1, 0.4])
+
+    for density in (vp.pdf, vp.log_pdf):
+        with pytest.raises(ValueError, match="one point") as error:
+            density(points, orig_flag=orig_flag, df=df)
+        assert "column" in str(error.value)
+
+        column = density(points[:, np.newaxis], orig_flag=orig_flag, df=df)
+        assert column.shape == (3, 1)
+        one_by_one = [
+            density(points[i : i + 1], orig_flag=orig_flag, df=df)[0]
+            for i in range(3)
+        ]
+        assert np.array_equal(column.ravel(), one_by_one)
+
+
+def test_pdf_refuses_rows_whose_width_is_not_the_dimension():
+    """A matrix whose rows are not `D` wide is refused; a flat array of
+    `D` numbers is one point."""
+    vp = VariationalPosterior(2, 2, np.zeros((1, 2)), rng=20260923)
+    vp.sigma = np.ones((1, 2))
+
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.pdf(np.zeros((4, 3)), orig_flag=False)
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.log_pdf(np.zeros((4, 1)), orig_flag=False, grad_flag=True)
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.pdf(np.zeros(3))
+    assert vp.pdf(np.zeros(2)).shape == (1,)
+
+
 def test_pdf_duplicate_log_flag():
     D = 2
     lb = np.ones((1, D)) * -3
@@ -714,6 +851,58 @@ def test_set_parameters_not_raw_checks_the_constrained_entries(
         negative[idx] = -negative[idx]
         with pytest.raises(ValueError, match="must be positive"):
             vp.set_parameters(negative, raw_flag=False)
+
+
+@pytest.mark.parametrize("raw_flag", [True, False])
+@pytest.mark.parametrize(
+    "optimize_sigma, optimize_lambd",
+    [(False, True), (True, False), (False, False)],
+)
+def test_set_parameters_keeps_a_scale_that_is_not_optimized(
+    optimize_sigma, optimize_lambd, raw_flag
+):
+    """``sigma`` and ``lambd`` are rescaled against each other only when
+    both are optimized. A scale that is not optimized keeps the value it
+    was given, however often the parameters are set, and an optimized scale
+    takes the value in ``theta``: the parameters are a function of
+    ``theta`` alone."""
+    K = 2
+    D = 3
+    vp = VariationalPosterior(D, K, np.array([[5]]))
+    vp.optimize_sigma = optimize_sigma
+    vp.optimize_lambd = optimize_lambd
+    sigma = np.array([[0.6, 0.4]])
+    # A root mean square other than one, which a rescaling would change.
+    lambd = np.array([[3.0], [1.5], [0.5]])
+    vp.sigma = sigma.copy()
+    vp.lambd = lambd.copy()
+
+    rng = np.random.default_rng(20260923)
+    sigma_block = rng.uniform(0.3, 1.5, K)
+    lambd_block = rng.uniform(0.3, 1.5, D)
+    blocks = [rng.standard_normal(D * K)]
+    if optimize_sigma:
+        blocks.append(sigma_block)
+    if optimize_lambd:
+        blocks.append(lambd_block)
+    blocks.append(np.full(K, 1.0 / K))
+    theta = np.concatenate(blocks)
+    to_value = np.exp if raw_flag else np.asarray
+    if optimize_sigma:
+        expected_sigma = to_value(sigma_block).reshape(1, -1)
+    else:
+        expected_sigma = sigma
+    if optimize_lambd:
+        expected_lambd = to_value(lambd_block).reshape(-1, 1)
+    else:
+        expected_lambd = lambd
+
+    for _ in range(3):
+        vp.set_parameters(theta, raw_flag=raw_flag)
+        assert vp.sigma.shape == (1, K)
+        assert vp.lambd.shape == (D, 1)
+        assert np.array_equal(vp.sigma, expected_sigma)
+        assert np.array_equal(vp.lambd, expected_lambd)
 
 
 def test_get_parameters_raw():
@@ -1079,6 +1268,39 @@ def test_mode_one_dimensional(bounded):
     if not bounded:
         # Of a single component, the mode is its mean.
         assert np.isclose(mode, 0.7, atol=1e-4)
+
+
+@pytest.mark.parametrize("orig_flag", [False, True])
+def test_mode_refines_on_a_narrow_posterior(orig_flag):
+    """On a posterior whose scale is small in the units searched, the first
+    trial steps of the optimizer land where the density underflows; the
+    search goes on from there and finds the mode."""
+    scale = 0.003
+    vp = VariationalPosterior(2, 3, np.zeros((1, 2)), rng=20260923)
+    vp.mu = np.random.default_rng(3).normal(0, 0.6, (2, 3)) * scale
+    vp.sigma = np.array([[1.0, 1.3, 0.8]])
+    vp.lambd = np.full((2, 1), scale)
+    vp.w = np.array([[0.4, 0.33, 0.27]])
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        mode = vp.mode(orig_flag=orig_flag)
+
+    # The transformation is the identity, so the mode is the same in both
+    # spaces. The reference searches in units of the posterior's scale.
+    def negative_log_density(z):
+        log_q, grad = _log_density_by_log_sum_exp(vp, z * scale)
+        return -log_q[0], -grad[0] * scale
+
+    reference = minimize(
+        negative_log_density,
+        (vp.mu @ vp.w.T).ravel() / scale,
+        jac=True,
+        method="BFGS",
+        options={"gtol": 1e-10},
+    )
+    assert np.max(np.abs(mode - reference.x * scale)) < 1e-4 * scale
+    assert not [w for w in caught if issubclass(w.category, RuntimeWarning)]
 
 
 def test_mode_starts_inside_the_box_it_searches(mocker):

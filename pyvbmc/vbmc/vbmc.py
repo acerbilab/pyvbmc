@@ -1445,6 +1445,13 @@ class VBMC:
                 self.vp, self.hyp_dict["hyp"] = warp_gp_and_vp(
                     parameter_transformer_warp, self.gp, self.vp, self
                 )
+                # The optim_state that warp_input returns is a copy, and so
+                # is the hyp_dict it holds. Active sampling, which links the
+                # two, is skipped after a warp, so they are linked here, for
+                # the record of the iteration to hold the hyperparameters
+                # fitted in the warped space. An undone warp restores the
+                # earlier optim_state, and active sampling links that one.
+                self.optim_state["hyp_dict"] = self.hyp_dict
 
                 self.logging_action.append(warp_action)
                 timer.stop_timer("warping")
