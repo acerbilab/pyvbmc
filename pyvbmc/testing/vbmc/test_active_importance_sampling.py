@@ -402,7 +402,9 @@ def test_active_sample_proposal_pdf():
 
 
 def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero():
-    """A point that lies outside every component of the proposal has zero
+    """A point that lies outside every box of the proposal, and so far
+    from every component of its posterior that the logarithm of their
+    density is -inf (its squared distance to each overflows), has zero
     proposal density and so no importance weight. MATLAB's arithmetic
     gives NaN there and ``activeimportancesampling_vbmc.m:148`` turns it
     into ``-Inf``, which is what the caller does with every non-finite
@@ -413,7 +415,7 @@ def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero():
     w_vp = 0.5
 
     Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
-    far = np.full((1, vp.D), 1e5)
+    far = np.full((1, vp.D), 1e200)
     assert np.all(vp.pdf(far, orig_flag=False, log_flag=True) == -np.inf)
     assert not np.any(np.all(np.abs(far - gp.X) < rect_delta, axis=1))
 

@@ -810,7 +810,11 @@ class VariationalPosterior:
             `orig_flag` is `False`.
         log_flag : bool, optional
             If `log_flag` is ``True`` return the logarithm of the pdf,
-            by default ``False``.
+            by default ``False``. Where the density of the mixture of
+            normal components is below the smallest normal double, its
+            logarithm and the gradient of the logarithm are computed by
+            log-sum-exp over the components, so that they stay finite in
+            the far tails.
         grad_flag : bool, optional
             If ``True`` the gradient of the pdf is returned as a second output,
             by default ``False``. Gradients are available only in transformed
@@ -893,6 +897,9 @@ class VariationalPosterior:
         y = np.zeros((N, 1))
         if grad_flag:
             dy = np.zeros((N, D))
+        # Rows of `y` and `dy` that hold the log density and its gradient
+        # directly (see below).
+        tail = np.zeros(N, dtype=bool)
 
         if not np.isfinite(df) or df == 0:
             # compute pdf of variational posterior
@@ -919,6 +926,22 @@ class VariationalPosterior:
             w_k = (nf * self.w / self.sigma**D).reshape(1, K)
             if grad_flag:
                 scale2 = lambd_d**2 * sigma_k**2
+            if log_flag:
+                # Where the sum falls below the smallest normal number, its
+                # logarithm loses precision and then becomes -inf, and the
+                # gradient dy / y becomes 0 / 0. There the log density is a
+                # log-sum-exp of the components' log densities, and its
+                # gradient the components' gradients weighted by their
+                # responsibilities. Every other row is left to the linear
+                # sum.
+                tiny = np.finfo(np.float64).tiny
+                with np.errstate(divide="ignore"):
+                    log_w_k = (
+                        np.log(self.w.reshape(1, K))
+                        - 0.5 * D * np.log(2 * np.pi)
+                        - np.sum(np.log(lamd_row))
+                        - D * np.log(self.sigma.reshape(1, K))
+                    )
             step = max(1, int(chunk_elements) // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))
@@ -930,6 +953,26 @@ class VariationalPosterior:
                     dy[rows] = -np.sum(
                         nn[:, :, np.newaxis] * diff / scale2, axis=1
                     )
+                if log_flag:
+                    low = (y[rows, 0] < tiny) & mask[rows]
+                    if np.any(low):
+                        idx = i0 + np.flatnonzero(low)
+                        log_nn = log_w_k - 0.5 * d2[low]  # (m, K)
+                        top = np.max(log_nn, axis=1, keepdims=True)
+                        # A row whose every term is -inf stays at -inf
+                        top[np.isneginf(top)] = 0.0
+                        r = np.exp(log_nn - top)
+                        r_sum = np.sum(r, axis=1, keepdims=True)
+                        with np.errstate(divide="ignore"):
+                            y[idx] = top + np.log(r_sum)
+                        if grad_flag:
+                            dy[idx] = -np.sum(
+                                (r / r_sum)[:, :, np.newaxis]
+                                * diff[low]
+                                / scale2,
+                                axis=1,
+                            )
+                        tail[idx] = True
 
         else:
             # Compute pdf of heavy-tailed variant of variational posterior
@@ -992,12 +1035,16 @@ class VariationalPosterior:
                         )
 
         if log_flag:
+            # The rows of `tail` hold the log density and its gradient already
+            head = ~tail
             if grad_flag:
-                dy = dy / y
+                dy[head] = dy[head] / y[head]
+            y_head = y[head]
             # Avoid log(0):
-            zero_mask = y == 0
-            y[zero_mask] = -np.inf
-            y[~zero_mask] = np.log(y[~zero_mask])
+            zero_mask = y_head == 0
+            y_head[zero_mask] = -np.inf
+            y_head[~zero_mask] = np.log(y_head[~zero_mask])
+            y[head] = y_head
             # PDF is 0 outside original bounds:
             y[~mask] = -np.inf
         else:
