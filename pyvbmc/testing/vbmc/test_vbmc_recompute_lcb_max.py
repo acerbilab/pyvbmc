@@ -211,14 +211,17 @@ def build_noisy_state(noise_sd, dropped, counts, hyp):
 
 
 def test_a_noisy_run_recomputes_with_the_noise_of_each_point():
-    """On a target that returns the noise of each value, the GP of the run
-    is conditioned on those per-point variances, and the recomputed maxima
-    are the bounds of that GP, which differ from those of a GP that ignores
-    them. The variances reach the bound through that conditioning alone:
-    MATLAB passes ``s2 = S.^2`` to ``gplite_pred``
-    (``private/recompute_lcbmax.m:9-16``), which reads it only for the
-    predictive variance with the noise added (``gplite/gplite_pred.m:63``),
-    and so does gpyreg's ``GP.predict``."""
+    """On a target that returns the noise of each value, the recomputation
+    takes its noisy branch, which hands the per-point variances to
+    ``GP.predict``, and returns the running maxima of the latent bound of
+    the GP of the run, which is conditioned on those variances as a noisy
+    run conditions it (the bounds of a GP that ignores them are far from
+    these). The variances handed to the prediction cannot change the
+    latent bound: gpyreg's ``GP.predict`` reads them only for the
+    predictive variance with the noise added, as ``gplite_pred`` reads the
+    ``s2 = S.^2`` that MATLAB passes it (``private/recompute_lcbmax.m:9-16``,
+    ``gplite/gplite_pred.m:63``). The test pins that the branch runs and
+    returns the latent bound, whatever variances it hands over."""
     noise_sd = np.array([0.3, 1.5, 0.6, 2.0, 0.9, 0.2, 1.2])
     dropped = (1,)
     counts = (3, 5, 7)
