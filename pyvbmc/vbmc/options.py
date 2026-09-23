@@ -206,9 +206,8 @@ def _noise_size_reading(value):
     An empty value leaves the option unset. Any other value has to be a
     positive finite number, as ``misc/setupoptions_vbmc.m:131-132``
     requires, since the GP fit starts its noise from the logarithm of the
-    value. A 0-d array counts as the number it holds, as it does for the
-    other options that take one number; an array with an axis, even of one
-    entry, does not.
+    value. A 0-d array counts as the number it holds; an array with an
+    axis, even of one entry, does not.
 
     Parameters
     ----------
@@ -550,10 +549,13 @@ class Options(MutableMapping, dict):
         ``misc/setupoptions_vbmc.m:109-114`` requires, or infinity for no
         limit. ``min_iter`` has to be a finite non-negative integer, 0 for a
         run without a minimum: the minimum holds back every termination,
-        the one on the budget of evaluations included, so a run under an
-        infinite one would never stop. A floating value that lands on an
-        integer counts. A ``max_iter`` below ``min_iter`` is raised to it,
-        as ``misc/setupoptions_vbmc.m:115-119`` does.
+        the one on the budget of evaluations included unless the run
+        accounts for evaluations made before it (``precomputed_evaluations``
+        or an ``initialization_cost``), so a run under an infinite one
+        would never stop, or would stop only at its budget. A floating
+        value that lands on an integer counts. A ``max_iter`` below
+        ``min_iter`` is raised to it, as ``misc/setupoptions_vbmc.m:115-119``
+        does.
 
         Raises
         ------

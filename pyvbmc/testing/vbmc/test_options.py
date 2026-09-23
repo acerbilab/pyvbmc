@@ -215,8 +215,10 @@ def test_min_iter_must_be_a_finite_non_negative_integer(value):
     reach ``max_iter``, which is raised to ``min_iter`` when it is lower.
     An infinite minimum is refused as well: the minimum holds back every
     termination, the one on the budget of evaluations included (MATLAB
-    VBMC, ``private/vbmc_termination.m:98-99``), so a run under it would
-    never stop."""
+    VBMC, ``private/vbmc_termination.m:98-99``) unless the run accounts for
+    evaluations made before it (``precomputed_evaluations`` or an
+    ``initialization_cost``), so a run under it would never stop, or would
+    stop only at its budget."""
     with pytest.raises(ValueError) as execinfo:
         _shipped_options({"min_iter": value, "max_iter": 2})
     assert "The option min_iter needs to be a finite non-negative integer" in (
