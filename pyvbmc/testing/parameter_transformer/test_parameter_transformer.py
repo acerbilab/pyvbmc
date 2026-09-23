@@ -703,12 +703,18 @@ def test_transform_inverse_direct():
 
 
 def test_transform_direct_inverse_largeN():
+    # Many distinct points, whose coordinates keep at least 0.1 away from
+    # the middle of the interval: there the forward Student's t transform
+    # forms a difference by cancellation, and its round trip is less
+    # accurate than the tolerance below.
+    rng = np.random.default_rng(20260923)
+    N = 10**5
+    X = rng.choice([-1.0, 1.0], (N, D)) * rng.uniform(0.1, 9.9, (N, D))
     parameter_transformer = ParameterTransformer(
         D=D,
         lb_orig=np.ones((1, D)) * -10,
         ub_orig=np.ones((1, D)) * 10,
     )
-    X = np.ones((10 ^ 6, D)) * 0.4
     U = parameter_transformer(X)
     X2 = parameter_transformer.inverse(U)
     assert np.all(np.isclose(X, X2, rtol=1e-12, atol=1e-14))
@@ -720,19 +726,25 @@ def test_transform_direct_inverse_largeN():
             ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
-        X = np.ones((10 ^ 6, D)) * 0.4
         U = parameter_transformer(X)
         X2 = parameter_transformer.inverse(U)
         assert np.all(np.isclose(X, X2, rtol=1e-11, atol=1e-14))
 
 
 def test_transform_inverse_direct_largeN():
+    # Many distinct points, whose coordinates lie between 0.05 and 3 in
+    # absolute value: near zero the forward Student's t transform forms a
+    # difference by cancellation, and farther out the original variable,
+    # close to a bound, resolves the transformed one only coarsely; both
+    # would exceed the tolerance below.
+    rng = np.random.default_rng(20260923)
+    N = 10**5
+    U = rng.choice([-1.0, 1.0], (N, D)) * rng.uniform(0.05, 3.0, (N, D))
     parameter_transformer = ParameterTransformer(
         D=D,
         lb_orig=np.ones((1, D)) * -10,
         ub_orig=np.ones((1, D)) * 10,
     )
-    U = np.ones((10 ^ 6, D)) * 0.11
     X = parameter_transformer.inverse(U)
     U2 = parameter_transformer(X)
     assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
@@ -744,7 +756,6 @@ def test_transform_inverse_direct_largeN():
             ub_orig=np.ones((1, D)) * 10,
             transform_type=t,
         )
-        U = np.ones((10 ^ 6, D)) * 0.11
         X = parameter_transformer.inverse(U)
         U2 = parameter_transformer(X)
         assert np.all(np.isclose(U, U2, rtol=1e-12, atol=1e-14))
