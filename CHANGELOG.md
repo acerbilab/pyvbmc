@@ -694,6 +694,10 @@ its entry below.
   taken before the corrections listed above, which change how long a run
   takes. The VIQR acquisition function, the default for noisy targets, is 1.1
   to 1.4 times faster per call on large candidate sets.
+- `vp.mode(orig_flag=False)` ranks its candidate starting points by the
+  density alone, where 1.0.4 also computed the gradient and discarded it,
+  with the same result; on a posterior with 5 variables and 20 components
+  it took 0.40 seconds instead of 0.69, about 1.7 times faster.
 
 ### Fixed
 
