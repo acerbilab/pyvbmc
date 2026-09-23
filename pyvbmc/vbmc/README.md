@@ -146,7 +146,15 @@ defect *n*" is entry *n* of
   `gplite/gplite_train.m` fills them from the whole set, so PyVBMC's lower
   bounds are lower, by much when the training set holds a value far below
   the rest (issue 99 and pull request 116, 2022; `verification/wave3.md`,
-  W3-11).
+  W3-11). In a coordinate where every point of the subset shares one value,
+  the recommendations built from the spread of the coordinate are
+  `log 0 = -inf`: the lower bound of that length scale, and the starting
+  values of the length scale and of the scale of the negative-quadratic
+  mean, which MATLAB also takes from the subset (`misc/gptrain_vbmc.m:139`,
+  `:168`). There all three come from the whole set: the lower bound as
+  MATLAB's does, and the two starting values where MATLAB's starting vector
+  holds `-inf`. The location of the mean starts at the value the subset
+  shares, as in MATLAB.
 - **`hpd_frac` is checked** (deliberate change). `VBMC` refuses, at
   construction and in `load`, a value that is not a fraction in `(0, 1]` or
   that leaves fewer than two points of the initial design, from which the

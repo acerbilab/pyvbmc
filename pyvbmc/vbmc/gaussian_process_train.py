@@ -328,6 +328,24 @@ def _gp_hyp(
     cov_bounds_info = gp.covariance.get_bounds_info(hpd_X, hpd_y)
     mean_bounds_info = gp.mean.get_bounds_info(hpd_X, hpd_y)
     noise_bounds_info = gp.noise.get_bounds_info(hpd_X, hpd_y)
+    # In a coordinate where every point of the subset shares one value, the
+    # recommendations built from the spread of the coordinate are log(0):
+    # the starting length scale and its lower bound, and the starting scale
+    # of the negative-quadratic mean. Those take the recommendations of the
+    # whole training set, from which MATLAB takes the bounds of the length
+    # scales (`misc/gptrain_vbmc.m:174-180` leaves them unset and
+    # `gplite/gplite_train.m:120` fills them).
+    shared = np.flatnonzero(np.max(hpd_X, axis=0) == np.min(hpd_X, axis=0))
+    if shared.size > 0:
+        # The length scales lead the covariance hyperparameters.
+        cov_full_info = gp.covariance.get_bounds_info(X, y)
+        for key in ("x0", "LB"):
+            cov_bounds_info[key][shared] = cov_full_info[key][shared]
+        if isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
+            # The constant and the location precede the scales.
+            omega = 1 + D + shared
+            mean_full_x0 = gp.mean.get_bounds_info(X, y)["x0"]
+            mean_bounds_info["x0"][omega] = mean_full_x0[omega]
     # Missing port: output warping hyperparameters not implemented
     cov_x0 = cov_bounds_info["x0"]
     mean_x0 = mean_bounds_info["x0"]

@@ -18,6 +18,7 @@ import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
 from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc.active_sample import active_sample
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
 
 from .test_vbmc_loop_state import build_short
@@ -68,6 +69,29 @@ def build_trained_state(
             logger.n_evals[i] = 1
     vbmc.optim_state["N"] = sample_count
     vbmc.optim_state["n_eff"] = sample_count
+    return vbmc
+
+
+def build_shared_value_state(options: dict = None):
+    """A training set whose high-posterior-density subset shares one value
+    in its second coordinate.
+
+    Of its ten points, the eight of highest density, the subset that the
+    default ``hpd_frac`` of 0.8 selects, lie on the line ``x2 = 0.25``, and
+    the other two lie off it.
+    """
+    X = np.vstack(
+        (
+            np.column_stack((np.linspace(-0.9, 0.9, 8), np.full(8, 0.25))),
+            [[0.1, -0.8], [-0.3, 0.9]],
+        )
+    )
+    y = -0.5 * X[:, 0] ** 2 - 3.0 * (X[:, 1] - 0.25) ** 2
+    vbmc = build_trained_state(options, sample_count=X.shape[0])
+    logger = vbmc.function_logger
+    for i in range(X.shape[0]):
+        logger.X[i] = X[i]
+        logger.y[i] = y[i]
     return vbmc
 
 
@@ -445,6 +469,129 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert filled["mean_const"][0] == recommended["mean_const"][0]
     assert filled["mean_const"][0] == np.min(y) - 0.5 * (np.max(y) - np.min(y))
     assert filled["mean_const"][1] == np.min(hpd_y)
+
+
+def test_a_coordinate_the_subset_shares_takes_its_scales_from_the_whole_set():
+    """``_gp_hyp`` takes gpyreg's recommendations on the
+    high-posterior-density subset. Where every point of the subset shares
+    one value in a coordinate, the recommendations built from the spread of
+    that coordinate are the logarithm of zero: the starting length scale,
+    its lower bound and the starting scale of the negative-quadratic mean.
+    Those three come from the whole training set, where MATLAB VBMC takes
+    the bounds of the length scales (``misc/gptrain_vbmc.m:174-180`` leaves
+    them unset and ``gplite/gplite_train.m:120`` fills them), and the other
+    coordinate keeps the subset's."""
+    vbmc = build_shared_value_state()
+    X, y = training_data(vbmc)
+    D = X.shape[1]
+    hpd_X, hpd_y, _, _ = get_hpd(X, y, vbmc.options["hpd_frac"])
+    assert np.all(hpd_X[:, 1] == 0.25) and np.ptp(hpd_X[:, 0]) > 0
+    assert np.ptp(X[:, 1]) > 0
+
+    gp, hyp0, bounds, _ = install_hyperparameters(vbmc, default_gp(vbmc))
+
+    whole_cov = gp.covariance.get_bounds_info(X, y)
+    whole_mean = gp.mean.get_bounds_info(X, y)
+    with np.errstate(divide="ignore"):
+        hpd_cov = gp.covariance.get_bounds_info(hpd_X, hpd_y)
+        hpd_mean = gp.mean.get_bounds_info(hpd_X, hpd_y)
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    cov_x0 = hyp0[:cov_N]
+    mean_x0 = hyp0[cov_N + noise_N :]
+    lower = bounds["covariance_log_lengthscale"][0]
+    assert np.all(np.isfinite(hyp0))
+    assert np.all(np.isfinite(lower))
+
+    # The shared coordinate.
+    assert cov_x0[1] == whole_cov["x0"][1]
+    assert lower[1] == whole_cov["LB"][1]
+    assert mean_x0[1 + D + 1] == whole_mean["x0"][1 + D + 1]
+    # The other coordinate, the output scale and the rest of the mean.
+    assert cov_x0[0] == hpd_cov["x0"][0]
+    assert lower[0] == hpd_cov["LB"][0]
+    assert cov_x0[D] == hpd_cov["x0"][D]
+    assert mean_x0[1 + D] == hpd_mean["x0"][1 + D]
+    # The location of the mean is finite on the subset, and starts at the
+    # value the subset shares.
+    np.testing.assert_array_equal(mean_x0[: 1 + D], hpd_mean["x0"][: 1 + D])
+    assert mean_x0[1 + 1] == 0.25
+
+
+@pytest.mark.parametrize(
+    "options",
+    [{}, {"integer_vars": [1]}, {"ns_gp_max": 0}],
+    ids=["continuous", "integer", "without_sampling"],
+)
+def test_the_first_fit_completes_when_the_subset_shares_a_value(options):
+    """The first GP fit of a run starts from the vector ``_gp_hyp`` builds,
+    so a starting value of ``log(0)`` there stopped the slice sampler ("The
+    widths vector needs to be all positive real numbers") or, without
+    sampling, gave non-finite hyperparameters. Here the best eight of ten
+    provided starting points share their second coordinate, and iteration 0
+    runs as ``VBMC.optimize`` runs it: the initial design, then the fit."""
+
+    def target(x):
+        x = np.atleast_2d(x)
+        return float(-0.5 * x[0, 0] ** 2 - 3.0 * (x[0, 1] - 5.0) ** 2)
+
+    x0 = np.array(
+        [[x, 5.0] for x in np.linspace(-1.8, 1.8, 8)]
+        + [[0.0, 1.0], [0.3, 9.0]]
+    )
+    settings = {
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    settings.update(options)
+    vbmc = VBMC(
+        target,
+        x0,
+        np.array([[-np.inf, -0.5]]),
+        np.array([[np.inf, 10.5]]),
+        np.array([[-2.0, 0.5]]),
+        np.array([[2.0, 9.5]]),
+        options=settings,
+        seed=11,
+    )
+    assert x0.shape[0] == vbmc.options["fun_eval_start"]
+    vbmc.iteration = 0
+    vbmc.optim_state["iter"] = 0
+    vbmc.optim_state["hyp_dict"] = vbmc.hyp_dict
+    (
+        vbmc.function_logger,
+        vbmc.optim_state,
+        vbmc.vp,
+        vbmc.gp,
+    ) = active_sample(
+        vbmc.gp,
+        vbmc.options["fun_eval_start"],
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    X, y = training_data(vbmc)
+    hpd_X, _, _, _ = get_hpd(X, y, vbmc.options["hpd_frac"])
+    assert np.ptp(hpd_X[:, 1]) == 0 and np.ptp(X[:, 1]) > 0
+
+    gp, _, _, hyp_dict = train_gp(
+        vbmc.optim_state["hyp_dict"],
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
+        rng=vbmc.rng,
+    )
+
+    assert np.all(np.isfinite(gp.get_hyperparameters(as_array=True)))
+    assert np.all(np.isfinite(hyp_dict["full"]))
+    f_mu, f_s2 = gp.predict(np.vstack((X, [[0.5, 0.0]])))
+    assert np.all(np.isfinite(f_mu)) and np.all(np.isfinite(f_s2))
 
 
 def test_a_bound_the_gp_already_carries_survives():

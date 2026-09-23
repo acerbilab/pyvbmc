@@ -760,6 +760,17 @@ its entry below.
   the evaluations of the design. `VBMC` refuses such starting points at
   construction, with a message that names the coordinates and says that
   fewer points leave the rest of the design to the plausible box.
+- The first GP fit of a run completes when the points of highest density in
+  the initial design (the fraction `hpd_frac` of it, 80% by default) share
+  one value in a coordinate, as when the best 8 of 10 starting points do.
+  Such a run stopped at that fit with `ValueError: The widths vector needs
+  to be all positive real numbers`, after the evaluations of the design, or,
+  with `ns_gp_max=0`, gave a GP with non-finite hyperparameters. In such a
+  coordinate the starting length scale of the GP, the lower bound of that
+  length scale and the starting scale of the GP mean come from the whole
+  training set. Later fits whose points of highest density share a value,
+  which is common with `integer_vars`, take that lower bound from the whole
+  training set as well, so their results differ from 1.0.4.
 - A bound given as a single number applies to every variable, as documented.
   It raised an error for problems with more than one variable. Without `x0`
   the number of variables comes from the plausible bounds, so one of them
