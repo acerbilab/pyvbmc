@@ -27,12 +27,17 @@ Plain NumPy/SciPy, no autodiff. The GP layer is the lab's `gpyreg`
   numerical core, catalogues every hand-derived gradient and lists the latent
   defects found. Read it before changing the numerical core; do not re-derive
   what is written there.
-- `pyvbmc/vbmc/README.md` is the MATLAB-to-Python porting log. The sheets of
-  the port review under `dev/experiments/port_review_20260919/` hold the
-  fuller catalogue: `known_differences.md` lists the deliberate differences
-  from MATLAB and `counterpart_map.md` pairs every MATLAB file with its
-  Python counterpart, both citing the revisions that their headers name.
-  Check them before treating a difference from MATLAB as a porting error.
+- `pyvbmc/vbmc/README.md` is the MATLAB-to-Python porting log and holds the
+  catalogue of the deliberate differences from MATLAB. Check it before
+  treating a difference from MATLAB as a porting error, and update its entry
+  with any change that creates, removes or alters such a difference. The
+  records of the port correctness review under
+  `dev/experiments/port_review_20260919/` hold the evidence behind the
+  catalogue, citing the revisions that their headers name.
+  `known_differences.md` is the sheet the catalogue was consolidated from,
+  with each entry's history, and `counterpart_map.md` pairs every MATLAB
+  file with its Python counterpart. The review's findings and their
+  dispositions are in `dev/results/2026-09-23-port-correctness-review.md`.
 - `docsrc/` is the Sphinx source. `docs/` is its gitignored build output;
   never put source material there.
 

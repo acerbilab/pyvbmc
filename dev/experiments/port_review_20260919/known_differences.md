@@ -4,6 +4,12 @@ This sheet lists the *settled, deliberate* differences between the Python
 code and the MATLAB original. Its purpose is narrow: a reviewer who finds
 one of these should not report it as a new finding.
 
+The sheet is a record of the port correctness review and stands as the
+review left it at its close (2026-09-23). Its entries were consolidated
+into the catalogue of the porting log `pyvbmc/vbmc/README.md`, which is the
+one kept current; the review's findings and dispositions are in
+`dev/results/2026-09-23-port-correctness-review.md`.
+
 **Every entry is a claim a reviewer may challenge.** The sheet says what not
 to report as new, not what is beyond question. If the code does not match an
 entry's description, or if the cited reason does not hold, that is itself a
