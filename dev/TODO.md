@@ -114,8 +114,11 @@ records its execution.
   readers O1 to O4, is reviewed, verified, ruled on and fixed, and its pass
   checked by fresh reviewers (`verification/wave7.md`); none of its fixes
   moves a default trajectory, and its fixes to gpyreg shipped in gpyreg
-  1.3.1, which PyVBMC requires. The plan's pickup point says where to
-  resume.
+  1.3.1, which PyVBMC requires; all of it is merged into `dev-next`. Next:
+  the capped run of row W7-17 and the run that measures W7-2 on a resume,
+  then the closing ledger under `results/` and the consolidation of the
+  sheet's durable entries into the porting log. The plan's pickup point
+  says where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with

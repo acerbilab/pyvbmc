@@ -2466,21 +2466,41 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `gpyreg >= 1.3.1` in `pyproject.toml`, the changelog's requirement, the
   sheet's gpyreg citations and its two gpyreg entries at 1.3.1, the
   `TODO.md` line on a NaN location removed.
-- [ ] **Pickup point (2026-09-23, gpyreg 1.3.1 required): CI, then
-  `dev-next`.** The state: `dev-port-review` holds the wave-7 pass, the
-  round after its check and the move to gpyreg 1.3.1. In this order:
-  1. The exact oracle check and the default suite against the installed
-     gpyreg 1.3.1; the push, the smoke and the full matrix.
-  2. The fast-forward of `dev-next` to `dev-port-review`, with the status
-     line of `TODO.md`.
-  3. The worktrees removed once `git cherry` has been read: `../pyvbmc-wave7`
-     (`dev-port-review-w7`), `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to
-     `-C`) with their local branches, and gpyreg's `../gpyreg-w7`
-     (`w7-fixes`, whose remote branch stays).
-  Open beside it: the ruling on W7-17 with the `TODO.md` item on a single
-  training point, after a capped run from starting points that share a
-  coordinate, and the run that measures W7-2's effect on a resume
-  (`verification/wave7.md`, "Runs for when the heavy slot is free").
+- [x] 2026-09-23: wave 7 through CI with gpyreg 1.3.1, and into `dev-next`.
+  The exact oracle check, 11 of 11, and the default suite, 2143 passed,
+  against the installed gpyreg 1.3.1; `dev-port-review` pushed at
+  `3fb370cd`, its smoke and full matrix (nine jobs) green with the pin at
+  `v1.3.1`. The worktrees `../pyvbmc-wave7`, `../pyvbmc-w7-A`, `-B`, `-C` and
+  gpyreg's `../gpyreg-w7` removed with their local branches, `git cherry`
+  having shown every commit of theirs on `dev-port-review` or on gpyreg's
+  `main`; gpyreg's remote branch `w7-fixes` stands. `dev-next`
+  fast-forwarded to `dev-port-review`, with the status line of `TODO.md`.
+- [ ] **Pickup point (2026-09-23, wave 7 in `dev-next`): the close of the
+  review.** The state: `dev-next` and `dev-port-review` are one commit,
+  pushed and green in CI, and hold every wave of the review (0 to 7) with
+  the independent check of each fix pass; gpyreg 1.3.1 is on PyPI and
+  required. No worktree of the review is left. What closes the `TODO.md`
+  item, in this order, one heavy process at a time:
+  1. The capped run from starting points that share one coordinate (row
+     W7-17 of `verification/wave7.md`), and the PI's ruling on it together
+     with the `TODO.md` item on a fit on a single training point.
+  2. The run that measures what W7-2's fix changes for a run resumed at a
+     kept warp (`verification/wave7.md`, "Runs for when the heavy slot is
+     free").
+  3. The closing ledger, `dev/results/<date>-port-correctness-review.md`:
+     every finding of waves 0 to 7 with its disposition and fix commit, the
+     intentional differences found, the sheet entries withdrawn and the
+     test notes acted on, pointing at the per-wave ledgers under
+     `experiments/port_review_20260919/verification/`; and the durable
+     entries of the known-differences sheet consolidated into the porting
+     log `pyvbmc/vbmc/README.md`, as the section "Verification and the
+     findings ledger" above describes. An independent check of both, then the
+     three generic checkboxes below ticked and the `TODO.md` item closed.
+  The `TODO.md` items that wait for the review's fixes to be in (the oracle
+  state at uncertainty level 1, the seeded gate run with a prior, the triage
+  list left by the check of wave 6, the regeneration of the golden
+  references and the run pools for the release gate) can start once the
+  PI decides.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
