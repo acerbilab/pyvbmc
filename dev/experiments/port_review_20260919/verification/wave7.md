@@ -203,6 +203,9 @@ slot: the gates of the pass are to come ("Gates").
 | W7-14 | gpyreg `e5b7238` | no NaN in the prior's gradient for a coordinate with equal bounds |
 | W7-15 | gpyreg `5ae1c44` | the prior's mass by the survival function where the lower bound lies above the prior's centre; bit-identical for every GP PyVBMC builds (2,304 configurations) |
 | W7-16 | gpyreg `5499b59` | `set_priors` refuses a location that is not finite beside a finite `sigma` |
+| W7-3 | `83a592c6` | the `vp_pdf` references replaced with the generator's targeted mode, the reason in each fixture's metadata, on the PI's word ("Found during the fix round") |
+| found in the round | `72a39732` | the docstrings of `_gp_log_joint`, `warp_gp_and_vp` and `log_pdf` |
+| found in the round | gpyreg `0cf27e1`, `201b52b` | the space-filling design of `fit` by the survival function in a prior's upper tail; `set_priors` refuses an inverted smooth box and takes one of zero width (agent D's second round, `../fixes/wave7_agent_D_second_round.md`) |
 | test notes | `005256f3`, `601efaee` (O3-8, O3-9); `eaac0349`, `e060c768`, `24669ad9` (O2-4 and O2-6, O2-8, O2-7); `fee60c43`, `3dfa93eb`, `de876410`, `91122ff0`, `9f18f491` (slice O1); gpyreg `14736b5`, `dcaea44`, `8be6ee4` (slice O4) | |
 
 ## Found during the fix round
@@ -216,17 +219,19 @@ slot: the gates of the pass are to come ("Gates").
   there are at most -708.9, below the floor `log(realmin)` of the
   acquisitions. The ruling's premise that nothing moves did not hold for
   `vp_pdf` itself: its reference is to be replaced with the generator's
-  targeted mode and a reason, which waits for the PI's word.
+  targeted mode and a reason, which the PI agreed to on 2026-09-23.
 - **W7-2 repairs new records only.** A file saved before the fix still
   holds the stale `hyp_dict` at a kept-warp iteration; covering old files
-  would take a repair inside `load` (fix agent A, §6).
+  would take a repair inside `load` (fix agent A, §6). The PI kept the fix
+  as ruled (2026-09-23), and the changelog says that old files keep their
+  record.
 - **gpyreg, two candidates of the kind of W7-15 and W7-16** (fix agent D,
   §6), neither reached by PyVBMC: the space-filling design of `fit` maps its
   draws through `cdf(lb) + (cdf(ub) - cdf(lb)) S`, which is `+inf` for
   almost every draw with both bounds far in a prior's upper tail, and a fit
   with hyperparameter samples then raises; `set_priors` takes an inverted
   smooth box (`a > b`), whose log prior is then a wrong finite value or
-  NaN.
+  NaN. Both fixed in 1.3.1 on the PI's word (2026-09-23), by agent D.
 - **Smaller notes, not fixed.** The type-2 starting points of `_vb_init`
   overwrite a `sigma` that is not optimized, as `vbinit_vbmc.m:32` does; with
   one scale not optimized, `optimize_vp` returns scales that MATLAB's
@@ -240,13 +245,36 @@ slot: the gates of the pass are to come ("Gates").
 
 ## Gates
 
-To come, once the other session's gates of the merged head have passed and
-`dev-port-review-w7` is merged into `dev-port-review`: the changed modules'
-test directories (the test of W7-2 and the whole of
-`test_vbmc_warp_branch.py` among them), the exact oracle check with the
-targeted replacement of `vp_pdf` if the PI agrees, the four seeded runs,
-PyVBMC's whole suite, the Torch and PyMC environments, the same suite and
-oracle check against gpyreg's `w7-fixes`, and the CI matrix.
+On `dev-port-review` after the merge of `dev-port-review-w7` (`129f53d6`)
+and the replacement of the `vp_pdf` references (`83a592c6`), in the main
+checkout, one process at a time, with BLAS single-threaded; the logs are on
+the orchestrator's machine (`dev/scripts/runs/LOCAL.md`, "Port correctness
+review", `verification_logs/wave7_gates/`).
+
+- The test of W7-2 with its fix reverted in the working tree fails at its
+  `array_equal` (the record holds the hyperparameters of before the warp);
+  with the fix, the whole of `test_vbmc_warp_branch.py`, 4 passed.
+- The exact oracle check, 8 of 11 before the replacement, `vp_pdf` moving
+  in `logpdf` and `dlogpdf` alone on the three fixtures that agent B named;
+  after it, 11 of 11.
+- The four seeded runs against `wave1_merge/seeded_merged_68e37d3e.npz`:
+  92 arrays compared, 0 differ. No fix of the pass moves a default
+  trajectory.
+- The default suite: 2140 passed and 58 skipped, without reruns (the merged
+  head before the pass: 2073 passed).
+- In the extras environment, the Torch selection, 863 passed and 19
+  skipped, and the PyMC adapter, 110 passed.
+
+Against gpyreg's `w7-fixes` at `201b52b`, all eight gpyreg commits of the
+pass, with `PYTHONPATH` naming `../gpyreg-w7` (every log prints that
+`gpyreg` was imported from there), on PyVBMC's `c26cec32`: gpyreg's own
+suite, 371 passed; the exact oracle check, 11 of 11; the four seeded runs
+against those on gpyreg 1.3.0 above, 92 arrays compared, 0 differ; the
+default suite, 2140 passed and 58 skipped; the Torch and PyMC selections in
+the extras environment, 973 passed and 19 skipped. No PyVBMC number moves
+with the gpyreg fixes.
+
+To come: the CI matrix.
 
 ## Runs for when the heavy slot is free
 
