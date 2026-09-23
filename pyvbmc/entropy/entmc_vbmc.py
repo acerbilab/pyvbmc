@@ -139,7 +139,9 @@ def _entmc_vbmc(
     # Everything from the mixture density on runs over the canonical blocks;
     # the budget in force only decides how the component densities and the
     # location sums of a canonical block are produced. A change to how the
-    # work is split into blocks bumps KERNEL_REVISION in
+    # work is split into blocks is repeated in the calibration campaign's
+    # copy of this layout (_layout_signature in
+    # pyvbmc/calibration/_campaign.py) and bumps KERNEL_REVISION in
     # pyvbmc/calibration/_cache.py, so that cached calibrations measured on
     # the old blocks are not reused.
     g_c, step_c = _block_layout(Ns, D, K, DEFAULT_CHUNK_ELEMENTS)
