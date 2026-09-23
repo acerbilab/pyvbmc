@@ -17,11 +17,11 @@ relative to the gpyreg repository root. Bare MATLAB paths (`vbmc.m`,
 `misc/...`, `acq/...`, `gplite/...`, `private/...`, `shared/...`,
 `utils/...`, `ent/...`) are relative to the MATLAB VBMC repository root at
 the comparison revision `396d649`. Line citations into gpyreg are at
-`9e70e6b` (release 1.2.1, the revision PyVBMC's CI installs). Entries that
-cite gpyreg by function name describe its branch `port-review-wave6`
-(`dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
-commits"), which is to be released; their line citations are brought to
-that release when PyVBMC moves to it. Citations of PyVBMC's `AGENTS.md` by
+`a4c2cc0`, the merge of the port review's wave 6 into gpyreg's `main` and
+the revision PyVBMC's CI installs; the commits it brought are listed in
+`dev/experiments/port_review_20260919/verification/wave6.md`, "Fix
+commits". Where an entry says what gpyreg 1.2.1 did, it describes the
+revision before that merge. Citations of PyVBMC's `AGENTS.md` by
 section name or by quotation refer to that file at revision `feadb6fe`; the
 file was rewritten afterwards and does not hold every section cited.
 
@@ -112,7 +112,7 @@ fact inherited from MATLAB.
 - Kind: unported feature.
 
 ### `gplite_qpred.m` (quantile prediction) not ported
-- Python: no counterpart; `gpyreg/gaussian_process.py:2258` records
+- Python: no counterpart; `gpyreg/gaussian_process.py:2530` records
   "quantile doesn't work, requires gplite_qpred implementation" in `GP.plot`.
 - MATLAB: `gplite/gplite_qpred.m`.
 - What differs: gpyreg cannot produce predictive quantiles, and the
@@ -185,7 +185,7 @@ fact inherited from MATLAB.
 - Kind: substituted library.
 
 ### NumPy's quantile convention in the GP mean-function bound recommendations
-- Python: `gpyreg/mean_functions.py:498-501` and `:508` (comment: "For future
+- Python: `gpyreg/mean_functions.py:500-503` and `:510` (comment: "For future
   reference note that quantile behaviour in MATLAB and NumPy is slightly
   different").
 - MATLAB: `gplite/gplite_meanfun.m:157-160` and `:186`, via
@@ -370,7 +370,7 @@ fact inherited from MATLAB.
 ---
 
 ### The window of the burn-in statistics of the slice sampler
-- Python: `gpyreg/slice_sample.py:562`, `:568`: the sums behind the adapted
+- Python: `gpyreg/slice_sample.py:564`, `:572`: the sums behind the adapted
   widths are accumulated over `burn/2 <= i < burn` (`i` from 0), exactly
   `floor(burn/2)` iterations, and divided by `floor(burn/2)`.
 - MATLAB: `gplite/private/slicesamplebnd.m:362`, `:367-371`: accumulated

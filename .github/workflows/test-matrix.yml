@@ -23,9 +23,10 @@ on:
         default: ''
 
 env:
-  # gpyreg v1.2.1: GP.predict(return_cross_covariance=True) for VIQR reuse
-  # (1.2.0) and the heteroskedastic quadrature-variance fix (1.2.1).
-  GPYREG_PIN: 9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b
+  # gpyreg main at the merge of the port review's wave 6 (acerbilab/gpyreg#50):
+  # the GP mean's bounds per input dimension and the fixes listed in the
+  # release notes' 1.3.0 section, on top of 1.2.1.
+  GPYREG_PIN: a4c2cc02fcabb8cf3d85528c2860f697f7a8b5c2
 
 jobs:
   tests:
