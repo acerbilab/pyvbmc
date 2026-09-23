@@ -26,13 +26,18 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.rng import get_rng
 from pyvbmc.stats import kl_div_mvn
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
+from pyvbmc.whitening.whitening import (
+    _WARP_COV_REG_REFUSAL,
+    _is_finite_real_number,
+)
 
 from ._bounds import _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
-from .active_sample import active_sample
+from .active_sample import _refresh_training_counts, active_sample
 from .gaussian_process_train import (
     _lean_gp,
     _restore_gp_posteriors,
@@ -40,7 +45,7 @@ from .gaussian_process_train import (
     train_gp,
 )
 from .iteration_history import IterationHistory
-from .options import Options
+from .options import SHIPPED_OPTIONS_PATHS, Options
 from .variational_optimization import optimize_vp, update_K
 
 
@@ -88,10 +93,9 @@ _CONSTRUCTION_ONLY_OPTIONS = (
     # handling level the GP noise model and the function logger follow.
     "uncertainty_handling",
     "specify_target_noise",
-    # ``_init_optim_state``: the GP mean functions, the starting values and
+    # ``_init_optim_state``: the GP mean function, the starting values and
     # the bound tolerance of the transformed box.
     "gp_mean_fun",
-    "gp_int_mean_fun",
     "f_vals",
     "tol_bound_x",
     # ``_init_optim_state``, through ``Options.integer_vars_mask``.
@@ -104,7 +108,6 @@ _CONSTRUCTION_ONLY_OPTIONS = (
     "det_entropy_min_d",
     "det_entropy_alpha",
     "tol_gp_var",
-    "proposal_fcn",
     "fitness_shaping",
     "out_warp_thresh_base",
     # ``_init_optim_state``: the search bounds, which every iteration then
@@ -309,7 +312,9 @@ class VBMC:
         when ``options["specify_target_noise"]`` is true. ``X`` has shape
         ``(N, D)`` in the target's original coordinates and the other arrays
         have shape ``(N,)``. If a separate prior is supplied, ``y`` contains
-        log-likelihood values; VBMC adds the prior once. Inputs are copied to
+        log-likelihood values; VBMC adds the prior once. (The values of
+        ``options["f_vals"]``, given at ``x0``, are log-joint values, with
+        the prior already added.) Inputs are copied to
         float64 storage. Exact duplicate points must agree within four
         float64 ULPs at their value scale and are retained once; noisy repeats
         remain independent observations and are pooled by the logger.
@@ -1135,12 +1140,6 @@ class VBMC:
         # with small increment
         optim_state["warmup_stable_count"] = 0
 
-        # Proposal function for search
-        if self.options.get("proposal_fcn") is None:
-            optim_state["proposal_fcn"] = "@(x)proposal_vbmc"
-        else:
-            optim_state["proposal_fcn"] = self.options.get("proposal_fcn")
-
         # Quality of the variational posterior
         optim_state["R"] = np.inf
 
@@ -1250,7 +1249,6 @@ class VBMC:
 
         # The value was checked by `_validate_gp_mean_fun_option`.
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab
 
         # Starting threshold on y for output warping
@@ -1587,11 +1585,10 @@ class VBMC:
                     )
                     self.hyp_dict = self.optim_state["hyp_dict"]
 
-            # Number of training inputs
-            self.optim_state["N"] = self.function_logger.Xn + 1
-            self.optim_state["n_eff"] = np.sum(
-                self.function_logger.n_evals[self.function_logger.X_flag]
-            )
+            # The counts of the training set, which active sampling refreshes
+            # after each evaluation; an iteration that acquires no point
+            # still needs them to follow the trimming of the warm-up.
+            _refresh_training_counts(self.optim_state, self.function_logger)
 
             timer.stop_timer("active_sampling")
 
@@ -2862,27 +2859,36 @@ class VBMC:
     def determine_best_vp(
         self,
         max_idx: int = None,
-        safe_sd: float = 5,
-        frac_back: float = 0.25,
-        rank_criterion_flag: bool = False,
+        safe_sd: float = None,
+        frac_back: float = None,
+        rank_criterion_flag: bool = None,
     ):
         """
         Return the best VariationalPosterior found during the optimization of
         VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
+
+        Called without the selection arguments, the method uses the run's
+        options, so that on a finished run it returns the iteration the run
+        selected.
 
         Parameters
         ----------
         max_idx : int, optional
             Check up to this iteration, by default None which means last iter.
         safe_sd : float, optional
-            Penalization for uncertainty, by default 5.
+            Penalization for uncertainty: the multiple of the ELBO_SD
+            subtracted from the ELBO to give the ELCBO. By default None,
+            which means the option ``best_safe_sd`` (5 unless set).
         frac_back : float, optional
             If no past stable iteration, go back up to this fraction of
-            iterations, by default 0.25.
+            iterations. Used only without the ranking criterion. By default
+            None, which means the option ``best_frac_back`` (0.25 unless
+            set).
         rank_criterion_flag : bool, optional
             If True use new ranking criterion method to pick best solution.
-            It finds a solution that combines ELCBO, stability, and recency,
-            by default False.
+            It finds a solution that combines ELCBO, stability, and recency.
+            By default None, which means the option ``rank_criterion``
+            (True unless set).
 
         Returns
         -------
@@ -2898,11 +2904,25 @@ class VBMC:
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
             The index of the iteration with the best VariationalPosterior.
+
+        Notes
+        -----
+        A NaN ELCBO (``elbo - safe_sd * elbo_sd``) or reliability index
+        ranks last in the ranking criterion, and a NaN ELCBO is skipped
+        without it. If the ELCBO of every candidate iteration is NaN, the
+        last iteration considered is selected, which with the default
+        ``max_idx`` is the posterior the run ended on.
         """
 
         # Check up to this iteration (default, last)
         if max_idx is None:
             max_idx = self.iteration_history.get("iter")[-1]
+        if safe_sd is None:
+            safe_sd = self.options["best_safe_sd"]
+        if frac_back is None:
+            frac_back = self.options["best_frac_back"]
+        if rank_criterion_flag is None:
+            rank_criterion_flag = self.options["rank_criterion"]
 
         if self.iteration_history.get("stable")[max_idx]:
             # If the current iteration is stable, return it
@@ -2918,18 +2938,21 @@ class VBMC:
                 # Rank by position
                 rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
-                # The history stores object-dtype arrays, so the scores
-                # and the flags are read through `asarray`: the flags have
-                # to be booleans to index with, and the scores have to be
-                # an array to sort.
+                # The history stores object-dtype arrays. The flags are
+                # read as booleans to index with, and the scores as floats:
+                # an object array sorts with Python's comparisons, to which
+                # NaN is incomparable, while a float sort places NaN last.
                 lnZ_iter = np.asarray(
-                    self.iteration_history.get("elbo")[: max_idx + 1]
+                    self.iteration_history.get("elbo")[: max_idx + 1],
+                    dtype=float,
                 )
                 lnZsd_iter = np.asarray(
-                    self.iteration_history.get("elbo_sd")[: max_idx + 1]
+                    self.iteration_history.get("elbo_sd")[: max_idx + 1],
+                    dtype=float,
                 )
                 r_index_iter = np.asarray(
-                    self.iteration_history.get("r_index")[: max_idx + 1]
+                    self.iteration_history.get("r_index")[: max_idx + 1],
+                    dtype=float,
                 )
                 stable_iter = np.asarray(
                     self.iteration_history.get("stable")[: max_idx + 1],
@@ -2938,7 +2961,8 @@ class VBMC:
 
                 # Rank by ELCBO. In this ranking and in the next, the
                 # earlier of two iterations with equal scores ranks first,
-                # as in MATLAB's stable sort.
+                # as in MATLAB's stable sort, and a NaN score ranks last.
+                # (MATLAB's descending sort ranks a NaN ELCBO first.)
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
                 order = np.argsort(-elcbo, kind="stable")
                 rank[order, 1] = np.arange(1, max_idx + 2)
@@ -2952,7 +2976,10 @@ class VBMC:
                 rank[:, 3] = max_idx + 1
                 rank[stable_iter, 3] = 1
 
-                idx_best = np.argmin(np.sum(rank, 1))
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = np.argmin(np.sum(rank, 1))
 
             else:
                 # Find recent solution with best ELCBO
@@ -2970,14 +2997,24 @@ class VBMC:
                 else:
                     idx_start = np.ravel(laststable)[-1]
 
-                lnZ_iter = self.iteration_history.get("elbo")[
-                    idx_start : max_idx + 1
-                ]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    idx_start : max_idx + 1
-                ]
+                lnZ_iter = np.asarray(
+                    self.iteration_history.get("elbo")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
+                lnZsd_iter = np.asarray(
+                    self.iteration_history.get("elbo_sd")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                idx_best = idx_start + np.argmax(elcbo)
+                # The best ELCBO skips NaN, as MATLAB's `max` does.
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = idx_start + np.nanargmax(elcbo)
 
         # Return best variational posterior, its ELBO and SD. The
         # stability flag goes on the copy: the iteration history describes
@@ -3120,7 +3157,9 @@ class VBMC:
             value would take no effect, and running with another value means
             constructing a new ``VBMC`` object. ``uncertainty_handling``,
             ``gp_mean_fun``, ``integer_vars`` and ``warmup`` are such
-            options; the refusal names the ones it applies to.
+            options; the refusal names the ones it applies to. An option
+            that has no effect in PyVBMC is taken with the warning that
+            construction gives for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3277,6 +3316,9 @@ class VBMC:
             vbmc.options.validate_supplied_option_names(new_options)
             vbmc.options.is_initialized = False
             vbmc.options.update(new_options)
+            # The names join the options the user set, as they do when
+            # given to construction.
+            vbmc.options["useroptions"].update(new_options.keys())
             vbmc.options.is_initialized = True
 
         if "vectorized_target" not in vbmc.options:
@@ -3290,6 +3332,11 @@ class VBMC:
         vbmc._validate_option_values()
         if new_options is not None:
             vbmc._refuse_construction_only_options(new_options)
+            # An option without effect among them is named as such, as
+            # construction names it.
+            vbmc.options._warn_inert_options(
+                SHIPPED_OPTIONS_PATHS, names=new_options.keys()
+            )
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):
@@ -3783,6 +3830,8 @@ class VBMC:
         self._validate_search_optimizer_option()
         self._validate_acq_hedge_option()
         self._validate_search_fraction_options()
+        self._validate_warp_cov_reg_option()
+        self._validate_hpd_frac_option()
         self._validate_performance_calibration_option(
             self.options.get("performance_calibration")
         )
@@ -3817,7 +3866,9 @@ class VBMC:
                 "extremely low-density regions) is not ported, so turning "
                 "the option on would only replace the GP noise function "
                 "and disable the rank-one GP update, a configuration of "
-                "neither toolbox."
+                "neither toolbox. A saved run that carries the value is "
+                "continued with "
+                "VBMC.load(file, new_options={'noise_shaping': False})."
             )
 
     def _refuse_construction_only_options(self, new_options):
@@ -4000,6 +4051,50 @@ class VBMC:
                 f"{total!r}. The share the fractions leave is drawn from "
                 "the variational posterior." + from_a_saved_run
             )
+
+    def _validate_warp_cov_reg_option(self):
+        """Check the weight of the regularization of the covariance of the
+        warp towards its diagonal.
+
+        A number outside ``[0, 1]`` passes: the warp clamps the weight into
+        the interval. What a function returns is checked at the warp, where
+        the number of training points it is given is known.
+        """
+        value = self.options.get("warp_cov_reg", 0)
+        if callable(value) or _is_finite_real_number(value):
+            return
+        raise ValueError(
+            _WARP_COV_REG_REFUSAL.format(value)
+            + " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'warp_cov_reg': 0})."
+        )
+
+    def _validate_hpd_frac_option(self):
+        """Check the fraction of the training inputs from which the bounds
+        of the GP hyperparameters are set.
+
+        The fit takes the points of highest density, `hpd_frac` of the
+        training inputs rounded as MATLAB rounds
+        (`misc/gethpd_vbmc.m:10`), and sets the bounds from their spread,
+        which a single point does not have: a value that leaves fewer than
+        two points of the initial design makes the first fit fail.
+        """
+        value = self.options.get("hpd_frac")
+        fun_eval_start = self.options.get("fun_eval_start")
+        if (
+            _is_finite_real_number(value)
+            and 0 < value <= 1
+            and round_half_away_from_zero(value * fun_eval_start) >= 2
+        ):
+            return
+        raise ValueError(
+            "The option 'hpd_frac' must be a fraction in (0, 1] that leaves "
+            "at least two of the fun_eval_start = "
+            f"{fun_eval_start} points of the initial design, from which the "
+            "bounds of the GP hyperparameters are set; it is "
+            f"{value!r}. A saved run that carries such a value is continued "
+            "with VBMC.load(file, new_options={'hpd_frac': 0.8})."
+        )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""

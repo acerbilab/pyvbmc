@@ -428,11 +428,12 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   It commits one finding at a time and does not push; the orchestrator
   reviews each diff, cherry-picks the commits onto `dev-port-review` and
   runs the module's whole test directory there. A `dev/scripts` script
-  run from a worktree imports the main checkout's package unless
-  `PYTHONPATH` names the worktree (`python -m pytest` is unaffected), so
-  every oracle command in an agent's brief carries `PYTHONPATH=<worktree>`
-  and the agent prints `pyvbmc.__file__` once; `AGENTS.md` records the
-  trap.
+  run from a worktree imports the main checkout's package unless it puts
+  its own repository root on `sys.path`, as `make_oracle_fixtures.py` and
+  `golden_replay.py` do, or `PYTHONPATH` names the worktree (`python -m
+  pytest` is unaffected), so every script command in an agent's brief
+  carries `PYTHONPATH=<worktree>` and the agent prints `pyvbmc.__file__`
+  once; `AGENTS.md` records the trap.
 - The review proceeds one wave at a time. After every wave the
   orchestrator stops and reports the wave's findings to the PI with
   enough context to judge them; the PI decides what follows: the next
@@ -586,21 +587,26 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `minimize_adam` writing into its starting point, and the
   deterministic-entropy branch raising where MATLAB continues.
   Verification and triage pending.
-- [x] 2026-09-19: wave 1 verified. P6: 24 ledger rows
-  (`verification/wave1_P6.md`); M and P2: 21 rows and seven minor
+- [x] 2026-09-19: wave 1 verified. P6: 23 ledger rows
+  (`verification/wave1_P6.md`); M and P2: 21 rows and eight minor
   observations (`verification/wave1_M_P2.md`); every statement
   reproduced or read in both sources, and the reports' own errors
-  recorded there (the reasoning behind P2 F15, M's cause for the
-  one-dimensional search override, three line citations). A pass over
+  recorded there (the reasoning behind P2 F15, four line citations). The
+  ledger's correction of M's cause for the one-dimensional search
+  override was itself wrong, and the ledger's header says why. A pass over
   the options surface that grew out of M F2
-  (`verification/wave1_options.md`) found 25 declared options that
-  nothing reads, three selection options that `determine_best_vp` took
+  (`verification/wave1_options.md`) found 25 of the 28 declared options
+  that nothing read (wave 2 found the other three), three selection
+  options that `determine_best_vp` took
   as arguments both call sites left out, a ranking branch that had
   never executed, and two iteration counts off by one against
   `best_vbmc`.
-- [x] 2026-09-19: wave 1 fixed, 34 commits on `dev-port-review` after
-  `6c151cb` (three Opus agents on worktrees, one finding per commit with
-  its test, cherry-picked after review). Active sampling (13 plus one):
+- [x] 2026-09-19: wave 1 fixed, 35 commits on `dev-port-review` after
+  `6c151cb`, one of them the note in `AGENTS.md` on scripts run from
+  another checkout (`0d24698`) (three Opus agents on worktrees, one
+  finding per commit with its test, cherry-picked after review; their
+  reports were not kept, the rule that saves them under `fixes/` dating
+  from wave 2). Active sampling (13 plus one):
   the CMA-ES search starts at the per-coordinate scales (`CMA_stds`) and
   runs without cma's noise handler; the rank-one GP update takes a first
   noisy observation with its variance; an empty search cache no longer
@@ -624,30 +630,43 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   rejected, the selection options wired, iteration counts corrected.
   Gates: every module suite touched; `--check --exact` 11 of 11 after
   one sanctioned re-baseline of `active_sample_step` (`dd89374`: the
-  search reaches a different point on 7 of the 8 states, every other
-  reference bit-identical); the oracle tests; both flaky tests made
+  search reaches a different point on all seven states that hold an
+  `active_sample_step` reference, the eighth, `rosenbrock_D2_noise1_viqr`,
+  having none because the oracle does not apply to a run with the full
+  update inside active sampling; every other reference bit-identical);
+  the oracle tests; both flaky tests made
   deterministic. Records: `AGENTS.md`, the Stage 1 and Stage 2 plans and
   the oracle harness comments describe the search without its noise
   handler (`80204f7`); the known-differences sheet brought to the state
   of the code. **Moves default trajectories**: the per-coordinate search
   scales and the dropped noise handler (every search with `D > 1`), the
   ranking criterion (runs ending without a stable iteration), the exact
-  one-component entropy (reported values where `K = 1`), the type-2
+  one-component entropy (where `K = 1`: the reported ELBO, the ranking of
+  the finished optimizations and the pruning decision, and the draws the
+  Monte Carlo estimate took from the run's generator), the type-2
   starting widths (`D > 1` with two slow candidates), the bounded
-  one-dimensional search (`D = 1`) and the kept starting points (`x0`
-  longer than `fun_eval_start`), on top of `fun_eval_start` above. The
+  one-dimensional search (`D = 1`), the kept starting points (`x0`
+  longer than `fun_eval_start`), the rank-one GP update of a fresh noisy
+  observation (`510a493`: every acquired point of a noisy run that is not
+  a repeat, equal to the full recomputation to rounding) and the refreshed
+  `n_eff` (`118626e`: the GP refit inside active sampling on noisy
+  targets), on top of `fun_eval_start` above. The
   golden references are regenerated once after the review's remaining
   trajectory-moving fixes are decided.
 - [x] 2026-09-19: rulings without a code change (PI). The soft-bound box
   stays a function of the call's training inputs where MATLAB
   accumulates it: `verification/scripts/soft_bounds_trace.py` on two
   short seeded runs (Rosenbrock `D = 2`, two Gaussians `D = 3`) found
-  the accumulated box wider than the rebuilt one on about half the
-  calls (up to 2.2 and 12 times its width) while the fitted posterior
-  stayed within the rebuilt box up to a small overshoot (a component
-  mean 0.07 box widths outside, a log scale 0.008 above its bound), so
-  the rebuilt bounds bind marginally at most and the accumulation code
-  was removed instead of completed. `search_cmaes_best`
+  the accumulated box wider than the rebuilt one on 16 of 34 and 6 of
+  14 calls (up to 2.08 and 10.4 times its width), while on those calls
+  the fitted posterior stayed within the rebuilt box up to a small
+  overshoot (a component mean 0.008 box widths outside, a log scale
+  0.007 above its bound; the largest overshoot of either run, a mean
+  0.14 box widths outside, is at a warm-up call where the two boxes
+  coincide), so the rebuilt bounds bind marginally at most and the
+  accumulation code, which never had a stored box to widen, was removed
+  instead of completed. The log is listed in `dev/scripts/runs/LOCAL.md`.
+  `search_cmaes_best`
   stays inert: the acquisition is deterministic while the search runs,
   so cma's best-ever point is the best. The noise handler was dropped
   after a side-by-side (`verification/cmaes_side_by_side/`) found the
@@ -661,7 +680,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   fresh, degenerate posterior, so its first slow optimization always
   ends in the merged solution and everything rides on the one candidate
   the sieve ranks first, which is sometimes a broad merged pair. Remedy
-  (`29c822d`): a second `optimize_vp` call continuing from the returned
+  (`e48fade`): a second `optimize_vp` call continuing from the returned
   posterior, a seed, and the one-dimensional KL from exact moments; ten
   of ten runs pass. `test_active_uncertainty_sampling` failed about one
   run in seven for a different reason: the CMA-ES search stops by its
@@ -2209,6 +2228,41 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   list (entry 48), `TODO.md` (the findings left for later, E's two among
   them), the reader of the probe, which prints every number the ledger
   quotes, `dev/scripts/runs/LOCAL.md`.
+- [x] **2026-09-22, the independent check of the wave-1 pass, and its fix
+  round** (PI: `/doublecheck`, read-only, by a second session while wave 6
+  was closed in the main checkout; then, on the PI's word, the fixes as the
+  orchestrator proposed them). The pass of wave 1 was the one pass no fresh
+  reviewer had read. Six fresh read-only Opus reviewers read it on
+  `a3d4a70d`, and `verification/wave1.md` has what they read, what holds,
+  what they found, the disposition of every finding of the wave (its two
+  verifiers' ledgers have no column for it) and the gates. No later pass
+  undid a wave-1 fix. In the code: `optimize_vp` could return a posterior
+  of NaN without an error, the check of W5-7 dropped the stored value of a
+  cached starting point after a warp, and `determine_best_vp` ranked NaN
+  scores anywhere; in the records, the wave-1 ledgers' premise about
+  MATLAB's rank-one update and their correction of the reason for the
+  one-dimensional search were wrong, and the changelog lacked the
+  "Upgrading" line for `noise_shaping`. The fix round runs on the branch
+  `dev-port-review-w1check`, cut at `326c7676` in the worktree
+  `../pyvbmc-w1check`, so that the main checkout stays wave 6's: two Opus
+  fix agents on worktrees of their own (`fixes/wave1_check_agent_A.md` and
+  `_B.md`), 19 commits cherry-picked after review, and a test, three
+  option descriptions and the records by the orchestrator. One of them
+  moves noisy trajectories: `N` and `n_eff` follow every evaluation of
+  active sampling, as in MATLAB. On the PI's rulings of the same day on
+  the items the round left, seven more commits by the orchestrator: the
+  stable sort of the search set, the set of user options of options built
+  from another run's, a CMA-ES start that is not finite, the warning of
+  `get_parameters` on a zero weight, the check of `hpd_frac`, and two texts
+  (`f_vals` are log-joint values; the design size of the PyMC setup
+  probe). The raw reports of the six reviewers and the logs of the gates
+  are on the orchestrator's machine (`dev/scripts/runs/LOCAL.md`). To do
+  when the branch is brought onto `dev-port-review`: the whole suite, the
+  Torch and PyMC environments, the refresh of the sheet's Python line
+  citations against the merged code, the CI matrix, and the noisy half of
+  the benchmark sweep for the refreshed counts; the worktrees and branches
+  of the two fix agents are removed once `git cherry` shows their commits
+  on `dev-port-review`.
 - [x] 2026-09-23: a check of the last round for substantial errors alone
   (PI: `/doublecheck`, "only substantial errors"). Three fresh read-only
   Opus reviewers: P found none in PyVBMC's two commits; G found that the

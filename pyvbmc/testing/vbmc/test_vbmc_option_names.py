@@ -3,6 +3,8 @@ it was supplied: in the ``options`` dictionary, in the file of
 ``options_path``, or in the ``new_options`` of :py:meth:`VBMC.load`. The
 same holds for an option value that construction refuses."""
 
+import logging
+
 import numpy as np
 import pytest
 
@@ -82,6 +84,8 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"search_optimizer": "bounded"}, ValueError, "search_optimizer"),
         ({"search_cache_frac": 0.5}, ValueError, "search_cache_frac"),
         ({"cache_frac": 1.5}, ValueError, "cache_frac"),
+        ({"warp_cov_reg": np.nan}, ValueError, "warp_cov_reg"),
+        ({"hpd_frac": 0.1}, ValueError, "hpd_frac"),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -143,6 +147,72 @@ def test_load_takes_an_option_a_continued_run_reads(tmp_path):
     _vbmc().save(saved)
     loaded = VBMC.load(saved, new_options={"max_iter": 9})
     assert loaded.options["max_iter"] == 9
+
+
+@pytest.mark.parametrize(
+    "name, value",
+    [("gp_int_mean_fun", 1), ("proposal_fcn", "@(x)my_proposal")],
+)
+def test_load_takes_an_option_that_has_no_effect(
+    tmp_path, caplog, name, value
+):
+    """An option that no module reads is taken by ``load`` as it is by
+    construction, with the same warning: refusing it as an option that only
+    construction reads would advise a new ``VBMC`` object, where the value
+    has no effect either."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    caplog.set_level(logging.WARNING)
+    loaded = VBMC.load(saved, new_options={name: value})
+    assert loaded.options[name] == value
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        name in message and "no effect" in message for message in messages
+    )
+
+
+def _warnings_naming(caplog, name):
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno >= logging.WARNING and name in record.getMessage()
+    ]
+
+
+def test_load_warns_of_an_option_that_has_no_effect(tmp_path, caplog):
+    """A value that ``load`` is given for an option without effect is named
+    as having none, as construction names it, and the option joins those
+    the user set. A repeated default is silent, and so is any value of an
+    option whose default is a function, which cannot be told apart from
+    the default by value."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc().save(saved)
+    caplog.set_level(logging.WARNING)
+
+    loaded = VBMC.load(saved, new_options={"double_gp": True})
+    warned = _warnings_naming(caplog, "double_gp")
+    assert len(warned) == 1 and "no effect" in warned[0]
+    assert "double_gp" in loaded.options["useroptions"]
+
+    caplog.clear()
+    VBMC.load(saved, new_options={"double_gp": False})
+    VBMC.load(
+        saved, new_options={"annealed_gp_mean": lambda N, NMAX: 5 * N / NMAX}
+    )
+    assert _warnings_naming(caplog, "double_gp") == []
+    assert _warnings_naming(caplog, "annealed_gp_mean") == []
+
+
+def test_load_warns_only_of_the_options_it_is_given(tmp_path, caplog):
+    """A value given at construction was named there; loading the run
+    with other options does not name it again."""
+    saved = tmp_path.joinpath("run.pkl")
+    caplog.set_level(logging.WARNING)
+    _vbmc(options={"double_gp": True}).save(saved)
+    assert len(_warnings_naming(caplog, "double_gp")) == 1
+    caplog.clear()
+    VBMC.load(saved, new_options={"max_iter": 9})
+    assert _warnings_naming(caplog, "double_gp") == []
 
 
 def test_load_refuses_a_gp_mean_fun_construction_refuses(tmp_path):
@@ -222,6 +292,7 @@ def test_load_reads_the_integer_vars_mask_of_release_1_0_4(
         {"search_cache_frac": "a quarter"},
         {"search_optimizer": "Nelder-Mead"},
         {"cache_frac": -0.1},
+        {"warp_cov_reg": True},
     ],
 )
 def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
@@ -231,6 +302,30 @@ def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):
         _vbmc(options=options)
     message = execinfo.value.args[0]
     assert "VBMC.load(file, new_options=" in message
+
+
+def test_a_saved_run_that_carries_noise_shaping_is_loaded_as_the_refusal_says(
+    tmp_path,
+):
+    """Release 1.0.4 took ``noise_shaping = True``, which is now refused at
+    construction and when a saved run that carries it is loaded. The
+    refusal names the argument of ``load`` that replaces the value, and
+    the run loads with it."""
+    vbmc = _vbmc()
+    vbmc.options.__setitem__("noise_shaping", True, force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+    remedy = "VBMC.load(file, new_options={'noise_shaping': False})"
+
+    with pytest.raises(NotImplementedError) as at_construction:
+        _vbmc(options={"noise_shaping": True})
+    assert remedy in at_construction.value.args[0]
+    with pytest.raises(NotImplementedError) as at_load:
+        VBMC.load(saved)
+    assert remedy in at_load.value.args[0]
+
+    loaded = VBMC.load(saved, new_options={"noise_shaping": False})
+    assert loaded.options["noise_shaping"] is False
 
 
 @pytest.mark.parametrize("value", ["Nelder-Mead", "bounded", "fmincon", ""])
@@ -346,3 +441,96 @@ def test_the_shipped_search_fractions_leave_a_quarter_unclaimed():
     vbmc = _vbmc(options={"search_cache_frac": 0.25})
     assert vbmc.options["search_cache_frac"] == 0.25
     assert sum(vbmc.options[name] for name in SEARCH_FRACTIONS) == 1
+
+
+@pytest.mark.parametrize(
+    "value",
+    [None, "0.5", 0.5 + 0.1j, True, np.True_, np.nan, np.inf, [0.5]],
+    ids=[
+        "None",
+        "str",
+        "complex",
+        "bool",
+        "numpy-bool",
+        "nan",
+        "inf",
+        "list",
+    ],
+)
+def test_a_warp_cov_reg_that_is_not_a_finite_number_is_refused(value):
+    """``warp_cov_reg`` weighs the regularization of the covariance of the
+    warp towards its diagonal: a finite real number or a function of the
+    number of training points. Any other value is refused at construction,
+    naming the option, where it would otherwise fail, or be read as a
+    number it is not, at the first warp, after the warm-up."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"warp_cov_reg": value})
+    assert "warp_cov_reg" in execinfo.value.args[0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        0,
+        0.5,
+        np.float64(0.5),
+        np.float32(0.5),
+        np.int64(1),
+        np.array(0.5),
+        -1.0,
+        2,
+        lambda N: 0.5,
+    ],
+    ids=[
+        "int",
+        "float",
+        "float64",
+        "float32",
+        "int64",
+        "0-d-array",
+        "below-zero",
+        "above-one",
+        "function",
+    ],
+)
+def test_a_warp_cov_reg_that_is_a_finite_number_or_a_function_is_taken(
+    value,
+):
+    """A number outside ``[0, 1]`` is taken as well: the warp clamps the
+    weight into the interval, as MATLAB VBMC does."""
+    vbmc = _vbmc(options={"warp_cov_reg": value})
+    assert vbmc.options["warp_cov_reg"] is value
+
+
+@pytest.mark.parametrize(
+    "value",
+    [0, 0.04, 0.1, -0.5, 1.5, np.nan, True, "0.8", None],
+    ids=[
+        "zero",
+        "empty-subset",
+        "one-point",
+        "negative",
+        "above-one",
+        "nan",
+        "bool",
+        "str",
+        "None",
+    ],
+)
+def test_an_hpd_frac_that_leaves_too_few_points_is_refused(value):
+    """``hpd_frac`` is the fraction of the training inputs, those of
+    highest density, from which the bounds of the GP hyperparameters are
+    set. Of the initial design of ten points, 0.04 leaves none and 0.1
+    leaves one, from which no bound can be set, and the first GP fit
+    fails. Such a value, and one that is not a fraction, is refused at
+    construction, naming the option."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc(options={"hpd_frac": value})
+    assert "hpd_frac" in execinfo.value.args[0]
+
+
+@pytest.mark.parametrize("value", [0.15, 0.8, 1, np.float64(0.5)])
+def test_an_hpd_frac_that_leaves_two_points_or_more_is_taken(value):
+    """Two points of the initial design are enough for the GP fit."""
+    vbmc = _vbmc(options={"hpd_frac": value})
+    assert vbmc.options["hpd_frac"] is value

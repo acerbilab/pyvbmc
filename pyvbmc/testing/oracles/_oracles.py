@@ -7,8 +7,9 @@ reference; the tests recompute and compare with :func:`compare`.
 
 Randomness: functions that draw internally (``entmc_vbmc``, the
 variational objective with Monte Carlo entropy, ``active_sample``) are
-given a generator seeded with ``seed`` (and the legacy global state is
-seeded for the pieces that still use it), so a change in the *order* of
+given a generator seeded with ``seed`` (the legacy global state is also
+seeded around some of them, which no package code draws from any more), so
+a change in the *order* of
 draws re-baselines those oracles deliberately, while the pointwise oracles
 (prediction, density, acquisition, analytic expectations, transformer) are
 deterministic and must agree to rounding.

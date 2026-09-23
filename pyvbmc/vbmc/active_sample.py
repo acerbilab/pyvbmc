@@ -29,6 +29,19 @@ from .options import Options
 _selection_policy_callback = None
 
 
+def _refresh_training_counts(optim_state, function_logger):
+    """Write the counts of the training set into ``optim_state``.
+
+    ``N`` is the number of training inputs and ``n_eff`` the number of
+    evaluations over the live rows, where a repeated observation pooled
+    into its row counts once more. The GP training reads both.
+    """
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+
+
 def _log_search_failure(logger, exc):
     """Report a local acquisition search that raised."""
     logger.warning(
@@ -179,8 +192,10 @@ def active_sample(
             ys = np.copy(optim_state["cache"]["y_orig"][:sample_count])
             skip_logger = np.copy(skip_logger_cache[:sample_count])
             # Only the points the initial design consumes leave the cache;
-            # the rest stay there with their values, as candidates of the
-            # search sieve that are acquired without a target call.
+            # the rest stay there as candidates of the search sieve. One
+            # acquired later at the point the cache holds is recorded with
+            # the value that `f_vals` stored for it, without a target call;
+            # one without a stored value is evaluated.
             idx_remove = np.full(provided_sample_count, False)
             idx_remove[:sample_count] = True
             logger.info(
@@ -217,6 +232,7 @@ def active_sample(
                     function_logger(Xs[idx])
                 else:
                     function_logger.add(Xs[idx], ys[idx])
+        _refresh_training_counts(optim_state, function_logger)
 
     else:
         # active uncertainty sampling
@@ -304,12 +320,7 @@ def active_sample(
 
         ## Active sampling loop (sequentially acquire Ns new points)
         for i in range(sample_count):
-            optim_state["N"] = (
-                function_logger.Xn + 1
-            )  # Number of training inputs
-            optim_state["n_eff"] = np.sum(
-                function_logger.n_evals[function_logger.X_flag]
-            )
+            _refresh_training_counts(optim_state, function_logger)
             ###
             # if options.ActiveVariationalSamples > 0 % Unused
             ###
@@ -379,8 +390,14 @@ def active_sample(
                     optim_state=optim_state,
                     options=options,
                 )
+            cache_rows = {}
             X_search, idx_cache = _get_search_points(
-                options["ns_search"], optim_state, function_logger, vp, options
+                options["ns_search"],
+                optim_state,
+                function_logger,
+                vp,
+                options,
+                cache_rows=cache_rows,
             )
 
             X_search = AbstractAcqFcn._real2int(
@@ -431,7 +448,10 @@ def active_sample(
             acq_fast = acq_eval(X_search, gp, vp, function_logger, optim_state)
 
             if options["search_cache_frac"] > 0:
-                inds = np.argsort(acq_fast)
+                # A stable sort, as MATLAB's: of candidates with equal
+                # values the earlier comes first, so the point acquired is
+                # the one `argmin` takes without a search cache.
+                inds = np.argsort(acq_fast, kind="stable")
                 # The training inputs at the head of the search set are
                 # candidates for a repeated observation of this step
                 # alone. They are kept out of the cache: a training input
@@ -487,8 +507,10 @@ def active_sample(
             def acq_fun(X):
                 """Acquisition for the search optimizers.
 
-                One point (a 1-D array: the bounded scalar search, or
-                CMA-ES's rejection path) returns a float; a list of points
+                One point (a 1-D array: the bounded scalar search,
+                CMA-ES's rejection path, or the final mean that cma
+                evaluates once at the end of every CMA-ES search, its
+                option `eval_final_mean`) returns a float; a list of points
                 (one CMA-ES generation) is evaluated in a single batched
                 call and returns a list.
                 With integer variables the acquisition snaps its input to
@@ -516,8 +538,9 @@ def active_sample(
             ):
                 search_optimizer = options["search_optimizer"]
                 if gp.D == 1:
-                    # A one-dimensional acquisition is minimized over the
-                    # whole search interval by a bounded scalar search.
+                    # A one-dimensional acquisition is searched by SciPy's
+                    # bounded scalar method, a local search that the search
+                    # interval brackets.
                     search_optimizer = "bounded"
 
                 f_val_old = acq_fast[idx]
@@ -571,10 +594,16 @@ def active_sample(
                     # deviations `insigma`: `sigma0` is the overall step size
                     # and `CMA_stds` the coordinate scaling, which cma keeps
                     # in a non-adapting `sigma_vec` while `C` starts at the
-                    # identity and adapts on top of it. A coordinate scaling
-                    # needs every entry positive and finite; otherwise the
-                    # search starts isotropic at `sigma0`.
-                    if np.all(np.isfinite(insigma)) and np.all(insigma > 0):
+                    # identity and adapts on top of it. The scaling is set
+                    # only when every entry is positive and finite. A zero
+                    # entry, from a coordinate without spread, leaves the
+                    # search to start isotropic at `sigma0`, the largest
+                    # entry. An entry that is not finite makes `sigma0` not
+                    # finite, and cma does not return from such a start, so
+                    # the search is not started and fails as a search that
+                    # raises does.
+                    finite_start = np.all(np.isfinite(insigma))
+                    if finite_start and np.all(insigma > 0):
                         cma_options["CMA_stds"] = insigma / sigma0
 
                     # The population of each generation is evaluated in one
@@ -585,18 +614,27 @@ def active_sample(
                     # samples are fixed while the search runs, so the
                     # acquisition is deterministic and the search needs no
                     # noise handling: one generation costs one population.
-                    try:
-                        res = cma.fmin(
-                            acq_fun,
-                            x0,
-                            sigma0,
-                            options=cma_options,
-                            parallel_objective=acq_fun,
+                    if not finite_start:
+                        _log_search_failure(
+                            logger,
+                            ValueError(
+                                "the initial step sizes of the CMA-ES "
+                                f"search are not finite: {insigma}"
+                            ),
                         )
-                    except Exception as exc:
-                        _log_search_failure(logger, exc)
                     else:
-                        xsearch_optim, f_val_optim = res[:2]
+                        try:
+                            res = cma.fmin(
+                                acq_fun,
+                                x0,
+                                sigma0,
+                                options=cma_options,
+                                parallel_objective=acq_fun,
+                            )
+                        except Exception as exc:
+                            _log_search_failure(logger, exc)
+                        else:
+                            xsearch_optim, f_val_optim = res[:2]
                 elif search_optimizer == "bounded":
                     from scipy.optimize import minimize_scalar
 
@@ -698,12 +736,14 @@ def active_sample(
                 # the acquisition snaps integer coordinates to their grid,
                 # so a candidate that either of the two moved is a point
                 # the target has not been called at: it is evaluated. The
-                # comparison is exact and in the inference space, where
-                # both the clip and the snap act.
-                x_cached = parameter_transformer(
-                    optim_state["cache"]["x_orig"][[idx]]
-                )
-                if np.array_equal(x_cached[0], xnew[0]):
+                # candidate is compared, exactly and in the inference space
+                # where both act, with the row the sieve made of the cached
+                # point before its clip. A new transform of the point is
+                # no reference: once a warp has rotated the space the
+                # transform is a matrix product, and a row of a product can
+                # round differently according to the rows computed with it.
+                x_cached = cache_rows.get(idx)
+                if x_cached is not None and np.array_equal(x_cached, xnew[0]):
                     y_orig = optim_state["cache"]["y_orig"][idx]
                 else:
                     y_orig = np.nan
@@ -729,6 +769,10 @@ def active_sample(
                             optim_state["cache"][key], idx, 0
                         )
             timer.stop_timer("fun_time")
+            # The counts follow each evaluation, as in MATLAB, where the
+            # function logger refreshes them (`misc/funlogger_vbmc.m:278-279`):
+            # the GP refit below reads them before the next acquisition.
+            _refresh_training_counts(optim_state, function_logger)
 
             if hasattr(function_logger, "S"):
                 s2new = function_logger.S[idx_new] ** 2
@@ -789,7 +833,7 @@ def active_sample(
                             # Decide number of fast optimizations
                             N_fastopts = math.ceil(
                                 options_update["ns_elbo_incr"]
-                                * options_update["ns_elbo"](vp.K)
+                                * options_update.eval("ns_elbo", {"K": vp.K})
                             )
                             if options["update_random_alpha"]:
                                 optim_state["entropy_alpha"] = 1 - np.sqrt(
@@ -881,9 +925,18 @@ def active_sample(
             if (np.size(theta0) != np.size(theta)) or (
                 np.any(theta0 != theta)
             ):
-                NSentFineK = math.ceil(
-                    options["ns_ent_fine_active"](vp0.K) / vp0.K
-                )
+                # The two ELBOs are compared on one entropy estimator. The
+                # reported ELBO of a one-component posterior takes the exact
+                # entropy of a Gaussian (`_eval_full_elcbo`), which
+                # `_neg_elcbo` returns when it is given no entropy samples;
+                # for more components both sides estimate it by sampling.
+                if vp0.K == 1:
+                    NSentFineK = 0
+                else:
+                    NSentFineK = math.ceil(
+                        options.eval("ns_ent_fine_active", {"K": vp0.K})
+                        / vp0.K
+                    )
                 elbo0 = -_neg_elcbo(
                     theta0, gp, vp0, 0.0, NSentFineK, False, True
                 )[0]
@@ -903,6 +956,7 @@ def _get_search_points(
     function_logger: FunctionLogger,
     vp: VariationalPosterior,
     options: Options,
+    cache_rows: dict = None,
 ):
     """
     Get search points from starting cache or randomly generated.
@@ -920,6 +974,12 @@ def _get_search_points(
         from.
     options : Options
         Options from the VBMC instance this function is called from.
+    cache_rows : dict, optional
+        When given, it receives the rows that the starting cache
+        contributes, keyed by their cache index, as the transform into the
+        inference space made them and before the clip into the search box.
+        The caller tells by them whether a candidate is still the point the
+        cache holds.
 
     Returns
     -------
@@ -962,6 +1022,11 @@ def _get_search_points(
         idx_cache = rng.permutation(x0.shape[0])[: min(N_cache, x0.shape[0])]
 
         search_X = parameter_transformer(x0[idx_cache])
+        if cache_rows is not None:
+            cache_rows.update(
+                (int(index), np.copy(row))
+                for index, row in zip(idx_cache, search_X)
+            )
 
     # Randomly sample the points the cache did not provide
     if search_X.shape[0] < number_of_points:

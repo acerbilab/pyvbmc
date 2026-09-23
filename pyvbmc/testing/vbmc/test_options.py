@@ -64,6 +64,25 @@ def test_options_user_options():
     assert "foo" in options.get("useroptions")
 
 
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_options_built_from_another_options_leave_it_alone(as_dict):
+    """The options of one run can be given as the user options of another,
+    as an `Options` object or a dict copied from one. Each keeps a set of
+    user options of its own: building the second leaves the first's set as
+    it was, and the name `useroptions` is not an option the user set."""
+    default_options_path = options_path.joinpath("test_options.ini")
+    options_1 = Options(default_options_path, {"D": 2}, {"foo": "iter2"})
+    before = set(options_1["useroptions"])
+
+    source = dict(options_1) if as_dict else options_1
+    options_2 = Options(default_options_path, {"D": 2}, source)
+
+    assert options_1["useroptions"] == before
+    assert options_2["useroptions"] is not options_1["useroptions"]
+    assert "useroptions" not in options_2["useroptions"]
+    assert options_2.get("foo") == "iter2"
+
+
 def test_init_from_existing_options():
     default_options_path = options_path.joinpath("test_options.ini")
     user_options = {"foo": "iter2"}
@@ -484,6 +503,25 @@ def test_separate_search_gp_is_inert(caplog):
     assert any(
         "separate_search_gp" in message and "no effect" in message
         for message in messages
+    )
+
+
+@pytest.mark.parametrize(
+    "name, value", [("gp_int_mean_fun", 1), ("proposal_fcn", print)]
+)
+def test_the_integrated_mean_and_the_proposal_function_are_inert(
+    caplog, name, value
+):
+    """The integrated mean function of MATLAB VBMC's GP is not ported, and
+    its proposal function for the search is an option that MATLAB VBMC
+    stores and never reads, so a value given for either has no effect and
+    is reported as having none."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({name: value})
+    assert options[name] is value
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        name in message and "no effect" in message for message in messages
     )
 
 

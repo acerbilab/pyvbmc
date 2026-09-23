@@ -20,6 +20,18 @@ value, evaluations, wall time and improvement over the sieve for each of
 the eight states) are left out here because `run_grid.py` regenerates them
 from `runs.csv`; everything else is unedited.
 
+Corrections by the orchestrator, from the independent check of the wave-1
+pass (2026-09-22; `../wave1.md`), recomputed from `runs.csv`. The code read
+is `dev-port-review` at `cb2d513`. The pooled summary is printed by
+`run_grid.py` (`:158-183`), not by `analyze.py`. S's median number of
+evaluations per generation is 8.482; 8.467 is `current`'s. In §7, S's
+median distance on `cigar_D4_largeK` is 1.087 `insigma`, and 2.13 is N's;
+and "changes evaluations by 0-9% and nothing else" on the six
+near-isotropic states does not hold on `rosenbrock_D2_noise1_viqr`, where S
+takes about two thirds of `current`'s evaluations and beats the sieve on 1
+seed of 20 where `current` does on 3. None of this changes the reading of
+S, N or B.
+
 ---
 
 ## The three settings and the variants

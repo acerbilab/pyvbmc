@@ -34,6 +34,7 @@ INERT_OPTIONS = frozenset(
         "diagnostics",
         "double_gp",
         "empirical_gp_prior",
+        "gp_int_mean_fun",
         "gp_stochastic_step_size",
         "integrate_gp_mean",
         "noise_shaping_factor",
@@ -41,6 +42,7 @@ INERT_OPTIONS = frozenset(
         "nonlinear_scaling",
         "optimistic_variational_bound",
         "output_fcn",
+        "proposal_fcn",
         "sample_extra_vp_means",
         "scale_lower_bound",
         "search_cmaes_best",
@@ -243,10 +245,16 @@ class Options(MutableMapping, dict):
         # load options from file
         self.load_options_file(default_options_path, evaluation_parameters)
 
-        # User options
+        # User options. They may be the options of another run, as an
+        # `Options` object or a dict copied from one, whose set of user
+        # options is left out: taken over, it would be shared between the
+        # two, and the names added here would change the other run's.
         if user_options is not None:
-            self.update(user_options)
-            self["useroptions"].update(user_options.keys())
+            supplied = {
+                k: v for k, v in user_options.items() if k != "useroptions"
+            }
+            self.update(supplied)
+            self["useroptions"].update(supplied.keys())
 
     def integer_vars_mask(self, D: int):
         """
@@ -535,7 +543,7 @@ class Options(MutableMapping, dict):
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
 
-    def _warn_inert_options(self, options_paths: list):
+    def _warn_inert_options(self, options_paths: list, names=None):
         """
         Warn about the options of :data:`INERT_OPTIONS` that the user set to
         a value other than the default declared in the ini files.
@@ -549,8 +557,13 @@ class Options(MutableMapping, dict):
         ----------
         options_paths : list of str
             A list of paths to the ini files that declare the defaults.
+        names : iterable of str, optional
+            The names of the options to weigh. Default the options the user
+            set (``useroptions``).
         """
-        supplied = set(self.get("useroptions")) & INERT_OPTIONS
+        if names is None:
+            names = self.get("useroptions")
+        supplied = set(names) & INERT_OPTIONS
         if len(supplied) == 0:
             return
 

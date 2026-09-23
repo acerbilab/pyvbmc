@@ -682,15 +682,6 @@ def test_vbmc_optimstate_warmup():
     assert vbmc.optim_state["last_warmup"] == 0
 
 
-def test_vbmc_optimstate_proposal_fcn():
-    options = {"proposal_fcn": fun}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["proposal_fcn"] == fun
-    options = {"proposal_fcn": None}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert vbmc.optim_state["proposal_fcn"] == "@(x)proposal_vbmc"
-
-
 def test_vbmc_optimstate_entropy_switch():
     D = 3
     options = {"entropy_switch": False, "det_entropy_min_d": D - 1}
@@ -835,12 +826,6 @@ def test_vbmc_optimstate_entropy_alpha():
     options = {"det_entropy_alpha": True}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert np.all(vbmc.optim_state["entropy_alpha"] == True)
-
-
-def test_vbmc_optimstate_int_mean_fun():
-    options = {"gp_int_mean_fun": fun}
-    vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
-    assert np.all(vbmc.optim_state["int_mean_fun"] == fun)
 
 
 def test_vbmc_optimstate_outwarp_delta():

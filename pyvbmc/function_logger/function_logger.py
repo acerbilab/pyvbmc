@@ -350,9 +350,10 @@ class FunctionLogger:
         self.func_count += 1
         f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, funtime)
 
-        # optimstate.N = self.Xn
-        # optimstate.N_eff = np.sum(self.n_evals[self.X_flag])
-        # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
+        # The logger holds no optimization state: the counts of the
+        # training set that the algorithm reads, ``optim_state["N"]`` and
+        # ``optim_state["n_eff"]``, are refreshed by ``active_sample`` after
+        # each evaluation it logs.
         return f_val, f_sd, idx
 
     def batch_call(self, x: np.ndarray, f_vals=None):

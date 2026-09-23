@@ -269,9 +269,10 @@ def test_warp_input():
     )
 
 
-def test_warp_input_cov_reg():
-    """The covariance regularization is a number, of any scalar type, or
-    a function of the number of training points."""
+def _cov_reg_state():
+    """A posterior with correlated coordinates and a ``VBMC`` instance
+    whose state records 42 training points, for the regularization of the
+    covariance of the warp."""
     D = 2
     angle = 1.309355600770139
     R = np.array(
@@ -293,6 +294,14 @@ def test_warp_input_cov_reg():
         np.ones((1, D)) * 10,
     )
     vbmc.optim_state["N"] = 42
+    return vp, vbmc
+
+
+def test_warp_input_cov_reg():
+    """The covariance regularization is a number, of any scalar type, or
+    a function of the number of training points, which may return its
+    number in an array of one element."""
+    vp, vbmc = _cov_reg_state()
     seen = []
 
     def cov_reg_of_N(N):
@@ -300,7 +309,13 @@ def test_warp_input_cov_reg():
         return 0.75
 
     transforms = []
-    for value in (0.75, np.float64(0.75), cov_reg_of_N):
+    for value in (
+        0.75,
+        np.float64(0.75),
+        np.array(0.75),
+        cov_reg_of_N,
+        lambda N: np.array([0.75]),
+    ):
         vbmc.options.__setitem__("warp_cov_reg", value, force=True)
         parameter_transformer_warp, _, _, _ = warp_input(
             vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
@@ -312,7 +327,7 @@ def test_warp_input_cov_reg():
             )
         )
 
-    # The callable was given the number of training points, and all three
+    # The callable was given the number of training points, and all the
     # forms of the same amount give the same transform.
     assert seen == [42]
     for R_mat, scale in transforms[1:]:
@@ -325,6 +340,41 @@ def test_warp_input_cov_reg():
         vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
     )
     assert not np.allclose(unregularized.R_mat, transforms[0][0])
+
+
+@pytest.mark.parametrize(
+    "returned",
+    [None, "0.75", 0.75 + 0.1j, True, np.nan, np.inf, np.array([0.5, 0.5])],
+    ids=["None", "str", "complex", "bool", "nan", "inf", "two-elements"],
+)
+def test_warp_cov_reg_function_must_return_a_finite_number(returned):
+    """The value that a function of the number of training points returns
+    is checked where it is used, at the warp: anything but a finite real
+    number (in an array of one element or not) is refused with an error
+    that names the option, the number of training points it was given and
+    what it returned."""
+    vp, vbmc = _cov_reg_state()
+    vbmc.options.__setitem__("warp_cov_reg", lambda N: returned, force=True)
+    with pytest.raises(ValueError) as execinfo:
+        warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+    message = execinfo.value.args[0]
+    assert "warp_cov_reg" in message
+    assert "42" in message
+    assert repr(returned) in message
+
+
+@pytest.mark.parametrize(
+    "value", [None, True, np.nan, [0.75]], ids=["None", "bool", "nan", "list"]
+)
+def test_warp_cov_reg_written_into_built_options_is_checked_at_use(value):
+    """Construction refuses such values; one written into the options of a
+    built instance is refused at the warp, with an error that names the
+    option."""
+    vp, vbmc = _cov_reg_state()
+    vbmc.options.__setitem__("warp_cov_reg", value, force=True)
+    with pytest.raises(ValueError) as execinfo:
+        warp_input(vp, vbmc.optim_state, vbmc.function_logger, vbmc.options)
+    assert "warp_cov_reg" in execinfo.value.args[0]
 
 
 def _unbounded_vbmc(D):

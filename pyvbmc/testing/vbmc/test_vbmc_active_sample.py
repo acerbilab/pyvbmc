@@ -17,6 +17,7 @@ from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.vbmc import active_sample
 from pyvbmc.vbmc.active_sample import _get_search_points
 from pyvbmc.vbmc.gaussian_process_train import reupdate_gp, train_gp
+from pyvbmc.whitening import warp_gp_and_vp, warp_input
 
 # The module, for patching its names. Inside the package the name
 # `pyvbmc.vbmc.active_sample` is the function the package exports, and a
@@ -215,7 +216,11 @@ def test_cmaes_search_runs_without_noise_handling(mocker):
 
 def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     """With a non-finite search bound the local search is bounded by the
-    training inputs and the starting point, one bound per coordinate."""
+    training inputs and the starting point, one bound per coordinate, a
+    tenth of the range of the training inputs beyond them, as
+    ``private/activesample_vbmc.m:253-254`` bounds it:
+    ``min([gp.X; x0]) - 0.1*xrange`` and ``max([gp.X; x0]) + 0.1*xrange``
+    with ``xrange = max(gp.X) - min(gp.X)``."""
     D = 2
     vbmc, gp = _state_with_gp(D)
     vbmc.optim_state["ub_search"][0, 0] = np.inf
@@ -224,6 +229,7 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     captured = {}
 
     def fake_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["x0"] = np.asarray(x0, dtype=float)
         captured["options"] = dict(options)
         # A rejected search result: the sieve's point is kept.
         return np.asarray(x0, dtype=float), np.inf
@@ -246,16 +252,23 @@ def test_search_bounds_fallback_is_one_bound_per_coordinate(mocker):
     lb_search, ub_search = captured["options"]["bounds"]
     assert np.shape(lb_search) == (D,)
     assert np.shape(ub_search) == (D,)
-    assert np.all(lb_search <= gp.X.min(0))
-    assert np.all(ub_search >= gp.X.max(0))
+    X_and_x0 = np.vstack((gp.X, captured["x0"]))
+    xrange = gp.X.max(0) - gp.X.min(0)
+    assert np.array_equal(lb_search, X_and_x0.min(0) - 0.1 * xrange)
+    assert np.array_equal(ub_search, X_and_x0.max(0) + 0.1 * xrange)
 
 
 def test_one_dimensional_search_is_bounded(mocker):
-    """A one-dimensional acquisition is minimized over the search
-    interval, within the search budget, and the acquired point is no
-    worse than the best candidate of the search set."""
+    """A one-dimensional acquisition is searched within the search
+    interval, which is the one the CMA-ES search of more dimensions takes,
+    ``[min(x0, lb_search), max(x0, ub_search)]`` with ``x0`` the best
+    candidate of the search set, within the search budget, and the
+    acquired point is no worse than that candidate."""
     vbmc, gp = _state_with_gp(1, seed=20260919)
     candidates = np.array([[0.7], [1.5], [-2.0]])
+    lb_search = vbmc.optim_state["lb_search"][0, 0]
+    ub_search = vbmc.optim_state["ub_search"][0, 0]
+    assert np.isfinite(lb_search) and np.isfinite(ub_search)
     captured = {}
     real_minimize_scalar = scipy.optimize.minimize_scalar
 
@@ -289,7 +302,9 @@ def test_one_dimensional_search_is_bounded(mocker):
 
     lb, ub = captured["bounds"]
     assert captured["method"] == "bounded"
-    assert lb < ub
+    # The best candidate under `_cheap_acq` is 0.7.
+    assert lb == min(0.7, lb_search)
+    assert ub == max(0.7, ub_search)
     assert (
         captured["options"]["maxiter"] == vbmc.options["search_max_fun_evals"]
     )
@@ -555,6 +570,54 @@ def test_two_steps_with_a_search_cache(mocker):
         assert np.shape(optim_state["search_cache"]) == (32, D)
 
 
+def test_the_search_cache_orders_tied_candidates_stably(mocker):
+    """With a search cache the candidates are sorted by their acquisition
+    value, and the first of them is acquired. MATLAB's `sort` is stable
+    (`private/activesample_vbmc.m:231-233`), so of candidates with equal
+    values the earlier comes first: the point acquired is the first
+    candidate with the smallest value, as `min` gives it without a search
+    cache, and the cache keeps tied candidates in the order of the search
+    set."""
+    D = 2
+    vbmc, gp = _state_with_gp(
+        D,
+        options={
+            "ns_search": 256,
+            "search_cache_frac": 0.25,
+            "search_optimizer": "none",
+        },
+        seed=20260922,
+    )
+    searched = []
+
+    def tied_acq(self, x, *args):
+        # Five values interleaved along the search set, so that every
+        # candidate ties with a fifth of the others.
+        x = np.atleast_2d(x)
+        searched.append(np.copy(x))
+        return (np.arange(x.shape[0]) * 7 % 5).astype(float)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", tied_acq
+    )
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    X_search = searched[0]
+    values = (np.arange(X_search.shape[0]) * 7 % 5).astype(float)
+    order = np.argsort(values, kind="stable")
+    acquired = function_logger.X[function_logger.Xn]
+    assert np.array_equal(acquired, X_search[np.argmin(values)])
+    assert np.array_equal(optim_state["search_cache"], X_search[order])
+
+
 def _acquire_one_cached_point(mocker, vbmc, gp, x_cached, y_cached):
     """One active-sampling step whose only candidate is the one row of the
     starting cache, with a value stored for it."""
@@ -643,6 +706,159 @@ def test_a_cached_point_the_integer_grid_moved_is_evaluated(mocker):
     assert np.isclose(recorded[1], x_cached[0, 1])
 
 
+def _warped_state_with_gp(D: int, options: dict = None, seed: int = None):
+    """A state whose inference space a rotoscaling warp has rotated, as the
+    main loop warps it: the initial design drawn and a GP trained on it, the
+    warp computed from a variational posterior with correlated coordinates,
+    and a GP trained again in the warped space."""
+    vbmc, gp = _state_with_gp(D, options, seed=seed)
+    vp = vbmc.vp
+    K = vp.K
+    vp.mu = np.outer(np.linspace(1.0, -0.6, D), np.linspace(-1.0, 1.0, K))
+    vp.sigma = np.full((1, K), 0.3)
+    vp.lambd = np.ones((D, 1))
+    vp.w = np.full((1, K), 1 / K)
+    parameter_transformer, optim_state, function_logger, _ = warp_input(
+        vp, vbmc.optim_state, vbmc.function_logger, vbmc.options
+    )
+    vp, _ = warp_gp_and_vp(parameter_transformer, gp, vp, vbmc)
+    vp.parameter_transformer = parameter_transformer
+    vbmc.vp = vp
+    vbmc.parameter_transformer = parameter_transformer
+    vbmc.function_logger = function_logger
+    vbmc.optim_state = optim_state
+    optim_state["N"] = function_logger.Xn + 1
+    optim_state["n_eff"] = np.sum(
+        function_logger.n_evals[function_logger.X_flag]
+    )
+    gp, _, _, hyp_dict = train_gp(
+        {},
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        optim_state["plb_tran"],
+        optim_state["pub_tran"],
+        rng=vp.rng,
+    )
+    optim_state["hyp_dict"] = hyp_dict
+    return vbmc, gp
+
+
+def test_a_cached_point_nothing_moved_keeps_its_value_after_a_warp(mocker):
+    """Once a warp has rotated the inference space the transform is a
+    matrix product, and a row of a product can round differently according
+    to the rows computed with it: a cached point transformed alone need not
+    equal, bit for bit, the row that the sieve made of it among the other
+    cached points. A cached point that neither the clip into the search box
+    nor the snap to the integer grid moved is still the point the cache
+    holds, and it is acquired with its stored value, without a target call.
+    A cached point that the clip moved is evaluated."""
+    D = 3
+    n_cache = 7
+    vbmc, gp = _warped_state_with_gp(
+        D,
+        options={
+            "ns_search": n_cache,
+            "cache_frac": 1,
+            "search_optimizer": "none",
+        },
+        seed=20260922,
+    )
+    function_logger = vbmc.function_logger
+    optim_state = vbmc.optim_state
+    parameter_transformer = function_logger.parameter_transformer
+    assert parameter_transformer.R_mat is not None
+
+    # Cached points inside the search box, with stored values that the
+    # target would not return there.
+    x_cached = np.random.default_rng(3).uniform(-1.5, 1.5, (n_cache, D))
+    y_cached = 100.0 + np.arange(n_cache)
+    u_cached = parameter_transformer(x_cached)
+    assert np.all(u_cached > optim_state["lb_search"])
+    assert np.all(u_cached < optim_state["ub_search"])
+    optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    optim_state["cache"]["y_orig"] = np.copy(y_cached)
+    optim_state["cache"]["skip_logger"] = np.zeros(n_cache, dtype=bool)
+
+    def prefer_a_row_a_new_transform_moves(
+        self, Xs, gp, vp, function_logger, optim_state
+    ):
+        """Every candidate is a cached point; the first one that differs
+        from a transform of its point alone scores best, where the
+        platform's matrix product gives one."""
+        Xs = np.atleast_2d(Xs)
+        alone = [
+            parameter_transformer(x[None, :])[0]
+            for x in optim_state["cache"]["x_orig"]
+        ]
+        return np.array(
+            [
+                0.0 if not any(np.array_equal(x, a) for a in alone) else 1.0
+                for x in Xs
+            ]
+        )
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__",
+        prefer_a_row_a_new_transform_moves,
+    )
+    calls_before = function_logger.func_count
+    cache_count_before = function_logger.cache_count
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The stored value was used instead of a target call.
+    assert function_logger.func_count == calls_before
+    assert function_logger.cache_count == cache_count_before + 1
+    last = function_logger.Xn
+    acquired = int(
+        np.argmin(np.sum((x_cached - function_logger.X_orig[last]) ** 2, 1))
+    )
+    assert np.allclose(function_logger.X_orig[last], x_cached[acquired])
+    assert function_logger.y_orig[last] == y_cached[acquired]
+    assert optim_state["cache"]["x_orig"].shape == (n_cache - 1, D)
+
+    # A cached point that the clip moves into the search box is evaluated,
+    # at the point the clip moved it to.
+    x_far = np.array([[50.0, 0.0, 0.0]])
+    u_far = parameter_transformer(x_far)
+    lb_search = np.copy(optim_state["lb_search"])
+    ub_search = np.copy(optim_state["ub_search"])
+    assert np.any(u_far > ub_search) or np.any(u_far < lb_search)
+    clipped = parameter_transformer.inverse(
+        np.minimum(np.maximum(u_far, lb_search), ub_search)
+    )
+    vbmc.options.__setitem__("ns_search", 1, force=True)
+    optim_state["cache"]["x_orig"] = np.copy(x_far)
+    optim_state["cache"]["y_orig"] = np.array([100.0])
+    optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = function_logger.func_count
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    assert function_logger.func_count == calls_before + 1
+    recorded = function_logger.X_orig[function_logger.Xn]
+    assert np.allclose(recorded, clipped[0])
+    assert np.isclose(
+        function_logger.y_orig[function_logger.Xn], fun(recorded)
+    )
+    assert optim_state["cache"]["x_orig"].shape[0] == 0
+
+
 def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     """A local search that raises costs one acquisition, not the run."""
     D = 2
@@ -682,6 +898,144 @@ def test_local_search_failure_keeps_the_best_candidate(mocker, caplog):
     assert "no search today" in caplog.text
 
 
+def test_one_dimensional_search_failure_keeps_the_sieve_point_and_index(
+    mocker, caplog
+):
+    """A bounded one-dimensional search that raises costs one acquisition
+    too: the sieve's point is acquired with its cache index, so a cached
+    starting point keeps its stored value and leaves the cache, and the
+    failure is logged."""
+    vbmc, gp = _state_with_gp(
+        1, options={"ns_search": 1, "cache_frac": 1}, seed=20260919
+    )
+    x_cached = np.array([[0.4]])
+    y_cached = 12.5
+    vbmc.optim_state["cache"]["x_orig"] = np.copy(x_cached)
+    vbmc.optim_state["cache"]["y_orig"] = np.array([y_cached])
+    vbmc.optim_state["cache"]["skip_logger"] = np.zeros(1, dtype=bool)
+    calls_before = vbmc.function_logger.func_count
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    search = mocker.patch(
+        "scipy.optimize.minimize_scalar",
+        side_effect=RuntimeError("no search today"),
+    )
+    caplog.set_level(logging.WARNING)
+
+    function_logger, optim_state, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    assert search.call_count == 1
+    assert function_logger.func_count == calls_before
+    last = function_logger.Xn
+    assert np.allclose(function_logger.X_orig[last], x_cached[0])
+    assert function_logger.y_orig[last] == y_cached
+    assert optim_state["cache"]["x_orig"].shape == (0, 1)
+    assert "Active search failed" in caplog.text
+    assert "no search today" in caplog.text
+
+
+def test_cmaes_search_with_a_zero_scale_starts_isotropic(mocker, caplog):
+    """A coordinate along which the search covariance has no spread gives
+    a zero entry of the per-coordinate scales, which cma's ``CMA_stds``
+    cannot take. The search then starts isotropic at the largest scale and
+    runs without error."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, seed=20260919)
+    vp = vbmc.vp
+    vp.mu = np.vstack([np.linspace(-1.0, 1.0, vp.K), np.zeros(vp.K)])
+    vp.sigma = np.ones((1, vp.K))
+    vp.lambd = np.array([[1.0], [0.0]])
+    _, Sigma = vp.moments(orig_flag=False, cov_flag=True)
+    insigma = np.sqrt(np.diag(Sigma))
+    assert insigma[1] == 0 and insigma[0] > 0
+    candidates = np.array([[0.5, 0.5], [2.0, 2.0], [-3.0, 1.0]])
+
+    captured = {}
+    real_fmin = cma.fmin
+
+    def recording_fmin(objective, x0, sigma0, options=None, **kwargs):
+        captured["sigma0"] = sigma0
+        captured["options"] = dict(options)
+        return real_fmin(objective, x0, sigma0, options=options, **kwargs)
+
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    mocker.patch("cma.fmin", side_effect=recording_fmin)
+    caplog.set_level(logging.WARNING)
+    Xn_before = vbmc.function_logger.Xn
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vp,
+        vbmc.options,
+    )
+
+    assert "CMA_stds" not in captured["options"]
+    assert captured["sigma0"] == insigma.max()
+    assert "Active search failed" not in caplog.text
+    assert function_logger.Xn == Xn_before + 1
+
+
+@pytest.mark.parametrize("bad", [np.nan, np.inf])
+def test_cmaes_search_with_a_scale_that_is_not_finite_fails(
+    mocker, caplog, bad
+):
+    """A search covariance with an entry that is not finite gives a step
+    size that is not finite, and cma does not return from such a start.
+    The search is not started: it fails as a search that raises does, and
+    the sieve's best candidate is acquired, with the warning."""
+    D = 2
+    vbmc, gp = _state_with_gp(D, seed=20260922)
+    vp = vbmc.vp
+    Sigma = np.array([[1.0, 0.0], [0.0, bad]])
+    mocker.patch.object(vp, "moments", return_value=(np.zeros((1, D)), Sigma))
+    candidates = np.array([[0.5, 0.5], [2.0, 2.0], [-3.0, 1.0]])
+    mocker.patch(
+        "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", _cheap_acq
+    )
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        return_value=(candidates, np.full(len(candidates), np.nan)),
+    )
+    fmin = mocker.patch("cma.fmin")
+    caplog.set_level(logging.WARNING)
+
+    function_logger, _, _, _ = active_sample(
+        gp,
+        1,
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vp,
+        vbmc.options,
+    )
+
+    assert fmin.call_count == 0
+    assert "Active search failed" in caplog.text
+    assert np.array_equal(function_logger.X[function_logger.Xn], candidates[0])
+
+
 def test_active_uncertainty_sampling(mocker):
     def rosen(self, x, *args):
         x = np.atleast_2d(x)
@@ -702,8 +1056,10 @@ def test_active_uncertainty_sampling(mocker):
         "active_sample_gp_update": True,
     }
     # The search stops by its own tolerance (`tolfun = 1e-2` on a log
-    # acquisition), which on about one stream in seven halts it on the
-    # valley floor short of the minimum; the seed fixes one that reaches it.
+    # acquisition), which on some streams halts it on the valley floor
+    # short of the minimum. Every draw below comes from the run's
+    # generator, the GP fit's included, so the seed fixes the stream, and
+    # it is one on which the search reaches the minimum.
     vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, options, seed=0)
     mocker.patch("pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", rosen)
     N_init = 10
@@ -728,6 +1084,7 @@ def test_active_uncertainty_sampling(mocker):
         vbmc.options,
         vbmc.plausible_lower_bounds,
         vbmc.plausible_upper_bounds,
+        rng=vbmc.vp.rng,
     )
     optim_state["hyp_dict"] = hyp_dict
     sample_count = 2
@@ -1667,10 +2024,13 @@ def test_get_search_points_all_hpd_search_empty_get_hpd(mocker):
         "mvn_search_frac": 0,
         "box_search_frac": 0,
         "hpd_search_frac": 1,
-        "hpd_frac": 0,
     }
 
     vbmc = create_vbmc(3, 3, -np.inf, np.inf, -500, 500, options)
+    # Construction refuses an `hpd_frac` that leaves the GP fit too few
+    # points; the search points take fractions of it down to an eighth,
+    # which can leave none, and zero reaches that branch at once.
+    vbmc.options.__setitem__("hpd_frac", 0, force=True)
     number_of_points = 2
     X = np.linspace((0, 0, 0), (10, 10, 10), number_of_points)
     vbmc.optim_state["cache"]["x_orig"] = np.zeros(0)
@@ -2075,18 +2435,36 @@ def test_repeated_observation_candidates_off_by_default(mocker):
 
 
 def _noisy_run(
-    mocker, user_options, acq=None, lower_bounds=None, upper_bounds=None
+    mocker,
+    user_options,
+    acq=None,
+    lower_bounds=None,
+    upper_bounds=None,
+    noise_sd=1.0,
+    uncertainty_level=2,
 ):
     """A noisy ``VBMC`` on a quadratic target with the given options, its
     initial design drawn and a GP trained; ``acq`` replaces the
-    acquisition wrapper (``AbstractAcqFcn.__call__``) when given."""
+    acquisition wrapper (``AbstractAcqFcn.__call__``) when given.
+
+    The noise of the target has the standard deviation ``noise_sd``. At
+    uncertainty level 2 the target returns it with each value
+    (``specify_target_noise``); at level 1 it returns the value alone and
+    the run infers the noise (``uncertainty_handling``)."""
     D = 2
     rng = np.random.default_rng(0)
 
     def noisy_target(x):
         x = np.atleast_2d(x)
-        return -0.5 * np.sum(x**2) + rng.normal(), 1.0
+        value = -0.5 * np.sum(x**2) + noise_sd * rng.normal()
+        if uncertainty_level == 2:
+            return value, noise_sd
+        return value
 
+    if uncertainty_level == 2:
+        noise_options = {"specify_target_noise": True}
+    else:
+        noise_options = {"uncertainty_handling": True}
     vbmc = VBMC(
         noisy_target,
         np.zeros((1, D)),
@@ -2095,12 +2473,13 @@ def _noisy_run(
         np.full((1, D), -3.0),
         np.full((1, D), 3.0),
         {
-            "specify_target_noise": True,
+            **noise_options,
             "active_sample_gp_update": False,
             "active_sample_vp_update": False,
             **user_options,
         },
     )
+    assert vbmc.optim_state["uncertainty_handling_level"] == uncertainty_level
     if acq is not None:
         mocker.patch(
             "pyvbmc.acquisition_functions.AbstractAcqFcn.__call__", acq
@@ -2541,12 +2920,25 @@ def test_compute_var_log_joint_hook_through_active_sample(mocker):
     assert function_logger.Xn == Xn0 + 2
 
 
-def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
+@pytest.mark.parametrize("uncertainty_level", [1, 2])
+def test_noisy_fresh_point_takes_the_rank_one_gp_update(
+    mocker, uncertainty_level
+):
     """On a noisy target a first observation at a new input extends the GP
-    posterior by rank one, reaching the factors of a full recomputation."""
+    posterior by rank one, with the noise variance of the observation,
+    reaching the factors of a full recomputation. At uncertainty level 2
+    the target gives the standard deviation of its noise, here 0.3, and
+    the variance passed is its square; at level 1 the function logger
+    records a standard deviation of 1 for every observation."""
+    noise_sd = 0.3
     vbmc, gp, function_logger, optim_state = _noisy_run(
-        mocker, {"max_repeated_observations": 0}, acq=_cheap_acq
+        mocker,
+        {"max_repeated_observations": 0},
+        acq=_cheap_acq,
+        noise_sd=noise_sd,
+        uncertainty_level=uncertainty_level,
     )
+    Xn0 = function_logger.Xn
 
     # The step takes that branch, with the observation's noise variance,
     # instead of recomputing the posterior.
@@ -2565,7 +2957,12 @@ def test_noisy_fresh_point_takes_the_rank_one_gp_update(mocker):
     )
     assert reupdate_spy.call_count == 0
     assert update_spy.call_count == 1
-    assert update_spy.call_args.kwargs["s2_new"] is not None
+    first = Xn0 + 1
+    assert function_logger.n_evals[first] == 1
+    s2_new = update_spy.call_args.kwargs["s2_new"]
+    assert np.allclose(s2_new, function_logger.S[first] ** 2)
+    recorded_sd = noise_sd if uncertainty_level == 2 else 1.0
+    assert np.allclose(s2_new, recorded_sd**2)
 
     # The rank-one extension by the last acquired point, which the GP has
     # not seen yet, agrees with recomputing the posterior from the whole
@@ -2652,7 +3049,7 @@ def test_in_loop_variational_update_keeps_no_repository(mocker):
 
 def test_active_sample_refreshes_n_eff(mocker):
     """Each acquisition refreshes the effective training-set count, which
-    the in-loop updates read, to the number of evaluations over the live
+    the in-loop GP refit reads, to the number of evaluations over the live
     rows of the function logger."""
     vbmc, gp, function_logger, optim_state = _noisy_run(
         mocker,
@@ -2692,3 +3089,182 @@ def test_active_sample_refreshes_n_eff(mocker):
     # A repeated observation is pooled into its row, so the count is not
     # the number of rows.
     assert any(n_eff > n_rows for n_eff, _, n_rows in seen)
+
+
+def test_in_loop_gp_refit_reads_the_counts_after_the_evaluation(mocker):
+    """The GP refit between two acquisitions reads the number of training
+    inputs and the number of evaluations over them, and it reads them as
+    they stand after the evaluation just logged: MATLAB refreshes both
+    after every logged evaluation (``misc/funlogger_vbmc.m:278-279``). A
+    repeated observation raises the second count alone, a fresh point
+    both."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "max_repeated_observations": 1,
+            "active_sample_gp_update": True,
+        },
+        acq=_prefer_training,
+    )
+    seen = []
+
+    def recording_train_gp(
+        hyp_dict, optim_state, logger, history, options, *a, **k
+    ):
+        seen.append(
+            (
+                optim_state["N"],
+                optim_state["n_eff"],
+                logger.Xn + 1,
+                np.sum(logger.n_evals[logger.X_flag]),
+            )
+        )
+        return train_gp(
+            hyp_dict, optim_state, logger, history, options, *a, **k
+        )
+
+    mocker.patch.object(
+        _active_sample_module, "train_gp", side_effect=recording_train_gp
+    )
+    N0 = function_logger.Xn + 1
+    n_eff0 = np.sum(function_logger.n_evals[function_logger.X_flag])
+    active_sample(
+        gp,
+        3,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # One refit after each acquisition but the last: the first acquisition
+    # repeats a training input, the second is a fresh point.
+    assert [(N, n_eff) for N, n_eff, _, _ in seen] == [
+        (N0, n_eff0 + 1),
+        (N0 + 1, n_eff0 + 2),
+    ]
+    for N, n_eff, logger_N, logger_n_eff in seen:
+        assert N == logger_N
+        assert n_eff == logger_n_eff
+
+
+def _record_in_loop_variational_update(mocker):
+    """Stand in for the in-loop variational optimization and for the ELBO
+    of the posterior from before the step, recording the number of fast
+    optimizations and of entropy samples each is asked for. The updated
+    posterior is moved and scores low, so the comparison with the old one
+    runs and keeps the old one."""
+    seen = {}
+
+    def fake_optimize_vp(options, optim_state, vp, gp, fast_opts_N, **kwargs):
+        seen["fast_opts_N"] = fast_opts_N
+        moved = copy.deepcopy(vp)
+        moved.mu = moved.mu + 0.1
+        moved.stats = {"elbo": -1e9}
+        return moved, 0.0, 0
+
+    def fake_neg_elcbo(theta, gp, vp, beta, Ns, *args, **kwargs):
+        seen["entropy_samples"] = Ns
+        return (0.0,)
+
+    mocker.patch.object(
+        _active_sample_module, "optimize_vp", side_effect=fake_optimize_vp
+    )
+    mocker.patch.object(
+        _active_sample_module, "_neg_elcbo", side_effect=fake_neg_elcbo
+    )
+    return seen
+
+
+def test_a_scalar_count_option_reaches_the_in_loop_update(mocker):
+    """``ns_elbo`` and ``ns_ent_fine_active`` may be numbers as well as
+    functions of the number of components, as construction and
+    ``Options.eval`` allow. The in-loop variational update reads both, and
+    a number gives the count that the shipped function gives at the same
+    number of components."""
+    K = 2
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "active_sample_vp_update": True,
+            "k_warmup": K,
+            "ns_elbo": 50 * K,
+            "ns_ent_fine_active": 200 * K,
+        },
+        acq=_cheap_acq,
+    )
+    assert vbmc.vp.K == K
+    seen = _record_in_loop_variational_update(mocker)
+
+    active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # The shipped functions are 50 * K and 200 * K.
+    assert seen["fast_opts_N"] == math.ceil(
+        vbmc.options["ns_elbo_incr"] * 50 * K
+    )
+    assert seen["entropy_samples"] == math.ceil(200 * K / K)
+
+
+def test_in_loop_comparison_scores_one_component_with_its_exact_entropy(
+    mocker,
+):
+    """Where the in-loop variational update has moved the posterior, the
+    posterior from before the step is scored again and kept if its ELBO is
+    the higher. The reported ELBO of the moved posterior takes the exact
+    entropy of a Gaussian when it has one component, and so does the score
+    of a one-component posterior from before the step, so that both sides
+    of the comparison use one estimator."""
+    vbmc, gp, function_logger, optim_state = _noisy_run(
+        mocker,
+        {
+            "search_optimizer": "none",
+            "active_sample_vp_update": True,
+            "k_warmup": 1,
+        },
+        acq=_cheap_acq,
+    )
+    vp0 = copy.deepcopy(vbmc.vp)
+    assert vp0.K == 1
+
+    def fake_optimize_vp(options, optim_state, vp, gp, fast_opts_N, **kwargs):
+        moved = copy.deepcopy(vp)
+        moved.mu = moved.mu + 0.1
+        moved.stats = {"elbo": -1e9}
+        return moved, 0.0, 0
+
+    mocker.patch.object(
+        _active_sample_module, "optimize_vp", side_effect=fake_optimize_vp
+    )
+    score = mocker.spy(_active_sample_module, "_neg_elcbo")
+
+    active_sample(
+        gp,
+        2,
+        optim_state,
+        function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+
+    # No entropy samples: the deterministic entropy, which is the exact
+    # entropy of a single Gaussian.
+    assert score.call_count == 1
+    assert score.call_args.args[4] == 0
+    entropy = score.spy_return[3]
+    D = vp0.D
+    exact = 0.5 * D * (1 + np.log(2 * np.pi)) + np.sum(
+        np.log(vp0.sigma[0, 0] * vp0.lambd)
+    )
+    assert np.isclose(entropy, exact, rtol=1e-12, atol=1e-12)

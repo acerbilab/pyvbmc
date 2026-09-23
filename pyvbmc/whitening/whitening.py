@@ -1,7 +1,38 @@
 import copy
+import math
+from numbers import Real
 
 import gpyreg as gpr
 import numpy as np
+
+# The refusal of a value of the option `warp_cov_reg` that is neither a
+# number nor a function; `format` takes the value.
+_WARP_COV_REG_REFUSAL = (
+    "The option 'warp_cov_reg' must be a finite real number (not a "
+    "boolean) or a function of the number of training points that returns "
+    "one; it is {!r}."
+)
+
+
+def _is_finite_real_number(value):
+    """Whether ``value`` is a finite real number.
+
+    A Python or NumPy integer or floating-point number is one, and so is a
+    0-d array that holds one; a boolean is not.
+    """
+    if isinstance(value, np.ndarray):
+        if value.ndim != 0 or not (
+            np.issubdtype(value.dtype, np.integer)
+            or np.issubdtype(value.dtype, np.floating)
+        ):
+            return False
+        value = value.item()
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def _drop_low_correlations(vp_cov, corr_thresh):
@@ -231,15 +262,21 @@ def warp_input(vp, optim_state, function_logger, options):
         # points.
         warp_cov_reg = options["warp_cov_reg"]
         if callable(warp_cov_reg):
-            w_reg = warp_cov_reg(optim_state["N"])
-        elif np.ndim(warp_cov_reg) == 0:
+            N = optim_state["N"]
+            returned = warp_cov_reg(N)
+            w_reg = returned
+            if isinstance(returned, np.ndarray) and returned.size == 1:
+                w_reg = returned.reshape(())
+            if not _is_finite_real_number(w_reg):
+                raise ValueError(
+                    "The option 'warp_cov_reg' is a function of the number "
+                    "of training points, and it must return a finite real "
+                    f"number; given N = {N}, it returned {returned!r}."
+                )
+        elif _is_finite_real_number(warp_cov_reg):
             w_reg = warp_cov_reg
         else:
-            raise TypeError(
-                "The option 'warp_cov_reg' must be a number or a callable "
-                "of the number of training points, but was "
-                f"{warp_cov_reg}."
-            )
+            raise ValueError(_WARP_COV_REG_REFUSAL.format(warp_cov_reg))
         w_reg = np.max([0, np.min([1, w_reg])])
         vp_cov = (1 - w_reg) * vp_cov + w_reg * np.diag(np.diag(vp_cov))
 

@@ -115,7 +115,9 @@ def optimize_vp(
         The Gaussian process surrogate of the log-posterior, against which to
         optimize the VP.
     fast_opts_N : int
-        Number of fast optimizations.
+        Number of fast optimizations. Zero starts the optimization from
+        the given VP alone, and then requires ``slow_opts_N = 1``, as in
+        MATLAB.
     slow_opts_N : int
         Number of slow optimizations.
     K : int, optional
@@ -130,9 +132,17 @@ def optimize_vp(
         Spread of the expected log joint across the GP hyperparameter
         samples: the sample variance of its value from sample to sample
         plus the sample standard deviation of its per-sample variances.
-        Zero with a single hyperparameter sample.
+        Zero with a single hyperparameter sample, and when the variance of
+        the expected log joint is not computed.
     pruned : int
         Number of pruned components.
+
+    Raises
+    ======
+    ValueError
+        If the full ELCBO evaluation of every optimized solution returns
+        NaN, so that no variational parameters can be selected, or if the
+        option ``stochastic_optimizer`` is not ``"adam"``.
 
     Notes
     =====
@@ -174,6 +184,10 @@ def optimize_vp(
     theta_N = np.size(vp0_vec[0].get_parameters())
     Ns = np.size(gp.posteriors)
     elbo_stats = _initialize_full_elcbo(slow_opts_N * 2, theta_N, K, Ns)
+    # The slots of elbo_stats that a full ELCBO evaluation filled: the
+    # midpoint slots stay empty in the deterministic optimization and when
+    # `elcbo_midpoint` is off.
+    evaluated = np.full((slow_opts_N * 2,), False)
 
     # For the moment no gradient available for variance
     gradient_available = compute_var == 0
@@ -293,8 +307,13 @@ def optimize_vp(
 
                 if options["elcbo_midpoint"]:
                     # Recompute ELCBO at best midpoint with full variance
-                    # and more precision.
-                    idx_mid = np.argmin(f_val_lst)
+                    # and more precision. The best midpoint skips NaN
+                    # values, as MATLAB's `min` does, and is the first
+                    # iterate when every value is NaN.
+                    if np.all(np.isnan(f_val_lst)):
+                        idx_mid = 0
+                    else:
+                        idx_mid = np.nanargmin(f_val_lst)
                     elbo_stats = _eval_full_elcbo(
                         i_mid,
                         theta_lst[:, idx_mid],
@@ -304,6 +323,7 @@ def optimize_vp(
                         elcbo_beta,
                         options,
                     )
+                    evaluated[i_mid] = True
             else:
                 raise ValueError("Unknown stochastic optimizer!")
 
@@ -311,18 +331,22 @@ def optimize_vp(
         elbo_stats = _eval_full_elcbo(
             i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options
         )
+        evaluated[i_end] = True
 
         vp0_fine[i_mid] = copy.deepcopy(vp0)
         vp0_fine[i_end] = copy.deepcopy(vp0)  # Parameters get assigned later
 
     ## Finalize optimization by taking variational parameters with best ELCBO
 
-    if np.all(np.isnan(elbo_stats["nelcbo"])):
+    # The candidates are the evaluated slots whose value is not NaN; of
+    # equal values, the first slot is taken.
+    candidates = np.flatnonzero(evaluated & ~np.isnan(elbo_stats["nelcbo"]))
+    if np.size(candidates) == 0:
         raise ValueError(
             "Every full ELCBO evaluation of the variational optimization "
             "returned NaN, so no variational parameters can be selected."
         )
-    idx = np.nanargmin(elbo_stats["nelcbo"])
+    idx = candidates[np.argmin(elbo_stats["nelcbo"][candidates])]
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
@@ -728,7 +752,12 @@ def _sieve(
     gp : GP
         Current GP from optimization.
     init_N : int, optional
-        Number of initial starting points.
+        Number of initial starting points, by default ``ceil(ns_elbo(K))``.
+        With ``init_N = 0`` no candidates are generated or evaluated, and
+        the given VP is the only candidate, of type 1, whatever ``best_N``.
+        A single candidate supports a single slow optimization, so
+        ``fast_opts_N = 0`` in ``optimize_vp`` requires ``slow_opts_N = 1``,
+        as in MATLAB.
     best_N : int, defaults to 1
         Specifies the design pattern for new starting parameters. ``best_N==1``
         means use the old variational parameters as a starting point for new
@@ -745,9 +774,10 @@ def _sieve(
 
     Returns
     =======
-    vp0_vec : np.ndarray, shape (init_N,)
-        Vector of candidate variational posteriors.
-    vp0_type : np.ndarray, shape (init_N,)
+    vp0_vec : np.ndarray, shape (max(init_N, 1),)
+        Vector of candidate variational posteriors, sorted by their
+        quickly estimated negative ELCBO.
+    vp0_type : np.ndarray, shape (max(init_N, 1),)
         Vector of types of candidate variational posteriors.
     elcbo_beta : float
         Confidence weight.
@@ -1162,7 +1192,8 @@ def _neg_elcbo(
         Spread of the expected variational log joint across the GP
         hyperparameter samples: the sample variance of its value from
         sample to sample plus the sample standard deviation of its
-        per-sample variances. Zero with a single hyperparameter sample.
+        per-sample variances. Zero with a single hyperparameter sample,
+        and when ``compute_var`` is False.
     varG : float
         Variance of the expected variational log joint
         probability.
@@ -1412,7 +1443,8 @@ def _gp_log_joint(
         Spread of ``G`` across the GP hyperparameter samples: the sample
         variance of its value from sample to sample plus the sample
         standard deviation of the per-sample variances. Zero with a single
-        hyperparameter sample.
+        hyperparameter sample, and when ``compute_var`` or ``avg_flag`` is
+        False.
     I_sk : np.ndarray
         The contribution to ``G`` per GP hyperparameter sample and per VP
         component.

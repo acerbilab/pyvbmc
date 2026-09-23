@@ -26,11 +26,17 @@ its entry below.
   `f_vals` together with `specify_target_noise`, a `quantile` of `AcqFcnVIQR`
   or `AcqFcnIMIQR` outside (0.5, 1), and a `search_acq_fcn` string that
   cannot be read as a call. `search_optimizer` takes `"cmaes"` or
-  `"none"` (the `"Nelder-Mead"` value is removed), `acq_hedge=True` raises
-  an error, and so do fractions of the acquisition search that add up to
+  `"none"` (the `"Nelder-Mead"` value is removed), `acq_hedge=True` and
+  `noise_shaping=True` raise an error, also when `VBMC.load` finds them in
+  a saved run (the message gives the `new_options` that loads it), and so
+  do fractions of the acquisition search that add up to
   more than one and a `cache_frac` outside [0, 1]. `integer_vars` given as
   a list of indices marks those
-  variables, where 1.0.4 marked every variable.
+  variables, where 1.0.4 marked every variable. A `warp_cov_reg` that is
+  neither a finite number nor a function (`True`, which 1.0.4 read as 1,
+  among them) raises an error, and so does an `hpd_frac` that is not a
+  fraction in (0, 1] or that leaves fewer than two points of the initial
+  design.
 - `VBMC.load(file, new_options=...)` raises for an option that only
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
   `warmup` and their kin; the message names them), where such a value used
@@ -40,6 +46,12 @@ its entry below.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
   defaults for noisy targets apply, a larger budget of evaluations among
   them.
+- `vbmc.determine_best_vp()` without arguments follows the options
+  `rank_criterion` (on by default), `best_safe_sd` and `best_frac_back`, so
+  it can return another iteration than in 1.0.4 when the last iteration is
+  not stable. A variational optimization in which every candidate has a NaN
+  ELBO raises `ValueError`, where 1.0.4 went on with a posterior whose ELBO
+  was NaN.
 - `results["iterations"]` is the number of iterations, one more than in 1.0.4.
   `results["problem_type"]` is `"bounded"` for a problem with bounds, where
   1.0.4 said `"unconstrained"` for every problem.
@@ -79,7 +91,9 @@ its entry below.
 - `results["rng_state"]` and `vbmc.random_state` hold the state of `vbmc.rng`.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
-  input point and must not set `acq_info["mcmc_importance_sampling"]`.
+  input point and must not set `acq_info["mcmc_importance_sampling"]`. A
+  callable `adaptive_k` receives the number of components as the keyword
+  argument `K`, where 1.0.4 passed it as `unkn`.
 - `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
   own: a variable with one finite bound, a `scale` that is not positive, a
   noise flag that contradicts the uncertainty handling level, and `add`
@@ -232,7 +246,9 @@ its entry below.
   `VBMC(..., precomputed_evaluations=(X, y))` gives a run target values that
   were computed beforehand (`(X, y, y_sd)` with `specify_target_noise`). They
   enter as observations, they are independent of `x0`, and they do not count
-  as function evaluations of the run. `VBMC(..., initialization_cost=k)`
+  as function evaluations of the run. With a separate prior, `y` holds
+  log-likelihood values and VBMC adds the prior; `options["f_vals"]`, the
+  values at `x0`, holds log-joint values, as in 1.0.4. `VBMC(..., initialization_cost=k)`
   charges `k` evaluations against `max_fun_evals` for work done before the
   run. `results` reports the first in `precomputed_observations` and
   `precomputed_locations`, and the second in `evaluation_budget`; each key is
@@ -301,8 +317,10 @@ its entry below.
   Each correction changes the course of a run, so a script that fixes the
   seed gives different numbers than it gave with 1.0.4. Some entries under
   Fixed change results as well: the gradient of the soft-bound penalty, the
-  conversion of `x0` and the bounds to double precision, and the SciPy
-  priors, which no longer consume a random draw when they are created.
+  conversion of `x0` and the bounds to double precision, the SciPy priors,
+  which no longer consume a random draw when they are created, and the
+  starting points beyond those of the initial design, which stay available
+  to the acquisition search.
   - The initial design has `10 * ceil((D + 1) / 10)` points, where `D` is the
     number of variables: 10 points up to `D = 9`, 20 for `D` from 10 to 19,
     and so on. In 1.0.4 the number was `max(D, 10)`. The option is
@@ -310,7 +328,8 @@ its entry below.
   - The CMA-ES search that refines each new point before it is evaluated
     starts with a separate step size for each variable, and does not use the
     noise handling of the `cma` package. For a problem with one variable, a
-    bounded one-dimensional search replaces CMA-ES.
+    bounded one-dimensional search replaces the unbounded Nelder-Mead search
+    of 1.0.4.
   - Warm-up ends by the same rule as in MATLAB VBMC. The test for a recent
     improvement of the target looks at fewer iterations, and it compares the
     running maximum of the lower confidence bound, recomputed with the
@@ -367,7 +386,15 @@ its entry below.
     one first, when PyVBMC selects the points of highest density
     (`pyvbmc.stats.get_hpd`) and when it keeps the best points at the end of
     warm-up. So are iterations with equal scores when the best posterior of
-    a run is selected. 1.0.4 ordered them arbitrarily.
+    a run is selected, and candidates of the acquisition search with equal
+    values when a search cache is kept (`search_cache_frac`), which
+    candidates snapped to one point of an integer grid can have. 1.0.4
+    ordered them arbitrarily. In that selection an
+    iteration whose ELCBO or reliability index is NaN ranks last, and
+    without the ranking criterion an iteration whose ELCBO is NaN is passed
+    over; if the ELCBO of every candidate iteration is NaN, the last
+    iteration considered is returned. 1.0.4 could return a posterior whose
+    ELBO was NaN.
   - In a long run, from about 1380 evaluations on, the number of starting
     points tried in the fit of the GP hyperparameters goes down to zero, as
     in MATLAB VBMC, where 1.0.4 kept nine.
@@ -383,11 +410,22 @@ its entry below.
     a component could count up to about one draw more or fewer on average.
     The candidates of every acquisition search and the Monte Carlo moments
     of the posterior come from such draws.
+  - On a noisy target, the refit of the GP between the new points of an
+    iteration counts the point just evaluated, as MATLAB VBMC does; 1.0.4
+    counted the training set without it.
   - Smaller changes: the initial widths of the components in the variational
     optimization; the entropy of a posterior with a single component, which
-    is computed exactly; and which posterior is returned when no iteration
-    was stable. That choice follows the options `rank_criterion`,
-    `best_safe_sd` and `best_frac_back`, which 1.0.4 ignored.
+    is computed exactly, also where the variational update between the new
+    points of an iteration on a noisy target is compared with the posterior
+    from before it; and which posterior a run returns when its last
+    iteration is not stable, and which posterior an input warp starts from.
+    That choice follows the options `rank_criterion`, `best_safe_sd` and
+    `best_frac_back`, which 1.0.4 ignored. `VBMC.determine_best_vp()`,
+    called without `safe_sd`, `frac_back` or `rank_criterion_flag`, uses
+    the same options, so on a finished run it returns the iteration the run
+    selected. In 1.0.4 these arguments defaulted to 5, 0.25 and no ranking
+    criterion, and without the ranking criterion the method looked back one
+    or two iterations fewer than MATLAB VBMC does.
   - Code rewritten for speed changes the last digits of intermediate results,
     and that is enough to change the course of a run.
 - **The final boost is checked before it is accepted.** At the end of a run,
@@ -484,17 +522,26 @@ its entry below.
     sum. 1.0.4 took any value: a negative one took all but so many
     rows of the cache, and one above one could make the search set
     larger than asked.
+  - `noise_shaping=True` raises an error, because noise shaping is not
+    implemented.
   - The errors that refuse a value of `search_optimizer`, `acq_hedge`,
-    `cache_frac` or the fractions say how a saved run that carries it is
-    loaded:
+    `noise_shaping`, `warp_cov_reg`, `cache_frac` or the fractions say how
+    a saved run that carries it is loaded:
     `VBMC.load(file, new_options={...})`.
   - Setting an option that has no effect gives a warning that names the
-    option. Such options come from MATLAB VBMC and belong to features that
-    PyVBMC does not have; their descriptions in the options files say so.
-    `noise_shaping=True` raises an error, because noise shaping is not
-    implemented.
+    option, whether it is given at construction or to
+    `VBMC.load(new_options=...)`. Most such options come from MATLAB VBMC
+    and belong to features that PyVBMC does not have, `gp_int_mean_fun` and
+    `proposal_fcn` among them; `nonlinear_scaling` and `search_cmaes_best`
+    name behavior that PyVBMC always has. Their descriptions in the options
+    files say which. Options given to `load` are listed with the user's
+    options (`print(vbmc.options)`).
   - Once a `VBMC` object is constructed, its options cannot be removed (`del`,
     `pop`). Assigning to them was already an error.
+  - The options of one run can be given to another, `VBMC(...,
+    options=vbmc.options)`, without changing the first: 1.0.4 shared their
+    set of user options, and building the second made the first list every
+    option as set by the user.
 - **Priors are checked.**
   - `VBMC` refuses a prior whose support does not cover the hard bounds,
     with a message that names the coordinates, the two intervals and the
@@ -664,6 +711,19 @@ its entry below.
   original coordinates are available as `vbmc.x0_orig`.
 - `entropy_switch=True` raised `TypeError` in the first iteration of any
   problem with five or more variables.
+- When SciPy's optimizer did not converge in a variational optimization with
+  the deterministic entropy (a posterior with one component, or
+  `entropy_switch=True`), the run stopped with `RuntimeError`. It now goes on
+  from the optimizer's last iterate and logs a warning.
+- The variational optimization passes over NaN. The best iterate of a
+  stochastic optimization is taken among the objective values that are not
+  NaN, as in MATLAB VBMC, and a candidate solution whose ELBO is NaN is not
+  selected; if the ELBO of every candidate is NaN, `optimize_vp` raises
+  `ValueError`. 1.0.4 took the first NaN it met in both places and could go
+  on with a posterior whose ELBO was NaN.
+- A callable `adaptive_k` is called with the number of components as the
+  keyword argument `K`, as its description says. 1.0.4 passed it as `unkn`,
+  so `lambda K: ...` raised `TypeError`.
 - `variable_means=False` raised an error in the final boost of any run that
   ended with fewer than `min_final_components` components. With that
   setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many
@@ -681,9 +741,24 @@ its entry below.
   - When the local search of the acquisition function fails, the run goes on
     with the best candidate found before it. The failure used to end the run.
   - When `x0` holds more points than the initial design uses, the others stay
-    available as candidates for later evaluations, and a starting point that
-    has been evaluated is not proposed again. 1.0.4 discarded the surplus
+    available as candidates for later evaluations. One that is acquired
+    where it lies is recorded with its value from `f_vals`, without a call
+    to the target, also after an input warp, and a starting point that has
+    been evaluated is not proposed again. 1.0.4 discarded the surplus
     points.
+  - A number given for `ns_elbo` or `ns_ent_fine_active`, in place of a
+    function of the number of components, raised `TypeError` in the
+    variational update between the new points of an iteration, which a
+    noisy target runs by default.
+- A run whose `max_fun_evals` equals the size of its initial design raised an
+  error in its first GP fit; with the initial design of
+  `10 * ceil((D + 1) / 10)` points, `max_fun_evals=20` does this for `D` from
+  10 to 19. The fit now starts without the space-filling design of the GP
+  hyperparameters, as in MATLAB VBMC.
+- An `hpd_frac` that leaves fewer than two points of the initial design, below
+  0.15 of ten points, made the first GP fit fail with an error about an
+  empty array or zero widths; such a value is refused at construction, with
+  a message that names the option, and so is one outside (0, 1].
 - After a second or later input warp, the bounds of the acquisition search
   could be mapped through the transform of an earlier iteration. We have not
   seen this happen in a run.
@@ -754,7 +829,8 @@ its entry below.
     it did in 1.0.4, and does not replace it, so `vp.mode()` keeps
     answering with the result of the default search.
     `vp.get_parameters()` discards a stored mode, which its normalization
-    of the weights may have moved.
+    of the weights may have moved, and gives a zero weight the raw
+    parameter minus infinity without NumPy's warning of a division by zero.
   - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
     hold `sigma`, `lambd` and the weights to be positive, and those alone.
     1.0.4 checked other entries: a negative scale could pass, and a
@@ -829,8 +905,14 @@ its entry below.
   accepts a single point with several scales, which raised an error.
 - Example 1 gave −2.272 as the true log evidence of its target; the value is
   −2.2598.
-- `warp_cov_reg` accepts any number, or a callable that receives the number
-  of training points. Only a Python `int` or `float` worked.
+- `warp_cov_reg` takes a finite number of any numeric type, NumPy's
+  included, or a function of `N`, the number of points logged so far; the
+  function may return its number in an array of one element. Any other
+  value (a boolean, NaN, a string) is refused at construction and by
+  `VBMC.load`, and a function's result that is not a finite number is
+  refused at the warp, with a message that names the option. 1.0.4 took
+  only a Python `int` or `float`, read `True` as 1, and failed at the first
+  warp on other values.
 - Option descriptions are printed in full (`print(options)`,
   `repr(options)`). Descriptions containing `:` or `=` were cut short, and
   an option of the advanced set that the user had given showed `None` for
