@@ -43,8 +43,11 @@ its entry below.
   them. `log_file_level=0` writes the log file, where 1.0.4 wrote none.
 - `VBMC.load(file, new_options=...)` raises for an option that only
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
-  `warmup` and their kin; the message names them), where such a value used
-  to be stored and ignored; construct a new `VBMC` object to run with one.
+  `warmup` and their kin; the message names them) given a value other than
+  the one the run stores, where such a value used to be stored and ignored;
+  construct a new `VBMC` object to run with one. The stored value itself is
+  taken, so the options a run was built with can be given back with a new
+  budget.
   A saved run whose stored `gp_mean_fun` names a mean function PyVBMC does
   not implement raises on `load` as it does at construction.
 - With `uncertainty_handling=True`, or a noisy setting in an options file, the
@@ -472,14 +475,17 @@ its entry below.
     file, and in `VBMC.load(new_options=...)`. A misspelt name in an options
     file used to be ignored. The values given to `VBMC.load` are checked as
     those given at construction are.
-  - `VBMC.load(file, new_options=...)` refuses an option that PyVBMC reads
-    only while it builds a `VBMC` object (`uncertainty_handling`,
+  - `VBMC.load(file, new_options=...)` refuses a value of an option that
+    PyVBMC reads only while it builds a `VBMC` object (`uncertainty_handling`,
     `specify_target_noise`, `gp_mean_fun`, `integer_vars`, `warmup`,
-    `k_warmup`, `entropy_switch`, `active_search_bound` and their kin) with
-    a message that names it and says to construct a new `VBMC` object: the
-    saved run carries the state that was built from such an option, so a
-    value given to `load` was stored and then ignored, leaving the options
-    and the state in disagreement. The options a continued run reads,
+    `k_warmup`, `entropy_switch`, `active_search_bound` and their kin) that
+    differs from the one the run stores, with a message that names the
+    option and says to construct a new `VBMC` object: the saved run carries
+    the state that was built from such an option, so a value given to `load`
+    was stored and then ignored, leaving the options and the state in
+    disagreement. The stored value, in any form construction reads alike
+    (`1` for `True`, the indices of the integer variables for their mask),
+    is taken and changes nothing. The options a continued run reads,
     `max_fun_evals` and `max_iter` among them, are taken as before, and
     `gp_mean_fun` and `integer_vars` are checked for a value no run can use
     whichever way they are supplied. A run saved by 1.0.4 whose stored

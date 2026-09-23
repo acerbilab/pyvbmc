@@ -141,6 +141,112 @@ def test_load_refuses_an_option_only_construction_reads(tmp_path, new_options):
     assert "'max_iter'" not in message
 
 
+# Options that only construction reads, of each kind: booleans, a number,
+# strings and arrays, one of them holding NaN.
+_BUILT_WITH = {
+    "warmup": False,
+    "uncertainty_handling": True,
+    "k_warmup": 3,
+    "gp_mean_fun": "const",
+    "bounded_transform": "logit",
+    "f_vals": np.array([np.nan]),
+    "integer_vars": np.array([True, False]),
+}
+
+
+def _vbmc_built_with(options):
+    """A run whose first variable takes integer values, which puts its hard
+    bounds at half-integers."""
+    return VBMC(
+        log_joint,
+        np.zeros((1, D)),
+        np.array([[-10.5, -10.0]]),
+        np.array([[10.5, 10.0]]),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options=options,
+    )
+
+
+def _same_stored_values(loaded, built):
+    for name, value in built.options.items():
+        if name in _BUILT_WITH:
+            assert type(loaded.options[name]) is type(value), name
+            assert np.array_equal(
+                np.asarray(loaded.options[name]),
+                np.asarray(value),
+                equal_nan=np.asarray(value).dtype.kind == "f",
+            ), name
+
+
+@pytest.mark.parametrize(
+    "given_back",
+    [
+        {},
+        # The same values in the other forms that construction reads alike.
+        {
+            "uncertainty_handling": 1,
+            "k_warmup": 3.0,
+            "f_vals": [np.nan],
+            "integer_vars": [0],
+        },
+    ],
+    ids=["as_built", "other_forms"],
+)
+def test_load_takes_back_the_options_a_run_was_built_with(
+    tmp_path, given_back
+):
+    """The options a run was built with can be given back to ``load``
+    together with a new budget: a value of an option that only
+    construction reads is refused only where it differs from the one the
+    run stores, read as construction reads it. The values given back
+    change nothing, and the budget takes effect."""
+    built = _vbmc_built_with(dict(_BUILT_WITH))
+    saved = tmp_path.joinpath("run.pkl")
+    built.save(saved)
+
+    new_options = {**_BUILT_WITH, **given_back, "max_fun_evals": 321}
+    loaded = VBMC.load(saved, new_options=new_options)
+
+    assert loaded.options["max_fun_evals"] == 321
+    _same_stored_values(loaded, built)
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        {"warmup": True},
+        {"uncertainty_handling": False},
+        {"k_warmup": 4},
+        {"gp_mean_fun": "negquad"},
+        {"f_vals": np.array([-1.0])},
+        {"integer_vars": np.array([False, True])},
+    ],
+)
+def test_load_refuses_a_value_other_than_the_one_the_run_was_built_with(
+    tmp_path, changed
+):
+    """A value of an option that only construction reads that differs from
+    the one the run stores is refused with the message that says to
+    construct a new ``VBMC`` object, also among the other options the run
+    was built with."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc_built_with(dict(_BUILT_WITH)).save(saved)
+
+    new_options = {**_BUILT_WITH, **changed, "max_fun_evals": 321}
+    with pytest.raises(ValueError) as execinfo:
+        VBMC.load(saved, new_options=new_options)
+
+    message = execinfo.value.args[0]
+    assert message.startswith("VBMC.load cannot change the option ")
+    assert "construct a new VBMC object" in message
+    (name,) = changed
+    assert repr(name) in message
+    for other in _BUILT_WITH:
+        if other != name:
+            assert repr(other) not in message
+
+
 def test_load_takes_an_option_a_continued_run_reads(tmp_path):
     """The budget of a continued run is what ``load`` is most often given,
     and it takes effect."""

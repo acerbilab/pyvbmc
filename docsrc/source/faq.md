@@ -705,11 +705,14 @@ vp, results = continued.optimize()
 
 Here `1000` is the *total* budget, including evaluations already made. If
 the run reached its iteration limit, increase `max_iter` as well.
-`new_options` changes the options a running iteration reads; an option that
+`new_options` changes the options a running iteration reads. An option that
 PyVBMC reads only while it builds a `VBMC` object — `uncertainty_handling`,
-`gp_mean_fun`, `integer_vars` and `warmup` among them — is refused, since
-the saved state already holds what was built from it, and running with
-another value means building a new `VBMC` object. Continue
+`gp_mean_fun`, `integer_vars` and `warmup` among them — keeps the value the
+run was built with: giving that value again is fine, so you can pass the
+run's original options together with the new budget, but another value is
+refused, since the saved state already holds what was built from the
+original one, and running with another value means building a new `VBMC`
+object. Continue
 with the same model, data, prior and bounds, and under the same minor
 version of Python (3.12, say) that saved the file: a saved run holds Python
 bytecode, so under another minor version it can be loaded and inspected but

@@ -221,6 +221,150 @@ def _uncertainty_handling_flag(value):
     )
 
 
+def _integer_vars_mask(value, D):
+    """
+    Read a value of the ``integer_vars`` option as a mask over the
+    variables; :py:meth:`Options.integer_vars_mask` describes the forms.
+    """
+    mask = np.full(D, False)
+    if value is None:
+        return mask
+    array = np.asarray(value)
+    if array.size == 0:
+        return mask
+    if array.ndim != 1 or not (
+        array.dtype == bool or np.issubdtype(array.dtype, np.integer)
+    ):
+        raise ValueError(
+            "The option integer_vars must be "
+            + _INTEGER_VARS_FORMS
+            + f"; got {value!r}."
+        )
+    if array.dtype == bool:
+        if array.size != D:
+            raise ValueError(
+                "The option integer_vars, written as a boolean mask, "
+                f"needs one entry per variable, that is {D}; got "
+                f"{array.size}."
+            )
+        mask[array] = True
+        return mask
+    if array.size == D and np.all((array == 0) | (array == 1)):
+        raise ValueError(
+            f"The option integer_vars holds {D} integers, each of them "
+            "zero or one, which reads both as a mask and as a list of "
+            "indices. Write a boolean array to give a mask."
+        )
+    if np.any(array < 0) or np.any(array >= D):
+        raise ValueError(
+            "The option integer_vars, written as indices, needs "
+            f"0-based indices of the {D} variables; got {value!r}."
+        )
+    if np.unique(array).size != array.size:
+        raise ValueError(
+            "The option integer_vars, written as indices, names a "
+            f"variable twice; got {value!r}."
+        )
+    mask[array] = True
+    return mask
+
+
+def _construction_reading(name, value, D):
+    """
+    The value of an option as construction reads it.
+
+    ``uncertainty_handling`` and ``specify_target_noise`` are read as the
+    choices they state, ``integer_vars`` as its mask over the `D`
+    variables and ``f_vals`` as a flat array; any other option is read as
+    it is.
+
+    Raises
+    ------
+    ValueError
+        When construction refuses the value.
+    """
+    if name == "uncertainty_handling":
+        return _uncertainty_handling_flag(value)
+    if name == "specify_target_noise":
+        return _specify_target_noise_flag(value)
+    if name == "integer_vars":
+        return _integer_vars_mask(value, D)
+    if name == "f_vals":
+        return np.array(value).ravel()
+    return value
+
+
+def _same_reading(value, other):
+    """
+    Whether two readings of an option are the same.
+
+    Two strings are the same when they are equal. Numbers, booleans and
+    arrays of them are the same when their values are equal and their
+    shapes agree, NaN matching NaN, so that a boolean and the number it
+    equals are the same. ``None`` is the same only as ``None``, and other
+    objects are compared as :func:`_equals_default` compares a value with
+    its default.
+    """
+    if value is other:
+        return True
+    if isinstance(value, str) or isinstance(other, str):
+        return (
+            isinstance(value, str)
+            and isinstance(other, str)
+            and value == other
+        )
+    if value is None or other is None:
+        return False
+    try:
+        value_array = np.asarray(value, dtype=np.float64)
+        other_array = np.asarray(other, dtype=np.float64)
+    except (TypeError, ValueError):
+        return _equals_default(value, other)
+    return value_array.shape == other_array.shape and bool(
+        np.array_equal(value_array, other_array, equal_nan=True)
+    )
+
+
+def _states_the_stored_value(name, value, stored, D):
+    """
+    Whether a value of an option that only construction reads states what
+    the value a run stores for it states.
+
+    Both are read as construction reads the option
+    (:func:`_construction_reading`) and compared by
+    :func:`_same_reading`. A stored value that construction would refuse,
+    which a run saved by an earlier release can hold, states nothing that a
+    value given now can match.
+
+    Parameters
+    ----------
+    name : str
+        The name of the option.
+    value : object
+        The value given for it.
+    stored : object
+        The value the run stores for it.
+    D : int
+        The number of variables of the run.
+
+    Returns
+    -------
+    same : bool
+        Whether the two values state the same.
+
+    Raises
+    ------
+    ValueError
+        When construction refuses ``value``.
+    """
+    reading = _construction_reading(name, value, D)
+    try:
+        stored_reading = _construction_reading(name, stored, D)
+    except ValueError:
+        return False
+    return _same_reading(reading, stored_reading)
+
+
 class Options(MutableMapping, dict):
     """
     This class is responsible for Options.
@@ -304,48 +448,7 @@ class Options(MutableMapping, dict):
             When the value is neither a boolean mask of length `D` nor an
             array of distinct indices within range.
         """
-        mask = np.full(D, False)
-        value = self.get("integer_vars")
-        if value is None:
-            return mask
-        array = np.asarray(value)
-        if array.size == 0:
-            return mask
-        if array.ndim != 1 or not (
-            array.dtype == bool or np.issubdtype(array.dtype, np.integer)
-        ):
-            raise ValueError(
-                "The option integer_vars must be "
-                + _INTEGER_VARS_FORMS
-                + f"; got {value!r}."
-            )
-        if array.dtype == bool:
-            if array.size != D:
-                raise ValueError(
-                    "The option integer_vars, written as a boolean mask, "
-                    f"needs one entry per variable, that is {D}; got "
-                    f"{array.size}."
-                )
-            mask[array] = True
-            return mask
-        if array.size == D and np.all((array == 0) | (array == 1)):
-            raise ValueError(
-                f"The option integer_vars holds {D} integers, each of them "
-                "zero or one, which reads both as a mask and as a list of "
-                "indices. Write a boolean array to give a mask."
-            )
-        if np.any(array < 0) or np.any(array >= D):
-            raise ValueError(
-                "The option integer_vars, written as indices, needs "
-                f"0-based indices of the {D} variables; got {value!r}."
-            )
-        if np.unique(array).size != array.size:
-            raise ValueError(
-                "The option integer_vars, written as indices, names a "
-                f"variable twice; got {value!r}."
-            )
-        mask[array] = True
-        return mask
+        return _integer_vars_mask(self.get("integer_vars"), D)
 
     def validate_run_limits(self):
         """

@@ -45,7 +45,7 @@ from .gaussian_process_train import (
     train_gp,
 )
 from .iteration_history import IterationHistory
-from .options import SHIPPED_OPTIONS_PATHS, Options
+from .options import SHIPPED_OPTIONS_PATHS, Options, _states_the_stored_value
 from .variational_optimization import optimize_vp, update_K
 
 
@@ -3249,16 +3249,21 @@ class VBMC:
             larger budget of function evaluations and/or iterations. See the
             documentation on PyVBMC's options for more details. Each name is
             checked against the options PyVBMC declares and each value
-            against the checks construction makes of it. An option that
-            PyVBMC reads only while it builds a ``VBMC`` object is refused:
-            the stored state already holds what was built from it, so a new
-            value would take no effect, and running with another value means
-            constructing a new ``VBMC`` object. ``uncertainty_handling``,
-            ``gp_mean_fun``, ``integer_vars`` and ``warmup`` are such
-            options; the refusal names the ones it applies to. An option
-            that has no effect in PyVBMC, or a ``noise_size`` for a target
-            that returns its own noise estimates, is taken with the warning
-            that construction gives for it.
+            against the checks construction makes of it.
+            ``uncertainty_handling``, ``gp_mean_fun``, ``integer_vars``,
+            ``warmup`` and their kin are read only while PyVBMC builds a
+            ``VBMC`` object, and the stored state already holds what was
+            built from them. A value of such an option that differs from
+            the one the run stores, read as construction reads it, is
+            refused, since it would take no effect: running with it means
+            constructing a new ``VBMC`` object, and the refusal names the
+            options it applies to. The stored value itself, in any form
+            construction reads alike, is taken and changes nothing, so the
+            options a run was built with can be given back together with,
+            for example, a new budget. An option that has no effect in
+            PyVBMC, or a ``noise_size`` for a target that returns its own
+            noise estimates, is taken with the warning that construction
+            gives for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3286,8 +3291,8 @@ class VBMC:
             If the specified ``iteration`` is less than zero or larger than the
             last stored iteration, if an option has a value that construction
             refuses (a stored ``integer_vars`` aside, which takes the mask
-            the run was made with), or if ``new_options`` names an option
-            that only construction reads.
+            the run was made with), or if ``new_options`` gives an option
+            that only construction reads a value other than the stored one.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
             (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
@@ -3410,6 +3415,16 @@ class VBMC:
         if has_calibration_override:
             calibration_override = new_options["performance_calibration"]
 
+        # The values the run stores for the options that only construction
+        # reads, which a value given for one of them is weighed against.
+        stored_construction_values = {}
+        if new_options is not None:
+            stored_construction_values = {
+                name: vbmc.options[name]
+                for name in _CONSTRUCTION_ONLY_OPTIONS
+                if name in new_options and name in vbmc.options
+            }
+
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
             vbmc.options.validate_supplied_option_names(new_options)
@@ -3430,7 +3445,9 @@ class VBMC:
         vbmc.options.validate_run_limits()
         vbmc._validate_option_values()
         if new_options is not None:
-            vbmc._refuse_construction_only_options(new_options)
+            vbmc._refuse_construction_only_options(
+                new_options, stored_construction_values
+            )
             # An option without effect among them is named as such, as
             # construction names it.
             vbmc.options._warn_inert_options(
@@ -3965,14 +3982,26 @@ class VBMC:
                 "VBMC.load(file, new_options={'noise_shaping': False})."
             )
 
-    def _refuse_construction_only_options(self, new_options):
-        """Refuse the names that only construction reads.
+    def _refuse_construction_only_options(self, new_options, stored):
+        """Refuse a new value of an option that only construction reads.
 
-        Called by ``load`` on the options it was given.
+        Called by ``load`` with the options it was given, once they are in
+        place, and with the values the run stored before, by name. A value
+        that states what the stored one states, read as construction reads
+        the option, is taken, and the stored value is put back, so that the
+        options a run was built with can be given back without changing
+        anything. Any other value of such an option is refused.
         """
-        refused = [
-            name for name in _CONSTRUCTION_ONLY_OPTIONS if name in new_options
-        ]
+        refused = []
+        for name in _CONSTRUCTION_ONLY_OPTIONS:
+            if name not in new_options:
+                continue
+            if name in stored and _states_the_stored_value(
+                name, new_options[name], stored[name], self.D
+            ):
+                self.options.__setitem__(name, stored[name], force=True)
+            else:
+                refused.append(name)
         if not refused:
             return
         listed = ", ".join(repr(name) for name in refused)
