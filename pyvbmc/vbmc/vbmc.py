@@ -3414,6 +3414,20 @@ class VBMC:
                     ]
             vbmc._ensure_gp_sampling_history()
 
+        # A run without warm-up ends it before its first iteration, at the
+        # index -1 of ``last_warmup``. Earlier releases stored 0 there,
+        # MATLAB's value in its count from 1, which no other run stores,
+        # since warm-up ends at iteration 1 at the earliest. A continued run
+        # reads the live state, and a finished one the last recorded state.
+        states = [vbmc.optim_state]
+        if hasattr(vbmc, "iteration_history"):
+            recorded_states = vbmc.iteration_history["optim_state"]
+            if recorded_states is not None and len(recorded_states) > 0:
+                states.append(recorded_states[-1])
+        for state in states:
+            if state is not None and state.get("last_warmup") == 0:
+                state["last_warmup"] = -1
+
         if "performance_calibration" not in vbmc.options:
             # A legacy run used the historical constants and must not adopt
             # settings from the machine on which it happens to be loaded.

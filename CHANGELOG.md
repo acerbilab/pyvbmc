@@ -866,7 +866,8 @@ its entry below.
     posterior between the new points of an iteration
     (`active_sample_gp_update`, `active_sample_vp_update`, on by default for
     a noisy target) in its first `active_sample_full_update_past_warmup`
-    iterations, as MATLAB VBMC does. 1.0.4 took them for one iteration more.
+    iterations, as MATLAB VBMC does, also when it was saved by 1.0.4 and is
+    continued. 1.0.4 took them for one iteration more.
 - A run whose `max_fun_evals` equals the size of its initial design raised an
   error in its first GP fit; with the initial design of
   `10 * ceil((D + 1) / 10)` points, `max_fun_evals=20` does this for `D` from

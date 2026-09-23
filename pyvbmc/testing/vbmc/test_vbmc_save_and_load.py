@@ -415,6 +415,52 @@ def test_a_run_given_a_positive_ns_gp_max_on_load_samples(tmp_path):
     assert len(loaded.gp.posteriors) > 1
 
 
+@pytest.mark.parametrize("recorded", [False, True], ids=["live", "recorded"])
+def test_load_ends_the_warm_up_of_a_run_without_one_before_its_start(
+    tmp_path, recorded
+):
+    """``optim_state["last_warmup"]`` is the index of the last warm-up
+    iteration, -1 for a run without warm-up, which ends it before its first
+    iteration. Earlier releases stored 0, MATLAB's value in its count from
+    1, with which such a run, continued, takes the full update after each
+    new point (``active_sample_full_update_past_warmup``) for one iteration
+    more. A stored 0 comes only from such a run, since warm-up ends at
+    iteration 1 at the earliest, and ``load`` reads it as -1, in the live
+    state and in the recorded state that a finished run continues from."""
+    vbmc = _vbmc_with_options({"warmup": False})
+    assert vbmc.optim_state["last_warmup"] == -1
+    vbmc.optim_state["last_warmup"] = 0
+    if recorded:
+        vbmc.iteration_history.record("vp", vbmc.vp, 0)
+        vbmc.iteration_history.record("optim_state", vbmc.optim_state, 0)
+        vbmc.iteration = 0
+        vbmc.is_finished = True
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path)
+
+    assert loaded.optim_state["last_warmup"] == -1
+    if recorded:
+        record = loaded.iteration_history["optim_state"][-1]
+        assert record["last_warmup"] == -1
+
+
+def test_load_leaves_the_last_warm_up_iteration_of_a_run_with_one(tmp_path):
+    """A run with warm-up stores infinity until its warm-up ends, and then
+    the index of its last warm-up iteration, 1 or later."""
+    vbmc = _vbmc_with_options({})
+    assert vbmc.optim_state["last_warmup"] == np.inf
+    path = tmp_path / "warming"
+    vbmc.save(path)
+    assert VBMC.load(path).optim_state["last_warmup"] == np.inf
+
+    vbmc.optim_state["last_warmup"] = 1
+    path = tmp_path / "warmed"
+    vbmc.save(path)
+    assert VBMC.load(path).optim_state["last_warmup"] == 1
+
+
 def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
     """One transformer is shared, and it is the chosen iteration's.
 
