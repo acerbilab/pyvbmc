@@ -13,7 +13,10 @@ def _block_layout(Ns: int, D: int, K: int, budget: int) -> tuple[int, int]:
     The budget bounds one ``(components, samples, D, K)`` tensor of
     standardized distances. Samples are blocked only once one component's
     tensor alone exceeds the budget, and one sample's ``D x K`` slab is
-    always used whole.
+    always used whole. The calibration campaign holds a copy of this
+    function, ``_entropy_blocks`` in ``pyvbmc/calibration/_campaign.py``,
+    which a change here repeats (see the comment on the blocks in
+    ``_entmc_vbmc``).
     """
     per_component = Ns * D * K
     g = int(max(1, min(K, budget // max(1, per_component))))
@@ -140,10 +143,13 @@ def _entmc_vbmc(
     # the budget in force only decides how the component densities and the
     # location sums of a canonical block are produced. A change to how the
     # work is split into blocks is repeated in the calibration campaign's
-    # copy of this layout (_layout_signature in
+    # copy of this layout (_entropy_blocks, the copy of _block_layout, and
+    # _layout_signature, the copy of the lines below, in
     # pyvbmc/calibration/_campaign.py) and bumps KERNEL_REVISION in
     # pyvbmc/calibration/_cache.py, so that cached calibrations measured on
-    # the old blocks are not reused.
+    # the old blocks are not reused. A test of the campaign
+    # (test_the_campaign_layout_matches_the_blocks_the_kernels_compute)
+    # compares the copy with the blocks computed here.
     g_c, step_c = _block_layout(Ns, D, K, DEFAULT_CHUNK_ELEMENTS)
     g_x, step_x = _block_layout(Ns, D, K, budget)
     # A computed block subdivides one canonical block or is the union of

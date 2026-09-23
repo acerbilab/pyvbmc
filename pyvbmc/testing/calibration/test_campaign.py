@@ -1,7 +1,9 @@
 """Focused scheduler and numerical tests for the calibration campaign."""
 
+import importlib
 import json
 import math
+from collections import Counter
 from statistics import median
 from types import SimpleNamespace
 
@@ -531,6 +533,159 @@ def test_density_workloads_time_value_only_calls():
         aliases = campaign._layout_aliases(one_point)
         assert set(aliases) == set(campaign.CANDIDATE_BUDGETS)
         assert set(aliases.values()) == {campaign.DEFAULT_BUDGET}
+
+
+class _WatchedNumPy:
+    """NumPy, noting the shape of every array given to ``exp`` and ``log``.
+
+    Installed as the ``np`` of a kernel's module, it shows the blocks the
+    kernel computes: the entropy kernel takes ``exp`` of the distances of
+    each computed block, ``(components, samples, K)``, and ``log`` of the
+    mixture density of each canonical block, ``(components, samples)``; the
+    density takes ``exp`` of the distances of each block of rows,
+    ``(rows, K)``.
+    """
+
+    def __init__(self):
+        self.exp_shapes = []
+        self.log_shapes = []
+
+    def __getattr__(self, name):
+        return getattr(np, name)
+
+    def exp(self, x, *args, **kwargs):
+        self.exp_shapes.append(np.shape(x))
+        return np.exp(x, *args, **kwargs)
+
+    def log(self, x, *args, **kwargs):
+        self.log_shapes.append(np.shape(x))
+        return np.log(x, *args, **kwargs)
+
+
+def _partition(total, size):
+    """The sizes of the blocks that split ``total`` into ``size``."""
+    return [size] * (total // size) + ([total % size] if total % size else [])
+
+
+def test_the_campaign_layout_matches_the_blocks_the_kernels_compute(
+    monkeypatch,
+):
+    """The campaign groups the budgets that give a workload the same blocks
+    (``_layout_signature``), from its copy of how the entropy kernel
+    (``_entmc_vbmc``, with ``_block_layout``) and the density
+    (``VariationalPosterior._pdf``) split their work. Both kernels are run
+    over a grid of shapes and budgets, and the blocks they compute are the
+    ones the copy describes. The entropy kernel's default budget, which
+    sets its canonical blocks, is lowered in the kernel and in the copy
+    alike, so that small shapes reach every branch of the layout: canonical
+    blocks that split the samples, and computed blocks that subdivide them
+    or join them. The copy of ``_block_layout``, ``_entropy_blocks``, is
+    also compared with it at the shipped default over a wider grid."""
+    entmc_module = importlib.import_module("pyvbmc.entropy.entmc_vbmc")
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    assert entmc_module.DEFAULT_CHUNK_ELEMENTS == campaign.DEFAULT_BUDGET
+
+    budgets = [1, 7, 100, 500, 2600, 3 * 2**14, 100_000]
+    budgets += [2**power for power in range(10, 21)]
+    for D in (1, 2, 3, 4, 7, 15, 20):
+        for K in (1, 2, 3, 7, 20, 26, 50, 115):
+            for Ns in (1, 2, 5, 8, 37, 38, 55, 200, 1000, 4096):
+                for budget in budgets:
+                    assert campaign._entropy_blocks(
+                        Ns, D, K, budget
+                    ) == entmc_module._block_layout(Ns, D, K, budget), (
+                        Ns,
+                        D,
+                        K,
+                        budget,
+                    )
+
+    kernels = campaign._load_kernel_api()
+    canonical_budget = 600
+    monkeypatch.setattr(
+        entmc_module, "DEFAULT_CHUNK_ELEMENTS", canonical_budget
+    )
+    monkeypatch.setattr(campaign, "DEFAULT_BUDGET", canonical_budget)
+    budgets = [1, 7, 50, 300, 599, 600, 601, 1000, 2400, 100_000]
+    for D in (1, 2, 3):
+        for K in (1, 2, 3, 5, 8):
+            for Ns in (1, 2, 5, 8, 38, 101):
+                workload = campaign._Workload(
+                    "entropy_grad", "layout", D, K, Ns, (True,) * 4
+                )
+                (vp,) = campaign._make_problem(workload, kernels, 7)
+                Ns_even = campaign._effective_count(workload)
+                for budget in budgets:
+                    watched = _WatchedNumPy()
+                    monkeypatch.setattr(entmc_module, "np", watched)
+                    kernels.entropy(
+                        vp,
+                        Ns,
+                        grad_flags=workload.grad_flags,
+                        jacobian_flag=True,
+                        rng=np.random.default_rng(0),
+                        budget=budget,
+                    )
+                    monkeypatch.setattr(entmc_module, "np", np)
+                    (
+                        g_c,
+                        _,
+                        _,
+                        step_c,
+                        _,
+                        _,
+                        g_x,
+                        step_x,
+                    ) = campaign._layout_signature(workload, budget)
+                    case = (D, K, Ns, budget)
+                    canonical = Counter(
+                        shape
+                        for shape in watched.log_shapes
+                        if len(shape) == 2
+                    )
+                    assert canonical == Counter(
+                        (g, n)
+                        for g in _partition(K, g_c)
+                        for n in _partition(Ns_even, step_c)
+                    ), case
+                    computed = [
+                        shape[:2]
+                        for shape in watched.exp_shapes
+                        if len(shape) == 3
+                    ]
+                    assert computed[0] == (g_x, step_x), case
+                    assert all(
+                        g <= g_x and n <= step_x for g, n in computed
+                    ), case
+                    assert sum(g * n for g, n in computed) == K * Ns_even
+
+    budgets = [1, 2, 7, 12, 50, 100, 257, 1000, 2**16]
+    for D in (1, 2, 4):
+        for K in (1, 3, 7):
+            for N in (1, 2, 8, 11, 64):
+                workload = campaign._Workload("pdf", "layout", D, K, N)
+                vp, x = campaign._make_problem(workload, kernels, 7)
+                for budget in budgets:
+                    watched = _WatchedNumPy()
+                    monkeypatch.setattr(vp_module, "np", watched)
+                    kernels.pdf(
+                        vp,
+                        x,
+                        orig_flag=False,
+                        log_flag=False,
+                        grad_flag=False,
+                        budget=budget,
+                    )
+                    monkeypatch.setattr(vp_module, "np", np)
+                    step, _, _ = campaign._layout_signature(workload, budget)
+                    rows = [
+                        shape[0]
+                        for shape in watched.exp_shapes
+                        if len(shape) == 2
+                    ]
+                    assert rows == _partition(N, step), (D, K, N, budget)
 
 
 def test_record_validator_agrees_with_the_shipped_recipe():

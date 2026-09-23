@@ -272,7 +272,10 @@ def _effective_count(workload: _Workload) -> int:
 
 
 def _entropy_blocks(Ns: int, D: int, K: int, budget: int) -> tuple[int, int]:
-    """Components and samples of the entropy kernel's block at a budget."""
+    """Components and samples of the entropy kernel's block at a budget.
+
+    A copy of ``_block_layout`` in ``pyvbmc/entropy/entmc_vbmc.py``.
+    """
     per_component = Ns * D * K
     g = max(1, min(K, budget // max(1, per_component)))
     step = Ns if per_component <= budget else max(1, budget // max(1, D * K))
@@ -280,6 +283,16 @@ def _entropy_blocks(Ns: int, D: int, K: int, budget: int) -> tuple[int, int]:
 
 
 def _layout_signature(workload: _Workload, budget: int) -> tuple[int, ...]:
+    """The blocks a kernel splits a workload into at a budget.
+
+    A copy of how ``VariationalPosterior._pdf``
+    (``pyvbmc/variational_posterior/variational_posterior.py``) splits its
+    rows, and of how ``_entmc_vbmc`` (``pyvbmc/entropy/entmc_vbmc.py``)
+    splits its components and samples. Budgets with the same signature give
+    the same blocks. The calibration test
+    ``test_the_campaign_layout_matches_the_blocks_the_kernels_compute``
+    compares the copy with the blocks the kernels compute.
+    """
     D, K = int(workload.D), int(workload.K)
     budget = int(budget)
     if workload.group == "pdf":

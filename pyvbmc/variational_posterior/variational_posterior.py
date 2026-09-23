@@ -957,6 +957,9 @@ class VariationalPosterior:
             # (_layout_signature in pyvbmc/calibration/_campaign.py) and
             # bumps KERNEL_REVISION in pyvbmc/calibration/_cache.py, so that
             # cached calibrations measured on the old blocks are not reused.
+            # A test of the campaign
+            # (test_the_campaign_layout_matches_the_blocks_the_kernels_compute)
+            # compares the copy with the blocks computed here.
             step = max(1, int(chunk_elements) // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))
