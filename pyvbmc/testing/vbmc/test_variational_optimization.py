@@ -432,6 +432,16 @@ def test_neg_elcbo_default_variance_follows_beta():
     assert np.isclose(F2, F0 + 2.0 * np.sqrt(varF_full))
 
 
+@pytest.mark.parametrize("compute_grad", [False, True])
+def test_neg_elcbo_refuses_the_diagonal_variance(compute_grad):
+    """``compute_var=2`` asks for the diagonal approximation of the
+    variance, which is not implemented."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+    with pytest.raises(NotImplementedError, match="Diagonal approximation"):
+        _neg_elcbo(theta, gp, vp, 0.0, 0, compute_grad, 2)
+
+
 def test_vp_bound_loss():
     D = 2
     K = 2
