@@ -8,7 +8,11 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from pyvbmc.calibration import _cache
 from pyvbmc.calibration import _campaign as campaign
+from pyvbmc.calibration.profile import DEFAULT_CHUNK_ELEMENTS
+from pyvbmc.testing.calibration.test_api import identity
+from pyvbmc.vbmc import Options
 
 
 class _FakeClock:
@@ -416,13 +420,15 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
     """The analytical bound covers the retained allocator diagnostics."""
     workloads = {workload.name: workload for workload in campaign._workloads()}
     # Incremental tracemalloc peaks with each workload preallocated, recorded
-    # in dev/scripts/runs/calibration_integration_20260909/.
+    # in dev/scripts/runs/calibration_integration_20260909/ and, for the
+    # value-only active_d4_k20, in
+    # dev/scripts/runs/calibration_recipe_v2_20260923/.
     measured = (
         ("small_value", 2**16, 24_200),
         ("sieve_gradient", 2**16, 2_568_064),
         ("boost_d4_k50", 2**18, 7_512_096),
         ("boost_d15_k50", 2**18, 6_861_480),
-        ("active_d4_k20", 2**16, 2_076_168),
+        ("active_d4_k20", 2**16, 1_384_376),
         ("fine_d15_k26", 2**18, 25_567_888),
     )
     for name, budget, traced_peak in measured:
@@ -434,6 +440,103 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
         campaign._workspace_estimate(workload, budget)["within_limit"]
         for workload in workloads.values()
         for budget in campaign.CANDIDATE_BUDGETS
+    )
+
+
+# The options that set the total number of samples of the Monte Carlo
+# entropy, by whether the calls that use them request gradients. The
+# package's one call of `entmc_vbmc` is in `_neg_elcbo`, which requests
+# gradients when its caller does:
+# - with gradients, the stochastic optimization of `optimize_vp` draws the
+#   count of `ns_ent`, which `VBMC.final_boost` replaces with `ns_ent_boost`
+#   and `active_sample` with `ns_ent_active`;
+# - value-only, `_eval_full_elcbo` draws the count of `ns_ent_fine`, which
+#   `active_sample` replaces with `ns_ent_fine_active`, and `active_sample`
+#   draws `ns_ent_fine_active` to compare the posteriors before and after
+#   its update.
+# The remaining count options (`ns_ent_fast` and its variants,
+# `ns_ent_fine_boost`) default to no samples, which selects the
+# deterministic entropy, or to one of the options above.
+_ENTROPY_COUNT_OPTIONS = {
+    True: ("ns_ent", "ns_ent_boost", "ns_ent_active"),
+    False: ("ns_ent_fine", "ns_ent_fine_active"),
+}
+
+
+def _shipped_options(D):
+    options = Options("option_configs/basic_vbmc_options.ini", {"D": D})
+    options.load_options_file(
+        "option_configs/advanced_vbmc_options.ini", {"D": D}
+    )
+    return options
+
+
+def test_entropy_workloads_time_calls_the_package_makes():
+    """Each entropy workload has the sample count and gradient use of a call.
+
+    The package draws ``ceil(total / K)`` samples per component, ``total``
+    being a count option evaluated at ``K``, and a call that requests any
+    gradient runs at the gradient budget, a value-only call at the value
+    budget.
+    """
+    entropy = [
+        workload
+        for workload in campaign._workloads()
+        if workload.group.startswith("entropy")
+    ]
+    assert entropy
+    for workload in entropy:
+        with_gradients = any(workload.grad_flags)
+        options = _shipped_options(workload.D)
+        counts = {
+            name: math.ceil(options.eval(name, {"K": workload.K}) / workload.K)
+            for name in _ENTROPY_COUNT_OPTIONS[with_gradients]
+        }
+        expected_group = "entropy_grad" if with_gradients else "entropy_value"
+        assert workload.group == expected_group, workload.name
+        assert workload.count in counts.values(), (
+            f"{workload.name} draws {workload.count} samples per component "
+            f"{'with' if with_gradients else 'without'} gradients; the "
+            f"package's counts for such calls at K={workload.K} are {counts}"
+        )
+
+
+def test_record_validator_agrees_with_the_shipped_recipe():
+    """The recipe tables and constants of ``_cache`` match the campaign's."""
+    recipe = campaign._workloads()
+    groups = {}
+    for workload in recipe:
+        groups.setdefault(workload.group, []).append(workload.name)
+    assert {
+        group: tuple(names) for group, names in groups.items()
+    } == _cache._GROUP_WORKLOADS
+    assert _cache._WORKLOAD_SHAPES == {
+        workload.name: (
+            workload.D,
+            workload.K,
+            workload.count,
+            campaign._effective_count(workload),
+        )
+        for workload in recipe
+    }
+    assert _cache._GROUP_SETTINGS == campaign.SETTING_GROUPS
+    assert set(_cache._SETTING_NAMES) == set(campaign.SETTING_GROUPS.values())
+    assert _cache.CANDIDATE_BUDGETS == frozenset(campaign.CANDIDATE_BUDGETS)
+    assert DEFAULT_CHUNK_ELEMENTS == campaign.DEFAULT_BUDGET
+
+    # The validator writes the round counts, the default budget and the
+    # recipe version as literals: a complete campaign of the shipped recipe,
+    # timed on instant stand-in kernels, has to make a valid record.
+    clock = _FakeClock(0.001)
+    result = campaign.run_campaign(
+        deadline=300.0, _clock=clock, _kernel_api=_fake_kernels(clock)
+    )
+    assert result["status"] == "complete", result["report"].get("reason")
+    _cache.make_record(
+        identity=identity(),
+        settings=result["settings"],
+        report=result["report"],
+        elapsed_seconds=1.0,
     )
 
 

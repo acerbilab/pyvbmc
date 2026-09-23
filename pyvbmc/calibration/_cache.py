@@ -35,7 +35,7 @@ from .profile import CalibrationProfile, default_profile
 
 CACHE_SCHEMA_VERSION = 1
 KERNEL_REVISION = "chunk-kernels-v2"
-WORKLOAD_REVISION = "machine-calibration-v1"
+WORKLOAD_REVISION = "machine-calibration-v2"
 CANDIDATE_BUDGETS = frozenset(2**power for power in range(14, 19))
 MAX_CACHE_BYTES = 1024 * 1024
 MAX_REPORT_DEPTH = 8
@@ -130,13 +130,8 @@ _GROUP_WORKLOADS = {
         "sieve_gradient",
         "large_density",
     ),
-    "entropy_grad": (
-        "adam_d4_k20",
-        "boost_d4_k50",
-        "boost_d15_k50",
-        "active_d4_k20",
-    ),
-    "entropy_value": ("fine_d4_k20", "fine_d15_k26"),
+    "entropy_grad": ("adam_d4_k20", "boost_d4_k50", "boost_d15_k50"),
+    "entropy_value": ("active_d4_k20", "fine_d4_k20", "fine_d15_k26"),
 }
 _GROUP_SETTINGS = {
     "pdf": "pdf_chunk_elements",
@@ -158,8 +153,10 @@ _WORKLOAD_SHAPES = {
 _TIMING_FIELDS = frozenset(
     {"setup", "numerical", "discovery", "heldout", "total"}
 )
-# These tables define report schema v1. Keep them aligned with the workload
-# recipe when WORKLOAD_REVISION changes.
+# These tables and _RECIPE_VERSION describe the workload recipe of
+# WORKLOAD_REVISION in report schema v1. Keep them aligned with the recipe
+# in _campaign when WORKLOAD_REVISION changes.
+_RECIPE_VERSION = 2
 
 _CAMPAIGN_GUARD = threading.Lock()
 _REGISTRY_LOCK = threading.Lock()
@@ -435,8 +432,11 @@ def _validate_report(
     if not isinstance(report, dict) or set(report) != _REPORT_FIELDS:
         raise ValueError("calibration report has invalid fields")
     _validate_json_value(report)
-    for name in ("schema_version", "recipe_version"):
-        if not _is_positive_int(report[name]) or report[name] != 1:
+    for name, expected in (
+        ("schema_version", 1),
+        ("recipe_version", _RECIPE_VERSION),
+    ):
+        if not _is_positive_int(report[name]) or report[name] != expected:
             raise ValueError("calibration report has an invalid version")
     if report["status"] != "complete":
         raise ValueError("calibration report is incomplete")

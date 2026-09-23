@@ -202,12 +202,12 @@ def _workloads() -> tuple[_Workload, ...]:
             (True, True, True, True),
         ),
         _Workload(
-            "entropy_grad",
+            "entropy_value",
             "active_d4_k20",
             4,
             20,
             200,
-            (True, True, True, True),
+            (False, False, False, False),
         ),
         _Workload(
             "entropy_value",
@@ -1373,7 +1373,7 @@ def run_campaign(
     global_rng_before = copy.deepcopy(np.random.get_state())
     report = {
         "schema_version": 1,
-        "recipe_version": 1,
+        "recipe_version": 2,
         "status": "running",
         "estimated_seconds": ESTIMATED_SECONDS,
         "watchdog_seconds": WATCHDOG_SECONDS,
