@@ -122,16 +122,18 @@ def _is_positive_integer_valued(value):
     return bool(np.isinf(value)) or float(value).is_integer()
 
 
-def _is_non_negative_integer_valued(value):
+def _is_finite_non_negative_integer_valued(value):
     """
-    Whether a count that may be zero is a non-negative integer.
+    Whether a count that may be zero is a finite non-negative integer.
 
-    Zero passes, and so does every value that `_is_positive_integer_valued`
-    lets through.
+    A floating value that lands on an integer counts, as for
+    `_is_positive_integer_valued`; infinity and NaN do not.
     """
-    return _is_positive_integer_valued(value) or (
-        isinstance(value, Real) and value == 0
-    )
+    if not isinstance(value, Real):
+        return False
+    if not value >= 0 or np.isinf(value):
+        return False
+    return float(value).is_integer()
 
 
 def _stated_boolean(value):
@@ -350,17 +352,19 @@ class Options(MutableMapping, dict):
         Check the limits on iterations and function evaluations.
 
         ``max_fun_evals`` and ``max_iter`` have to be positive integers, as
-        ``misc/setupoptions_vbmc.m:109-114`` requires, and ``min_iter`` a
-        non-negative one, 0 for a run without a minimum. A floating value
-        that lands on an integer counts, and so does infinity. A
-        ``max_iter`` below ``min_iter`` is raised to it, as
-        ``misc/setupoptions_vbmc.m:115-119`` does.
+        ``misc/setupoptions_vbmc.m:109-114`` requires, or infinity for no
+        limit. ``min_iter`` has to be a finite non-negative integer, 0 for a
+        run without a minimum: the minimum holds back every termination,
+        the one on the budget of evaluations included, so a run under an
+        infinite one would never stop. A floating value that lands on an
+        integer counts. A ``max_iter`` below ``min_iter`` is raised to it,
+        as ``misc/setupoptions_vbmc.m:115-119`` does.
 
         Raises
         ------
         ValueError
             When ``max_fun_evals`` or ``max_iter`` is not a positive
-            integer, or ``min_iter`` is not a non-negative integer.
+            integer, or ``min_iter`` is not a finite non-negative integer.
         """
         for key in ("max_fun_evals", "max_iter"):
             value = self.get(key)
@@ -370,10 +374,10 @@ class Options(MutableMapping, dict):
                     f"got {value!r}."
                 )
         min_iter = self.get("min_iter")
-        if not _is_non_negative_integer_valued(min_iter):
+        if not _is_finite_non_negative_integer_valued(min_iter):
             raise ValueError(
-                "The option min_iter needs to be a non-negative integer "
-                f"(0 for no minimum); got {min_iter!r}."
+                "The option min_iter needs to be a finite non-negative "
+                f"integer (0 for no minimum); got {min_iter!r}."
             )
         if self.get("max_iter") < min_iter:
             logging.warning(

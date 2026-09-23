@@ -205,22 +205,28 @@ def test_a_run_limit_accepts_an_integer_value(key, value):
     assert options[key] == value
 
 
-@pytest.mark.parametrize("value", [-1, 2.5, -np.inf, np.nan, None, "3"])
-def test_min_iter_must_be_a_non_negative_integer(value):
+@pytest.mark.parametrize(
+    "value", [-1, 2.5, np.inf, -np.inf, np.nan, None, "3"]
+)
+def test_min_iter_must_be_a_finite_non_negative_integer(value):
     """``min_iter`` is a number of iterations, 0 when a run has no
     minimum. Any other value is refused where it is given, before it can
-    reach ``max_iter``, which is raised to ``min_iter`` when it is lower."""
+    reach ``max_iter``, which is raised to ``min_iter`` when it is lower.
+    An infinite minimum is refused as well: the minimum holds back every
+    termination, the one on the budget of evaluations included (MATLAB
+    VBMC, ``private/vbmc_termination.m:98-99``), so a run under it would
+    never stop."""
     with pytest.raises(ValueError) as execinfo:
         _shipped_options({"min_iter": value, "max_iter": 2})
-    assert "The option min_iter needs to be a non-negative integer" in (
+    assert "The option min_iter needs to be a finite non-negative integer" in (
         execinfo.value.args[0]
     )
 
 
-@pytest.mark.parametrize("value", [0, 3, 3.0, np.int64(3), np.inf])
+@pytest.mark.parametrize("value", [0, 3, 3.0, np.int64(3)])
 def test_min_iter_accepts_a_non_negative_integer_value(value):
     """As for the other limits on a run, a floating value that lands on an
-    integer passes, and so does an infinite one; 0 sets no minimum."""
+    integer passes; 0 sets no minimum."""
     options = _shipped_options({"min_iter": value})
     assert options["min_iter"] == value
 

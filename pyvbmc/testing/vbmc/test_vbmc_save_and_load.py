@@ -274,14 +274,16 @@ def test_load_refuses_the_run_limits_that_construction_refuses(
         VBMC.load(path, new_options=new_options)
 
 
-@pytest.mark.parametrize("min_iter", [-1, 2.5])
+@pytest.mark.parametrize("min_iter", [-1, 2.5, np.inf])
 def test_load_refuses_the_min_iter_that_construction_refuses(
     tmp_path, min_iter
 ):
-    """``min_iter`` has to be a non-negative integer on either route."""
+    """``min_iter`` has to be a finite non-negative integer on either route."""
     D = 2
     new_options = {"min_iter": min_iter, "max_iter": 2}
-    with pytest.raises(ValueError, match="min_iter needs to be a non-neg"):
+    with pytest.raises(
+        ValueError, match="min_iter needs to be a finite non-neg"
+    ):
         VBMC(
             lambda x: -0.5 * np.sum(x**2),
             np.zeros((1, D)),
@@ -294,7 +296,9 @@ def test_load_refuses_the_min_iter_that_construction_refuses(
 
     path = tmp_path / "fresh"
     _fresh_vbmc(D, 100).save(path)
-    with pytest.raises(ValueError, match="min_iter needs to be a non-neg"):
+    with pytest.raises(
+        ValueError, match="min_iter needs to be a finite non-neg"
+    ):
         VBMC.load(path, new_options=new_options)
 
 
