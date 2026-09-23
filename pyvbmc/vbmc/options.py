@@ -199,7 +199,7 @@ def _is_empty_value(value):
     return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0
 
 
-def _noise_size_reading(value):
+def _noise_size_reading(value, tol_gp_noise=None):
     """
     Read the ``noise_size`` option.
 
@@ -213,6 +213,10 @@ def _noise_size_reading(value):
     ----------
     value : object
         The value of the option.
+    tol_gp_noise : float, optional
+        The run's ``tol_gp_noise``. Release 1.0.4 ran a number that is not
+        positive as this value, and the refusal of such a number names it
+        as the value that continues a saved run as 1.0.4 ran it.
 
     Returns
     -------
@@ -228,17 +232,29 @@ def _noise_size_reading(value):
         return None
     if _is_finite_real_number(value) and value > 0:
         return float(value)
-    message = (
-        "The option noise_size must be "
-        + _NOISE_SIZE_FORMS
-        + f"; got {value!r}. A saved run that carries such a value is "
-        "continued with VBMC.load(file, new_options={'noise_size': []})."
-    )
+    message = "The option noise_size must be " + _NOISE_SIZE_FORMS
+    message += f"; got {value!r}."
+    unset = "VBMC.load(file, new_options={'noise_size': []})"
     if _is_finite_real_number(value):
+        if tol_gp_noise is None:
+            as_released = (
+                "by giving noise_size the value of the run's tol_gp_noise"
+            )
+        else:
+            as_released = (
+                "with VBMC.load(file, new_options={'noise_size': "
+                f"{float(tol_gp_noise)!r}}}), the run's tol_gp_noise"
+            )
         message += (
             " Release 1.0.4 ran a value that is not positive as the value "
-            "of the option tol_gp_noise, which new_options can give "
-            "instead."
+            "of the option tol_gp_noise, so a saved run that carries one is "
+            f"continued as 1.0.4 ran it {as_released}, or with the option "
+            f"unset with {unset}."
+        )
+    else:
+        message += (
+            " A saved run that carries such a value is continued with "
+            f"{unset}, which leaves the option unset."
         )
     raise ValueError(message)
 

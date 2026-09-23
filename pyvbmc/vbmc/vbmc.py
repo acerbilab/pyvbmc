@@ -4330,7 +4330,10 @@ class VBMC:
         """Check the base observation noise of the GP, whatever the
         uncertainty level: ``_noise_size_reading`` says which values it
         takes, and the GP fit reads the option through it."""
-        _noise_size_reading(self.options.get("noise_size"))
+        _noise_size_reading(
+            self.options.get("noise_size"),
+            tol_gp_noise=self.options.get("tol_gp_noise"),
+        )
 
     def _validate_gp_sample_thin_option(self):
         """Check the thinning of the GP hyperparameter samples.

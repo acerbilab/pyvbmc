@@ -951,22 +951,49 @@ def test_a_noise_size_that_is_empty_or_a_positive_number_is_taken(
     assert loaded.options["noise_size"] is value
 
 
-def test_a_saved_noise_size_of_zero_loads_as_the_refusal_says(tmp_path):
+@pytest.mark.parametrize(
+    "options",
+    [{}, {"uncertainty_handling": True}],
+    ids=["level_0", "level_1"],
+)
+def test_a_saved_noise_size_of_zero_loads_as_the_refusal_says(
+    tmp_path, options
+):
     """Release 1.0.4 took a ``noise_size`` that is not positive and ran it
     as ``tol_gp_noise``. Such a value is refused when a saved run that
-    carries it is loaded, and the refusal names the argument of ``load``
-    that replaces it."""
-    vbmc = _vbmc_with_noise({})
+    carries it is loaded. The refusal leads with the argument of ``load``
+    that continues the run as 1.0.4 ran it, the run's ``tol_gp_noise``,
+    and names the one that leaves the option unset."""
+    vbmc = _vbmc_with_noise(options)
     vbmc.options.__setitem__("noise_size", 0, force=True)
     saved = tmp_path.joinpath("run.pkl")
     vbmc.save(saved)
-    remedy = "VBMC.load(file, new_options={'noise_size': []})"
+    tol_gp_noise = float(vbmc.options["tol_gp_noise"])
+    as_released = (
+        f"VBMC.load(file, new_options={{'noise_size': {tol_gp_noise!r}}})"
+    )
+    unset = "VBMC.load(file, new_options={'noise_size': []})"
 
     with pytest.raises(ValueError) as at_load:
         VBMC.load(saved)
-    assert remedy in at_load.value.args[0]
+    message = at_load.value.args[0]
+    assert as_released in message and unset in message
+    assert message.index(as_released) < message.index(unset)
+    loaded = VBMC.load(saved, new_options={"noise_size": tol_gp_noise})
+    assert loaded.options["noise_size"] == tol_gp_noise
     loaded = VBMC.load(saved, new_options={"noise_size": []})
     assert loaded.options["noise_size"] == []
+
+
+@pytest.mark.parametrize("value", [np.nan, "0.1", [0.1]])
+def test_a_noise_size_that_is_not_a_number_says_how_to_leave_it_unset(value):
+    """A value that is not a number is refused with the argument of
+    ``load`` that leaves the option unset."""
+    with pytest.raises(ValueError) as execinfo:
+        _vbmc_with_noise({"noise_size": value})
+    message = execinfo.value.args[0]
+    assert "VBMC.load(file, new_options={'noise_size': []})" in message
+    assert "tol_gp_noise" not in message
 
 
 _MCMC_SAMPLES = "active_importance_sampling_mcmc_samples"
