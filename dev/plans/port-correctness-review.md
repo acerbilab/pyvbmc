@@ -2226,13 +2226,20 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   ledger cites is on gpyreg's `main`; gpyreg's build and docs workflows
   passed on it. `../gpyreg` brought to it. PyVBMC's `GPYREG_PIN` moved to
   it, with the sheet's header and its gpyreg line citations (`4196649a`).
-- [ ] **Pickup point (2026-09-23, the pin at gpyreg's merge): the matrix,
-  gpyreg 1.3.0, the pin at its tag, then `dev-next`; the wave-1 branch
-  after.** The state: gpyreg's `main` at `a4c2cc0`; its pull request `#51`
-  (`release-1.3.0`) dates the heading `1.3.0 (unreleased)` of the release
-  notes, the one text on `main` that still says so, and waits for the PI's
-  merge; no gpyreg release after 1.2.1 on PyPI or GitHub. `dev-port-review`
-  holds the pin at `a4c2cc0`. The agents' worktrees
+- [x] 2026-09-23: gpyreg 1.3.0 released, and PyVBMC moved to it (PI: do
+  it now). PyVBMC's full matrix against the pin at `a4c2cc0`, nine jobs,
+  green, with the branch smoke. gpyreg's `#51` merged (`0186d89`), dating
+  the release notes, the one text on `main` that said "unreleased"; the
+  annotated tag `v1.3.0` on it and its GitHub release, whose workflow
+  uploaded the wheel and the source archive to PyPI. `2dc2a6c3`:
+  `GPYREG_PIN` at the tagged commit, `gpyreg >= 1.3.0` in `pyproject.toml`,
+  the changelog's requirement, the sheet citing gpyreg at the tag. Locally,
+  `../gpyreg` fetched with its tags and reinstalled editable (it reads
+  1.3.0, and `pip check` finds no broken requirement).
+- [ ] **Pickup point (2026-09-23, gpyreg 1.3.0 released): the merge into
+  `dev-next`, then the wave-1 branch; each on the PI's word.** The state:
+  gpyreg's `main` at `v1.3.0` (`0186d89`), on PyPI; `dev-port-review`
+  requires it and pins CI at it. The agents' worktrees
   `../gpyreg-port-review-A`, `-B`, `-D` and `-E` stand, every commit of
   theirs on gpyreg's `main`. Beside `dev-port-review` stands
   `dev-port-review-w1check`, a parallel session's check of wave 1, cut at
@@ -2240,36 +2247,14 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   not pushed, sharing seven files with wave 6's commits since `326c7676`
   (`CHANGELOG.md`, the sheet, the MATLAB-side list, this plan,
   `pyvbmc/vbmc/vbmc.py` and the two option test modules). In this order:
-  1. The push of `dev-port-review`, its smoke, and the full matrix
-     (`test-matrix.yml` by hand, against the pin).
-  2. With the matrix green and `#51` merged by the PI: gpyreg's tag `v1.3.0`
-     on the merge of `#51` and its GitHub release, which uploads 1.3.0 to
-     PyPI (the release workflow); PyPI refuses a version twice, so nothing
-     is released before the matrix passes.
-  3. One PyVBMC commit: `GPYREG_PIN` moved to the commit of `v1.3.0`, the
-     minimum of `pyproject.toml` raised to `gpyreg>=1.3.0`, and the
-     changelog's requirement, drafted for the PI to read: "gpyreg 1.3.0 or
-     later. gpyreg 1.3.0 takes the bounds of the location and scale of the
-     GP mean function, and the starting length scales, per input
-     dimension, where it pooled the statistics of the training inputs over
-     all dimensions; the hyperparameter samples of every GP fit that
-     samples, and with them the results of every run, move. See the release
-     notes of gpyreg for the rest of what changed there." The pin moves with
-     the minimum: CI reads the pinned checkout's version from gpyreg's tags,
-     and a commit before `v1.3.0` reads as 1.2.2.dev, below the minimum, so
-     pip would install 1.3.0 from PyPI over the pinned checkout. The sheet's
-     header names the tag. Then its CI.
-  4. Locally, as `AGENTS.md` says: `git -C ../gpyreg fetch --tags` and an
-     editable reinstall of `../gpyreg`, whose version otherwise stays below
-     the minimum, so that the next `pip install -e .` does not install
-     gpyreg from PyPI over the checkout.
-  5. The merge of `dev-port-review` into `dev-next` (a fast-forward), with
-     the status line of `TODO.md`. Wave 6 is then finished.
-  6. The wave-1 branch brought onto `dev-port-review`: the seven shared
+  1. The merge of `dev-port-review` into `dev-next` (a fast-forward), with
+     the status line of `TODO.md`, once the smoke of `2dc2a6c3` is green.
+     Wave 6 is then finished.
+  2. The wave-1 branch brought onto `dev-port-review`: the seven shared
      files merged by hand, its gates rerun on the result (its plan entry
      lists them), and the gates of wave 6 with them; one of its commits
      moves the noisy seeded runs, so their record is made anew there.
-  7. The worktrees of A, B, D and E removed once `git cherry` has been read
+  3. The worktrees of A, B, D and E removed once `git cherry` has been read
      once more.
   The session starts no other wave.
 
