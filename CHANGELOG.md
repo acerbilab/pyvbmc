@@ -103,8 +103,10 @@ its entry below.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
   input point and must not set `acq_info["mcmc_importance_sampling"]`. A
-  callable `adaptive_k` receives the number of components as the keyword
-  argument `K`, where 1.0.4 passed it as `unkn`.
+  function given as an option of one argument (`ns_ent`, `k_fun_max`,
+  `adaptive_k` and the like) receives the argument by position, so one that
+  takes it only by keyword (`lambda *, K: ...`, `lambda **kw: ...`) raises
+  `TypeError`.
 - `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
   own: a variable with one finite bound, a `scale` that is not positive, a
   noise flag that contradicts the uncertainty handling level, and `add`
@@ -745,9 +747,12 @@ its entry below.
   selected; if the ELBO of every candidate is NaN, `optimize_vp` raises
   `ValueError`. 1.0.4 took the first NaN it met in both places and could go
   on with a posterior whose ELBO was NaN.
-- A callable `adaptive_k` is called with the number of components as the
-  keyword argument `K`, as its description says. 1.0.4 passed it as `unkn`,
-  so `lambda K: ...` raised `TypeError`.
+- A function given as an option of one argument (`ns_ent`, `k_fun_max`,
+  `adaptive_k` and the like) receives the argument by position, as in MATLAB
+  VBMC, so its parameter may have any name. 1.0.4 passed the argument by
+  keyword, as `K`, as `N` for `k_fun_max` and as `unkn` for `adaptive_k`, so
+  a function whose parameter had another name was accepted at construction
+  and raised `TypeError` at its first use in the run.
 - `variable_means=False` raised an error in the final boost of any run that
   ended with fewer than `min_final_components` components. With that
   setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many

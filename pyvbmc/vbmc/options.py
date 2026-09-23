@@ -656,24 +656,32 @@ class Options(MutableMapping, dict):
         Evaluate an option using `evaluation_parameters` if it is a callable,
         otherwise return the value of the option.
 
+        A callable evaluated with a single parameter receives its value by
+        position, as MATLAB VBMC's ``misc/evaloption_vbmc.m`` calls
+        ``option(N)``, so the name of the callable's parameter does not
+        matter. With several parameters it receives them as keyword
+        arguments, and its parameters have to carry their names.
+
         Parameters
         ----------
         key : str
             The name of the option.
         evaluation_parameters : dict
-            Parameters for the options in case it is a callable. These have to
-            match the key arguments of the callable and are ignored if it is not
-            a callable.
+            Parameters for the option in case it is a callable, by name.
+            They are ignored if it is not a callable.
 
         Returns
         -------
         val : object
             Value of the object which has been evaluated if it is a callable.
         """
-        if callable(self.get(key)):
-            return self.get(key)(**evaluation_parameters)
-        else:
-            return self.get(key)
+        value = self.get(key)
+        if not callable(value):
+            return value
+        if len(evaluation_parameters) == 1:
+            (parameter,) = evaluation_parameters.values()
+            return value(parameter)
+        return value(**evaluation_parameters)
 
     def __str__(self):
         """

@@ -721,6 +721,40 @@ def test_eval_callable():
     assert (5, 10) == options.eval("bar", {"S": 5, "T": 10})
 
 
+def test_eval_passes_a_single_parameter_by_position():
+    """A callable option evaluated with one parameter receives it by
+    position, as ``misc/evaloption_vbmc.m`` calls ``option(N)``, so the
+    function's parameter may have any name: ``lambda n: ...`` for
+    ``ns_ent``, and ``lambda unkn: ...`` for ``adaptive_k``, the name that
+    release 1.0.4 passed."""
+    options = _shipped_options(
+        {
+            "ns_ent": lambda n: 100 * n,
+            "adaptive_k": lambda unkn: unkn + 1,
+            "k_fun_max": lambda n_eff: n_eff / 2,
+        }
+    )
+    assert options.eval("ns_ent", {"K": 3}) == 300
+    assert options.eval("adaptive_k", {"K": 4}) == 5
+    assert options.eval("k_fun_max", {"N": 10}) == 5
+
+
+def test_eval_passes_several_parameters_by_keyword():
+    """With several parameters the names decide which value goes where,
+    whatever the order of the function's parameters."""
+    options = _shipped_options(
+        {
+            "active_importance_sampling_mcmc_samples": (
+                lambda D, K, n_vars: (D, K, n_vars)
+            )
+        }
+    )
+    assert options.eval(
+        "active_importance_sampling_mcmc_samples",
+        {"K": 1, "n_vars": 2, "D": 3},
+    ) == (3, 1, 2)
+
+
 def test_eval_constant():
     default_options_path = options_path.joinpath("test_options.ini")
     user_options = {"ns_ent": (5, 3)}
