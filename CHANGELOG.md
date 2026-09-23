@@ -20,8 +20,9 @@ its entry below.
   `plotly`.
 - Option values are checked: an unknown option name in an options file,
   `uncertainty_handling=[1]`, a `specify_target_noise` that is not `True` or
-  `False`, an ambiguous `integer_vars`, or a `max_fun_evals` or `max_iter`
-  that is not a positive integer raises an error.
+  `False`, an ambiguous `integer_vars`, a `max_fun_evals` or `max_iter`
+  that is not a positive integer, or a `min_iter` that is not a
+  non-negative integer raises an error.
   So do a `gp_mean_fun` or a `gp_hyp_sampler` that PyVBMC does not implement,
   `f_vals` together with `specify_target_noise`, a `quantile` of `AcqFcnVIQR`
   or `AcqFcnIMIQR` outside (0.5, 1), and a `search_acq_fcn` string that
@@ -489,9 +490,10 @@ its entry below.
     made every variable an integer variable, without warning. An array of `D`
     integers that are all 0 or 1 could be a mask or a list of indices, and
     raises an error: write the mask with `True` and `False`.
-  - `max_fun_evals` and `max_iter` must be positive integers (`np.inf` is
-    allowed). A `max_iter` smaller than `min_iter` is raised to `min_iter`,
-    with a warning.
+  - `max_fun_evals` and `max_iter` must be positive integers, and
+    `min_iter` a non-negative integer, 0 for a run without a minimum
+    (`np.inf` is allowed for all three). A `max_iter` smaller than
+    `min_iter` is raised to `min_iter`, with a warning.
   - `gp_mean_fun` takes `"zero"`, `"const"` or `"negquad"`, and
     `gp_hyp_sampler` takes `"slicesample"`: the mean functions and the
     sampler that PyVBMC implements. 1.0.4 accepted the other names of MATLAB

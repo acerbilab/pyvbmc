@@ -205,6 +205,48 @@ def test_a_run_limit_accepts_an_integer_value(key, value):
     assert options[key] == value
 
 
+@pytest.mark.parametrize("value", [-1, 2.5, -np.inf, np.nan, None, "3"])
+def test_min_iter_must_be_a_non_negative_integer(value):
+    """``min_iter`` is a number of iterations, 0 when a run has no
+    minimum. Any other value is refused where it is given, before it can
+    reach ``max_iter``, which is raised to ``min_iter`` when it is lower."""
+    with pytest.raises(ValueError) as execinfo:
+        _shipped_options({"min_iter": value, "max_iter": 2})
+    assert "The option min_iter needs to be a non-negative integer" in (
+        execinfo.value.args[0]
+    )
+
+
+@pytest.mark.parametrize("value", [0, 3, 3.0, np.int64(3), np.inf])
+def test_min_iter_accepts_a_non_negative_integer_value(value):
+    """As for the other limits on a run, a floating value that lands on an
+    integer passes, and so does an infinite one; 0 sets no minimum."""
+    options = _shipped_options({"min_iter": value})
+    assert options["min_iter"] == value
+
+
+def test_the_default_min_iter_is_accepted():
+    D = 3
+    options = _shipped_options({}, D=D)
+    assert options["min_iter"] == D  # `min_iter = D` in the shipped file
+
+
+def test_min_iter_takes_a_boolean_as_max_iter_does():
+    """The two limits on iterations agree on `True`: both accept it, or
+    both refuse it."""
+
+    def accepted(user_options):
+        try:
+            _shipped_options(user_options)
+        except ValueError:
+            return False
+        return True
+
+    assert accepted({"min_iter": True}) == accepted(
+        {"max_iter": True, "min_iter": 0}
+    )
+
+
 def test_max_iter_below_min_iter_is_raised_to_it(caplog):
     """``misc/setupoptions_vbmc.m:115-119`` raises MaxIter to MinIter and
     says so."""

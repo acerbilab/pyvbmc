@@ -274,6 +274,56 @@ def test_load_refuses_the_run_limits_that_construction_refuses(
         VBMC.load(path, new_options=new_options)
 
 
+@pytest.mark.parametrize("min_iter", [-1, 2.5])
+def test_load_refuses_the_min_iter_that_construction_refuses(
+    tmp_path, min_iter
+):
+    """``min_iter`` has to be a non-negative integer on either route."""
+    D = 2
+    new_options = {"min_iter": min_iter, "max_iter": 2}
+    with pytest.raises(ValueError, match="min_iter needs to be a non-neg"):
+        VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros((1, D)),
+            np.full((1, D), -np.inf),
+            np.full((1, D), np.inf),
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            options={**new_options, "display": "off"},
+        )
+
+    path = tmp_path / "fresh"
+    _fresh_vbmc(D, 100).save(path)
+    with pytest.raises(ValueError, match="min_iter needs to be a non-neg"):
+        VBMC.load(path, new_options=new_options)
+
+
+def test_min_iter_of_zero_and_the_default_are_accepted_on_either_route(
+    tmp_path,
+):
+    """0, which sets no minimum, and the default ``min_iter = D`` pass at
+    construction and through ``load``."""
+    D = 2
+    fresh = _fresh_vbmc(D, 100)
+    assert fresh.options["min_iter"] == D
+    built = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"min_iter": 0, "display": "off"},
+    )
+    assert built.options["min_iter"] == 0
+
+    path = tmp_path / "fresh"
+    fresh.save(path)
+    assert VBMC.load(path).options["min_iter"] == D
+    loaded = VBMC.load(path, new_options={"min_iter": 0})
+    assert loaded.options["min_iter"] == 0
+
+
 def test_load_raises_max_iter_to_min_iter_as_construction_does(tmp_path):
     """A ``max_iter`` below ``min_iter`` is raised to it on either route."""
     path = tmp_path / "fresh"

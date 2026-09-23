@@ -122,6 +122,18 @@ def _is_positive_integer_valued(value):
     return bool(np.isinf(value)) or float(value).is_integer()
 
 
+def _is_non_negative_integer_valued(value):
+    """
+    Whether a count that may be zero is a non-negative integer.
+
+    Zero passes, and so does every value that `_is_positive_integer_valued`
+    lets through.
+    """
+    return _is_positive_integer_valued(value) or (
+        isinstance(value, Real) and value == 0
+    )
+
+
 def _stated_boolean(value):
     """
     The boolean that a value states, or `None` when it states none.
@@ -337,15 +349,18 @@ class Options(MutableMapping, dict):
         """
         Check the limits on iterations and function evaluations.
 
-        ``max_fun_evals`` and ``max_iter`` have to be positive integers,
-        and a ``max_iter`` below ``min_iter`` is raised to it, as
-        ``misc/setupoptions_vbmc.m:109-119`` requires.
+        ``max_fun_evals`` and ``max_iter`` have to be positive integers, as
+        ``misc/setupoptions_vbmc.m:109-114`` requires, and ``min_iter`` a
+        non-negative one, 0 for a run without a minimum. A floating value
+        that lands on an integer counts, and so does infinity. A
+        ``max_iter`` below ``min_iter`` is raised to it, as
+        ``misc/setupoptions_vbmc.m:115-119`` does.
 
         Raises
         ------
         ValueError
             When ``max_fun_evals`` or ``max_iter`` is not a positive
-            integer.
+            integer, or ``min_iter`` is not a non-negative integer.
         """
         for key in ("max_fun_evals", "max_iter"):
             value = self.get(key)
@@ -354,7 +369,13 @@ class Options(MutableMapping, dict):
                     f"The option {key} needs to be a positive integer; "
                     f"got {value!r}."
                 )
-        if self.get("max_iter") < self.get("min_iter"):
+        min_iter = self.get("min_iter")
+        if not _is_non_negative_integer_valued(min_iter):
+            raise ValueError(
+                "The option min_iter needs to be a non-negative integer "
+                f"(0 for no minimum); got {min_iter!r}."
+            )
+        if self.get("max_iter") < min_iter:
             logging.warning(
                 "The option max_iter cannot be smaller than min_iter. "
                 "Raising max_iter to %s.",
