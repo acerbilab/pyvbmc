@@ -87,6 +87,11 @@ def test_declared_name_in_new_options_is_accepted(tmp_path):
         ({"warp_cov_reg": np.nan}, ValueError, "warp_cov_reg"),
         ({"hpd_frac": 0.1}, ValueError, "hpd_frac"),
         ({"log_file_level": None}, ValueError, "log_file_level"),
+        (
+            {"bounded_transform": np.str_("probit")},
+            ValueError,
+            "bounded transform",
+        ),
     ],
 )
 def test_new_options_are_checked_as_at_construction(
@@ -221,6 +226,8 @@ def test_load_takes_back_the_options_a_run_was_built_with(
         {"gp_mean_fun": "negquad"},
         {"f_vals": np.array([-1.0])},
         {"integer_vars": np.array([False, True])},
+        {"bounded_transform": "probit"},
+        {"bounded_transform": 12},
     ],
 )
 def test_load_refuses_a_value_other_than_the_one_the_run_was_built_with(
@@ -245,6 +252,39 @@ def test_load_refuses_a_value_other_than_the_one_the_run_was_built_with(
     for other in _BUILT_WITH:
         if other != name:
             assert repr(other) not in message
+
+
+@pytest.mark.parametrize(
+    "built, given_back",
+    [
+        ({"bounded_transform": "probit"}, {"bounded_transform": "norminv"}),
+        ({"bounded_transform": "probit"}, {"bounded_transform": 12}),
+        ({"bounded_transform": "norminv"}, {"bounded_transform": 12.0}),
+        ({"bounded_transform": 3}, {"bounded_transform": "logit"}),
+        ({"warmup": True}, {"warmup": 2}),
+        ({"warmup": False}, {"warmup": []}),
+        ({"entropy_switch": True}, {"entropy_switch": 2}),
+        ({"fitness_shaping": True}, {"fitness_shaping": 5}),
+    ],
+)
+def test_load_takes_back_a_value_that_construction_reads_as_the_stored_one(
+    tmp_path, built, given_back
+):
+    """Construction reads ``bounded_transform`` through the map of names and
+    numbers of ``ParameterTransformer``, where ``"probit"``, ``"norminv"``
+    and ``12`` name one transform, and ``warmup``, ``entropy_switch`` and
+    ``fitness_shaping`` by their truth. A value that it reads as the stored
+    one is taken back by ``load``, which keeps the stored value, together
+    with a new budget."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc(options=built).save(saved)
+
+    loaded = VBMC.load(saved, new_options={**given_back, "max_fun_evals": 321})
+
+    assert loaded.options["max_fun_evals"] == 321
+    for name, value in built.items():
+        assert type(loaded.options[name]) is type(value)
+        assert loaded.options[name] == value
 
 
 def test_load_takes_an_option_a_continued_run_reads(tmp_path):
@@ -460,6 +500,92 @@ def test_load_reads_the_integer_vars_mask_of_release_1_0_4(
     assert np.array_equal(loaded.options["integer_vars"], mask)
     assert loaded.options["integer_vars"].dtype == bool
     assert np.array_equal(loaded.optim_state["integer_vars"], mask)
+
+
+@pytest.mark.parametrize(
+    "built, stored, restated",
+    [
+        (
+            {"uncertainty_handling": True},
+            {"uncertainty_handling": [1]},
+            {"uncertainty_handling": True, "specify_target_noise": False},
+        ),
+        (
+            {"uncertainty_handling": True},
+            {"uncertainty_handling": [0]},
+            {"uncertainty_handling": True, "specify_target_noise": False},
+        ),
+        (
+            {"uncertainty_handling": True},
+            {"uncertainty_handling": np.array([1])},
+            {"uncertainty_handling": True, "specify_target_noise": False},
+        ),
+        (
+            {"specify_target_noise": True},
+            {"specify_target_noise": "yes"},
+            {"uncertainty_handling": [], "specify_target_noise": True},
+        ),
+        (
+            {"specify_target_noise": True},
+            {"specify_target_noise": [0], "uncertainty_handling": False},
+            {"uncertainty_handling": True, "specify_target_noise": True},
+        ),
+        (
+            {},
+            {"specify_target_noise": None},
+            {"uncertainty_handling": [], "specify_target_noise": False},
+        ),
+    ],
+    ids=["list_one", "list_zero", "array", "string", "list_and_off", "none"],
+)
+def test_load_restates_the_noise_handling_of_release_1_0_4(
+    tmp_path, built, stored, restated
+):
+    """Release 1.0.4 read ``specify_target_noise`` by its truth, and it
+    turned the noise handling on for any ``uncertainty_handling`` of nonzero
+    length, which it did not read when ``specify_target_noise`` was on. A
+    run it saved can store forms that construction refuses, such as ``[1]``,
+    or a pair that it refuses, such as ``uncertainty_handling=False`` with
+    a target that returns its noise. ``load`` gives each of the two options
+    the form that states the uncertainty handling level the run's state
+    holds, so that the options read as the run was made and the run's own
+    options can be given back with a new budget."""
+    vbmc = _vbmc_with_noise(built)
+    for name, value in stored.items():
+        vbmc.options.__setitem__(name, value, force=True)
+    level = vbmc.optim_state["uncertainty_handling_level"]
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+
+    loaded = VBMC.load(saved)
+
+    for name, value in restated.items():
+        assert type(loaded.options[name]) is type(value), name
+        assert np.array_equal(loaded.options[name], value), name
+    assert loaded.optim_state["uncertainty_handling_level"] == level
+    assert loaded.options.uncertainty_handling_on() == (level > 0)
+    again = VBMC.load(saved, new_options={**restated, "max_fun_evals": 321})
+    assert again.options["max_fun_evals"] == 321
+
+
+def test_load_refuses_the_uncertainty_handling_form_of_release_1_0_4(
+    tmp_path,
+):
+    """The ``[1]`` that a run saved by release 1.0.4 can store is restated
+    as ``True`` when the run is loaded, and given to ``load`` it is refused
+    with the message construction gives for it, which names the forms the
+    option takes."""
+    vbmc = _vbmc_with_noise({"uncertainty_handling": True})
+    vbmc.options.__setitem__("uncertainty_handling", [1], force=True)
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+
+    with pytest.raises(ValueError) as at_construction:
+        _vbmc_with_noise({"uncertainty_handling": [1]})
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(saved, new_options={"uncertainty_handling": [1]})
+    assert at_load.value.args[0] == at_construction.value.args[0]
+    assert "True or False" in at_load.value.args[0]
 
 
 @pytest.mark.parametrize(

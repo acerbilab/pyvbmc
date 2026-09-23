@@ -49,7 +49,9 @@ from .options import (
     SHIPPED_OPTIONS_PATHS,
     Options,
     _noise_size_reading,
+    _stated_boolean,
     _states_the_stored_value,
+    _uncertainty_handling_flag,
 )
 from .variational_optimization import optimize_vp, update_K
 
@@ -78,10 +80,11 @@ _PRECOMPUTED_DUPLICATE_ULPS = 4
 # ``_initialize_precomputed_evaluations`` it calls, in
 # ``Options.update_defaults``, or in a check that construction and ``load``
 # share: a value check, a ``VBMC._validate_*`` method, or
-# ``Options._warn_ignored_noise_size``. Two reads are not reads a
-# run acts on: ``load``'s rewrite of the ``integer_vars`` that release 1.0.4
-# stored, and ``active_sample``'s read of ``active_search_bound`` into two
-# locals that nothing uses. A read of the ``optim_state`` entry that carries
+# ``Options._warn_ignored_noise_size``. Some reads are not reads a run acts
+# on: ``load``'s rewrites of the ``integer_vars``, ``uncertainty_handling``
+# and ``specify_target_noise`` that release 1.0.4 stored, and
+# ``active_sample``'s read of ``active_search_bound`` into two locals that
+# nothing uses. A read of the ``optim_state`` entry that carries
 # the same name is a read of the state, not of the option. The test
 # ``test_construction_only_options_are_the_options_only_construction_reads``
 # (``pyvbmc/testing/vbmc/test_options.py``) holds the tuple to this rule. It
@@ -3294,16 +3297,23 @@ class VBMC:
             refused, since it would take no effect: running with it means
             constructing a new ``VBMC`` object, and the refusal names the
             options it applies to. The stored value itself, in any form
-            construction reads alike, is taken and changes nothing, so the
-            options a run was built with can be given back together with,
-            for example, a new budget. A new ``ns_gp_max`` also decides, as
-            at construction, whether the GP fits sample their
-            hyperparameters (0 turns the sampling off), unless the sampling
-            has already stopped in the stable regime. An
-            option that has no effect in
-            PyVBMC, or a ``noise_size`` for a target that returns its own
-            noise estimates, is taken with the warning that construction
-            gives for it.
+            construction reads alike (``"norminv"`` for a
+            ``bounded_transform`` of ``"probit"``, ``2`` for a ``warmup``
+            of ``True``), is taken and changes nothing, so the options a
+            run was built with can be given back together with, for
+            example, a new budget. A run saved by release 1.0.4 can store
+            an ``integer_vars``, ``uncertainty_handling`` or
+            ``specify_target_noise`` in a form that construction refuses
+            or reads otherwise, such as ``uncertainty_handling=[1]``; the
+            loaded run holds the form that states what the run was made
+            with (``True`` for ``[1]``), which is the one to give back. A
+            new ``ns_gp_max`` also decides, as at construction, whether the
+            GP fits sample their hyperparameters (0 turns the sampling
+            off), unless the sampling has already stopped in the stable
+            regime. An option that has no effect in PyVBMC, or a
+            ``noise_size`` for a target that returns its own noise
+            estimates, is taken with the warning that construction gives
+            for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3446,6 +3456,41 @@ class VBMC:
             vbmc.options.__setitem__(
                 "integer_vars", np.asarray(mask, dtype=bool), force=True
             )
+        # Release 1.0.4 read ``specify_target_noise`` by its truth, and it
+        # turned the noise handling on for any ``uncertainty_handling`` of
+        # nonzero length, such as ``[1]``, which it did not read when
+        # ``specify_target_noise`` was on. A run it saved can store forms
+        # that are refused when they are given, or a pair that is, such as
+        # ``uncertainty_handling=False`` with ``specify_target_noise`` on.
+        # The run's state holds the uncertainty handling level the run was
+        # made with, and each of the two options takes the form that states
+        # it wherever its reading differs; a run built by the current code
+        # stores options that read as its level.
+        level = vbmc.optim_state.get("uncertainty_handling_level")
+        if level is not None:
+            noisy = bool(level > 0)
+            target_noise = bool(level == 2)
+            if (
+                _stated_boolean(vbmc.options.get("specify_target_noise"))
+                is not target_noise
+            ):
+                vbmc.options.__setitem__(
+                    "specify_target_noise", target_noise, force=True
+                )
+            try:
+                requested = _uncertainty_handling_flag(
+                    vbmc.options.get("uncertainty_handling")
+                )
+                # An empty value follows ``specify_target_noise``.
+                states_level = requested is noisy or (
+                    requested is None and noisy is target_noise
+                )
+            except ValueError:
+                states_level = False
+            if not states_level:
+                vbmc.options.__setitem__(
+                    "uncertainty_handling", noisy, force=True
+                )
 
         calibration_override = None
         has_calibration_override = (

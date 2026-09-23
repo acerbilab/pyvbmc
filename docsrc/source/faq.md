@@ -708,15 +708,17 @@ the run reached its iteration limit, increase `max_iter` as well.
 `new_options` changes the options a running iteration reads. An option that
 PyVBMC reads only while it builds a `VBMC` object — `uncertainty_handling`,
 `gp_mean_fun`, `integer_vars` and `warmup` among them — keeps the value the
-run was built with: giving that value again is fine, so you can pass the
-run's original options together with the new budget, but another value is
-refused, since the saved state already holds what was built from the
-original one, and running with another value means building a new `VBMC`
-object. Continue
-with the same model, data, prior and bounds, and under the same minor
-version of Python (3.12, say) that saved the file: a saved run holds Python
-bytecode, so under another minor version it can be loaded and inspected but
-should not be continued or saved again, which can end the interpreter. See
+run was built with. Giving that value again, in any form PyVBMC reads alike,
+is fine, so you can pass the run's original options together with the new
+budget; another value is refused, since the saved state already holds what
+was built from the original one, and running with another value means
+building a new `VBMC` object. A run saved by PyVBMC 1.0.4 with
+`uncertainty_handling=[1]`, a form that PyVBMC refuses, holds `True` once
+loaded, and `True` is the value to give. Continue with the same model, data,
+prior and bounds, and under the same minor version of Python (3.12, say)
+that saved the file: a saved run holds Python bytecode, so under another
+minor version it can be loaded and inspected but should not be continued or
+saved again, which can end the interpreter. See
 [`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
 
 If you only need to use the fitted posterior later, save it with

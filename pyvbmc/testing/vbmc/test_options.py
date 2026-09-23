@@ -449,10 +449,13 @@ _READS_BY_METHOD = {
 }
 # Reads that no run acts on, by option and site: ``active_sample`` reads
 # the option into two locals that nothing uses, and ``load`` reads the
-# stored ``integer_vars`` to rewrite the forms that release 1.0.4 wrote.
+# stored ``integer_vars``, ``uncertainty_handling`` and
+# ``specify_target_noise`` to rewrite the forms that release 1.0.4 wrote.
 _READS_THAT_DO_NOT_COUNT = {
     ("active_search_bound", "active_sample"),
     ("integer_vars", "VBMC.load"),
+    ("uncertainty_handling", "VBMC.load"),
+    ("specify_target_noise", "VBMC.load"),
 }
 
 

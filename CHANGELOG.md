@@ -492,13 +492,16 @@ its entry below.
     the state that was built from such an option, so a value given to `load`
     was stored and then ignored, leaving the options and the state in
     disagreement. The stored value, in any form construction reads alike
-    (`1` for `True`, the indices of the integer variables for their mask),
-    is taken and changes nothing. The options a continued run reads,
-    `max_fun_evals` and `max_iter` among them, are taken as before, and
-    `gp_mean_fun` and `integer_vars` are checked for a value no run can use
-    whichever way they are supplied. A run saved by 1.0.4 whose stored
-    `integer_vars` is refused now or read otherwise than 1.0.4 read it, an
-    array of zeros for one, loads with the mask the run was made with.
+    (`1` for `True`, `"norminv"` for `"probit"`, the indices of the integer
+    variables for their mask), is taken and changes nothing. The options a
+    continued run reads, `max_fun_evals` and `max_iter` among them, are
+    taken as before, and `gp_mean_fun` and `integer_vars` are checked for a
+    value no run can use whichever way they are supplied. A run saved by
+    1.0.4 whose stored `integer_vars`, `uncertainty_handling` or
+    `specify_target_noise` is refused now or read otherwise than 1.0.4 read
+    it (an `integer_vars` of zeros, an `uncertainty_handling` of `[1]`)
+    loads with the values that state what the run was made with: the mask
+    of its integer variables, and `True` or `False` for its noise handling.
   - `uncertainty_handling` takes `True` or `False` (`1` and `0` are accepted).
     Left empty, it follows `specify_target_noise`. A list such as `[1]`, which
     used to switch it on, raises an error, and so does `False` combined with

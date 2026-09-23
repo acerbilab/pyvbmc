@@ -16,6 +16,9 @@ import numpy as np
 
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
+from pyvbmc.parameter_transformer.parameter_transformer import (
+    _bounded_transform_type,
+)
 from pyvbmc.whitening.whitening import _is_finite_real_number
 
 #: Options declared in the ``.ini`` files that no PyVBMC module reads. They
@@ -324,14 +327,21 @@ def _integer_vars_mask(value, D):
     return mask
 
 
+#: The options that construction reads by their truth.
+_OPTIONS_READ_BY_TRUTH = ("warmup", "entropy_switch", "fitness_shaping")
+
+
 def _construction_reading(name, value, D):
     """
     The value of an option as construction reads it.
 
     ``uncertainty_handling`` and ``specify_target_noise`` are read as the
     choices they state, ``integer_vars`` as its mask over the `D`
-    variables and ``f_vals`` as a flat array; any other option is read as
-    it is.
+    variables, ``f_vals`` as a flat array, ``bounded_transform`` as the
+    number of the transform it names, which ``ParameterTransformer`` gives
+    ``"probit"`` and ``"norminv"`` alike, and the options of
+    :data:`_OPTIONS_READ_BY_TRUTH` by their truth; any other option is read
+    as it is.
 
     Raises
     ------
@@ -346,6 +356,10 @@ def _construction_reading(name, value, D):
         return _integer_vars_mask(value, D)
     if name == "f_vals":
         return np.array(value).ravel()
+    if name == "bounded_transform":
+        return _bounded_transform_type(value)
+    if name in _OPTIONS_READ_BY_TRUTH:
+        return bool(value)
     return value
 
 

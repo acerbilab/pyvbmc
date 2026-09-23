@@ -139,25 +139,7 @@ class ParameterTransformer:
         self.ub_orig = np.copy(ub_orig)
 
         # Select and validate the type of transform:
-        transform_types = {
-            "logit": 3,
-            "norminv": 12,
-            "probit": 12,
-            "student4": 13,
-        }
-        if type(transform_type) == str:
-            try:
-                bounded_type = transform_types[transform_type]
-            except KeyError as exc:
-                raise ValueError(
-                    f"Unrecognized bounded transform {transform_type}."
-                ) from exc
-        else:
-            if transform_type not in transform_types.values():
-                raise ValueError(
-                    f"Unrecognized bounded transform {transform_type}."
-                )
-            bounded_type = transform_type
+        bounded_type = _bounded_transform_type(transform_type)
 
         # Setup bounded transforms:
         self.bounded_types = [bounded_type]
@@ -576,6 +558,39 @@ bounded transform type(s) = {transforms}""",
             expand=expand,
             arr_size_thresh=arr_size_thresh,
         )
+
+
+#: The bounded transforms by name, and the number of each.
+_BOUNDED_TRANSFORM_TYPES = {
+    "logit": 3,
+    "norminv": 12,
+    "probit": 12,
+    "student4": 13,
+}
+
+
+def _bounded_transform_type(transform_type):
+    """
+    The number of the bounded transform that ``transform_type`` names.
+
+    A string (of the type ``str`` itself) is read as the name of a
+    transform, and any other value has to be one of the numbers.
+
+    Raises
+    ------
+    ValueError
+        When the value names no transform.
+    """
+    if type(transform_type) == str:
+        try:
+            return _BOUNDED_TRANSFORM_TYPES[transform_type]
+        except KeyError as exc:
+            raise ValueError(
+                f"Unrecognized bounded transform {transform_type}."
+            ) from exc
+    if transform_type not in _BOUNDED_TRANSFORM_TYPES.values():
+        raise ValueError(f"Unrecognized bounded transform {transform_type}.")
+    return transform_type
 
 
 def _to_unit_interval(x, lb, ub, safe=True):
