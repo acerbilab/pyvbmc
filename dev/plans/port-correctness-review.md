@@ -2209,30 +2209,52 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   list (entry 48), `TODO.md` (the findings left for later, E's two among
   them), the reader of the probe, which prints every number the ledger
   quotes, `dev/scripts/runs/LOCAL.md`.
-- [ ] **Pickup point (2026-09-22, after the check of the fix round): the
-  pull request of gpyreg's branch, on the PI's word.** The state: gpyreg's
-  `port-review-wave6` at `ec0f085` in `../gpyreg-port-review` (55 commits
-  over `fdbafdf`; pushed at `caacbc1`, the commits after it not); the
-  agents' worktrees `../gpyreg-port-review-A`, `-B`, `-D` and `-E` standing,
-  every commit of theirs on `port-review-wave6`; `dev-port-review` ahead of
-  its origin (the re-baselined fixtures, the four commits of the two rounds
-  on `load` and the scan test, the records), not pushed. The references of
-  `gp_fit` and `gp_fit_history` hold against the branch and not against
-  gpyreg at the pin: where the installed gpyreg is the pin (`../gpyreg` on
-  the orchestrator's machine), `pytest pyvbmc/testing/oracles` and
+- [x] 2026-09-23: a check of the last round for substantial errors alone
+  (PI: `/doublecheck`, "only substantial errors"). Three fresh read-only
+  Opus reviewers: P found none in PyVBMC's two commits; G found that the
+  width check of `quad` (W6-34, `5ff9353`) refused a `sigma` of one column,
+  which 1.2.1 and gplite take, and that the release notes misstated what
+  1.2.1 did with a measure of the wrong width, fixed by the orchestrator in
+  gpyreg's `286b595` with a test seen to fail (gpyreg's suite 320 passed;
+  no PyVBMC code calls `quad`); R found that this pickup point left out the
+  parallel branch `dev-port-review-w1check` and that row W6-16 missed the
+  fixed coordinates, both corrected. `verification/wave6.md`, "The check
+  for substantial errors of the last round".
+- [ ] **Pickup point (2026-09-23): the pull request of gpyreg's branch, and
+  the order of the two PyVBMC branches, on the PI's word.** The state:
+  gpyreg's `port-review-wave6` at `286b595` in `../gpyreg-port-review` (56
+  commits over `fdbafdf`; pushed at `caacbc1`, the commits after it not);
+  the agents' worktrees `../gpyreg-port-review-A`, `-B`, `-D` and `-E`
+  standing, every commit of theirs on `port-review-wave6`;
+  `dev-port-review` ahead of its origin (the re-baselined fixtures, the
+  four commits of the two rounds on `load` and the scan test, the
+  records), not pushed. Beside it stands `dev-port-review-w1check`, a
+  parallel session's check of wave 1, cut at `326c7676` in the worktree
+  `../pyvbmc-w1check` (with its agents' `../pyvbmc-w1check-A` and `-B`),
+  not pushed; its own plan entry says it waits to be brought onto
+  `dev-port-review` with its gates, and it shares seven files with the
+  commits of wave 6 made since `326c7676` (`CHANGELOG.md`, the sheet, the
+  MATLAB-side list, this plan, `pyvbmc/vbmc/vbmc.py` and the two option
+  test modules), so bringing it over needs those merged by hand and the
+  gates of both rerun on the result. The references of `gp_fit` and
+  `gp_fit_history` hold against gpyreg's branch and not against the pin:
+  where the installed gpyreg is the pin (`../gpyreg` on the orchestrator's
+  machine), `pytest pyvbmc/testing/oracles` and
   `make_oracle_fixtures.py --check --exact` fail unless `PYTHONPATH` names
   `../gpyreg-port-review` (in CI those oracles skip, platform-bound). In
   this order, on the PI's word:
   1. The push of gpyreg's branch and its pull request (one branch; the
      release notes' heading `1.3.0 (unreleased)` dated at the release, the
      version number the PI's), gpyreg's CI, the merge.
-  2. `GPYREG_PIN` in `.github/workflows/test-matrix.yml` moved to the
+  2. The wave-1 branch brought onto `dev-port-review` (or after it, as the
+     PI orders), with the merge of the shared files and the gates of both.
+  3. `GPYREG_PIN` in `.github/workflows/test-matrix.yml` moved to the
      merge, and in the same commit the sheet's header, whose revision of the
      gpyreg citations then changes, with those line citations brought to the
      merge by hand (`refresh_citations.py` carries PyVBMC's alone). Then the
      push of `dev-port-review`, the smoke, the full matrix, the merge into
      `dev-next` with the status line of `TODO.md`.
-  3. After gpyreg's release, in one commit, the minimum version in
+  4. After gpyreg's release, in one commit, the minimum version in
      `pyproject.toml` and the changelog's requirement, drafted for the PI to
      read: "gpyreg <version> or later. gpyreg <version> takes the bounds of
      the location and scale of the GP mean function, and the starting
@@ -2241,7 +2263,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
      every GP fit that samples, and with them the results of every run,
      move. See the release notes of gpyreg for the rest of what changed
      there."
-  4. The worktrees of A, B, D and E removed once `git cherry` has been read
+  5. The worktrees of A, B, D and E removed once `git cherry` has been read
      once more.
   The session starts no other wave.
 
