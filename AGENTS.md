@@ -197,7 +197,10 @@ around three numerical stages, repeated until termination:
   on a live run in `test_vbmc_seed.py`.
 - **Saved objects are pickles of the classes as they are.** `VBMC.load`
   back-fills what older files lack (its `hasattr` and `not in options`
-  checks); an attribute or option added to a saved class needs the same, and
+  checks), and rewrites what they hold in a form the current code reads
+  otherwise (a stored `integer_vars`, `uncertainty_handling` or
+  `specify_target_noise` in a form that 1.0.4 took, and a `last_warmup`
+  of 0); an attribute or option added to a saved class needs the same, and
   renaming or removing one breaks users' files along with the static test
   pickles.
 - **Optional integrations import lazily.** `import pyvbmc` imports none of
