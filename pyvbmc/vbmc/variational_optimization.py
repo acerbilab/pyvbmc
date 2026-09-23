@@ -522,11 +522,6 @@ def _eval_full_elcbo(
     else:
         ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
-    if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
-        compute_var = False
-    else:
-        compute_var = True
-
     nelbo, _, G, H, varF, _, var_ss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta,
         gp,
@@ -534,7 +529,7 @@ def _eval_full_elcbo(
         0,
         ns_ent_fine_K,
         False,
-        compute_var,
+        True,  # compute_var
         None,
         entropy_alpha,
         True,

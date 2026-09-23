@@ -1491,10 +1491,7 @@ class VBMC:
                 WarpDelay = self.options["warp_every_iters"]
 
             doWarping = (
-                (
-                    self.options.get("warp_rotoscaling")
-                    or self.options.get("warp_nonlinear")
-                )
+                self.options.get("warp_rotoscaling")
                 and (self.iteration > 0)
                 and (not self.optim_state["warmup"])
                 and (
@@ -1665,29 +1662,22 @@ class VBMC:
                 self.optim_state["skip_active_sampling"] = False
             else:
                 # Perform active sampling
-                if self.options.get("varactivesample"):
-                    # FIX TIMER HERE IF USING THIS
-                    # [optimState,vp,t_active,t_func] =
-                    # variationalactivesample_vbmc(optimState,new_funevals,
-                    # funwrapper,vp,vp_old,gp,options)
-                    sys.exit("Function currently not supported")
-                else:
-                    self.optim_state["hyp_dict"] = self.hyp_dict
-                    (
-                        self.function_logger,
-                        self.optim_state,
-                        self.vp,
-                        self.gp,
-                    ) = active_sample(
-                        self.gp,
-                        new_funevals,
-                        self.optim_state,
-                        self.function_logger,
-                        self.iteration_history,
-                        self.vp,
-                        self.options,
-                    )
-                    self.hyp_dict = self.optim_state["hyp_dict"]
+                self.optim_state["hyp_dict"] = self.hyp_dict
+                (
+                    self.function_logger,
+                    self.optim_state,
+                    self.vp,
+                    self.gp,
+                ) = active_sample(
+                    self.gp,
+                    new_funevals,
+                    self.optim_state,
+                    self.function_logger,
+                    self.iteration_history,
+                    self.vp,
+                    self.options,
+                )
+                self.hyp_dict = self.optim_state["hyp_dict"]
 
             # The counts of the training set, which active sampling refreshes
             # after each evaluation; an iteration that acquires no point

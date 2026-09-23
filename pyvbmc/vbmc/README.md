@@ -515,7 +515,8 @@ defect *n*" is entry *n* of
   `vbmc.m:323`) and its default single acquisition, never sets `idxAcq`
   and reads it unset (MATLAB-side defect 33).
 - **Variational active sampling (`VarActiveSample`) is not ported**
-  (unported feature; `misc/vpsample_vbmc.m`, marked unused in `vbmc.m:652`).
+  (unported feature; `misc/vpsample_vbmc.m`, marked unused in `vbmc.m:652`),
+  and PyVBMC declares no option for it.
 - **`AbstractAcqFcn._real2int` snaps its input in place** (deliberate
   change), where `misc/real2int_vbmc.m` returns a new array; the batched
   CMA-ES objective reproduces the side effect deliberately. The rounding is
@@ -734,7 +735,8 @@ defect *n*" is entry *n* of
   `misc/warp_input_vbmc.m:59-64` checks nothing (commit `cc0ef2f`;
   `verification/wave1.md`).
 - **Nonlinear input warping is not ported** (unported feature): only
-  `warp_rotoscaling`; MATLAB's `WarpNonlinear` has no counterpart.
+  `warp_rotoscaling`; MATLAB's `WarpNonlinear` has no counterpart, neither
+  an option nor code.
 - **`warp_input` maps the search state back with the current transform**
   (deliberate change), the function logger's, where
   `misc/warp_input_vbmc.m:8`, `:133` uses the transform of the posterior
@@ -903,8 +905,10 @@ the Python line (`dev/plans/svbmc-integration.md`,
 - **`update_K`'s recent window is six iterations at the defaults**, as
   `private/updateK.m:16` computes it, against the paper's four, and the mask
   of its two oldest entries is MATLAB's.
-- **The `skip_elbo_variance` guard is dead on both sides**: no declared
-  option holds the key (`misc/vpoptimize_vbmc.m:281`).
+- **The full ELBO of each candidate of the variational optimization comes
+  with its variance**, as in MATLAB, whose guard that would skip the
+  variance (`misc/vpoptimize_vbmc.m:281`) is dead: no declared option holds
+  its key, `SkipELBOVariance`. PyVBMC has no such guard.
 - **`final_boost` and `determine_best_vp` leave the run's state alone**, as
   `misc/finalboost_vbmc.m` and `misc/best_vbmc.m` work on by-value structs:
   `final_boost` works on a copy of `optim_state`, and `determine_best_vp`

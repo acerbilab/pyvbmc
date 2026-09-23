@@ -204,16 +204,11 @@ def warp_input(vp, optim_state, function_logger, options):
     function_logger : FunctionLogger
         An updated copy of the original function logger.
     warp_action : str
-        The type of warping performed ("rotoscaling" or "warp")
+        The label of the warp in the iteration display, "rotoscale".
 
     Notes
     -----
     Random draws use ``vp.rng``.
-
-    Raises
-    ------
-    NotImplementedError
-        If `vbmc.options["warp_nonlinear"]` is set other than False.
     """
     parameter_transformer = copy.deepcopy(vp.parameter_transformer)
     optim_state = copy.deepcopy(optim_state)
@@ -225,24 +220,18 @@ def warp_input(vp, optim_state, function_logger, options):
     # current space.
     current_transformer = function_logger.parameter_transformer
 
-    if options.get("warp_nonlinear"):
-        raise NotImplementedError("Non-linear warping is not supported.")
-
     if options.get("warp_rotoscaling"):
-        if options.get("warp_nonlinear"):
-            raise NotImplementedError("Non-linear warping is not supported.")
-        else:
-            # Get covariance matrix analytically
-            __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
-            delta = parameter_transformer.delta
-            R_mat = parameter_transformer.R_mat
-            scale = parameter_transformer.scale
-            if R_mat is None:
-                R_mat = np.eye(vp.D)
-            if scale is None:
-                scale = np.ones(vp.D)
-            vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
-            vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
+        # Get covariance matrix analytically
+        __, vp_cov = vp.moments(orig_flag=False, cov_flag=True)
+        delta = parameter_transformer.delta
+        R_mat = parameter_transformer.R_mat
+        scale = parameter_transformer.scale
+        if R_mat is None:
+            R_mat = np.eye(vp.D)
+        if scale is None:
+            scale = np.ones(vp.D)
+        vp_cov = R_mat @ np.diag(scale) @ vp_cov @ np.diag(scale) @ R_mat.T
+        vp_cov = np.diag(delta) @ vp_cov @ np.diag(delta)
 
         # Remove low-correlation entries. Setting entries of a covariance
         # matrix to zero can leave a matrix that is no longer positive
@@ -364,10 +353,7 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["last_run_avg"] = np.nan
 
     # Warp action for output display
-    if options.get("warp_nonlinear"):
-        warp_action = "warp"
-    else:
-        warp_action = "rotoscale"
+    warp_action = "rotoscale"
 
     return parameter_transformer, optim_state, function_logger, warp_action
 

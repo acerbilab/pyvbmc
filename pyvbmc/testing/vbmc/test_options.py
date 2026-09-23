@@ -355,17 +355,27 @@ def _code_without_comments(path):
     return "".join(pieces)
 
 
-def test_inert_options_are_the_declared_options_nothing_reads():
-    """``INERT_OPTIONS`` lists exactly the declared options that no module
-    of the package reads, so that a newly dead option, or a newly read
-    registered one, fails here.
+# The forms of a read of an option, matched in the code with its whitespace
+# removed: the name quoted and subscripted (other than as the target of an
+# assignment), or fetched with ``get`` or ``eval``, from a mapping whose
+# name ends in ``options`` (``options``, ``self.options``, ``new_options``)
+# or from ``self``; or the name tested for membership in such a mapping,
+# with ``in`` or ``not in``.
+_OPTION_READS = (
+    r"(?:options|self)"
+    r"(?:\[['\"](\w+)['\"]\](?!=(?!=))|\.(?:get|eval)\(['\"](\w+)['\"])",
+    r"['\"](\w+)['\"](?:not)?in[\w.]*options",
+)
 
-    An option is read where its name is subscripted or fetched from an
-    options mapping: ``options["name"]``, ``options.get("name")`` or
-    ``options.eval("name", ...)``, and the same through ``self`` inside
-    :class:`Options`. A key of another mapping that happens to carry an
-    option's name, such as an entry of ``optim_state``, is not a read of
-    the option, and neither is a mention in a comment."""
+# Names read through an options mapping that are not options: an
+# ``Options`` object keeps the names the user set under ``useroptions``.
+_NAMES_THAT_ARE_NOT_OPTIONS = {"useroptions"}
+
+
+def _names_read_as_options():
+    """The names that the package, outside its tests, reads as options, in
+    one of the forms of ``_OPTION_READS``. A mention in a comment is not a
+    read."""
     package_path = options_path.parent.parent
     sources = [
         path
@@ -375,18 +385,40 @@ def test_inert_options_are_the_declared_options_nothing_reads():
     text = re.sub(
         r"\s+", "", "\n".join(_code_without_comments(path) for path in sources)
     )
-    unread = {
-        name
-        for name in _declared_option_names()
-        if re.search(
-            r"(?:options|self)(?:\[|\.get\(|\.eval\()['\"]"
-            + re.escape(name)
-            + r"['\"]",
-            text,
-        )
-        is None
-    }
+    names = set()
+    for pattern in _OPTION_READS:
+        for match in re.finditer(pattern, text):
+            names.update(group for group in match.groups() if group)
+    return names
+
+
+def test_inert_options_are_the_declared_options_nothing_reads():
+    """``INERT_OPTIONS`` lists exactly the declared options that no module
+    of the package reads, so that a newly dead option, or a newly read
+    registered one, fails here.
+
+    A read is one of the forms of ``_OPTION_READS``; inside
+    :class:`Options` the mapping is ``self``. A key of another mapping that
+    happens to carry an option's name, such as an entry of ``optim_state``,
+    is not a read of the option, and neither is a mention in a comment."""
+    unread = _declared_option_names() - _names_read_as_options()
     assert unread == set(INERT_OPTIONS)
+
+
+def test_every_option_the_package_reads_is_declared():
+    """Every name that the package reads as an option is declared in the
+    shipped files. Option names are checked against those files wherever
+    they are given, so no run can set an undeclared one: a read of it
+    always finds it absent, and the code that it guards never runs."""
+    undeclared = (
+        _names_read_as_options()
+        - _declared_option_names()
+        - _NAMES_THAT_ARE_NOT_OPTIONS
+    )
+    assert not undeclared, (
+        "read as options, declared in neither shipped file: "
+        f"{sorted(undeclared)}"
+    )
 
 
 # The functions that run while a ``VBMC`` object is built, and the value
