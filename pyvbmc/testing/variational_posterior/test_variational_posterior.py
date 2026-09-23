@@ -1336,6 +1336,63 @@ def test_mode_starts_inside_the_box_it_searches(mocker):
     assert np.all(x0 <= ub.ravel() - offset)
 
 
+def _mode_test_posteriors():
+    """The posterior of the MATLAB fixture and one of five variables and
+    twenty components, both with a generator of their own."""
+    matlab_vp = get_matlab_vp()
+    matlab_vp.rng = np.random.default_rng(20260923)
+    D, K = 5, 20
+    rng = np.random.default_rng(7)
+    vp = VariationalPosterior(D, K, np.zeros((1, D)), rng=7)
+    vp.mu = rng.normal(0.0, 1.5, (D, K))
+    vp.sigma = rng.uniform(0.2, 1.2, (1, K))
+    vp.lambd = rng.uniform(0.5, 2.0, (D, 1))
+    weights = rng.uniform(0.1, 1.0, (1, K))
+    vp.w = weights / np.sum(weights)
+    return [matlab_vp, vp]
+
+
+@pytest.mark.parametrize("which", [0, 1], ids=["matlab_vp", "D5_K20"])
+def test_mode_screens_its_starting_points_without_the_gradient(mocker, which):
+    """In the transformed space the optimizer of ``mode`` follows the
+    gradient of the log density, and the screen that ranks the candidate
+    starting points by the density computes none, as the objective of
+    MATLAB VBMC computes it only when asked for two outputs
+    (``vbmc_mode.m:58-66``). The values are the same with and without the
+    gradient, so the mode is the point the screen with the gradient
+    gives, bit for bit."""
+    vp = _mode_test_posteriors()[which]
+    pdf = VariationalPosterior.pdf
+    _pdf = VariationalPosterior._pdf
+
+    def screen_with_the_gradient(
+        self, x, orig_flag=True, log_flag=False, grad_flag=False, df=np.inf
+    ):
+        if not orig_flag and not grad_flag:
+            y, __ = pdf(self, x, False, log_flag, True, df)
+            return y
+        return pdf(self, x, orig_flag, log_flag, grad_flag, df)
+
+    mocker.patch.object(VariationalPosterior, "pdf", screen_with_the_gradient)
+    expected = vp.mode(orig_flag=False)
+    mocker.stopall()
+
+    calls = []
+
+    def recording(self, x, orig_flag, log_flag, grad_flag, df, **kwargs):
+        calls.append((np.atleast_2d(x).shape[0], bool(grad_flag)))
+        return _pdf(self, x, orig_flag, log_flag, grad_flag, df, **kwargs)
+
+    mocker.patch.object(VariationalPosterior, "_pdf", recording)
+    mode = vp.mode(orig_flag=False)
+
+    assert calls, "the density was not evaluated"
+    assert not [n for n, grad in calls if grad and n > 1]
+    assert [n for n, grad in calls if not grad and n > 1]
+    assert [n for n, grad in calls if grad and n == 1]
+    assert np.array_equal(mode, expected)
+
+
 def test_mtv_not_enough_arguments():
     vp = VariationalPosterior(1, 1, np.array([[5]]))
     with pytest.raises(ValueError):

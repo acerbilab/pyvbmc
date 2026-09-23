@@ -1451,17 +1451,19 @@ class VariationalPosterior:
         if orig_flag and default_search and self._mode is not None:
             return self._mode
 
-        def neg_log_pdf(x0, orig_flag=orig_flag):
-            if orig_flag:
-                y = self.pdf(
-                    x0, orig_flag=True, log_flag=True, grad_flag=False
-                )
-                return -y
-            else:
+        def neg_log_pdf(x0, grad_flag=not orig_flag):
+            # The optimizer takes the gradient, which exists in the
+            # transformed space only; the screen of the starting points
+            # needs the values alone, which are the same without it.
+            if grad_flag:
                 y, dy = self.pdf(
                     x0, orig_flag=False, log_flag=True, grad_flag=True
                 )
                 return -y, -dy
+            y = self.pdf(
+                x0, orig_flag=orig_flag, log_flag=True, grad_flag=False
+            )
+            return -y
 
         if n_opts is None:
             n_opts = int(np.ceil(np.sqrt(self.K)))
@@ -1488,9 +1490,7 @@ class VariationalPosterior:
                 x0_mat = np.concatenate([x0_mat, x0_mu])
 
             # Evaluate pdf at all points and start optimization from best
-            y0_vec = neg_log_pdf(x0_mat)
-            if not orig_flag:  # drop gradient -dy
-                y0_vec = y0_vec[0]
+            y0_vec = neg_log_pdf(x0_mat, grad_flag=False)
             idx = np.argmin(y0_vec.squeeze())
             x0 = x0_mat[idx]
 
