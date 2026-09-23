@@ -2578,7 +2578,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   commit per finding with a test seen to fail first; the orchestrator read
   each diff and took the PyVBMC commits onto `dev-port-review`, 27 of them
   after `3aba4fc5`, and removed the worktrees once `git cherry` showed them
-  all there; gpyreg's branch holds 15. The fixes found ten more findings, ruled the same day (the ledger's
+  all there; gpyreg's branch holds 16. The fixes found ten more findings, ruled the same day (the ledger's
   table "Found while the rulings were carried out"); one of them showed that
   the absolute value of `sigma` in gpyreg's prior code, ruled dead, serves
   GPs pickled by gpyreg 1.2.1, and its removal was dropped. The PI set a rule

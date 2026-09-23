@@ -240,12 +240,12 @@ PyPI by its GitHub release. It carries W7-14, W7-15 and W7-16, the design of
 pin to the tag with `gpyreg >= 1.3.1` (`9068f2d0` (git)).
 
 **1.3.2** (prepared on 2026-09-23, not released): the branch `w6-leftovers`
-of gpyreg, 15 commits over `v1.3.1`, not pushed, which carries the gpyreg
+of gpyreg, 16 commits over `v1.3.1`, not pushed, which carries the gpyreg
 fixes of the rulings after the close ("Findings ruled after the close").
 Its release notes, under "1.3.2 (unreleased)", have an "Upgrading" point
 for each value it now refuses and for the predictions of the low-noise
-representation, which change. None of its changes moves a number that
-PyVBMC computes: PyVBMC's gates against the branch give the oracles and
+representation, which change, PyBADS's among them. None of its changes
+moves a number that PyVBMC computes: PyVBMC's gates against the branch give the oracles and
 the seeded runs bit for bit. At its release PyVBMC moves its minimum and
 its pin to it (`AGENTS.md`).
 
@@ -312,7 +312,7 @@ Found while the rulings were carried out:
 | gpyreg | `GP.quad` formed the variance of an integral in the low-noise representation from the explicit inverse, as `gplite_quad.m` does | fix: from the Cholesky factor, as the predictions do | gpyreg `0aa76e2` |
 | gpyreg | `fit`'s `n_samples`, `opts_N` and `init_N`, and the `N` of `SliceSampler.sample`, raised `TypeError` on a whole float, and some ran a negative value or zero without a word | fix: whole numbers of either type; any other value refused | gpyreg `0fac152` |
 | gpyreg | `fit` on a GP without training data raised `AttributeError` from a component | fix: a `ValueError` that says so, before anything changes | gpyreg `dedf90b` |
-| gpyreg | pybads passes a `"delta"` prior, which `set_priors` has always refused | a matter for pybads | — |
+| gpyreg | PyBADS's known-noise path (`fit_lik` false) sets the noise prior `("delta", noise_mu)`, a type that gpyreg does not implement and `set_priors` refuses | a matter for PyBADS, noted in `dev/TODO.md` for its maintainers | — |
 | gpyreg | `SliceSampler.sample` took a bool as `thin` or `burn`, where its `N` and the counts of `fit` refuse one | fix: refused | gpyreg `3eccef5` |
 | gpyreg | `get_priors` refuses a GP that holds a negative `sigma`, pickled by gpyreg 1.2.1 or written into `hyper_priors` directly, whose log prior the kept absolute value still computes | left: `get_priors` returns the form that `set_priors` takes, `set_priors` refuses a negative `sigma`, and such a GP still fits and predicts | — |
 | PyVBMC | with `integer_vars`, the high-posterior-density subset can share one integer value in a coordinate, and the lower bound of that length scale is then `-inf`, as MATLAB's `log(0)` gives it | left: the fit completes, its upper bound coming from the whole training set, and the option is experimental | — |

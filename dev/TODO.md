@@ -134,14 +134,17 @@ records its execution.
   after the close") are committed and not pushed: PyVBMC's on
   `dev-port-review`, 28 commits after `3aba4fc5` up to `9d3d8ddd`, and
   gpyreg's on the branch `w6-leftovers` of the gpyreg worktree
-  `../gpyreg-w6-leftovers`, 15 commits over `v1.3.1` up to `3eccef5`,
+  `../gpyreg-w6-leftovers`, 16 commits over `v1.3.1` up to `9280a75`,
   prepared as gpyreg 1.3.2. The PI asked for a double-check of all of it by
   fresh read-only reviewers before anything is pushed. The full gates ran on
   PyVBMC's `b24a9238`, alone and against gpyreg's `dedf90b`; the two commits
   after those, `3eccef5` in gpyreg and `59bf7a4b` in PyVBMC, were gated by
   their test files alone. Then, with the PI's go: the gates again on the
   final heads (`dev/scripts/runs/LOCAL.md`, "Port correctness review",
-  names the scripts); push `w6-leftovers`, open its pull request into
+  names the scripts); PyBADS's tests against the branch, since PyBADS
+  requires only `gpyreg >= 0.1.0` and its GPs reach the low-noise
+  representation whose predictions 1.3.2 changes (the release notes say
+  so), with the outcome brought to the PI before the tag; push `w6-leftovers`, open its pull request into
   gpyreg's `main`, merge it, date the release notes, tag `v1.3.2` and
   publish its GitHub release, which uploads to PyPI; `git fetch --tags` in
   `../gpyreg` and reinstall it editable in the environments at the tag
@@ -152,7 +155,10 @@ records its execution.
   then push `dev-port-review`, wait for its branch smoke, dispatch the full
   CI matrix, and merge into `dev-next` as the plan's working rules say.
   Remove the gpyreg worktree once `git cherry` shows its commits on
-  gpyreg's `main`.
+  gpyreg's `main`. For PyBADS's maintainers: its known-noise path
+  (`fit_lik` false, `pybads/bads/gaussian_process_train.py`) sets the
+  noise prior `("delta", noise_mu)`, a prior type that gpyreg does not
+  implement and `set_priors` refuses.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated, regenerate the
