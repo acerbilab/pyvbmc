@@ -2566,6 +2566,33 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   the wave-6 pass left for later. `dev-port-review` was pushed at
   `047147a9`, its branch smoke green, and `dev-next` fast-forwarded to it
   with this line (PI: go).
+- [x] 2026-09-23, after the close: the rulings on what the close left
+  open. The PI ruled, on the orchestrator's recommendations, on the
+  seventeen findings and items without a ruling, in three batches (the
+  calibration module; the setup findings of wave 2; the items that the check
+  of the wave-2 pass left for the PI), and on the ten items that the check
+  of the wave-6 pass had left for later; the ledger's section "Findings
+  ruled after the close" gives each ruling, its reason where the code stays
+  as it is, and its fix. Opus agents made the fixes in worktrees, four of
+  PyVBMC and gpyreg's `../gpyreg-w6-leftovers` (branch `w6-leftovers`), one
+  commit per finding with a test seen to fail first; the orchestrator read
+  each diff and took the PyVBMC commits onto `dev-port-review`, 27 of them
+  after `3aba4fc5`, and removed the worktrees once `git cherry` showed them
+  all there; gpyreg's branch holds 15. The fixes found ten more findings, ruled the same day (the ledger's
+  table "Found while the rulings were carried out"); one of them showed that
+  the absolute value of `sigma` in gpyreg's prior code, ruled dead, serves
+  GPs pickled by gpyreg 1.2.1, and its removal was dropped. The PI set a rule
+  that `AGENTS.md` states: PyVBMC requires the latest gpyreg release. Gates
+  (the ledger's "Gates, CI and merges", row "after the close"): the exact
+  oracle check, the seeded runs, the whole suite and the extras selections on
+  the PyVBMC head, then against gpyreg's branch with gpyreg's own suite. Two
+  copies of the chained script of the gates against the branch ran at once,
+  a stopped task having gone on: their results agree, and the seeded runs,
+  which both wrote to one file, were run again alone. Nothing is pushed
+  (PI): a double-check of the whole work comes first, then the release of
+  gpyreg 1.3.2 from the branch, PyVBMC's move of its minimum and pin to it,
+  the push of `dev-port-review` with its smoke and the full CI matrix, and
+  the merge into `dev-next`.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values

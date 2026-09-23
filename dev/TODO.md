@@ -13,7 +13,10 @@ records its execution.
   covers the changes since `v1.0.4`; the worklog of the
   [port review plan](plans/port-correctness-review.md) records how it was
   written and checked (2026-09-20). Open before the release: the PI's
-  reading of the entries added that day; the whole-run timings of "Runs are
+  reading of the entries added that day, and of those added on 2026-09-23
+  by the rulings after the close of the port review (its
+  [ledger](results/2026-09-23-port-correctness-review.md), "Findings ruled
+  after the close"); the whole-run timings of "Runs are
   faster", measured on 2026-09-03 to 09-05, before the corrections that
   change how long a run takes, and the S-VBMC speed figure, both to be
   measured again on the release benchmark; the S-VBMC entry's account of the
@@ -125,102 +128,6 @@ records its execution.
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
   independent check of the pass").
 
-- [ ] **What the independent check of the wave-6 pass left for later.**
-  None changes a number of a run at the shipped options; the raw reports of
-  the check are on the machine that ran it (`scripts/runs/LOCAL.md`, "Port
-  correctness review").
-  - gpyreg: `RationalQuadraticARD.get_bounds_info` carries a full copy of
-    the bounds helper of `covariance_functions.py`, and every change of the
-    recommendations has had to patch both; it can call the helper and
-    override the shape's entries. `GP.update` and `GP.quad` each recover the
-    noise scale `sl` of a posterior pickled without it, in two copies of the
-    same lines that a method of `Posterior` could hold.
-  - gpyreg: a `fit` on a single training point ends with the `KeyError` of
-    L-BFGS-B, since the width of every input column is zero and the
-    length-scale bounds are `(-inf, -inf)`; gplite's bounds are finite
-    there, its `max` and `min` running along the single row (read from its
-    source, not run) (entry 49 of
-    `experiments/port_review_20260919/matlab_side_defects.md`). A candidate
-    for triage, as the constant targets of row W6-4 were. Row W7-17 of
-    `experiments/port_review_20260919/verification/wave7.md` finds the same
-    mechanism in a set of distinct points that share one coordinate, which
-    PyVBMC reached from such starting points, and which PyVBMC refuses at
-    construction (PI, 2026-09-23). This gpyreg item stays for triage: PyVBMC
-    never fits on fewer than `fun_eval_start` points.
-  - gpyreg: `get_priors` returns `None` for a Student's t block with mixed
-    degrees of freedom, such as `[0, nan]` or `[0, 3]`, which `set_priors`
-    writes, so `set_priors(get_priors())` drops it; and for a smooth-box
-    coordinate written directly into `hyper_priors` with finite `a` and `b`
-    and a NaN `sigma` it can return a block that `set_priors` refuses.
-  - gpyreg: `set_priors` sets `no_prior` to false before its checks, so a
-    refused call leaves it false on a GP without priors; `np.abs(sigma)` in
-    the prior code is dead, `set_priors` refusing a negative `sigma`; the
-    `Raises` section of `fit` names neither the `ValueError` it passes on
-    from `get_recommended_bounds` nor those from `update`; `set_bounds`
-    takes an inverted pair, which only `fit` and `get_recommended_bounds`
-    refuse.
-  - gpyreg's tests: `test_split_update` fixes two hyperparameter samples
-    where it drew one or two; the test of the documented prior densities
-    runs without bounds, so the renormalization over them is not checked
-    against the truncated densities.
-  - PyVBMC: `load` refuses a construction-only option even when its value
-    equals the stored one, so passing back the original options with a
-    new `max_fun_evals` raises.
-  - gpyreg: in the low-noise representation of the posterior (a smallest
-    noise variance below 1e-6), `predict` and `predict_full` form the
-    predictive covariance from the explicit negative inverse the posterior
-    holds, as `gplite_pred.m:102-104` does (read, not run), so its
-    rounding grows like the inverse of the noise: at a noise standard
-    deviation of 1e-6 the variances inside the data are off by up to
-    1.9e-3 where they are about 1e-12, and `predict_full`'s covariance has
-    eigenvalues down to -1.8e-2. The low-noise rank-one update divides by
-    such a variance. `random_function` forms it from a Cholesky factor
-    instead. No PyVBMC run reaches the representation. A candidate for
-    triage, and for the list of MATLAB-side defects.
-  - gpyreg: `fit` with a whole float `thin`, 2.0 for one, raises
-    `TypeError` from its own use of it, where `SliceSampler.sample` takes
-    it.
-  - PyVBMC: `ns_gp_max` is read at every fit, but `_init_optim_state` also
-    derives `stop_sampling` from it, so raising it from zero at `load` is
-    stored and leaves the hyperparameters unsampled.
-  - PyVBMC: the three captures under
-    `pyvbmc/testing/oracles/fixtures/gp_fit_history/` still hold the arrays
-    `capture/ref/fit/hyp_dict_logp`, which no sidecar names since
-    `hyp_dict` lost its `logp`; prune them the next time a capture is
-    rewritten.
-
-- [ ] **The findings of the port review without a recorded ruling.**
-  Seventeen verified findings and items have neither a ruling nor any other
-  outcome in the records, and the code they describe is unchanged; none
-  changes what a run at the shipped options computes, so the triage need not
-  precede the release gate. The
-  [ledger](results/2026-09-23-port-correctness-review.md), "Findings
-  without a recorded ruling", gives each with its class. For triage (fix,
-  or leave with the reason recorded in the ledger's row):
-  - the calibration module, wave 0
-    (`experiments/port_review_20260919/verification/wave0.md`): N3 F2 and F8,
-    two timing workloads that do not time what the package computes; N3 F4,
-    a finished campaign discarded on a `ValueError` of its record; N3 F5,
-    a held-out gate that needs all four rounds; N3 F6, the finished groups
-    of an incomplete campaign discarded; N3 F9, a cache key without the
-    package version;
-  - setup, wave 2
-    (`experiments/port_review_20260919/verification/wave2_C_setup.md`):
-    C-M8, a list or a float `x0` raising `AttributeError`; C-C7, a
-    callable option called by keyword, so that a user's `lambda n: ...` for
-    `ns_ent` raises at its first use; the warning of C-C2 on `noise_size`
-    with `specify_target_noise`, whose error is ported; the refusal of a
-    `log_file_level` outside the standard levels, the rest of C-M2;
-  - the seven items that the independent check of the wave-2 pass left for
-    the PI (`experiments/port_review_20260919/verification/wave2.md`, "Left
-    for the PI"): rebuilding the option functions of a saved run in `load`;
-    `vbmc.x0` in the space of construction after a warp; `last_warmup = 0`
-    and the fallback of `.get("last_successful_warping", 0)`; the main-loop
-    sieve at `self.vp.K` with fixed means; the checks of `min_iter`, the
-    one-way guard of the inert options and the warnings of `Options` on the
-    root logger; the scalar bound of `_normalized_hard_bound` and the reach
-    of the tests of `_recompute_lcb_max`; and gaps of the changelog.
-
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated, regenerate the
   VBMC run pools on the test targets with the release code on the cluster
@@ -307,7 +214,6 @@ records its execution.
   optional noise shaping. The [tail-acquisition report](results/2026-09-16-gp-tail-acquisition.md)
   records the VIQR/refit mechanism and precision checks at its onset;
   remedies and their effects on inference accuracy have not been compared.
-
 - **New acquisition-function design.** The acquisition-efficiency work used
   existing criteria only.
   The experimental VIQR losses and the EIG acquisition were removed from the

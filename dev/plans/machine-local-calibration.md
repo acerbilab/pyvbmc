@@ -270,7 +270,10 @@ Start with candidates `2**14, 2**15, 2**16, 2**17, 2**18` and these regimes:
 Recipe revision `machine-calibration-v2` (2026-09-23) moved the 200-sample
 active-sampling workload to the value group and dropped the 8192-row gradient
 workload, because the package makes neither call with gradients (port review,
-N3 F2 and F8).
+N3 F2 and F8). The one call of the density with its gradient, the objective
+of `VariationalPosterior.mode` in the transformed space, takes one point per
+evaluation, whose layout no budget changes; that settles the check of PDF
+gradients asked for below.
 
 Specify the small PDF shape as D4/K20. Entropy Ns is per component and keeps
 the current even-number rounding. These cases cover regimes, not measured

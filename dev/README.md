@@ -128,8 +128,8 @@ plan and consolidated human summary.
   disposition depended on it, and none was. Complete (2026-09-19 to 09-23):
   the [closing ledger](results/2026-09-23-port-correctness-review.md) holds
   every finding with its disposition, and its fix commit where there is one
-  (those without a recorded ruling are an item of `TODO.md`), and the
-  porting log `pyvbmc/vbmc/README.md` the catalogue of deliberate
+  (those the close left without a ruling were ruled on the same day), and
+  the porting log `pyvbmc/vbmc/README.md` the catalogue of deliberate
   differences from MATLAB.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with

@@ -56,7 +56,7 @@ what its plan says; the question is whether the plan is what is wanted),
 | F2 `active_d4_k20` times 200 samples per component with gradients | reading `_campaign.py:204-211`, `variational_optimization.py:489-500`, `active_sample.py:786-791` | both call sites of `ns_ent_fine_active` pass `compute_grad=False` | defect (performance only) |
 | F3 the summary reports a rejected candidate's speed-up | reading `_campaign.py:1293-1310` | `heldout_speedup` is the median of `group_speedups` whatever `pass` says | defect (report metadata) |
 | F4 a `ValueError` from `make_record` or `write_record` discards a finished campaign | reading `_api.py:229-239` | `make_record` is outside any `try`; `write_record` is guarded for `OSError` only | defect, latent (no live trigger) |
-| F5 the held-out gate needs all four rounds | reading `_campaign.py:883` | `ceil(0.80 * 4) = 4` | as specified or not: the plan does not say; conservative |
+| F5 the held-out gate needs all four rounds | reading `_campaign.py:883` | `ceil(0.80 * 4) = 4` | as specified: `plans/machine-local-calibration.md` requires at least `ceil(0.8*R)` winning rounds and applies the same gates to its four held-out rounds; conservative |
 | F6 an incomplete campaign discards the groups that finished | reading `_campaign.py:1509-1532` | `settings = _defaults()` whenever the status is not complete; a test pins it | design choice |
 | F7 the docstring promises output the code does not print | reading `__init__.py:14-16`, `_api.py:79-99` | neither the selected budgets nor a held-out number is printed | documentation |
 | F8 `sieve_gradient` times a gradient the package takes one point at a time | reading `_campaign.py:171-178`; `grad_flag=True` occurs only in `get_mode` | confirmed | defect (performance only) |
@@ -64,3 +64,8 @@ what its plan says; the question is whether the plan is what is wanted),
 | F10 `_MAX_WORKLOAD_SLOWDOWN` and `_deduplicate_order` are unused | `grep` | one definition each, no use | cleanup |
 
 All 24 findings are confirmed as facts about the code. None was a misreading.
+
+N3 F2, F4, F5, F6, F8 and F9 had no ruling when the review closed. The PI
+ruled on them on 2026-09-23, after the close: the ledger
+`dev/results/2026-09-23-port-correctness-review.md`, "Findings ruled after
+the close", gives each ruling and fix.

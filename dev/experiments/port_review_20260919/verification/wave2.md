@@ -288,6 +288,12 @@ Left for the PI:
   that each is present "only when its argument was used", where W2-27 made
   it the values.
 
+The PI ruled on these seven items on 2026-09-23, after the review closed,
+together with C-M8, C-C7 and the unfixed halves of C-C2 and C-M2
+(`wave2_C_setup.md`): the ledger
+`dev/results/2026-09-23-port-correctness-review.md`, "Findings ruled after
+the close", gives each ruling and fix.
+
 Gates, on the branch of the check (`dev-port-review-w2check`, cut at
 `0bf7963`), with the package of that checkout: the tests of every module
 touched, 413 passed; the oracle tests, 143 passed; and

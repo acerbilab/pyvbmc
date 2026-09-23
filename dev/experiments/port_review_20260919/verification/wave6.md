@@ -561,8 +561,11 @@ construction-only options of `load` in step with the code; the sheet states
 the revisions of its gpyreg citations and states facts where it narrated
 the pass; the message of `8dec795` stands, its error flagged in "Fix
 commits". The other findings were taken as the orchestrator proposed; those
-left for later are in `TODO.md` ("What the independent check of the wave-6
-pass left for later").
+left for later went into `TODO.md` ("What the independent check of the
+wave-6 pass left for later"), and the PI ruled on them on 2026-09-23, after
+the review closed: the ledger
+`dev/results/2026-09-23-port-correctness-review.md`, "Findings ruled after
+the close", gives each ruling and fix.
 
 Fix agent D, on a worktree of gpyreg made by hand
 (`../gpyreg-port-review-D`, branch `port-review-wave6-D`, from `dc2a930`),

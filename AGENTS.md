@@ -52,7 +52,9 @@ repository at old revisions, so a file search that does not respect
 
 `pyproject.toml` sets the minimum gpyreg version, and CI installs gpyreg at
 the commit pinned as `GPYREG_PIN` in `.github/workflows/test-matrix.yml`, so
-a change that needs a newer gpyreg also moves the pin. When the minimum names
+a change that needs a newer gpyreg also moves the pin. PyVBMC requires the
+latest gpyreg release: each gpyreg release moves the minimum and the pin to
+it, whether or not PyVBMC needs its changes. When the minimum names
 a gpyreg release, the pin is that release's tagged commit: CI reads the
 version of the pinned checkout from gpyreg's tags, an untagged commit reads
 lower than the release, and pip then installs gpyreg from PyPI over the
