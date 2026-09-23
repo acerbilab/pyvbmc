@@ -6,6 +6,53 @@ import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
 
+from pyvbmc.whitening.whitening import _is_finite_real_number
+
+
+def _sample_count(options, K, D):
+    """
+    The number of importance samples that the option
+    ``active_importance_sampling_mcmc_samples`` gives, rounded up.
+
+    The option is a number or a function of the keywords ``K`` (the number
+    of components of the variational posterior), ``n_vars`` and ``D`` (both
+    the number of variables), as MATLAB VBMC evaluates a string expression
+    with ``K``, ``nvars`` and ``D`` in scope
+    (``private/activeimportancesampling_vbmc.m:40-45``). Both branches of
+    :func:`active_importance_sampling` read it through here.
+
+    Parameters
+    ----------
+    options : Options
+        The VBMC options.
+    K : int
+        The number of components of the variational posterior.
+    D : int
+        The number of variables.
+
+    Returns
+    -------
+    count : int
+        The number of samples, rounded up.
+
+    Raises
+    ------
+    ValueError
+        When the option is not, or does not return, a finite real number.
+    """
+    count = options.eval(
+        "active_importance_sampling_mcmc_samples",
+        {"K": K, "n_vars": D, "D": D},
+    )
+    if not _is_finite_real_number(count):
+        raise ValueError(
+            "The option active_importance_sampling_mcmc_samples must be a "
+            "finite number, or a function of the keywords K, n_vars and D "
+            f"that returns one; it gives {count!r} for K = {K} and "
+            f"D = {D}."
+        )
+    return ceil(count)
+
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
     """
@@ -80,16 +127,11 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
 
-        Na = ceil(
-            options.eval(
-                "active_importance_sampling_mcmc_samples",
-                {"K": vp.K, "n_vars": D, "D": D},
-            )
-        )
+        Na = _sample_count(options, vp.K, D)
 
         if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
             raise ValueError(
-                "options['active_importance_sampling_mcmc_samples']"
+                "options['active_importance_sampling_mcmc_samples'] "
                 + "should evaluate to a positive integer."
             )
 
@@ -180,9 +222,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             ~np.isfinite(active_is["ln_weights"])
         ] = -np.inf
 
-        # Step 2 (optional): MCMC sample
+        # Step 2 (optional): MCMC sample, left out for a count of zero.
 
-        Nmcmc_samples = options["active_importance_sampling_mcmc_samples"]
+        Nmcmc_samples = _sample_count(options, vp.K, D)
 
         if Nmcmc_samples > 0:
             active_is_old = copy.deepcopy(active_is)

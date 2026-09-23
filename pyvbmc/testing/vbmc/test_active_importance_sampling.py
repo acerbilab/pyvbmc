@@ -290,6 +290,64 @@ def test_the_mcmc_chain_starts_at_a_sample_drawn_by_its_weight():
         assert p.max() / p.min() > 10
 
 
+def test_a_function_gives_the_number_of_samples_in_both_branches():
+    """``active_importance_sampling_mcmc_samples`` may be a function of the
+    keywords ``K``, ``n_vars`` and ``D``, as MATLAB VBMC evaluates a string
+    expression with ``K``, ``nvars`` and ``D`` in scope
+    (``private/activeimportancesampling_vbmc.m:40-45``). The MCMC step of
+    IMIQR draws, for each GP hyperparameter sample, the number the function
+    returns, rounded up, as VIQR draws it from the variational
+    posterior."""
+    vp, gp, vbmc_options = _scenario()
+    calls = []
+
+    def sample_count(K, n_vars, D):
+        calls.append({"K": K, "n_vars": n_vars, "D": D})
+        return 3 * K + 0.5
+
+    vbmc_options["active_importance_sampling_mcmc_samples"] = sample_count
+    imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), vbmc_options)
+    viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), vbmc_options)
+
+    assert calls == [{"K": 2, "n_vars": 3, "D": 3}] * 2
+    assert imiqr["X"].shape == (2, 7, 3)
+    assert imiqr["ln_weights"].shape == imiqr["f_s2"].T.shape == (2, 7)
+    assert viqr["X"].shape == (7, 3)
+
+
+def test_a_function_that_gives_zero_leaves_out_the_mcmc_step():
+    """In the branch that IMIQR takes, zero samples mean no MCMC step
+    (``private/activeimportancesampling_vbmc.m:155-157``): the importance
+    samples are those of step 1, drawn from the smoothed posterior and
+    from boxes around the training inputs."""
+    vp, gp, vbmc_options = _scenario()
+    vbmc_options[
+        "active_importance_sampling_mcmc_samples"
+    ] = lambda K, n_vars, D: 0
+    imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), vbmc_options)
+    step_one = (
+        vbmc_options["active_importance_sampling_vp_samples"]
+        + vbmc_options["active_importance_sampling_box_samples"]
+    )
+    assert imiqr["X"].shape == (step_one, vp.D)
+
+
+@pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
+@pytest.mark.parametrize(
+    "value",
+    [np.nan, np.inf, True, "100", lambda K, n_vars, D: None],
+    ids=["nan", "inf", "bool", "str", "function-of-none"],
+)
+def test_a_count_that_is_not_a_finite_number_is_refused(acq_fcn, value):
+    """A number of samples is a finite number, or a function that returns
+    one; any other value is refused, naming the option, by both
+    branches."""
+    vp, gp, vbmc_options = _scenario()
+    vbmc_options["active_importance_sampling_mcmc_samples"] = value
+    with pytest.raises(ValueError, match="active_importance_sampling_mcmc"):
+        active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
+
+
 def test_fess_draws_the_points_it_is_asked_for():
     """``X`` may be a number of samples to draw from the variational
     posterior, the documented default of 100 among them

@@ -579,6 +579,13 @@ defect *n*" is entry *n* of
   (`private/activeimportancesampling_vbmc.m:57-92`), and
   `active_importance_sampling_fess_thresh` is inert (`verification/wave4.md`,
   W4-6).
+- **`active_importance_sampling_mcmc_samples` may be a function in both
+  branches** (deliberate change). MATLAB takes a number or a string
+  expression evaluated with `K`, `nvars` and `D` in scope, in its
+  variational branch only (`private/activeimportancesampling_vbmc.m:40-45`);
+  its MCMC branch reads the option as a number (`:155-157`). PyVBMC takes a
+  number or a function of the keywords `K`, `n_vars` and `D`, evaluated and
+  rounded up in both branches, the MCMC branch that IMIQR takes included.
 - **The importance log weights are normalized** (deliberate change): one
   log-sum-exp over the whole array is subtracted, a constant that moves the
   values of IMIQR and of VIQR with `loss="iqr_reduction"` and no comparison
