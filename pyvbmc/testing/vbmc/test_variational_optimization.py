@@ -24,6 +24,8 @@ from pyvbmc.vbmc.variational_optimization import (
     update_K,
 )
 
+from .test_variational_optimization_grad_fd import _random_gp
+
 
 @pytest.fixture(autouse=True)
 def _restore_global_rng(request):
@@ -339,6 +341,49 @@ def test_gp_log_joint_variance_non_cholesky_branch():
     )
     assert np.isclose(varG0a, varG1a, rtol=1e-6)
     assert np.isclose(var_ss0, var_ss1, rtol=1e-6)
+
+
+def _gauss_hermite_nodes(D, n):
+    """Nodes and weights of a tensor Gauss-Hermite rule for the standard
+    normal measure in ``D`` dimensions, ``n`` nodes per dimension."""
+    t, weights = np.polynomial.hermite_e.hermegauss(n)
+    weights = weights / np.sum(weights)
+    nodes = np.stack(np.meshgrid(*([t] * D), indexing="ij"), axis=-1)
+    node_weights = np.stack(
+        np.meshgrid(*([weights] * D), indexing="ij"), axis=-1
+    )
+    return nodes.reshape(-1, D), np.prod(node_weights.reshape(-1, D), axis=1)
+
+
+@pytest.mark.parametrize("D", [1, 2])
+@pytest.mark.parametrize("mean", ["zero", "const", "negquad"])
+def test_gp_log_joint_value_against_quadrature(mean, D):
+    """The expected log joint per hyperparameter sample and component,
+    ``I_sk``, against a Gauss-Hermite quadrature of gpyreg's posterior mean
+    under each component, for each mean function that ``VBMC`` offers
+    (``gp_mean_fun``); ``G`` is their weighted sum."""
+    K = 2
+    gp = _random_gp(D, N=18, Ns=3, seed=41 + D, mean=mean)
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = np.array([[-0.8, 0.9], [0.4, -0.3]])[:D]
+    vp.sigma = np.array([[0.3, 0.6]])
+    vp.lambd = np.array([[1.2], [0.8]])[:D]
+    vp.w = np.array([[0.4, 0.6]])
+    vp.eta = np.log(vp.w)
+
+    G, _, _, _, _, I_sk, _ = _gp_log_joint(
+        vp, gp, False, False, True, False, True
+    )
+
+    nodes, node_weights = _gauss_hermite_nodes(D, 60)
+    scales = vp.sigma * vp.lambd  # (D, K)
+    I_ref = np.zeros((len(gp.posteriors), K))
+    for k in range(K):
+        x = vp.mu[:, k] + nodes * scales[:, k]
+        f_mu, _ = gp.predict(x, separate_samples=True)
+        I_ref[:, k] = node_weights @ f_mu
+    assert np.allclose(I_sk, I_ref, rtol=1e-10, atol=1e-10)
+    assert np.allclose(G, I_sk @ vp.w.ravel(), rtol=1e-13, atol=1e-13)
 
 
 def test_gp_log_joint_variance_gradient_not_implemented():

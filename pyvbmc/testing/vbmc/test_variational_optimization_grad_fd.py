@@ -139,33 +139,87 @@ def test_gp_log_joint_grad_fd_single_sample():
     assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
 
 
-def _random_gp(D, N, Ns, seed):
+MEAN_FUNCTIONS = {
+    "zero": gpr.mean_functions.ZeroMean,
+    "const": gpr.mean_functions.ConstantMean,
+    "negquad": gpr.mean_functions.NegativeQuadratic,
+}
+
+
+def _random_gp(D, N, Ns, seed, mean="negquad"):
     """A small GP with ``Ns`` hyperparameter samples at any ``D``, from a
-    local Generator (the shared fixture is ``D = 2`` only)."""
+    local Generator (the shared fixture is ``D = 2`` only), with one of the
+    mean functions that ``VBMC`` offers (option ``gp_mean_fun``)."""
     rng = np.random.default_rng(seed)
     gp = gpr.GP(
         D=D,
         covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
+        mean=MEAN_FUNCTIONS[mean](),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
     X = rng.uniform(-2.0, 2.0, size=(N, D))
     y = -0.5 * np.sum(X**2, axis=1) + 0.1 * rng.standard_normal(N)
     cov_N = gp.covariance.hyperparameter_count(D)
     noise_N = gp.noise.hyperparameter_count()
-    hyp = np.zeros((Ns, cov_N + noise_N + gp.mean.hyperparameter_count(D)))
+    mean_N = gp.mean.hyperparameter_count(D)
+    hyp = np.zeros((Ns, cov_N + noise_N + mean_N))
     hyp[:, :D] = rng.normal(0.0, 0.3, size=(Ns, D))  # ln ell
     hyp[:, D] = rng.normal(0.0, 0.3, size=Ns)  # ln sf
     hyp[:, cov_N : cov_N + noise_N] = -2.0  # ln sn
-    hyp[:, cov_N + noise_N] = rng.normal(0.0, 0.5, size=Ns)  # m0
-    hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + 1 + D] = rng.normal(
-        0.0, 0.3, size=(Ns, D)
-    )  # xm
-    hyp[:, cov_N + noise_N + 1 + D :] = rng.normal(
-        0.3, 0.3, size=(Ns, D)
-    )  # ln omega
+    if mean_N > 0:
+        hyp[:, cov_N + noise_N] = rng.normal(0.0, 0.5, size=Ns)  # m0
+    if mean_N > 1:
+        hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + 1 + D] = rng.normal(
+            0.0, 0.3, size=(Ns, D)
+        )  # xm
+        hyp[:, cov_N + noise_N + 1 + D :] = rng.normal(
+            0.3, 0.3, size=(Ns, D)
+        )  # ln omega
     gp.update(X_new=X, y_new=y.reshape(-1, 1), hyp=hyp)
     return gp
+
+
+def _vp_from_raw(theta, D_vp, K_vp):
+    """A VP of any shape from raw theta, without the gauge renormalization
+    (as ``_vp_from_raw_theta`` for the shared fixture)."""
+    vp = VariationalPosterior(D_vp, K_vp, rng=0)
+    vp.mu = theta[: D_vp * K_vp].reshape((D_vp, K_vp), order="F")
+    start = D_vp * K_vp
+    vp.sigma = np.exp(theta[start : start + K_vp]).reshape(1, -1)
+    start += K_vp
+    vp.lambd = np.exp(theta[start : start + D_vp]).reshape(-1, 1)
+    eta = theta[-K_vp:] - np.max(theta[-K_vp:])
+    vp.eta = eta.reshape(1, -1)
+    vp.w = (np.exp(eta) / np.sum(np.exp(eta))).reshape(1, -1)
+    return vp
+
+
+@pytest.mark.parametrize("D_gp", [1, 3])
+@pytest.mark.parametrize("mean", ["zero", "const"])
+def test_gp_log_joint_grad_fd_zero_and_constant_mean(mean, D_gp):
+    """dG with the zero and the constant mean function, which ``VBMC``
+    offers besides the default negative quadratic (``gp_mean_fun``), with
+    three hyperparameter samples."""
+    K_vp = 2
+    gp = _random_gp(D_gp, N=18, Ns=3, seed=31 + D_gp, mean=mean)
+    rng = np.random.default_rng(32 + D_gp)
+    theta0 = np.concatenate(
+        [
+            rng.uniform(-1.0, 1.0, size=D_gp * K_vp),
+            np.log(0.4 + 0.5 * rng.random(K_vp)),
+            np.log(0.7 + 0.6 * rng.random(D_gp)),
+            0.5 * rng.standard_normal(K_vp),
+        ]
+    )
+
+    def f(theta):
+        return _gp_log_joint(_vp_from_raw(theta, D_gp, K_vp), gp, False)[0]
+
+    def grad(theta):
+        return _gp_log_joint(_vp_from_raw(theta, D_gp, K_vp), gp, True)[1]
+
+    assert grad(theta0).shape == theta0.shape
+    assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
 
 
 def test_gp_log_joint_grad_fd_D_ne_K():
