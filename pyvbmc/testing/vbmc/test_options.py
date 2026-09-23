@@ -1,5 +1,6 @@
 import ast
 import copy
+import functools
 import logging
 import re
 import tokenize
@@ -802,22 +803,57 @@ def test_eval_callable():
     assert (5, 10) == options.eval("bar", {"S": 5, "T": 10})
 
 
+def _positional_only_k(K, /):
+    return 10 * K
+
+
 def test_eval_passes_a_single_parameter_by_position():
-    """A callable option evaluated with one parameter receives it by
-    position, as ``misc/evaloption_vbmc.m`` calls ``option(N)``, so the
-    function's parameter may have any name: ``lambda n: ...`` for
-    ``ns_ent``, and ``lambda unkn: ...`` for ``adaptive_k``, the name that
-    release 1.0.4 passed."""
+    """A callable option evaluated with one parameter, and without a
+    parameter that takes it by its name, receives it by position, as
+    ``misc/evaloption_vbmc.m`` calls ``option(N)``, so the function's
+    parameter may have any name: ``lambda n: ...`` for ``ns_ent``, and
+    ``lambda unkn: ...`` for ``adaptive_k``, the name that release 1.0.4
+    passed. A parameter that takes no keyword, and a callable whose
+    signature cannot be read, take the value by position too."""
     options = _shipped_options(
         {
             "ns_ent": lambda n: 100 * n,
             "adaptive_k": lambda unkn: unkn + 1,
             "k_fun_max": lambda n_eff: n_eff / 2,
+            "ns_elbo": _positional_only_k,
+            "ns_ent_fine": int,
         }
     )
     assert options.eval("ns_ent", {"K": 3}) == 300
     assert options.eval("adaptive_k", {"K": 4}) == 5
     assert options.eval("k_fun_max", {"N": 10}) == 5
+    assert options.eval("ns_elbo", {"K": 4}) == 40
+    assert options.eval("ns_ent_fine", {"K": 4.0}) == 4
+
+
+def _two_parameters(a, K):
+    return (a, K)
+
+
+@pytest.mark.parametrize(
+    "function, value",
+    [
+        (lambda scale=100, K=1: scale * K, 400),
+        (functools.partial(_two_parameters, a=1), (1, 4)),
+        (lambda *, K: K + 1, 5),
+        (lambda **kwargs: kwargs["K"] + 2, 6),
+    ],
+    ids=["later-parameter", "partial", "keyword-only", "var-keyword"],
+)
+def test_eval_passes_a_single_parameter_by_the_name_it_is_taken_by(
+    function, value
+):
+    """A callable option that takes the parameter by its name, as a
+    parameter so named or through ``**kwargs``, receives it by keyword, as
+    release 1.0.4 passed it, so that it computes what it computed there,
+    also when the parameter is not its first."""
+    options = _shipped_options({"ns_ent": function})
+    assert options.eval("ns_ent", {"K": 4}) == value
 
 
 def test_eval_passes_several_parameters_by_keyword():

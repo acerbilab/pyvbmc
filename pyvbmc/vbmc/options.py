@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import configparser
 import copy
+import inspect
 import logging
 import re
 from collections.abc import MutableMapping
@@ -417,6 +418,29 @@ def _states_the_stored_value(name, value, stored, D):
     except ValueError:
         return False
     return _same_reading(reading, stored_reading)
+
+
+def _takes_keyword(function, name):
+    """
+    Whether a callable takes an argument by the keyword `name`.
+
+    It does when it has a parameter of that name that is not
+    positional-only, or ``**kwargs``. A callable whose signature
+    :func:`inspect.signature` cannot read is taken not to.
+    """
+    try:
+        parameters = inspect.signature(function).parameters.values()
+    except (TypeError, ValueError):
+        return False
+    for parameter in parameters:
+        if parameter.kind is inspect.Parameter.VAR_KEYWORD:
+            return True
+        if parameter.name == name and parameter.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        ):
+            return True
+    return False
 
 
 class Options(MutableMapping, dict):
@@ -885,9 +909,12 @@ class Options(MutableMapping, dict):
         otherwise return the value of the option.
 
         A callable evaluated with a single parameter receives its value by
-        position, as MATLAB VBMC's ``misc/evaloption_vbmc.m`` calls
-        ``option(N)``, so the name of the callable's parameter does not
-        matter. With several parameters it receives them as keyword
+        keyword when it takes an argument of that name (a parameter so
+        named that is not positional-only, or ``**kwargs``), and by
+        position otherwise, as MATLAB VBMC's ``misc/evaloption_vbmc.m``
+        calls ``option(N)``, so the name of a single parameter does not
+        matter. A callable whose signature cannot be read receives it by
+        position. With several parameters it receives them as keyword
         arguments, and its parameters have to carry their names.
 
         Parameters
@@ -907,7 +934,9 @@ class Options(MutableMapping, dict):
         if not callable(value):
             return value
         if len(evaluation_parameters) == 1:
-            (parameter,) = evaluation_parameters.values()
+            ((name, parameter),) = evaluation_parameters.items()
+            if _takes_keyword(value, name):
+                return value(**{name: parameter})
             return value(parameter)
         return value(**evaluation_parameters)
 

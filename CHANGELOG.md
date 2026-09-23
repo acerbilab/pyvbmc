@@ -121,11 +121,13 @@ its entry below.
 - `results["rng_state"]` and `vbmc.random_state` hold the state of `vbmc.rng`.
 - Classes of your own: a prior needs `sample(self, n, rng=None)` to be part of
   a `Product` prior, and an acquisition function must return one value per
-  input point and must not set `acq_info["mcmc_importance_sampling"]`. A
-  function given as an option of one argument (`ns_ent`, `k_fun_max`,
-  `adaptive_k` and the like) receives the argument by position, so one that
-  takes it only by keyword (`lambda *, K: ...`, `lambda **kw: ...`) raises
-  `TypeError`.
+  input point and must not set `acq_info["mcmc_importance_sampling"]`.
+- A function given for `adaptive_k` receives the number of components by the
+  keyword `K`, or by position when it takes no argument of that name, where
+  1.0.4 passed it by the keyword `unkn`. One that takes `unkn` by keyword
+  alone (`lambda *, unkn: ...`, `lambda **kw: kw["unkn"]`) raises an error,
+  and one with parameters named both `K` and `unkn` receives the number in
+  `K`.
 - `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
   own: a variable with one finite bound, a `scale` that is not positive, a
   noise flag that contradicts the uncertainty handling level, and `add`
@@ -809,11 +811,13 @@ its entry below.
   `ValueError`. 1.0.4 took the first NaN it met in both places and could go
   on with a posterior whose ELBO was NaN.
 - A function given as an option of one argument (`ns_ent`, `k_fun_max`,
-  `adaptive_k` and the like) receives the argument by position, as in MATLAB
-  VBMC, so its parameter may have any name. 1.0.4 passed the argument by
-  keyword, as `K`, as `N` for `k_fun_max` and as `unkn` for `adaptive_k`, so
-  a function whose parameter had another name was accepted at construction
-  and raised `TypeError` at its first use in the run.
+  `adaptive_k` and the like) receives the argument by keyword when it takes
+  an argument of the name PyVBMC passes (`K`, and `N` for `k_fun_max`), as
+  in 1.0.4, and by position otherwise, as MATLAB VBMC passes it, so the
+  parameter of a function of one positional parameter may have any name.
+  1.0.4 passed the argument by keyword alone, and as `unkn` for
+  `adaptive_k`, so a function whose parameter had another name was accepted
+  at construction and raised `TypeError` at its first use in the run.
 - `variable_means=False` raised an error in the final boost of any run that
   ended with fewer than `min_final_components` components. With that
   setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many
