@@ -182,6 +182,38 @@ def test_vbmc_one_scalar_plausible_bound_without_x0_is_replicated():
     assert np.all(vbmc.plausible_lower_bounds == -1)
 
 
+@pytest.mark.parametrize(
+    "x0, x0_array, bounds",
+    [
+        # A list of numbers is one starting point.
+        ([0.5, -0.5], np.array([0.5, -0.5]), (-2, 2, -1, 1)),
+        ([1, 0], np.array([1, 0]), (-2, 2, -1.5, 1.5)),
+        # A list of lists holds several.
+        (
+            [[0.5, -0.5], [0.25, 0.75]],
+            np.array([[0.5, -0.5], [0.25, 0.75]]),
+            (-2, 2, -1, 1),
+        ),
+        # A number is the starting point of a problem of one variable.
+        (0.5, np.array([[0.5]]), (-2, 2, -1, 1)),
+        (0.5, np.array([[0.5]]), ([-2.0], [2.0], [-1.0], [1.0])),
+        (np.float64(0.5), np.array([[0.5]]), (-2, 2, -1, 1)),
+        (np.array(0.5), np.array([[0.5]]), (-2, 2, -1, 1)),
+    ],
+)
+def test_vbmc_x0_given_as_a_list_or_a_number(x0, x0_array, bounds):
+    """``x0`` is array_like, as the bounds are: a list of numbers is one
+    starting point, a list of lists holds several, and a number is the
+    starting point of a problem of one variable. Each gives the run that
+    the equivalent NumPy array gives."""
+    vbmc = VBMC(fun, x0, *bounds)
+    reference = VBMC(fun, x0_array, *bounds)
+    assert vbmc.D == reference.D == np.atleast_2d(x0_array).shape[1]
+    assert vbmc.x0.dtype == np.float64
+    assert np.array_equal(vbmc.x0, reference.x0)
+    assert np.array_equal(vbmc.x0_orig, reference.x0_orig)
+
+
 def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
     """A starting set without width leaves the plausible box without
     width, and the hard bounds take its place, which needs the replicated

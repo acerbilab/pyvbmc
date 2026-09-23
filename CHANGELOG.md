@@ -719,6 +719,10 @@ its entry below.
   the number of variables comes from the plausible bounds, so one of them
   needs an entry per variable; two single numbers raise an error that says
   so.
+- `x0` can be given as a list or a number, as the bounds can: a list of
+  numbers is one starting point, a list of lists holds several, and a number
+  is the starting point of a problem of one variable. 1.0.4 raised an error
+  for each of them.
 - The title of the final plot (`plot=True`, `create_vbmc_animation`) gave one
   iteration fewer than the run had performed.
 - After `VBMC.load`, the run, its posterior and its function logger share one

@@ -233,11 +233,14 @@ class VBMC:
         NumPy array with shape ``(N, D)`` and returns values with shape
         ``(N,)`` or ``(N, 1)``. A noisy vectorized target returns a pair of
         arrays with one value and positive standard deviation per row.
-    x0 : np.ndarray, optional
+    x0 : array_like, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
-        proximity of the mode of the posterior. Default is ``None``, in which
-        case the number of variables is read from the plausible bounds, one
-        of which then needs one entry per variable.
+        proximity of the mode of the posterior. One starting point is a
+        row of `D` coordinates (a 1-D array or a list; for `D` = 1, also a
+        number), and several are the rows of an array of shape ``(n0, D)``
+        or a list of lists. Default is ``None``, in which case the number
+        of variables is read from the plausible bounds, one of which then
+        needs one entry per variable.
     lower_bounds, upper_bounds : np.ndarray, optional
         ``lower_bounds`` (`LB`) and ``upper_bounds`` (`UB`) define a set
         of strict lower and upper bounds for the coordinate vector, `x`, so
@@ -464,6 +467,10 @@ class VBMC:
                 )
             x0 = np.full(shapes[0], np.nan)
 
+        # A number is one coordinate, a list of numbers one starting point
+        # and a list of lists several. The bounds check casts the values to
+        # floating point.
+        x0 = np.atleast_1d(np.asarray(x0))
         if x0.ndim == 1:
             logging.warning("Reshaping x0 to row vector.")
             x0 = x0.reshape((1, -1))
