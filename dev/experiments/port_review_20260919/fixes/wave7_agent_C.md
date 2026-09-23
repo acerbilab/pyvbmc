@@ -6,7 +6,7 @@ worktree made by hand (`../pyvbmc-w7-C`, branch `w7-agent-C`, cut from
 `dev-port-review-w7` at `ed9df90e`, whose package code is that of
 `a65b96f4`), made the fix of row W7-8 of `../verification/wave7.md` as the
 PI ruled it, the docstrings of rows W7-9 and W7-10, and the test notes of
-slice O1, one commit each. It ran only the test functions it added or
+slice O1, one commit per row or note. It ran only the test functions it added or
 changed, by node id, while another session held the machine's heavy slot.
 The orchestrator reviewed the diffs and cherry-picked the commits onto
 `dev-port-review-w7`, where they have other hashes

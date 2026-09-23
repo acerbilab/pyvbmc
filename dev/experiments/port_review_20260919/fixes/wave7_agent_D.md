@@ -5,7 +5,9 @@ Raw report of fix agent D, wave 7 of the port correctness review
 worktree of gpyreg made by hand (`../gpyreg-w7`, branch `w7-fixes`, cut
 from gpyreg's `main` at `0186d89`, the tag `v1.3.0`), made the fixes of
 rows W7-14, W7-15 and W7-16 of `../verification/wave7.md` as the PI ruled
-them, and the test notes of slice O4, one commit each, with the entries of
+them, and the test notes of slice O4, one commit per row or note (the
+assertion of `test_fitting_with_fixed_bounds` is in the commit of W7-14),
+with the entries of
 a section `1.3.1 (unreleased)` in gpyreg's release notes. It ran only the
 test functions it added or changed, by node id, while another session held
 the machine's heavy slot. The commits stay on gpyreg's branch until the

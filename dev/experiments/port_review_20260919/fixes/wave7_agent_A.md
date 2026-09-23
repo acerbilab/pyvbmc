@@ -6,7 +6,8 @@ worktree made by hand (`../pyvbmc-w7-A`, branch `w7-agent-A`, cut from
 `dev-port-review-w7` at `ed9df90e`, whose package code is that of
 `a65b96f4`), made the fixes of rows W7-1 and W7-2 of
 `../verification/wave7.md` as the PI ruled them, and the test notes O3-8,
-O3-9 and O3-10, one commit each. It ran only the test functions it added or
+O3-9 and O3-10, in four commits (the test of O3-10 is in the commit of
+W7-1). It ran only the test functions it added or
 changed, by node id, while another session held the machine's heavy slot;
 the test of W7-2 needs an `optimize()` run and was left for the gate. The
 orchestrator reviewed the diffs and cherry-picked the commits onto

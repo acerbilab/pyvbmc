@@ -32,7 +32,7 @@ a fix may make an interface stricter but may not change behavior silently
 |---|---|---|---|---|---|---|---|
 | W7-1 | O3 F2; O3-2 | `warp_gp_and_vp` re-expresses a `ConstantMean` and a `NegativeQuadratic` and raises `ValueError("Unsupported GP mean function for input warping.")` for a `ZeroMean` (`whitening.py:435-472`), which `VBMC` accepts for `gp_mean_fun="zero"` (`vbmc.py:3905`, documented in `advanced_vbmc_options.ini:108`). Nothing catches the error, and the instance is left half-warped: `optim_state` and the function logger are the warped copies, the VP, the GP, `hyp_dict` and the transformer are not. MATLAB numbers its mean functions (0 zero, 1 const, 4 negquad) and `misc/warp_gpandvp_vbmc.m:38` has `case 0`, commented "Warp constant mean", which reads a hyperparameter past the end of a zero-mean vector; `'const'` falls to `otherwise` and errors | zero mean: confirmed shared defect (both stop). Constant mean: confirmed MATLAB-side defect (PyVBMC warps it exactly) | Not at the defaults (`negquad`). With `gp_mean_fun="zero"` and every other option at its default, every run with `D >= 2` that reaches a warp stops there, noiseless or noisy (`warp_rotoscaling` on, `K >= 5`, `r_index < 3`, and the spacing of warps; with `warmup=False` the first warp needs no end of warm-up) | `wave7_O3_F2_zero_mean_warp.py`: the `ValueError` for `ZeroMean`; for `ConstantMean` and `NegativeQuadratic` the shift of `m0` equals the constant shift of the stored log joint (-3.3586, spread 3.6e-15) to 4.4e-16 | Fix. The options: (a) warp the length scales alone for a zero mean and let the refit, which follows every warp, absorb the constant shift of the stored log joint that a zero mean cannot follow; (b) refuse `"zero"` at construction (stricter), which also makes `CHANGELOG.md`'s "the mean functions that PyVBMC implements" true; (c) no warping for a zero-mean run. Proposed (a), with a warp test on a bounded state for the constant and the zero mean that checks the `m0` shift against the logger's; the MATLAB side goes into `matlab_side_defects.md` | as proposed |
 | W7-2 | O3 F6; O3-6 | At a kept warp, `warp_input` deep-copies `optim_state` (`whitening.py:219`) and so breaks the link between `optim_state["hyp_dict"]` and `self.hyp_dict`; active sampling, which relinks them (`vbmc.py:1571`, `:1586`), is skipped in that iteration. The iteration's record (`:1941`) therefore holds the `hyp_dict` of the previous iteration, in the old space, and `VBMC.load(file, iteration=k)` pairs it with the warped `get_gp(k)` (`:3252-3253`), so a run resumed there starts its GP fit from pre-warp hyperparameters and slice widths. An undone warp is not affected: the restored `optim_state_old` relinks before the fit (the report's "one fit behind" for that case is wrong) | confirmed Python-only defect (the resume feature, `a5f6effb`) | Only a resume from a kept-warp iteration, or `load(file)` of a run that stopped on one (possible through `max_iter`, not through `max_fun_evals`, since a warp iteration makes no evaluation). An uninterrupted run is unaffected | `wave7_O3_F6_hyp_dict_at_warp.py` replays the statements of `optimize` around a warp with the package's `warp_input`, `warp_gp_and_vp` and `IterationHistory`: at a kept warp the record equals the previous iteration's `hyp_dict` (length scales 0.6, 0.5, 0.8 against the warped 2.35, 1.59, 1.93); at an undone warp it equals the iteration's fit | Fix: relink after the warp (`self.optim_state["hyp_dict"] = self.hyp_dict`). `optim_state["hyp_dict"]` is read only by `active_sample` after the relink and by `load`, so no number of an uninterrupted run moves; a test that the record of a kept-warp iteration holds the post-warp `hyp_dict`. The run that measures the effect on a resume (O3 verifier, §9) is made when the heavy slot is free | as proposed |
-| W7-3 | O2 F1; O2-1 | `_pdf` sums the component densities in the linear domain (`variational_posterior.py:919-928`) and takes the log afterwards (`:994-1000`), as `vbmc_pdf.m:58-66`, `:107-110` does: where the log density is below about -745 (38.6 standard deviations for a unit Gaussian) `log_pdf` returns `-inf` and its gradient NaN (`dy / y` = 0/0), both finite in truth, and in the subnormal band before that the value loses up to 7e-4 relative and the gradient 2.6e-2. `vp.mode()` meets it: on a narrow posterior the first trial point of its optimizer, about one coordinate unit long, lands there, and the start (the best of the draws, or a component mean) is returned unrefined. L-BFGS-B (`orig_flag=True`, the default) reports success; BFGS (`orig_flag=False`) usually stops with "precision loss" and sometimes recovers. A NumPy `RuntimeWarning` ("invalid value encountered in subtract", or "in divide") is printed, which does not say that the refinement was skipped | the log density and its gradient: confirmed shared defect. The mode search: confirmed on the Python side; for `vbmc_mode.m` it needs MATLAB (its objective is `+Inf` there, with no gradient requested, and recovery depends on `fmincon`/`fminunc`) | No run: the in-run readers floor the log density at `log(realmin)` (`acq_fcn_log.py:42`, `active_importance_sampling.py:481`) or combine it in a log-sum-exp with finite terms (`:362-364`), and `mode` is called by nothing in `optimize()`, the result, S-VBMC, the exports or the PyMC adapter. A user meets it through `vp.log_pdf` in the far tails and through `vp.mode()` (in the FAQ and example 2, whose posterior is wide enough): the default call skips its refinement for unbounded variables whose posterior SD is below about 0.013 original units (0.005 to 0.017 for bounded ones), so whether it refines depends on the units of the parameters. The error is small: the start is 0.3 % to 8 % of the smallest component SD from the mode, at most 0.01 nats | `wave7_O2_F1_pdf_tail_underflow.py` (with a transcription of `vbmc_pdf.m`, the same pattern and identical finite values), `wave7_O2_F1_mode_narrow.py`, `_mode_bfgs_trace.py`, `_mode_lse_counterfactual.py` (the same SciPy calls from the same starts converge on a log-sum-exp density), `_mode_start_error.py`, `_mode_warning_origin.py` | Fix: the log density by log-sum-exp in `_pdf` under `log_flag`, applied only where the linear sum falls below the smallest normal number, so that every value that is normal today stays bit-identical and the values that change lie below the floor of the in-run readers (the `vp_pdf` oracle under `make_oracle_fixtures.py --check --exact`, and the seeded runs, confirm that nothing moves); this repairs the value, the gradient and `mode`. (Corrected in the fix round: the acquisition oracles stay bit-identical, but the `vp_pdf` oracle moves on three fixtures, at the rows whose density was below the smallest normal number, where it held `-inf` and NaN; see "Found during the fix round".) Tests of the log density and its gradient in the tails and of `mode` on a narrow posterior, for both values of `orig_flag`. The shared part goes into `matlab_side_defects.md`. Records to correct: the P7 first question in the plan (`port-correctness-review.md:1397-1402`, "never at such a point": the starts are not, the trial steps are), `reviews/P7_internal.md` Q1 and row Q1 of `wave5_P7.md` ("unreachable") | as proposed |
+| W7-3 | O2 F1; O2-1 | `_pdf` sums the component densities in the linear domain (`variational_posterior.py:919-928`) and takes the log afterwards (`:994-1000`), as `vbmc_pdf.m:58-66`, `:107-110` does: where the log density is below about -745 (38.6 standard deviations for a unit Gaussian) `log_pdf` returns `-inf` and its gradient NaN (`dy / y` = 0/0), both finite in truth, and in the subnormal band before that the value loses up to 7e-4 relative and the gradient 2.6e-2. `vp.mode()` meets it: on a narrow posterior the first trial point of its optimizer, about one coordinate unit long, lands there, and the start (the best of the draws, or a component mean) is returned unrefined. L-BFGS-B (`orig_flag=True`, the default) reports success; BFGS (`orig_flag=False`) usually stops with "precision loss" and sometimes recovers. A NumPy `RuntimeWarning` ("invalid value encountered in subtract", or "in divide") is printed, which does not say that the refinement was skipped | the log density and its gradient: confirmed shared defect. The mode search: confirmed on the Python side; for `vbmc_mode.m` it needs MATLAB (its objective is `+Inf` there, with no gradient requested, and recovery depends on `fmincon`/`fminunc`) | No run: the in-run readers floor the log density at `log(realmin)` (`acq_fcn_log.py:42`, `active_importance_sampling.py:481`) or combine it in a log-sum-exp with finite terms (`:362-364`), and `mode` is called by nothing in `optimize()`, the result, S-VBMC, the exports or the PyMC adapter. A user meets it through `vp.log_pdf` in the far tails and through `vp.mode()` (in the FAQ and example 2, whose posterior is wide enough): the default call skips its refinement for unbounded variables whose posterior SD is below about 0.013 original units (0.005 to 0.017 for bounded ones), so whether it refines depends on the units of the parameters. The error is small: the start is 0.3 % to 8 % of the smallest component SD from the mode, at most 0.01 nats | `wave7_O2_F1_pdf_tail_underflow.py` (with a transcription of `vbmc_pdf.m`, the same pattern and identical finite values), `wave7_O2_F1_mode_narrow.py`, `_mode_bfgs_trace.py`, `_mode_lse_counterfactual.py` (the same SciPy calls from the same starts converge on a log-sum-exp density), `_mode_start_error.py`, `_mode_warning_origin.py` | Fix: the log density by log-sum-exp in `_pdf` under `log_flag`, applied only where the linear sum falls below the smallest normal number, so that every value that is normal today stays bit-identical and the values that change lie below the floor of the in-run readers (the `vp_pdf` oracle under `make_oracle_fixtures.py --check --exact`, and the seeded runs, confirm that nothing moves); this repairs the value, the gradient and `mode`. (Corrected in the fix round: the acquisition oracles stay bit-identical, but the `vp_pdf` oracle moves on three fixtures, at the rows whose density was below the smallest normal number, where it held `-inf`, NaN or the logarithm of a subnormal density; see "Found during the fix round".) Tests of the log density and its gradient in the tails and of `mode` on a narrow posterior, for both values of `orig_flag`. The shared part goes into `matlab_side_defects.md`. Records to correct: the P7 first question in the plan (`port-correctness-review.md:1397-1402`, "never at such a point": the starts are not, the trial steps are), `reviews/P7_internal.md` Q1 and row Q1 of `wave5_P7.md` ("unreachable") | as proposed |
 | W7-4 | O2 §1; O2-2 | `handle_0D_1D_input` reads a 1-D array as one point, so for a one-dimensional posterior a flat array of `N > 1` points is one point of `N` coordinates. `pdf` and `log_pdf` then raise an `IndexError` or `ValueError`, except in the transformed space with a finite `df`, where the Student-t branches take `D` from `x.shape[1]` (`variational_posterior.py:877`) and return one meaningless number without error | confirmed Python-only defect (interface) | A user calling `vp.pdf` on a flat array with `D = 1`; no package caller (all pass 2-D arrays) | `wave7_O2_D1_input_shape.py`, nine calls over both flags, both transforms and `df` of 3 and -3 | Fix, stricter: `_pdf` refuses an `x` whose width is not `vp.D`, with a message that says a column of points is expected; this closes the silent case. The alternative, reading a flat array as a column when `D = 1`, departs from the decorator's convention elsewhere | as proposed |
 | W7-5 | O3 F5; O3-5 | After a warp the search box is the minimum and maximum of 1000 uniform draws of the old box, mapped and widened by a thousandth of the range (`whitening.py:333-347`; `warp_input_vbmc.m:143-148`), where the exact image of the box under the affine warp has half-width `abs(A) h`. The extent per coordinate falls short of the exact one more as `D` grows (median 0.985 at `D = 2`, 0.741 at 10, 0.590 at 20) | confirmed shared defect, of no consequence | At every kept warp with `D > 1`, at the defaults, noiseless or noisy; nothing measurable: the volume lost is at most about `2D/1001` of the old box, all in far corners, the posterior mean stays at least 8.7 marginal SDs from every face, and the loss does not compound across warps (after two warps, at most 1e-4 of the original box) | `wave7_O3_F5_search_box_after_warp.py` (the package's `warp_input` on the default box with a posterior-like covariance), `wave7_O3_F5_two_warps.py` | Leave it as it is in both: the exact box would widen the search box up to about 2.3 times per coordinate at `D = 20` and move default trajectories for a gain nothing measures. Into `matlab_side_defects.md` among the items left as they are in both | as proposed |
 | W7-6 | O3 F4, Q2; O3-4 | Every bounded transform goes through `z = (x - a)/(b - a)`, so the distance to the upper bound is resolved only to `(b - a) eps/2`: a loss beyond the representation of `x` where `abs(b) < b - a`, worst at `b = 0` (on `[-1, 0]`, at `b - x = 1e-12` the logit loses 8e-7 forward and 9e-5 back). The lower bound keeps full precision, zero or not; the Student-t(4) inverse alone also loses `x - a` at a zero lower bound. The log Jacobian as a function of `u` is exact, so the stored log joint stays consistent with the point the GP sees. MATLAB evaluates the same expressions. This answers the question of wave 0 (row N2 rerun F3 of `wave0.md`), left to slices P8 and O3: MATLAB shares it | confirmed shared defect (precision) | Reachable at the defaults (probit) on a bounded problem only for points within about `1e-10 (b - a)` of such an upper bound, and visible only where a stored point is transformed again (a warp, `vp.pdf(orig_flag=True)`, S-VBMC) | `wave7_O3_F3_F4_precision.py` | Leave it as it is in both; into `matlab_side_defects.md` among the items left as they are in both. The Torch export computes the distance to each bound separately and is accurate there. Records to correct: the plan's statement of the wave-0 question (`port-correctness-review.md:554-556`, "loss of precision near a nonzero bound"), which receives the answer and the criterion (an upper bound with `abs(b) < b - a`) | as proposed |
@@ -138,7 +138,9 @@ transform is probit, not logit" (W7-13); "'No prior' is expressed by
 draws of the posterior", the optimizer of `orig_flag=False`, which is BFGS
 with the analytic gradient, not L-BFGS-B (O2 verifier, §8). To add: the
 default of `compute_var` (W7-9). The texts are in the verifier reports,
-§8.
+§8. All are made; the two entries on gpyreg (W7-14 to W7-16) only after the
+independent check of the pass found them still wrong, and they are to be
+brought to the text of release 1.3.1 when PyVBMC's pin moves to it.
 
 ## Test notes worth acting on
 
@@ -189,13 +191,14 @@ report says otherwise; the PyVBMC commits reviewed by the orchestrator and
 cherry-picked onto `dev-port-review-w7`, the gpyreg commits kept on
 gpyreg's branch `w7-fixes` until its pull request. The agents ran only the
 test functions they added or changed, while another session held the heavy
-slot: the gates of the pass are to come ("Gates").
+slot; the gates of the pass follow ("Gates"), and the commits made after its
+independent check are listed there.
 
 | row | commit | what it does |
 |---|---|---|
 | W7-1 | `58c4be10` | `warp_gp_and_vp` warps the length scales of a zero-mean GP and skips the mean block; the constant and negative quadratic paths bit-identical over 400 random states each |
-| W7-2 | `017bda47` | `optim_state["hyp_dict"]` linked to `self.hyp_dict` right after a kept warp; its test shares the short run of `test_vbmc_warp_branch.py`, whose options now keep the warp, and has not run yet |
-| W7-3 | `0ccda687` | the log density and its gradient by log-sum-exp where the linear sum is below the smallest normal number; every row normal before is bit-identical (217,829 rows) |
+| W7-2 | `017bda47` | `optim_state["hyp_dict"]` linked to `self.hyp_dict` right after a kept warp; its test shares the short run of `test_vbmc_warp_branch.py`, whose options keep the warp, seen to fail at the gate with the link reverted; the link moved to the end of the warp block after the independent check (`3dd58381`) |
+| W7-3 | `0ccda687` | the log density and its gradient by log-sum-exp where the linear sum is below the smallest normal number; every row normal before is bit-identical (217,829 rows); the proposal of the active importance sampling keeps the logarithm of the density as it is held, as before, after the independent check (`d8c3990c`) |
 | W7-4 | `78365e55` | `pdf` and `log_pdf` refuse an `x` whose rows are not `D` wide |
 | W7-8 | `047a75ee` | `set_parameters` rescales `sigma` and `lambd` only when both are optimized; bit-identical with both optimized (3,168 calls) |
 | W7-9 | `fa10366c` | the docstring of `_neg_elcbo`'s default variance |
@@ -213,9 +216,10 @@ slot: the gates of the pass are to come ("Gates").
 - **W7-3 moves the `vp_pdf` oracle.** On three fixtures (`cigar_D4_boosted`,
   6 rows; `cigar_D4_largeK`, 7; `corr_D5_warped`, 76) the oracle's candidate
   rows include points whose density is below the smallest normal number,
-  where the stored reference holds `-inf` and NaN and the fixed code gives
-  finite values; every other entry, and every acquisition oracle on all
-  eight fixtures, is bit-identical (fix agent B, §3). The new log densities
+  where the stored reference holds `-inf`, NaN or the logarithm of a
+  subnormal density and the fixed code gives finite and exact values; every
+  entry at a row whose density is a normal double, and every acquisition
+  oracle on all eight fixtures, is bit-identical (fix agent B, §3). The new log densities
   there are at most -708.9, below the floor `log(realmin)` of the
   acquisitions. The ruling's premise that nothing moves did not hold for
   `vp_pdf` itself: its reference is to be replaced with the generator's
@@ -232,16 +236,18 @@ slot: the gates of the pass are to come ("Gates").
   with hyperparameter samples then raises; `set_priors` takes an inverted
   smooth box (`a > b`), whose log prior is then a wrong finite value or
   NaN. Both fixed in 1.3.1 on the PI's word (2026-09-23), by agent D.
-- **Smaller notes, not fixed.** The type-2 starting points of `_vb_init`
-  overwrite a `sigma` that is not optimized, as `vbinit_vbmc.m:32` does; with
-  one scale not optimized, `optimize_vp` returns scales that MATLAB's
-  `rescale_params` would rescale, with the same density, for the sheet; the
-  docstrings of `_gp_log_joint` (`compute_var` takes 2), of
-  `warp_gp_and_vp` (it returns an array, not a dictionary) and of `log_pdf`
-  (it returns the log density) (fix agents A, B and C, §6). Where
-  `nf w / sigma^D` overflows, at component scales near 1e-16 in 20
-  dimensions, `_pdf` gives `inf` or NaN, outside the ruling of W7-3 (fix
-  agent B, §6).
+- **Smaller notes.** Three docstrings were wrong, and are corrected in
+  `72a39732`: `_gp_log_joint`'s `compute_var` takes 2, `warp_gp_and_vp`
+  returns an array and not a dictionary, and `log_pdf` returns the log
+  density. With one scale not optimized, `optimize_vp` returns scales that
+  MATLAB's `rescale_params` would rescale, with the same density, which the
+  sheet's entry on `set_parameters` records. Left as they are: the type-2
+  starting points of `_vb_init` overwrite a `sigma` that is not optimized,
+  as `vbinit_vbmc.m:32` does; where `nf w / sigma^D` overflows, at component
+  scales near 1e-16 in 20 dimensions, `_pdf` gives `inf` or NaN, outside the
+  ruling of W7-3; and an exception inside the warp block other than the one
+  W7-1 removes still leaves the instance half-warped (fix agents A, B and C,
+  §6).
 
 ## Gates
 
@@ -274,7 +280,60 @@ default suite, 2140 passed and 58 skipped; the Torch and PyMC selections in
 the extras environment, 973 passed and 19 skipped. No PyVBMC number moves
 with the gpyreg fixes.
 
-To come: the CI matrix.
+## The independent check of the pass
+
+Five fresh read-only Opus reviewers without the session's context read the
+pass on 2026-09-23, one per part: the warps and the resume; the density and
+the entropy; the variational objective and the scales; gpyreg's commits and
+release notes; the records. Their raw reports and scripts are on the
+orchestrator's machine (`dev/scripts/runs/LOCAL.md`, "Port correctness
+review", `wave7_check_reports/`). None found a defect in the code of a fix;
+each confirmed the rulings, the bit-identity of the paths the rulings keep
+and the tests, with checks and mutations of its own. What they found:
+
+- **The proposal of the active importance sampling** (the density and the
+  entropy, S1). After W7-3, a point outside every box of the proposal
+  where the variational density underflows got a finite and very large log
+  weight instead of `-inf`, the rule of row W4-7 and of
+  `activeimportancesampling_vbmc.m`; only a box draw that fails its own box
+  by rounding can be such a point. On the PI's word the proposal takes the
+  logarithm of the density as it is held, which is its value before W7-3
+  to the bit (`d8c3990c`: 120,000 points, 32,887 of them where the density
+  underflows, compared with the code of `a65b96f4`).
+- **An undone warp at the end of warm-up** (the warps, O1 and O2). With
+  `skip_active_sampling_after_warmup`, active sampling does not relink after
+  an undone warp, and the record held the `hyp_dict` of before the warp;
+  and the fixture that keeps every warp left the undo branch without a
+  test. On the PI's word the link moved to the end of the warp block, and a
+  second short run checks the record of an undone warp (`3dd58381`).
+- **The two fixed-draw checks of the Monte Carlo entropy** (the density
+  and the entropy, S3). The test note asked for the exact check in place of
+  the fixed-draw checks; `eaac0349` replaced the unasserted one and kept the
+  two asserted ones, of a single Gaussian and of an overlapping mixture,
+  which check the estimator against the entropy's gradient within Monte
+  Carlo error, as the exact check does not. The PI kept them (2026-09-23).
+- **gpyreg** (S2 and S3, and one finding beyond the pass). No test pinned
+  the design's unchanged path at a lower bound exactly at the prior's
+  centre, where PyVBMC's noise prior sits; the release notes' "Upgrading"
+  point on the location refusal gave `None` as the replacement also for one
+  coordinate of a block, and the refusal of an inverted box had none. The
+  design of a coordinate fixed by equal bounds that has a prior lands 1 to 2
+  ulp off its bound, so every design point but those of `x0` has a log
+  prior of `-inf`; PyVBMC reaches it only with a collapsed noise pair and a
+  `noise_size` other than `tol_gp_noise`. On the PI's word all of it is
+  fixed in 1.3.1 (agent D's third round).
+- **Text.** `_neg_elcbo`'s docstring gains its Raises section and a test
+  docstring the condition of MATLAB's default variance (`a087961d`); the
+  sheet's two entries on gpyreg, wrong even for 1.3.0, are rewritten; the
+  records corrected where they hold the error: this ledger, the plan, the
+  changelog's account of 1.0.4 for W7-4, the fixtures' recorded reason for
+  `vp_pdf`, the MATLAB-side list, three sheet entries, the headers of the
+  reports and the note of `dev/2026-09-02-modernization-discussion.md` on
+  `vp.pdf`.
+- Left as they are (optional findings): past about 37.7 scales the survival
+  function underflows too, and the mass and the design fail as the lower
+  tail always did; a GP pickled by 1.3.0 keeps its stored constants until
+  a refit.
 
 ## Runs for when the heavy slot is free
 

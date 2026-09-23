@@ -486,25 +486,42 @@ fact inherited from MATLAB.
   normalization constant per coordinate (`verification/wave6.md`, W6-6).
 - Kind: Python-only addition.
 
-### The hyperprior is renormalized to the bounds, and a fixed hyperparameter gets a prior
+### The hyperprior is renormalized to the bounds, and a hyperparameter with equal bounds is held at its value
 - Python: `gpyreg/gaussian_process.py: __recompute_normalization_constants`
-  stores, per coordinate, the probability the prior puts inside the bounds,
-  and `__compute_log_priors` subtracts their log (`lp -= masks["log_norm"]`).
-  Separately, the mask `f_idx` returns `-inf` for a hyperparameter whose
-  bounds are equal and whose value is not exactly that bound.
-- MATLAB: `gplite/gplite_hypprior.m` has neither; its priors are
-  unnormalized over the bounds, and a fixed hyperparameter contributes
-  whatever its prior gives.
-- What differs: gpyreg's `log_posterior` is a normalized log posterior with
-  respect to the bounds, so its value differs from `gplite_nlZ`'s by the sum
-  of the log truncation constants. The term is constant in `hyp`, so neither
-  the optimizer nor the slice sampler sees it, and no sampled hyperparameter
-  and no PyVBMC number moves; only the reported value of `log_posterior`
-  differs (by 0.747 in the case measured, and by whatever the bounds make it
-  in general). `f_idx` likewise changes only what a caller who evaluates off
-  a fixed value is told.
-- Why: introduced with the bound handling of `0ca35b3` (2021-06-28) and the
-  prior families of `27f8d66` (2021-06-11); PyVBMC never compares
+  stores, for each coordinate with a prior and a finite bound, the
+  probability the prior puts inside the bounds, and `__compute_log_priors`
+  subtracts the sum of their logs (`lp -= masks["log_norm"]`). The mask
+  `f_idx` of the coordinates whose two bounds are equal sets the log prior
+  to `-inf` where such a coordinate is not exactly at its bound.
+- MATLAB: `gplite/gplite_hypprior.m` has neither: its priors are
+  unnormalized over the bounds, and every coordinate contributes what its
+  prior gives (a zero value and a zero gradient where it has none), whatever
+  its bounds.
+- What differs: gpyreg's `log_posterior` differs from `gplite_nlZ`'s by the
+  sum of the log truncation constants (0.747 in the case measured). The sum
+  is constant in `hyp`, so the optimizer and the slice sampler do not see it
+  while each mass is a positive double. No PyVBMC number moves: PyVBMC's
+  priors put 0.44 to 0.94 of their mass inside the bounds it fills, with the
+  lower bound at or below the prior's centre, and its one pair of equal
+  bounds, the noise's for a target whose range is below `tol_gp_noise`,
+  carries a Student's t prior.
+- Two defects of this code at the sheet's revision, 1.3.0, are fixed on
+  gpyreg's branch `w7-fixes` for release 1.3.1
+  (`dev/experiments/port_review_20260919/verification/wave7.md`, W7-14 and
+  W7-15). In 1.3.0 the mass is `cdf(ub) - cdf(lb)`, which is 0 with both
+  bounds beyond about 8.3 scales in the upper tail of a Gaussian prior, and
+  `log_posterior` is then `+inf` at every point; and `f_idx` writes NaN into
+  the gradient of every fixed coordinate that its prior's branch leaves
+  unset (no prior, or a smooth box around its value), which reaches
+  `GP.fit` whenever another coordinate has a prior, where L-BFGS-B stops
+  within an iteration. 1.3.1 takes the mass, and the space-filling design,
+  from the survival function where the lower bound lies above the prior's
+  centre, and leaves such a gradient at zero, as MATLAB does.
+- Why: the fixed prior came in `6754f01` (2021-06-22) as a prior type that
+  set equal bounds; `0ca35b3` (2021-06-28) moved the bounds out of the
+  priors, and `f_idx` has read the GP's bounds since. The renormalization
+  came in `64dc49d` (2021-06-29), after the smooth-box families of
+  `27f8d66` (2021-06-11). No commit records a reason; PyVBMC never compares
   `log_posterior` values across the two implementations
   (`verification/wave6.md`, W6-24).
 - Kind: Python-only addition.
@@ -527,15 +544,23 @@ fact inherited from MATLAB.
   the location or the scale is non-finite, so `sigma = Inf` is its
   documented way of asking for a flat prior. gpyreg requires both, because a
   non-finite `mu` with a finite `sigma` is how it identifies its own
-  smooth-box families (the entry above). A prior written MATLAB's way is
-  refused (gpyreg 1.2.1 took it for a Student's t, with a log posterior of
-  `-inf` or NaN and a design column of NaN). PyVBMC never writes such a
-  prior: `_gp_hyp` gives every coordinate that has a prior a finite `mu` and
-  `sigma`, and leaves both NaN where there is none.
+  smooth-box families (the entry above). Of MATLAB's two ways of writing no
+  prior, `sigma = Inf` is refused (gpyreg 1.2.1 took it for a Student's t,
+  with a log posterior of `-inf` or NaN and a design column of NaN). The
+  other, a location that is not finite beside a finite `sigma`, is taken by
+  1.3.0, and the log posterior is then `-inf` without finite bounds and NaN
+  with the bounds that `fit` fills. gpyreg's branch `w7-fixes` refuses it
+  for release 1.3.1, and also a smooth box with an infinite or NaN end or
+  with `a > b`; a box of zero width, the Gaussian or Student's t centred at
+  `a`, is taken. PyVBMC never writes such a prior: `_gp_hyp` gives every
+  coordinate that has a prior a finite `mu` and `sigma`, and leaves both NaN
+  where there is none.
 - Why: the `and` is required by the smooth-box families of `27f8d66`
-  (2021-06-11). The refusal is row W6-17 of `verification/wave6.md`, with
-  `verification/wave6_G1.md`, row G1-12; the coordinates without a prior
-  are in the ledger's section "The independent check of the pass".
+  (2021-06-11). The refusal of `sigma = Inf` is row W6-17 of
+  `verification/wave6.md`, with `verification/wave6_G1.md`, row G1-12; the
+  coordinates without a prior are in that ledger's section "The independent
+  check of the pass"; the refusals of 1.3.1 are row W7-16 of
+  `verification/wave7.md` and its section "Found during the fix round".
 - Kind: deliberate change.
 
 ### An exception of the hyperparameter objective ends the fit
@@ -2351,15 +2376,21 @@ fact inherited from MATLAB.
   under `log_flag`: a row whose mixture density is below the smallest
   normal double takes its log density as a log-sum-exp of the components'
   log densities and its gradient from their responsibilities; every other
-  row takes the log of the linear sum, as before.
+  row takes the log of the linear sum.
 - MATLAB: `vbmc_pdf.m:58-66`, `:107-110` takes the log of the linear sum
   and the gradient `dy./y` at every point (`matlab_side_defects.md`, row
   58).
 - What differs: beyond about 38.6 standard deviations from every component
-  MATLAB returns `-Inf` with a NaN gradient and PyVBMC finite values. The
-  acquisitions floor the log density at `log(realmin)` on both sides, so no
-  run moves; `vp.mode()` refines its start on a narrow posterior, where the
-  first trial point of its optimizer lands in that region. The Student-t
+  (for a unit Gaussian) MATLAB returns `-Inf` with a NaN gradient and
+  PyVBMC finite values, and in the band of subnormal densities just before,
+  where MATLAB's value loses precision, PyVBMC's is exact. The acquisitions
+  floor the log density at `log(realmin)` on both sides, and the proposal
+  of the active importance sampling takes the logarithm of the density as
+  it is held (`active_sample_proposal_pdf`), as
+  `activeimportancesampling_vbmc.m` does, so that a point where it
+  underflows keeps a weight of zero: no run moves. `vp.mode()` refines its
+  start on a narrow posterior, where the first trial point of its optimizer
+  lands in that region. The Student-t
   branches (`df` finite) take the log of their linear sum on both sides; they
   underflow only far beyond any point a run evaluates.
 - Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-3.
@@ -2385,8 +2416,8 @@ fact inherited from MATLAB.
   result.
 - What differs: with both scales optimized, as every run has them on both
   sides, nothing. With one not optimized, the objective is a function of θ
-  alone on both sides, and the posterior that `optimize_vp` returns keeps
-  the fixed scale where MATLAB's is rescaled, with the same density.
+  alone on both sides, and the posterior that `optimize_vp` returns is not
+  rescaled at the end, where MATLAB's is, with the same density.
   `get_parameters` normalizes whatever the flags, as `rescale_params.m`
   does.
 - Why: `dev/experiments/port_review_20260919/verification/wave7.md`, W7-8.
@@ -2664,9 +2695,10 @@ fact inherited from MATLAB.
 - Kind: Python-only addition.
 
 ### A zero-mean GP is warped
-- Python: `pyvbmc/whitening/whitening.py: warp_gp_and_vp` re-expresses the
-  zero, constant and negative quadratic means; for a zero mean it warps the
-  length scales and leaves the constant shift of the stored log joint to the
+- Python: `pyvbmc/whitening/whitening.py: warp_gp_and_vp` warps the length
+  scales of the GP whatever its mean function and re-expresses the
+  hyperparameters of a constant and a negative quadratic mean; a zero mean
+  has none, and the constant shift of the stored log joint is left to the
   refit that follows every warp.
 - MATLAB: `misc/warp_gpandvp_vbmc.m:37-66` catches the zero mean (code 0)
   in the case commented "Warp constant mean" and reads past the end of its

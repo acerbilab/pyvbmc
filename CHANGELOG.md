@@ -848,10 +848,11 @@ its entry below.
     the units of the parameters), where 1.0.4 returned the starting point
     unrefined, with a NumPy `RuntimeWarning`.
   - `vp.pdf` and `vp.log_pdf` raise `ValueError` when the rows of `x` do
-    not have `D` coordinates. For a posterior of one parameter, 1.0.4 read
-    a flat array of several points as a single point and failed with an
-    obscure error or, in the transformed space with a finite `df`, returned
-    one meaningless number.
+    not have `D` coordinates. In the transformed space (`orig_flag=False`)
+    1.0.4 returned values for points it had misread: for a posterior of one
+    parameter, a flat array of several points was read as a single point
+    and gave one number, and a column of points given to a posterior of
+    more parameters gave one number per row.
   - `vp.mode()` works for a posterior of one parameter, where it raised an
     `AxisError`. It draws its starting points from a copy of the random
     generator, so a call leaves the random stream of a run where it was and
@@ -866,7 +867,7 @@ its entry below.
     only when both are optimized; a scale whose `optimize_sigma` or
     `optimize_lambd` flag is off keeps its value. 1.0.4 rescaled whatever
     the flags, so that with `sigma` fixed and `lambd` optimized the
-    variational optimization inflated the fixed `sigma` at every evaluation
+    variational optimization rescaled the fixed `sigma` at every evaluation
     of its objective.
   - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
     hold `sigma`, `lambd` and the weights to be positive, and those alone.

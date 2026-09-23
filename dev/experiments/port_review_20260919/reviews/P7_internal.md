@@ -7,10 +7,10 @@ did not read the MATLAB source. Its brief carried two first questions,
 which the report answers before its findings. Its check scripts ran in the
 session scratchpad and are kept only on the machine that ran them
 (`dev/scripts/runs/LOCAL.md`). The text below is the agent's final message,
-unedited. Its answer on the underflowed log density, that no path reaches
-it in practice, is corrected by wave 7 (`../verification/wave7.md`, W7-3):
-`vp.mode()` reaches it at the first trial step of its optimizer on a narrow
-posterior.
+unedited. Its answer on the underflowed log density, that the mode search
+cannot reach it in practice, is corrected by wave 7
+(`../verification/wave7.md`, W7-3): `vp.mode()` reaches it at the first
+trial step of its optimizer on a narrow posterior.
 
 ---
 

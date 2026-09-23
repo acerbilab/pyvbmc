@@ -2,20 +2,20 @@
 
 Raw reviewer report, wave 7 of the port correctness review
 (`dev/plans/port-correctness-review.md`), 2026-09-23. One Opus agent, fresh
-context, read-only on the repositories, combining both tracks: it
-re-derived each formula of the slice, checked it by finite differences, and
-then compared the code with `gplite/` of MATLAB VBMC at `396d649`. It read
-gpyreg at `v1.3.0` (`0186d89`), with PyVBMC at `a65b96f4` as its caller, in
-a worktree frozen at that commit while the merged waves were gated in the
-main checkout. Its brief carried one first question: whether the gradient
-holds with respect to every hyperparameter in every configuration PyVBMC
-builds (each mean function, the three noise configurations with the
-multiplier of the recorded noise at uncertainty level 1, the low-noise
-representation of the posterior, the hyperpriors, `D = 1`, repeated
-training inputs); the report answers it after its table of derivations. Its
-check scripts ran in the session scratchpad and are kept only on the
-machine that ran them (`dev/scripts/runs/LOCAL.md`). The text below is the
-agent's final message, unedited.
+context, read-only on the repositories, combining both tracks: it re-derived
+each formula of the slice, checked it by finite differences, and then
+compared the code with `gplite/` of MATLAB VBMC at `396d649`. It read gpyreg
+at `v1.3.0` (`0186d89`), with PyVBMC at `a65b96f4` as its caller, in a
+worktree whose package code stayed at that commit while the merged waves
+were gated in the main checkout. Its brief carried one first question:
+whether the gradient holds with respect to every hyperparameter in every
+configuration PyVBMC builds (each mean function, the three noise
+configurations with the multiplier of the recorded noise at uncertainty
+level 1, the low-noise representation of the posterior, the hyperpriors, `D
+= 1`, repeated training inputs); the report answers it after its table of
+derivations. Its check scripts ran in the session scratchpad and are kept
+only on the machine that ran them (`dev/scripts/runs/LOCAL.md`). The text
+below is the agent's final message, unedited.
 
 ---
 

@@ -2,20 +2,20 @@
 
 Raw reviewer report, wave 7 of the port correctness review
 (`dev/plans/port-correctness-review.md`), 2026-09-23. One Opus agent, fresh
-context, read-only on the repositories, combining both tracks: it
-re-derived each formula of the slice, checked it by finite differences,
-and then compared the code with MATLAB VBMC at `396d649`. It read PyVBMC at
-`a65b96f4`, in a worktree frozen at that commit while the merged waves were
-gated in the main checkout, with gpyreg at `v1.3.0` (`0186d89`). Its brief
-carried one first question: which configurations the entropy tests and the
-finite-difference test of the density's gradient leave out, and whether
-each gradient holds there (`K = 1`, `D = 1`, a weight at or near zero,
-nearly coincident components, disparate scales, points in the tails, with
-and without the softmax Jacobian, several block budgets of the Monte Carlo
-entropy); the report answers it in its section 4. Its check scripts ran in
-the session scratchpad and are kept only on the machine that ran them
-(`dev/scripts/runs/LOCAL.md`). The text below is the agent's final message,
-unedited.
+context, read-only on the repositories, combining both tracks: it re-derived
+each formula of the slice, checked it by finite differences, and then
+compared the code with MATLAB VBMC at `396d649`. It read PyVBMC at
+`a65b96f4`, in a worktree whose package code stayed at that commit while the
+merged waves were gated in the main checkout, with gpyreg at `v1.3.0`
+(`0186d89`). Its brief carried one first question: which configurations the
+entropy tests and the finite-difference test of the density's gradient leave
+out, and whether each gradient holds there (`K = 1`, `D = 1`, a weight at or
+near zero, nearly coincident components, disparate scales, points in the
+tails, with and without the softmax Jacobian, several block budgets of the
+Monte Carlo entropy); the report answers it in its section 4. Its check
+scripts ran in the session scratchpad and are kept only on the machine that
+ran them (`dev/scripts/runs/LOCAL.md`). The text below is the agent's final
+message, unedited.
 
 ---
 

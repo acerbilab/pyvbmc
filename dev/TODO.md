@@ -110,9 +110,14 @@ records its execution.
   MATLAB), so the golden references and the production-reference pools
   describe the code from before them. The passes of waves 1 to 6 were each
   checked afterwards by fresh reviewers without the session's context, and
-  what the checks found is fixed and merged as well. Next, on the PI's
-  decision: the third readers (O1 to O4). The plan's pickup point says
-  where to resume.
+  what the checks found is fixed and merged as well. Wave 7, the third
+  readers O1 to O4, is reviewed, verified, ruled on and fixed, and its pass
+  checked by fresh reviewers (`verification/wave7.md`); none of its fixes
+  moves a default trajectory, and its fixes to gpyreg are on gpyreg's
+  branch `w7-fixes` for release 1.3.1. Next: the gates of the round that
+  followed the check, the push and the CI matrix, then, on the PI's word,
+  gpyreg 1.3.1 and the fast-forward into `dev-next`. The plan's pickup
+  point says where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
@@ -162,11 +167,18 @@ records its execution.
     there, its `max` and `min` running along the single row (read from its
     source, not run) (entry 49 of
     `experiments/port_review_20260919/matlab_side_defects.md`). A candidate
-    for triage, as the constant targets of row W6-4 were.
+    for triage, as the constant targets of row W6-4 were. Row W7-17 of
+    `experiments/port_review_20260919/verification/wave7.md` finds the same
+    mechanism in a set of distinct points that share one coordinate, which
+    PyVBMC reaches from such starting points; the PI rules on the two
+    together after a capped run from such points.
   - gpyreg: `set_priors` takes a NaN location beside a finite `sigma` (a
     Gaussian prior with `mu` NaN, a smooth box with `a` NaN), and the log
     prior is then NaN; the mirror of a NaN `sigma` beside a set location,
-    which it refuses. A candidate for triage.
+    which it refuses. Ruled with row W7-16 of
+    `experiments/port_review_20260919/verification/wave7.md`, which widens
+    it to every location that is not finite, and fixed on gpyreg's branch
+    `w7-fixes`; this line goes when gpyreg 1.3.1 is released.
   - gpyreg: `get_priors` returns `None` for a Student's t block with mixed
     degrees of freedom, such as `[0, nan]` or `[0, 3]`, which `set_priors`
     writes, so `set_priors(get_priors())` drops it; and for a smooth-box

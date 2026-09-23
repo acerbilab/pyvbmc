@@ -473,7 +473,7 @@
      "pdf_orig": 0.0
     },
     "oracle": "vp_pdf",
-    "reason": "Wave 7 of the port correctness review, row W7-3 (PI, 2026-09-23): the log density of the variational posterior and its gradient are computed by log-sum-exp where the mixture density is below the smallest normal double; the stored references held -inf and NaN at those rows of cigar_D4_boosted, cigar_D4_largeK and corr_D5_warped, and every other entry is unchanged."
+    "reason": "Wave 7 of the port correctness review, row W7-3 (PI, 2026-09-23): the log density of the variational posterior and its gradient are computed by log-sum-exp where the mixture density is below the smallest normal double; the stored references held -inf and NaN, or the logarithm of a subnormal density, at those rows of cigar_D4_boosted, cigar_D4_largeK and corr_D5_warped, and every entry at a row whose density is a normal double is unchanged (a correction of 2026-09-23 to the reason as first written, which said -inf and NaN alone and every other entry unchanged)."
    }
   ],
   "recipe": "halfnormal_D2_bounded",

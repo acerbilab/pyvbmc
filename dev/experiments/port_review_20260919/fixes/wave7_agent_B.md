@@ -6,7 +6,7 @@ worktree made by hand (`../pyvbmc-w7-B`, branch `w7-agent-B`, cut from
 `dev-port-review-w7` at `ed9df90e`, whose package code is that of
 `a65b96f4`), made the fixes of rows W7-3 and W7-4 of
 `../verification/wave7.md` as the PI ruled them, and the test notes O2-4,
-O2-6, O2-7 and O2-8, one commit each. It ran only the test functions it
+O2-6, O2-7 and O2-8, in five commits (O2-4 and O2-6 share one). It ran only the test functions it
 added or changed, by node id, while another session held the machine's
 heavy slot; it found that the fix of W7-3 moves the `vp_pdf` oracle on
 three fixtures, at the rows whose density was below the smallest normal

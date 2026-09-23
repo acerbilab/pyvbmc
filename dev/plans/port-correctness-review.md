@@ -155,7 +155,7 @@ reviewer confirms that and spends no more time on them.
 | **M** MATLAB changes since the port began (comparison track) | whichever PyVBMC or gpyreg code corresponds | the algorithmic commits in the table above, checked one by one (`bd38b48` has no Python surface: `utils/fminfill.m` is VBMC's own copy), plus the one substantive non-`intmeanfun` line where gpyreg's `gplite` copy differs from the target, the predictive log-density of `gplite_pred.m` |
 | **O1** Third reader: expected log joint and ELBO gradients | `_gp_log_joint`, `_neg_elcbo`, `_vp_bound_loss`, `_soft_bound_loss`, and the softmax Jacobian copies in `variational_optimization.py` and in the VP parameter path | `misc/gplogjoint.m`, `misc/negelcbo_vbmc.m`, `misc/vpbndloss.m` |
 | **O2** Third reader: entropies and VP density gradients | `entropy/entlb_vbmc.py`, `entropy/entmc_vbmc.py` (each with its own softmax Jacobian copy), the `vp.pdf` gradient | `ent/entlb_vbmc.m`, `ent/entmc_vbmc.m`, `vbmc_pdf.m` |
-| **O3** Third reader: transformations and their Jacobians | `parameter_transformer.py`: forward, inverse, `log_abs_det_jacobian`; `whitening.py`. MATLAB's `warpvars_vbmc.m` also provides the gradient of the log Jacobian, which PyVBMC lacks: the reader checks whether any Python path needs it | `shared/warpvars_vbmc.m`, `misc/warp_gpandvp_vbmc.m` |
+| **O3** Third reader: transformations and their Jacobians | `parameter_transformer.py`: forward, inverse, `log_abs_det_jacobian`; `whitening.py`. MATLAB's `warpvars_vbmc.m` also provides the gradient of the log Jacobian, which PyVBMC lacks: the reader checks whether any Python path needs it (the reader found that the `'g'` action returns the derivatives of the coordinate-wise inverse map, not that gradient, and that no path of either side needs one: `verification/wave7.md`, W7-12) | `shared/warpvars_vbmc.m`, `misc/warp_gpandvp_vbmc.m` |
 | **O4** Third reader: GP marginal likelihood and its gradient | the negative log marginal likelihood and its gradient in `gaussian_process.py`; the derivative branches (`compute_grad=True`) of `covariance_functions.py`, `mean_functions.py`, `noise_functions.py` | `gplite/private/gplite_core.m`, `gplite/gplite_nlZ.m`, `gplite/gplite_covfun.m`, `gplite/gplite_meanfun.m`, `gplite/gplite_noisefun.m`, `gplite/private/derivcheck.m` |
 | **N1** Internal only: S-VBMC | `svbmc/*.py` | none (the original standalone `svbmc` package is the reference) |
 | **N2** Internal only: PyMC adapter and posterior exports | `pymc/*.py`, `variational_posterior/_torch.py`, `variational_posterior/_arviz.py` | none |
@@ -417,7 +417,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
 
 ## Working rules
 
-- At most four agents at a time; the orchestrator holds the heavy-compute
+- At most four agents at a time, as a guide (see "Decisions"); the
+  orchestrator holds the heavy-compute
   slot and does not use it while the production-reference runs are active.
 - Reviewers are fresh general-purpose agents, never forks.
 - An agent that changes code works in its own git worktree. The harness
@@ -554,10 +555,11 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   object works through `dill` and gets `save`/`load` methods as a
   `TODO.md` item; the core transformer's loss of precision near a
   nonzero bound waits for slices P8 and O3 to say whether MATLAB shares
-  it. (Answered by wave 7, `verification/wave7.md`, W7-6: MATLAB shares it,
-  and the loss is at an upper bound with `abs(b) < b - a`, worst at
-  `b = 0`, not at a nonzero bound; a lower bound keeps full precision. Left
-  as it is in both.)
+  it. (Answered by wave 7, `verification/wave7.md`, W7-6: MATLAB shares it.
+  The loss is at an upper bound with `abs(b) < b - a`, worst at `b = 0`,
+  whether the bound is zero or not; a lower bound keeps full precision,
+  except under the Student-t(4) transform at a lower bound of zero. Left as
+  it is in both.)
 - [x] 2026-09-19: chunk-independent Monte Carlo entropy (PI decision).
   Every chunk budget reproduces the default budget's output bit for bit:
   the mixture densities and every sum over samples and components are
@@ -2405,7 +2407,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   fail before it except the test of W7-2, which needs a run; they ran only
   the test functions they added or changed. The reports are
   `fixes/wave7_agent_A.md` to `_D.md`, and `verification/wave7.md`, "Fix
-  commits", lists the commits: sixteen of PyVBMC's, reviewed and
+  commits", lists the commits: seventeen of PyVBMC's, reviewed and
   cherry-picked onto `dev-port-review-w7`, and six of gpyreg's on its branch
   `w7-fixes` with a section `1.3.1 (unreleased)` of its release notes. Where
   the rulings said that no number moves, the agents compared the fixed code
@@ -2419,40 +2421,66 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   smooth box) fixed in 1.3.1 as well, by agent D on the same branch; W7-2
   kept as ruled, so that a file saved before it keeps its record. The
   records that the rulings correct were corrected on the branch (the sheet,
-  the MATLAB-side list, rows 56 to 60 and the items left as they are in
+  except its two entries on gpyreg, which the independent check of the pass
+  found still wrong and which were rewritten after it; the MATLAB-side list, rows 56 to 60 and the items left as they are in
   both, the notes beside two lines of the paper's transcription, the answer
   to the wave-0 question on the precision near a bound, the record of P7's
   first question), and `dev-port-review-w7` was merged into
   `dev-port-review` at `bad56bc3`, which holds the merged waves 1 to 6, in
   the main checkout; the package code the reviewers read, `a65b96f4`, is
   that of `bad56bc3`.
-- [ ] **Pickup point (2026-09-23, wave 7 merged into `dev-port-review`): the
-  gates of the wave-7 fix pass.** The state: `dev-port-review` holds the
-  merge of `dev-port-review-w7`, not yet pushed; `dev-next` stands at
-  `bad56bc3`. gpyreg's fixes are on `w7-fixes` in `../gpyreg-w7`, not
-  pushed. The worktrees `../pyvbmc-wave7` (branch `dev-port-review-w7`) and
-  `../pyvbmc-w7-A`, `-B`, `-C` stand until `git cherry` has been read once
-  more. In this order, one heavy process at a time:
-  1. The test of W7-2 seen to fail with the relink reverted, then the whole
-     of `test_vbmc_warp_branch.py`.
-  2. The exact oracle check: `vp_pdf` alone moves, on `cigar_D4_boosted`,
-     `cigar_D4_largeK` and `corr_D5_warped`; its reference replaced with
-     `--rebaseline vp_pdf` and a reason; the check again, 11 of 11.
-  3. The four seeded runs against `wave1_merge/seeded_merged_68e37d3e.npz`
-     (`dev/scripts/runs/LOCAL.md`): bit for bit expected, since no fix of
-     the pass moves a default trajectory.
-  4. PyVBMC's default suite; the Torch and PyMC tests in the extras
-     environment.
-  5. Against gpyreg's `w7-fixes` once agent D's second round is in: gpyreg's
-     suite, PyVBMC's default suite and the exact oracle check with
-     `PYTHONPATH` naming `../gpyreg-w7`.
-  6. The changelog's lines, the porting log's line for W7-8, the sheet's
-     entries on the renormalized hyperprior and on `None` for the fixed
-     gpyreg, the `TODO.md` line on a NaN location removed with W7-16, and
-     `LOCAL.md`'s entries for the scripts and logs of wave 7.
-  7. The push, the smoke and the full matrix; then, on the PI's word,
-     gpyreg's pull request and release 1.3.1, the pin and the minimum at
-     its tag, the matrix again, and the fast-forward into `dev-next`.
+- [x] 2026-09-23: the gates of the wave-7 pass (the pickup point that
+  followed the merge, steps 1 to 5): the test of W7-2 seen to fail with its
+  link reverted; the exact oracle check with `vp_pdf` alone moving and its
+  reference replaced with the generator's targeted mode (`83a592c6`), 11 of
+  11; the seeded runs bit for bit against the merged head's record; the
+  default suite, 2140 passed; the Torch and PyMC selections; and the same
+  gates against gpyreg's `w7-fixes`, with gpyreg's own suite, 371 passed.
+  `verification/wave7.md`, "Gates".
+- [x] **2026-09-23, the independent check of the wave-7 pass, and its round**
+  (PI: `/doublecheck` before anything is pushed). Five fresh read-only Opus
+  reviewers, one per part (the warps and the resume; the density and the
+  entropy; the objective and the scales; gpyreg; the records). None found a
+  defect in the code of a fix. On the PI's rulings of the same day: the
+  proposal of the active importance sampling keeps the logarithm of the
+  density as it is held, so that a point where it underflows keeps a weight
+  of zero (`d8c3990c`); the link of the recorded `hyp_dict` moved to the end
+  of the warp block, with a test of an undone warp (`3dd58381`); the two
+  asserted fixed-draw checks of the Monte Carlo entropy kept; and, in
+  gpyreg, a test of the design's unchanged path, the design of a fixed
+  coordinate with a prior at its bound, and the release notes' "Upgrading"
+  points, by agent D in a third round. The records corrected where they
+  held the errors, the sheet's two entries on gpyreg among them.
+  `verification/wave7.md`, "The independent check of the pass".
+- [ ] **Pickup point (2026-09-23, the round after the independent check):
+  its gates, the push and CI.** The state: `dev-port-review` holds the
+  wave-7 pass and the round after its check, not pushed; `dev-next` and
+  `origin/dev-port-review` stand at `bad56bc3`. gpyreg's fixes, eight
+  commits and agent D's third round, are on `w7-fixes` in `../gpyreg-w7`,
+  not pushed. The worktrees `../pyvbmc-wave7` (`dev-port-review-w7`) and
+  `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to `-C`) stand; every commit of
+  theirs is on `dev-port-review` (`git cherry`). In this order, one heavy
+  process at a time:
+  1. PyVBMC's gates on the head: the test files the round changed, the
+     exact oracle check, the four seeded runs against
+     `wave1_merge/seeded_merged_68e37d3e.npz` (bit for bit expected), the
+     default suite, the Torch and PyMC selections in the extras environment.
+  2. Once agent D's third round is in: gpyreg's suite on `w7-fixes`, and
+     PyVBMC's exact oracle check, seeded runs, default suite and extras
+     selections with `PYTHONPATH` naming `../gpyreg-w7`.
+  3. The push of `dev-port-review`, the branch smoke and the full matrix
+     (`gh workflow run tests.yml --ref dev-port-review`).
+  4. On the PI's word: gpyreg's pull request of `w7-fixes` and release
+     1.3.1 (dating its release notes, the tag, the GitHub release that
+     uploads to PyPI); PyVBMC's `GPYREG_PIN` and minimum at its tag, the
+     sheet's gpyreg citations and its two gpyreg entries brought to the text
+     of 1.3.1, the `TODO.md` line on a NaN location removed; the matrix
+     again; the fast-forward of `dev-next`, with the status line of
+     `TODO.md`; the worktrees removed.
+  Open beside it: the ruling on W7-17 with the `TODO.md` item on a single
+  training point, after a capped run from starting points that share a
+  coordinate, and the run that measures W7-2's effect on a resume
+  (`verification/wave7.md`, "Runs for when the heavy slot is free").
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values

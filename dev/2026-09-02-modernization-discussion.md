@@ -1218,7 +1218,10 @@ in §2 are estimates.
   current operating point does not need it.
 - Log-space rewrite of the mixture density sums (`entlb:94-97`, `entmc:77-80`,
   `_gp_log_joint:1402-1406`, `vp.pdf:451-464`), which currently rely on float64
-  headroom rather than log-sum-exp.
+  headroom rather than log-sum-exp. `vp.pdf` with `log_flag` takes the
+  log-sum-exp over the components where the density is below the smallest
+  normal double (`dev/experiments/port_review_20260919/verification/wave7.md`,
+  W7-3); its linear sum and the others do not.
 
 ---
 

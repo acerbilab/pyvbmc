@@ -2,20 +2,20 @@
 
 Raw reviewer report, wave 7 of the port correctness review
 (`dev/plans/port-correctness-review.md`), 2026-09-23. One Opus agent, fresh
-context, read-only on the repositories, combining both tracks: it
-re-derived each formula of the slice, checked it numerically, and then
-compared the code with MATLAB VBMC at `396d649`. It read PyVBMC at
-`a65b96f4`, in a worktree frozen at that commit while the merged waves were
-gated in the main checkout, with gpyreg at `v1.3.0` (`0186d89`). Its brief
-carried three first questions, which the report answers before its
+context, read-only on the repositories, combining both tracks: it re-derived
+each formula of the slice, checked it numerically, and then compared the
+code with MATLAB VBMC at `396d649`. It read PyVBMC at `a65b96f4`, in a
+worktree whose package code stayed at that commit while the merged waves
+were gated in the main checkout, with gpyreg at `v1.3.0` (`0186d89`). Its
+brief carried three first questions, which the report answers before its
 coverage: whether any Python computation needs the gradient of the log
 Jacobian that MATLAB's `warpvars_vbmc.m` provides; what precision the
 bounded transforms keep near a hard bound, a nonzero bound in particular,
 and whether MATLAB evaluates the same expressions; and whether a warp
-re-expresses every quantity stored in the old transformed space rightly.
-Its check scripts ran in the session scratchpad and are kept only on the
-machine that ran them (`dev/scripts/runs/LOCAL.md`). The text below is the
-agent's final message, unedited.
+re-expresses every quantity stored in the old transformed space rightly. Its
+check scripts ran in the session scratchpad and are kept only on the machine
+that ran them (`dev/scripts/runs/LOCAL.md`). The text below is the agent's
+final message, unedited.
 
 ---
 
