@@ -420,16 +420,14 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
     """The analytical bound covers the retained allocator diagnostics."""
     workloads = {workload.name: workload for workload in campaign._workloads()}
     # Incremental tracemalloc peaks with each workload preallocated, recorded
-    # in dev/scripts/runs/calibration_integration_20260909/ and, for
-    # sieve_value and the value-only active_d4_k20, in
-    # dev/scripts/runs/calibration_recipe_v2_20260923/.
+    # in dev/scripts/runs/calibration_recipe_v2_20260923/peaks.json.
     measured = (
-        ("small_value", 2**16, 24_200),
+        ("small_value", 2**16, 24_216),
         ("sieve_value", 2**16, 2_181_680),
-        ("boost_d4_k50", 2**18, 7_512_096),
-        ("boost_d15_k50", 2**18, 6_861_480),
+        ("boost_d4_k50", 2**18, 4_281_568),
+        ("boost_d15_k50", 2**18, 4_676_688),
         ("active_d4_k20", 2**16, 1_384_376),
-        ("fine_d15_k26", 2**18, 25_567_888),
+        ("fine_d15_k26", 2**18, 25_568_528),
     )
     for name, budget, traced_peak in measured:
         estimate = campaign._workspace_estimate(workloads[name], budget)
