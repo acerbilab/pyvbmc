@@ -597,6 +597,8 @@ def test_load_refuses_the_uncertainty_handling_form_of_release_1_0_4(
         {"search_optimizer": "Nelder-Mead"},
         {"cache_frac": -0.1},
         {"warp_cov_reg": True},
+        {"min_iter": 2.5},
+        {"min_iter": np.inf},
     ],
 )
 def test_a_refused_value_says_how_a_saved_run_carrying_it_is_loaded(options):

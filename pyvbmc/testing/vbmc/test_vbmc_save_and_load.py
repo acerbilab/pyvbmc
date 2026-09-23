@@ -302,6 +302,27 @@ def test_load_refuses_the_min_iter_that_construction_refuses(
         VBMC.load(path, new_options=new_options)
 
 
+@pytest.mark.parametrize("min_iter", [-1, 2.5, np.inf])
+def test_a_saved_min_iter_that_is_refused_loads_as_the_refusal_says(
+    tmp_path, min_iter
+):
+    """Release 1.0.4 took any ``min_iter``. A value that is not a finite
+    non-negative integer is refused when a saved run that carries it is
+    loaded, and the refusal names the argument of ``load`` that replaces
+    it."""
+    vbmc = _fresh_vbmc(2, 100)
+    vbmc.options.__setitem__("min_iter", min_iter, force=True)
+    path = tmp_path / "fresh"
+    vbmc.save(path)
+    remedy = "VBMC.load(file, new_options={'min_iter': 0})"
+
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(path)
+    assert remedy in at_load.value.args[0]
+    loaded = VBMC.load(path, new_options={"min_iter": 0})
+    assert loaded.options["min_iter"] == 0
+
+
 def test_min_iter_of_zero_and_the_default_are_accepted_on_either_route(
     tmp_path,
 ):

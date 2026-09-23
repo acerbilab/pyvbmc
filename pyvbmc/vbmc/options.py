@@ -574,7 +574,10 @@ class Options(MutableMapping, dict):
         if not _is_finite_non_negative_integer_valued(min_iter):
             raise ValueError(
                 "The option min_iter needs to be a finite non-negative "
-                f"integer (0 for no minimum); got {min_iter!r}."
+                f"integer (0 for no minimum); got {min_iter!r}. A saved run "
+                "that carries such a value is continued with "
+                "VBMC.load(file, new_options={'min_iter': 0}), or with "
+                "another minimum."
             )
         if self.get("max_iter") < min_iter:
             logging.warning(
