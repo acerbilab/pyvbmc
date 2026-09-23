@@ -1428,8 +1428,10 @@ def _gp_log_joint(
         (the parameterization of ``vp.get_parameters``) rather than to
         ``(mu, sigma, lambd, w)``. The requested gradient blocks are
         present either way.
-    compute_var : bool, defaults to False
-        Whether to compute variance.
+    compute_var : int or bool, defaults to False
+        Whether to compute variance: 0 (or ``False``) skips it, 1 (or
+        ``True``) computes the full variance, and 2, its diagonal
+        approximation, is not implemented and raises.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
 

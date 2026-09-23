@@ -394,9 +394,9 @@ def warp_gp_and_vp(parameter_transformer, gp_old, vp_old, vbmc):
     -------
     vp : VariationalPosterior
         An updated copy of the original variational posterior.
-    hyp_warped : dict
-        An updated copy of the dictionary of original GP hyperparameters, with
-        the warping transformation applied.
+    hyp_warped : np.ndarray
+        The GP hyperparameters with the warping transformation applied, one
+        row per hyperparameter sample, of shape ``(Ns_gp, n_hyp)``.
 
     Raises
     ------

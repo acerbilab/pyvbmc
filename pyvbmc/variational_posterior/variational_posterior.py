@@ -1133,7 +1133,7 @@ class VariationalPosterior:
         Returns
         -------
         log_pdf: np.ndarray
-            The probability density of the variational posterior
+            The log probability density of the variational posterior
             evaluated at each row of `x`.
         gradient: np.ndarray
             If `grad_flag` is ``True``, the function returns the gradient as well.
