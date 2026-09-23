@@ -48,8 +48,11 @@ its entry below.
   value with `ns_gp_max=0`.
   A `log_file_level` other than `"off"`, `"iter"`, `"full"` or a
   non-negative integer raises an error, also when no `log_file_name` is
-  given; `None` and `False`, with which 1.0.4 wrote no log file, are among
-  them. `log_file_level=0` writes the log file, where 1.0.4 wrote none.
+  given. `None` and `False`, with which 1.0.4 wrote no log file, are among
+  them, and so are the names `"notify"` and `"final"`, which 1.0.4's
+  description of the option listed, and a whole float such as `10.0`: 1.0.4
+  took these when no log file was named. `log_file_level=0` writes the log
+  file, where 1.0.4 wrote none.
 - `VBMC.load(file, new_options=...)` raises for an option that only
   construction reads (`uncertainty_handling`, `gp_mean_fun`, `integer_vars`,
   `warmup` and their kin; the message names them) given a value other than
@@ -573,9 +576,11 @@ its entry below.
   - `noise_shaping=True` raises an error, because noise shaping is not
     implemented.
   - The errors that refuse a value of `search_optimizer`, `acq_hedge`,
-    `noise_shaping`, `warp_cov_reg`, `cache_frac`, the fractions or
-    `active_importance_sampling_mcmc_samples` say how a saved run that
-    carries it is loaded: `VBMC.load(file, new_options={...})`.
+    `noise_shaping`, `warp_cov_reg`, `hpd_frac`, `noise_size`,
+    `gp_sample_thin`, `active_importance_sampling_mcmc_samples`,
+    `cache_frac`, the fractions, `min_iter` or `log_file_level` say how a
+    saved run that carries it is loaded:
+    `VBMC.load(file, new_options={...})`.
   - Setting an option that has no effect gives a warning that names the
     option, whether it is given at construction or to
     `VBMC.load(new_options=...)`. Most such options come from MATLAB VBMC
@@ -880,13 +885,15 @@ its entry below.
   empty array or zero widths; such a value is refused at construction, with
   a message that names the option, and so is one outside (0, 1].
 - `noise_size` takes a positive finite number of any numeric type, or an
-  empty value (`[]`, an empty array or `None`) that leaves it unset. `None`
-  raised `TypeError` at the first GP fit; an empty array or a NumPy number
-  raised `ValueError` there with recent versions of NumPy, and older ones
-  ignored a NumPy number; zero or a negative value
-  was replaced by `tol_gp_noise` without a word. Any other value is
-  refused at construction and by `VBMC.load`, with a message that names
-  the option, as MATLAB VBMC refuses a value that is not positive.
+  empty value (`[]`, an empty array or `None`) that leaves it unset. For a
+  target that does not return its own noise (`specify_target_noise`), the
+  only one whose GP fit reads the option, `None` raised `TypeError` at the
+  first GP fit; an empty array or a NumPy number raised `ValueError` there
+  with recent versions of NumPy, and older ones ignored a NumPy number;
+  zero or a negative value was replaced by `tol_gp_noise` without a word.
+  Any other value is refused at construction and by `VBMC.load`, with a
+  message that names the option, as MATLAB VBMC refuses a value that is not
+  positive.
 - `gp_sample_thin` takes a whole number greater than zero, of an integer or
   a floating-point type (`5.0` is read as 5). Any other value is refused at
   construction and by `VBMC.load`, whatever `ns_gp_max`, with a message
