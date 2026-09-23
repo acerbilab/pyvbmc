@@ -401,27 +401,31 @@ def test_active_sample_proposal_pdf():
         assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
 
 
-def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero():
+@pytest.mark.parametrize("distance", [40.0, 1e5, 1e200])
+def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero(distance):
     """A point that lies outside every box of the proposal, and so far
-    from every component of its posterior that the logarithm of their
-    density is -inf (its squared distance to each overflows), has zero
-    proposal density and so no importance weight. MATLAB's arithmetic
-    gives NaN there and ``activeimportancesampling_vbmc.m:148`` turns it
-    into ``-Inf``, which is what the caller does with every non-finite
-    weight."""
+    from every component of its posterior that their density underflows
+    to zero, has zero proposal density and so no importance weight.
+    MATLAB's arithmetic gives NaN there and
+    ``activeimportancesampling_vbmc.m:148`` turns it into ``-Inf``, which
+    is what the caller does with every non-finite weight. The logarithm
+    of the density that ``vp.log_pdf`` returns there is finite (a
+    log-sum-exp over the components), but the proposal is the density as
+    it is held."""
     vp, gp, __ = _scenario()
     acq_fcn = AcqFcnIMIQR()
     rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
     w_vp = 0.5
 
     Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
-    far = np.full((1, vp.D), 1e200)
-    assert np.all(vp.pdf(far, orig_flag=False, log_flag=True) == -np.inf)
+    far = np.full((1, vp.D), distance)
+    assert np.all(vp.pdf(far, orig_flag=False) == 0)
     assert not np.any(np.all(np.abs(far - gp.X) < rect_delta, axis=1))
 
-    ln_weights, f_s2 = active_sample_proposal_pdf(
-        np.vstack([Xa, far]), gp, vp, w_vp, rect_delta, acq_fcn
-    )
+    with np.errstate(over="ignore"):
+        ln_weights, f_s2 = active_sample_proposal_pdf(
+            np.vstack([Xa, far]), gp, vp, w_vp, rect_delta, acq_fcn
+        )
     assert np.all(ln_weights[-1] == -np.inf)
 
     # The other points are untouched.

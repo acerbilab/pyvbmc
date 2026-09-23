@@ -357,11 +357,16 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
     else:
         temp_lpdf = np.zeros((Na, 1))
 
-    # Mixture of variational posteriors
+    # Mixture of variational posteriors. The logarithm of the density as
+    # the density is held, as in `activeimportancesampling_vbmc.m`: where
+    # it underflows to zero, the proposal has no mass and the point no
+    # weight (below). `pdf(log_flag=True)` takes the log-sum-exp there,
+    # which would give such a point a finite and very large weight.
     if w_vp > 0:
-        temp_lpdf[:, 0] = vp_is.pdf(
-            Xa, orig_flag=False, log_flag=True
-        ).T + np.log(w_vp)
+        with np.errstate(divide="ignore"):
+            temp_lpdf[:, 0] = np.log(
+                vp_is.pdf(Xa, orig_flag=False)
+            ).T + np.log(w_vp)
     else:
         temp_lpdf[:, 0] = -np.inf
 
