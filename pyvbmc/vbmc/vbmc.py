@@ -3341,11 +3341,16 @@ class VBMC:
         Raises
         ------
         ValueError
-            If the specified ``iteration`` is less than zero or larger than the
-            last stored iteration, if an option has a value that construction
-            refuses (a stored ``integer_vars`` aside, which takes the mask
-            the run was made with), or if ``new_options`` gives an option
-            that only construction reads a value other than the stored one.
+            If the specified ``iteration`` is less than zero or larger than
+            the last stored iteration; if a value given in ``new_options``
+            is one that construction refuses; if the run stores a value that
+            the checks of the option values, which construction and
+            ``load`` share, refuse (a stored ``integer_vars``,
+            ``uncertainty_handling`` or ``specify_target_noise`` that
+            construction would refuse takes instead the form that states
+            what the run was made with, and a stored ``f_vals`` is not
+            checked); or if ``new_options`` gives an option that only
+            construction reads a value other than the stored one.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
             (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
