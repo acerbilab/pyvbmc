@@ -2452,25 +2452,20 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   points, by agent D in a third round. The records corrected where they
   held the errors, the sheet's two entries on gpyreg among them.
   `verification/wave7.md`, "The independent check of the pass".
-- [ ] **Pickup point (2026-09-23, the round after the independent check):
-  its gates, the push and CI.** The state: `dev-port-review` holds the
-  wave-7 pass and the round after its check, not pushed; `dev-next` and
-  `origin/dev-port-review` stand at `bad56bc3`. gpyreg's fixes, eight
-  commits and agent D's third round, are on `w7-fixes` in `../gpyreg-w7`,
-  not pushed. The worktrees `../pyvbmc-wave7` (`dev-port-review-w7`) and
-  `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to `-C`) stand; every commit of
-  theirs is on `dev-port-review` (`git cherry`). In this order, one heavy
-  process at a time:
-  1. PyVBMC's gates on the head: the test files the round changed, the
-     exact oracle check, the four seeded runs against
-     `wave1_merge/seeded_merged_68e37d3e.npz` (bit for bit expected), the
-     default suite, the Torch and PyMC selections in the extras environment.
-  2. Once agent D's third round is in: gpyreg's suite on `w7-fixes`, and
-     PyVBMC's exact oracle check, seeded runs, default suite and extras
-     selections with `PYTHONPATH` naming `../gpyreg-w7`.
-  3. The push of `dev-port-review`, the branch smoke and the full matrix
+- [ ] **Pickup point (2026-09-23, the round after the independent check,
+  gated): the push and CI.** The state: `dev-port-review` holds the wave-7
+  pass and the round after its check, not pushed; `dev-next` and
+  `origin/dev-port-review` stand at `bad56bc3`. gpyreg's fixes, twelve
+  commits, are on `w7-fixes` in `../gpyreg-w7` (head `c81063c`), not pushed.
+  The gates of the round have passed on `265348e7` with gpyreg 1.3.0 and
+  against `w7-fixes` at `c81063c` (`verification/wave7.md`, "The independent
+  check of the pass"). The worktrees `../pyvbmc-wave7`
+  (`dev-port-review-w7`) and `../pyvbmc-w7-A`, `-B`, `-C` (`w7-agent-A` to
+  `-C`) stand; every commit of theirs is on `dev-port-review` (`git cherry`).
+  In this order:
+  1. The push of `dev-port-review`, the branch smoke and the full matrix
      (`gh workflow run tests.yml --ref dev-port-review`).
-  4. On the PI's word: gpyreg's pull request of `w7-fixes` and release
+  2. On the PI's word: gpyreg's pull request of `w7-fixes` and release
      1.3.1 (dating its release notes, the tag, the GitHub release that
      uploads to PyPI); PyVBMC's `GPYREG_PIN` and minimum at its tag, the
      sheet's gpyreg citations and its two gpyreg entries brought to the text

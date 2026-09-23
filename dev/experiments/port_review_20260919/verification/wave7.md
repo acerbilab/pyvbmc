@@ -335,6 +335,30 @@ and the tests, with checks and mutations of its own. What they found:
   tail always did; a GP pickled by 1.3.0 keeps its stored constants until
   a refit.
 
+The commits of the round: PyVBMC's `d8c3990c`, `3dd58381`, `a087961d` and
+the records in `265348e7`; gpyreg's `6ffff06` (the design's unchanged path,
+a test), `4eb8789` (the design of a fixed coordinate with a prior),
+`1f959de` (the release notes and two comments) and `c81063c` (the smooth-box
+families in the test of the mass's unchanged path), by agent D in its third
+and fourth rounds (`../fixes/wave7_agent_D_third_round.md`,
+`_fourth_round.md`). The design fix changes 144 of the 2,304 GPs that agent
+D builds as PyVBMC does, all at uncertainty level 0 with the option
+`noise_size` set and a target whose range is below `tol_gp_noise`, where the
+noise is held at its lower bound; the other 2,160 are bit-identical in every
+field recorded.
+
+The gates of the round on PyVBMC's `265348e7`, with gpyreg 1.3.0: the three
+test files the round changed, 69 passed; the exact oracle check, 11 of 11;
+the four seeded runs against `wave1_merge/seeded_merged_68e37d3e.npz`, 92
+arrays compared, 0 differ; the default suite, 2143 passed and 58 skipped;
+the Torch and PyMC selections in the extras environment, 973 passed and 19
+skipped. Against gpyreg's `w7-fixes` at `c81063c`, all twelve gpyreg commits
+of the pass, with `PYTHONPATH` naming `../gpyreg-w7`: gpyreg's own suite,
+386 passed; PyVBMC's exact oracle check, 11 of 11; the four seeded runs
+against those of the pass on gpyreg 1.3.0, 92 arrays compared, 0 differ;
+the default suite, 2143 passed and 58 skipped; the extras selections, 973
+passed and 19 skipped. To come: the CI matrix.
+
 ## Runs for when the heavy slot is free
 
 - W7-2: a seeded `D = 3` run on a correlated Gaussian that reaches one kept
