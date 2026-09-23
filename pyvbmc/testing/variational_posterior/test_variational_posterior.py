@@ -685,6 +685,47 @@ def test_log_pdf_in_the_original_space_holds_where_the_density_underflows():
     assert not [w for w in caught if issubclass(w.category, RuntimeWarning)]
 
 
+@pytest.mark.parametrize("orig_flag", [True, False])
+@pytest.mark.parametrize("df", [np.inf, 3, -3])
+def test_pdf_refuses_points_whose_width_is_not_the_dimension(orig_flag, df):
+    """Each row of `x` is one point, and a flat array is one point. For a
+    one-dimensional posterior a flat array of several numbers is therefore
+    a point of the wrong width, and is refused; a column of points is
+    evaluated point by point."""
+    vp = VariationalPosterior(1, 2, np.zeros((1, 1)), rng=20260923)
+    vp.mu = np.array([[-0.2, 0.3]])
+    vp.sigma = np.array([[0.5, 0.8]])
+    points = np.array([-0.3, 0.1, 0.4])
+
+    for density in (vp.pdf, vp.log_pdf):
+        with pytest.raises(ValueError, match="one point") as error:
+            density(points, orig_flag=orig_flag, df=df)
+        assert "column" in str(error.value)
+
+        column = density(points[:, np.newaxis], orig_flag=orig_flag, df=df)
+        assert column.shape == (3, 1)
+        one_by_one = [
+            density(points[i : i + 1], orig_flag=orig_flag, df=df)[0]
+            for i in range(3)
+        ]
+        assert np.array_equal(column.ravel(), one_by_one)
+
+
+def test_pdf_refuses_rows_whose_width_is_not_the_dimension():
+    """A matrix whose rows are not `D` wide is refused; a flat array of
+    `D` numbers is one point."""
+    vp = VariationalPosterior(2, 2, np.zeros((1, 2)), rng=20260923)
+    vp.sigma = np.ones((1, 2))
+
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.pdf(np.zeros((4, 3)), orig_flag=False)
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.log_pdf(np.zeros((4, 1)), orig_flag=False, grad_flag=True)
+    with pytest.raises(ValueError, match="D = 2"):
+        vp.pdf(np.zeros(3))
+    assert vp.pdf(np.zeros(2)).shape == (1,)
+
+
 def test_pdf_duplicate_log_flag():
     D = 2
     lb = np.ones((1, D)) * -3

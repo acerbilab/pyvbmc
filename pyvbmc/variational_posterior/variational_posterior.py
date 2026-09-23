@@ -800,7 +800,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -836,6 +838,8 @@ class VariationalPosterior:
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
@@ -879,6 +883,12 @@ class VariationalPosterior:
         # therefore holds them in full precision whatever the caller gave.
         x = np.array(x, dtype=np.float64)
         N, D = x.shape
+        if D != self.D:
+            raise ValueError(
+                f"x has {D} columns but the posterior has D = {self.D}: "
+                "each row of x is one point (for D = 1, the points form a "
+                "column, x.reshape(-1, 1))."
+            )
 
         # compute pdf only for points inside bounds in origspace
         if orig_flag:
@@ -1099,7 +1109,9 @@ class VariationalPosterior:
             `x` is a matrix of inputs to evaluate the pdf at.
             The rows of the `N`-by-`D` matrix `x` correspond to observations or
             points, and columns correspond to variables or coordinates. `x` is
-            assumed to be in the original space by default.
+            assumed to be in the original space by default. A one-dimensional
+            array is one point, so for ``D = 1`` several points go in a
+            column.
         orig_flag : bool, optional
             Controls if the value of the posterior density should be evaluated
             in the original parameter space for `orig_flag` is ``True``, or in
@@ -1128,6 +1140,8 @@ class VariationalPosterior:
 
         Raises
         ------
+        ValueError
+            Raised if the rows of `x` are not `D` wide.
         NotImplementedError
             Raised if `df` is non-zero and finite and `grad_flag` = ``True``
             (Gradient of heavy-tailed pdf not supported yet).
