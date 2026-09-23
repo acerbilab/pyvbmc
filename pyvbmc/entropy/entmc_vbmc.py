@@ -138,7 +138,10 @@ def _entmc_vbmc(
     budget = int(budget)
     # Everything from the mixture density on runs over the canonical blocks;
     # the budget in force only decides how the component densities and the
-    # location sums of a canonical block are produced.
+    # location sums of a canonical block are produced. A change to how the
+    # work is split into blocks bumps KERNEL_REVISION in
+    # pyvbmc/calibration/_cache.py, so that cached calibrations measured on
+    # the old blocks are not reused.
     g_c, step_c = _block_layout(Ns, D, K, DEFAULT_CHUNK_ELEMENTS)
     g_x, step_x = _block_layout(Ns, D, K, budget)
     # A computed block subdivides one canonical block or is the union of

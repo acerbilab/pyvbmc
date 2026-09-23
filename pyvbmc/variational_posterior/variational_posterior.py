@@ -952,6 +952,9 @@ class VariationalPosterior:
                         - np.sum(np.log(lamd_row))
                         - D * np.log(self.sigma.reshape(1, K))
                     )
+            # A change to how the rows are split into blocks bumps
+            # KERNEL_REVISION in pyvbmc/calibration/_cache.py, so that cached
+            # calibrations measured on the old blocks are not reused.
             step = max(1, int(chunk_elements) // max(1, K * D))
             for i0 in range(0, N, step):
                 rows = slice(i0, min(N, i0 + step))

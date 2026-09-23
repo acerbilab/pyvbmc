@@ -890,6 +890,7 @@ def _gate_ratios(ratios: dict, rounds: int) -> dict:
     group_rounds = ratios["rounds"]
     group_median = median(group_rounds)
     wins = sum(value > 1.0 for value in group_rounds)
+    # With the four held-out rounds, all four must win: ceil(0.8 * 4) = 4.
     needed_wins = math.ceil(_MIN_WIN_FRACTION * rounds)
     workload_medians = {
         name: median(values) for name, values in ratios["per_workload"].items()
