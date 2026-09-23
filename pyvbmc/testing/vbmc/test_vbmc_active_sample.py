@@ -1174,6 +1174,149 @@ def test_active_sample_rollback_preserves_live_transformer(mocker):
     assert returned_vp.parameter_transformer is transformer
 
 
+def _iterations_with_a_full_update(mocker, vbmc, iterations):
+    """Take one active-sampling step of two points at each of `iterations`
+    and return those whose step took the full update, the variational
+    update between the two points.
+
+    The GP is a stand-in, and the reliability index of every earlier
+    iteration is below the threshold at which the full update is taken
+    regardless of the warm-up (`active_sample_full_update_threshold`), so
+    the steps differ only in where they stand relative to the warm-up.
+    """
+    for key, value in {
+        "active_sample_vp_update": True,
+        "active_sample_gp_update": False,
+        "search_optimizer": "none",
+        "ns_search": 1,
+    }.items():
+        vbmc.options.__setitem__(key, value, force=True)
+    acq = mocker.Mock()
+    acq.acq_info = {}
+    acq.return_value = np.array([0.0])
+    vbmc.options.__setitem__("search_acq_fcn", [acq], force=True)
+    points = np.random.default_rng(0)
+    mocker.patch.object(
+        _active_sample_module,
+        "_get_search_points",
+        side_effect=lambda *args, **kwargs: (
+            points.uniform(-1.0, 1.0, (1, 1)),
+            np.array([np.nan]),
+        ),
+    )
+    gp = mocker.Mock()
+    gp.D = 1
+    gp.X = np.array([[0.0]])
+    gp.y = np.array([[0.0]])
+    gp.posteriors = [mocker.Mock(hyp=np.zeros(2))]
+    gp.covariance.hyperparameter_count.return_value = 1
+    gp.noise.hyperparameter_count.return_value = 1
+    gp.noise.compute.return_value = np.ones(1)
+    gp.temporary_data = {}
+    mocker.patch.object(_active_sample_module, "reupdate_gp", return_value=gp)
+    # The update leaves the posterior as it is, so the step keeps it
+    # without scoring the one from before the step.
+    variational_update = mocker.patch.object(
+        _active_sample_module,
+        "optimize_vp",
+        side_effect=lambda options, optim_state, vp, *args, **kwargs: (
+            vp,
+            0.0,
+            0,
+        ),
+    )
+    vbmc.optim_state["hyp_dict"] = {}
+    below_threshold = vbmc.options["active_sample_full_update_threshold"] / 2
+    taken = []
+    for iteration in iterations:
+        vbmc.optim_state["iter"] = iteration
+        for past in range(iteration):
+            if vbmc.iteration_history["r_index"] is None or (
+                len(vbmc.iteration_history["r_index"]) <= past
+            ):
+                vbmc.iteration_history.record("r_index", below_threshold, past)
+        calls_before = variational_update.call_count
+        active_sample(
+            gp,
+            2,
+            vbmc.optim_state,
+            vbmc.function_logger,
+            vbmc.iteration_history,
+            vbmc.vp,
+            vbmc.options,
+        )
+        if variational_update.call_count > calls_before:
+            taken.append(iteration)
+    return taken
+
+
+def test_a_run_without_warmup_takes_the_full_update_in_its_first_iterations(
+    mocker,
+):
+    """Without warm-up, the full update after each active sample is taken
+    in the first `active_sample_full_update_past_warmup` iterations of the
+    run, as in MATLAB, where it is taken while `iter -
+    ActiveSampleFullUpdatePastWarmup <= LastWarmup`
+    (`private/activesample_vbmc.m:49`) and `LastWarmup` starts at 0 in a
+    count of iterations from 1 (`misc/setupvars_vbmc.m:179`)."""
+    past_warmup = 2
+    vbmc = create_vbmc(
+        1,
+        0,
+        -np.inf,
+        np.inf,
+        -2,
+        2,
+        {
+            "warmup": False,
+            "active_sample_full_update_past_warmup": past_warmup,
+        },
+    )
+    taken = _iterations_with_a_full_update(mocker, vbmc, range(5))
+    assert taken == list(range(past_warmup))
+
+
+def test_the_full_update_continues_for_a_while_after_the_warmup(mocker):
+    """With warm-up, the full update after each active sample is taken in
+    every iteration of the warm-up and in the
+    `active_sample_full_update_past_warmup` iterations that follow the one
+    that ended it (`private/activesample_vbmc.m:49`)."""
+    past_warmup = 2
+    vbmc = create_vbmc(
+        1,
+        0,
+        -np.inf,
+        np.inf,
+        -2,
+        2,
+        {"warmup": True, "active_sample_full_update_past_warmup": past_warmup},
+    )
+    end_of_warmup = 3
+    during = _iterations_with_a_full_update(
+        mocker, vbmc, range(1, end_of_warmup + 1)
+    )
+    assert during == list(range(1, end_of_warmup + 1))
+
+    # The warm-up ends at `end_of_warmup`: its reliability index is below
+    # the one that warm-up stops at, and below the threshold of the full
+    # update.
+    r_index = min(
+        vbmc.options["stop_warmup_reliability"],
+        vbmc.options["active_sample_full_update_threshold"],
+    )
+    vbmc.optim_state["iter"] = end_of_warmup
+    vbmc.iteration_history.record("r_index", r_index / 2, end_of_warmup)
+    vbmc._setup_vbmc_after_warmup()
+    assert not vbmc.optim_state["warmup"]
+    assert vbmc.optim_state["last_warmup"] == end_of_warmup
+
+    after = range(end_of_warmup + 1, end_of_warmup + 5)
+    taken = _iterations_with_a_full_update(mocker, vbmc, after)
+    assert taken == list(
+        range(end_of_warmup + 1, end_of_warmup + 1 + past_warmup)
+    )
+
+
 def test_active_sample_initial_sample_no_y_values():
     """
     Test initial sample with provided_sample_count == sample_count and

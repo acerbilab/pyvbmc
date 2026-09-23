@@ -1221,12 +1221,15 @@ class VBMC:
         # Fully recompute variational posterior
         optim_state["recompute_var_post"] = True
 
-        # Start with warm-up?
+        # Start with warm-up? `last_warmup` is the index of the last warm-up
+        # iteration. A run without warm-up ends it before its first
+        # iteration, the index -1 in this count from 0 (MATLAB's 0, in a
+        # count from 1).
         optim_state["warmup"] = self.options.get("warmup")
         if self.options.get("warmup"):
             optim_state["last_warmup"] = np.inf
         else:
-            optim_state["last_warmup"] = 0
+            optim_state["last_warmup"] = -1
 
         # Number of stable function evaluations during warmup
         # with small increment

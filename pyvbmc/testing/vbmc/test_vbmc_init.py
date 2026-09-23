@@ -754,7 +754,8 @@ def test_vbmc_optimstate_warmup():
     options = {"warmup": False}
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, options)
     assert not vbmc.optim_state["warmup"]
-    assert vbmc.optim_state["last_warmup"] == 0
+    # The index before the first iteration, which is 0.
+    assert vbmc.optim_state["last_warmup"] == -1
 
 
 def test_vbmc_optimstate_entropy_switch():

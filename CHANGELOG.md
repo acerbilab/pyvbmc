@@ -794,6 +794,11 @@ its entry below.
     function of the number of components, raised `TypeError` in the
     variational update between the new points of an iteration, which a
     noisy target runs by default.
+  - A run with `warmup=False` takes the updates of the GP and of the
+    posterior between the new points of an iteration
+    (`active_sample_gp_update`, `active_sample_vp_update`, on by default for
+    a noisy target) in its first `active_sample_full_update_past_warmup`
+    iterations, as MATLAB VBMC does. 1.0.4 took them for one iteration more.
 - A run whose `max_fun_evals` equals the size of its initial design raised an
   error in its first GP fit; with the initial design of
   `10 * ceil((D + 1) / 10)` points, `max_fun_evals=20` does this for `D` from
