@@ -35,7 +35,7 @@ from pyvbmc.whitening.whitening import (
     _is_finite_real_number,
 )
 
-from ._bounds import _normalize_bounds
+from ._bounds import _expand_scalar_bound, _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
 from .active_sample import _refresh_training_counts, active_sample
 from .gaussian_process_train import (
@@ -730,11 +730,16 @@ class VBMC:
 
     @staticmethod
     def _normalized_hard_bound(bound, dimension):
-        """Normalize a hard bound for comparison with adapter support."""
+        """Normalize a hard bound for comparison with adapter support.
+
+        A bound given as a single value holds for every variable, as
+        `_normalize_bounds` reads it.
+        """
         value = np.array(bound, copy=True)
         if np.any(np.invert(np.isreal(value))):
             raise ValueError("Hard bounds must be real valued.")
         value = value.astype(np.float64, copy=False)
+        value = _expand_scalar_bound(value, dimension)
         value = np.atleast_1d(value)
         try:
             return value.reshape((1, dimension))

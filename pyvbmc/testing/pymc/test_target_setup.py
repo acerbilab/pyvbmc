@@ -382,6 +382,31 @@ def test_boundary_mode_is_moved_and_vbmc_accepts_bounds(caplog):
     ]
 
 
+def test_vbmc_takes_a_single_valued_hard_bound_that_matches_the_support():
+    """A hard bound given as a single value holds for every variable, with
+    a ``PyMCTarget`` as with any target, and is then compared with the
+    model's support: a matching one is taken, a contradicting one is
+    refused."""
+    spec = vector_model(np.random.default_rng(803))
+    target = PyMCTarget(spec["model"], seed=14)
+    assert target.D == 3
+    assert np.all(np.isneginf(target.lb))
+    assert np.all(np.isposinf(target.ub))
+
+    vbmc = VBMC(
+        target,
+        lower_bounds=-np.inf,
+        upper_bounds=np.inf,
+        options={"display": "off"},
+        seed=15,
+    )
+    np.testing.assert_array_equal(vbmc.lower_bounds, target.lb)
+    np.testing.assert_array_equal(vbmc.upper_bounds, target.ub)
+
+    with pytest.raises(ValueError, match="lower_bounds must match"):
+        VBMC(target, lower_bounds=-10.0, options={"display": "off"})
+
+
 def test_prior_initial_strategy_is_seeded_without_global_rng_use():
     first_model = stochastic_initial_model()
     second_model = stochastic_initial_model()

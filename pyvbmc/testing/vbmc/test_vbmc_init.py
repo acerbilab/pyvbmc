@@ -226,6 +226,32 @@ def test_vbmc_bounds_check_scalars_with_a_degenerate_starting_set():
     assert np.all(vbmc.plausible_lower_bounds < vbmc.plausible_upper_bounds)
 
 
+@pytest.mark.parametrize(
+    "bound", [-np.inf, 2, np.float64(2.0), [2.0], np.array([[2.0]])]
+)
+def test_a_hard_bound_of_one_entry_is_replicated_for_the_support_check(
+    bound,
+):
+    """A bound given as a single value holds for every variable, as the
+    class docstring promises, also where a hard bound given together with a
+    ``PyMCTarget`` is brought to the shape of the model's support to be
+    compared with it."""
+    D = 3
+    normalized = VBMC._normalized_hard_bound(bound, D)
+    assert normalized.shape == (1, D)
+    assert normalized.dtype == np.float64
+    assert np.all(normalized == np.ravel(bound)[0])
+
+
+def test_a_hard_bound_of_another_length_is_refused_for_the_support_check():
+    """A bound with more than one entry but not one per variable is
+    refused, as ``_normalize_bounds`` refuses it."""
+    with pytest.raises(
+        ValueError, match="Bounds must match problem dimension"
+    ):
+        VBMC._normalized_hard_bound([1.0, 2.0], 3)
+
+
 def _bounds_2d():
     D = 2
     return (
