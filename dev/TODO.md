@@ -105,14 +105,14 @@ records its execution.
   1.3.0, which PyVBMC requires. Several of the fixes of waves 1 to 3, one
   of wave 5 (the balanced draw of the variational posterior) and one of
   wave 6 (the GP mean's bounds per input dimension, W6-1) move default
-  trajectories, so the golden references and the production-reference
-  pools describe the code from before them. The passes of waves 2 to 6
-  were each checked afterwards by fresh reviewers without the session's
-  context, and what the checks found is fixed and merged as well. An
-  independent check of the wave-1 pass, made in a parallel session, waits
-  on `dev-port-review-w1check` to be merged. Next, on the PI's decision:
-  that merge, then the third readers (O1 to O4). The plan's pickup point
-  says where to resume.
+  trajectories, and so does one fix of the check of wave 1 (the noise
+  counts refreshed after every evaluation of active sampling, as in
+  MATLAB), so the golden references and the production-reference pools
+  describe the code from before them. The passes of waves 1 to 6 were each
+  checked afterwards by fresh reviewers without the session's context, and
+  what the checks found is fixed and merged as well. Next, on the PI's
+  decision: the third readers (O1 to O4). The plan's pickup point says
+  where to resume.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with

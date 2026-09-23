@@ -264,8 +264,8 @@ Gates, on the branch of the check (`dev-port-review-w1check`, cut at
 Not run on the branch: the whole suite, the Torch and PyMC environments,
 the CI matrix, and the refresh of the sheet's Python line citations
 (`refresh_citations.py`, 125 to carry and 14 to read by hand on the
-branch). All but the CI matrix, which runs with the push, ran on the
-merged code (below).
+branch). They ran on the merged code: the CI matrix on `0d09e63d`, green in
+its nine jobs and in the branch smoke, and the others below.
 
 ## The merge into `dev-port-review`
 

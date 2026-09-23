@@ -2326,28 +2326,26 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   under `dev/scripts/runs/` that held PyMC and the minimum versions are
   removed, and the reviewer brief finds its interpreters in `LOCAL.md`
   (`a65b96f4`).
-- [ ] **Pickup point (2026-09-23, the wave-1 branch merged): the push, the
-  matrix and `dev-next`, on the PI's word.** The state: `dev-port-review`
-  holds the merge and its records, not pushed; `dev-next` stands at
-  `403fb678`. In this order:
-  1. The push of `dev-port-review`, the branch smoke, the full matrix (the
-     `tests` workflow dispatched on `dev-port-review`); then the
-     fast-forward of `dev-next`, with the status line of `TODO.md` and the
-     paragraph of `verification/wave1.md` on what the branch did not run
-     completed with the matrix.
-  2. The worktrees removed, on the PI's word: gpyreg's
-     `../gpyreg-port-review` and `-A`, `-B`, `-D` and `-E` with their local
-     branches (`git cherry` against gpyreg's `main`, read on 2026-09-23: no
-     commit of theirs is missing from it); wave 1's `../pyvbmc-w1check`,
-     `-A` and `-B` with the branches `dev-port-review-w1check`,
-     `w1check-agent-A` and `w1check-agent-B` (`git cherry` against
-     `dev-port-review`: every commit of theirs is on it).
-  The record that the seeded runs of a later pass are compared with is
-  `wave1_merge/seeded_merged_68e37d3e.npz` on the orchestrator's machine
-  (`dev/scripts/runs/LOCAL.md`); on another machine the four seeded runs
-  are made anew on the starting commit
-  (`verification/scripts/wave2_fixpass_gate_runs.py` with `--out`). The
-  session starts no other wave.
+- [x] 2026-09-23: the merge through CI, the worktrees removed and
+  `dev-next` fast-forwarded (PI: go). `dev-port-review` pushed at
+  `0d09e63d`; the branch smoke (one job) and the full matrix (nine
+  jobs) green. gpyreg's worktrees `../gpyreg-port-review` and `-A`, `-B`,
+  `-D` and `-E` and wave 1's `../pyvbmc-w1check`, `-A` and `-B` removed with
+  their local branches, `git cherry` having shown every commit of theirs on
+  gpyreg's `main` or on `dev-port-review`; gpyreg's remote branch
+  `port-review-wave6` stands. `dev-next` fast-forwarded to
+  `dev-port-review`, with the status line of `TODO.md`.
+- [ ] **Pickup point (2026-09-23, the wave-1 branch in `dev-next`): wave 7,
+  on the PI's decision.** The state: `dev-next` and `dev-port-review` are one
+  commit, pushed and green in CI; they hold waves 0 to 6 and the independent
+  checks of the passes of waves 1 to 6. No worktree of the review is left.
+  Next is the item below: O1 to O4, the third readers, with
+  the sheet's Python citations carried to the present lines before the
+  comparison reviewers receive it. The record that the seeded runs of a
+  later pass are compared with is `wave1_merge/seeded_merged_68e37d3e.npz`
+  on the orchestrator's machine (`dev/scripts/runs/LOCAL.md`); on another
+  machine the four seeded runs are made anew on the starting commit
+  (`verification/scripts/wave2_fixpass_gate_runs.py` with `--out`).
 - [ ] After wave 6, on the PI's decision and not before: O1 to O4, the third
   readers, with O4 after the fixes of G1. With the internal track of P2,
   which wave 1 had left out and wave 5 took in, every P slice has both
