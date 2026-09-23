@@ -401,15 +401,25 @@ def test_neg_elcbo_grad_fd_one_component_one_dimension_weight_penalty(
     assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
 
 
-def test_neg_elcbo_grad_fd_mc_entropy():
+@pytest.mark.parametrize("inside_bounds", [False, True])
+def test_neg_elcbo_grad_fd_mc_entropy(inside_bounds):
     """dF with the Monte Carlo entropy (``Ns > 0``), using common random
     numbers so the objective is a deterministic function of theta.
 
-    The tolerance is loose on purpose: the reparameterization gradient in
+    The tolerances are loose on purpose: the reparameterization gradient in
     ``entmc_vbmc`` is an unbiased estimator of the true gradient, not the
     exact derivative of the sample-based value estimate, so the two agree
-    only up to Monte Carlo error (relative ~1e-3 at ``Ns = 1e4``). This
-    still catches wrong signs, wrong Jacobians, or a missing block.
+    only up to Monte Carlo error, at ``Ns = 1e4`` about 0.01 to 0.03 on
+    each entry of the entropy's gradient in ``mu``, ``ln sigma`` and
+    ``ln lambd`` (1 to 3 % of it); its ``eta`` block is exact.
+
+    With a mean and a log scale beyond their soft bounds, the bound loss
+    dominates the gradient (entries up to 1e4): the check constrains the
+    assembly of the objective with the Monte Carlo path and soft bounds,
+    and the entropy's own gradient lies far within the tolerance. At a
+    point inside the bounds with moderate widths, the check constrains the
+    entropy's own gradient: that gradient scaled by 1.1 fails it, and so
+    does its ``eta`` block alone scaled by 2.
     """
     gp, X = _fixture_gp()
     Ns = int(1e4)
@@ -448,10 +458,22 @@ def test_neg_elcbo_grad_fd_mc_entropy():
         return value
 
     theta0 = _raw_theta0(seed=2)
-    theta0[0] = theta_bnd["lb"][0] - 0.5
-    theta0[D * K] = 1.0
-    theta0[-K:] -= 20.0
-    assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
+    if inside_bounds:
+        theta0[D * K : D * K + K] = np.log([0.25, 0.35])
+        L = _vp_bound_loss(
+            VariationalPosterior(D, K),
+            theta0,
+            theta_bnd,
+            theta_bnd["tol_con"],
+            compute_grad=False,
+        )
+        assert L == 0.0
+        assert check_grad(f, grad, theta0, rtol=1e-2, atol=5e-2)
+    else:
+        theta0[0] = theta_bnd["lb"][0] - 0.5
+        theta0[D * K] = 1.0
+        theta0[-K:] -= 20.0
+        assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
 
 
 def _fixed_scale_problem(fixed):
