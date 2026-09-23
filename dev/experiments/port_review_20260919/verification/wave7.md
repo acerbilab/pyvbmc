@@ -138,7 +138,14 @@ transform is probit, not logit" (W7-13); "'No prior' is expressed by
 draws of the posterior", the optimizer of `orig_flag=False`, which is BFGS
 with the analytic gradient, not L-BFGS-B (O2 verifier, §8). To add: the
 default of `compute_var` (W7-9). The texts are in the verifier reports,
-§8. All are made; the two entries on gpyreg (W7-14 to W7-16) only after the
+§8. The fixes brought five more entries, "The log density is taken in log
+space where the density underflows" (W7-3), "`pdf` refuses points whose
+width is not the dimension" (W7-4), "`set_parameters` rescales the two
+scales only when both are optimized" (W7-8), "A zero-mean GP is warped"
+(W7-1) and, with the refusal of the close, "Starting points that leave the
+initial design without spread are refused" (W7-17), and one bullet of the
+settled non-differences, "Three behaviors of the warps and the transforms
+are MATLAB's" (W7-5 to W7-7). All are made; the two entries on gpyreg (W7-14 to W7-16) only after the
 independent check of the pass found them still wrong, and they were brought
 to the text of release 1.3.1 when PyVBMC's pin moved to it.
 
@@ -188,7 +195,9 @@ Made by four Opus fix agents on worktrees of their own
 (`../fixes/wave7_agent_A.md` to `_D.md`), one commit per row or test note,
 each fix with a test seen to fail on the code before it except where the
 report says otherwise; the PyVBMC commits reviewed by the orchestrator and
-cherry-picked onto `dev-port-review-w7`, the gpyreg commits kept on
+cherry-picked onto `dev-port-review-w7`, but for the orchestrator's
+`83a592c6` and `72a39732`, made on `dev-port-review` after the merge of that
+branch (`129f53d6`); the gpyreg commits kept on
 gpyreg's branch `w7-fixes` until its pull request, `acerbilab/gpyreg#52`,
 merged as `1dbbfc5` and released as gpyreg 1.3.1 (the tag `v1.3.1` on the
 merge, whose GitHub release uploaded the wheel and the source archive to
@@ -360,7 +369,9 @@ of the pass, with `PYTHONPATH` naming `../gpyreg-w7`: gpyreg's own suite,
 386 passed; PyVBMC's exact oracle check, 11 of 11; the four seeded runs
 against those of the pass on gpyreg 1.3.0, 92 arrays compared, 0 differ;
 the default suite, 2143 passed and 58 skipped; the extras selections, 973
-passed and 19 skipped. To come: the CI matrix.
+passed and 19 skipped. The CI matrix: the branch smoke and the full matrix
+(nine jobs) green on `acdbfd01` and on `6ef6a084`, and again on `3fb370cd`
+with the pin at gpyreg `v1.3.1`.
 
 ## The two runs of the close
 

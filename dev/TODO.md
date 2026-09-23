@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-21. These lists describe scope, not priority or execution
+Updated 2026-09-23. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -77,54 +77,18 @@ records its execution.
   final large-scale check below is the first such campaign. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
-- [ ] **Independent codebase and MATLAB-port review.** Before freezing the
-  code for the final release benchmark, have several independent reviewers
-  examine the PyVBMC codebase for errors and latent bugs. Split coverage
-  between internal correctness and systematic comparison with the original
-  MATLAB VBMC implementation, with overlapping review of critical numerical
-  paths. Cover formulas and gradients, indexing and array shapes, defaults,
-  control flow, random draws, state and caching, and cross-module behavior.
-  Record the MATLAB revision used and distinguish intentional Python
-  differences from porting mistakes and defects shared by both versions.
-  The recently discovered long-standing acquisition-box sampling error
-  motivates checking established code as well as recent changes; passing
-  tests and stored oracles do not establish correctness of the original port.
-  Reconcile findings against source and reproducible examples, add regression
-  checks for confirmed fixes, and apply the existing numerical gates to any
-  behavior changes. Resolve findings or document their disposition before the
-  final benchmark so it measures the reviewed release candidate. This review
-  can start before the other release work is complete. Started 2026-09-19;
-  the [review plan](plans/port-correctness-review.md) records the PI's
-  decisions (gpyreg in scope, comparison against the latest MATLAB
-  `master`, Opus reviewers, no MATLAB run unless a finding's disposition
-  depends on one), the slice map, the reviewer brief and the worklog. Status
-  on 2026-09-23: waves 0 to 6 (the subsystems without a MATLAB counterpart,
-  the MATLAB changes since the port, every P slice on both tracks, and the
-  two gpyreg slices G1 and G2) are reviewed, verified, ruled on and fixed,
-  and merged into `dev-next`; wave 6's fixes to gpyreg shipped in gpyreg
-  1.3.0. Several of the fixes of waves 1 to 3, one
-  of wave 5 (the balanced draw of the variational posterior) and one of
-  wave 6 (the GP mean's bounds per input dimension, W6-1) move default
-  trajectories, and so does one fix of the check of wave 1 (the noise
-  counts refreshed after every evaluation of active sampling, as in
-  MATLAB), so the golden references and the production-reference pools
-  describe the code from before them. The passes of waves 1 to 6 were each
-  checked afterwards by fresh reviewers without the session's context, and
-  what the checks found is fixed and merged as well. Wave 7, the third
-  readers O1 to O4, is reviewed, verified, ruled on and fixed, and its pass
-  checked by fresh reviewers
-  (`experiments/port_review_20260919/verification/wave7.md`); none of its
-  fixes moves a default trajectory, and its fixes to gpyreg shipped in
-  gpyreg 1.3.1, which PyVBMC requires; all of it is merged into `dev-next`, with
-  the two runs that closed it (W7-17, refused at construction, and the
-  measure of W7-2 on a resume). Every finding of the review is ruled on
-  and fixed or left with its disposition recorded, so the items below that
-  wait for the review's fixes (the oracle state at uncertainty level 1, the
-  seeded gate run with a prior) can start. What closes this item: the
-  closing ledger under `results/` and the consolidation of the sheet's
-  durable entries into the porting log `pyvbmc/vbmc/README.md`, then an
-  independent check of both. The plan's pickup point says where to
-  resume.
+- [ ] **The golden references after the port review.** Several fixes of
+  the [port correctness review](plans/port-correctness-review.md) move
+  default trajectories; its
+  [ledger](results/2026-09-23-port-correctness-review.md) lists them. The
+  golden reference `reference_990_20260913` and the production-reference
+  runs of 2026-09-18 and 09-19 (below, "Completed baseline and local
+  artifacts") describe the code from before them, so
+  `scripts/golden_replay.py` compares a run with trajectories the code no
+  longer follows. Regenerate them with the release code after assessment,
+  preserving the old ones (the working rule below); the seeded gate run
+  with a prior (below) joins the gate's records when they are made anew.
+  The item can start when the PI decides.
 
 - [ ] **An oracle state at uncertainty level 1.** No fixture under
   `pyvbmc/testing/oracles/fixtures/` holds a state of a run with
@@ -139,9 +103,9 @@ records its execution.
   `dev/scripts/make_oracle_fixtures.py` on a level-1 variant of a benchmark
   target, with `max_repeated_observations` above 0 so that the recorded
   noise differs between points, generated alone (`--only`) so that the
-  existing fixtures stay bit-identical. To be done once the port review's
-  remaining fixes are in, since slices G1, G2 and O4 may still move the GP
-  fit (PI, 2026-09-21).
+  existing fixtures stay bit-identical. It was to wait for the port
+  review's fixes, which could still move the GP fit (PI, 2026-09-21); the
+  review closed with all of them in on 2026-09-23.
 
 - [ ] **A seeded gate run with a prior.** None of the four seeded runs that
   gate the port review's fix passes
@@ -152,9 +116,9 @@ records its execution.
   at every call. Add two runs: one with the FAQ's list of `uniform`
   marginals built from the hard bounds, which reaches the slack of that
   check, and one with a `SplineTrapezoidal` on them. To be done when the
-  golden references and the run pools are regenerated after the review's
-  remaining fixes, which is when the gate's records are made anew (PI,
-  2026-09-21; the wave-5
+  golden references and the run pools are regenerated (the item on the
+  golden references above), which is when the gate's records are made anew
+  (PI, 2026-09-21; the wave-5
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
   independent check of the pass").
 
@@ -222,8 +186,30 @@ records its execution.
     `hyp_dict` lost its `logp`; prune them the next time a capture is
     rewritten.
 
+- [ ] **The findings of the port review without a recorded ruling.** Nine
+  verified findings have no ruling in the records, and the code they
+  describe is unchanged; none changes what a run computes. The
+  [ledger](results/2026-09-23-port-correctness-review.md), "Findings
+  without a recorded ruling", gives each with its class. For triage (fix,
+  or leave with the reason recorded in the ledger's row):
+  - the calibration module, wave 0
+    (`experiments/port_review_20260919/verification/wave0.md`): N3 F2 and F8,
+    two timing workloads that do not time what the package computes; N3 F4,
+    a finished campaign discarded on a `ValueError` of its record; N3 F5,
+    a held-out gate that needs all four rounds; N3 F6, the finished groups
+    of an incomplete campaign discarded; N3 F9, a cache key without the
+    package version;
+  - active sampling, wave 1: part (c) of P2 F16, the overlapping timers
+    not subtracted from each other (diagnostics only);
+  - setup, wave 2
+    (`experiments/port_review_20260919/verification/wave2_C_setup.md`):
+    C-M8, a list or a float `x0` raising `AttributeError`; C-C7, a
+    callable option called by keyword, so that a user's `lambda n: ...` for
+    `ns_ent` raises at its first use.
+
 - [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated and the code review above is complete, regenerate the
+  1.5 is consolidated (the port correctness review closed on 2026-09-23),
+  regenerate the
   VBMC run pools on the test targets with the release code on the cluster
   (about 100 runs per condition as in the
   [campaign](plans/svbmc-benchmark-campaign.md),
@@ -423,7 +409,14 @@ timing and multisensory at ten) exist locally under
 run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
 and after its stop; the
 [efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
-records their provenance.
+records their provenance. The independent correctness review of PyVBMC,
+gpyreg and the MATLAB port is complete (2026-09-19 to 09-23): its
+[ledger](results/2026-09-23-port-correctness-review.md) holds every finding
+with its disposition and fix, the [plan](plans/port-correctness-review.md)
+the design, the PI's rulings and the worklog, and the porting log
+`pyvbmc/vbmc/README.md` the catalogue of the deliberate differences from
+MATLAB; its fixes to gpyreg shipped in gpyreg 1.3.0 and 1.3.1, which
+PyVBMC requires.
 
 Raw traces, boost captures, run pools, captured states and frozen
 worktrees are gitignored under `dev/scripts/runs/` and exist only on the

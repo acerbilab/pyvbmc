@@ -1,11 +1,13 @@
 # Plan: independent correctness review of PyVBMC and its MATLAB port
 
 Started 2026-09-19. Owner of the item: `TODO.md`, "Independent codebase and
-MATLAB-port review". This file holds the design, the reviewer brief, the
-working rules and the worklog. The consolidated findings go into a dated
-ledger under `results/` when verification completes; the raw reviewer
-reports, the reports of the fix agents, the known-differences sheet and the
-verification scripts are kept under `experiments/port_review_20260919/`.
+MATLAB-port review", closed on 2026-09-23. This file holds the design, the
+reviewer brief, the working rules and the worklog. The consolidated findings
+are in the ledger `results/2026-09-23-port-correctness-review.md`; the raw
+reviewer reports, the reports of the fix agents, the known-differences sheet
+and the verification scripts are kept under
+`experiments/port_review_20260919/`, and the catalogue of deliberate
+differences from MATLAB is in the porting log `pyvbmc/vbmc/README.md`.
 
 ## Purpose
 
@@ -292,7 +294,7 @@ Findings that two independent reviewers made carry that fact in the
 ledger; a finding made by one reviewer alone is verified with the same
 care.
 
-The ledger is `results/<date>-port-correctness-review.md`, dated on
+The ledger is `results/2026-09-23-port-correctness-review.md`, dated on
 completion. Per finding: identifier, slice, both locations, category,
 classification, the dating from both histories, verification evidence
 (path under `experiments/port_review_20260919/`), the PI's disposition,
@@ -300,8 +302,8 @@ and the fix commit if any. It also records the intentional differences
 discovered during the review, the sheet entries withdrawn, and the
 test-adequacy notes worth acting on. Durable entries of the
 known-differences sheet are consolidated into the porting log
-`pyvbmc/vbmc/README.md` during the fix phase, so that the catalogue of
-deliberate differences outlives this review.
+`pyvbmc/vbmc/README.md` at the close of the review, so that the catalogue
+of deliberate differences outlives it.
 
 ## Fixes and gates
 
@@ -784,8 +786,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   trim can drop every point an early iteration logged, `movmax` then leaves
   that iteration's entry `NaN`, and the maxima of the warm-up check pass
   over it as MATLAB's `max` does, where `np.amax` made the check raise.
-  Last, the block that **moves default trajectories**: the empty stability
-  window, the recent-improvement window, the recomputed LCB maxima with the
+  Last, the block that **moves default trajectories**, with the empty
+  stability window among it, which does not fire at the defaults (row W2-14
+  of the ledger): the recent-improvement window, the recomputed LCB maxima with the
   branch that consumes them, the warping clocks at the end of warm-up, the
   minimum-iteration guard, and the initial variational means in transformed
   coordinates.
@@ -1586,7 +1589,9 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   disagreement on its reach is settled: under a probit transform no density
   is infinite up to an SD of 8 in the inference space, and they appear from
   10. The rounding of a half to even (W5-6) has no tie at the defaults; the
-  same convention stands at twelve sites where MATLAB has `round`. Of the
+  same convention stands at twelve sites where MATLAB has `round`
+  (corrected by the independent check of the pass, R4-1: a starting cache
+  reaches a tie at the shipped options, `verification/wave5.md`, W5-6). Of the
   two P2 findings that can misplace an evaluation, the value of a cached
   starting point recorded at a moved point (W5-7) is shared with MATLAB, its
   clip out of reach, the search box holding the plausible box with a margin
@@ -2404,7 +2409,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   worktrees made by hand (`../pyvbmc-w7-A`, `-B`, `-C`, cut from
   `dev-port-review-w7`, and `../gpyreg-w7`, cut from gpyreg's `main` at
   `v1.3.0`), one commit per row or test note, each fix with a test seen to
-  fail before it except the test of W7-2, which needs a run; they ran only
+  fail before it except the test of W7-2, which needs a run, and those of
+  W7-9 and W7-10, whose fixes are docstrings; they ran only
   the test functions they added or changed. The reports are
   `fixes/wave7_agent_A.md` to `_D.md`, and `verification/wave7.md`, "Fix
   commits", lists the commits: seventeen of PyVBMC's, reviewed and

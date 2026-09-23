@@ -9,9 +9,9 @@ cites. **Nothing here was run in MATLAB**, so an entry says what the code
 reads as doing, and an entry that rests on MATLAB's documented semantics
 and not on its text alone says which step is inferred or was read and not
 run. Paths are relative to the MATLAB repository root. The list
-is brought up to date as the review's waves are verified; it stands at the
-end of the verification of wave 7, the third readers of the critical
-numerical paths, whose rows are 56 to 61. Rows 41 to 53 come from wave 6,
+holds what the review found through its last wave, wave 7, the third
+readers of the critical numerical paths, whose rows are 56 to 61; the
+review closed on 2026-09-23. Rows 41 to 53 come from wave 6,
 the gpyreg slices, and concern `gplite/`, the GP layer that gpyreg ports;
 rows 54 and 55 come from the independent check of the wave-1 pass.
 

@@ -125,7 +125,11 @@ plan and consolidated human summary.
   third readers on the gradient and integral formulas, the reviewer
   brief and verification into a findings ledger, against the latest
   MATLAB `master`; MATLAB itself is run only if a finding's disposition
-  depends on it.
+  depends on it. Complete (2026-09-19 to 09-23): the
+  [closing ledger](results/2026-09-23-port-correctness-review.md) holds
+  every finding with its disposition and fix commit, and the porting log
+  `pyvbmc/vbmc/README.md` the catalogue of deliberate differences from
+  MATLAB.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local

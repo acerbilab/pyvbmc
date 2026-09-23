@@ -116,7 +116,9 @@ acquisitions, the log acquisition and `fess` floor it at the log of the
 smallest positive double as `acq/acqf_vbmc.m:7` and its siblings do, and both
 sides discard the band between -708 and -744, so a log-sum-exp evaluation
 would change nothing there while the floors stand. The mode search turns
-`-inf` into `+inf` as `vbmc_mode.m` does and never starts there; `mtv` reads
+`-inf` into `+inf` as `vbmc_mode.m` does and never starts there (corrected
+by wave 7, `wave7.md`, W7-3: on a narrow posterior the first trial step of
+its optimizer lands there, and the start is returned unrefined); `mtv` reads
 no density; the entropies take the log of their own sums with no floor on
 either side (W5-3); at the default `kl_gauss=True` the main loop reads
 moments and no density. `kl_div(gauss_flag=False)` is the one reader that

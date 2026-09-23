@@ -93,9 +93,10 @@ reports.
 
 Shared by both implementations and left as they are: the repeat pooled into
 a deactivated row (W3-20), the hyperparameter statistics of before a warp
-that go on being used after it (W3-29), the thresholded covariance that need
-not be positive semi-definite (W3-6, the PI's to rule), and `log(scale)` in
-the log-Jacobian (W3-26).
+that go on being used after it (W3-29), and `log(scale)` in the
+log-Jacobian (W3-26). The thresholded covariance that need not be positive
+semi-definite (W3-6) is shared as well; PyVBMC keeps the covariance as it was
+in that case, on the PI's ruling (`61a7325`).
 
 ## Sheet entries
 

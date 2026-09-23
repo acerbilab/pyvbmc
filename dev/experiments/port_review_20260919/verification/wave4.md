@@ -193,7 +193,8 @@ P3 comparison report's numbers: it ascribes a residual of 1.4e-14 in
 
 ## Fix commits
 
-On `dev-port-review` after `f873556`, made on 2026-09-20. One Opus agent on
+On `dev-port-review` after `f873556`, made on 2026-09-20, but for the five
+that follow the independent check, made on 2026-09-21. One Opus agent on
 a worktree made ten (report `../fixes/wave4_agent.md`), which the
 orchestrator reviewed and cherry-picked; the orchestrator made the others,
 among them the five that follow the independent check of the pass (below).
@@ -313,4 +314,6 @@ in the package.
 - `_validate_search_acq_fcn_option` runs at construction, as the checks of
   `noise_shaping` and `gp_hyp_sampler` beside it do; an acquisition that sets
   the flag and arrives through `load(new_options=)` is refused in
-  `active_importance_sampling` instead. Not acted on.
+  `active_importance_sampling` instead. Not acted on in this pass; `load`
+  runs the check since `9b5213d` (the independent check of the wave-3 pass,
+  `wave3.md`).
