@@ -698,7 +698,10 @@ def test_vp_bound_loss_weight_flags():
 
 
 def test_neg_elcbo_retains_capped_small_weight_penalty():
-    """Removing eta bounds leaves the separate capped weight penalty."""
+    """Removing eta bounds leaves the separate capped weight penalty. Its
+    gradient with respect to eta is the softmax Jacobian
+    ``diag(w) - w w^T`` applied to the penalty's slope in ``w``, which is
+    the penalty weight below the threshold and zero above it."""
     gp, X = _fixture_gp()
     theta = _raw_theta0(seed=3)
     theta[-K:] = (-8.0, 0.0)
@@ -726,7 +729,14 @@ def test_neg_elcbo_retains_capped_small_weight_penalty():
     )
     assert np.isclose(F_penalty - F_base, expected)
     assert np.allclose(dF_penalty[:-K], dF_base[:-K])
-    assert not np.allclose(dF_penalty[-K:], dF_base[-K:])
+
+    w = vp_penalty.w.ravel()
+    slope = OPTIONS["weight_penalty"] * (w < theta_bnd["weight_threshold"])
+    assert slope[0] > 0.0 and slope[1] == 0.0
+    expected_grad = (np.diag(w) - np.outer(w, w)) @ slope
+    assert np.allclose(
+        dF_penalty[-K:] - dF_base[-K:], expected_grad, rtol=1e-8, atol=1e-12
+    )
 
 
 @pytest.mark.parametrize("Ns", [0, 64])
