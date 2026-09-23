@@ -2340,77 +2340,6 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   4. The worktrees removed: gpyreg's A, B, D and E once `git cherry` has
      been read once more; wave 1's once its branch is merged.
   The session starts no other wave.
-
-  Why this wave. G1 and G2 are the only slices that no reviewer has read,
-  and what they find can still move the GP fit, on which the stored oracle
-  state at uncertainty level 1 and the regeneration of the golden references
-  wait (`TODO.md`). The third readers O1 to O4 follow as wave 7: they go over
-  code that two reviewers and the finite-difference gates have covered, and
-  O4, the GP marginal likelihood and its gradient, overlaps G1, so it reads
-  that code after the fixes of G1.
-
-  What the reviewers read. gpyreg in `../gpyreg`: the code under `gpyreg/` is
-  that of the pinned revision `9e70e6b` (the checkout stands at `fdbafdf`,
-  three commits further, which change workflow files alone). MATLAB's
-  `gplite` in `../vbmc/gplite/` at `396d649`. The rows G1 and G2 under
-  "Slices" name the files and carry two first questions: whether
-  `f_min_fill.py` has the `uuinv` fix of `1d1f20d`, and whether gpyreg's
-  prediction has the predictive log-density with the total predictive
-  variance that `gplite_pred.m` computes since `68a197b`. The brief is the
-  section "Reviewer brief", with its warning that gpyreg's `AGENTS.md`
-  misdescribes three MATLAB mappings. The comparison reviewers receive
-  `known_differences.md`: its citations into `pyvbmc/` are carried to
-  `f9ab814`, since which no file under `pyvbmc/` has changed, and its two
-  citations into gpyreg, which `refresh_citations.py` does not carry, were
-  read by hand on 2026-09-21 and hold at the pin.
-
-  What to do, in this order, as waves 4 and 5 went (the worklog entries of
-  wave 5 and `verification/wave5.md` are the model):
-  1. Launch the four reviewers (G1 internal, G1 comparison, G2 internal, G2
-     comparison): fresh general-purpose Opus agents, read-only, each with a
-     scratchpad directory of its own. Save each report verbatim under
-     `experiments/port_review_20260919/reviews/` with `extract_report.py`,
-     then `git status --porcelain --ignored` in the three repositories.
-  2. Report the wave to the PI with enough context to judge the findings.
-     The PI decides what follows (working rule, "one wave at a time").
-  3. On the PI's word: the verification (the orchestrator takes the findings
-     that can change a run, read-only Opus verifiers the rest) and the
-     ledger `verification/wave6.md` with a proposed disposition per row; the
-     PI rules on the rows. The candidate from outside the slices, below
-     (`load(new_options=)`), goes to a verifier of this wave.
-  4. On the rulings: the fixes, one finding per commit with a test seen to
-     fail on the code before it. A fix to gpyreg goes to gpyreg on a branch
-     and a pull request of its own, passes gpyreg's suite, and moves
-     `GPYREG_PIN` and, after a gpyreg release, the minimum version in
-     `pyproject.toml` ("Fixes and gates"). No fix of the review has touched
-     gpyreg yet, and the harness's isolated worktree is one of this
-     repository: how an agent works on gpyreg (a worktree of `../gpyreg`
-     made by hand, or the orchestrator alone) is settled with the PI before
-     the first such fix. Then the gates, the sheet, `matlab_side_defects.md`,
-     the changelog and the worklog.
-  5. After each of the passes of waves 2 to 5 the PI asked for an independent
-     check by fresh reviewers (`/doublecheck`), and after wave 5 for one more
-     fresh reviewer on the fix round of that check. Each found errors that
-     the session had not, the orchestrator's own among them. Expect the same.
-  6. On the PI's word: the push, the branch smoke, the full matrix, the merge
-     into `dev-next` with the status line of `TODO.md` updated there.
-
-  State of the branch. `dev-port-review` and `dev-next` are one commit,
-  pushed and green in CI: they hold waves 0 to 5 with the independent checks
-  of the passes of waves 2 to 5. No agent and no run is in flight, and no
-  worktree of a fix agent is left.
-  The reviewers' check scripts of waves 4 and 5, the raw reports of the six
-  reviewers of the independent check of wave 5, the gate records and the
-  logs are on the orchestrator's machine only (`dev/scripts/runs/LOCAL.md`,
-  "Port correctness review"); a verifier writes its own checks and may use
-  the scripts as leads. The record that a pass of wave 6 is compared with is
-  there too, `wave5_gates/after_pass_23d962a1.npz`, which every head since
-  has matched bit for bit; on another machine the four seeded runs are made
-  anew on the starting commit
-  (`verification/scripts/wave2_fixpass_gate_runs.py` with `--out`). The
-  golden references and the run pools describe the code from before the
-  moving fixes of waves 1 to 3 and of wave 5, and are regenerated once,
-  after the review's remaining fixes.
 - [ ] After wave 6, on the PI's decision and not before: O1 to O4, the third
   readers, with O4 after the fixes of G1. With the internal track of P2,
   which wave 1 had left out and wave 5 took in, every P slice has both
@@ -2420,7 +2349,7 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   2026-09-21): every fix pass moves them. The stored oracle state at
   uncertainty level 1 and the seeded gate run with a prior are items of
   `TODO.md` (PI, 2026-09-21).
-- [ ] A candidate from outside the slices, to be verified with the
+- [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
   (`_validate_option_values`); it runs neither `Options.update_defaults`
@@ -2432,7 +2361,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   ledger cover those defaults at construction only. Found on 2026-09-21
   while the statements of `AGENTS.md` were checked against the code, by
   reading `load`; not reproduced by a run. A disposition to consider: `load`
-  refuses the options that are read only at construction.
+  refuses the options that are read only at construction. Verified in wave 6
+  and fixed as W6-37 (`e657eba8`, `verification/wave6.md`): `load` refuses
+  such an option, and the checks of `gp_mean_fun` and `integer_vars` run on
+  both paths.
 - [ ] Verification of the accumulated findings; ledger written.
 - [ ] PI triage.
 - [ ] Fixes on `dev-port-review` with gates; durable sheet entries
