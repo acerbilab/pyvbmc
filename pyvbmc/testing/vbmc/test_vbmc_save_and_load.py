@@ -339,6 +339,82 @@ def test_load_raises_max_iter_to_min_iter_as_construction_does(tmp_path):
     assert unchanged.options["max_iter"] == 9
 
 
+def _vbmc_with_options(options, D=2):
+    """A seeded run on a Gaussian target with the given options."""
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"display": "off", **options},
+        seed=5,
+    )
+
+
+@pytest.mark.parametrize(
+    "built, given",
+    [(0, 80), (80, 0), (0, 0), (80, 40)],
+    ids=["raised_from_zero", "lowered_to_zero", "zero_again", "positive"],
+)
+def test_load_starts_or_stops_gp_sampling_as_ns_gp_max_says(
+    tmp_path, built, given
+):
+    """``ns_gp_max`` sets the number of GP hyperparameter samples at every
+    fit, and construction also derives from it whether the fits sample at
+    all: ``optim_state["stop_sampling"]`` is 0, sampling, for a positive
+    value, and infinity, no sampling, for 0. A value given to ``load``
+    leaves the run in the state construction gives for it."""
+    path = tmp_path / "run"
+    _vbmc_with_options({"ns_gp_max": built}).save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": given})
+
+    expected = _vbmc_with_options({"ns_gp_max": given}).optim_state
+    assert loaded.optim_state["stop_sampling"] == expected["stop_sampling"]
+
+
+@pytest.mark.parametrize("given", [0, 80])
+def test_load_leaves_gp_sampling_stopped_in_the_stable_regime(tmp_path, given):
+    """A run whose sampling has stopped in the stable regime holds the
+    number of training points at the stop in ``stop_sampling``, and its
+    fits take ``stable_gp_samples`` whatever ``ns_gp_max`` says, so a value
+    given to ``load`` leaves that state alone."""
+    vbmc = _vbmc_with_options({"ns_gp_max": 80})
+    vbmc.optim_state["stop_sampling"] = 37
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": given})
+
+    assert loaded.optim_state["stop_sampling"] == 37
+
+
+def test_a_run_given_a_positive_ns_gp_max_on_load_samples(tmp_path):
+    """A run built with ``ns_gp_max=0`` fits the GP hyperparameters by
+    optimization alone. Loaded with a positive value and continued, it
+    samples them: its next fit draws several samples."""
+    options = {
+        "ns_gp_max": 0,
+        "max_iter": 1,
+        "min_iter": 0,
+        "max_fun_evals": 60,
+        "do_final_boost": False,
+    }
+    vbmc = _vbmc_with_options(options)
+    vbmc.optimize()
+    assert len(vbmc.gp.posteriors) == 1
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": 80, "max_iter": 2})
+    loaded.optimize()
+
+    assert loaded.iteration == 1
+    assert len(loaded.gp.posteriors) > 1
+
+
 def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
     """One transformer is shared, and it is the chosen iteration's.
 

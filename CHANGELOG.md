@@ -730,6 +730,11 @@ its entry below.
   last recorded iteration. 1.0.4 continued from the history entries
   themselves, so the record of that iteration changed as the run went on, and
   `VBMC.load(iteration=...)` could restore a wrong state.
+- A run built with `ns_gp_max=0`, saved, and loaded with a positive
+  `ns_gp_max` (`VBMC.load(file, new_options=...)`) samples the GP
+  hyperparameters when it is continued. 1.0.4 stored the new value and went
+  on fitting them by optimization alone. A run whose sampling has stopped in
+  the stable regime stays there.
 - `x0` and the bounds are converted to double precision whatever floating-point
   type they come in. 1.0.4 converted integer inputs only, and kept `float32`
   or `float16` values in the state of the run and in the parameter transform.

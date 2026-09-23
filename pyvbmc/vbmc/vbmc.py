@@ -124,6 +124,19 @@ _CONSTRUCTION_ONLY_OPTIONS = (
 )
 
 
+def _stop_sampling_at_start(ns_gp_max):
+    """The value of ``optim_state["stop_sampling"]`` that a run starts from.
+
+    0 lets the GP fits sample their hyperparameters, as a positive
+    ``ns_gp_max`` asks; infinity, for ``ns_gp_max`` 0, gives every fit the
+    number of samples of the stable regime (``stable_gp_samples``, none by
+    default, which fits them by optimization) from the start. A run whose
+    sampling stops in the stable regime later stores there the number of
+    training points at the stop.
+    """
+    return 0 if ns_gp_max > 0 else np.inf
+
+
 # The levels of the log file that ``log_file_level`` names by a string, the
 # names that ``display`` gives the levels of the screen.
 _LOG_FILE_LEVEL_NAMES = {
@@ -1218,10 +1231,9 @@ class VBMC:
         optim_state["warping_count"] = 0
 
         # When GP hyperparameter sampling is switched with optimization
-        if self.options.get("ns_gp_max") > 0:
-            optim_state["stop_sampling"] = 0
-        else:
-            optim_state["stop_sampling"] = np.inf
+        optim_state["stop_sampling"] = _stop_sampling_at_start(
+            self.options.get("ns_gp_max")
+        )
 
         # Fully recompute variational posterior
         optim_state["recompute_var_post"] = True
@@ -1434,6 +1446,9 @@ class VBMC:
                     "initialization_cost"
                 ] = self.initialization_cost
                 self.optim_state["budget_active"] = True
+            # So does it carry whether the GP fits sample, which follows the
+            # `ns_gp_max` of this call, one that `load` was given included.
+            self._follow_ns_gp_max()
         self.vp._calibration_display = self.options.get("display") != "off"
         calibration_profile = self.vp._resolve_calibration(
             display=self.vp._calibration_display
@@ -2517,6 +2532,22 @@ class VBMC:
         )[0]
         return np.mean(r_index_vec), ELCBO_improvement
 
+    def _follow_ns_gp_max(self):
+        """Set whether the GP fits sample their hyperparameters from the
+        option ``ns_gp_max``, as construction sets it.
+
+        A run whose sampling has stopped in the stable regime keeps its
+        state: ``stop_sampling`` then holds the number of training points at
+        the stop, and its fits read the option no more. For a run whose
+        state follows its options this changes nothing.
+        """
+        stop_sampling = self.optim_state.get("stop_sampling")
+        if stop_sampling is not None and 0 < stop_sampling < np.inf:
+            return
+        self.optim_state["stop_sampling"] = _stop_sampling_at_start(
+            self.options.get("ns_gp_max")
+        )
+
     def _check_gp_sampling_stop(self):
         """Apply the variance-based transition to stable GP sampling."""
         if (
@@ -3260,7 +3291,11 @@ class VBMC:
             options it applies to. The stored value itself, in any form
             construction reads alike, is taken and changes nothing, so the
             options a run was built with can be given back together with,
-            for example, a new budget. An option that has no effect in
+            for example, a new budget. A new ``ns_gp_max`` also decides, as
+            at construction, whether the GP fits sample their
+            hyperparameters (0 turns the sampling off), unless the sampling
+            has already stopped in the stable regime. An
+            option that has no effect in
             PyVBMC, or a ``noise_size`` for a target that returns its own
             noise estimates, is taken with the warning that construction
             gives for it.
@@ -3491,6 +3526,8 @@ class VBMC:
         # the schedules of the algorithm read it. It describes the budget of
         # the continued run, not the one the file was saved with.
         vbmc.optim_state["max_fun_evals"] = vbmc._effective_max_fun_evals
+        if new_options is not None and "ns_gp_max" in new_options:
+            vbmc._follow_ns_gp_max()
         if vbmc._budget_active:
             vbmc.optim_state[
                 "max_fun_evals_total"
