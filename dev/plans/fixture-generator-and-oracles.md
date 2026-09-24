@@ -92,6 +92,52 @@ Evidence: `dev/scripts/runs/latent_fixes/acquisition_20260908/`
 `all_exact.log`). The trajectory check compares the acquisition change with
 the covariance-only runs, retaining the original population accuracy fences.
 
+## Phase 5 a state at uncertainty level 1 (2026-09-24)
+
+`rosenbrock_D2_noise3_level1` is the first snapshot of a run with
+`uncertainty_handling=True` and no `specify_target_noise` (the item of
+`dev/TODO.md` that the PI set on 2026-09-21 to wait for the fixes of the
+port correctness review). At that level the GP noise of each row is
+`exp(2 h1) + exp(h2) s2`, with `s2 = 1/n_evals` from the function logger
+(noise function `[1, 2, 0]`, row W3-1 of
+[the wave-3 ledger](../experiments/port_review_20260919/verification/wave3.md)).
+The snapshot is the only one that reaches the scaled provided-noise
+branch of gpyreg's `GaussianNoise`, the level-1 hyperprior of `_gp_hyp`
+(through `gp_nlZ`, whose gradient covers the multiplier) and the level-1
+fit (`gp_fit`, `gp_fit_history`).
+
+- Target: the config `rosenbrock_D2_noise3_level1` of the `oracle` suite
+  of `benchmark_targets.py`, the noisy Rosenbrock whose target returns its
+  value alone (`provide_noise=False`). At a noise SD of 1 the fitted
+  multiplier settles near 1, and since `S^2 n_evals = 1` the acquisitions
+  and most rows then compute nearly the numbers of level 2, so a
+  mishandled multiplier would barely move an output. At SD 3 the log
+  multiplier of the snapshot's eight samples lies between 2.02 and 2.61
+  (log 9 = 2.20).
+- Repeated observations: `max_repeated_observations = 3`, default run
+  limits, and the pick `first_repeat`, the first iteration whose GP holds
+  a row evaluated more than once. The run (28 iterations, 140
+  evaluations) makes its only repeat at iteration 20, which is the
+  snapshot: 100 GP rows, one of them from two evaluations (`s2` 0.5
+  there, 1 elsewhere), K = 19, Ns = 8, a rotoscale warp in place. No
+  repeat occurs in the first four iterations, the length of the noisy
+  snapshot's run.
+- Candidates: the 100 live training inputs lead the 512 sieve candidates
+  (`train_candidates`, recorded as `meta["cand_train_rows"]`): with
+  observation noise and `max_repeated_observations` above 0, active
+  sampling offers them as candidates for a repeated observation.
+- Oracles: the sixteen of `rosenbrock_D2_noise1_viqr`.
+  `active_sample_step` does not apply, since the noisy defaults turn on
+  the GP and VP updates inside active sampling.
+- Generation: `--only rosenbrock_D2_noise3_level1` on the generating
+  machine, at the clean commit `7bf916e5`; the 22 files of the other
+  fixtures kept their hashes. Two generations on one commit agree in
+  every array except the logger's wall-clock evaluation times.
+- Gates: `make_oracle_fixtures.py --check --exact`, 12 of 12;
+  `pytest pyvbmc/testing/oracles`, 159 passed and 16 skipped (on the new
+  snapshot sixteen oracles pass and `active_sample_step` is skipped as not
+  applicable); `benchmark_targets.py --smoke --suite oracle`.
+
 ## Summary
 
 A generator script runs a handful of short, seeded VBMC runs with
@@ -265,6 +311,7 @@ total about six minutes.
 | `cigar_D4_boosted` | same run | — | final VP (K = 50) with the best iteration's GP | `final_boost`-sized VP for `_gp_log_joint`, entropies, the ELCBO |
 | `halfnormal_D2_bounded` | `halfnormal_D2` | — | last | probit transform, finite bounds, non-constant log-Jacobian |
 | `rosenbrock_D2_noise1_viqr` | `rosenbrock_D2_noise1` | `max_iter = 4`, `min_iter = 0`, `min_fun_evals = 0` | last | noisy path: `S`, `s2`, VIQR/IMIQR with pre-drawn importance samples (no `active_sample_step`: the per-sample full update needs history GPs) |
+| `rosenbrock_D2_noise3_level1` | `rosenbrock_D2_noise3_level1` | `max_repeated_observations = 3`; assert level 1, noise function `[1, 2, 0]`, non-constant `s2`, log multiplier away from 0 | first with a repeated observation | uncertainty level 1: the recorded noise scaled by a fitted multiplier, its hyperprior and fit; the training inputs lead the candidates (Phase 5) |
 
 ### Oracles (reference outputs per snapshot; seed = snapshot seed)
 

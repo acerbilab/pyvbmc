@@ -379,9 +379,14 @@ reason.
   causal-inference model on two subjects, from the 2020 noisy-VBMC paper,
   with spline-trapezoidal priors; see
   [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md)),
-  a generic noise wrapper, the `smoke` / `profile` / `golden` /
-  `svbmc_pool` suites (the last one the pool conditions of the S-VBMC
-  campaign, at PyVBMC's default budget and tagged `svbmc`), shared
+  a generic noise wrapper, whose target returns the noise SD beside the
+  value (uncertainty level 2) or, with `provide_noise=False` and a label
+  ending in `_level1`, the value alone (level 1), the `smoke` / `profile`
+  / `golden` / `svbmc_pool` / `production` / `oracle` suites
+  (`svbmc_pool` the pool conditions of the S-VBMC campaign, at PyVBMC's
+  default budget and tagged `svbmc`; `production` the golden suite with
+  its noisy entries at the package's defaults; `oracle` the configs that
+  only the oracle fixtures read), shared
   posterior-moment and metric helpers, and `--list` / `--check` / `--smoke`
   self-tests. Every other script takes its targets from here.
 - `scripts/export_benchflow_data.py` — exports the real-data targets' data

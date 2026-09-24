@@ -836,7 +836,7 @@ lines. No defect in what a run computes; the gates ran on `095c29e`.
 | flaky ADAM test (from the gate rerun) | `test_minimize_adam_matyas_with_noise` failed 48 of 400 seeded calls. | PI: fix it before the push | `b731fac` |
 | records | Corrected: four `CHANGELOG.md` items; entry 18 of `matlab_side_defects.md`, with a flag in `wave3_P5.md`; `wave3.md`'s counts, its sheet list, the W3-34 helper and the stopped script; the capture mode in `dev/README.md` and the fixture plan; `AGENTS.md`; 83 of 161 sheet citations; the `noise_shaping` entry. | corrected | `8a33203`, `99e787c` (git) |
 | reviewer statement on W3-20 | A new route through the warp was claimed. | did not hold | — |
-| stored oracle state at level 1 | No fixture holds one. | PI ruling: an item of `TODO.md` after the review (`dev/TODO.md`, "An oracle state at uncertainty level 1") | — |
+| stored oracle state at level 1 | No fixture holds one. | PI ruling: an item of `TODO.md` after the review; done on 2026-09-24, the snapshot `rosenbrock_D2_noise3_level1` (`dev/plans/fixture-generator-and-oracles.md`, "Phase 5") | `af34ced4` |
 
 Left as they are (`wave3.md`, "Left as they are"): the Cholesky test of W3-6
 has no tolerance; `hyp_dict["logp"]` after a fit without samples; the order
