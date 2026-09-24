@@ -499,7 +499,8 @@ the fixes, whose commits the records name only for the Monte Carlo entropy
 (`f3ba8d3`, `7c7972f`); the others were found in `f91fdf0..57cbfb4`. The
 rulings also gave `dev/TODO.md` an item on saving and loading an `SVBMC`
 object, which `dill` serializes (worklog, 2026-09-19), answering no numbered
-finding. The
+finding; done on 2026-09-24 (`dev/plans/svbmc-integration.md`, "Execution
+record"). The
 preparatory agent wrote the known-differences sheet (67 entries) and the
 counterpart map (124 rows) before any comparison reviewer ran
 (`prep_report.md`).

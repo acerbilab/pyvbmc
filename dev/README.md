@@ -150,9 +150,10 @@ plan and consolidated human summary.
   integration (complete): the settled decisions (Torch retained,
   independent sampling with a balanced option, `seed`, float64, snapshot
   fixtures plus a generated D=1, bounded and warped set), layout, the
-  parity gate against upstream, the test suite, verification and the
-  remaining follow-up (forwarding release after 1.5); the speedups have
-  their own plan below.
+  parity gate against upstream, the test suite, verification, the
+  `SVBMC.save` and `SVBMC.load` methods (2026-09-24) and the remaining
+  follow-up (forwarding release after 1.5); the speedups have their own
+  plan below.
 - [plans/svbmc-speedups.md](plans/svbmc-speedups.md) — S-VBMC
   preparation and entropy speedups: per-run transforms and Jacobians,
   broadcast component densities, vectorized per-component reduction;
@@ -521,7 +522,9 @@ reason.
   posteriors from short seeded VBMC runs (D=1; bounded D=2 with a different
   plausible box per run; correlated D=3 mixing warped and unwarped runs);
   `references` records the seeded three-step optimization of every group
-  and mode as the regression gate (needs Torch). Every written posterior
+  and mode as the regression gate (needs Torch); `saved-stack` writes one
+  stack with `SVBMC.save`, the file that every CI cell loads, and a sidecar
+  of its state and seeded draws (needs Torch). Every written posterior
   is rebuilt and compared with its source. `pyvbmc/testing/svbmc/FIXTURES.md`
   documents the files.
 - `scripts/svbmc_speedup_benchmark.py` — paired before/after timing of

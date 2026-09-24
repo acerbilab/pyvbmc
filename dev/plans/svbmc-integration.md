@@ -309,32 +309,61 @@ added there, and the fixture globs go into `MANIFEST.in`.
   deferred speedups gated by `references.npz`.
 - 2026-09-24: `SVBMC.save` and `SVBMC.load`, which a ruling of the port
   review's wave 0 asked for (`port-correctness-review.md`, worklog of
-  2026-09-19), on `feat-svbmc-save-load` from `dev-next` at `45fd3892`
-  (`e5ea7381`).
-  They mirror the posterior's methods: `dill` with `recurse=True`, `.pkl`
-  added to a name without an extension, and an existing file kept unless
-  `overwrite=True`. A probe listed every global a saved stack references:
-  NumPy's array and generator constructors, `logging.getLogger`, the
-  calibration profile's constructor and the classes `SVBMC`,
-  `VariationalPosterior` and `ParameterTransformer`, all by name, so the
-  file holds no bytecode. Plain `pickle` serializes the object too, since
-  the transformer leaves out its bounded transforms (W2-30). `load` takes
-  no `calibration=` keyword: stacking reads none of the calibrated
-  settings (its entropy computes the component densities itself, and
-  `sample` reads none), and each retained posterior keeps its profile as
-  saved state, which the posterior's own accessors migrate when a legacy
-  one is used. `load` sets up the `"SVBMC"` logger as construction does,
-  since the file names the logger but not its level. It refuses a file
-  that holds another object, and it imports no Torch, so a loaded stack
-  samples and plots without it. Tests: `test_svbmc_save_and_load.py`
-  (8, the Torch cell), which takes over the no-function check of
-  `test_svbmc.py`. Documentation: a section of the API page, a line of
-  the FAQ's S-VBMC answer, the S-VBMC entry of `CHANGELOG.md`, and a
-  saving step in Example 7 (section 5; the script regenerated with its
-  Makefile). The example ran end to end as that script in the extras
-  environment. Its stored outputs, from 2026-09-12, predate the port
-  review's fixes: in the new run, two of the four VBMC runs find both
-  modes and the stacked ELBO is 0.017, where the notebook shows one such
-  run and 0.024. They are left for the release's run of the examples. Gates:
-  the S-VBMC tests with Torch 2.14.0 (234 passed, none skipped), and a
-  docs build with no new warning.
+  2026-09-19), on `feat-svbmc-save-load` from `dev-next` at `45fd3892`:
+  `e5ea7381`, then `8d27e6c4`, `ade0634c` and `482c6f1a` from the review
+  below.
+  The methods mirror the posterior's: `dill` with `recurse=True`, `.pkl`
+  added to a name without an extension, and `FileExistsError` for an
+  existing file unless `overwrite=True`. A saved stack references, all by
+  name, the array constructors of dill and NumPy, NumPy's generator
+  constructors, `logging.getLogger`, the calibration profile's constructor
+  and the classes `SVBMC`, `VariationalPosterior` and
+  `ParameterTransformer` (listed by unpickling with a recording
+  `find_class`, once before the work and again in the review), so the file
+  holds no bytecode; `recurse=True` changes none of its bytes. Plain
+  `pickle` serializes the object too, since the transformer leaves out its
+  bounded transforms (W2-30). `load` takes no `calibration=` keyword:
+  stacking reads none of the calibrated settings (its entropy computes the
+  component densities itself, and `sample` reads none). It gives the
+  retained posteriors the migration of their calibration state that
+  `VBMC.load` gives the posteriors of a run, since they never pass through
+  `VariationalPosterior.load` (`AGENTS.md` records that a posterior's
+  back-fill goes into all three loads). It sets up the `"SVBMC"` logger as
+  construction does, since the file names the logger but not its level; it
+  refuses a file that holds another object, naming both types with their
+  modules; and it imports no Torch, so a loaded stack samples and plots
+  without it.
+  Tests: `test_svbmc_save_and_load.py`, nine tests that run where Torch
+  is installed, the Torch cell of CI among them, and that take over the
+  no-function check of `test_svbmc.py`; and `test_svbmc_saved_stack.py`,
+  three tests without Torch that load `fixtures/saved/bounded_D2.pkl`, a
+  stack written by `make_svbmc_fixtures.py saved-stack` under Python 3.12
+  on Windows, in every cell of the matrix (`FIXTURES.md`, "Saved stack").
+  Documentation: a section of the API page, a line of the FAQ's S-VBMC
+  answer, the S-VBMC entry of `CHANGELOG.md`, and a saving step in
+  Example 7 (section 5; the script regenerated with its Makefile). The
+  example ran end to end as that script in the extras environment, and the
+  output of the new cell is that run's (two comparisons that hold for any
+  run), entered by hand as the cell's output. The notebook's other stored
+  outputs, from 2026-09-12, predate the port review's fixes: in the new
+  run, two of the four VBMC runs find both modes and the stacked ELBO is
+  0.017, where the notebook shows one such run and 0.024. They are left for
+  the release's run of the examples.
+  Review: two read-only Opus reviewers, one of the code and tests and one
+  of the documentation and records, found no defect. From their findings
+  came the migration of the retained posteriors, the committed stack file,
+  the module-qualified type names of the error, the wording of the
+  overwrite guard and of the methods that need Torch, and corrections to
+  this entry. Ruled not to be fixed (PI, 2026-09-24): a dump that fails
+  leaves a partial file, as in `VariationalPosterior.save` and
+  `VBMC.save`, whose code `save` repeats, and an atomic write would change
+  all three for little gain; the save code and the test helpers repeated
+  across modules stay as they are; `load` configures logging as
+  construction does. A fresh-interpreter variant of the test that blocks
+  Torch in-process is not needed, since the cells without Torch load the
+  committed file.
+  Gates: the S-VBMC tests with Torch 2.14.0 (238 passed, none skipped) and
+  without it (52 passed, the Torch modules skipped), a docs build with no
+  new warning, and the full CI matrix on `482c6f1a` (run 36055045741,
+  green in all nine cells, each of which ran the three tests of the saved
+  stack; the Torch cell ran the nine others).
