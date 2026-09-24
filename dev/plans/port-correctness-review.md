@@ -2624,6 +2624,29 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   again on the final heads (the ledger's row "after the close"). PyBADS's
   tests against the branch are run by the PI's session on PyBADS, from its
   repository.
+- [x] 2026-09-24: gpyreg 1.3.2 released, PyVBMC moved to it, and the work
+  after the close through CI and into `dev-next` (PI: go, once the PI's
+  session on PyBADS had reported: no refusal fires and no test breaks in
+  PyBADS's suite). gpyreg: `w6-leftovers` with its release notes dated
+  (`755a4b3`) pushed and opened as `acerbilab/gpyreg#53`; the first run of
+  its checks failed on macOS with Python 3.11, on a test that assumed how
+  LAPACK treats a covariance that holds NaN, fixed in `1cbab6d` (the
+  ledger's table of the check); the ten checks green; merged with a merge
+  commit and admin rights, `main` asking for a review the author cannot give
+  (`29b868c`), its build and docs workflows green; the annotated tag
+  `v1.3.2` on the merge and its GitHub release, whose workflow uploaded the
+  wheel and the source archive to PyPI. `../gpyreg` brought to the tag, and
+  gpyreg reinstalled editable in the three environments that install it,
+  each reading 1.3.2; the worktree `../gpyreg-w6-leftovers` removed with its
+  local branch, which is an ancestor of `main`; the remote branch
+  `w6-leftovers` stands. PyVBMC: `gpyreg >= 1.3.2`, `GPYREG_PIN` at the
+  tag's commit, the changelog's requirement and the porting log's entries
+  (`95377395`); the exact oracle check, 11 of 11, the seeded runs bit for
+  bit, the default suite, 2376 passed, and the extras selections, 1073
+  passed, against the installed 1.3.2; the ledger's record of the release
+  (`d729b276`); `dev-port-review` pushed at `d729b276`, its branch smoke and
+  full matrix (nine jobs) green; `dev-next` fast-forwarded to it with these
+  records, and the item of the pickup removed from `TODO.md`.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
