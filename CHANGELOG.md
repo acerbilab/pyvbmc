@@ -428,7 +428,10 @@ its entry below.
     run on such a target changes from its first GP fit, the model having one
     more hyperparameter; the weighting shows with repeated observations
     (`max_repeated_observations`), without which every point is recorded
-    with the same noise.
+    with the same noise. A run saved by 1.0.4 on such a target continues
+    with this model, the statistics of the GP hyperparameters it stored
+    (their samples and covariance) started afresh, as in the first fit of a
+    run.
   - Points with exactly equal values of the target, which a quantized
     log-likelihood can return, are ordered as in MATLAB VBMC, the earlier
     one first, when PyVBMC selects the points of highest density

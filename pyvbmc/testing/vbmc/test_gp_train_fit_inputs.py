@@ -766,6 +766,83 @@ def test_the_noise_multiplier_starts_where_matlab_starts_it(monkeypatch):
         assert sigma == np.log(10) and df == 3
 
 
+@pytest.mark.parametrize(
+    "weighted_hyp_cov", [True, False], ids=["weighted", "running"]
+)
+def test_a_level_one_run_saved_by_1_0_4_continues(
+    monkeypatch, weighted_hyp_cov
+):
+    """PyVBMC 1.0.4 fitted the GP of uncertainty level 1 with the constant
+    noise term alone, one noise hyperparameter where the model of this
+    level has two (``test_the_noise_model_follows_the_uncertainty_level``).
+    A run it saved at that level holds the statistics of the smaller model:
+    the summary samples and the running covariance in ``hyp_dict``, and the
+    hyperparameters of the recorded GPs. The fit drops each of them that
+    does not match the model, and starts the summary samples and the
+    running covariance afresh, as for a first fit, so that the run
+    continues, also in the iterations whose history holds GPs of both
+    models."""
+    vbmc = build_trained_state(
+        {"uncertainty_handling": True, "weighted_hyp_cov": weighted_hyp_cov}
+    )
+    old_N = np.size(default_gp(vbmc).hyper_priors["mu"])
+    history = vbmc.iteration_history
+    # The statistics of three iterations of 1.0.4, with the keys it wrote.
+    rng = np.random.default_rng(104)
+    samples = rng.normal(scale=0.1, size=(40, old_N))
+    hyp_dict = {
+        "hyp": samples[::5].copy(),
+        "warp": None,
+        "logp": rng.normal(size=40),
+        "full": samples,
+        "run_cov": np.cov(samples.T),
+    }
+    for i in range(3):
+        history.record("gp", RecordedGP(samples[i::8]), i)
+        history.record("gp_hyp_full", samples, i)
+        history.record("r_index", 2.0, i)
+        history.record("sKL", vbmc.options["tol_skl"], i)
+    vbmc.optim_state["iter"] = 3
+
+    seen = []
+    unwired = gpr.GP.fit
+
+    def note_the_starting_points(self, *args, hyp0=None, **kwargs):
+        seen.append(np.array(hyp0, copy=True))
+        return unwired(self, *args, hyp0=hyp0, **kwargs)
+
+    monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
+    gp, _, _, hyp_dict = fit_the_gp(vbmc, hyp_dict)
+
+    hyp_N = np.size(gp.hyper_priors["mu"])
+    assert hyp_N == old_N + 1
+    # A first fit starts from the one vector `_gp_hyp` builds, and takes
+    # the covariance of its own samples as the running covariance.
+    assert seen[0].shape == (1, hyp_N)
+    assert hyp_dict["hyp"].shape[1] == hyp_N
+    np.testing.assert_array_equal(
+        hyp_dict["run_cov"], np.cov(hyp_dict["full"].T)
+    )
+
+    # The next iteration: the history holds the fit above beside the GPs
+    # of 1.0.4, and the statistics of the fit above are kept.
+    history.record("gp", gp, 3)
+    history.record("gp_hyp_full", hyp_dict["full"], 3)
+    history.record("r_index", 2.0, 3)
+    history.record("sKL", vbmc.options["tol_skl"], 3)
+    vbmc.optim_state["iter"] = 4
+    run_cov = hyp_dict["run_cov"].copy()
+    gp, _, _, hyp_dict = fit_the_gp(vbmc, hyp_dict, seed=2)
+
+    assert seen[1].shape[1] == hyp_N and seen[1].shape[0] > 1
+    assert np.all(np.isfinite(gp.get_hyperparameters(as_array=True)))
+    w = vbmc.options["hyp_run_weight"] ** vbmc.options["fun_evals_per_iter"]
+    np.testing.assert_array_equal(
+        hyp_dict["run_cov"],
+        (1 - w) * np.cov(hyp_dict["full"].T) + w * run_cov,
+    )
+
+
 def noise_starting_point_and_priors(options: dict):
     """The noise hyperparameters ``_gp_hyp`` starts the fit from, with the
     hyperpriors it sets on them, for a state built with ``options``."""

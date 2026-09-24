@@ -31,7 +31,8 @@ def train_gp(
     hyp_dict : dict
         Hyperparameter summary statistics dictionary.
         If it does not contain the appropriate keys they will be added
-        automatically.
+        automatically. A statistic whose shape does not match the number of
+        hyperparameters of the GP model is dropped and started afresh.
     optim_state : dict
         Optimization state from the VBMC instance we are calling this from.
     function_logger : FunctionLogger
@@ -111,6 +112,19 @@ def train_gp(
     gp, hyp0, gp_s_N = _gp_hyp(
         optim_state, options, plb_tran, pub_tran, gp, x_train, y_train
     )
+    # The stored statistics of the hyperparameters belong to the model that
+    # computed them, and a run saved by an earlier version can hold those of
+    # a model with another number of hyperparameters (release 1.0.4 fitted
+    # one noise hyperparameter at uncertainty level 1, where this model has
+    # two). Those that do not match the model are dropped, and start afresh
+    # as in a first fit.
+    hyp_n = np.size(hyp0)
+    stored_hyp = hyp_dict["hyp"]
+    if stored_hyp is not None and np.atleast_2d(stored_hyp).shape[1] != hyp_n:
+        hyp_dict["hyp"] = None
+    run_cov = hyp_dict["run_cov"]
+    if run_cov is not None and np.shape(run_cov) != (hyp_n, hyp_n):
+        hyp_dict["run_cov"] = None
     # Initial GP hyperparameters.
     if hyp_dict["hyp"] is None:
         hyp_dict["hyp"] = hyp0.copy()
@@ -122,7 +136,7 @@ def train_gp(
         options,
         hyp_dict,
         gp_s_N,
-        hyp_n=np.size(hyp0),
+        hyp_n=hyp_n,
     )
 
     # In some cases the model can change so be careful.
@@ -138,17 +152,15 @@ def train_gp(
         # The later half of the recorded GPs. With `n` of them, MATLAB
         # collects the 1-based `ceil(n/2):n`, which over the same records
         # is `range(ceil(n / 2) - 1, n)` here; a history holding no GP
-        # leaves nothing to collect.
+        # leaves nothing to collect, and a GP of another model, recorded by
+        # an earlier version, gives no starting point.
         n_recorded = np.size(iteration_history["gp"])
         for i in range(max(math.ceil(n_recorded / 2) - 1, 0), n_recorded):
-            hyp0 = np.concatenate(
-                (
-                    hyp0,
-                    iteration_history["gp"][i].get_hyperparameters(
-                        as_array=True
-                    ),
-                )
+            recorded_hyp = iteration_history["gp"][i].get_hyperparameters(
+                as_array=True
             )
+            if recorded_hyp.shape[1] == hyp_n:
+                hyp0 = np.concatenate((hyp0, recorded_hyp))
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
