@@ -357,7 +357,10 @@ its entry below.
   such a GP only with `tol_gp_noise` below 1e-3. It also refuses, with a
   message, inputs that it could not use, and gpyreg 1.3.3 leaves a GP as
   it was when a call on it fails. See the release notes of gpyreg for the
-  rest of what changed there. `filelock`, `platformdirs` and
+  rest of what changed there. PyVBMC 1.0.4, which takes any gpyreg, runs
+  no noisy target at uncertainty level 1 with gpyreg 1.3.0 or later: it
+  sets a prior on a hyperparameter its GP does not have, which gpyreg
+  refuses from 1.3.0 on, at the first GP fit of the run. `filelock`, `platformdirs` and
   `threadpoolctl` are new dependencies, used by the machine calibration.
   `pytest`, its plugins and `plotly` are no longer installed with PyVBMC: they
   are in the extras `test` and `examples`. `plotly` is used by example
