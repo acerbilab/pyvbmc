@@ -17,7 +17,8 @@ records its execution.
   and 24 by the rulings after the close of the port review and the round
   of their check (its
   [ledger](results/2026-09-23-port-correctness-review.md), "Findings ruled
-  after the close"); the whole-run timings of "Runs are
+  after the close"), and of the S-VBMC entry's point on `save` and `load`,
+  added on 2026-09-24; the whole-run timings of "Runs are
   faster", measured on 2026-09-03 to 09-05, before the corrections that
   change how long a run takes, and the S-VBMC speed figure, both to be
   measured again on the release benchmark; the S-VBMC entry's account of the
@@ -56,20 +57,6 @@ records its execution.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
-
-- [ ] **Saving and loading an S-VBMC object.** `SVBMC` has no `save` or
-  `load`, unlike `VBMC` and `VariationalPosterior`, and neither the API
-  page nor Example 7 says how to keep a stack; the original standalone
-  package had no such methods either. The standard `pickle` fails on an
-  `SVBMC` object, as it does on a posterior, because the parameter
-  transformer holds local closures. `dill`, which the existing `save` and
-  `load` methods use, serializes a fresh or an optimized stack with an
-  exact round trip of the weights, the ELBO and the generator state, and
-  the object holds no Torch state (checked 2026-09-19 during the
-  [port correctness review](plans/port-correctness-review.md)). Add
-  `SVBMC.save` and `SVBMC.load` mirroring the posterior's (`dill`, the
-  overwrite guard), a round-trip test in the Torch CI cell, the API
-  documentation, and a short saving step in Example 7.
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
   resource settings, resumption and result collection. The pool campaign's

@@ -307,3 +307,34 @@ added there, and the fixture globs go into `MANIFEST.in`.
   Example 6 reference on the `VBMC` page does. Remaining from this plan:
   the forwarding `svbmc` release after the 1.5 publication, and the
   deferred speedups gated by `references.npz`.
+- 2026-09-24: `SVBMC.save` and `SVBMC.load`, which a ruling of the port
+  review's wave 0 asked for (`port-correctness-review.md`, worklog of
+  2026-09-19), on `feat-svbmc-save-load` from `dev-next` at `45fd3892`
+  (`e5ea7381`).
+  They mirror the posterior's methods: `dill` with `recurse=True`, `.pkl`
+  added to a name without an extension, and an existing file kept unless
+  `overwrite=True`. A probe listed every global a saved stack references:
+  NumPy's array and generator constructors, `logging.getLogger`, the
+  calibration profile's constructor and the classes `SVBMC`,
+  `VariationalPosterior` and `ParameterTransformer`, all by name, so the
+  file holds no bytecode. Plain `pickle` serializes the object too, since
+  the transformer leaves out its bounded transforms (W2-30). `load` takes
+  no `calibration=` keyword: stacking reads none of the calibrated
+  settings (its entropy computes the component densities itself, and
+  `sample` reads none), and each retained posterior keeps its profile as
+  saved state, which the posterior's own accessors migrate when a legacy
+  one is used. `load` sets up the `"SVBMC"` logger as construction does,
+  since the file names the logger but not its level. It refuses a file
+  that holds another object, and it imports no Torch, so a loaded stack
+  samples and plots without it. Tests: `test_svbmc_save_and_load.py`
+  (8, the Torch cell), which takes over the no-function check of
+  `test_svbmc.py`. Documentation: a section of the API page, a line of
+  the FAQ's S-VBMC answer, the S-VBMC entry of `CHANGELOG.md`, and a
+  saving step in Example 7 (section 5; the script regenerated with its
+  Makefile). The example ran end to end as that script in the extras
+  environment. Its stored outputs, from 2026-09-12, predate the port
+  review's fixes: in the new run, two of the four VBMC runs find both
+  modes and the stacked ELBO is 0.017, where the notebook shows one such
+  run and 0.024. They are left for the release's run of the examples. Gates:
+  the S-VBMC tests with Torch 2.14.0 (234 passed, none skipped), and a
+  docs build with no new warning.
