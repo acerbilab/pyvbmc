@@ -55,6 +55,7 @@ from .options import (
     _states_the_stored_uncertainty_handling,
     _states_the_stored_value,
     _uncertainty_handling_flag,
+    _uncertainty_handling_level,
 )
 from .variational_optimization import optimize_vp, update_K
 
@@ -102,8 +103,8 @@ _PRECOMPUTED_DUPLICATE_ULPS = 4
 # of names below says which site reads them.
 _CONSTRUCTION_ONLY_OPTIONS = (
     # Read by ``Options.update_defaults``, which settles the defaults for a
-    # noisy target, and by ``_init_optim_state`` through
-    # ``Options.uncertainty_handling_on``, which sets the uncertainty
+    # noisy target, and by ``_init_optim_state``, which sets from the pair,
+    # through ``options._uncertainty_handling_level``, the uncertainty
     # handling level the GP noise model and the function logger follow.
     # ``specify_target_noise`` is also read by the warning that a
     # ``noise_size`` given with it has no effect.
@@ -1313,12 +1314,11 @@ class VBMC:
 
         # Set uncertainty handling level
         # (0: none; 1: unknown noise level; 2: user-provided noise)
-        if not self.options.uncertainty_handling_on():
-            optim_state["uncertainty_handling_level"] = 0
-        elif self.options.get("specify_target_noise"):
-            optim_state["uncertainty_handling_level"] = 2
-        else:
-            optim_state["uncertainty_handling_level"] = 1
+        level = _uncertainty_handling_level(
+            self.options.get("uncertainty_handling"),
+            self.options.get("specify_target_noise"),
+        )
+        optim_state["uncertainty_handling_level"] = level
 
         # List of points at the end of each iteration
         optim_state["iter_list"] = {}
