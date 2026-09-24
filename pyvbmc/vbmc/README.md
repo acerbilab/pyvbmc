@@ -625,9 +625,9 @@ defect *n*" is entry *n* of
   between 0.5 and 1, where `acq/acqviqr_vbmc.m:4` and
   `acq/acqimiqr_vbmc.m:4` have the literal `0.6745`. The literal accounts
   for the whole difference between the two implementations' values: on the
-  stored noisy state of the oracles they move by up to 1.7e-5 (VIQR) and
-  8e-5 (IMIQR), with the same best candidate (pull request 80;
-  `verification/wave4.md`, W4-8).
+  oracles' stored state `rosenbrock_D2_noise1_viqr` they move by up to
+  1.7e-5 (VIQR) and 8e-5 (IMIQR), with the same best candidate (pull
+  request 80; `verification/wave4.md`, W4-8).
 - **A NaN acquisition value stays NaN** (deliberate change), where
   `acq/acqwrapper_vbmc.m:47` turns it into `-realmax`, the best value for the
   search. No shipped acquisition returns one (`verification/wave4.md`,

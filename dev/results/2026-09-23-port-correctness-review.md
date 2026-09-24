@@ -160,8 +160,9 @@ What the review changed:
   as material for the MATLAB repository.
 
 What it leaves, all in `dev/TODO.md`: the regeneration of the golden
-references; an oracle state at uncertainty level 1; a seeded gate run with a
-prior; and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
+references; an oracle state at uncertainty level 1 (done on 2026-09-24:
+`dev/plans/fixture-generator-and-oracles.md`, "Phase 5"); a seeded gate run
+with a prior; and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
 object and the comparison of the two compositions of the S-VBMC shrinkage.
 
 ## The fixes that move default trajectories

@@ -380,8 +380,8 @@ reason.
   with spline-trapezoidal priors; see
   [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md)),
   a generic noise wrapper, whose target returns the noise SD beside the
-  value (uncertainty level 2) or, with `provide_noise=False` and a label
-  ending in `_level1`, the value alone (level 1), the `smoke` / `profile`
+  value (uncertainty level 2) or, with `provide_noise=False`, the value
+  alone (level 1; the label then carries `_level1`), the `smoke` / `profile`
   / `golden` / `svbmc_pool` / `production` / `oracle` suites
   (`svbmc_pool` the pool conditions of the S-VBMC campaign, at PyVBMC's
   default budget and tagged `svbmc`; `production` the golden suite with

@@ -95,33 +95,47 @@ the covariance-only runs, retaining the original population accuracy fences.
 ## Phase 5 a state at uncertainty level 1 (2026-09-24)
 
 `rosenbrock_D2_noise3_level1` is the first snapshot of a run with
-`uncertainty_handling=True` and no `specify_target_noise` (the item of
-`dev/TODO.md` that the PI set on 2026-09-21 to wait for the fixes of the
-port correctness review). At that level the GP noise of each row is
-`exp(2 h1) + exp(h2) s2`, with `s2 = 1/n_evals` from the function logger
-(noise function `[1, 2, 0]`, row W3-1 of
+`uncertainty_handling=True` and no `specify_target_noise`. The PI set it
+on 2026-09-21 as work for after the fixes of the port correctness review
+(its closing ledger, `dev/results/2026-09-23-port-correctness-review.md`,
+row "stored oracle state at level 1"). At that level the GP noise
+variance of each row is `exp(2 h1) + exp(h2) s2`: `h1` is the log SD of a
+constant term and `h2` the log of a multiplier of the recorded noise
+`s2 = 1/n_evals`, the function logger recording an SD of 1 per
+evaluation (noise function `[1, 2, 0]`, row W3-1 of
 [the wave-3 ledger](../experiments/port_review_20260919/verification/wave3.md)).
-The snapshot is the only one that reaches the scaled provided-noise
-branch of gpyreg's `GaussianNoise`, the level-1 hyperprior of `_gp_hyp`
-(through `gp_nlZ`, whose gradient covers the multiplier) and the level-1
-fit (`gp_fit`, `gp_fit_history`).
+The snapshot is the only one that reaches, on every platform, the scaled
+provided-noise branch of gpyreg's `GaussianNoise` and the level-1
+hyperprior of `_gp_hyp` (through `gp_nlZ`, whose gradient covers the
+multiplier), and, on the generating machine, where the platform-bound
+oracles run, the level-1 fit (`gp_fit`, `gp_fit_history`).
 
 - Target: the config `rosenbrock_D2_noise3_level1` of the `oracle` suite
   of `benchmark_targets.py`, the noisy Rosenbrock whose target returns its
   value alone (`provide_noise=False`). At a noise SD of 1 the fitted
-  multiplier settles near 1, and since `S^2 n_evals = 1` the acquisitions
-  and most rows then compute nearly the numbers of level 2, so a
-  mishandled multiplier would barely move an output. At SD 3 the log
-  multiplier of the snapshot's eight samples lies between 2.02 and 2.61
-  (log 9 = 2.20).
-- Repeated observations: `max_repeated_observations = 3`, default run
-  limits, and the pick `first_repeat`, the first iteration whose GP holds
-  a row evaluated more than once. The run (28 iterations, 140
-  evaluations) makes its only repeat at iteration 20, which is the
-  snapshot: 100 GP rows, one of them from two evaluations (`s2` 0.5
-  there, 1 elsewhere), K = 19, Ns = 8, a rotoscale warp in place. No
-  repeat occurs in the first four iterations, the length of the noisy
-  snapshot's run.
+  multiplier settles near 1, where the noise of a row,
+  `exp(2 h1) + 1/n_evals`, is nearly the `1/n_evals` that a level-2 target
+  of SD 1 provides, so a mishandled multiplier would barely move an
+  output. At SD 3 the noise variance is 9, and the log multiplier of the
+  snapshot's eight samples lies between 2.02 and 2.61 (log 9 = 2.20).
+- The split between the two terms is weakly identified: with `s2` the
+  same on every row but one, the data pin their sum (a total noise
+  variance between 8.9 and 13.6 over the snapshot's samples), not their
+  shares. The snapshot's samples carry the noise in the multiplier, the
+  log SD of the constant lying between -4.69 and -2.22 on seven of them,
+  and so do the four samples of the `gp_fit_history` reference; seven of
+  the eight samples of the `gp_fit` reference, refitted from the same
+  state, carry it in the constant (log SD 0.86 to 1.05, log multiplier
+  -0.02 to 1.36). A regeneration can therefore land in the second mode,
+  and the recipe's check, a mean log multiplier above 1 in absolute
+  value, refuses such a state.
+- Repeated observations: `max_repeated_observations = 3` and the pick
+  `first_repeat`, the first iteration whose GP holds a row evaluated more
+  than once, with the default run limits, since a run capped at four
+  iterations, as the level-2 snapshot's is, makes no repeat. The run (28
+  iterations, 140 evaluations) makes one repeat, at iteration 20, which is
+  the snapshot: 100 GP rows, one of them from two evaluations (`s2` 0.5
+  there, 1 elsewhere), K = 19, Ns = 8, a rotoscale warp in place.
 - Candidates: the 100 live training inputs lead the 512 sieve candidates
   (`train_candidates`, recorded as `meta["cand_train_rows"]`): with
   observation noise and `max_repeated_observations` above 0, active
@@ -129,14 +143,25 @@ fit (`gp_fit`, `gp_fit_history`).
 - Oracles: the sixteen of `rosenbrock_D2_noise1_viqr`.
   `active_sample_step` does not apply, since the noisy defaults turn on
   the GP and VP updates inside active sampling.
-- Generation: `--only rosenbrock_D2_noise3_level1` on the generating
-  machine, at the clean commit `7bf916e5`; the 22 files of the other
-  fixtures kept their hashes. Two generations on one commit agree in
-  every array except the logger's wall-clock evaluation times.
-- Gates: `make_oracle_fixtures.py --check --exact`, 12 of 12;
+- Generation: `--only rosenbrock_D2_noise3_level1` with BLAS
+  single-threaded on the generating machine, at the clean commit
+  `7bf916e5`, in about 70 s; the 22 files of the other fixtures kept their
+  hashes. A generation from the same code before it was committed agrees
+  in every array except the logger's wall-clock evaluation times.
+- Gates: `make_oracle_fixtures.py --check --exact`, 12 of 12, and
   `pytest pyvbmc/testing/oracles`, 159 passed and 16 skipped (on the new
   snapshot sixteen oracles pass and `active_sample_step` is skipped as not
-  applicable); `benchmark_targets.py --smoke --suite oracle`.
+  applicable), both with BLAS single-threaded;
+  `benchmark_targets.py --smoke --suite oracle`, ok; the CI matrix at
+  `28d3b4f5` (run 36038440605), nine of nine jobs green, with the
+  snapshot's fourteen portable oracles passing on each of the three BLAS
+  builds and `gp_fit` and `gp_fit_history` skipped off the generating
+  platform.
+- Evidence: `dev/scripts/runs/oracle_level1_20260924/` (listed in
+  `dev/scripts/runs/LOCAL.md`): the generation logs, the probe of the
+  run's repeats and noise hyperparameters, the gate logs, the hashes of
+  the other fixtures, and the labels and target outputs before and after
+  the `provide_noise` switch.
 
 ## Summary
 
@@ -179,8 +204,10 @@ and its corrections are folded in below and in the code.
   returns `(Nc, Ns)` arrays, the averaged form `(Nc, 1)`. The noise
   function's switches are recorded from `gp.noise.parameters`, not from
   `optim_state["gp_noise_fun"]`: with `uncertainty_handling` but no
-  `specify_target_noise` the two disagree (`GaussianNoise` applies the
-  scale flag only inside the user-provided branch).
+  `specify_target_noise` the two disagreed (`GaussianNoise` applies the
+  scale flag only inside the user-provided branch) until `train_gp`
+  translated the flag as MATLAB does (`095c82c`, 2026-09-20, row W3-1 of
+  the port review's wave-3 ledger); both are `[1, 2, 0]` since (Phase 5).
 - **`gp.temporary_data` is empty on every recorded GP**: `train_gp` builds
   a new GP each iteration and `active_sample` fills `sn2_new` /
   `X_rescaled` (and `optim_state["gp_length_scale"]`) on the previous one.
@@ -284,11 +311,14 @@ Namespaces:
 - `optim_state/...` through the codec, recursively.
 - `options`: the run's user options (acquisition objects as class names).
 - `cand/Xs (Nc, D)`: `Nc = 512` points, a fixed stride through the seeded
-  `2^13` sieve of `_get_search_points`.
+  `2^13` sieve of `_get_search_points`; a recipe with `train_candidates`
+  puts the live training inputs before them (Phase 5).
 - `ref/<oracle>/<output>`: the reference outputs.
 - JSON `meta`: recipe, config, problem `(name, D, noise_sd, seed)`, the
   iteration and the run's `best_iter`, `r_index`, `K`, `Ns`, `N`, the
-  oracle seed, git SHA and dirty flag, package versions, timestamp.
+  oracle seed, git SHA and dirty flag, package versions, timestamp; on a
+  snapshot generated since Phase 5, `cand_train_rows`, the number of
+  training inputs that lead `cand/Xs`.
 
 Rebuilding: `build_transformer`, `build_vp`, `build_gp`, `build_logger`,
 `build_options`, `build_optim_state` in `pyvbmc/testing/oracles/_state.py`,
