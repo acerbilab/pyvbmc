@@ -388,8 +388,8 @@ of an item, with a test seen to fail first where the commit changes what
 the code does (the test of the calibration's layout, of code that was
 right, on planted drifts); `490d4d8f`, which changes how construction
 computes the uncertainty handling level and not the level, is checked by a
-comparison on 170 pairs of the two options, and the test fix `1cbab6d` is
-the orchestrator's. The orchestrator read each diff and wrote the records. The id is the row of
+comparison on 170 pairs of the two options, and the test fix, gpyreg's
+`1cbab6d`, is the orchestrator's. The orchestrator read each diff and wrote the records. The id is the row of
 the report, or the item of the orchestrator's list to the PI (A to G).
 
 | Code | id | Finding | Ruling (PI) | Fix |
@@ -458,7 +458,10 @@ added to the ruling on its refusals, was kept and extended to `update`
 after its effect on PyBADS was weighed (none at PyBADS's default options;
 a retry after a failed factorization at two options that are not its
 defaults). Fix agents J (gpyreg) and K (PyVBMC) made the fixes in
-worktrees, and the orchestrator the texts and records beyond them.
+worktrees, and the orchestrator the texts and records beyond them. A
+narrow read-only check of the round's diffs followed, two fresh reviewers
+(N1 on gpyreg, N2 on PyVBMC), whose three findings the PI ruled on the
+same day (the rows marked N1 and N2).
 
 | Code | id | Finding | Ruling (PI) | Fix |
 |---|---|---|---|---|
@@ -478,6 +481,9 @@ worktrees, and the orchestrator the texts and records beyond them.
 | gpyreg | Q4 S3, Q3 S2, S3 | the 1.3.2 release notes missed Upgrading points and misstated a few behaviors of 1.3.1 | fix, in place; and a sentence in the 1.3.0 notes for PyVBMC 1.0.4, whose first GP fit fails there when its points of highest density share a value | gpyreg `4f68a12`, `5132393` |
 | gpyreg | Q4 S4 | gpyreg's `AGENTS.md` said that the tests are not in the wheels | fix | gpyreg `060ed71` |
 | gpyreg | Q4 S1 | the texts of `#53` and of the release `v1.3.2` say that every refusal comes before anything changes, which holds from 1.3.3 on | a line of correction in each, with the release of 1.3.3 | the published texts |
+| gpyreg | N1 S1 (the narrow check) | the warning with which a single-point `update` falls back to a full recomputation named a line of gpyreg in 1.3.3, the body of `update` having moved one frame deeper | fix, on `main` for the next release ("1.3.4 (unreleased)" in the notes) | gpyreg `56d634b` (`#55`) |
+| gpyreg | N1 S2 | the 1.3.3 notes said that `update` runs on a GP whose `s2` holds a number; given new data it needs an array, in every release | fix, in the notes and in the texts of `#54` and `v1.3.3` | gpyreg `5b7424c` (`#55`) |
+| both | N2 S1 | PyVBMC 1.0.4 runs no noisy target at uncertainty level 1 with gpyreg 1.3.0 or later: it sets a prior on `noise_provided_log_multiplier`, which its GP has not, and `set_priors` refuses the name from 1.3.0 on, at the first GP fit; nothing said so | documented: gpyreg's 1.3.0 notes, PyVBMC's changelog, and the flag in `wave3.md` on W3-1 | gpyreg `5b7424c`; the changelog and the records |
 
 ## The findings, wave by wave
 

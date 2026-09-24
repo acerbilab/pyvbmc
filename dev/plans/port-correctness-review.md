@@ -2689,7 +2689,14 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   `dev-port-review` pushed at `08627e29`, its branch smoke and full matrix
   (nine jobs) green with the pin at `v1.3.3`; `dev-next` fast-forwarded to
   it with these records. A narrow read-only check of the round's diffs, two
-  reviewers, followed.
+  fresh reviewers (N1 gpyreg, N2 PyVBMC), followed; the PI ruled on its
+  three findings the same day: the fallback warning of a single-point
+  update named a line of gpyreg in 1.3.3 (fixed on gpyreg's `main` for the
+  next release, `acerbilab/gpyreg#55`, merged as `51ebf95`, no release); the
+  1.3.3 notes overstated what runs on a GP whose `s2` holds a number
+  (corrected there and in the texts of `#54` and `v1.3.3`); and PyVBMC
+  1.0.4 runs no noisy target at uncertainty level 1 with gpyreg 1.3.0 or
+  later, which gpyreg's 1.3.0 notes, the changelog and `wave3.md` now say.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
