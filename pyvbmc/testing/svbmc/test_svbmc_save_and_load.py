@@ -5,6 +5,7 @@ what is checked is that the file restores the whole object, not the
 quality of the stack.
 """
 
+import copy
 import logging
 import sys
 
@@ -48,11 +49,12 @@ def _stack(vp_list, seed=0):
 def _assert_same(restored, original, where):
     """Assert that ``restored`` holds what ``original`` holds, recursively.
 
-    Objects are compared attribute by attribute, so an attribute that a
-    later version adds is compared too. The transformer and the
-    calibration profile compare with their own ``==``, the transformer's
-    leaving out the bounded transforms that it rebuilds on loading. The
-    generators compare by state, and the logger is the process's own.
+    The stack and its posteriors are compared attribute by attribute, so
+    an attribute that a later version gives them is compared too. The
+    transformer and the calibration profile compare with their own ``==``,
+    the transformer's leaving out the bounded transforms that it rebuilds
+    on loading. The generators compare by state, and the logger is the
+    process's own.
     """
     if isinstance(original, logging.Logger):
         assert restored is original, where
@@ -163,8 +165,32 @@ def test_file_name_and_overwrite_guard(d2_vps, tmp_path):
 def test_load_refuses_another_object(d2_vps, tmp_path):
     path = tmp_path / "posterior.pkl"
     d2_vps[0].save(path)
-    with pytest.raises(TypeError, match="VariationalPosterior"):
+    with pytest.raises(
+        TypeError,
+        match=r"variational_posterior\.VariationalPosterior, not "
+        r"pyvbmc\.svbmc\.svbmc\.SVBMC",
+    ):
         SVBMC.load(path)
+
+
+def test_load_migrates_the_retained_posteriors(d2_vps, tmp_path):
+    """A retained posterior saved before calibration profiles existed gets
+    the profile that ``VariationalPosterior.load`` would give it."""
+    stacked = SVBMC(d2_vps, seed=0)
+    legacy = stacked.vp_list[1] = copy.deepcopy(stacked.vp_list[1])
+    for name in (
+        "_calibration_profile",
+        "_calibration_request",
+        "_calibration_hint_emitted",
+    ):
+        del legacy.__dict__[name]
+    path = tmp_path / "stack.pkl"
+    stacked.save(path)
+
+    restored = SVBMC.load(path).vp_list[1]
+    assert restored.__dict__["_calibration_profile"].source == "legacy"
+    assert restored.__dict__["_calibration_request"] is None
+    assert restored.__dict__["_calibration_hint_emitted"] is False
 
 
 def test_a_loaded_stack_samples_without_torch(d2_vps, tmp_path, monkeypatch):

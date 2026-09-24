@@ -1078,9 +1078,16 @@ Generator, optional
             stacked = dill.load(f)
 
         if not isinstance(stacked, cls):
+            found = type(stacked)
             raise TypeError(
-                f"{filepath} holds a {type(stacked).__name__}, not an "
-                f"{cls.__name__} object."
+                f"{filepath} holds an object of type "
+                f"{found.__module__}.{found.__qualname__}, not "
+                f"{cls.__module__}.{cls.__qualname__}."
             )
+        # The retained posteriors do not pass through
+        # `VariationalPosterior.load`, so they are migrated here as
+        # `VBMC.load` migrates the posteriors of a run.
+        for vp in stacked.vp_list:
+            vp._ensure_calibration_state()
         stacked.logger = _svbmc_logger()
         return stacked

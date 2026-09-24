@@ -207,7 +207,11 @@ around three numerical stages, repeated until termination:
   `specify_target_noise` or `search_optimizer` in a form that 1.0.4 took,
   and a `last_warmup` of 0); an attribute or option added to a saved class
   needs the same, and renaming or removing one breaks users' files along
-  with the static test pickles.
+  with the static test pickles. `VariationalPosterior.load` migrates the
+  posterior it loads (`_ensure_calibration_state`), and `VBMC.load` and
+  `SVBMC.load` apply the same migration to the posteriors their files hold,
+  which never pass through `VariationalPosterior.load`: a back-fill of a
+  posterior goes into all three.
 - **Optional integrations import lazily.** `import pyvbmc` imports none of
   Torch, ArviZ, PyMC and PyTensor: `pyvbmc.SVBMC` and `pyvbmc.PyMCTarget`
   resolve on request (`pyvbmc/__init__.py`), and the posterior exports import
