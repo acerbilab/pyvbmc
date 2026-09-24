@@ -27,6 +27,10 @@ from pyvbmc.testing.oracles._state import (
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 REFERENCES = "references"
+# The stack saved with `SVBMC.save`, the one pickle among the fixtures, in
+# a directory of its own so that `snapshot_names` does not list its sidecar.
+SAVED_DIR = FIXTURES_DIR / "saved"
+SAVED_GROUP = "bounded_D2"
 
 
 def _placeholder_plausible(lb, ub):

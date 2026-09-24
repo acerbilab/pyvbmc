@@ -18,6 +18,8 @@ include pyvbmc/testing/oracles/fixtures/gp_fit_history/*.json
 recursive-include pyvbmc/testing/calibration *.py
 include pyvbmc/testing/svbmc/fixtures/*.npz
 include pyvbmc/testing/svbmc/fixtures/*.json
+include pyvbmc/testing/svbmc/fixtures/saved/*.pkl
+include pyvbmc/testing/svbmc/fixtures/saved/*.json
 include pyvbmc/testing/svbmc/FIXTURES.md
 include pyvbmc/svbmc/LICENSE.txt
 prune docsrc

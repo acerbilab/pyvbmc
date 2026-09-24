@@ -7,7 +7,8 @@ Fitted posteriors and regression references for the tests of
 with `np.load(path, allow_pickle=False)`), `<name>.json` the tree, the
 scalars and a `meta` block with the provenance. `_fixtures.py` next to
 this file rebuilds them through the public constructors (`load_vp`,
-`load_group`), so no file depends on the layout of any class. Everything
+`load_group`), so no posterior file depends on the layout of any class;
+the saved stack under `saved/` depends on it by design (below). Everything
 here is written by `dev/scripts/make_svbmc_fixtures.py`; regenerate only to
 set a new baseline on purpose.
 
@@ -99,12 +100,36 @@ baseline. Both reported values and bounded-target optimization weights can
 therefore change. The 39 posterior snapshots remain unchanged. The plan
 records plausibility checks against the previous code's sampling variation.
 
+## Saved stack (`saved/bounded_D2.pkl` / `saved/bounded_D2.json`)
+
+`make_svbmc_fixtures.py saved-stack` (2026-09-24, Python 3.12.6 on Windows,
+NumPy 2.5.3, dill 0.4.1, Torch 2.14.0 CPU; the sidecar's `meta` records
+these, the PyVBMC commit and the S-VBMC source hashes):
+`SVBMC(vps, seed=0).optimize(n_samples=5, n_samples_final=5, max_steps=3)`
+with `vps = load_group("bounded_D2", rng=0)[0]`, written with
+`SVBMC.save`. It is the one pickle among these fixtures, a file as a user's
+`stacked.save` writes it. Loaded in every CI cell, under other Python
+versions and platforms and without torch, it tests that such a file holds
+no bytecode and needs no torch to load; and it holds the class layout that
+`SVBMC.load` reads, so a change that renames or removes an attribute of the
+stack or of the objects it holds fails `test_svbmc_saved_stack.py`. The
+sidecar holds the stack's `D`, `M`, `K`, weights, `elbo`, `elbo_sd`,
+`entropy` and `elbo_details`, the names of the retained posteriors (the
+three `bounded_D2` snapshots, in order), the SHA-256 of the file, and
+`sample(16)` of the loaded stack after its generator is set to
+`default_rng(1)`. Regenerate it only for a deliberate change of that layout
+made before PyVBMC 1.5 is released. Users hold files written by a released
+version, so after the release this file stays, and `SVBMC.load` back-fills
+what an older file lacks instead (`AGENTS.md`, "Saved objects are pickles
+of the classes as they are").
+
 ## Tests
 
 | test module | reads | tolerance |
 | --- | --- | --- |
 | `test_svbmc.py` | `upstream_GMM`, `normal_D1`, `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | shapes, dtypes and reproducibility exact; sample statistics loose (means within 0.25 or 0.5, standard deviations at `rtol=0.25`) |
 | `test_svbmc_save_and_load.py` | `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | exact: every attribute of the loaded object, generator states included, its draws and a later optimization |
+| `test_svbmc_saved_stack.py` | `saved/bounded_D2.pkl` and its sidecar; the `bounded_D2` snapshots | state exact; draws at `rtol=1e-12`, `atol=1e-12`; runs without torch |
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
 | `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
 | `test_entropy.py` | `normal_D1`, `bounded_D2`, `corr_D3` and the first three `upstream_GMM` posteriors via `load_group(group, rng=0)` | the per-run entropy preparation and vectorized reduction against literal per-component transcriptions of the same estimator, at 1 and 3 draws per component: density matrix, entropy, weight gradient and stratified variance at `rtol=1e-12`, `atol=1e-12`; generator state and chunking exact. The preparation checks run without torch |
