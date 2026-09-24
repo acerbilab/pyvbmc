@@ -2686,6 +2686,10 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   minimum and pin at 1.3.3 (`912ff70e`) and the gates against the installed
   1.3.3. The ledger's "The final check of the session, and its round" and
   "gpyreg 1.3.0 to 1.3.3" give each finding, ruling and fix.
+  `dev-port-review` pushed at `08627e29`, its branch smoke and full matrix
+  (nine jobs) green with the pin at `v1.3.3`; `dev-next` fast-forwarded to
+  it with these records. A narrow read-only check of the round's diffs, two
+  reviewers, followed.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
