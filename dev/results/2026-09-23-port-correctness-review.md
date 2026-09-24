@@ -8,8 +8,8 @@ with its class, its dating, its evidence, the PI's disposition and its fix
 commit. It points at the per-wave ledgers under
 [`experiments/port_review_20260919/verification/`](../experiments/port_review_20260919/verification/),
 which hold each finding's full statement, its reproduction and the gates of
-its pass, and at gpyreg 1.3.0 and 1.3.1 and gpyreg's branch `w6-leftovers`,
-prepared as 1.3.2, which carry the review's fixes to gpyreg. The catalogue of
+its pass, and at gpyreg 1.3.0, 1.3.1 and 1.3.2, which carry the review's
+fixes to gpyreg. The catalogue of
 the deliberate differences from MATLAB that the review settled is in the
 porting log [`pyvbmc/vbmc/README.md`](../../pyvbmc/vbmc/README.md). The
 findings that the close left without a ruling, and the items that the
@@ -58,7 +58,7 @@ check.
 | Code | Repository | At the start | At the close |
 |---|---|---|---|
 | PyVBMC | this repository | `f91fdf0` (`dev-next`, 2026-09-19) | `c228cc2e` (`dev-port-review`, equal to `dev-next`), which holds every fix of the eight waves |
-| gpyreg | `acerbilab/gpyreg` | `9e70e6b` (1.2.1) | `v1.3.1` (`1dbbfc5`), which PyVBMC requires |
+| gpyreg | `acerbilab/gpyreg` | `9e70e6b` (1.2.1) | `v1.3.1` (`1dbbfc5`); PyVBMC requires `v1.3.2` (`29b868c`), released after the close |
 | MATLAB VBMC, the comparison target | `acerbilab/vbmc` | `396d649` (`master`, 2023-05-03) | unchanged |
 
 | Record | Path under `experiments/port_review_20260919/` |
@@ -109,8 +109,7 @@ in one row, so does this one.
   ancestor of `c228cc2e`, but for `29c822d`, a fix agent's commit that the
   branch took as `e48fade`, and every gpyreg commit cited there is an
   ancestor of `v1.3.1`. The commits of the section "Findings ruled after the
-  close" come after those, on `dev-port-review` and on gpyreg's branch
-  `w6-leftovers`.
+  close" come after those, on `dev-port-review` and, in gpyreg, in `v1.3.2`.
 
 ## Summary
 
@@ -124,7 +123,7 @@ in one row, so does this one.
 | 5 | 2026-09-21 | P7, P9, both tracks; P2, internal track | 54 | `wave5.md`, W5-1 to W5-40 | 32 commits; check 13, and `5c4fc87`, `6d492a2`, `6dcd027`, `f9ab814` | `03a8d46`; `1563053` |
 | 6 | 2026-09-21 to 09-23 | G1, G2 (gpyreg), both tracks | 36, and 52 minor observations | `wave6.md`, W6-1 to W6-38 | gpyreg: 56 commits in `acerbilab/gpyreg#50`; PyVBMC: 8 | gpyreg 1.3.0; `dev-next` fast-forwarded |
 | 7 | 2026-09-23 | O1 to O4, third readers | 14, two observations, and a verifier's candidate (W7-17) | `wave7.md`, W7-1 to W7-17 | PyVBMC: 19, then 3 in the round of its check and `8921845f`; gpyreg: 12 | gpyreg 1.3.1; `dev-next` fast-forwarded |
-| after the close | 2026-09-23 | the 17 findings that the close left without a ruling and the 10 items that the check of the wave-6 pass left for later; then the independent check of that work, six reviewers | 14 more found while the rulings were carried out; the check's findings | this ledger, "Findings ruled after the close" | PyVBMC: 27, then 27 in the round of the check; gpyreg: 16, then 15, on `w6-leftovers` | not yet |
+| after the close | 2026-09-23 | the 17 findings that the close left without a ruling and the 10 items that the check of the wave-6 pass left for later; then the independent check of that work, six reviewers | 14 more found while the rulings were carried out; the check's findings | this ledger, "Findings ruled after the close" | PyVBMC: 27, then 27 in the round of the check; gpyreg: 16, then 16, in 1.3.2 | not yet |
 
 What the review changed:
 
@@ -143,10 +142,10 @@ What the review changed:
   to `load`, unported samplers, mean functions and features, priors that do
   not cover the hard bounds, starting points without spread, non-finite
   prior arguments in gpyreg.
-- **gpyreg 1.3.0 and 1.3.1**, released on 2026-09-23 with the fixes of waves 6
-  and 7 (below); PyVBMC requires 1.3.1. The gpyreg fixes of the rulings
-  after the close are on gpyreg's branch `w6-leftovers`, prepared as 1.3.2
-  and not yet released.
+- **gpyreg 1.3.0, 1.3.1 and 1.3.2**: 1.3.0 and 1.3.1 released on 2026-09-23
+  with the fixes of waves 6 and 7, 1.3.2 on 2026-09-24 with those of the
+  rulings after the close and of their check (below); PyVBMC requires
+  1.3.2.
 - **Default trajectories.** The fixes listed under "The fixes that move
   default trajectories" change what a run at the shipped options computes, so
   the golden references and the production-reference runs describe the code
@@ -245,16 +244,27 @@ PyPI by its GitHub release. It carries W7-14, W7-15 and W7-16, the design of
 (found by the check), and the tests of the O4 test notes. PyVBMC moved its
 pin to the tag with `gpyreg >= 1.3.1` (`9068f2d0` (git)).
 
-**1.3.2** (prepared on 2026-09-23, not released): the branch `w6-leftovers`
-of gpyreg, 31 commits over `v1.3.1`, not pushed, which carries the gpyreg
-fixes of the rulings after the close and of the round of their check
-("Findings ruled after the close"): 16 commits, then 15. Its release notes,
-under "1.3.2 (unreleased)", have an "Upgrading" point for each change that
-can stop a script written for 1.3.1, and for the predictions of the
-low-noise representation, which change, PyBADS's among them. None of its
-changes moves a number that PyVBMC computes: PyVBMC's gates against the
-branch give the oracles and the seeded runs bit for bit. At its release
-PyVBMC moves its minimum and its pin to it (`AGENTS.md`).
+**1.3.2** (2026-09-24): the annotated tag `v1.3.2` on `29b868c`, the merge of
+`acerbilab/gpyreg#53` (`w6-leftovers`, 33 commits: the 16 of the rulings
+after the close, the 16 of the round of their check, and the dating of the
+release notes, `755a4b3`), uploaded to PyPI by its GitHub release (the
+wheel and the source archive). It carries the gpyreg fixes of "Findings
+ruled after the close". Its release notes have an "Upgrading" point for
+each change that can stop a script written for 1.3.1, and for the
+predictions of the low-noise representation, which change, PyBADS's among
+them. None of its changes moves a number that PyVBMC computes: PyVBMC's
+gates against the branch give the oracles and the seeded runs bit for bit.
+The first run of the pull request's checks failed on macOS with Python
+3.11: a test of the branch expected the `ValueError` with which `update`
+refuses a starting point of NaN, where the LAPACK of those runners reports
+the failure of factoring a covariance that holds NaN first (the check's
+table, below). Before the tag, the PI's session on PyBADS ran PyBADS's
+tests against the branch and against 1.3.1, three times each: no refusal
+fires and no test breaks, 88 pass on both, and `test_he_noisy_sphere_opt`,
+which fails on 1.3.1 on its tolerance, passes on 1.3.2, the low-noise
+change having moved the path of a seeded test before it, which leaves
+NumPy's global stream in another state. PyVBMC moved its minimum and its
+pin to the tag (`AGENTS.md`).
 
 ## Findings ruled after the close
 
@@ -374,6 +384,7 @@ the report, or the item of the orchestrator's list to the PI (A to G).
 | gpyreg | fix agent H, 2 | `update` given `y_new` or `s2_new` without `X_new` appended the targets to a GP that holds data and then failed, leaving it without a posterior, and raised `AttributeError` on a GP without data (1.3.1 too) | fix, then widened (PI, 2026-09-24): `update` refuses, before it changes anything, a call that would make the number of targets, or of noise variances, differ from the number of inputs, `X_new` without `y_new` on a GP that holds targets included; targets given alone for inputs held without targets, and variances given alone for data held without variances, are taken as 1.3.1 takes them, bit for bit; counts that already differ are not checked | gpyreg `2c90b9f` |
 | gpyreg | fix agent H, 3 | a complex noise variance gets the `TypeError` of `float()`, not the check's own message | left: the error is clear | — |
 | gpyreg | fix agent I | `fit` given inputs of another number without the targets, or without the noise variances that its noise function reads, that the GP holds stored them, raised from its objective and left the GP with new inputs beside old posteriors (1.3.1 too) | fix: refused before anything changes, by `update`'s rule; variances that the noise function does not read are not counted, and counts that already differ are not checked. On a GP of a single training point 1.3.1 ran such calls of both methods by broadcasting the one target or variance; they are refused, with an Upgrading point | gpyreg `38e8ada` |
+| gpyreg | the checks of `#53` | `test_fit_raises_what_it_documents` expected the `ValueError` of `update` for a starting point of NaN, and failed on macOS with Python 3.11, whose LAPACK reports the failure of factoring a covariance that holds NaN, so that the objective at the starting point raises `LinAlgError` first | fix (the orchestrator, within the PI's go for the release): the test takes either exception and checks the message of each, and `fit`'s `Raises` section says that its `LinAlgError` can come from the objective; with scipy's Cholesky made to fail on NaN, as on those runners, gpyreg's suite passes (696) | gpyreg `1cbab6d` |
 | PyVBMC | C1 (R1 S1) | `calibrate` still raised for a complete campaign whose settings fail validation | fix: validated in the same `try` as the report, status `"invalid"` | `92b93aa9` |
 | PyVBMC | C1b (R1) | a refused result printed "could not complete", and a record that could not be built was reported as a failed write | fix: each message says what happened | `60621f80` |
 | PyVBMC | C1c (R1) | nothing tied the campaign's copy of the kernels' blocking to the kernels | fix, beyond the ruling on N3 F9: a test over a grid of shapes and budgets, and comments that name each copy | `6bdfbaa7` |
