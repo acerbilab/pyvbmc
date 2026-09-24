@@ -799,7 +799,10 @@ its entry below.
   With gpyreg 1.3.0 or later, which a fresh installation of 1.0.4 gets,
   PyVBMC 1.0.4 stops at that fit with `ValueError: The widths vector needs
   to be all positive real numbers`, after the evaluations of the design, or,
-  with `ns_gp_max=0`, gives a GP with non-finite hyperparameters. With
+  with `ns_gp_max=0`, gives a GP with non-finite hyperparameters, where the
+  shared values leave the coordinate's standard deviation exactly zero;
+  where rounding leaves it slightly above zero, the fit completes from a
+  starting length scale far too small. With
   gpyreg 1.0.3 to 1.2.1, which start the length scales from statistics of
   the training inputs pooled over all dimensions, the fit completes. In
   such a coordinate the starting length scale of the GP, the lower bound of
