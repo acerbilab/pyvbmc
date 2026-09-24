@@ -172,7 +172,7 @@ def test_busy_returns_fallback_without_campaign(monkeypatch, capsys):
     "status, message",
     [
         ("incomplete", "Calibration could not complete after"),
-        ("invalid", "but its results cannot be used: synthetic outcome."),
+        ("invalid", "and its results cannot be used: synthetic outcome."),
     ],
     ids=["incomplete", "invalid"],
 )
@@ -282,8 +282,8 @@ def test_complete_campaign_with_invalid_report_falls_back(
     assert "discovery" in profile.provenance["reason"]
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
-    assert "Calibration finished in" in output
-    assert "but its results cannot be used" in output
+    assert "Calibration ended after" in output
+    assert "and its results cannot be used" in output
     assert "could not complete" not in output
     assert "results failed validation" in output
     assert "Using the standard settings." in output
@@ -309,36 +309,45 @@ def test_complete_campaign_with_invalid_settings_falls_back(
     assert "pdf_chunk_elements" in profile.provenance["reason"]
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
-    assert "but its results cannot be used" in output
+    assert "and its results cannot be used" in output
     assert "could not complete" not in output
     assert "results failed validation" in output
     assert "Using the standard settings." in output
 
 
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "campaign changed NumPy's global RNG state",
+        "baseline numerical validation failed",
+    ],
+    ids=["global_rng", "baseline"],
+)
 def test_campaign_its_own_checks_call_invalid_falls_back(
-    monkeypatch, tmp_path, capsys
+    monkeypatch, tmp_path, capsys, reason
 ):
-    """A campaign that changed NumPy's global random state is invalid by
-    its own checks, whether or not it finished its measurements: its
-    results cannot be used, and the message gives the reason."""
+    """A campaign that its own checks call invalid falls back to the
+    standard settings: one that changed NumPy's global random state, and
+    one whose baseline numerics failed, which stops it part-way. The
+    message says that the calibration ended, which holds whether or not the
+    campaign finished its measurements, and that its results cannot be
+    used, with the reason."""
     monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
     install_guard(monkeypatch, guard(persistent=True, reason=None))
     value = result("invalid")
-    value["report"]["reason"] = "campaign changed NumPy's global RNG state"
+    value["report"]["reason"] = reason
     monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
 
     profile = pyvbmc.calibrate()
 
     assert profile.status == "invalid"
     assert profile.source == "default"
-    assert profile.provenance["reason"] == value["report"]["reason"]
+    assert profile.provenance["reason"] == reason
     assert not list(tmp_path.rglob("*.json"))
     output = capsys.readouterr().out
-    assert "Calibration finished in" in output
-    assert (
-        "but its results cannot be used: campaign changed NumPy's global "
-        "RNG state." in output
-    )
+    assert "Calibration ended after" in output
+    assert f"and its results cannot be used: {reason}." in output
+    assert "finished" not in output
     assert "could not complete" not in output
     assert "Using the standard settings." in output
 

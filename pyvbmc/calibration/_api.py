@@ -116,7 +116,7 @@ def _print_fallback_summary(
         print(f"Calibration did not start: {reason}.")
     elif outcome == "invalid":
         print(
-            f"Calibration finished in {elapsed:.0f} seconds, but its "
+            f"Calibration ended after {elapsed:.0f} seconds, and its "
             f"results cannot be used: {reason}."
         )
     else:
