@@ -68,4 +68,6 @@ All 24 findings are confirmed as facts about the code. None was a misreading.
 N3 F2, F4, F5, F6, F8 and F9 had no ruling when the review closed. The PI
 ruled on them on 2026-09-23, after the close: the ledger
 `dev/results/2026-09-23-port-correctness-review.md`, "Findings ruled after
-the close", gives each ruling and fix.
+the close", gives each ruling and fix. The class of F5 in the table
+above was corrected then: the review had recorded "as specified or not:
+the plan does not say", and the plan does say.

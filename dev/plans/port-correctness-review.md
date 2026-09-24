@@ -2575,11 +2575,13 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   ruled after the close" gives each ruling, its reason where the code stays
   as it is, and its fix. Opus agents made the fixes in worktrees, four of
   PyVBMC and gpyreg's `../gpyreg-w6-leftovers` (branch `w6-leftovers`), one
-  commit per finding with a test seen to fail first; the orchestrator read
+  commit per finding, with a test seen to fail first where the commit
+  changes code; the orchestrator read
   each diff and took the PyVBMC commits onto `dev-port-review`, 27 of them
   after `3aba4fc5`, and removed the worktrees once `git cherry` showed them
-  all there; gpyreg's branch holds 16. The fixes found ten more findings, ruled the same day (the ledger's
-  table "Found while the rulings were carried out"); one of them showed that
+  all there; gpyreg's branch holds 16. The fixes found fourteen more
+  findings, ruled the same day, ten of them fixed (the ledger's table
+  "Found while the rulings were carried out"); one of them showed that
   the absolute value of `sigma` in gpyreg's prior code, ruled dead, serves
   GPs pickled by gpyreg 1.2.1, and its removal was dropped. The PI set a rule
   that `AGENTS.md` states: PyVBMC requires the latest gpyreg release. Gates
@@ -2593,6 +2595,35 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   gpyreg 1.3.2 from the branch, PyVBMC's move of its minimum and pin to it,
   the push of `dev-port-review` with its smoke and the full CI matrix, and
   the merge into `dev-next`.
+- [x] 2026-09-23 and 09-24, after the close: the check of the rulings, and
+  its round (PI: a double-check by fresh read-only reviewers before anything
+  is pushed). Six Opus reviewers, one part each (the calibration; the
+  options, construction and `load`, with the heavy-compute slot; the main
+  loop, the importance sampling and the posterior; gpyreg's low-noise
+  representation; gpyreg's input checks, priors and tests; the records),
+  read PyVBMC `3aba4fc5..093342ed` and gpyreg `1dbbfc5..9280a75`. None found
+  a defect that had to be fixed first. The PI ruled on everything they found
+  on the orchestrator's recommendations, and then on what the fix agents
+  noticed beyond their items, in two more batches on 2026-09-24; each item
+  is fixed or left with its reason, none deferred to `TODO.md`, which is to
+  be empty when 1.5 is done (PI), and from the last batch on the fix agents
+  reported only substantial issues (PI). Fix agents A (options,
+  construction and `load`), B (the first GP fit, the calibration, the
+  porting log) and G (gpyreg), then C and H, then D and I, each in its own
+  worktree; the orchestrator read each diff, cherry-picked the PyVBMC
+  commits onto `dev-port-review`, fast-forwarded `w6-leftovers`, ran the
+  tests of the touched modules after each agent's commits, and removed each
+  worktree once `git cherry` showed its commits there. The ledger's "The
+  check of the rulings, and its round" gives each finding, ruling and fix.
+  A defect older than the port review surfaced (R3, confirmed by the
+  orchestrator on release 1.0.4 with gpyreg 1.2.0 and 1.3.1): the first GP
+  fit of a run stops when the points of highest density share a value in a
+  coordinate, with or without `integer_vars`; fixed as F1, after which the
+  orchestrator's capped reproduction completes. The gates ran on the heads
+  of the first fix agents' round (`03c6401e` with gpyreg `107c829`) and
+  again on the final heads (the ledger's row "after the close"). PyBADS's
+  tests against the branch are run by the PI's session on PyBADS, from its
+  repository.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values

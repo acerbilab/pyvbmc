@@ -14,7 +14,8 @@ records its execution.
   [port review plan](plans/port-correctness-review.md) records how it was
   written and checked (2026-09-20). Open before the release: the PI's
   reading of the entries added that day, and of those added on 2026-09-23
-  by the rulings after the close of the port review (its
+  and 24 by the rulings after the close of the port review and the round
+  of their check (its
   [ledger](results/2026-09-23-port-correctness-review.md), "Findings ruled
   after the close"); the whole-run timings of "Runs are
   faster", measured on 2026-09-03 to 09-05, before the corrections that
@@ -129,36 +130,48 @@ records its execution.
   independent check of the pass").
 
 - [ ] **Publishing the rulings after the close of the port review.** The
-  fixes of those rulings (the
+  fixes of those rulings and of the round of their check (the
   [ledger](results/2026-09-23-port-correctness-review.md), "Findings ruled
   after the close") are committed and not pushed: PyVBMC's on
-  `dev-port-review`, 28 commits after `3aba4fc5` up to `9d3d8ddd`, and
-  gpyreg's on the branch `w6-leftovers` of the gpyreg worktree
-  `../gpyreg-w6-leftovers`, 16 commits over `v1.3.1` up to `9280a75`,
-  prepared as gpyreg 1.3.2. The PI asked for a double-check of all of it by
-  fresh read-only reviewers before anything is pushed. The full gates ran on
-  PyVBMC's `b24a9238`, alone and against gpyreg's `dedf90b`; the two commits
-  after those, `3eccef5` in gpyreg and `59bf7a4b` in PyVBMC, were gated by
-  their test files alone. Then, with the PI's go: the gates again on the
-  final heads (`dev/scripts/runs/LOCAL.md`, "Port correctness review",
-  names the scripts); PyBADS's tests against the branch, since PyBADS
-  requires only `gpyreg >= 0.1.0` and its GPs reach the low-noise
-  representation whose predictions 1.3.2 changes (the release notes say
-  so), with the outcome brought to the PI before the tag; push `w6-leftovers`, open its pull request into
-  gpyreg's `main`, merge it, date the release notes, tag `v1.3.2` and
-  publish its GitHub release, which uploads to PyPI; `git fetch --tags` in
-  `../gpyreg` and reinstall it editable in the environments at the tag
-  (`AGENTS.md`); in PyVBMC, `gpyreg >= 1.3.2` in `pyproject.toml`,
-  `GPYREG_PIN` at the tag's commit, the changelog's "Requirements" entry,
-  and in the ledger the release of 1.3.2 (section "gpyreg 1.3.0, 1.3.1 and
-  1.3.2") and the CI and merge cells of the gates row "after the close";
-  then push `dev-port-review`, wait for its branch smoke, dispatch the full
-  CI matrix, and merge into `dev-next` as the plan's working rules say.
-  Remove the gpyreg worktree once `git cherry` shows its commits on
-  gpyreg's `main`. For PyBADS's maintainers: its known-noise path
-  (`fit_lik` false, `pybads/bads/gaussian_process_train.py`) sets the
-  noise prior `("delta", noise_mu)`, a prior type that gpyreg does not
-  implement and `set_priors` refuses.
+  `dev-port-review`, the code in 57 commits after `3aba4fc5` up to
+  `68f47251`, then the records, and gpyreg's on the branch `w6-leftovers` of
+  the gpyreg worktree `../gpyreg-w6-leftovers`, 31 commits over `v1.3.1` up
+  to `38e8ada`, prepared as gpyreg 1.3.2. The gates ran on those heads,
+  alone and against the branch (the ledger's row "after the close" of
+  "Gates, CI and merges"). Before the tag, the PI's session on PyBADS runs
+  PyBADS's tests against the branch, since PyBADS requires only
+  `gpyreg >= 0.1.0` and its GPs reach the low-noise representation whose
+  predictions 1.3.2 changes.
+  Then, with the PI's go:
+  1. gpyreg: push `w6-leftovers` and open its pull request into `main`; date
+     the release notes in a commit of the branch, as 1.3.0 and 1.3.1 were;
+     merge with a merge commit, never a squash or a rebase, so that the
+     hashes the records cite stay on `main`; tag `v1.3.2` (annotated) on the
+     merge and publish its GitHub release, which uploads to PyPI; in
+     `../gpyreg`, fetch the tags, check out the tag, and reinstall gpyreg
+     editable in the three environments that install it (`AGENTS.md`;
+     `dev/scripts/runs/LOCAL.md`, "Python environments"), each reading
+     1.3.2; remove `../gpyreg-w6-leftovers` and its local branch once `git
+     cherry` shows its commits on `main`.
+  2. PyVBMC: `gpyreg >= 1.3.2` in `pyproject.toml`; `GPYREG_PIN` at the
+     tag's commit, with the comment beside it in
+     `.github/workflows/test-matrix.yml`; the changelog's "Requirements"
+     entry, which says that a run meets 1.3.2's change of the low-noise
+     predictions only with `tol_gp_noise` below 1e-3; in the porting log
+     `pyvbmc/vbmc/README.md`, the release of gpyreg it describes (its
+     opening names 1.3.1) and entries for the differences from gplite that
+     1.3.2 makes (the low-noise representation keeps a Cholesky factor, from
+     which the predictions, `quad` and the rank-one update form the
+     variance; the bound recommendation refuses a column without spread
+     that the caller gives no finite lower bound; `fit` and `update`
+     refuse data whose numbers of inputs, targets and variances would
+     differ); in the ledger, the statements that 1.3.2 is prepared and
+     not released (its opening, the table of repositories, the ancestry
+     of the cited commits, the summary and its row "after the close",
+     the paragraph on 1.3.2) and the CI and merge cells of the gates row
+     "after the close".
+  3. Push `dev-port-review`, wait for its branch smoke, dispatch the full CI
+     matrix, and merge into `dev-next` as the plan's working rules say.
 
 - [ ] **Final large-scale check before the release (the gate).** Once
   1.5 is consolidated, regenerate the

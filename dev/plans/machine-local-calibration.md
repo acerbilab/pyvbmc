@@ -1,6 +1,7 @@
 # Machine-local calibration integrated into PyVBMC
 
-Created/updated: 2026-09-09, roadmap pickup 12.
+Created 2026-09-09, roadmap pickup 12; recipe revision v2 on 2026-09-23
+(port review, N3 F2 and F8).
 Status: **DELIVERED — merged, pushed, full CI matrix passed**.
 Integrated into `dev-next` at `46c16b7`; `dev-machine-calibration` is deleted.
 Release scope: **include in PyVBMC 1.5**, confirmed by the PI.
@@ -277,8 +278,10 @@ gradients asked for below.
 
 Specify the small PDF shape as D4/K20. Entropy Ns is per component and keeps
 the current even-number rounding. These cases cover regimes, not measured
-solver call-frequency weights. Verify PDF gradients' performance before
-selecting a shared PDF setting; the prior timing experiment measured values.
+solver call-frequency weights. The performance of PDF gradients was to be
+verified before a shared PDF setting was selected, the prior timing
+experiment having measured values; the note on recipe revision v2 above
+settles it.
 
 Warm candidates; use balanced interleaved timing cycles including the default,
 rotate every candidate through each position, and reserve independent held-out

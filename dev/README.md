@@ -822,3 +822,7 @@ reason.
   outputs of the fit and the sampler widths alone, on the generating
   platform only, with the captured inputs and the portable references
   asserted bit-identical and an audit entry in the capture's `.json`.
+  The three captures still hold the arrays `capture/ref/fit/hyp_dict_logp`,
+  the fit's output under the `logp` key that the port review's W6-23
+  removed from its hyperparameter dictionary; no sidecar describes them,
+  and a capture written anew leaves them out.

@@ -37,6 +37,13 @@ wrong in part; the porting log holds the corrected text:
   unused in MATLAB too": the MATLAB lines are
   `private/activesample_vbmc.m:503-508`, not `:420-427`.
 
+The independent check of the rulings made after the close (2026-09-23)
+found one more entry wrong in part, "Variational active sampling
+(`VarActiveSample`) is not ported": `misc/vpsample_vbmc.m` is the sampler
+behind `ActiveVariationalSamples` (`private/activesample_vbmc.m:86-87`),
+and the branch that `VarActiveSample` selects (`vbmc.m:652-655`) calls
+`variationalactivesample_vbmc`, which the MATLAB repository does not hold.
+
 **Every entry is a claim a reviewer may challenge.** The sheet says what not
 to report as new, not what is beyond question. If the code does not match an
 entry's description, or if the cited reason does not hold, that is itself a
