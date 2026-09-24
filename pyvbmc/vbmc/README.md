@@ -288,7 +288,7 @@ defect *n*" is entry *n* of
   training covariance; gpyreg's also keeps its upper Cholesky factor
   (`Posterior.L_factor`), from which `predict`, `predict_full`, `quad` and
   the single-point `update` form the variance, where
-  `gplite/gplite_pred.m:95-96` and `gplite/gplite_quad.m:102-105` form it
+  `gplite/gplite_pred.m:103-104` and `gplite/gplite_quad.m:102-105` form it
   from the inverse, with a rounding error that grows like the inverse of
   the noise variance (gpyreg 1.3.2). PyVBMC's own counterparts of these
   expressions keep MATLAB's form: the variance of `_gp_log_joint`, VIQR,
@@ -299,7 +299,7 @@ defect *n*" is entry *n* of
   the scale of the negative quadratic mean, take their scale from the
   width of a column of the training inputs, which is `log 0 = -inf` for a
   column without spread on both sides (`gplite/gplite_covfun.m:105`,
-  `:121-124`; MATLAB-side defects 49 and 61). gpyreg's
+  `:122-125`; MATLAB-side defects 49 and 61). gpyreg's
   `get_recommended_bounds`, and `fit` through it, refuse such a column
   unless the caller gives those hyperparameters a finite lower bound
   (gpyreg 1.3.2). `_gp_hyp` reads the components' recommendations on the
@@ -309,7 +309,9 @@ defect *n*" is entry *n* of
 - **`fit` and `update` refuse data whose numbers of inputs, targets and
   noise variances would differ** (Python-only addition). gplite takes a
   training set whole (`gplite/gplite_post.m`, `gplite/gplite_train.m`) or
-  one new observation with its value (`gplite_post(gp,xstar,ystar,[],1)`);
+  one new observation with its value
+  (`gplite_post(gp,xnew,ynew,[],[],[],s2new,1)`,
+  `private/activesample_vbmc.m:483`);
   gpyreg's `update` also takes inputs, targets and variances in separate
   calls, and refuses, before it changes anything, a call of `fit` or
   `update` that would leave their numbers different (gpyreg 1.3.2).
@@ -596,7 +598,7 @@ defect *n*" is entry *n* of
   starting points, a coordinate that takes one value across the first
   `fun_eval_start` of them raises `ValueError` at construction; MATLAB
   reaches the first GP fit with infinite length-scale bounds
-  (`gplite/gplite_covfun.m:105`, `:121-124`; MATLAB-side defect 61;
+  (`gplite/gplite_covfun.m:105`, `:122-125`; MATLAB-side defect 61;
   `verification/wave7.md`, W7-17).
 
 ### Acquisition functions
