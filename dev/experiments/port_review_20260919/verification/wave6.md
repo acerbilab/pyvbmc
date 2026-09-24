@@ -675,7 +675,7 @@ On `dev-port-review`:
 
 Found by fix agent E on the way and left for triage (`TODO.md`): `predict`
 and `predict_full` form the low-noise covariance from the same explicit
-inverse, as `gplite_pred.m:95-96` does, so their variances there carry
+inverse, as `gplite_pred.m:103-104` does, so their variances there carry
 the rounding (1.9e-3 against true variances of about 1e-12 inside the data
 at a noise standard deviation of 1e-6), and the low-noise rank-one update
 divides by such a variance; no PyVBMC run reaches the low-noise

@@ -2615,11 +2615,16 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   tests of the touched modules after each agent's commits, and removed each
   worktree once `git cherry` showed its commits there. The ledger's "The
   check of the rulings, and its round" gives each finding, ruling and fix.
-  A defect older than the port review surfaced (R3, confirmed by the
-  orchestrator on release 1.0.4 with gpyreg 1.2.0 and 1.3.1): the first GP
-  fit of a run stops when the points of highest density share a value in a
-  coordinate, with or without `integer_vars`; fixed as F1, after which the
-  orchestrator's capped reproduction completes. The gates ran on the heads
+  A defect surfaced (R3): the first GP fit of a run stops when the points
+  of highest density share a value in a coordinate, with or without
+  `integer_vars`; fixed as F1, after which the orchestrator's capped
+  reproduction completes. The orchestrator's run of that reproduction on
+  release 1.0.4, which was to show the defect older than the review,
+  imported the main checkout and gpyreg 1.3.1 (its `PYTHONPATH` was not
+  read); the final check of the session found that 1.0.4 completes its
+  first fit with the gpyreg of its time (1.0.3 to 1.2.1) and fails from
+  gpyreg 1.3.0 on, whose recommendations take the spread of each column
+  (W6-1). The gates ran on the heads
   of the first fix agents' round (`03c6401e` with gpyreg `107c829`) and
   again on the final heads (the ledger's row "after the close"). PyBADS's
   tests against the branch are run by the PI's session on PyBADS, from its
@@ -2647,6 +2652,40 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   (`d729b276`); `dev-port-review` pushed at `d729b276`, its branch smoke and
   full matrix (nine jobs) green; `dev-next` fast-forwarded to it with these
   records, and the item of the pickup removed from `TODO.md`.
+- [x] 2026-09-24: the final check of the session, its round, and gpyreg
+  1.3.3 (PI: a double-check of everything done in the session, at the end;
+  then go on the orchestrator's recommendations). Five fresh read-only Opus
+  reviewers (Q1 to Q5: the options, construction and `load`, with the
+  heavy-compute slot; the first GP fit, the calibration and the porting
+  log; gpyreg's code in 1.3.2; the release of 1.3.2 and its documents; the
+  records) read the session's work with the published pull request, tag,
+  release and PyPI files, and reported substantial issues alone. They found
+  one defect in PyVBMC (a run saved by 1.0.4 at uncertainty level 1 could
+  not be continued), three in gpyreg (a GP whose `s2` holds a number failed
+  in 1.3.2's count checks; a failed `fit` or `update` left new data beside
+  unusable posteriors), and errors in texts and records, two of them the
+  orchestrator's own: the lines of `gplite_pred.m` taken from gpyreg's copy
+  of gplite, and F1's "1.0.4 too", from a run whose `PYTHONPATH`, written
+  with Unix-style paths, was not read, so that it ran the main checkout and
+  gpyreg 1.3.1. The PI ruled on all of it: fix. Fix agents J (gpyreg,
+  worktree `../gpyreg-133`) and K (PyVBMC, `../pyvbmc-final-K`); J's brief
+  extended the PI's ruling on the refusals of `fit` to a restore of the GP
+  on any failure, which changes a retry of PyBADS's after a failed
+  factorization at two options that are not its defaults; the PI kept it
+  and extended it to `update` (option A). K's capped check: the seeded runs
+  unchanged, the level-1 file of 1.0.4 continued; the continuations of the
+  1.0.4 files are not reproducible between processes, `load` giving such a
+  file a fresh generator. Gates on `3f06d6a3`, alone and against gpyreg
+  `eab13e0`, and gpyreg's suite, also with a Cholesky that fails on NaN.
+  gpyreg 1.3.3: `acerbilab/gpyreg#54`, its ten checks green, merged with a
+  merge commit and admin rights (`98ab5a4`), `main`'s workflows green, the
+  annotated tag `v1.3.3` and its GitHub release, uploaded to PyPI; the texts
+  of `#53` and of the release `v1.3.2` given a line of correction;
+  `../gpyreg` at the tag and gpyreg reinstalled in the three environments,
+  each reading 1.3.3; the worktrees removed with their branches. PyVBMC's
+  minimum and pin at 1.3.3 (`912ff70e`) and the gates against the installed
+  1.3.3. The ledger's "The final check of the session, and its round" and
+  "gpyreg 1.3.0 to 1.3.3" give each finding, ruling and fix.
 - [x] A candidate from outside the slices, to be verified with the
   accumulated findings. `load(new_options=)` validates the names it is
   given, updates the options and checks single values
