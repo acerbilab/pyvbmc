@@ -155,6 +155,16 @@ defect *n*" is entry *n* of
   MATLAB's does, and the two starting values where MATLAB's starting vector
   holds `-inf`. The location of the mean starts at the value the subset
   shares, as in MATLAB.
+- **A saved run whose GP has another number of hyperparameters continues**
+  (Python-only addition). A run saved by release 1.0.4 at uncertainty
+  level 1 holds the statistics of a GP with one noise hyperparameter fewer
+  than the level-1 model has. `train_gp` drops a stored starting vector or
+  running covariance whose shape does not match the model and starts it
+  afresh, as in a first fit, and takes no starting point from a recorded
+  GP of the other model. `misc/gptrain_vbmc.m:37-52` falls back on the
+  current starting vector alone when the recorded hyperparameters cannot
+  be concatenated, and on none when that vector has the wrong size. Within
+  a run the model does not change.
 - **`hpd_frac` is checked** (deliberate change). `VBMC` refuses, at
   construction and in `load`, a value that is not a fraction in `(0, 1]` or
   that leaves fewer than two points of the initial design, from which the
