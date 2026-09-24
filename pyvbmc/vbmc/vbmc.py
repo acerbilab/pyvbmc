@@ -4371,11 +4371,11 @@ class VBMC:
         """Check the thinning of the GP hyperparameter samples.
 
         The GP fit keeps one sample in ``gp_sample_thin``: a whole number
-        greater than zero, of an integer or a floating-point type and not a
-        boolean, as the fit of gpyreg takes its ``thin``. The check does
-        not depend on ``ns_gp_max``: the fit checks the value whether or
-        not it samples, and ``load`` can give a positive ``ns_gp_max`` to a
-        run built without sampling.
+        greater than zero, given as a Python or NumPy integer or
+        floating-point number; a boolean and an array, a 0-d one included,
+        are refused. The check does not depend on ``ns_gp_max``: the fit
+        checks the value whether or not it samples, and ``load`` can give a
+        positive ``ns_gp_max`` to a run built without sampling.
         """
         value = self.options.get("gp_sample_thin")
         if (

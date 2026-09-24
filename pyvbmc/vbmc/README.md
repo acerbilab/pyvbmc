@@ -179,8 +179,9 @@ defect *n*" is entry *n* of
   run from stopping.
 - **`gp_sample_thin` is checked** (deliberate change). `VBMC` refuses, at
   construction and in `load` and whatever `ns_gp_max`, a value that is not
-  a whole number greater than zero, of an integer or a floating type (not
-  a boolean), as gpyreg's `fit` takes its `thin`.
+  a whole number greater than zero given as a Python or NumPy integer or
+  floating-point number: a boolean and an array, a 0-d one included, are
+  refused.
   `misc/setupoptions_vbmc.m:43` evaluates `GPSampleThin` unchecked, and
   `misc/get_GPTrainOptions.m:8` passes it to `gplite/gplite_train.m` as
   the thinning of its sampler.
