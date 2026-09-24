@@ -343,7 +343,7 @@ its entry below.
 ### Changed
 
 - **Requirements.** PyVBMC needs Python 3.10 or later (1.0.4 accepted 3.9),
-  SciPy 1.15 or later and gpyreg 1.3.2 or later. gpyreg 1.3.0 takes the
+  SciPy 1.15 or later and gpyreg 1.3.3 or later. gpyreg 1.3.0 takes the
   bounds of the location and scale of the GP mean function, and the
   starting length scales, per input dimension, where it pooled the
   statistics of the training inputs over all dimensions; the
@@ -355,8 +355,9 @@ its entry below.
   GP whose noise variance is below 1e-6 from a Cholesky factor, where they
   carried a rounding error that grows as the noise shrinks; a run reaches
   such a GP only with `tol_gp_noise` below 1e-3. It also refuses, with a
-  message, inputs that it could not use. See the release notes of gpyreg
-  for the rest of what changed there. `filelock`, `platformdirs` and
+  message, inputs that it could not use, and gpyreg 1.3.3 leaves a GP as
+  it was when a call on it fails. See the release notes of gpyreg for the
+  rest of what changed there. `filelock`, `platformdirs` and
   `threadpoolctl` are new dependencies, used by the machine calibration.
   `pytest`, its plugins and `plotly` are no longer installed with PyVBMC: they
   are in the extras `test` and `examples`. `plotly` is used by example

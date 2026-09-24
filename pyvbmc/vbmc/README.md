@@ -13,7 +13,7 @@ MATLAB file with its Python counterpart.
 The MATLAB reference is the `master` branch of acerbilab/vbmc at `396d649`
 (2023-05-03). A MATLAB citation `file:line` is at that revision, relative to
 the root of that repository. Python code is cited by module and function;
-gpyreg as of release 1.3.2.
+gpyreg as of release 1.3.3.
 
 The catalogue was consolidated from the known-differences sheet of the port
 correctness review of September 2026,
