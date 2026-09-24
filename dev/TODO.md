@@ -307,6 +307,10 @@ records its execution.
 
 ## Dependencies and working rules
 
+- "In scope for 1.5" is empty when 1.5 is done: each of its items is either
+  done or decided not to be done, with the reason recorded where its work
+  is recorded. A finding is not parked in this file to wait; it is fixed or
+  ruled not to be fixed (PI, 2026-09-23).
 - Evaluate numerical proposals before choosing defaults or reported
   estimators. If an accepted change moves default trajectories, update the
   affected golden references after assessment and preserve the old ones.
