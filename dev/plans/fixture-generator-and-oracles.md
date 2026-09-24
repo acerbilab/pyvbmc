@@ -92,7 +92,7 @@ Evidence: `dev/scripts/runs/latent_fixes/acquisition_20260908/`
 `all_exact.log`). The trajectory check compares the acquisition change with
 the covariance-only runs, retaining the original population accuracy fences.
 
-## Phase 5 a state at uncertainty level 1 (2026-09-24)
+## Phase 5 a state at uncertainty level 1 (2026-09-24, complete)
 
 `rosenbrock_D2_noise3_level1` is the first snapshot of a run with
 `uncertainty_handling=True` and no `specify_target_noise`. The PI set it
