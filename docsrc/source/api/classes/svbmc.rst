@@ -203,12 +203,12 @@ Saving and loading
 retained posteriors, the weights, the ELBO report and the state of the
 generator. ``SVBMC.load("stacked.pkl")`` reads it back, and the loaded
 object draws what the saved one would have drawn next. As with
-``vp.save``, ``.pkl`` is added to a name without an extension, an existing
-file is kept unless ``overwrite=True``, and the file holds no Python
-bytecode, so it can be loaded under another minor version of Python.
-Loading needs no torch: a loaded stack can be sampled and plotted without
-it, while ``optimize()`` and the methods that estimate the stacked ELBO
-need it.
+``vp.save``, ``.pkl`` is added to a name without an extension, ``save``
+raises ``FileExistsError`` rather than replace an existing file unless
+``overwrite=True``, and the file holds no Python bytecode, so it can be
+loaded under another minor version of Python. Loading needs no torch: a
+loaded stack can be sampled and plotted without it, while ``optimize()``
+and the methods that estimate the stacked ELBO or its entropy need it.
 
 .. code-block:: python
 
