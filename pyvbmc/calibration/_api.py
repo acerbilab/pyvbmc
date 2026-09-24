@@ -114,7 +114,7 @@ def _print_fallback_summary(
 ) -> None:
     if outcome == "is busy":
         print(f"Calibration did not start: {reason}.")
-    elif outcome == "refused":
+    elif outcome == "invalid":
         print(
             f"Calibration finished in {elapsed:.0f} seconds, but its "
             f"results cannot be used: {reason}."
@@ -215,10 +215,8 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
                 _validate_report(dict(report), settings)
             except ValueError as error:
                 status = "invalid"
-                outcome = "refused"
                 reason = f"campaign results failed validation ({error})"
         else:
-            outcome = status
             reason = str(report.get("reason", f"campaign status: {status}"))
 
         if status != "complete":
@@ -230,7 +228,7 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
             if verbose:
                 _print_fallback_summary(
                     profile,
-                    outcome=outcome,
+                    outcome=status,
                     reason=reason,
                     elapsed=elapsed,
                 )

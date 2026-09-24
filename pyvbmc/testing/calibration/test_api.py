@@ -168,9 +168,16 @@ def test_busy_returns_fallback_without_campaign(monkeypatch, capsys):
     assert "262,144" not in output
 
 
-@pytest.mark.parametrize("status", ["incomplete", "invalid"])
+@pytest.mark.parametrize(
+    "status, message",
+    [
+        ("incomplete", "Calibration could not complete after"),
+        ("invalid", "but its results cannot be used: synthetic outcome."),
+    ],
+    ids=["incomplete", "invalid"],
+)
 def test_failed_rerun_preserves_previous_valid_settings(
-    monkeypatch, capsys, status
+    monkeypatch, capsys, status, message
 ):
     install_guard(monkeypatch, guard())
     previous = CalibrationProfile(
@@ -191,7 +198,7 @@ def test_failed_rerun_preserves_previous_valid_settings(
     assert profile.status == status
     assert profile.source == "cache"
     output = capsys.readouterr().out
-    assert "Calibration could not complete after" in output
+    assert message in output
     assert f"Calibration {status}" not in output
     assert "synthetic outcome" in output
     assert "Using the previous saved settings." in output
@@ -305,6 +312,34 @@ def test_complete_campaign_with_invalid_settings_falls_back(
     assert "but its results cannot be used" in output
     assert "could not complete" not in output
     assert "results failed validation" in output
+    assert "Using the standard settings." in output
+
+
+def test_campaign_its_own_checks_call_invalid_falls_back(
+    monkeypatch, tmp_path, capsys
+):
+    """A campaign that changed NumPy's global random state is invalid by
+    its own checks, whether or not it finished its measurements: its
+    results cannot be used, and the message gives the reason."""
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = result("invalid")
+    value["report"]["reason"] = "campaign changed NumPy's global RNG state"
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.source == "default"
+    assert profile.provenance["reason"] == value["report"]["reason"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Calibration finished in" in output
+    assert (
+        "but its results cannot be used: campaign changed NumPy's global "
+        "RNG state." in output
+    )
+    assert "could not complete" not in output
     assert "Using the standard settings." in output
 
 
