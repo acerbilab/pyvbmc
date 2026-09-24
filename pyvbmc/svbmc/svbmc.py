@@ -16,7 +16,9 @@ import copy
 import logging
 import sys
 import warnings
+from pathlib import Path
 
+import dill
 import numpy as np
 
 from pyvbmc.rng import get_rng
@@ -52,6 +54,17 @@ def _import_torch():
             "S-VBMC requires torch; install pyvbmc[torch]."
         ) from exc
     return torch
+
+
+def _svbmc_logger():
+    """Return the ``"SVBMC"`` logger, showing progress by default."""
+    # Root logger as in VBMC (a no-op if one is configured already).
+    logging.basicConfig(stream=sys.stdout, format="%(message)s")
+    logger = logging.getLogger("SVBMC")
+    if logger.level == logging.NOTSET:
+        # Progress is shown by default; a level set by the user stays.
+        logger.setLevel(logging.INFO)
+    return logger
 
 
 def _validate_posteriors(vp_list):
@@ -221,7 +234,8 @@ class SVBMC:
     directly.
 
     Requires the optional ``torch`` extra (``pip install pyvbmc[torch]``);
-    construction raises ``ImportError`` without it.
+    construction raises ``ImportError`` without it. An object saved with
+    :meth:`save` can be loaded, sampled and plotted without it.
 
     Parameters
     ----------
@@ -344,12 +358,7 @@ Generator, optional
         if noisy is not None and not isinstance(noisy, (bool, np.bool_)):
             raise TypeError("`noisy` should be a boolean or None.")
         self.show_tips = bool(show_tips)
-        # Root logger as in VBMC (a no-op if one is configured already).
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
-        self.logger = logging.getLogger("SVBMC")
-        if self.logger.level == logging.NOTSET:
-            # Progress is shown by default; a level set by the user stays.
-            self.logger.setLevel(logging.INFO)
+        self.logger = _svbmc_logger()
 
         self.rng = get_rng(seed)
 
@@ -992,3 +1001,86 @@ Generator, optional
         else:
             fig.canvas.draw()
         return fig
+
+    def save(self, file, overwrite=False):
+        """Save the stacked posterior to a file.
+
+        The file holds the whole object: the retained posteriors, the
+        weights, the ELBO report and the state of the generator, so the
+        object that :meth:`load` returns draws what this one would draw
+        next. It holds no Python bytecode, so it can be loaded, used and
+        saved again under another minor version of Python than the one that
+        wrote it.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(cls, file):
+        """Load a stacked posterior from a file written by :meth:`save`.
+
+        Loading needs no torch: :meth:`sample` and :meth:`plot` of the
+        loaded object work without it, while :meth:`optimize` and the
+        methods that estimate the stacked ELBO or its entropy raise
+        ``ImportError`` as construction does. The logging level is not
+        saved: progress goes to the ``"SVBMC"`` logger at ``INFO`` level
+        unless a level has been set on it, as for a newly constructed
+        object.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
+
+        Returns
+        -------
+        stacked : SVBMC
+            The loaded object.
+
+        Raises
+        ------
+        TypeError
+            If the file holds another kind of object, such as a
+            ``VariationalPosterior``.
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            stacked = dill.load(f)
+
+        if not isinstance(stacked, cls):
+            raise TypeError(
+                f"{filepath} holds a {type(stacked).__name__}, not an "
+                f"{cls.__name__} object."
+            )
+        stacked.logger = _svbmc_logger()
+        return stacked

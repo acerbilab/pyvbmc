@@ -196,6 +196,27 @@ by the ``seed`` argument; the input posteriors are never modified or advanced.
 As for ``VBMC``, ``seed=None`` derives the generator from NumPy's global
 state, so ``np.random.seed`` before construction still fixes a run.
 
+Saving and loading
+------------------
+
+``stacked.save("stacked.pkl")`` writes the whole object to a file: the
+retained posteriors, the weights, the ELBO report and the state of the
+generator. ``SVBMC.load("stacked.pkl")`` reads it back, and the loaded
+object draws what the saved one would have drawn next. As with
+``vp.save``, ``.pkl`` is added to a name without an extension, an existing
+file is kept unless ``overwrite=True``, and the file holds no Python
+bytecode, so it can be loaded under another minor version of Python.
+Loading needs no torch: a loaded stack can be sampled and plotted without
+it, while ``optimize()`` and the methods that estimate the stacked ELBO
+need it.
+
+.. code-block:: python
+
+   stacked.save("stacked.pkl")
+
+   stacked = SVBMC.load("stacked.pkl")
+   samples = stacked.sample(10000)
+
 Helpers
 -------
 

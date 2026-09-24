@@ -750,7 +750,9 @@ samples = stacked.sample(10000)
 The headline estimate is `stacked.elbo`; `stacked.elbo_details` contains
 the detailed estimates. On noisy targets the headline uses a cap to reduce
 optimism. `stacked.elbo_sd` describes uncertainty in the raw estimate,
-not a confidence interval for that capped headline. See the
+not a confidence interval for that capped headline. Keep the stacked
+posterior with `stacked.save("stacked.pkl")` and load it with
+`SVBMC.load("stacked.pkl")`. See the
 [S-VBMC documentation](api/classes/svbmc.rst) and
 [Example 7](_examples/pyvbmc_example_7_stacking.ipynb)
 for the filtering of input runs, reporting and examples.

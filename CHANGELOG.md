@@ -205,6 +205,11 @@ its entry below.
     `vp.stats["uncertainty_handling_level"]`. For a posterior saved by an
     earlier version, S-VBMC guesses it from `vp.stats["elbo_sd"]`; pass
     `SVBMC(..., noisy=True)` or `noisy=False` to settle it.
+  - `stacked.save("stacked.pkl")` saves the stacked posterior and
+    `SVBMC.load("stacked.pkl")` loads it, as `vp.save` and
+    `VariationalPosterior.load` do for a posterior. The file holds no Python
+    bytecode, so it can be loaded under another Python version, and loading
+    needs no Torch: a loaded stack can be sampled and plotted without it.
   - See the `SVBMC` page of the documentation and Example 7. Please cite the
     S-VBMC paper along with those of VBMC and PyVBMC when you use it.
   - What differs from the standalone `svbmc` package (0.1.1). The method and

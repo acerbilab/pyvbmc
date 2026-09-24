@@ -78,3 +78,10 @@ fig = overlay_corner_plot(samples, labels=labels, figsize=(7, 7), bins=40)
 
 
 fig = stacked.plot(n_samples=n_samples, figsize=(6, 6), bins=40)
+
+
+stacked.save("stacked_posterior.pkl", overwrite=True)
+
+restored = SVBMC.load("stacked_posterior.pkl")
+print("Same weights:      ", np.array_equal(restored.w, stacked.w))
+print("Same headline ELBO:", restored.elbo == stacked.elbo)

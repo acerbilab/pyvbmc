@@ -104,6 +104,7 @@ records plausibility checks against the previous code's sampling variation.
 | test module | reads | tolerance |
 | --- | --- | --- |
 | `test_svbmc.py` | `upstream_GMM`, `normal_D1`, `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | shapes, dtypes and reproducibility exact; sample statistics loose (means within 0.25 or 0.5, standard deviations at `rtol=0.25`) |
+| `test_svbmc_save_and_load.py` | `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | exact: every attribute of the loaded object, generator states included, its draws and a later optimization |
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
 | `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
 | `test_entropy.py` | `normal_D1`, `bounded_D2`, `corr_D3` and the first three `upstream_GMM` posteriors via `load_group(group, rng=0)` | the per-run entropy preparation and vectorized reduction against literal per-component transcriptions of the same estimator, at 1 and 3 draws per component: density matrix, entropy, weight gradient and stratified variance at `rtol=1e-12`, `atol=1e-12`; generator state and chunking exact. The preparation checks run without torch |
