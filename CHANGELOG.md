@@ -791,7 +791,8 @@ its entry below.
   length scale and the starting scale of the GP mean come from the whole
   training set. Later fits whose points of highest density share a value,
   which is common with `integer_vars`, take that lower bound from the whole
-  training set as well, so their results differ from 1.0.4.
+  training set as well, so their results differ from 1.0.4. Such fits print
+  no `RuntimeWarning: divide by zero encountered in log`.
 - A bound given as a single number applies to every variable, as documented.
   It raised an error for problems with more than one variable. Without `x0`
   the number of variables comes from the plausible bounds, so one of them

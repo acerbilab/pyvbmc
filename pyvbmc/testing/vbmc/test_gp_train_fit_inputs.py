@@ -9,6 +9,7 @@ and its local ``vbmc_gphyp``).
 
 import copy
 import math
+import warnings
 
 import gpyreg as gpr
 import numpy as np
@@ -516,6 +517,30 @@ def test_a_coordinate_the_subset_shares_takes_its_scales_from_the_whole_set():
     # value the subset shares.
     np.testing.assert_array_equal(mean_x0[: 1 + D], hpd_mean["x0"][: 1 + D])
     assert mean_x0[1 + 1] == 0.25
+
+
+def test_a_coordinate_the_subset_shares_gives_no_warning():
+    """gpyreg's recommendations on a high-posterior-density subset that
+    shares one value in a coordinate take the logarithm of zero there, of
+    which NumPy warns. ``_gp_hyp`` replaces those values with the whole
+    training set's, and prints no warning for them."""
+    vbmc = build_shared_value_state()
+    X, y = training_data(vbmc)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        _, hyp0, _ = _gp_hyp(
+            vbmc.optim_state,
+            vbmc.options,
+            vbmc.optim_state["plb_tran"],
+            vbmc.optim_state["pub_tran"],
+            default_gp(vbmc),
+            X,
+            y,
+        )
+
+    assert np.all(np.isfinite(hyp0))
+    assert [str(warning.message) for warning in caught] == []
 
 
 @pytest.mark.parametrize(
