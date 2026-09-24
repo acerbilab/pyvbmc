@@ -34,12 +34,12 @@ its entry below.
   more than one and a `cache_frac` outside [0, 1]. `integer_vars` given as
   a list of indices marks those
   variables, where 1.0.4 marked every variable. A `warp_cov_reg` that is
-  neither a finite number nor a function (`True`, which 1.0.4 read as 1,
-  among them) raises an error, and so does an `hpd_frac` that is not a
-  fraction in (0, 1] or that leaves fewer than two points of the initial
-  design. A `noise_size` that is neither empty nor a positive finite number
-  (zero or a negative value, which 1.0.4 read as `tol_gp_noise`, among
-  them) raises an error, also when `VBMC.load` finds it in a saved run.
+  neither a finite number nor a function (`True` among them) raises an
+  error, and so does an `hpd_frac` that is not a fraction in (0, 1] or
+  that leaves fewer than two points of the initial design. A `noise_size`
+  that is neither empty nor a positive finite number (zero or a negative
+  value, which 1.0.4 ran as it ran the option unset, among them) raises
+  an error, also when `VBMC.load` finds it in a saved run.
   An `active_importance_sampling_mcmc_samples` that is neither a finite
   number nor a function (`True` and NaN among them) raises an error, also
   for a run that does not read it and when `VBMC.load` finds it in a saved
@@ -1107,8 +1107,8 @@ its entry below.
   value (a boolean, NaN, a string) is refused at construction and by
   `VBMC.load`, and a function's result that is not a finite number is
   refused at the warp, with a message that names the option. 1.0.4 took
-  only a Python `int` or `float`, read `True` as 1, and failed at the first
-  warp on other values.
+  only a Python `int` or `float`, and failed at the first warp on other
+  values, `True` included.
 - Option descriptions are printed in full (`print(options)`,
   `repr(options)`). Descriptions containing `:` or `=` were cut short, and
   an option of the advanced set that the user had given showed `None` for
