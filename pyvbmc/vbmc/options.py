@@ -199,7 +199,7 @@ def _is_empty_value(value):
     return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0
 
 
-def _noise_size_reading(value, tol_gp_noise=None):
+def _noise_size_reading(value):
     """
     Read the ``noise_size`` option.
 
@@ -207,16 +207,14 @@ def _noise_size_reading(value, tol_gp_noise=None):
     positive finite number, as ``misc/setupoptions_vbmc.m:131-132``
     requires, since the GP fit starts its noise from the logarithm of the
     value. A 0-d array counts as the number it holds; an array with an
-    axis, even of one entry, does not.
+    axis, even of one entry, does not. Release 1.0.4 ran a number that is
+    not positive as it ran the option unset, and the refusal of such a
+    number says so.
 
     Parameters
     ----------
     value : object
         The value of the option.
-    tol_gp_noise : float, optional
-        The run's ``tol_gp_noise``. Release 1.0.4 ran a number that is not
-        positive as this value, and the refusal of such a number names it
-        as the value that continues a saved run as 1.0.4 ran it.
 
     Returns
     -------
@@ -236,20 +234,11 @@ def _noise_size_reading(value, tol_gp_noise=None):
     message += f"; got {value!r}."
     unset = "VBMC.load(file, new_options={'noise_size': []})"
     if _is_finite_real_number(value):
-        if tol_gp_noise is None:
-            as_released = (
-                "by giving noise_size the value of the run's tol_gp_noise"
-            )
-        else:
-            as_released = (
-                "with VBMC.load(file, new_options={'noise_size': "
-                f"{float(tol_gp_noise)!r}}}), the run's tol_gp_noise"
-            )
         message += (
-            " Release 1.0.4 ran a value that is not positive as the value "
-            "of the option tol_gp_noise, so a saved run that carries one is "
-            f"continued as 1.0.4 ran it {as_released}, or with the option "
-            f"unset with {unset}."
+            " Release 1.0.4 ran a value that is not positive as it ran the "
+            "option unset. A saved run that carries one is continued with "
+            f"the option unset, with {unset}, or with a positive noise_size "
+            "given the same way."
         )
     else:
         message += (
