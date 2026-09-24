@@ -55,10 +55,13 @@ the commit pinned as `GPYREG_PIN` in `.github/workflows/test-matrix.yml`, so
 a change that needs a newer gpyreg also moves the pin. PyVBMC requires the
 latest gpyreg release: each gpyreg release moves the minimum and the pin to
 it, whether or not PyVBMC needs its changes. When the minimum names
-a gpyreg release, the pin is that release's tagged commit: CI reads the
-version of the pinned checkout from gpyreg's tags, an untagged commit reads
-lower than the release, and pip then installs gpyreg from PyPI over the
-pinned checkout. For development, install gpyreg from a sibling checkout:
+a gpyreg release, the pin is that release's tagged commit, so that the
+pinned checkout reads the minimum from gpyreg's tags. CI installs PyVBMC
+first, which takes gpyreg from PyPI, and the pinned checkout over it last:
+an untagged commit before the tag reads lower than the minimum, so that pip
+warns of the conflict and CI tests a version the minimum excludes, and
+before the release is on PyPI the install of PyVBMC fails. For
+development, install gpyreg from a sibling checkout:
 
 ```console
 git clone https://github.com/acerbilab/gpyreg ../gpyreg
@@ -71,7 +74,9 @@ After gpyreg is tagged, `git fetch --tags` in the sibling checkout and
 reinstall it editable: its setuptools_scm version otherwise stays below the
 minimum in `pyproject.toml`, and the next `pip install -e .` installs gpyreg
 from PyPI over the checkout. PyVBMC's own version comes from git tags in the
-same way, with no fallback: a shallow clone or an exported tarball fails to
+same way, with no fallback: a shallow clone, which holds no tags, builds as
+version 0.1.dev1 (the version the machine calibration's provenance then
+records), and an exported tarball, which holds no git metadata, fails to
 build.
 
 ```console
@@ -198,11 +203,11 @@ around three numerical stages, repeated until termination:
 - **Saved objects are pickles of the classes as they are.** `VBMC.load`
   back-fills what older files lack (its `hasattr` and `not in options`
   checks), and rewrites what they hold in a form the current code reads
-  otherwise (a stored `integer_vars`, `uncertainty_handling` or
-  `specify_target_noise` in a form that 1.0.4 took, and a `last_warmup`
-  of 0); an attribute or option added to a saved class needs the same, and
-  renaming or removing one breaks users' files along with the static test
-  pickles.
+  otherwise (among them a stored `integer_vars`, `uncertainty_handling`,
+  `specify_target_noise` or `search_optimizer` in a form that 1.0.4 took,
+  and a `last_warmup` of 0); an attribute or option added to a saved class
+  needs the same, and renaming or removing one breaks users' files along
+  with the static test pickles.
 - **Optional integrations import lazily.** `import pyvbmc` imports none of
   Torch, ArviZ, PyMC and PyTensor: `pyvbmc.SVBMC` and `pyvbmc.PyMCTarget`
   resolve on request (`pyvbmc/__init__.py`), and the posterior exports import
