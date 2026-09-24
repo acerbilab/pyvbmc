@@ -1934,7 +1934,8 @@ class VariationalPosterior:
         Parameters
         ----------
         file : path-like
-            The file name or path to write to.
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
         calibration : CalibrationProfile, {"cached", "off"}, or None, optional
             Optional pending-mode/profile override. Resolved saved settings
             cannot be changed; a matching explicit profile is accepted while

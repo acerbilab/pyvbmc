@@ -3286,7 +3286,8 @@ class VBMC:
         Parameters
         ----------
         file : path-like
-            The file name or path to write to.
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
         new_options : dict or None
             A dictionary of options to change when loading the stored VBMC
             instance. Useful, for example, to continue a previous run with a
