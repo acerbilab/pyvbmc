@@ -141,7 +141,8 @@ class Recipe:
         self.name = name
         self.config = config
         self.options = dict(options)
-        self.pick = pick  # int | "last" | "last_warped" | "final_vp" | "k1"
+        # int | "last" | "last_warped" | "first_repeat" | "final_vp" | "k1"
+        self.pick = pick
         self.note = note
         # callable(decoded snapshot tree) -> None (asserts)
         self.check = check
@@ -255,21 +256,16 @@ RECIPES = [
     Recipe(
         "rosenbrock_D2_noise3_level1",
         "rosenbrock_D2_noise3_level1",
-        {
-            "max_iter": 4,
-            "min_iter": 0,
-            "min_fun_evals": 0,
-            "max_repeated_observations": 3,
-        },
-        "last",
+        {"max_repeated_observations": 3},
+        "first_repeat",
         "uncertainty level 1, the target returning its value alone: the "
         "GP noise is a constant plus the recorded noise of each point "
-        "scaled by a fitted multiplier (noise function [1, 2, 0]); "
-        "repeated observations make the recorded noise differ between "
-        "points, and a noise SD of 3 keeps the multiplier away from 1, "
-        "where levels 1 and 2 compute nearly the same numbers; the live "
-        "training inputs lead the candidate set, as the candidates of a "
-        "repeated observation",
+        "scaled by a fitted multiplier (noise function [1, 2, 0]); the "
+        "first iteration whose GP holds a repeated observation, so that "
+        "the recorded noise differs between points, and a noise SD of 3 "
+        "keeps the multiplier away from 1, where levels 1 and 2 compute "
+        "nearly the same numbers; the live training inputs lead the "
+        "candidate set, as the candidates of a repeated observation",
         _check_level1,
         train_candidates=True,
     ),
@@ -319,6 +315,13 @@ def pick_iteration(vbmc, pick):
             if h["vp"][i].parameter_transformer.R_mat is not None:
                 return i
         raise RuntimeError("no warped iteration in this run")
+    if pick == "first_repeat":
+        # The first iteration whose GP holds a repeated observation.
+        for i in range(n):
+            fl = h["function_logger"][i]
+            if np.any(fl.n_evals[fl.X_flag] > 1):
+                return i
+        raise RuntimeError("no repeated observation in this run")
     if isinstance(pick, int):
         assert 0 <= pick < n, f"iteration {pick} not in 0..{n - 1}"
         return pick
