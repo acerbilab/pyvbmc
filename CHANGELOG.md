@@ -133,7 +133,10 @@ its entry below.
   1.0.4 passed it by the keyword `unkn`. One that takes `unkn` by keyword
   alone (`lambda *, unkn: ...`, `lambda **kw: kw["unkn"]`) raises an error,
   and one with parameters named both `K` and `unkn` receives the number in
-  `K`.
+  `K`. A function given for `ns_elbo` or `ns_ent_fine_active` that takes `K`
+  after another parameter receives the number in `K` also where active
+  sampling updates the posterior between the new points of an iteration,
+  where 1.0.4 passed it by position.
 - `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
   own: a variable with one finite bound, a `scale` that is not positive, a
   noise flag that contradicts the uncertainty handling level, and `add`
@@ -835,12 +838,18 @@ its entry below.
   on with a posterior whose ELBO was NaN.
 - A function given as an option of one argument (`ns_ent`, `k_fun_max`,
   `adaptive_k` and the like) receives the argument by keyword when it takes
-  an argument of the name PyVBMC passes (`K`, and `N` for `k_fun_max`), as
-  in 1.0.4, and by position otherwise, as MATLAB VBMC passes it, so the
-  parameter of a function of one positional parameter may have any name.
-  1.0.4 passed the argument by keyword alone, and as `unkn` for
-  `adaptive_k`, so a function whose parameter had another name was accepted
-  at construction and raised `TypeError` at its first use in the run.
+  an argument of the name PyVBMC passes (`K`, and `N` for `k_fun_max`), and
+  by position otherwise, as MATLAB VBMC passes it, so the parameter of a
+  function of one positional parameter may have any name. 1.0.4 passed the
+  argument by keyword, and as `unkn` for `adaptive_k`, so a function whose
+  parameter had another name was accepted at construction and raised
+  `TypeError` at its first use in the run. Where active sampling updates
+  the posterior between the new points of an iteration, 1.0.4 passed it by
+  position to `ns_elbo` and `ns_ent_fine_active`: there a function that
+  takes `K` after another parameter received the number in that other
+  parameter (`lambda scale=100, K=1: scale * K` gave 4 for four components,
+  where it gives 400), and one that takes `K` by keyword alone raised
+  `TypeError`.
 - `variable_means=False` raised an error in the final boost of any run that
   ended with fewer than `min_final_components` components. With that
   setting, `vbmc.final_boost(vp, gp)` needs a `gp` with at least as many
