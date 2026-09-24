@@ -589,6 +589,137 @@ def test_load_refuses_the_uncertainty_handling_form_of_release_1_0_4(
 
 
 @pytest.mark.parametrize(
+    "built, given_back",
+    [
+        ({"specify_target_noise": True}, {"uncertainty_handling": True}),
+        ({"specify_target_noise": True}, {"uncertainty_handling": 1}),
+        (
+            {"specify_target_noise": True},
+            {"uncertainty_handling": True, "specify_target_noise": True},
+        ),
+        (
+            {"specify_target_noise": True, "uncertainty_handling": True},
+            {"uncertainty_handling": []},
+        ),
+        (
+            {"specify_target_noise": True, "uncertainty_handling": True},
+            {"uncertainty_handling": None},
+        ),
+        ({}, {"uncertainty_handling": False}),
+        ({}, {"uncertainty_handling": 0, "specify_target_noise": False}),
+        ({"specify_target_noise": False}, {"uncertainty_handling": False}),
+    ],
+    ids=[
+        "true_for_empty",
+        "one_for_empty",
+        "both_for_empty",
+        "empty_for_true",
+        "none_for_true",
+        "false_for_empty",
+        "zero_and_false_for_empty",
+        "false_for_empty_beside_false",
+    ],
+)
+def test_load_reads_the_noise_handling_pair_as_construction_does(
+    tmp_path, built, given_back
+):
+    """Construction reads ``uncertainty_handling`` and
+    ``specify_target_noise`` together, as the uncertainty handling level
+    they select, and an empty ``uncertainty_handling`` follows
+    ``specify_target_noise``. A value given to ``load`` for either is read
+    in the pair it forms with the stored value of the other, so a pair that
+    selects the run's level is taken, together with a new budget, and
+    changes nothing."""
+    vbmc = _vbmc_with_noise(built)
+    stored = {
+        name: vbmc.options[name]
+        for name in ("uncertainty_handling", "specify_target_noise")
+    }
+    level = vbmc.optim_state["uncertainty_handling_level"]
+    saved = tmp_path.joinpath("run.pkl")
+    vbmc.save(saved)
+
+    loaded = VBMC.load(saved, new_options={**given_back, "max_fun_evals": 321})
+
+    assert loaded.options["max_fun_evals"] == 321
+    for name, value in stored.items():
+        assert type(loaded.options[name]) is type(value), name
+        assert np.array_equal(loaded.options[name], value), name
+    assert loaded.optim_state["uncertainty_handling_level"] == level
+
+
+@pytest.mark.parametrize(
+    "built, changed, named",
+    [
+        (
+            {"specify_target_noise": True},
+            {"specify_target_noise": False},
+            ["specify_target_noise"],
+        ),
+        (
+            {"specify_target_noise": True},
+            {"specify_target_noise": False, "uncertainty_handling": True},
+            ["uncertainty_handling", "specify_target_noise"],
+        ),
+        (
+            {"specify_target_noise": True},
+            {"uncertainty_handling": False},
+            ["uncertainty_handling"],
+        ),
+        (
+            {"uncertainty_handling": True},
+            {"specify_target_noise": True},
+            ["specify_target_noise"],
+        ),
+        (
+            {"uncertainty_handling": True},
+            {"uncertainty_handling": []},
+            ["uncertainty_handling"],
+        ),
+        (
+            {},
+            {"uncertainty_handling": True},
+            ["uncertainty_handling"],
+        ),
+        (
+            {},
+            {"uncertainty_handling": [], "specify_target_noise": True},
+            ["specify_target_noise"],
+        ),
+    ],
+    ids=[
+        "none_for_given",
+        "inferred_for_given",
+        "refused_pair",
+        "given_for_inferred",
+        "none_for_inferred",
+        "inferred_for_none",
+        "given_for_none",
+    ],
+)
+def test_load_refuses_a_noise_handling_pair_of_another_level(
+    tmp_path, built, changed, named
+):
+    """A value given for ``uncertainty_handling`` or
+    ``specify_target_noise`` whose pair with the stored value of the other
+    selects another uncertainty handling level than the run's, or a pair
+    that construction refuses, is refused with the message that names the
+    option given another value and says to construct a new ``VBMC``
+    object."""
+    saved = tmp_path.joinpath("run.pkl")
+    _vbmc_with_noise(built).save(saved)
+
+    with pytest.raises(ValueError) as execinfo:
+        VBMC.load(saved, new_options={**changed, "max_fun_evals": 321})
+
+    message = execinfo.value.args[0]
+    assert message.startswith("VBMC.load cannot change the option")
+    assert "construct a new VBMC object" in message
+    for name in ("uncertainty_handling", "specify_target_noise"):
+        assert (repr(name) in message) == (name in named), name
+
+
+@pytest.mark.parametrize(
     "options",
     [
         {"acq_hedge": True},

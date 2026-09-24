@@ -47,10 +47,12 @@ from .gaussian_process_train import (
 )
 from .iteration_history import IterationHistory
 from .options import (
+    _UNCERTAINTY_HANDLING_OPTIONS,
     SHIPPED_OPTIONS_PATHS,
     Options,
     _noise_size_reading,
     _stated_boolean,
+    _states_the_stored_uncertainty_handling,
     _states_the_stored_value,
     _uncertainty_handling_flag,
 )
@@ -3304,9 +3306,13 @@ class VBMC:
             ``bounded_transform`` of ``"probit"``, ``2`` for a ``warmup``
             of ``True``), is taken and changes nothing, so the options a
             run was built with can be given back together with, for
-            example, a new budget. A run saved by release 1.0.4 can store
-            an ``integer_vars``, ``uncertainty_handling`` or
-            ``specify_target_noise`` in a form that construction refuses
+            example, a new budget. ``uncertainty_handling`` and
+            ``specify_target_noise`` are read together, as the uncertainty
+            handling they select, so ``uncertainty_handling=True`` is taken
+            for a run built with ``specify_target_noise=True`` and
+            ``uncertainty_handling`` left empty. A run saved by release
+            1.0.4 can store an ``integer_vars``, ``uncertainty_handling``
+            or ``specify_target_noise`` in a form that construction refuses
             or reads otherwise, such as ``uncertainty_handling=[1]``; the
             loaded run holds the form that states what the run was made
             with (``True`` for ``[1]``), which is the one to give back. A
@@ -4102,14 +4108,38 @@ class VBMC:
         that states what the stored one states, read as construction reads
         the option, is taken, and the stored value is put back, so that the
         options a run was built with can be given back without changing
-        anything. Any other value of such an option is refused.
+        anything. Construction reads ``uncertainty_handling`` and
+        ``specify_target_noise`` together, as the uncertainty handling level
+        they select, so a value given for either is also taken when the
+        pair it forms with the value given for the other, or with the
+        stored one, selects the level of the stored pair. Any other value
+        of such an option is refused.
         """
+        given_pair = {
+            name: new_options[name]
+            for name in _UNCERTAINTY_HANDLING_OPTIONS
+            if name in new_options
+        }
+        same_level = False
+        if given_pair and all(name in stored for name in given_pair):
+            # The option of the pair that is not given holds its stored
+            # value in the options.
+            stored_pair = {
+                name: stored.get(name, self.options.get(name))
+                for name in _UNCERTAINTY_HANDLING_OPTIONS
+            }
+            same_level = _states_the_stored_uncertainty_handling(
+                given_pair, stored_pair
+            )
         refused = []
         for name in _CONSTRUCTION_ONLY_OPTIONS:
             if name not in new_options:
                 continue
-            if name in stored and _states_the_stored_value(
-                name, new_options[name], stored[name], self.D
+            if name in stored and (
+                (name in given_pair and same_level)
+                or _states_the_stored_value(
+                    name, new_options[name], stored[name], self.D
+                )
             ):
                 self.options.__setitem__(name, stored[name], force=True)
             else:

@@ -294,6 +294,47 @@ def _uncertainty_handling_flag(value):
     )
 
 
+def _uncertainty_handling_level(uncertainty_handling, specify_target_noise):
+    """
+    The uncertainty handling level that ``uncertainty_handling`` and
+    ``specify_target_noise`` select together, as construction reads them.
+
+    Parameters
+    ----------
+    uncertainty_handling : object
+        The value of the ``uncertainty_handling`` option.
+    specify_target_noise : object
+        The value of the ``specify_target_noise`` option.
+
+    Returns
+    -------
+    level : int
+        0 for a target without noise, 1 for a noisy target whose noise level
+        is inferred, and 2 for a target that returns its own noise
+        estimate. An empty ``uncertainty_handling`` follows
+        ``specify_target_noise``.
+
+    Raises
+    ------
+    ValueError
+        When ``uncertainty_handling`` holds a value that is neither a
+        boolean nor empty, when ``specify_target_noise`` holds a value that
+        is not a boolean, or when ``uncertainty_handling`` is off while
+        ``specify_target_noise`` is set.
+    """
+    requested = _uncertainty_handling_flag(uncertainty_handling)
+    if _specify_target_noise_flag(specify_target_noise):
+        if requested is False:
+            raise ValueError(
+                "A target that returns its own noise estimate is a "
+                "noisy target: with specify_target_noise set, "
+                "uncertainty_handling cannot be turned off. Leave it "
+                "empty or set it to True."
+            )
+        return 2
+    return 1 if requested else 0
+
+
 def _integer_vars_mask(value, D):
     """
     Read a value of the ``integer_vars`` option as a mask over the
@@ -447,6 +488,51 @@ def _states_the_stored_value(name, value, stored, D):
     except ValueError:
         return False
     return _same_reading(reading, stored_reading)
+
+
+#: The two options that construction reads together, as the uncertainty
+#: handling level they select (:func:`_uncertainty_handling_level`).
+_UNCERTAINTY_HANDLING_OPTIONS = (
+    "uncertainty_handling",
+    "specify_target_noise",
+)
+
+
+def _states_the_stored_uncertainty_handling(given, stored):
+    """
+    Whether values given for ``uncertainty_handling`` or
+    ``specify_target_noise`` state the uncertainty handling level that the
+    values a run stores for the two state.
+
+    Construction reads the two options as a pair, an empty
+    ``uncertainty_handling`` following ``specify_target_noise``, so each
+    value given is read together with the one given for the other option or,
+    where none is, the stored one. A pair that construction refuses states
+    no level.
+
+    Parameters
+    ----------
+    given : dict
+        The values given for one or both of the two options, by name.
+    stored : dict
+        The values the run stores for both options, by name.
+
+    Returns
+    -------
+    same : bool
+        Whether the two pairs state the same level.
+    """
+    pair = {**stored, **given}
+    try:
+        level = _uncertainty_handling_level(
+            pair["uncertainty_handling"], pair["specify_target_noise"]
+        )
+        stored_level = _uncertainty_handling_level(
+            stored["uncertainty_handling"], stored["specify_target_noise"]
+        )
+    except ValueError:
+        return False
+    return level == stored_level
 
 
 def _takes_keyword(function, name):
@@ -624,19 +710,10 @@ class Options(MutableMapping, dict):
             that is not a boolean, or when ``uncertainty_handling`` is off
             while ``specify_target_noise`` is set.
         """
-        requested = _uncertainty_handling_flag(
-            self.get("uncertainty_handling")
+        level = _uncertainty_handling_level(
+            self.get("uncertainty_handling"), self.get("specify_target_noise")
         )
-        if _specify_target_noise_flag(self.get("specify_target_noise")):
-            if requested is False:
-                raise ValueError(
-                    "A target that returns its own noise estimate is a "
-                    "noisy target: with specify_target_noise set, "
-                    "uncertainty_handling cannot be turned off. Leave it "
-                    "empty or set it to True."
-                )
-            return True
-        return bool(requested)
+        return level > 0
 
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""
