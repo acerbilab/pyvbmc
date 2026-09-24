@@ -105,6 +105,7 @@ from pyvbmc.testing.oracles._oracles import (  # noqa: E402
 from pyvbmc.testing.oracles._state import (  # noqa: E402
     _files,
     build_state,
+    decode,
     encode,
     load_snapshot,
     save_snapshot,
@@ -127,13 +128,25 @@ SIEVE = 2**13
 
 
 class Recipe:
-    def __init__(self, name, config, options, pick, note, check=None):
+    def __init__(
+        self,
+        name,
+        config,
+        options,
+        pick,
+        note,
+        check=None,
+        train_candidates=False,
+    ):
         self.name = name
         self.config = config
         self.options = dict(options)
         self.pick = pick  # int | "last" | "last_warped" | "final_vp" | "k1"
         self.note = note
-        self.check = check  # callable(snapshot_tree) -> None (asserts)
+        # callable(decoded snapshot tree) -> None (asserts)
+        self.check = check
+        # Whether the live training inputs lead the candidate set.
+        self.train_candidates = train_candidates
 
 
 def _check_singlesample(tree):
@@ -155,6 +168,20 @@ def _check_boosted(tree):
 
 def _check_k1(tree):
     assert tree["vp"]["K"] == 1
+
+
+def _check_level1(tree):
+    assert tree["logger"]["uncertainty_handling_level"] == 1
+    p = tree["gp"]["noise_parameters"]
+    assert p == [1, 2, 0], f"expected noise parameters [1, 2, 0], got {p}"
+    s2 = np.ravel(tree["gp"]["s2"])
+    assert np.ptp(s2) > 0, "no repeated observation: s2 is constant"
+    # The noise block follows the D + 1 hyperparameters of the SE-ARD
+    # kernel: the constant term, then the log multiplier of the recorded
+    # noise.
+    D = tree["pt"]["D"]
+    log_mult = float(np.mean(tree["gp"]["hyp"][:, D + 2]))
+    assert abs(log_mult) > 1, f"log noise multiplier {log_mult:.3f} near 0"
 
 
 RECIPES = [
@@ -224,6 +251,27 @@ RECIPES = [
         "noisy target on the VIQR path: per-point noise, pre-drawn "
         "importance samples for the VIQR/IMIQR acquisitions",
         _check_noisy,
+    ),
+    Recipe(
+        "rosenbrock_D2_noise3_level1",
+        "rosenbrock_D2_noise3_level1",
+        {
+            "max_iter": 4,
+            "min_iter": 0,
+            "min_fun_evals": 0,
+            "max_repeated_observations": 3,
+        },
+        "last",
+        "uncertainty level 1, the target returning its value alone: the "
+        "GP noise is a constant plus the recorded noise of each point "
+        "scaled by a fitted multiplier (noise function [1, 2, 0]); "
+        "repeated observations make the recorded noise differ between "
+        "points, and a noise SD of 3 keeps the multiplier away from 1, "
+        "where levels 1 and 2 compute nearly the same numbers; the live "
+        "training inputs lead the candidate set, as the candidates of a "
+        "repeated observation",
+        _check_level1,
+        train_candidates=True,
     ),
 ]
 
@@ -366,16 +414,25 @@ def make_snapshot(recipe):
     arrays, tree = snapshot_from_objects(
         vp, gp, fl, os_, vbmc.options, meta=meta, iteration=i
     )
-    # Candidate set: a fixed subsample of the seeded sieve.
+    # Candidate set: a fixed subsample of the seeded sieve, after the live
+    # training inputs for a recipe that asks for them (with observation
+    # noise and `max_repeated_observations` above 0, active sampling offers
+    # them as candidates for a repeated observation).
     vp_c = copy.deepcopy(vp)
     vp_c.rng = np.random.default_rng(DEFAULT_SEED)
     Xs, _ = _get_search_points(
         SIEVE, copy.deepcopy(os_), copy.deepcopy(fl), vp_c, vbmc.options
     )
     Xs = np.array(Xs[:: SIEVE // N_CAND][:N_CAND])
+    n_train = 0
+    if recipe.train_candidates:
+        X_train = np.array(fl.X[fl.X_flag])
+        n_train = X_train.shape[0]
+        Xs = np.vstack([X_train, Xs])
     tree["cand"] = {"Xs": encode(Xs, "cand/Xs", arrays)}
+    tree["meta"]["cand_train_rows"] = n_train
     if recipe.check is not None:
-        recipe.check(tree)
+        recipe.check(decode(tree, arrays))
     return arrays, tree, prob
 
 
