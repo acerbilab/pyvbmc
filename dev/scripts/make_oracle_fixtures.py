@@ -114,6 +114,9 @@ from pyvbmc.testing.oracles._state import (  # noqa: E402
 )
 from pyvbmc.variational_posterior import VariationalPosterior  # noqa: E402
 from pyvbmc.vbmc.active_sample import _get_search_points  # noqa: E402
+from pyvbmc.vbmc.gaussian_process_train import (  # noqa: E402
+    _cov_identifier_to_covariance_function,
+)
 
 FIXTURES = REPO_ROOT / "pyvbmc" / "testing" / "oracles" / "fixtures"
 GP_HISTORY_FIXTURES = FIXTURES / "gp_fit_history"
@@ -172,16 +175,17 @@ def _check_k1(tree):
 
 
 def _check_level1(tree):
-    assert tree["logger"]["uncertainty_handling_level"] == 1
+    level = tree["logger"]["uncertainty_handling_level"]
+    assert level == 1, f"expected uncertainty level 1, got {level}"
     p = tree["gp"]["noise_parameters"]
     assert p == [1, 2, 0], f"expected noise parameters [1, 2, 0], got {p}"
     s2 = np.ravel(tree["gp"]["s2"])
     assert np.ptp(s2) > 0, "no repeated observation: s2 is constant"
-    # The noise block follows the D + 1 hyperparameters of the SE-ARD
-    # kernel: the constant term, then the log multiplier of the recorded
-    # noise.
-    D = tree["pt"]["D"]
-    log_mult = float(np.mean(tree["gp"]["hyp"][:, D + 2]))
+    # The noise block follows the covariance hyperparameters: the constant
+    # term, then the log multiplier of the recorded noise.
+    cov = _cov_identifier_to_covariance_function(tree["gp"]["cov_fun"])
+    cov_N = cov.hyperparameter_count(tree["pt"]["D"])
+    log_mult = float(np.mean(tree["gp"]["hyp"][:, cov_N + 1]))
     assert abs(log_mult) > 1, f"log noise multiplier {log_mult:.3f} near 0"
 
 
@@ -367,6 +371,10 @@ def make_snapshot(recipe):
     assert np.array_equal(gp.X, fl.X[live]) and np.array_equal(
         np.ravel(gp.y), np.ravel(fl.y[live])
     ), f"{recipe.name}: GP data differ from the logger's live rows"
+    if fl.noise_flag:
+        assert np.array_equal(
+            np.ravel(gp.s2), np.ravel(fl.S[live] ** 2)
+        ), f"{recipe.name}: GP noise differs from the logger's live rows"
     if recipe.pick == "final_vp":
         vp = vp_final
     elif recipe.pick == "k1":
@@ -1260,7 +1268,7 @@ def main(argv=None):
     if args.list:
         for r in RECIPES:
             print(
-                f"{r.name:28s} {r.config:24s} pick={r.pick!s:12s} {r.options or ''}"
+                f"{r.name:28s} {r.config:28s} pick={r.pick!s:12s} {r.options or ''}"
             )
             print(f"{'':28s} {r.note}")
         print("oracles:", ", ".join(ORACLES))

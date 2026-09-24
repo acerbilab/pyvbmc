@@ -369,9 +369,11 @@ def parse_args(argv=None):
 def resolve_problem(args):
     """Turn the CLI into ``(problem, config_label, requested_options)``."""
     name, D, noise_sd, options, label = "normal", 5, None, {}, None
+    provide_noise = True
     if args.config:
         cfg = find_config(args.config)
         name, D, noise_sd = cfg.name, cfg.D, cfg.noise_sd
+        provide_noise = cfg.provide_noise
         options = cfg.options_dict()
         label = cfg.label
     if args.problem:
@@ -387,7 +389,12 @@ def resolve_problem(args):
     if args.max_fun_evals is not None:
         options["max_fun_evals"] = args.max_fun_evals
     problem = make_problem(
-        name, D, noise_sd=noise_sd, seed=args.seed, options=options
+        name,
+        D,
+        noise_sd=noise_sd,
+        seed=args.seed,
+        options=options,
+        provide_noise=provide_noise,
     )
     if label is None:
         label = f"{name}_D{D}" + (f"_noise{noise_sd:g}" if noise_sd else "")

@@ -78,7 +78,7 @@ Any target can be made noisy with ``noise_sd``: the callable then returns
 (uncertainty level 2). With ``provide_noise=False`` it returns
 ``y + sd * eps`` alone and ``options["uncertainty_handling"] = True``
 instead, so that VBMC infers the noise (level 1); the label of such a
-config ends in ``_level1``.
+config carries ``_level1`` after its noise level.
 
 Command line::
 
@@ -212,6 +212,12 @@ class Config:
     options: tuple = ()  # tuple of (key, value) pairs so the Config hashes
     tag: str = ""
     provide_noise: bool = True
+
+    def __post_init__(self):
+        if not self.provide_noise and self.noise_sd is None:
+            raise ValueError(
+                f"{self.name}: provide_noise=False needs noise_sd"
+            )
 
     @property
     def label(self):
