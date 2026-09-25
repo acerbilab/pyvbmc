@@ -23,3 +23,7 @@ include pyvbmc/testing/svbmc/fixtures/saved/*.json
 include pyvbmc/testing/svbmc/FIXTURES.md
 include pyvbmc/svbmc/LICENSE.txt
 prune docsrc
+# setuptools_scm puts every tracked file in the sdist; the development
+# records and the paper transcriptions stay out of it.
+prune dev
+prune papers

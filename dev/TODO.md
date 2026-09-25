@@ -157,10 +157,13 @@ records its execution.
   and 7 write files into the working directory.
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. The package checks include what
-  the sdist ships: setuptools_scm puts every tracked file in it, `dev/` and
-  `papers/` included (36 MB when built on 2026-09-21), and of `MANIFEST.in`
-  only `prune docsrc` has an effect, its `include` lines naming files that
-  the sdist holds already. Decide which locally held
+  the sdist ships: setuptools_scm puts every tracked file in it, and of
+  `MANIFEST.in` only the `prune` lines have an effect (`docsrc`, `dev`,
+  `papers`), its `include` lines naming files that the sdist holds
+  already. Built on 2026-09-25 the sdist was 11.8 MB (37.7 MB before `dev`
+  and `papers` were pruned) and the wheel unchanged; from the sdist the
+  tests that read `dev/scripts` skip, among them 7 of the oracle tests.
+  Decide which locally held
   artifacts attach to the release as archives rather than commits: the
   golden reference traces, the run pools, the captured frozen states and
   the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
