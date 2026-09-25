@@ -24,7 +24,7 @@ import numpy as np
 from pyvbmc.rng import get_rng
 
 from ._elbo_shrinkage import _two_level_shrinkage
-from ._entropy import component_log_densities
+from ._entropy import component_log_densities, log_density_chunks
 from ._jacobian import expected_log_jacobian
 from ._runtime_tips import consider_runtime_tip
 
@@ -518,8 +518,23 @@ Generator, optional
         H, corrections, _ = self._stacked_entropy(w, n_samples)
         return H, corrections
 
-    def _stacked_entropy(self, w, n_samples, *, compute_variance=False):
-        """Evaluate entropy and optionally its stratified sampling variance."""
+    def _stacked_entropy(
+        self, w, n_samples, *, compute_variance=False, chunk_rows=None
+    ):
+        """
+        Evaluate entropy and optionally its stratified sampling variance.
+
+        The log density of the stacked mixture at a draw is the weighted
+        log-sum-exp of one row of the ``(K_total * n_samples, K_total)``
+        matrix of component log densities. When the weights need a
+        gradient, the matrix is built whole and reduced in one Torch
+        operation. Otherwise it is reduced ``chunk_rows`` rows at a time
+        (by default as many as
+        :func:`~pyvbmc.svbmc._entropy.log_density_chunks` fits in its
+        memory bound) and never held whole; the draws and the values are
+        the same. Returns the entropy, a copy of the Jacobian corrections
+        and the variance, which is ``None`` unless ``compute_variance``.
+        """
         torch = _import_torch()
         n_samples = int(n_samples)
         if n_samples < 1:
@@ -534,14 +549,31 @@ Generator, optional
         log_w = torch.log(w + 1e-40)
 
         # Draws from every component and the log density of every component
-        # at every draw, in the original space; the weights play no part.
-        logq_matrix = component_log_densities(
-            self.vp_list, n_samples, self.rng
-        )
-
-        # The weights enter here, so switch to torch for the gradient.
-        logq_matrix = torch.as_tensor(logq_matrix, dtype=dtype, device=device)
-        logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
+        # at every draw, in the original space, then the log density of the
+        # mixture at every draw: the weights enter only there, in Torch.
+        if torch.is_grad_enabled() and w.requires_grad:
+            # The whole matrix in one reduction. Autograd sums the gradient
+            # of the weights over the rows; reducing by chunks would change
+            # the order of that sum and with it the optimization's
+            # trajectory.
+            logq_matrix = component_log_densities(
+                self.vp_list, n_samples, self.rng
+            )
+            logq_matrix = torch.as_tensor(
+                logq_matrix, dtype=dtype, device=device
+            )
+            logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
+        else:
+            logq_orig = torch.empty(
+                K_total * n_samples, dtype=dtype, device=device
+            )
+            for r0, r1, logq_rows in log_density_chunks(
+                self.vp_list, n_samples, self.rng, chunk_rows=chunk_rows
+            ):
+                logq_rows = torch.as_tensor(
+                    logq_rows, dtype=dtype, device=device
+                )
+                logq_orig[r0:r1] = torch.logsumexp(logq_rows + log_w, dim=1)
 
         # E_{q_mk}[log q(x)] for every component: ``component_log_densities``
         # lays the rows out by component, ``n_samples`` consecutive rows
