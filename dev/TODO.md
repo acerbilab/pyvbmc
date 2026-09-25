@@ -322,6 +322,12 @@ records its execution.
   records how the difference was found.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.
+- Dependabot's PRs target `main`, whose `tests.yml` and `merge-tests.yml`
+  `dev-next` has replaced (its tests run through `test-matrix.yml`, which
+  Dependabot does not see from `main`). Until `dev-next` merges into
+  `main`, a bump is applied on `dev-next`, in every workflow that uses the
+  action, and its PR closed: merged into `main`, it makes those files
+  conflict in the release merge.
 
 ## Completed baseline and local artifacts
 
