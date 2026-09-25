@@ -1,11 +1,32 @@
 """Assess completed population artifacts without running inference or scoring.
 
-A first-stage campaign and any extension campaigns of the same frozen
-treatment are pooled. Every case is revalidated against its own campaign's
-launch record, the campaigns must share one source/environment identity, and
-the pooled population is compared with the golden reference. Each extension
-is also reported on its own, with a confirmatory test family fixed before it
-ran (`assessment` in its launch manifest).
+Two kinds of assessment:
+
+- **Campaigns of one treatment against the golden reference** (the default
+  command line; the campaigns of September 2026, run before
+  ``population_run.py`` met the campaign contract). A first-stage campaign
+  and any extension campaigns of the same frozen treatment are pooled.
+  Every case is revalidated against its own campaign's launch record, the
+  campaigns must share one source/environment identity, and the pooled
+  population is compared with the golden reference, whose sidecars are
+  checked against their tracked SHA-256 manifest. Each extension is also
+  reported on its own, with a confirmatory test family fixed before it ran
+  (``assessment`` in its launch manifest).
+- **Two arms of array mode** (``--arms REFERENCE CANDIDATE``): campaigns of
+  ``population_run.py`` on one allocation, run by different code, compared
+  seed by seed. Each arm is checked against its own ``verification.json``
+  (every file read here must be the one its verification checked, under a
+  completion record of the arm's identity), and the two arms must share the
+  harness, the targets module and its data. The comparison reads each
+  arm's sidecars and boost reports and the metrics that ``population_run.py
+  rescore`` recomputed with the release code (``--rescored``, by default
+  the candidate's ``rescored/``), so that this process imports no package
+  but its own. It reports a KS screen per configuration and metric under
+  one Holm family, the paired changes, the descriptive paired family (every
+  configuration: signed-rank tests of the three accuracy metrics and the
+  evaluation count, McNemar tests of usability, one Holm family), the
+  confirmatory family fixed in both arms' manifests, and every boost
+  decision of each arm checked against the guard.
 """
 
 import argparse
@@ -25,6 +46,10 @@ QUALITY = ("elbo_err", "gskl", "mmtv")
 ALPHA = 0.05
 
 
+#: The most nonzero differences whose sign-assignment counts fit in int64.
+INT64_PAIRS = 62
+
+
 def exact_signed_rank(delta):
     """Two-sided exact signed-rank test over all sign assignments.
 
@@ -33,30 +58,40 @@ def exact_signed_rank(delta):
     dynamic programming over the midranks, so ties are handled exactly at
     any sample size. The result equals SciPy's ``wilcoxon`` with
     ``PermutationMethod(n_resamples=np.inf)``, whose enumeration of the
-    ``2**n`` sign vectors is limited to about 20 pairs. Returns the smaller
-    rank sum and the p-value.
+    ``2**n`` sign vectors is limited to about 20 pairs. The counts of the
+    ``2**m`` assignments of ``m`` nonzero differences are exact integers:
+    int64 up to :data:`INT64_PAIRS` differences and Python integers beyond,
+    and each tail probability is their quotient by ``2**m``, correctly
+    rounded. Returns the smaller rank sum and the p-value.
     """
     d = np.asarray(delta, dtype=float)
+    if not np.all(np.isfinite(d)):
+        raise ValueError("The paired differences must be finite.")
     d = d[d != 0]
     m = len(d)
     if m < 2:
         return 0.0, 1.0
-    if m > 62:
-        raise ValueError("Exact enumeration counts exceed int64 beyond 62.")
     ranks = stats.rankdata(np.abs(d))
     units = np.rint(2 * ranks).astype(np.int64)  # midranks are half-integers
     assert np.array_equal(units, 2 * ranks)
     total = int(units.sum())
-    counts = np.zeros(total + 1, dtype=np.int64)
+    exact_int64 = m <= INT64_PAIRS
+    counts = np.zeros(total + 1, dtype=np.int64 if exact_int64 else object)
     counts[0] = 1
     for unit in units:
+        unit = int(unit)
         shifted = counts.copy()
         shifted[unit:] += counts[: total + 1 - unit]
         counts = shifted
     positive = int(units[d > 0].sum())
-    n_assignments = float(2**m)
-    less = counts[: positive + 1].sum() / n_assignments
-    greater = counts[positive:].sum() / n_assignments
+    if exact_int64:
+        n_assignments = float(2**m)
+        less = counts[: positive + 1].sum() / n_assignments
+        greater = counts[positive:].sum() / n_assignments
+    else:
+        n_assignments = 2**m
+        less = int(counts[: positive + 1].sum()) / n_assignments
+        greater = int(counts[positive:].sum()) / n_assignments
     statistic = float(min(ranks[d > 0].sum(), ranks[d < 0].sum()))
     return statistic, float(min(1.0, 2 * min(less, greater)))
 
@@ -116,19 +151,27 @@ def mcnemar_test(label, rows):
     }
 
 
-def paired_tests(changes, metrics=(*QUALITY, "func_count"), adjust=True):
+def paired_tests(
+    changes,
+    metrics=(*QUALITY, "func_count"),
+    adjust=True,
+    usability=True,
+    alpha=ALPHA,
+):
     """Test within-configuration seed pairs; one Holm family when `adjust`.
 
     Signed-rank nulls assume symmetric, independent seed differences.
-    Usability uses exact McNemar tests, conditional on the discordant pairs.
+    Usability uses exact McNemar tests, conditional on the discordant pairs
+    (left out when `usability` is false).
     """
     tests = []
     for label in sorted({row["label"] for row in changes}):
         rows = [row for row in changes if row["label"] == label]
         for metric in metrics:
             tests.append(signed_rank_test(label, metric, rows))
-        tests.append(mcnemar_test(label, rows))
-    return holm(tests) if adjust else tests
+        if usability:
+            tests.append(mcnemar_test(label, rows))
+    return holm(tests, alpha) if adjust else tests
 
 
 def usable(metrics):
@@ -164,24 +207,8 @@ def describe(rows):
     }
 
 
-def merge_populations(populations):
-    """Pool golden-harness populations (`load_population`) by label."""
-    merged = {}
-    for population in populations:
-        for label, entry in population.items():
-            target = merged.setdefault(
-                label, {"seeds": [], "rows": [], "fails": 0}
-            )
-            target["seeds"] += entry["seeds"]
-            target["rows"] += entry["rows"]
-            target["fails"] += entry["fails"]
-    trace = runner.golden_trace
-    for entry in merged.values():
-        for m in trace.METRICS + trace.EXTRA_SCALARS:
-            entry[m] = np.array(
-                [r.get(m, np.nan) for r in entry["rows"]], dtype=float
-            )
-    return merged
+#: Pool golden-harness populations (``load_population``) by label.
+merge_populations = runner.golden_trace.merge_populations
 
 
 def verify_reference(reference):
@@ -250,10 +277,14 @@ def paired_change(tag, label, new, old):
     }
 
 
-def boost_record(cases, tag, label, new):
-    record = json.loads(
-        runner.case_path(cases, tag, ".boost.json").read_text()
-    )
+def boost_record(report, tag, label, new):
+    """Check one boost report's decision against the guard; summarize it.
+
+    ``report`` is the path of the ``.boost.json``, and ``new`` the run's
+    in-run finals, which the report's metrics of the returned posterior
+    must equal.
+    """
+    record = json.loads(Path(report).read_text())
     pre, candidate = record["scores"]["pre"], record["scores"]["candidate"]
     worst_change = None
     expected_accept = False
@@ -431,7 +462,9 @@ def analyze(campaign, extensions, out):
         label = current[tag]["label"]
         new, old = current[tag]["final"], baseline[tag]["final"]
         changes[tag] = paired_change(tag, label, new, old)
-        boosts[tag] = boost_record(where[tag], tag, label, new)
+        boosts[tag] = boost_record(
+            runner.case_path(where[tag], tag, ".boost.json"), tag, label, new
+        )
     ordered_changes = [changes[tag] for tag in sorted(current)]
     ordered_boosts = [boosts[tag] for tag in sorted(current)]
     result = {
@@ -543,8 +576,319 @@ def analyze(campaign, extensions, out):
     return result
 
 
+# --------------------------------------------------------------------------
+# Two arms of array mode
+# --------------------------------------------------------------------------
+
+
+def load_array_campaign(path, rescored_dir):
+    """Read one campaign of array mode, checked against its own verification.
+
+    Its ``verification.json`` must reconcile the manifest's allocation, have
+    passed (exit code 0) and name the manifest's SHA-256. Every case it
+    places as verified must have a completion record whose source identity
+    is the manifest's, and the sidecar and boost report read here must be
+    the files that record hashes. The rescored metrics
+    (``<rescored_dir>/<directory name>.json``) must be those of this
+    manifest and this verification, rescored from that sidecar. Cases in
+    other states are counted, not read.
+
+    Returns
+    -------
+    dict
+        ``name``, ``path``, ``manifest``, ``identity`` (the manifest's),
+        ``cases`` (``{stem: (label, seed, status)}``), ``rows`` (the
+        verified cases: ``label``, ``seed``, ``final`` with the rescored
+        metrics in place of the in-run ones, ``in_run``, ``equal_to_in_run``),
+        ``reports`` (the boost report of each verified case), ``counts``
+        (the verification's) and ``rescoring`` (the rescoring process's
+        source identity).
+    """
+    path = Path(path).resolve()
+    manifest_path = path / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    verification_path = path / "verification.json"
+    verification = json.loads(verification_path.read_text())
+    assert [case["case"] for case in verification["cases"]] == (
+        runner.case_lines(manifest)
+    ), f"{path}: the verification does not reconcile the manifest"
+    assert verification["exit_code"] == 0, (path, verification["counts"])
+    assert verification["manifest_sha256"] == runner.sha256(manifest_path)
+    rescored = json.loads(
+        (Path(rescored_dir) / f"{path.name}.json").read_text()
+    )
+    assert rescored["campaign"]["manifest_sha256"] == runner.sha256(
+        manifest_path
+    ), f"{path}: rescored for another manifest"
+    assert rescored["campaign"]["verification_sha256"] == runner.sha256(
+        verification_path
+    ), f"{path}: rescored for another verification"
+    cases, rows, reports = {}, {}, {}
+    for entry in verification["cases"]:
+        tag, label, seed = runner.parse_case(entry["case"])
+        stem = f"{label}_seed{seed}"
+        cases[stem] = (label, seed, entry["status"])
+        if entry["status"] != "verified":
+            continue
+        record = json.loads(runner.contract.record_path(path, tag).read_text())
+        assert record["tag"] == tag, tag
+        assert not runner.contract.source_differences(
+            record["identity"], manifest["identity"]
+        ), f"{tag}: the record's identity is not the manifest's"
+        files = runner.case_files(label, seed)
+        for key in ("sidecar", "boost_report"):
+            rel = files[key]
+            assert (
+                runner.sha256(path / rel) == record["artifacts"][rel]["sha256"]
+            ), f"{tag}: {rel} is not the file its verification checked"
+        side = json.loads((path / files["sidecar"]).read_text())
+        assert (side["label"], side["seed"]) == (label, seed), tag
+        again = rescored["cases"][stem]
+        assert again["status"] == "rescored", tag
+        assert (
+            again["artifacts"][files["sidecar"]]
+            == record["artifacts"][files["sidecar"]]["sha256"]
+        ), f"{tag}: rescored from another sidecar"
+        in_run = {key: side["final"][key] for key in runner.RESCORED_METRICS}
+        rows[stem] = {
+            "label": label,
+            "seed": seed,
+            "final": {**side["final"], **again["metrics"]},
+            "in_run": in_run,
+            "equal_to_in_run": again["equal_to_in_run"],
+        }
+        reports[stem] = path / files["boost_report"]
+    return {
+        "name": path.name,
+        "path": path,
+        "manifest": manifest,
+        "identity": manifest["identity"],
+        "cases": cases,
+        "rows": rows,
+        "reports": reports,
+        "counts": verification["counts"],
+        "rescoring": rescored["rescoring"]["identity"]["source"],
+    }
+
+
+def array_population(campaign):
+    """The population of one arm (``load_population``'s form), rescored."""
+    population = {}
+    for stem, (label, seed, status) in campaign["cases"].items():
+        entry = population.setdefault(
+            label, {"seeds": [], "rows": [], "fails": 0}
+        )
+        entry["fails"] += status == "failed"
+        if stem in campaign["rows"]:
+            entry["seeds"].append(seed)
+            entry["rows"].append(campaign["rows"][stem]["final"])
+    return merge_populations([population])
+
+
+def ks_screen(reference, candidate, alpha=ALPHA):
+    """KS tests per configuration and metric, one Holm family.
+
+    The tests of ``golden_trace.compare_populations``: its metrics, their
+    finite values, three or more on each side.
+    """
+    tests = []
+    for label in sorted(set(reference) & set(candidate)):
+        for metric in runner.golden_trace.METRICS:
+            x = reference[label][metric]
+            y = candidate[label][metric]
+            x, y = x[np.isfinite(x)], y[np.isfinite(y)]
+            if len(x) < 3 or len(y) < 3:
+                continue
+            test = stats.ks_2samp(x, y)
+            tests.append(
+                {
+                    "label": label,
+                    "metric": metric,
+                    "n_reference": len(x),
+                    "n_candidate": len(y),
+                    "statistic": float(test.statistic),
+                    "pvalue": float(test.pvalue),
+                    "median_shift": float(np.median(y) - np.median(x)),
+                }
+            )
+    decisions = runner.golden_trace._holm([t["pvalue"] for t in tests], alpha)
+    for test, reject in zip(tests, decisions):
+        test["holm_rejected"] = bool(reject)
+    return tests
+
+
+def _describe(rows):
+    return describe(rows) if rows else None
+
+
+def analyze_arms(reference, candidate, rescored, out):
+    """Compare two arms of array mode (module docstring); write the report."""
+    if not __debug__:
+        raise RuntimeError(
+            "Run without -O: artifact validation uses assertions."
+        )
+    rescored = Path(rescored) if rescored else Path(candidate) / "rescored"
+    ref = load_array_campaign(reference, rescored)
+    new = load_array_campaign(candidate, rescored)
+    for key in ("allocation", "options", "confirmatory"):
+        assert (
+            ref["manifest"][key] == new["manifest"][key]
+        ), f"the arms have different {key}"
+    a, b = ref["identity"]["source"], new["identity"]["source"]
+    assert a["trees"]["harness"] == b["trees"]["harness"], "harness commits"
+    assert a["files"] == b["files"], "the harness files differ"
+    assert a["versions"] == b["versions"], "the environments differ"
+    assert ref["rescoring"] == new["rescoring"], "rescored by other code"
+    rescoring_trees = ref["rescoring"]["trees"]
+    assert (
+        rescoring_trees["pyvbmc"]
+        == rescoring_trees["harness"]
+        == (a["trees"]["harness"])
+    ), "not rescored by the release code of the arms' harness checkout"
+    family = new["manifest"]["confirmatory"]
+    labels = new["manifest"]["allocation"]["labels"]
+    print(
+        f"Validated {len(ref['rows'])} reference and {len(new['rows'])}"
+        " candidate cases against their verifications.",
+        flush=True,
+    )
+
+    ref_population = array_population(ref)
+    new_population = array_population(new)
+    comparison, flagged = runner.golden_trace.compare_populations(
+        ref_population, new_population
+    )
+    ks = ks_screen(ref_population, new_population)
+    assert {t["label"] for t in ks if t["holm_rejected"]} == flagged
+
+    paired = sorted(set(ref["rows"]) & set(new["rows"]))
+    changes = [
+        paired_change(
+            stem,
+            new["rows"][stem]["label"],
+            new["rows"][stem]["final"],
+            ref["rows"][stem]["final"],
+        )
+        for stem in paired
+    ]
+    confirmatory = paired_tests(
+        [c for c in changes if c["label"] in family["labels"]],
+        metrics=family["signed_rank"],
+        usability=family["mcnemar_usability"],
+        alpha=family["alpha"],
+    )
+    boosts = {
+        role: [
+            boost_record(
+                arm["reports"][stem],
+                stem,
+                arm["rows"][stem]["label"],
+                {**arm["rows"][stem]["final"], **arm["rows"][stem]["in_run"]},
+            )
+            for stem in sorted(arm["rows"])
+        ]
+        for role, arm in (("reference", ref), ("candidate", new))
+    }
+
+    def arm_summary(arm):
+        return {
+            "name": arm["name"],
+            "arm": arm["manifest"].get("arm"),
+            "source": arm["identity"]["source"],
+            "verification_counts": arm["counts"],
+            "verified": len(arm["rows"]),
+            "rescored_equal_to_in_run": {
+                key: sum(
+                    bool(row["equal_to_in_run"][key])
+                    for row in arm["rows"].values()
+                )
+                for key in runner.RESCORED_METRICS
+            },
+        }
+
+    result = {
+        "kind": "two arms of array mode, paired by seed",
+        "arms": {"reference": arm_summary(ref), "candidate": arm_summary(new)},
+        "rescoring_source": ref["rescoring"],
+        "allocation": new["manifest"]["allocation"],
+        "options": new["manifest"]["options"],
+        "confirmatory_family": family,
+        "paired_cases": len(paired),
+        "flagged_configurations": sorted(flagged),
+        "ks_tests": ks,
+        "aggregate": {
+            "reference": _describe(list(ref["rows"].values())),
+            "candidate": _describe(list(new["rows"].values())),
+        },
+        "configurations": {
+            label: {
+                role: _describe(
+                    [r for r in arm["rows"].values() if r["label"] == label]
+                )
+                for role, arm in (("reference", ref), ("candidate", new))
+            }
+            for label in labels
+        },
+        "paired_changes": changes,
+        "paired_tests": paired_tests(changes),
+        "confirmatory_tests": confirmatory,
+        "boosts": boosts,
+        "boost_summary": {
+            role: summarize_boosts(records) for role, records in boosts.items()
+        },
+        "usability_losses": [
+            c["tag"]
+            for c in changes
+            if c["old_usable"] and not c["new_usable"]
+        ],
+        "usability_gains": [
+            c["tag"]
+            for c in changes
+            if not c["old_usable"] and c["new_usable"]
+        ],
+    }
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    runner.write_json(out / "assessment.json", result)
+    (out / "comparison.md").write_text(
+        f"# Compare {ref['name']} (reference) vs {new['name']} (candidate),"
+        " rescored metrics\n\n" + comparison + "\n",
+        encoding="utf-8",
+    )
+    print(
+        "Aggregate:",
+        json.dumps(
+            {
+                role: {
+                    m: value[m]
+                    for m in ("n", "converged", "usable", "optimizer_seconds")
+                }
+                for role, value in result["aggregate"].items()
+                if value
+            }
+        ),
+        flush=True,
+    )
+    print("Flagged by the KS screen:", sorted(flagged), flush=True)
+    print("Boost:", result["boost_summary"], flush=True)
+    print("Usability losses:", result["usability_losses"], flush=True)
+    print("Usability gains:", result["usability_gains"], flush=True)
+    rejected = [t for t in confirmatory if t["holm_rejected"]]
+    print(
+        f"Confirmatory family: {len(confirmatory)} tests, "
+        f"{len(rejected)} rejected"
+        + (
+            ": " + ", ".join(f"{t['label']} {t['metric']}" for t in rejected)
+            if rejected
+            else ""
+        ),
+        flush=True,
+    )
+    return result
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument(
         "--campaign",
         type=Path,
@@ -562,9 +906,33 @@ if __name__ == "__main__":
         " without paths to assess the first stage alone",
     )
     parser.add_argument(
+        "--arms",
+        type=Path,
+        nargs=2,
+        metavar=("REFERENCE", "CANDIDATE"),
+        help="compare two arms of array mode instead, seed by seed",
+    )
+    parser.add_argument(
+        "--rescored",
+        type=Path,
+        help="with --arms: the directory of the rescored metrics"
+        " (default: the candidate's rescored/)",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
-        default=runner.ROOT / "dev/experiments/population_extension_20260911",
+        help="where the report goes (default for the campaigns of one"
+        " treatment: dev/experiments/population_extension_20260911)",
     )
     args = parser.parse_args()
-    analyze(args.campaign, args.extension, args.out)
+    if args.arms:
+        if args.out is None:
+            parser.error("--arms needs --out")
+        analyze_arms(*args.arms, args.rescored, args.out)
+    else:
+        analyze(
+            args.campaign,
+            args.extension,
+            args.out
+            or runner.ROOT / "dev/experiments/population_extension_20260911",
+        )

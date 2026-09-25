@@ -45,6 +45,7 @@ import json
 import os
 import platform
 import pstats
+import re
 import subprocess
 import sys
 import time
@@ -56,8 +57,11 @@ from benchmark_targets import TARGET_NAMES, find_config, make_problem, metrics
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 # The package of this checkout, whichever checkout is installed: the records
-# are labelled with this checkout's commit.
+# are labelled with this checkout's commit. A tree that PYVBMC_SOURCE names
+# (a worktree at another commit) goes ahead of it, as in golden_trace.py.
 sys.path.insert(0, str(REPO_ROOT))
+if os.environ.get("PYVBMC_SOURCE"):
+    sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
 DEFAULT_OUT = REPO_ROOT / "dev" / "scripts" / "runs"
 
 # Options whose effective value is worth recording because VBMC rewrites them
@@ -275,17 +279,24 @@ def thread_env():
 
 
 def jsonable(v):
+    """``v`` as JSON values, the same for equal values in any process.
+
+    A set becomes a sorted list, and any other object its ``repr`` without
+    the memory address that a default ``repr`` names.
+    """
     if isinstance(v, (np.floating, np.integer)):
         return v.item()
     if isinstance(v, np.ndarray):
         return v.tolist()
     if isinstance(v, (list, tuple)):
         return [jsonable(x) for x in v]
+    if isinstance(v, (set, frozenset)):
+        return sorted((jsonable(x) for x in v), key=repr)
     if isinstance(v, dict):
         return {str(k): jsonable(x) for k, x in v.items()}
     if isinstance(v, (str, int, float, bool)) or v is None:
         return v
-    return repr(v)
+    return re.sub(r" at 0x[0-9A-Fa-f]+", "", repr(v))
 
 
 def effective_options(vbmc, extra_keys=()):

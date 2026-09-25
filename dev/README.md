@@ -415,7 +415,8 @@ reason.
   (timing costs about 40 to 50 ms per evaluation).
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
-  `--cprofile`, a cProfile attribution of the hot paths.
+  `--cprofile`, a cProfile attribution of the hot paths. It runs this
+  checkout's package, or the tree that `PYVBMC_SOURCE` names.
 - `scripts/profile_suite.py` — run `profile_run.py` over a whole suite
   (plain and/or cProfile, resumable) and aggregate the summaries into one
   markdown table. `--probe CONFIG` runs a short reference config plain
@@ -436,28 +437,48 @@ reason.
   suite over many seeds (one process by default), storing one compact
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
-  for a null check). Populations live under `scripts/runs/golden/`.
-- `scripts/population_run.py` — the staged population benchmark's
-  supervisor: runs a manifest's configuration/seed pairs one fresh process
-  at a time from a frozen checkout (`PYVBMC_GPYREG_SOURCE` names the frozen
-  gpyreg checkout), verifying before every case that imports, commits,
-  dependency versions and thread settings match the manifest, and wraps
-  the production final boost to retain the pre-boost posterior, the raw
+  for a null check). Populations live under `scripts/runs/golden/`. It runs
+  this checkout's package, or the tree that `PYVBMC_SOURCE` names, which
+  goes ahead of the checkout on `sys.path`; each sidecar's `meta` records
+  the checkout's commit, the path and commit of the imported PyVBMC and
+  gpyreg, and the versions their installed distributions name, labelled as
+  such.
+- `scripts/population_run.py` — the population harness of the release gate
+  (`plans/slurm-benchmark-support.md`), meeting the campaign contract of
+  `scripts/campaign_contract.py`: `prepare` fixes the allocation (a suite,
+  its labels, one seed range), the options, the identity and the
+  confirmatory family of the comparison of two arms; `cases` and its
+  subsets; `worker` runs one case in a fresh process, wrapping the
+  production final boost to retain the pre-boost posterior, the raw
   candidate and the decision without changing the calculation or the
-  random stream. A hash-verified completion record per case permits
-  resumption; partial artifacts stop the run for inspection. `--limit N`
-  runs the first N cases. `test_population_run.py` checks the capture and
-  resume behavior.
-- `scripts/analyze_population_run.py` — assesses finished campaigns of one
-  treatment without inference: revalidates every case and the reference
-  sidecars, pools a first-stage campaign with its extensions, recomputes
-  the KS screen and a within-configuration paired family (exact signed-rank
-  tests by dynamic programming over midranks, exact McNemar tests of
-  usability), checks every boost decision against the guard, and reports
-  each extension on its own with the confirmatory family fixed in its
-  manifest. Writes `assessment.json`, `comparison.md` and the campaign
-  manifests under `--out`. `test_analyze_population_run.py` checks the
-  statistics.
+  random stream, and writes, beside the trace and the sidecar, the arrays
+  that rebuild the returned posterior exactly; `verify` reconciles the
+  contract's states and re-checks every case in the campaign's own trees;
+  `summarize` and `rescore` are its finishing steps, the second
+  recomputing the metrics of both arms with the release code; `run` is the
+  same campaign one case after another on a workstation. `PYVBMC_SOURCE`
+  names the package tree of an arm of other code and `PYVBMC_GPYREG_SOURCE`
+  the gpyreg checkout; the harness, the targets module and its data are
+  this checkout's in every arm. `validate_case` checks the records of the
+  campaigns of September 2026, which ran before array mode.
+  `test_population_run.py` checks the capture, the contract's states,
+  `verify`, `rescore` and the rebuilt posterior without inference.
+- `scripts/analyze_population_run.py` — assesses finished campaigns without
+  inference. By default, campaigns of one treatment against the golden
+  reference: it revalidates every case and the reference sidecars, pools a
+  first-stage campaign with its extensions, recomputes the KS screen and a
+  within-configuration paired family (exact signed-rank tests by dynamic
+  programming over midranks, exact at any number of pairs, and exact
+  McNemar tests of usability), checks every boost decision against the
+  guard, and reports each extension on its own with the confirmatory family
+  fixed in its manifest. With `--arms REFERENCE CANDIDATE`, two arms of
+  `population_run.py`'s array mode, each checked against its own
+  `verification.json` and compared seed by seed on the metrics that
+  `rescore` recomputed, with the confirmatory family of their manifests.
+  Writes `assessment.json` and `comparison.md` (and, by default, the
+  campaign manifests) under `--out`. `test_analyze_population_run.py`
+  checks the statistics and the comparison of two arms on campaign
+  directories it writes.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous
@@ -493,8 +514,9 @@ reason.
   [pilot results](results/2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
-  (about 7 minutes for the default set) and compares each run with its
-  stored trace: exact shapes and values of every non-timer NPZ array and
+  (this checkout's package, or the tree that `PYVBMC_SOURCE` names, which
+  the report then names), about 7 minutes for the default set, and
+  compares each run with its stored trace: exact shapes and values of every non-timer NPZ array and
   all semantic final-result fields, the ELBO/live-point agreement horizons,
   the initial design (see below), and final accuracy against the baseline
   population's `Q3 + 3 IQR` envelope. It reports "same loop, changed final"
