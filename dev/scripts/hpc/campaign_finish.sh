@@ -37,8 +37,8 @@
 #    flight: the whole directory as <parent>/<name>.tar.zst.000, .001, ...,
 #    zstd-compressed parts of at most ARCHIVE_PART_SIZE (default 1900M,
 #    below GitHub's 2 GiB per release asset), with their SHA-256 in
-#    <parent>/<name>.tar.zst.sha256. `cat <name>.tar.zst.* | zstd -d | tar x`
-#    restores it.
+#    <parent>/<name>.tar.zst.sha256.
+#    `cat <name>.tar.zst.[0-9][0-9][0-9] | zstd -d | tar x` restores it.
 #
 # Environment (optional, beyond the submission's): VERIFY_TIME (01:00:00)
 # and VERIFY_MEM (2G) size the verify job, FINISH_TIME (01:00:00) and

@@ -455,7 +455,9 @@ reason.
   that rebuild the returned posterior exactly; `verify` reconciles the
   contract's states and re-checks every case in the campaign's own trees;
   `summarize` and `rescore` are its finishing steps, the second
-  recomputing the metrics of both arms with the release code; `run` is the
+  recomputing the metrics of both arms with the release code; its tracked
+  copies (`TRACKED_COPIES`) are the summary, the rescored metrics and every
+  verified case's record, sidecar and boost report; `run` is the
   same campaign one case after another on a workstation. `PYVBMC_SOURCE`
   names the package tree of an arm of other code and `PYVBMC_GPYREG_SOURCE`
   the gpyreg checkout; the harness, the targets module and its data are
@@ -474,11 +476,13 @@ reason.
   fixed in its manifest. With `--arms REFERENCE CANDIDATE`, two arms of
   `population_run.py`'s array mode, each checked against its own
   `verification.json` and compared seed by seed on the metrics that
-  `rescore` recomputed, with the confirmatory family of their manifests.
-  Writes `assessment.json` and `comparison.md` (and, by default, the
-  campaign manifests) under `--out`. `test_analyze_population_run.py`
-  checks the statistics and the comparison of two arms on campaign
-  directories it writes.
+  `rescore` recomputed, with the confirmatory family of their manifests;
+  either arm may be a campaign directory or its redacted tracked copies,
+  which give the same report. Writes `assessment.json` and `comparison.md`
+  (and, by default, the campaign manifests) under `--out`.
+  `test_analyze_population_run.py` checks the statistics and the
+  comparison of two arms on campaign directories it writes and on their
+  redacted copies.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous
@@ -640,33 +644,35 @@ reason.
   and post hoc also against the hashes of the completion record, in the
   contract's shape or the flat layout's (`recorded_hashes`);
   `filter_verdict` applies the pool's stability and `J_sjk` filters.
-- `scripts/hpc/` — Slurm tooling for generating the S-VBMC pools on a
-  cluster ([README](scripts/hpc/README.md)): `svbmc_pool_submit.sh`
-  refuses a dirty checkout, prepares a campaign once and submits
-  `svbmc_pool_task.sbatch` as a throttled array (chunked below the site's
-  `MaxArraySize` with an index offset, the checkout frozen until the array
-  is done because every worker compares the identity fixed at `prepare`);
-  `svbmc_pool_finish.sh` collects the Slurm accounting, runs `verify`
-  under `srun`, then `select`, `summarize` and the archive with its
-  SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
-  University of Helsinki's Turso cluster; every site-specific value is an
-  environment variable. Beside them is the generic driver of the release
-  gate's campaigns (`plans/slurm-benchmark-support.md`, "The driver"),
-  which each script's header documents: `campaign_submit.sh` refuses a
-  dirty source tree, an environment that differs from
-  `campaign_requirements.txt` and a fixed operator setting that differs
-  from the manifest's, prepares a campaign once, writes its case list once
-  and submits `campaign_task.sbatch` in chunks below `MaxArraySize`, a
-  named subset of the cases as its own array; `campaign_finish.sh`
-  refuses while tasks are queued or running, runs `verify` and the
-  harness's finishing steps as batch jobs, counts the cases in flight
-  apart from the missing ones and writes the archive in parts with their
-  SHA-256; `campaign_env.sh` activates the environment, or builds it
-  (`build`). They drive any harness that meets the campaign contract
-  (`campaign_contract.py`) and hold no value particular to a site.
+- `scripts/hpc/` — Slurm tooling ([README](scripts/hpc/README.md), which
+  holds the operator's guide to the release gate's campaigns: the
+  settings, the environment and its frozen pins, the source trees, the
+  environment check, each campaign command by command in the order of the
+  plan's Phase 8, the finish's report, the limits, the redaction and the
+  hand-back, and what to do when something refuses). The generic driver of
+  the release gate (`plans/slurm-benchmark-support.md`, "The driver"),
+  which each script's header documents, runs any harness that meets the
+  campaign contract (`campaign_contract.py`) and holds no value particular
+  to a site: `campaign_submit.sh` refuses a dirty source tree, an
+  environment that differs from `campaign_requirements.txt` and a fixed
+  operator setting that differs from the manifest's, prepares a campaign
+  once, writes its case list once and submits `campaign_task.sbatch` in
+  chunks below `MaxArraySize`, a named subset of the cases as its own
+  array; `campaign_finish.sh` refuses while tasks are queued or running,
+  runs `verify` and the harness's finishing steps as batch jobs, counts
+  the cases in flight apart from the missing ones and writes the archive
+  in parts with their SHA-256; `campaign_redact.sh` writes a finished
+  campaign's tracked copies, redacted, on the login node in the account
+  that ran it (`campaign_contract.py redact`); `campaign_env.sh`
+  activates the environment, or builds it (`build`).
   `test_campaign_driver.py` runs them against stub Slurm commands
   (`campaign_slurm_stubs.py`) and a stub harness
-  (`campaign_stub_harness.py`).
+  (`campaign_stub_harness.py`). Beside them, `svbmc_pool_submit.sh`,
+  `svbmc_pool_task.sbatch`, `svbmc_pool_finish.sh` and `svbmc_pool_env.sh`
+  are the record of the September pool (`pool_20260914`), which they
+  generated on the University of Helsinki's Turso cluster; they no longer
+  run against the pool harness, whose worker takes a case line where they
+  pass a label and a seed.
 - `scripts/campaign_contract.py` — the part of the campaign contract of
   `plans/slurm-benchmark-support.md` that the Slurm-driven harnesses
   share: the layout of a campaign directory (a case line starts with its
@@ -681,10 +687,19 @@ reason.
   (`identity`); the completion record and its check; the worker sequence
   with its refusals, and its clean-up when Slurm's SIGTERM stops a case
   (`run_worker`); the environment check against a pinned requirements
-  file; and the reconciliation of `verify`'s states, among them the
+  file; the reconciliation of `verify`'s states, among them the
   `interrupted` case that a task killed outright leaves, which is
-  resubmitted like a missing one (`reconcile`). Run as a script, it offers the checks the driver's shell
-  scripts call. `test_campaign_contract.py` checks it.
+  resubmitted like a missing one (`reconcile`); and the tracked copies of
+  a finished campaign, which its harness declares in the manifest
+  (`tracked_copies`) and `redact` writes for the repository: hostnames
+  reduced to the node family, paths under the operator's home to `~` and
+  under a path setting to its name, the site block, the `pip freeze` paths
+  and the Slurm accounting left in the archive, and every copy searched
+  for what must not remain, with `redaction.json` recording each copy's
+  SHA-256 beside its source file's, which `source_sha256` gives the
+  readers that check the records' hashes. Run as a script, it offers the
+  checks the driver's shell scripts call and `redact`.
+  `test_campaign_contract.py` checks it.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
   one subset of the filtered pool is stacked by both the integrated
