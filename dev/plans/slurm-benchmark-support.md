@@ -59,11 +59,23 @@ that drive any harness meeting it.
 
 Decisions of the PI, 2026-09-25.
 
+The gate runs two kinds of VBMC campaign. A **reference population** runs
+each of the 24 configurations of the `production` suite at seeds 0–99 and
+keeps every run; it measures the accuracy of the code and becomes the new
+reference. An **S-VBMC run pool** runs each of the 8 conditions of the
+`svbmc_pool` suite at every seed from 1000 up to a cap, and keeps for
+stacking the first 320 runs, in seed order, that pass the filters of the
+S-VBMC paper, which are also both implementations' defaults: the run
+reports itself stable, and `sqrt(max J_sjk) < sqrt(5)`, a bound on the
+GP's uncertainty about the components' expected log joints. The runs that
+fail are kept with their verdict and never stacked. The stacking
+comparison then stacks subsets of each pool.
+
 | Campaign | Where | Code | Size |
 |---|---|---|---|
 | Reference population, after arm | Turso | the release code, gpyreg `v1.3.3` (`98ab5a4`) | the 24 configurations of the `production` suite, seeds 0–99: 2400 runs |
 | Reference population, before arm | Turso | PyVBMC `f91fdf0`, gpyreg `v1.2.1` (`9e70e6b`) | the same 2400 runs |
-| S-VBMC run pools | Turso | the release code | the 8 conditions of `svbmc_pool`, 320 filtered runs each, seeds from 1000: 2930 cases |
+| S-VBMC run pools | Turso | the release code | the 8 conditions of `svbmc_pool`, seeds 1000–1349 (1000–1479 for the ring): 2930 runs, of which 320 per condition are stacked |
 | Stacking comparison | Turso | the release code and the original S-VBMC 0.1.1 (`13a78f6`) | both arms at `M` = 2, 4, 8, 16 (560 cells); the integrated arm alone at 3, 5, 32 (400 cells); disjoint subsets |
 | Replay fingerprints | the developer's machine | the release code | one seed of each `production` configuration, and the six seeded gate runs |
 
@@ -108,13 +120,15 @@ Decisions of the PI, 2026-09-25.
    to its machine: on a new machine it is regenerated at the commit the old
    set certifies, checked as in Phase 9, and recorded in that machine's
    `dev/scripts/runs/LOCAL.md`.
-5. **The pools: 320 filtered runs per condition, seeds from 1000.** 320
-   runs give ten disjoint subsets at `M = 32`. The seed caps follow the
+5. **The pools: 320 stacked runs per condition.** Ten disjoint stacks of
+   `M = 32` runs need 320 runs that pass the filters; the September
+   pools, 100 runs per noisy condition and 50 per noiseless one, reuse
+   each run 3.2 to 6.4 times at `M = 32`. The seed caps follow the
    September pass rates (`experiments/svbmc_pool/pool_20260914/README.md`):
-   350 for the seven conditions that passed at 0.97 or more, 480 for the
-   ring, which passed at 0.73. The seeds continue the campaign's range, so
-   a release run and the campaign's run of a seed start from the same
-   point.
+   350 seeds for the seven conditions where 97 % or more of the runs
+   passed, 480 for the ring, where 73 % did. The seeds start at 1000,
+   continuing the campaign's range, so a release run and the campaign's
+   run of a seed start from the same point.
 6. **Disjoint subsets at every `M`**, with the campaign's repetition
    counts (20 at `M` = 2, 3, 4, 5 and 8; 10 at 16 and 32; `floor(320 / M)`
    exceeds each). Repetition `r` at `M` takes the `r`-th block of `M` runs
@@ -139,12 +153,24 @@ Decisions of the PI, 2026-09-25.
 11. **Operation.** A postdoc of the lab runs the campaigns in their own
     account and hands them back as draft-release assets and a pull
     request, as in September. The smoke campaigns run in the PI's account.
-12. **Two campaigns, not one.** Four pool conditions run the target,
-    dimension, noise level and budget of a `production` configuration
-    (noisy Rosenbrock, Student D8 and multisensory at noise 1.3, and
-    noiseless multisensory), but a pool run saves the posterior and its GP
-    and a population run the trace of every iteration; the two harnesses
-    exist, and the duplicated runs cost little on the cluster.
+12. **Two campaigns, not one.** Four pool conditions are the problem of a
+    `production` configuration, with its target, dimension, noise level
+    and budget: noisy Rosenbrock, Student D8 and multisensory at noise
+    1.3, and noiseless multisensory. Their runs are not shared, because
+    each harness saves what its own analysis reads. A pool run saves,
+    in about 300 KB, the returned posterior with its statistics `I_sk`
+    and `J_sjk` (each component's expected log joint and the GP's
+    uncertainty about it, which S-VBMC stacks), the GP that produced
+    them, from which `verify` recomputes them, and the run's evaluations.
+    A population run saves, in 0.4 to 1.1 MB, the trace of every
+    iteration (the ELBO, the GP hyperparameters, the posterior and the
+    transformer at each iteration, the initial design), which
+    `golden_replay.py` compares step by step, and the state at the final
+    boost, which the population analysis checks; it holds neither the
+    statistics that S-VBMC stacks nor the GP they come from. The seeds
+    differ too, 0–99 against 1000 upward, and a pool needs 320 passing
+    runs, so one harness for both would save few runs; the duplicated
+    ones are of targets that take minutes.
 13. **The release code is the latest `dev-next` at the launch.** The
     campaigns of Phase 8 launch once no algorithmic work on 1.5 remains,
     from the latest commit of `dev-next` at that time. After the launch
@@ -414,10 +440,12 @@ gains:
   targets module has changed since `f91fdf0` (the uncertainty-level-1
   switch, the `oracle` suite, the smoke printout and its help text); every
   `production` configuration is defined identically in both.
-- **The returned posterior as plain arrays.** The worker writes
-  `<tag>.vp.npz` with the returned posterior's `w`, `mu`, `sigma` and
-  `lambd` and its transformer's state, with NumPy alone, so that the
-  rescoring (below) reads the posteriors of both arms with one code.
+- **The returned posterior as plain arrays**, so that the rescoring
+  (below) reads the posteriors of both arms with NumPy and one code. The
+  trace already holds the returned posterior's `w`, `mu`, `sigma` and
+  `lambd` (`final_*`) and each iteration's transformer parameters
+  (`pt_*`). Phase 4 checks whether they rebuild the returned posterior
+  exactly; the worker writes a `<tag>.vp.npz` only with what they lack.
 - The host part of the identity, and the provenance of the sidecars
   (the contract).
 - The boost capture (`BoostCapture`, the `.boost.pkl` and `.boost.json` of
@@ -453,7 +481,7 @@ reference and refuses any overlap with it.
   and others for the posterior's sampling), so the in-run metrics of the
   two arms come from different code. A `rescore` step, run once in a
   release-code process over both arms, rebuilds each returned posterior
-  from `<tag>.vp.npz` and recomputes gsKL, MMTV and RMSE with the release
+  from its plain arrays and recomputes gsKL, MMTV and RMSE with the release
   code, on a random stream seeded from the run's seed; the evidence error
   uses each run's own ELBO. The in-run metrics stay in the sidecars.
 - **Inputs.** The comparison reads the sidecars, the `.boost.json` files
