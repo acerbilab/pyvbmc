@@ -10,7 +10,7 @@ cluster on 2026-09-25 and on the records of the September pool.
 - [x] Phase 1a: the cluster survey (2026-09-25).
 - [ ] Phase 1b: the survey where the campaigns run, the environment and
   the source trees.
-- [ ] Phase 2: the generic Slurm driver.
+- [x] Phase 2: the generic Slurm driver (2026-09-25).
 - [ ] Phase 3: the pool harness.
 - [ ] Phase 4: the population harness and the arm comparison.
 - [ ] Phase 5: the stacking harness.
@@ -237,43 +237,68 @@ minutes (September pool README, "Resource fit").
 | `BASELINE_DIR` | the original S-VBMC checkout and its Torch, for the stacking's original arm |
 | `CASES_SUBSET` | optional, a named subset of the cases, submitted as its own array |
 | `THROTTLE`, `TIME`, `MEM`, `ARRAY`, `SBATCH_EXTRA` | as in the September scripts |
+| `CONDA_SETUP` | optional commands that define `conda`, such as loading a site module |
+| `LOGIN_PROFILE` | the login profile the environment script reads when `module` is not defined; default `/etc/profile` |
+| `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` |
+| `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
 
 The driver passes them to the harness's `prepare`, which records them in
 the `site` block of the raw manifest. Only the raw campaign directory holds
-that block ("Records and hand-back").
+that block ("Records and hand-back"). `HARNESS`, `CAMPAIGN_ENV`,
+`NODE_FEATURE`, the source trees and `BASELINE_DIR` are fixed for a
+campaign: a later submission and the finish refuse a value that differs
+from the manifest's. The others may change from one submission to the
+next, and `slurm/jobs.txt` records each submission's.
 
 ## The campaign contract
 
 Each harness that the driver runs has these subcommands.
 
 - **`prepare --out DIR ...`** writes `manifest.json`: the allocation, the
-  run options, the source identity, the `site` block and the environment's
-  `pip freeze`. It runs on the login node and refuses to change the
+  run options, the source identity, the `site` block, the environment's
+  `pip freeze` and the harness's finishing steps (`finishing_steps`, each
+  an argument list). It runs on the login node and refuses to change the
   identity of a prepared directory.
 - **`cases --out DIR [--subset NAME]`** prints one case per line, in a fixed
   order; the line numbers of the full list are the case indices every
-  submission refers to, and a subset prints its cases with their indices
-  in the full list.
+  submission refers to, and `--subset` prints `<index> <line>` for each
+  case of the subset, the index being its line number in the full list.
+  Each line begins with the case's tag: components of letters, digits and
+  `_.+=-`, none beginning with a dot, joined by `/`, the first naming the
+  configuration or condition, so that a case's files lie in the
+  subdirectory of its condition.
 - **`worker --out DIR --case LINE`** runs one case, given as the text of its
   line, in a fresh process. It exits 0 at once when the case has a
   completion record; compares its source identity with the manifest's and
-  refuses a difference; claims the case (below); runs it; and on success
-  writes the artifacts and a completion record holding the SHA-256 of
-  every file, the elapsed time and the identity with its host part, then
-  removes its claim. On failure it removes the case's partial files,
-  writes `<tag>.error.txt` with the traceback, removes its claim and exits
-  non-zero.
+  refuses a difference (exit 78); claims the case (below; exit 75 when the
+  claim is refused); removes whatever an interrupted attempt left; runs
+  it; and on success writes the artifacts and a completion record holding
+  the SHA-256 of every file, the elapsed time and the identity with its
+  host part, then removes its claim. Neither refusal touches the case's
+  files. On failure it removes the case's partial files, writes
+  `<tag>.error.txt` with the traceback, removes its claim and exits
+  non-zero. A SIGTERM or SIGINT, which Slurm sends at the time limit and
+  on `scancel`, makes it remove the case's partial files and its claim and
+  exit non-zero without an error file, so that a killed case counts as
+  missing, not failed.
 - **`verify --out DIR`** re-checks every completed case against its record
   and the manifest, in the campaign's own environment and source trees; it
   checks that each record's node features include `NODE_FEATURE` and that
   its CPU affinity is one physical core. It reconciles the allocation case
-  by case: verified, failed, in flight (a claim that is live by the rule
-  below, which takes precedence over partial files), partial, missing and
-  stray, each with its index. It
-  writes `verification.json`, and exits non-zero on a failed check, a
-  partial case or a stray file.
+  by case, each with its index: verified; failed (an error file); in
+  flight (a claim that is live by the rule below, which takes precedence
+  over files without a record); interrupted (files without a record and a
+  stale claim, as a task leaves them when it is killed without a SIGTERM,
+  by SIGKILL or by its memory limit); partial (files without a record and
+  without a claim); missing; and stray. It writes `verification.json`, and
+  exits non-zero on a failed check, a partial case or a stray file.
 - The harness's own **finishing steps**, which run only on a verified
-  directory.
+  directory; the finish runs each with `--out DIR` appended, in order.
+
+A campaign directory holds, beside each case's artifacts,
+`records/<tag>.complete.json`, `claims/<tag>` and `<tag>.error.txt`, and
+`subsets/<name>.txt`, `slurm/` (the task logs, the job ids, the
+accounting) and `tmp/` (`TMPDIR`).
 
 **The claim.** A claim is `claims/<tag>`, holding the job id, the array
 task id, the restart count (`SLURM_RESTART_COUNT`), the host and the start
@@ -294,7 +319,9 @@ workers never both hold one. When a claim exists:
   succeeds, and then creates its own.
 
 A refusal never takes the failure path, which deletes the case's files.
-The accounting keeps a job's state after the job ends. `squeue` answers
+A claim made outside Slurm, by `run` on a workstation, is live while its
+process runs on the host that made it, and on any other host until the
+operator removes it. The accounting keeps a job's state after the job ends. `squeue` answers
 only for the jobs the controller still holds and can answer with an
 error for one it has dropped, as it does when the query fails, so it
 cannot tell an ended task from an unreachable controller. Phase 1b checks
@@ -367,7 +394,11 @@ What is new:
 - **The finish** runs `verify` and every finishing step that computes as
   batch jobs (`sbatch --wait`); a `verify` submitted while the campaign's
   tasks run may queue behind them. It counts in-flight cases apart from
-  missing ones, so that `--allow-running` works without `--allow-missing`.
+  missing ones, so that `--allow-running` works without `--allow-missing`;
+  a task still queued holds no claim, so the finish maps the queued and
+  running array tasks (`squeue -r`) to their case indices and counts a
+  missing case whose task is queued as in flight. It lists the
+  interrupted and missing cases as the indices to resubmit.
 - **Limits.** `TIME` and `MEM` per harness come from the smoke campaigns'
   accounting (Phase 6). The throttle applies per submission, so a campaign
   in several chunks runs up to `THROTTLE` times the number of chunks.
@@ -627,10 +658,16 @@ survey, with the per-user limits, the node features that select the
 campaigns' node family, and whether `sacct` answers from a compute node
 (a batch job); then the conda environment and the source trees: the
 harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
-`f91fdf0` as a detached worktree, and the S-VBMC baseline. The
-site-specific results go into the operator's notes; what bears on the
-design revises "The cluster". **Acceptance:** the environment builds from
-the pinned requirements, and every source tree is clean at its commit.
+`f91fdf0` as a detached worktree, and the S-VBMC baseline. The first
+environment built from the direct pins (`campaign_env.sh build`) is
+frozen into `campaign_requirements.txt`, every package and Python to its
+patch release (`python -m pip list --format=freeze --exclude-editable`),
+and the file is committed and pulled into the harness checkout before the
+first submission, since the submission refuses a package the file does
+not pin. The site-specific results go into the operator's notes; what
+bears on the design revises "The cluster". **Acceptance:** the
+environment built from the frozen file passes the environment check, and
+every source tree is clean at its commit.
 
 ### Phase 2: the generic driver
 
@@ -682,8 +719,10 @@ skipped. Then each harness through the driver on the `smoke` suite
 or a few cases, and the heaviest cases of each (`cigar_D15_exhaust`,
 `lumpy_D10_noise3_production`, a stacking cell at `M = 32`): a canary; a
 resubmission of a finished range; a task cancelled while running, which
-`verify` must report as missing, then resubmitted, which must take over the
-stale claim; a duplicate submission of a running case, which the claim must
+`verify` must report as missing, then resubmitted; a task killed without
+warning (by SIGKILL, or by exceeding its memory), which `verify` must
+report as interrupted, then resubmitted, which must take over the stale
+claim; a duplicate submission of a running case, which the claim must
 refuse; a finish with and without `--allow-running`; the redaction and the
 archive. The before arm's worker on a few cases of `f91fdf0`, the boost
 capture among them. **Acceptance:** every check above passes, and the
@@ -745,3 +784,13 @@ run reproduces bit for bit.
   Phase 6, where the harnesses' test modules first run without skipping.
   Phase 1b runs on whichever installation of the cluster is up; the
   scripts need no change between them.
+- 2026-09-25: Phase 2 on `feat-slurm-campaigns` (`c1a77df2` to
+  `a020cfc0`): `campaign_contract.py`, the four driver scripts, the pinned
+  direct requirements, stub Slurm commands and a stub harness; 108 tests
+  pass on the developer's machine with none skipped. The interface choices
+  the plan had left open are written into "Operator settings", "The
+  campaign contract" and "The driver", among them the tag-first case line,
+  the exit codes, the stopped and interrupted cases and the queued tasks
+  counted as in flight. The Linux-only paths (the host part's affinity,
+  topology and BLAS, `conda activate`, the real output of `sacct`,
+  `squeue` and `scontrol`, an external SIGTERM) first run in Phase 6.
