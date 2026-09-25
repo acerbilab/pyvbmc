@@ -166,11 +166,14 @@ source identity (the harness checkout, gpyreg and, when a cell runs the
 original arm, the baseline checkout; the harness modules, the targets
 module and its data, the baseline record; the versions of Python, NumPy,
 SciPy, cma and Torch), the operator settings, the environment's
-``pip freeze`` and the finishing step. Its defaults are the release
-gate's grid (``RELEASE_M``, ``RELEASE_REPETITIONS``, ``RELEASE_ARMS``). A
-task, one line of ``cases``, computes every repetition of one condition
-and ``M`` below ``--split-from`` (``<condition>/M<M>``) and one cell at
-``M`` from it on (``<condition>/M<M>_r<r>``), writing one file per cell,
+``pip freeze``, the finishing step and the tracked copies
+(``TRACKED_COPIES``: the assembled outputs, which
+``campaign_contract.py redact`` writes for the repository). Its defaults
+are the release gate's grid (``RELEASE_M``, ``RELEASE_REPETITIONS``,
+``RELEASE_ARMS``). A task, one line of ``cases``, computes every
+repetition of one condition and ``M`` below ``--split-from``
+(``<condition>/M<M>``) and one cell at ``M`` from it on
+(``<condition>/M<M>_r<r>``), writing one file per cell,
 ``<condition>/M<M>_r<r>.cell.json``; it runs ``warm_up`` before its first
 timed cell and both arms of every two-arm cell, so that a cell's runtime
 ratio is measured on one node. ``worker`` runs one task under the claim
@@ -316,6 +319,13 @@ RELEASE_ARMS = (
 #: repetition of its condition and ``M``.
 SPLIT_FROM = 16
 CELL_SUFFIX = ".cell.json"
+#: What of a finished campaign enters the repository, beside its manifest
+#: and verification report (``campaign_contract.tracked_copies``): the
+#: assembled outputs. ``results.json`` holds every cell, so the cell files
+#: stay in the archive.
+TRACKED_COPIES = {
+    "files": ["results.json", "summary.json", "summary.md", "sources.json"]
+}
 #: The files, relative to the harness checkout, whose SHA-256 a campaign's
 #: source identity holds: this harness and the modules it runs, the targets
 #: module and the data it reads, and the baseline's record.
@@ -3191,6 +3201,7 @@ STRUCTURAL_KEYS = (
     "skipped",
     "pools",
     "finishing_steps",
+    "tracked_copies",
 )
 #: What a manifest keeps of a pool run's recorded metrics: the fields of
 #: the single-run rows.
@@ -3304,8 +3315,10 @@ def cmd_prepare(args):
         "site": contract.site_block(),
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": [["assemble"]],
+        "tracked_copies": TRACKED_COPIES,
         "created": contract.now(),
     }
+    contract.tracked_copies(manifest)
     path = out / "manifest.json"
     if path.exists():
         previous = contract.read_json(path)

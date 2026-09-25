@@ -4,7 +4,8 @@
 in a scratch git repository with stub Slurm commands
 (``campaign_slurm_stubs.py``). It is also the shortest example of a harness
 built on ``campaign_contract.py``. Its cases take no time: each writes one
-text file, ``<tag>.out``.
+text file, ``<tag>.out``, which its tracked copies hold with each case's
+completion record and the summary.
 
 Subcommands::
 
@@ -88,6 +89,10 @@ def cmd_prepare(args):
         "site": contract.site_block(),
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": [["summarize"]],
+        "tracked_copies": {
+            "files": ["summary.json"],
+            "cases": {"record": True, "artifacts": ["*.out"]},
+        },
         "created": contract.now(),
     }
     path = out / "manifest.json"

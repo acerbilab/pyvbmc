@@ -49,9 +49,11 @@ labelled as such.
 all of them by default, and one seed range for every label), the options
 (:data:`DEFAULT_OPTIONS` and ``--options``) and the confirmatory family of
 the comparison of two arms (:func:`confirmatory_family`), and names the
-finishing steps. Case ``i`` is line ``i`` of the list that ``cases``
-prints, ``<label>/<label>_seed<seed> <label> <seed>``, the labels in suite
-order and the seeds rising within each; the subsets are each label,
+finishing steps and the tracked copies (:data:`TRACKED_COPIES`, which
+``campaign_contract.py redact`` writes for the repository). Case ``i``
+is line ``i`` of the list that ``cases`` prints,
+``<label>/<label>_seed<seed> <label> <seed>``, the labels in suite order
+and the seeds rising within each; the subsets are each label,
 ``noisy``, ``noiseless`` and ``canary`` (the first seed of every label).
 A case writes, relative to the campaign directory::
 
@@ -195,6 +197,15 @@ PAIRED_METRICS = ("elbo_err", "gskl", "mmtv", "func_count")
 RESCORED_METRICS = ("elbo_err", "gskl", "mmtv", "rmse")
 #: The named subsets beside one per label.
 SUBSETS = ("canary", "noisy", "noiseless")
+#: What of a finished campaign enters the repository, beside its manifest
+#: and verification report (``campaign_contract.tracked_copies``): the
+#: summary, the rescored metrics, and for every verified case its
+#: completion record, its sidecar and its boost report, which are what the
+#: comparison of two arms reads (``analyze_population_run.py --arms``).
+TRACKED_COPIES = {
+    "files": ["summary.md", "rescored/*.json"],
+    "cases": {"record": True, "artifacts": ["*.json"]},
+}
 EXIT_USAGE = 64
 
 sha256 = contract.sha256_file
@@ -971,9 +982,11 @@ def cmd_prepare(args):
         "site": contract.site_block(),
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": steps,
+        "tracked_copies": TRACKED_COPIES,
         "created": contract.now(),
     }
     contract.finishing_steps(manifest)
+    contract.tracked_copies(manifest)
     path = out / "manifest.json"
     if path.exists():
         previous = contract.read_json(path)
@@ -989,6 +1002,7 @@ def cmd_prepare(args):
                 "arm",
                 "pair",
                 "finishing_steps",
+                "tracked_copies",
             )
             if previous.get(key) != manifest[key]
         ]

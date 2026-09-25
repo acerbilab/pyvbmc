@@ -29,12 +29,15 @@ arrays. Sub-commands::
 
 ``prepare`` writes the manifest: the allocation, the run options, the
 identity of the code the pool is generated with, the operator settings of
-the Slurm plan (the ``site`` block), the environment's ``pip freeze`` and
-the finishing steps, ``select`` and then ``summarize``. ``--gpyreg-source``
-names the gpyreg checkout every process of the campaign imports, and must
-name the directory of ``PYVBMC_GPYREG_SOURCE`` where that is set. The
-identity is ``campaign_contract.identity`` over two trees, the whole
-harness checkout (``harness``) and gpyreg: their commits and clean states,
+the Slurm plan (the ``site`` block), the environment's ``pip freeze``, the
+finishing steps, ``select`` and then ``summarize``, and the tracked copies
+(:data:`TRACKED_COPIES`: the selection and the summary, which
+``campaign_contract.py redact`` copies beside the manifest and the
+verification report). ``--gpyreg-source`` names the gpyreg checkout every
+process of the campaign imports, and must name the directory of
+``PYVBMC_GPYREG_SOURCE`` where that is set. The identity is
+``campaign_contract.identity`` over two trees, the whole harness checkout
+(``harness``) and gpyreg: their commits and clean states,
 the SHA-256 of this harness, ``svbmc_pool_io.py``, ``benchmark_targets.py``,
 ``campaign_contract.py`` and the data directory ``dev/scripts/data``, and
 the imported versions of Python, NumPy, SciPy and cma; ``pyvbmc`` must be
@@ -262,6 +265,12 @@ IDENTITY_FILES = (
 IDENTITY_MODULES = {"pyvbmc": "harness", "gpyreg": "gpyreg"}
 #: The finishing steps the driver runs on a verified directory.
 FINISHING_STEPS = [["select"], ["summarize"]]
+#: What of a finished pool enters the repository, beside its manifest and
+#: verification report (``campaign_contract.tracked_copies``): the filtered
+#: pool and the summary. The runs themselves stay in the archive.
+TRACKED_COPIES = {
+    "files": ["selection.json", "selection.md", "summary.json", "summary.md"]
+}
 #: Exit code of a worker given a line that is not a case of the
 #: allocation, or a directory it may not generate cases in (``EX_USAGE``).
 EXIT_USAGE = 64
@@ -762,10 +771,12 @@ def cmd_prepare(args):
                 "site": contract.site_block(),
                 "pip_freeze": contract.pip_freeze(),
                 "finishing_steps": FINISHING_STEPS,
+                "tracked_copies": TRACKED_COPIES,
                 "created": contract.now(),
                 "allocation_history": [],
             }
         )
+        contract.tracked_copies(manifest)
     elif manifest["allocation"] != previous["allocation"]:
         history = revised_history(out, previous, manifest["allocation"])
         manifest = dict(

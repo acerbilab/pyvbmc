@@ -27,6 +27,11 @@
 # With CAMPAIGN_STEP set it runs one step on the whole directory instead,
 # `$HARNESS $CAMPAIGN_STEP --out CAMPAIGN_DIR` (verify, a finishing step),
 # as campaign_finish.sh submits it.
+#
+# The redaction of the campaign's tracked copies (campaign_redact.sh) finds
+# the host of every task and step in the two lines below that end in
+# "on $(hostname)" (campaign_contract.LOG_HOST_LINES), so a change to their
+# form changes those patterns too.
 set -euo pipefail
 
 : "${CAMPAIGN_DIR:?CAMPAIGN_DIR must be exported by the submitter}"

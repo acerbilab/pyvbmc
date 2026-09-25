@@ -1,6 +1,8 @@
 """Tests of ``campaign_contract.py``: the claim, the identity and its host
-part, the completion record, the worker sequence, the environment check and
-the reconciliation of ``verify``'s states.
+part, the completion record, the worker sequence, the environment check,
+the reconciliation of ``verify``'s states, and the tracked copies with
+their redaction, on a campaign that the contract's own functions write at
+a stand-in site (``campaign_slurm_stubs.FakeSite``).
 
 Outside default pytest discovery; run it by path::
 
@@ -16,6 +18,7 @@ raise on Linux.
 import json
 import os
 import platform
+import shutil
 import signal
 import subprocess
 import sys
@@ -1415,3 +1418,416 @@ def test_command_line(tmp_path):
     )
     assert result.returncode == contract.FINISH_MISSING
     assert "missing indices: 3" in result.stderr
+
+
+# --------------------------------------------------------------------------
+# Tracked copies and their redaction
+# --------------------------------------------------------------------------
+
+STUB_HARNESS = "dev/scripts/campaign_stub_harness.py"
+LINES = ["g0/c001 1", "g0/c002 2", "g1/c003 3"]
+
+
+def base_identity():
+    """An identity whose source part every record of the campaign shares."""
+    return {
+        "contract": contract.CONTRACT_VERSION,
+        "source": {
+            "trees": {
+                "harness": {"commit": "a" * 40, "clean": True},
+                "gpyreg": {"commit": "b" * 40, "clean": True},
+            },
+            "files": {STUB_HARNESS: "c" * 64},
+            "versions": {"python": "3.12.6", "numpy": "2.5.2"},
+        },
+        "imports": {
+            "trees": {
+                "harness": {"path": "", "dirty": []},
+                "gpyreg": {"path": "", "dirty": []},
+            },
+            "modules": {"pyvbmc": "", "gpyreg": ""},
+            "installed_metadata_versions": {"pyvbmc": None},
+        },
+    }
+
+
+def finished_campaign(site, where=None):
+    """A campaign finished at ``site``, written with the contract alone.
+
+    Three cases of the stub harness's shape: two verified, run on the two
+    nodes, and one interrupted, whose stale claim names the second node.
+    Its tracked copies are the summary, a note under ``notes/``, each
+    verified case's record and ``.out`` file. The site's details lie in
+    the manifest (the site block, the login node's host part, the pip
+    freeze), the records, a claim, the task logs and the accounting; the
+    summary names the node that only a task log names and one that only
+    the accounting names, and the note the login node, the host that
+    redacts (``fakelogin9``) and the campaign's own path.
+    """
+    out = (site.home / "runs" / "c1") if where is None else where
+    out.mkdir(parents=True)
+    manifest = {
+        "campaign": "stub",
+        "cases": len(LINES),
+        "identity": site.plant(base_identity()),
+        "site": site.site_block(STUB_HARNESS),
+        "pip_freeze": [
+            "numpy==2.5.2",
+            f"gpyreg @ file://{site.gpyreg.as_posix()}",
+            f"-e {site.home.as_posix()}/src/pyvbmc",
+        ],
+        "finishing_steps": [["summarize"]],
+        "tracked_copies": {
+            "files": ["summary.json", "notes/*.md"],
+            "cases": {"record": True, "artifacts": ["*.out"]},
+        },
+    }
+    contract.write_json(out / "manifest.json", manifest)
+    (out / "cases.txt").write_text("".join(f"{x}\n" for x in LINES))
+    for index, line in enumerate(LINES[:2], start=1):
+        tag = contract.case_tag(line)
+        path = out / f"{tag}.out"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # The first case's file names the campaign's path; the second's
+        # holds nothing to redact.
+        path.write_text(
+            f"case {index} in {out}\n" if index == 1 else "case 2\n",
+            encoding="utf-8",
+        )
+        record = site.plant(
+            base_identity(), node=site.nodes[index - 1], task=str(index)
+        )
+        contract.write_completion(
+            out, tag, line, [path], record, 0.0, 1.0, {"index": index}
+        )
+    contract.write_json(
+        contract.claim_path(out, "g1/c003"),
+        {
+            "job": "4242",
+            "array_task": "3",
+            "host": site.nodes[1],
+            "pid": 7,
+            "started": "2026-10-01T10:00:00+0300",
+        },
+    )
+    report = contract.reconcile(
+        out,
+        LINES,
+        lambda tag: None,
+        lambda tag: [],
+        query=answer(False, "OUT_OF_MEMORY"),
+    )
+    assert report["counts"]["verified"] == 2
+    assert report["counts"]["interrupted"] == 1
+    contract.write_json(out / "verification.json", report)
+    contract.write_json(
+        out / "summary.json",
+        {
+            "counts": report["counts"],
+            "slowest": f"{site.log_node} and fakenode42",
+        },
+    )
+    (out / "notes").mkdir()
+    (out / "notes" / "prepared.md").write_text(
+        f"Prepared on {site.login}, redacted on fakelogin9, in {out}.\n",
+        encoding="utf-8",
+    )
+    site.write_slurm(out)
+    (out.parent / "c1.tar.zst.sha256").write_text(
+        f"{'d' * 64}  c1.tar.zst.000\n", encoding="utf-8"
+    )
+    return out
+
+
+@pytest.fixture
+def site(tmp_path):
+    return stubs.FakeSite(tmp_path)
+
+
+def redacted(site, out, target, **kwargs):
+    """``redact`` with the site's operator, no settings of this process and
+    ``fakelogin9`` as the host that redacts."""
+    kwargs.setdefault("operator", site.operator())
+    kwargs.setdefault("environ", {})
+    kwargs.setdefault("host", "fakelogin9")
+    return contract.redact(out, target, say=lambda message: None, **kwargs)
+
+
+def test_the_setting_groups_cover_every_setting():
+    groups = (
+        contract.REDACTED_PATH_SETTINGS,
+        contract.COMMAND_SETTINGS,
+        contract.PUBLIC_SETTINGS,
+        ("PARTITION",),
+    )
+    named = [name for group in groups for name in group]
+    assert sorted(named) == sorted(contract.SETTINGS)
+
+
+def test_tracked_copies_declaration():
+    good = {
+        "files": ["summary.md", "rescored/*.json"],
+        "cases": {"record": True, "artifacts": ["*.json"]},
+    }
+    assert contract.tracked_copies({"tracked_copies": good}) == good
+    assert contract.tracked_copies({"tracked_copies": {}}) == {
+        "files": [],
+        "cases": {"record": False, "artifacts": []},
+    }
+    with pytest.raises(contract.ContractError, match="declares no"):
+        contract.tracked_copies({})
+    for files in (
+        ["/abs/summary.md"],
+        ["../summary.md"],
+        ["a//b"],
+        ["a" + "\\" + "b.md"],
+        ["C:/x.md"],
+        ["slurm/sacct.txt"],
+        ["claims/g0/c001"],
+        ["tmp/x"],
+        ["redaction.json"],
+        ["*/summary.md"],
+        [""],
+        "summary.md",
+    ):
+        with pytest.raises(contract.ContractError):
+            contract.tracked_copies({"tracked_copies": {"files": files}})
+    for spec in (
+        {"files": [], "other": 1},
+        {"cases": {"record": "yes"}},
+        {"cases": {"artifacts": ["slurm/*"]}},
+        {"cases": {"records": True}},
+    ):
+        with pytest.raises(contract.ContractError):
+            contract.tracked_copies({"tracked_copies": spec})
+
+
+def test_operator_identity_from_the_environment_and_the_password_entry(
+    tmp_path,
+):
+    from types import SimpleNamespace
+
+    entry = SimpleNamespace(pw_name="fromdb", pw_dir=str(tmp_path / "db"))
+    found = contract.operator_identity(
+        {"USER": "fromenv", "HOME": str(tmp_path / "env")}, passwd=entry
+    )
+    assert found == {
+        "users": ["fromdb", "fromenv"],
+        "homes": sorted([str(tmp_path / "db"), str(tmp_path / "env")]),
+    }
+    with pytest.raises(contract.ContractError, match="root"):
+        contract.operator_identity({"USER": "u", "HOME": "/"}, passwd=entry)
+    nobody = SimpleNamespace(pw_name="", pw_dir="")
+    with pytest.raises(contract.ContractError, match="no username"):
+        contract.operator_identity({}, passwd=nobody)
+
+
+def test_slurm_host_lists():
+    assert contract.expand_hostlist("n[01-03,7],login1,a[1-2]b[3-4]") == [
+        "n01",
+        "n02",
+        "n03",
+        "n7",
+        "login1",
+        "a1b3",
+        "a1b4",
+        "a2b3",
+        "a2b4",
+    ]
+    assert contract.expand_hostlist("None assigned") == []
+    assert contract.expand_hostlist("(null)") == []
+    with pytest.raises(contract.ContractError):
+        contract.expand_hostlist("n[a-b]")
+
+
+def test_redact_removes_every_site_detail(site, tmp_path):
+    out = finished_campaign(site)
+    target = tmp_path / "handback" / "tracked" / "c1"
+    record = redacted(site, out, target)
+    assert site.leaks(target) == []
+    assert site.leaks(out)  # the campaign itself is left as it is
+    names = sorted(
+        p.relative_to(target).as_posix()
+        for p in target.rglob("*")
+        if p.is_file()
+    )
+    assert names == [
+        "g0/c001.out",
+        "g0/c002.out",
+        "manifest.json",
+        "notes/prepared.md",
+        "records/g0/c001.complete.json",
+        "records/g0/c002.complete.json",
+        "redaction.json",
+        "summary.json",
+        "verification.json",
+    ]
+    manifest = contract.read_json(target / "manifest.json")
+    assert "site" not in manifest
+    assert manifest["pip_freeze"] == [
+        "numpy==2.5.2",
+        "gpyreg @ file:<redacted>",
+        "-e <redacted>",
+    ]
+    assert manifest["identity"]["host"]["hostname"] == contract.LOGIN_HOST
+    assert manifest["identity"]["host"]["executable"] == (
+        "$CAMPAIGN_ENV/bin/python"
+    )
+    trees = manifest["identity"]["imports"]["trees"]
+    assert trees["gpyreg"]["path"] == "$PYVBMC_GPYREG_SOURCE"
+    assert trees["harness"]["path"].startswith("~")
+    host = contract.read_json(target / "records/g0/c002.complete.json")[
+        "identity"
+    ]["host"]
+    assert host["hostname"] == site.family
+    assert host["node_features"]["node"] == site.family
+    assert host["node_features"]["available"] == [site.family, "avx2"]
+    assert host["slurm"]["node"] == site.family
+    assert host["slurm"]["partition"] == "$PARTITION"
+    assert host["slurm"]["array_job_id"] == "4242"  # job ids stay
+    summary = contract.read_json(target / "summary.json")
+    assert summary["slowest"] == f"{site.family} and {site.family}"
+    note = (target / "notes" / "prepared.md").read_text(encoding="utf-8")
+    assert note.startswith("Prepared on login, redacted on login, in ~")
+    assert (target / "g0/c001.out").read_text().startswith("case 1 in ~")
+    # The record of the redaction, and the SHA-256 chain through it.
+    assert record == contract.read_json(target / contract.REDACTION)
+    assert record["campaign"] == "c1"
+    assert record["node_family"] == site.family
+    assert record["archive"] == {
+        "sha256_file": "c1.tar.zst.sha256",
+        "parts": {"c1.tar.zst.000": "d" * 64},
+    }
+    assert set(record["files"]) == set(names) - {contract.REDACTION}
+    for name, entry in record["files"].items():
+        assert entry["source_sha256"] == contract.sha256_file(out / name)
+        assert entry["sha256"] == contract.sha256_file(target / name)
+        assert contract.source_sha256(target, name) == entry["source_sha256"]
+        assert contract.source_sha256(out, name) == entry["source_sha256"]
+    # A file with nothing to redact is copied as it is.
+    assert (target / "g0/c002.out").read_bytes() == (
+        out / "g0/c002.out"
+    ).read_bytes()
+    assert record["replaced"]["hosts"] > 0 and record["replaced"]["~"] > 0
+    assert contract.source_name(target) == contract.source_name(out) == "c1"
+    (target / "summary.json").write_text("{}\n", encoding="utf-8")
+    with pytest.raises(contract.ContractError, match="not the copy"):
+        contract.source_sha256(target, "summary.json")
+
+
+def test_redact_refuses_what_survives_and_writes_nothing(site, tmp_path):
+    out = finished_campaign(site)
+    target = tmp_path / "handback" / "c1"
+    for planted in (
+        f"run by {site.user}",
+        f"/scratch/{site.user}/c1",
+        "export https_proxy=http://fakeproxy.invalid:3128",
+        "fakeconda/24.1",
+    ):
+        site.rewrite(
+            out / "summary.json", lambda value: value.update(note=planted)
+        )
+        with pytest.raises(contract.ContractError) as refusal:
+            redacted(site, out, target)
+        message = str(refusal.value)
+        assert "summary.json" in message and "none was written" in message
+        assert not target.parent.exists()
+    # A partition in a field the redaction does not know is a JSON string
+    # of its own, which it replaces; in a text it is refused.
+    site.rewrite(
+        out / "summary.json", lambda value: value.update(note=site.partition)
+    )
+    redacted(site, out, target)
+    assert contract.read_json(target / "summary.json")["note"] == "$PARTITION"
+    shutil.rmtree(target)
+    with open(out / "notes" / "prepared.md", "a", encoding="utf-8") as note:
+        note.write(f"Queued on {site.partition}.\n")
+    with pytest.raises(contract.ContractError, match="a partition"):
+        redacted(site, out, target)
+
+
+def test_redact_names_a_directory_outside_the_home(site, tmp_path):
+    scratch = tmp_path / "scratch" / site.user
+    out = finished_campaign(site, where=scratch / "c1")
+    target = tmp_path / "handback" / "c1"
+    with pytest.raises(contract.ContractError, match="the username"):
+        redacted(site, out, target)
+    redacted(site, out, target, paths=[("SCRATCH", str(scratch))])
+    assert site.leaks(target) == []
+    assert (
+        (target / "g0/c001.out").read_text().startswith("case 1 in $SCRATCH")
+    )
+    with pytest.raises(contract.ContractError, match="upper case"):
+        redacted(site, out, tmp_path / "t2", paths=[("scratch", "/x")])
+
+
+def test_redact_refusals(site, tmp_path):
+    out = finished_campaign(site)
+    target = tmp_path / "handback" / "c1"
+    target.mkdir(parents=True)
+    (target / "old.md").write_text("x")
+    with pytest.raises(contract.ContractError, match="not an empty"):
+        redacted(site, out, target)
+    for inside in (out / "tracked", site.home / "src" / "harness" / "dev"):
+        with pytest.raises(contract.ContractError, match="lies inside"):
+            redacted(site, out, inside)
+
+    def refuses(change, match, name="manifest.json"):
+        before = (out / name).read_bytes()
+        site.rewrite(out / name, change)
+        with pytest.raises(contract.ContractError, match=match):
+            redacted(site, out, tmp_path / "other")
+        (out / name).write_bytes(before)
+        assert not (tmp_path / "other").exists()
+
+    refuses(lambda m: m.pop("tracked_copies"), "declares no tracked")
+    refuses(lambda m: m["site"].pop("NODE_FEATURE"), "names no NODE_FEATURE")
+    refuses(
+        lambda m: m["tracked_copies"]["files"].append("absent.md"),
+        "holds no absent.md",
+    )
+    refuses(
+        lambda m: m.update(exit_code=1), "did not pass", "verification.json"
+    )
+    refuses(
+        lambda r: r["identity"]["host"]["node_features"].update(
+            available=["other"], active=["other"]
+        ),
+        "not fakefamily",
+        "records/g0/c001.complete.json",
+    )
+    # A host named as the copies name the login node.
+    refuses(
+        lambda s: s.update(hostname=contract.LOGIN_HOST),
+        "name hosts by 'login', which holds a hostname",
+        "summary.json",
+    )
+    (out / "g0" / "c002.out").write_bytes(b"\x00\x01binary")
+    with pytest.raises(contract.ContractError, match="is not text"):
+        redacted(site, out, tmp_path / "other")
+    (out / "verification.json").unlink()
+    with pytest.raises(contract.ContractError, match="no verification"):
+        redacted(site, out, tmp_path / "other")
+
+
+def test_redact_from_the_command_line(site, tmp_path, monkeypatch, capsys):
+    out = finished_campaign(site)
+    for name in contract.SETTINGS:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(
+        contract, "operator_identity", lambda environ=None: site.operator()
+    )
+    # The host that redacts, which the campaign's note names.
+    monkeypatch.setattr(contract.socket, "gethostname", lambda: "fakelogin9")
+    target = tmp_path / "handback" / "c1"
+    arguments = ["redact", "--campaign", str(out), "--out"]
+    assert contract.main([*arguments, str(target)]) == 0
+    assert site.leaks(target) == []
+    assert "none of" in capsys.readouterr().out
+    other = str(tmp_path / "t2")
+    assert contract.main([*arguments, other, "--path", "X"]) == 1
+    assert "not NAME=PATH" in capsys.readouterr().err
+    site.rewrite(out / "summary.json", lambda v: v.update(by=site.user))
+    assert contract.main([*arguments, other]) == 1
+    assert "refusing: " in capsys.readouterr().err
+    assert not (tmp_path / "t2").exists()

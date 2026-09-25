@@ -21,12 +21,15 @@ Two kinds of assessment:
   arm's sidecars and boost reports and the metrics that ``population_run.py
   rescore`` recomputed with the release code (``--rescored``, by default
   the candidate's ``rescored/``), so that this process imports no package
-  but its own. It reports a KS screen per configuration and metric under
-  one Holm family, the paired changes, the descriptive paired family (every
-  configuration: signed-rank tests of the three accuracy metrics and the
-  evaluation count, McNemar tests of usability, one Holm family), the
-  confirmatory family fixed in both arms' manifests, and every boost
-  decision of each arm checked against the guard.
+  but its own. Either arm may be a campaign directory or its tracked
+  copies in the repository, redacted by ``campaign_contract.py
+  redact``, which give the same report. It reports a KS screen per
+  configuration and metric under one Holm family, the paired changes,
+  the descriptive paired family (every configuration: signed-rank tests
+  of the three accuracy metrics and the evaluation count, McNemar tests
+  of usability, one Holm family), the confirmatory family fixed in both
+  arms' manifests, and every boost decision of each arm checked against
+  the guard.
 """
 
 import argparse
@@ -591,7 +594,13 @@ def load_array_campaign(path, rescored_dir):
     the files that record hashes. The rescored metrics
     (``<rescored_dir>/<directory name>.json``) must be those of this
     manifest and this verification, rescored from that sidecar. Cases in
-    other states are counted, not read.
+    other states are counted, not read. ``path`` may also be the tracked
+    copies of a campaign, redacted by ``campaign_contract.redact``: each
+    file is then checked against the SHA-256 its ``redaction.json``
+    records, and that of the campaign's own file, which the records and
+    reports hash, is compared in its place
+    (``campaign_contract.source_sha256``); the campaign's name is the one
+    ``redaction.json`` records.
 
     Returns
     -------
@@ -605,23 +614,23 @@ def load_array_campaign(path, rescored_dir):
         source identity).
     """
     path = Path(path).resolve()
-    manifest_path = path / "manifest.json"
-    manifest = json.loads(manifest_path.read_text())
-    verification_path = path / "verification.json"
-    verification = json.loads(verification_path.read_text())
+    contract = runner.contract
+    name = contract.source_name(path)
+    manifest = json.loads((path / "manifest.json").read_text())
+    verification = json.loads((path / "verification.json").read_text())
+    manifest_sha256 = contract.source_sha256(path, "manifest.json")
+    verification_sha256 = contract.source_sha256(path, "verification.json")
     assert [case["case"] for case in verification["cases"]] == (
         runner.case_lines(manifest)
     ), f"{path}: the verification does not reconcile the manifest"
     assert verification["exit_code"] == 0, (path, verification["counts"])
-    assert verification["manifest_sha256"] == runner.sha256(manifest_path)
-    rescored = json.loads(
-        (Path(rescored_dir) / f"{path.name}.json").read_text()
-    )
-    assert rescored["campaign"]["manifest_sha256"] == runner.sha256(
-        manifest_path
+    assert verification["manifest_sha256"] == manifest_sha256
+    rescored = json.loads((Path(rescored_dir) / f"{name}.json").read_text())
+    assert (
+        rescored["campaign"]["manifest_sha256"] == manifest_sha256
     ), f"{path}: rescored for another manifest"
-    assert rescored["campaign"]["verification_sha256"] == runner.sha256(
-        verification_path
+    assert (
+        rescored["campaign"]["verification_sha256"] == verification_sha256
     ), f"{path}: rescored for another verification"
     cases, rows, reports = {}, {}, {}
     for entry in verification["cases"]:
@@ -630,16 +639,17 @@ def load_array_campaign(path, rescored_dir):
         cases[stem] = (label, seed, entry["status"])
         if entry["status"] != "verified":
             continue
-        record = json.loads(runner.contract.record_path(path, tag).read_text())
+        record = json.loads(contract.record_path(path, tag).read_text())
         assert record["tag"] == tag, tag
-        assert not runner.contract.source_differences(
+        assert not contract.source_differences(
             record["identity"], manifest["identity"]
         ), f"{tag}: the record's identity is not the manifest's"
         files = runner.case_files(label, seed)
         for key in ("sidecar", "boost_report"):
             rel = files[key]
             assert (
-                runner.sha256(path / rel) == record["artifacts"][rel]["sha256"]
+                contract.source_sha256(path, rel)
+                == record["artifacts"][rel]["sha256"]
             ), f"{tag}: {rel} is not the file its verification checked"
         side = json.loads((path / files["sidecar"]).read_text())
         assert (side["label"], side["seed"]) == (label, seed), tag
@@ -659,7 +669,7 @@ def load_array_campaign(path, rescored_dir):
         }
         reports[stem] = path / files["boost_report"]
     return {
-        "name": path.name,
+        "name": name,
         "path": path,
         "manifest": manifest,
         "identity": manifest["identity"],

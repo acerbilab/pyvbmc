@@ -4,13 +4,17 @@ The statistics are checked against SciPy and an independent count; the
 comparison of two arms of array mode runs on campaign directories that the
 fixtures here write (sidecars, boost reports, completion records,
 verification reports and rescored metrics), which test the reader and the
-statistics, not VBMC.
+statistics, not VBMC. Two such arms, run at a stand-in site
+(``campaign_slurm_stubs.FakeSite``), are compared as they are and as their
+redacted tracked copies.
 """
 
+import copy
 import json
 from fractions import Fraction
 
 import analyze_population_run as analysis
+import campaign_slurm_stubs as stubs
 import numpy as np
 import pytest
 from scipy import stats
@@ -225,7 +229,29 @@ def arm_metrics(role, label, seed):
     return base, rescored
 
 
-def write_arm(root, role, pyvbmc_commit, files=None):
+def sited(site, identity, node=None):
+    """``identity`` with the paths and host part of ``site``, the stand-in
+    site of ``campaign_slurm_stubs.FakeSite``: of its login node, or with
+    ``node`` of an array task there."""
+    identity = copy.deepcopy(identity)
+    identity["imports"] = {
+        "trees": {
+            name: {"path": "", "dirty": []}
+            for name in ("harness", "pyvbmc", "gpyreg")
+        },
+        "modules": {"pyvbmc": "", "gpyreg": ""},
+    }
+    return site.plant(identity, node=node)
+
+
+def write_arm(root, role, pyvbmc_commit, files=None, site=None):
+    """One arm of array mode, its cases verified.
+
+    With ``site`` the arm was run there: its manifest holds the site block,
+    the tracked copies and the login node's identity, each record the
+    identity of the node its case ran on, each sidecar its provenance, and
+    the directory the task logs, the accounting and a summary.
+    """
     path = root / role
     manifest = {
         "harness": "population_run",
@@ -239,6 +265,13 @@ def write_arm(root, role, pyvbmc_commit, files=None):
         "confirmatory": runner.confirmatory_family(None, LABELS),
         "identity": {"source": source(pyvbmc_commit, files), "imports": {}},
     }
+    if site is not None:
+        manifest["identity"] = sited(site, manifest["identity"])
+        manifest.update(
+            site=site.site_block("dev/scripts/population_run.py"),
+            pip_freeze=[f"gpyreg @ file://{site.gpyreg.as_posix()}"],
+            tracked_copies=runner.TRACKED_COPIES,
+        )
     runner.write_json(path / "manifest.json", manifest)
     cases, rescored = [], {}
     for index, line in enumerate(runner.case_lines(manifest), start=1):
@@ -258,11 +291,17 @@ def write_arm(root, role, pyvbmc_commit, files=None):
             "final_K": 50,
             "n_warps": 0,
         }
+        identity = manifest["identity"]
+        side = {"label": label, "seed": seed, "final": final}
+        if site is not None:
+            identity = sited(site, identity, site.nodes[seed % 2])
+            side["provenance"] = {
+                "source": identity["source"],
+                "imports": identity["imports"],
+            }
         side_path = path / files_of["sidecar"]
         side_path.parent.mkdir(parents=True, exist_ok=True)
-        side_path.write_text(
-            json.dumps({"label": label, "seed": seed, "final": final})
-        )
+        side_path.write_text(json.dumps(side))
         quality = {k: in_run[k] for k in analysis.QUALITY}
         report = {
             "attempted": True,
@@ -286,11 +325,7 @@ def write_arm(root, role, pyvbmc_commit, files=None):
         }
         runner.write_json(
             contract.record_path(path, tag),
-            {
-                "tag": tag,
-                "identity": manifest["identity"],
-                "artifacts": artifacts,
-            },
+            {"tag": tag, "identity": identity, "artifacts": artifacts},
         )
         cases.append(
             {"index": index, "tag": tag, "case": line, "status": "verified"}
@@ -316,21 +351,31 @@ def write_arm(root, role, pyvbmc_commit, files=None):
             "exit_code": 0,
         },
     )
+    if site is not None:
+        site.write_slurm(path)
+        (path / "summary.md").write_text(
+            f"# {role}\n\nPrepared on {site.login} in {path}.\n",
+            encoding="utf-8",
+        )
     return path, rescored
 
 
-def write_rescored(candidate, arm, cases):
+def write_rescored(candidate, arm, cases, site=None):
+    identity = {"source": source(HARNESS)}
+    if site is not None:
+        identity = sited(site, identity)
     runner.write_json(
         candidate / "rescored" / f"{arm.name}.json",
         {
             "campaign": {
                 "name": arm.name,
+                "path": str(arm),
                 "manifest_sha256": runner.sha256(arm / "manifest.json"),
                 "verification_sha256": runner.sha256(
                     arm / "verification.json"
                 ),
             },
-            "rescoring": {"identity": {"source": source(HARNESS)}},
+            "rescoring": {"identity": identity},
             "cases": cases,
         },
     )
@@ -424,3 +469,64 @@ def test_arms_refuse_other_harness_files(tmp_path):
     write_rescored(candidate, candidate, after)
     with pytest.raises(AssertionError, match="harness files"):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_the_redacted_copies_give_the_same_assessment(tmp_path):
+    """The two arms, run at a stand-in site, are redacted into the tracked
+    tree of a release gate, which holds none of the site's details; the
+    comparison of the copies writes the report the arms themselves give."""
+    site = stubs.FakeSite(tmp_path)
+    runs = site.home / "runs"
+    reference, before = write_arm(runs, "reference", "b" * 40, site=site)
+    candidate, after = write_arm(runs, "candidate", HARNESS, site=site)
+    write_rescored(candidate, reference, before, site=site)
+    write_rescored(candidate, candidate, after, site=site)
+    assert site.leaks(reference) and site.leaks(candidate)
+    analysis.analyze_arms(reference, candidate, None, tmp_path / "raw")
+    tracked = tmp_path / "handback" / "release_gate"
+    for arm, name in (
+        (reference, "population_before"),
+        (candidate, "population_after"),
+    ):
+        contract.redact(
+            arm,
+            tracked / name,
+            operator=site.operator(),
+            environ={},
+            host="fakelogin9",
+            say=lambda message: None,
+        )
+    assert site.leaks(tracked) == []
+    after_copies = sorted(
+        p.relative_to(tracked / "population_after").as_posix()
+        for p in (tracked / "population_after").rglob("*")
+        if p.is_file()
+    )
+    assert "rescored/reference.json" in after_copies
+    assert len(after_copies) == 6 + 3 * len(LABELS) * len(SEEDS)
+    result = analysis.analyze_arms(
+        tracked / "population_before",
+        tracked / "population_after",
+        None,
+        tmp_path / "copies",
+    )
+    assert result["paired_cases"] == 200
+    assert result["arms"]["reference"]["name"] == "reference"
+    for name in ("assessment.json", "comparison.md"):
+        assert (tmp_path / "copies" / name).read_bytes() == (
+            tmp_path / "raw" / name
+        ).read_bytes(), name
+    # A copy changed after the redaction is refused.
+    sidecar = (
+        tracked
+        / "population_before"
+        / runner.case_files(LABELS[0], 3)["sidecar"]
+    )
+    sidecar.write_text(sidecar.read_text() + " ")
+    with pytest.raises(contract.ContractError, match="not the copy"):
+        analysis.analyze_arms(
+            tracked / "population_before",
+            tracked / "population_after",
+            None,
+            tmp_path / "again",
+        )

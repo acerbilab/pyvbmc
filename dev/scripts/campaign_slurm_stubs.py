@@ -26,8 +26,13 @@ On Windows the scripts run under Git Bash, and each also gets a ``.cmd``
 shim, through which Python's ``subprocess`` reaches it. :func:`find_bash`
 locates bash, failing rather than skipping where there is none, since the
 tests must run wherever the campaigns do.
+
+:class:`FakeSite` stands in for what a site and an operator leave in a
+campaign's records, for the tests of the redaction of its tracked copies
+(``campaign_contract.redact``).
 """
 
+import json
 import os
 import shutil
 import subprocess
@@ -218,3 +223,188 @@ def stub_environment(stubs, state, base=None):
     environment["PATH"] = os.pathsep.join(entry for entry in entries if entry)
     environment["STUB_STATE"] = Path(state).as_posix()
     return environment
+
+
+class FakeSite:
+    """The site details and the operator that a test plants in a campaign.
+
+    Every value but the node family holds one of :data:`TOKENS`, which no
+    file of the repository holds, so that :meth:`leaks` can search a
+    redacted copy for them independently of how the redaction matches: the
+    operator's username and home (under ``root``), a login host, compute
+    nodes by their domain names, one node that only a task log names and
+    two that only the accounting names, a partition, an environment and a
+    gpyreg checkout outside the home, and the login, conda and sbatch
+    settings. ``family``, the node feature, names every compute node in
+    the copies, and may remain.
+    """
+
+    #: What no redacted copy may hold, in any letter case.
+    TOKENS = (
+        "fakeoperator",
+        "fakelogin",
+        "fakenode",
+        "fakepartition",
+        "fakeproject",
+        "fakeproxy",
+        "fakeconda",
+    )
+
+    def __init__(self, root):
+        root = Path(root)
+        self.user = "fakeoperator"
+        self.home = root / "home" / self.user
+        self.home.mkdir(parents=True, exist_ok=True)
+        self.login = "fakelogin7.cluster.invalid"
+        self.nodes = [f"fakenode{n}.cluster.invalid" for n in (17, 18)]
+        self.log_node = "fakenode40"
+        self.accounting = "fakenode[41-42]"
+        self.family = "fakefamily"
+        self.partition = "fakepartition"
+        self.env = root / "fakeproject" / "env"
+        self.gpyreg = root / "fakeproject" / "gpyreg"
+
+    def site_block(self, harness):
+        """The ``site`` block of a campaign of ``harness`` at this site."""
+        import campaign_contract as contract
+
+        site = {name: None for name in contract.SETTINGS}
+        site.update(
+            HARNESS=harness,
+            CAMPAIGN_ENV=str(self.env),
+            NODE_FEATURE=self.family,
+            PARTITION=self.partition,
+            LOGIN_SETUP="export https_proxy=http://fakeproxy.invalid:3128",
+            CONDA_SETUP="module load fakeconda/24.1",
+            PYVBMC_GPYREG_SOURCE=str(self.gpyreg),
+            SBATCH_EXTRA="--comment=fakeproject/queue",
+            THROTTLE="200",
+            TIME="00:30:00",
+            MEM="2G",
+        )
+        return site
+
+    def operator(self):
+        """The operator's identity, as
+        ``campaign_contract.operator_identity`` gives it."""
+        return {"users": [self.user], "homes": [str(self.home)]}
+
+    def host(self, node=None, job="4242", task="1"):
+        """A host part: the login node's, outside Slurm, or with ``node``
+        that of the array task ``<job>_<task>`` on that node."""
+        env = self.env.as_posix()
+        part = {
+            "hostname": self.login,
+            "platform": "Linux-6.1-x86_64-with-glibc2.34",
+            "executable": f"{env}/bin/python",
+            "cpu_model": "Stand-in CPU",
+            "node_features": None,
+            "blas": [
+                {
+                    "user_api": "blas",
+                    "internal_api": "openblas",
+                    "num_threads": 1,
+                    "filepath": f"{env}/lib/libopenblas.so",
+                }
+            ],
+            "cpu_affinity": {"cpus": [3], "physical_cores": ["0:3"]},
+            "threads": {"OMP_NUM_THREADS": "1"},
+            "slurm": {
+                "job_id": None,
+                "array_job_id": None,
+                "array_task_id": None,
+                "restart_count": None,
+                "node": None,
+                "partition": None,
+                "cpus_per_task": None,
+            },
+        }
+        if node is not None:
+            short = node.split(".")[0]
+            part["hostname"] = node
+            part["node_features"] = {
+                "node": short,
+                "available": [self.family, "avx2"],
+                "active": [self.family, "avx2"],
+            }
+            part["slurm"] = {
+                "job_id": f"{job}{int(task):03d}",
+                "array_job_id": job,
+                "array_task_id": str(task),
+                "restart_count": "0",
+                "node": short,
+                "partition": self.partition,
+                "cpus_per_task": "1",
+            }
+        return part
+
+    def plant(self, identity, node=None, **task):
+        """Give an identity this site's host part and paths; return it.
+
+        Its host part becomes :meth:`host`'s, and the paths of its trees and
+        imported packages lie under the home, gpyreg's at ``gpyreg``.
+        """
+        identity["host"] = self.host(node, **task)
+        imports = identity.setdefault("imports", {})
+        for name, tree in (imports.get("trees") or {}).items():
+            tree["path"] = str(
+                self.gpyreg if name == "gpyreg" else self.home / "src" / name
+            )
+        for name in imports.get("modules") or {}:
+            root = self.gpyreg if name == "gpyreg" else self.home / "src"
+            imports["modules"][name] = str(root / name)
+        return identity
+
+    def write_slurm(self, out, job="4242"):
+        """The task logs, the accounting and a submission in ``out/slurm``.
+
+        The logs name the nodes and :attr:`log_node`, the accounting a node
+        and the host list :attr:`accounting`, the submission the partition.
+        """
+        slurm = Path(out) / "slurm"
+        slurm.mkdir(parents=True, exist_ok=True)
+        for index, node in enumerate([*self.nodes, self.log_node], start=1):
+            (slurm / f"{job}_{index}.out").write_text(
+                f"task {job}_{index}, case {index}: g/c{index} {index}, "
+                f"on {node}\ng/c{index}: complete in 1.0 s\n",
+                encoding="utf-8",
+            )
+        (slurm / f"verify_{job}9.out").write_text(
+            f"step 'verify' of {self.home.as_posix()}/runs: job {job}9 on "
+            f"{self.nodes[0]}\n",
+            encoding="utf-8",
+        )
+        (slurm / "sacct.txt").write_text(
+            "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
+            f"{job}_1|c|COMPLETED|0:0|00:01:00|100M|2|"
+            f"{self.nodes[0].split('.')[0]}\n"
+            f"{job}_2|c|COMPLETED|0:0|00:01:00|100M|2|{self.accounting}\n"
+            f"{job}_3|c|PENDING|0:0|00:00:00||2|None assigned\n",
+            encoding="utf-8",
+        )
+        with open(slurm / "jobs.txt", "a", encoding="utf-8") as stream:
+            stream.write(
+                f"{job} array=1-3 offset=0 subset=- throttle=200 "
+                f"time=00:30:00 mem=2G partition={self.partition} "
+                "2026-10-01T10:00:00\n"
+            )
+
+    def leaks(self, directory):
+        """``(file, token)`` for each of :data:`TOKENS` a file under
+        ``directory`` holds."""
+        found = []
+        for path in sorted(Path(directory).rglob("*")):
+            if path.is_file():
+                text = path.read_bytes().decode("utf-8", "replace").lower()
+                name = path.relative_to(directory).as_posix()
+                found += [(name, t) for t in self.TOKENS if t in text]
+        return found
+
+    def rewrite(self, path, change):
+        """Apply ``change`` to the JSON document at ``path`` and rewrite it
+        as ``campaign_contract.write_json`` writes."""
+        path = Path(path)
+        value = json.loads(path.read_text(encoding="utf-8"))
+        change(value)
+        path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+        return value

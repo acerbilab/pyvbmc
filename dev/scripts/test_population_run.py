@@ -6,7 +6,9 @@ campaign of the ``smoke`` suite's ``normal_D2`` whose identity is fixed by
 the test (the real one needs clean trees) and whose cases are written by
 hand or by a stand-in for the run, so that the contract's states (the
 early exit, the refusals, a stop by SIGTERM, a failure) and ``verify``,
-``rescore`` and ``summarize`` are exercised without VBMC.
+``rescore`` and ``summarize`` are exercised without VBMC. One such campaign,
+prepared at a stand-in site (``campaign_slurm_stubs.FakeSite``), has its
+tracked copies redacted.
 """
 
 import copy
@@ -22,6 +24,7 @@ from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 
+import campaign_slurm_stubs as stubs
 import dill
 import numpy as np
 import population_run as runner
@@ -337,12 +340,15 @@ def files_of(out, seed):
     }
 
 
-def complete_case(out, seed, exact_metrics=False):
+def complete_case(out, seed, exact_metrics=False, identity=None):
     """Write a verified-looking case by hand, with a real posterior.
 
     With ``exact_metrics`` the sidecar's metrics are the posterior's own,
-    so that the rescoring reproduces them.
+    so that the rescoring reproduces them. ``identity`` is the one its
+    record and its sidecar's provenance hold, :data:`FAKE_IDENTITY` by
+    default.
     """
+    identity = FAKE_IDENTITY if identity is None else identity
     vp = make_vbmc().vp
     files = files_of(out, seed)
     for path in files.values():
@@ -385,8 +391,8 @@ def complete_case(out, seed, exact_metrics=False):
         "effective_options": options,
         "final": final,
         "provenance": {
-            "source": FAKE_IDENTITY["source"],
-            "imports": FAKE_IDENTITY["imports"],
+            "source": identity["source"],
+            "imports": identity["imports"],
         },
     }
     files["sidecar"].write_text(json.dumps(side, indent=1))
@@ -431,7 +437,7 @@ def complete_case(out, seed, exact_metrics=False):
         tag,
         line_of(seed),
         list(files.values()),
-        copy.deepcopy(FAKE_IDENTITY),
+        copy.deepcopy(identity),
         time.time(),
         1.0,
         {"boost": {"attempted": False, "accepted": False}},
@@ -788,6 +794,131 @@ def test_rescore_and_summarize_a_verified_campaign(campaign, tmp_path):
     path.write_text(path.read_text() + " ")
     with pytest.raises(contract.ContractError, match="not the file"):
         runner.main(["rescore", "--out", str(campaign)])
+
+
+def sited_identity(site, node=None):
+    """:data:`FAKE_IDENTITY` with the host part and the paths of ``site``:
+    of its login node, or with ``node`` of an array task there."""
+    identity = copy.deepcopy(FAKE_IDENTITY)
+    identity["imports"] = {
+        "trees": {
+            name: {"path": "", "dirty": []}
+            for name in ("harness", "pyvbmc", "gpyreg")
+        },
+        "modules": {"pyvbmc": "", "gpyreg": ""},
+        "installed_metadata_versions": {"pyvbmc": None, "gpyreg": None},
+    }
+    identity = site.plant(identity, node=node)
+    identity["imports"]["harness_modules"] = {
+        "golden_trace": str(site.home / "src" / "golden_trace.py")
+    }
+    return identity
+
+
+@pytest.fixture
+def sited(tmp_path, monkeypatch):
+    """``(site, campaign)``: the campaign of :func:`campaign`, prepared at
+    a stand-in site (``campaign_slurm_stubs.FakeSite``) in its operator's
+    home, with the site's settings and the login node's identity."""
+    site = stubs.FakeSite(tmp_path)
+    for name, value in site.site_block(
+        "dev/scripts/population_run.py"
+    ).items():
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+    login = sited_identity(site)
+    monkeypatch.setattr(
+        runner, "this_identity", lambda host=True: copy.deepcopy(login)
+    )
+    monkeypatch.setattr(
+        contract,
+        "pip_freeze",
+        lambda: ["pyvbmc==0", f"gpyreg @ file://{site.gpyreg.as_posix()}"],
+    )
+    out = site.home / "runs" / "population_after"
+    arguments = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0-2"]
+    assert runner.main(["prepare", "--out", str(out), *arguments]) == 0
+    return site, out
+
+
+def test_the_tracked_copies_of_a_campaign_are_redacted(sited, tmp_path):
+    site, out = sited
+    manifest = contract.read_json(out / "manifest.json")
+    assert manifest["tracked_copies"] == runner.TRACKED_COPIES
+    tag, files = complete_case(
+        out,
+        0,
+        exact_metrics=True,
+        identity=sited_identity(site, site.nodes[0]),
+    )
+    assert runner.main(["verify", "--out", str(out)]) == 0
+    assert runner.main(["summarize", "--out", str(out)]) == 0
+    assert runner.main(["rescore", "--out", str(out)]) == 0
+    site.write_slurm(out)
+    assert site.leaks(out)
+    target = tmp_path / "handback" / "population_after"
+    contract.redact(
+        out,
+        target,
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        say=lambda message: None,
+    )
+    assert site.leaks(target) == []
+    rels = runner.case_files(LABEL, 0)
+    names = sorted(
+        p.relative_to(target).as_posix()
+        for p in target.rglob("*")
+        if p.is_file()
+    )
+    # Every verified case's record, sidecar and boost report, and none of
+    # the unverified ones; the traces and the pickles stay in the archive.
+    assert names == sorted(
+        [
+            "manifest.json",
+            "verification.json",
+            "summary.md",
+            "rescored/population_after.json",
+            "redaction.json",
+            f"records/{tag}.complete.json",
+            rels["sidecar"],
+            rels["boost_report"],
+        ]
+    )
+    side = json.loads((target / rels["sidecar"]).read_text())
+    raw = json.loads(files["sidecar"].read_text())
+    assert side["final"] == raw["final"]
+    trees = side["provenance"]["imports"]["trees"]
+    assert trees["pyvbmc"]["path"].startswith("~")
+    assert trees["gpyreg"]["path"] == "$PYVBMC_GPYREG_SOURCE"
+    record = contract.read_json(contract.record_path(target, tag))
+    assert record["identity"]["host"]["hostname"] == site.family
+    for key in ("sidecar", "boost_report"):
+        assert (
+            contract.source_sha256(target, rels[key])
+            == record["artifacts"][rels[key]]["sha256"]
+        )
+    rescored = contract.read_json(target / "rescored/population_after.json")
+    assert rescored["campaign"]["path"].startswith("~")
+    assert rescored["rescoring"]["identity"]["host"]["hostname"] == "login"
+    # A sidecar field the redaction knows nothing of, holding the username.
+    raw["notes"] = f"run by {site.user}"
+    files["sidecar"].write_text(json.dumps(raw, indent=1))
+    again = tmp_path / "handback" / "again"
+    with pytest.raises(contract.ContractError) as refusal:
+        contract.redact(
+            out,
+            again,
+            operator=site.operator(),
+            environ={},
+            say=lambda message: None,
+        )
+    assert rels["sidecar"] in str(refusal.value)
+    assert "the username" in str(refusal.value)
+    assert not again.exists()
 
 
 def test_rescore_runs_in_the_release_code_alone(

@@ -4,8 +4,9 @@ The artifact, resumption, selection and summary; the campaign contract
 (the case list and its subsets, the worker's early exit and refusals, its
 claim, its clean-up after a failure or a SIGTERM, the identity and host
 fields, every state of ``verify``); the identity of a case run by the array
-worker and by ``run``; the flat layout of the pools prepared before the
-contract; and one campaign through the Slurm driver of ``dev/scripts/hpc/``.
+worker and by ``run``; the redaction of a pool's tracked copies; the
+flat layout of the pools prepared before the contract; and one campaign
+through the Slurm driver of ``dev/scripts/hpc/``, its redaction included.
 
 One short campaign (``normal_D2``, at most three seeds, well under a
 minute of inference) is generated once for the whole module through the
@@ -30,6 +31,7 @@ import os
 import re
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -1986,6 +1988,96 @@ def test_the_array_worker_and_run_give_identical_artifacts(stored, tmp_path):
 
 
 # --------------------------------------------------------------------------
+# The tracked copies
+# --------------------------------------------------------------------------
+
+
+def test_the_tracked_copies_of_a_pool_are_redacted(campaign, tmp_path):
+    """The module's pool, finished and then given what a cluster leaves in
+    it (the site block, the login node's and the nodes' host parts, the
+    paths of the operator's trees, the task logs and the accounting), is
+    copied for the repository with none of it."""
+    out, _ = campaign
+    site = stubs.FakeSite(tmp_path)
+    pool = site.home / "runs" / "pool"
+    shutil.copytree(out, pool)
+    (pool / "verification.json").unlink(missing_ok=True)
+    for step in ("verify", "select", "summarize"):
+        ok(cli(step, "--out", str(pool)))
+    manifest = manifest_of(pool)
+    assert manifest["tracked_copies"] == runner.TRACKED_COPIES
+
+    def at_site(manifest):
+        manifest["site"] = site.site_block("dev/scripts/svbmc_pool_run.py")
+        site.plant(manifest["identity"])
+        manifest["gpyreg_source"] = str(site.gpyreg)
+        manifest["pip_freeze"].append(
+            f"gpyreg @ file://{site.gpyreg.as_posix()}"
+        )
+
+    edit_manifest(pool, at_site)
+    tags = completed_tags(pool)
+    for index, tag in enumerate(tags, start=1):
+        site.rewrite(
+            contract.record_path(pool, tag),
+            lambda record: site.plant(
+                record["identity"], node=site.nodes[index % 2], task=index
+            ),
+        )
+
+    def verified_there(report):
+        site.plant(report["verifier"], node=site.nodes[0])
+        report["gpyreg_source"] = str(site.gpyreg)
+
+    site.rewrite(pool / "verification.json", verified_there)
+    site.write_slurm(pool)
+    assert site.leaks(pool)
+    target = tmp_path / "handback" / "pools"
+    contract.redact(
+        pool,
+        target,
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        say=lambda message: None,
+    )
+    assert site.leaks(target) == []
+    assert sorted(p.name for p in target.iterdir()) == [
+        "manifest.json",
+        "redaction.json",
+        "selection.json",
+        "selection.md",
+        "summary.json",
+        "summary.md",
+        "verification.json",
+    ]
+    copied_manifest = read_json(target / "manifest.json")
+    assert "site" not in copied_manifest
+    assert copied_manifest["gpyreg_source"] == "$PYVBMC_GPYREG_SOURCE"
+    assert copied_manifest["identity"]["host"]["hostname"] == "login"
+    assert copied_manifest["allocation"] == manifest["allocation"]
+    report = read_json(target / "verification.json")
+    assert report["directory"].startswith("~")
+    assert report["verifier"]["host"]["hostname"] == site.family
+    assert report["counts"] == read_json(pool / "verification.json")["counts"]
+    assert read_json(target / "selection.json")["directory"].startswith("~")
+    assert read_json(target / "selection.json")["conditions"] == (
+        read_json(pool / "selection.json")["conditions"]
+    )
+    # A field no rule knows of, holding the username, is refused.
+    site.rewrite(pool / "summary.json", lambda s: s.update(by=site.user))
+    with pytest.raises(contract.ContractError, match="the username"):
+        contract.redact(
+            pool,
+            tmp_path / "handback" / "again",
+            operator=site.operator(),
+            environ={},
+            say=lambda message: None,
+        )
+    assert not (tmp_path / "handback" / "again").exists()
+
+
+# --------------------------------------------------------------------------
 # The flat layout of the pools prepared before the contract
 # --------------------------------------------------------------------------
 
@@ -2202,6 +2294,7 @@ DRIVER_FILES = (
     "dev/scripts/hpc/campaign_submit.sh",
     "dev/scripts/hpc/campaign_task.sbatch",
     "dev/scripts/hpc/campaign_finish.sh",
+    "dev/scripts/hpc/campaign_redact.sh",
 )
 POOL_HARNESS = "dev/scripts/svbmc_pool_run.py"
 
@@ -2312,3 +2405,44 @@ def test_a_pool_campaign_through_the_slurm_driver(tmp_path, driver_template):
     )
     assert read_json(out / "summary.json")["conditions"][0]["completed"] == 1
     assert sorted(world.campaigns.glob("c1.tar.zst.[0-9][0-9][0-9]"))
+
+    # The redaction, in an account whose home holds the scratch world; the
+    # interpreter this test runs lies outside it.
+    account = {
+        "HOME": str(world.root),
+        "USER": "fakeoperator",
+        "LOGNAME": "fakeoperator",
+    }
+    target = world.root / "handback" / "pools"
+    redaction = world.run(
+        "campaign_redact.sh",
+        driver.posix(out),
+        driver.posix(target),
+        "--path",
+        f"PYTHON={sys.prefix}",
+        env={**settings, **account},
+    )
+    assert redaction.returncode == 0, redaction.stdout + redaction.stderr
+    assert sorted(p.name for p in target.iterdir()) == [
+        "manifest.json",
+        "redaction.json",
+        "selection.json",
+        "selection.md",
+        "summary.json",
+        "summary.md",
+        "verification.json",
+    ]
+    hostname = socket.gethostname().split(".")[0].lower()
+    for path in target.iterdir():
+        text = path.read_text(encoding="utf-8").lower()
+        for forbidden in (
+            "fakeoperator",
+            hostname,
+            driver.posix(world.root),
+            str(world.root),
+            json.dumps(str(world.root))[1:-1],
+        ):
+            assert forbidden.lower() not in text, (path.name, forbidden)
+    report = read_json(target / "verification.json")
+    assert report["verifier"]["host"]["hostname"] == "stubfeat"
+    assert report["counts"] == verification(out)["counts"]

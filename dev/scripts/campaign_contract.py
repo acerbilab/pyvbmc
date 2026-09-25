@@ -26,7 +26,11 @@ meet it through this module, which holds what they have in common:
   the manifest's ``site`` block (:func:`site_block`,
   :func:`site_differences`);
 - **the reconciliation** of ``verify``'s states (:func:`reconcile`) and the
-  finish's decision on its report (:func:`finish_decision`).
+  finish's decision on its report (:func:`finish_decision`);
+- **the tracked copies** of a finished campaign, which its harness declares
+  in the manifest (:func:`tracked_copies`), redacted for the repository
+  (:func:`redact`), and read back where the analysis needs the files the
+  records hash (:func:`source_sha256`, :func:`source_name`).
 
 The layout, relative to the campaign directory ``out``::
 
@@ -87,9 +91,15 @@ call::
     python dev/scripts/campaign_contract.py finish-check \\
         --verification FILE [--queued FILE] [--allow-missing] \\
         [--allow-running]
+
+and the redaction, which ``hpc/campaign_redact.sh`` runs after the finish::
+
+    python dev/scripts/campaign_contract.py redact --campaign DIR \\
+        --out DIR [--path NAME=PATH ...]
 """
 
 import argparse
+import fnmatch
 import hashlib
 import importlib
 import importlib.metadata
@@ -97,6 +107,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import shutil
 import signal
 import socket
@@ -106,6 +117,7 @@ import threading
 import time
 import traceback
 import uuid
+from collections import Counter
 from pathlib import Path
 
 #: The version of this contract, recorded in every identity, claim,
@@ -160,6 +172,25 @@ PATH_SETTINGS = (
     "PYVBMC_SOURCE",
     "PYVBMC_GPYREG_SOURCE",
     "BASELINE_DIR",
+)
+#: How :func:`redact` treats each setting's value. The paths
+#: (:data:`PATH_SETTINGS` and ``LOGIN_PROFILE``) are replaced by the
+#: setting's name, ``$PYVBMC_GPYREG_SOURCE/gpyreg``; a partition is
+#: ``$PARTITION``; the commands and sbatch arguments may appear nowhere,
+#: whole or any word of them that holds a ``/``. The others may appear:
+#: the harness is a path of this repository, the node feature is the family
+#: every host of the campaign's Slurm jobs is named by, the subset is a
+#: name of the harness, and the rest are numbers.
+REDACTED_PATH_SETTINGS = (*PATH_SETTINGS, "LOGIN_PROFILE")
+COMMAND_SETTINGS = ("LOGIN_SETUP", "CONDA_SETUP", "SBATCH_EXTRA")
+PUBLIC_SETTINGS = (
+    "HARNESS",
+    "NODE_FEATURE",
+    "CASES_SUBSET",
+    "THROTTLE",
+    "TIME",
+    "MEM",
+    "ARRAY",
 )
 
 #: The modules whose versions every source identity records, imported if
@@ -1992,6 +2023,976 @@ def finish_decision(
 
 
 # --------------------------------------------------------------------------
+# Tracked copies
+# --------------------------------------------------------------------------
+
+#: The files every campaign's tracked copies hold, beside those its harness
+#: declares (:func:`tracked_copies`).
+TRACKED_ALWAYS = ("manifest.json", "verification.json")
+#: The record :func:`redact` writes beside the copies it makes.
+REDACTION = "redaction.json"
+#: The parts of a campaign directory that no tracked copy comes from: the
+#: task logs and the Slurm accounting, the claims, and TMPDIR.
+UNTRACKED = ("slurm", CLAIMS, "tmp")
+#: What names, in the tracked copies, a host that ran none of the
+#: campaign's Slurm jobs: the login node, where ``prepare``, the driver's
+#: scripts and :func:`redact` run.
+LOGIN_HOST = "login"
+_GLOB = re.compile(r"[*?\[]")
+
+
+def _tracked_path(path, what, glob_last=False):
+    """Check one path or pattern of a declaration; return it."""
+    if not isinstance(path, str) or not path:
+        raise ContractError(f"{what}: {path!r} is not a path")
+    parts = path.split("/")
+    if (
+        "\\" in path
+        or path.startswith("/")
+        or re.match(r"[A-Za-z]:", path)
+        or any(part in ("", ".", "..") for part in parts)
+    ):
+        raise ContractError(
+            f"{what}: {path!r} is not a path relative to the campaign "
+            "directory"
+        )
+    if parts[0] in UNTRACKED or path == REDACTION:
+        raise ContractError(
+            f"{what}: {path!r} lies in what the tracked copies leave in the "
+            f"archive ({', '.join(UNTRACKED)}) or is the redaction's record"
+        )
+    if glob_last and any(_GLOB.search(part) for part in parts[:-1]):
+        raise ContractError(
+            f"{what}: {path!r} may hold a pattern in its last component alone"
+        )
+    return path
+
+
+def tracked_copies(manifest):
+    """The harness's declaration of its tracked copies, checked.
+
+    ``manifest["tracked_copies"]`` names what of a finished campaign enters
+    the repository (``dev/plans/slurm-benchmark-support.md``, "Records and
+    hand-back"), beside the manifest and the verification report, which
+    every campaign's copies hold (:data:`TRACKED_ALWAYS`):
+
+    - ``files``: paths relative to the campaign directory, whose last
+      component may be a glob pattern (``rescored/*.json``); a path
+      without a pattern must exist in a finished campaign;
+    - ``cases``: what each case that the verification report places as
+      verified contributes: its completion record (``"record": true``) and
+      those of its artifacts whose paths, as the record lists them, match
+      one of the glob patterns of ``artifacts``.
+
+    Nothing declared may lie under :data:`UNTRACKED` or be named
+    :data:`REDACTION`.
+
+    Returns
+    -------
+    dict
+        ``{"files": [...], "cases": {"record": bool, "artifacts": [...]}}``.
+    """
+    spec = manifest.get("tracked_copies")
+    if not isinstance(spec, dict):
+        raise ContractError(
+            "the manifest declares no tracked copies (tracked_copies); its "
+            "harness names them at prepare"
+        )
+    unknown = sorted(set(spec) - {"files", "cases"})
+    cases = spec.get("cases") or {}
+    if unknown or not isinstance(cases, dict):
+        raise ContractError(f"tracked_copies holds what it may not: {spec!r}")
+    files = spec.get("files") or []
+    artifacts = cases.get("artifacts") or []
+    if (
+        not isinstance(files, list)
+        or not isinstance(artifacts, list)
+        or set(cases) - {"record", "artifacts"}
+        or not isinstance(cases.get("record", False), bool)
+    ):
+        raise ContractError(f"tracked_copies holds what it may not: {spec!r}")
+    return {
+        "files": [
+            _tracked_path(p, "tracked_copies.files", glob_last=True)
+            for p in files
+        ],
+        "cases": {
+            "record": cases.get("record", False),
+            "artifacts": [
+                _tracked_path(p, "tracked_copies.cases.artifacts")
+                for p in artifacts
+            ],
+        },
+    }
+
+
+def tracked_files(campaign, manifest, verification, records):
+    """The files of a finished campaign that its tracked copies hold.
+
+    ``records`` maps the tag of every case the verification report places
+    as verified to its completion record. Returns the paths relative to the
+    campaign directory, sorted; a declared path without a pattern that the
+    directory does not hold raises :class:`ContractError`.
+    """
+    campaign = Path(campaign)
+    spec = tracked_copies(manifest)
+    found = set(TRACKED_ALWAYS)
+    for pattern in spec["files"]:
+        parent, _, name = pattern.rpartition("/")
+        if _GLOB.search(name):
+            for entry in _listing(campaign / parent if parent else campaign):
+                if (
+                    entry.is_file()
+                    and not entry.name.startswith(".")
+                    and fnmatch.fnmatchcase(entry.name, name)
+                ):
+                    found.add(
+                        f"{parent}/{entry.name}" if parent else entry.name
+                    )
+        elif (campaign / pattern).is_file():
+            found.add(pattern)
+        else:
+            raise ContractError(
+                f"{campaign} holds no {pattern}, which its tracked copies "
+                "declare; the finish writes it"
+            )
+    for case in verification.get("cases", []):
+        if case.get("status") != "verified":
+            continue
+        tag = case["tag"]
+        if spec["cases"]["record"]:
+            found.add(f"{RECORDS}/{tag}{RECORD_SUFFIX}")
+        for name in records[tag].get("artifacts") or {}:
+            if any(
+                fnmatch.fnmatchcase(name, pattern)
+                for pattern in spec["cases"]["artifacts"]
+            ):
+                found.add(_tracked_path(name, f"an artifact of {tag}"))
+    return sorted(found)
+
+
+def read_redaction(directory):
+    """The :data:`REDACTION` record of a directory of tracked copies; None
+    for any other directory."""
+    path = Path(directory) / REDACTION
+    return read_json(path) if path.is_file() else None
+
+
+def source_sha256(directory, relative):
+    """The SHA-256 of a campaign's file as the campaign wrote it.
+
+    In a campaign directory it is the file's own. In a directory of tracked
+    copies that :func:`redact` wrote, the file's own SHA-256 must be the one
+    :data:`REDACTION` records for it, and the one returned is that of the
+    file it was made from, which the campaign's records and reports hash;
+    a file the record does not list, or one changed since, raises
+    :class:`ContractError`.
+    """
+    directory = Path(directory)
+    redaction = read_redaction(directory)
+    actual = sha256_file(directory / relative)
+    if redaction is None:
+        return actual
+    entry = redaction["files"].get(Path(relative).as_posix())
+    if entry is None or entry["sha256"] != actual:
+        raise ContractError(
+            f"{directory / relative} is not the copy that "
+            f"{directory / REDACTION} records"
+        )
+    return entry["source_sha256"]
+
+
+def source_name(directory):
+    """The name of the campaign directory that a directory is or copies."""
+    redaction = read_redaction(directory)
+    if redaction is None:
+        return Path(directory).resolve().name
+    return redaction["campaign"]
+
+
+# --------------------------------------------------------------------------
+# Redaction
+# --------------------------------------------------------------------------
+
+#: The lines of a campaign's logs that name a host: the two that
+#: ``hpc/campaign_task.sbatch`` prints for a task and for a step, and the
+#: one Slurm writes into a job's output when it stops the job.
+LOG_HOST_LINES = (
+    re.compile(r"^task \S+, case \d+: .*, on (\S+)\r?$", re.MULTILINE),
+    re.compile(r"^step '.*' of .*: job \S+ on (\S+)\r?$", re.MULTILINE),
+    re.compile(r"\*\*\* (?:JOB|STEP) \S+ ON (\S+) CANCELLED"),
+)
+#: The most occurrences of forbidden strings reported for one file.
+MAX_LEAKS = 100
+_HOST_WORD = "A-Za-z0-9"
+_NAME_WORD = "A-Za-z0-9_"
+#: The characters that continue a path component, around a path that the
+#: redaction replaces or the check looks for.
+_PATH_BEFORE = "A-Za-z0-9_.+=-"
+_PATH_AFTER = "A-Za-z0-9_+=-"
+
+
+def _trie(words):
+    """A regular expression for any of ``words``, built as a trie, so that
+    a search stays fast however many words there are; None for none."""
+    root = {}
+    for word in words:
+        node = root
+        for character in word:
+            node = node.setdefault(character, {})
+        node[None] = None
+
+    def pattern(node):
+        branches = [
+            re.escape(character) + pattern(node[character])
+            for character in sorted(c for c in node if c is not None)
+        ]
+        if not branches:
+            return ""
+        if len(branches) == 1 and None not in node:
+            return branches[0]
+        return "(?:" + "|".join(branches) + ")" + ("?" if None in node else "")
+
+    return pattern(root) if root else None
+
+
+def _bounded(words, word, flags=0):
+    """``words`` matched where no character of the class ``word`` flanks
+    them; None for no word."""
+    body = _trie(words)
+    if body is None:
+        return None
+    return re.compile(rf"(?<![{word}])(?:{body})(?![{word}])", flags)
+
+
+def _paths_pattern(paths):
+    """The path prefixes ``paths``, longest first, matched as whole path
+    components; None for none."""
+    if not paths:
+        return None
+    body = "|".join(
+        re.escape(p) for p in sorted(paths, key=lambda p: (-len(p), p))
+    )
+    return re.compile(rf"(?<![{_PATH_BEFORE}])(?:{body})(?![{_PATH_AFTER}])")
+
+
+def _is_root(path):
+    """Whether a path is a filesystem's root (``/``, ``C:\\``)."""
+    stripped = str(path).rstrip("/\\")
+    return not stripped or re.fullmatch(r"[A-Za-z]:", stripped) is not None
+
+
+def path_variants(value):
+    """The forms a path may take in a campaign's records.
+
+    As given, with ``~`` expanded, and as it resolves on this machine, each
+    without a trailing separator, and on Windows with either separator,
+    with the JSON-escaped form of each; a filesystem's root is none.
+    """
+    value = str(value)
+    forms = {value, os.path.expanduser(value)}
+    for form in list(forms):
+        try:
+            forms.add(os.path.realpath(form))
+        except (OSError, ValueError):
+            pass
+    if sys.platform == "win32":
+        forms |= {form.replace("\\", "/") for form in forms}
+    forms = {form.rstrip("/\\") for form in forms if not _is_root(form)}
+    forms |= {json.dumps(form)[1:-1] for form in forms}
+    return {form for form in forms if len(form) > 1}
+
+
+def operator_identity(environ=None, passwd=None):
+    """The username and home of the account this process runs in.
+
+    From the environment (``USER``, ``LOGNAME``, ``USERNAME``; ``HOME``,
+    ``USERPROFILE``) and the password database (``passwd``, an entry of
+    :mod:`pwd`, this process's own by default where the platform has one),
+    never from a file of the campaign. Returns ``{"users": [...],
+    "homes": [...]}``; a home that is a filesystem's root raises
+    :class:`ContractError`, since the redaction would take every path for
+    one under it.
+    """
+    env = os.environ if environ is None else environ
+    users = {env.get(k) for k in ("USER", "LOGNAME", "USERNAME")}
+    homes = {env.get(k) for k in ("HOME", "USERPROFILE")}
+    if passwd is None:
+        try:
+            import pwd
+
+            passwd = pwd.getpwuid(os.getuid())
+        except (ImportError, KeyError, AttributeError):
+            passwd = None
+    if passwd is not None:
+        users.add(passwd.pw_name)
+        homes.add(passwd.pw_dir)
+    users = sorted(u for u in users if u)
+    homes = sorted(h for h in homes if h)
+    rooted = [h for h in homes if _is_root(h)]
+    if rooted:
+        raise ContractError(
+            f"the home directory {rooted[0]!r} is a filesystem's root"
+        )
+    if not users or not homes:
+        raise ContractError(
+            "this process names no username or no home directory (USER, "
+            "HOME, the password database), which the redaction removes"
+        )
+    return {"users": users, "homes": homes}
+
+
+def expand_hostlist(text):
+    """The hosts of a Slurm host list: ``node[01-03,7],login1``.
+
+    The accounting's ``None assigned`` and ``(null)``, of a job that never
+    started, name none.
+    """
+    if text.strip() in ("", "(null)") or text.strip().startswith("None"):
+        return []
+    hosts = []
+    depth, start = 0, 0
+    items = []
+    for index, character in enumerate(text):
+        depth += {"[": 1, "]": -1}.get(character, 0)
+        if character == "," and depth == 0:
+            items.append(text[start:index])
+            start = index + 1
+    items.append(text[start:])
+    for item in (i.strip() for i in items):
+        match = re.match(r"([^\[]*)\[([^\]]*)\](.*)$", item)
+        if not match:
+            if item:
+                hosts.append(item)
+            continue
+        prefix, ranges, rest = match.groups()
+        for part in ranges.split(","):
+            first, _, last = part.partition("-")
+            if not first.isdigit() or (last and not last.isdigit()):
+                raise ContractError(f"{text!r} is not a Slurm host list")
+            for number in range(int(first), int(last or first) + 1):
+                hosts += expand_hostlist(
+                    f"{prefix}{number:0{len(first)}d}{rest}"
+                )
+    return hosts
+
+
+def _dicts(value):
+    """Every mapping in a JSON value, its own included."""
+    if isinstance(value, dict):
+        yield value
+        for item in value.values():
+            yield from _dicts(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _dicts(item)
+
+
+class Hosts:
+    """The hosts a campaign names, and whether each ran a Slurm job of it."""
+
+    def __init__(self):
+        self.in_slurm = {}
+
+    def add(self, name, in_slurm):
+        """Add a hostname, and its short name if it is a domain name."""
+        if not isinstance(name, str) or not name.strip():
+            return
+        names = {name.strip()}
+        short = name.strip().split(".", 1)[0]
+        if short and not re.fullmatch(r"[0-9.]+", name.strip()):
+            names.add(short)
+        for each in names:
+            key = each.lower()
+            self.in_slurm[key] = self.in_slurm.get(key, False) or in_slurm
+
+    def add_documents(self, documents, node_feature):
+        """The hosts that the JSON ``documents`` hold.
+
+        A host part (a mapping with ``hostname`` and ``slurm`` or
+        ``node_features``) ran in Slurm when it holds a job id or node
+        features, which must then include ``node_feature``; any other
+        mapping's ``hostname`` or ``host`` ran in Slurm when the mapping
+        names a job. Raises :class:`ContractError` for a host whose recorded
+        features lack the campaign's.
+        """
+        for document in documents:
+            for mapping in _dicts(document):
+                if isinstance(mapping.get("hostname"), str) and (
+                    "slurm" in mapping or "node_features" in mapping
+                ):
+                    slurm = mapping.get("slurm") or {}
+                    features = mapping.get("node_features") or {}
+                    if features:
+                        found = set(features.get("available") or []) | set(
+                            features.get("active") or []
+                        )
+                        if node_feature not in found:
+                            raise ContractError(
+                                f"a record of {mapping['hostname']} lists the "
+                                f"node features {sorted(found)}, not "
+                                f"{node_feature}, the family its copies "
+                                "would name it by"
+                            )
+                    in_slurm = bool(slurm.get("job_id") or features)
+                    for name in (
+                        mapping["hostname"],
+                        features.get("node"),
+                        slurm.get("node"),
+                    ):
+                        self.add(name, in_slurm)
+                    continue
+                for key in ("hostname", "host"):
+                    if isinstance(mapping.get(key), str):
+                        self.add(
+                            mapping[key],
+                            bool(mapping.get("job") or mapping.get("job_id")),
+                        )
+
+    def add_logs(self, slurm_dir):
+        """The hosts of the task and step logs and of the accounting."""
+        for entry in _listing(slurm_dir):
+            if not entry.is_file() or not entry.name.endswith(".out"):
+                continue
+            text = Path(entry.path).read_text(
+                encoding="utf-8", errors="replace"
+            )
+            for pattern in LOG_HOST_LINES:
+                for match in pattern.finditer(text):
+                    self.add(match.group(1), True)
+        accounting = Path(slurm_dir) / "sacct.txt"
+        if accounting.is_file():
+            lines = accounting.read_text(
+                encoding="utf-8", errors="replace"
+            ).splitlines()
+            header = lines[0].split("|") if lines else []
+            if "NodeList" in header:
+                column = header.index("NodeList")
+                for line in lines[1:]:
+                    fields = line.split("|")
+                    if len(fields) > column:
+                        for host in expand_hostlist(fields[column]):
+                            self.add(host, True)
+
+    def tokens(self, family):
+        """``{lower-case hostname: what the copies name it by}``."""
+        return {
+            name: family if in_slurm else LOGIN_HOST
+            for name, in_slurm in self.in_slurm.items()
+        }
+
+
+def _command_words(value):
+    """The words of a command or of sbatch arguments that name a path."""
+    try:
+        words = shlex.split(value)
+    except ValueError:
+        words = value.split()
+    found = set()
+    for word in words:
+        for part in (word, word.partition("=")[2]):
+            part = part.strip(";&|()")
+            if "/" in part and len(part) > 2:
+                found.add(part)
+    return found
+
+
+def _partitions(slurm_dir):
+    """The partitions ``slurm/jobs.txt`` records for each submission."""
+    path = Path(slurm_dir) / "jobs.txt"
+    if not path.is_file():
+        return set()
+    found = re.findall(
+        r"\bpartition=(\S+)",
+        path.read_text(encoding="utf-8", errors="replace"),
+    )
+    return {p for p in found if p != "-"}
+
+
+class Redaction:
+    """The rules that make one campaign's tracked copies, and their check.
+
+    Parameters
+    ----------
+    paths : mapping of str to str
+        Path prefixes and what replaces each: a path setting's value by
+        ``$NAME``, the operator's home by ``~``.
+    hosts : mapping of str to str
+        Lower-case hostnames and the family or :data:`LOGIN_HOST` that
+        replaces each, as a whole name.
+    names : mapping of str to str
+        Values that replace a JSON string equal to them (a partition by
+        ``$PARTITION``).
+    forbidden : mapping of str to list of (str, str)
+        What may remain in no copy, by how it is matched: ``paths`` (as a
+        substring), ``users`` and ``hosts`` (as a whole name, the hosts in
+        any case), ``names`` (as a whole JSON string, and as a whole word
+        of a text), each ``(string, what it is)``.
+    """
+
+    def __init__(self, paths, hosts, names, forbidden):
+        self.paths = dict(paths)
+        self.hosts = dict(hosts)
+        self.names = dict(names)
+        self.forbidden = {key: list(value) for key, value in forbidden.items()}
+        self.counts = Counter()
+        self._paths = _paths_pattern(self.paths)
+        self._hosts = _bounded(self.hosts, _HOST_WORD, re.IGNORECASE)
+        self._find = {
+            "paths": _paths_pattern([s for s, _ in self.forbidden["paths"]]),
+            "users": _bounded(
+                [s for s, _ in self.forbidden["users"]], _HOST_WORD
+            ),
+            "hosts": _bounded(
+                [s for s, _ in self.forbidden["hosts"]],
+                _HOST_WORD,
+                re.IGNORECASE,
+            ),
+            "names": _bounded(
+                [s for s, _ in self.forbidden["names"]], _NAME_WORD
+            ),
+        }
+        self._what = {
+            kind: {
+                (s.lower() if kind == "hosts" else s): what
+                for s, what in items
+            }
+            for kind, items in self.forbidden.items()
+        }
+
+    def _path(self, match):
+        token = self.paths[match.group(0)]
+        self.counts[token] += 1
+        return token
+
+    def _host(self, match):
+        token = self.hosts[match.group(0).lower()]
+        self.counts["hosts"] += 1
+        return token
+
+    def text(self, text):
+        """``text`` with its paths and then its hostnames replaced."""
+        if self._paths is not None:
+            text = self._paths.sub(self._path, text)
+        if self._hosts is not None:
+            text = self._hosts.sub(self._host, text)
+        return text
+
+    def value(self, value, path=()):
+        """A JSON value, every string and key of it redacted."""
+        if isinstance(value, str):
+            if value in self.names:
+                self.counts[self.names[value]] += 1
+                return self.names[value]
+            return self.text(value)
+        if isinstance(value, list):
+            return [self.value(item, path) for item in value]
+        if isinstance(value, dict):
+            result = {}
+            for key, item in value.items():
+                new = self.text(key)
+                if new in result:
+                    raise ContractError(
+                        f"two keys of {'.'.join(path) or 'the document'} "
+                        f"become {new!r}"
+                    )
+                result[new] = self.value(item, (*path, key))
+            return result
+        return value
+
+    def leaks(self, text, parsed=None):
+        """Where the forbidden strings occur in one file's text.
+
+        ``parsed`` is the file's JSON value, whose keys and strings a name
+        may not equal; a text without one may not hold a name as a word.
+        Returns ``(line, string, what it is)`` for each occurrence, at most
+        :data:`MAX_LEAKS`, in the order of the text (a name in a JSON value
+        has no line).
+        """
+        found = set()
+        for kind, pattern in self._find.items():
+            if pattern is None or (kind == "names" and parsed is not None):
+                continue
+            for match in pattern.finditer(text):
+                string = match.group(0)
+                what = self._what[kind][
+                    string.lower() if kind == "hosts" else string
+                ]
+                line = text.count("\n", 0, match.start()) + 1
+                found.add((line, string, what))
+                if len(found) >= MAX_LEAKS:
+                    break
+        if parsed is not None:
+            names = self._what["names"]
+            for string in _all_strings(parsed):
+                if string in names:
+                    found.add((0, string, names[string]))
+        return sorted(found)[:MAX_LEAKS]
+
+
+def _all_strings(value):
+    """Every key and every string of a JSON value."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for item in value:
+            yield from _all_strings(item)
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield key
+            yield from _all_strings(item)
+
+
+def _json_layout(text):
+    """``(indent, trailing newline)`` of a JSON text that ``json.dumps``
+    wrote."""
+    match = re.match(r"[\[{]\n( +)\S", text)
+    return (len(match.group(1)) if match else None), text.endswith("\n")
+
+
+def _pip_freeze(lines):
+    """``pip freeze`` lines, each that names a path cut to its package's
+    name; returns the lines and how many were cut."""
+    kept, cut = [], 0
+    for line in lines:
+        name, at, reference = line.partition(" @ ")
+        if at and reference.startswith("file:"):
+            kept.append(f"{name} @ file:<redacted>")
+            cut += 1
+        elif line.startswith("-e ") and "://" not in line:
+            kept.append("-e <redacted>")
+            cut += 1
+        else:
+            kept.append(line)
+    return kept, cut
+
+
+def _archive(campaign):
+    """The parts of the campaign's archive and their SHA-256, or None."""
+    path = campaign.parent / f"{campaign.name}.tar.zst.sha256"
+    if not path.is_file():
+        return None
+    parts = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        fields = line.split()
+        if len(fields) == 2:
+            parts[fields[1].lstrip("*")] = fields[0]
+    return {"sha256_file": path.name, "parts": parts}
+
+
+def _inside(path, directory):
+    path, directory = Path(path), Path(directory)
+    return path == directory or directory in path.parents
+
+
+def redaction_rules(
+    campaign, manifest, documents, operator, environ=None, paths=(), host=None
+):
+    """The :class:`Redaction` of one campaign.
+
+    Parameters
+    ----------
+    campaign : path
+        The campaign directory, whose ``slurm/`` holds the task logs, the
+        accounting and the submissions' partitions.
+    manifest : dict
+        Its manifest, whose ``site`` block names the operator settings.
+    documents : sequence
+        Every JSON document read from the campaign: the manifest, the
+        verification report, every completion record, every tracked copy.
+    operator : dict
+        :func:`operator_identity`.
+    environ : mapping, optional
+        The settings of this process (:func:`site_block`), which join the
+        manifest's; this process's environment by default.
+    paths : sequence of (str, str)
+        Further directories to name, ``(NAME, PATH)``: their paths become
+        ``$NAME``.
+    host : str, optional
+        The host that redacts, which names no Slurm job; this one's by
+        default.
+    """
+    site = manifest.get("site")
+    if not isinstance(site, dict) or not site.get("NODE_FEATURE"):
+        raise ContractError(
+            "the manifest's site block names no NODE_FEATURE, the node "
+            "family that the tracked copies name the campaign's hosts by"
+        )
+    family = site["NODE_FEATURE"]
+    here = site_block(environ)
+    slurm_dir = Path(campaign) / "slurm"
+
+    def values(name):
+        return {v for v in (site.get(name), here.get(name)) if v}
+
+    replace, forbidden = {}, {k: [] for k in ("paths", "users", "hosts")}
+    forbidden["names"] = []
+    for name in REDACTED_PATH_SETTINGS:
+        for value in values(name):
+            for form in path_variants(value):
+                replace[form] = f"${name}"
+                forbidden["paths"].append((form, name))
+    for name, value in paths:
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*", name) or name in SETTINGS:
+            raise ContractError(
+                f"--path {name}=...: the name is upper case, and no operator "
+                "setting's"
+            )
+        for form in path_variants(value):
+            replace[form] = f"${name}"
+            forbidden["paths"].append((form, f"--path {name}"))
+    for home in operator["homes"]:
+        for form in path_variants(home):
+            replace.setdefault(form, "~")
+            forbidden["paths"].append((form, "the home directory"))
+    for name in COMMAND_SETTINGS:
+        for value in values(name):
+            forbidden["paths"].append((value, name))
+            forbidden["paths"] += [(w, name) for w in _command_words(value)]
+    forbidden["users"] = [(u, "the username") for u in operator["users"]]
+
+    hosts = Hosts()
+    hosts.add_documents(documents, family)
+    hosts.add_logs(slurm_dir)
+    hosts.add(socket.gethostname() if host is None else host, False)
+    tokens = hosts.tokens(family)
+    forbidden["hosts"] = [(h, "a hostname") for h in tokens]
+
+    partitions = set(values("PARTITION")) | _partitions(slurm_dir)
+    for document in documents:
+        for mapping in _dicts(document):
+            slurm = mapping.get("slurm")
+            if isinstance(slurm, dict) and slurm.get("partition"):
+                partitions.add(slurm["partition"])
+    names = {p: "$PARTITION" for p in partitions}
+    forbidden["names"] = [(p, "a partition") for p in partitions]
+
+    redaction = Redaction(replace, tokens, names, forbidden)
+    for token in {family, LOGIN_HOST}:
+        leaked = redaction.leaks(token)
+        if leaked:
+            raise ContractError(
+                f"the copies name hosts by {token!r}, which holds "
+                f"{leaked[0][2]} {leaked[0][1]!r}"
+            )
+    return redaction
+
+
+def redact(
+    campaign, out, operator=None, environ=None, paths=(), host=None, say=None
+):
+    """Write a finished campaign's tracked copies, redacted, into ``out``.
+
+    The copies are the files its manifest declares (:func:`tracked_files`),
+    at the same paths relative to ``out``, with :data:`REDACTION` beside
+    them. The campaign's verification report must have passed. In every
+    copy (:func:`redaction_rules`):
+
+    - every host that ran a Slurm job of the campaign (a record's host
+      part, a task's or a step's log, the accounting) is named by the
+      campaign's node family, the value of ``NODE_FEATURE``, and every
+      other host (the login node where ``prepare`` and the driver ran, and
+      the host that redacts) by :data:`LOGIN_HOST`;
+    - a path under a path setting of the site block (or a ``--path``)
+      starts with the setting's name, ``$PYVBMC_GPYREG_SOURCE/gpyreg``, and
+      a path under the operator's home with ``~``;
+    - a JSON string that names a partition is ``$PARTITION``;
+    - the manifest keeps no ``site`` block, and its ``pip freeze`` lines
+      that name a path keep their package's name alone;
+    - the task logs, the accounting, the claims and the error files are
+      not copied.
+
+    Then every copy, :data:`REDACTION` included, is searched for each value
+    of the site block that is a path, a command or a partition, the
+    operator's username and home directory, and every hostname; any of
+    them raises :class:`ContractError` naming the file and the string, and
+    nothing is written. The copies are written into a directory beside
+    ``out`` and renamed into place, so ``out`` holds either all of them or
+    none.
+
+    Parameters
+    ----------
+    campaign : path
+        The campaign directory.
+    out : path
+        Where the copies go; it must not exist, or be empty, and lie
+        neither inside the campaign directory nor inside any source tree
+        of its manifest's identity, since those stay clean until every
+        campaign that uses them is done.
+    operator : dict, optional
+        :func:`operator_identity`, this process's by default.
+    environ, paths, host
+        See :func:`redaction_rules`.
+    say : callable, optional
+        Prints a progress line; :func:`print` by default.
+
+    Returns
+    -------
+    dict
+        The :data:`REDACTION` record written.
+    """
+    say = _say if say is None else say
+    campaign = Path(campaign).resolve()
+    out = Path(out).resolve()
+    manifest = read_json(campaign / "manifest.json")
+    trees = (manifest.get("identity") or {}).get("imports", {}).get("trees")
+    for where in [campaign] + [
+        Path(t["path"]).resolve()
+        for t in (trees or {}).values()
+        if isinstance(t, dict) and t.get("path")
+    ]:
+        if _inside(out, where):
+            raise ContractError(
+                f"{out} lies inside {where}, which the campaign's tasks read "
+                "or which must stay clean; write the copies into another "
+                "checkout"
+            )
+    if out.exists() and (not out.is_dir() or any(out.iterdir())):
+        raise ContractError(f"{out} exists and is not an empty directory")
+    verification_path = campaign / "verification.json"
+    if not verification_path.is_file():
+        raise ContractError(f"{campaign} holds no verification.json")
+    verification = read_json(verification_path)
+    if verification.get("exit_code") != 0:
+        raise ContractError(
+            f"{verification_path} did not pass; the copies are made of a "
+            "finished campaign"
+        )
+    operator = operator_identity(environ) if operator is None else operator
+    say(f"reading {campaign}")
+    tags = [case["tag"] for case in verification.get("cases", [])]
+    records, documents = {}, [manifest, verification]
+    for tag in tags:
+        path = record_path(campaign, tag)
+        if path.is_file():
+            records[tag] = read_json(path)
+            documents.append(records[tag])
+    for group in sorted({Path(t).parent.as_posix() for t in tags}):
+        folder = campaign / CLAIMS / ("" if group == "." else group)
+        for entry in _listing(folder):
+            if entry.is_file() and not entry.name.startswith("."):
+                try:
+                    documents.append(read_json(entry.path))
+                except (OSError, ValueError):
+                    pass
+    names = tracked_files(campaign, manifest, verification, records)
+    sources = {}
+    for name in names:
+        data = (campaign / name).read_bytes()
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            text = None
+        if text is None or "\0" in text:
+            raise ContractError(
+                f"{campaign / name} is not text; a tracked copy is JSON or "
+                "text"
+            )
+        parsed = json.loads(text) if name.endswith(".json") else None
+        if parsed is not None and name not in TRACKED_ALWAYS:
+            documents.append(parsed)
+        sources[name] = (data, text, parsed)
+    say(f"redacting {len(names)} files")
+    redaction = redaction_rules(
+        campaign, manifest, documents, operator, environ, paths, host
+    )
+    written, files, cut = {}, {}, 0
+    for name in names:
+        data, text, parsed = sources[name]
+        if parsed is None:
+            new_text = redaction.text(text)
+            new = new_text.encode("utf-8")
+        else:
+            value = parsed
+            if name == "manifest.json":
+                value = {k: v for k, v in parsed.items() if k != "site"}
+                if isinstance(value.get("pip_freeze"), list):
+                    value["pip_freeze"], cut = _pip_freeze(value["pip_freeze"])
+            value = redaction.value(value)
+            if value == parsed:
+                new, new_text = data, text
+            else:
+                indent, newline = _json_layout(text)
+                new_text = json.dumps(value, indent=indent) + (
+                    "\n" if newline else ""
+                )
+                new = new_text.encode("utf-8")
+        written[name] = (new, new_text, None if parsed is None else value)
+        files[name] = {
+            "source_sha256": hashlib.sha256(data).hexdigest(),
+            "sha256": hashlib.sha256(new).hexdigest(),
+            "bytes": len(new),
+        }
+    record = {
+        "contract": CONTRACT_VERSION,
+        "campaign": campaign.name,
+        "generated": now(),
+        "node_family": manifest["site"]["NODE_FEATURE"],
+        "rules": [
+            "a host that ran a Slurm job of the campaign is named by the "
+            "node family, NODE_FEATURE; any other host, "
+            f"{LOGIN_HOST!r}",
+            "a path under a path setting starts with its name "
+            "($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), one under the "
+            "operator's home with ~",
+            "a partition is $PARTITION",
+            "the manifest keeps no site block, and its pip freeze lines "
+            "that name a path keep their package's name alone",
+            "each file's source_sha256 is that of the campaign's own file, "
+            "which the records and reports hash",
+        ],
+        "replaced": dict(sorted(redaction.counts.items())),
+        "pip_freeze_paths": cut,
+        "archive": _archive(campaign),
+        "files": files,
+    }
+    record_text = json.dumps(record, indent=2) + "\n"
+    written[REDACTION] = (record_text.encode("utf-8"), record_text, record)
+    leaks = [
+        (name, line, string, what)
+        for name, (_, text, value) in sorted(written.items())
+        for line, string, what in redaction.leaks(text, value)
+    ]
+    if leaks:
+        shown = [
+            f"  {name}{f':{line}' if line else ''}: {what} {string!r}"
+            for name, line, string, what in leaks[:40]
+        ]
+        more = len(leaks) - len(shown)
+        raise ContractError(
+            "the redacted copies still hold what they may not, so none was "
+            "written:\n"
+            + "\n".join(shown)
+            + (f"\n  and {more} more" if more else "")
+        )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    staging = out.parent / f".{out.name}.{uuid.uuid4().hex}.redacting"
+    try:
+        for name, (data, _, _) in written.items():
+            path = staging / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        for path in staging.rglob("*"):
+            if path.is_file():
+                name = path.relative_to(staging).as_posix()
+                if path.read_bytes() != written[name][0]:
+                    raise ContractError(f"{path} is not what was written")
+        if out.exists():
+            out.rmdir()
+        os.replace(staging, out)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+    say(
+        f"{len(names)} copies and {REDACTION} in {out}; replaced "
+        + ", ".join(f"{k} {v}" for k, v in record["replaced"].items())
+        + f"; none of {sum(len(v) for v in redaction.forbidden.values())} "
+        "forbidden strings remains"
+    )
+    return record
+
+
+# --------------------------------------------------------------------------
 # Command line
 # --------------------------------------------------------------------------
 
@@ -2078,6 +3079,22 @@ def _cmd_finish_check(args):
     return code
 
 
+def _cmd_redact(args):
+    paths = []
+    for item in args.path or ():
+        name, equals, value = item.partition("=")
+        if not equals or not value:
+            print(f"--path {item!r} is not NAME=PATH", file=sys.stderr)
+            return 1
+        paths.append((name, value))
+    try:
+        redact(args.campaign, args.out, paths=paths)
+    except ContractError as error:
+        print(f"refusing: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -2115,6 +3132,27 @@ def parse_args(argv=None):
     )
     finish.add_argument("--allow-missing", action="store_true")
     finish.add_argument("--allow-running", action="store_true")
+    redaction = sub.add_parser(
+        "redact",
+        help="write a finished campaign's tracked copies, redacted, and "
+        "check that no site detail, username, home or hostname remains",
+    )
+    redaction.add_argument("--campaign", type=Path, required=True)
+    redaction.add_argument(
+        "--out",
+        type=Path,
+        required=True,
+        help="an empty or new directory in the checkout that the copies go "
+        "into, outside the campaign's source trees",
+    )
+    redaction.add_argument(
+        "--path",
+        action="append",
+        metavar="NAME=PATH",
+        help="a directory outside the home, such as a scratch area that "
+        "holds the campaign, whose paths the copies write as $NAME/...; "
+        "repeatable",
+    )
     return parser.parse_args(argv)
 
 
@@ -2124,6 +3162,7 @@ COMMANDS = {
     "check-cases": _cmd_check_cases,
     "finishing-steps": _cmd_finishing_steps,
     "finish-check": _cmd_finish_check,
+    "redact": _cmd_redact,
 }
 
 

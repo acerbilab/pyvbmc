@@ -22,6 +22,7 @@ import os
 import re
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import tarfile
@@ -39,6 +40,7 @@ SCRIPTS = (
     "campaign_submit.sh",
     "campaign_task.sbatch",
     "campaign_finish.sh",
+    "campaign_redact.sh",
 )
 HARNESS = "dev/scripts/campaign_stub_harness.py"
 #: A conda stand-in: `conda activate PREFIX` puts PREFIX/bin first on the
@@ -1085,6 +1087,96 @@ def test_finish_refusals(world):
     assert world.finish("c2").returncode == 64
     assert world.finish("c1", "--bogus").returncode == 64
     assert len(world.calls()) == 1
+
+
+# --------------------------------------------------------------------------
+# The redaction of the tracked copies
+# --------------------------------------------------------------------------
+
+
+def test_the_redaction_of_a_finished_campaign(world):
+    """Tasks on two named nodes, the finish, then ``campaign_redact.sh``
+    in an account whose username is a stand-in and whose home holds the
+    whole scratch world: no node, host, username or path of the world
+    remains in the copies, and a copy that would keep the username is
+    refused."""
+    site = stubs.FakeSite(world.root)
+    ok(world.submit("c1", "--cases", "3"))
+    for index, node in (
+        (1, "fakenode17"),
+        (2, "fakenode18"),
+        (3, "fakenode17"),
+    ):
+        ok(world.task("c1", index, SLURMD_NODENAME=node))
+    ok(world.finish("c1"))
+    account = {
+        "HOME": str(world.root),
+        "USER": site.user,
+        "LOGNAME": site.user,
+    }
+    # The interpreter this test runs lies outside the stand-in home; the
+    # records name it and its libraries.
+    interpreter = ("--path", f"PYTHON={sys.prefix}")
+    target = world.root / "handback" / "c1"
+    result = world.run(
+        "campaign_redact.sh",
+        posix(world.campaign()),
+        posix(target),
+        *interpreter,
+        env=account,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "none of" in result.stdout
+    names = sorted(
+        p.relative_to(target).as_posix()
+        for p in target.rglob("*")
+        if p.is_file()
+    )
+    assert names == [
+        "g0/c001.out",
+        "g0/c002.out",
+        "g0/c003.out",
+        "manifest.json",
+        "records/g0/c001.complete.json",
+        "records/g0/c002.complete.json",
+        "records/g0/c003.complete.json",
+        "redaction.json",
+        "summary.json",
+        "verification.json",
+    ]
+    hostname = socket.gethostname().split(".")[0].lower()
+    for path in target.rglob("*"):
+        if path.is_file():
+            text = path.read_text(encoding="utf-8")
+            for forbidden in (
+                "fakenode",
+                site.user,
+                hostname,
+                posix(world.root),
+                str(world.root),
+                json.dumps(str(world.root))[1:-1],
+            ):
+                assert forbidden.lower() not in text.lower(), (path, forbidden)
+    record = contract.read_json(target / "records/g0/c002.complete.json")
+    host = record["identity"]["host"]
+    assert host["hostname"] == host["node_features"]["node"] == "stubfeat"
+    redaction = contract.read_json(target / contract.REDACTION)
+    assert redaction["campaign"] == "c1"
+    assert redaction["archive"]["parts"]
+    # A copy that would keep the username is refused, and nothing written.
+    summary = world.campaign() / "summary.json"
+    site.rewrite(summary, lambda value: value.update(by=site.user))
+    again = world.run(
+        "campaign_redact.sh",
+        posix(world.campaign()),
+        posix(world.root / "handback" / "c1b"),
+        *interpreter,
+        env=account,
+    )
+    assert again.returncode == 1
+    assert "refusing" in again.stderr and "the username" in again.stderr
+    assert not (world.root / "handback" / "c1b").exists()
+    assert world.run("campaign_redact.sh", "nowhere", "x").returncode == 64
 
 
 # --------------------------------------------------------------------------
