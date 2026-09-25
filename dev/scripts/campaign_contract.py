@@ -51,9 +51,21 @@ the record path of a case from its line alone.
 
 The worker's exit codes: 0 for a completed case (or one that already has a
 record), 1 for a case that failed, :data:`EXIT_CLAIMED` (75) when a live
-task holds the case's claim and :data:`EXIT_IDENTITY` (78) when the
-worker's source identity differs from the manifest's. The last two are
-refusals: they leave the case's files as they are.
+task holds the case's claim, :data:`EXIT_IDENTITY` (78) when the worker's
+source identity differs from the manifest's, and 128 plus the signal's
+number (143 for SIGTERM) when a signal stopped the run. The claim and the
+identity refusals leave the case's files as they are.
+
+A task that Slurm stops ends in one of two ways. At its time limit or on
+``scancel`` it receives SIGTERM, and KillWait seconds later SIGKILL; the
+worker catches SIGTERM (and SIGINT), removes the case's partial files and
+its claim and exits, writing no error file, since a kill is no failure of
+the run, and ``verify`` reports the case as ``missing``. A task killed
+outright (SIGKILL, an out-of-memory kill, a node lost) leaves its partial
+files and its claim, which the accounting then shows as ended: ``verify``
+reports the case as ``interrupted``, which, like ``missing``, is
+resubmitted, and the worker that takes over the stale claim removes the
+partial files before it runs.
 
 The module imports only the standard library at module level, so that a
 harness can import it before it sets its thread variables and pins its
@@ -85,9 +97,11 @@ import os
 import platform
 import re
 import shutil
+import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 import traceback
 import uuid
@@ -102,6 +116,10 @@ EXIT_CLAIMED = 75
 #: Exit code of a worker whose source identity differs from the manifest's
 #: (``EX_CONFIG``).
 EXIT_IDENTITY = 78
+#: The signals that stop the run of a case cleanly: Slurm's SIGTERM, at the
+#: time limit and on ``scancel``, and the interactive SIGINT. A worker they
+#: stop exits with 128 plus the signal's number.
+STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT)
 
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 #: The operator settings of the plan, recorded in the ``site`` block of the
@@ -171,12 +189,14 @@ STATUSES = (
     "verify_failed",
     "failed",
     "in_flight",
+    "interrupted",
     "partial",
     "missing",
 )
 #: What makes ``verify`` exit non-zero: a record that fails its check, a
-#: partial case, a stray file. Failed and missing cases are reported and
-#: then rerun or left out.
+#: partial case (artifacts with neither a record nor a claim, which no path
+#: of the contract leaves), a stray file. Failed, interrupted and missing
+#: cases are reported and then rerun or left out.
 FATAL = ("verify_failed", "partial", "stray")
 #: The exit codes of ``finish-check``.
 FINISH_FATAL, FINISH_MISSING, FINISH_IN_FLIGHT = 1, 3, 4
@@ -228,6 +248,18 @@ class CompletionError(ContractError):
         self.tag = tag
         self.problems = list(problems)
         super().__init__(f"{tag}: " + "; ".join(self.problems))
+
+
+class Interrupted(BaseException):
+    """A signal of :data:`STOP_SIGNALS` stopped the run of a case.
+
+    A ``BaseException``, like ``KeyboardInterrupt``, so that a harness's
+    ``except Exception`` does not take it for a failure of the run.
+    """
+
+    def __init__(self, signum):
+        self.signum = signum
+        super().__init__(f"stopped by {signal.Signals(signum).name}")
 
 
 # --------------------------------------------------------------------------
@@ -1287,6 +1319,26 @@ def _remove(out, paths):
     return removed
 
 
+def _raise_interrupted(signum, frame):
+    raise Interrupted(signum)
+
+
+def _handle_stop_signals(handler):
+    """Set ``handler`` for :data:`STOP_SIGNALS`; return the previous ones.
+
+    Python sets signal handlers in the main thread alone; elsewhere this
+    does nothing and returns None.
+    """
+    if threading.current_thread() is not threading.main_thread():
+        return None
+    return {signum: signal.signal(signum, handler) for signum in STOP_SIGNALS}
+
+
+def _restore_stop_signals(previous):
+    for signum, handler in (previous or {}).items():
+        signal.signal(signum, signal.SIG_DFL if handler is None else handler)
+
+
 def run_worker(out, case, expected, identity, run, partial_files, query=None):
     """The contract's worker sequence for one case; returns the exit code.
 
@@ -1307,8 +1359,9 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         harness's own fields for the completion record (a mapping or None).
     partial_files : callable
         ``partial_files()`` returns every artifact path the case may have
-        written (absolute, or relative to ``out``), which the failure path
-        removes where they exist.
+        written (absolute, or relative to ``out``). Those that exist are
+        removed before the run, so that a rerun never mixes its files with
+        an interrupted attempt's, and after a failure or a stop.
     query : callable, optional
         Replaces :func:`accounting_state` in the claim.
 
@@ -1319,11 +1372,19 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         :data:`EXIT_IDENTITY` when the identity cannot be established or
         differs from ``expected``'s source; :data:`EXIT_CLAIMED` when the
         case is claimed by a live task or the claim cannot be made; 1 when
-        the case failed. The two refusals touch none of the case's files.
+        the case failed; 128 plus the signal's number when a signal of
+        :data:`STOP_SIGNALS` stopped it. The two refusals touch none of the
+        case's files. From the claim to its release, the stop signals raise
+        :class:`Interrupted` (the previous handlers are restored after).
         A failure removes the case's partial files, writes
         ``<tag>.error.txt`` with the traceback and removes the claim; a
-        success writes the completion record, removes an earlier attempt's
-        error file and then the claim.
+        stop removes the partial files and the claim and writes no error
+        file, so that ``verify`` reports the case as missing, unless the
+        completion record was already written, which leaves the case
+        complete; a success writes the completion record, removes an
+        earlier attempt's error file and then the claim. While the
+        clean-up of a failure or a stop runs, and while the claim is
+        released, further stop signals are ignored.
     """
     out = Path(out)
     tag = case_tag(case)
@@ -1349,6 +1410,7 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
     except Exception as error:
         _say(f"{tag}: refused, {error}; the case's files are left as they are")
         return EXIT_CLAIMED
+    handlers = _handle_stop_signals(_raise_interrupted)
     try:
         if record.exists():
             _say(f"{tag}: completed by another task; nothing to do")
@@ -1361,6 +1423,12 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
             )
         started = time.time()
         try:
+            removed = _remove(out, partial_files())
+            if removed:
+                _say(
+                    f"{tag}: removed {len(removed)} files of an earlier "
+                    "attempt before the run"
+                )
             artifacts, extra = run(actual)
             write_completion(
                 out,
@@ -1372,7 +1440,31 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 time.time() - started,
                 extra,
             )
+            error_path(out, tag).unlink(missing_ok=True)
+            _say(f"{tag}: complete in {time.time() - started:.1f} s")
+            # No stop signal may interrupt what follows a complete case.
+            _handle_stop_signals(signal.SIG_IGN)
+        except Interrupted as stop:
+            _handle_stop_signals(signal.SIG_IGN)
+            name = signal.Signals(stop.signum).name
+            if record.exists():
+                _say(f"{tag}: {name} came after the completion record")
+                return 128 + stop.signum
+            try:
+                removed = _remove(out, partial_files())
+            except Exception:
+                removed = []
+                _say(
+                    "removing the partial files failed:\n"
+                    + traceback.format_exc()
+                )
+            _say(
+                f"{tag}: stopped by {name}; removed {len(removed)} partial "
+                "files and the claim, and left the case to be resubmitted"
+            )
+            return 128 + stop.signum
         except Exception as error:
+            _handle_stop_signals(signal.SIG_IGN)
             text = traceback.format_exc()
             try:
                 removed = _remove(out, partial_files())
@@ -1394,11 +1486,11 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 f"see {path}"
             )
             return 1
-        error_path(out, tag).unlink(missing_ok=True)
-        _say(f"{tag}: complete in {time.time() - started:.1f} s")
         return 0
     finally:
+        _handle_stop_signals(signal.SIG_IGN)
         release_claim(claim)
+        _restore_stop_signals(handlers)
 
 
 # --------------------------------------------------------------------------
@@ -1744,10 +1836,14 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         explains it), ``stray`` and ``exit_code``. A case is
         ``verified`` or ``verify_failed`` when it has a record, whatever
         else it left; otherwise ``in_flight`` when its claim is live,
-        which takes precedence over partial files and an error file; then
-        ``partial`` (artifacts without a record), ``failed`` (an error
-        file) or ``missing``, with the claim's details when a stale claim
-        remains. ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
+        which takes precedence over partial files and an error file. A
+        case whose artifacts lie without a record is ``interrupted`` when
+        a stale claim remains beside them (its task was killed outright,
+        so that it could clean up nothing; a resubmission removes them)
+        and ``partial`` when no claim does, which no path of the contract
+        leaves. Otherwise a case is ``failed`` (an error file) or
+        ``missing``. Each stale claim's details go with its case.
+        ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
     """
     query = accounting_state if query is None else query
     answers = {}
@@ -1777,7 +1873,9 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
                 entry.update(status="in_flight", claim=claim)
             else:
                 files = [Path(f).as_posix() for f in partial_files(tag)]
-                if files:
+                if files and claim["state"] == "stale":
+                    entry.update(status="interrupted", files=files)
+                elif files:
                     entry.update(status="partial", files=files)
                 elif error_path(out, tag).exists():
                     entry.update(
@@ -1810,18 +1908,19 @@ def finish_decision(
     """What the finish does with a verification report: ``(code, lines)``.
 
     ``queued`` holds the case indices whose tasks the queue still holds;
-    a missing case among them is counted as ``queued``, in flight, and not
-    as missing. The code is :data:`FINISH_FATAL` for a failed check, a
-    partial case or a stray file; :data:`FINISH_IN_FLIGHT` for a case in
-    flight or queued without ``allow_running``; :data:`FINISH_MISSING` for
-    a missing case without ``allow_missing``; and 0 to go on. ``lines`` is
-    the summary, with the indices of every group but the verified one.
+    a missing or interrupted case among them is counted as ``queued``, in
+    flight. The code is :data:`FINISH_FATAL` for a failed check, a partial
+    case or a stray file; :data:`FINISH_IN_FLIGHT` for a case in flight or
+    queued without ``allow_running``; :data:`FINISH_MISSING` for a missing
+    or interrupted case without ``allow_missing``, the two resubmitted
+    alike; and 0 to go on. ``lines`` is the summary, with the indices of
+    every group but the verified one, and the indices to resubmit.
     """
     queued = {int(i) for i in queued}
     groups = {status: [] for status in (*STATUSES, "queued")}
     for case in report["cases"]:
         status = case["status"]
-        if status == "missing" and case["index"] in queued:
+        if status in ("missing", "interrupted") and case["index"] in queued:
             status = "queued"
         groups[status].append(case["index"])
     stray = list(report.get("stray", []))
@@ -1834,6 +1933,7 @@ def finish_decision(
                 "failed",
                 "in_flight",
                 "queued",
+                "interrupted",
                 "partial",
                 "missing",
             )
@@ -1846,6 +1946,7 @@ def finish_decision(
         "failed",
         "in_flight",
         "queued",
+        "interrupted",
         "missing",
     ):
         if groups[status]:
@@ -1866,13 +1967,16 @@ def finish_decision(
             "--allow-running for a look at the campaign as it stands"
         )
         return FINISH_IN_FLIGHT, lines
-    if groups["missing"] and not allow_missing:
+    resubmit = sorted(groups["missing"] + groups["interrupted"])
+    if resubmit and not allow_missing:
         lines.append(
-            f"{len(groups['missing'])} cases are missing (tasks Slurm "
-            "killed or never ran); resubmit them with ARRAY="
-            f"{compress_indices(groups['missing'])} campaign_submit.sh "
-            "(raise TIME or MEM if a limit killed them), or pass "
-            "--allow-missing"
+            f"{len(groups['missing'])} cases are missing (their tasks never "
+            "ran, or stopped and cleaned up) and "
+            f"{len(groups['interrupted'])} were interrupted (their tasks "
+            "were killed outright); resubmit them with "
+            f"ARRAY={compress_indices(resubmit)} campaign_submit.sh, "
+            "raising TIME or MEM where the accounting (slurm/sacct.txt) "
+            "shows that a limit stopped them, or pass --allow-missing"
         )
         return FINISH_MISSING, lines
     return 0, lines
@@ -1951,11 +2055,15 @@ def _cmd_finish_check(args):
     )
     for line in lines:
         print(line, file=sys.stderr)
+    queued = set(queued)
     in_flight = sum(
         1
         for case in report["cases"]
         if case["status"] == "in_flight"
-        or (case["status"] == "missing" and case["index"] in set(queued))
+        or (
+            case["status"] in ("missing", "interrupted")
+            and case["index"] in queued
+        )
     )
     print(in_flight)
     return code

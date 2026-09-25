@@ -19,12 +19,18 @@
 #    (sbatch --wait; slurm/verify_<job>.out), which writes
 #    verification.json; a verify submitted while the campaign's tasks run
 #    may queue behind them. It stops when verify fails (a record that fails
-#    its check, a partial case, a stray file), when cases are in flight (a
-#    live claim, or a task still queued) unless --allow-running, and when
-#    cases are missing unless --allow-missing, printing the indices to
-#    resubmit with `ARRAY=... campaign_submit.sh CAMPAIGN_DIR` (raise TIME or
-#    MEM when a limit killed them). Cases in flight are counted apart from
-#    missing ones, so --allow-running works without --allow-missing.
+#    its check, a stray file, or artifacts with neither a record nor a
+#    claim), when cases are in flight (a live claim, or a task still
+#    queued) unless --allow-running, and when cases are missing or
+#    interrupted unless --allow-missing. A case is missing when its task
+#    never ran, or stopped on SIGTERM (its time limit, scancel) and cleaned
+#    up; it is interrupted when its task was killed outright (SIGKILL, out
+#    of memory) and left its files and its claim. Both are resubmitted
+#    alike: the finish prints their indices for `ARRAY=...
+#    campaign_submit.sh CAMPAIGN_DIR` (raise TIME or MEM when the
+#    accounting shows that a limit stopped them). Cases in flight are
+#    counted apart from missing ones, so --allow-running works without
+#    --allow-missing.
 # 4. The harness's finishing steps, the manifest's "finishing_steps", each
 #    a batch job in turn (slurm/<step>_<job>.out).
 # 5. Unless --no-archive, and never while tasks are queued, running or in

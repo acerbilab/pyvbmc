@@ -12,10 +12,16 @@
 # exits 0 at once, before the environment is even activated; otherwise it
 # runs `$HARNESS worker --out CAMPAIGN_DIR --case <line>` and exits with the
 # worker's code: 0 done, 1 failed (the case's <tag>.error.txt holds the
-# traceback), 75 claimed by a live task and 78 a source identity that
-# differs from the manifest's, the last two leaving the case's files as
-# they are. A task Slurm kills leaves its claim, which the next worker
-# finds stale in the accounting, and `verify` reports the case as missing.
+# traceback), 75 claimed by a live task, 78 a source identity that differs
+# from the manifest's (these two leaving the case's files as they are) and
+# 128 plus the signal's number when a signal stopped it. The script execs
+# the worker, so that the signals Slurm sends reach it. At the time limit
+# or on scancel Slurm sends SIGTERM, and the worker removes the case's
+# partial files and its claim before it exits: `verify` reports the case as
+# missing. A task killed outright (SIGKILL after KillWait, an out-of-memory
+# kill) leaves its files and its claim: `verify` reports the case as
+# interrupted, and the next worker finds the claim stale in the accounting,
+# takes it over and removes the files before it runs.
 #
 # With CAMPAIGN_STEP set it runs one step on the whole directory instead,
 # `$HARNESS $CAMPAIGN_STEP --out CAMPAIGN_DIR` (verify, a finishing step),

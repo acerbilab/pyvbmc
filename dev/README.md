@@ -646,9 +646,11 @@ reason.
   versions and host part (CPU model, node features, BLAS threads, CPU
   affinity and its physical cores, Slurm ids) are recorded only
   (`identity`); the completion record and its check; the worker sequence
-  with its refusals (`run_worker`); the environment check against a
-  pinned requirements file; and the reconciliation of `verify`'s states
-  (`reconcile`). Run as a script, it offers the checks the driver's shell
+  with its refusals, and its clean-up when Slurm's SIGTERM stops a case
+  (`run_worker`); the environment check against a pinned requirements
+  file; and the reconciliation of `verify`'s states, among them the
+  `interrupted` case that a task killed outright leaves, which is
+  resubmitted like a missing one (`reconcile`). Run as a script, it offers the checks the driver's shell
   scripts call. `test_campaign_contract.py` checks it.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
