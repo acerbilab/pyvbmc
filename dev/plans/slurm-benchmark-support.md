@@ -11,9 +11,9 @@ cluster on 2026-09-25 and on the records of the September pool.
 - [ ] Phase 1b: the survey where the campaigns run, the environment and
   the source trees.
 - [x] Phase 2: the generic Slurm driver (2026-09-25).
-- [ ] Phase 3: the pool harness.
-- [ ] Phase 4: the population harness and the arm comparison.
-- [ ] Phase 5: the stacking harness.
+- [x] Phase 3: the pool harness (2026-09-25).
+- [x] Phase 4: the population harness and the arm comparison (2026-09-25).
+- [x] Phase 5: the stacking harness (2026-09-25).
 - [ ] Phase 6: smoke campaigns on Turso.
 - [ ] Phase 7: the operator guide, the brief, an independent review; merge
   into `dev-next`.
@@ -287,10 +287,12 @@ Each harness that the driver runs has these subcommands.
   its CPU affinity is one physical core. It reconciles the allocation case
   by case, each with its index: verified; failed (an error file); in
   flight (a claim that is live by the rule below, which takes precedence
-  over files without a record); interrupted (files without a record and a
-  stale claim, as a task leaves them when it is killed without a SIGTERM,
-  by SIGKILL or by its memory limit); partial (files without a record and
-  without a claim); missing; and stray. It writes `verification.json`, and
+  over files without a record); interrupted (a stale claim without a
+  record, with whatever files the task left, possibly none, as a task
+  leaves it when it is killed without a SIGTERM, by SIGKILL or by its
+  memory limit); partial (files without a record and without a claim);
+  missing (never ran, or stopped by a SIGTERM that removed its claim); and
+  stray. It writes `verification.json`, and
   exits non-zero on a failed check, a partial case or a stray file.
 - The harness's own **finishing steps**, which run only on a verified
   directory; the finish runs each with `--out DIR` appended, in order.
@@ -425,10 +427,12 @@ state. It gains:
   `iterations` in the completion record and in `summarize`, beside
   `success_flag`.
 
-Its test module `dev/scripts/test_svbmc_pool_run.py` skips every test when
-the September gpyreg path is absent; it reads the gpyreg checkout from an
-environment variable instead, and the operator's environment check fails on
-any skipped test.
+Its test module `dev/scripts/test_svbmc_pool_run.py` reads the gpyreg
+checkout from `PYVBMC_GPYREG_SOURCE`, which the campaign environment
+exports, and skips only when it is unset; the operator's environment check
+fails on any skipped test. `verify`, `select`, `summarize` and the scripts
+that read a pool also read the September pool's flat layout, which its
+manifest marks by the absence of `"contract"`.
 
 The allocation of the release pools is set with the existing flags:
 `--target 320 --max-seeds 350 --allocation ring_D2_noise3_svbmc=320/480`.
@@ -475,8 +479,11 @@ gains:
   (below) reads the posteriors of both arms with NumPy and one code. The
   trace already holds the returned posterior's `w`, `mu`, `sigma` and
   `lambd` (`final_*`) and each iteration's transformer parameters
-  (`pt_*`). Phase 4 checks whether they rebuild the returned posterior
-  exactly; the worker writes a `<tag>.vp.npz` only with what they lack.
+  (`pt_*`, whose entry at the sidecar's `best_iter` is the returned
+  posterior's transformer). They lack the bounded-transform family and
+  whether `scale` and `R_mat` are unset, which `<tag>.vp.npz` holds; with
+  the configuration's bounds they rebuild the returned posterior exactly,
+  which the worker checks for every case.
 - The host part of the identity, and the provenance of the sidecars
   (the contract).
 - The boost capture (`BoostCapture`, the `.boost.pkl` and `.boost.json` of
@@ -513,8 +520,10 @@ reference and refuses any overlap with it.
   two arms come from different code. A `rescore` step, run once in a
   release-code process over both arms, rebuilds each returned posterior
   from its plain arrays and recomputes gsKL, MMTV and RMSE with the release
-  code, on a random stream seeded from the run's seed; the evidence error
-  uses each run's own ELBO. The in-run metrics stay in the sidecars.
+  code, calling `benchmark_targets.metrics` as the run did, with its
+  fixed-seed generators, so that the rescored metrics of the after arm
+  equal its in-run metrics exactly; the evidence error uses each run's own
+  ELBO. The in-run metrics stay in the sidecars.
 - **Inputs.** The comparison reads the sidecars, the `.boost.json` files
   and the rescored metrics alone, so that no process imports both packages.
 - **Method.** The population plan's: a KS screen per configuration and
@@ -560,12 +569,18 @@ repetitions draw independent subsets, which can overlap. It gains:
 - **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` and
   CPU Torch 2.14.0 in `BASELINE_DIR`, recreated as
   `experiments/svbmc_pool/baseline_environment.json` describes and verified
-  by the SHA-256 of every `svbmc/*.py` it records and the Torch version,
+  by the SHA-256 of the committed content of every `svbmc/*.py` it records
+  (`files_sha256_committed`; its `files_sha256` are those of a Windows
+  working tree whose line endings git converted) and the Torch version,
   not by its paths. The integrated arm's environment holds the same Torch.
+  A task of the integrated arm alone neither needs nor checks it.
 
-Its test module `dev/scripts/test_svbmc_pool_stack.py` skips unless the
-September gpyreg path and the recorded Windows overlay exist; it reads both
-from environment variables, under the same no-skip rule. The scripts that
+Its test module `dev/scripts/test_svbmc_pool_stack.py` reads the gpyreg
+checkout from `PYVBMC_GPYREG_SOURCE` and the baseline from `BASELINE_DIR`,
+and skips only when they are unset, under the same no-skip rule; Torch
+comes from the environment, or else from the baseline's `deps/`. A pool
+too small for the repetitions at an `M` gives `floor(n / M)` of them, and
+`prepare` prints and records the shortfall. The scripts that
 read the assembled results (`svbmc_shrink_elbo.py`,
 `svbmc_single_run_bias.py`) run as batch jobs.
 
@@ -592,8 +607,16 @@ without a tracked record of their time; that makes about 110 laptop hours
 per arm, doubled for the cluster. `cigar_D15_exhaust` alone takes about
 27.5 of them. The stacking estimate doubles the September laptop times
 (8.1 hours for the two-arm cells, 15 minutes for the integrated cells at
-`M` = 3 and 5, 237 minutes at `M = 32`). The memory of a cell at `M = 32`
-has not been measured.
+`M` = 3 and 5, 237 minutes at `M = 32`). Phase 5 found one `M = 32` cell
+taking about 150 s at three optimization steps on the developer's
+machine, so the stacking may cost more than this estimate; Phase 6
+measures it. S-VBMC's final entropy evaluation reduces its matrix of log
+densities by chunks of rows (`ca4e8259`), with results identical bit for
+bit, so its peak at `M = 32` is about 350 MiB; the peak of an
+`optimize()` at `M = 32` is then its gradient steps, about 2.1 GB, which
+build the whole matrix at 20 draws per component. The `M = 16` and
+`M = 32` tasks are submitted as their own subsets (`CASES_SUBSET=M16`,
+`M32`) with their own `MEM`, which Phase 6 sets from their accounting.
 
 ## Records and hand-back
 
@@ -733,7 +756,11 @@ per-case times that replace the estimates above.
 
 `dev/scripts/hpc/README.md` gains the operator's guide to the new driver
 and the three harnesses, in site-neutral terms; the site values stay in the
-operator's notes. A brief in the manner of
+operator's notes. The September scripts no longer drive the pool harness,
+whose worker takes `--case`; the guide and the `scripts/hpc/` entry of
+`dev/README.md` present them as the record of that campaign. The `redact`
+finishing step ("Records and hand-back") is implemented here, before the
+hand-back needs it. A brief in the manner of
 [the September one](svbmc-pool-handoff.md) tells the postdoc what to run,
 in what order, and what to hand back, and names the settings the operator
 supplies without their values. A doublecheck by fresh reviewers reads the
@@ -757,7 +784,9 @@ On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
 with `golden_trace.py`: about 70 to 80 minutes by the laptop medians, and
 `lumpy_D10_noise3_production`, which Phase 6 times. Each run must lie
-inside the after arm's accuracy envelope (`golden_replay.py --sidecars`), a
+inside the after arm's accuracy envelope (`golden_replay.py --sidecars`,
+which reads a flat directory of sidecars, so it is given the tracked copies
+or learns to read the per-configuration directories of array mode), a
 coarse check that the machine and the cluster sample the same
 distribution. The six seeded gate runs, wrapped so that their record
 carries the commit, the gpyreg source, the thread settings and the host,
@@ -794,3 +823,32 @@ run reproduces bit for bit.
   counted as in flight. The Linux-only paths (the host part's affinity,
   topology and BLAS, `conda activate`, the real output of `sacct`,
   `squeue` and `scontrol`, an external SIGTERM) first run in Phase 6.
+- 2026-09-25: Phases 3, 4 and 5 ran in parallel on branches of
+  `feat-slurm-campaigns` and merged into it. Phase 3: the pool harness on
+  the contract, 78 tests; the September copy verifies 1100 of 1100 with
+  every difference equal to the local record's, and the pool readers
+  reproduce their tracked outputs. Phase 4: array mode, the two-tree
+  identity and the rescoring, 76 tests; one short case of each arm ran
+  through the harness, the before arm at `f91fdf0` with its boost capture,
+  and the rescoring reproduced the after arm's in-run metrics exactly.
+  Phase 5: the stacking as tasks, 44 tests; assembled tasks equal the
+  single-process run's cells, rows and summaries. Two contract rules came
+  from them: a stale claim without a record is interrupted whether or not
+  the task left files, and `git status` lines are recorded unaltered. The
+  rescoring calls the metrics' fixed-seed generators, since only they
+  reproduce the in-run metrics. Phase 4 also found that
+  `population_run.validate_case`, which `analyze_population_run.py` and
+  `reference_join.py` call on the September campaigns, compared the
+  transformers of the captured posteriors by their `__dict__`. Since
+  `e610479e` (2026-09-20) every copy of a transformer builds its own
+  bounded-transform functions, so the comparison fails on every case,
+  bounded or not, the captured posteriors being separate copies; it
+  compares their data instead.
+- 2026-09-25: the PI asked for S-VBMC's final entropy evaluation to be
+  chunked (`feat-svbmc-entropy-chunks`, merged into `dev-next` as
+  `ca4e8259`): the draws, the generator's stream and every result are
+  unchanged bit for bit (checked against the previous code on every
+  fixture group and on whole `optimize()` runs), and the peak of the final
+  evaluation at 32 runs of 50 components in `D = 6` falls from about
+  5.9 GiB to 351 MiB. The gradient steps keep the whole matrix: chunking
+  them changes the order in which the gradient sums over rows.

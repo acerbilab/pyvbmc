@@ -408,8 +408,11 @@ tree, SHA-256 of every `svbmc/*.py`, Torch, Python, NumPy, SciPy, PyVBMC
 and gpyreg commits), and it is recoverable elsewhere by cloning the
 upstream repository (`acerbilab/S-VBMC`) at `13a78f6` and installing CPU
 Torch 2.14.0 into a `deps/` directory with `pip install --target`; the
-recorded hashes verify the recreation. The stacking harness re-verifies
-the environment before every campaign.
+recorded hashes of the committed content (`files_sha256_committed`) verify
+the recreation on any platform, where `files_sha256` holds those of the
+Windows working tree, whose line endings git converted. The stacking
+harness re-verifies the environment before every campaign that runs the
+original arm.
 
 ### Stacking comparison
 
