@@ -22,7 +22,10 @@ platform, interpreter, import paths, installed versions, thread settings)
 that is recorded and never compared, so that any machine may generate any
 case of one pool. `baseline_environment.json` is the
 identity of the comparison's baseline arm: the commit and per-file
-SHA-256 hashes of the pinned upstream checkout, the Torch overlay it runs
+SHA-256 hashes of the pinned upstream checkout (of the files as that
+machine's checkout held them, with the CRLF line endings Git gave them on
+Windows, and of their committed content, which verifies a recreation on
+any platform), the Torch overlay it runs
 against, and the interpreter, library versions, PyVBMC and gpyreg
 checkouts and thread settings of the machine that ran it. The checkout
 and the overlay are machine-local, so that record is what makes the
