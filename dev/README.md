@@ -617,7 +617,39 @@ reason.
   under `srun`, then `select`, `summarize` and the archive with its
   SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
   University of Helsinki's Turso cluster; every site-specific value is an
-  environment variable.
+  environment variable. Beside them is the generic driver of the release
+  gate's campaigns (`plans/slurm-benchmark-support.md`, "The driver"),
+  which each script's header documents: `campaign_submit.sh` refuses a
+  dirty source tree, an environment that differs from
+  `campaign_requirements.txt` and a fixed operator setting that differs
+  from the manifest's, prepares a campaign once, writes its case list once
+  and submits `campaign_task.sbatch` in chunks below `MaxArraySize`, a
+  named subset of the cases as its own array; `campaign_finish.sh`
+  refuses while tasks are queued or running, runs `verify` and the
+  harness's finishing steps as batch jobs, counts the cases in flight
+  apart from the missing ones and writes the archive in parts with their
+  SHA-256; `campaign_env.sh` activates the environment, or builds it
+  (`build`). They drive any harness that meets the campaign contract
+  (`campaign_contract.py`) and hold no value particular to a site.
+  `test_campaign_driver.py` runs them against stub Slurm commands
+  (`campaign_slurm_stubs.py`) and a stub harness
+  (`campaign_stub_harness.py`).
+- `scripts/campaign_contract.py` — the part of the campaign contract of
+  `plans/slurm-benchmark-support.md` that the Slurm-driven harnesses
+  share: the layout of a campaign directory (a case line starts with its
+  tag; `records/<tag>.complete.json`, `claims/<tag>`, `<tag>.error.txt`);
+  the claim of a case, hard-linked into place and judged stale only when
+  the Slurm accounting shows that its task has ended (`acquire_claim`);
+  the identity, whose source part (each tree's commit and clean state,
+  file and directory hashes, the imported modules' versions) every worker
+  compares with the manifest's, and whose import paths, installed-metadata
+  versions and host part (CPU model, node features, BLAS threads, CPU
+  affinity and its physical cores, Slurm ids) are recorded only
+  (`identity`); the completion record and its check; the worker sequence
+  with its refusals (`run_worker`); the environment check against a
+  pinned requirements file; and the reconciliation of `verify`'s states
+  (`reconcile`). Run as a script, it offers the checks the driver's shell
+  scripts call. `test_campaign_contract.py` checks it.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
   one subset of the filtered pool is stacked by both the integrated
