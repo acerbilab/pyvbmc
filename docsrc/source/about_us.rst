@@ -17,7 +17,7 @@ Core developers
 
 Active developers, in order of joining:
 
-- `Luigi Acerbi <https://www2.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people#section-99451>`_, University of Helsinki
+- `Luigi Acerbi <https://lacerbi.github.io/>`_, University of Helsinki
 - `Chengkun Li <https://pipme.github.io/>`_, University of Helsinki
 - `Francesco Silvestrin <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people>`_, University of Helsinki
 
@@ -27,8 +27,8 @@ Development team alumni
 Developers who have made important contributions in the past, but are no longer contributing actively:
 
 - `Marlon Tobaben <https://www.linkedin.com/in/marlon-tobaben/?originalSubdomain=fi>`_ (2021, *while at*: University of Helsinki)
-- `Mikko Aarnos <https://www2.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people#section-110512>`_ (Summer 2021, *while at*: University of Helsinki)
-- `Bobby Huggins <https://www2.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people#section-111359>`_ (2022–2023, *while at*: University of Helsinki → PhD student at Washington University in St. Louis)
+- `Mikko Aarnos <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people>`_ (Summer 2021, *while at*: University of Helsinki)
+- `Bobby Huggins <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people>`_ (2022–2023, *while at*: University of Helsinki → PhD student at Washington University in St. Louis)
 
 Join the team
 --------------

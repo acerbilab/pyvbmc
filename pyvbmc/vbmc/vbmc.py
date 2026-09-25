@@ -442,7 +442,7 @@ class VBMC:
     --------
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
     in the PyVBMC documentation:
-    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1.html
+    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1_basic_usage.html
 
     Previously computed target values can seed the logger without becoming
     starting points or changing the plausible box. Preparation performed for

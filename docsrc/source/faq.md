@@ -1,6 +1,6 @@
 # PyVBMC: Frequently Asked Questions
 
-This FAQ is curated by [Luigi Acerbi](https://luigiacerbi.com/), and in constant expansion.
+This FAQ is curated by [Luigi Acerbi](https://lacerbi.github.io/), and in constant expansion.
 It is adapted from the [MATLAB VBMC FAQ](https://github.com/acerbilab/vbmc/wiki)
 for PyVBMC 1.5.
 
@@ -565,7 +565,7 @@ PyVBMC supports noisy target functions as input, as explained below.
 No. In order to perform inference with a noisy target function, you need to:
 
 - manually set `options={"specify_target_noise": True}` when constructing `VBMC`;
-- pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](_examples/pyvbmc_example_6_noisy_likelihoods.ipynb) for further information.
+- pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
 
 With a separate `prior=` or `log_prior=`, `log_density` is the noisy log
 likelihood; otherwise it is the noisy log joint. The SD describes the
@@ -634,7 +634,7 @@ We list here the major failure modes, diagnostics, and possible solutions:
 - In the simplest case, the VBMC algorithm fails to converge within the allotted budget of target function evaluations.
   - This is easy to detect (look at `results["success_flag"]` and `results["message"]`). There may be several distinct reasons for failure of convergence (see below).
 - VBMC converges, but the variational optimization has only found a *local* optimum.
-  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](_examples/pyvbmc_example_4_validation.ipynb)).
+  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html)).
 - Multiple runs of VBMC converge to pretty much the same variational solution, which fails to capture important aspects of the true posterior.
   - This problem has no obvious solution, in that it is intrinsic to the fact that we are using an approximation that it may deviate from the true posterior. For example, variational posteriors, for how the variational objective is defined, tend to underestimate the true uncertainty of the posterior. You can use [*posterior predictive checks*](https://stats.stackexchange.com/questions/115157/what-are-posterior-predictive-checks-and-what-makes-them-useful) to gain confidence that the found solution makes sensible predictions, also in terms of calibration.
 
@@ -754,7 +754,7 @@ not a confidence interval for that capped headline. Keep the stacked
 posterior with `stacked.save("stacked.pkl")` and load it with
 `SVBMC.load("stacked.pkl")`. See the
 [S-VBMC documentation](api/classes/svbmc.rst) and
-[Example 7](_examples/pyvbmc_example_7_stacking.ipynb)
+[Example 7](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_7_stacking.html)
 for the filtering of input runs, reporting and examples.
 
 (faq-miscellanea)=

@@ -60,7 +60,7 @@ The code is formatted using `Black <https://pypi.org/project/black/>`__ with a l
 
 After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in ``.pre-commit-config.yaml``. The settings of the hooks are specified in ``pyproject.toml``. You need to restage the file if it gets modified by the hooks.
 
-If you want, you can also check with `ruff <https://beta.ruff.rs/docs/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
+If you want, you can also check with `ruff <https://docs.astral.sh/ruff/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
 
 Docstrings
 ----------
@@ -69,7 +69,7 @@ The docstrings are generated following the `NumPy format <https://numpydoc.readt
 There are add-ons to generate docstring blueprints using IDEs.
 
 - See an example for a correct docstring from NumPy `here <https://numpydoc.readthedocs.io/en/latest/example.html>`__.
-- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <variational_posterior/variational_posterior.py>`.
+- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <pyvbmc/variational_posterior/variational_posterior.py>`.
 - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 Code documentation
@@ -96,7 +96,7 @@ GitHub workflows automatically build and update the documentation whenever a com
 
    (If you are using Windows, run ``.\make.bat clean`` with ``cmd`` instead.)
 
-If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
+If any changes have been made to the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
 
 General structure
 .................
@@ -120,7 +120,7 @@ Please keep the documentation up to date. (Sphinx logs possible issues when comp
 Exceptions
 ----------
 
-Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/library/exceptions.html>`__.
+Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/builtins/exceptions.html>`__.
 
 ``git`` commits
 ---------------
