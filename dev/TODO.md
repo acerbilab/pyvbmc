@@ -98,18 +98,23 @@ records its execution.
   gate's records when they are made anew. The item can start when the PI
   decides.
 
-- [ ] **A seeded gate run with a prior.** None of the four seeded runs that
-  gate the port review's fix passes
+- [ ] **A seeded gate run with a prior.** The four seeded runs that gate
+  the port review's fix passes
   (`experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`)
-  is given a prior with `prior=`, so what a run does with a prior object
-  rests on unit tests: the check of its support against the hard bounds,
+  pass no prior with `prior=`, so what a run does with a prior object
+  rested on unit tests: the check of its support against the hard bounds,
   and the support that `SciPy` and `Product` read from their distribution
-  at every call. Add two runs: one with the FAQ's list of `uniform`
-  marginals built from the hard bounds, which reaches the slack of that
-  check, and one with a `SplineTrapezoidal` on them. To be done when the
-  release gate's records are made anew: the golden references (the item
-  above) and the run pools of the final large-scale check (below) (PI,
-  2026-09-21; the wave-5
+  at every call. The script holds two more runs, on a two-dimensional
+  Rosenbrock likelihood with the hard bounds -2.9 and 3.3: the FAQ's list
+  of `uniform` marginals built from the hard bounds, whose support ends
+  one rounding short of the upper bound and so passes the check within its
+  slack, and a `SplineTrapezoidal` on the same bounds. On 2026-09-25 each
+  reproduced bit for bit in two recordings, and their ELBOs came out 0.34
+  and 0.37 nats below the log evidence computed by quadrature, the gap the
+  unbounded Rosenbrock run of the same script shows without a prior object
+  (0.40). Their record joins the release gate's records when those are
+  made anew: the golden references (the item above) and the run pools of
+  the final large-scale check (below) (PI, 2026-09-21; the wave-5
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
   independent check of the pass").
 
