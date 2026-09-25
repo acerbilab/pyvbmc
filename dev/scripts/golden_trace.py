@@ -23,8 +23,18 @@ run writes ``<tag>.error.txt`` and the sweep continues.
 
 Each run produces ``<label>_seed<seed>.npz`` (per-iteration vectors, ragged
 blocks with index vectors, final arrays) and ``<label>_seed<seed>.json``
-(config, seed, options as requested and as effective, git SHA, versions,
-the imported gpyreg's path and commit, final scalar metrics). ``summary`` and ``compare`` read only the sidecars.
+(config, seed, options as requested and as effective, provenance, final
+scalar metrics). ``summary`` and ``compare`` read only the sidecars.
+
+The package run is this checkout's, whichever checkout is installed, unless
+``PYVBMC_SOURCE`` names another tree (a worktree at another commit), which
+then goes ahead of this checkout on ``sys.path``. The sidecar's ``meta``
+records this checkout's commit (``git``), the path and commit of the
+imported PyVBMC and gpyreg (``pyvbmc_source``, ``gpyreg_source``), the
+imported versions of NumPy, SciPy and cma, and, under
+``installed_metadata_versions``, the versions that the installed
+distributions of PyVBMC and gpyreg name, which differ from the imported
+trees' when a tree is pinned by path.
 
 ``compare`` runs a two-sample Kolmogorov-Smirnov test per (config, metric)
 on the final ``elbo_err``, ``gskl``, ``mmtv`` and ``func_count`` and applies
@@ -48,9 +58,11 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
-# The package of this checkout, whichever checkout is installed: the traces
-# are labelled with this checkout's commit.
+# The package of this checkout, whichever checkout is installed, or the
+# tree PYVBMC_SOURCE names, which goes ahead of it (module docstring).
 sys.path.insert(0, str(REPO_ROOT))
+if os.environ.get("PYVBMC_SOURCE"):
+    sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
 # Rough solo minutes per run, used only to order tasks longest-first when
@@ -109,7 +121,9 @@ def run_task(label, seed, extra_options, out_dir):
     tag = _tag(label, seed)
     t_start = time.time()
     try:
+        import cma
         import psutil
+        import scipy
         from benchmark_targets import find_config, metrics
         from profile_run import (
             effective_options,
@@ -299,11 +313,14 @@ def run_task(label, seed, extra_options, out_dir):
                 "git": git_info(),
                 "python": sys.version.split()[0],
                 "numpy": np.__version__,
-                "scipy": pkg_version("scipy"),
-                "pyvbmc": pkg_version("pyvbmc"),
-                "gpyreg": pkg_version("gpyreg"),
+                "scipy": scipy.__version__,
+                "cma": cma.__version__,
+                "pyvbmc_source": module_source("pyvbmc"),
                 "gpyreg_source": module_source("gpyreg"),
-                "cma": pkg_version("cma"),
+                "installed_metadata_versions": {
+                    "pyvbmc": pkg_version("pyvbmc"),
+                    "gpyreg": pkg_version("gpyreg"),
+                },
                 "threads": thread_env(),
                 "started": time.strftime(
                     "%Y-%m-%d %H:%M:%S", time.localtime(t_start)
@@ -455,6 +472,25 @@ def load_population(d):
     return pop
 
 
+def merge_populations(populations):
+    """Pool populations of ``load_population`` label by label."""
+    merged = {}
+    for population in populations:
+        for label, entry in population.items():
+            target = merged.setdefault(
+                label, {"seeds": [], "rows": [], "fails": 0}
+            )
+            target["seeds"] += entry["seeds"]
+            target["rows"] += entry["rows"]
+            target["fails"] += entry["fails"]
+    for entry in merged.values():
+        for m in METRICS + EXTRA_SCALARS:
+            entry[m] = np.array(
+                [r.get(m, np.nan) for r in entry["rows"]], dtype=float
+            )
+    return merged
+
+
 def _med_iqr(x):
     x = x[np.isfinite(x)]
     if len(x) == 0:
@@ -463,10 +499,10 @@ def _med_iqr(x):
     return f"{q[1]:.3g} [{q[0]:.3g}, {q[2]:.3g}]"
 
 
-def cmd_summary(args):
-    pop = load_population(args.dir)
+def summary_text(pop, name):
+    """The summary table of a population (``load_population``), as Markdown."""
     lines = [
-        f"# Golden population {Path(args.dir).name}",
+        f"# Golden population {name}",
         "",
         "| config | n | failed | elbo_err | gskl | mmtv | rmse | usable |"
         " evals | iters | K | warps | wall min |",
@@ -489,7 +525,11 @@ def cmd_summary(args):
             f" {_med_iqr(e['final_K'])} | {np.nanmean(e['n_warps']):.1f} |"
             f" {_med_iqr(e['wall_s'] / 60)} |"
         )
-    text = "\n".join(lines)
+    return "\n".join(lines)
+
+
+def cmd_summary(args):
+    text = summary_text(load_population(args.dir), Path(args.dir).name)
     print(text)
     (Path(args.dir) / "summary.md").write_text(text + "\n", encoding="utf-8")
     return 0

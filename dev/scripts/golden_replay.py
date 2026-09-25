@@ -12,10 +12,12 @@ population was::
     python dev/scripts/golden_replay.py --report-only --out <dir>   # re-render
 
 Run it as a script from the repository root (it imports its neighbours by
-module name). For each (config, seed) the script runs VBMC in this process
-with one BLAS thread (as the baseline was run), writes the new trace under
-``--out`` and reports, against the stored trace of the same (config, seed)
-under ``--baseline``:
+module name). It replays this checkout's package, or the tree that
+``PYVBMC_SOURCE`` names (as ``golden_trace.py`` does), which the report then
+names beside this checkout's commit. For each (config, seed) the script
+runs VBMC in this process with one BLAS thread (as the baseline was run),
+writes the new trace under ``--out`` and reports, against the stored trace
+of the same (config, seed) under ``--baseline``:
 
 - exact stored-state identity: every non-timer NPZ array (including its
   shape), separated into main-loop and returned-final state, plus the
@@ -617,16 +619,29 @@ def _fmt(v, nd=3):
     return f"{f:.{nd}g}"
 
 
-def render(rows, git, args, minutes):
+def render(rows, git, args, minutes, package=None):
+    """The Markdown report; ``package`` is where PyVBMC was imported from.
+
+    ``git`` is this checkout's commit; a package imported from another tree
+    (``PYVBMC_SOURCE``) is named beside it.
+    """
     calibration = (
         "historical default budgets"
         if args.calibration_budget is None
         else f"all calibration budgets {args.calibration_budget}"
     )
+    code = f"Code `{git['sha']}`{' (dirty)' if git['dirty'] else ''}"
+    if package and Path(package["path"]).parent != REPO_ROOT:
+        package_git = package.get("git") or {}
+        code += (
+            f", PyVBMC from `{package['path']}` at"
+            f" `{package_git.get('sha')}`"
+            f"{' (dirty)' if package_git.get('dirty') else ''}"
+        )
     lines = [
         f"# Golden replay {time.strftime('%Y-%m-%d %H:%M')}",
         "",
-        f"Code `{git['sha']}`{' (dirty)' if git['dirty'] else ''};"
+        f"{code};"
         f" baseline `{args.baseline.name}`; threads {args.threads};"
         f" {calibration}; {minutes:.1f} min.",
         "",
@@ -707,10 +722,14 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     sys.path.insert(0, str(HERE))
-    # The package of this checkout, whichever checkout is installed.
+    # The package of this checkout, whichever checkout is installed, or the
+    # tree PYVBMC_SOURCE names, which goes ahead of it (as golden_trace.py
+    # does when it is imported).
     sys.path.insert(0, str(REPO_ROOT))
+    if os.environ.get("PYVBMC_SOURCE"):
+        sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
     from golden_trace import _tag, load_population, parse_seeds, run_task
-    from profile_run import git_info
+    from profile_run import git_info, module_source
 
     try:
         import psutil  # noqa: F401
@@ -728,6 +747,7 @@ def main(argv=None):
     pop = load_population(args.sidecars) if args.sidecars.exists() else {}
     have_traces = args.baseline.exists()
     git = git_info()
+    package = module_source("pyvbmc")
     if not args.report_only:
         print(
             f"[replay] {len(labels)} configs x {len(seeds)} seeds, code"
@@ -794,16 +814,18 @@ def main(argv=None):
         if prev.exists():
             saved = json.loads(prev.read_text())
             git = saved.get("git", git)
+            package = saved.get("package", package)
             minutes = saved.get("minutes", minutes)
             args.threads = saved.get("threads", args.threads)
             if args.calibration_budget is None:
                 args.calibration_budget = saved.get("calibration_budget")
-    report, n_flag = render(rows, git, args, minutes)
+    report, n_flag = render(rows, git, args, minutes, package)
     (out_dir / "replay.md").write_text(report, encoding="utf-8")
     (out_dir / "replay.json").write_text(
         json.dumps(
             {
                 "git": git,
+                "package": package,
                 "threads": args.threads,
                 "calibration_budget": args.calibration_budget,
                 "minutes": minutes,
