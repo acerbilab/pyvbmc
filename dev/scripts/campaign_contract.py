@@ -60,12 +60,13 @@ A task that Slurm stops ends in one of two ways. At its time limit or on
 ``scancel`` it receives SIGTERM, and KillWait seconds later SIGKILL; the
 worker catches SIGTERM (and SIGINT), removes the case's partial files and
 its claim and exits, writing no error file, since a kill is no failure of
-the run, and ``verify`` reports the case as ``missing``. A task killed
-outright (SIGKILL, an out-of-memory kill, a node lost) leaves its partial
-files and its claim, which the accounting then shows as ended: ``verify``
-reports the case as ``interrupted``, which, like ``missing``, is
-resubmitted, and the worker that takes over the stale claim removes the
-partial files before it runs.
+the run, and ``verify`` reports the case as ``missing``, as it does a case
+that never ran. A task killed outright (SIGKILL, an out-of-memory kill, a
+node lost) leaves its claim, which the accounting then shows as ended, and
+whatever partial files it had written, none for a harness that writes its
+artifacts at the end of a run: ``verify`` reports the case as
+``interrupted``, which, like ``missing``, is resubmitted, and the worker
+that takes over the stale claim removes the partial files before it runs.
 
 The module imports only the standard library at module level, so that a
 harness can import it before it sets its thread variables and pins its
@@ -796,14 +797,21 @@ def claim_status(out, tag, query=None):
 # --------------------------------------------------------------------------
 
 
-def git(path, *args):
-    return subprocess.run(
+def git(path, *args, strip=True):
+    """The output of ``git -C path args``, stripped unless ``strip`` is False.
+
+    Porcelain output keeps its leading spaces with ``strip=False``: the
+    first column of ``git status --porcelain`` is the index's status, a
+    space when the index holds no change.
+    """
+    output = subprocess.run(
         ["git", "-C", str(path), *args],
         capture_output=True,
         text=True,
         check=True,
         stdin=subprocess.DEVNULL,
-    ).stdout.strip()
+    ).stdout
+    return output.strip() if strip else output
 
 
 def tree_state(path):
@@ -812,14 +820,14 @@ def tree_state(path):
     ``source`` is what the identity compares, the commit and whether the
     tree is clean (``git status --porcelain`` prints nothing, so no
     uncommitted or untracked change); ``where`` is its resolved path and
-    the status lines of a dirty tree, recorded only. ``path`` must be the
-    top of its checkout.
+    the status lines of a dirty tree as git prints them, recorded only.
+    ``path`` must be the top of its checkout.
     """
     path = Path(path).resolve()
     try:
         top = git(path, "rev-parse", "--show-toplevel")
         commit = git(path, "rev-parse", "HEAD")
-        status = git(path, "status", "--porcelain")
+        status = git(path, "status", "--porcelain", strip=False)
     except (OSError, subprocess.CalledProcessError) as error:
         detail = getattr(error, "stderr", None) or error
         raise IdentityError(
@@ -1835,14 +1843,16 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         with its ``index``, ``tag``, ``case`` and ``status`` and what
         explains it), ``stray`` and ``exit_code``. A case is
         ``verified`` or ``verify_failed`` when it has a record, whatever
-        else it left; otherwise ``in_flight`` when its claim is live,
-        which takes precedence over partial files and an error file. A
-        case whose artifacts lie without a record is ``interrupted`` when
-        a stale claim remains beside them (its task was killed outright,
-        so that it could clean up nothing; a resubmission removes them)
-        and ``partial`` when no claim does, which no path of the contract
-        leaves. Otherwise a case is ``failed`` (an error file) or
-        ``missing``. Each stale claim's details go with its case.
+        else it left. Without a record, a case is ``in_flight`` when its
+        claim is live and ``interrupted`` when its claim is stale: its task
+        was killed outright and could clean up nothing, and the case's
+        ``files`` lists what it left (none, for a harness that writes its
+        artifacts at the end of a run), which a resubmission removes; the
+        claim's details, and an earlier attempt's error, go with it. A
+        case without a record or a claim is ``partial`` when artifacts
+        remain, which no path of the contract leaves, ``failed`` when its
+        error file does, and ``missing`` otherwise: it never ran, or a
+        stop signal ended it and it removed its files and its claim.
         ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
     """
     query = accounting_state if query is None else query
@@ -1869,23 +1879,22 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
                 entry["error"] = f"{type(error).__name__}: {error}"
         else:
             claim = claim_status(out, tag, query=ask)
+            error = error_path(out, tag)
             if claim["state"] == "live":
                 entry.update(status="in_flight", claim=claim)
+            elif claim["state"] == "stale":
+                files = [Path(f).as_posix() for f in partial_files(tag)]
+                entry.update(status="interrupted", files=files, claim=claim)
+                if error.exists():
+                    entry["earlier_error"] = error_reason(error)
             else:
                 files = [Path(f).as_posix() for f in partial_files(tag)]
-                if files and claim["state"] == "stale":
-                    entry.update(status="interrupted", files=files)
-                elif files:
+                if files:
                     entry.update(status="partial", files=files)
-                elif error_path(out, tag).exists():
-                    entry.update(
-                        status="failed",
-                        reason=error_reason(error_path(out, tag)),
-                    )
+                elif error.exists():
+                    entry.update(status="failed", reason=error_reason(error))
                 else:
                     entry["status"] = "missing"
-                if claim["state"] == "stale":
-                    entry["claim"] = claim
         entries.append(entry)
     strays = sorted(set(stray) | set(stray_files(out, tags)))
     counts = {status: 0 for status in STATUSES}
@@ -1971,9 +1980,9 @@ def finish_decision(
     if resubmit and not allow_missing:
         lines.append(
             f"{len(groups['missing'])} cases are missing (their tasks never "
-            "ran, or stopped and cleaned up) and "
+            "ran, or a stop signal ended them and they cleaned up) and "
             f"{len(groups['interrupted'])} were interrupted (their tasks "
-            "were killed outright); resubmit them with "
+            "were killed outright and left their claims); resubmit them with "
             f"ARRAY={compress_indices(resubmit)} campaign_submit.sh, "
             "raising TIME or MEM where the accounting (slurm/sacct.txt) "
             "shows that a limit stopped them, or pass --allow-missing"

@@ -25,8 +25,8 @@
 #    interrupted unless --allow-missing. A case is missing when its task
 #    never ran, or stopped on SIGTERM (its time limit, scancel) and cleaned
 #    up; it is interrupted when its task was killed outright (SIGKILL, out
-#    of memory) and left its files and its claim. Both are resubmitted
-#    alike: the finish prints their indices for `ARRAY=...
+#    of memory) and left its claim, with or without files. Both are
+#    resubmitted alike: the finish prints their indices for `ARRAY=...
 #    campaign_submit.sh CAMPAIGN_DIR` (raise TIME or MEM when the
 #    accounting shows that a limit stopped them). Cases in flight are
 #    counted apart from missing ones, so --allow-running works without

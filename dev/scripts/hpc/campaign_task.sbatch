@@ -19,9 +19,10 @@
 # or on scancel Slurm sends SIGTERM, and the worker removes the case's
 # partial files and its claim before it exits: `verify` reports the case as
 # missing. A task killed outright (SIGKILL after KillWait, an out-of-memory
-# kill) leaves its files and its claim: `verify` reports the case as
-# interrupted, and the next worker finds the claim stale in the accounting,
-# takes it over and removes the files before it runs.
+# kill) leaves its claim and whatever files it had written, possibly none:
+# `verify` reports the case as interrupted, and the next worker finds the
+# claim stale in the accounting, takes it over and removes the files
+# before it runs.
 #
 # With CAMPAIGN_STEP set it runs one step on the whole directory instead,
 # `$HARNESS $CAMPAIGN_STEP --out CAMPAIGN_DIR` (verify, a finishing step),
