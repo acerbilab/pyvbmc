@@ -68,13 +68,18 @@ records its execution.
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
 - [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
-  resource settings, resumption and result collection. The pool campaign's
-  per-case worker and `cases` enumeration are the first cluster-ready
-  pieces, and the sbatch scripts the cluster developer returns with the
-  pool PR (under `dev/scripts/hpc/` or similar) are the seed of this item;
-  the general design remains open. Needed before relying on that workflow
-  for further cluster campaigns, not before local experiments; the
-  final large-scale check below is the first such campaign. See
+  resource settings, resumption and result collection. The seed is the
+  pool campaign's cluster half under `scripts/hpc/` (its `README.md`):
+  sbatch scripts, written for the Helsinki `kale` cluster, around the
+  per-case worker, `cases` enumeration and hash-verified completion
+  records of `scripts/svbmc_pool_run.py`. They drive that harness alone,
+  and their README sets up the campaign's gpyreg, 1.2.1, which is also
+  the harness's default `--gpyreg-source`; the release gate runs the
+  release code with the gpyreg it requires (1.3.3 on 2026-09-25). The
+  general design remains open. Needed before relying on that workflow
+  for further cluster campaigns, not before local experiments; the final
+  large-scale check below is the first such campaign. The PI takes it up
+  next, with cluster access (2026-09-25). See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
@@ -142,7 +147,14 @@ records its execution.
   stored output shows. Executed through nbclient, Example 2's Plotly figure
   keeps only its Plotly JSON, which the docs build skips, so the execution
   has to produce the figure's HTML as well. Example 4 prints its list of
-  ELBOs as NumPy 2 writes them, `np.float64(-1.52)`.
+  ELBOs as NumPy 2 writes them, `np.float64(-1.52)`. Example 2's
+  `print(vp)` shows an entropy near zero where the stored output shows
+  2.40: the stored split into expected log joint and entropy comes from
+  code before 1.0, and the new one equals a Monte Carlo entropy of the
+  posterior in the transformed space (checked on 2026-09-25). Examples 7
+  and 8 need the `torch` and `pymc` extras and Example 9 Torch and JAX;
+  Example 6 loads the posterior that Example 4 saves, and Examples 3, 4
+  and 7 write files into the working directory.
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. The package checks include what
   the sdist ships: setuptools_scm puts every tracked file in it, `dev/` and

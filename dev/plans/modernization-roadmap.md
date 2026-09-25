@@ -1113,9 +1113,8 @@ its implementation design remains open.
   work starts. The S-VBMC run-pool campaign
   ([svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md)) is the
   first cluster job: its per-case worker, `cases` enumeration and
-  hash-verified completion records are cluster-ready, and the sbatch
-  scripts the cluster developer returns with the pool PR are the seed of
-  this item.
+  hash-verified completion records are cluster-ready, and its sbatch
+  scripts under `dev/scripts/hpc/` are the seed of this item.
 - [ ] Make the distinction between reference generation and candidate
   checking explicit in benchmark workflows and documentation. A golden
   reference may contain many traces and require a long campaign to generate.
