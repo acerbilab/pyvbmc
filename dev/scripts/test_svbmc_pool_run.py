@@ -867,7 +867,16 @@ def test_case_state_as_the_sweep_sees_it(stored, tmp_path, no_slurm):
     claim = contract.new_claim(tag_of(4006), task={})
     claim["pid"] = gone.pid
     contract.write_json(contract.claim_path(copy, tag_of(4006)), claim)
-    assert runner.case_state(copy, tag_of(4006), expected)[0] == "interrupted"
+    assert runner.case_state(copy, tag_of(4006), expected) == (
+        "interrupted",
+        [f"{tag_of(4006)}.npz"],
+    )
+    # A task killed before it wrote any file leaves its stale claim alone.
+    (copy / f"{tag_of(4006)}.npz").unlink()
+    assert runner.case_state(copy, tag_of(4006), expected) == (
+        "interrupted",
+        [],
+    )
     claim["pid"] = os.getpid()
     contract.write_json(contract.claim_path(copy, tag_of(4006)), claim)
     assert runner.case_state(copy, tag_of(4006), expected)[0] == "in_flight"

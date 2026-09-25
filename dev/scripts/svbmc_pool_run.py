@@ -107,9 +107,11 @@ of every case the directory holds, to ``summary.json`` and ``summary.md``.
 manifest, and reconciles the allocation case by case with
 ``campaign_contract.reconcile``: ``verified``, ``verify_failed``,
 ``failed`` (an error file), ``in_flight`` (a live claim), ``interrupted``
-(artifact files and a stale claim, which a task killed outright leaves),
+(a stale claim, which a task killed outright leaves with whatever files
+it wrote; a worker writes the artifact only once the run has finished),
 ``partial`` (artifact files with neither a record nor a claim),
-``missing``, and the stray files no case owns. A record passes when its
+``missing`` (a case that never ran, or that a SIGTERM stopped), and the
+stray files no case owns. A record passes when its
 source identity equals the manifest's, every artifact it lists has its
 SHA-256, and, where the manifest's ``site`` block names ``NODE_FEATURE``,
 its host part shows that feature and one physical core; the artifact must
@@ -1079,9 +1081,10 @@ def check_record(out, tag, expected, node_feature=None):
 def case_state(out, tag, expected):
     """The state of one case as ``run`` sees it: ``(state, detail)``.
 
-    ``done`` (a record that passes :func:`check_record`, the record),
-    ``in_flight`` (a live claim), ``interrupted`` (artifact files and a
-    stale claim, which the worker takes over), ``partial`` (artifact
+    As ``verify`` places it: ``done`` (a record that passes
+    :func:`check_record`, the record), ``in_flight`` (a live claim),
+    ``interrupted`` (a stale claim, which the worker takes over, with the
+    artifact files the killed attempt left, if any), ``partial`` (artifact
     files with neither a record nor a claim), ``failed`` (an error file)
     or ``new``.
     """
@@ -1091,10 +1094,10 @@ def case_state(out, tag, expected):
     if claim["state"] == "live":
         return "in_flight", claim
     files = partial_artifacts(out, tag)
+    if claim["state"] == "stale":
+        return "interrupted", files
     if files:
-        return (
-            "interrupted" if claim["state"] == "stale" else "partial"
-        ), files
+        return "partial", files
     if contract.error_path(out, tag).exists():
         return "failed", None
     return "new", None
