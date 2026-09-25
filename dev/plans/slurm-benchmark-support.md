@@ -1,12 +1,12 @@
 # Slurm benchmark support for the release gate
 
-Created: 2026-09-25. Status: **design, for the PI's review**; nothing in it
-is implemented. What it assumes of the cluster rests on a survey of the
+Created: 2026-09-25. Status: **design, reviewed by the PI on 2026-09-25**;
+nothing in it is implemented. What it assumes of the cluster rests on a survey of the
 cluster on 2026-09-25 and on the records of the September pool.
 
 ## Live checklist
 
-- [ ] The PI's review of this plan.
+- [x] The PI's review of this plan (2026-09-25).
 - [x] Phase 1a: the cluster survey (2026-09-25).
 - [ ] Phase 1b: the survey where the campaigns run, the environment and
   the source trees.
@@ -605,11 +605,14 @@ has not been measured.
 ## Phases
 
 Executors: the orchestrator keeps the design, the integration and every
-phase that runs on Turso; Opus sub-agents implement Phases 2 to 5, one at a
-time, each on the branch `feat-slurm-campaigns` cut from `dev-next`, with its
-tests, the formatting hooks and conventional commits. Nothing heavy runs on
-the developer's machine beyond the tests a phase owns. Every phase ends
-with its acceptance check.
+phase that runs on Turso; Opus sub-agents implement Phases 2 to 5 on the
+branch `feat-slurm-campaigns` cut from `dev-next`, with their tests, the
+formatting hooks and conventional commits. Phase 2 comes first, since the
+harnesses build on its contract module; Phases 3, 4 and 5 then run in
+parallel, each in its own worktree on a branch of `feat-slurm-campaigns`
+that merges back into it, and at most one of them runs tests at a time.
+Nothing heavy runs on the developer's machine beyond the tests a phase
+owns. Every phase ends with its acceptance check.
 
 ### Phase 1: the cluster survey and the environment
 
@@ -632,7 +635,16 @@ the pinned requirements, and every source tree is clean at its commit.
 ### Phase 2: the generic driver
 
 The driver section, with tests against stub `sbatch`, `squeue`, `sacct`
-commands. **Acceptance:** the tests cover the index mapping, the chunk
+commands, and the part of the contract the three harnesses share, as one
+module, `dev/scripts/campaign_contract.py`, which each harness imports: the
+claim (its creation, the takeover on a requeue, the staleness from the
+accounting, its removal), the source identity (each tree's commit, clean
+state and import path, the hashes of the harness files, the imported
+versions), the host part, the completion record and its check, the
+comparison of the environment with the pinned requirements, and the
+reconciliation of `verify`'s states. `campaign_requirements.txt` holds the
+direct requirements pinned; Phase 1b freezes the first environment built
+from them into it, dependencies included. **Acceptance:** the tests cover the index mapping, the chunk
 count, the subsets, every refusal, the reconciliation of in-flight and
 missing cases, and a task that exits early on a completed case; `bash -n`
 passes on every script.

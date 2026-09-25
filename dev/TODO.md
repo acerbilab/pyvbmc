@@ -73,8 +73,9 @@ records its execution.
   PI's decisions of 2026-09-25: one campaign contract (`prepare`, `cases`,
   a `worker` that claims its case, `verify`) that the pool, population and
   stacking harnesses are to meet, and generic scripts beside the pool
-  campaign's under `scripts/hpc/`. Next: the PI's review of the plan, then
-  its Phases 1b to 7. Needed before relying on that workflow for further
+  campaign's under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25.
+  Next: its Phases 2 to 5 on `feat-slurm-campaigns`, then Phase 1b and
+  the smoke campaigns on the cluster, then Phase 7. Needed before relying on that workflow for further
   cluster campaigns, not before local experiments; the final large-scale
   check and the new reference below are the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
