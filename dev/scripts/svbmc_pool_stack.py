@@ -8,7 +8,7 @@ stacked posterior against the target's truth. The design, the conditions,
 the grid and the acceptance criteria are
 ``dev/plans/svbmc-benchmark-campaign.md``, sections "Stacking comparison",
 "Metrics" and "Acceptance criteria for the comparison"; the pools come from
-``svbmc_pool_run.py`` and are read through ``svbmc_pool_io.load_run``.
+``svbmc_pool_run.py``.
 
 Every ELBO an arm reports is scored by its bias against ``elbo_mc``, the
 Monte Carlo ELBO of the posterior that arm's fit produced::
@@ -42,103 +42,163 @@ the numbers of contributing, unavailable and older unrecorded cells. Its
 bootstrap uses an independent deterministic stream, so adding it does not
 move historical intervals or paired checks.
 
-Usage. ``TORCH_PATH`` is the Torch overlay recorded in
-``dev/experiments/svbmc_pool/baseline_environment.json``, the only Torch on
-the campaign's machine, so every invocation that runs a cell needs it::
+The comparison runs in one of two ways, which give the same cells and the
+same summaries but for the seconds they measure. On one machine, the flags
+below without a subcommand run every cell in one process. On a Slurm
+cluster, the subcommands meet the campaign contract of
+``dev/plans/slurm-benchmark-support.md`` (``campaign_contract.py``), which
+the driver under ``dev/scripts/hpc/`` runs as array tasks::
 
-    PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
+    python -u dev/scripts/svbmc_pool_stack.py \\
         --pool DIR --out DIR [--conditions L1,L2] [--M 2,4,8,16] \\
-        [--repetitions 20,20,20,10] [--seed 0] [--max-steps 500] \\
-        [--gpyreg-source DIR] [--arms both|integrated] [--overwrite]
-    PYTHONPATH="<TORCH_PATH>" python -u dev/scripts/svbmc_pool_stack.py \\
+        [--repetitions 20,20,20,10] [--arms both|integrated|A1,A2,...] \\
+        [--seed 0] [--max-steps 500] [--gpyreg-source DIR] [--overwrite]
+    python -u dev/scripts/svbmc_pool_stack.py \\
         --fixtures upstream_Ring --out DIR --M 2,3 --repetitions 2,2 \\
         --max-steps 3
     python dev/scripts/svbmc_pool_stack.py --summarize-only --out DIR \\
         [--from-results R1.json --from-results R2.json]
 
+    python dev/scripts/svbmc_pool_stack.py prepare --out DIR \\
+        (--pool DIR ... | --fixtures G1,G2) [--conditions L1,L2] \\
+        [--M ...] [--repetitions ...] [--arms ...] [--seed 0] \\
+        [--max-steps 500] [--split-from 16]
+    python dev/scripts/svbmc_pool_stack.py cases --out DIR [--subset NAME]
+    python -u dev/scripts/svbmc_pool_stack.py worker --out DIR --case LINE
+    python dev/scripts/svbmc_pool_stack.py verify --out DIR
+    python -u dev/scripts/svbmc_pool_stack.py assemble --out DIR
+
+What every invocation that runs a cell needs from its environment: Torch,
+importable in the process (the campaign environment holds CPU Torch
+2.14.0; on the developer's machine it is the overlay ``<BASELINE_DIR>/deps``
+on ``PYTHONPATH``); ``BASELINE_DIR``, for a run of the original arm; and
+the gpyreg checkout both arms import, ``PYVBMC_GPYREG_SOURCE`` (or, for the
+single-process run, ``--gpyreg-source`` or the pool manifest's path).
+
 A condition's filtered pool is the runs its pool directory's
 ``selection.json`` names, written by ``svbmc_pool_run.py select``, which
 is the campaign's stopping rule applied to the generated runs; a directory
 without one contributes every run whose completion record says it passed
-the filters. The line printed for each condition and ``sources.json`` say
-which of the two it was.
+the filters. The line printed for each condition, ``sources.json`` and the
+campaign manifest say which of the two it was. A run's files are
+``<pool>/<tag>.npz`` and ``<pool>/<tag>.json``, whatever the tag holds: a
+flat ``<label>_seed<seed>`` in the September pools,
+``<label>/<label>_seed<seed>`` in the pools of the campaign contract. The
+SHA-256 of both files is taken when the pools are read, and every process
+that rebuilds a run's posterior checks it first.
 
-A cell is one subset of ``M`` runs drawn without replacement from a
-condition's filtered pool by ``np.random.default_rng([seed,
-condition_index, M, repetition])``, where ``condition_index`` is the
-condition's place among every label the pools hold, so that the subsets do
-not depend on which conditions an invocation selects.
-``np.random.SeedSequence`` on the same key yields the cell's seed, and
+A cell is one subset of ``M`` runs of a condition's filtered pool. The
+subsets are disjoint within one ``M``: repetition ``r`` takes the ``r``-th
+block of ``M`` runs of a permutation of the condition's runs drawn by
+``np.random.default_rng([seed, condition_index, M])``, so that a condition
+whose pool holds ``n`` runs gives at most ``n // M`` repetitions at ``M``
+(the cells beyond are listed as skipped), and the permutations of
+different ``M`` are independent. ``condition_index`` is the condition's
+place among every label the pools hold, so that the subsets do not depend
+on which conditions an invocation selects. ``np.random.SeedSequence`` on
+``[seed, condition_index, M, repetition]`` yields the cell's seed, and
 spawning that sequence yields one seed per entry of the subset, with which
 both arms rebuild the cell's posteriors: the original draws each run's
 block of samples from that run's own generator, which one shared seed
 would couple. Both arms receive the subset in the same order and never run
-at the same time; which arm runs first alternates from cell to cell. The
-integrated arm runs in this process, seeded through
-``SVBMC(seed=cell_seed)``; the original arm runs in one long-lived worker
-subprocess, seeded by ``np.random.seed(cell_seed)`` immediately before
-construction, because it draws its entropy samples from NumPy's global
-legacy stream and its posterior samples from the input posteriors' own
-generators.
+at the same time; the integrated arm runs first on the even repetitions
+and the original on the odd ones.
 
-``--arms integrated`` runs the integrated arm alone, for the larger-``M``
-regime where the original's cost, quadratic in ``M`` and two to four
-times the integrated arm's, is not worth paying: every cell then carries
-one arm and no paired quantity, and the summaries carry the integrated
-arm's medians, biases and headline-bias growth. ``--summarize-only``
-takes several ``--from-results`` files and summarizes their cells
-together, so a run of both arms up to one ``M`` and a run of the
-integrated arm beyond it give one summary, whose paired quantities and
-equivalence tests cover the cell sets both arms ran and whose
-headline-bias growth spans every ``M``.
+``--arms`` names the arms of every ``M``: ``both``, ``integrated`` (the
+integrated class alone, for the larger-``M`` regime where the original's
+cost, quadratic in ``M`` and two to four times the integrated arm's, is not
+worth paying), or one of the two per ``M``. A cell of the integrated arm
+alone carries no paired quantity, and the summaries carry that arm's
+medians, biases and headline-bias growth there. The integrated arm runs in
+the process that runs the cell, seeded through ``SVBMC(seed=cell_seed)``.
+The original arm runs in one long-lived subprocess, seeded by
+``np.random.seed(cell_seed)`` immediately before construction, because it
+draws its entropy samples from NumPy's global legacy stream and its
+posterior samples from the input posteriors' own generators. That
+subprocess alone has the baseline's ``src`` directory on its import path;
+the process that starts it refuses to have it on its own, so that no
+``import svbmc`` there can reach the pinned upstream package.
 
-The two arms need different import paths, both recorded in
-``dev/experiments/svbmc_pool/baseline_environment.json``, which this script
-re-verifies (commit, clean tree, file hashes, Torch version) before any
-cell runs: the controller carries only the Torch overlay, so that no
-``import svbmc`` here can reach the pinned upstream package, and the worker
-carries the overlay and the upstream source. Both arms import gpyreg from
-the campaign's frozen worktree through ``PYVBMC_GPYREG_SOURCE`` and record
-where it resolved. A pool's manifest names that worktree as an absolute
-path on the machine that generated the pool; for a pool copied from
-another machine, ``--gpyreg-source`` names a local clean checkout at the
-manifest's gpyreg commit (``svbmc_pool_run.pinned_gpyreg_source``), which
-is checked before PyVBMC is imported, and ``sources.json`` records which
-of the two named the checkout.
+``BASELINE_DIR`` names the original S-VBMC checkout, or a directory that
+holds it as its one subdirectory with ``src/svbmc`` (the layout that
+``dev/experiments/svbmc_pool/baseline_environment.json`` describes, with
+the Torch overlay ``deps`` beside the checkout ``source``). A process that
+runs the original arm verifies the checkout by its content, wherever it
+lies: the recorded commit, a clean tree, the recorded SHA-256 of the
+committed content of every file of ``src/svbmc`` (with CRLF read as LF,
+since Git on Windows may convert line endings on checkout) and no other
+file there, and the recorded Torch version in the process. A run of the integrated arm alone neither needs nor verifies
+it. Both arms import gpyreg from one checkout, whose commit must be the one
+every pool's manifest names (as ``identity.source.gpyreg_commit`` in the
+September pools, as the gpyreg tree of the contract's identity in the
+campaign pools), with a clean tree.
 
 ``--fixtures`` presents the shipped S-VBMC posterior fixtures
 (``pyvbmc/testing/svbmc/fixtures/``) as pools, one condition per fixture
 group, scored against the ported target the group's runs used. It needs no
 pool directory and is what ``test_svbmc_pool_stack.py`` exercises.
 
-Outputs under ``--out``: ``cells.jsonl`` (one line per finished cell,
-written as the sweep goes), ``results.json`` (every cell, the single-run
-rows and the settings), ``summary.json`` and ``summary.md`` (per condition
-and ``M``: medians with 10 000-resample bootstrap 95 % intervals of the
-biases, the KL gap, the metrics, the maximum weight difference and the
-runtime ratio, the paired differences integrated minus original with
-exact signed-rank tests on the metrics, and criterion 3's two gates,
-``headline_bias_not_worse`` per ``M`` and ``headline_bias_growth`` per
-condition),
-``sources.json`` (both arms' commits, working-tree state, import paths,
-versions and thread settings, the baseline re-verification, the pools' or
-fixtures' identities and this file's SHA-256) and ``original_arm.log``
-(everything the worker wrote to its standard streams).
-``--summarize-only`` rebuilds ``summary.json`` and ``summary.md`` from a
-finished ``results.json`` without running a cell. It describes that
-comparison by the settings the file records — the draw counts, the
-entropy reference, the bootstrap and the stacking call — and falls back
-to this module's constants only for a field a results file written before
-it existed does not carry, so a rebuilt summary never attributes today's
-constants to an older run.
+The single-process run writes under ``--out``: ``cells.jsonl`` (one line
+per finished cell, written as the sweep goes), ``results.json`` (every
+cell, the single-run rows and the settings), ``summary.json`` and
+``summary.md`` (per condition and ``M``: medians with 10 000-resample
+bootstrap 95 % intervals of the biases, the KL gap, the metrics, the
+maximum weight difference and the runtime ratio, the paired differences
+integrated minus original with exact signed-rank tests on the metrics,
+and criterion 3's two gates, ``headline_bias_not_worse`` per ``M`` and
+``headline_bias_growth`` per condition), ``sources.json`` (both arms'
+commits, working-tree state, import paths, versions and thread settings,
+the baseline's verification, the pools' or fixtures' identities and this
+file's SHA-256) and ``original_arm.log`` (everything the original arm's
+subprocess wrote to its standard streams). ``--summarize-only`` rebuilds
+``summary.json`` and ``summary.md`` from a finished ``results.json``
+without running a cell. It describes that comparison by the settings the
+file records — the draw counts, the entropy reference, the bootstrap and
+the stacking call — and falls back to this module's constants only for a
+field a results file written before it existed does not carry, so a
+rebuilt summary never attributes today's constants to an older run.
+
+The campaign. ``prepare`` reads the pools and writes ``manifest.json``:
+the pools with their selections and every selected run's hashes, the
+``M`` values, repetition counts and arms, the seed, every planned cell
+with its subset and seeds, the baseline's record and verification, the
+source identity (the harness checkout, gpyreg and, when a cell runs the
+original arm, the baseline checkout; the harness modules, the targets
+module and its data, the baseline record; the versions of Python, NumPy,
+SciPy, cma and Torch), the operator settings, the environment's
+``pip freeze`` and the finishing step. Its defaults are the release
+gate's grid (``RELEASE_M``, ``RELEASE_REPETITIONS``, ``RELEASE_ARMS``). A
+task, one line of ``cases``, computes every repetition of one condition
+and ``M`` below ``--split-from`` (``<condition>/M<M>``) and one cell at
+``M`` from it on (``<condition>/M<M>_r<r>``), writing one file per cell,
+``<condition>/M<M>_r<r>.cell.json``; it runs ``warm_up`` before its first
+timed cell and both arms of every two-arm cell, so that a cell's runtime
+ratio is measured on one node. ``worker`` runs one task under the claim
+and refusals of the contract; the identity it compares leaves the baseline
+out for a task of the integrated arm alone. Its completion record adds
+the original arm's import paths, the baseline's verification, the
+warm-up's seconds and the peak resident memory of the task's process and
+of the original arm's subprocess. ``verify`` re-checks every record and
+cell file against the manifest's plan and reconciles the allocation.
+``assemble``, the finishing step, runs on a campaign whose every task
+verifies and writes the outputs the single-process run writes, but for
+``cells.jsonl`` and ``original_arm.log``: ``results.json`` from the cell
+files in the plan's order, the single-run rows from the pool records the
+manifest holds, the bootstrap drawn in that order, and ``sources.json``
+with the tasks' hosts and memory. It never merges a partial campaign.
+``cases --subset`` takes ``M<M>`` (the tasks at one ``M``), ``both`` (the
+tasks that run the original arm) and ``integrated`` (those that do not).
 """
 
 import argparse
+import contextlib
+import copy
 import inspect
 import json
 import logging
 import os
 import platform
+import signal
 import subprocess
 import sys
 import time
@@ -153,16 +213,10 @@ sys.path.insert(0, str(HERE))
 
 # The pool generator's module body pins BLAS to one thread and selects the
 # non-interactive matplotlib backend, both of which must happen before
-# NumPy is imported, so this import stays above the one below.
-from svbmc_pool_run import (  # noqa: E402
-    DEFAULT_GPYREG,
-    THREAD_KEYS,
-    activate_gpyreg,
-    git,
-    identity,
-    pinned_gpyreg_source,
-    write_json,
-)
+# NumPy is imported, so its import stays above the one below; the contract
+# module imports only the standard library.
+import campaign_contract as contract  # noqa: E402
+from svbmc_pool_run import THREAD_KEYS, activate_gpyreg, identity  # noqa: E402
 
 # isort: split
 import numpy as np  # noqa: E402
@@ -234,18 +288,64 @@ FIXTURE_PROBLEMS = {
     "upstream_Ring": "ring_D2_noise3_svbmc",
 }
 ARMS = ("integrated", "original")
+#: What ``--arms`` names for one ``M``: the arms its cells run.
+ARM_SETS = {"both": ARMS, "integrated": ("integrated",)}
 #: The variant each arm reports as its ELBO; criterion 3 compares the
 #: biases of these two.
 HEADLINE_VARIANT = {"integrated": "headline", "original": "estimated"}
+#: The suffixes of one pool run's two files.
+RUN_SUFFIXES = (".npz", ".json")
 
-
-def sha256(path):
-    # Imported here rather than at module level: svbmc_pool_io imports
-    # PyVBMC and with it gpyreg, which must not happen before
-    # `activate_gpyreg` has put the campaign's frozen worktree on the path.
-    import svbmc_pool_io as pool_io
-
-    return pool_io.sha256(path)
+#: The name a campaign manifest of this harness carries.
+CAMPAIGN = "svbmc_pool_stack"
+#: The release gate's grid (``dev/plans/slurm-benchmark-support.md``,
+#: decision 6): both arms at ``M`` = 2, 4, 8 and 16, the integrated arm
+#: alone at 3, 5 and 32, 20 repetitions up to ``M`` = 8 and 10 beyond.
+RELEASE_M = (2, 3, 4, 5, 8, 16, 32)
+RELEASE_REPETITIONS = (20, 20, 20, 20, 20, 10, 10)
+RELEASE_ARMS = (
+    "both",
+    "integrated",
+    "both",
+    "integrated",
+    "both",
+    "both",
+    "integrated",
+)
+#: The ``M`` from which a campaign task holds one cell rather than every
+#: repetition of its condition and ``M``.
+SPLIT_FROM = 16
+CELL_SUFFIX = ".cell.json"
+#: The files, relative to the harness checkout, whose SHA-256 a campaign's
+#: source identity holds: this harness and the modules it runs, the targets
+#: module and the data it reads, and the baseline's record.
+HARNESS_FILES = (
+    "dev/scripts/svbmc_pool_stack.py",
+    "dev/scripts/campaign_contract.py",
+    "dev/scripts/svbmc_pool_run.py",
+    "dev/scripts/svbmc_pool_io.py",
+    "dev/scripts/benchmark_targets.py",
+    "dev/scripts/profile_run.py",
+    "dev/scripts/golden_trace.py",
+    "dev/scripts/data",
+    "dev/experiments/svbmc_pool/baseline_environment.json",
+)
+#: The top-level names of a campaign directory that belong to the contract,
+#: which no condition may take for its subdirectory.
+RESERVED_NAMES = frozenset({"records", "claims", "slurm", "subsets", "tmp"})
+#: The keys of a planned cell that every cell file must repeat.
+PLAN_KEYS = (
+    "condition",
+    "condition_index",
+    "M",
+    "repetition",
+    "indices",
+    "entries",
+    "seeds",
+    "cell_seed",
+    "entry_seeds",
+    "first_arm",
+)
 
 
 # --------------------------------------------------------------------------
@@ -253,64 +353,123 @@ def sha256(path):
 # --------------------------------------------------------------------------
 
 
-def verify_baseline(record, path):
-    """Re-verify the recorded original-S-VBMC baseline; return the report.
+def baseline_checkout(directory=None):
+    """The original S-VBMC checkout that ``BASELINE_DIR`` names.
 
-    The checkout must sit at the recorded commit with a clean tree and the
-    recorded SHA-256 for every file of the package, and the Torch overlay
-    must still hold the recorded version. Raises ``RuntimeError`` naming
-    every mismatch: the baseline is the comparison's other arm, so a
-    campaign that cannot identify it must not start.
+    ``directory`` (``BASELINE_DIR`` by default) is the checkout itself,
+    holding ``src/svbmc``, or a directory whose one subdirectory holding
+    ``src/svbmc`` is the checkout. Raises
+    :class:`campaign_contract.IdentityError` otherwise, since a process
+    that runs the original arm cannot establish its identity without it.
     """
+    if directory is None:
+        directory = os.environ.get("BASELINE_DIR")
+    if not directory:
+        raise contract.IdentityError(
+            "BASELINE_DIR is not set; it names the original S-VBMC "
+            "checkout, which the original arm imports"
+        )
+    directory = Path(directory).resolve()
+    if (directory / "src" / "svbmc").is_dir():
+        return directory
+    found = (
+        [
+            child
+            for child in sorted(directory.iterdir())
+            if (child / "src" / "svbmc").is_dir()
+        ]
+        if directory.is_dir()
+        else []
+    )
+    if len(found) != 1:
+        raise contract.IdentityError(
+            f"BASELINE_DIR={directory} holds no src/svbmc and "
+            f"{len(found)} subdirectories that do; it names the original "
+            "S-VBMC checkout or the directory that holds it"
+        )
+    return found[0]
+
+
+def verify_baseline(record, checkout):
+    """Re-verify the original-S-VBMC baseline by its content; return a report.
+
+    ``record`` is ``baseline_environment.json``. The checkout must sit at
+    the recorded commit with a clean tree, every file the record lists
+    under ``src/svbmc`` must hold its committed content (the SHA-256 of
+    ``files_sha256_committed``, taken with CRLF read as LF, since Git on
+    Windows may convert the line endings on checkout) and no other file
+    may lie there (``__pycache__`` aside), and the Torch this process
+    imports must be the recorded version. Where the checkout lies does not
+    matter, so that a recreation on another machine verifies. Raises
+    :class:`campaign_contract.IdentityError` naming every mismatch: the
+    baseline is the comparison's other arm, so a run that cannot identify
+    it must not start.
+    """
+    import hashlib
+
     import torch
 
     baseline = record["baseline"]
-    checkout = Path(baseline["checkout"])
-    source = Path(baseline["source_dir"])
+    checkout = Path(checkout).resolve()
+    package = checkout / "src" / "svbmc"
     failures = []
-    if not source.is_dir():
-        raise RuntimeError(f"the baseline checkout is missing: {source}")
-    commit = git(checkout, "rev-parse", "HEAD")
-    if commit != baseline["commit"]:
-        failures.append(f"commit {commit}, recorded {baseline['commit']}")
-    status = git(checkout, "status", "--porcelain")
-    if status:
-        failures.append(f"the checkout has uncommitted changes: {status}")
+    state, where = contract.tree_state(checkout)
+    if state["commit"] != baseline["commit"]:
+        failures.append(
+            f"commit {state['commit']}, recorded {baseline['commit']}"
+        )
+    if not state["clean"]:
+        failures.append(
+            "the checkout has uncommitted or untracked changes: "
+            + "; ".join(where["dirty"])
+        )
+    recorded = baseline["files_sha256_committed"]
+    present = sorted(
+        path.relative_to(package).as_posix()
+        for path in package.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    )
+    unrecorded = [name for name in present if name not in recorded]
+    if unrecorded:
+        failures.append(f"files the record does not list: {unrecorded}")
     files = {}
-    for name, stored in baseline["files_sha256"].items():
-        actual = sha256(source / name)
-        files[name] = actual
-        if actual != stored["sha256"]:
+    for name, stored in sorted(recorded.items()):
+        path = package / name
+        if not path.is_file():
+            failures.append(f"{name} is missing")
+            continue
+        content = path.read_bytes().replace(b"\r\n", b"\n")
+        files[name] = hashlib.sha256(content).hexdigest()
+        if files[name] != stored["sha256"]:
             failures.append(f"{name} differs from the recorded hash")
     if torch.__version__ != record["torch"]["version"]:
         failures.append(
             f"Torch {torch.__version__}, recorded {record['torch']['version']}"
         )
     if failures:
-        raise RuntimeError(
-            f"{path} does not re-verify: " + "; ".join(failures)
+        raise contract.IdentityError(
+            f"the baseline at {checkout} does not verify against "
+            f"{BASELINE_RECORD.relative_to(ROOT).as_posix()}: "
+            + "; ".join(failures)
         )
     return {
-        "record": str(path),
-        "commit": commit,
+        "record": BASELINE_RECORD.relative_to(ROOT).as_posix(),
+        "checkout": str(checkout),
+        "commit": state["commit"],
         "clean": True,
-        "files_sha256": files,
+        "files_sha256_committed": files,
         "torch_version": torch.__version__,
         "torch_import": str(Path(torch.__file__).resolve()),
-        "verified": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "verified": contract.now(),
     }
 
 
-def path_sets(record):
-    """``(TORCH_PATH, BASELINE_PATH)`` of the plan, from the record."""
-    overlay = str(Path(record["torch"]["overlay_dir"]).resolve())
-    upstream = str(Path(record["baseline"]["source_dir"]).resolve().parent)
-    return overlay, os.pathsep.join([overlay, upstream])
+def read_baseline_record():
+    return contract.read_json(BASELINE_RECORD)
 
 
-def refuse_upstream_on_path(baseline_path):
-    """The controller must not be able to ``import svbmc`` from upstream."""
-    upstream = baseline_path.split(os.pathsep)[-1]
+def refuse_upstream_on_path(upstream):
+    """This process must not be able to ``import svbmc`` from ``upstream``."""
     entries = [
         Path(p).resolve()
         for p in (
@@ -321,15 +480,89 @@ def refuse_upstream_on_path(baseline_path):
     ]
     if Path(upstream).resolve() in entries:
         raise RuntimeError(
-            f"{upstream} is on this process's import path; the controller "
-            "must carry only the Torch overlay, so that the integrated "
-            "class is the only S-VBMC it can import"
+            f"{upstream} is on this process's import path; only the "
+            "original arm's subprocess may carry it, so that the integrated "
+            "class is the only S-VBMC this process can import"
         )
+
+
+def import_torch():
+    """Import Torch for this process, single-threaded; say where to get it."""
+    try:
+        import torch
+    except ImportError as error:
+        raise contract.IdentityError(
+            "the integrated class needs Torch: the campaign environment "
+            "holds it, and on the developer's machine PYTHONPATH carries "
+            "the overlay <BASELINE_DIR>/deps"
+        ) from error
+    torch.set_num_threads(1)
+    logging.getLogger("SVBMC").setLevel(logging.WARNING)
+    return torch
 
 
 # --------------------------------------------------------------------------
 # Pools, entries and problems
 # --------------------------------------------------------------------------
+
+
+def pool_gpyreg_commit(manifest):
+    """The gpyreg commit a pool manifest names, or None.
+
+    The September pools record it in a flat identity,
+    ``identity.source.gpyreg_commit``; the pools of the campaign contract
+    record it as the ``gpyreg`` tree of ``campaign_contract.identity``,
+    ``identity.source.trees.gpyreg.commit``.
+    """
+    source = (manifest.get("identity") or {}).get("source") or {}
+    if source.get("gpyreg_commit"):
+        return source["gpyreg_commit"]
+    tree = (source.get("trees") or {}).get("gpyreg") or {}
+    return tree.get("commit")
+
+
+def check_gpyreg_against_pools(source, manifests):
+    """Refuse a gpyreg checkout other than the pools' own library.
+
+    ``manifests`` holds ``(path, manifest)`` of every pool read. ``source``
+    must hold the ``gpyreg`` package and be a clean checkout at the commit
+    every manifest names (:func:`pool_gpyreg_commit`), the library the
+    pools' numerics were produced by; anything else raises
+    ``RuntimeError`` naming what differs. Returns the commit.
+    """
+    source = Path(source).resolve()
+    if not (source / "gpyreg").is_dir():
+        raise RuntimeError(f"no gpyreg package under {source}")
+    state, _ = contract.tree_state(source)
+    if not state["clean"]:
+        raise RuntimeError(
+            f"{source} has uncommitted changes; the pool is read against "
+            "the pinned library as committed"
+        )
+    for path, manifest in manifests:
+        pinned = pool_gpyreg_commit(manifest)
+        if pinned is None:
+            raise RuntimeError(
+                f"{path} names no gpyreg commit, so the library its pool "
+                "was generated by is unknown"
+            )
+        if pinned != state["commit"]:
+            raise RuntimeError(
+                f"{source} is at gpyreg commit {state['commit']}, not the "
+                f"manifest's {pinned}; the pool was generated by that "
+                "commit and is read against it"
+            )
+    return state["commit"]
+
+
+def run_files(base):
+    """``{suffix: path}`` of the two files of a run or fixture at ``base``.
+
+    ``base`` is the path without suffix, ``<pool>/<tag>`` for a pool run;
+    the suffix is appended to the name, which may hold a dot.
+    """
+    base = Path(base)
+    return {s: base.parent / (base.name + s) for s in RUN_SUFFIXES}
 
 
 def pool_entry(directory, tag, origin="the pool directory"):
@@ -340,7 +573,8 @@ def pool_entry(directory, tag, origin="the pool directory"):
     wrong entry of that list rather than as an absent file. A pool is
     generated once and read many times, and the case that leads here is a
     selection copied without the artifacts it names, or one whose run
-    failed after the selection was written.
+    failed after the selection was written. The entry carries the SHA-256
+    of the run's two files, which :func:`load_entry` checks.
     """
     import svbmc_pool_io as pool_io
 
@@ -351,11 +585,8 @@ def pool_entry(directory, tag, origin="the pool directory"):
             f"({record_file}): the case failed or was never generated"
         )
     record = json.loads(record_file.read_text(encoding="utf-8"))
-    missing = [
-        path.name
-        for path in pool_io.artifact_paths(directory, record["tag"])
-        if not path.exists()
-    ]
+    files = run_files(directory / record["tag"])
+    missing = [path.name for path in files.values() if not path.exists()]
     if missing:
         raise RuntimeError(
             f"{origin} names {tag}, whose artifact {directory} does not "
@@ -369,18 +600,40 @@ def pool_entry(directory, tag, origin="the pool directory"):
         "metrics": record["metrics"],
         "passes": bool(record["verdict"]["passes"]),
         "label": record["label"],
+        "sha256": {s: contract.sha256_file(p) for s, p in files.items()},
     }
+
+
+def passing_record_tags(directory, label):
+    """The tags of a condition's completion records, in either layout.
+
+    A September pool keeps its records flat,
+    ``records/<label>_seed<seed>.complete.json``; a pool of the campaign
+    contract keeps them in one subdirectory per condition,
+    ``records/<label>/<label>_seed<seed>.complete.json``.
+    """
+    records = directory / "records"
+    tags = []
+    for pattern in (
+        f"{label}_seed*.complete.json",
+        f"{label}/{label}_seed*.complete.json",
+    ):
+        for path in sorted(records.glob(pattern)):
+            relative = path.relative_to(records).as_posix()
+            tags.append(relative[: -len(".complete.json")])
+    return tags
 
 
 def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
     """The filtered runs of every condition, ordered by seed.
 
     One entry per run of the condition's filtered pool, carrying the
-    artifact path (without suffix) and the metrics recorded for that single
-    run, which are the comparison's ``M = 1`` rows.
+    artifact path (without suffix), the SHA-256 of its two files and the
+    metrics recorded for that single run, which are the comparison's
+    ``M = 1`` rows.
 
     The pools must have been generated against one gpyreg source. With
-    ``gpyreg_source`` given, a local checkout that :func:`main` has already
+    ``gpyreg_source`` given, a local checkout that the caller has already
     checked against every manifest's gpyreg commit, the paths the
     manifests name are not compared, since they belong to the machines
     that generated the pools.
@@ -401,9 +654,8 @@ def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
     conditions, identities, labels = {}, [], []
     for directory in pool_dirs:
         directory = Path(directory).resolve()
-        manifest = json.loads(
-            (directory / "manifest.json").read_text(encoding="utf-8")
-        )
+        manifest_path = directory / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         selection_path = directory / "selection.json"
         selection = (
             json.loads(selection_path.read_text(encoding="utf-8"))
@@ -416,14 +668,19 @@ def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
         }
         identity_record = {
             "directory": str(directory),
+            "manifest_sha256": contract.sha256_file(manifest_path),
             "identity": manifest["identity"],
-            "gpyreg_source": manifest["gpyreg_source"],
-            "options": manifest["options"],
+            "gpyreg_source": manifest.get("gpyreg_source"),
+            "gpyreg_commit": pool_gpyreg_commit(manifest),
+            "options": manifest.get("options"),
             "selection": {
                 "path": str(selection_path) if selection else None,
                 "generated": selection["generated"] if selection else None,
                 "conditions": {},
             },
+            "selection_sha256": (
+                contract.sha256_file(selection_path) if selection else None
+            ),
         }
         identities.append(identity_record)
         for allocated in manifest["allocation"]:
@@ -450,14 +707,10 @@ def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
             else:
                 origin = "every passing record"
                 entries = []
-                for path in sorted(
-                    (directory / "records").glob(
-                        f"{label}_seed*.complete.json"
-                    )
-                ):
+                for tag in passing_record_tags(directory, label):
                     entry = pool_entry(
                         directory,
-                        path.name[: -len(".complete.json")],
+                        tag,
                         f"the completion records under {directory}",
                     )
                     if entry["label"] == label and entry["passes"]:
@@ -471,7 +724,7 @@ def pool_conditions(pool_dirs, only=None, gpyreg_source=None):
     if gpyreg_source is None and len(sources) > 1:
         raise RuntimeError(
             f"the pools were generated against different gpyreg sources: "
-            f"{sorted(sources)}"
+            f"{sorted(sources, key=str)}"
         )
     return conditions, identities, sorted(set(labels))
 
@@ -514,6 +767,10 @@ def fixture_conditions(groups):
                         "path": None,
                         "seed": index,
                         "metrics": None,
+                        "sha256": {
+                            s: contract.sha256_file(p)
+                            for s, p in run_files(FIXTURES_DIR / name).items()
+                        },
                     }
                 )
         if not entries:
@@ -531,13 +788,7 @@ def fixture_sources(conditions):
             "condition": condition,
             "directory": str(FIXTURES_DIR),
             "fixtures": [
-                {
-                    "name": entry["name"],
-                    "sha256": {
-                        suffix: sha256(FIXTURES_DIR / (entry["name"] + suffix))
-                        for suffix in (".npz", ".json")
-                    },
-                }
+                {"name": entry["name"], "sha256": entry["sha256"]}
                 for entry in entries
             ],
         }
@@ -545,15 +796,65 @@ def fixture_sources(conditions):
     ]
 
 
+def entry_base(entry):
+    """The path without suffix of one entry's two files."""
+    if entry["kind"] == "fixture":
+        from pyvbmc.testing.svbmc._fixtures import FIXTURES_DIR
+
+        return FIXTURES_DIR / entry["name"]
+    return Path(entry["path"])
+
+
+def check_entry(entry):
+    """Refuse an entry whose files differ from the hashes it carries.
+
+    An entry read from a pool carries the SHA-256 of both files, taken
+    when the pool was read (for a campaign, at ``prepare``), so that a
+    posterior is never rebuilt from a file that changed since.
+    """
+    expected = entry.get("sha256")
+    if not expected:
+        return
+    for suffix, path in run_files(entry_base(entry)).items():
+        if contract.sha256_file(path) != expected[suffix]:
+            raise RuntimeError(
+                f"{path} differs from the SHA-256 recorded when its pool "
+                "was read"
+            )
+
+
+def load_posterior(base, rng=None):
+    """Rebuild the returned posterior of one stored pool run.
+
+    ``base`` is the run's path without suffix. The posterior and its
+    transformer are rebuilt through the codec's public constructors, as
+    ``svbmc_pool_io.load_run`` rebuilds them, without the GP, the logger
+    and the state, which stacking does not read. ``rng`` (an integer seed
+    or a generator) becomes the posterior's generator, the codec's fixed
+    seed without it.
+    """
+    from pyvbmc.testing.oracles._state import (
+        build_transformer,
+        build_vp,
+        load_snapshot,
+    )
+
+    snapshot = load_snapshot(base)
+    return build_vp(
+        snapshot["vp"],
+        build_transformer(snapshot["pt"]),
+        rng=None if rng is None else np.random.default_rng(rng),
+    )
+
+
 def load_entry(entry, rng):
     """Rebuild one pool entry's posterior with its own generator."""
+    check_entry(entry)
     if entry["kind"] == "fixture":
         from pyvbmc.testing.svbmc._fixtures import load_vp
 
         return load_vp(entry["name"], rng=rng)[0]
-    from svbmc_pool_io import load_run
-
-    return load_run(entry["path"], rng=rng)["vp"]
+    return load_posterior(entry["path"], rng=rng)
 
 
 class Problems:
@@ -889,32 +1190,102 @@ def add_reference(row, stacked, problem, cell_seed):
 
 
 # --------------------------------------------------------------------------
-# The original arm's worker
+# The original arm's subprocess
 # --------------------------------------------------------------------------
 
 
-def worker_main(gpyreg_source):
+def peak_rss(children=False):
+    """The peak resident memory in bytes of this process, or of its children.
+
+    On Linux ``getrusage``: ``children`` gives the largest of the
+    terminated children this process has waited for. Elsewhere the
+    process's own peak working set through ``psutil`` where it is
+    installed, and None for the children, which :class:`OriginalArm`
+    measures itself before its subprocess exits.
+    """
+    if sys.platform.startswith("linux"):
+        import resource
+
+        who = resource.RUSAGE_CHILDREN if children else resource.RUSAGE_SELF
+        return int(resource.getrusage(who).ru_maxrss) * 1024  # KiB on Linux
+    if children:
+        return None
+    return process_peak_rss(os.getpid())
+
+
+def process_peak_rss(pid, descendants=False):
+    """A running process's peak working set through ``psutil``, or None.
+
+    With ``descendants``, the largest over the process and every process it
+    started: a virtual environment's ``python.exe`` on Windows is a
+    launcher whose child is the interpreter.
+    """
+    try:
+        import psutil
+
+        process = psutil.Process(pid)
+        processes = [process]
+        if descendants:
+            processes += process.children(recursive=True)
+    except Exception:  # psutil absent, or the process gone
+        return None
+    peaks = []
+    for each in processes:
+        try:
+            peak = getattr(each.memory_info(), "peak_wset", None)
+        except Exception:  # the process ended meanwhile
+            continue
+        if peak is not None:
+            peaks.append(int(peak))
+    return max(peaks) if peaks else None
+
+
+def campaign_identity(gpyreg_source, checkout=None, host=True):
+    """The campaign contract's identity of a process of this harness.
+
+    The trees are the harness checkout, gpyreg and, for a process that
+    runs the original arm, the baseline checkout; the files are
+    :data:`HARNESS_FILES`; PyVBMC must be imported from the harness
+    checkout and gpyreg from its tree. Torch is imported first, so that
+    its version is part of the source identity.
+    """
+    trees = {"harness": ROOT, "gpyreg": Path(gpyreg_source)}
+    if checkout is not None:
+        trees["baseline"] = Path(checkout)
+    return contract.identity(
+        trees,
+        HARNESS_FILES,
+        modules={"pyvbmc": "harness", "gpyreg": "gpyreg"},
+        host=host,
+    )
+
+
+def serve_original(gpyreg_source, checkout):
     """Serve stacking requests for the original implementation.
 
     Requests and replies are one JSON object per line. The original
     implementation prints progress and warnings, so file descriptor 1 is
-    pointed at stderr (which the controller captures into a log) and the
-    protocol keeps a private copy of the real stdout.
+    pointed at stderr (which the controller captures into a log, or passes
+    on to its own) and the protocol keeps a private copy of the real
+    stdout. The stop signals are ignored here: the controller receives
+    them, and ends this process itself once it has cleaned up.
     """
+    for signum in contract.STOP_SIGNALS:
+        signal.signal(signum, signal.SIG_IGN)
     protocol = os.fdopen(os.dup(sys.stdout.fileno()), "w", buffering=1)
     os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
     sys.stdout = sys.stderr
 
     activate_gpyreg(gpyreg_source)
-    import torch
-
-    torch.set_num_threads(1)
+    torch = import_torch()
     import svbmc
 
     def send(payload):
         protocol.write(json.dumps(payload) + "\n")
         protocol.flush()
 
+    source_identity = campaign_identity(gpyreg_source, checkout, host=False)
+    contract.module_origin("svbmc", checkout)
     send(
         {
             "ready": True,
@@ -925,6 +1296,7 @@ def worker_main(gpyreg_source):
             "torch_threads": torch.get_num_threads(),
             "executable": sys.executable,
             "environment": identity(gpyreg_source),
+            "identity": source_identity,
         }
     )
 
@@ -950,24 +1322,47 @@ def worker_main(gpyreg_source):
             send({"error": traceback.format_exc()})
 
 
-class Worker:
-    """The original implementation, served by one long-lived subprocess."""
+class OriginalArm:
+    """The original implementation, served by one long-lived subprocess.
 
-    def __init__(self, baseline_path, gpyreg_source, log_path):
+    The subprocess's ``PYTHONPATH`` is this process's with the baseline
+    checkout's ``src`` appended, so that it finds the same Torch and the
+    pinned upstream package. A context manager: leaving the block normally
+    asks the subprocess to quit, leaving it on an exception (a stop signal
+    among them) kills it at once, since a fit in progress could outlast
+    the time Slurm leaves before its SIGKILL. ``peak_rss_bytes`` is the
+    subprocess's peak resident memory once it has ended, where the
+    platform reports it.
+    """
+
+    def __init__(self, gpyreg_source, checkout, log_path=None):
+        checkout = Path(checkout)
         environment = dict(os.environ)
-        environment["PYTHONPATH"] = baseline_path
+        inherited = [
+            p for p in environment.get("PYTHONPATH", "").split(os.pathsep) if p
+        ]
+        environment["PYTHONPATH"] = os.pathsep.join(
+            [*inherited, str(checkout / "src")]
+        )
         environment["PYTHONUNBUFFERED"] = "1"
         environment["PYVBMC_GPYREG_SOURCE"] = str(gpyreg_source)
         environment["MPLBACKEND"] = "Agg"
         environment.update({key: "1" for key in THREAD_KEYS})
-        self.log = Path(log_path).open("w", encoding="utf-8")
+        self.pythonpath = environment["PYTHONPATH"]
+        self.peak_rss_bytes = None
+        self.log = (
+            None
+            if log_path is None
+            else Path(log_path).open("w", encoding="utf-8")
+        )
         self.process = subprocess.Popen(
             [
                 sys.executable,
                 "-u",
                 str(Path(__file__).resolve()),
-                "--worker",
+                "--serve-original",
                 str(gpyreg_source),
+                str(checkout),
             ],
             cwd=str(ROOT),
             stdin=subprocess.PIPE,
@@ -977,16 +1372,32 @@ class Worker:
             text=True,
             bufsize=1,
         )
-        self.info = self._read()
-        if not self.info.get("ready"):
-            raise RuntimeError(f"the original arm did not start: {self.info}")
+        try:
+            self.info = self._read()
+            if not self.info.get("ready"):
+                raise RuntimeError(
+                    f"the original arm did not start: {self.info}"
+                )
+        except BaseException:
+            self.kill()
+            raise
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, kind, value, trace):
+        if kind is None:
+            self.close()
+        else:
+            self.kill()
+        return False
 
     def _read(self):
         line = self.process.stdout.readline()
         if not line:
             raise RuntimeError(
-                "the original arm's worker exited; see its log for the "
-                "traceback"
+                "the original arm's subprocess exited; its traceback is in "
+                "its log, or on this process's standard error"
             )
         return json.loads(line)
 
@@ -998,21 +1409,65 @@ class Worker:
             raise RuntimeError("the original arm failed:\n" + reply["error"])
         return reply
 
+    def _finish(self):
+        if not sys.platform.startswith("linux"):
+            return
+        # Every child this process has waited for; the subprocess is by far
+        # the largest of them (the others are git and pip queries).
+        self.peak_rss_bytes = peak_rss(children=True)
+
     def close(self):
-        try:
-            self.request({"op": "quit"})
-        except (OSError, ValueError, RuntimeError):
-            pass
-        try:
-            self.process.wait(timeout=60)
-        except subprocess.TimeoutExpired:
+        """Ask the subprocess to quit and wait for it."""
+        if self.process.poll() is None:
+            self.peak_rss_bytes = process_peak_rss(
+                self.process.pid, descendants=True
+            )
+            try:
+                self.request({"op": "quit"})
+            except (OSError, ValueError, RuntimeError):
+                pass
+            try:
+                self.process.wait(timeout=60)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.wait()
+            self._finish()
+        self._close_log()
+
+    def kill(self):
+        """End the subprocess at once."""
+        if self.process.poll() is None:
+            self.peak_rss_bytes = process_peak_rss(
+                self.process.pid, descendants=True
+            )
             self.process.kill()
             self.process.wait()
-        self.log.close()
+            self._finish()
+        self._close_log()
+
+    def _close_log(self):
+        if self.log is not None and not self.log.closed:
+            self.log.close()
+
+    def summary(self):
+        """What a record keeps of the subprocess: its imports and memory."""
+        keys = (
+            "svbmc_version",
+            "svbmc_import",
+            "torch_version",
+            "torch_import",
+            "torch_threads",
+            "executable",
+        )
+        return {
+            **{key: self.info[key] for key in keys},
+            "pythonpath": self.pythonpath,
+            "peak_rss_bytes": self.peak_rss_bytes,
+        }
 
 
 # --------------------------------------------------------------------------
-# The sweep
+# The cells
 # --------------------------------------------------------------------------
 
 
@@ -1030,30 +1485,79 @@ def entry_seeds(cell_seed, M):
     ]
 
 
-def plan_cells(conditions, grid, repetitions, seed, indices):
-    """Every cell of the comparison, in the order it will be run.
+def arm_sets(value, grid):
+    """The arm set of every ``M``: ``both`` or ``integrated``, per ``M``.
 
-    ``indices`` gives each condition its place among all the labels the
-    pools hold, so that the subsets drawn for a condition do not depend on
-    which conditions this invocation selected.
+    ``value`` is one name for every ``M``, or a comma-separated name per
+    ``M`` of ``grid``; raises ``ValueError`` otherwise.
     """
+    names = [v.strip() for v in str(value).split(",") if v.strip()]
+    if len(names) == 1:
+        names = names * len(grid)
+    unknown = [name for name in names if name not in ARM_SETS]
+    if unknown or len(names) != len(grid):
+        raise ValueError(
+            f"--arms takes {' or '.join(ARM_SETS)}, once or once per M "
+            f"({len(grid)} values); got {value!r}"
+        )
+    return names
+
+
+def describe_arms(grid, arms_by_M):
+    """The arms of a grid in words, as the run prints them."""
+    parts = []
+    for name, words in (
+        ("both", "both arms"),
+        ("integrated", "the integrated arm alone"),
+    ):
+        values = [str(M) for M, arms in zip(grid, arms_by_M) if arms == name]
+        if values:
+            parts.append(f"{words} at M = {', '.join(values)}")
+    return "; ".join(parts)
+
+
+def plan_cells(conditions, grid, repetitions, seed, indices, arms_by_M=None):
+    """Every cell of the comparison, in the order it is run and assembled.
+
+    The subsets of one condition and ``M`` are disjoint: repetition ``r``
+    takes the ``r``-th block of ``M`` runs of a permutation of the
+    condition's runs drawn by ``default_rng([seed, index, M])``, and a
+    pool of ``n`` runs gives at most ``n // M`` repetitions. Every
+    ``(condition, M)`` that gives fewer than the requested repetitions is
+    listed in the second return value with the pool size and the number
+    drawn. ``indices`` gives each condition its place among all the labels
+    the pools hold, so that the subsets drawn for a condition do not
+    depend on which conditions this invocation selected. ``arms_by_M``
+    (``both`` by default) names the arms of each ``M``; a two-arm cell
+    runs the integrated arm first on an even repetition and the original
+    on an odd one.
+    """
+    arms_by_M = ["both"] * len(grid) if arms_by_M is None else arms_by_M
     plan, skipped = [], []
     for condition, entries in conditions.items():
         index = indices[condition]
-        for M, R in zip(grid, repetitions):
-            if M > len(entries):
+        n = len(entries)
+        for M, R, arms in zip(grid, repetitions, arms_by_M):
+            M, R = int(M), int(R)
+            drawn = min(R, n // M)
+            if drawn < R:
                 skipped.append(
-                    {"condition": condition, "M": M, "pool": len(entries)}
+                    {
+                        "condition": condition,
+                        "M": M,
+                        "pool": n,
+                        "requested": R,
+                        "drawn": drawn,
+                    }
                 )
+            if not drawn:
                 continue
-            for repetition in range(R):
+            order = np.random.default_rng([seed, index, M]).permutation(n)
+            arm_set = list(ARM_SETS[arms])
+            for repetition in range(drawn):
                 key = [seed, index, M, repetition]
-                subset = sorted(
-                    int(i)
-                    for i in np.random.default_rng(key).choice(
-                        len(entries), M, replace=False
-                    )
-                )
+                block = order[repetition * M : (repetition + 1) * M]
+                subset = sorted(int(i) for i in block)
                 cell_seed = int(
                     np.random.SeedSequence(key).generate_state(
                         1, dtype=np.uint32
@@ -1063,21 +1567,52 @@ def plan_cells(conditions, grid, repetitions, seed, indices):
                     {
                         "condition": condition,
                         "condition_index": index,
-                        "M": int(M),
-                        "repetition": int(repetition),
+                        "M": M,
+                        "repetition": repetition,
                         "indices": subset,
                         "entries": [entries[i]["name"] for i in subset],
                         "seeds": [entries[i]["seed"] for i in subset],
                         "cell_seed": cell_seed,
                         "entry_seeds": entry_seeds(cell_seed, M),
+                        "first_arm": arm_set[repetition % len(arm_set)],
+                        "arm_set": arm_set,
                     }
                 )
     return plan, skipped
 
 
+def comparison_settings(seed, grid, repetitions, arms_by_M, max_steps, kind):
+    """The settings ``results.json`` records for a comparison."""
+    return {
+        "seed": seed,
+        "M": [int(M) for M in grid],
+        "repetitions": [int(R) for R in repetitions],
+        "arms_by_M": list(arms_by_M),
+        "subsets": "disjoint",
+        "max_steps": max_steps,
+        "n_samples": N_SAMPLES,
+        "lr": LEARNING_RATE,
+        "version": VERSION,
+        "n_samples_final": N_SAMPLES_FINAL,
+        "n_draws": N_DRAWS,
+        "n_log_joint": N_LOG_JOINT,
+        "n_entropy_ref": N_ENTROPY_REF,
+        "n_entropy_batches": N_ENTROPY_BATCHES,
+        "growth_bound": GROWTH_BOUND,
+        "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+        "alpha": ALPHA,
+        "kind": kind,
+        "arms": [
+            arm
+            for arm in ARMS
+            if any(arm in ARM_SETS[arms] for arms in arms_by_M)
+        ],
+    }
+
+
 def fit_cell(
     arm,
-    worker,
+    server,
     condition,
     kind,
     entries,
@@ -1087,18 +1622,18 @@ def fit_cell(
     problem,
     ref,
 ):
-    """One arm of one cell: in this process, or through the worker.
+    """One arm of one cell: in this process, or through the subprocess.
 
     Returns the arm's record and, for the integrated arm, the fitted
     object that :func:`add_reference` scores the cell with; the original
-    arm's object lives in the worker process and never crosses back.
+    arm's object lives in its subprocess and never crosses back.
     """
     if arm == "integrated":
         return fit_integrated(
             entries, seeds, cell_seed, max_steps, problem, ref
         )
     return (
-        worker.request(
+        server.request(
             {
                 "op": "fit",
                 "condition": condition,
@@ -1113,24 +1648,25 @@ def fit_cell(
     )
 
 
-def warm_up(plan, conditions, kind, worker, problems, arms=ARMS):
+def warm_up(cell, conditions, kind, server, problems, arms):
     """One short discarded fit per arm, so no cell pays the first-call cost.
 
     Both implementations build their Torch graph, import what they need
     lazily and touch the sampling and metric paths on their first fit, which
     would otherwise land on the first recorded cell and inflate its
     optimization seconds. The fit is two Adam steps on the first two runs of
-    the first cell and nothing about it is recorded; every recorded cell
+    ``cell`` and nothing about it is recorded; every recorded cell
     rebuilds its posteriors and reseeds both arms, so it leaves no trace.
+    Returns the seconds of each arm's warm-up.
     """
-    cell = plan[0]
     condition = cell["condition"]
     entries = [conditions[condition][i] for i in cell["indices"][:2]]
+    seconds = {}
     for arm in arms:
         started = time.perf_counter()
         fit_cell(
             arm,
-            worker,
+            server,
             condition,
             kind,
             entries,
@@ -1140,10 +1676,9 @@ def warm_up(plan, conditions, kind, worker, problems, arms=ARMS):
             problems.get(condition, kind),
             problems.reference(condition, kind),
         )
-        print(
-            f"warmed up {arm} in {time.perf_counter() - started:.1f} s",
-            flush=True,
-        )
+        seconds[arm] = time.perf_counter() - started
+        print(f"warmed up {arm} in {seconds[arm]:.1f} s", flush=True)
+    return seconds
 
 
 def check_pairing(where, outcomes):
@@ -1170,82 +1705,93 @@ def check_pairing(where, outcomes):
     return float(np.max(np.abs(weights[0] - weights[1])))
 
 
-def run_cells(
-    plan, conditions, kind, worker, problems, max_steps, out, arms=ARMS
-):
-    """Run every planned cell, its arms one at a time; return the rows.
+def run_cell(cell, conditions, kind, server, problems, max_steps):
+    """Run one planned cell, its arms one at a time; return its row.
 
-    With both arms, which arm goes first alternates from cell to cell and
-    the cell records their pairing; with the integrated arm alone, the
-    cell carries that arm's record and no paired quantity.
+    With both arms, the cell's ``first_arm`` goes first and the row
+    records their pairing; with the integrated arm alone, the row carries
+    that arm's record and no paired quantity.
+    """
+    condition = cell["condition"]
+    entries = [conditions[condition][i] for i in cell["indices"]]
+    problem = problems.get(condition, kind)
+    reference = problems.reference(condition, kind)
+    arms = cell["arm_set"]
+    outcomes, stacked = {}, None
+    for arm in (
+        cell["first_arm"],
+        *[a for a in arms if a != cell["first_arm"]],
+    ):
+        outcomes[arm], fitted = fit_cell(
+            arm,
+            server,
+            condition,
+            kind,
+            entries,
+            cell["entry_seeds"],
+            cell["cell_seed"],
+            max_steps,
+            problem,
+            reference,
+        )
+        stacked = fitted if arm == "integrated" else stacked
+    row = {key: value for key, value in cell.items() if key != "arm_set"}
+    row["arms"] = outcomes
+    where = f"{condition} M={cell['M']} r={cell['repetition']}"
+    row["max_abs_dw"] = (
+        check_pairing(where, outcomes) if set(arms) == set(ARMS) else None
+    )
+    reference_started = time.perf_counter()
+    add_reference(row, stacked, problem, cell["cell_seed"])
+    row["reference_seconds"] = time.perf_counter() - reference_started
+    if set(arms) == set(ARMS):
+        print(
+            f"DONE  {where}: "
+            f"max|dw| {row['max_abs_dw']:.4g}, "
+            f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
+            f"{outcomes['original']['optimize_seconds']:.1f} s, bias "
+            f"{outcomes['integrated']['bias']['headline']:+.3f} vs "
+            f"{outcomes['original']['bias']['estimated']:+.3f} "
+            f"(reference {row['reference_seconds']:.1f} s)",
+            flush=True,
+        )
+    else:
+        print(
+            f"DONE  {where}: "
+            + ", ".join(
+                f"{arm} {outcomes[arm]['optimize_seconds']:.1f} s, "
+                f"bias "
+                f"{outcomes[arm]['bias'][HEADLINE_VARIANT[arm]]:+.3f}"
+                for arm in arms
+            )
+            + f" (reference {row['reference_seconds']:.1f} s)",
+            flush=True,
+        )
+    return row
+
+
+def run_cells(plan, conditions, kind, server, problems, max_steps, out):
+    """Run every planned cell in order; return the rows.
+
+    Each finished row is also appended to ``<out>/cells.jsonl`` as the
+    sweep goes.
     """
     progress = (out / "cells.jsonl").open("w", encoding="utf-8")
     rows = []
     started = time.time()
     try:
         for number, cell in enumerate(plan):
-            condition = cell["condition"]
-            entries = [conditions[condition][i] for i in cell["indices"]]
-            problem = problems.get(condition, kind)
-            reference = problems.reference(condition, kind)
-            first = arms[number % len(arms)]
             print(
-                f"START {condition} M={cell['M']} r={cell['repetition']} "
-                f"({number + 1}/{len(plan)}, {first} first, "
+                f"START {cell['condition']} M={cell['M']} "
+                f"r={cell['repetition']} ({number + 1}/{len(plan)}, "
+                f"{cell['first_arm']} first, "
                 f"{(time.time() - started) / 60:.1f} min elapsed)",
                 flush=True,
             )
-            outcomes, stacked = {}, None
-            for arm in (first, *[a for a in arms if a != first]):
-                outcomes[arm], fitted = fit_cell(
-                    arm,
-                    worker,
-                    condition,
-                    kind,
-                    entries,
-                    cell["entry_seeds"],
-                    cell["cell_seed"],
-                    max_steps,
-                    problem,
-                    reference,
-                )
-                stacked = fitted if arm == "integrated" else stacked
-            row = dict(cell, first_arm=first, arms=outcomes)
-            where = f"{condition} M={cell['M']} r={cell['repetition']}"
-            row["max_abs_dw"] = (
-                check_pairing(where, outcomes)
-                if set(arms) == set(ARMS)
-                else None
-            )
-            reference_started = time.perf_counter()
-            add_reference(row, stacked, problem, cell["cell_seed"])
-            row["reference_seconds"] = time.perf_counter() - reference_started
+            row = run_cell(cell, conditions, kind, server, problems, max_steps)
             rows.append(row)
             progress.write(json.dumps(row) + "\n")
             progress.flush()
-            if set(arms) == set(ARMS):
-                print(
-                    f"DONE  {where}: "
-                    f"max|dw| {row['max_abs_dw']:.4g}, "
-                    f"{outcomes['integrated']['optimize_seconds']:.1f} s vs "
-                    f"{outcomes['original']['optimize_seconds']:.1f} s, bias "
-                    f"{outcomes['integrated']['bias']['headline']:+.3f} vs "
-                    f"{outcomes['original']['bias']['estimated']:+.3f} "
-                    f"(reference {row['reference_seconds']:.1f} s)",
-                    flush=True,
-                )
-            else:
-                print(
-                    f"DONE  {where}: "
-                    + ", ".join(
-                        f"{arm} {outcomes[arm]['optimize_seconds']:.1f} s, "
-                        f"bias "
-                        f"{outcomes[arm]['bias'][HEADLINE_VARIANT[arm]]:+.3f}"
-                        for arm in arms
-                    )
-                    + f" (reference {row['reference_seconds']:.1f} s)",
-                    flush=True,
-                )
     finally:
         progress.close()
     return rows
@@ -1774,7 +2320,13 @@ def summary_markdown(summary):
         f"`lr={setting(settings, 'lr')}`, "
         f"`max_steps={settings['max_steps']}`, "
         f"`version=\"{setting(settings, 'version')}\"`, "
-        f"subsets drawn with seed {settings['seed']}. Medians over the "
+        f"subsets drawn with seed {settings['seed']}"
+        + (
+            ", disjoint within each `M`"
+            if settings.get("subsets") == "disjoint"
+            else ""
+        )
+        + ". Medians over the "
         f"repetitions of a cell with a "
         f"{spaced(setting(settings, 'bootstrap_resamples'))}"
         "-resample bootstrap 95 % "
@@ -2009,8 +2561,12 @@ def summary_markdown(summary):
 
 
 # --------------------------------------------------------------------------
-# Main
+# The single-process run
 # --------------------------------------------------------------------------
+
+
+def integer_list(text):
+    return [int(v) for v in str(text).split(",") if v.strip()]
 
 
 def parse_args(argv=None):
@@ -2035,15 +2591,10 @@ def parse_args(argv=None):
     parser.add_argument(
         "--gpyreg-source",
         type=Path,
-        help="the gpyreg checkout both arms import: for --fixtures runs, "
-        "which have no pool manifest to name one (default: "
-        f"{DEFAULT_GPYREG}); for --pool runs, a local checkout in place of "
-        "the path the manifest names, for a pool copied from another "
-        "machine, accepted only as a clean checkout at the manifest's "
-        "gpyreg commit",
-    )
-    parser.add_argument(
-        "--baseline-record", type=Path, default=BASELINE_RECORD
+        help="the gpyreg checkout both arms import (default: "
+        "PYVBMC_GPYREG_SOURCE, and for --pool runs without it the path "
+        "the first pool's manifest names); for --pool runs it must be a "
+        "clean checkout at every manifest's gpyreg commit",
     )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument(
@@ -2061,19 +2612,19 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--arms",
-        choices=("both", "integrated"),
         default="both",
-        help="which implementations stack every cell: both (default), or "
-        "the integrated class alone, for the larger-M regime where the "
-        "original's cost is not worth paying",
+        help="which implementations stack the cells of each M: both "
+        "(default), or integrated, the integrated class alone, for the "
+        "larger-M regime where the original's cost is not worth paying; "
+        "one name for every M, or one per M",
     )
     args = parser.parse_args(argv)
-    args.M = [int(v) for v in args.M.split(",") if v.strip()]
-    args.repetitions = [
-        int(v) for v in args.repetitions.split(",") if v.strip()
-    ]
+    args.M = integer_list(args.M)
+    args.repetitions = integer_list(args.repetitions)
     if len(args.M) != len(args.repetitions):
         parser.error("--M and --repetitions must have the same length")
+    if len(set(args.M)) != len(args.M):
+        parser.error("--M names an M twice")
     if args.summarize_only:
         unusable = [
             flag
@@ -2092,6 +2643,10 @@ def parse_args(argv=None):
                 "cannot apply"
             )
         return args
+    try:
+        args.arms_by_M = arm_sets(args.arms, args.M)
+    except ValueError as error:
+        parser.error(str(error))
     if args.from_results:
         parser.error("--from-results needs --summarize-only")
     if bool(args.pool) == bool(args.fixtures):
@@ -2110,14 +2665,13 @@ def load_results(paths):
     Several files are the runs of one comparison split by arm set or by
     ``M`` (both arms up to one ``M``, the integrated arm beyond it): their
     cells are concatenated, the settings are the first file's with ``M``,
-    ``repetitions`` and ``arms`` widened to cover every file and a
-    ``merged_from`` record of each file, and the single-run rows are the
-    first file's, since every run scores the same pools. Files that
-    differ in any setting they share other than ``M``, ``repetitions``
-    and ``arms``, that hold the same cell twice, or that hold cells of
-    one condition and ``M`` with different arm sets, cannot be
-    summarized together; the repetitions of an ``M`` are counted from
-    the merged cells.
+    ``repetitions``, ``arms`` and ``arms_by_M`` widened to cover every
+    file and a ``merged_from`` record of each file, and the single-run
+    rows are the first file's, since every run scores the same pools.
+    Files that differ in any setting they share other than those, that
+    hold the same cell twice, or that hold cells of one condition and
+    ``M`` with different arm sets, cannot be summarized together; the
+    repetitions of an ``M`` are counted from the merged cells.
     """
     results = [
         (path, json.loads(path.read_text(encoding="utf-8"))) for path in paths
@@ -2133,7 +2687,7 @@ def load_results(paths):
     if len(results) > 1:
         # Every setting the files share must agree, except the ones a
         # split by M or by arm set is allowed to differ in.
-        free = {"M", "repetitions", "arms", "merged_from"}
+        free = {"M", "repetitions", "arms", "arms_by_M", "merged_from"}
         for path, result in results[1:]:
             for key in sorted(set(settings) & set(result["settings"]) - free):
                 if result["settings"][key] != settings[key]:
@@ -2143,7 +2697,7 @@ def load_results(paths):
                         f"with {settings[key]!r}; their cells cannot be "
                         "summarized together"
                     )
-        seen, arm_sets = {}, {}
+        seen, arm_sets_held = {}, {}
         for path, result in results:
             for row in result["cells"]:
                 key = (row["condition"], row["M"], row["repetition"])
@@ -2158,7 +2712,7 @@ def load_results(paths):
                 # quantities and tests would otherwise be computed on a
                 # subset of the cells its medians describe.
                 arms = tuple(sorted(row["arms"]))
-                held = arm_sets.setdefault(key[:2], (arms, path))
+                held = arm_sets_held.setdefault(key[:2], (arms, path))
                 if held[0] != arms:
                     raise RuntimeError(
                         f"{path} and {held[1]} hold cells of {key[0]} "
@@ -2184,6 +2738,16 @@ def load_results(paths):
             for arm in ARMS
             if any(arm in setting(r["settings"], "arms") for _, r in results)
         ]
+        by_M = {}
+        for _, result in results:
+            for row in result["cells"]:
+                by_M.setdefault(int(row["M"]), set()).add(
+                    "both" if paired_row(row) else "integrated"
+                )
+        settings["arms_by_M"] = [
+            next(iter(by_M[M])) if len(by_M.get(M, ())) == 1 else None
+            for M in settings["M"]
+        ]
         settings["merged_from"] = [
             {
                 "path": str(path),
@@ -2199,6 +2763,19 @@ def load_results(paths):
     return cells, first["single_run"], settings
 
 
+def write_summaries(out, rows, singles, settings):
+    """``summary.json`` and ``summary.md`` of a set of cells; returns the
+    markdown. The bootstrap is seeded from the comparison's seed and drawn
+    in the order of ``rows``."""
+    summary = build_summary(
+        rows, singles, settings, np.random.default_rng(settings["seed"])
+    )
+    contract.write_json(out / "summary.json", summary)
+    text = summary_markdown(summary)
+    (out / "summary.md").write_text(text, encoding="utf-8")
+    return text
+
+
 def summarize_only(args):
     """Rebuild the summaries of a finished comparison, running no cell."""
     out = args.out.resolve()
@@ -2208,12 +2785,7 @@ def summarize_only(args):
     ]
     cells, single_run, settings = load_results(paths)
     out.mkdir(parents=True, exist_ok=True)
-    summary = build_summary(
-        cells, single_run, settings, np.random.default_rng(settings["seed"])
-    )
-    write_json(out / "summary.json", summary)
-    text = summary_markdown(summary)
-    (out / "summary.md").write_text(text, encoding="utf-8")
+    text = write_summaries(out, cells, single_run, settings)
     print(text, flush=True)
     print(
         f"{len(cells)} cells from {', '.join(str(p) for p in paths)} -> {out}",
@@ -2222,14 +2794,40 @@ def summarize_only(args):
     return 0
 
 
-def main(argv=None):
-    if argv is None:
-        argv = sys.argv[1:]
-    if argv and argv[0] == "--worker":
-        return worker_main(argv[1])
-    args = parse_args(argv)
-    if args.summarize_only:
-        return summarize_only(args)
+def single_process_gpyreg(args, manifests):
+    """The gpyreg checkout of a single-process run, and what named it.
+
+    ``--gpyreg-source``, else ``PYVBMC_GPYREG_SOURCE``, else, for a run on
+    pools, the path the first pool's manifest names. For a run on pools
+    the checkout must be at every manifest's gpyreg commit
+    (:func:`check_gpyreg_against_pools`).
+    """
+    candidates = [
+        (args.gpyreg_source, "--gpyreg-source"),
+        (os.environ.get("PYVBMC_GPYREG_SOURCE"), "PYVBMC_GPYREG_SOURCE"),
+    ]
+    if manifests:
+        candidates.append(
+            (manifests[0][1].get("gpyreg_source"), "the pool manifest")
+        )
+    for source, origin in candidates:
+        if source:
+            break
+    else:
+        raise RuntimeError(
+            "name the gpyreg checkout both arms import, with "
+            "--gpyreg-source or PYVBMC_GPYREG_SOURCE"
+        )
+    source = Path(source).resolve()
+    if manifests:
+        check_gpyreg_against_pools(source, manifests)
+    elif not (source / "gpyreg").is_dir():
+        raise RuntimeError(f"no gpyreg package under {source}")
+    return source, origin
+
+
+def run_comparison(args):
+    """The whole comparison in this process, every cell in plan order."""
     out = args.out.resolve()
     if (out / "results.json").exists() and not args.overwrite:
         raise RuntimeError(f"{out} already holds a comparison; --overwrite")
@@ -2237,60 +2835,36 @@ def main(argv=None):
 
     kind = "fixture" if args.fixtures else "run"
     only = [s.strip() for s in (args.conditions or "").split(",") if s.strip()]
-    if kind == "run":
-        manifests = [
-            json.loads(
-                (Path(pool).resolve() / "manifest.json").read_text(
-                    encoding="utf-8"
-                )
-            )
-            for pool in args.pool
-        ]
-        if args.gpyreg_source:
-            # A pool copied from another machine: the local checkout must
-            # be at every pool's gpyreg commit, the library the pools'
-            # numerics were produced by.
-            for manifest in manifests:
-                gpyreg_source = pinned_gpyreg_source(
-                    args.gpyreg_source, manifest
-                )
-            gpyreg_origin = "--gpyreg-source"
-        else:
-            gpyreg_source = manifests[0]["gpyreg_source"]
-            gpyreg_origin = "the pool manifest"
-        gpyreg_source = activate_gpyreg(gpyreg_source)
-    else:
-        gpyreg_source = activate_gpyreg(args.gpyreg_source or DEFAULT_GPYREG)
-        gpyreg_origin = (
-            "--gpyreg-source" if args.gpyreg_source else "the default"
+    manifests = [
+        (
+            Path(pool).resolve() / "manifest.json",
+            contract.read_json(Path(pool).resolve() / "manifest.json"),
         )
-
-    baseline = json.loads(
-        Path(args.baseline_record).read_text(encoding="utf-8")
-    )
-    torch_path, baseline_path = path_sets(baseline)
-    refuse_upstream_on_path(baseline_path)
-    try:
-        import torch
-    except ImportError as error:  # the overlay is the only Torch here
-        raise RuntimeError(
-            "the integrated class needs Torch: start this script with "
-            f'PYTHONPATH="{torch_path}"'
-        ) from error
-
-    torch.set_num_threads(1)
-    logging.getLogger("SVBMC").setLevel(logging.WARNING)
-    import svbmc_pool_io as pool_io
+        for pool in (args.pool or [])
+    ]
+    source, gpyreg_origin = single_process_gpyreg(args, manifests)
+    gpyreg_source = activate_gpyreg(source)
+    arms_by_M = args.arms_by_M
+    runs_original = any("original" in ARM_SETS[a] for a in arms_by_M)
+    arms = [a for a in ARMS if any(a in ARM_SETS[s] for s in arms_by_M)]
+    checkout = baseline_checkout() if runs_original else None
+    if checkout is not None:
+        refuse_upstream_on_path(checkout / "src")
+    torch = import_torch()
 
     # This raises unless PyVBMC imported gpyreg from the campaign's frozen
     # worktree, so the controller's own environment is settled before the
     # baseline's is checked and long before a cell runs.
     integrated_identity = identity(gpyreg_source)
-    verification = verify_baseline(baseline, args.baseline_record)
+    verification = (
+        verify_baseline(read_baseline_record(), checkout)
+        if checkout is not None
+        else None
+    )
 
     if kind == "run":
         conditions, pool_identities, labels = pool_conditions(
-            args.pool, only, gpyreg_source=args.gpyreg_source
+            args.pool, only, gpyreg_source=gpyreg_source
         )
         fixtures = []
     else:
@@ -2317,70 +2891,50 @@ def main(argv=None):
         for condition, entries in conditions.items()
     }
     plan, skipped = plan_cells(
-        conditions, args.M, args.repetitions, args.seed, indices
+        conditions, args.M, args.repetitions, args.seed, indices, arms_by_M
     )
     for entry in skipped:
         print(
-            f"skipping {entry['condition']} M={entry['M']}: the filtered "
-            f"pool holds {entry['pool']} runs",
+            f"{entry['condition']} M={entry['M']}: {entry['drawn']} of "
+            f"{entry['requested']} repetitions, the most that {entry['pool']} "
+            "filtered runs give in disjoint subsets",
             flush=True,
         )
     if not plan:
         raise RuntimeError(
             "no cell to run: every requested M exceeds the filtered pools"
         )
-    arms = ARMS if args.arms == "both" else ("integrated",)
-    print(
-        f"{len(plan)} cells, "
-        + ("both arms" if len(arms) == 2 else "the integrated arm alone"),
-        flush=True,
-    )
+    print(f"{len(plan)} cells: {describe_arms(args.M, arms_by_M)}", flush=True)
 
-    worker = (
-        Worker(baseline_path, gpyreg_source, out / "original_arm.log")
-        if "original" in arms
-        else None
-    )
     started = time.time()
-    # Process-scoped request, as in the pool runner's sweep: permit display
-    # sleep, prevent idle system sleep while the cells run, since a full
-    # grid takes hours on a laptop.
-    if sys.platform == "win32":
-        import ctypes
-
-        ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
-    try:
-        warm_up(plan, conditions, kind, worker, problems, arms)
-        rows = run_cells(
-            plan, conditions, kind, worker, problems, args.max_steps, out, arms
+    with contextlib.ExitStack() as stack:
+        server = (
+            stack.enter_context(
+                OriginalArm(gpyreg_source, checkout, out / "original_arm.log")
+            )
+            if runs_original
+            else None
         )
-    finally:
-        if worker is not None:
-            worker.close()
+        # Process-scoped request, as in the pool runner's sweep: permit
+        # display sleep, prevent idle system sleep while the cells run,
+        # since a full grid takes hours on a laptop.
         if sys.platform == "win32":
-            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
+            import ctypes
+
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
+            stack.callback(
+                ctypes.windll.kernel32.SetThreadExecutionState, 0x80000000
+            )
+        warm_up(plan[0], conditions, kind, server, problems, arms)
+        rows = run_cells(
+            plan, conditions, kind, server, problems, args.max_steps, out
+        )
     elapsed = time.time() - started
 
-    settings = {
-        "seed": args.seed,
-        "M": args.M,
-        "repetitions": args.repetitions,
-        "max_steps": args.max_steps,
-        "n_samples": N_SAMPLES,
-        "lr": LEARNING_RATE,
-        "version": VERSION,
-        "n_samples_final": N_SAMPLES_FINAL,
-        "n_draws": N_DRAWS,
-        "n_log_joint": N_LOG_JOINT,
-        "n_entropy_ref": N_ENTROPY_REF,
-        "n_entropy_batches": N_ENTROPY_BATCHES,
-        "growth_bound": GROWTH_BOUND,
-        "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
-        "alpha": ALPHA,
-        "kind": kind,
-        "arms": list(arms),
-    }
-    write_json(
+    settings = comparison_settings(
+        args.seed, args.M, args.repetitions, arms_by_M, args.max_steps, kind
+    )
+    contract.write_json(
         out / "results.json",
         {
             "campaign": "svbmc_pool",
@@ -2393,20 +2947,15 @@ def main(argv=None):
             "single_run": singles,
         },
     )
-    summary = build_summary(
-        rows, singles, settings, np.random.default_rng(args.seed)
-    )
-    write_json(out / "summary.json", summary)
-    text = summary_markdown(summary)
-    (out / "summary.md").write_text(text, encoding="utf-8")
-    write_json(
+    text = write_summaries(out, rows, singles, settings)
+    contract.write_json(
         out / "sources.json",
         {
             "campaign": "svbmc_pool",
             "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
             "harness": {
                 "path": str(Path(__file__).resolve()),
-                "sha256": pool_io.sha256(Path(__file__).resolve()),
+                "sha256": contract.sha256_file(Path(__file__).resolve()),
             },
             "settings": settings,
             "hostname": platform.node(),
@@ -2418,12 +2967,17 @@ def main(argv=None):
                     "torch_threads": torch.get_num_threads(),
                     "pythonpath": os.environ.get("PYTHONPATH"),
                 },
-                "original": None if worker is None else worker.info,
+                "original": None if server is None else server.info,
             },
-            "path_sets": {
-                "TORCH_PATH": torch_path,
-                "BASELINE_PATH": baseline_path,
-            },
+            "baseline": (
+                None
+                if server is None
+                else {
+                    "BASELINE_DIR": os.environ.get("BASELINE_DIR"),
+                    "checkout": str(checkout),
+                    "pythonpath": server.pythonpath,
+                }
+            ),
             "baseline_environment": verification,
             "gpyreg_source": str(gpyreg_source),
             "gpyreg_source_origin": gpyreg_origin,
@@ -2435,6 +2989,707 @@ def main(argv=None):
     print(text, flush=True)
     print(f"{len(rows)} cells in {elapsed / 60:.1f} min -> {out}", flush=True)
     return 0
+
+
+# --------------------------------------------------------------------------
+# The campaign
+# --------------------------------------------------------------------------
+
+
+def read_manifest(out):
+    """The manifest of a campaign directory of this harness."""
+    path = Path(out) / "manifest.json"
+    manifest = contract.read_json(path)
+    if manifest.get("campaign") != CAMPAIGN:
+        raise SystemExit(f"{path} is not a manifest of {CAMPAIGN}")
+    return manifest
+
+
+def manifest_conditions(manifest):
+    """``{label: entries}`` of a manifest, in its order."""
+    return {
+        entry["label"]: entry["entries"] for entry in manifest["conditions"]
+    }
+
+
+def cell_path(cell):
+    """A cell's file, relative to the campaign directory."""
+    return (
+        f"{cell['condition']}/M{cell['M']}_r{cell['repetition']}{CELL_SUFFIX}"
+    )
+
+
+def campaign_tasks(manifest):
+    """The tasks of a campaign, in the order of its case list.
+
+    A task holds every planned repetition of one condition and ``M`` below
+    the manifest's ``split_from``, and one cell from it on. Each task has
+    its ``tag``, its case ``line``, its ``condition``, ``M`` and ``arms``,
+    the numbers of its ``cells`` in the manifest's plan and their ``paths``.
+    """
+    split_from = int(manifest["split_from"])
+    tasks, by_key = [], {}
+    for number, cell in enumerate(manifest["plan"]):
+        condition, M = cell["condition"], int(cell["M"])
+        key = (condition, M, None if M < split_from else cell["repetition"])
+        if key not in by_key:
+            tag = f"{condition}/M{M}" + (
+                "" if key[2] is None else f"_r{key[2]}"
+            )
+            by_key[key] = {
+                "tag": tag,
+                "condition": condition,
+                "M": M,
+                "arms": list(cell["arm_set"]),
+                "cells": [],
+                "paths": [],
+            }
+            tasks.append(by_key[key])
+        by_key[key]["cells"].append(number)
+        by_key[key]["paths"].append(cell_path(cell))
+    for task in tasks:
+        repetitions = contract.compress_indices(
+            manifest["plan"][n]["repetition"] for n in task["cells"]
+        ).replace(",", "+")
+        task["line"] = (
+            f"{task['tag']} M={task['M']} repetitions={repetitions} "
+            f"arms={'+'.join(task['arms'])}"
+        )
+    return tasks
+
+
+def task_identity(expected, with_baseline):
+    """The identity a task compares: the manifest's, without the baseline
+    tree for a task of the integrated arm alone."""
+    if with_baseline:
+        return expected
+    trimmed = copy.deepcopy(expected)
+    trimmed.get("source", {}).get("trees", {}).pop("baseline", None)
+    return trimmed
+
+
+def campaign_process(with_baseline):
+    """What a campaign process sets up before its identity is taken.
+
+    Pins gpyreg to ``PYVBMC_GPYREG_SOURCE``, imports Torch and, for a
+    process that runs the original arm, finds the ``BASELINE_DIR``
+    checkout, keeps its ``src`` off this process's path and verifies it
+    by content (:func:`verify_baseline`). Every failure raises
+    :class:`campaign_contract.IdentityError`, which the worker reports as
+    an identity refusal. Returns ``{"gpyreg", "checkout", "baseline"}``,
+    the last two None without the original arm.
+    """
+    source = os.environ.get("PYVBMC_GPYREG_SOURCE")
+    if not source:
+        raise contract.IdentityError(
+            "PYVBMC_GPYREG_SOURCE is not set; it names the gpyreg checkout "
+            "of the campaign"
+        )
+    try:
+        gpyreg_source = Path(activate_gpyreg(source))
+    except RuntimeError as error:
+        raise contract.IdentityError(str(error)) from error
+    import_torch()
+    state = {"gpyreg": gpyreg_source, "checkout": None, "baseline": None}
+    if with_baseline:
+        checkout = baseline_checkout()
+        refuse_upstream_on_path(checkout / "src")
+        state["checkout"] = checkout
+        state["baseline"] = verify_baseline(read_baseline_record(), checkout)
+    return state
+
+
+def parse_campaign_args(argv):
+    parser = argparse.ArgumentParser(
+        prog="svbmc_pool_stack.py",
+        description="The stacking comparison as a campaign of the Slurm "
+        "driver (dev/plans/slurm-benchmark-support.md, the campaign "
+        "contract).",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+    prepare = sub.add_parser("prepare", help="write the campaign manifest")
+    prepare.add_argument("--out", type=Path, required=True)
+    prepare.add_argument(
+        "--pool",
+        action="append",
+        type=Path,
+        help="a pool directory written by svbmc_pool_run.py, repeatable",
+    )
+    prepare.add_argument(
+        "--fixtures",
+        help="comma-separated fixture groups to compare instead of pools",
+    )
+    prepare.add_argument("--conditions", help="comma-separated pool labels")
+    prepare.add_argument("--M", default=",".join(str(M) for M in RELEASE_M))
+    prepare.add_argument(
+        "--repetitions",
+        default=",".join(str(R) for R in RELEASE_REPETITIONS),
+    )
+    prepare.add_argument(
+        "--arms",
+        default=",".join(RELEASE_ARMS),
+        help="both or integrated, once or once per M (default: the "
+        "release gate's)",
+    )
+    prepare.add_argument("--seed", type=int, default=0)
+    prepare.add_argument("--max-steps", type=int, default=500)
+    prepare.add_argument(
+        "--split-from",
+        type=int,
+        default=SPLIT_FROM,
+        help="the M from which a task holds one cell rather than every "
+        f"repetition of its condition and M (default {SPLIT_FROM})",
+    )
+    cases = sub.add_parser("cases", help="print the case list")
+    cases.add_argument("--out", type=Path, required=True)
+    cases.add_argument(
+        "--subset",
+        help="M<M> (the tasks at one M), both (the tasks that run the "
+        "original arm) or integrated (those that do not)",
+    )
+    worker = sub.add_parser("worker", help="run one task")
+    worker.add_argument("--out", type=Path, required=True)
+    worker.add_argument("--case", required=True)
+    for name, text in (
+        ("verify", "re-check every task and reconcile the allocation"),
+        ("assemble", "the finishing step: results.json and the summaries"),
+    ):
+        sub.add_parser(name, help=text).add_argument(
+            "--out", type=Path, required=True
+        )
+    args = parser.parse_args(argv)
+    if args.command == "prepare":
+        args.M = integer_list(args.M)
+        args.repetitions = integer_list(args.repetitions)
+        if len(args.M) != len(args.repetitions):
+            parser.error("--M and --repetitions must have the same length")
+        if len(set(args.M)) != len(args.M):
+            parser.error("--M names an M twice")
+        try:
+            args.arms_by_M = arm_sets(args.arms, args.M)
+        except ValueError as error:
+            parser.error(str(error))
+        if bool(args.pool) == bool(args.fixtures):
+            parser.error("give either --pool (repeatable) or --fixtures")
+        if args.fixtures and args.conditions:
+            parser.error(
+                "--conditions selects labels of a pool; --fixtures already "
+                "names the groups to compare"
+            )
+    return args
+
+
+#: The manifest fields a prepared campaign is bound to; ``prepare`` on a
+#: prepared directory refuses a difference in any of them or in the source
+#: identity.
+STRUCTURAL_KEYS = (
+    "kind",
+    "settings",
+    "split_from",
+    "conditions",
+    "plan",
+    "skipped",
+    "pools",
+    "finishing_steps",
+)
+#: What a manifest keeps of a pool run's recorded metrics: the fields of
+#: the single-run rows.
+SINGLE_RUN_METRICS = ("elbo_err", "gskl", "mmtv")
+
+
+def manifest_entry(entry):
+    """A pool entry as the manifest holds it."""
+    kept = {
+        key: entry[key]
+        for key in ("kind", "name", "path", "seed", "label", "sha256")
+        if key in entry
+    }
+    metrics = entry.get("metrics")
+    kept["metrics"] = (
+        None
+        if metrics is None
+        else {k: metrics[k] for k in SINGLE_RUN_METRICS if k in metrics}
+    )
+    return kept
+
+
+def cmd_prepare(args):
+    out = args.out.resolve()
+    arms_by_M = args.arms_by_M
+    with_baseline = any("original" in ARM_SETS[a] for a in arms_by_M)
+    state = campaign_process(with_baseline)
+    kind = "fixture" if args.fixtures else "run"
+    only = [s.strip() for s in (args.conditions or "").split(",") if s.strip()]
+    if kind == "run":
+        manifests = [
+            (
+                Path(pool).resolve() / "manifest.json",
+                contract.read_json(Path(pool).resolve() / "manifest.json"),
+            )
+            for pool in args.pool
+        ]
+        check_gpyreg_against_pools(state["gpyreg"], manifests)
+        conditions, pools, labels = pool_conditions(
+            args.pool, only, gpyreg_source=state["gpyreg"]
+        )
+        fixtures = []
+    else:
+        groups = [s.strip() for s in args.fixtures.split(",") if s.strip()]
+        conditions, pools = fixture_conditions(groups), []
+        labels = sorted(FIXTURE_PROBLEMS)
+        fixtures = fixture_sources(conditions)
+    reserved = sorted(set(conditions) & RESERVED_NAMES)
+    if reserved:
+        raise SystemExit(
+            f"the conditions {reserved} would take a directory the "
+            "campaign contract reserves"
+        )
+    indices = {label: labels.index(label) for label in conditions}
+    plan, skipped = plan_cells(
+        conditions, args.M, args.repetitions, args.seed, indices, arms_by_M
+    )
+    if not plan:
+        raise SystemExit(
+            "no cell to run: every requested M exceeds the filtered pools"
+        )
+    record = read_baseline_record()
+    manifest = {
+        "contract": contract.CONTRACT_VERSION,
+        "campaign": CAMPAIGN,
+        "kind": kind,
+        "settings": comparison_settings(
+            args.seed,
+            args.M,
+            args.repetitions,
+            arms_by_M,
+            args.max_steps,
+            kind,
+        ),
+        "split_from": int(args.split_from),
+        "conditions": [
+            {
+                "label": label,
+                "index": indices[label],
+                "origin": next(
+                    (
+                        pool["selection"]["conditions"][label]
+                        for pool in pools
+                        if label in pool["selection"]["conditions"]
+                    ),
+                    "the fixture group",
+                ),
+                "entries": [manifest_entry(entry) for entry in entries],
+            }
+            for label, entries in conditions.items()
+        ],
+        "plan": plan,
+        "skipped": skipped,
+        "pools": pools,
+        "fixtures": fixtures,
+        "baseline": {
+            "record": BASELINE_RECORD.relative_to(ROOT).as_posix(),
+            "commit": record["baseline"]["commit"],
+            "version": record["baseline"]["version"],
+            "files_sha256_committed": {
+                name: entry["sha256"]
+                for name, entry in record["baseline"][
+                    "files_sha256_committed"
+                ].items()
+            },
+            "torch_version": record["torch"]["version"],
+            "verification": state["baseline"],
+        },
+        "gpyreg_source": str(state["gpyreg"]),
+        "identity": campaign_identity(state["gpyreg"], state["checkout"]),
+        "site": contract.site_block(),
+        "pip_freeze": contract.pip_freeze(),
+        "finishing_steps": [["assemble"]],
+        "created": contract.now(),
+    }
+    path = out / "manifest.json"
+    if path.exists():
+        previous = contract.read_json(path)
+        differing = [
+            f"identity.{key}"
+            for key in contract.source_differences(
+                manifest["identity"], previous.get("identity")
+            )
+        ] + [
+            key
+            for key in STRUCTURAL_KEYS
+            if manifest[key] != previous.get(key)
+        ]
+        if differing:
+            raise SystemExit(
+                f"{path} is prepared differently, in {differing}; prepare "
+                "a new directory instead of changing a campaign in place"
+            )
+        print(f"{path}: prepared already, and unchanged", flush=True)
+        return 0
+    contract.write_json(path, manifest)
+    tasks = campaign_tasks(manifest)
+    print(
+        f"{path}: {len(conditions)} conditions, {len(plan)} cells in "
+        f"{len(tasks)} tasks; {describe_arms(args.M, arms_by_M)}",
+        flush=True,
+    )
+    for entry in skipped:
+        print(
+            f"  {entry['condition']} M={entry['M']}: {entry['drawn']} of "
+            f"{entry['requested']} repetitions, the most that {entry['pool']} "
+            "filtered runs give in disjoint subsets",
+            flush=True,
+        )
+    return 0
+
+
+def subset_tasks(name, tasks):
+    """The case indices of a named subset of the tasks."""
+    if name == "both":
+        chosen = [i for i, t in enumerate(tasks, 1) if "original" in t["arms"]]
+    elif name == "integrated":
+        chosen = [
+            i for i, t in enumerate(tasks, 1) if "original" not in t["arms"]
+        ]
+    elif name.startswith("M") and name[1:].isdigit():
+        chosen = [i for i, t in enumerate(tasks, 1) if t["M"] == int(name[1:])]
+    else:
+        raise SystemExit(
+            f"no subset {name!r}: the subsets are M<M>, both and integrated"
+        )
+    if not chosen:
+        raise SystemExit(f"the subset {name!r} holds no task")
+    return chosen
+
+
+def cmd_cases(args):
+    tasks = campaign_tasks(read_manifest(args.out.resolve()))
+    if args.subset:
+        for index in subset_tasks(args.subset, tasks):
+            print(f"{index} {tasks[index - 1]['line']}")
+    else:
+        for task in tasks:
+            print(task["line"])
+    return 0
+
+
+def write_cell(path, tag, row):
+    """Write one cell's file, whole or not at all."""
+    contract.write_json(path, {"campaign": CAMPAIGN, "task": tag, "cell": row})
+
+
+def run_task(out, manifest, task, state, actual):
+    """Run one task's cells; return its cell files and record fields."""
+    kind = manifest["kind"]
+    condition = task["condition"]
+    conditions = {condition: manifest_conditions(manifest)[condition]}
+    cells = [manifest["plan"][number] for number in task["cells"]]
+    max_steps = int(manifest["settings"]["max_steps"])
+    problems = Problems()
+    written, original = [], None
+    with contextlib.ExitStack() as stack:
+        server = None
+        if "original" in task["arms"]:
+            server = stack.enter_context(
+                OriginalArm(state["gpyreg"], state["checkout"])
+            )
+            differing = contract.source_differences(
+                server.info["identity"], actual
+            )
+            if differing:
+                raise RuntimeError(
+                    "the original arm's subprocess runs with another source "
+                    f"identity than this process, differing in {differing}"
+                )
+        warm = warm_up(
+            cells[0], conditions, kind, server, problems, task["arms"]
+        )
+        for number, (cell, path) in enumerate(zip(cells, task["paths"])):
+            print(
+                f"START {condition} M={cell['M']} r={cell['repetition']} "
+                f"({number + 1}/{len(cells)}, {cell['first_arm']} first)",
+                flush=True,
+            )
+            row = run_cell(cell, conditions, kind, server, problems, max_steps)
+            write_cell(out / path, task["tag"], row)
+            written.append(out / path)
+        if server is not None:
+            server.close()
+            original = server.summary()
+    return written, {
+        "cells": len(written),
+        "warm_up_seconds": warm,
+        "original_arm": original,
+        "baseline": state["baseline"],
+        "peak_rss_bytes": {
+            "harness": peak_rss(),
+            "original_arm": None
+            if original is None
+            else original["peak_rss_bytes"],
+        },
+    }
+
+
+def task_of_line(manifest, line, out):
+    for task in campaign_tasks(manifest):
+        if task["line"] == line:
+            return task
+    raise SystemExit(f"{line!r} is not a case of {out}")
+
+
+def cmd_worker(args):
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    task = task_of_line(manifest, args.case, out)
+    with_baseline = "original" in task["arms"]
+    state = {}
+
+    def this_identity():
+        state.update(campaign_process(with_baseline))
+        return campaign_identity(state["gpyreg"], state["checkout"])
+
+    return contract.run_worker(
+        out,
+        args.case,
+        task_identity(manifest["identity"], with_baseline),
+        this_identity,
+        lambda actual: run_task(out, manifest, task, state, actual),
+        lambda: [out / path for path in task["paths"]],
+    )
+
+
+def check_task(out, manifest, task, node_feature):
+    """Re-check one completed task: its record, and every cell file
+    against the manifest's plan. Raises
+    :class:`campaign_contract.CompletionError`."""
+    record = contract.check_completion(
+        out,
+        task["tag"],
+        task_identity(manifest["identity"], "original" in task["arms"]),
+        required=task["paths"],
+        node_feature=node_feature,
+    )
+    problems = []
+    unowned = sorted(set(record["artifacts"]) - set(task["paths"]))
+    if unowned:
+        problems.append(f"the record lists files of no cell: {unowned}")
+    for number, path in zip(task["cells"], task["paths"]):
+        try:
+            stored = contract.read_json(out / path)
+        except (OSError, ValueError) as error:
+            problems.append(f"{path} cannot be read: {error}")
+            continue
+        if (
+            stored.get("campaign") != CAMPAIGN
+            or stored.get("task") != task["tag"]
+        ):
+            problems.append(f"{path} is not a cell file of this task")
+            continue
+        row, cell = stored["cell"], manifest["plan"][number]
+        differing = [key for key in PLAN_KEYS if row.get(key) != cell[key]]
+        if differing:
+            problems.append(f"{path} is not the planned cell: {differing}")
+        if sorted(row.get("arms", {})) != sorted(cell["arm_set"]):
+            problems.append(f"{path} holds the arms {sorted(row['arms'])}")
+        for arm, outcome in row.get("arms", {}).items():
+            missing = [key for key in REFERENCE_FIELDS if key not in outcome]
+            if missing:
+                problems.append(f"{path}: the {arm} arm lacks {missing}")
+    if problems:
+        raise contract.CompletionError(task["tag"], problems)
+    return {"cells": len(task["paths"])}
+
+
+def stray_cells(out, manifest, tasks):
+    """The cell files in the conditions' directories that no task owns."""
+    owned = {path for task in tasks for path in task["paths"]}
+    stray = []
+    for condition in manifest_conditions(manifest):
+        try:
+            listing = sorted(os.scandir(out / condition), key=lambda e: e.name)
+        except FileNotFoundError:
+            continue
+        for entry in listing:
+            name = entry.name
+            relative = f"{condition}/{name}"
+            if (
+                entry.is_file()
+                and name.endswith(CELL_SUFFIX)
+                and not name.startswith(".")
+                and relative not in owned
+            ):
+                stray.append(relative)
+    return stray
+
+
+def campaign_report(out, manifest, tasks, query=None):
+    """``verify``'s reconciliation of a campaign directory."""
+    by_tag = {task["tag"]: task for task in tasks}
+    node_feature = (manifest.get("site") or {}).get("NODE_FEATURE")
+
+    def partial_files(tag):
+        return [p for p in by_tag[tag]["paths"] if (out / p).exists()]
+
+    return contract.reconcile(
+        out,
+        [task["line"] for task in tasks],
+        lambda tag: check_task(out, manifest, by_tag[tag], node_feature),
+        partial_files,
+        stray=stray_cells(out, manifest, tasks),
+        query=query,
+    )
+
+
+def cmd_verify(args):
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    report = campaign_report(out, manifest, campaign_tasks(manifest))
+    contract.write_json(
+        out / "verification.json", {"campaign": CAMPAIGN, **report}
+    )
+    for case in report["cases"]:
+        if case["status"] != "verified":
+            print(json.dumps(case), flush=True)
+    for name in report["stray"]:
+        print(f"stray: {name}", flush=True)
+    print(json.dumps(report["counts"]), flush=True)
+    return report["exit_code"]
+
+
+def cmd_assemble(args):
+    """The finishing step: the comparison's outputs from its cell files.
+
+    Refuses unless every task of the allocation verifies and no stray
+    file lies in the directory, so that a partial campaign is never
+    merged, and unless this process runs with the campaign's source
+    identity (the baseline aside, which assembling does not import).
+    """
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    tasks = campaign_tasks(manifest)
+    report = campaign_report(out, manifest, tasks)
+    counts = report["counts"]
+    if counts["verified"] != len(tasks) or report["stray"]:
+        for case in report["cases"]:
+            if case["status"] != "verified":
+                print(json.dumps(case), flush=True)
+        raise SystemExit(
+            f"assemble merges a complete campaign only: {json.dumps(counts)}"
+        )
+    state = campaign_process(False)
+    actual = campaign_identity(state["gpyreg"])
+    differing = contract.source_differences(
+        actual, task_identity(manifest["identity"], False)
+    )
+    if differing:
+        raise SystemExit(
+            "the source identity differs from the manifest's in "
+            f"{differing}; the campaign is assembled by the code that ran it"
+        )
+    rows = [None] * len(manifest["plan"])
+    records = {}
+    for task in tasks:
+        records[task["tag"]] = contract.read_json(
+            contract.record_path(out, task["tag"])
+        )
+        for number, path in zip(task["cells"], task["paths"]):
+            rows[number] = contract.read_json(out / path)["cell"]
+    kind, settings = manifest["kind"], manifest["settings"]
+    problems = Problems()
+    singles = {
+        condition: single_run_rows(condition, kind, entries, problems)
+        for condition, entries in manifest_conditions(manifest).items()
+    }
+    elapsed = float(sum(r["elapsed_seconds"] for r in records.values()))
+    contract.write_json(
+        out / "results.json",
+        {
+            "campaign": "svbmc_pool",
+            "kind": kind,
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "elapsed_seconds": elapsed,
+            "settings": settings,
+            "skipped": manifest["skipped"],
+            "cells": rows,
+            "single_run": singles,
+        },
+    )
+    write_summaries(out, rows, singles, settings)
+
+    def host(record):
+        found = (record.get("identity") or {}).get("host") or {}
+        slurm = found.get("slurm") or {}
+        return {
+            "hostname": found.get("hostname"),
+            "cpu_model": found.get("cpu_model"),
+            "job": slurm.get("array_job_id") or slurm.get("job_id"),
+            "array_task": slurm.get("array_task_id"),
+        }
+
+    contract.write_json(
+        out / "sources.json",
+        {
+            "campaign": "svbmc_pool",
+            "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "harness": {
+                "path": Path(__file__).resolve().relative_to(ROOT).as_posix(),
+                "sha256": contract.sha256_file(Path(__file__).resolve()),
+            },
+            "settings": settings,
+            "manifest_sha256": contract.sha256_file(out / "manifest.json"),
+            "verification": counts,
+            "identity": actual,
+            "baseline": manifest["baseline"],
+            "gpyreg_source": str(state["gpyreg"]),
+            "pools": manifest["pools"],
+            "fixtures": manifest["fixtures"],
+            "tasks": {
+                tag: {
+                    "elapsed_seconds": record["elapsed_seconds"],
+                    "host": host(record),
+                    "warm_up_seconds": record.get("warm_up_seconds"),
+                    "peak_rss_bytes": record.get("peak_rss_bytes"),
+                    "original_arm": record.get("original_arm"),
+                }
+                for tag, record in records.items()
+            },
+        },
+    )
+    print(
+        f"{len(rows)} cells of {len(tasks)} tasks assembled -> {out}",
+        flush=True,
+    )
+    return 0
+
+
+COMMANDS = {
+    "prepare": cmd_prepare,
+    "cases": cmd_cases,
+    "worker": cmd_worker,
+    "verify": cmd_verify,
+    "assemble": cmd_assemble,
+}
+
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+    if argv and argv[0] == "--serve-original":
+        return serve_original(argv[1], argv[2])
+    # The driver reads these outputs in bash, which takes a carriage return
+    # for part of a word.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(newline="\n")
+        except AttributeError:
+            pass
+    if argv and argv[0] in COMMANDS:
+        args = parse_campaign_args(argv)
+        return COMMANDS[args.command](args)
+    args = parse_args(argv)
+    if args.summarize_only:
+        return summarize_only(args)
+    return run_comparison(args)
 
 
 if __name__ == "__main__":
