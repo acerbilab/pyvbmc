@@ -45,6 +45,7 @@ import json
 import os
 import platform
 import pstats
+import re
 import subprocess
 import sys
 import time
@@ -278,17 +279,24 @@ def thread_env():
 
 
 def jsonable(v):
+    """``v`` as JSON values, the same for equal values in any process.
+
+    A set becomes a sorted list, and any other object its ``repr`` without
+    the memory address that a default ``repr`` names.
+    """
     if isinstance(v, (np.floating, np.integer)):
         return v.item()
     if isinstance(v, np.ndarray):
         return v.tolist()
     if isinstance(v, (list, tuple)):
         return [jsonable(x) for x in v]
+    if isinstance(v, (set, frozenset)):
+        return sorted((jsonable(x) for x in v), key=repr)
     if isinstance(v, dict):
         return {str(k): jsonable(x) for k, x in v.items()}
     if isinstance(v, (str, int, float, bool)) or v is None:
         return v
-    return repr(v)
+    return re.sub(r" at 0x[0-9A-Fa-f]+", "", repr(v))
 
 
 def effective_options(vbmc, extra_keys=()):

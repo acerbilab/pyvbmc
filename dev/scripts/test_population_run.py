@@ -829,6 +829,19 @@ def test_returned_posterior_rebuilds_a_posterior_exactly():
     assert runner.posterior_differences(rebuilt, vp) == ["sigma"]
 
 
+def test_recorded_options_are_the_same_in_every_process():
+    # Two processes record equal options alike: no memory address, and a
+    # set in sorted order.
+    class Thing:
+        pass
+
+    value = {"f": lambda x: x, "o": Thing(), "s": {"b", "a", "c"}}
+    recorded = runner.jsonable(value)
+    assert recorded["s"] == ["a", "b", "c"]
+    assert " at 0x" not in recorded["f"] and " at 0x" not in recorded["o"]
+    assert recorded["o"].endswith("Thing object>")
+
+
 def test_two_trees_keep_the_package_tree_first(tmp_path):
     # A stand-in package tree: importing population_run must take PyVBMC
     # from it, although golden_trace and profile_run put the harness
