@@ -1,0 +1,45 @@
+# The campaign environment (dev/plans/slurm-benchmark-support.md, "The
+# driver"): what the conda environment at CAMPAIGN_ENV takes from PyPI,
+# pinned. `bash dev/scripts/hpc/campaign_env.sh build` creates the
+# environment from conda-forge with the Python pinned below, zstd and gh,
+# and installs this file with pip; campaign_submit.sh and campaign_finish.sh
+# refuse an environment that differs from it (campaign_contract.py
+# check-env). PyVBMC and gpyreg come from the campaign's source trees and
+# are not pinned here: the check exempts a package installed from a path or
+# editable, and one that conda installed.
+#
+# This file holds the direct requirements: PyVBMC's dependencies (the same
+# at the release and at f91fdf0, the before arm's commit), gpyreg's (the
+# same at v1.2.1 and v1.3.3), the test extra for the harnesses' test
+# modules, psutil for the benchmark scripts, packaging for the environment
+# check and CPU Torch for the stacking. Phase 1b of the plan freezes the
+# first environment built from these pins into this file, dependencies
+# included (`python -m pip list --format=freeze --exclude-editable`), and
+# the Python below to its patch release, so that every environment built
+# from the file, in any account, holds the same libraries.
+#
+# The interpreter, which the build takes from conda-forge:
+# python==3.12
+
+cma==4.4.4
+corner==2.3.0
+dill==0.4.1
+filelock==3.32.5
+imageio==2.37.4
+matplotlib==3.11.1
+numdifftools==0.11.1
+numpy==2.5.2
+packaging==26.3
+platformdirs==4.11.7
+psutil==7.2.2
+pytest==9.1.1
+pytest-mock==3.15.1
+pytest-rerunfailures==16.6
+scipy==1.18.1
+threadpoolctl==3.6.0
+
+# CPU Torch 2.14.0, as dev/experiments/svbmc_pool/baseline_environment.json
+# records it, from the PyTorch CPU index, whose Linux wheels carry the local
+# label +cpu (PyPI's Linux wheels of the same version are CUDA builds).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu
