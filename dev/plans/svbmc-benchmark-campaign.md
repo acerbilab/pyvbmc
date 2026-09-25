@@ -1217,6 +1217,22 @@ draft had left open:
     The inputs remain fitted posteriors with their existing statistics;
     this estimator needs no GP or full VBMC object, and the objects
     returned by `VBMC.optimize()` remain unchanged.
+14. **The release gate's pools and stacking (2026-09-25)**: the release
+    pools hold 320 filtered runs per condition (seed caps 350, and 480 for
+    the ring; seeds from 1000, continuing this campaign's range), which
+    gives ten disjoint subsets at `M = 32`. Every `M` is stacked in
+    disjoint subsets: repetition `r` takes the `r`-th block of `M` runs of
+    a permutation drawn for the condition and `M`, with the repetition
+    counts of decision 6 and of the `M` = 3, 5 and 32 runs. Both arms run
+    again at `M` = 2, 4, 8 and 16, since the release pools make new cells,
+    and the integrated arm alone at 3, 5 and 32. Generation, stacking and
+    the analyses of the gate all run on the cluster, through the
+    [Slurm plan](slurm-benchmark-support.md). This supersedes decision 8
+    where it keeps everything that consumes a pool within an overnight
+    laptop run, and decision 12's allocation of about 100 runs per
+    condition. Rejected: stacking the release pools on the laptop, which
+    their size and the rerun of the original arm would stretch well past a
+    night.
 
 ## Risks and rollback
 

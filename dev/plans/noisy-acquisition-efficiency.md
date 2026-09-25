@@ -74,7 +74,8 @@ central with intermittent stability spikes, under a 200-evaluation benchmark
 budget below the package's noisy default of 300). On that finding the user
 decided on 2026-09-18 that experiments test what ships: the `production`
 suite of `benchmark_targets.py` carries the noisy configurations at package
-defaults, and the TODO records how a production reference is assembled.
+defaults, and the reference that replaces the golden references after the
+port review is to run that suite ([Slurm plan](slurm-benchmark-support.md)).
 Among the [follow-ups](#follow-ups-proposed-2026-09-18) the user chose F2
 on 2026-09-18, matched-cost RQMC nodes for the VIQR estimate with the
 production search retained. The
@@ -115,9 +116,11 @@ into the reference's run directory,
 `dev/scripts/runs/golden/production_noisy_20260918` (listed in
 `dev/scripts/runs/LOCAL.md`), from the branch `dev-production-reference`,
 cut from `dev-next` once this work merged, and completed on 2026-09-19
-with no failure, so all 80 exist: the first noisy runs of the production
-reference that the TODO's working rules describe. No background work
-needs reattachment.
+with no failure, so all 80 exist. They were to be the first noisy runs of
+a production reference; they come from the code before the port review's
+fixes, and the reference that replaces the golden references runs the
+whole `production` suite anew ([Slurm plan](slurm-benchmark-support.md)).
+No background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting

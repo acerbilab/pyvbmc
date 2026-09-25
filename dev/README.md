@@ -178,6 +178,14 @@ plan and consolidated human summary.
   (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a
   Slurm array of `worker` calls, `select`, `summarize`), what to hand
   back and the branch-and-PR flow; carried out, and retained as written.
+- [plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md) —
+  the Slurm workflow of the release gate on the Turso cluster: what runs
+  where (the reference populations of the `production` suite with a
+  before arm, the S-VBMC pools and stacking on the cluster; exact replay
+  fingerprints on the developer's machine), the campaign contract every
+  harness meets, the generic driver grown from `scripts/hpc/`, the
+  harness changes, what it assumes of the cluster, costs and phases. For
+  the PI's review (2026-09-25).
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
@@ -328,11 +336,11 @@ default for a specified-noise target; everything else is a package
 default. Since 2026-09-18 release checks and new experiments use the
 `production` suite instead: the same configurations with the noisy entries
 freed of that pin under `production`-tagged labels. Its noiseless entries
-are the golden ones, so a production reference copies the golden noiseless
-runs and adds fresh runs only for the noisy production labels
-(`golden_trace.py run --suite production --only <labels>`). The golden
-reference below remains the baseline for trajectory identity at the paper
-budget.
+are the golden ones. The golden reference below is the record of the
+golden suite; the reference that replaces it after the port review is to
+run the whole `production` suite on the cluster, with exact replay from
+one seed per configuration generated on the developer's machine
+([plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md)).
 
 The current golden reference is `reference_990_20260913`: **990 runs across
 23 configurations, including 250 noisy runs, with 92 population KS tests**.
@@ -348,8 +356,10 @@ remain preserved for historical comparisons.
 The [promotion record](golden/promotion_20260913/README.md) contains the
 assessment, provenance, hashes and verification. All 990 archives passed
 integrity checks and the 92-test even/odd check had no flags. The five
-default cases replay exactly under current code in every non-timer NPZ
-loop/final array, semantic final-result field and initial design. The four real-data seed-0 replays
+default cases replayed exactly under the code at promotion (2026-09-13) in
+every non-timer NPZ loop/final array, semantic final-result field and
+initial design; the port review's fixes have moved default trajectories
+since (`TODO.md`, "The golden references after the port review"). The four real-data seed-0 replays
 retain their earlier exact certification. The returned posterior's
 transformer is absent from the traces and remains uncertifiable.
 
@@ -606,7 +616,7 @@ reason.
   `svbmc_pool_finish.sh` collects the Slurm accounting, runs `verify`
   under `srun`, then `select`, `summarize` and the archive with its
   SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
-  University of Helsinki `kale` cluster; every site-specific value is an
+  University of Helsinki's Turso cluster; every site-specific value is an
   environment variable.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,

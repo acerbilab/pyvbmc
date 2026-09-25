@@ -67,36 +67,41 @@ records its execution.
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
-- [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
-  resource settings, resumption and result collection. The seed is the
-  pool campaign's cluster half under `scripts/hpc/` (its `README.md`):
-  sbatch scripts, written for the Helsinki `kale` cluster, around the
-  per-case worker, `cases` enumeration and hash-verified completion
-  records of `scripts/svbmc_pool_run.py`. They drive that harness alone,
-  and their README sets up the campaign's gpyreg, 1.2.1, which is also
-  the harness's default `--gpyreg-source`; the release gate runs the
-  release code with the gpyreg it requires (1.3.3 on 2026-09-25). The
-  general design remains open. Needed before relying on that workflow
-  for further cluster campaigns, not before local experiments; the final
-  large-scale check below is the first such campaign. The PI takes it up
-  next, with cluster access (2026-09-25). See
+- [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
+  settings, resumption and result collection on the Turso cluster. The
+  design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
+  PI's decisions of 2026-09-25: one campaign contract (`prepare`, `cases`,
+  a `worker` that claims its case, `verify`) that the pool, population and
+  stacking harnesses are to meet, and generic scripts beside the pool
+  campaign's under `scripts/hpc/`. Next: the PI's review of the plan, then
+  its Phases 1b to 7. Needed before relying on that workflow for further
+  cluster campaigns, not before local experiments; the final large-scale
+  check and the new reference below are the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
   the [port correctness review](plans/port-correctness-review.md) move
   default trajectories; its
   [ledger](results/2026-09-23-port-correctness-review.md) lists them. The
-  golden reference `reference_990_20260913` and the production-reference
+  golden reference `reference_990_20260913` and the production-budget
   runs of 2026-09-18 and 09-19 (below, "Completed baseline and local
   artifacts") describe the code from before them, so
   `scripts/golden_replay.py` compares a run with trajectories the code no
-  longer follows. Regenerate them with the release code after assessment,
-  preserving the old ones (the working rule below). The moving fixes of the
-  wave-1 and wave-2 passes, W5-1 and W5-6 were not read for accuracy on the
-  benchmark targets (the ledger, "The fixes that move default
-  trajectories"). The seeded gate run with a prior (below) joins the release
-  gate's records when they are made anew. The item can start when the PI
-  decides.
+  longer follows. The reference that replaces them (PI, 2026-09-25; the
+  [Slurm plan](plans/slurm-benchmark-support.md), "What runs where") is
+  to run the `production` suite alone at 100 seeds per configuration on
+  Turso with the release code, beside a before arm of the same runs at
+  `f91fdf0` with gpyreg 1.2.1; exact replay is to come from one seed per
+  configuration generated on the developer's machine, with the six seeded
+  gate runs of the item below. The moving fixes of the wave-1 and wave-2
+  passes, W5-1 and W5-6 were not read for accuracy on the benchmark
+  targets (the ledger, "The fixes that move default trajectories"); the
+  comparison of the two arms is their measure. This item owns that
+  assessment, by the method of the
+  [population plan](plans/final-population-benchmark.md), and the
+  promotion of the new reference with its fingerprints, preserving the old
+  references (the working rule below). The campaigns run in the plan's
+  Phase 8, on the PI's instruction.
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -112,21 +117,26 @@ records its execution.
   reproduced bit for bit in two recordings, and their ELBOs came out 0.34
   and 0.37 nats below the log evidence computed by quadrature, the gap the
   unbounded Rosenbrock run of the same script shows without a prior object
-  (0.40). Their record joins the release gate's records when those are
-  made anew: the golden references (the item above) and the run pools of
-  the final large-scale check (below) (PI, 2026-09-21; the wave-5
+  (0.40). The script's six runs join the release gate's records (PI,
+  2026-09-21; the wave-5
   [ledger](experiments/port_review_20260919/verification/wave5.md), "The
-  independent check of the pass").
+  independent check of the pass") as part of the replay fingerprints of
+  the new reference (the item above): they are run again with the release
+  code, wrapped so that their record carries the commit, the gpyreg
+  source, the thread settings and the host, which the script does not
+  record (PI, 2026-09-25; the
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
 
 - [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated, regenerate the
-  VBMC run pools on the test targets with the release code on the cluster
-  (about 100 runs per condition as in the
-  [campaign](plans/svbmc-benchmark-campaign.md),
-  several hundred where `M = 32` is to be scored: the present pools of
-  100 noisy and 50 noiseless runs reuse each run 1.6 to 3.2 times at
-  `M = 16` and 3.2 to 6.4 times at `M = 32`, so ten disjoint subsets of
-  32 need 320 runs), then run S-VBMC at several `M` and check that the
+  1.5 is consolidated, regenerate the VBMC run pools on the test targets
+  with the release code on the cluster, 320 filtered runs per condition
+  (PI, 2026-09-25; the [Slurm plan](plans/slurm-benchmark-support.md)):
+  the present pools of 100 noisy and 50 noiseless runs reuse each run 1.6
+  to 3.2 times at `M = 16` and 3.2 to 6.4 times at `M = 32`, and ten
+  disjoint subsets of 32 need 320 runs. Then stack them on the cluster in
+  disjoint subsets at every `M`, with both arms of the
+  [campaign](plans/svbmc-benchmark-campaign.md) at `M` = 2, 4, 8 and 16
+  and the integrated arm alone at 3, 5 and 32, and check that the
   campaign's results hold: the acceptance criteria of the comparison,
   the added-bias ranges of the headline note, and the switch of the
   headline to the two-level shrinkage (the debiasing item above). The
@@ -172,7 +182,10 @@ records its execution.
   artifacts attach to the release as archives rather than commits: the
   golden reference traces, the run pools, the captured frozen states and
   the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
-  holding machine. The draft releases `svbmc-pool-20260914` and
+  holding machine, and the release gate's campaigns and replay
+  fingerprints (the [Slurm plan](plans/slurm-benchmark-support.md),
+  "Records and hand-back", whose raw archives are published only once
+  redacted). The draft releases `svbmc-pool-20260914` and
   `svbmc-analyses-20260915` already hold the pool and its analyses that
   way, so the decision is which of the remaining artifacts a reader of the
   release needs to revalidate its results. Search the whole repository's
@@ -290,11 +303,12 @@ records its execution.
   ruled not to be fixed (PI, 2026-09-23).
 - Evaluate numerical proposals before choosing defaults or reported
   estimators. If an accepted change moves default trajectories, update the
-  affected golden references after assessment and preserve the old ones.
-- The Phase 2 estimator and the stacking comparison both consume the run
-  pools, the asset of the draft release `svbmc-pool-20260914`; nothing
-  that needs them runs on a machine before every artifact re-verifies
-  there (`svbmc_pool_run.py verify`).
+  affected references after assessment and preserve the old ones.
+- Whatever consumes a run pool (the Phase 2 estimator, a stacking
+  comparison) runs on a machine only after every artifact of that pool
+  re-verifies there (`svbmc_pool_run.py verify`): the September pool, the
+  asset of the draft release `svbmc-pool-20260914`, and the release pools
+  alike.
 - At most one heavy computation runs at a time. Read-only investigation
   and documentation may proceed alongside it.
 - Final release checks depend on included changes being settled.
@@ -311,15 +325,10 @@ records its execution.
   experiment run noisy targets at the package's production defaults, on
   the `production` suite of `benchmark_targets.py`: the golden suite with
   its noisy entries freed of the budget pin and given the `production`
-  label tag. The noiseless golden runs are production runs already, so a
-  production reference copies them and adds fresh runs only for the noisy
-  labels: the seven noisy configurations with reference runs, 250 runs at
-  their production budgets (`golden_trace.py run --suite production --only
-  <noisy production labels>`), plus `lumpy_D10_noise3_production` if that
-  configuration is to enter the reference (the current reference has no
-  runs for it). The golden references stay the regression baseline for
-  trajectory identity at the paper budget. The E5 report's F3 section
-  records how the difference was found.
+  label tag. The existing golden references remain the record of the
+  golden suite; the reference that replaces them after the port review is
+  to run the whole `production` suite (the golden references item above).
+  The E5 report's F3 section records how the difference was found.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.
 - Dependabot's PRs target `main`, whose `tests.yml` and `merge-tests.yml`
@@ -352,13 +361,14 @@ candidate pairs plus 120 unchanged real-data pairs. The
 [promotion record](golden/promotion_20260913/README.md) owns the
 assessment, independent review, hashes and passed gates;
 [the population plan](plans/final-population-benchmark.md) owns execution
-history. The production reference's noisy runs have begun: 80 runs of six
-noisy configurations at production budgets (logistic regression and
+history. 80 runs of six noisy configurations at production budgets, made
+with the code from before the port review's fixes (logistic regression and
 high-noise Rosenbrock at twenty seeds; low-noise Rosenbrock, Student-t,
-timing and multisensory at ten) exist locally under
+timing and multisensory at ten), exist locally under
 `golden/production_noisy_20260918/` (listed in `dev/scripts/runs/LOCAL.md`),
 run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
-and after its stop; the
+and after its stop; the new reference does not include them (the golden
+references item above). The
 [efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
 records their provenance.
 

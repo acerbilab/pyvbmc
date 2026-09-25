@@ -57,8 +57,11 @@ represented in the reference. `lumpy_D10_noise3` remains registered but
 has no reference traces.
 
 All 990 archives passed integrity checks and the 92-test even/odd comparison
-had no flags. The five default cases replay with identical non-timer NPZ
-arrays, semantic final results and initial designs under current code. The
+had no flags. The five default cases replayed with identical non-timer NPZ
+arrays, semantic final results and initial designs under the code at
+promotion (2026-09-13); the port review's fixes have moved default
+trajectories since (`dev/TODO.md`, "The golden references after the port
+review"). The
 retained real-data cases also have exact replay certification in their
 execution record.
 No trace stores the returned posterior's transformer, so replay reports

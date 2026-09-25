@@ -1092,7 +1092,7 @@ the staged execution. Previous references are preserved.
 
 These workstreams have no prescribed order relative to acquisition or
 S-VBMC work. Slurm support is needed for campaigns using that workflow;
-its implementation design remains open.
+its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
 
 - [x] Extend the core benchmark with real-data targets: the Bayesian timing
   model and the multisensory causal-inference model on two subjects,
@@ -1109,8 +1109,9 @@ its implementation design remains open.
   suite; no additional packaged regression tests are needed for 1.5.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
-  with reproducible run provenance. Choose the execution design when this
-  work starts. The S-VBMC run-pool campaign
+  with reproducible run provenance. The design, for the PI's review, is in
+  [slurm-benchmark-support.md](slurm-benchmark-support.md) (2026-09-25).
+  The S-VBMC run-pool campaign
   ([svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md)) is the
   first cluster job: its per-case worker, `cases` enumeration and
   hash-verified completion records are cluster-ready, and its sbatch

@@ -7,8 +7,18 @@ section "Cluster generation"; the brief is
 They implement the sbatch sketch in the module docstring of
 [`svbmc_pool_run.py`](../svbmc_pool_run.py): `prepare` once on the login
 node, one `worker` per Slurm array task, then `verify`, `select` and
-`summarize`. Written for the University of Helsinki `kale` cluster (login
-node `turso02`); every site-specific value is an environment variable.
+`summarize`. Written for the University of Helsinki's Turso cluster;
+every site-specific value is an environment variable.
+
+This README describes the September campaign. Its commands ran at
+`d63c477`, and the scripts were revised after them in the review of the
+pull request that delivered the pool (its record,
+[experiments/svbmc_pool/pool_20260914/README.md](../../experiments/svbmc_pool/pool_20260914/README.md),
+"How it was generated"). Its prerequisites install gpyreg 1.2.1, which
+the current `pyproject.toml` (gpyreg 1.3.3 or later) excludes. The Slurm
+workflow of the release gate, which adds generic scripts beside these, is
+designed in
+[plans/slurm-benchmark-support.md](../../plans/slurm-benchmark-support.md).
 
 ## Prerequisites
 

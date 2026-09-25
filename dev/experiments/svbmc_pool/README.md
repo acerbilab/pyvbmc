@@ -96,7 +96,7 @@ report is
 ## Cluster pool (2026-09-14)
 
 `pool_20260914/` holds the tracked side of the eight-condition pool
-generated on the University of Helsinki `kale` cluster with the Slurm
+generated on the University of Helsinki's Turso cluster with the Slurm
 scripts under `dev/scripts/hpc/`: `manifest.json`, `selection.json` /
 `selection.md` (700 selected runs, every condition at its filtered
 target), `summary.json` / `summary.md` (1100 completed runs, 1035 passing

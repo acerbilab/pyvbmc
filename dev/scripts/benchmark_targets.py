@@ -1817,9 +1817,9 @@ SUITES = {
 # The golden suite at PyVBMC's production defaults, the suite for release
 # checks and new experiments by the PI's decision of 2026-09-18 that
 # experiments test what ships. The noiseless entries are the golden ones
-# unchanged (they carry no override, so their golden runs already are
-# production runs and a production reference copies them; this includes
-# the deliberate exhaust regime entry). The noisy entries drop the paper
+# unchanged (they carry no override, so a golden run of one is also a
+# production run; this includes the deliberate exhaust regime entry). The
+# noisy entries drop the paper
 # budget, so the package's own adjustments for a specified-noise target
 # apply: 75 (D + 2) evaluations, a stability count of 90 evaluations, GP
 # and VP updates inside active sampling, VIQR. The golden labels keep the
