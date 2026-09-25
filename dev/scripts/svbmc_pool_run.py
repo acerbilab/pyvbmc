@@ -86,7 +86,8 @@ that failed counts towards the seed cap and the sweep goes on; a worker
 that dies without writing its error file gets one from the tail of its
 ``<tag>.log``, and its partial files are removed. The sweep stops for
 inspection at a case whose artifact files lie without a record, an error
-file or a claim, and at a case that another process holds. A sweep that
+file or a claim, at a case that another process holds, and when a worker
+refuses its case or a signal stops it. A sweep that
 runs to its targets leaves exactly the runs ``select`` would choose; one
 run with ``--pilot-seeds`` or under a lowered target leaves more, and
 ``select`` then says which of them the pool is. The campaign lock,
