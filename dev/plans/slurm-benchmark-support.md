@@ -318,9 +318,12 @@ What is new:
   Python 3.12 as in September, `zstd` for the archive and `gh` for the
   hand-back from conda-forge (a cluster need not have either), and the rest
   from pip at the versions pinned in
-  `dev/scripts/hpc/campaign_requirements.txt`, so that the environments of
-  the smoke campaigns and of the campaigns, built in different accounts,
-  hold the same libraries. It is built on the login node after
+  `dev/scripts/hpc/campaign_requirements.txt`, which pins every package the
+  environment takes from PyPI, dependencies included, so that the
+  environments of the smoke campaigns and of the campaigns, built in
+  different accounts, hold the same libraries. The submission compares the
+  environment's installed versions with the file before `prepare` and
+  refuses a difference. It is built on the login node after
   `LOGIN_SETUP`, from a site conda module or a Miniforge installation. The environment script reads
   the login profile (a non-interactive shell may not define `module`
   otherwise), activates the environment, exports single-threaded BLAS,
