@@ -4,7 +4,7 @@
   "clean": true,
   "commit": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
   "commit_matches_pin": true,
-  "files_note": "Every file under src/svbmc/ except __pycache__; paths are relative to source_dir.",
+  "files_note": "Every file under src/svbmc/ except __pycache__; paths are relative to source_dir. files_sha256 hashes the files as this machine's checkout holds them, with the CRLF line endings that Git's core.autocrlf gave them on checkout; files_sha256_committed hashes their content as committed at the pin, with LF line endings, which a checkout holds on any platform once CRLF is read as LF. The second is what verifies a recreation.",
   "files_sha256": {
    "__init__.py": {
     "bytes": 804,
@@ -23,9 +23,27 @@
     "sha256": "75a0e8348865fd906f2a023bf654ae5a656a885fcec380f05ff55116de4d8c68"
    }
   },
+  "files_sha256_committed": {
+   "__init__.py": {
+    "bytes": 779,
+    "sha256": "09a7f47828ae6614d667d33fde6219e654c4776ebb7589c3c3cff6943975bcad"
+   },
+   "svbmc.py": {
+    "bytes": 28248,
+    "sha256": "347fdb2b6f00bd54da00d40249e6749c936f823091bae4ee89161dcb68f86fd3"
+   },
+   "targets.py": {
+    "bytes": 5115,
+    "sha256": "b7a18a801682787f7661253cfd2ac8b13cd9b1b2df28726917f7d6e3b1dea51d"
+   },
+   "utils.py": {
+    "bytes": 11089,
+    "sha256": "2863dad06ddb13ab9b924b740a98fb7ce3fbd6f18fe1428eff35ff05185b8fb4"
+   }
+  },
   "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc\\__init__.py",
   "pin": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
-  "recreation": "git clone https://github.com/acerbilab/S-VBMC and check out 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01; install CPU Torch 2.14.0 with `pip install --target deps torch==2.14.0` ; the files_sha256 entries verify the source tree.",
+  "recreation": "git clone https://github.com/acerbilab/S-VBMC and check out 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01; install CPU Torch 2.14.0 with `pip install --target deps torch==2.14.0` ; the files_sha256_committed entries verify the source tree, with CRLF read as LF.",
   "source_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc",
   "status_porcelain": "",
   "upstream_repository": "https://github.com/acerbilab/S-VBMC",

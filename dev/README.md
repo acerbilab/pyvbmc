@@ -689,13 +689,20 @@ reason.
   campaign: for every condition, every `M` on a grid and every repetition,
   one subset of the filtered pool is stacked by both the integrated
   `pyvbmc.svbmc.SVBMC` (in process) and the original standalone `svbmc`
-  0.1.1 (in a long-lived worker whose `PYTHONPATH` carries the pinned
-  checkout, so no controller can import it), never at the same time and
-  alternating which goes first, both arms rebuilding the subset's
-  posteriors with one seed per entry derived from the cell's seed. A
+  0.1.1 (in a long-lived subprocess whose `PYTHONPATH` alone carries the
+  pinned checkout's `src`, so no other process can import it), never at
+  the same time and alternating which goes first, both arms rebuilding the
+  subset's posteriors with one seed per entry derived from the cell's
+  seed. The subsets of one condition and `M` are disjoint (repetition `r`
+  takes the `r`-th block of `M` runs of a permutation drawn for that
+  condition and `M`), so a pool of `n` runs gives at most `n // M`
+  repetitions, and the cells beyond are listed as skipped. A
   condition's filtered pool is what its directory's `selection.json`
   names, or every passing completion record when the directory holds no
-  selection; the printed lines and `sources.json` say which. Each cell
+  selection; the printed lines and `sources.json` say which. A run's
+  files are `<pool>/<tag>.npz` and `.json` whatever its tag holds, flat
+  or in one subdirectory per condition, and their SHA-256, taken when the
+  pool is read, is checked before a posterior is rebuilt. Each cell
   records the weights, every ELBO variant, the entropy, the seconds and
   the quality of 100 000 draws (`benchmark_targets.sample_metrics`, plus
   the Monte Carlo expected log joint over a random subsample of them).
@@ -710,16 +717,31 @@ reason.
   `summary.md` (medians with bootstrap intervals, the biases with
   criterion 3's gates, paired differences with exact signed-rank tests
   Holm-corrected over every condition and `M`, `max |dw|`, runtime ratio)
-  and `sources.json`. It refuses to start unless
-  `experiments/svbmc_pool/baseline_environment.json` re-verifies, and
-  needs `PYTHONPATH` to carry that record's Torch overlay. Both arms
-  import gpyreg from the checkout the pool's manifest names, or, for a
-  pool copied from another machine, from `--gpyreg-source`, a local clean
-  checkout at the manifest's gpyreg commit.
-  `--arms integrated` stacks every cell with the integrated class alone,
-  for the larger-`M` regime where the original's cost (quadratic in `M`,
-  two to four times the integrated arm's) is not worth paying; such
-  cells carry no paired quantity. `--summarize-only --out DIR` rebuilds
+  and `sources.json`. It needs Torch importable (the campaign
+  environment's, or the overlay `<BASELINE_DIR>/deps` on `PYTHONPATH`).
+  A run of the original arm needs `BASELINE_DIR`, the upstream checkout
+  or the directory holding it, and refuses to start unless that checkout
+  verifies by content against
+  `experiments/svbmc_pool/baseline_environment.json`, wherever it lies:
+  the recorded commit, a clean tree, the committed content of every file
+  of `src/svbmc` (CRLF read as LF) and the recorded Torch version; a run
+  of the integrated arm alone needs no baseline. Both arms import gpyreg
+  from `--gpyreg-source`, `PYVBMC_GPYREG_SOURCE` or the path the pool's
+  manifest names, which must be a clean checkout at the gpyreg commit
+  every pool's manifest records. `--arms` names the arms of every `M`,
+  `both` or `integrated` (the integrated class alone, for the larger-`M`
+  regime where the original's cost, quadratic in `M` and two to four
+  times the integrated arm's, is not worth paying; such cells carry no
+  paired quantity), once or once per `M`. The subcommands `prepare`,
+  `cases`, `worker`, `verify` and the finishing step `assemble` meet the
+  campaign contract of `plans/slurm-benchmark-support.md`, for the
+  driver under `scripts/hpc/`: a task computes every repetition of one
+  condition and `M` below `--split-from` (16) and one cell from it on,
+  warms both implementations up first and writes one file per cell;
+  `prepare` defaults to the release gate's grid; `assemble` refuses a
+  campaign that does not verify whole and writes the outputs of the
+  single-process run from the cell files, in the plan's order, with the
+  same numbers but for the seconds. `--summarize-only --out DIR` rebuilds
   the summaries from a finished `results.json` without running a cell or
   needing Torch, describing that comparison by the settings it recorded
   rather than by the script's current constants, and with several
@@ -727,7 +749,10 @@ reason.
   to one `M`, the integrated arm beyond it), the paired quantities and
   equivalence tests covering the cell sets both arms ran. `--fixtures
   GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
-  which is what `test_svbmc_pool_stack.py` runs.
+  which is what `test_svbmc_pool_stack.py` runs, in one process and as a
+  campaign split into tasks, whose assembly it checks against the single
+  process; the test module skips unless `PYVBMC_GPYREG_SOURCE` and
+  `BASELINE_DIR` are set.
 - `scripts/svbmc_honest_elbo.py` — the Phase 2 estimator of the S-VBMC
   ELBO optimism note on the pool artifacts: for every component of a
   stacked cell (a pool directory plus the comparison's `results.json`),
