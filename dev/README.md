@@ -566,54 +566,64 @@ reason.
   for `plans/svbmc-speedups.md`; the evidence is in
   `experiments/svbmc_speedups/`.
 - `scripts/svbmc_pool_run.py` — the run-pool generator of the S-VBMC
-  benchmark campaign (`plans/svbmc-benchmark-campaign.md`): `prepare`
-  fixes the allocation (every condition of the named suite, which for
-  `svbmc_pool` is the campaign's eight pool conditions, `POOL_LABELS`,
-  with a first seed, a seed cap and a filtered target each; `--only`
-  allocates a subset), the run options and the identity of the code the
-  pool is generated with; re-running it on a prepared directory is how its
-  targets and seed caps are revised, the previous allocation kept in
-  `allocation_history`, and nothing else about the campaign can change;
-  `run` is the laptop supervisor, walking the conditions in manifest
-  order, seeds upward, one fresh worker process at a time, stopping each
-  condition once its filtered target or its seed cap is reached
-  (`--pilot-seeds K` runs exactly K seeds per condition instead;
-  `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
-  and is invocable on its own; `cases` prints every `label seed` of the
-  allocation, one per line, so a Slurm array can map its index to one
-  `worker` call (the plan's "Cluster generation"; `scripts/hpc/` holds the
-  Slurm scripts that implement the docstring's sketch);
-  `select` then defines the filtered pool post hoc, per condition the
-  lowest-seed runs that pass the filters up to the target, in
-  `selection.json`, which the comparison reads, and reports its pass rate
-  over the seeds it scanned before the target was met, which is not
-  `summarize`'s over every completed case; `summarize` writes the
-  per-condition pass rates, wall times and metric quartiles from the cases
-  the directory holds; `verify` re-checks every stored artifact post hoc
-  against its completion record and the manifest's source identity, the
-  recomputation gate included, reconciles the allocation (failed, partial,
-  missing and stray cases, the missing ones printed with their array index
-  for resubmission) into `verification.json`, and takes `--gpyreg-source`
-  for a pool copied to another machine (a clean checkout at the manifest's
-  gpyreg commit, checked by `pinned_gpyreg_source`, which the stacking
-  comparison shares). On such a machine the recomputation gate is met up
-  to the other BLAS's rounding amplified by each run's GP condition
-  number, which `verify_run` allows and reports (`--rounding-factor`
-  scales the allowance); the report also records the verifying checkout's
-  identity next to the pool's. gpyreg is pinned to a frozen
-  worktree through `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the
-  identity is split into a `source` half (commits, library versions,
-  working-tree state and the hashes of the suite module and both pool
-  scripts) that every process of one campaign must match and a `host` half
-  that is recorded only, so any node may run any case. Hash-verified
-  completion records permit resumption; a failing case leaves
-  `<tag>.error.txt` and no artifact, written by the worker itself so that
-  an array task records its failure as a sweep does, and is skipped by
-  later sweeps; an artifact file without a completion record or an error
-  file stops the sweep for inspection (the log of an interrupted case is
-  not one). `test_svbmc_pool_run.py` generates a short campaign and checks
-  the artifact, resume, revision, selection, summary and post-hoc
-  verification contracts.
+  benchmark campaign (`plans/svbmc-benchmark-campaign.md`), a harness of
+  the campaign contract (`plans/slurm-benchmark-support.md`), which the
+  driver under `scripts/hpc/` runs with
+  `HARNESS=dev/scripts/svbmc_pool_run.py`: `prepare` fixes the allocation
+  (every condition of the named suite, which for `svbmc_pool` is the
+  campaign's eight pool conditions, `POOL_LABELS`, with a first seed, a
+  seed cap and a filtered target each; `--only` allocates a subset; the
+  release pools are `--target 320 --max-seeds 350 --allocation
+  ring_D2_noise3_svbmc=320/480`, 2930 cases), the run options, the
+  contract's identity over the harness checkout and the gpyreg checkout
+  that `--gpyreg-source` names (required), the `site` block, the `pip
+  freeze` and the finishing steps (`select`, `summarize`); it refuses a
+  dirty gpyreg checkout, and a dirty harness checkout without
+  `--allow-dirty`, and re-running it on a prepared directory revises the
+  targets and seed caps alone, the previous allocation kept in
+  `allocation_history`; `cases` prints one tag
+  `<label>/<label>_seed<seed>` per case over every seed of each range
+  (`--subset LABEL`, one condition's as `<index> <line>`); `worker --case
+  LINE` runs one case through `campaign_contract.run_worker` (the early
+  exit, the identity and claim refusals, the clean-up after a failure or a
+  SIGTERM, a completion record holding the run's filter verdict, metrics,
+  `success_flag`, `convergence_status`, `message`, `r_index` and
+  `iterations`); `run` is the workstation supervisor, walking the
+  conditions in manifest order, seeds upward, one `worker` process at a
+  time, stopping each condition once its filtered target or its seed cap
+  is reached (`--pilot-seeds K` runs exactly K seeds per condition
+  instead; `--save-vbmc` also pickles the whole `VBMC` object); `select`
+  then defines the filtered pool post hoc, per condition the lowest-seed
+  runs that pass the filters up to the target, in `selection.json`, which
+  the comparison reads, and reports its pass rate over the seeds it
+  scanned before the target was met, which is not `summarize`'s over every
+  completed case; `summarize` writes the per-condition pass rates,
+  convergence, wall times and metric quartiles from the cases the
+  directory holds; `verify` re-checks every stored artifact post hoc
+  against its completion record and the manifest (the source identity,
+  the SHA-256 of every file, the node feature and one physical core where
+  the `site` block names `NODE_FEATURE`), the recomputation gate
+  included, reconciles the allocation with `campaign_contract.reconcile`
+  into `verification.json`, and takes `--gpyreg-source` for a pool copied
+  to another machine (a clean checkout at the manifest's gpyreg commit,
+  checked by `pinned_gpyreg_source`, which the stacking comparison
+  shares). On such a machine the recomputation gate is met up to the other
+  BLAS's rounding amplified by each run's GP condition number, which
+  `verify_run` allows and reports (`--rounding-factor` scales the
+  allowance); the report also records the verifying checkout's identity
+  next to the pool's. Each condition's artifacts, error files and logs lie
+  in its own directory, its records and claims under `records/<label>/`
+  and `claims/<label>/`. A pool prepared before the contract, such as
+  `pool_20260914`, keeps its flat layout (artifacts and records named
+  `<label>_seed<seed>`, the flat identity of `identity()`), which the
+  September scripts under `scripts/hpc/` generated: `verify`, `select`,
+  `summarize` and `cases` read it with its own checks, and `prepare`,
+  `worker` and `run` refuse it. `test_svbmc_pool_run.py` generates a short
+  campaign and checks the artifact, resume, revision, selection, summary,
+  the contract's refusals, claims, clean-up and `verify` states, the
+  identity of a case run by the array worker and by `run`, the flat
+  layout, and one campaign through the driver; it reads the gpyreg
+  checkout from `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
@@ -627,7 +637,8 @@ reason.
   another, within that machine's rounding amplified by the condition
   number of the GP's kernel matrix, which the gate allows as a fixed
   multiple of `eps` times that number and reports) without the live run,
-  and post hoc also against the hashes of the completion record;
+  and post hoc also against the hashes of the completion record, in the
+  contract's shape or the flat layout's (`recorded_hashes`);
   `filter_verdict` applies the pool's stability and `J_sjk` filters.
 - `scripts/hpc/` — Slurm tooling for generating the S-VBMC pools on a
   cluster ([README](scripts/hpc/README.md)): `svbmc_pool_submit.sh`
@@ -739,8 +750,10 @@ reason.
   and of the cells file; `--headline-ratio` moves the headline within
   `--ratios`; `--self-check` runs the run-level checks on a pool without
   cells; `--summarize-only` rebuilds summaries and figures. Needs no
-  Torch. `test_svbmc_honest_elbo.py` checks the contracts on a generated
-  two-run pool and, synthetically, the combination rules, the checks and
+  Torch. It reads the artifacts of a pool of either layout of
+  `svbmc_pool_run.py`. `test_svbmc_honest_elbo.py` (the gpyreg checkout
+  from `PYVBMC_GPYREG_SOURCE`, skipped when that is unset) checks the
+  contracts on a generated two-run pool and, synthetically, the combination rules, the checks and
   the mapping between two different transformers; the first run, on the
   pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
@@ -753,8 +766,8 @@ reason.
   `kappa` (the crossing component included; `kappa = 1` is the class's
   cap) and at the weighted median, every variant's bias scored against
   the cell's `elbo_mc`. Needs Torch on `PYTHONPATH` and the pool's
-  gpyreg through `--gpyreg-source`; writes `cells.jsonl`, `summary.json`
-  and `summary.md`. Its runs are
+  gpyreg through `--gpyreg-source`, a clean checkout at the manifest's
+  gpyreg commit; writes `cells.jsonl`, `summary.json` and `summary.md`. Its runs are
   `experiments/svbmc_pool/cap_kappa_20260915/`, `cap_kappa_M35_20260915/`
   and `cap_kappa_M32_20260916/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
@@ -790,7 +803,9 @@ reason.
   `results.json`, repeatable) and `--shrink` (a shrinkage `cells.jsonl`,
   repeatable) every stacked estimate's bias is restated as the **added
   bias**, the stack's bias minus the mean bias of its input runs, the
-  yardstick of the campaign plan's decision 11. Its run is
+  yardstick of the campaign plan's decision 11. The pool's gpyreg comes
+  through `--gpyreg-source`, checked against the manifest's gpyreg
+  commit, as for every script below that reads a pool. Its run is
   `experiments/svbmc_pool/single_run_20260915/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (section "The inputs' own bias") and the
@@ -814,10 +829,12 @@ reason.
   the hybrid threshold sweep, the caps' bind fractions, paired
   bootstrap intervals, the single-run biases and added-bias ranges,
   the re-optimization's rows; every aggregate over `M` both for the
-  grid through 16 and for every `M`) from the tracked `cells.jsonl`,
-  `summary.json` and `added.json` files under
-  `experiments/svbmc_pool/`; NumPy only, no pool or raw directory
-  needed. The check for a quoted number.
+  grid through 16 and for every `M`) from the `cells.jsonl`,
+  `summary.json` and `added.json` files of the directories it is given
+  (`--shrink`, `--caps`, `--single-run`, `--shrink-opt`; the quoted
+  numbers are those of the tracked directories under
+  `experiments/svbmc_pool/`, which its docstring's command names); NumPy
+  only, no pool or raw directory needed. The check for a quoted number.
 - `scripts/svbmc_shrink_worked_example.py` — prints the worked example
   of the [tutorial note](2026-09-15-svbmc-shrinkage-explained.md)
   (section 7): one recorded `M = 4` stack per condition rebuilt from

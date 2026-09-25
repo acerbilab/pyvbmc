@@ -18,9 +18,11 @@ on hand-built arrays, the own-run checks flagging a broken mapping, and
 the mapping of draws between two runs with different transformers (one
 unbounded, one bounded probit) through stand-in GPs that know the target,
 whose estimates must agree to rounding. Outside default pytest discovery;
-run it by path::
+run it by path, with ``PYVBMC_GPYREG_SOURCE`` naming the gpyreg checkout
+the pool is generated against (every test skips when it is unset)::
 
-    python -m pytest dev/scripts/test_svbmc_honest_elbo.py -vv
+    PYVBMC_GPYREG_SOURCE=<gpyreg checkout> \\
+        python -m pytest dev/scripts/test_svbmc_honest_elbo.py -vv
 """
 
 import json
@@ -36,7 +38,11 @@ import svbmc_pool_run as runner
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 SCRIPT = HERE / "svbmc_honest_elbo.py"
-GPYREG_SOURCE = runner.DEFAULT_GPYREG
+GPYREG_SOURCE = (
+    Path(os.environ["PYVBMC_GPYREG_SOURCE"]).resolve()
+    if os.environ.get("PYVBMC_GPYREG_SOURCE")
+    else None
+)
 LABEL = "normal_D2"
 SEED_START = 4100
 SEEDS = 2
@@ -44,17 +50,18 @@ CELL_SEED = 123
 DRAWS = 200
 HEADLINE = f"ratio{2.0:g}"
 
-# The campaign pins gpyreg to a frozen worktree: the estimator's
-# subprocesses read the variable, and this process gets the same pin on
-# its path before anything imports PyVBMC.
-if (GPYREG_SOURCE / "gpyreg").is_dir():
+# The campaign pins gpyreg to one checkout: the estimator's subprocesses
+# read the variable, and this process gets the same pin on its path before
+# anything imports PyVBMC.
+if GPYREG_SOURCE is not None:
     runner.activate_gpyreg(GPYREG_SOURCE)
 
 import svbmc_honest_elbo as honest  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
-    not (GPYREG_SOURCE / "gpyreg").is_dir(),
-    reason="the campaign's frozen gpyreg worktree is machine-local",
+    GPYREG_SOURCE is None,
+    reason="PYVBMC_GPYREG_SOURCE, the gpyreg checkout the pool is "
+    "generated against, is unset",
 )
 
 
@@ -91,6 +98,8 @@ def pool(tmp_path_factory):
         str(SEEDS),
         "--seed-start",
         str(SEED_START),
+        "--gpyreg-source",
+        str(GPYREG_SOURCE),
         # The estimator and the pool scripts are developed together, so
         # this pool is generated from whatever the tree holds.
         "--allow-dirty",
@@ -101,8 +110,8 @@ def pool(tmp_path_factory):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     tags = sorted(
-        p.name[: -len(".complete.json")]
-        for p in (out / "records").glob("*.complete.json")
+        f"{p.parent.name}/{p.name[: -len('.complete.json')]}"
+        for p in (out / "records").glob("*/*.complete.json")
     )
     assert len(tags) == SEEDS
     return out, tags

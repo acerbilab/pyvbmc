@@ -3,157 +3,162 @@
 The pools are the input of the ELBO debiasing estimator and of the
 stacking comparison against the original S-VBMC; the campaign, its
 conditions, seeds, filters and stopping rule are
-``dev/plans/svbmc-benchmark-campaign.md``. Each run is one fresh process
-on one configuration and seed of the ``svbmc_pool`` suite of
-``benchmark_targets.py``, saved as the per-run artifact of that plan
-(``svbmc_pool_io.save_run``: the returned posterior with all of its
-statistics, the GP behind them, the transformer, every evaluation, the
-run's state and its metadata) and recorded in a hash-verified completion
-record that permits resumption.
+``dev/plans/svbmc-benchmark-campaign.md``, and how the release pools run on
+a Slurm cluster is ``dev/plans/slurm-benchmark-support.md``. Each run is
+one fresh process on one configuration and seed of the ``svbmc_pool``
+suite of ``benchmark_targets.py``, saved as the per-run artifact of the
+campaign plan (``svbmc_pool_io.save_run``: the returned posterior with all
+of its statistics, the GP behind them, the transformer, every evaluation,
+the run's state and its metadata) and recorded in a hash-verified
+completion record.
 
-Sub-commands::
+The harness meets the campaign contract of the Slurm plan
+(``campaign_contract.py``), so the driver under ``dev/scripts/hpc/``
+(``campaign_submit.sh``, ``campaign_task.sbatch``, ``campaign_finish.sh``,
+with ``HARNESS=dev/scripts/svbmc_pool_run.py``) runs a pool as Slurm job
+arrays. Sub-commands::
 
     python dev/scripts/svbmc_pool_run.py prepare --out DIR \\
-        --suite svbmc_pool
-    python -u dev/scripts/svbmc_pool_run.py run --out DIR --pilot-seeds 3
-    python -u dev/scripts/svbmc_pool_run.py run --out DIR
-    python dev/scripts/svbmc_pool_run.py cases --out DIR
-    python dev/scripts/svbmc_pool_run.py worker --out DIR --label L --seed S
+        --gpyreg-source PATH [--suite svbmc_pool] [allocation flags]
+    python dev/scripts/svbmc_pool_run.py cases --out DIR [--subset LABEL]
+    python dev/scripts/svbmc_pool_run.py worker --out DIR --case LINE
+    python dev/scripts/svbmc_pool_run.py verify --out DIR
     python dev/scripts/svbmc_pool_run.py select --out DIR
     python dev/scripts/svbmc_pool_run.py summarize --out DIR
-    python dev/scripts/svbmc_pool_run.py verify --out DIR
+    python -u dev/scripts/svbmc_pool_run.py run --out DIR [--pilot-seeds K]
 
-``prepare`` writes the manifest: the allocation, the run options and the
-identity of the code and environment the pool is generated with. It
-allocates every condition of the named suite, which for ``svbmc_pool`` is
-the campaign's eight pool conditions (``POOL_LABELS``); ``--only``
-allocates a subset of them. The defaults are
-the campaign's approved allocation, so the command above needs no
-allocation flags: 100 filtered runs per noisy condition and 50 per
-noiseless control, seed caps 150, 200 for the ring (``DEFAULT_SEED_CAPS``)
-and 75 for the controls. The narrower the flag, the later it wins:
-``--target`` and ``--max-seeds`` set every condition including the
-controls, ``--control-target`` and ``--control-max-seeds`` the controls
-alone, ``--allocation LABEL=TARGET/MAXSEEDS`` one condition.
-Run on a directory that already holds a manifest, ``prepare`` revises the
-allocation; nothing else about the campaign can change. Filtered targets
-and seed caps may be revised and a condition added, a condition that
-already has runs may neither be dropped nor given a different first seed,
-and the previous allocation and the time are appended to
-``allocation_history``, which is how the pilot's revision of the seed caps
-is recorded.
+``prepare`` writes the manifest: the allocation, the run options, the
+identity of the code the pool is generated with, the operator settings of
+the Slurm plan (the ``site`` block), the environment's ``pip freeze`` and
+the finishing steps, ``select`` and then ``summarize``. ``--gpyreg-source``
+names the gpyreg checkout every process of the campaign imports, and must
+name the directory of ``PYVBMC_GPYREG_SOURCE`` where that is set. The
+identity is ``campaign_contract.identity`` over two trees, the whole
+harness checkout (``harness``) and gpyreg: their commits and clean states,
+the SHA-256 of this harness, ``svbmc_pool_io.py``, ``benchmark_targets.py``,
+``campaign_contract.py`` and the data directory ``dev/scripts/data``, and
+the imported versions of Python, NumPy, SciPy and cma; ``pyvbmc`` must be
+imported from the harness checkout and ``gpyreg`` from its checkout. A
+gpyreg checkout with any uncommitted or untracked change is refused, and so
+is a dirty harness checkout unless ``--allow-dirty``, which the manifest
+records. It allocates every condition of the named suite, which for
+``svbmc_pool`` is the campaign's eight pool conditions (``POOL_LABELS``);
+``--only`` allocates a subset of them. The defaults are the campaign's
+approved allocation: 100 filtered runs per noisy condition and 50 per
+noiseless control, seed caps 150, 200 for the ring
+(``DEFAULT_SEED_CAPS``) and 75 for the controls. The narrower the flag,
+the later it wins: ``--target`` and ``--max-seeds`` set every condition
+including the controls, ``--control-target`` and ``--control-max-seeds``
+the controls alone, ``--allocation LABEL=TARGET/MAXSEEDS`` one condition.
+The release pools are ``--target 320 --max-seeds 350 --allocation
+ring_D2_noise3_svbmc=320/480``, 2930 cases. Run on a directory that
+already holds a manifest, ``prepare`` revises the allocation and nothing
+else: filtered targets and seed caps may be revised and a condition added,
+a condition that already has runs may neither be dropped nor given a
+different first seed, and the previous allocation and the time are
+appended to ``allocation_history``. The driver writes the case list once,
+so a campaign that has been submitted is not revised.
 
-``run`` is the laptop supervisor: it refuses a source identity that
-differs from the prepared one, takes the campaign lock, and walks the
-conditions in manifest order, seeds upward, one
-worker subprocess at a time, stopping each condition at its filtered
-target or its seed cap. A failing case leaves ``<tag>.error.txt`` — the
-one its own worker wrote, or one the supervisor writes from the case log
-when the worker died before it could —, counts towards the seed cap, and
-the sweep continues; an artifact file of a case with neither a completion
-record nor an error file stops the sweep for inspection. The ``<tag>.log``
-an interrupted sweep leaves behind is not such a file: it is truncated
-when the case runs again. A sweep that runs
-to its targets leaves exactly the runs ``select`` would choose, so the
-comparison reads the same pool either way; a sweep run with
-``--pilot-seeds`` or under a lowered target leaves more than the target,
-and ``select`` is then what says which of them the pool is.
+``cases`` prints one line per case, its tag ``<label>/<label>_seed<seed>``,
+for every seed of each condition's range whatever its filtered target,
+conditions in manifest order; line ``i`` is case index ``i``. ``--subset
+LABEL`` prints ``<index> <line>`` for the cases of one condition, which the
+driver submits as its own array with its own time limit.
 
-``cases`` prints every ``label seed`` pair of the allocation over the
-full seed range, and ``worker`` runs one of them in one fresh process, so
-a cluster can generate the same pool as an array job, one task per case.
-The plan's section "Cluster generation" owns that hand-over; the shape of
-it is three separate pieces. ``dev/scripts/hpc/`` holds the scripts that
-implement this sketch (its README is the operator's guide). On the login
-node, once the campaign is prepared, write the case list and submit the
-array::
+``worker --case LINE`` runs one case in one fresh process through
+``campaign_contract.run_worker``: it exits 0 at once when the case has a
+completion record, refuses a source identity that differs from the
+manifest's (exit 78) and a case that a live task has claimed (exit 75),
+removes what an interrupted attempt left, runs the case and writes its
+artifact and its completion record. A case that raises leaves
+``<tag>.error.txt`` with the traceback and no artifact and exits 1; a
+SIGTERM or SIGINT removes the partial files and exits 128 plus the
+signal's number, so that ``verify`` reports the case as missing. A line
+that is not a case of the allocation is refused with exit 64 and touches
+nothing.
 
-    python dev/scripts/svbmc_pool_run.py cases --out $DIR > $DIR/cases.txt
-    wc -l < $DIR/cases.txt      # 1100 for the campaign's allocation
-    sbatch --array=1-1000%50 --cpus-per-task=1 --mem=2G pool_task.sh
-    sbatch --array=1-100%50 --export=ALL,INDEX_OFFSET=1000 \\
-        --cpus-per-task=1 --mem=2G pool_task.sh
+``run`` is the workstation supervisor: it refuses a source identity that
+differs from the manifest's, takes the campaign lock and walks the
+conditions in manifest order, seeds upward, one ``worker`` subprocess at a
+time, stopping each condition at its filtered target or its seed cap
+(``--pilot-seeds K`` runs exactly ``K`` seeds of each instead). A case
+that failed counts towards the seed cap and the sweep goes on; a worker
+that dies without writing its error file gets one from the tail of its
+``<tag>.log``, and its partial files are removed. The sweep stops for
+inspection at a case whose artifact files lie without a record, an error
+file or a claim, at a case that another process holds, and when a worker
+refuses its case or a signal stops it. A sweep that
+runs to its targets leaves exactly the runs ``select`` would choose; one
+run with ``--pilot-seeds`` or under a lowered target leaves more, and
+``select`` then says which of them the pool is. The campaign lock,
+``status.json`` and ``finished.json`` belong to ``run`` alone.
 
-Two submissions because Slurm's ``MaxArraySize`` defaults to 1001 and caps
-the largest index rather than the number of tasks: the valid indices are
-0..1000, which the allocation's 1100 cases exceed. The second submission
-therefore runs indices 1..100 again and has the script add
-``INDEX_OFFSET`` to them, so those tasks read lines 1001..1100 of the case
-list; ``scontrol show config | grep MaxArraySize`` gives the site's own
-limit, and the ``%50`` throttle caps how many tasks run at once. One core
-and under 2 GB per case is enough.
+``select`` applies the campaign's stopping rule after the fact: per
+condition it takes the lowest-seed runs that pass the filters, up to the
+filtered target, and writes them to ``selection.json`` (per condition in
+``conditions``, the selected ``tag`` and ``seed`` pairs in seed order in
+``runs``), the authoritative definition of the filtered pool, which the
+stacking comparison reads. ``summarize`` writes the per-condition counts,
+pass rates, convergence (``success_flag``, ``convergence_status``,
+``message``, ``r_index``, ``iterations``), wall times and metric quartiles
+of every case the directory holds, to ``summary.json`` and ``summary.md``.
 
-``pool_task.sh`` is the array script, run once per task by Slurm. Its
-body is these lines, which belong in the script and nowhere else; the
-line of the case list one task reads is its array index plus the offset
-its submission exported, which is nothing for the first chunk::
-
-    #!/bin/bash
-    export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-    export MPLBACKEND=Agg PYVBMC_GPYREG_SOURCE=<the manifest's gpyreg_source>
-    LINE=$((SLURM_ARRAY_TASK_ID + ${INDEX_OFFSET:-0}))
-    CASE=$(sed -n "${LINE}p" $DIR/cases.txt)
-    python -u dev/scripts/svbmc_pool_run.py worker --out $DIR \\
-        --label ${CASE% *} --seed ${CASE#* }
-
-When the array is done, on any machine that can read ``$DIR``::
-
-    python dev/scripts/svbmc_pool_run.py select --out $DIR
-    python dev/scripts/svbmc_pool_run.py summarize --out $DIR
-
-An array runs every seed of the range rather than stopping at the
-filtered target, and ``select`` then applies the campaign's stopping rule
-after the fact: per condition it takes the lowest-seed runs that pass the
-filters, up to the filtered target, and writes them to ``selection.json``,
-which is the authoritative definition of the filtered pool and what the
-stacking comparison reads. A task that fails leaves ``<tag>.error.txt``
-naming the case and carrying the end of its traceback, deletes whatever
-artifact files it had begun so that no truncated artifact is mistaken for
-a run, and exits non-zero, so Slurm records the failure too; the case is
-rerun or left out, and nothing else needs doing about it. ``run``'s
-campaign lock, its ``status.json`` and its sequential stopping rule belong
-to the laptop sweep alone; no array task writes any of them.
-
-``verify`` is what reads an array's output before ``select``. It re-checks
-every completed case against its completion record (the recorded identity,
-which must match the manifest's source identity, and the hashes of both
-files) and then post hoc with ``svbmc_pool_io.verify_run``, the
-recomputation gate on the rebuilt posterior and GP included, and it
-reconciles the allocation case by case: the ``failed`` cases with the last
-line of their error file, the ``partial`` artifacts left without a record
-or an error file, and the ``missing`` cases, which is what a task Slurm
-kills for its time limit or its memory leaves behind, printed with the
-array index that resubmits them; artifact files the allocation does not
-name are reported as stray. The report is ``verification.json``. The
-command exits non-zero when an artifact fails its checks or the directory
-holds a partial or a stray file, and zero for failed and missing cases,
-which are reported and then rerun or left out. A pool copied to another
-machine is verified with ``--gpyreg-source`` naming a local checkout of the
-pinned library instead of the manifest's path, which is accepted only at
-the manifest's gpyreg commit. On that other machine the recomputation is
-no longer bit-identical: its BLAS rounds differently, and the rebuilt
-posterior factors carry that rounding amplified by the condition number
-of each run's GP, up to a relative 0.3 on the ill-conditioned GPs of the
-noisy Rosenbrock condition, whose training sets hold far-tail
-evaluations. The gate allows each artifact its own amplified rounding
-(``svbmc_pool_io.verify_run``; ``--rounding-factor`` scales the
+``verify`` re-checks every completed case against its record and the
+manifest, and reconciles the allocation case by case with
+``campaign_contract.reconcile``: ``verified``, ``verify_failed``,
+``failed`` (an error file), ``in_flight`` (a live claim), ``interrupted``
+(a stale claim, which a task killed outright leaves with whatever files
+it wrote; a worker writes the artifact only once the run has finished),
+``partial`` (artifact files with neither a record nor a claim),
+``missing`` (a case that never ran, or that a SIGTERM stopped), and the
+stray files no case owns. A record passes when its
+source identity equals the manifest's, every artifact it lists has its
+SHA-256, and, where the manifest's ``site`` block names ``NODE_FEATURE``,
+its host part shows that feature and one physical core; the artifact must
+then pass ``svbmc_pool_io.verify_run``, the recomputation gate on the
+rebuilt posterior and GP included. The report is ``verification.json``;
+the command exits non-zero when a case fails its verification or the
+directory holds a partial case or a stray file, and zero for failed,
+interrupted and missing cases, which are resubmitted or left out. A pool
+copied to another machine is verified with ``--gpyreg-source`` naming a
+local checkout of the pinned library instead of the manifest's path, which
+is accepted only at the manifest's gpyreg commit. On that other machine the
+recomputation is no longer bit-identical: its BLAS rounds differently, and
+the rebuilt posterior factors carry that rounding amplified by the
+condition number of each run's GP, up to a relative 0.3 on the
+ill-conditioned GPs of the noisy Rosenbrock condition, whose training sets
+hold far-tail evaluations. The gate allows each artifact its own amplified
+rounding (``svbmc_pool_io.verify_run``; ``--rounding-factor`` scales the
 allowance, 0 restores the absolute gate) and the report carries every
 case's relative differences and condition number, per condition their
 maxima, and the identity of the verifying checkout next to the pool's.
 
-gpyreg is pinned to the frozen worktree the manifest names: every
-process prepends it to ``sys.path`` before PyVBMC is imported (through
-``PYVBMC_GPYREG_SOURCE``, which the launcher also passes to its
-children) and refuses to run when ``gpyreg`` resolves elsewhere. PyVBMC
-itself is this checkout: the identity's ``source`` half records its
-commit, whether the package or the suite module carries uncommitted
-changes, and the hashes of the suite module and of the two pool scripts.
-``prepare``, ``run``, ``worker`` and the resumption check compare that
-half alone, so that one pool is generated by one code and library state
-while any node may run any case; the ``host`` half (hostname, platform,
-interpreter, import paths, threads) is recorded and never compared.
-``run`` refuses to generate a pool from a dirty tree unless the manifest
-was prepared with ``--allow-dirty``, which records the relaxation.
+A campaign directory holds, per condition ``<label>``,
+``<label>/<label>_seed<seed>.npz`` and ``.json`` (the artifact; ``run
+--save-vbmc`` adds ``.vbmc.pkl``), ``.error.txt`` for a failed case and
+``.log`` for a case ``run`` started, and beside them the contract's
+``records/<tag>.complete.json`` and ``claims/<tag>``. A completion record
+holds the contract's fields (the case, the identity with its host part,
+the times, the SHA-256 and size of every artifact file) and the run's own:
+``label``, ``seed``, ``wall_s``, ``target_eval_s``, ``K``,
+``func_count``, ``elbo``, ``elbo_sd``, ``success_flag``,
+``convergence_status``, ``message``, ``r_index``, ``iterations``,
+``verdict`` (the filters), ``metrics`` (against the truth) and
+``verification`` (the checks the artifact passed when it was saved).
+
+Pools prepared before the campaign contract, among them
+``dev/experiments/svbmc_pool/pool_20260914/``, keep their flat layout,
+recognised by a manifest without a ``contract`` field: artifacts
+``<label>_seed<seed>.*`` at the top of the directory, records
+``records/<label>_seed<seed>.complete.json`` holding the hashes by suffix
+and the flat identity of :func:`identity`. ``verify``, ``select``,
+``summarize`` and ``cases`` read such a pool as it is, with the checks it
+was generated under; ``prepare``, ``worker`` and ``run`` refuse it.
+
+gpyreg is pinned to the checkout the manifest names: every process
+prepends it to ``sys.path`` before PyVBMC is imported (through
+``PYVBMC_GPYREG_SOURCE``, which ``run`` also passes to its workers) and
+refuses to run when ``gpyreg`` resolves elsewhere.
 """
 
 import argparse
@@ -162,7 +167,6 @@ import os
 import subprocess
 import sys
 import time
-import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -173,20 +177,25 @@ for _key in THREAD_KEYS:
 os.environ["MPLBACKEND"] = "Agg"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
-# Honour a gpyreg pin already in the environment (a child of `run`, or an
-# operator following `population_run.py`); `activate_gpyreg` installs the
+# Honour a gpyreg pin already in the environment (the campaign's
+# environment script, a child of `run`); `activate_gpyreg` installs the
 # manifest's pin for a process started without it. Either way this
 # happens before the first PyVBMC import, which is why nothing under
 # `pyvbmc` or `svbmc_pool_io` is imported at module level here.
 if os.environ.get("PYVBMC_GPYREG_SOURCE"):
     sys.path.insert(1, os.environ["PYVBMC_GPYREG_SOURCE"])
 
+import campaign_contract as contract  # noqa: E402
 import numpy as np  # noqa: E402
 from filelock import FileLock  # noqa: E402
 
 SUITE_MODULE = ROOT / "dev" / "scripts" / "benchmark_targets.py"
 IO_MODULE = HERE / "svbmc_pool_io.py"
 RUNNER_MODULE = Path(__file__).resolve()
+#: The frozen gpyreg 1.2.1 worktree against which ``pool_20260914`` is
+#: read, at its place under the gitignored ``dev/scripts/runs/`` (listed in
+#: ``dev/scripts/runs/LOCAL.md``). This harness takes its gpyreg checkout
+#: as an argument; the scripts that default to this path import it here.
 DEFAULT_GPYREG = (
     ROOT / "dev" / "scripts" / "runs" / "svbmc_pool_20260913" / "gpyreg_1.2.1"
 )
@@ -225,9 +234,8 @@ BASE_OPTIONS = {
 # suite: evidence error, Gaussianized symmetrized KL, marginal TV.
 THRESHOLDS = {"elbo_err": 1.0, "gskl": 1.0, "mmtv": 0.2}
 #: The manifest fields a campaign directory is bound to for its whole
-#: life. The allocation is not one of them: the pilot revises targets and
-#: seed caps in place (``cmd_prepare``), which leaves every run already
-#: generated valid.
+#: life. The allocation is not one of them: a revision of targets and
+#: seed caps (``cmd_prepare``) leaves every run already generated valid.
 STRUCTURAL_KEYS = (
     "campaign",
     "suite",
@@ -237,16 +245,31 @@ STRUCTURAL_KEYS = (
     "allow_dirty",
 )
 #: The suffixes of one case's artifact files. A ``<tag>.log`` is not one:
-#: every case that starts writes one, and it is truncated on a rerun.
+#: every case that ``run`` starts writes one, and it is truncated on a
+#: rerun.
 ARTIFACT_SUFFIXES = (".npz", ".json", ".vbmc.pkl")
+#: The files and directories whose SHA-256 the source identity holds,
+#: relative to the harness checkout.
+IDENTITY_FILES = (
+    "dev/scripts/svbmc_pool_run.py",
+    "dev/scripts/svbmc_pool_io.py",
+    "dev/scripts/benchmark_targets.py",
+    "dev/scripts/campaign_contract.py",
+    "dev/scripts/data",
+)
+#: The packages whose import path the identity records, each with the
+#: tree it must be imported from.
+IDENTITY_MODULES = {"pyvbmc": "harness", "gpyreg": "gpyreg"}
+#: The finishing steps the driver runs on a verified directory.
+FINISHING_STEPS = [["select"], ["summarize"]]
+#: Exit code of a worker given a line that is not a case of the
+#: allocation, or a directory it may not generate cases in (``EX_USAGE``).
+EXIT_USAGE = 64
+#: The convergence fields of a run's results that its completion record
+#: holds, beside ``success_flag``.
+CONVERGENCE_KEYS = ("convergence_status", "message", "r_index", "iterations")
 
-
-def write_json(path, value):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(path)
+write_json = contract.write_json
 
 
 def git(path, *args):
@@ -280,6 +303,40 @@ def activate_gpyreg(source):
     return str(source)
 
 
+# --------------------------------------------------------------------------
+# Layouts
+# --------------------------------------------------------------------------
+
+
+def is_contract(manifest):
+    """Whether a manifest was prepared under the campaign contract.
+
+    A pool prepared before it (the flat layout of ``pool_20260914``) has
+    no ``contract`` field.
+    """
+    return "contract" in manifest
+
+
+def case_tag(label, seed, contract_layout=True):
+    """The tag of one case: ``<label>/<label>_seed<seed>``, or in the flat
+    layout ``<label>_seed<seed>``."""
+    name = f"{label}_seed{int(seed)}"
+    return f"{label}/{name}" if contract_layout else name
+
+
+def tag_seed(tag):
+    """The seed a tag of either layout names."""
+    return int(tag.rsplit("_seed", 1)[1])
+
+
+def manifest_gpyreg_commit(manifest):
+    """The gpyreg commit a manifest of either layout pins."""
+    identity = manifest["identity"]
+    if is_contract(manifest):
+        return identity["source"]["trees"]["gpyreg"]["commit"]
+    return identity_source(identity).get("gpyreg_commit")
+
+
 def pinned_gpyreg_source(source, manifest):
     """A local gpyreg checkout accepted in place of the manifest's path.
 
@@ -300,7 +357,7 @@ def pinned_gpyreg_source(source, manifest):
             f"{source} is not a git checkout; --gpyreg-source names a clone "
             "of gpyreg at the manifest's commit"
         ) from error
-    pinned = identity_source(manifest["identity"]).get("gpyreg_commit")
+    pinned = manifest_gpyreg_commit(manifest)
     if commit != pinned:
         raise RuntimeError(
             f"{source} is at gpyreg commit {commit}, not the manifest's "
@@ -315,11 +372,61 @@ def pinned_gpyreg_source(source, manifest):
     return str(source)
 
 
-#: The identity fields every process of one campaign must agree on.
-#: ``svbmc_pool_io.environment`` provides the commits and library
-#: versions; :func:`identity` adds the working-tree state and the module
-#: hashes. Everything else an identity record holds says where the
-#: process ran and is never compared.
+# --------------------------------------------------------------------------
+# Identities
+# --------------------------------------------------------------------------
+
+
+def campaign_identity(gpyreg_source, host=True):
+    """The identity of this process under the campaign contract.
+
+    ``campaign_contract.identity`` over the harness checkout and the gpyreg
+    checkout, with the files of :data:`IDENTITY_FILES` and the import paths
+    of :data:`IDENTITY_MODULES`: ``source`` (compared by every worker),
+    ``imports`` and, with ``host``, the host part (recorded only).
+    """
+    return contract.identity(
+        {"harness": ROOT, "gpyreg": Path(gpyreg_source).resolve()},
+        IDENTITY_FILES,
+        modules=IDENTITY_MODULES,
+        host=host,
+    )
+
+
+def dirty_trees(record, allow_dirty):
+    """Refuse a dirty source tree of a contract identity.
+
+    The gpyreg checkout must be clean, since the pin is what makes the
+    pool reproducible; the harness checkout may be dirty only with
+    ``allow_dirty``. Returns the names of the dirty trees.
+    """
+    trees = record["source"]["trees"]
+    status = record.get("imports", {}).get("trees", {})
+
+    def detail(name):
+        lines = (status.get(name) or {}).get("dirty") or []
+        more = f" and {len(lines) - 5} more" if len(lines) > 5 else ""
+        return "; ".join(lines[:5]) + more
+
+    if not trees["gpyreg"]["clean"]:
+        raise RuntimeError(
+            "the gpyreg checkout has uncommitted or untracked changes "
+            f"({detail('gpyreg')}); the pin is what makes the pool "
+            "reproducible"
+        )
+    dirty = [name for name, tree in trees.items() if not tree["clean"]]
+    if dirty and not allow_dirty:
+        raise RuntimeError(
+            "uncommitted or untracked changes in the "
+            + ", ".join(f"{name} checkout ({detail(name)})" for name in dirty)
+            + "; commit them, or prepare with --allow-dirty to record that "
+            "the pool is generated from a dirty tree"
+        )
+    return dirty
+
+
+#: The fields of the flat identity (:func:`identity`) that the pools
+#: prepared before the campaign contract compared between processes.
 SOURCE_KEYS = (
     "python",
     "pyvbmc_commit",
@@ -336,19 +443,16 @@ SOURCE_KEYS = (
 
 
 def identity(gpyreg_source):
-    """What a pool is generated by, and where the process generating it ran.
+    """The flat identity: what a pool of the flat layout was generated by.
 
-    Returns ``{"source": ..., "host": ...}``. ``source`` is the code and
-    library state every process of one campaign must share, so that a
-    resumed or distributed campaign cannot mix versions: the commits and
-    versions of ``svbmc_pool_io.environment`` plus the state of the
-    working tree (whether the package or the suite module carries
-    uncommitted changes, whether the frozen gpyreg worktree is clean) and
-    the hashes of the three modules a run is generated by (the suite,
-    this harness and its artifact layer), which the package commit does
-    not cover while they are uncommitted. ``host`` is where the process
-    ran, recorded and never compared, so that any node may run any case
-    of one campaign.
+    Returns ``{"source": ..., "host": ...}``: the commits and versions of
+    ``svbmc_pool_io.environment`` plus the state of the working tree
+    (whether the package or the suite module carries uncommitted changes,
+    whether the gpyreg checkout is clean) and the hashes of the suite, this
+    harness and its artifact layer; ``host`` is where the process ran. The
+    pools prepared before the campaign contract compare its ``source``
+    half, and the analysis scripts record it as their provenance
+    (:func:`analysis_sources`).
     """
     import svbmc_pool_io as pool_io
 
@@ -396,12 +500,11 @@ def analysis_sources(script, cells, pool, gpyreg_source):
 
 
 def identity_source(record):
-    """The compared half of an identity record, in either stored shape.
+    """The compared half of a flat identity record, in either stored shape.
 
-    Records written before the split hold one flat mapping of both
-    halves; selecting :data:`SOURCE_KEYS` out of it yields the same
-    ``source`` the split writes, so a campaign generated by an earlier
-    version of this harness is still readable here.
+    Records written before the split into halves hold one flat mapping of
+    both; selecting :data:`SOURCE_KEYS` out of it yields the same
+    ``source`` the split writes.
     """
     if "source" in record:
         return record["source"]
@@ -409,7 +512,7 @@ def identity_source(record):
 
 
 def identity_host(record):
-    """The recorded-only half of an identity record, in either shape."""
+    """The recorded-only half of a flat identity record, in either shape."""
     if "host" in record:
         return record["host"]
     return {k: v for k, v in record.items() if k not in SOURCE_KEYS}
@@ -420,49 +523,40 @@ def identity_differences(actual, expected):
     return sorted(k for k in keys if actual.get(k) != expected.get(k))
 
 
+def identity_summary(record, contract_layout):
+    """``(pyvbmc commit, gpyreg commit, hostname)`` of an identity."""
+    if contract_layout:
+        trees = record["source"]["trees"]
+        return (
+            trees["harness"]["commit"],
+            trees["gpyreg"]["commit"],
+            (record.get("host") or {}).get("hostname"),
+        )
+    source, host = identity_source(record), identity_host(record)
+    return (
+        source.get("pyvbmc_commit"),
+        source.get("gpyreg_commit"),
+        host.get("hostname"),
+    )
+
+
 def structural_differences(previous, manifest):
     """The fields a campaign directory is bound to that a mapping changes.
 
-    Of the identity only the source half counts, so that a campaign
-    prepared on one machine and generated on another is one campaign.
+    Of the identity only the source part counts, so that a campaign
+    prepared on one machine and generated on another is one campaign; its
+    differing keys are named.
     """
     differing = []
     for key in STRUCTURAL_KEYS:
         before, now = previous.get(key), manifest[key]
         if key == "identity":
-            before, now = (
-                identity_source(before or {}),
-                identity_source(now),
-            )
-        if before != now:
+            changed = contract.source_differences(now, before)
+            if changed:
+                differing.append(f"identity ({', '.join(changed)})")
+        elif before != now:
             differing.append(key)
     return differing
-
-
-def check_tree(record, allow_dirty):
-    """Refuse a dirty numerical source unless the manifest allows it."""
-    record = identity_source(record)
-    if not record["gpyreg_clean"]:
-        raise RuntimeError(
-            "the frozen gpyreg worktree has uncommitted changes; the pin "
-            "is what makes the pool reproducible"
-        )
-    dirty = [
-        name
-        for name, value in (
-            ("pyvbmc/", record["pyvbmc_dirty"]),
-            ("dev/scripts/benchmark_targets.py", record["suite_module_dirty"]),
-        )
-        if value
-    ]
-    if dirty and not allow_dirty:
-        raise RuntimeError(
-            "uncommitted changes in "
-            + ", ".join(dirty)
-            + "; commit them, or prepare the manifest with --allow-dirty "
-            "to record that the pool was generated from a dirty tree"
-        )
-    return dirty
 
 
 # --------------------------------------------------------------------------
@@ -564,18 +658,29 @@ def read_manifest(out):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def condition_runs(out, label):
-    """The tags of one condition that left a completion record or an error."""
+def condition_runs(out, label, contract_layout=True):
+    """The tags of one condition that left a completion record or an error.
+
+    Only the directories of the condition are listed: under the contract,
+    ``records/<label>/`` and ``<label>/``; in the flat layout, ``records/``
+    and the top of the directory. Sorted by seed.
+    """
     out = Path(out)
+    name = f"{label}_seed*"
+    if contract_layout:
+        records, errors = out / "records" / label, out / label
+        prefix = f"{label}/"
+    else:
+        records, errors, prefix = out / "records", out, ""
     tags = {
-        path.name[: -len(".complete.json")]
-        for path in (out / "records").glob(f"{label}_seed*.complete.json")
+        prefix + path.name[: -len(".complete.json")]
+        for path in records.glob(f"{name}.complete.json")
     }
     tags |= {
-        path.name[: -len(".error.txt")]
-        for path in out.glob(f"{label}_seed*.error.txt")
+        prefix + path.name[: -len(".error.txt")]
+        for path in errors.glob(f"{name}.error.txt")
     }
-    return sorted(tags, key=lambda tag: int(tag.rsplit("seed", 1)[1]))
+    return sorted(tags, key=tag_seed)
 
 
 def revised_history(out, previous, current):
@@ -590,7 +695,7 @@ def revised_history(out, previous, current):
     allocated = {entry["label"]: entry for entry in current}
     for entry in previous["allocation"]:
         label = entry["label"]
-        runs = condition_runs(out, label)
+        runs = condition_runs(out, label, is_contract(previous))
         if not runs:
             continue
         if label not in allocated:
@@ -612,42 +717,77 @@ def revised_history(out, previous, current):
 
 
 def cmd_prepare(args):
-    source = activate_gpyreg(args.gpyreg_source)
+    out = args.out.resolve()
+    path = out / "manifest.json"
+    previous = read_manifest(out) if path.exists() else None
+    if previous is not None and not is_contract(previous):
+        raise RuntimeError(
+            f"{path} is a pool of the flat layout, prepared before the "
+            "campaign contract; it is verified, selected and summarized "
+            "here, and never revised or extended"
+        )
+    requested = Path(args.gpyreg_source).resolve()
+    pinned = os.environ.get("PYVBMC_GPYREG_SOURCE")
+    if pinned and Path(pinned).resolve() != requested:
+        raise RuntimeError(
+            f"--gpyreg-source {requested} is not PYVBMC_GPYREG_SOURCE "
+            f"{Path(pinned).resolve()}; every process of the campaign "
+            "imports one gpyreg checkout"
+        )
+    source = activate_gpyreg(requested)
     from benchmark_targets import suite_configs
 
     configs = select_configs(args, suite_configs(args.suite))
     manifest = {
         "campaign": "svbmc_pool",
+        "contract": contract.CONTRACT_VERSION,
         "suite": args.suite,
         "options": dict(BASE_OPTIONS),
         "allocation": allocation(args, configs),
         "gpyreg_source": source,
-        "identity": identity(source),
+        "identity": campaign_identity(source),
         "allow_dirty": bool(args.allow_dirty),
-        "created": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "allocation_history": [],
     }
-    out = args.out.resolve()
-    path = out / "manifest.json"
-    if path.exists():
-        previous = json.loads(path.read_text(encoding="utf-8"))
+    if previous is not None:
         differing = structural_differences(previous, manifest)
         if differing:
             raise RuntimeError(
                 f"{path} exists and differs in {differing}; prepare a new "
                 "directory instead of changing a campaign in place"
             )
-        manifest["created"] = previous["created"]
-        manifest["allocation_history"] = list(
-            previous.get("allocation_history", [])
+    dirty = dirty_trees(manifest["identity"], manifest["allow_dirty"])
+    if previous is None:
+        manifest.update(
+            {
+                "site": contract.site_block(),
+                "pip_freeze": contract.pip_freeze(),
+                "finishing_steps": FINISHING_STEPS,
+                "created": contract.now(),
+                "allocation_history": [],
+            }
         )
-        if manifest["allocation"] != previous["allocation"]:
-            manifest["allocation_history"] = revised_history(
-                out, previous, manifest["allocation"]
-            )
-            print(f"{path}: allocation revised", flush=True)
+    elif manifest["allocation"] != previous["allocation"]:
+        history = revised_history(out, previous, manifest["allocation"])
+        manifest = dict(
+            previous,
+            allocation=manifest["allocation"],
+            allocation_history=history,
+        )
+        print(f"{path}: allocation revised", flush=True)
+    else:
+        manifest = previous
     write_json(path, manifest)
-    print(f"{path}: {len(manifest['allocation'])} conditions", flush=True)
+    cases = manifest_cases(manifest)
+    print(
+        f"{path}: {len(manifest['allocation'])} conditions, "
+        f"{len(cases)} cases"
+        + (
+            f"; generated from a dirty {', '.join(dirty)} tree"
+            if dirty
+            else ""
+        ),
+        flush=True,
+    )
     for entry in manifest["allocation"]:
         print(
             f"  {entry['label']}: seeds {entry['seed_start']}.."
@@ -659,42 +799,121 @@ def cmd_prepare(args):
 
 
 # --------------------------------------------------------------------------
-# run
+# cases
 # --------------------------------------------------------------------------
 
 
-def validate_case(out, tag, expected):
-    """Re-verify a completed case; never silently skip a changed one.
+def manifest_cases(manifest):
+    """Every ``(label, seed)`` of an allocation, in condition order.
 
-    Only the source half of the identity is compared, so a case generated
-    on another node of a distributed campaign is accepted and one
-    generated by other code is not.
+    One case per seed of each condition's whole range, whatever the
+    filtered target: an array job runs them all and :func:`cmd_select`
+    applies the stopping rule afterwards.
     """
-    import svbmc_pool_io as pool_io
+    return [
+        (entry["label"], seed)
+        for entry in manifest["allocation"]
+        for seed in range(
+            int(entry["seed_start"]),
+            int(entry["seed_start"]) + int(entry["max_seeds"]),
+        )
+    ]
 
-    done = json.loads(
-        pool_io.record_path(out, tag).read_text(encoding="utf-8")
-    )
-    differing = identity_differences(
-        identity_source(done["identity"]), identity_source(expected)
-    )
-    if differing:
-        raise RuntimeError(f"{tag}: recorded identity differs in {differing}")
-    if not set(pool_io.SUFFIXES) <= set(done["hashes"]):
-        raise RuntimeError(f"{tag}: incomplete file manifest")
-    for suffix, digest in done["hashes"].items():
-        path = Path(out) / f"{tag}{suffix}"
-        if not path.exists():
-            raise RuntimeError(f"{tag}: missing {suffix}")
-        if pool_io.sha256(path) != digest:
-            raise RuntimeError(f"{tag}: changed {suffix}")
-    if done["tag"] != tag:
-        raise RuntimeError(f"{tag}: record belongs to {done['tag']}")
-    return done
+
+def case_lines(manifest):
+    """The case list: line ``i`` is case index ``i``.
+
+    Under the contract a line is the case's tag; in the flat layout it is
+    ``<label> <seed>``, the case list of the pools prepared before it.
+    """
+    if is_contract(manifest):
+        return [
+            case_tag(label, seed) for label, seed in manifest_cases(manifest)
+        ]
+    return [f"{label} {seed}" for label, seed in manifest_cases(manifest)]
+
+
+def allocated_case(manifest, line):
+    """``(label, seed)`` of a line of the case list, or None."""
+    for case, candidate in zip(manifest_cases(manifest), case_lines(manifest)):
+        if candidate == line:
+            return case
+    return None
+
+
+def cmd_cases(args):
+    """Print the cases of a campaign, one per line, for the driver.
+
+    The line number is the case index. With ``--subset LABEL``, one
+    condition's cases as ``<index> <line>``. The count goes to standard
+    error, so that redirecting standard output yields exactly the list.
+    """
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    cases = manifest_cases(manifest)
+    lines = case_lines(manifest)
+    if args.format == "json":
+        print(
+            json.dumps(
+                {
+                    "campaign": manifest["campaign"],
+                    "directory": str(out),
+                    "count": len(cases),
+                    "cases": [
+                        {
+                            "index": index,
+                            "line": line,
+                            "label": label,
+                            "seed": seed,
+                        }
+                        for index, ((label, seed), line) in enumerate(
+                            zip(cases, lines), start=1
+                        )
+                    ],
+                },
+                indent=2,
+            ),
+            flush=True,
+        )
+        return 0
+    if args.subset is not None:
+        labels = [entry["label"] for entry in manifest["allocation"]]
+        if args.subset not in labels:
+            print(
+                f"no subset {args.subset!r}: the subsets are the "
+                f"conditions of the allocation, {labels}",
+                file=sys.stderr,
+            )
+            return 1
+        chosen = [
+            f"{index} {line}"
+            for index, ((label, _), line) in enumerate(
+                zip(cases, lines), start=1
+            )
+            if label == args.subset
+        ]
+        for line in chosen:
+            print(line)
+        print(f"{len(chosen)} cases", file=sys.stderr, flush=True)
+        return 0
+    for line in lines:
+        print(line)
+    print(f"{len(cases)} cases", file=sys.stderr, flush=True)
+    return 0
+
+
+# --------------------------------------------------------------------------
+# worker
+# --------------------------------------------------------------------------
+
+
+def case_files(out, tag):
+    """Every artifact path one case may write."""
+    return [Path(out) / f"{tag}{suffix}" for suffix in ARTIFACT_SUFFIXES]
 
 
 def partial_artifacts(out, tag):
-    """The artifact files one case left behind, if any."""
+    """The artifact files one case left behind, relative to ``out``."""
     return [
         f"{tag}{suffix}"
         for suffix in ARTIFACT_SUFFIXES
@@ -702,18 +921,185 @@ def partial_artifacts(out, tag):
     ]
 
 
-def case_state(out, tag, expected):
-    """``("done", record)``, ``("failed", None)``, ``("partial", files)`` or
-    ``("new", None)`` for one case."""
-    import svbmc_pool_io as pool_io
+def convergence(results):
+    """The convergence fields of a run's results, as plain values."""
+    r_index = results.get("r_index")
+    return {
+        "convergence_status": str(results["convergence_status"]),
+        "message": str(results["message"]),
+        "r_index": None if r_index is None else float(r_index),
+        "iterations": int(results["iterations"]),
+    }
 
-    if pool_io.record_path(out, tag).exists():
-        return "done", validate_case(out, tag, expected)
-    if (Path(out) / f"{tag}.error.txt").exists():
+
+def run_case(out, manifest, tag, label, seed, save_vbmc=False):
+    """Run one case and write its artifact; ``(artifact paths, fields)``.
+
+    The fields are the run's own part of the completion record.
+    """
+    import svbmc_pool_io as pool_io
+    from benchmark_targets import find_config, metrics
+    from profile_run import jsonable
+
+    from pyvbmc import VBMC
+
+    base = Path(out) / tag
+    cfg = find_config(label)
+    problem = cfg.make(seed=seed)
+    vbmc_args, options = problem.vbmc_args()
+    options.update(manifest["options"])
+    vbmc = VBMC(*vbmc_args, options=options, seed=seed)
+    clock = time.perf_counter()
+    vp, results = vbmc.optimize()
+    wall = time.perf_counter() - clock
+    measured = jsonable(metrics(problem, vp, results["elbo"]))
+    verdict = pool_io.filter_verdict(vp)
+    base.parent.mkdir(parents=True, exist_ok=True)
+    report = pool_io.save_run(
+        base.parent,
+        base.name,
+        vbmc,
+        results,
+        problem,
+        cfg,
+        seed,
+        {"wall_s": wall},
+        meta_extra={"metrics": measured, "filter": verdict},
+    )
+    artifacts = [
+        base.with_name(f"{base.name}{suffix}") for suffix in pool_io.SUFFIXES
+    ]
+    if save_vbmc:
+        pickled = base.with_name(f"{base.name}.vbmc.pkl")
+        vbmc.save(pickled, overwrite=True)
+        artifacts.append(pickled)
+    fields = {
+        "label": label,
+        "seed": int(seed),
+        "wall_s": wall,
+        "target_eval_s": float(vbmc.function_logger.total_fun_eval_time),
+        "K": int(vp.K),
+        "func_count": int(results["func_count"]),
+        "elbo": float(results["elbo"]),
+        "elbo_sd": float(results["elbo_sd"]),
+        "success_flag": bool(results["success_flag"]),
+        **convergence(results),
+        "verdict": verdict,
+        "metrics": measured,
+        "verification": {
+            "checks": report["checks"],
+            "differences": report["differences"],
+            "bytes": report["bytes"],
+        },
+    }
+    print(
+        f"{tag}: elbo {results['elbo']:.3f} +- {results['elbo_sd']:.3f}, "
+        f"K {vp.K}, {results['func_count']} evaluations, "
+        f"{results['iterations']} iterations, {wall / 60:.1f} min, "
+        f"convergence {results['convergence_status']}, "
+        f"{'passes' if verdict['passes'] else 'filtered out'} "
+        f"(stable {verdict['stable']}, "
+        f"max J_sjk {verdict['max_J_sjk']:.3f})",
+        flush=True,
+    )
+    return artifacts, fields
+
+
+def cmd_worker(args):
+    """One case in one fresh process, through ``run_worker``."""
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    if not is_contract(manifest):
+        print(
+            f"{out} is a pool of the flat layout, prepared before the "
+            "campaign contract; no case runs in it",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+    case = allocated_case(manifest, args.case)
+    if case is None:
+        print(
+            f"{args.case!r} is not a case of the allocation of {out}; "
+            "the worker takes a line of `cases`",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+    label, seed = case
+    tag = contract.case_tag(args.case)
+    source = manifest["gpyreg_source"]
+
+    def this_identity():
+        return campaign_identity(activate_gpyreg(source))
+
+    def run(identity):
+        return run_case(out, manifest, tag, label, seed, args.save_vbmc)
+
+    return contract.run_worker(
+        out,
+        args.case,
+        manifest["identity"],
+        this_identity,
+        run,
+        lambda: case_files(out, tag),
+    )
+
+
+# --------------------------------------------------------------------------
+# run
+# --------------------------------------------------------------------------
+
+
+def check_record(out, tag, expected, node_feature=None):
+    """Re-check one completion record; raise ``CompletionError``.
+
+    ``campaign_contract.check_completion`` (the source identity, the
+    artifact files and their SHA-256, and with ``node_feature`` the host
+    part) with both artifact files required, and the record's label and
+    seed those of its tag.
+    """
+    record = contract.check_completion(
+        out,
+        tag,
+        expected,
+        required=[f"{tag}.npz", f"{tag}.json"],
+        node_feature=node_feature,
+    )
+    label = tag.split("/", 1)[0]
+    problems = []
+    if record.get("label") != label or record.get("seed") != tag_seed(tag):
+        problems.append(
+            f"the record is of {record.get('label')} seed "
+            f"{record.get('seed')}"
+        )
+    if not isinstance(record.get("verdict"), dict):
+        problems.append("the record holds no filter verdict")
+    if problems:
+        raise contract.CompletionError(tag, problems)
+    return record
+
+
+def case_state(out, tag, expected):
+    """The state of one case as ``run`` sees it: ``(state, detail)``.
+
+    As ``verify`` places it: ``done`` (a record that passes
+    :func:`check_record`, the record), ``in_flight`` (a live claim),
+    ``interrupted`` (a stale claim, which the worker takes over, with the
+    artifact files the killed attempt left, if any), ``partial`` (artifact
+    files with neither a record nor a claim), ``failed`` (an error file)
+    or ``new``.
+    """
+    if contract.record_path(out, tag).exists():
+        return "done", check_record(out, tag, expected)
+    claim = contract.claim_status(out, tag)
+    if claim["state"] == "live":
+        return "in_flight", claim
+    files = partial_artifacts(out, tag)
+    if claim["state"] == "stale":
+        return "interrupted", files
+    if files:
+        return "partial", files
+    if contract.error_path(out, tag).exists():
         return "failed", None
-    leftover = partial_artifacts(out, tag)
-    if leftover:
-        return "partial", leftover
     return "new", None
 
 
@@ -724,42 +1110,48 @@ def condition_plan(entry, pilot_seeds):
     return int(entry["max_seeds"]), int(entry["target_filtered"])
 
 
+def died_worker(out, tag, returncode, log_path, pid):
+    """What ``run`` leaves of a worker that died without its error file.
+
+    The error file, from the tail of the case's log; the partial artifact
+    files are removed, and the dead worker's own claim with them, so that
+    the case counts as failed.
+    """
+    error_file = contract.error_path(out, tag)
+    tail = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    error_file.write_text(
+        f"{tag}: worker exited with code {returncode} leaving no error "
+        "file\n" + "\n".join(tail[-40:]) + "\n",
+        encoding="utf-8",
+    )
+    for path in case_files(out, tag):
+        path.unlink(missing_ok=True)
+    claim = contract.claim_path(out, tag)
+    try:
+        record = contract.read_json(claim)
+    except (OSError, ValueError):
+        return
+    if record.get("pid") == pid and not record.get("job"):
+        claim.unlink(missing_ok=True)
+
+
 def cmd_run(args):
     out = args.out.resolve()
     manifest = read_manifest(out)
+    if not is_contract(manifest):
+        raise RuntimeError(
+            f"{out} is a pool of the flat layout, prepared before the "
+            "campaign contract; it is never extended"
+        )
     source = activate_gpyreg(manifest["gpyreg_source"])
-    expected = identity(source)
-    check_tree(expected, manifest.get("allow_dirty"))
-    differing = identity_differences(
-        identity_source(expected), identity_source(manifest["identity"])
+    expected = manifest["identity"]
+    differing = contract.source_differences(
+        campaign_identity(source, host=False), expected
     )
     if differing:
         raise RuntimeError(
             f"identity differs from the manifest in {differing}; the pool "
             "must be generated with the code it was prepared with"
-        )
-    launch = out / "launch.json"
-    structural = {k: manifest[k] for k in STRUCTURAL_KEYS}
-    if launch.exists():
-        previous = json.loads(launch.read_text(encoding="utf-8"))
-        differing = structural_differences(
-            previous["manifest"], manifest
-        ) + identity_differences(
-            identity_source(previous["identity"]), identity_source(expected)
-        )
-        if differing:
-            raise RuntimeError(
-                "an existing campaign in this directory belongs to a "
-                f"different setup (differs in {sorted(set(differing))})"
-            )
-    else:
-        write_json(
-            launch,
-            {
-                "identity": expected,
-                "manifest": structural,
-                "started": time.strftime("%Y-%m-%d %H:%M:%S"),
-            },
         )
     started = time.time()
     conditions = {}
@@ -790,16 +1182,23 @@ def cmd_run(args):
             target is None or counts["filtered"] < target
         ):
             current, seed = seed, seed + 1
-            tag = f"{label}_seed{current}"
+            tag = case_tag(label, current)
             state, detail = case_state(out, tag, expected)
             if state == "partial":
                 publish(None)
                 raise RuntimeError(
                     f"{tag}: incomplete prior attempt ("
                     + ", ".join(detail)
-                    + ") without a completion record or an error file; "
-                    "inspect before retrying, and delete those files to "
-                    "run the case again"
+                    + ") without a completion record, an error file or a "
+                    "claim; inspect before retrying, and delete those files "
+                    "to run the case again"
+                )
+            if state == "in_flight":
+                publish(None)
+                raise RuntimeError(
+                    f"{tag}: claimed by {detail['owner']} since "
+                    f"{detail['started']} ({detail['detail']}); another "
+                    "process is running it"
                 )
             counts["seeds_run"] += 1
             counts["seeds"].append(current)
@@ -809,12 +1208,12 @@ def cmd_run(args):
                 print(f"SKIP {tag} (failed earlier)", flush=True)
                 continue
             if state == "done":
-                record = detail
-                counts["filtered"] += bool(record["verdict"]["passes"])
+                passes = bool(detail["verdict"]["passes"])
+                counts["filtered"] += passes
                 completed.append(tag)
                 print(
                     f"SKIP {tag} (complete, "
-                    f"{'passes' if record['verdict']['passes'] else 'filtered out'})",
+                    f"{'passes' if passes else 'filtered out'})",
                     flush=True,
                 )
                 continue
@@ -833,10 +1232,8 @@ def cmd_run(args):
                 "worker",
                 "--out",
                 str(out),
-                "--label",
-                label,
-                "--seed",
-                str(current),
+                "--case",
+                tag,
             ]
             if args.save_vbmc:
                 command.append("--save-vbmc")
@@ -845,42 +1242,49 @@ def cmd_run(args):
             child_env["MPLBACKEND"] = "Agg"
             child_env["PYVBMC_GPYREG_SOURCE"] = source
             log_path = out / f"{tag}.log"
+            log_path.parent.mkdir(parents=True, exist_ok=True)
             with log_path.open("w", encoding="utf-8") as log:
-                result = subprocess.run(
+                child = subprocess.Popen(
                     command,
                     cwd=str(ROOT),
                     stdout=log,
                     stderr=subprocess.STDOUT,
                     env=child_env,
                 )
-            if result.returncode:
+                returncode = child.wait()
+            if (
+                returncode
+                in (
+                    contract.EXIT_CLAIMED,
+                    contract.EXIT_IDENTITY,
+                    EXIT_USAGE,
+                )
+                or returncode > 128
+            ):
+                publish(None)
+                raise RuntimeError(
+                    f"{tag}: the worker exited with code {returncode} "
+                    f"(see {log_path}); the sweep stops"
+                )
+            if returncode:
                 # The worker records its own failure; the supervisor
                 # writes the record only for a worker that died before it
                 # could, so that the case is never counted as unfinished.
-                error_file = out / f"{tag}.error.txt"
-                if not error_file.exists():
-                    tail = log_path.read_text(
-                        encoding="utf-8", errors="replace"
-                    ).splitlines()[-40:]
-                    error_file.write_text(
-                        f"{tag}: worker exited with code "
-                        f"{result.returncode} leaving no error file\n"
-                        + "\n".join(tail)
-                        + "\n",
-                        encoding="utf-8",
-                    )
+                if not contract.error_path(out, tag).exists():
+                    died_worker(out, tag, returncode, log_path, child.pid)
                 counts["failed"] += 1
                 failed.append(tag)
                 failed_now.append(tag)
                 print(f"FAILED {tag}; see {tag}.error.txt", flush=True)
             else:
-                record = validate_case(out, tag, expected)
-                counts["filtered"] += bool(record["verdict"]["passes"])
+                record = check_record(out, tag, expected)
+                passes = bool(record["verdict"]["passes"])
+                counts["filtered"] += passes
                 completed.append(tag)
                 print(
                     f"DONE {tag} in "
                     f"{(time.time() - case_started) / 60:.1f} min; "
-                    f"{'passes' if record['verdict']['passes'] else 'filtered out'}"
+                    f"{'passes' if passes else 'filtered out'}"
                     f"; elapsed {(time.time() - started) / 3600:.2f} h",
                     flush=True,
                 )
@@ -904,196 +1308,16 @@ def cmd_run(args):
 
 
 # --------------------------------------------------------------------------
-# worker
+# select
 # --------------------------------------------------------------------------
 
 
-def record_failure(out, tag, error):
-    """Leave one failed case as ``<tag>.error.txt`` and nothing else.
-
-    The file names the case, the exception and the end of the traceback,
-    and every artifact file the case had begun is deleted, so that a case
-    which died between writing its artifact and writing its completion
-    record cannot leave a truncated run behind for ``select`` or the
-    comparison to read. A sweep and a Slurm array both read this file as
-    the whole of what a failed case leaves.
-    """
-    out = Path(out)
-    out.mkdir(parents=True, exist_ok=True)
-    tail = traceback.format_exc().splitlines()[-40:]
-    (out / f"{tag}.error.txt").write_text(
-        f"{tag}: {type(error).__name__}: {error}\n" + "\n".join(tail) + "\n",
-        encoding="utf-8",
-    )
-    for suffix in ARTIFACT_SUFFIXES:
-        (out / f"{tag}{suffix}").unlink(missing_ok=True)
+def read_record(out, tag):
+    path = Path(out) / "records" / f"{tag}.complete.json"
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def cmd_worker(args):
-    """One case in one fresh process, recording its own failure.
-
-    A case that raises leaves ``<tag>.error.txt`` and no artifact, and the
-    process exits non-zero so that whatever launched it — a sweep, a Slurm
-    array — sees the failure; one that succeeds removes the error file of
-    an earlier attempt.
-    """
-    out = args.out.resolve()
-    tag = f"{args.label}_seed{args.seed}"
-    # Outside the guard below: a directory that holds no manifest is not a
-    # case that failed, so it must leave nothing behind.
-    manifest = read_manifest(out)
-    try:
-        worker_case(args, out, tag, manifest)
-    except Exception as error:
-        record_failure(out, tag, error)
-        raise
-    (out / f"{tag}.error.txt").unlink(missing_ok=True)
-    return 0
-
-
-def worker_case(args, out, tag, manifest):
-    out = Path(out)
-    launch = out / "launch.json"
-    if launch.exists():
-        loaded = json.loads(launch.read_text(encoding="utf-8"))
-        manifest, expected = loaded["manifest"], loaded["identity"]
-    else:  # invoked per case, outside a `run` sweep
-        expected = manifest["identity"]
-    source = activate_gpyreg(manifest["gpyreg_source"])
-    actual = identity(source)
-    # The source half alone, so that any node of an array job may run any
-    # case while no node may run one with different code.
-    differing = identity_differences(
-        identity_source(actual), identity_source(expected)
-    )
-    if differing:
-        raise RuntimeError(f"worker identity differs in {differing}")
-
-    import svbmc_pool_io as pool_io
-    from benchmark_targets import find_config, metrics
-    from profile_run import jsonable
-
-    from pyvbmc import VBMC
-
-    started = time.time()
-    cfg = find_config(args.label)
-    problem = cfg.make(seed=args.seed)
-    vbmc_args, options = problem.vbmc_args()
-    options.update(manifest["options"])
-    vbmc = VBMC(*vbmc_args, options=options, seed=args.seed)
-    clock = time.perf_counter()
-    vp, results = vbmc.optimize()
-    wall = time.perf_counter() - clock
-    measured = jsonable(metrics(problem, vp, results["elbo"]))
-    verdict = pool_io.filter_verdict(vp)
-    report = pool_io.save_run(
-        out,
-        tag,
-        vbmc,
-        results,
-        problem,
-        cfg,
-        args.seed,
-        {"wall_s": wall},
-        meta_extra={"metrics": measured, "filter": verdict},
-    )
-    hashes = dict(report["hashes"])
-    if args.save_vbmc:
-        vbmc.save(out / f"{tag}.vbmc.pkl", overwrite=True)
-        hashes[".vbmc.pkl"] = pool_io.sha256(out / f"{tag}.vbmc.pkl")
-    write_json(
-        pool_io.record_path(out, tag),
-        {
-            "tag": tag,
-            "label": args.label,
-            "seed": int(args.seed),
-            "identity": actual,
-            "elapsed_seconds": time.time() - started,
-            "wall_s": wall,
-            "target_eval_s": float(vbmc.function_logger.total_fun_eval_time),
-            "K": int(vp.K),
-            "func_count": int(results["func_count"]),
-            "elbo": float(results["elbo"]),
-            "elbo_sd": float(results["elbo_sd"]),
-            "success_flag": bool(results["success_flag"]),
-            "verdict": verdict,
-            "metrics": measured,
-            "verification": {
-                "checks": report["checks"],
-                "differences": report["differences"],
-                "bytes": report["bytes"],
-            },
-            "hashes": hashes,
-        },
-    )
-    print(
-        f"{tag}: elbo {results['elbo']:.3f} +- {results['elbo_sd']:.3f}, "
-        f"K {vp.K}, {results['func_count']} evaluations, "
-        f"{wall / 60:.1f} min, "
-        f"{'passes' if verdict['passes'] else 'filtered out'} "
-        f"(stable {verdict['stable']}, "
-        f"max J_sjk {verdict['max_J_sjk']:.3f})",
-        flush=True,
-    )
-
-
-# --------------------------------------------------------------------------
-# cases and select
-# --------------------------------------------------------------------------
-
-
-def manifest_cases(manifest):
-    """Every ``(label, seed)`` of an allocation, in condition order.
-
-    One case per seed of each condition's whole range, whatever the
-    filtered target: an array job runs them all and :func:`cmd_select`
-    applies the stopping rule afterwards.
-    """
-    return [
-        (entry["label"], seed)
-        for entry in manifest["allocation"]
-        for seed in range(
-            int(entry["seed_start"]),
-            int(entry["seed_start"]) + int(entry["max_seeds"]),
-        )
-    ]
-
-
-def cmd_cases(args):
-    """Print the cases of a campaign, one per line, for an array job.
-
-    The line number is the array index: line ``i`` names the case that
-    ``worker --out DIR --label L --seed S`` generates. The count goes to
-    standard error, so that redirecting standard output yields exactly the
-    case list.
-    """
-    out = args.out.resolve()
-    manifest = read_manifest(out)
-    cases = manifest_cases(manifest)
-    if args.format == "json":
-        print(
-            json.dumps(
-                {
-                    "campaign": manifest["campaign"],
-                    "directory": str(out),
-                    "count": len(cases),
-                    "cases": [
-                        {"index": index, "label": label, "seed": seed}
-                        for index, (label, seed) in enumerate(cases, start=1)
-                    ],
-                },
-                indent=2,
-            ),
-            flush=True,
-        )
-    else:
-        for label, seed in cases:
-            print(f"{label} {seed}", flush=True)
-        print(f"{len(cases)} cases", file=sys.stderr, flush=True)
-    return 0
-
-
-def condition_selection(out, entry, target):
+def condition_selection(out, entry, target, contract_layout=True):
     """The campaign's stopping rule applied to one condition's records.
 
     The completed runs are walked in seed order and the ones that pass the
@@ -1106,19 +1330,16 @@ def condition_selection(out, entry, target):
     failed is scanned like any other. The pass rate over every completed
     case is ``summarize``'s.
     """
-    import svbmc_pool_io as pool_io
-
     label = entry["label"]
     selected, scanned, failed = [], 0, 0
-    for tag in condition_runs(out, label):
+    for tag in condition_runs(out, label, contract_layout):
         if len(selected) >= target:
             break
         scanned += 1
-        path = pool_io.record_path(out, tag)
-        if not path.exists():  # the case failed and left an error file
-            failed += 1
+        if not (Path(out) / "records" / f"{tag}.complete.json").exists():
+            failed += 1  # the case failed and left an error file
             continue
-        record = json.loads(path.read_text(encoding="utf-8"))
+        record = read_record(out, tag)
         if record["verdict"]["passes"]:
             selected.append({"tag": tag, "seed": int(record["seed"])})
     return {
@@ -1203,6 +1424,7 @@ def cmd_select(args):
             out,
             entry,
             entry["target_filtered"] if args.target is None else args.target,
+            is_contract(manifest),
         )
         for entry in manifest["allocation"]
     ]
@@ -1243,22 +1465,30 @@ def quartiles(values):
     }
 
 
-def condition_summary(out, entry):
+def tally(values):
+    """``{value: count}`` of the values that are not None, most common first."""
+    counts = {}
+    for value in values:
+        if value is not None:
+            counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
+
+
+def condition_summary(out, entry, contract_layout=True):
     """One condition of a pool, counted from the cases it holds.
 
     Every case of the condition that left a completion record or an error
     file is counted, whatever seed cap the sweeps that generated them
     worked under; the allocation contributes the first seed, the cap and
-    the filtered target the counts are read against.
+    the filtered target the counts are read against. The convergence
+    counts and quartiles are over the completed runs whose record holds
+    the field (the flat layout's records hold ``success_flag`` alone).
     """
-    import svbmc_pool_io as pool_io
-
     label = entry["label"]
     records, failures = [], []
-    for tag in condition_runs(out, label):
-        path = pool_io.record_path(out, tag)
-        if path.exists():
-            records.append(json.loads(path.read_text(encoding="utf-8")))
+    for tag in condition_runs(out, label, contract_layout):
+        if (Path(out) / "records" / f"{tag}.complete.json").exists():
+            records.append(read_record(out, tag))
         else:
             first = (
                 (Path(out) / f"{tag}.error.txt")
@@ -1295,6 +1525,13 @@ def condition_summary(out, entry):
             if r["verdict"]["stable"] and not r["verdict"]["passes"]
         ),
         "usable_fraction": (len(usable) / len(passed)) if passed else None,
+        "success_flag": sum(1 for r in records if r.get("success_flag")),
+        "convergence_status": tally(
+            r.get("convergence_status") for r in records
+        ),
+        "messages": tally(r.get("message") for r in records),
+        "iterations": quartiles([r.get("iterations") for r in records]),
+        "r_index": quartiles([r.get("r_index") for r in records]),
         "wall_minutes": quartiles([r["wall_s"] / 60 for r in records]),
         "func_count": quartiles([r["func_count"] for r in records]),
         "K": quartiles([r["K"] for r in passed]),
@@ -1305,22 +1542,25 @@ def condition_summary(out, entry):
     return summary
 
 
-def summary_markdown(summary):
-    source = identity_source(summary["identity"])
-    host = identity_host(summary["identity"])
-    gpyreg_commit = source["gpyreg_commit"] or "unknown"
+def summary_markdown(summary, contract_layout=True):
+    pyvbmc_commit, gpyreg_commit, hostname = identity_summary(
+        summary["identity"], contract_layout
+    )
     lines = [
         f"# S-VBMC pool: {summary['directory']}",
         "",
         f"Generated {summary['generated']}. The campaign was prepared on "
-        f"{host['hostname']} at `{source['pyvbmc_commit']}` "
-        f"(gpyreg `{gpyreg_commit[:12]}`), the code every case was "
-        "generated with; each case records the host that ran it. "
+        f"{hostname} at `{pyvbmc_commit}` "
+        f"(gpyreg `{(gpyreg_commit or 'unknown')[:12]}`), the code every "
+        "case was generated with; each case records the host that ran it. "
         "Filters: stable and "
         "`sqrt(max J_sjk) < sqrt(5)`; the counts are of the runs the "
         "directory holds, against the allocation's seed caps and filtered "
         "targets, and the metric quartiles are over the filtered runs, "
-        "the wall times over every completed run.",
+        "the wall times over every completed run. `success` counts the "
+        "completed runs whose `success_flag` is true and `converged` those "
+        "whose `convergence_status` is `probable`, where the records hold "
+        "it.",
         "",
     ]
     if summary["pilot_seeds"]:
@@ -1331,9 +1571,10 @@ def summary_markdown(summary):
             "",
         ]
     lines += [
-        "| condition | seeds | filtered | pass rate | usable | "
-        "wall min (med [IQR]) | evals | K | elbo_err | gskl | mmtv |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| condition | seeds | filtered | pass rate | usable | success | "
+        "converged | wall min (med [IQR]) | evals | K | elbo_err | gskl | "
+        "mmtv |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
 
     def cell(q, digits=2):
@@ -1347,10 +1588,11 @@ def summary_markdown(summary):
     for condition in summary["conditions"]:
         rate = condition["pass_rate"]
         usable = condition["usable_fraction"]
+        statuses = condition["convergence_status"]
         lines.append(
             "| {label} | {seeds}/{cap} | {filtered}/{target} | {rate} | "
-            "{usable} | {wall} | {evals} | {K} | {elbo} | {gskl} | "
-            "{mmtv} |".format(
+            "{usable} | {success}/{completed} | {converged} | {wall} | "
+            "{evals} | {K} | {elbo} | {gskl} | {mmtv} |".format(
                 label=condition["label"],
                 seeds=condition["seeds_run"],
                 cap=condition["seed_cap"],
@@ -1358,6 +1600,13 @@ def summary_markdown(summary):
                 target=condition["target_filtered"],
                 rate="-" if rate is None else f"{rate:.2f}",
                 usable="-" if usable is None else f"{usable:.2f}",
+                success=condition["success_flag"],
+                completed=condition["completed"],
+                converged=(
+                    f"{statuses.get('probable', 0)}/{sum(statuses.values())}"
+                    if statuses
+                    else "-"
+                ),
                 wall=cell(condition["wall_minutes"], 1),
                 evals=cell(condition["func_count"], 0),
                 K=cell(condition["K"], 0),
@@ -1379,6 +1628,7 @@ def summary_markdown(summary):
 def cmd_summarize(args):
     out = args.out.resolve()
     manifest = read_manifest(out)
+    contract_layout = is_contract(manifest)
     finished = out / "finished.json"
     pilot_seeds = None
     if finished.exists():
@@ -1395,16 +1645,18 @@ def cmd_summarize(args):
         "identity": manifest["identity"],
         "options": manifest["options"],
         "conditions": [
-            condition_summary(out, entry) for entry in manifest["allocation"]
+            condition_summary(out, entry, contract_layout)
+            for entry in manifest["allocation"]
         ],
     }
     summary["totals"] = {
         "seeds_run": sum(c["seeds_run"] for c in summary["conditions"]),
         "filtered": sum(c["filtered"] for c in summary["conditions"]),
         "failed": sum(c["failed"] for c in summary["conditions"]),
+        "success_flag": sum(c["success_flag"] for c in summary["conditions"]),
     }
     write_json(out / "summary.json", summary)
-    text = summary_markdown(summary)
+    text = summary_markdown(summary, contract_layout)
     (out / "summary.md").write_text(text, encoding="utf-8")
     print(text, flush=True)
     return 0
@@ -1414,12 +1666,14 @@ def cmd_summarize(args):
 # verify
 # --------------------------------------------------------------------------
 
-#: The case states :func:`cmd_verify` counts, in the totals and per
+#: Per-condition extremes of the recomputation gate over the verified
+#: cases: the largest relative difference of the recomputed statistics
+#: from the stored ones, and the largest condition number of a run's GP.
+GATE_COLUMNS = ("max_relative", "max_condition_number")
+#: The case states of the flat layout's ``verify``, in the totals and per
 #: condition. ``verify_failed`` is a case whose own verification raised,
-#: a fault of the stored artifact rather than of the allocation; it is
-#: counted with the others so that a condition's counts add up to its
-#: cases.
-VERIFY_STATUSES = (
+#: a fault of the stored artifact rather than of the allocation.
+FLAT_STATUSES = (
     "verified",
     "failed",
     "partial",
@@ -1428,49 +1682,11 @@ VERIFY_STATUSES = (
 )
 
 
-def error_reason(out, tag):
-    """The last non-empty line of one failed case's error file."""
-    lines = (
-        (Path(out) / f"{tag}.error.txt")
-        .read_text(encoding="utf-8", errors="replace")
-        .strip()
-        .splitlines()
-    )
-    return lines[-1] if lines else ""
-
-
-def stray_tags(out, tags):
-    """The artifact tags of a directory that the allocation does not name.
-
-    Only what a case leaves is looked at, its ``<tag>.npz``, its optional
-    ``<tag>.vbmc.pkl`` and its completion record, so that the campaign's
-    own files (the manifest, the reports, the case list, the lock, a log
-    or an error file) and the directories beside them (``records/``,
-    ``slurm/``) are never mistaken for a run.
-    """
-    out = Path(out)
-    candidates = {path.name[: -len(".npz")] for path in out.glob("*.npz")}
-    candidates |= {
-        path.name[: -len(".vbmc.pkl")] for path in out.glob("*.vbmc.pkl")
-    }
-    candidates |= {
-        path.name[: -len(".complete.json")]
-        for path in (out / "records").glob("*.complete.json")
-    }
-    return sorted(candidates - set(tags))
-
-
 def status_counts(cases, statuses):
     return {
         status: sum(1 for case in cases if case["status"] == status)
         for status in statuses
     }
-
-
-#: Per-condition extremes of the recomputation gate over the verified
-#: cases: the largest relative difference of the recomputed statistics
-#: from the stored ones, and the largest condition number of a run's GP.
-GATE_COLUMNS = ("max_relative", "max_condition_number")
 
 
 def gate_extremes(cases):
@@ -1486,32 +1702,261 @@ def gate_extremes(cases):
     }
 
 
-def case_verification(out, tag, expected, pool_io, rounding_factor=None):
-    """One case of the allocation, re-checked against what it left behind.
+def gate_fields(report, passes):
+    """The fields of one verified case: its verdict and the gate's report."""
+    return {
+        "passes": bool(passes),
+        "differences": report["differences"],
+        "relative": report["relative"],
+        "condition_number": report["condition_number"],
+    }
 
-    The guard is broad on purpose: ``case_state`` raises ``RuntimeError``
-    for a record that no longer describes its files, and ``verify_run`` on
-    a truncated ``.npz`` raises whatever the codec beneath it raises
-    (``zlib.error``, ``OSError``, ``KeyError``, ``ValueError``). Every one
-    of them is this case failing its verification, not the command.
+
+def verification_source(args, manifest):
+    """The gpyreg checkout ``verify`` reads a pool against, activated."""
+    if args.gpyreg_source is not None:
+        source = pinned_gpyreg_source(args.gpyreg_source, manifest)
+    else:
+        source = manifest["gpyreg_source"]
+    return activate_gpyreg(source)
+
+
+def rounding(args):
+    import svbmc_pool_io as pool_io
+
+    if args.rounding_factor is None:
+        return pool_io.ROUNDING_FACTOR
+    return float(args.rounding_factor)
+
+
+def contract_strays(out, manifest):
+    """The artifact files of a contract directory that no case owns.
+
+    Only the directories of the allocated conditions and the top of the
+    directory are listed: an artifact file of a tag the allocation does
+    not name, and an artifact file of the flat layout at the top.
+    """
+    out = Path(out)
+    tags = set(case_lines(manifest))
+    stray = []
+    for entry in manifest["allocation"]:
+        label = entry["label"]
+        for path in sorted((out / label).glob("*")):
+            name = path.name
+            if not path.is_file() or name.startswith("."):
+                continue
+            for suffix in ARTIFACT_SUFFIXES:
+                if name.endswith(suffix):
+                    if f"{label}/{name[: -len(suffix)]}" not in tags:
+                        stray.append(f"{label}/{name}")
+                    break
+    for suffix in (".npz", ".vbmc.pkl"):
+        stray += [path.name for path in sorted(out.glob(f"*{suffix}"))]
+    return sorted(stray)
+
+
+def print_verification(conditions, columns, counts, stray, cases, line):
+    print("| condition | " + " | ".join(columns) + " |", flush=True)
+    print("|" + "---|" * (len(columns) + 1), flush=True)
+    for condition in conditions:
+        cells = [condition["label"]]
+        cells += [
+            (
+                f"{condition[key]:.2e}"
+                if key in GATE_COLUMNS
+                else str(condition[key])
+            )
+            for key in columns
+        ]
+        print("| " + " | ".join(cells) + " |", flush=True)
+    print(
+        f"stray: {len(stray)}" + (f" ({', '.join(stray)})" if stray else ""),
+        flush=True,
+    )
+    for case in cases:
+        if case["status"] != "verified":
+            print(line(case), flush=True)
+    print(
+        f"{len(cases)} cases: "
+        + ", ".join(f"{key} {value}" for key, value in counts.items()),
+        flush=True,
+    )
+
+
+def contract_case_line(case):
+    """One reported case: ``index tag status``, and what explains it."""
+    text = f"{case['index']} {case['tag']} {case['status']}"
+    detail = {
+        "verify_failed": case.get("error"),
+        "failed": case.get("reason"),
+        "in_flight": (case.get("claim") or {}).get("detail"),
+        "interrupted": ", ".join(case.get("files", [])),
+        "partial": ", ".join(case.get("files", [])),
+    }.get(case["status"])
+    return f"{text}: {detail}" if detail else text
+
+
+def verify_contract(args, out, manifest):
+    """``verify`` on a campaign directory of the contract."""
+    source = verification_source(args, manifest)
+    # The manifest's identity, not this process's: a pool is verified
+    # against the code it was prepared with, wherever it is read. The
+    # verifier's own identity is recorded next to it, so that the report
+    # says which code and libraries recomputed the artifacts.
+    expected = manifest["identity"]
+    verifier = campaign_identity(source)
+    verifier_differs_in = contract.source_differences(verifier, expected)
+    if verifier_differs_in:
+        print(
+            "verifying with a source identity that differs from the "
+            f"pool's in {verifier_differs_in}; recorded, not compared",
+            flush=True,
+        )
+
+    import svbmc_pool_io as pool_io
+
+    rounding_factor = rounding(args)
+    node_feature = (manifest.get("site") or {}).get("NODE_FEATURE")
+    lines = case_lines(manifest)
+    by_tag = dict(zip(lines, manifest_cases(manifest)))
+
+    def check(tag):
+        record = check_record(out, tag, expected, node_feature)
+        report = pool_io.verify_run(
+            out / tag,
+            rounding_factor=rounding_factor,
+            record=contract.record_path(out, tag),
+        )
+        return gate_fields(report, record["verdict"]["passes"])
+
+    report = contract.reconcile(
+        out,
+        lines,
+        check,
+        lambda tag: partial_artifacts(out, tag),
+        stray=contract_strays(out, manifest),
+    )
+    cases = []
+    for case in report["cases"]:
+        label, seed = by_tag[case["tag"]]
+        cases.append(
+            {
+                "index": case["index"],
+                "tag": case["tag"],
+                "label": label,
+                "seed": int(seed),
+                **{
+                    k: v
+                    for k, v in case.items()
+                    if k not in ("index", "tag", "case")
+                },
+            }
+        )
+    by_label = {}
+    for case in cases:
+        by_label.setdefault(case["label"], []).append(case)
+    conditions = [
+        {
+            "label": entry["label"],
+            **status_counts(
+                by_label.get(entry["label"], []), contract.STATUSES
+            ),
+            **gate_extremes(by_label.get(entry["label"], [])),
+        }
+        for entry in manifest["allocation"]
+    ]
+    write_json(
+        out / "verification.json",
+        {
+            "campaign": manifest["campaign"],
+            "contract": report["contract"],
+            "directory": str(out),
+            "generated": report["generated"],
+            "gpyreg_source": source,
+            "identity": expected,
+            "verifier": verifier,
+            "verifier_differs_in": verifier_differs_in,
+            "rounding_factor": rounding_factor,
+            "node_feature": node_feature,
+            "counts": report["counts"],
+            "conditions": conditions,
+            "stray": report["stray"],
+            "cases": cases,
+            "exit_code": report["exit_code"],
+        },
+    )
+    print_verification(
+        conditions,
+        contract.STATUSES + GATE_COLUMNS,
+        report["counts"],
+        report["stray"],
+        cases,
+        contract_case_line,
+    )
+    return report["exit_code"]
+
+
+def validate_flat_case(out, tag, expected):
+    """Re-verify a completed case of the flat layout against its record.
+
+    Only the source half of the flat identity is compared, so a case
+    generated on another node is accepted and one generated by other code
+    is not.
+    """
+    import svbmc_pool_io as pool_io
+
+    done = json.loads(
+        pool_io.record_path(out, tag).read_text(encoding="utf-8")
+    )
+    differing = identity_differences(
+        identity_source(done["identity"]), identity_source(expected)
+    )
+    if differing:
+        raise RuntimeError(f"{tag}: recorded identity differs in {differing}")
+    if not set(pool_io.SUFFIXES) <= set(done["hashes"]):
+        raise RuntimeError(f"{tag}: incomplete file manifest")
+    for suffix, digest in done["hashes"].items():
+        path = Path(out) / f"{tag}{suffix}"
+        if not path.exists():
+            raise RuntimeError(f"{tag}: missing {suffix}")
+        if pool_io.sha256(path) != digest:
+            raise RuntimeError(f"{tag}: changed {suffix}")
+    if done["tag"] != tag:
+        raise RuntimeError(f"{tag}: record belongs to {done['tag']}")
+    return done
+
+
+def flat_case_verification(out, tag, expected, pool_io, rounding_factor):
+    """One case of a flat allocation, re-checked against what it left.
+
+    The guard is broad on purpose: ``validate_flat_case`` raises
+    ``RuntimeError`` for a record that no longer describes its files, and
+    ``verify_run`` on a truncated ``.npz`` raises whatever the codec
+    beneath it raises (``zlib.error``, ``OSError``, ``KeyError``,
+    ``ValueError``). Every one of them is this case failing its
+    verification, not the command.
     """
     try:
-        state, detail = case_state(out, tag, expected)
-        if state == "done":
+        if pool_io.record_path(out, tag).exists():
+            record = validate_flat_case(out, tag, expected)
             report = pool_io.verify_run(
                 Path(out) / tag, rounding_factor=rounding_factor
             )
             return {
                 "status": "verified",
-                "passes": bool(detail["verdict"]["passes"]),
-                "differences": report["differences"],
-                "relative": report["relative"],
-                "condition_number": report["condition_number"],
+                **gate_fields(report, record["verdict"]["passes"]),
             }
-        if state == "failed":
-            return {"status": "failed", "reason": error_reason(out, tag)}
-        if state == "partial":
-            return {"status": "partial", "files": detail}
+        error = Path(out) / f"{tag}.error.txt"
+        if error.exists():
+            lines = (
+                error.read_text(encoding="utf-8", errors="replace")
+                .strip()
+                .splitlines()
+            )
+            return {"status": "failed", "reason": lines[-1] if lines else ""}
+        leftover = partial_artifacts(out, tag)
+        if leftover:
+            return {"status": "partial", "files": leftover}
         return {"status": "missing"}
     except Exception as error:
         return {
@@ -1520,8 +1965,22 @@ def case_verification(out, tag, expected, pool_io, rounding_factor=None):
         }
 
 
-def case_line(case):
-    """One reported case: ``index tag status``, and what it left."""
+def flat_stray_tags(out, tags):
+    """The artifact tags of a flat directory that the allocation does not
+    name: its ``<tag>.npz``, ``<tag>.vbmc.pkl`` and completion records."""
+    out = Path(out)
+    candidates = {path.name[: -len(".npz")] for path in out.glob("*.npz")}
+    candidates |= {
+        path.name[: -len(".vbmc.pkl")] for path in out.glob("*.vbmc.pkl")
+    }
+    candidates |= {
+        path.name[: -len(".complete.json")]
+        for path in (out / "records").glob("*.complete.json")
+    }
+    return sorted(candidates - set(tags))
+
+
+def flat_case_line(case):
     line = f"{case['index']} {case['tag']} {case['status']}"
     detail = {
         "failed": case.get("reason"),
@@ -1531,29 +1990,15 @@ def case_line(case):
     return f"{line}: {detail}" if detail else line
 
 
-def cmd_verify(args):
-    """Re-check every artifact of a campaign and reconcile the allocation.
+def verify_flat(args, out, manifest):
+    """``verify`` on a pool of the flat layout, with its own checks.
 
-    The post-hoc verification of a pool an array job generated, and what
-    makes ``select`` and ``summarize`` trustworthy on one: those two read
-    the cases that left a completion record or an error file, and a task
-    Slurm killed leaves neither, so it would silently be left out. Every
-    case of the allocation is placed instead — ``verified``, ``failed``,
-    ``partial``, ``missing``, or ``verify_failed`` when the check itself
-    raised — and every artifact file the allocation does not name is
-    reported as stray.
+    Its records hold the flat identity and the hashes by suffix, so each
+    is checked by :func:`validate_flat_case`, and the states are those the
+    flat layout can hold: verified, failed, partial, missing and
+    verify_failed, and the stray artifact tags.
     """
-    out = args.out.resolve()
-    manifest = read_manifest(out)
-    if args.gpyreg_source is not None:
-        source = pinned_gpyreg_source(args.gpyreg_source, manifest)
-    else:
-        source = manifest["gpyreg_source"]
-    source = activate_gpyreg(source)
-    # The manifest's identity, not this process's: a pool is verified
-    # against the code it was prepared with, wherever it is read. The
-    # verifier's own identity is recorded next to it, so that the report
-    # says which code and libraries recomputed the artifacts.
+    source = verification_source(args, manifest)
     expected = manifest["identity"]
     verifier = identity(source)
     verifier_differs_in = identity_differences(
@@ -1568,27 +2013,23 @@ def cmd_verify(args):
 
     import svbmc_pool_io as pool_io
 
-    rounding_factor = (
-        pool_io.ROUNDING_FACTOR
-        if args.rounding_factor is None
-        else float(args.rounding_factor)
-    )
+    rounding_factor = rounding(args)
     cases = []
     for index, (label, seed) in enumerate(manifest_cases(manifest), start=1):
-        tag = f"{label}_seed{seed}"
+        tag = case_tag(label, seed, contract_layout=False)
         cases.append(
             {
                 "index": index,
                 "tag": tag,
                 "label": label,
                 "seed": int(seed),
-                **case_verification(
+                **flat_case_verification(
                     out, tag, expected, pool_io, rounding_factor
                 ),
             }
         )
-    stray = stray_tags(out, [case["tag"] for case in cases])
-    counts = status_counts(cases, VERIFY_STATUSES)
+    stray = flat_stray_tags(out, [case["tag"] for case in cases])
+    counts = status_counts(cases, FLAT_STATUSES)
     counts["stray"] = len(stray)
     by_label = {}
     for case in cases:
@@ -1596,7 +2037,7 @@ def cmd_verify(args):
     conditions = [
         {
             "label": entry["label"],
-            **status_counts(by_label.get(entry["label"], []), VERIFY_STATUSES),
+            **status_counts(by_label.get(entry["label"], []), FLAT_STATUSES),
             **gate_extremes(by_label.get(entry["label"], [])),
         }
         for entry in manifest["allocation"]
@@ -1608,7 +2049,7 @@ def cmd_verify(args):
             "directory": str(out),
             "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
             "gpyreg_source": source,
-            "identity": manifest["identity"],
+            "identity": expected,
             "verifier": verifier,
             "verifier_differs_in": verifier_differs_in,
             "rounding_factor": rounding_factor,
@@ -1618,26 +2059,13 @@ def cmd_verify(args):
             "cases": cases,
         },
     )
-    columns = VERIFY_STATUSES + GATE_COLUMNS
-    print("| condition | " + " | ".join(columns) + " |", flush=True)
-    print("|" + "---|" * (len(columns) + 1), flush=True)
-    for condition in conditions:
-        cells = [condition["label"]]
-        cells += [str(condition[key]) for key in VERIFY_STATUSES]
-        cells += [f"{condition[key]:.2e}" for key in GATE_COLUMNS]
-        print("| " + " | ".join(cells) + " |", flush=True)
-    print(
-        f"stray: {counts['stray']}"
-        + (f" ({', '.join(stray)})" if stray else ""),
-        flush=True,
-    )
-    for case in cases:
-        if case["status"] != "verified":
-            print(case_line(case), flush=True)
-    print(
-        f"{len(cases)} cases: "
-        + ", ".join(f"{key} {value}" for key, value in counts.items()),
-        flush=True,
+    print_verification(
+        conditions,
+        FLAT_STATUSES + GATE_COLUMNS,
+        counts,
+        stray,
+        cases,
+        flat_case_line,
     )
     # A failed case is rerun or left out and a missing one is resubmitted,
     # both of which the operator reads off this report; an artifact that
@@ -1645,6 +2073,22 @@ def cmd_verify(args):
     # must be settled before the pool is read.
     fatal = ("verify_failed", "partial", "stray")
     return 1 if any(counts[key] for key in fatal) else 0
+
+
+def cmd_verify(args):
+    """Re-check every artifact of a campaign and reconcile the allocation.
+
+    What makes ``select`` and ``summarize`` trustworthy on a pool: those
+    two read the cases that left a completion record or an error file,
+    and a task that Slurm stopped leaves neither, so it would silently be
+    left out. Every case of the allocation is placed instead, and every
+    artifact file the allocation does not name is reported as stray.
+    """
+    out = args.out.resolve()
+    manifest = read_manifest(out)
+    if is_contract(manifest):
+        return verify_contract(args, out, manifest)
+    return verify_flat(args, out, manifest)
 
 
 # --------------------------------------------------------------------------
@@ -1701,14 +2145,24 @@ def parse_args(argv=None):
         help="per-condition allocation, repeatable; overrides every "
         "default above for the condition it names",
     )
-    prepare.add_argument("--gpyreg-source", type=Path, default=DEFAULT_GPYREG)
+    prepare.add_argument(
+        "--gpyreg-source",
+        type=Path,
+        required=True,
+        help="the gpyreg checkout every process of the campaign imports: "
+        "the top of a clean git checkout, the directory of "
+        "PYVBMC_GPYREG_SOURCE where that is set",
+    )
     prepare.add_argument(
         "--allow-dirty",
         action="store_true",
-        help="record that the pool may be generated from a dirty tree",
+        help="record that the pool may be generated from a harness "
+        "checkout with uncommitted or untracked changes",
     )
 
-    runner = sub.add_parser("run", help="generate the pool")
+    runner = sub.add_parser(
+        "run", help="generate the pool on a workstation, one case at a time"
+    )
     runner.add_argument("--out", type=Path, required=True)
     runner.add_argument(
         "--pilot-seeds",
@@ -1719,21 +2173,27 @@ def parse_args(argv=None):
     runner.add_argument("--save-vbmc", action="store_true")
 
     cases = sub.add_parser(
-        "cases", help="print every (label, seed) of the allocation"
+        "cases", help="print the case list, one tag per line"
     )
     cases.add_argument("--out", type=Path, required=True)
+    cases.add_argument(
+        "--subset",
+        metavar="LABEL",
+        help="print '<index> <line>' for the cases of one condition",
+    )
     cases.add_argument(
         "--format",
         choices=("lines", "json"),
         default="lines",
-        help="one `label seed` per line (the array index is the line "
-        "number, and the count goes to standard error), or one JSON object",
+        help="one case per line (the case index is the line number, and "
+        "the count goes to standard error), or one JSON object",
     )
 
-    worker = sub.add_parser("worker", help="one run (one fresh process)")
+    worker = sub.add_parser("worker", help="one case (one fresh process)")
     worker.add_argument("--out", type=Path, required=True)
-    worker.add_argument("--label", required=True)
-    worker.add_argument("--seed", type=int, required=True)
+    worker.add_argument(
+        "--case", required=True, help="the case's line of `cases`"
+    )
     worker.add_argument("--save-vbmc", action="store_true")
 
     select = sub.add_parser("select", help="write the filtered pool")
@@ -1773,6 +2233,13 @@ def parse_args(argv=None):
 
 
 def main(argv=None):
+    # The driver reads the case list in bash, which takes a carriage
+    # return for part of a word.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(newline="\n")
+        except AttributeError:
+            pass
     args = parse_args(argv)
     if args.command == "prepare":
         return cmd_prepare(args)
@@ -1786,10 +2253,10 @@ def main(argv=None):
         return cmd_summarize(args)
     if args.command == "verify":
         return cmd_verify(args)
-    # The sequential sweep below is the laptop supervisor: the campaign
-    # lock, `status.json` and the idle-sleep request are its own, and no
-    # other sub-command takes them. Process-scoped request: permit display
-    # sleep, prevent idle system sleep while a long sweep is working.
+    # The sequential sweep below is the workstation supervisor: the
+    # campaign lock, `status.json` and the idle-sleep request are its own,
+    # and no other sub-command takes them. Process-scoped request: permit
+    # display sleep, prevent idle system sleep while a long sweep works.
     if sys.platform == "win32":
         import ctypes
 
