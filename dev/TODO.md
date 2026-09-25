@@ -259,6 +259,18 @@ records its execution.
   `pyvbmc[torch]>=1.5` and forwards old `svbmc` imports to the integrated
   implementation. S-VBMC is already available through PyVBMC; this serves
   users of the old package. See the [integration plan](plans/svbmc-integration.md).
+- [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
+  [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
+  that bumps the version and the source hash. Where the feedstock's
+  `conda-forge.yml` sets `bot: {automerge: true, inspection:
+  update-grayskull}` (proposed in its PR 11 on 2026-09-25, as gpyreg's and
+  PyBADS's feedstocks do), that PR takes the requirements from the PyPI
+  metadata and merges itself once the feedstock's CI passes; otherwise the
+  recipe's requirements, still those of 1.0.4, are updated by hand. Check
+  the published package's requirements against `pyproject.toml`: 1.5 needs
+  gpyreg 1.3.3 or later, which is on conda-forge, and adds `filelock`,
+  `platformdirs` and `threadpoolctl`. conda-forge's `python_min`, 3.11 on
+  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 
