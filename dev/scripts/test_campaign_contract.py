@@ -589,10 +589,14 @@ def test_tree_state(tmp_path):
     source, where = contract.tree_state(tree)
     assert source == {"commit": commit, "clean": True}
     assert where["path"] == str(tree.resolve()) and where["dirty"] == []
+    # The status lines as git prints them: the first column, a space here,
+    # is the index's status, the second the working tree's.
     (tree / "x.py").write_text("x = 2\n", encoding="utf-8")
-    assert contract.tree_state(tree)[0]["clean"] is False
-    (tree / "x.py").write_text("x = 1\n", encoding="utf-8")
+    source, where = contract.tree_state(tree)
+    assert source["clean"] is False and where["dirty"] == [" M x.py"]
     (tree / "new.py").write_text("", encoding="utf-8")
+    assert contract.tree_state(tree)[1]["dirty"] == [" M x.py", "?? new.py"]
+    (tree / "x.py").write_text("x = 1\n", encoding="utf-8")
     source, where = contract.tree_state(tree)
     assert source["clean"] is False and where["dirty"] == ["?? new.py"]
     (tree / "sub").mkdir()
@@ -1115,7 +1119,7 @@ def test_reconcile_places_every_case(tmp_path):
     artifact(tags[3])
     contract.error_path(out, tags[3]).write_text("earlier\n", "utf-8")
     artifact(tags[4])  # 5 partial
-    claim_by(out, tags[5], "901", "6")  # 6 missing, with a stale claim
+    claim_by(out, tags[5], "901", "6")  # 6 interrupted: a stale claim alone
     # 7 missing
     artifact(tags[7])  # 8 partial, beside an earlier error file
     contract.error_path(out, tags[7]).write_text("earlier\n", "utf-8")
@@ -1165,7 +1169,7 @@ def test_reconcile_places_every_case(tmp_path):
         "failed",
         "in_flight",
         "partial",
-        "missing",
+        "interrupted",
         "missing",
         "partial",
         "verified",
@@ -1177,7 +1181,7 @@ def test_reconcile_places_every_case(tmp_path):
     assert cases[2]["reason"] == "c003: E: x"
     assert cases[3]["claim"]["owner"] == "900_4"
     assert cases[4]["files"] == ["g0/c005.out"]
-    assert cases[5]["claim"]["state"] == "stale"
+    assert cases[5]["claim"]["state"] == "stale" and cases[5]["files"] == []
     assert "claim" not in cases[6]
     assert [case["index"] for case in cases] == list(range(1, 11))
     assert report["stray"] == [
@@ -1192,9 +1196,9 @@ def test_reconcile_places_every_case(tmp_path):
         "verify_failed": 1,
         "failed": 1,
         "in_flight": 2,
-        "interrupted": 0,
+        "interrupted": 1,
         "partial": 2,
-        "missing": 2,
+        "missing": 1,
         "stray": 5,
     }
     assert report["exit_code"] == 1
@@ -1252,6 +1256,47 @@ def test_a_case_killed_outright_is_interrupted_and_resubmitted(tmp_path):
     )
     code, _ = contract.finish_decision(report, allow_missing=True)
     assert code == 0
+
+
+def test_a_stale_claim_without_files_is_interrupted(tmp_path):
+    """A harness that writes its artifacts at the end of a run, killed
+    outright mid-run: a stale claim and nothing else."""
+    out = tmp_path
+    lines = ["g0/c001 1", "g0/c002 2", "g0/c003 3"]
+    claim_by(out, "g0/c001", "800", "1")
+    # Case 2 failed once, and its rerun was killed before it wrote a file.
+    claim_by(out, "g0/c002", "800", "2")
+    (out / "g0").mkdir()
+    contract.error_path(out, "g0/c002").write_text("c002: E: x\n", "utf-8")
+    # Case 3: files beside no claim, which stay fatal.
+    (out / "g0" / "c003.out").write_text("half\n", encoding="utf-8")
+
+    def partial(tag):
+        return [f"{tag}.out"] if (out / f"{tag}.out").exists() else []
+
+    report = contract.reconcile(
+        out, lines, None, partial, query=answer(False, "TIMEOUT")
+    )
+    cases = report["cases"]
+    assert [case["status"] for case in cases] == [
+        "interrupted",
+        "interrupted",
+        "partial",
+    ]
+    assert cases[0]["files"] == [] and cases[0]["claim"]["owner"] == "800_1"
+    assert cases[1]["earlier_error"] == "c002: E: x"
+    assert report["exit_code"] == 1
+    (out / "g0" / "c003.out").unlink()
+    report = contract.reconcile(
+        out, lines, None, partial, query=answer(False, "TIMEOUT")
+    )
+    assert report["exit_code"] == 0
+    code, lines_out = contract.finish_decision(report)
+    assert code == contract.FINISH_MISSING
+    assert "interrupted indices: 1-2" in lines_out
+    assert (
+        "ARRAY=1-3" in lines_out[-1] and "left their claims" in lines_out[-1]
+    )
 
 
 def report_of(statuses):
