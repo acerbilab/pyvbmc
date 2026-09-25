@@ -835,6 +835,10 @@ run reproduces bit for bit.
   the task left files, and `git status` lines are recorded unaltered. The
   rescoring calls the metrics' fixed-seed generators, since only they
   reproduce the in-run metrics. Phase 4 also found that
-  `analyze_population_run.validate_case` compared transformers by their
-  `__dict__`, which fails on an accepted boost since the transformer
-  rebuilds its functions on copy; it compares their data instead.
+  `population_run.validate_case`, which `analyze_population_run.py` and
+  `reference_join.py` call on the September campaigns, compared the
+  transformers of the captured posteriors by their `__dict__`. Since
+  `e610479e` (2026-09-20) every copy of a transformer builds its own
+  bounded-transform functions, so the comparison fails on every case,
+  bounded or not, the captured posteriors being separate copies; it
+  compares their data instead.
