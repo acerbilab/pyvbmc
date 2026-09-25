@@ -610,9 +610,11 @@ per arm, doubled for the cluster. `cigar_D15_exhaust` alone takes about
 `M` = 3 and 5, 237 minutes at `M = 32`). Phase 5 found one `M = 32` cell
 taking about 150 s at three optimization steps on the developer's
 machine, so the stacking may cost more than this estimate; Phase 6
-measures it. A task at `M = 16` peaked at about 2.9 GiB and one at
-`M = 32` at 6.1 GiB, most of it S-VBMC's final entropy evaluation, whose
-full matrix of log densities is 2 GB at `M = 32`; the `M = 16` and
+measures it. S-VBMC's final entropy evaluation reduces its matrix of log
+densities by chunks of rows (`ca4e8259`), with results identical bit for
+bit, so its peak at `M = 32` is about 350 MiB; the peak of an
+`optimize()` at `M = 32` is then its gradient steps, about 2.1 GB, which
+build the whole matrix at 20 draws per component. The `M = 16` and
 `M = 32` tasks are submitted as their own subsets (`CASES_SUBSET=M16`,
 `M32`) with their own `MEM`, which Phase 6 sets from their accounting.
 
@@ -842,3 +844,11 @@ run reproduces bit for bit.
   bounded-transform functions, so the comparison fails on every case,
   bounded or not, the captured posteriors being separate copies; it
   compares their data instead.
+- 2026-09-25: the PI asked for S-VBMC's final entropy evaluation to be
+  chunked (`feat-svbmc-entropy-chunks`, merged into `dev-next` as
+  `ca4e8259`): the draws, the generator's stream and every result are
+  unchanged bit for bit (checked against the previous code on every
+  fixture group and on whole `optimize()` runs), and the peak of the final
+  evaluation at 32 runs of 50 components in `D = 6` falls from about
+  5.9 GiB to 351 MiB. The gradient steps keep the whole matrix: chunking
+  them changes the order in which the gradient sums over rows.
