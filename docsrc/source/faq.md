@@ -256,11 +256,19 @@ Alternatively, pass a separate prior with `prior=`. For independent uniform
 priors, the same problem can be written as:
 
 ```python
+import numpy as np
 from scipy.stats import uniform
 
-prior = [uniform(loc=low, scale=high - low) for low, high in zip(LB, UB)]
+prior = [
+    uniform(loc=low, scale=high - low)
+    for low, high in zip(np.ravel(LB), np.ravel(UB))
+]
 vbmc = VBMC(log_likelihood, x0, LB, UB, PLB, PUB, prior=prior)
 ```
+
+The list holds one distribution per variable: `np.ravel` reads the bounds
+one coordinate at a time, whether they are given as a row of shape `(1, D)`
+or as a flat array.
 
 In this case PyVBMC adds the log prior to the log likelihood, so do not
 include the prior in `log_likelihood` as well. Supported priors include
