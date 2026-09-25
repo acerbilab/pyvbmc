@@ -21,9 +21,11 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
+import time
 from pathlib import Path
 
 import campaign_contract as contract
@@ -235,22 +237,40 @@ class World:
     def campaign(self, name="c1"):
         return self.campaigns / name
 
-    def run(self, script, *args, env=None):
+    def environment(self, env=None):
         environment = dict(self.environ)
         for key, value in (env or {}).items():
             if value is None:
                 environment.pop(key, None)
             else:
                 environment[key] = str(value)
+        return environment
+
+    def script(self, name):
+        return posix(self.repo / "dev" / "scripts" / "hpc" / name)
+
+    def run(self, script, *args, env=None):
         return subprocess.run(
-            [self.bash, posix(self.repo / "dev" / "scripts" / "hpc" / script)]
-            + [str(a) for a in args],
-            env=environment,
+            [self.bash, self.script(script), *(str(a) for a in args)],
+            env=self.environment(env),
             capture_output=True,
             text=True,
             stdin=subprocess.DEVNULL,
             timeout=900,
         )
+
+    def start(self, command, env, log):
+        """A process left running, its output in the file ``log``."""
+        stream = open(log, "w", encoding="utf-8")
+        process = subprocess.Popen(
+            command,
+            env=self.environment(env),
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+        )
+        stream.close()
+        return process
 
     def submit(self, name="c1", *prepare, **env):
         return self.run(
@@ -262,7 +282,8 @@ class World:
             "campaign_finish.sh", posix(self.campaign(name)), *flags, env=env
         )
 
-    def task(self, name, array_task, offset=0, job=1001, restart=None, **env):
+    def task_variables(self, name, array_task, offset, job, restart, env):
+        """What Slurm and the submitter give one array task."""
         variables = {
             "CAMPAIGN_DIR": posix(self.campaign(name)),
             "REPO": posix(self.repo),
@@ -275,6 +296,12 @@ class World:
         if restart is not None:
             variables["SLURM_RESTART_COUNT"] = restart
         variables.update(env)
+        return variables
+
+    def task(self, name, array_task, offset=0, job=1001, restart=None, **env):
+        variables = self.task_variables(
+            name, array_task, offset, job, restart, env
+        )
         return self.run("campaign_task.sbatch", env=variables)
 
     def calls(self):
@@ -920,9 +947,112 @@ def test_finish_counts_cases_in_flight_apart_from_missing_ones(world):
     ok(world.finish("c1", "--allow-missing", "--no-archive"))
 
 
+def wait_for(path, process, log, timeout=120):
+    """Wait until a worker left running has written ``path``."""
+    deadline = time.monotonic() + timeout
+    while not Path(path).exists():
+        if process.poll() is not None:
+            pytest.fail(
+                f"the worker exited {process.returncode} before its case "
+                f"was under way:\n{Path(log).read_text('utf-8')}"
+            )
+        if time.monotonic() > deadline:
+            process.kill()
+            pytest.fail("the worker never got under way")
+        time.sleep(0.05)
+
+
+def test_a_task_stopped_by_sigterm_leaves_a_missing_case(world):
+    """Slurm's SIGTERM, at the time limit or on scancel: clean up and exit."""
+    ok(world.submit("c1", "--cases", "2"))
+    ok(world.task("c1", 1))
+    out = world.campaign()
+    if sys.platform == "win32":
+        # No process can send another SIGTERM on Windows: the worker sends
+        # it to itself, and it reaches the same handler.
+        result = world.task("c1", 2, STUB_SIGNAL_SELF=1)
+        code, output = result.returncode, result.stdout + result.stderr
+    else:
+        log = world.root / "task2.log"
+        variables = world.task_variables(
+            "c1", 2, 0, 1001, None, {"STUB_HOLD": 1}
+        )
+        process = world.start(
+            [world.bash, world.script("campaign_task.sbatch")], variables, log
+        )
+        wait_for(out / "g0" / "c002.out", process, log)
+        # The task script execs the worker, so that the signal reaches it
+        # as Slurm's does.
+        process.send_signal(signal.SIGTERM)
+        code = process.wait(timeout=60)
+        output = log.read_text("utf-8")
+    assert code == 128 + signal.SIGTERM, output
+    assert "stopped by SIGTERM" in output
+    for path in (
+        out / "g0" / "c002.out",
+        out / "g0" / "c002.error.txt",
+        out / "claims" / "g0" / "c002",
+        out / "records" / "g0" / "c002.complete.json",
+    ):
+        assert not path.exists(), path
+    result = world.finish("c1", "--no-archive")
+    assert result.returncode == contract.FINISH_MISSING, result.stderr
+    assert "missing indices: 2" in result.stderr
+    assert "ARRAY=2" in result.stderr
+    ok(world.task("c1", 2))
+    ok(world.finish("c1", "--no-archive"))
+
+
+def test_a_killed_task_is_interrupted_and_its_resubmission_completes(world):
+    """SIGKILL (KillWait passed, an out-of-memory kill): files, claim stay."""
+    ok(world.submit("c1", "--cases", "2"))
+    ok(world.task("c1", 1))
+    out = world.campaign()
+    log = world.root / "worker2.log"
+    variables = world.task_variables("c1", 2, 0, 1001, None, {"STUB_HOLD": 1})
+    # The worker itself, so that the kill reaches the process that holds
+    # the case on every platform (on Windows, Git Bash runs an exec'd
+    # program as a child).
+    command = [
+        sys.executable,
+        posix(world.repo / HARNESS),
+        "worker",
+        "--out",
+        posix(out),
+        "--case",
+        "g0/c002 2",
+    ]
+    process = world.start(command, variables, log)
+    wait_for(out / "g0" / "c002.out", process, log)
+    process.kill()
+    process.wait(timeout=60)
+    assert (out / "g0" / "c002.out").exists()
+    assert (out / "claims" / "g0" / "c002").exists()
+    assert not (out / "g0" / "c002.error.txt").exists()
+    world.answer("1001_2", "OUT_OF_MEMORY\n")
+    result = world.finish("c1", "--no-archive")
+    assert result.returncode == contract.FINISH_MISSING, result.stderr
+    assert "interrupted indices: 2" in result.stderr
+    assert "ARRAY=2" in result.stderr and "TIME or MEM" in result.stderr
+    report = json.loads((out / "verification.json").read_text("utf-8"))
+    assert report["exit_code"] == 0
+    assert report["cases"][1]["status"] == "interrupted"
+    # The resubmission, a task of another job, takes over the stale claim
+    # and removes the killed attempt's file before it runs.
+    (out / "g0" / "c002.out").write_text("the killed attempt's\n", "utf-8")
+    result = ok(world.task("c1", 2, job=1002))
+    assert "took over the stale claim of 1001_2" in result.stdout
+    assert "removed 1 files of an earlier attempt" in result.stdout
+    assert (out / "g0" / "c002.out").read_text("utf-8") == "case 2\n"
+    assert (out / "claims" / "g0" / "c002.stale.1001_2").exists()
+    ok(world.finish("c1", "--no-archive"))
+
+
 def test_finish_stops_on_a_failed_verification(world):
     ok(world.submit("c1", "--cases", "3"))
     run_tasks(world, "c1", (1, 3))
+    # An artifact with neither a record nor a claim, which no path of the
+    # contract leaves: even --allow-missing does not pass it.
     (world.campaign() / "g0" / "c002.out").write_text(
         "partial\n", encoding="utf-8"
     )

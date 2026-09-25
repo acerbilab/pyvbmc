@@ -20,13 +20,20 @@ Case ``i`` is the line ``g<k>/c<iii> <i>``, five cases per group ``k``.
 file. The subsets are ``odd``, ``first3`` and ``g0``, ``g1``, ... (one per
 group). ``summarize`` is the finishing step. With ``STUB_FAKE_AFFINITY``
 set, the worker records its CPU affinity as one physical core, which the
-host a test runs on need not have.
+host a test runs on need not have. Two variables stop a case in the middle
+of its run, after it has written its file: with ``STUB_HOLD`` set it waits
+there (up to a minute) for a test to signal or kill it, and with
+``STUB_SIGNAL_SELF`` set it sends itself SIGTERM, which is how a test
+delivers the signal on Windows, where one process cannot send another
+SIGTERM.
 """
 
 import argparse
 import json
 import os
+import signal
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -121,6 +128,13 @@ def cmd_worker(args):
         path = out / f"{tag}.out"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"case {index}\n", encoding="utf-8")
+        if os.environ.get("STUB_SIGNAL_SELF"):
+            signal.raise_signal(signal.SIGTERM)
+        if os.environ.get("STUB_HOLD"):
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline:
+                time.sleep(0.05)
+            raise RuntimeError("the stub was held for a minute")
         if index in manifest["fail"]:
             raise RuntimeError(f"the stub fails case {index} on purpose")
         return [path], {"index": index}

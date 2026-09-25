@@ -16,6 +16,7 @@ raise on Linux.
 import json
 import os
 import platform
+import signal
 import subprocess
 import sys
 import tomllib
@@ -470,6 +471,107 @@ def test_run_worker_leaves_a_case_another_task_completed(repo, tmp_path):
         raise AssertionError("a completed case must not run again")
 
     assert contract.run_worker(out, TAG, expected, identity, run, None) == 0
+    assert not contract.claim_path(out, TAG).exists()
+
+
+@pytest.mark.parametrize("signum", [signal.SIGTERM, signal.SIGINT])
+def test_a_stop_signal_cleans_up_the_case(repo, tmp_path, signum):
+    """The signal is delivered to this process, through its handler."""
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    before = {s: signal.getsignal(s) for s in contract.STOP_SIGNALS}
+
+    def run(identity):
+        path = out / f"{TAG}.out"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("half\n", encoding="utf-8")
+        signal.raise_signal(signum)
+        raise AssertionError("the signal must stop the run")
+
+    code = contract.run_worker(
+        out,
+        TAG,
+        expected,
+        lambda: expected,
+        run,
+        lambda: [f"{TAG}.out"],
+        query=never,
+    )
+    assert code == 128 + signum
+    assert not (out / f"{TAG}.out").exists()
+    assert not contract.claim_path(out, TAG).exists()
+    assert not contract.error_path(out, TAG).exists()
+    assert not contract.record_path(out, TAG).exists()
+    assert {s: signal.getsignal(s) for s in contract.STOP_SIGNALS} == before
+    report = contract.reconcile(out, [TAG], None, lambda tag: [], query=never)
+    assert report["cases"][0]["status"] == "missing"
+
+
+def test_a_stop_signal_after_the_record_leaves_the_case_complete(
+    repo, tmp_path, monkeypatch
+):
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    write = contract.write_completion
+
+    def write_then_signal(*args, **kwargs):
+        record = write(*args, **kwargs)
+        signal.raise_signal(signal.SIGTERM)
+        return record
+
+    monkeypatch.setattr(contract, "write_completion", write_then_signal)
+
+    def run(identity):
+        path = out / f"{TAG}.out"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("whole\n", encoding="utf-8")
+        return [path], None
+
+    code = contract.run_worker(
+        out,
+        TAG,
+        expected,
+        lambda: expected,
+        run,
+        lambda: [f"{TAG}.out"],
+        query=never,
+    )
+    assert code == 128 + signal.SIGTERM
+    contract.check_completion(out, TAG, expected, [f"{TAG}.out"])
+    assert not contract.claim_path(out, TAG).exists()
+
+
+def test_a_resubmission_takes_over_and_starts_from_clean(repo, tmp_path):
+    """After a kill: the stale claim is taken over, the old files go first."""
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    (out / "g0").mkdir(parents=True)
+    (out / f"{TAG}.out").write_text("the killed attempt's\n", "utf-8")
+    (out / f"{TAG}.aux").write_text("the killed attempt's\n", "utf-8")
+    claim_by(out, TAG, "800", "1")
+    seen = []
+
+    def run(identity):
+        seen.append(sorted(p.name for p in (out / "g0").iterdir()))
+        path = out / f"{TAG}.out"
+        path.write_text("the resubmission's\n", encoding="utf-8")
+        return [path], None
+
+    code = contract.run_worker(
+        out,
+        TAG,
+        expected,
+        lambda: expected,
+        run,
+        lambda: [f"{TAG}.out", f"{TAG}.aux"],
+        query=answer(False, "TIMEOUT"),
+    )
+    assert code == 0
+    assert seen == [[]]
+    record = contract.check_completion(out, TAG, expected, [f"{TAG}.out"])
+    assert set(record["artifacts"]) == {f"{TAG}.out"}
+    assert (out / f"{TAG}.out").read_text("utf-8") == "the resubmission's\n"
+    assert (out / "claims" / "g0" / "c001.stale.800_1").exists()
     assert not contract.claim_path(out, TAG).exists()
 
 
@@ -1090,6 +1192,7 @@ def test_reconcile_places_every_case(tmp_path):
         "verify_failed": 1,
         "failed": 1,
         "in_flight": 2,
+        "interrupted": 0,
         "partial": 2,
         "missing": 2,
         "stray": 5,
@@ -1105,6 +1208,50 @@ def test_reconcile_exits_zero_on_failed_and_missing_cases(tmp_path):
     report = contract.reconcile(tmp_path, lines, None, lambda tag: [])
     assert report["counts"]["failed"] == 1 and report["counts"]["missing"] == 1
     assert report["exit_code"] == 0
+
+
+def test_a_case_killed_outright_is_interrupted_and_resubmitted(tmp_path):
+    """Files and a stale claim, as SIGKILL leaves them: not fatal."""
+    out = tmp_path
+    lines = ["g0/c001 1", "g0/c002 2", "g0/c003 3"]
+    (out / "g0").mkdir()
+    # Case 1: killed outright; its task has ended.
+    (out / "g0" / "c001.out").write_text("half\n", encoding="utf-8")
+    claim_by(out, "g0/c001", "800", "1")
+    # Case 3: files with neither a record nor a claim, which no path of
+    # the contract leaves.
+    (out / "g0" / "c003.out").write_text("half\n", encoding="utf-8")
+
+    def query(job, array_task):
+        return {"live": False, "state": "OUT_OF_MEMORY", "detail": ""}
+
+    def partial(tag):
+        return [f"{tag}.out"] if (out / f"{tag}.out").exists() else []
+
+    report = contract.reconcile(out, lines, None, partial, query=query)
+    cases = report["cases"]
+    assert [case["status"] for case in cases] == [
+        "interrupted",
+        "missing",
+        "partial",
+    ]
+    assert cases[0]["files"] == ["g0/c001.out"]
+    assert cases[0]["claim"]["slurm_state"] == "OUT_OF_MEMORY"
+    assert report["exit_code"] == 1  # the partial case alone
+    (out / "g0" / "c003.out").unlink()
+    report = contract.reconcile(out, lines, None, partial, query=query)
+    assert report["counts"]["interrupted"] == 1 and report["exit_code"] == 0
+    code, lines_out = contract.finish_decision(report)
+    assert code == contract.FINISH_MISSING
+    assert "interrupted indices: 1" in lines_out
+    assert "missing indices: 2-3" in lines_out
+    assert "ARRAY=1-3" in lines_out[-1] and "TIME or MEM" in lines_out[-1]
+    code, lines_out = contract.finish_decision(report, queued=[1])
+    assert (
+        code == contract.FINISH_IN_FLIGHT and "queued indices: 1" in lines_out
+    )
+    code, _ = contract.finish_decision(report, allow_missing=True)
+    assert code == 0
 
 
 def report_of(statuses):
