@@ -664,6 +664,11 @@ run reproduces bit for bit.
   100, and its first smoke case gives its cost.
 - Whether `squeue` answers from a compute node (Phase 1b); if it does not,
   the claim fails closed and resubmissions need the operator's check.
+- Whether the September pool's tracked records are redacted in place:
+  they predate the redaction rule, and their manifests, summaries and the
+  `sources.json` of the analyses built on them hold the login host, node
+  names, job ids and the operator's home paths. The history keeps the
+  current versions either way.
 
 ## Worklog
 
