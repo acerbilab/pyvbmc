@@ -133,6 +133,16 @@ records its execution.
   focused Torch/JAX workflow and teaching consistency review are recorded
   in the [teaching-material plan](plans/teaching-material.md).
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
+  Re-execute every example notebook with the release code and commit its
+  outputs: the docs build renders the stored outputs
+  (`nb_execution_mode = "off"`), and on 2026-09-25 every notebook's
+  outputs differed from what the code produces (Examples 4 and 5 were last
+  executed in 2023). Read each notebook's text against its new outputs;
+  Example 7's runs, for one, no longer split between the modes as the
+  stored output shows. Executed through nbclient, Example 2's Plotly figure
+  keeps only its Plotly JSON, which the docs build skips, so the execution
+  has to produce the figure's HTML as well. Example 4 prints its list of
+  ELBOs as NumPy 2 writes them, `np.float64(-1.52)`.
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. The package checks include what
   the sdist ships: setuptools_scm puts every tracked file in it, `dev/` and

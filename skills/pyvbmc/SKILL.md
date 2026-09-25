@@ -24,6 +24,7 @@ this skill folder has been copied elsewhere.
 
 | Task | Read |
 | --- | --- |
+| Fit a model written in Torch or JAX; export the posterior to Torch or ArviZ | [Torch and JAX quickstart](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/quickstart.rst#bring-a-torch-or-jax-model-into-pyvbmc), its section “Use a fitted posterior downstream”, and [Example 9](https://github.com/acerbilab/pyvbmc/blob/dev-next/examples/pyvbmc_example_9_torch_jax.ipynb). |
 | Fit a PyMC model | [PyMC quickstart](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/quickstart.rst#bring-a-pymc-model-into-pyvbmc), [`PyMCTarget` API](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/api/classes/pymc_target.rst), and [Example 8](https://github.com/acerbilab/pyvbmc/blob/dev-next/examples/pyvbmc_example_8_pymc.ipynb). |
 | Decide whether PyVBMC fits the problem; install it | [README.md](https://github.com/acerbilab/pyvbmc/blob/dev-next/README.md): “When should I use PyVBMC?” and “Installation”. |
 | Set up or adapt an analysis | [docsrc/source/quickstart.rst](https://github.com/acerbilab/pyvbmc/blob/dev-next/docsrc/source/quickstart.rst); consult the FAQ's “Input arguments” sections for target functions, priors, starting points and bounds. |
