@@ -111,6 +111,12 @@ condition), so the plan's 45 CPU-hour estimate became 90 on these cores.
 In every file `campaign` is `svbmc_pool` and `generated` the time it was
 written; `directory` is the bare directory name in `summary.json` and
 the cluster's absolute path in `selection.json` and `verification.json`.
+The files are kept as the campaign wrote them, with the login host,
+compute-node names, Slurm job ids and the operator's paths on the cluster,
+as are the `sources.json` of the analyses built on the pool. The tracked
+records of the release gate's campaigns are redacted
+([Slurm plan](../../../plans/slurm-benchmark-support.md), "Records and
+hand-back"); these predate that rule.
 
 - `manifest.json` — written by `prepare`: `campaign` (`svbmc_pool`),
   `suite`, `options` (the base VBMC options every run used), `allocation`

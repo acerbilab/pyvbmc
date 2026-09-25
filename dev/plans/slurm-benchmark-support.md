@@ -83,7 +83,11 @@ Decisions of the PI, 2026-09-25.
    every CMA-ES search with `D > 1` and every sampled GP fit (the
    [ledger](../results/2026-09-23-port-correctness-review.md), "The fixes
    that move default trajectories"), so the noiseless runs are regenerated
-   along with the noisy ones.
+   along with the noisy ones. The 100 seeds hold for the two costliest
+   configurations as well: `cigar_D15_exhaust`, about a quarter of a
+   population's cost, and `lumpy_D10_noise3_production`, which has never
+   run and whose seed count is revisited only if its first smoke case
+   takes hours.
 3. **A before arm.** The only old-code runs of the noisy `production`
    configurations are the 80 runs of 2026-09-18/19 (six configurations,
    10 to 20 seeds each), too few to judge the fixes on those targets. The
@@ -141,6 +145,12 @@ Decisions of the PI, 2026-09-25.
     noiseless multisensory), but a pool run saves the posterior and its GP
     and a population run the trace of every iteration; the two harnesses
     exist, and the duplicated runs cost little on the cluster.
+13. **The release code is the latest `dev-next` at the launch.** The
+    campaigns of Phase 8 launch once no algorithmic work on 1.5 remains,
+    from the latest commit of `dev-next` at that time. After the launch
+    only the documentation changes, and the S-VBMC headline selection
+    that the gate itself decides; a change to the numerics after it would
+    need the campaigns it reaches to run again.
 
 ## The cluster
 
@@ -231,8 +241,9 @@ Each harness that the driver runs has these subcommands.
   and the manifest, in the campaign's own environment and source trees; it
   checks that each record's node features include `NODE_FEATURE` and that
   its CPU affinity is one physical core. It reconciles the allocation case
-  by case: verified, failed, in flight (a live claim, which takes precedence
-  over partial files), partial, missing and stray, each with its index. It
+  by case: verified, failed, in flight (a claim that is live by the rule
+  below, which takes precedence over partial files), partial, missing and
+  stray, each with its index. It
   writes `verification.json`, and exits non-zero on a failed check, a
   partial case or a stray file.
 - The harness's own **finishing steps**, which run only on a verified
@@ -246,14 +257,24 @@ workers never both hold one. When a claim exists:
 
 - a task that finds its own job and array task id in it (a requeue) takes
   it over;
-- otherwise the worker asks Slurm whether that task is queued or running
-  (`squeue -h -j <job>_<task>`); a live task, or a query that fails, makes
-  the worker exit with code 75 without touching the case's files;
-- a claim whose task Slurm no longer knows is stale: the worker renames it
+- otherwise the worker asks the Slurm accounting for the state of that
+  task (`sacct -n -X -P -j <job>_<task> -o State`). While the task has not
+  ended (pending, running, requeued, suspended), and whenever the query
+  fails or answers nothing, the claim is live: the worker exits with code
+  75 without touching the case's files;
+- a claim whose task has ended (completed, failed, cancelled, timed out,
+  node failure, out of memory, preempted) is stale: the worker renames it
   to `claims/<tag>.stale.<job>_<task>`, so that of two workers only one
   succeeds, and then creates its own.
 
 A refusal never takes the failure path, which deletes the case's files.
+The accounting keeps a job's state after the job ends. `squeue` answers
+only for the jobs the controller still holds and can answer with an
+error for one it has dropped, as it does when the query fails, so it
+cannot tell an ended task from an unreachable controller. Phase 1b checks
+that the accounting answers from a compute node; where it does not, every
+claim is live, and a resubmission waits for the operator to clear the
+stale ones.
 
 **The source identity**, compared by every worker: the commit and the
 clean state of each source tree (the whole harness checkout, the package
@@ -296,8 +317,11 @@ What is new:
 - **The environment** is a conda environment at `CAMPAIGN_ENV`, with
   Python 3.12 as in September, `zstd` for the archive and `gh` for the
   hand-back from conda-forge (a cluster need not have either), and the rest
-  from pip. It is built on the login node after `LOGIN_SETUP`, from a site
-  conda module or a Miniforge installation. The environment script reads
+  from pip at the versions pinned in
+  `dev/scripts/hpc/campaign_requirements.txt`, so that the environments of
+  the smoke campaigns and of the campaigns, built in different accounts,
+  hold the same libraries. It is built on the login node after
+  `LOGIN_SETUP`, from a site conda module or a Miniforge installation. The environment script reads
   the login profile (a non-interactive shell may not define `module`
   otherwise), activates the environment, exports single-threaded BLAS,
   `MPLBACKEND=Agg`, the source trees' paths and `TMPDIR` under the campaign
@@ -542,6 +566,10 @@ has not been measured.
   username or a hostname remains in its output.
 - A machine that holds a raw directory lists it in its
   `dev/scripts/runs/LOCAL.md`.
+- The tracked records of the September pool
+  (`experiments/svbmc_pool/pool_20260914/`) and the `sources.json` of the
+  analyses built on it predate the redaction and are kept as written; that
+  pool's README says so.
 
 ## Phases
 
@@ -562,13 +590,13 @@ association (`sacctmgr show assoc`), a node's `CPUTot`, `CoresPerSocket`,
 `Sockets` and `ThreadsPerCore`, the tools and the Python and conda modules,
 and the storage quota. **1b**, where the campaigns will run: the same
 survey, with the per-user limits, the node features that select the
-campaigns' node family, and whether `squeue` answers from a compute node;
-then the conda environment and the source trees: the harness checkout,
-gpyreg at `v1.3.3` and at `v1.2.1`, the package at `f91fdf0` as a detached
-worktree, and the S-VBMC baseline. The site-specific results go into the
-operator's notes; what bears on the design revises "The cluster".
-**Acceptance:** the environment check (the three harnesses' test modules,
-as a batch job) passes with no test skipped.
+campaigns' node family, and whether `sacct` answers from a compute node
+(a batch job); then the conda environment and the source trees: the
+harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
+`f91fdf0` as a detached worktree, and the S-VBMC baseline. The
+site-specific results go into the operator's notes; what bears on the
+design revises "The cluster". **Acceptance:** the environment builds from
+the pinned requirements, and every source tree is clean at its commit.
 
 ### Phase 2: the generic driver
 
@@ -582,10 +610,10 @@ passes on every script.
 
 The pool harness section, with tests in `dev/scripts/test_svbmc_pool_run.py`.
 **Acceptance:** the tests cover `--case`, the early exit, the claim (fresh,
-live, stale, requeued, and a refusal that leaves the case's files
-untouched), the identity and host fields and every `verify` state; a case
-run by the array-mode worker and by `run` on the same machine gives
-identical artifacts.
+live, stale, requeued, a failed query, and a refusal that leaves the
+case's files untouched), the identity and host fields and every `verify`
+state; a case run by the array-mode worker and by `run` on the same
+machine gives identical artifacts.
 
 ### Phase 4: the population harness and the arm comparison
 
@@ -605,7 +633,9 @@ disjoint; a recreated baseline verifies by content.
 
 ### Phase 6: smoke campaigns on Turso
 
-In the PI's account, each harness through the driver on the `smoke` suite
+In the PI's account. First the environment check: the three harnesses'
+test modules, run from the branch as a batch job, pass with no test
+skipped. Then each harness through the driver on the `smoke` suite
 or a few cases, and the heaviest cases of each (`cigar_D15_exhaust`,
 `lumpy_D10_noise3_production`, a stacking cell at `M = 32`): a canary; a
 resubmission of a finished range; a task cancelled while running, which
@@ -624,13 +654,14 @@ and the three harnesses, in site-neutral terms; the site values stay in the
 operator's notes. A brief in the manner of
 [the September one](svbmc-pool-handoff.md) tells the postdoc what to run,
 in what order, and what to hand back, and names the settings the operator
-supplies without their values. Fresh reviewers read the branch against this
-plan. **Acceptance:** the review's findings are fixed or ruled on, and the
-branch merges into `dev-next` after the PI's review.
+supplies without their values. A doublecheck by fresh reviewers reads the
+branch against this plan. **Acceptance:** the review's findings are fixed
+or ruled on, and the branch merges into `dev-next` after the PI's review.
 
 ### Phase 8: the campaigns
 
-On the PI's instruction, once 1.5 is settled and Phase 1b's survey holds.
+On the PI's instruction, once no algorithmic work on 1.5 remains
+(decision 13) and Phase 1b's survey holds.
 Each campaign runs whole in one environment on one node family, and the two
 population arms run together, so that they differ in their code alone; the
 pools and then the stacking follow, from a clean checkout at the release
@@ -655,21 +686,6 @@ to the golden references item's promotion, with the populations.
 **Acceptance:** every fingerprint lies inside its envelope, and each gate
 run reproduces bit for bit.
 
-## Open questions
-
-- `cigar_D15_exhaust` at 100 seeds costs about 27.5 laptop hours per arm, a
-  quarter of a population's budget; the current reference holds 10 seeds of
-  it.
-- How many seeds `lumpy_D10_noise3_production` can afford: the decision is
-  100, and its first smoke case gives its cost.
-- Whether `squeue` answers from a compute node (Phase 1b); if it does not,
-  the claim fails closed and resubmissions need the operator's check.
-- Whether the September pool's tracked records are redacted in place:
-  they predate the redaction rule, and their manifests, summaries and the
-  `sources.json` of the analyses built on them hold the login host, node
-  names, job ids and the operator's home paths. The history keeps the
-  current versions either way.
-
 ## Worklog
 
 - 2026-09-25: plan written from the PI's decisions of the day. Phase 1a
@@ -677,3 +693,12 @@ run reproduces bit for bit.
   the storage quota; its site-specific results are in the operator's notes.
   Three independent reviewers read the plan and its pointers the same day
   (privacy, the plan, the pointers); this text includes their findings.
+- 2026-09-25: the PI ruled on the open questions: 100 seeds for
+  `cigar_D15_exhaust` and `lumpy_D10_noise3_production` (decision 2), the
+  September records kept as written ("Records and hand-back"), and the
+  release code (decision 13), and a doublecheck for Phase 7's review.
+  The claim reads the Slurm accounting in place of `squeue`, the
+  environment is pinned, and the environment check moved from Phase 1b to
+  Phase 6, where the harnesses' test modules first run without skipping.
+  Phase 1b runs on whichever installation of the cluster is up; the
+  scripts need no change between them.

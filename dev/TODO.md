@@ -127,9 +127,11 @@ records its execution.
   record (PI, 2026-09-25; the
   [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
 
-- [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated, regenerate the VBMC run pools on the test targets
-  with the release code on the cluster, 320 filtered runs per condition
+- [ ] **Final large-scale check before the release (the gate).** Once no
+  algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
+  test targets with the release code on the cluster, the latest
+  `dev-next` at the launch, after which only the documentation and the
+  headline selection change; 320 filtered runs per condition
   (PI, 2026-09-25; the [Slurm plan](plans/slurm-benchmark-support.md)):
   the present pools of 100 noisy and 50 noiseless runs reuse each run 1.6
   to 3.2 times at `M = 16` and 3.2 to 6.4 times at `M = 32`, and ten
