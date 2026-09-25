@@ -112,6 +112,10 @@ def get_repr(obj, expand=False, full=False, **kwargs):
     string : str
         The string representation of ``obj``.
     """
+    if isinstance(obj, np.generic):
+        # A NumPy scalar prints as the Python number it holds, `1.5` rather
+        # than NumPy 2's `np.float64(1.5)`.
+        return repr(obj.item())
     if expand:  # Expand child elements
         if type(obj) == dict:
             return format_dict(obj, **kwargs)

@@ -1129,6 +1129,9 @@ its entry below.
   array of one element, as it could its value; a target written for a batch
   of points does so for a single point. 1.0.4 raised
   `FunctionLogger:InvalidNoiseValue`.
+- The summaries of PyVBMC objects (`print(vp)`, `format_dict(results)` and
+  the like) show a NumPy number as the value it holds, `'elbo': -1.88`,
+  where with NumPy 2 they showed `'elbo': np.float64(-1.88)`.
 
 ### Removed
 
