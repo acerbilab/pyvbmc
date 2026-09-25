@@ -642,13 +642,24 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
   `population_before/`, `stacking/`, with a README) in a pull request to
   `dev-next`, as in September: the manifests, the verification reports, the
-  summaries and, for the populations, every sidecar (as `dev/golden/baseline/`
-  holds the current reference's), so that the assessment can be redone from
-  a fresh checkout. A `redact` finishing step writes them: hostnames reduce
-  to the node family, paths under the operator's home to `~`, and the
-  `site` block, the `pip freeze` paths and the Slurm accounting stay in the
-  archive. The step fails when a value of the `site` block, the operator's
-  username or a hostname remains in its output.
+  summaries and, for the populations, every verified case's record,
+  sidecar and boost report and the after arm's rescored metrics (about 30
+  to 45 MB per arm), so that the assessment can be redone from a fresh
+  checkout. The redaction (`hpc/campaign_redact.sh CAMPAIGN_DIR OUT_DIR`,
+  `campaign_contract.py redact`) writes them: a command the operator runs
+  on the login node in the account that ran the campaign, after the
+  finish, since it removes that account's username and home, which it
+  reads from its own process. Each harness declares its tracked copies in
+  its manifest (`tracked_copies`). Hostnames reduce to the node family
+  (`NODE_FEATURE`, which the copies keep so that the family of every run
+  stays checkable) or to `login`, paths under a path setting to its name
+  and paths under the home to `~`; the `site` block, the `pip freeze`
+  paths and the Slurm accounting stay in the archive. It refuses when a
+  path setting, the operator's username, the home or a hostname remains in
+  its output, and `redaction.json` records the SHA-256 of each copy beside
+  its source's, which the population analysis checks when it reads the
+  copies. The operator writes the README of `release_gate_<date>/`, which
+  nothing redacts, so it names no host, path or account.
 - A machine that holds a raw directory lists it in its
   `dev/scripts/runs/LOCAL.md`.
 - The tracked records of the September pool
@@ -758,9 +769,11 @@ per-case times that replace the estimates above.
 and the three harnesses, in site-neutral terms; the site values stay in the
 operator's notes. The September scripts no longer drive the pool harness,
 whose worker takes `--case`; the guide and the `scripts/hpc/` entry of
-`dev/README.md` present them as the record of that campaign. The `redact`
-finishing step ("Records and hand-back") is implemented here, before the
-hand-back needs it. A brief in the manner of
+`dev/README.md` present them as the record of that campaign. The
+redaction ("Records and hand-back") is implemented here, before the
+hand-back needs it. The limits of the verify and finishing jobs of the
+populations (a `verify` of 2400 cases, a `rescore` of 4800) and of the
+pools are set explicitly in the guide, from the accounting of Phase 6. A brief in the manner of
 [the September one](svbmc-pool-handoff.md) tells the postdoc what to run,
 in what order, and what to hand back, and names the settings the operator
 supplies without their values. A doublecheck by fresh reviewers reads the
@@ -852,3 +865,9 @@ run reproduces bit for bit.
   evaluation at 32 runs of 50 components in `D = 6` falls from about
   5.9 GiB to 351 MiB. The gradient steps keep the whole matrix: chunking
   them changes the order in which the gradient sums over rows.
+- 2026-09-25: Phase 7's redaction and operator's guide on
+  `feat-slurm-campaigns` (`1f9a3538`, `4682b1a2`): the redaction is a
+  command run after the finish, not a finishing step, since it needs the
+  operator's account and writes into a checkout; every harness's test
+  module passes with none skipped. The guide leaves `TIME` and `MEM` of
+  every job to the accounting of Phase 6.
