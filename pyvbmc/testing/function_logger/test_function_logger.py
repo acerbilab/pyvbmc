@@ -481,6 +481,45 @@ def test_call_non_scalar_return():
     assert np.all(f_logger.y_orig[1] == y)
 
 
+@pytest.mark.parametrize(
+    "sd", [np.array([0.5]), np.array([[0.5]]), np.array(0.5), [0.5]]
+)
+def test_call_one_element_sd(sd):
+    """A noisy target may return its SD as an array of one element, as it
+    may its value: a target written for a batch of points does so for a
+    single point. The element is recorded and pooled as a number would be."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        lambda x: (np.array([np.sum(x)]), sd), 3, True, 2
+    )
+    f_val, f_sd, idx = f_logger(x)
+    assert f_val == np.sum(x)
+    assert np.isscalar(f_sd) and f_sd == 0.5
+    assert f_logger.S[0, 0] == 0.5
+    f_logger(x)
+    assert f_logger.S[0, 0] == 1 / np.sqrt(2 / 0.5**2)
+
+
+@pytest.mark.parametrize(
+    "sd",
+    [
+        np.array([0.5, 0.5]),
+        np.array([0.0]),
+        np.array([-1.0]),
+        np.array([np.inf]),
+        np.array([np.nan]),
+    ],
+)
+def test_call_invalid_array_sd_is_refused(sd):
+    """An SD of several elements, or one element that is not a finite
+    positive number, is refused before anything is recorded."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(lambda x: (np.sum(x), sd), 3, True, 2)
+    with pytest.raises(ValueError, match="InvalidNoiseValue"):
+        f_logger(x)
+    assert f_logger.Xn == -1
+
+
 def test_add_invalid_func_value():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)

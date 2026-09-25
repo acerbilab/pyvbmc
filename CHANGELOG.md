@@ -1125,6 +1125,10 @@ its entry below.
   `repr(options)`). Descriptions containing `:` or `=` were cut short, and
   an option of the advanced set that the user had given showed `None` for
   its description.
+- A target with `specify_target_noise=True` may return its noise SD as an
+  array of one element, as it could its value; a target written for a batch
+  of points does so for a single point. 1.0.4 raised
+  `FunctionLogger:InvalidNoiseValue`.
 
 ### Removed
 

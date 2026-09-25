@@ -163,9 +163,11 @@ class FunctionLogger:
         The function to be logged.
         `fun` must take a vector input and return a scalar value and,
         optionally, the (estimated) SD of the returned value (if the
-        function fun is stochastic). If ``vectorized_target`` is true,
-        ``fun`` instead takes an ``(N, D)`` array and returns an ``(N,)`` or
-        ``(N, 1)`` array, or a pair of those arrays for user-provided noise.
+        function fun is stochastic); an array of one element stands for its
+        element, for the value and the SD alike. If ``vectorized_target`` is
+        true, ``fun`` instead takes an ``(N, D)`` array and returns an
+        ``(N,)`` or ``(N, 1)`` array, or a pair of those arrays for
+        user-provided noise.
     D : int
         The number of dimensions that the function takes as input.
     noise_flag : bool
@@ -319,6 +321,10 @@ class FunctionLogger:
         # if f_val is an array with only one element, extract that element
         if not np.isscalar(f_val_orig) and np.size(f_val_orig) == 1:
             f_val_orig = np.array(f_val_orig).flat[0]
+        # and likewise for the SD, which a target written for a batch of
+        # points returns as an array of one element for a single point
+        if self.noise_flag and not np.isscalar(f_sd) and np.size(f_sd) == 1:
+            f_sd = np.asarray(f_sd).item()
 
         # Check function value
         if (

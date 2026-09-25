@@ -869,6 +869,32 @@ def test_specify_target_noise_true_takes_the_noise_the_target_returns(value):
     assert vbmc.optim_state["uncertainty_handling_level"] == 2
 
 
+def test_a_noisy_target_may_return_arrays_of_one_element():
+    """A target written for a batch of points returns, for a single point,
+    its value and its noise SD as arrays of one element (Example 6 does).
+    Through the wrapper that adds the log prior and through the function
+    logger, both are read as the numbers they hold."""
+
+    def log_likelihood(theta):
+        theta = np.atleast_2d(theta)
+        return -np.sum(theta**2, axis=1), np.full(theta.shape[0], 0.5)
+
+    vbmc = VBMC(
+        log_likelihood,
+        np.zeros((1, 2)),
+        np.full((1, 2), -np.inf),
+        np.full((1, 2), np.inf),
+        -np.ones((1, 2)),
+        np.ones((1, 2)),
+        options={"specify_target_noise": True, "display": "off"},
+        log_prior=lambda x: -0.5 * np.sum(np.asarray(x) ** 2),
+    )
+    x = np.array([[0.5, -0.5]])
+    vbmc.function_logger(vbmc.parameter_transformer(x)[0])
+    assert vbmc.function_logger.y_orig[0, 0] == pytest.approx(-0.75)
+    assert vbmc.function_logger.S[0, 0] == 0.5
+
+
 @pytest.mark.parametrize("value", [False, 0, np.False_, np.int64(0)])
 def test_specify_target_noise_false_gives_a_noiseless_run(value):
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4, {"specify_target_noise": value})
