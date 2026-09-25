@@ -881,6 +881,29 @@ def test_a_stale_log_is_not_a_partial_artifact(tmp_path):
     assert runner.partial_artifacts(tmp_path, tag) == [f"{tag}.npz"]
 
 
+def test_a_worker_that_died_leaves_a_failed_case(tmp_path):
+    """What `run` makes of a worker that died without its error file: the
+    tail of its log as the error file, no partial file, and no claim of
+    its own; a claim some other process made stays."""
+    tag = tag_of(SEED_START)
+    log = plant(
+        tmp_path, f"{tag}.log", "".join(f"line {i}\n" for i in range(60))
+    )
+    plant(tmp_path, f"{tag}.npz")
+    claim = contract.new_claim(tag, task={})
+    claim["pid"] = 424242
+    contract.write_json(contract.claim_path(tmp_path, tag), claim)
+    runner.died_worker(tmp_path, tag, -9, log, 424242)
+    error = contract.error_path(tmp_path, tag).read_text(encoding="utf-8")
+    assert error.startswith(f"{tag}: worker exited with code -9")
+    assert "line 59" in error and "line 19\n" not in error
+    assert runner.partial_artifacts(tmp_path, tag) == []
+    assert not contract.claim_path(tmp_path, tag).exists()
+    contract.write_json(contract.claim_path(tmp_path, tag), claim)
+    runner.died_worker(tmp_path, tag, -9, log, 1)
+    assert contract.claim_path(tmp_path, tag).exists()
+
+
 # --------------------------------------------------------------------------
 # prepare
 # --------------------------------------------------------------------------
