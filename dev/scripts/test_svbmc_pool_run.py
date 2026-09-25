@@ -1,21 +1,41 @@
-"""Contracts of the S-VBMC pool generator: artifact, resume, selection,
-summary and post-hoc verification.
+"""Contracts of the S-VBMC pool harness, ``svbmc_pool_run.py``.
 
-One short campaign (``normal_D2``, at most three seeds, about a minute of
-inference) is generated once for the whole module through the command
-line, exactly as a real pool is, and the stored runs are then reloaded and
-re-verified. Outside default pytest discovery; run it by path::
+The artifact, resumption, selection and summary; the campaign contract
+(the case list and its subsets, the worker's early exit and refusals, its
+claim, its clean-up after a failure or a SIGTERM, the identity and host
+fields, every state of ``verify``); the identity of a case run by the array
+worker and by ``run``; the flat layout of the pools prepared before the
+contract; and one campaign through the Slurm driver of ``dev/scripts/hpc/``.
 
-    python -m pytest dev/scripts/test_svbmc_pool_run.py -vv
+One short campaign (``normal_D2``, at most three seeds, well under a
+minute of inference) is generated once for the whole module through the
+command line with ``run``, as a workstation pool is, and its stored runs
+are reloaded, copied and re-verified. The tests of the worker's
+bookkeeping run it in this process with the run itself replaced by a copy
+of one of those stored runs; the tests that play a Slurm task set its
+variables and put the stub Slurm commands of ``campaign_slurm_stubs.py``
+first on the PATH.
+
+The gpyreg checkout is the one ``PYVBMC_GPYREG_SOURCE`` names, which the
+campaign's environment exports: every test skips when it is unset, and
+fails when it names no gpyreg checkout. Outside default pytest discovery;
+run it by path::
+
+    PYVBMC_GPYREG_SOURCE=<gpyreg checkout> \\
+        python -m pytest dev/scripts/test_svbmc_pool_run.py -vv
 """
 
 import json
 import os
+import re
 import shutil
+import signal
 import subprocess
 import sys
 from pathlib import Path
 
+import campaign_contract as contract
+import campaign_slurm_stubs as stubs
 import numpy as np
 import pytest
 import svbmc_pool_run as runner
@@ -23,9 +43,12 @@ import svbmc_pool_run as runner
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 SCRIPT = HERE / "svbmc_pool_run.py"
-#: The campaign's pinned gpyreg worktree, as the harness names it; the
-#: runner imports no PyVBMC, so reading it costs nothing.
-GPYREG_SOURCE = runner.DEFAULT_GPYREG
+#: The gpyreg checkout every campaign of the module is generated against.
+GPYREG_SOURCE = (
+    Path(os.environ["PYVBMC_GPYREG_SOURCE"]).resolve()
+    if os.environ.get("PYVBMC_GPYREG_SOURCE")
+    else None
+)
 LABEL = "normal_D2"
 SEED_START = 4000
 TARGET, MAX_SEEDS = 2, 3
@@ -40,36 +63,105 @@ LIVE_CHECKS = [
     "evaluations",
     "gp_prediction",
 ]
-
-# The campaign pins gpyreg to a frozen worktree; the artifact module reads
-# the variable when it is imported, and the workers inherit it.
-if (GPYREG_SOURCE / "gpyreg").is_dir():
-    os.environ["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)
+POST_HOC_CHECKS = ["stats_keys", "recomputation_gate", "dtype_canary"]
+#: The fields of a completion record that the contract writes; the rest
+#: are the harness's.
+CONTRACT_FIELDS = (
+    "contract",
+    "tag",
+    "case",
+    "identity",
+    "started",
+    "finished",
+    "elapsed_seconds",
+    "artifacts",
+)
+#: What says when a run was written and how long it and its evaluations
+#: took: the sidecar's metadata fields, the logger's total and the array of
+#: each evaluation's seconds. Two runs of one case differ in these, and in
+#: the memory addresses that the representations of its objects carry,
+#: alone.
+TIMING_META = ("written", "wall_s", "target_eval_s")
+TIMING_ARRAYS = ("logger/fun_eval_time",)
+ADDRESS = re.compile(r" at 0x[0-9A-Fa-f]+")
+#: The flag every campaign of the module is prepared with: the harness
+#: and the suite are developed together, so the campaigns are generated
+#: from whatever the checkout holds.
+DIRTY = "--allow-dirty"
 
 import svbmc_pool_io as pool_io  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
-    not (GPYREG_SOURCE / "gpyreg").is_dir(),
-    reason="the campaign's frozen gpyreg worktree is machine-local",
+    GPYREG_SOURCE is None,
+    reason="PYVBMC_GPYREG_SOURCE, the gpyreg checkout the pools are "
+    "generated against, is unset",
 )
 
 
-def cli(*args):
-    environment = dict(os.environ)
-    environment.update({k: "1" for k in runner.THREAD_KEYS})
-    environment["MPLBACKEND"] = "Agg"
-    environment["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)
+# --------------------------------------------------------------------------
+# Helpers
+# --------------------------------------------------------------------------
+
+
+def tag_of(seed, label=LABEL):
+    return runner.case_tag(label, seed)
+
+
+def read_json(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def manifest_of(out):
+    return read_json(Path(out) / "manifest.json")
+
+
+def verification(out):
+    """The report `verify` wrote in a campaign directory."""
+    return read_json(Path(out) / "verification.json")
+
+
+def reported(report, tag):
+    """The one reported case of a tag."""
+    (case,) = [c for c in report["cases"] if c["tag"] == tag]
+    return case
+
+
+def outside_campaign(key):
+    """Whether a variable is Slurm's or an operator setting other than the
+    gpyreg pin, which a test that is no campaign task must not see."""
+    key = key.upper()
+    return key.startswith("SLURM") or (
+        key in contract.SETTINGS and key != "PYVBMC_GPYREG_SOURCE"
+    )
+
+
+def environment(**extra):
+    """This process's environment outside any Slurm task and campaign, the
+    campaign's thread settings and gpyreg pin, and ``extra``."""
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not outside_campaign(key)
+    }
+    env.update({k: "1" for k in runner.THREAD_KEYS})
+    env["MPLBACKEND"] = "Agg"
+    env["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)
+    env.update({key: str(value) for key, value in extra.items()})
+    return env
+
+
+def cli(*args, env=None):
     return subprocess.run(
-        [sys.executable, "-u", str(SCRIPT), *args],
+        [sys.executable, "-u", str(SCRIPT), *(str(a) for a in args)],
         cwd=str(ROOT),
-        env=environment,
+        env=environment() if env is None else env,
         capture_output=True,
         text=True,
     )
 
 
-def prepare(out, target=TARGET):
-    return cli(
+def prepare_args(out, target=TARGET, max_seeds=MAX_SEEDS, *extra):
+    return [
         "prepare",
         "--out",
         str(out),
@@ -80,41 +172,218 @@ def prepare(out, target=TARGET):
         "--target",
         str(target),
         "--max-seeds",
-        str(MAX_SEEDS),
+        str(max_seeds),
         "--seed-start",
         str(SEED_START),
-        # The pool scripts and the suite module are developed together, so
-        # this campaign is generated from whatever the tree holds.
-        "--allow-dirty",
+        "--gpyreg-source",
+        str(GPYREG_SOURCE),
+        *extra,
+    ]
+
+
+def prepare(out, target=TARGET, max_seeds=MAX_SEEDS, *extra):
+    return cli(*prepare_args(out, target, max_seeds, DIRTY, *extra))
+
+
+def ok(result):
+    assert result.returncode == 0, result.stdout + result.stderr
+    return result
+
+
+def completed_tags(out):
+    return sorted(
+        (
+            f"{path.parent.name}/{path.name[: -len('.complete.json')]}"
+            for path in (Path(out) / "records").glob("*/*.complete.json")
+        ),
+        key=runner.tag_seed,
     )
+
+
+def copied(out, tmp_path, name="pool"):
+    copy = tmp_path / name
+    shutil.copytree(out, copy)
+    (copy / "verification.json").unlink(missing_ok=True)
+    return copy
+
+
+def snapshot(directory):
+    """Every file under a directory with its bytes and modification time."""
+    return {
+        path.relative_to(directory).as_posix(): (
+            path.read_bytes(),
+            path.stat().st_mtime_ns,
+        )
+        for path in sorted(Path(directory).rglob("*"))
+        if path.is_file()
+    }
+
+
+def edit_manifest(out, change):
+    manifest = manifest_of(out)
+    change(manifest)
+    contract.write_json(Path(out) / "manifest.json", manifest)
+    return manifest
+
+
+def plant(out, name, text="planted\n"):
+    path = Path(out) / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def claim_by(out, tag, job, array_task, restart_count=0):
+    """A claim of ``tag`` made by the Slurm task ``<job>_<array_task>``."""
+    record = contract.new_claim(
+        tag,
+        task={
+            "job": job,
+            "array_task": array_task,
+            "restart_count": restart_count,
+        },
+    )
+    contract.write_json(contract.claim_path(out, tag), record)
+    return record
+
+
+def answer(state, step, text=None, fail=False):
+    """What the stub ``sacct`` says of the task ``step``."""
+    folder = state / "sacct"
+    folder.mkdir(exist_ok=True)
+    if fail:
+        (folder / f"{step}.fail").write_text("", encoding="utf-8")
+    else:
+        (folder / step).write_text(text, encoding="utf-8")
+
+
+def stub_environment(state, **extra):
+    """:func:`environment` with the stub Slurm commands first on the PATH."""
+    base = environment(**extra)
+    return stubs.stub_environment(state.parent / "bin", state, base)
+
+
+def as_task(monkeypatch, job, array_task, restart=0, node="node1"):
+    """Make this process an array task of Slurm, as the task script's."""
+    monkeypatch.setenv("SLURM_JOB_ID", f"{job}{int(array_task):03d}")
+    monkeypatch.setenv("SLURM_ARRAY_JOB_ID", str(job))
+    monkeypatch.setenv("SLURM_ARRAY_TASK_ID", str(array_task))
+    monkeypatch.setenv("SLURM_RESTART_COUNT", str(restart))
+    monkeypatch.setenv("SLURMD_NODENAME", node)
+
+
+def worker(out, line):
+    """``worker --case LINE`` in this process."""
+    return runner.main(["worker", "--out", str(out), "--case", line])
+
+
+def replay(source_out, source_tag, seen=None):
+    """A stand-in for ``run_case``: a stored run copied into place.
+
+    The copy of ``source_tag``'s artifact from ``source_out`` becomes the
+    case's, with its record fields under the case's label and seed. With
+    ``seen``, it records the case's claim and files as the run finds them.
+    """
+
+    def run_case(out, manifest, tag, label, seed, save_vbmc=False):
+        out = Path(out)
+        if seen is not None:
+            claim = contract.claim_path(out, tag)
+            seen["claim"] = read_json(claim) if claim.exists() else None
+            seen["files"] = runner.partial_artifacts(out, tag)
+        target = out / tag
+        target.parent.mkdir(parents=True, exist_ok=True)
+        paths = []
+        for suffix in pool_io.SUFFIXES:
+            shutil.copyfile(
+                f"{source_out / source_tag}{suffix}", f"{target}{suffix}"
+            )
+            paths.append(Path(f"{target}{suffix}"))
+        record = read_json(pool_io.record_path(source_out, source_tag))
+        fields = {k: v for k, v in record.items() if k not in CONTRACT_FIELDS}
+        fields.update(label=label, seed=int(seed))
+        return paths, fields
+
+    return run_case
+
+
+def must_not_run(*args, **kwargs):
+    raise AssertionError("a refused case must not run")
+
+
+# --------------------------------------------------------------------------
+# Fixtures
+# --------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="module")
 def campaign(tmp_path_factory):
     """One generated pool directory, shared by every check below."""
     out = tmp_path_factory.mktemp("svbmc_pool")
-    assert prepare(out).returncode == 0
-    result = cli("run", "--out", str(out))
-    assert result.returncode == 0, result.stdout + result.stderr
+    ok(prepare(out))
+    result = ok(cli("run", "--out", str(out)))
     return out, result.stdout
 
 
-def completed_tags(out):
-    return [
-        p.name[: -len(".complete.json")]
-        for p in sorted((out / "records").glob("*.complete.json"))
-    ]
+@pytest.fixture
+def no_slurm(monkeypatch):
+    """This process outside any Slurm task, and without the operator
+    settings a campaign's environment may export."""
+    for key in list(os.environ):
+        if outside_campaign(key):
+            monkeypatch.delenv(key)
 
 
-def test_frozen_gpyreg_is_the_one_imported():
+@pytest.fixture
+def slurm(tmp_path, monkeypatch, no_slurm):
+    """Stub Slurm commands first on this process's PATH; their state."""
+    state = tmp_path / "slurm_state"
+    state.mkdir()
+    environment = stubs.stub_environment(
+        stubs.write_stubs(tmp_path / "bin"), state
+    )
+    monkeypatch.setenv("PATH", environment["PATH"])
+    monkeypatch.setenv("STUB_STATE", environment["STUB_STATE"])
+    return state
+
+
+@pytest.fixture
+def fresh(tmp_path, no_slurm):
+    """A campaign of eight seeds, prepared in this process.
+
+    Its identity is this process's, so that the worker run here matches
+    it whatever modules the process has imported.
+    """
+    out = tmp_path / "fresh"
+    assert runner.main(prepare_args(out, 2, 8, DIRTY)) == 0
+    return out
+
+
+@pytest.fixture
+def stored(campaign):
+    """``(campaign directory, the tag of its first stored run)``."""
+    out, _ = campaign
+    return out, completed_tags(out)[0]
+
+
+# --------------------------------------------------------------------------
+# The artifact and the records
+# --------------------------------------------------------------------------
+
+
+def test_the_pinned_gpyreg_is_the_one_imported():
     import gpyreg
 
+    assert (
+        GPYREG_SOURCE / "gpyreg"
+    ).is_dir(), f"PYVBMC_GPYREG_SOURCE={GPYREG_SOURCE} holds no gpyreg package"
     assert Path(gpyreg.__file__).resolve().parent == GPYREG_SOURCE / "gpyreg"
 
 
-def test_manifest_records_the_allocation_and_the_identity(campaign):
+def test_manifest_records_the_allocation_identity_and_site(campaign):
     out, _ = campaign
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    manifest = manifest_of(out)
+    assert manifest["contract"] == contract.CONTRACT_VERSION
     assert manifest["allocation"] == [
         {
             "label": LABEL,
@@ -124,28 +393,76 @@ def test_manifest_records_the_allocation_and_the_identity(campaign):
         }
     ]
     assert manifest["options"] == runner.BASE_OPTIONS
+    assert manifest["gpyreg_source"] == str(GPYREG_SOURCE)
+    assert manifest["allow_dirty"] is True
+    assert manifest["finishing_steps"] == [["select"], ["summarize"]]
+    assert contract.finishing_steps(manifest) == [["select"], ["summarize"]]
+    assert set(manifest["site"]) == set(contract.SETTINGS)
+    assert manifest["pip_freeze"] and isinstance(manifest["pip_freeze"], list)
     identity = manifest["identity"]
-    assert set(identity) == {"source", "host"}
-    assert identity["source"]["gpyreg_commit"] == runner.git(
-        GPYREG_SOURCE, "rev-parse", "HEAD"
+    assert set(identity) == {"contract", "source", "imports", "host"}
+    trees = identity["source"]["trees"]
+    assert set(trees) == {"harness", "gpyreg"}
+    assert trees["harness"]["commit"] == runner.git(ROOT, "rev-parse", "HEAD")
+    assert trees["gpyreg"] == {
+        "commit": runner.git(GPYREG_SOURCE, "rev-parse", "HEAD"),
+        "clean": True,
+    }
+    files = identity["source"]["files"]
+    assert set(files) == {
+        "dev/scripts/svbmc_pool_run.py",
+        "dev/scripts/svbmc_pool_io.py",
+        "dev/scripts/benchmark_targets.py",
+        "dev/scripts/campaign_contract.py",
+        "dev/scripts/data/",
+    }
+    assert files["dev/scripts/svbmc_pool_run.py"] == contract.sha256_file(
+        SCRIPT
     )
-    assert identity["host"]["gpyreg_source"] == str(GPYREG_SOURCE.resolve())
-    assert identity["host"]["hostname"] and identity["host"]["executable"]
+    assert files["dev/scripts/data/"] == contract.directory_sha256(
+        HERE / "data"
+    )
+    versions = identity["source"]["versions"]
+    assert set(versions) == {"python", "numpy", "scipy", "cma", "torch"}
+    assert versions["numpy"] == np.__version__
+    modules = identity["imports"]["modules"]
+    assert Path(modules["pyvbmc"]) == ROOT / "pyvbmc"
+    assert Path(modules["gpyreg"]) == GPYREG_SOURCE / "gpyreg"
+    assert Path(identity["imports"]["trees"]["gpyreg"]["path"]) == (
+        GPYREG_SOURCE
+    )
+    assert set(identity["host"]) == {
+        "hostname",
+        "platform",
+        "executable",
+        "cpu_model",
+        "node_features",
+        "blas",
+        "cpu_affinity",
+        "threads",
+        "slurm",
+    }
+    assert identity["host"]["threads"] == {k: "1" for k in runner.THREAD_KEYS}
 
 
-def test_every_case_wrote_both_files_and_a_valid_record(campaign):
+def test_every_case_wrote_its_artifact_and_a_valid_record(campaign):
     out, stdout = campaign
     tags = completed_tags(out)
     assert tags, stdout
     assert len(tags) <= MAX_SEEDS
-    expected = runner.identity(GPYREG_SOURCE)
+    manifest = manifest_of(out)
     for tag in tags:
         for suffix in pool_io.SUFFIXES:
             assert (out / f"{tag}{suffix}").exists()
-        record = runner.validate_case(out, tag, expected)
-        assert record["identity"]["host"]["gpyreg_import"].startswith(
-            str(GPYREG_SOURCE)
+        record = runner.check_record(out, tag, manifest["identity"])
+        assert record["tag"] == record["case"] == tag
+        assert set(record["artifacts"]) == {f"{tag}.npz", f"{tag}.json"}
+        assert record["label"] == LABEL
+        assert record["seed"] == runner.tag_seed(tag)
+        assert not contract.source_differences(
+            record["identity"], manifest["identity"]
         )
+        assert record["identity"]["host"]["slurm"]["job_id"] is None
         assert set(record["verdict"]) == {
             "stable",
             "max_J_sjk",
@@ -153,41 +470,45 @@ def test_every_case_wrote_both_files_and_a_valid_record(campaign):
             "passes",
         }
         assert record["K"] > 0 and record["func_count"] > 0
+        assert isinstance(record["success_flag"], bool)
+        assert record["convergence_status"] in ("probable", "no")
+        assert isinstance(record["message"], str) and record["message"]
+        assert isinstance(record["r_index"], float)
+        assert isinstance(record["iterations"], int)
+        assert record["iterations"] > 0
         assert record["verification"]["checks"] == LIVE_CHECKS
         assert (out / f"{tag}.npz").stat().st_size < 10**6
+        assert not contract.claim_path(out, tag).exists()
 
 
 def test_stopping_rule_and_seeds(campaign):
     out, _ = campaign
     tags = completed_tags(out)
-    seeds = sorted(int(t.rsplit("seed", 1)[1]) for t in tags)
+    seeds = [runner.tag_seed(t) for t in tags]
     assert seeds == list(range(SEED_START, SEED_START + len(seeds)))
     passing = sum(
-        json.loads(pool_io.record_path(out, tag).read_text(encoding="utf-8"))[
-            "verdict"
-        ]["passes"]
+        read_json(pool_io.record_path(out, tag))["verdict"]["passes"]
         for tag in tags
     )
     assert passing >= TARGET or len(tags) == MAX_SEEDS
 
 
-def test_load_run_rebuilds_the_stored_posterior(campaign):
-    out, _ = campaign
-    tag = completed_tags(out)[0]
+def test_load_run_rebuilds_the_stored_posterior(stored):
+    out, tag = stored
     state = pool_io.load_run(out / tag, rng=0)
     assert set(state) == set(pool_io.load_run.KEYS)
-    sidecar = json.loads((out / f"{tag}.json").read_text(encoding="utf-8"))
+    sidecar = read_json(out / f"{tag}.json")
     assert sidecar["vp"]["stats"]["I_sk"] == "@@npz:vp/stats/I_sk"
-    with np.load(out / f"{tag}.npz", allow_pickle=False) as stored:
+    with np.load(out / f"{tag}.npz", allow_pickle=False) as stored_arrays:
         np.testing.assert_array_equal(
-            state["vp"].stats["I_sk"], stored["vp/stats/I_sk"]
+            state["vp"].stats["I_sk"], stored_arrays["vp/stats/I_sk"]
         )
-        np.testing.assert_array_equal(state["gp"].X, stored["gp/X"])
+        np.testing.assert_array_equal(state["gp"].X, stored_arrays["gp/X"])
     for key in pool_io.STATS_KEYS:
         assert key in state["vp"].stats
     meta = state["meta"]
     assert meta["label"] == LABEL and meta["target"] == "normal"
-    assert meta["seed"] == int(tag.rsplit("seed", 1)[1])
+    assert meta["seed"] == runner.tag_seed(tag)
     assert set(meta["filter"]) == {"stable", "max_J_sjk", "s_max", "passes"}
     assert np.isfinite(meta["metrics"]["gskl"])
     assert meta["identity"]["host"]["gpyreg_import"].startswith(
@@ -199,27 +520,26 @@ def test_load_run_rebuilds_the_stored_posterior(campaign):
 def test_verify_run_passes_post_hoc(campaign):
     out, _ = campaign
     for tag in completed_tags(out):
-        report = pool_io.verify_run(out / tag)
-        assert report["checks"] == [
-            "stats_keys",
-            "recomputation_gate",
-            "dtype_canary",
-            "hashes",
-        ]
+        report = pool_io.verify_run(
+            out / tag, record=contract.record_path(out, tag)
+        )
+        assert report["checks"] == POST_HOC_CHECKS + ["hashes"]
         assert report["differences"]["I_sk"] <= pool_io.TOL_STATS
         assert report["differences"]["J_sjk"] <= pool_io.TOL_STATS
         assert report["dtype_leaves"] > 0
+        # Without the record's path, the flat layout's is looked for,
+        # which a campaign of the contract does not have.
+        assert pool_io.verify_run(out / tag)["checks"] == POST_HOC_CHECKS
 
 
-def test_verify_run_compares_the_live_evaluations(campaign):
+def test_verify_run_compares_the_live_evaluations(stored):
     """The live checks, against a rebuilt run standing in for the live one.
 
     A second rebuild of the same artifact holds the same objects, so
     every live check passes on it; changing one recorded evaluation
     makes the comparison of the evaluations fail.
     """
-    out, _ = campaign
-    tag = completed_tags(out)[0]
+    out, tag = stored
     state = pool_io.load_run(out / tag, rng=0)
 
     class Run:
@@ -238,50 +558,84 @@ def test_verify_run_compares_the_live_evaluations(campaign):
         pool_io.verify_run(out / tag, vbmc=Run(), results=results)
 
 
+def test_verify_run_reads_the_hashes_of_either_record(stored, tmp_path):
+    out, tag = stored
+    copy = copied(out, tmp_path)
+    path = contract.record_path(copy, tag)
+    record = read_json(path)
+    name = tag.split("/")[1]
+    assert pool_io.recorded_hashes(record, name) == pool_io.artifact_hashes(
+        copy / LABEL, name
+    )
+    flat = {"hashes": pool_io.artifact_hashes(copy / LABEL, name)}
+    assert pool_io.recorded_hashes(flat, name) == flat["hashes"]
+    record["artifacts"][f"{tag}.json"]["sha256"] = "0" * 64
+    contract.write_json(path, record)
+    with pytest.raises(
+        RuntimeError, match=r"\.json differs from the recorded"
+    ):
+        pool_io.verify_run(copy / tag, record=path)
+
+
 def test_second_run_skips_every_completed_case(campaign):
     out, _ = campaign
     before = {
-        tag: pool_io.artifact_hashes(out, tag) for tag in completed_tags(out)
+        tag: pool_io.artifact_hashes(out / LABEL, tag.split("/")[1])
+        for tag in completed_tags(out)
     }
-    result = cli("run", "--out", str(out))
-    assert result.returncode == 0, result.stdout + result.stderr
+    result = ok(cli("run", "--out", str(out)))
     assert "START" not in result.stdout
-    for tag in before:
+    for tag, hashes in before.items():
         assert f"SKIP {tag}" in result.stdout
-        assert pool_io.artifact_hashes(out, tag) == before[tag]
+        assert (
+            pool_io.artifact_hashes(out / LABEL, tag.split("/")[1]) == hashes
+        )
 
 
-def test_summarize_reports_the_counts(campaign):
+def test_summarize_reports_the_counts_and_the_convergence(campaign):
     out, _ = campaign
-    assert cli("summarize", "--out", str(out)).returncode == 0
-    summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    ok(cli("summarize", "--out", str(out)))
+    summary = read_json(out / "summary.json")
     (condition,) = summary["conditions"]
     tags = completed_tags(out)
+    records = [read_json(pool_io.record_path(out, tag)) for tag in tags]
     assert condition["label"] == LABEL
     assert condition["completed"] == len(tags)
     assert condition["seeds_run"] == len(tags) + condition["failed"]
     assert condition["seed_cap"] == MAX_SEEDS
     assert condition["target_filtered"] == TARGET
     assert condition["filtered"] == sum(
-        json.loads(pool_io.record_path(out, tag).read_text(encoding="utf-8"))[
-            "verdict"
-        ]["passes"]
-        for tag in tags
+        r["verdict"]["passes"] for r in records
     )
     assert 0.0 <= condition["pass_rate"] <= 1.0
     assert condition["wall_minutes"]["median"] > 0
+    assert condition["success_flag"] == sum(r["success_flag"] for r in records)
+    assert sum(condition["convergence_status"].values()) == len(tags)
+    assert sum(condition["messages"].values()) == len(tags)
+    assert condition["iterations"]["n"] == len(tags)
+    assert condition["iterations"]["median"] == float(
+        np.median([r["iterations"] for r in records])
+    )
+    assert condition["r_index"]["n"] == len(tags)
     assert summary["totals"]["filtered"] == condition["filtered"]
+    assert summary["totals"]["success_flag"] == condition["success_flag"]
     text = (out / "summary.md").read_text(encoding="utf-8")
-    assert LABEL in text and "filtered" in text
+    assert LABEL in text and "converged" in text and "success" in text
+
+
+# --------------------------------------------------------------------------
+# cases
+# --------------------------------------------------------------------------
 
 
 def test_manifest_cases_follows_the_allocation_order():
     """Every seed of every condition's range, conditions in manifest order."""
     manifest = {
+        "contract": 1,
         "allocation": [
             {"label": "second", "seed_start": 10, "max_seeds": 2},
             {"label": "first", "seed_start": 1000, "max_seeds": 3},
-        ]
+        ],
     }
     assert runner.manifest_cases(manifest) == [
         ("second", 10),
@@ -290,25 +644,114 @@ def test_manifest_cases_follows_the_allocation_order():
         ("first", 1001),
         ("first", 1002),
     ]
-
-
-def test_cases_prints_one_worker_call_per_line(campaign):
-    """The array index is the line number; the count goes to stderr."""
-    out, _ = campaign
-    result = cli("cases", "--out", str(out))
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert result.stdout.splitlines() == [
-        f"{LABEL} {SEED_START + i}" for i in range(MAX_SEEDS)
+    assert runner.case_lines(manifest)[:3] == [
+        "second/second_seed10",
+        "second/second_seed11",
+        "first/first_seed1000",
     ]
-    assert f"{MAX_SEEDS} cases" in result.stderr
+    flat = dict(manifest)
+    del flat["contract"]
+    assert runner.case_lines(flat)[:2] == ["second 10", "second 11"]
+    assert runner.allocated_case(manifest, "first/first_seed1001") == (
+        "first",
+        1001,
+    )
+    assert runner.allocated_case(manifest, "first/first_seed1003") is None
+
+
+def test_cases_prints_one_tag_per_line(campaign, tmp_path):
+    """The case index is the line number; the count goes to stderr."""
+    out, _ = campaign
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "cases", "--out", str(out)],
+        cwd=str(ROOT),
+        env=environment(),
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert b"\r" not in result.stdout
+    lines = result.stdout.decode("utf-8").splitlines()
+    assert lines == [tag_of(SEED_START + i) for i in range(MAX_SEEDS)]
+    assert f"{MAX_SEEDS} cases" in result.stderr.decode("utf-8")
+    listing = tmp_path / "cases.txt"
+    listing.write_bytes(result.stdout)
+    assert contract.read_cases(listing) == lines
     listed = json.loads(
         cli("cases", "--out", str(out), "--format", "json").stdout
     )
     assert listed["count"] == MAX_SEEDS
     assert [
-        (case["index"], case["label"], case["seed"])
-        for case in listed["cases"]
-    ] == [(i + 1, LABEL, SEED_START + i) for i in range(MAX_SEEDS)]
+        (case["index"], case["line"], case["seed"]) for case in listed["cases"]
+    ] == [
+        (i + 1, tag_of(SEED_START + i), SEED_START + i)
+        for i in range(MAX_SEEDS)
+    ]
+
+
+def test_the_release_allocation_has_2930_cases(tmp_path):
+    """The release pools: 320 filtered runs per condition, seeds 1000-1349
+    and 1000-1479 for the ring, expressed with the existing flags."""
+    out = tmp_path / "release"
+    ok(
+        cli(
+            "prepare",
+            "--out",
+            out,
+            "--target",
+            "320",
+            "--max-seeds",
+            "350",
+            "--allocation",
+            "ring_D2_noise3_svbmc=320/480",
+            "--gpyreg-source",
+            GPYREG_SOURCE,
+            DIRTY,
+        )
+    )
+    manifest = manifest_of(out)
+    assert [e["label"] for e in manifest["allocation"]] == list(
+        runner.POOL_LABELS
+    )
+    for entry in manifest["allocation"]:
+        ring = entry["label"] == "ring_D2_noise3_svbmc"
+        assert entry["target_filtered"] == 320
+        assert entry["max_seeds"] == (480 if ring else 350)
+        assert entry["seed_start"] == 1000
+    result = ok(cli("cases", "--out", out))
+    lines = result.stdout.splitlines()
+    assert len(lines) == 2930
+    listing = tmp_path / "cases.txt"
+    listing.write_text(result.stdout, encoding="utf-8", newline="\n")
+    assert contract.read_cases(listing) == lines
+    assert (
+        lines[0]
+        == "multisensory_s1_D6_noise3_svbmc/multisensory_s1_D6_noise3_svbmc_seed1000"
+    )
+    assert (
+        lines[-1]
+        == "multisensory_s1_D6_svbmc/multisensory_s1_D6_svbmc_seed1349"
+    )
+    subset = ok(cli("cases", "--out", out, "--subset", "ring_D2_noise3_svbmc"))
+    rows = subset.stdout.splitlines()
+    assert len(rows) == 480
+    subset_file = tmp_path / "ring.txt"
+    subset_file.write_text(subset.stdout, encoding="utf-8", newline="\n")
+    indices = contract.read_subset(subset_file, lines)
+    assert indices == list(range(1401, 1881))
+    assert rows[0] == "1401 ring_D2_noise3_svbmc/ring_D2_noise3_svbmc_seed1000"
+
+
+def test_cases_refuses_an_unknown_subset(campaign):
+    out, _ = campaign
+    result = cli("cases", "--out", out, "--subset", "no_such_condition")
+    assert result.returncode == 1
+    assert "no subset 'no_such_condition'" in result.stderr
+    assert result.stdout == ""
+
+
+# --------------------------------------------------------------------------
+# select, the stacking harness and the sweep
+# --------------------------------------------------------------------------
 
 
 def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
@@ -316,19 +759,16 @@ def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
     passing = [
         tag
         for tag in completed_tags(out)
-        if json.loads(
-            pool_io.record_path(out, tag).read_text(encoding="utf-8")
-        )["verdict"]["passes"]
+        if read_json(pool_io.record_path(out, tag))["verdict"]["passes"]
     ]
-    result = cli("select", "--out", str(out))
-    assert result.returncode == 0, result.stdout + result.stderr
-    selection = json.loads(
-        (out / "selection.json").read_text(encoding="utf-8")
-    )
+    ok(cli("select", "--out", str(out)))
+    selection = read_json(out / "selection.json")
     (condition,) = selection["conditions"]
     assert condition["label"] == LABEL
     assert condition["target_filtered"] == TARGET
-    assert [run["tag"] for run in condition["runs"]] == passing[:TARGET]
+    assert condition["runs"] == [
+        {"tag": tag, "seed": runner.tag_seed(tag)} for tag in passing[:TARGET]
+    ]
     assert condition["selected"] == len(condition["runs"])
     assert condition["shortfall"] == TARGET - condition["selected"]
     assert condition["seeds_scanned"] >= condition["selected"]
@@ -340,144 +780,151 @@ def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
         condition["selected"] / condition["seeds_scanned"]
     )
     assert selection["totals"]["selected"] == condition["selected"]
+    assert selection["identity"] == manifest_of(out)["identity"]
     markdown = (out / "selection.md").read_text(encoding="utf-8")
     assert markdown.startswith("# S-VBMC filtered pool")
     assert "pass rate over the scanned seeds" in markdown
     assert "stops as soon as the target is met" in markdown
 
-    copy = tmp_path / "one"
-    shutil.copytree(out, copy)
-    assert cli("select", "--out", str(copy), "--target", "1").returncode == 0
-    lowered = json.loads((copy / "selection.json").read_text(encoding="utf-8"))
+    copy = copied(out, tmp_path, "one")
+    ok(cli("select", "--out", str(copy), "--target", "1"))
+    lowered = read_json(copy / "selection.json")
     assert lowered["target_override"] == 1
     assert [r["tag"] for r in lowered["conditions"][0]["runs"]] == passing[:1]
 
 
 def test_the_stack_harness_reads_the_selection(campaign, tmp_path):
-    """The comparison's pool reader prefers `selection.json` to the records.
+    """The comparison's pool reader resolves the selected runs' files.
 
-    The check lives in this module because this is where a pool directory
-    is generated; the rest of the comparison harness is exercised by
-    `test_svbmc_pool_stack.py`.
+    The reader is ``svbmc_pool_stack.py``'s; it is checked here because
+    this is where a pool directory is generated.
     """
     import svbmc_pool_stack as stack
 
     out, _ = campaign
-    copy = tmp_path / "selected"
-    shutil.copytree(out, copy)
-    (copy / "selection.json").unlink(missing_ok=True)
+    copy = copied(out, tmp_path, "selected")
+    ok(cli("select", "--out", str(copy), "--target", "1"))
+    selection = read_json(copy / "selection.json")
+    chosen = [run["tag"] for run in selection["conditions"][0]["runs"]]
     conditions, identities, labels = stack.pool_conditions([copy])
     assert labels == [LABEL]
-    every = [entry["name"] for entry in conditions[LABEL]]
-    assert identities[0]["selection"] == {
-        "path": None,
-        "generated": None,
-        "conditions": {LABEL: "every passing record"},
-    }
-    assert cli("select", "--out", str(copy), "--target", "1").returncode == 0
-    conditions, identities, _ = stack.pool_conditions([copy])
-    assert [entry["name"] for entry in conditions[LABEL]] == every[:1]
-    assert identities[0]["selection"]["path"] == str(copy / "selection.json")
+    assert [entry["name"] for entry in conditions[LABEL]] == chosen
+    assert [Path(entry["path"]).resolve() for entry in conditions[LABEL]] == [
+        (copy / tag).resolve() for tag in chosen
+    ]
     assert identities[0]["selection"]["conditions"] == {
         LABEL: "selection.json"
     }
-
     # A selection whose runs the directory no longer holds names the
     # entry that is wrong, not only the file that is absent.
-    (copy / f"{every[0]}.npz").unlink()
+    (copy / f"{chosen[0]}.npz").unlink()
     with pytest.raises(RuntimeError, match=r"selection\.json"):
         stack.pool_conditions([copy])
-    pool_io.record_path(copy, every[0]).unlink()
-    with pytest.raises(RuntimeError, match="no completion record"):
-        stack.pool_conditions([copy])
 
 
-def test_changed_artifact_stops_the_sweep(campaign, tmp_path):
-    out, _ = campaign
-    copy = tmp_path / "tampered"
-    shutil.copytree(out, copy)
-    tag = completed_tags(copy)[0]
-    path = pool_io.record_path(copy, tag)
-    record = json.loads(path.read_text(encoding="utf-8"))
-    record["hashes"][".npz"] = "0" * 64
-    runner.write_json(path, record)
+def test_a_changed_artifact_stops_the_sweep(stored, tmp_path):
+    out, tag = stored
+    copy = copied(out, tmp_path, "tampered")
+    path = contract.record_path(copy, tag)
+    record = read_json(path)
+    record["artifacts"][f"{tag}.npz"]["sha256"] = "0" * 64
+    contract.write_json(path, record)
     result = cli("run", "--out", str(copy))
     assert result.returncode != 0
-    assert f"{tag}: changed .npz" in result.stderr
+    assert f"{tag}.npz differs from its recorded SHA-256" in result.stderr
     assert f"START {tag}" not in result.stdout
 
 
-def test_partial_artifact_stops_the_sweep(campaign, tmp_path):
+def test_a_partial_artifact_stops_the_sweep(campaign, tmp_path):
     out, _ = campaign
-    copy = tmp_path / "partial"
-    shutil.copytree(out, copy)
+    copy = copied(out, tmp_path, "partial")
     # The first seed of the condition, so the sweep reaches it whatever
     # the filters did: its record and sidecar are gone, its .npz is not.
-    tag = f"{LABEL}_seed{SEED_START}"
-    pool_io.record_path(copy, tag).unlink()
+    tag = tag_of(SEED_START)
+    contract.record_path(copy, tag).unlink()
     (copy / f"{tag}.json").unlink()
     result = cli("run", "--out", str(copy))
     assert result.returncode != 0
     assert "incomplete prior attempt" in result.stderr
 
 
-def test_verify_run_rejects_a_tampered_record(campaign, tmp_path):
-    out, _ = campaign
-    copy = tmp_path / "hashes"
-    shutil.copytree(out, copy)
-    tag = completed_tags(copy)[0]
-    path = pool_io.record_path(copy, tag)
-    record = json.loads(path.read_text(encoding="utf-8"))
-    record["hashes"][".json"] = "0" * 64
-    runner.write_json(path, record)
-    with pytest.raises(RuntimeError, match="recorded hash"):
-        pool_io.verify_run(copy / tag)
+def test_case_state_as_the_sweep_sees_it(stored, tmp_path, no_slurm):
+    out, done = stored
+    copy = copied(out, tmp_path)
+    expected = manifest_of(copy)["identity"]
+    assert runner.case_state(copy, done, expected)[0] == "done"
+    assert runner.case_state(copy, tag_of(4005), expected) == ("new", None)
+    plant(copy, f"{tag_of(4005)}.error.txt")
+    assert runner.case_state(copy, tag_of(4005), expected) == ("failed", None)
+    plant(copy, f"{tag_of(4006)}.npz")
+    assert runner.case_state(copy, tag_of(4006), expected) == (
+        "partial",
+        [f"{tag_of(4006)}.npz"],
+    )
+    # A claim made outside Slurm is live while its process runs here.
+    gone = subprocess.Popen([sys.executable, "-c", "pass"])
+    gone.wait()
+    claim = contract.new_claim(tag_of(4006), task={})
+    claim["pid"] = gone.pid
+    contract.write_json(contract.claim_path(copy, tag_of(4006)), claim)
+    assert runner.case_state(copy, tag_of(4006), expected)[0] == "interrupted"
+    claim["pid"] = os.getpid()
+    contract.write_json(contract.claim_path(copy, tag_of(4006)), claim)
+    assert runner.case_state(copy, tag_of(4006), expected)[0] == "in_flight"
 
 
-class _Posterior:
-    def __init__(self, stable, max_J_sjk):
-        self.stats = {
-            "stable": stable,
-            "J_sjk": np.array([[[0.1, max_J_sjk], [0.0, 0.2]]]),
-        }
+def test_a_stale_log_is_not_a_partial_artifact(tmp_path):
+    tag = tag_of(SEED_START)
+    plant(tmp_path, f"{tag}.log", "interrupted\n")
+    assert runner.partial_artifacts(tmp_path, tag) == []
+    plant(tmp_path, f"{tag}.npz", "")
+    assert runner.partial_artifacts(tmp_path, tag) == [f"{tag}.npz"]
 
 
-@pytest.mark.parametrize(
-    "stable,max_J_sjk,passes",
-    [(True, 4.9, True), (True, 5.1, False), (False, 1.0, False)],
-)
-def test_filter_verdict(stable, max_J_sjk, passes):
-    verdict = pool_io.filter_verdict(_Posterior(stable, max_J_sjk))
-    assert verdict["stable"] is stable
-    assert verdict["max_J_sjk"] == max_J_sjk
-    assert verdict["passes"] is passes
+# --------------------------------------------------------------------------
+# prepare
+# --------------------------------------------------------------------------
 
 
-def test_prepare_refuses_a_structural_change(campaign):
-    out, _ = campaign
+def test_prepare_requires_the_gpyreg_source(tmp_path):
+    out = tmp_path / "no_source"
     result = cli(
-        "prepare",
-        "--out",
-        str(out),
-        "--suite",
-        "smoke",
-        "--only",
-        LABEL,
-        "--target",
-        str(TARGET),
-        "--max-seeds",
-        str(MAX_SEEDS),
-        "--seed-start",
-        str(SEED_START),
-        # everything as prepared, but not the recorded relaxation
+        "prepare", "--out", out, "--suite", "smoke", "--only", LABEL, DIRTY
+    )
+    assert result.returncode == 2
+    assert "--gpyreg-source" in result.stderr
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    result = cli(
+        *prepare_args(out, TARGET, MAX_SEEDS, DIRTY),
+        env=environment(PYVBMC_GPYREG_SOURCE=elsewhere),
     )
     assert result.returncode != 0
+    assert "is not PYVBMC_GPYREG_SOURCE" in result.stderr
+    assert not (out / "manifest.json").exists()
+
+
+def test_prepare_refuses_a_structural_change(campaign, tmp_path):
+    out, _ = campaign
+    copy = copied(out, tmp_path)
+    # Everything as prepared, but not the recorded relaxation.
+    result = cli(*prepare_args(copy))
+    assert result.returncode != 0
     assert "allow_dirty" in result.stderr
+    edit_manifest(
+        copy,
+        lambda m: m["identity"]["source"]["files"].update(
+            {"dev/scripts/benchmark_targets.py": "0" * 64}
+        ),
+    )
+    result = prepare(copy)
+    assert result.returncode != 0
+    assert "identity (files.dev/scripts/benchmark_targets.py)" in result.stderr
 
 
 def test_revised_history_guards_a_revision(campaign):
     out, _ = campaign
-    previous = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    previous = manifest_of(out)
     lowered = [
         dict(entry, target_filtered=1) for entry in previous["allocation"]
     ]
@@ -502,25 +949,35 @@ def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
     2`` still walks two seeds of the condition.
     """
     out, _ = campaign
-    copy = tmp_path / "revised"
-    shutil.copytree(out, copy)
-    revision = prepare(copy, target=1)
-    assert revision.returncode == 0, revision.stdout + revision.stderr
+    copy = copied(out, tmp_path, "revised")
+    revision = ok(prepare(copy, target=1))
     assert "allocation revised" in revision.stdout
-    before = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    before = manifest_of(out)
+    manifest = manifest_of(copy)
     assert manifest["allocation"][0]["target_filtered"] == 1
     assert manifest["allocation_history"][-1] == {
         "allocation": before["allocation"],
         "revised": manifest["allocation_history"][-1]["revised"],
     }
-    for key in ("campaign", "suite", "options", "identity", "created"):
+    for key in (
+        "campaign",
+        "contract",
+        "suite",
+        "options",
+        "identity",
+        "site",
+        "pip_freeze",
+        "finishing_steps",
+        "created",
+    ):
         assert manifest[key] == before[key]
+    # Prepared again as it is, nothing changes.
+    ok(prepare(copy, target=1))
+    assert manifest_of(copy) == manifest
 
-    result = cli("run", "--out", str(copy), "--pilot-seeds", "2")
-    assert result.returncode == 0, result.stdout + result.stderr
+    result = ok(cli("run", "--out", str(copy), "--pilot-seeds", "2"))
     assert "START" not in result.stdout
-    finished = json.loads((copy / "finished.json").read_text(encoding="utf-8"))
+    finished = read_json(copy / "finished.json")
     condition = finished["conditions"][LABEL]
     assert condition["seeds_run"] == 2
     assert condition["seeds"] == [SEED_START, SEED_START + 1]
@@ -528,34 +985,33 @@ def test_revised_allocation_and_pilot_seeds(campaign, tmp_path):
 
 def bogus_case(out, label="no_such_target_D2", seed=1):
     """Allocate a condition whose target the suite does not define."""
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
-    manifest["allocation"].append(
-        {
-            "label": label,
-            "seed_start": seed,
-            "max_seeds": 1,
-            "target_filtered": 1,
-        }
-    )
-    runner.write_json(out / "manifest.json", manifest)
-    return label, f"{label}_seed{seed}"
+
+    def add(manifest):
+        manifest["allocation"].append(
+            {
+                "label": label,
+                "seed_start": seed,
+                "max_seeds": 1,
+                "target_filtered": 1,
+            }
+        )
+
+    edit_manifest(out, add)
+    return label, tag_of(seed, label)
 
 
 def test_a_failed_case_is_skipped_and_counted(tmp_path):
     """A case that failed earlier costs its seed and does not fail a sweep."""
     out = tmp_path / "failures"
-    assert prepare(out).returncode == 0
-    planted = [f"{LABEL}_seed{SEED_START + i}" for i in range(2)]
+    ok(prepare(out))
+    planted = [tag_of(SEED_START + i) for i in range(2)]
     for tag in planted:
-        (out / f"{tag}.error.txt").write_text(
-            "exit code 1\nplanted failure\n", encoding="utf-8"
-        )
-    result = cli("run", "--out", str(out), "--pilot-seeds", "2")
-    assert result.returncode == 0, result.stdout + result.stderr
+        plant(out, f"{tag}.error.txt", "exit code 1\nplanted failure\n")
+    result = ok(cli("run", "--out", str(out), "--pilot-seeds", "2"))
     for tag in planted:
         assert f"SKIP {tag} (failed earlier)" in result.stdout
     assert "START" not in result.stdout
-    finished = json.loads((out / "finished.json").read_text(encoding="utf-8"))
+    finished = read_json(out / "finished.json")
     assert finished["failed"] == planted
     assert finished["failed_this_sweep"] == []
     condition = finished["conditions"][LABEL]
@@ -563,106 +1019,73 @@ def test_a_failed_case_is_skipped_and_counted(tmp_path):
 
     # A case that fails in this sweep does fail it: an allocation entry
     # naming a target the suite does not define makes its worker exit.
-    bogus_case(out)
+    _, tag = bogus_case(out)
     result = cli("run", "--out", str(out), "--pilot-seeds", "1")
     assert result.returncode == 1, result.stdout + result.stderr
-    assert "FAILED no_such_target_D2_seed1" in result.stdout
+    assert f"FAILED {tag}" in result.stdout
     # The worker wrote the record of its own failure; the supervisor kept
     # it rather than replacing it with the exit code and the log tail.
-    error = (out / "no_such_target_D2_seed1.error.txt").read_text(
-        encoding="utf-8"
-    )
-    assert error.startswith("no_such_target_D2_seed1: ValueError")
-    finished = json.loads((out / "finished.json").read_text(encoding="utf-8"))
-    assert finished["failed_this_sweep"] == ["no_such_target_D2_seed1"]
+    error = (out / f"{tag}.error.txt").read_text(encoding="utf-8")
+    assert error.startswith(f"{tag}: ValueError")
+    finished = read_json(out / "finished.json")
+    assert finished["failed_this_sweep"] == [tag]
+    assert not contract.claim_path(out, tag).exists()
 
 
 def test_a_failing_worker_records_the_case_and_exits_non_zero(tmp_path):
-    """`<tag>.error.txt` is the whole of what a failed array task leaves.
+    """`<tag>.error.txt` is the whole of what a failed case leaves.
 
-    The worker itself writes it, deletes the artifact files an earlier
-    attempt had begun so that no truncated run can be read as one, writes
-    no completion record, and exits non-zero, which is how Slurm sees the
+    The worker removes the files an earlier attempt had begun before it
+    runs, writes the error file with the traceback, writes no completion
+    record, releases its claim and exits 1, which is how Slurm sees the
     failure. `select` and `summarize` then count the case as failed.
     """
     out = tmp_path / "array"
-    assert prepare(out).returncode == 0
+    ok(prepare(out))
     label, tag = bogus_case(out)
     for suffix in runner.ARTIFACT_SUFFIXES:
-        (out / f"{tag}{suffix}").write_text("partial", encoding="utf-8")
+        plant(out, f"{tag}{suffix}", "partial")
 
-    result = cli("worker", "--out", str(out), "--label", label, "--seed", "1")
-    assert result.returncode != 0
+    result = cli("worker", "--out", str(out), "--case", tag)
+    assert result.returncode == 1, result.stdout + result.stderr
     error = (out / f"{tag}.error.txt").read_text(encoding="utf-8")
     assert error.startswith(f"{tag}: ValueError")
     assert label in error and "Traceback" in error
     assert not pool_io.record_path(out, tag).exists()
     assert runner.partial_artifacts(out, tag) == []
+    assert not contract.claim_path(out, tag).exists()
 
-    assert cli("select", "--out", str(out)).returncode == 0
-    selection = json.loads(
-        (out / "selection.json").read_text(encoding="utf-8")
-    )
+    ok(cli("select", "--out", str(out)))
+    selection = read_json(out / "selection.json")
     (failed,) = [c for c in selection["conditions"] if c["label"] == label]
     assert failed["failed_while_scanning"] == 1
     assert failed["selected"] == 0 and failed["shortfall"] == 1
 
-    assert cli("summarize", "--out", str(out)).returncode == 0
-    summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    ok(cli("summarize", "--out", str(out)))
+    summary = read_json(out / "summary.json")
     (counted,) = [c for c in summary["conditions"] if c["label"] == label]
     assert counted["failed"] == 1 and counted["completed"] == 0
     assert counted["failures"][0]["tag"] == tag
     assert "ValueError" in counted["failures"][0]["reason"]
-
-
-def test_a_successful_worker_clears_a_stale_error_file(tmp_path, monkeypatch):
-    """A rerun that works leaves no trace of the attempt that did not.
-
-    The case itself is stubbed out: what is under test is the bookkeeping
-    around it, which every generated case of the module shares.
-    """
-    tag = f"{LABEL}_seed{SEED_START}"
-    (tmp_path / f"{tag}.error.txt").write_text(
-        "an attempt\n", encoding="utf-8"
-    )
-    runner.write_json(tmp_path / "manifest.json", {})
-    monkeypatch.setattr(runner, "worker_case", lambda *args: None)
-    assert (
-        runner.main(
-            [
-                "worker",
-                "--out",
-                str(tmp_path),
-                "--label",
-                LABEL,
-                "--seed",
-                str(SEED_START),
-            ]
-        )
-        == 0
-    )
-    assert not (tmp_path / f"{tag}.error.txt").exists()
+    ok(cli("verify", "--out", out))
+    assert reported(verification(out), tag)["status"] == "failed"
 
 
 def test_a_manifest_with_extra_keys_is_read(campaign, tmp_path):
-    """Every command reads a manifest by the keys it needs.
-
-    Campaigns prepared by earlier versions of this harness carry fields
-    this one does not write, and the pools they generated are read here.
-    """
+    """Every command reads a manifest by the keys it needs."""
     out, _ = campaign
-    copy = tmp_path / "extra_keys"
-    shutil.copytree(out, copy)
-    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
-    manifest.update({"released": True, "released_by": "an earlier harness"})
-    runner.write_json(copy / "manifest.json", manifest)
-    assert cli("cases", "--out", str(copy)).returncode == 0
-    assert cli("select", "--out", str(copy)).returncode == 0
-    assert cli("summarize", "--out", str(copy)).returncode == 0
+    copy = copied(out, tmp_path, "extra_keys")
+    edit_manifest(
+        copy,
+        lambda m: m.update({"released": True, "released_by": "a reviewer"}),
+    )
+    ok(cli("cases", "--out", str(copy)))
+    ok(cli("select", "--out", str(copy)))
+    ok(cli("summarize", "--out", str(copy)))
 
 
 def test_prepare_allocates_the_whole_pool_suite(tmp_path):
-    """The campaign's approved allocation, with no flag but `--out`.
+    """The campaign's approved allocation, with no allocation flag.
 
     Without `--only` the allocation is the eight pool conditions, and
     without allocation flags it is the sizes the PI approved: 100 filtered
@@ -670,9 +1093,8 @@ def test_prepare_allocates_the_whole_pool_suite(tmp_path):
     200 for the ring and 75 for the controls.
     """
     out = tmp_path / "pool"
-    result = cli("prepare", "--out", str(out), "--allow-dirty")
-    assert result.returncode == 0, result.stdout + result.stderr
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    ok(cli("prepare", "--out", out, "--gpyreg-source", GPYREG_SOURCE, DIRTY))
+    manifest = manifest_of(out)
     allocated = [entry["label"] for entry in manifest["allocation"]]
     assert allocated == list(runner.POOL_LABELS)
     assert manifest["suite"] == "svbmc_pool"
@@ -696,104 +1118,45 @@ def test_prepare_allocates_the_whole_pool_suite(tmp_path):
 def test_only_allocates_a_subset(tmp_path):
     out = tmp_path / "subset"
     wanted = [runner.POOL_LABELS[4], runner.POOL_LABELS[1]]
-    result = cli(
-        "prepare",
-        "--out",
-        str(out),
-        "--only",
-        ",".join(wanted),
-        "--allow-dirty",
+    ok(
+        cli(
+            "prepare",
+            "--out",
+            out,
+            "--only",
+            ",".join(wanted),
+            "--gpyreg-source",
+            GPYREG_SOURCE,
+            DIRTY,
+        )
     )
-    assert result.returncode == 0, result.stdout + result.stderr
-    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    manifest = manifest_of(out)
     assert [e["label"] for e in manifest["allocation"]] == wanted
 
 
-def test_check_tree_refuses_an_uncommitted_numerical_source():
-    clean = {
-        "gpyreg_clean": True,
-        "pyvbmc_dirty": "",
-        "suite_module_dirty": "",
-    }
-    assert runner.check_tree(clean, False) == []
-    dirty = dict(clean, pyvbmc_dirty=" M pyvbmc/vbmc/vbmc.py")
-    with pytest.raises(RuntimeError, match="uncommitted changes"):
-        runner.check_tree(dirty, False)
-    assert runner.check_tree(dirty, True) == ["pyvbmc/"]
-    with pytest.raises(RuntimeError, match="frozen gpyreg"):
-        runner.check_tree(dict(clean, gpyreg_clean=False), True)
-
-
-def test_identity_differences_names_every_mismatch():
-    expected = {"pyvbmc_commit": "a", "runner_sha256": "b", "numpy": "2.0"}
-    actual = {"pyvbmc_commit": "a", "runner_sha256": "c", "hostname": "h"}
-    assert runner.identity_differences(actual, expected) == [
-        "hostname",
-        "numpy",
-        "runner_sha256",
-    ]
-
-
-def test_identity_pins_the_harness_modules():
-    source = runner.identity(GPYREG_SOURCE)["source"]
-    assert set(source) == set(runner.SOURCE_KEYS)
-    assert source["suite_module_sha256"] == pool_io.sha256(
-        HERE / "benchmark_targets.py"
-    )
-    assert source["io_module_sha256"] == pool_io.sha256(
-        HERE / "svbmc_pool_io.py"
-    )
-    assert source["runner_sha256"] == pool_io.sha256(SCRIPT)
-
-
-def test_identity_source_reads_the_flat_records_of_earlier_campaigns():
-    """A record written before the split holds both halves in one mapping."""
-    record = runner.identity(GPYREG_SOURCE)
-    flat = dict(record["source"], **record["host"])
-    assert runner.identity_source(flat) == record["source"]
-    assert runner.identity_host(flat) == record["host"]
-
-
-def test_only_the_source_half_of_a_record_is_compared(campaign, tmp_path):
-    """Another node may have run a case; other code may not have.
-
-    The host half of a completion record names where the case ran, which
-    an array job spreads over the cluster, so it is recorded and not
-    compared; the source half is the code and library state the pool is
-    generated by, and a difference there stops the campaign.
-    """
-    out, _ = campaign
-    copy = tmp_path / "elsewhere"
-    shutil.copytree(out, copy)
-    tag = completed_tags(copy)[0]
-    path = pool_io.record_path(copy, tag)
-    record = json.loads(path.read_text(encoding="utf-8"))
-    expected = runner.identity(GPYREG_SOURCE)
-    record["identity"]["host"].update(
-        {
-            "hostname": "cluster-node-07",
-            "executable": "/scratch/venv/bin/python",
-            "platform": "Linux-5.14.0-x86_64-with-glibc2.34",
+def test_dirty_trees_refuses_an_uncommitted_source():
+    def record(harness, gpyreg):
+        return {
+            "source": {
+                "trees": {
+                    "harness": {"commit": "a", "clean": harness},
+                    "gpyreg": {"commit": "b", "clean": gpyreg},
+                }
+            },
+            "imports": {
+                "trees": {
+                    "harness": {"dirty": [" M pyvbmc/vbmc/vbmc.py"]},
+                    "gpyreg": {"dirty": ["?? scratch.py"]},
+                }
+            },
         }
-    )
-    runner.write_json(path, record)
-    assert runner.validate_case(copy, tag, expected)["tag"] == tag
 
-    record["identity"]["source"]["suite_module_sha256"] = "0" * 64
-    runner.write_json(path, record)
-    with pytest.raises(RuntimeError, match="suite_module_sha256"):
-        runner.validate_case(copy, tag, expected)
-
-
-def test_a_stale_log_is_not_a_partial_artifact(tmp_path):
-    tag = f"{LABEL}_seed{SEED_START}"
-    (tmp_path / f"{tag}.log").write_text("interrupted\n", encoding="utf-8")
-    assert runner.case_state(tmp_path, tag, {}) == ("new", None)
-    (tmp_path / f"{tag}.npz").write_bytes(b"")
-    assert runner.case_state(tmp_path, tag, {}) == (
-        "partial",
-        [f"{tag}.npz"],
-    )
+    assert runner.dirty_trees(record(True, True), False) == []
+    with pytest.raises(RuntimeError, match="pyvbmc/vbmc/vbmc.py"):
+        runner.dirty_trees(record(False, True), False)
+    assert runner.dirty_trees(record(False, True), True) == ["harness"]
+    with pytest.raises(RuntimeError, match="gpyreg checkout"):
+        runner.dirty_trees(record(True, False), True)
 
 
 def test_allocation_overrides_and_bounds():
@@ -856,25 +1219,278 @@ def test_allocation_rejects_a_malformed_argument(item):
         runner.parse_override(item)
 
 
-def verification(out):
-    """The report `verify` wrote in a campaign directory."""
-    return json.loads((out / "verification.json").read_text(encoding="utf-8"))
+class _Posterior:
+    def __init__(self, stable, max_J_sjk):
+        self.stats = {
+            "stable": stable,
+            "J_sjk": np.array([[[0.1, max_J_sjk], [0.0, 0.2]]]),
+        }
 
 
-def reported(report, tag):
-    """The one reported case of a tag."""
-    (case,) = [c for c in report["cases"] if c["tag"] == tag]
-    return case
+@pytest.mark.parametrize(
+    "stable,max_J_sjk,passes",
+    [(True, 4.9, True), (True, 5.1, False), (False, 1.0, False)],
+)
+def test_filter_verdict(stable, max_J_sjk, passes):
+    verdict = pool_io.filter_verdict(_Posterior(stable, max_J_sjk))
+    assert verdict["stable"] is stable
+    assert verdict["max_J_sjk"] == max_J_sjk
+    assert verdict["passes"] is passes
+
+
+# --------------------------------------------------------------------------
+# The worker: early exit, refusals, claims, clean-up
+# --------------------------------------------------------------------------
+
+
+def test_the_worker_exits_at_once_on_a_completed_case(stored, tmp_path):
+    out, tag = stored
+    copy = copied(out, tmp_path)
+    before = snapshot(copy)
+    result = ok(cli("worker", "--out", copy, "--case", tag))
+    assert "already has a completion record; nothing to do" in result.stdout
+    assert snapshot(copy) == before
+
+
+@pytest.mark.parametrize(
+    "line",
+    ["nonsense", tag_of(SEED_START + MAX_SEEDS), tag_of(SEED_START) + " 1"],
+)
+def test_the_worker_refuses_a_line_outside_the_allocation(
+    stored, tmp_path, line
+):
+    out, _ = stored
+    copy = copied(out, tmp_path)
+    before = snapshot(copy)
+    result = cli("worker", "--out", copy, "--case", line)
+    assert result.returncode == runner.EXIT_USAGE
+    assert "is not a case of the allocation" in result.stderr
+    assert snapshot(copy) == before
+
+
+def test_a_fresh_claim_holds_the_case_while_it_runs(
+    fresh, stored, slurm, monkeypatch
+):
+    """The identity and host fields of a case an array task ran."""
+    source_out, source_tag = stored
+    tag = tag_of(SEED_START)
+    seen = {}
+    monkeypatch.setattr(
+        runner, "run_case", replay(source_out, source_tag, seen)
+    )
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == 0
+    assert seen["claim"]["job"] == "700" and seen["claim"]["array_task"] == "1"
+    assert seen["claim"]["restart_count"] == 0
+    assert seen["files"] == []
+    assert not contract.claim_path(fresh, tag).exists()
+    manifest = manifest_of(fresh)
+    record = runner.check_record(fresh, tag, manifest["identity"])
+    assert record["identity"]["source"] == manifest["identity"]["source"]
+    host = record["identity"]["host"]
+    assert host["slurm"] == {
+        "job_id": "700001",
+        "array_job_id": "700",
+        "array_task_id": "1",
+        "restart_count": "0",
+        "node": "node1",
+        "partition": None,
+        "cpus_per_task": None,
+    }
+    assert host["node_features"] == {
+        "node": "node1",
+        "available": ["stubfeat"],
+        "active": ["stubfeat"],
+    }
+    assert host["threads"] == {k: "1" for k in runner.THREAD_KEYS}
+    assert any(entry["user_api"] == "blas" for entry in host["blas"])
+    if sys.platform.startswith("linux"):
+        assert host["cpu_affinity"]["cpus"] and host["cpu_model"]
+    else:
+        assert host["cpu_affinity"] is None
+    assert Path(record["identity"]["imports"]["modules"]["gpyreg"]) == (
+        GPYREG_SOURCE / "gpyreg"
+    )
+    ok(cli("verify", "--out", fresh, env=stub_environment(slurm)))
+    assert reported(verification(fresh), tag)["status"] == "verified"
+
+
+def test_a_live_claim_refuses_the_case_and_leaves_its_files(
+    fresh, slurm, monkeypatch
+):
+    tag = tag_of(SEED_START)
+    plant(fresh, f"{tag}.npz", "the running task's\n")
+    claim_by(fresh, tag, "600", "7")
+    answer(slurm, "600_7", "RUNNING\n")
+    before = snapshot(fresh)
+    monkeypatch.setattr(runner, "run_case", must_not_run)
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == contract.EXIT_CLAIMED
+    assert snapshot(fresh) == before
+
+
+@pytest.mark.parametrize("how", ["fails", "answers nothing"])
+def test_a_claim_the_accounting_cannot_judge_is_live(
+    fresh, slurm, monkeypatch, how
+):
+    tag = tag_of(SEED_START)
+    plant(fresh, f"{tag}.npz", "a task's\n")
+    claim_by(fresh, tag, "600", "7")
+    if how == "fails":
+        answer(slurm, "600_7", fail=True)
+    before = snapshot(fresh)
+    monkeypatch.setattr(runner, "run_case", must_not_run)
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == contract.EXIT_CLAIMED
+    assert snapshot(fresh) == before
+
+
+def test_a_stale_claim_is_retired_and_the_case_starts_clean(
+    fresh, stored, slurm, monkeypatch
+):
+    source_out, source_tag = stored
+    tag = tag_of(SEED_START)
+    for suffix in runner.ARTIFACT_SUFFIXES:
+        plant(fresh, f"{tag}{suffix}", "the killed attempt's\n")
+    claim_by(fresh, tag, "600", "7")
+    answer(slurm, "600_7", "CANCELLED by 1000\n")
+    seen = {}
+    monkeypatch.setattr(
+        runner, "run_case", replay(source_out, source_tag, seen)
+    )
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == 0
+    assert seen["files"] == []
+    assert seen["claim"]["job"] == "700"
+    assert (
+        fresh / "claims" / LABEL / f"{LABEL}_seed{SEED_START}.stale.600_7"
+    ).exists()
+    assert not contract.claim_path(fresh, tag).exists()
+    runner.check_record(fresh, tag, manifest_of(fresh)["identity"])
+    assert runner.partial_artifacts(fresh, tag) == [
+        f"{tag}.npz",
+        f"{tag}.json",
+    ]
+
+
+def test_a_requeued_task_takes_over_its_own_claim(
+    fresh, stored, slurm, monkeypatch, capsys
+):
+    source_out, source_tag = stored
+    tag = tag_of(SEED_START)
+    claim_by(fresh, tag, "700", "1", restart_count=0)
+    seen = {}
+    monkeypatch.setattr(
+        runner, "run_case", replay(source_out, source_tag, seen)
+    )
+    as_task(monkeypatch, 700, 1, restart=1)
+    assert worker(fresh, tag) == 0
+    assert "took over the requeue claim of 700_1" in capsys.readouterr().out
+    assert seen["claim"]["restart_count"] == 1
+    assert seen["claim"]["previous"]["reason"] == "requeue"
+    assert not (slurm / "sacct_queries").exists()
+    assert not contract.claim_path(fresh, tag).exists()
+    assert contract.record_path(fresh, tag).exists()
+
+
+def test_the_worker_refuses_another_identity_and_leaves_the_case(
+    fresh, slurm, monkeypatch
+):
+    tag = tag_of(SEED_START)
+    edit_manifest(
+        fresh,
+        lambda m: m["identity"]["source"]["files"].update(
+            {"dev/scripts/benchmark_targets.py": "0" * 64}
+        ),
+    )
+    plant(fresh, f"{tag}.npz", "an earlier attempt's\n")
+    before = snapshot(fresh)
+    monkeypatch.setattr(runner, "run_case", must_not_run)
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == contract.EXIT_IDENTITY
+    assert snapshot(fresh) == before
+
+
+def test_a_successful_worker_clears_an_earlier_error_file(
+    fresh, stored, monkeypatch
+):
+    source_out, source_tag = stored
+    tag = tag_of(SEED_START)
+    plant(fresh, f"{tag}.error.txt", "an attempt\n")
+    monkeypatch.setattr(runner, "run_case", replay(source_out, source_tag))
+    assert worker(fresh, tag) == 0
+    assert not contract.error_path(fresh, tag).exists()
+    assert contract.record_path(fresh, tag).exists()
+
+
+def test_a_sigterm_leaves_a_missing_case(fresh, slurm, monkeypatch):
+    """Slurm's SIGTERM, at the time limit or on scancel, in the middle of
+    the run: the partial files and the claim go, and no error file is
+    written, so that `verify` reports the case as missing."""
+    tag = tag_of(SEED_START)
+
+    def stopped(out, manifest, tag, label, seed, save_vbmc=False):
+        plant(out, f"{tag}.npz", "half\n")
+        signal.raise_signal(signal.SIGTERM)
+        raise AssertionError("the signal must stop the run")
+
+    monkeypatch.setattr(runner, "run_case", stopped)
+    as_task(monkeypatch, 700, 1)
+    assert worker(fresh, tag) == 128 + signal.SIGTERM
+    assert runner.partial_artifacts(fresh, tag) == []
+    for path in (
+        contract.claim_path(fresh, tag),
+        contract.error_path(fresh, tag),
+        contract.record_path(fresh, tag),
+    ):
+        assert not path.exists()
+    ok(cli("verify", "--out", fresh, env=stub_environment(slurm)))
+    assert reported(verification(fresh), tag)["status"] == "missing"
+
+
+def test_a_killed_case_is_interrupted_and_its_resubmission_completes(
+    fresh, stored, slurm, monkeypatch
+):
+    """A task killed outright leaves its files and its claim; `verify`
+    reports the case as interrupted, and the next task takes the stale
+    claim over and starts from clean."""
+    source_out, source_tag = stored
+    tag = tag_of(SEED_START + 1)
+    plant(fresh, f"{tag}.npz", "the killed attempt's\n")
+    claim_by(fresh, tag, "800", "2")
+    answer(slurm, "800_2", "OUT_OF_MEMORY\n")
+    ok(cli("verify", "--out", fresh, env=stub_environment(slurm)))
+    case = reported(verification(fresh), tag)
+    assert case["status"] == "interrupted"
+    assert case["files"] == [f"{tag}.npz"]
+    assert case["claim"]["owner"] == "800_2"
+
+    seen = {}
+    monkeypatch.setattr(
+        runner, "run_case", replay(source_out, source_tag, seen)
+    )
+    as_task(monkeypatch, 900, 2)
+    assert worker(fresh, tag) == 0
+    assert seen["files"] == []
+    assert (
+        fresh / "claims" / LABEL / f"{LABEL}_seed{SEED_START + 1}.stale.800_2"
+    ).exists()
+    ok(cli("verify", "--out", fresh, env=stub_environment(slurm)))
+    assert reported(verification(fresh), tag)["status"] == "verified"
+
+
+# --------------------------------------------------------------------------
+# verify
+# --------------------------------------------------------------------------
 
 
 def test_verify_reconciles_the_allocation(campaign, tmp_path):
     """Every case of the allocation is placed, and the counts add up."""
     out, _ = campaign
-    copy = tmp_path / "pool"
-    shutil.copytree(out, copy)
-    result = cli("verify", "--out", str(copy))
-    assert result.returncode == 0, result.stdout + result.stderr
+    copy = copied(out, tmp_path)
+    ok(cli("verify", "--out", str(copy)))
     report = verification(copy)
+    assert report["contract"] == contract.CONTRACT_VERSION
     assert [case["index"] for case in report["cases"]] == list(
         range(1, MAX_SEEDS + 1)
     )
@@ -883,18 +1499,8 @@ def test_verify_reconciles_the_allocation(campaign, tmp_path):
     ]
     counts = report["counts"]
     assert counts["verified"] == len(completed_tags(copy))
-    assert counts["failed"] == len(list(copy.glob("*.error.txt")))
-    # The sweep stops at the filtered target or walks every seed; either
-    # way the allocation's cases are each placed exactly once.
-    assert (
-        counts["verified"]
-        + counts["failed"]
-        + counts["partial"]
-        + counts["missing"]
-        + counts["verify_failed"]
-        == MAX_SEEDS
-    )
-    assert counts["stray"] == 0 and counts["partial"] == 0
+    assert sum(counts[s] for s in contract.STATUSES) == MAX_SEEDS
+    assert counts["stray"] == 0 and report["exit_code"] == 0
     for case in report["cases"]:
         if case["status"] == "verified":
             assert isinstance(case["passes"], bool)
@@ -902,98 +1508,207 @@ def test_verify_reconciles_the_allocation(campaign, tmp_path):
             assert case["differences"]["J_sjk"] <= pool_io.TOL_STATS
     (condition,) = report["conditions"]
     assert condition["label"] == LABEL
-    assert [condition[key] for key in runner.VERIFY_STATUSES] == [
-        counts[key] for key in runner.VERIFY_STATUSES
+    assert [condition[key] for key in contract.STATUSES] == [
+        counts[key] for key in contract.STATUSES
     ]
+    assert report["node_feature"] is None
+    assert report["verifier_differs_in"] == []
 
 
-def test_verify_reports_a_tampered_artifact(campaign, tmp_path):
-    """A flipped byte in a stored `.npz` fails that case and the command."""
+def test_verify_places_every_state(campaign, tmp_path):
+    """verified, verify_failed, failed, in_flight, interrupted, partial,
+    missing and the stray files, in one directory."""
     out, _ = campaign
-    copy = tmp_path / "pool"
-    shutil.copytree(out, copy)
-    tag = completed_tags(copy)[0]
-    artifact = copy / f"{tag}.npz"
-    stored = bytearray(artifact.read_bytes())
-    stored[10] ^= 0xFF
-    artifact.write_bytes(bytes(stored))
-    result = cli("verify", "--out", str(copy))
-    assert result.returncode == 1, result.stdout + result.stderr
-    case = reported(verification(copy), tag)
-    assert case["status"] == "verify_failed" and case["error"]
-    assert f"{tag} verify_failed" in result.stdout
-
-
-def test_verify_distinguishes_partial_from_missing(campaign, tmp_path):
-    """An artifact without its record is partial; nothing at all is missing.
-
-    The second is what a task Slurm killed leaves, which `select` and
-    `summarize` cannot see, so `verify` names it with its array index.
-    """
-    out, _ = campaign
-    copy = tmp_path / "pool"
-    shutil.copytree(out, copy)
-    result = cli("verify", "--out", str(copy))
-    assert result.returncode == 0, result.stdout + result.stderr
-    before = verification(copy)["counts"]["missing"]
-    tag = completed_tags(copy)[0]
-    pool_io.record_path(copy, tag).unlink()
-    result = cli("verify", "--out", str(copy))
-    assert result.returncode == 1, result.stdout + result.stderr
-    case = reported(verification(copy), tag)
-    assert case["status"] == "partial"
-    assert case["files"] == [f"{tag}.npz", f"{tag}.json"]
-
-    gone = tmp_path / "pool2"
-    shutil.copytree(out, gone)
-    pool_io.record_path(gone, tag).unlink()
-    for suffix in (".npz", ".json", ".vbmc.pkl", ".log", ".error.txt"):
-        (gone / f"{tag}{suffix}").unlink(missing_ok=True)
-    result = cli("verify", "--out", str(gone))
-    assert result.returncode == 0, result.stdout + result.stderr
-    report = verification(gone)
-    case = reported(report, tag)
-    assert case["status"] == "missing"
-    assert report["counts"]["missing"] == before + 1
-    assert f"{case['index']} {tag} missing" in result.stdout
-
-
-def test_verify_flags_a_stray_artifact(campaign, tmp_path):
-    """An artifact the allocation does not name is stray; nothing else is."""
-    out, _ = campaign
-    copy = tmp_path / "pool"
-    shutil.copytree(out, copy)
-    (copy / "foo_seed1.npz").write_bytes(b"not an artifact")
-    # The campaign's own files and the array's directory are not runs.
-    (copy / "slurm").mkdir(exist_ok=True)
-    (copy / "slurm" / "sacct.txt").write_text(
-        "JobID|State|ExitCode\n", encoding="utf-8"
+    copy = copied(out, tmp_path)
+    edit_manifest(copy, lambda m: m["allocation"][0].update(max_seeds=8))
+    state = tmp_path / "slurm_state"
+    state.mkdir()
+    stubs.write_stubs(tmp_path / "bin")
+    completed = completed_tags(copy)
+    assert len(completed) >= 2
+    verified, tampered = completed[:2]
+    artifact = copy / f"{tampered}.npz"
+    data = bytearray(artifact.read_bytes())
+    data[10] ^= 0xFF
+    artifact.write_bytes(bytes(data))
+    plant(
+        copy, f"{tag_of(4003)}.error.txt", f"{tag_of(4003)}: ValueError: x\n"
     )
-    (copy / "cases.txt").write_text(
-        f"{LABEL} {SEED_START}\n", encoding="utf-8"
-    )
-    result = cli("verify", "--out", str(copy))
+    plant(copy, f"{tag_of(4004)}.npz")
+    claim_by(copy, tag_of(4004), "700", "4")
+    answer(state, "700_4", "RUNNING\n")
+    plant(copy, f"{tag_of(4005)}.npz")
+    claim_by(copy, tag_of(4005), "700", "5")
+    answer(state, "700_5", "OUT_OF_MEMORY\n")
+    plant(copy, f"{tag_of(4006)}.npz")
+    plant(copy, f"{LABEL}/{LABEL}_seed9999.npz")
+    plant(copy, f"records/{LABEL}/{LABEL}_seed9998.complete.json", "{}")
+    plant(copy, "orphan.npz")
+    claim_by(copy, f"{LABEL}/{LABEL}_seed9997", "700", "9")
+    result = cli("verify", "--out", copy, env=stub_environment(state))
     assert result.returncode == 1, result.stdout + result.stderr
     report = verification(copy)
-    assert report["stray"] == ["foo_seed1"]
-    assert report["counts"]["stray"] == 1
-    assert "stray: 1 (foo_seed1)" in result.stdout
-    assert "sacct" not in result.stdout and "cases.txt" not in result.stdout
+    statuses = {case["tag"]: case["status"] for case in report["cases"]}
+    expected = {
+        tag_of(seed): "verified" if tag_of(seed) in completed else "missing"
+        for seed in range(SEED_START, SEED_START + MAX_SEEDS)
+    }
+    expected.update(
+        {
+            tampered: "verify_failed",
+            tag_of(4003): "failed",
+            tag_of(4004): "in_flight",
+            tag_of(4005): "interrupted",
+            tag_of(4006): "partial",
+            tag_of(4007): "missing",
+        }
+    )
+    assert statuses == expected
+    assert statuses[verified] == "verified"
+    assert (
+        "differs from its recorded SHA-256"
+        in reported(report, tampered)["error"]
+    )
+    assert reported(report, tag_of(4003))["reason"].startswith(tag_of(4003))
+    assert reported(report, tag_of(4004))["claim"]["owner"] == "700_4"
+    assert reported(report, tag_of(4005))["files"] == [f"{tag_of(4005)}.npz"]
+    assert reported(report, tag_of(4006))["files"] == [f"{tag_of(4006)}.npz"]
+    assert report["stray"] == sorted(
+        [
+            f"claims/{LABEL}/{LABEL}_seed9997",
+            f"records/{LABEL}/{LABEL}_seed9998.complete.json",
+            f"{LABEL}/{LABEL}_seed9999.npz",
+            "orphan.npz",
+        ]
+    )
+    counts = report["counts"]
+    assert counts["stray"] == 4
+    (condition,) = report["conditions"]
+    for status in contract.STATUSES:
+        assert condition[status] == counts[status]
+        assert counts[status] == list(statuses.values()).count(status)
+    assert (
+        f"{reported(report, tag_of(4006))['index']} {tag_of(4006)} partial"
+        in result.stdout
+    )
+    # The finish goes on over failed, in-flight, interrupted and missing
+    # cases, and stops on the rest.
+    code, _ = contract.finish_decision(
+        report, allow_missing=True, allow_running=True
+    )
+    assert code == contract.FINISH_FATAL
+    for name in (
+        f"{tampered}.npz",
+        f"{tag_of(4006)}.npz",
+        f"{LABEL}/{LABEL}_seed9999.npz",
+        f"records/{LABEL}/{LABEL}_seed9998.complete.json",
+        "orphan.npz",
+        f"claims/{LABEL}/{LABEL}_seed9997",
+    ):
+        (copy / name).unlink()
+    contract.record_path(copy, tampered).unlink()
+    (copy / f"{tampered}.json").unlink()
+    ok(cli("verify", "--out", copy, env=stub_environment(state)))
+    report = verification(copy)
+    assert report["exit_code"] == 0
+    code, _ = contract.finish_decision(
+        report, allow_missing=True, allow_running=True
+    )
+    assert code == 0
 
 
-def copied_pool(out, tmp_path, name="pool"):
+def test_verify_checks_the_node_feature_and_the_core(stored, tmp_path):
+    """Where the site names a node feature, every record must show it and
+    one physical core."""
+    out, tag = stored
+    copy = copied(out, tmp_path)
+    edit_manifest(copy, lambda m: m["site"].update(NODE_FEATURE="stubfeat"))
+    others = [t for t in completed_tags(copy) if t != tag]
+    for other in others:
+        contract.record_path(copy, other).unlink()
+        for suffix in pool_io.SUFFIXES:
+            (copy / f"{other}{suffix}").unlink()
+    path = contract.record_path(copy, tag)
+
+    def host(features, cores):
+        record = read_json(path)
+        record["identity"]["host"].update(
+            node_features=features,
+            cpu_affinity={
+                "cpus": list(range(len(cores))),
+                "physical_cores": cores,
+            },
+        )
+        contract.write_json(path, record)
+        return cli("verify", "--out", copy)
+
+    result = cli("verify", "--out", copy)
+    assert result.returncode == 1
+    assert "no node features" in reported(verification(copy), tag)["error"]
+    features = {
+        "node": "n1",
+        "available": ["stubfeat", "x"],
+        "active": ["stubfeat"],
+    }
+    ok(host(features, ["0:3"]))
+    assert reported(verification(copy), tag)["status"] == "verified"
+    assert verification(copy)["node_feature"] == "stubfeat"
+    assert host(features, ["0:3", "0:4"]).returncode == 1
+    assert (
+        "spans 2 physical cores" in reported(verification(copy), tag)["error"]
+    )
+    other = {"node": "n1", "available": ["x"], "active": ["x"]}
+    assert host(other, ["0:3"]).returncode == 1
+    assert (
+        "lacks the feature stubfeat"
+        in reported(verification(copy), tag)["error"]
+    )
+
+
+def test_only_the_source_part_of_a_record_is_compared(stored, tmp_path):
+    """Another node may have run a case; other code may not have."""
+    out, tag = stored
+    copy = copied(out, tmp_path, "elsewhere")
+    path = contract.record_path(copy, tag)
+    record = read_json(path)
+    expected = manifest_of(copy)["identity"]
+    record["identity"]["host"].update(
+        {
+            "hostname": "cluster-node-07",
+            "executable": "/scratch/env/bin/python",
+            "platform": "Linux-5.14.0-x86_64-with-glibc2.34",
+        }
+    )
+    record["identity"]["imports"]["trees"]["harness"]["path"] = "/elsewhere"
+    contract.write_json(path, record)
+    assert runner.check_record(copy, tag, expected)["tag"] == tag
+    record["identity"]["source"]["files"][
+        "dev/scripts/benchmark_targets.py"
+    ] = ("0" * 64)
+    contract.write_json(path, record)
+    with pytest.raises(contract.CompletionError, match="benchmark_targets"):
+        runner.check_record(copy, tag, expected)
+    record = read_json(path)
+    record["identity"]["source"] = expected["source"]
+    record["seed"] = 1
+    contract.write_json(path, record)
+    with pytest.raises(contract.CompletionError, match="seed 1"):
+        runner.check_record(copy, tag, expected)
+
+
+def copied_elsewhere(out, tmp_path, name="pool"):
     """A copy of the campaign whose manifest names a checkout not here.
 
     What a pool copied from the machine that generated it looks like: the
     manifest's ``gpyreg_source`` is an absolute path of that machine.
     """
-    copy = tmp_path / name
-    shutil.copytree(out, copy)
-    (copy / "verification.json").unlink(missing_ok=True)
-    path = copy / "manifest.json"
-    manifest = json.loads(path.read_text(encoding="utf-8"))
-    manifest["gpyreg_source"] = str(tmp_path / "elsewhere" / "gpyreg_1.2.1")
-    runner.write_json(path, manifest)
+    copy = copied(out, tmp_path, name)
+    edit_manifest(
+        copy,
+        lambda m: m.update(
+            gpyreg_source=str(tmp_path / "elsewhere" / "gpyreg_1.2.1")
+        ),
+    )
     return copy
 
 
@@ -1002,29 +1717,29 @@ def test_verify_accepts_a_gpyreg_source_at_the_manifest_commit(
 ):
     """A copied pool is verified against a local checkout at the pin."""
     out, _ = campaign
-    copy = copied_pool(out, tmp_path)
-    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
+    copy = copied_elsewhere(out, tmp_path)
+    manifest = manifest_of(copy)
     # Without the flag the manifest's path is used, and it is not here.
     result = cli("verify", "--out", str(copy))
     assert result.returncode != 0
     assert "no gpyreg package under" in result.stderr
     assert not (copy / "verification.json").exists()
+    assert runner.manifest_gpyreg_commit(manifest) == runner.git(
+        GPYREG_SOURCE, "rev-parse", "HEAD"
+    )
     assert runner.pinned_gpyreg_source(GPYREG_SOURCE, manifest) == str(
-        GPYREG_SOURCE.resolve()
+        GPYREG_SOURCE
     )
-    result = cli(
-        "verify", "--out", str(copy), "--gpyreg-source", str(GPYREG_SOURCE)
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
+    ok(cli("verify", "--out", copy, "--gpyreg-source", GPYREG_SOURCE))
     report = verification(copy)
-    assert report["gpyreg_source"] == str(GPYREG_SOURCE.resolve())
+    assert report["gpyreg_source"] == str(GPYREG_SOURCE)
     assert report["rounding_factor"] == pool_io.ROUNDING_FACTOR
     # The verifier's identity is recorded next to the pool's, its host
-    # half saying where it ran, its source half compared for the report
+    # part saying where it ran, its source part compared for the report
     # only: this checkout generated the campaign, so nothing differs.
-    assert set(report["verifier"]) == {"source", "host"}
-    assert report["verifier"]["host"]["gpyreg_source"] == str(
-        GPYREG_SOURCE.resolve()
+    assert set(report["verifier"]) == {"contract", "source", "imports", "host"}
+    assert Path(report["verifier"]["imports"]["modules"]["gpyreg"]) == (
+        GPYREG_SOURCE / "gpyreg"
     )
     assert report["verifier_differs_in"] == []
     for case in report["cases"]:
@@ -1040,27 +1755,28 @@ def perturbed_artifact(out, tmp_path, amount):
     """A copy of the campaign with one stored `I_sk` entry moved.
 
     The largest entry of the first completed run's ``I_sk`` is shifted by
-    ``amount`` in the ``.npz`` and the completion record's hashes are
+    ``amount`` in the ``.npz`` and the completion record's entry is
     rewritten to the new file, so that only the recomputation gate can
     tell; returns the copy, the tag and the array's largest magnitude.
     """
-    copy = tmp_path / "perturbed"
-    shutil.copytree(out, copy)
-    (copy / "verification.json").unlink(missing_ok=True)
+    copy = copied(out, tmp_path, "perturbed")
     tag = completed_tags(copy)[0]
     npz = copy / f"{tag}.npz"
-    with np.load(npz, allow_pickle=False) as stored:
-        arrays = {k: stored[k] for k in stored.files}
+    with np.load(npz, allow_pickle=False) as stored_arrays:
+        arrays = {k: stored_arrays[k] for k in stored_arrays.files}
     stats = arrays["vp/stats/I_sk"].copy()
     index = np.unravel_index(np.argmax(np.abs(stats)), stats.shape)
     scale = float(np.abs(stats[index]))
     stats[index] += amount
     arrays["vp/stats/I_sk"] = stats
     np.savez_compressed(npz, **arrays)
-    path = pool_io.record_path(copy, tag)
-    record = json.loads(path.read_text(encoding="utf-8"))
-    record["hashes"] = pool_io.artifact_hashes(copy, tag)
-    runner.write_json(path, record)
+    path = contract.record_path(copy, tag)
+    record = read_json(path)
+    record["artifacts"][f"{tag}.npz"] = {
+        "sha256": contract.sha256_file(npz),
+        "bytes": npz.stat().st_size,
+    }
+    contract.write_json(path, record)
     return copy, tag, scale
 
 
@@ -1083,15 +1799,18 @@ def test_recomputation_gate_allows_amplified_rounding_only(campaign, tmp_path):
     assert allowance >= pool_io.TOL_STATS
     amount = 2.0 * allowance
     copy, tag, scale = perturbed_artifact(out, tmp_path, amount)
+    record = contract.record_path(copy, tag)
     with pytest.raises(RuntimeError, match="recomputed I_sk differs"):
-        pool_io.verify_run(copy / tag)
+        pool_io.verify_run(copy / tag, record=record)
     with pytest.raises(RuntimeError, match="recomputed I_sk differs"):
-        pool_io.verify_run(copy / tag, rounding_factor=0.0)
+        pool_io.verify_run(copy / tag, rounding_factor=0.0, record=record)
     # A factor whose allowance covers the move: the gate's rounding term
     # is factor * eps * cond(K) relative to the largest stored value.
     eps = np.finfo(float).eps
     factor = float(2.0 * amount / (eps * intact["condition_number"] * scale))
-    report = pool_io.verify_run(copy / tag, rounding_factor=factor)
+    report = pool_io.verify_run(
+        copy / tag, rounding_factor=factor, record=record
+    )
     assert report["differences"]["I_sk"] == pytest.approx(amount)
     assert report["relative"]["I_sk"] == pytest.approx(amount / scale)
     assert report["tolerance"]["I_sk"] >= amount
@@ -1103,10 +1822,7 @@ def test_recomputation_gate_allows_amplified_rounding_only(campaign, tmp_path):
     case = reported(verification(copy), tag)
     assert case["status"] == "verify_failed"
     assert "recomputed I_sk differs" in case["error"]
-    result = cli(
-        "verify", "--out", str(copy), "--rounding-factor", str(factor)
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
+    ok(cli("verify", "--out", str(copy), "--rounding-factor", str(factor)))
     report = verification(copy)
     assert report["rounding_factor"] == factor
     case = reported(report, tag)
@@ -1115,18 +1831,12 @@ def test_recomputation_gate_allows_amplified_rounding_only(campaign, tmp_path):
     (condition,) = report["conditions"]
     assert condition["max_relative"] == pytest.approx(amount / scale)
     assert condition["max_condition_number"] >= intact["condition_number"]
-    assert "max_relative" in result.stdout
 
 
-def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
-    """A copied pool is verified against the pinned library alone."""
-    out, _ = campaign
-    copy = tmp_path / "pool"
-    shutil.copytree(out, copy)
-    (copy / "verification.json").unlink(missing_ok=True)
+def other_gpyreg(tmp_path):
+    """A git checkout of a package named gpyreg that is not the campaign's."""
     other = tmp_path / "other_gpyreg"
     (other / "gpyreg").mkdir(parents=True)
-    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
     (other / "gpyreg" / "__init__.py").write_text(
         "# not the campaign's gpyreg\n", encoding="utf-8"
     )
@@ -1138,22 +1848,435 @@ def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
         "-c",
         "commit.gpgsign=false",
     ]
+    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
     subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
         check=True,
     )
-    result = cli("verify", "--out", str(copy), "--gpyreg-source", str(other))
+    return other
+
+
+def test_verify_refuses_a_gpyreg_source_at_another_commit(campaign, tmp_path):
+    """A copied pool is verified against the pinned library alone."""
+    out, _ = campaign
+    copy = copied(out, tmp_path)
+    other = other_gpyreg(tmp_path)
+    result = cli("verify", "--out", copy, "--gpyreg-source", other)
     assert result.returncode != 0
-    manifest = json.loads((copy / "manifest.json").read_text(encoding="utf-8"))
-    pinned = manifest["identity"]["source"]["gpyreg_commit"]
+    pinned = runner.manifest_gpyreg_commit(manifest_of(copy))
     # The refusal names the manifest's commit, and nothing was verified.
     assert f"not the manifest's {pinned}" in result.stderr
     assert not (copy / "verification.json").exists()
     # A directory that is no git checkout is refused with a plain message.
     plain = tmp_path / "plain"
     (plain / "gpyreg").mkdir(parents=True)
-    result = cli("verify", "--out", str(copy), "--gpyreg-source", str(plain))
+    result = cli("verify", "--out", copy, "--gpyreg-source", plain)
     assert result.returncode != 0
     assert "is not a git checkout" in result.stderr
     assert not (copy / "verification.json").exists()
+
+
+# --------------------------------------------------------------------------
+# The array worker and `run` on one machine
+# --------------------------------------------------------------------------
+
+
+def sidecar_content(path):
+    """A sidecar's tree without what differs between two runs of a case:
+    the time it was written, the seconds it took and memory addresses."""
+    tree = read_json(path)
+    for key in TIMING_META:
+        tree["meta"].pop(key)
+    tree["logger"].pop("total_fun_eval_time")
+
+    def strip(value):
+        if isinstance(value, dict):
+            return {k: strip(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [strip(v) for v in value]
+        if isinstance(value, str):
+            return ADDRESS.sub(" at 0x", value)
+        return value
+
+    return strip(tree)
+
+
+def test_the_array_worker_and_run_give_identical_artifacts(stored, tmp_path):
+    """One case, run by `run` in the module's campaign and by `worker
+    --case` as the task of an array job in another campaign prepared
+    alike: every stored array but the evaluations' seconds is equal bit
+    for bit, and the sidecar and the record differ in their timings and
+    the host part alone."""
+    out, tag = stored
+    other = tmp_path / "array"
+    ok(prepare(other))
+    state = tmp_path / "slurm_state"
+    state.mkdir()
+    stubs.write_stubs(tmp_path / "bin")
+    task = stub_environment(
+        state,
+        SLURM_JOB_ID="1001001",
+        SLURM_ARRAY_JOB_ID="1001",
+        SLURM_ARRAY_TASK_ID="1",
+        SLURMD_NODENAME="node1",
+    )
+    index = runner.case_lines(manifest_of(other)).index(tag) + 1
+    assert index == runner.tag_seed(tag) - SEED_START + 1
+    ok(cli("worker", "--out", other, "--case", tag, env=task))
+    with np.load(out / f"{tag}.npz", allow_pickle=False) as a, np.load(
+        other / f"{tag}.npz", allow_pickle=False
+    ) as b:
+        assert sorted(a.files) == sorted(b.files)
+        for key in a.files:
+            assert a[key].dtype == b[key].dtype, key
+            assert a[key].shape == b[key].shape, key
+            if key not in TIMING_ARRAYS:
+                assert a[key].tobytes() == b[key].tobytes(), key
+    assert sidecar_content(out / f"{tag}.json") == sidecar_content(
+        other / f"{tag}.json"
+    )
+    ran, arrayed = (
+        read_json(contract.record_path(d, tag)) for d in (out, other)
+    )
+    for record in (ran, arrayed):
+        # The size of the sidecar follows the digits of its timings.
+        record["verification"].pop("bytes")
+    own = set(ran) - set(CONTRACT_FIELDS) - {"wall_s", "target_eval_s"}
+    assert own == set(arrayed) - set(CONTRACT_FIELDS) - {
+        "wall_s",
+        "target_eval_s",
+    }
+    assert {k: ran[k] for k in own} == {k: arrayed[k] for k in own}
+    assert ran["identity"]["source"] == arrayed["identity"]["source"]
+    assert ran["identity"]["host"]["slurm"]["job_id"] is None
+    assert arrayed["identity"]["host"]["slurm"]["array_job_id"] == "1001"
+
+
+# --------------------------------------------------------------------------
+# The flat layout of the pools prepared before the contract
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def flat(campaign, tmp_path_factory):
+    """The module's pool in the flat layout, as ``pool_20260914`` holds it.
+
+    Its manifest has no ``contract`` field and holds the flat identity;
+    its artifacts lie at the top as ``<label>_seed<seed>.*``, and its
+    records hold the flat identity and the hashes by suffix and no
+    convergence field.
+    """
+    out, _ = campaign
+    flat_out = tmp_path_factory.mktemp("flat_pool")
+    manifest = manifest_of(out)
+    identity = runner.identity(GPYREG_SOURCE)
+    contract.write_json(
+        flat_out / "manifest.json",
+        {
+            **{
+                key: manifest[key]
+                for key in (
+                    "campaign",
+                    "suite",
+                    "options",
+                    "allocation",
+                    "gpyreg_source",
+                    "allow_dirty",
+                    "created",
+                    "allocation_history",
+                )
+            },
+            "identity": identity,
+        },
+    )
+    for tag in completed_tags(out):
+        name = tag.split("/")[1]
+        for suffix in pool_io.SUFFIXES:
+            shutil.copyfile(
+                out / f"{tag}{suffix}", flat_out / f"{name}{suffix}"
+            )
+        record = read_json(pool_io.record_path(out, tag))
+        contract.write_json(
+            pool_io.record_path(flat_out, name),
+            {
+                "tag": name,
+                "label": record["label"],
+                "seed": record["seed"],
+                "identity": identity,
+                "elapsed_seconds": record["elapsed_seconds"],
+                **{
+                    key: record[key]
+                    for key in (
+                        "wall_s",
+                        "target_eval_s",
+                        "K",
+                        "func_count",
+                        "elbo",
+                        "elbo_sd",
+                        "success_flag",
+                        "verdict",
+                        "metrics",
+                        "verification",
+                    )
+                },
+                "hashes": pool_io.artifact_hashes(flat_out, name),
+            },
+        )
+    return flat_out
+
+
+def flat_tags(out):
+    return sorted(
+        (
+            path.name[: -len(".complete.json")]
+            for path in (Path(out) / "records").glob("*.complete.json")
+        ),
+        key=runner.tag_seed,
+    )
+
+
+def test_a_flat_pool_verifies_selects_and_summarizes(flat, tmp_path):
+    copy = copied(flat, tmp_path, "flat")
+    tags = flat_tags(copy)
+    assert tags
+    result = ok(cli("verify", "--out", copy))
+    report = verification(copy)
+    assert "contract" not in report
+    assert report["counts"] == {
+        "verified": len(tags),
+        "failed": 0,
+        "partial": 0,
+        "missing": MAX_SEEDS - len(tags),
+        "verify_failed": 0,
+        "stray": 0,
+    }
+    assert [c["tag"] for c in report["cases"]] == [
+        f"{LABEL}_seed{SEED_START + i}" for i in range(MAX_SEEDS)
+    ]
+    assert set(report["verifier"]) == {"source", "host"}
+    assert "| verified | failed | partial | missing |" in result.stdout
+    listed = ok(cli("cases", "--out", copy)).stdout.splitlines()
+    assert listed == [f"{LABEL} {SEED_START + i}" for i in range(MAX_SEEDS)]
+    ok(cli("select", "--out", copy))
+    (condition,) = read_json(copy / "selection.json")["conditions"]
+    assert [run["tag"] for run in condition["runs"]] == [
+        tag
+        for tag in tags
+        if read_json(pool_io.record_path(copy, tag))["verdict"]["passes"]
+    ][:TARGET]
+    ok(cli("summarize", "--out", copy))
+    (summary,) = read_json(copy / "summary.json")["conditions"]
+    assert summary["completed"] == len(tags)
+    assert summary["success_flag"] == sum(
+        read_json(pool_io.record_path(copy, tag))["success_flag"]
+        for tag in tags
+    )
+    assert summary["convergence_status"] == {}
+    assert summary["iterations"]["n"] == 0
+    text = (copy / "summary.md").read_text(encoding="utf-8")
+    assert f"| {LABEL} |" in text
+
+
+def test_a_flat_pool_reports_its_faults(flat, tmp_path):
+    """A changed artifact, an artifact without its record, a stray one."""
+    copy = copied(flat, tmp_path, "flat")
+    first = flat_tags(copy)[0]
+    artifact = copy / f"{first}.npz"
+    data = bytearray(artifact.read_bytes())
+    data[10] ^= 0xFF
+    artifact.write_bytes(bytes(data))
+    plant(copy, "foo_seed1.npz")
+    result = cli("verify", "--out", copy)
+    assert result.returncode == 1
+    report = verification(copy)
+    assert reported(report, first)["status"] == "verify_failed"
+    assert report["stray"] == ["foo_seed1"]
+    pool_io.record_path(copy, first).unlink()
+    assert cli("verify", "--out", copy).returncode == 1
+    case = reported(verification(copy), first)
+    assert case["status"] == "partial"
+    assert case["files"] == [f"{first}.npz", f"{first}.json"]
+
+
+def test_a_flat_pool_is_never_extended(flat, tmp_path):
+    copy = copied(flat, tmp_path, "flat")
+    before = snapshot(copy)
+    result = prepare(copy)
+    assert result.returncode != 0 and "flat layout" in result.stderr
+    result = cli("worker", "--out", copy, "--case", f"{LABEL} {SEED_START}")
+    assert result.returncode == runner.EXIT_USAGE
+    result = cli("run", "--out", copy)
+    assert result.returncode != 0 and "flat layout" in result.stderr
+    after = snapshot(copy)
+    assert {k: v for k, v in after.items() if k != "campaign.lock"} == before
+
+
+def test_the_stack_harness_reads_every_passing_record_of_a_flat_pool(
+    flat, tmp_path
+):
+    import svbmc_pool_stack as stack
+
+    copy = copied(flat, tmp_path, "flat")
+    conditions, identities, labels = stack.pool_conditions([copy])
+    assert labels == [LABEL]
+    passing = [
+        tag
+        for tag in flat_tags(copy)
+        if read_json(pool_io.record_path(copy, tag))["verdict"]["passes"]
+    ]
+    assert [entry["name"] for entry in conditions[LABEL]] == passing
+    assert identities[0]["selection"]["conditions"] == {
+        LABEL: "every passing record"
+    }
+
+
+def test_the_flat_identity_helpers():
+    """A flat record written before the split into halves holds both in
+    one mapping; the differences name every mismatch."""
+    record = runner.identity(GPYREG_SOURCE)
+    assert set(record["source"]) == set(runner.SOURCE_KEYS)
+    single = dict(record["source"], **record["host"])
+    assert runner.identity_source(single) == record["source"]
+    assert runner.identity_host(single) == record["host"]
+    expected = {"pyvbmc_commit": "a", "runner_sha256": "b", "numpy": "2.0"}
+    actual = {"pyvbmc_commit": "a", "runner_sha256": "c", "hostname": "h"}
+    assert runner.identity_differences(actual, expected) == [
+        "hostname",
+        "numpy",
+        "runner_sha256",
+    ]
+    flat_manifest = {"identity": record}
+    assert runner.manifest_gpyreg_commit(flat_manifest) == runner.git(
+        GPYREG_SOURCE, "rev-parse", "HEAD"
+    )
+
+
+# --------------------------------------------------------------------------
+# A campaign through the Slurm driver
+# --------------------------------------------------------------------------
+
+#: What a scratch checkout needs to run the pool harness: the package, the
+#: harness and the modules it imports, the data the identity hashes and
+#: the driver.
+DRIVER_FILES = (
+    ".gitignore",
+    "dev/scripts/svbmc_pool_run.py",
+    "dev/scripts/svbmc_pool_io.py",
+    "dev/scripts/benchmark_targets.py",
+    "dev/scripts/campaign_contract.py",
+    "dev/scripts/profile_run.py",
+    "dev/scripts/hpc/campaign_env.sh",
+    "dev/scripts/hpc/campaign_submit.sh",
+    "dev/scripts/hpc/campaign_task.sbatch",
+    "dev/scripts/hpc/campaign_finish.sh",
+)
+POOL_HARNESS = "dev/scripts/svbmc_pool_run.py"
+
+
+@pytest.fixture(scope="module")
+def driver_template(tmp_path_factory):
+    """A committed scratch checkout holding the pool harness and the
+    driver, for ``test_campaign_driver.World``."""
+    import test_campaign_driver as driver
+
+    root = tmp_path_factory.mktemp("pool_driver_template")
+    home = root / "home"
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    repo = root / "repo"
+    tracked = runner.git(ROOT, "ls-files", "pyvbmc", "dev/scripts/data")
+    for name in [*tracked.splitlines(), *DRIVER_FILES]:
+        source = ROOT / name
+        if source.is_file():
+            (repo / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, repo / name)
+    (
+        repo / "dev" / "scripts" / "hpc" / "campaign_requirements.txt"
+    ).write_text(
+        driver.environment_pins(repo / "dev" / "scripts"), encoding="utf-8"
+    )
+    driver.git(repo, "init", "-q", home=home)
+    driver.git(repo, "add", "-A", home=home)
+    driver.git(repo, "commit", "-q", "-m", "pool harness", home=home)
+    return root
+
+
+def test_a_pool_campaign_through_the_slurm_driver(tmp_path, driver_template):
+    """Submission, one array task, and the finish: verify, select and
+    summarize as batch jobs, and the archive, with the stub Slurm
+    commands; the second case is left missing."""
+    import test_campaign_driver as driver
+
+    world = driver.World(tmp_path, driver_template, stubs.find_bash())
+    settings = {
+        "HARNESS": POOL_HARNESS,
+        "PYVBMC_GPYREG_SOURCE": driver.posix(GPYREG_SOURCE),
+    }
+    driver.ok(
+        world.submit(
+            "c1",
+            "--suite",
+            "smoke",
+            "--only",
+            LABEL,
+            "--target",
+            "1",
+            "--max-seeds",
+            "2",
+            "--seed-start",
+            str(SEED_START),
+            "--gpyreg-source",
+            driver.posix(GPYREG_SOURCE),
+            **settings,
+        )
+    )
+    out = world.campaign()
+    manifest = manifest_of(out)
+    assert manifest["site"]["HARNESS"] == POOL_HARNESS
+    assert manifest["site"]["NODE_FEATURE"] == "stubfeat"
+    assert manifest["identity"]["source"]["trees"]["harness"]["clean"] is True
+    lines = (out / "cases.txt").read_text("utf-8").splitlines()
+    assert lines == [tag_of(SEED_START), tag_of(SEED_START + 1)]
+    [call] = world.calls()
+    assert "--array=1-2%200" in call["args"]
+
+    task = world.task("c1", 1, **settings)
+    assert task.returncode == 0, task.stdout + task.stderr
+    tag = lines[0]
+    path = contract.record_path(out, tag)
+    record = read_json(path)
+    assert record["identity"]["host"]["slurm"]["array_task_id"] == "1"
+    assert record["identity"]["host"]["node_features"]["available"] == [
+        "stubfeat"
+    ]
+    # A Slurm task with --hint=nomultithread runs on one physical core,
+    # which this process need not; the record is given one.
+    record["identity"]["host"]["cpu_affinity"] = {
+        "cpus": [3],
+        "physical_cores": ["0:3"],
+    }
+    contract.write_json(path, record)
+    again = world.task("c1", 1, **settings)
+    assert again.returncode == 0
+    assert "already has a completion record" in again.stdout
+
+    finish = world.finish("c1", "--allow-missing", **settings)
+    assert finish.returncode == 0, finish.stdout + finish.stderr
+    report = verification(out)
+    assert report["counts"]["verified"] == 1
+    assert report["counts"]["missing"] == 1
+    assert report["node_feature"] == "stubfeat"
+    steps = (out / "slurm" / "steps.txt").read_text("utf-8").splitlines()
+    assert [line.split()[1:3] for line in steps] == [
+        ["step=verify", "rc=0"],
+        ["step=select", "rc=0"],
+        ["step=summarize", "rc=0"],
+    ]
+    selection = read_json(out / "selection.json")
+    assert selection["conditions"][0]["runs"] in (
+        [{"tag": tag, "seed": SEED_START}],
+        [],
+    )
+    assert read_json(out / "summary.json")["conditions"][0]["completed"] == 1
+    assert sorted(world.campaigns.glob("c1.tar.zst.[0-9][0-9][0-9]"))

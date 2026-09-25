@@ -50,7 +50,7 @@ import subprocess
 import sys
 import time
 from importlib.metadata import version
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -127,6 +127,24 @@ def record_path(out_dir, tag):
 
 def artifact_hashes(out_dir, tag):
     return {s: sha256(Path(out_dir) / f"{tag}{s}") for s in SUFFIXES}
+
+
+def recorded_hashes(record, name):
+    """``{suffix: SHA-256}`` of a run's two files, from its completion record.
+
+    ``name`` is the artifact's file name without suffix. A record of the
+    campaign contract lists every artifact file under ``artifacts`` by its
+    path relative to the campaign directory; a record of the flat layout
+    holds ``hashes`` by suffix. A file the record does not list maps to
+    None.
+    """
+    if "hashes" in record:
+        return {suffix: record["hashes"].get(suffix) for suffix in SUFFIXES}
+    listed = {
+        PurePosixPath(path).name: entry.get("sha256")
+        for path, entry in (record.get("artifacts") or {}).items()
+    }
+    return {suffix: listed.get(f"{name}{suffix}") for suffix in SUFFIXES}
 
 
 def _git(path, *args):
@@ -289,17 +307,21 @@ def gate_tolerance(stored, condition, rounding_factor):
     return TOL_STATS + rounding * scale
 
 
-def verify_run(path, vbmc=None, results=None, rounding_factor=None):
+def verify_run(
+    path, vbmc=None, results=None, rounding_factor=None, record=None
+):
     """Check one stored run against its contract; return a report.
 
     Always runs the recomputation gate (c) and the float64 canary (d) on
     the rebuilt state. With the live ``vbmc`` and its ``results`` it also
     runs (a) and (b) against the objects the run returned, and compares
     the rebuilt evaluations with the live ones. Checked on its own
-    instead, and with a completion record next to the artifact, it
-    compares both files against the hashes that record holds; a record
-    is written after the artifact it describes, so with live objects it
-    belongs to an earlier attempt and is not read. Raises
+    instead, and with a completion record, it compares both files against
+    the hashes that record holds (:func:`recorded_hashes`); a record is
+    written after the artifact it describes, so with live objects it
+    belongs to an earlier attempt and is not read. ``record`` is the
+    record's path; by default it is the flat layout's, ``records/`` beside
+    the artifact, and the check is left out where no record exists. Raises
     ``RuntimeError`` naming every check that failed.
 
     The gate allows ``TOL_STATS`` plus ``rounding_factor`` (default
@@ -357,9 +379,11 @@ def verify_run(path, vbmc=None, results=None, rounding_factor=None):
     )
     report["checks"].append("dtype_canary")
 
-    record = record_path(path.parent, tag)
+    record = record_path(path.parent, tag) if record is None else Path(record)
     if vbmc is None and record.exists():
-        stored = json.loads(record.read_text(encoding="utf-8"))["hashes"]
+        stored = recorded_hashes(
+            json.loads(record.read_text(encoding="utf-8")), tag
+        )
         actual = artifact_hashes(path.parent, tag)
         for suffix in SUFFIXES:
             if stored.get(suffix) != actual[suffix]:

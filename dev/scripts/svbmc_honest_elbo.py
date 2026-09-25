@@ -265,19 +265,28 @@ def coverage_rules(ratios, sd_cap, sd_floor=SD_FLOOR):
 
 
 class Runs:
-    """The pools' artifacts, rebuilt once each and cached by tag."""
+    """The pools' artifacts, rebuilt once each and cached by tag.
+
+    A run's tag is its artifact's path in the pool directory without the
+    suffix: ``<label>/<label>_seed<seed>`` in a pool of the campaign
+    contract, ``<label>_seed<seed>`` in one of the flat layout.
+    """
 
     def __init__(self, pool_dirs):
         self.paths = {}
         for directory in pool_dirs:
-            for npz in sorted(Path(directory).glob("*.npz")):
-                if npz.stem in self.paths:
+            directory = Path(directory)
+            for npz in sorted(
+                [*directory.glob("*.npz"), *directory.glob("*/*.npz")]
+            ):
+                tag = npz.relative_to(directory).with_suffix("").as_posix()
+                if tag in self.paths:
                     raise RuntimeError(
-                        f"the artifact {npz.stem} is in more than one pool "
-                        f"directory ({self.paths[npz.stem].parent} and "
+                        f"the artifact {tag} is in more than one pool "
+                        f"directory ({self.paths[tag].parent} and "
                         f"{npz.parent})"
                     )
-                self.paths[npz.stem] = npz.with_suffix("")
+                self.paths[tag] = npz.with_suffix("")
         self.cache = {}
 
     def tags(self):
