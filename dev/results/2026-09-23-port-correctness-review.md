@@ -164,7 +164,10 @@ references; an oracle state at uncertainty level 1 (done on 2026-09-24:
 `dev/plans/fixture-generator-and-oracles.md`, "Phase 5"); a seeded gate run
 with a prior; and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
 object (done on 2026-09-24: `dev/plans/svbmc-integration.md`, "Execution
-record") and the comparison of the two compositions of the S-VBMC shrinkage.
+record") and the comparison of the two compositions of the S-VBMC shrinkage
+(found on 2026-09-25 to exist on the existing pools as the variant
+`two_level_anchored`, in `dev/results/2026-09-15-svbmc-pool-comparison.md`;
+the release pools repeat it: the headline-selection item of `dev/TODO.md`).
 
 ## The fixes that move default trajectories
 

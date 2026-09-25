@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-24. These lists describe scope, not priority or execution
+Updated 2026-09-25. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -36,18 +36,27 @@ records its execution.
   pools, judging the optimism added by stacking relative to its input runs.
   Promote it only if the campaign confirms it is the best estimator; decide
   separately whether noiseless stacks use shrinkage or retain the raw value.
-  Before that decision, compare two compositions of its stages on the
-  existing pools with the campaign's added-bias measure. The implemented
-  one adds the between-run change of a run's raw level to the
-  within-shrunk components, so the run's final own-weighted level is the
-  shrunk level plus whatever the within-run stage did to it; the
-  alternative pins each run's level to its shrunk value. They coincide
-  for uniform own weights and differ where a run's weights align with its
-  component estimates (0.16 and 0.30 nats in the constructed case of the
-  [port review's verification](experiments/port_review_20260919/verification/wave0.md)).
-  The implemented form keeps the within-run correction of the level, which
-  addresses the single-run optimism that regression across runs cannot
-  see; the comparison is to confirm that on data (PI, 2026-09-19).
+  The campaign scores two compositions of its stages with its added-bias
+  measure. The implemented one adds the between-run change of a run's raw
+  level to the within-shrunk components, so the run's final own-weighted
+  level is the shrunk level plus whatever the within-run stage did to it;
+  the alternative pins each run's level to its shrunk value, and is the
+  variant `two_level_anchored` of `scripts/svbmc_shrink_elbo.py`, which
+  computes both. They differ in each run by how much the within-run stage
+  moves the run's own-weighted level: 0.16 and 0.30 nats for the two runs
+  of the constructed case of the
+  [port review's verification](experiments/port_review_20260919/verification/wave0.md).
+  Uniform own weights make that change zero only when the run's components
+  also carry equal, uncorrelated estimation noise, which real runs do not
+  have. On the existing
+  pools the implemented form adds −0.23 to +0.15 nats, partly by removing
+  some of the runs' own optimism through its within-run term, and the
+  alternative adds −0.02 to +0.21 at `M` = 3 to 5 and +0.02 to +0.42 at
+  `M = 16` (the [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
+  "The inputs' own bias, and what stacking adds"). The implemented form
+  keeps the within-run correction of the level, which addresses the
+  single-run optimism that regression across runs cannot see (PI,
+  2026-09-19); the release pools are to confirm that.
   The stacking objective and selected posterior remain unchanged.
   Finalize the headline's qualitative caveat, distinguishing inherited VBMC
   bias from bias added by stacking and explaining that residual bias can
