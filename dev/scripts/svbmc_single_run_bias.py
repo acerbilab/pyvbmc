@@ -65,7 +65,6 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 
 from svbmc_pool_run import (  # noqa: E402
-    DEFAULT_GPYREG,
     THREAD_KEYS,
     activate_gpyreg,
     identity,
@@ -416,7 +415,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--pool", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--gpyreg-source", type=Path, default=DEFAULT_GPYREG)
+    parser.add_argument(
+        "--gpyreg-source",
+        type=Path,
+        required=True,
+        help="the gpyreg checkout the pool is read against: a clean git "
+        "checkout at the commit the pool's manifest pins",
+    )
     parser.add_argument("--conditions", default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--cells", type=Path, action="append", default=[])

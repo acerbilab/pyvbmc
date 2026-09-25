@@ -63,10 +63,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 
 from svbmc_pool_run import (  # noqa: E402
-    DEFAULT_GPYREG,
     THREAD_KEYS,
     activate_gpyreg,
     analysis_sources,
+    pinned_gpyreg_source,
     write_json,
 )
 
@@ -323,7 +323,13 @@ def main(argv=None):
     parser.add_argument("--pool", type=Path, required=True)
     parser.add_argument("--cells", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--gpyreg-source", type=Path, default=DEFAULT_GPYREG)
+    parser.add_argument(
+        "--gpyreg-source",
+        type=Path,
+        required=True,
+        help="the gpyreg checkout the pool is read against: a clean git "
+        "checkout at the commit the pool's manifest pins",
+    )
     parser.add_argument(
         "--kappa", default=",".join(str(k) for k in DEFAULT_KAPPA)
     )
@@ -337,7 +343,11 @@ def main(argv=None):
     for key in THREAD_KEYS:
         os.environ.setdefault(key, "1")
     os.environ.setdefault("MPLBACKEND", "Agg")
-    activate_gpyreg(args.gpyreg_source)
+    pool = args.pool.resolve()
+    manifest = json.loads((pool / "manifest.json").read_text(encoding="utf-8"))
+    gpyreg_source = activate_gpyreg(
+        pinned_gpyreg_source(args.gpyreg_source, manifest)
+    )
 
     results = json.loads(args.cells.read_text(encoding="utf-8"))
     only = [c.strip() for c in (args.conditions or "").split(",") if c.strip()]
@@ -348,7 +358,6 @@ def main(argv=None):
     ]
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    pool = args.pool.resolve()
     records = []
     started = time.perf_counter()
     with (out / "cells.jsonl").open("w", encoding="utf-8") as progress:
@@ -371,7 +380,7 @@ def main(argv=None):
     (out / "summary.md").write_text(text, encoding="utf-8")
     write_json(
         out / "sources.json",
-        analysis_sources(__file__, args.cells, pool, args.gpyreg_source),
+        analysis_sources(__file__, args.cells, pool, gpyreg_source),
     )
     print(text, flush=True)
     return 0
