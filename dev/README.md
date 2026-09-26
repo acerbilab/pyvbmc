@@ -477,14 +477,23 @@ reason.
   rescored and the rebuilt posterior on hand-made cases, and runs one real
   case through `run` and through `worker`.
 - `scripts/analyze_population_run.py` — assesses finished campaigns without
-  inference. By default, campaigns of one treatment against the golden
-  reference: it revalidates every case and the reference sidecars, pools a
+  inference. By default, campaigns of one treatment (those of September
+  2026) against the 870-case golden reference of 2026-09-07: it revalidates
+  every case and the reference's sidecars, which `--reference` names and
+  which must be exactly those of
+  `golden/noisy_extension_20260907/sha256_manifest.json`, pools a
   first-stage campaign with its extensions, recomputes the KS screen and a
   within-configuration paired family (exact signed-rank tests by dynamic
   programming over midranks, exact at any number of pairs, and exact
   McNemar tests of usability), checks every boost decision against the
   guard, and reports each extension on its own with the confirmatory family
-  fixed in its manifest. With `--arms REFERENCE CANDIDATE`, two arms of
+  fixed in its manifest. The default `--reference`, `golden/baseline/`,
+  holds `reference_990_20260913`, so the default command stops at that
+  check; the 870 sidecars are `golden/baseline/` at commit `b2ea8597`
+  (`git worktree add --detach DIR b2ea8597`, then `--reference
+  DIR/dev/golden/baseline`) and the traces directory
+  `scripts/runs/golden/reference_870_20260907/` of the machine that
+  `scripts/runs/LOCAL.md` lists. With `--arms REFERENCE CANDIDATE`, two arms of
   `population_run.py`'s array mode, each checked against its own
   `verification.json` and compared seed by seed on the metrics that
   `rescore` recomputed (in the campaign `--rescoring` names, by default the
@@ -492,12 +501,15 @@ reason.
   the candidate's own identity), with the confirmatory family of their
   manifests at the size they fix: a test that cannot be computed enters it
   at p = 1 and is flagged. Either arm may be a campaign directory or its
-  redacted tracked copies, which give the same report. Writes
-  `assessment.json` and `comparison.md` (and, by default, the campaign
-  manifests) under `--out`.
-  `test_analyze_population_run.py` checks the statistics and the
-  comparison of two arms on campaign directories it writes and on their
-  redacted copies.
+  redacted tracked copies, which give the same report. In both, a boost
+  stage other than the returned posterior whose metrics are the error of
+  a scoring that failed, which the harness keeps and `verify` accepts, is
+  left out of the boost summary's usability counts, counted and listed.
+  Writes `assessment.json` and `comparison.md` (and, by default, the
+  campaign manifests) under `--out`.
+  `test_analyze_population_run.py` checks the statistics, the reference
+  check, and the comparison of two arms on campaign directories it writes
+  and on their redacted copies.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous

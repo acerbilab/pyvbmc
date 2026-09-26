@@ -247,13 +247,18 @@ def sited(site, identity, node=None):
     return site.plant(identity, node=node)
 
 
-def write_arm(root, role, pyvbmc_commit, files=None, site=None):
+def write_arm(
+    root, role, pyvbmc_commit, files=None, site=None, metric_errors=None
+):
     """One arm of array mode, its cases verified.
 
     With ``site`` the arm was run there: its manifest holds the site block,
     the tracked copies and the login node's identity, each record the
     identity of the node its case ran on, each sidecar its provenance, and
     the directory the task logs, the accounting and a summary.
+    ``metric_errors`` maps ``(label, seed)`` to the boost stages whose
+    metrics are the error of a scoring that failed, as the harness keeps
+    it for a posterior the run did not return.
     """
     path = root / role
     manifest = {
@@ -320,6 +325,8 @@ def write_arm(root, role, pyvbmc_commit, files=None, site=None):
                 for stage in ("pre", "candidate", "returned")
             },
         }
+        for stage in (metric_errors or {}).get((label, seed), ()):
+            report["metrics"][stage] = {"error": "LinAlgError: not definite"}
         report_path = path / files_of["boost_report"]
         runner.write_json(report_path, report)
         artifacts = {
@@ -476,6 +483,170 @@ def test_analyze_arms_on_100_paired_seeds(arms, tmp_path):
     assert written["paired_cases"] == 200
     comparison = (tmp_path / "report" / "comparison.md").read_text()
     assert "rescored metrics" in comparison and LABELS[0] in comparison
+    for role in ("reference", "candidate"):
+        summary = result["boost_summary"][role]
+        assert summary["metric_errors"] == {"pre": 0, "candidate": 0}
+        assert result["boost_metric_errors"][role] == []
+
+
+def test_a_boost_stage_whose_metrics_failed_is_left_out_and_counted(
+    tmp_path,
+):
+    """The harness keeps the error of a scoring that failed for a posterior
+    the run did not return, and its verification accepts the case: the
+    comparison leaves that stage of that run out of the boost summary,
+    counts and lists it, and goes on."""
+    errors = {
+        (LABELS[0], 3): ("pre",),
+        (LABELS[1], 5): ("candidate",),
+        (LABELS[1], 6): ("pre", "candidate"),
+    }
+    reference, before = write_arm(
+        tmp_path, "reference", "b" * 40, metric_errors=errors
+    )
+    candidate, after = write_arm(tmp_path, "candidate", HARNESS)
+    write_rescoring(candidate, {reference: before, candidate: after})
+    result = analysis.analyze_arms(
+        reference, candidate, None, tmp_path / "report"
+    )
+    assert result["paired_cases"] == 200
+
+    def usable_runs(stage):
+        """The usable runs of the reference at ``stage``: each stage of a
+        written report scores as the returned posterior does."""
+        return sum(
+            analysis.usable(arm_metrics("reference", label, seed)[0])
+            for label in LABELS
+            for seed in SEEDS
+            if stage not in errors.get((label, seed), ())
+        )
+
+    summary = result["boost_summary"]["reference"]
+    assert summary["metric_errors"] == {"pre": 2, "candidate": 2}
+    assert summary["attempted"] == summary["accepted"] == 200
+    assert summary["usable_pre"] == usable_runs("pre")
+    assert summary["usable_candidate"] == usable_runs("candidate")
+    assert summary["usable_returned"] == usable_runs("returned")
+    assert result["boost_summary"]["candidate"]["metric_errors"] == {
+        "pre": 0,
+        "candidate": 0,
+    }
+    listed = result["boost_metric_errors"]["reference"]
+    assert sorted((e["tag"], e["stage"]) for e in listed) == sorted(
+        (f"{label}_seed{seed}", stage)
+        for (label, seed), stages in errors.items()
+        for stage in stages
+    )
+    assert all(e["error"] == "LinAlgError: not definite" for e in listed)
+    (record,) = [
+        b
+        for b in result["boosts"]["reference"]
+        if b["tag"] == f"{LABELS[0]}_seed3"
+    ]
+    assert (
+        set(record["quality"])
+        == set(record["usable"])
+        == {
+            "candidate",
+            "returned",
+        }
+    )
+    assert record["metric_errors"] == {"pre": "LinAlgError: not definite"}
+
+
+def test_a_boost_report_whose_returned_metrics_failed_is_refused(tmp_path):
+    """The harness fails such a case, so a verified one never holds it."""
+    report = tmp_path / "case.boost.json"
+    scores = {"elbo": -2.0, "elbo_sd": 0.01}
+    runner.write_json(
+        report,
+        {
+            "attempted": False,
+            "accepted": False,
+            "tolerance": 0.1,
+            "scores": {"pre": scores, "candidate": None, "returned": scores},
+            "metrics": {
+                "pre": {k: 0.1 for k in analysis.QUALITY},
+                "returned": {"error": "LinAlgError: not definite"},
+            },
+        },
+    )
+    with pytest.raises(AssertionError, match="returned"):
+        analysis.boost_record(report, "case", LABELS[0], {})
+
+
+def write_reference(directory, manifest_path, stems):
+    """A reference of the sidecars ``stems``, written with CRLF line
+    endings, and the manifest of their LF-normalized SHA-256."""
+    directory.mkdir(parents=True)
+    files = {}
+    for stem in stems:
+        label, seed = stem.rsplit("_seed", 1)
+        side = {
+            "label": label,
+            "seed": int(seed),
+            "final": {
+                **base_metrics(label, int(seed)),
+                "func_count": 200,
+                "success_flag": True,
+            },
+        }
+        text = json.dumps(side, indent=1).replace("\n", "\r\n")
+        (directory / f"{stem}.json").write_bytes(text.encode())
+        lf = text.replace("\r\n", "\n").encode()
+        files[stem] = {"json_sha256": hashlib.sha256(lf).hexdigest()}
+    runner.write_json(manifest_path, {"files": files})
+    return directory
+
+
+def test_the_reference_of_one_treatment_is_the_manifests_exactly(
+    tmp_path, monkeypatch
+):
+    """``--reference`` names the reference's sidecars, which must be the
+    ones the manifest lists, each with its SHA-256; the assessment reads
+    no campaign before that check passes."""
+    stems = [f"{label}_seed{seed}" for label in LABELS for seed in (0, 1)]
+    manifest = tmp_path / "sha256_manifest.json"
+    reference = write_reference(tmp_path / "reference", manifest, stems)
+    monkeypatch.setattr(analysis, "REFERENCE_MANIFEST", manifest)
+    assert sorted(analysis.verify_reference(reference)) == sorted(stems)
+
+    read = []
+
+    def campaign_read(campaign, population):
+        read.append((campaign, sorted(population)))
+        raise RuntimeError("the campaign is read")
+
+    monkeypatch.setattr(analysis, "load_campaign", campaign_read)
+    arguments = ["--campaign", str(tmp_path / "first"), "--extension"]
+    arguments += ["--out", str(tmp_path / "out")]
+    with pytest.raises(RuntimeError, match="the campaign is read"):
+        analysis.main([*arguments, "--reference", str(reference)])
+    assert read == [(tmp_path / "first", sorted(LABELS))]
+
+    # The default is dev/golden/baseline, which no longer holds them.
+    with pytest.raises(RuntimeError, match="--reference") as refused:
+        analysis.main(arguments)
+    assert "b2ea8597" in str(refused.value)
+    assert len(read) == 1
+
+    # A sidecar changed, absent or extra is refused, and named.
+    changed = reference / f"{stems[0]}.json"
+    changed.write_bytes(changed.read_bytes() + b" ")
+    with pytest.raises(RuntimeError, match="1 with another SHA-256"):
+        analysis.verify_reference(reference)
+    changed.unlink()
+    with pytest.raises(
+        RuntimeError, match=f"1 absent \\(the first {stems[0]}"
+    ):
+        analysis.verify_reference(reference)
+    extra = write_reference(
+        tmp_path / "extra",
+        tmp_path / "other.json",
+        [*stems, "banana_D2_seed7"],
+    )
+    with pytest.raises(RuntimeError, match="1 not in the manifest"):
+        analysis.verify_reference(extra)
 
 
 def test_arms_refuse_a_file_changed_after_verification(arms, tmp_path):

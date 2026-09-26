@@ -8,9 +8,19 @@ Two kinds of assessment:
   and any extension campaigns of the same frozen treatment are pooled.
   Every case is revalidated against its own campaign's launch record, the
   campaigns must share one source/environment identity, and the pooled
-  population is compared with the golden reference, whose sidecars are
-  checked against their tracked SHA-256 manifest. Each extension is also
-  reported on its own, with a confirmatory test family fixed before it ran
+  population is compared with the reference those campaigns were assessed
+  against, the 870-case golden reference of 2026-09-07: ``--reference``
+  names the directory of its sidecars, which must be exactly the ones its
+  tracked SHA-256 manifest lists
+  (``dev/golden/noisy_extension_20260907/sha256_manifest.json``). The
+  default ``--reference``, ``dev/golden/baseline/``, holds
+  ``reference_990_20260913``, so the default command line stops at that
+  check. The 870 sidecars are ``dev/golden/baseline/`` at commit
+  ``b2ea8597`` (for one, ``git worktree add --detach DIR b2ea8597`` and
+  then ``--reference DIR/dev/golden/baseline``) and the traces directory
+  ``dev/scripts/runs/golden/reference_870_20260907/`` of the machine that
+  ``dev/scripts/runs/LOCAL.md`` lists. Each extension is also reported on
+  its own, with a confirmatory test family fixed before it ran
   (``assessment`` in its launch manifest).
 - **Two arms of array mode** (``--arms REFERENCE CANDIDATE``): campaigns of
   ``population_run.py`` on one allocation, run by different code, compared
@@ -42,6 +52,12 @@ Two kinds of assessment:
   tests, which count such pairs. The usability counts of the boost
   summaries come from each arm's in-run metrics
   (:data:`BOOST_USABILITY_BASIS`).
+
+In both, the metrics of a boost stage other than the returned posterior
+may be the error of a scoring that failed, which the harness keeps and its
+verification accepts: that stage of that run is left out of the boost
+summary's usability counts, counted there under ``metric_errors`` and
+listed under ``boost_metric_errors`` (:func:`boost_record`).
 """
 
 import argparse
@@ -324,19 +340,67 @@ def describe(rows, nonfinite=False):
 merge_populations = runner.golden_trace.merge_populations
 
 
-def verify_reference(reference):
+#: The tracked SHA-256 manifest of the 870-case golden reference of
+#: 2026-09-07, which the campaigns of one treatment were assessed against.
+REFERENCE_MANIFEST = (
+    runner.ROOT / "dev/golden/noisy_extension_20260907/sha256_manifest.json"
+)
+#: Where the campaigns of one treatment find the reference's sidecars by
+#: default. It held exactly the 870-case reference from ``b2ea8597`` until
+#: the real-data pairs joined it (``535590dd``), and holds
+#: ``reference_990_20260913`` now, which :func:`verify_reference` refuses.
+DEFAULT_REFERENCE = runner.ROOT / "dev/golden/baseline"
+#: Where the 870-case reference's sidecars are kept, for the refusal of
+#: another directory.
+REFERENCE_HINT = (
+    "name its sidecars with --reference: dev/golden/baseline/ at commit "
+    "b2ea8597 (for one, `git worktree add --detach DIR b2ea8597` and then "
+    "--reference DIR/dev/golden/baseline), or the traces directory "
+    "dev/scripts/runs/golden/reference_870_20260907/ where a machine holds "
+    "it (dev/scripts/runs/LOCAL.md)"
+)
+
+
+def verify_reference(reference, manifest=None):
+    """The reference's sidecars, checked against the 870-case manifest.
+
+    ``reference`` must hold exactly the sidecars (``*_seed*.json``) that
+    ``manifest`` (by default :data:`REFERENCE_MANIFEST`) lists, each with
+    the SHA-256 it records once its line endings are normalized to LF.
+    Any other directory, the current ``dev/golden/baseline`` among them,
+    raises ``RuntimeError`` naming the difference and where the 870-case
+    sidecars are kept. Returns ``{stem: sidecar}``.
+    """
+    reference = Path(reference)
+    path = Path(REFERENCE_MANIFEST if manifest is None else manifest)
+    files = json.loads(path.read_text())["files"]
     baseline = load_rows(reference)
-    manifest = json.loads(
-        (
-            runner.ROOT
-            / "dev/golden/noisy_extension_20260907/sha256_manifest.json"
-        ).read_text()
+
+    def digest(tag):
+        raw = (reference / f"{tag}.json").read_bytes()
+        return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
+
+    absent = sorted(set(files) - set(baseline))
+    extra = sorted(set(baseline) - set(files))
+    changed = sorted(
+        tag
+        for tag in set(baseline) & set(files)
+        if digest(tag) != files[tag]["json_sha256"]
     )
-    for tag in baseline:
-        raw = (reference / f"{tag}.json").read_bytes().replace(b"\r\n", b"\n")
-        assert (
-            hashlib.sha256(raw).hexdigest()
-            == manifest["files"][tag]["json_sha256"]
+    if absent or extra or changed:
+        found = ", ".join(
+            f"{len(tags)} {what} (the first {tags[0]})"
+            for what, tags in (
+                ("absent", absent),
+                ("not in the manifest", extra),
+                ("with another SHA-256", changed),
+            )
+            if tags
+        )
+        raise RuntimeError(
+            f"{reference} does not hold the {len(files)} sidecars that "
+            f"{path} lists: {found}. The campaigns of one treatment are "
+            "assessed against that reference; " + REFERENCE_HINT
         )
     return baseline
 
@@ -395,7 +459,13 @@ def boost_record(report, tag, label, new):
 
     ``report`` is the path of the ``.boost.json``, and ``new`` the run's
     in-run finals, which the report's metrics of the returned posterior
-    must equal.
+    must equal. The metrics of a posterior the run did not return (the
+    pre-boost one, or a candidate the boost rejected) may be an ``error``
+    in place of the values: the harness keeps the error of a scoring that
+    failed (``population_run.diagnostic_metrics``) and ``verify`` accepts
+    it. Such a stage is left out of the record's ``quality`` and
+    ``usable`` and named with its error under ``metric_errors``; the
+    returned posterior's metrics are never an error.
     """
     record = json.loads(Path(report).read_text())
     pre, candidate = record["scores"]["pre"], record["scores"]["candidate"]
@@ -416,8 +486,17 @@ def boost_record(report, tag, label, new):
             and (not valid_pre or worst_change > -record["tolerance"])
         )
     assert expected_accept == record["accepted"], tag
-    quality = record["metrics"]
-    assert all("error" not in q for q in quality.values()), (tag, quality)
+    errors = {
+        stage: str(value["error"])
+        for stage, value in record["metrics"].items()
+        if "error" in value
+    }
+    assert "returned" not in errors, (tag, errors)
+    quality = {
+        stage: value
+        for stage, value in record["metrics"].items()
+        if stage not in errors
+    }
     for k in QUALITY:
         assert quality["returned"][k] == new[k], (tag, k)
     return {
@@ -432,21 +511,57 @@ def boost_record(report, tag, label, new):
             for stage, value in quality.items()
         },
         "usable": {stage: usable(value) for stage, value in quality.items()},
+        "metric_errors": errors,
     }
 
 
 def summarize_boosts(boosts):
+    """The decisions of ``boosts`` (:func:`boost_record`) and the usable
+    posteriors at each stage.
+
+    The candidate stage of a skipped boost is its pre-boost posterior. A
+    stage whose metrics are an error is left out of that stage's count of
+    usable posteriors, and ``metric_errors`` counts such runs per stage.
+    """
+
+    def usable_at(boost, stage):
+        if stage == "candidate" and not boost["attempted"]:
+            stage = "pre"
+        return bool(boost["usable"].get(stage, False))
+
+    def errors_at(stage):
+        return sum(
+            stage in b["metric_errors"]
+            or (
+                stage == "candidate"
+                and not b["attempted"]
+                and "pre" in b["metric_errors"]
+            )
+            for b in boosts
+        )
+
     return {
         "attempted": sum(b["attempted"] for b in boosts),
         "accepted": sum(b["accepted"] for b in boosts),
         "rejected": sum(b["attempted"] and not b["accepted"] for b in boosts),
         "skipped": sum(not b["attempted"] for b in boosts),
-        "usable_pre": sum(b["usable"]["pre"] for b in boosts),
-        "usable_candidate": sum(
-            b["usable"].get("candidate", b["usable"]["pre"]) for b in boosts
-        ),
+        "usable_pre": sum(usable_at(b, "pre") for b in boosts),
+        "usable_candidate": sum(usable_at(b, "candidate") for b in boosts),
         "usable_returned": sum(b["usable"]["returned"] for b in boosts),
+        "metric_errors": {
+            stage: errors_at(stage) for stage in ("pre", "candidate")
+        },
     }
+
+
+def boost_metric_errors(boosts):
+    """``[{"tag", "stage", "error"}]`` of every stage of ``boosts`` whose
+    metrics are an error, which the boost summary leaves out."""
+    return [
+        {"tag": b["tag"], "stage": stage, "error": error}
+        for b in boosts
+        for stage, error in sorted(b["metric_errors"].items())
+    ]
 
 
 def configuration_rows(labels, current, baseline):
@@ -505,12 +620,18 @@ def follow_up(extension, first_stage, baseline, changes, boosts):
     }
 
 
-def analyze(campaign, extensions, out):
+def analyze(campaign, extensions, out, reference=DEFAULT_REFERENCE):
+    """Assess campaigns of one treatment against the golden reference.
+
+    ``reference`` is the directory of the reference's sidecars, which
+    :func:`verify_reference` checks against the 870-case manifest before
+    any campaign is read.
+    """
     if not __debug__:
         raise RuntimeError(
             "Run without -O: artifact validation uses assertions."
         )
-    reference = runner.ROOT / "dev/golden/baseline"
+    reference = Path(reference)
     baseline = verify_reference(reference)
     reference_population = runner.golden_trace.load_population(reference)
     campaigns = [
@@ -612,6 +733,7 @@ def analyze(campaign, extensions, out):
         "paired_tests": paired_tests(ordered_changes),
         "boosts": ordered_boosts,
         "boost_summary": summarize_boosts(ordered_boosts),
+        "boost_metric_errors": boost_metric_errors(ordered_boosts),
         "follow_up": [
             follow_up(extension, campaigns[0], baseline, changes, boosts)
             for extension in campaigns[1:]
@@ -645,6 +767,13 @@ def analyze(campaign, extensions, out):
         flush=True,
     )
     print("Boost:", result["boost_summary"], flush=True)
+    if result["boost_metric_errors"]:
+        print(
+            "Boost stages whose metrics are an error, left out of the "
+            "summary:",
+            result["boost_metric_errors"],
+            flush=True,
+        )
     print(
         "Usability losses:",
         [
@@ -1026,6 +1155,10 @@ def analyze_arms(reference, candidate, rescoring, out):
         "boost_summary": {
             role: summarize_boosts(records) for role, records in boosts.items()
         },
+        "boost_metric_errors": {
+            role: boost_metric_errors(records)
+            for role, records in boosts.items()
+        },
         "boost_usability_basis": BOOST_USABILITY_BASIS,
         "usability_losses": [
             c["tag"]
@@ -1066,6 +1199,14 @@ def analyze_arms(reference, candidate, rescoring, out):
         result["boost_summary"],
         flush=True,
     )
+    for role, errors in result["boost_metric_errors"].items():
+        if errors:
+            print(
+                f"Boost stages of the {role} arm whose metrics are an "
+                "error, left out of its summary:",
+                errors,
+                flush=True,
+            )
     print("Usability losses:", result["usability_losses"], flush=True)
     print("Usability gains:", result["usability_gains"], flush=True)
     rejected = [t for t in confirmatory if t["holm_rejected"]]
@@ -1088,7 +1229,7 @@ def analyze_arms(reference, candidate, rescoring, out):
     return result
 
 
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument(
         "--campaign",
@@ -1105,6 +1246,14 @@ if __name__ == "__main__":
         ],
         help="extension campaigns of the same treatment; give the flag"
         " without paths to assess the first stage alone",
+    )
+    parser.add_argument(
+        "--reference",
+        type=Path,
+        default=DEFAULT_REFERENCE,
+        help="the sidecars of the 870-case golden reference of 2026-09-07,"
+        " which the campaigns of one treatment are assessed against"
+        " (default: dev/golden/baseline, which no longer holds them)",
     )
     parser.add_argument(
         "--arms",
@@ -1125,15 +1274,19 @@ if __name__ == "__main__":
         help="where the report goes (default for the campaigns of one"
         " treatment: dev/experiments/population_extension_20260911)",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.arms:
         if args.out is None:
             parser.error("--arms needs --out")
-        analyze_arms(*args.arms, args.rescoring, args.out)
-    else:
-        analyze(
-            args.campaign,
-            args.extension,
-            args.out
-            or runner.ROOT / "dev/experiments/population_extension_20260911",
-        )
+        return analyze_arms(*args.arms, args.rescoring, args.out)
+    return analyze(
+        args.campaign,
+        args.extension,
+        args.out
+        or runner.ROOT / "dev/experiments/population_extension_20260911",
+        args.reference,
+    )
+
+
+if __name__ == "__main__":
+    main()
