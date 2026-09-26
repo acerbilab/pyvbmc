@@ -46,13 +46,20 @@ The layout, relative to the campaign directory ``out``::
                                   claims/<tag>.stale.<owner>.<key>
     claims/<tag>.error.txt        an earlier attempt's error file, which
                                   the worker of a later one set aside
-    <tag>.error.txt               the error file of a failed case
-    slurm/                        the driver's job ids, logs, accounting
+    <tag>.error.txt               the error file of a failed case, or of
+                                  one the operator gave up on
+    slurm/                        the driver's job ids, logs, accounting,
+                                  and the operator's rulings
+                                  (given_up.txt)
     tmp/                          TMPDIR of every process of the campaign
 
 A retired claim's ``<owner>`` is the Slurm task that made it,
 ``<job>_<task>`` (``<host>-<pid>`` outside Slurm), and its ``<key>`` the
-first eight hex digits of its token (:func:`retired_claim_path`).
+first eight hex digits of its token (:func:`retired_claim_path`). Beside a
+claim that a worker retires or takes over, the dot-file
+``.<name>.retiring.<owner>.<key>.<level>`` (``<name>`` the last component
+of the tag) marks the worker that does it (:func:`retirement_mark`); it
+remains only where that worker was killed before it was done.
 
 A case line is ``<tag> [<field> ...]``: its first field, up to the first
 space, is the case's tag, unique in the campaign, and the rest is the
@@ -64,13 +71,13 @@ and error paths above are fixed, because the driver's task script reads
 the record path of a case from its line alone.
 
 The worker's exit codes: 0 for a completed case (or one that already has a
-record), 1 for a case that failed, :data:`EXIT_USAGE` (64) when the
-harness finds the case line or the directory is not its own (a line
-outside the allocation, a directory that is not its campaign),
-:data:`EXIT_CLAIMED` (75) when a live task holds the case's claim,
-:data:`EXIT_IDENTITY` (78) when the worker's identity cannot be
-established (a source tree that git cannot read, a host fact such as the
-node's features unavailable) or its source part differs from the
+record, or that the operator gave up on), 1 for a case that failed,
+:data:`EXIT_USAGE` (64) when the harness finds the case line or the
+directory is not its own (a line outside the allocation, a directory that
+is not its campaign), :data:`EXIT_CLAIMED` (75) when a live task holds the
+case's claim, :data:`EXIT_IDENTITY` (78) when the worker's identity cannot
+be established (a source tree that git cannot read, a host fact such as
+the node's features unavailable) or its source part differs from the
 manifest's, and 128 plus the signal's number (143 for SIGTERM) when a
 signal stopped the run. The usage, claim and identity refusals leave the
 case's files as they are.
@@ -108,19 +115,27 @@ call::
         [--allow-running]
     python dev/scripts/campaign_contract.py queue-check --slurm DIR
     python dev/scripts/campaign_contract.py archive-check --slurm DIR
-    python dev/scripts/campaign_contract.py wait-job --job ID [--poll S]
+    python dev/scripts/campaign_contract.py wait-job --job ID [--poll S] \\
+        [--limit S]
+
+the operator's ruling on a case that can never finish, which ``verify``
+then places as failed and which no later task runs (:func:`give_up`)::
+
+    python dev/scripts/campaign_contract.py give-up --out DIR --case TAG \\
+        --reason TEXT
 
 and the redaction, which ``hpc/campaign_redact.sh`` runs after the finish,
 and its check of files it did not write::
 
     python dev/scripts/campaign_contract.py redact --campaign DIR \\
-        --out DIR [--path NAME=PATH ...]
+        --out DIR [--path NAME=PATH ...] [--allow STRING ...]
     python dev/scripts/campaign_contract.py redact --campaign DIR \\
-        --check FILE [FILE ...] [--path NAME=PATH ...]
+        --check FILE [FILE ...] [--path NAME=PATH ...] [--allow STRING ...]
 """
 
 import argparse
 import fnmatch
+import getpass
 import hashlib
 import importlib
 import importlib.metadata
@@ -266,11 +281,17 @@ FATAL = ("verify_failed", "partial", "stray")
 FINISH_FATAL, FINISH_MISSING, FINISH_IN_FLIGHT = 1, 3, 4
 
 RECORDS, CLAIMS = "records", "claims"
-RECORD_SUFFIX, ERROR_SUFFIX, STALE_INFIX = (
+RECORD_SUFFIX, ERROR_SUFFIX, STALE_INFIX, RETIRING_INFIX = (
     ".complete.json",
     ".error.txt",
     ".stale.",
+    ".retiring.",
 )
+#: The first line of the error file of a case that the operator gave up on
+#: (:func:`give_up`), followed by the operator's reason.
+GIVEN_UP = "given up by the operator: "
+#: The file of ``slurm/`` that records each of those rulings.
+GIVEN_UP_LOG = "given_up.txt"
 _COMPONENT = r"[A-Za-z0-9_+=-][A-Za-z0-9_.+=-]*"
 TAG_PATTERN = re.compile(rf"{_COMPONENT}(?:/{_COMPONENT})*")
 #: The characters a finishing step's arguments may hold, so that the
@@ -760,72 +781,30 @@ def retired_claims(out, tag):
     )
 
 
-def _retire(path, judged):
-    """Rename the stale claim ``judged`` to its retired name.
+def retirement_mark(path, judged, level=0):
+    """``claims/.<name>.retiring.<owner>.<key>.<level>``: the mark of the
+    worker that may remove or replace the claim at ``path`` holding
+    ``judged`` (:func:`claim_owner`, :func:`claim_key`).
 
-    The retired name (:func:`retired_claim_path`) holds the claim's owner
-    and key, so that no earlier retirement leaves it taken. The rename is
-    a hard link that fails when the name exists, then the removal of the
-    claim, so that of two workers that judged the same claim stale only
-    one retires it. A worker whose link reached another claim than the one
-    it judged (the claim changed between its read and its link) undoes the
-    link and reports failure. When the retired name exists already and
-    holds the judged claim, a retirement of this very claim stopped
-    between its link and its removal (its worker was killed, or a network
-    filesystem retried the link), and it is finished here
-    (:func:`_finish_retirement`).
+    A dot-file, so that the scans of :func:`stray_files` and the listing of
+    :func:`retired_claims` pass it by. ``level`` counts the holders of the
+    mark that ended before they were done (:func:`_take_mark`).
     """
-    stale = retired_claim_path(path, judged)
-    try:
-        os.link(path, stale)
-    except FileNotFoundError:
-        return False
-    except FileExistsError:
-        return _finish_retirement(path, stale, judged)
-    try:
-        retired = read_json(stale)
-    except (OSError, ValueError):
-        retired = None
-    if retired != judged:
-        stale.unlink(missing_ok=True)
-        return False
-    path.unlink(missing_ok=True)
-    return True
+    path = Path(path)
+    return path.with_name(
+        f".{path.name}{RETIRING_INFIX}{claim_owner(judged)}."
+        f"{claim_key(judged)}.{level}"
+    )
 
 
-def _finish_retirement(path, stale, judged):
-    """Remove the claim at ``path`` whose retired copy ``stale`` exists.
+def _retirement_step(stage, mine):
+    """Called between the steps of a retirement or a requeue's takeover.
 
-    Only when ``stale`` holds the judged claim, and only the claim file
-    that holds it: the claim is first renamed to a name of this worker's
-    own, which no other worker can reach, and a claim found there that is
-    not the judged one (another worker's, made after the retirement) is
-    linked back into place. Returns whether the judged claim is gone.
+    ``stage`` names the step just done (``judged``, ``marked``,
+    ``recorded``, ``removed``, ``retired``) and ``mine`` is the claim the
+    worker makes. It does nothing; the tests replace it to interleave
+    workers step by step.
     """
-    try:
-        retired = read_json(stale)
-    except (OSError, ValueError):
-        return False
-    if retired != judged:
-        return False
-    mine = path.with_name(f".{path.name}.{uuid.uuid4().hex}.retiring")
-    try:
-        os.rename(path, mine)
-    except FileNotFoundError:
-        return True
-    try:
-        taken = read_json(mine)
-    except (OSError, ValueError):
-        taken = None
-    if taken != judged:
-        try:
-            os.link(mine, path)
-        except FileExistsError:
-            pass
-        mine.unlink(missing_ok=True)
-        return False
-    mine.unlink(missing_ok=True)
-    return True
 
 
 def _same_task(existing, mine):
@@ -833,6 +812,163 @@ def _same_task(existing, mine):
         existing.get("job"),
         existing.get("array_task"),
     ) == (mine.get("job"), mine.get("array_task"))
+
+
+def _take_mark(path, judged, mine, query=None, attempts=5):
+    """Take the right to remove or replace the claim ``judged`` at ``path``.
+
+    The right is the retirement mark (:func:`retirement_mark`), created by
+    a hard link that fails when it exists, as a claim is, and holding
+    ``mine``'s task, host and process. A mark that exists belongs to
+    another worker: while its holder may still run (:func:`claim_liveness`,
+    as for a claim), the right is refused; once the accounting shows that
+    its task ended, the holder was killed before it was done, and the mark
+    of the next level is tried, so that of the workers that found the same
+    holder ended one takes the right. A holder that is this task's own
+    earlier run (a requeue) has ended too. A mark whose holder is done is
+    removed, and its level is tried again, ``attempts`` times at most.
+
+    Returns ``(mark, None)``, the mark taken, or ``(None, why)``.
+    """
+    record = {**mine, "retiring": claim_owner(judged)}
+    level, vanished = 0, 0
+    while True:
+        mark = retirement_mark(path, judged, level)
+        if _link_new(mark, record):
+            return mark, None
+        try:
+            holder = read_json(mark)
+        except FileNotFoundError:
+            vanished += 1
+            if vanished > attempts:
+                return None, f"{mark} came and went {attempts} times"
+            continue
+        except (OSError, ValueError) as error:
+            return None, f"{mark} cannot be read ({error})"
+        if holder.get("token") == record["token"]:
+            # A network filesystem retried a link that had succeeded.
+            return mark, None
+        if not _same_task(holder, mine):
+            liveness = claim_liveness(holder, query=query)
+            if liveness["live"]:
+                return None, (
+                    f"{claim_owner(holder)} is retiring it, and may still "
+                    f"run ({liveness['detail']})"
+                )
+        level += 1
+
+
+def _retire(path, judged, mine=None, query=None):
+    """Remove the stale claim ``judged`` from ``path``, keeping a copy.
+
+    The worker first takes the claim's retirement mark (:func:`_take_mark`).
+    Holding it, it reads the claim again: when it is still ``judged``, the
+    claim is linked to its retired name (:func:`retired_claim_path`) and
+    removed; when there is no claim, an earlier holder of the mark removed
+    it and was killed before it made its own; any other claim is left as it
+    is. The mark is removed at the end.
+
+    Returns ``("retired", None)`` when ``judged`` is gone, so that the
+    worker may make its claim; ``("changed", None)`` when another claim is
+    in place, which the worker judges in turn; ``("refused", why)`` when
+    another worker holds the mark, or the retired name holds another claim.
+
+    Why no interleaving lets two workers hold a claim, and none removes a
+    live one. A claim file changes in three ways alone: its creation, by a
+    hard link that fails when a claim exists; its release by its holder;
+    and its removal (here) or replacement (a requeue's takeover), which a
+    worker makes only while it holds the claim's mark. The mark is created
+    by the same hard link, so of the workers that judged one claim, one at
+    a time holds its mark, and a claim that is still the judged one when
+    the holder reads it stays so until the holder removes it. Of two
+    workers W1 and W2 that judged the same stale claim C:
+
+    - W1 holds the mark: W2 refuses, whatever step W1 is at. Were W2 to
+      finish a retirement it finds under way, say between W1's link to
+      the retired name and W1's removal of C, it would make its own claim
+      in C's place, which W1's removal would then delete.
+    - W1 is done and has removed its mark: W2 takes it and finds W1's claim
+      in place of C, which it leaves, and judges: W1 runs, W2 refuses. Or
+      W2 finds no claim, W1 not having linked its own yet: both link one,
+      one link succeeds, and the other worker reads a live claim.
+    - W1 was killed holding the mark: W2 takes the next level and finishes
+      the retirement, removing C if it is still there.
+    - W2 is C's own task, requeued, and W1 retires C: the takeover needs
+      the mark as the retirement does, so one of them has it.
+
+    Of three workers: while W1 holds the mark, W2 and W3 refuse; when W1
+    was killed holding it, W2 and W3 race for the next level, and one of
+    them refuses; when W1 was killed after it removed C, the worker that
+    takes the next level finds no claim and links its own, and of it and a
+    fresh worker linking theirs one succeeds. No worker moves a claim out
+    of its place to look at it: a claim moved aside and linked back would
+    leave the place empty for a moment, in which a third worker could make
+    a second claim while the first one's holder runs. All of this rests on
+    what makes a claim stale: a task that the accounting shows ended runs
+    no process.
+    """
+    path = Path(path)
+    mine = new_claim(judged.get("tag")) if mine is None else mine
+    mark, why = _take_mark(path, judged, mine, query=query)
+    if mark is None:
+        return "refused", why
+    try:
+        _retirement_step("marked", mine)
+        try:
+            current = read_json(path)
+        except FileNotFoundError:
+            return "retired", None
+        except (OSError, ValueError):
+            return "changed", None
+        if current != judged:
+            return "changed", None
+        stale = retired_claim_path(path, judged)
+        try:
+            os.link(path, stale)
+        except FileExistsError:
+            # An earlier holder of the mark linked it and was stopped.
+            try:
+                recorded = read_json(stale)
+            except (OSError, ValueError):
+                recorded = None
+            if recorded != judged:
+                return "refused", (
+                    f"{stale} holds another claim than the stale one; an "
+                    "operator looks at it"
+                )
+        except FileNotFoundError:
+            return "changed", None
+        _retirement_step("recorded", mine)
+        path.unlink(missing_ok=True)
+        _retirement_step("removed", mine)
+        return "retired", None
+    finally:
+        mark.unlink(missing_ok=True)
+
+
+def _take_over(path, existing, mine, query=None):
+    """Replace the claim ``existing`` of this task's earlier run with
+    ``mine`` (a requeue), holding the claim's mark as :func:`_retire` does.
+
+    Returns ``("taken", None)``, ``("changed", None)`` when another claim
+    or none is in place, or ``("refused", why)``.
+    """
+    mark, why = _take_mark(path, existing, mine, query=query)
+    if mark is None:
+        return "refused", why
+    try:
+        _retirement_step("marked", mine)
+        try:
+            current = read_json(path)
+        except (OSError, ValueError):
+            return "changed", None
+        if current != existing:
+            return "changed", None
+        mine["previous"] = _previous(existing, "requeue")
+        _replace(path, mine)
+        return "taken", None
+    finally:
+        mark.unlink(missing_ok=True)
 
 
 def _previous(existing, reason, state=None):
@@ -853,11 +989,14 @@ def acquire_claim(out, tag, query=None, task=None, attempts=3):
     hard-linked into place, so that it is never empty and the link fails
     when a claim exists. An existing claim that names this process's own
     job and array task (a requeue) is taken over, rewritten with the
-    current restart count. Otherwise it is judged by
+    current restart count (:func:`_take_over`). Otherwise it is judged by
     :func:`claim_liveness`: a live claim refuses the case, and a stale one
-    is renamed to ``claims/<tag>.stale.<owner>.<key>``
-    (:func:`retired_claim_path`) before this process creates its own.
-    Nothing but the claim files is touched.
+    is retired, kept as ``claims/<tag>.stale.<owner>.<key>``
+    (:func:`retired_claim_path`), before this process creates its own
+    (:func:`_retire`, which also shows why two workers never both hold a
+    claim). A takeover and a retirement are made holding the claim's
+    retirement mark (:func:`retirement_mark`), which a worker that finds
+    it held refuses. Nothing but the claim files is touched.
 
     Returns the claim, a mapping with its ``path`` and ``token``, which
     :func:`release_claim` takes. ``query`` replaces
@@ -879,9 +1018,15 @@ def acquire_claim(out, tag, query=None, task=None, attempts=3):
                 "removes it"
             ) from error
         if _same_task(existing, mine):
-            mine["previous"] = _previous(existing, "requeue")
-            _replace(path, mine)
-            return {**mine, "path": str(path)}
+            outcome, why = _take_over(path, existing, mine, query=query)
+            if outcome == "taken":
+                return {**mine, "path": str(path)}
+            if outcome == "refused":
+                raise ClaimRefused(
+                    f"the claim of this task's earlier run cannot be taken "
+                    f"over: {why}"
+                )
+            continue
         liveness = claim_liveness(existing, query=query)
         if liveness["live"]:
             raise ClaimRefused(
@@ -889,12 +1034,16 @@ def acquire_claim(out, tag, query=None, task=None, attempts=3):
                 f"{existing.get('started')}, which may still run "
                 f"({liveness['detail']})"
             )
-        if not _retire(path, existing):
+        _retirement_step("judged", mine)
+        outcome, why = _retire(path, existing, mine, query=query)
+        if outcome == "refused":
             raise ClaimRefused(
-                f"another worker is replacing the stale claim of "
-                f"{claim_owner(existing)}"
+                f"the stale claim of {claim_owner(existing)} cannot be "
+                f"retired: {why}"
             )
-        mine["previous"] = _previous(existing, "stale", liveness["state"])
+        if outcome == "retired":
+            mine["previous"] = _previous(existing, "stale", liveness["state"])
+            _retirement_step("retired", mine)
     raise ClaimRefused(f"{path} changed {attempts} times while it was claimed")
 
 
@@ -1687,7 +1836,10 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
     Returns
     -------
     int
-        0 when the case has a completion record, at once if it had one;
+        0 when the case has a completion record, at once if it had one,
+        and 0 at once, touching nothing, when the operator gave the case
+        up (:func:`given_up`), or when a worker that has claimed the case
+        finds it given up, releasing the claim;
         :data:`EXIT_IDENTITY` when the identity cannot be established or
         differs from ``expected``'s source; :data:`EXIT_CLAIMED` when the
         case is claimed by a live task or the claim cannot be made; 1 when
@@ -1717,6 +1869,10 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
     if record.exists():
         _say(f"{tag}: already has a completion record; nothing to do")
         return 0
+    reason = given_up(out, tag)
+    if reason is not None:
+        _say(f"{tag}: the operator gave it up ({reason}); nothing to do")
+        return 0
     try:
         actual = identity()
     except Exception:
@@ -1739,6 +1895,12 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
     try:
         if record.exists():
             _say(f"{tag}: completed by another task; nothing to do")
+            return 0
+        # give_up writes its error file holding the claim, so a worker that
+        # claims the case after it finds the file.
+        reason = given_up(out, tag)
+        if reason is not None:
+            _say(f"{tag}: the operator gave it up ({reason}); nothing to do")
             return 0
         previous = claim.get("previous")
         if previous:
@@ -2121,6 +2283,113 @@ def error_reason(path):
     return lines[0] if lines else ""
 
 
+def given_up(out, tag):
+    """The reason for which the operator gave the case ``tag`` up, or None.
+
+    Its error file then starts with :data:`GIVEN_UP` and the reason
+    (:func:`give_up`).
+    """
+    try:
+        with open(
+            error_path(out, tag), encoding="utf-8", errors="replace"
+        ) as f:
+            first = f.readline()
+    except OSError:
+        return None
+    if not first.startswith(GIVEN_UP):
+        return None
+    return first[len(GIVEN_UP) :].rstrip("\r\n")
+
+
+def _username():
+    try:
+        return getpass.getuser()
+    except Exception:
+        return "unknown"
+
+
+def give_up(out, tag, reason, user=None, query=None, task=None):
+    """Rule that no task will run the case ``tag`` again; its ruling.
+
+    For a case that no task can finish (one that its time limit stops every
+    time, say), which would otherwise stay missing or interrupted and hold
+    back what needs every case settled, such as the pool's ``select``. The
+    case's error file ``<tag>.error.txt`` is written with the first line
+    ``given up by the operator: <reason>`` (:data:`GIVEN_UP`), followed by
+    the error files of its earlier attempts, if any. ``verify`` then
+    places the case as failed with that line as its reason
+    (:func:`reconcile`), and the worker of any later task for it exits 0
+    at once, touching nothing (:func:`run_worker`). The ruling is appended
+    to ``slurm/given_up.txt``: the time, the tag, the user (``user``, this
+    process's by default) and the reason.
+
+    The case is claimed while its error file is written, as a worker claims
+    it (:func:`acquire_claim`, with ``query`` and ``task``), so that no
+    task runs it meanwhile, and a stale claim is retired first. Nothing
+    else of the case is touched: files that a task killed outright left
+    stay, and ``verify`` lists them with the failed case.
+
+    Raises :class:`ContractError` for a tag that is not a case of the
+    campaign's ``cases.txt``, a reason that is empty or holds a line
+    break, and a case that has a completion record or is given up already;
+    :class:`ClaimRefused` for a case whose claim may still be held.
+    """
+    out = Path(out)
+    if not isinstance(tag, str) or case_tag(tag) != tag:
+        raise ContractError(
+            f"{tag!r} is not a tag: its case line's first field"
+        )
+    if (
+        not isinstance(reason, str)
+        or not reason.strip()
+        or ("\n" in reason or "\r" in reason)
+    ):
+        raise ContractError("the reason is one line of text, not empty")
+    if tag not in {case_tag(line) for line in read_cases(out / "cases.txt")}:
+        raise ContractError(f"{tag} is not a case of {out / 'cases.txt'}")
+    record = record_path(out, tag)
+
+    def unsettled():
+        if record.exists():
+            raise ContractError(
+                f"{tag} has a completion record: it finished, and is not "
+                "given up"
+            )
+        earlier = given_up(out, tag)
+        if earlier is not None:
+            raise ContractError(f"{tag} is given up already ({earlier})")
+
+    unsettled()
+    user = _username() if user is None else user
+    claim = acquire_claim(out, tag, query=query, task=task)
+    try:
+        unsettled()
+        error = error_path(out, tag)
+        sections = [f"{GIVEN_UP}{reason}\n"]
+        for path in (error, earlier_error_path(out, tag)):
+            if path.is_file():
+                name = path.relative_to(out).as_posix()
+                sections.append(
+                    f"\nThe error file of an earlier attempt, {name}:\n"
+                    + path.read_text(encoding="utf-8", errors="replace")
+                )
+        error.parent.mkdir(parents=True, exist_ok=True)
+        temporary = error.with_name(f".{error.name}.{uuid.uuid4().hex}.tmp")
+        temporary.write_text("".join(sections), encoding="utf-8")
+        os.replace(temporary, error)
+        earlier_error_path(out, tag).unlink(missing_ok=True)
+        ruling = {"time": now(), "tag": tag, "user": user, "reason": reason}
+        log = out / "slurm" / GIVEN_UP_LOG
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with open(log, "a", encoding="utf-8", newline="\n") as stream:
+            stream.write(
+                f"{ruling['time']} {tag} given up by {user}: {reason}\n"
+            )
+    finally:
+        release_claim(claim)
+    return ruling
+
+
 def _listing(directory):
     try:
         return sorted(os.scandir(directory), key=lambda entry: entry.name)
@@ -2220,7 +2489,11 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         interrupted or missing case whose earlier attempt failed carries
         that attempt's reason as ``earlier_error``, from its error file or
         from the copy a later worker set aside (:func:`earlier_error_path`).
-        ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
+        A case that the operator gave up on (:func:`give_up`) is ``failed``
+        unless its claim is live, whatever a task killed outright left: its
+        ``reason`` is the ruling's line, and the files and the stale claim
+        left behind are reported with it. ``exit_code`` is 1 when a state
+        of :data:`FATAL` occurs.
     """
     query = accounting_state if query is None else query
     answers = {}
@@ -2257,6 +2530,13 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
             )
             if claim["state"] == "live":
                 entry.update(status="in_flight", claim=claim)
+            elif given_up(out, tag) is not None:
+                entry.update(status="failed", reason=error_reason(error))
+                files = [Path(f).as_posix() for f in partial_files(tag)]
+                if files:
+                    entry["files"] = files
+                if claim["state"] == "stale":
+                    entry["claim"] = claim
             elif claim["state"] == "stale":
                 files = [Path(f).as_posix() for f in partial_files(tag)]
                 entry.update(status="interrupted", files=files, claim=claim)
@@ -2378,6 +2658,14 @@ JOB_FILES = ("jobs.txt", "steps.txt")
 #: What ``squeue`` prints when it does not know a job id, which it does for
 #: a job the controller has dropped as well as for one it never held.
 SQUEUE_UNKNOWN_JOB = "Invalid job id"
+#: The seconds :func:`wait_job` waits for a step job before it gives up,
+#: the finish's default ``STEP_WAIT_LIMIT``: a day.
+STEP_WAIT_LIMIT = 24 * 3600.0
+#: The queries in a row that find a job unknown between two notices of
+#: :func:`wait_job`: ten minutes at the finish's default poll.
+UNKNOWN_NOTICE_POLLS = 20
+#: The exit code of ``wait-job`` when it gives up (that of ``timeout``).
+EXIT_WAIT_LIMIT = 124
 
 
 def recorded_jobs(slurm_dir):
@@ -2422,12 +2710,17 @@ def _state_word(text):
     return words[0].rstrip("+").upper() if words else ""
 
 
-def accounting_rows(slurm_dir):
+def accounting_rows(slurm_dir, steps=True):
     """The rows of ``slurm/sacct.txt`` by job: ``{job: [(JobID, state)]}``.
 
     None when the file is absent (the finish removes it when ``sacct``
     fails). A row belongs to the job its JobID starts with (``1001_3``,
-    ``1001_3.batch``, ``1001_[4-9]``, ``1005.extern``).
+    ``1001_3.batch``, ``1001_[4-9]``, ``1005.extern``). With ``steps``
+    False, the rows of the jobs' steps (a JobID with a ``.``, such as
+    ``1001_3.batch``) are left out, and the allocation rows alone remain:
+    the state of an allocation is its job's, while a step's row can stay
+    ``RUNNING`` in the database after its node failed. The file keeps the
+    step rows, where ``MaxRSS`` is.
     """
     path = Path(slurm_dir) / "sacct.txt"
     if not path.is_file():
@@ -2443,7 +2736,7 @@ def accounting_rows(slurm_dir):
         if len(fields) <= max(job_column, state_column):
             continue
         match = re.match(r"\d+", fields[job_column])
-        if match:
+        if match and (steps or "." not in fields[job_column]):
             rows.setdefault(match.group(0), []).append(
                 (fields[job_column], _state_word(fields[state_column]))
             )
@@ -2486,16 +2779,16 @@ def queue_state(slurm_dir, query=None):
     lists in any state but one of :data:`ENDED_STATES` (``squeue`` lists
     jobs that ended moments ago) is ``live``. A job it cannot answer for
     is resolved by the accounting of ``slurm/sacct.txt``
-    (:func:`accounting_rows`): ended when it holds rows of the job and all
-    of them have ended, and ``unknown`` otherwise, since a failed query
-    shows nothing.
+    (:func:`accounting_rows`, its allocation rows alone): ended when it
+    holds rows of the job and all of them have ended, and ``unknown``
+    otherwise, since a failed query shows nothing.
 
     Returns ``{"live": [(job, task, state)], "cases": [(case index,
     state)], "unknown": [(job, detail)]}``, ``cases`` the live array tasks
     mapped to case indices by their submission's offset.
     """
     query = squeue_tasks if query is None else query
-    accounting = accounting_rows(slurm_dir)
+    accounting = accounting_rows(slurm_dir, steps=False)
     live, cases, unknown = [], [], []
     for entry in recorded_jobs(slurm_dir):
         job = entry["job"]
@@ -2528,14 +2821,15 @@ def queue_state(slurm_dir, query=None):
 def accounting_problems(slurm_dir):
     """Why the accounting does not show every recorded task ended.
 
-    Each row of ``slurm/sacct.txt`` of a recorded job whose state is not
-    one of :data:`ENDED_STATES`, and the file's absence when any job is
+    Each allocation row of ``slurm/sacct.txt`` (:func:`accounting_rows`,
+    the rows of the jobs' steps left out) of a recorded job whose state is
+    not one of :data:`ENDED_STATES`, and the file's absence when any job is
     recorded. Empty when there is nothing to hold the archive back.
     """
     jobs = [entry["job"] for entry in recorded_jobs(slurm_dir)]
     if not jobs:
         return []
-    rows = accounting_rows(slurm_dir)
+    rows = accounting_rows(slurm_dir, steps=False)
     if rows is None:
         return [
             "the accounting of the recorded jobs (slurm/sacct.txt) is "
@@ -2593,15 +2887,37 @@ def job_exit(job, timeout=60):
     return state, code
 
 
-def wait_job(job, poll=30.0, say=None, query=None):
+def _duration(seconds):
+    if seconds < 120:
+        return f"{seconds:.0f} s"
+    if seconds < 7200:
+        return f"{seconds / 60:.0f} min"
+    return f"{seconds / 3600:.1f} h"
+
+
+def wait_job(
+    job,
+    poll=30.0,
+    say=None,
+    query=None,
+    limit=STEP_WAIT_LIMIT,
+    notice=UNKNOWN_NOTICE_POLLS,
+    clock=None,
+):
     """Wait until a job has ended in the accounting; return its exit code.
 
-    ``query`` replaces :func:`job_exit`; each change of the job's state is
-    reported with ``say`` (:func:`print` by default).
+    ``query`` replaces :func:`job_exit` and ``clock`` :func:`time.monotonic`;
+    each change of the job's state is reported with ``say`` (:func:`print`
+    by default), and so is every ``notice``-th query in a row that finds
+    the job unknown, which a query that always fails shows alike. After
+    ``limit`` seconds (None: no limit) the wait gives up and returns None,
+    whatever the job's state.
     """
     say = _say if say is None else say
     query = job_exit if query is None else query
-    last = ()
+    clock = time.monotonic if clock is None else clock
+    start = clock()
+    last, unknown = (), 0
     while True:
         state, code = query(job)
         if state != last:
@@ -2612,6 +2928,21 @@ def wait_job(job, poll=30.0, say=None, query=None):
             last = state
         if code is not None:
             return code
+        waited = clock() - start
+        unknown = unknown + 1 if state is None else 0
+        if state is None and notice and unknown % notice == 0:
+            say(
+                f"job {job}: still unknown to the accounting after {unknown} "
+                f"queries in {_duration(waited)} (sacct fails, or does not "
+                "know the job)"
+            )
+        if limit is not None and waited >= limit:
+            say(
+                f"job {job}: gave up waiting after {_duration(waited)}, "
+                f"the limit of {_duration(limit)}; its last state was "
+                f"{state or 'unknown'}"
+            )
+            return None
         time.sleep(poll)
 
 
@@ -2823,7 +3154,17 @@ LOG_HOST_LINES = (
 )
 #: The most occurrences of forbidden strings reported for one file.
 MAX_LEAKS = 100
-_HOST_WORD = "A-Za-z0-9"
+#: The characters that continue a hostname: the redaction replaces a
+#: hostname, and its check finds one, only where none of them flanks it, so
+#: that the name ``d2`` is not read into ``rosenbrock_D2`` or ``c1`` into
+#: ``+gc1a2b3``. A dot ends the short name of a domain name.
+_HOST_WORD = "A-Za-z0-9_-"
+#: The characters that continue a username, beside a dot that has one of
+#: them on its other side (``first.last``); a dot that ends a sentence does
+#: not. The check finds a username only where none of them flanks it, so
+#: that ``acerbi`` is not read into ``acerbilab``, while ``/home/acerbi/``
+#: and ``acerbi@host`` hold it.
+_USER_WORD = "A-Za-z0-9_-"
 #: The characters of a path component (``=`` aside, which in a copy mostly
 #: joins a name to its value, ``X=/path``).
 _PATH_CHARS = frozenset(
@@ -2898,6 +3239,18 @@ def _bounded(words, word, flags=0):
     return re.compile(rf"(?<![{word}])(?:{body})(?![{word}])", flags)
 
 
+def _usernames_pattern(users):
+    """``users`` matched where nothing that continues a username flanks
+    them (:data:`_USER_WORD`); None for none."""
+    body = _trie(users)
+    if body is None:
+        return None
+    word = _USER_WORD
+    return re.compile(
+        rf"(?<![{word}])(?<![{word}]\.)(?:{body})(?![{word}]|\.[{word}])"
+    )
+
+
 def _paths_pattern(paths):
     """The directories ``paths``, the longest that fits first, each where
     the character after it does not continue its last component
@@ -2964,11 +3317,11 @@ _PATH_START = re.compile(
 _PATH_EXTENT = re.compile(r"[^\s\"'<>|;,()\[\]{}`*?:]*")
 
 
-def _system_path(path):
-    """Whether an absolute path lies in one of :data:`SYSTEM_PREFIXES`."""
+def _system_path(path, prefixes=SYSTEM_PREFIXES):
+    """Whether an absolute path lies in one of ``prefixes``
+    (:data:`SYSTEM_PREFIXES`)."""
     return any(
-        path == prefix or path.startswith(f"{prefix}/")
-        for prefix in SYSTEM_PREFIXES
+        path == prefix or path.startswith(f"{prefix}/") for prefix in prefixes
     )
 
 
@@ -3229,21 +3582,30 @@ class Redaction:
       continue a longer path (:func:`_continues_a_path`), so that
       ``X=/proj/env/lib`` and ``-L/proj/env/lib`` are replaced and neither
       ``/proj/envs`` nor ``/a/proj/env`` is corrupted;
-    - a hostname, as a whole name in any letter case, is its family or
+    - a hostname, as a whole name in any letter case (one that no
+      character of :data:`_HOST_WORD` flanks), is its family or
       :data:`LOGIN_HOST`;
     - in a JSON value, the string of a field that holds a partition
       (:func:`_partition_field`) is :data:`PARTITION_TOKEN`, whatever the
       partition's name.
 
     The check (:meth:`leaks`) does not rely on them: it searches each copy
-    for every forbidden string as a plain substring (a hostname in any
-    letter case), so that whatever a replacement left is refused. Before
-    the search, the names the replacements write are blanked where they
-    stand as whole words, so that a forbidden string inside one of them
-    (a host named ``login``) is not taken for a leak, and an occurrence
-    inside a run of :data:`DIGEST_LENGTH` hex digits or more is a digest's
-    and not one. It also refuses every absolute path that no name covers
-    and that lies outside :data:`SYSTEM_PREFIXES`.
+    for every forbidden string, so that whatever a replacement left is
+    refused. The named directories and the command settings are found as
+    plain substrings; the usernames and the hostnames as whole names, a
+    hostname in any letter case, since a short name is also a word or a
+    part of one (``d2`` in ``rosenbrock_D2``, ``ab`` in ``lab``): a
+    username where nothing of :data:`_USER_WORD` flanks it, a hostname
+    where nothing of :data:`_HOST_WORD` does. Before the search, the names
+    the replacements write are blanked where they stand as whole words, so
+    that a forbidden string inside one of them (a host named ``login``) is
+    not taken for a leak, and an occurrence inside a run of
+    :data:`DIGEST_LENGTH` hex digits or more is a digest's and not one. It
+    also refuses every absolute path that no name covers and that lies
+    outside ``system_prefixes``. A forbidden string that is itself one of
+    those names (a username ``login``, or the node family's) could hide
+    behind the blanking, and is refused at once. A hit of a string of
+    ``allow`` is exempted and counted in :attr:`allowed`.
 
     Parameters
     ----------
@@ -3257,26 +3619,81 @@ class Redaction:
         What may remain in no copy, each ``(string, what it is)``:
         ``paths`` (the named directories, the command settings and their
         words that name a path), ``users`` and ``hosts``.
+    allow : sequence of str
+        Strings whose hits the operator found benign (``redact --allow``),
+        a hostname in any letter case.
+    system_prefixes : sequence of str
+        The directories where an absolute path may lie unnamed
+        (:data:`SYSTEM_PREFIXES`).
     """
 
-    def __init__(self, paths, hosts, forbidden):
+    def __init__(
+        self,
+        paths,
+        hosts,
+        forbidden,
+        allow=(),
+        system_prefixes=SYSTEM_PREFIXES,
+    ):
         self.paths = dict(paths)
         self.hosts = dict(hosts)
         self.forbidden = {key: list(value) for key, value in forbidden.items()}
         self.counts = Counter()
+        #: The hits each allowed string cleared, in the texts searched.
+        self.allowed = {string: 0 for string in allow if string}
+        self.system_prefixes = tuple(system_prefixes)
         self._paths = _paths_pattern(self.paths)
         self._hosts = _bounded(self.hosts, _HOST_WORD, re.IGNORECASE)
-        tokens = {
-            token
-            for token in (
-                *self.paths.values(),
-                *self.hosts.values(),
-                PARTITION_TOKEN,
-                "<redacted>",
+        origins = {token: "a named directory" for token in self.paths.values()}
+        for token in self.hosts.values():
+            origins[token] = (
+                "the hosts that ran no Slurm job of the campaign"
+                if token == LOGIN_HOST
+                else "the hosts of the campaign's node family"
             )
-            if len(token) > 1
-        }
+        origins[PARTITION_TOKEN] = "a partition"
+        origins["<redacted>"] = "a path of pip freeze"
+        tokens = {token for token in origins if len(token) > 1}
         self._tokens = _bounded(tokens, "A-Za-z0-9_")
+        self._check_collisions(tokens, origins)
+        self._user_what = {
+            user: what for user, what in self.forbidden.get("users", [])
+        }
+        self._users = _usernames_pattern(self._user_what)
+        self._host_what = {
+            host.lower(): what
+            for host, what in self.forbidden.get("hosts", [])
+        }
+        self._hosts_check = _bounded(
+            self._host_what, _HOST_WORD, re.IGNORECASE
+        )
+
+    def _check_collisions(self, tokens, origins):
+        """Refuse a forbidden string that is one of the names the copies
+        write, which the check's blanking would hide."""
+        lowered = {token.lower(): token for token in tokens}
+        found = []
+        for kind, items in self.forbidden.items():
+            for string, what in items:
+                if kind == "hosts":
+                    token = lowered.get(string.lower())
+                    own = self.hosts.get(string.lower(), "")
+                    if token is None or token.lower() == own.lower():
+                        continue
+                elif string in tokens:
+                    token = string
+                else:
+                    continue
+                found.append(
+                    f"{what} {string!r} is {token!r}, the name the copies "
+                    f"write for {origins[token]}"
+                )
+        if found:
+            raise ContractError(
+                "the check could not find these strings among the names the "
+                "copies write, so the redaction is refused: "
+                + "; ".join(sorted(set(found)))
+            )
 
     def _host(self, match):
         token = self.hosts[match.group(0).lower()]
@@ -3335,40 +3752,60 @@ class Redaction:
             return result
         return value
 
-    def leaks(self, text):
+    def _allowance(self, string, kind):
+        """The allowed string that exempts a hit of ``string``, or None."""
+        for allowed in self.allowed:
+            if allowed == string or (
+                kind == "hosts" and allowed.lower() == string.lower()
+            ):
+                return allowed
+        return None
+
+    def leaks(self, text, count=True):
         """Where what may remain in no copy occurs in one file's text.
 
         Returns ``(line, string, what it is)`` for each occurrence, at most
-        :data:`MAX_LEAKS`, in the order of the text.
+        :data:`MAX_LEAKS`, in the order of the text; an occurrence of an
+        allowed string is left out, and counted in :attr:`allowed` when
+        ``count`` is true.
         """
         masked = text
         if self._tokens is not None:
             masked = self._tokens.sub(
                 lambda match: "\0" * len(match.group(0)), text
             )
-        lowered = masked.lower()
         found = set()
+
+        def hit(offset, string, what, kind):
+            allowed = self._allowance(string, kind)
+            if allowed is not None:
+                self.allowed[allowed] += 1 if count else 0
+            elif len(found) < MAX_LEAKS:
+                found.add((text.count("\n", 0, offset) + 1, string, what))
+
         for kind, items in self.forbidden.items():
+            if kind in ("users", "hosts"):
+                continue
             for string, what in items:
                 if not string:
                     continue
-                haystack, needle = (
-                    (lowered, string.lower())
-                    if kind == "hosts"
-                    else (masked, string)
-                )
-                index = haystack.find(needle)
-                while index >= 0 and len(found) < MAX_LEAKS:
-                    if not _inside_digest(masked, index, len(needle)):
-                        line = text.count("\n", 0, index) + 1
-                        found.add((line, string, what))
-                    index = haystack.find(needle, index + 1)
+                index = masked.find(string)
+                while index >= 0:
+                    if not _inside_digest(masked, index, len(string)):
+                        hit(index, string, what, kind)
+                    index = masked.find(string, index + 1)
+        for kind, pattern, names in (
+            ("users", self._users, self._user_what),
+            ("hosts", self._hosts_check, self._host_what),
+        ):
+            for match in pattern.finditer(masked) if pattern else ():
+                string = match.group(0)
+                string = string.lower() if kind == "hosts" else string
+                if not _inside_digest(masked, match.start(), len(string)):
+                    hit(match.start(), string, names[string], kind)
         for offset, path in absolute_paths(text):
-            if len(found) >= MAX_LEAKS:
-                break
-            if not _system_path(path):
-                line = text.count("\n", 0, offset) + 1
-                found.add((line, path, "an absolute path that no name covers"))
+            if not _system_path(path, self.system_prefixes):
+                hit(offset, path, "an absolute path that no name covers", "")
         return sorted(found)[:MAX_LEAKS]
 
 
@@ -3452,7 +3889,15 @@ def tree_token(name):
 
 
 def redaction_rules(
-    campaign, manifest, documents, operator, environ=None, paths=(), host=None
+    campaign,
+    manifest,
+    documents,
+    operator,
+    environ=None,
+    paths=(),
+    host=None,
+    allow=(),
+    system_prefixes=SYSTEM_PREFIXES,
 ):
     """The :class:`Redaction` of one campaign.
 
@@ -3489,6 +3934,8 @@ def redaction_rules(
     host : str, optional
         The host that redacts, which names no Slurm job; this one's by
         default.
+    allow, system_prefixes
+        See :class:`Redaction`.
     """
     site = manifest.get("site")
     if not isinstance(site, dict) or not site.get("NODE_FEATURE"):
@@ -3553,7 +4000,7 @@ def redaction_rules(
     hosts.add(socket.gethostname() if host is None else host, False)
     tokens = hosts.tokens(family)
     forbidden["hosts"] = [(h, "a hostname") for h in tokens]
-    return Redaction(replace, tokens, forbidden)
+    return Redaction(replace, tokens, forbidden, allow, system_prefixes)
 
 
 def _read_campaign(campaign):
@@ -3640,7 +4087,15 @@ def _leak_lines(leaks, limit=40):
 
 
 def redact(
-    campaign, out, operator=None, environ=None, paths=(), host=None, say=None
+    campaign,
+    out,
+    operator=None,
+    environ=None,
+    paths=(),
+    host=None,
+    say=None,
+    allow=(),
+    system_prefixes=SYSTEM_PREFIXES,
 ):
     """Write a finished campaign's tracked copies, redacted, into ``out``.
 
@@ -3668,13 +4123,16 @@ def redact(
       not copied.
 
     Then every copy, :data:`REDACTION` included, is searched for each value
-    of the site block that is a path or a command, every named directory,
-    the operator's username and home directory, and every hostname, as
-    plain substrings, and for any absolute path outside
-    :data:`SYSTEM_PREFIXES` (:meth:`Redaction.leaks`); any of them raises
-    :class:`ContractError` naming the file and the string, and nothing is
-    written. The copies are written into a directory beside ``out`` and
-    renamed into place, so ``out`` holds either all of them or none.
+    of the site block that is a path or a command, every named directory
+    and the operator's home directory, as plain substrings, for the
+    operator's username and every hostname, as whole names, and for any
+    absolute path outside ``system_prefixes`` (:meth:`Redaction.leaks`);
+    any of them raises :class:`ContractError` naming the file and the
+    string, and nothing is written. A hit of a string of ``allow``, which
+    the operator judged benign, is exempted, and :data:`REDACTION` records
+    each such string with the hits it cleared in the copies. The copies are
+    written into a directory beside ``out`` and renamed into place, so
+    ``out`` holds either all of them or none.
 
     Parameters
     ----------
@@ -3691,6 +4149,8 @@ def redact(
         See :func:`redaction_rules`.
     say : callable, optional
         Prints a progress line; :func:`print` by default.
+    allow, system_prefixes
+        See :class:`Redaction`.
 
     Returns
     -------
@@ -3749,7 +4209,15 @@ def redact(
     names, sources = read["names"], read["sources"]
     say(f"redacting {len(names)} files")
     redaction = redaction_rules(
-        campaign, manifest, read["documents"], operator, environ, paths, host
+        campaign,
+        manifest,
+        read["documents"],
+        operator,
+        environ,
+        paths,
+        host,
+        allow=allow,
+        system_prefixes=system_prefixes,
     )
     written, files, cut = {}, {}, 0
     for name in names:
@@ -3778,6 +4246,11 @@ def redact(
             "sha256": hashlib.sha256(new).hexdigest(),
             "bytes": len(new),
         }
+    leaks = [
+        (name, line, string, what)
+        for name, (_, text) in sorted(written.items())
+        for line, string, what in redaction.leaks(text)
+    ]
     record = {
         "contract": CONTRACT_VERSION,
         "campaign": campaign.name,
@@ -3798,8 +4271,12 @@ def redact(
             "that name a path keep their package's name alone",
             "each file's source_sha256 is that of the campaign's own file, "
             "which the records and reports hash",
+            "allowed holds each string the operator judged benign where the "
+            "check found it (redact --allow), with the hits it cleared in "
+            "the copies",
         ],
         "replaced": dict(sorted(redaction.counts.items())),
+        "allowed": dict(sorted(redaction.allowed.items())),
         "pip_freeze_paths": cut,
         "cases_not_verified": {
             status: [
@@ -3814,10 +4291,9 @@ def redact(
     }
     record_text = json.dumps(record, indent=2) + "\n"
     written[REDACTION] = (record_text.encode("utf-8"), record_text)
-    leaks = [
-        (name, line, string, what)
-        for name, (_, text) in sorted(written.items())
-        for line, string, what in redaction.leaks(text)
+    leaks += [
+        (REDACTION, line, string, what)
+        for line, string, what in redaction.leaks(record_text, count=False)
     ]
     if leaks:
         raise ContractError(
@@ -3847,12 +4323,30 @@ def redact(
         f"{len(names)} copies and {REDACTION} in {out}; replaced "
         + ", ".join(f"{k} {v}" for k, v in record["replaced"].items())
         + f"; none of {forbidden} forbidden strings remains"
+        + _allowed_note(record["allowed"])
     )
     return record
 
 
+def _allowed_note(allowed):
+    """``; allowed: 'x' (3 hits)``, the hits that ``--allow`` cleared."""
+    if not allowed:
+        return ""
+    return "; allowed: " + ", ".join(
+        f"{string!r} ({count} hits)" for string, count in allowed.items()
+    )
+
+
 def check_files(
-    campaign, files, operator=None, environ=None, paths=(), host=None
+    campaign,
+    files,
+    operator=None,
+    environ=None,
+    paths=(),
+    host=None,
+    allow=(),
+    system_prefixes=SYSTEM_PREFIXES,
+    allowed=None,
 ):
     """Search files that :func:`redact` did not write for a campaign's leaks.
 
@@ -3860,7 +4354,9 @@ def check_files(
     campaign's forbidden strings and names (:func:`redaction_rules`), in
     files such as the hand-written README of the directory that holds the
     tracked copies. Returns ``(file, line, string, what it is)`` for each
-    occurrence; none for files that hold nothing forbidden.
+    occurrence; none for files that hold nothing forbidden. The hits of the
+    strings of ``allow`` are left out, and counted into the mapping
+    ``allowed`` when one is given.
     """
     campaign = Path(campaign).resolve()
     read = _read_campaign(campaign)
@@ -3873,6 +4369,8 @@ def check_files(
         environ,
         paths,
         host,
+        allow=allow,
+        system_prefixes=system_prefixes,
     )
     found = []
     for path in files:
@@ -3884,6 +4382,8 @@ def check_files(
             (str(path), line, string, what)
             for line, string, what in redaction.leaks(text)
         ]
+    if allowed is not None:
+        allowed.update(redaction.allowed)
     return found
 
 
@@ -4010,8 +4510,24 @@ def _cmd_archive_check(args):
 
 
 def _cmd_wait_job(args):
-    code = wait_job(args.job, poll=args.poll)
+    limit = None if args.limit <= 0 else args.limit
+    code = wait_job(args.job, poll=args.poll, limit=limit)
+    if code is None:
+        return EXIT_WAIT_LIMIT
     return min(max(int(code), 0), 255)
+
+
+def _cmd_give_up(args):
+    try:
+        ruling = give_up(args.out, args.case, args.reason)
+    except (ContractError, OSError) as error:
+        print(f"refusing: {error}", file=sys.stderr)
+        return 1
+    print(
+        f"{ruling['tag']}: given up by {ruling['user']} ({ruling['reason']}); "
+        f"recorded in {Path(args.out) / 'slurm' / GIVEN_UP_LOG}"
+    )
+    return 0
 
 
 def _cmd_redact(args):
@@ -4022,9 +4538,20 @@ def _cmd_redact(args):
             print(f"--path {item!r} is not NAME=PATH", file=sys.stderr)
             return 1
         paths.append((name, value))
+    allow = list(args.allow or ())
+    if any(not string for string in allow):
+        print("--allow takes a string that is not empty", file=sys.stderr)
+        return 1
     try:
         if args.check:
-            leaks = check_files(args.campaign, args.check, paths=paths)
+            allowed = {}
+            leaks = check_files(
+                args.campaign,
+                args.check,
+                paths=paths,
+                allow=allow,
+                allowed=allowed,
+            )
             if leaks:
                 print(
                     "refusing: the files hold what the tracked copies may "
@@ -4034,10 +4561,10 @@ def _cmd_redact(args):
                 return 1
             print(
                 f"none of {len(args.check)} files holds what the tracked "
-                "copies may not"
+                "copies may not" + _allowed_note(allowed)
             )
         else:
-            redact(args.campaign, args.out, paths=paths)
+            redact(args.campaign, args.out, paths=paths, allow=allow)
     except (ContractError, OSError, ValueError) as error:
         print(f"refusing: {error}", file=sys.stderr)
         return 1
@@ -4106,6 +4633,30 @@ def parse_args(argv=None):
         default=30.0,
         help="seconds between two queries of the accounting (default 30)",
     )
+    wait.add_argument(
+        "--limit",
+        type=float,
+        default=STEP_WAIT_LIMIT,
+        help="seconds after which the wait gives up and exits "
+        f"{EXIT_WAIT_LIMIT}, whatever the job's state; 0 for no limit "
+        f"(default {STEP_WAIT_LIMIT:.0f}, a day)",
+    )
+    ruling = sub.add_parser(
+        "give-up",
+        help="rule that a case which no task can finish is not run again: "
+        "write its error file, which verify places as failed and a later "
+        f"worker exits 0 on, and record the ruling in slurm/{GIVEN_UP_LOG}",
+    )
+    ruling.add_argument("--out", type=Path, required=True)
+    ruling.add_argument(
+        "--case", required=True, metavar="TAG", help="the case's tag"
+    )
+    ruling.add_argument(
+        "--reason",
+        required=True,
+        help="why the case is given up, one line, which enters the "
+        "verification report and so the tracked copies",
+    )
     redaction = sub.add_parser(
         "redact",
         help="write a finished campaign's tracked copies, redacted, and "
@@ -4138,6 +4689,15 @@ def parse_args(argv=None):
         "holds the campaign, whose paths the copies write as $NAME/...; "
         "repeatable",
     )
+    redaction.add_argument(
+        "--allow",
+        action="append",
+        metavar="STRING",
+        help="a string the check found where it is benign (a short "
+        "username that is also a word, say), whose hits are exempted; "
+        "redaction.json records each with the hits it cleared in the "
+        "copies, and --check prints them; repeatable",
+    )
     return parser.parse_args(argv)
 
 
@@ -4150,6 +4710,7 @@ COMMANDS = {
     "queue-check": _cmd_queue_check,
     "archive-check": _cmd_archive_check,
     "wait-job": _cmd_wait_job,
+    "give-up": _cmd_give_up,
     "redact": _cmd_redact,
 }
 

@@ -48,6 +48,8 @@ TASK_B = {
     "restart_count": 0,
     "node": "n2",
 }
+TASK_C = {"job": "700", "array_task": "9", "job_id": "709"}
+TASK_D = {"job": "800", "array_task": "1", "job_id": "801"}
 TAG = "g0/c001"
 
 
@@ -230,9 +232,10 @@ def test_a_requeued_task_takes_over_its_own_claim(tmp_path):
 
 
 def test_an_unfinished_retirement_is_finished(tmp_path):
-    """The retired name holds the judged claim, which is still in place: a
-    retirer was killed between its link and its removal, or a network
-    filesystem retried the link. The next worker finishes it."""
+    """The retired name holds the judged claim, which is still in place, and
+    no worker holds the claim's mark: a retirer was stopped between its link
+    and its removal by a signal that let it remove its mark (SIGINT), or a
+    network filesystem retried the link. The next worker finishes it."""
     held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
     path = Path(held["path"])
     record = json.loads(path.read_text("utf-8"))
@@ -267,14 +270,14 @@ def test_a_retired_name_that_holds_something_else_refuses(tmp_path):
     record = json.loads(path.read_text("utf-8"))
     contract.retired_claim_path(path, record).write_text("{", "utf-8")
     before = snapshot(tmp_path / "claims")
-    with pytest.raises(contract.ClaimRefused, match="another worker"):
+    with pytest.raises(contract.ClaimRefused, match="holds another claim"):
         contract.acquire_claim(
             tmp_path, TAG, query=answer(False, "TIMEOUT"), task=TASK_B
         )
     assert snapshot(tmp_path / "claims") == before
 
 
-def test_finishing_a_retirement_leaves_a_later_claim_in_place(tmp_path):
+def test_a_retirement_leaves_a_later_claim_in_place(tmp_path):
     """Another worker finished the retirement and made its own claim: the
     claim in place is not the judged one, and stays."""
     held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
@@ -284,11 +287,13 @@ def test_finishing_a_retirement_leaves_a_later_claim_in_place(tmp_path):
     os.link(path, stale)
     later = contract.new_claim(TAG, task=TASK_B)
     contract.write_json(path, later)
-    assert not contract._finish_retirement(path, stale, judged)
+    mine = contract.new_claim(TAG, task=TASK_C)
+    assert contract._retire(path, judged, mine, never) == ("changed", None)
     assert json.loads(path.read_text("utf-8")) == later
-    assert not [p for p in path.parent.iterdir() if p.name.startswith(".")]
+    assert not dot_files(path.parent)
     path.unlink()
-    assert contract._finish_retirement(path, stale, judged)
+    assert contract._retire(path, judged, mine, never) == ("retired", None)
+    assert not dot_files(path.parent)
 
 
 def test_claim_keys():
@@ -304,13 +309,266 @@ def test_claim_keys():
     )
 
 
-def test_retiring_undoes_a_link_to_another_claim(tmp_path):
+def test_retiring_leaves_a_claim_other_than_the_judged_one(tmp_path):
     contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
     path = tmp_path / "claims" / "g0" / "c001"
+    before = snapshot(path.parent)
     judged = dict(json.loads(path.read_text("utf-8")), token="another")
-    assert not contract._retire(path, judged)
-    assert path.exists()
-    assert not list(path.parent.glob("*.stale.*"))
+    assert contract._retire(path, judged, query=never) == ("changed", None)
+    assert snapshot(path.parent) == before
+
+
+# The interleavings of workers that judged one claim stale, stepped through
+# the retirement's stages (campaign_contract._retirement_step). Task A made
+# the claim and has ended; B, C and D are later tasks, and the accounting
+# says that a task it knows nothing of runs, as it does of a live worker.
+
+
+class Accounting:
+    """What the accounting says of each task, which a test changes as it
+    goes: ``states["500_3"] = "TIMEOUT"``; RUNNING for any other task."""
+
+    def __init__(self, **states):
+        self.states = {key.lstrip("_"): value for key, value in states.items()}
+
+    def __call__(self, job, array_task):
+        state = self.states.get(contract.task_step(job, array_task), "RUNNING")
+        return {
+            "live": state not in contract.ENDED_STATES,
+            "state": state,
+            "detail": f"stub says {state}",
+        }
+
+
+def interleave(monkeypatch, *steps):
+    """At each ``(job, stage, action)``, run ``action`` once, when the
+    worker of that job has done that stage of a retirement."""
+    pending = list(steps)
+    ran = []
+
+    def step(stage, mine):
+        for item in list(pending):
+            job, wanted, action = item
+            if mine.get("job") == job and stage == wanted:
+                pending.remove(item)
+                ran.append((job, stage))
+                action()
+
+    monkeypatch.setattr(contract, "_retirement_step", step)
+    return ran
+
+
+def attempt(out, task, accounting, results, name):
+    """Try to claim the case for ``task``; record the claim or the refusal
+    under ``name``."""
+    try:
+        results[name] = contract.acquire_claim(
+            out, TAG, query=accounting, task=task
+        )
+    except contract.ClaimRefused as refusal:
+        results[name] = refusal
+
+
+def dot_files(folder):
+    return sorted(p.name for p in Path(folder).iterdir() if p.name[0] == ".")
+
+
+def holder(out, results):
+    """The one worker of ``results`` that holds the claim, whose token the
+    claim file holds; the others were refused."""
+    held = [name for name, got in results.items() if isinstance(got, dict)]
+    assert len(held) == 1, results
+    [name] = held
+    current = json.loads(contract.claim_path(out, TAG).read_text("utf-8"))
+    assert current["token"] == results[name]["token"]
+    for other, got in results.items():
+        if other != name:
+            assert isinstance(got, contract.ClaimRefused), (other, got)
+    return name
+
+
+@pytest.mark.parametrize(
+    "stage, expected",
+    [
+        ("judged", "C"),
+        ("marked", "B"),
+        ("recorded", "B"),
+        ("removed", "C"),
+        ("retired", "C"),
+    ],
+)
+def test_two_retirers_of_one_claim_never_both_hold_it(
+    tmp_path, monkeypatch, stage, expected
+):
+    """C tries while B is at each stage of its retirement. At ``recorded``,
+    B has linked the retired name and not yet removed the claim: a C that
+    finished the retirement there and made its own claim would lose it to
+    B's removal. C refuses while B holds the mark, and makes its claim only
+    where B's retirement left no claim in place."""
+    judged = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    judged = {k: v for k, v in judged.items() if k != "path"}
+    accounting = Accounting(_500_3="TIMEOUT")
+    results = {}
+    ran = interleave(
+        monkeypatch,
+        (
+            "600",
+            stage,
+            lambda: attempt(tmp_path, TASK_C, accounting, results, "C"),
+        ),
+    )
+    attempt(tmp_path, TASK_B, accounting, results, "B")
+    assert ran == [("600", stage)]
+    assert holder(tmp_path, results) == expected
+    [retired] = contract.retired_claims(tmp_path, TAG)
+    assert json.loads(retired.read_text("utf-8")) == judged
+    assert not dot_files(retired.parent)
+
+
+@pytest.mark.parametrize("died", ["marked", "recorded"])
+def test_a_retirer_killed_holding_the_mark(tmp_path, monkeypatch, died):
+    """D was killed, holding the mark, after the stage ``died``; C and B
+    both find it ended and race for the next level: one takes it, the
+    other refuses while it may still run, and the retirement is finished
+    whatever D had done."""
+    held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = Path(held["path"])
+    judged = json.loads(path.read_text("utf-8"))
+    dead = contract.retirement_mark(path, judged, 0)
+    contract._link_new(dead, contract.new_claim(TAG, task=TASK_D))
+    if died == "recorded":
+        os.link(path, contract.retired_claim_path(path, judged))
+    accounting = Accounting(_500_3="TIMEOUT", _800_1="OUT_OF_MEMORY")
+    results = {}
+    interleave(
+        monkeypatch,
+        (
+            "600",
+            "marked",
+            lambda: attempt(tmp_path, TASK_C, accounting, results, "C"),
+        ),
+    )
+    attempt(tmp_path, TASK_B, accounting, results, "B")
+    assert holder(tmp_path, results) == "B"
+    assert "700_9" not in str(results["C"]) and "600_7" in str(results["C"])
+    [retired] = contract.retired_claims(tmp_path, TAG)
+    assert json.loads(retired.read_text("utf-8")) == judged
+    # The dead holder's mark is all that remains of the retirement.
+    assert dot_files(path.parent) == [dead.name]
+
+
+def test_a_fresh_worker_and_a_finisher_find_the_place_empty(
+    tmp_path, monkeypatch
+):
+    """B judged the claim stale while D, holding the mark, removed it; D
+    was killed before it made its own. B finishes the retirement and finds
+    no claim, and a fresh worker C finds none either: of their two links
+    one succeeds."""
+    held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = Path(held["path"])
+    judged = json.loads(path.read_text("utf-8"))
+    dead = contract.retirement_mark(path, judged, 0)
+    contract._link_new(dead, contract.new_claim(TAG, task=TASK_D))
+    os.link(path, contract.retired_claim_path(path, judged))
+    accounting = Accounting(_500_3="TIMEOUT", _800_1="NODE_FAIL")
+    results = {}
+    interleave(
+        monkeypatch,
+        ("600", "judged", path.unlink),  # D's removal
+        (
+            "600",
+            "retired",
+            lambda: attempt(tmp_path, TASK_C, accounting, results, "C"),
+        ),
+    )
+    attempt(tmp_path, TASK_B, accounting, results, "B")
+    assert holder(tmp_path, results) == "C"
+    assert "700_9" in str(results["B"])
+    assert dot_files(path.parent) == [dead.name]
+
+
+@pytest.mark.parametrize("first", ["retirer", "requeue", "retirer judged"])
+def test_a_requeue_and_a_retirer_never_both_hold_the_claim(
+    tmp_path, monkeypatch, first
+):
+    """A's task is requeued (A2) while B retires A's claim, which the
+    accounting showed ended when B judged it. The takeover holds the mark
+    as the retirement does."""
+    contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    requeued = dict(TASK_A, restart_count=1)
+    accounting = Accounting(_500_3="NODE_FAIL")
+    results = {}
+
+    def requeue():
+        accounting.states["500_3"] = "RUNNING"
+        attempt(tmp_path, requeued, accounting, results, "A2")
+
+    def retirer():
+        attempt(tmp_path, TASK_B, accounting, results, "B")
+
+    if first == "retirer":
+        # B holds the mark when A2 starts.
+        interleave(monkeypatch, ("600", "marked", requeue))
+        retirer()
+        assert holder(tmp_path, results) == "B"
+    elif first == "requeue":
+        # A2 holds the mark when B looks: A runs again.
+        def running_then_retirer():
+            accounting.states["500_3"] = "RUNNING"
+            retirer()
+
+        interleave(monkeypatch, ("500", "marked", running_then_retirer))
+        attempt(tmp_path, requeued, accounting, results, "A2")
+        assert holder(tmp_path, results) == "A2"
+    else:
+        # B judged A's claim stale; A2 takes it over before B's mark.
+        interleave(monkeypatch, ("600", "judged", requeue))
+        retirer()
+        assert holder(tmp_path, results) == "A2"
+    assert not dot_files(tmp_path / "claims" / "g0")
+
+
+def test_a_live_claim_is_never_removed_or_hidden(tmp_path, monkeypatch):
+    """B judged A's claim stale, and C retired it and made its own before B
+    went on; D comes while B holds the mark. Were B to move the claim in
+    place aside to look at it, D could make a second claim while C's was
+    hidden: C's claim file stays as it is throughout, and B and D
+    refuse."""
+    contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = contract.claim_path(tmp_path, TAG)
+    accounting = Accounting(_500_3="TIMEOUT")
+    results = {}
+    seen = {}
+
+    def c_retires():
+        attempt(tmp_path, TASK_C, accounting, results, "C")
+        seen["C"] = snapshot(path.parent)[path.name]
+
+    def d_comes():
+        assert snapshot(path.parent)[path.name] == seen["C"]
+        attempt(tmp_path, TASK_D, accounting, results, "D")
+
+    interleave(
+        monkeypatch, ("600", "judged", c_retires), ("600", "marked", d_comes)
+    )
+    attempt(tmp_path, TASK_B, accounting, results, "B")
+    assert holder(tmp_path, results) == "C"
+    assert snapshot(path.parent)[path.name] == seen["C"]
+    assert "700_9" in str(results["B"]) and "700_9" in str(results["D"])
+    assert not dot_files(path.parent)
+
+
+def test_a_retirement_mark_names_its_claim_and_level(tmp_path):
+    record = contract.new_claim(TAG, task=TASK_A)
+    path = contract.claim_path(tmp_path, TAG)
+    mark = contract.retirement_mark(path, record, 2)
+    assert mark.parent == path.parent
+    assert mark.name == f".c001.retiring.500_3.{record['token'][:8]}.2"
+    # Neither a retired claim nor a stray.
+    mark.parent.mkdir(parents=True)
+    contract._link_new(mark, record)
+    assert contract.retired_claims(tmp_path, TAG) == []
+    assert contract.stray_files(tmp_path, [TAG]) == []
 
 
 def test_release_removes_only_the_holders_claim(tmp_path):
@@ -763,6 +1021,148 @@ def test_a_resubmission_takes_over_and_starts_from_clean(repo, tmp_path):
     [retired] = contract.retired_claims(out, TAG)
     assert retired.name.startswith("c001.stale.800_1.")
     assert not contract.claim_path(out, TAG).exists()
+
+
+# --------------------------------------------------------------------------
+# A case given up
+# --------------------------------------------------------------------------
+
+GIVEN = ["g0/c001 1", "g0/c002 2", "g0/c003 3"]
+
+
+def campaign_of(out, lines=GIVEN):
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "cases.txt").write_bytes("".join(f"{x}\n" for x in lines).encode())
+    return out
+
+
+def test_a_case_given_up_is_failed_and_never_run_again(tmp_path):
+    out = campaign_of(tmp_path / "out")
+    tag = "g0/c002"
+    error = contract.error_path(out, tag)
+    error.parent.mkdir(parents=True)
+    error.write_text(f"{tag}: RuntimeError: the first attempt\n", "utf-8")
+    contract.earlier_error_path(out, tag).parent.mkdir(parents=True)
+    contract.earlier_error_path(out, tag).write_text(
+        f"{tag}: RuntimeError: the second attempt\n", "utf-8"
+    )
+    ruling = contract.give_up(
+        out, tag, "stopped at every time limit", user="op", query=never
+    )
+    assert ruling["tag"] == tag and ruling["user"] == "op"
+    text = error.read_text("utf-8")
+    assert text.startswith(
+        "given up by the operator: stopped at every time limit\n"
+    )
+    assert "the first attempt" in text and "the second attempt" in text
+    assert not contract.earlier_error_path(out, tag).exists()
+    assert not contract.claim_path(out, tag).exists()
+    assert not dot_files(out / "claims" / "g0")
+    [line] = (out / "slurm" / "given_up.txt").read_text("utf-8").splitlines()
+    assert line.endswith(f" {tag} given up by op: stopped at every time limit")
+    assert contract.given_up(out, tag) == "stopped at every time limit"
+    assert contract.given_up(out, "g0/c001") is None
+    report = contract.reconcile(out, GIVEN, None, lambda tag: [], query=never)
+    [first, given, third] = report["cases"]
+    assert given["status"] == "failed"
+    assert given["reason"] == (
+        "given up by the operator: stopped at every time limit"
+    )
+    assert first["status"] == third["status"] == "missing"
+    assert report["exit_code"] == 0
+    # A later task's worker exits at once and touches nothing.
+    before = snapshot(out)
+
+    def refuse():
+        raise AssertionError("a given-up case computes no identity")
+
+    code = contract.run_worker(
+        out, f"{tag} 2", {}, refuse, None, None, query=never
+    )
+    assert code == 0
+    assert snapshot(out) == before
+
+
+def test_give_up_refusals(tmp_path):
+    out = campaign_of(tmp_path / "out")
+    contract.write_json(contract.record_path(out, "g0/c001"), {"x": 1})
+    claim_by(out, "g0/c003", "900", "3")
+    before = snapshot(out)
+    for tag, reason, match in (
+        ("g0/c001", "x", "has a completion record"),
+        ("g0/c009", "x", "is not a case"),
+        ("g0/c002 2", "x", "is not a tag"),
+        ("g0/c002", "", "one line"),
+        ("g0/c002", "two\nlines", "one line"),
+    ):
+        with pytest.raises(contract.ContractError, match=match):
+            contract.give_up(out, tag, reason, query=never)
+    with pytest.raises(contract.ClaimRefused, match="900_3"):
+        contract.give_up(out, "g0/c003", "x", query=answer(True, "RUNNING"))
+    assert snapshot(out) == before
+    contract.give_up(out, "g0/c002", "once", query=never)
+    with pytest.raises(contract.ContractError, match="given up already"):
+        contract.give_up(out, "g0/c002", "twice", query=never)
+
+
+def test_giving_up_an_interrupted_case(tmp_path):
+    """A task killed outright left its stale claim and a file: the claim is
+    retired, and verify reports the file with the failed case."""
+    out = campaign_of(tmp_path / "out")
+    tag = "g0/c002"
+    claim_by(out, tag, "800", "2")
+    (out / "g0").mkdir()
+    (out / f"{tag}.out").write_text("half\n", "utf-8")
+    killed = answer(False, "OUT_OF_MEMORY")
+    contract.give_up(out, tag, "out of memory at any MEM", query=killed)
+    assert not contract.claim_path(out, tag).exists()
+    [retired] = contract.retired_claims(out, tag)
+    assert retired.name.startswith("c002.stale.800_2.")
+
+    def partial(tag):
+        return [f"{tag}.out"] if (out / f"{tag}.out").exists() else []
+
+    report = contract.reconcile(out, GIVEN, None, partial, query=killed)
+    given = report["cases"][1]
+    assert given["status"] == "failed" and given["files"] == [f"{tag}.out"]
+    assert given["reason"].endswith("out of memory at any MEM")
+    assert report["exit_code"] == 0
+
+
+def test_a_worker_that_claims_a_case_given_up_meanwhile(repo, tmp_path):
+    """The case is given up between the worker's first look and its claim:
+    the worker finds the ruling holding the claim, and releases it."""
+    out = campaign_of(tmp_path / "out")
+    tag = "g0/c002"
+    expected = worker_identity(repo)
+
+    def identity():
+        contract.give_up(out, tag, "meanwhile", query=never)
+        return expected
+
+    def run(identity):
+        raise AssertionError("a given-up case must not run")
+
+    code = contract.run_worker(
+        out, f"{tag} 2", expected, identity, run, lambda: [], query=never
+    )
+    assert code == 0
+    assert contract.given_up(out, tag) == "meanwhile"
+    assert not contract.claim_path(out, tag).exists()
+
+
+def test_give_up_from_the_command_line(tmp_path):
+    out = campaign_of(tmp_path / "out")
+    result = run_cli(
+        "give-up", "--out", str(out), "--case", "g0/c002", "--reason", "why"
+    )
+    assert result.returncode == 0, result.stderr
+    assert "g0/c002: given up by" in result.stdout
+    assert contract.given_up(out, "g0/c002") == "why"
+    result = run_cli(
+        "give-up", "--out", str(out), "--case", "g0/c002", "--reason", "why"
+    )
+    assert result.returncode == 1 and "refusing:" in result.stderr
 
 
 # --------------------------------------------------------------------------
@@ -1906,6 +2306,45 @@ def test_the_archive_waits_for_the_accounting(tmp_path):
     ]
 
 
+def test_the_finish_judges_the_allocation_rows_alone(tmp_path, slurm):
+    """A step's row can stay RUNNING in the database after its node failed;
+    the allocation's row is the job's state. The step rows stay in the
+    file, which the limits read (MaxRSS)."""
+    out = tmp_path / "c1"
+    rows = [
+        "1001_1|c1|COMPLETED|0:0|n1",
+        "1001_1.batch|batch|COMPLETED|0:0|n1",
+        "1001_2|c1|NODE_FAIL|0:0|n1",
+        "1001_2.batch|batch|RUNNING|0:0|n1",
+        "1001_2.extern|extern|RUNNING|0:0|n1",
+        "1005|c1_verify|COMPLETED|0:0|n2",
+        "1005.batch|batch|RUNNING|0:0|n2",
+    ]
+    records = slurm_records(
+        out, ["1001 array=1-2 offset=0"], ["1005 step=verify rc=0"], rows
+    )
+    assert contract.accounting_problems(records) == []
+    queue = slurm / "squeue"
+    queue.mkdir()
+    for job in ("1001", "1005"):
+        (queue / f"{job}.fail").write_text("", "utf-8")
+    assert contract.queue_state(records)["unknown"] == []
+    assert len(contract.accounting_rows(records)["1001"]) == 5
+    assert contract.accounting_rows(records, steps=False)["1001"] == [
+        ("1001_1", "COMPLETED"),
+        ("1001_2", "NODE_FAIL"),
+    ]
+    # A job with step rows alone has no state the finish can judge.
+    records = slurm_records(
+        out,
+        ["1001 array=1-2 offset=0"],
+        [],
+        ["1001_2.batch|b|COMPLETED|0:0|n"],
+    )
+    [(job, detail)] = contract.queue_state(records)["unknown"]
+    assert job == "1001" and "holds no row" in detail
+
+
 @pytest.mark.parametrize(
     "state, exitcode, code",
     [
@@ -1944,6 +2383,64 @@ def test_waiting_for_a_job(slurm, monkeypatch):
         "job 1006: RUNNING",
         "job 1006: FAILED, exit 1",
     ]
+
+
+def test_the_wait_for_a_job_gives_up(slurm, monkeypatch):
+    """A sacct that always fails: a notice every few queries, then the wait
+    gives up at its limit, whatever the job's state."""
+    now = [0.0]
+
+    def sleep(seconds):
+        now[0] += seconds
+
+    monkeypatch.setattr(contract.time, "sleep", sleep)
+    said = []
+    code = contract.wait_job(
+        "1006",
+        poll=60,
+        say=said.append,
+        query=lambda job: (None, None),
+        limit=600,
+        notice=3,
+        clock=lambda: now[0],
+    )
+    assert code is None
+    assert said[0] == "job 1006: not in the accounting yet"
+    notices = [line for line in said if "still unknown" in line]
+    assert notices == [
+        "job 1006: still unknown to the accounting after 3 queries in 2 min "
+        "(sacct fails, or does not know the job)",
+        "job 1006: still unknown to the accounting after 6 queries in 5 min "
+        "(sacct fails, or does not know the job)",
+        "job 1006: still unknown to the accounting after 9 queries in 8 min "
+        "(sacct fails, or does not know the job)",
+    ]
+    assert said[-1] == (
+        "job 1006: gave up waiting after 10 min, the limit of 10 min; its "
+        "last state was unknown"
+    )
+    # A job the accounting knows, pending past the limit.
+    now[0], said[:] = 0.0, []
+    code = contract.wait_job(
+        "1007",
+        poll=60,
+        say=said.append,
+        query=lambda job: ("PENDING", None),
+        limit=120,
+        clock=lambda: now[0],
+    )
+    assert code is None and said == [
+        "job 1007: PENDING",
+        "job 1007: gave up waiting after 2 min, the limit of 2 min; its "
+        "last state was PENDING",
+    ]
+    # The command line exits 124 when it gives up.
+    set_answer(slurm, "1008", "PENDING\n")
+    result = run_cli(
+        "wait-job", "--job", "1008", "--poll", "0.01", "--limit", "0.05"
+    )
+    assert result.returncode == contract.EXIT_WAIT_LIMIT == 124
+    assert "gave up waiting" in result.stdout
 
 
 def run_cli(*args):
@@ -2024,6 +2521,15 @@ def test_command_line(tmp_path):
 
 STUB_HARNESS = "dev/scripts/campaign_stub_harness.py"
 LINES = ["g0/c001 1", "g0/c002 2", "g1/c003 3"]
+#: The system prefixes without the temporary directories. pytest's
+#: ``tmp_path``, where the stand-in site lies, is under ``/tmp`` on Linux,
+#: so that a test expecting one of its paths to be refused as unnamed
+#: passes these, and holds wherever pytest keeps its files.
+NO_TMP = tuple(
+    prefix
+    for prefix in contract.SYSTEM_PREFIXES
+    if prefix not in ("/tmp", "/var/tmp")
+)
 
 
 def base_identity():
@@ -2326,14 +2832,15 @@ def test_redact_refuses_what_survives_and_writes_nothing(site, tmp_path):
     for planted, what in (
         (f"run by {site.user}", "the username"),
         (f"/scratch/{site.user}/c1", "the username"),
+        (f"mail {site.user}@example.invalid", "the username"),
+        # A full stop ends the name.
+        (f"Run by {site.user}.", "the username"),
         ("export https_proxy=http://fakeproxy.invalid:3128", "LOGIN_SETUP"),
         ("fakeconda/24.1", "CONDA_SETUP"),
         # Where the replacement leaves a path, the check still finds it:
         # a longer directory and a path that continues another.
         (f"{env}s/pyvbmc2", "CAMPAIGN_ENV"),
         (f"/mnt{env}/lib", "CAMPAIGN_ENV"),
-        (f"x{site.user}y", "the username"),
-        ("on xfakenode17y", "a hostname"),
     ):
         site.rewrite(
             out / "summary.json", lambda value: value.update(note=planted)
@@ -2379,19 +2886,134 @@ def test_the_redaction_rewrites_every_form_of_a_name(site, tmp_path):
 
 
 def test_a_digest_is_not_read_as_a_name(site, tmp_path):
-    """A username or a hostname of hex letters alone, inside a SHA-256."""
+    """A username of hex letters alone, inside a SHA-256 or a shorter hex
+    word, and standing alone."""
     site.user = "fab"
+    out = finished_campaign(site)
+    for digest in ("00fab0" + "1" * 58, "00fab0", "fab0"):
+        site.rewrite(
+            out / "summary.json",
+            lambda value: value.update(digest=digest),
+        )
+        target = tmp_path / "handback" / digest[:8]
+        redacted(site, out, target)
+        assert contract.read_json(target / "summary.json")["digest"] == digest
+    site.rewrite(out / "summary.json", lambda value: value.update(by="fab"))
+    with pytest.raises(contract.ContractError, match="the username 'fab'"):
+        redacted(site, out, tmp_path / "handback" / "c2")
+
+
+def test_names_are_found_as_whole_names(site, tmp_path):
+    """Nodes named ``d2`` and ``c1`` beside configuration labels and hex
+    versions, and a username that begins another word: whole names are
+    replaced and found, and the rest is left as it is."""
+    site.nodes = ["d2.cluster.invalid", "c1"]
+    site.user = "acerbi"
+    out = finished_campaign(site, where=site.home / "runs" / "pools")
+    benign = {
+        "labels": ["rosenbrock_D2", "logreg_D5", "ring_D2_noise3_svbmc"],
+        "versions": ["1.5.0.dev3+g1c1d2ab", "c1d2e3f", "abc1"],
+        "files": ["D2-notes.md", "C1_summary"],
+        "url": "https://github.com/acerbilab/pyvbmc",
+        "people": "luigi.acerbi and acerbilab",
+    }
+    site.rewrite(out / "summary.json", lambda value: value.update(benign))
+    target = tmp_path / "handback" / "pools"
+    redacted(site, out, target)
+    summary = contract.read_json(target / "summary.json")
+    assert {key: summary[key] for key in benign} == benign
+    for tag, node in (("g0/c001", "d2"), ("g0/c002", "c1")):
+        host = contract.read_json(contract.record_path(target, tag))[
+            "identity"
+        ]["host"]
+        assert host["hostname"] == host["slurm"]["node"] == site.family
+    # The check, on a file that redact did not write.
+    readme = tmp_path / "handback" / "README.md"
+    readme.write_text(
+        "# The pools\n"
+        "rosenbrock_D2 at 1.5.0.dev3+g1c1d2ab, from acerbilab.\n"
+        "Logged in to d2.cluster.invalid.\n"
+        '{"host": "D2"}\n'
+        "task 4242_1, case 1: g0/c001 1, on c1\n"
+        "Mail acerbi@example.invalid, or luigi.acerbi.\n"
+        "See ~acerbi/runs and the scratch of acerbi.\n",
+        "utf-8",
+    )
+    arguments = dict(operator=site.operator(), environ={}, host="fakelogin9")
+    leaks = contract.check_files(out, [readme], **arguments)
+    assert sorted((line, string) for _, line, string, _ in leaks) == [
+        (3, "d2.cluster.invalid"),
+        (4, "d2"),
+        (5, "c1"),
+        (6, "acerbi"),
+        (7, "acerbi"),
+        (7, "~acerbi"),
+    ]
+
+
+def test_allowed_strings_are_exempted_and_recorded(site, tmp_path):
+    """A short username that is also a word of a copy: refused, and passed
+    with --allow, which the redaction's record counts."""
+    site.user = "run"
     out = finished_campaign(site)
     site.rewrite(
         out / "summary.json",
-        lambda value: value.update(digest="00fab0" + "1" * 58),
+        lambda value: value.update(note="a run of three cases"),
     )
-    redacted(site, out, tmp_path / "handback" / "c1")
+    with pytest.raises(contract.ContractError, match="the username 'run'"):
+        redacted(site, out, tmp_path / "handback" / "c0")
+    record = redacted(site, out, tmp_path / "handback" / "c1", allow=["run"])
+    assert record["allowed"]["run"] >= 1
+    on_disk = contract.read_json(
+        tmp_path / "handback" / "c1" / "redaction.json"
+    )
+    assert on_disk["allowed"] == record["allowed"]
+    note = "a run of three cases"
+    assert (
+        contract.read_json(tmp_path / "handback" / "c1" / "summary.json")[
+            "note"
+        ]
+        == note
+    )
+    # An allowed string exempts its own hits alone.
     site.rewrite(
-        out / "summary.json", lambda value: value.update(digest="00fab0")
+        out / "summary.json",
+        lambda value: value.update(by=f"/scratch/{site.user}/x"),
     )
-    with pytest.raises(contract.ContractError, match="the username 'fab'"):
-        redacted(site, out, tmp_path / "handback" / "c2")
+    with pytest.raises(contract.ContractError, match="no name covers"):
+        redacted(site, out, tmp_path / "handback" / "c2", allow=["run"])
+    # The check of other files.
+    readme = tmp_path / "README.md"
+    readme.write_text("We run it twice: run, run.\n", "utf-8")
+    arguments = dict(operator=site.operator(), environ={}, host="fakelogin9")
+    assert contract.check_files(out, [readme], **arguments)
+    allowed = {}
+    assert (
+        contract.check_files(
+            out, [readme], allow=["run"], allowed=allowed, **arguments
+        )
+        == []
+    )
+    assert allowed == {"run": 3}
+
+
+@pytest.mark.parametrize("who", ["user login", "user family", "node login"])
+def test_a_name_the_copies_write_is_refused(site, tmp_path, who):
+    """A username or a hostname that is one of the names the copies write
+    would hide behind the check's blanking of those names."""
+    if who == "user login":
+        site.user, message = contract.LOGIN_HOST, "the username 'login'"
+    elif who == "user family":
+        site.user, message = site.family, f"the username '{site.family}'"
+    else:
+        site.nodes = [contract.LOGIN_HOST, site.nodes[1]]
+        message = "a hostname 'login'"
+    out = finished_campaign(site)
+    with pytest.raises(contract.ContractError) as refusal:
+        redacted(site, out, tmp_path / "handback" / "c1")
+    assert message in str(refusal.value)
+    assert "the name the copies write" in str(refusal.value)
+    assert not (tmp_path / "handback").exists()
 
 
 def test_a_login_host_named_login(site, tmp_path):
@@ -2698,7 +3320,14 @@ def test_the_check_of_files_redact_did_not_write(site, tmp_path):
     readme.write_text(
         f"# The pools\n\nRun on {site.family} nodes, in ~/runs.\n", "utf-8"
     )
-    arguments = dict(operator=site.operator(), environ={}, host="fakelogin9")
+    # The stand-in site lies under pytest's temporary directory, which is
+    # under /tmp on Linux: the system prefixes without it.
+    arguments = dict(
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        system_prefixes=NO_TMP,
+    )
     assert contract.check_files(out, [readme], **arguments) == []
     with open(readme, "a", encoding="utf-8") as stream:
         stream.write(f"Logged in to {site.login} as {site.user}.\n")
@@ -2746,5 +3375,44 @@ def test_redact_from_the_command_line(site, tmp_path, monkeypatch, capsys):
     check = ["redact", "--campaign", str(out), "--check", str(readme)]
     assert contract.main(check) == 1
     assert "refusing: " in capsys.readouterr().err
+    assert contract.main([*check, "--allow", site.user]) == 0
+    assert "allowed: 'fakeoperator' (1 hits)" in capsys.readouterr().out
+    # An allowed string, recorded; the summary holds the username still.
+    third = tmp_path / "t3"
+    assert contract.main([*arguments, str(third), "--allow", site.user]) == 0
+    assert "allowed: 'fakeoperator'" in capsys.readouterr().out
+    allowed = contract.read_json(third / contract.REDACTION)["allowed"]
+    assert allowed["fakeoperator"] >= 1
+    assert contract.main([*arguments, other, "--allow", ""]) == 1
+    assert "not empty" in capsys.readouterr().err
     with pytest.raises(SystemExit):
         contract.main(["redact", "--campaign", str(out)])
+
+
+def test_the_system_prefixes_of_the_check(site, tmp_path):
+    """A path under a temporary directory of the system is no site detail,
+    unless it holds the username; the tests pass the prefixes without
+    them where a path of pytest's temporary directory must be refused."""
+    out = finished_campaign(site)
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        "Scratch in /tmp/job-4242/x and /var/tmp/y, and /opt/site/z\n"
+        f"and /tmp/{site.user}/w\n",
+        "utf-8",
+    )
+    arguments = dict(operator=site.operator(), environ={}, host="fakelogin9")
+    found = contract.check_files(out, [readme], **arguments)
+    assert sorted((line, string) for _, line, string, _ in found) == [
+        (1, "/opt/site/z"),
+        (2, site.user),
+    ]
+    found = contract.check_files(
+        out, [readme], system_prefixes=NO_TMP, **arguments
+    )
+    assert {string for _, _, string, _ in found} == {
+        "/tmp/job-4242/x",
+        "/var/tmp/y",
+        "/opt/site/z",
+        f"/tmp/{site.user}/w",
+        site.user,
+    }

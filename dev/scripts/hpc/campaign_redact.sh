@@ -3,9 +3,10 @@
 # (dev/plans/slurm-benchmark-support.md, "Records and hand-back"), or check
 # other files as the copies are checked.
 #
-#   campaign_redact.sh CAMPAIGN_DIR OUT_DIR [--path NAME=PATH ...]
+#   campaign_redact.sh CAMPAIGN_DIR OUT_DIR [--path NAME=PATH ...] \
+#       [--allow STRING ...]
 #   campaign_redact.sh CAMPAIGN_DIR --check FILE [FILE ...] \
-#       [--path NAME=PATH ...]
+#       [--path NAME=PATH ...] [--allow STRING ...]
 #
 # On the login node, in the account that ran the campaign, once
 # campaign_finish.sh has passed. It runs `campaign_contract.py redact` in
@@ -42,11 +43,17 @@
 # The username and the home directory are this process's (USER, LOGNAME,
 # HOME and the password database), never read from a file, which is why it
 # runs in the account that ran the campaign. It refuses, and writes
-# nothing, when a copy still holds, as a plain substring, a value of the
-# site block that is a path or a command, a named directory, the username,
-# the home directory or a hostname of the campaign (in any letter case),
-# or an absolute path outside the system's directories (/usr, /etc, /tmp
-# and the like) that no name covers, naming the file and the string.
+# nothing, when a copy still holds a value of the site block that is a path
+# or a command, a named directory or the home directory (as a plain
+# substring), the username or a hostname of the campaign (as a whole name,
+# which no letter, digit, _ or - flanks, nor a dot that continues the name;
+# a hostname in any letter case), or an absolute path outside the system's
+# directories (/usr, /etc, /tmp and the like) that no name covers, naming
+# the file and the string. It also refuses a username or a hostname that is
+# itself a name the copies write (login, the node family), which the check
+# could not tell apart from it. A hit that is benign (a short username
+# that is also a word of a copy, say) is exempted with --allow STRING, and
+# redaction.json records each allowed string with the hits it cleared.
 #
 # With --check, it searches the FILEs, which it did not write (the README
 # beside the tracked copies, say), for the same strings, and refuses when

@@ -74,6 +74,7 @@ LEAKS = {
     "FINISH_MEM",
     "ARCHIVE_PART_SIZE",
     "STEP_POLL",
+    "STEP_WAIT_LIMIT",
     *contract.SETTINGS,
 }
 
@@ -951,6 +952,7 @@ def test_finish_verifies_runs_the_steps_and_archives(world):
     for call, step in ((verify, "verify"), (summarize, "summarize")):
         assert call["env"]["CAMPAIGN_STEP"] == step
         assert "--parsable" in call["args"] and "--wait" not in call["args"]
+        assert "--no-requeue" in call["args"]
         assert value(call["args"], "-C") == "stubfeat"
         assert "--hint=nomultithread" in call["args"]
         assert value(call["args"], "--output").endswith(
@@ -1049,10 +1051,19 @@ def test_finish_counts_cases_in_flight_apart_from_missing_ones(world):
         "in_flight indices: 5" in result.stderr
         and "queued indices: 6" in result.stderr
     )
-    assert (out / "summary.json").exists()
-    archive = world.finish("c1", "--allow-running")
-    assert archive.returncode == 1 and "not archiving" in archive.stderr
+    # A look: no finishing step, no archive, whatever the flags ask.
+    assert "a look at the campaign as it stands" in result.stderr
+    assert not (out / "summary.json").exists()
+    look = ok(world.finish("c1", "--allow-running"))
+    assert "the finishing steps and the archive are skipped" in look.stderr
+    assert not (out / "summary.json").exists()
     assert not list(world.campaigns.glob("c1.tar.zst*"))
+    assert [call["env"].get("CAMPAIGN_STEP") for call in world.calls()] == [
+        None,
+        None,
+        "verify",
+        "verify",
+    ]
     # The queue empties while case 5 still runs: in flight by its claim alone.
     shutil.rmtree(world.state / "squeue")
     assert (
@@ -1067,6 +1078,7 @@ def test_finish_counts_cases_in_flight_apart_from_missing_ones(world):
         "missing indices: 6" in missing.stderr and "ARRAY=6" in missing.stderr
     )
     ok(world.finish("c1", "--allow-missing", "--no-archive"))
+    assert (out / "summary.json").exists()
 
 
 def wait_for(path, process, log, timeout=120):
@@ -1169,6 +1181,70 @@ def test_a_killed_task_is_interrupted_and_its_resubmission_completes(world):
     [retired] = contract.retired_claims(out, "g0/c002")
     assert retired.name.startswith("c002.stale.1001_2.")
     ok(world.finish("c1", "--no-archive"))
+
+
+def contract_command(world, *args):
+    """``campaign_contract.py`` of the scratch checkout, as the operator runs
+    it on the login node."""
+    return subprocess.run(
+        [
+            sys.executable,
+            posix(world.repo / "dev" / "scripts" / "campaign_contract.py"),
+            *(str(a) for a in args),
+        ],
+        env=world.environment(),
+        capture_output=True,
+        text=True,
+        stdin=subprocess.DEVNULL,
+        timeout=300,
+    )
+
+
+def test_a_case_that_never_finishes_is_given_up(world):
+    """A case that its time limit stops every time stays missing, which
+    would hold back what needs every case settled (the pools' select). The
+    operator gives it up: verify places it as failed, the finish goes on,
+    and a later task of the case exits at once, touching nothing."""
+    ok(world.submit("c1", "--cases", "3"))
+    run_tasks(world, "c1", (1, 3))
+    stopped = world.task("c1", 2, STUB_SIGNAL_SELF=1)
+    assert stopped.returncode == 128 + signal.SIGTERM
+    out = world.campaign()
+    missing = world.finish("c1", "--no-archive")
+    assert missing.returncode == contract.FINISH_MISSING
+    give_up = ("give-up", "--out", posix(out), "--case")
+    # Refused for a case in flight, a complete one and one of no campaign.
+    world.claim("c1", "g0/c002", "900", "1")
+    world.answer("900_1", "RUNNING\n")
+    result = contract_command(world, *give_up, "g0/c002", "--reason", "x")
+    assert result.returncode == 1 and "900_1" in result.stderr
+    contract.claim_path(out, "g0/c002").unlink()
+    for tag, message in (
+        ("g0/c001", "has a completion record"),
+        ("g0/c009", "is not a case"),
+    ):
+        result = contract_command(world, *give_up, tag, "--reason", "x")
+        assert result.returncode == 1 and message in result.stderr
+    assert not contract.error_path(out, "g0/c002").exists()
+    reason = "SIGTERM at every time limit"
+    result = contract_command(world, *give_up, "g0/c002", "--reason", reason)
+    assert result.returncode == 0, result.stdout + result.stderr
+    [line] = (out / "slurm" / "given_up.txt").read_text("utf-8").splitlines()
+    assert " g0/c002 given up by " in line and line.endswith(f": {reason}")
+    # A later task of the case.
+    before = snapshot(out)
+    again = ok(world.task("c1", 2))
+    assert f"the operator gave it up ({reason})" in again.stdout
+    assert snapshot(out) == before
+    # The finish: a failed case, the finishing steps, the archive.
+    result = ok(world.finish("c1"))
+    assert "failed indices: 2" in result.stderr
+    report = json.loads((out / "verification.json").read_text("utf-8"))
+    given = report["cases"][1]
+    assert given["status"] == "failed"
+    assert given["reason"] == f"given up by the operator: {reason}"
+    assert (out / "summary.json").exists()
+    assert list(world.campaigns.glob("c1.tar.zst.000"))
 
 
 def test_finish_stops_on_a_failed_verification(world):
@@ -1298,33 +1374,45 @@ def test_finish_refuses_to_archive_without_zstd(world):
 
 
 def test_the_real_affinity_of_a_task_reaches_verify(world):
-    """Without the stubs' one-core affinity, the record holds this host's,
-    which a workstation cannot make one physical core: on Linux it spans
-    the cores the test runs on, and on Windows it is null."""
+    """Without the stubs' one-core affinity, a record holds the affinity of
+    the host the test runs on, and verify judges it as it judges a node's.
+    A workstation's spans several cores, Windows records none, and a node
+    of the cluster, whose environment check runs this test as a batch job,
+    may give its tasks one core or one of its hardware threads. The tasks
+    run with the stubs' job ids, not the batch job's, so the verdict
+    expected is the one on the records themselves."""
     ok(world.submit("c1", "--cases", "2"))
     for index in (1, 2):
         ok(world.task("c1", index, STUB_FAKE_AFFINITY=None))
-    host = {
-        "node_features": {"available": ["stubfeat"]},
-        "cpu_affinity": contract.cpu_affinity(False),
-    }
-    expected = contract.host_problems(host, "stubfeat")
+    out = world.campaign()
+    problems = {}
+    for tag in ("g0/c001", "g0/c002"):
+        record = contract.read_json(contract.record_path(out, tag))
+        host = record["identity"]["host"]
+        if sys.platform.startswith("linux"):
+            assert host["cpu_affinity"]["cpus"] == sorted(
+                os.sched_getaffinity(0)
+            )
+        elif sys.platform == "win32":
+            assert host["cpu_affinity"] is None
+        problems[tag] = contract.host_problems(host, "stubfeat")
     result = world.finish("c1", "--no-archive")
-    report = json.loads(
-        (world.campaign() / "verification.json").read_text("utf-8")
-    )
-    if not expected:  # a Linux host of one core, with no SMT
+    report = json.loads((out / "verification.json").read_text("utf-8"))
+    failed = [case for case in report["cases"] if problems[case["tag"]]]
+    if not failed:
         assert result.returncode == 0, result.stderr
+        assert report["counts"]["verified"] == 2
         return
     assert result.returncode == 1
-    assert "verify_failed indices: 1-2" in result.stderr
-    if sys.platform.startswith("linux"):
-        assert "physical cores" in expected[0]
-    else:
-        assert expected[0] == "the record holds no CPU affinity"
+    indices = contract.compress_indices(case["index"] for case in failed)
+    assert f"verify_failed indices: {indices}" in result.stderr
     for case in report["cases"]:
+        expected = problems[case["tag"]]
+        if not expected:
+            assert case["status"] == "verified"
+            continue
         assert case["status"] == "verify_failed"
-        assert expected[0].split(" [")[0] in case["error"]
+        assert "; ".join(expected) in case["error"]
 
 
 def test_a_queue_that_cannot_answer_holds_the_finish(world):
@@ -1336,11 +1424,19 @@ def test_a_queue_that_cannot_answer_holds_the_finish(world):
     assert "does not answer for job 1001" in result.stderr
     assert "--allow-running" in result.stderr
     assert len(world.calls()) == 1
-    # A look at the campaign as it stands: verified, finished, not archived.
-    result = world.finish("c1", "--allow-running")
-    assert result.returncode == 1 and "not archiving" in result.stderr
-    assert (out / "summary.json").exists()
+    # A look at the campaign as it stands: verified, and neither finished
+    # nor archived; a finishing step that would fail is never submitted.
+    result = ok(world.finish("c1", "--allow-running", STUB_SUMMARIZE_FAIL=1))
+    assert "a look at the campaign as it stands" in result.stderr
+    assert (
+        json.loads((out / "verification.json").read_text("utf-8"))["counts"][
+            "verified"
+        ]
+        == 2
+    )
+    assert not (out / "summary.json").exists()
     assert not list(world.campaigns.glob("c1.tar.zst*"))
+    assert len(world.calls()) == 2
     # The accounting shows every task of the job ended: the finish goes on.
     (world.state / "sacct_accounting").write_text(
         "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
@@ -1350,7 +1446,40 @@ def test_a_queue_that_cannot_answer_holds_the_finish(world):
         encoding="utf-8",
     )
     ok(world.finish("c1"))
+    assert (out / "summary.json").exists()
     assert list(world.campaigns.glob("c1.tar.zst.000"))
+
+
+def test_the_finish_judges_the_allocation_rows_alone(world):
+    """A step's row left RUNNING in the database after its node failed
+    holds neither the queue check nor the archive; the file keeps it."""
+    out = finished_tasks(world)
+    (world.state / "sacct_accounting").write_text(
+        "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
+        "1001_1|c1|COMPLETED|0:0|00:01:00||1|node1\n"
+        "1001_1.batch|batch|COMPLETED|0:0|00:01:00|10M|1|node1\n"
+        "1001_2|c1|NODE_FAIL|0:0|00:01:00||1|node1\n"
+        "1001_2.batch|batch|RUNNING|0:0|00:01:00|10M|1|node1\n"
+        "1001_2.extern|extern|RUNNING|0:0|00:01:00|0|1|node1\n",
+        encoding="utf-8",
+    )
+    # The controller has dropped the job: the accounting resolves it.
+    (world.state / "squeue").mkdir(exist_ok=True)
+    (world.state / "squeue" / "1001.fail").write_text("", encoding="utf-8")
+    ok(world.finish("c1"))
+    assert list(world.campaigns.glob("c1.tar.zst.000"))
+    accounting = (out / "slurm" / "sacct.txt").read_text("utf-8")
+    assert "1001_2.batch|batch|RUNNING|0:0|00:01:00|10M" in accounting
+    # The allocation's own row still running holds both.
+    (world.state / "sacct_accounting").write_text(
+        "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
+        "1001_1|c1|COMPLETED|0:0|00:01:00||1|node1\n"
+        "1001_2|c1|RUNNING|0:0|00:01:00||1|node1\n",
+        encoding="utf-8",
+    )
+    result = world.finish("c1")
+    assert result.returncode == 1
+    assert "does not answer for job 1001" in result.stderr
 
 
 def test_the_queue_counts_no_task_that_has_ended(world):
@@ -1434,6 +1563,33 @@ def test_a_step_job_is_recorded_before_the_finish_waits_for_it(world):
     result = world.finish("c1", "--no-archive")
     assert result.returncode == 1
     assert f"{job} PENDING" in result.stderr
+
+
+def test_the_finish_stops_waiting_for_a_step_at_its_limit(world):
+    """A step job the accounting shows pending, or that a failing sacct
+    never shows, past STEP_WAIT_LIMIT: the finish stops, and the recorded
+    job holds the next one while it may still run."""
+    out = finished_tasks(world)
+    refused(
+        world.finish("c1", STEP_WAIT_LIMIT="1h"),
+        "STEP_WAIT_LIMIT=1h is not a number of seconds",
+    )
+    (world.state / "step_hold").write_text("", encoding="utf-8")
+    result = world.finish("c1", "--no-archive", STEP_WAIT_LIMIT="0.3")
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "gave up waiting" in result.stdout
+    assert "stopped waiting for job" in result.stderr
+    assert "STEP_WAIT_LIMIT=0.3" in result.stderr
+    steps = (out / "slurm" / "steps.txt").read_text("utf-8").splitlines()
+    assert [line.split()[1:3] for line in steps] == [
+        ["step=verify", "submitted"],
+        ["step=verify", "rc=124"],
+    ]
+    assert not (out / "verification.json").exists()
+    (world.state / "step_hold").unlink()
+    result = world.finish("c1", "--no-archive")
+    assert result.returncode == 1
+    assert f"{steps[0].split()[0]} PENDING" in result.stderr
 
 
 # --------------------------------------------------------------------------
