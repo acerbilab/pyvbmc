@@ -341,7 +341,10 @@ its entry below.
   New quickstart sections on reproducible runs, Torch and JAX targets,
   vectorized targets, PyMC models and the use of a fitted posterior. The
   noisy target of Example 6 computes its noise point by point, so it also
-  works when it is called with several points at once.
+  works when it is called with several points at once. Every example shows
+  the output of this release, Examples 1 and 6 fix their random state so
+  that they reproduce, and the notebook of Example 2 is a tenth of its
+  former size.
   `skills/pyvbmc/SKILL.md` in the repository guides a coding agent through the
   documentation.
 
