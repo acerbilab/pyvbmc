@@ -57,11 +57,8 @@ from benchmark_targets import TARGET_NAMES, find_config, make_problem, metrics
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 # The package of this checkout, whichever checkout is installed: the records
-# are labelled with this checkout's commit. A tree that PYVBMC_SOURCE names
-# (a worktree at another commit) goes ahead of it, as in golden_trace.py.
+# are labelled with this checkout's commit.
 sys.path.insert(0, str(REPO_ROOT))
-if os.environ.get("PYVBMC_SOURCE"):
-    sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
 DEFAULT_OUT = REPO_ROOT / "dev" / "scripts" / "runs"
 
 # Options whose effective value is worth recording because VBMC rewrites them

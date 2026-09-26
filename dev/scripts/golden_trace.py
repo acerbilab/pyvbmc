@@ -26,13 +26,14 @@ blocks with index vectors, final arrays) and ``<label>_seed<seed>.json``
 (config, seed, options as requested and as effective, provenance, final
 scalar metrics). ``summary`` and ``compare`` read only the sidecars.
 
-The package run is this checkout's, whichever checkout is installed, unless
-``PYVBMC_SOURCE`` names another tree (a worktree at another commit), which
-then goes ahead of this checkout on ``sys.path``. The sidecar's ``meta``
-records this checkout's commit (``git``), the path and commit of the
-imported PyVBMC and gpyreg (``pyvbmc_source``, ``gpyreg_source``), the
-imported versions of NumPy, SciPy and cma, and, under
-``installed_metadata_versions``, the versions that the installed
+The package run is this checkout's, whichever checkout is installed:
+importing this module puts the checkout first on ``sys.path``. A process
+that has imported PyVBMC from another tree before (``population_run.py``,
+whose package tree ``PYVBMC_SOURCE`` names) runs that tree's. The
+sidecar's ``meta`` records this checkout's commit (``git``), the path and
+commit of the imported PyVBMC and gpyreg (``pyvbmc_source``,
+``gpyreg_source``), the imported versions of NumPy, SciPy and cma, and,
+under ``installed_metadata_versions``, the versions that the installed
 distributions of PyVBMC and gpyreg name, which differ from the imported
 trees' when a tree is pinned by path.
 
@@ -58,11 +59,9 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
-# The package of this checkout, whichever checkout is installed, or the
-# tree PYVBMC_SOURCE names, which goes ahead of it (module docstring).
+# The package of this checkout, whichever checkout is installed (module
+# docstring).
 sys.path.insert(0, str(REPO_ROOT))
-if os.environ.get("PYVBMC_SOURCE"):
-    sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
 # Rough solo minutes per run, used only to order tasks longest-first when

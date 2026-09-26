@@ -15,21 +15,33 @@ Two kinds of assessment:
 - **Two arms of array mode** (``--arms REFERENCE CANDIDATE``): campaigns of
   ``population_run.py`` on one allocation, run by different code, compared
   seed by seed. Each arm is checked against its own ``verification.json``
-  (every file read here must be the one its verification checked, under a
-  completion record of the arm's identity), and the two arms must share the
-  harness, the targets module and its data. The comparison reads each
-  arm's sidecars and boost reports and the metrics that ``population_run.py
-  rescore`` recomputed with the release code (``--rescored``, by default
-  the candidate's ``rescored/``), so that this process imports no package
-  but its own. Either arm may be a campaign directory or its tracked
-  copies in the repository, redacted by ``campaign_contract.py
-  redact``, which give the same report. It reports a KS screen per
-  configuration and metric under one Holm family, the paired changes,
-  the descriptive paired family (every configuration: signed-rank tests
-  of the three accuracy metrics and the evaluation count, McNemar tests
-  of usability, one Holm family), the confirmatory family fixed in both
-  arms' manifests, and every boost decision of each arm checked against
-  the guard.
+  (``population_run.checked_verification``: the report must still describe
+  the directory, and every file read here must be the one it checked,
+  under a completion record of the arm's identity). The two arms must share
+  the allocation, the options, the confirmatory family, the harness
+  checkout, the harness files (the targets module and its data among
+  them) and the environment's versions, and their package trees must be
+  at different commits. The comparison reads each arm's sidecars and boost
+  reports and the metrics that ``population_run.py rescore`` recomputed
+  with the release code, in the campaign given by ``--rescoring`` (by
+  default the candidate), whose ``rescoring.json`` names the rescoring
+  process's identity and the SHA-256 of each file of rescored metrics, so
+  that this process imports no package but its own. The rescoring's source
+  identity must be the candidate's, and the candidate's rescored metrics
+  must equal its in-run metrics in every verified case. Either arm, and the
+  rescoring campaign, may be a campaign directory or its tracked copies in
+  the repository, redacted by ``campaign_contract.py redact``, which give
+  the same report. It reports a KS screen per configuration and metric
+  under one Holm family, the paired changes, the descriptive paired family
+  (every configuration: signed-rank tests of the three accuracy metrics
+  and the evaluation count, McNemar tests of usability, one Holm family),
+  the confirmatory family fixed in both arms' manifests, at the size they
+  fix (:func:`confirmatory_tests`), and every boost decision of each arm
+  checked against the guard. A rescored metric that is not finite makes
+  its run unusable and leaves its pair out of that metric's signed-rank
+  tests, which count such pairs. The usability counts of the boost
+  summaries come from each arm's in-run metrics
+  (:data:`BOOST_USABILITY_BASIS`).
 """
 
 import argparse
@@ -118,10 +130,21 @@ def holm(tests, alpha=ALPHA):
     return tests
 
 
-def signed_rank_test(label, metric, rows):
-    delta = np.array([row["delta"][metric] for row in rows])
+def signed_rank_test(label, metric, rows, nonfinite=False):
+    """The exact signed-rank test of one metric's paired differences.
+
+    With ``nonfinite`` the pairs whose difference is not finite (a metric
+    that is not finite in one arm or both) are left out of the test and counted
+    (``nonfinite_pairs``); the other counts and the median are those of the
+    tested pairs. Without it a difference that is not finite raises, as the
+    campaigns of one treatment against the golden reference have none.
+    """
+    delta = np.array([row["delta"][metric] for row in rows], dtype=float)
+    finite = np.isfinite(delta)
+    if nonfinite:
+        delta = delta[finite]
     statistic, pvalue = exact_signed_rank(delta)
-    return {
+    test = {
         "label": label,
         "metric": metric,
         "method": "exact signed-rank sign permutation",
@@ -129,10 +152,15 @@ def signed_rank_test(label, metric, rows):
         "improved": int(sum(delta < 0)),
         "worsened": int(sum(delta > 0)),
         "tied": int(sum(delta == 0)),
-        "median_paired_change": float(np.median(delta)),
+        "median_paired_change": (
+            float(np.median(delta)) if len(delta) else float("nan")
+        ),
         "statistic": statistic,
         "pvalue": pvalue,
     }
+    if nonfinite:
+        test["nonfinite_pairs"] = int(sum(~finite))
+    return test
 
 
 def mcnemar_test(label, rows):
@@ -160,21 +188,86 @@ def paired_tests(
     adjust=True,
     usability=True,
     alpha=ALPHA,
+    nonfinite=False,
 ):
     """Test within-configuration seed pairs; one Holm family when `adjust`.
 
     Signed-rank nulls assume symmetric, independent seed differences.
     Usability uses exact McNemar tests, conditional on the discordant pairs
-    (left out when `usability` is false).
+    (left out when `usability` is false). `nonfinite` goes to
+    :func:`signed_rank_test`.
     """
     tests = []
     for label in sorted({row["label"] for row in changes}):
         rows = [row for row in changes if row["label"] == label]
         for metric in metrics:
-            tests.append(signed_rank_test(label, metric, rows))
+            tests.append(signed_rank_test(label, metric, rows, nonfinite))
         if usability:
             tests.append(mcnemar_test(label, rows))
     return holm(tests, alpha) if adjust else tests
+
+
+def confirmatory_tests(changes, family, planned_pairs):
+    """The confirmatory family of two arms, at the size fixed before the runs.
+
+    ``family`` is the one the arms' manifests fix
+    (``population_run.confirmatory_family``); its Holm correction runs over
+    ``family["tests"]`` tests whatever the runs gave, so that a failed
+    configuration cannot shrink the family and ease the rejection of the
+    others. A test of a configuration without a pair of seeds verified in
+    both arms, or whose paired differences are none of them finite, cannot
+    be computed: it enters the family with p = 1, so that it rejects
+    nothing and every other test is adjusted as in the family fixed before
+    the runs, and it is flagged (``computed`` false, with the ``reason``).
+    Refusing the whole comparison instead would withhold the verdict on
+    every other configuration because one failed in an arm. Every test
+    holds ``planned_pairs``, the seeds of the allocation, beside the
+    ``n_pairs`` it had.
+    """
+
+    def not_computed(label, metric, method, reason):
+        return {
+            "label": label,
+            "metric": metric,
+            "method": method,
+            "n_pairs": 0,
+            "pvalue": 1.0,
+            "computed": False,
+            "reason": reason,
+        }
+
+    tests = []
+    for label in sorted(family["labels"]):
+        rows = [row for row in changes if row["label"] == label]
+        for metric in family["signed_rank"]:
+            if not rows:
+                test = not_computed(
+                    label,
+                    metric,
+                    "exact signed-rank sign permutation",
+                    "no seed is verified in both arms",
+                )
+            else:
+                test = signed_rank_test(label, metric, rows, nonfinite=True)
+                test["computed"] = test["nonfinite_pairs"] < len(rows)
+                if not test["computed"]:
+                    test["reason"] = "no paired difference is finite"
+            tests.append(test)
+        if family["mcnemar_usability"]:
+            if not rows:
+                test = not_computed(
+                    label,
+                    "usable",
+                    "exact McNemar",
+                    "no seed is verified in both arms",
+                )
+            else:
+                test = mcnemar_test(label, rows) | {"computed": True}
+            tests.append(test)
+    for test in tests:
+        test["planned_pairs"] = planned_pairs
+    assert len(tests) == family["tests"], (len(tests), family["tests"])
+    return holm(tests, family["alpha"])
 
 
 def usable(metrics):
@@ -191,23 +284,40 @@ def load_rows(folder):
     }
 
 
-def describe(rows):
+def describe(rows, nonfinite=False):
+    """Counts and metric quantiles of a set of runs.
+
+    With ``nonfinite`` the quantiles of each metric are those of its finite
+    values (NaN when none is), and ``nonfinite`` counts the others; a run
+    with a metric that is not finite is never usable.
+    """
     finals = [r["final"] for r in rows]
-    return {
+
+    def spread(values):
+        if nonfinite:
+            values = [v for v in values if np.isfinite(v)]
+            if not values:
+                return {"median": np.nan, "q90": np.nan, "max": np.nan}
+        return {
+            "median": float(np.median(values)),
+            "q90": float(np.quantile(values, 0.9)),
+            "max": float(max(values)),
+        }
+
+    keys = (*QUALITY, "func_count", "wall_s", "peak_rss_mb")
+    result = {
         "n": len(rows),
         "converged": sum(bool(r["success_flag"]) for r in finals),
         "usable": sum(usable(r) for r in finals),
         "optimizer_seconds": sum(r["wall_s"] for r in finals),
         "evaluations": sum(r["func_count"] for r in finals),
-        "metrics": {
-            k: {
-                "median": float(np.median([r[k] for r in finals])),
-                "q90": float(np.quantile([r[k] for r in finals], 0.9)),
-                "max": float(max(r[k] for r in finals)),
-            }
-            for k in (*QUALITY, "func_count", "wall_s", "peak_rss_mb")
-        },
+        "metrics": {k: spread([r[k] for r in finals]) for k in keys},
     }
+    if nonfinite:
+        result["nonfinite"] = {
+            k: sum(not np.isfinite(r[k]) for r in finals) for k in keys
+        }
+    return result
 
 
 #: Pool golden-harness populations (``load_population``) by label.
@@ -584,19 +694,35 @@ def analyze(campaign, extensions, out):
 # --------------------------------------------------------------------------
 
 
-def load_array_campaign(path, rescored_dir):
+def read_rescoring(directory):
+    """The record of a rescoring (``population_run.RESCORING``).
+
+    ``directory`` is the campaign whose ``rescore`` step rescored the arms,
+    or its tracked copies.
+    """
+    path = Path(directory) / runner.RESCORING
+    assert path.is_file(), f"{directory} holds no {runner.RESCORING}"
+    return json.loads(path.read_text())
+
+
+def load_array_campaign(path, rescoring_dir, rescoring):
     """Read one campaign of array mode, checked against its own verification.
 
-    Its ``verification.json`` must reconcile the manifest's allocation, have
-    passed (exit code 0) and name the manifest's SHA-256. Every case it
-    places as verified must have a completion record whose source identity
-    is the manifest's, and the sidecar and boost report read here must be
-    the files that record hashes. The rescored metrics
-    (``<rescored_dir>/<directory name>.json``) must be those of this
-    manifest and this verification, rescored from that sidecar. Cases in
-    other states are counted, not read. ``path`` may also be the tracked
-    copies of a campaign, redacted by ``campaign_contract.redact``: each
-    file is then checked against the SHA-256 its ``redaction.json``
+    Its ``verification.json`` must pass
+    ``population_run.checked_verification``: reconcile the manifest's
+    allocation, have passed (exit code 0), name the manifest's SHA-256 and
+    still describe the directory (the record of every verified case is the
+    one it checked, and no other case has one). Every verified case's
+    record must hold the manifest's source identity, and the sidecar and
+    boost report read here must be the files that record hashes. The
+    rescored metrics must be the file ``rescored/<directory name>.json`` of
+    ``rescoring_dir`` whose SHA-256 ``rescoring`` (that directory's
+    ``rescoring.json``) records, made by the process that record names, for
+    this manifest and this verification, and from the trace, posterior
+    arrays and sidecar that each case's record hashes. Cases in other states
+    are counted, not read. ``path`` and ``rescoring_dir`` may also be the
+    tracked copies of campaigns, redacted by ``campaign_contract.redact``:
+    each file is then checked against the SHA-256 its ``redaction.json``
     records, and that of the campaign's own file, which the records and
     reports hash, is compared in its place
     (``campaign_contract.source_sha256``); the campaign's name is the one
@@ -614,18 +740,25 @@ def load_array_campaign(path, rescored_dir):
         source identity).
     """
     path = Path(path).resolve()
+    rescoring_dir = Path(rescoring_dir).resolve()
     contract = runner.contract
     name = contract.source_name(path)
     manifest = json.loads((path / "manifest.json").read_text())
-    verification = json.loads((path / "verification.json").read_text())
+    verification = runner.checked_verification(path, manifest)
     manifest_sha256 = contract.source_sha256(path, "manifest.json")
     verification_sha256 = contract.source_sha256(path, "verification.json")
-    assert [case["case"] for case in verification["cases"]] == (
-        runner.case_lines(manifest)
-    ), f"{path}: the verification does not reconcile the manifest"
-    assert verification["exit_code"] == 0, (path, verification["counts"])
-    assert verification["manifest_sha256"] == manifest_sha256
-    rescored = json.loads((Path(rescored_dir) / f"{name}.json").read_text())
+    entry = rescoring["rescored"].get(name)
+    assert entry is not None, f"{rescoring_dir} did not rescore {name}"
+    rel = f"rescored/{name}.json"
+    assert entry["file"] == rel, (name, entry["file"])
+    assert (
+        contract.source_sha256(rescoring_dir, rel) == entry["sha256"]
+    ), f"{rescoring_dir / rel} is not the file its rescoring wrote"
+    rescored = json.loads((rescoring_dir / rel).read_text())
+    assert (
+        rescored["rescoring"]["identity"]["source"]
+        == rescoring["identity"]["source"]
+    ), f"{rescoring_dir / rel}: rescored by another process"
     assert (
         rescored["campaign"]["manifest_sha256"] == manifest_sha256
     ), f"{path}: rescored for another manifest"
@@ -655,10 +788,11 @@ def load_array_campaign(path, rescored_dir):
         assert (side["label"], side["seed"]) == (label, seed), tag
         again = rescored["cases"][stem]
         assert again["status"] == "rescored", tag
-        assert (
-            again["artifacts"][files["sidecar"]]
-            == record["artifacts"][files["sidecar"]]["sha256"]
-        ), f"{tag}: rescored from another sidecar"
+        for key in ("trace", "posterior", "sidecar"):
+            assert (
+                again["artifacts"][files[key]]
+                == record["artifacts"][files[key]]["sha256"]
+            ), f"{tag}: rescored from another {key}"
         in_run = {key: side["final"][key] for key in runner.RESCORED_METRICS}
         rows[stem] = {
             "label": label,
@@ -728,35 +862,72 @@ def ks_screen(reference, candidate, alpha=ALPHA):
 
 
 def _describe(rows):
-    return describe(rows) if rows else None
+    return describe(rows, nonfinite=True) if rows else None
 
 
-def analyze_arms(reference, candidate, rescored, out):
-    """Compare two arms of array mode (module docstring); write the report."""
+#: What the usability counts of the boost summaries of two arms rest on.
+BOOST_USABILITY_BASIS = (
+    "each arm's in-run metrics of its pre-boost, candidate and returned "
+    "posteriors (its boost reports), computed by that arm's own code; the "
+    "pre-boost and candidate posteriors are not rescored, so these counts "
+    "are not those of the rescored metrics"
+)
+
+
+def analyze_arms(reference, candidate, rescoring, out):
+    """Compare two arms of array mode (module docstring); write the report.
+
+    ``rescoring`` is the campaign whose ``rescore`` step rescored both arms,
+    or its tracked copies (None: the candidate). The candidate is the arm
+    of the rescoring's own code: the rescoring's source identity must be
+    the candidate manifest's, and every verified candidate case's rescored
+    metrics must equal its in-run metrics.
+    """
     if not __debug__:
         raise RuntimeError(
             "Run without -O: artifact validation uses assertions."
         )
-    rescored = Path(rescored) if rescored else Path(candidate) / "rescored"
-    ref = load_array_campaign(reference, rescored)
-    new = load_array_campaign(candidate, rescored)
+    rescoring_dir = Path(rescoring) if rescoring else Path(candidate)
+    record = read_rescoring(rescoring_dir)
+    ref = load_array_campaign(reference, rescoring_dir, record)
+    new = load_array_campaign(candidate, rescoring_dir, record)
     for key in ("allocation", "options", "confirmatory"):
         assert (
             ref["manifest"][key] == new["manifest"][key]
         ), f"the arms have different {key}"
+    differing = runner.pair_differences(new["identity"], ref["identity"])
+    assert not differing, differing
     a, b = ref["identity"]["source"], new["identity"]["source"]
-    assert a["trees"]["harness"] == b["trees"]["harness"], "harness commits"
-    assert a["files"] == b["files"], "the harness files differ"
-    assert a["versions"] == b["versions"], "the environments differ"
-    assert ref["rescoring"] == new["rescoring"], "rescored by other code"
-    rescoring_trees = ref["rescoring"]["trees"]
+    source = record["identity"]["source"]
     assert (
-        rescoring_trees["pyvbmc"]
-        == rescoring_trees["harness"]
-        == (a["trees"]["harness"])
+        source == b
+    ), "the rescoring's source identity is not the candidate's: " + str(
+        runner.contract.source_differences(record["identity"], new["identity"])
+    )
+    assert ref["rescoring"] == new["rescoring"] == source
+    assert (
+        source["trees"]["pyvbmc"]
+        == source["trees"]["harness"]
+        == a["trees"]["harness"]
     ), "not rescored by the release code of the arms' harness checkout"
+    unequal = sorted(
+        stem
+        for stem, row in new["rows"].items()
+        if not all(row["equal_to_in_run"].values())
+        or not all(
+            runner.same_value(row["final"][key], row["in_run"][key])
+            for key in runner.RESCORED_METRICS
+        )
+    )
+    assert not unequal, (
+        "the candidate's rescored metrics differ from its in-run metrics "
+        f"in {len(unequal)} cases, the first {unequal[:1]}"
+    )
     family = new["manifest"]["confirmatory"]
     labels = new["manifest"]["allocation"]["labels"]
+    assert (
+        runner.confirmatory_family(family, labels) == family
+    ), "the manifests' confirmatory family is not the one prepare fixes"
     print(
         f"Validated {len(ref['rows'])} reference and {len(new['rows'])}"
         " candidate cases against their verifications.",
@@ -781,11 +952,8 @@ def analyze_arms(reference, candidate, rescored, out):
         )
         for stem in paired
     ]
-    confirmatory = paired_tests(
-        [c for c in changes if c["label"] in family["labels"]],
-        metrics=family["signed_rank"],
-        usability=family["mcnemar_usability"],
-        alpha=family["alpha"],
+    confirmatory = confirmatory_tests(
+        changes, family, len(new["manifest"]["allocation"]["seeds"])
     )
     boosts = {
         role: [
@@ -814,12 +982,19 @@ def analyze_arms(reference, candidate, rescored, out):
                 )
                 for key in runner.RESCORED_METRICS
             },
+            "rescored_nonfinite": {
+                key: sum(
+                    not np.isfinite(row["final"][key])
+                    for row in arm["rows"].values()
+                )
+                for key in runner.RESCORED_METRICS
+            },
         }
 
     result = {
         "kind": "two arms of array mode, paired by seed",
         "arms": {"reference": arm_summary(ref), "candidate": arm_summary(new)},
-        "rescoring_source": ref["rescoring"],
+        "rescoring_source": source,
         "allocation": new["manifest"]["allocation"],
         "options": new["manifest"]["options"],
         "confirmatory_family": family,
@@ -840,12 +1015,18 @@ def analyze_arms(reference, candidate, rescored, out):
             for label in labels
         },
         "paired_changes": changes,
-        "paired_tests": paired_tests(changes),
+        "paired_tests": paired_tests(changes, nonfinite=True),
         "confirmatory_tests": confirmatory,
+        "confirmatory_not_computed": [
+            f"{t['label']} {t['metric']}"
+            for t in confirmatory
+            if not t["computed"]
+        ],
         "boosts": boosts,
         "boost_summary": {
             role: summarize_boosts(records) for role, records in boosts.items()
         },
+        "boost_usability_basis": BOOST_USABILITY_BASIS,
         "usability_losses": [
             c["tag"]
             for c in changes
@@ -880,7 +1061,11 @@ def analyze_arms(reference, candidate, rescored, out):
         flush=True,
     )
     print("Flagged by the KS screen:", sorted(flagged), flush=True)
-    print("Boost:", result["boost_summary"], flush=True)
+    print(
+        "Boost (usability from each arm's in-run metrics):",
+        result["boost_summary"],
+        flush=True,
+    )
     print("Usability losses:", result["usability_losses"], flush=True)
     print("Usability gains:", result["usability_gains"], flush=True)
     rejected = [t for t in confirmatory if t["holm_rejected"]]
@@ -894,6 +1079,12 @@ def analyze_arms(reference, candidate, rescored, out):
         ),
         flush=True,
     )
+    if result["confirmatory_not_computed"]:
+        print(
+            "Confirmatory tests not computed (p = 1):",
+            result["confirmatory_not_computed"],
+            flush=True,
+        )
     return result
 
 
@@ -923,10 +1114,10 @@ if __name__ == "__main__":
         help="compare two arms of array mode instead, seed by seed",
     )
     parser.add_argument(
-        "--rescored",
+        "--rescoring",
         type=Path,
-        help="with --arms: the directory of the rescored metrics"
-        " (default: the candidate's rescored/)",
+        help="with --arms: the campaign whose rescore step rescored both"
+        " arms, or its tracked copies (default: the candidate)",
     )
     parser.add_argument(
         "--out",
@@ -938,7 +1129,7 @@ if __name__ == "__main__":
     if args.arms:
         if args.out is None:
             parser.error("--arms needs --out")
-        analyze_arms(*args.arms, args.rescored, args.out)
+        analyze_arms(*args.arms, args.rescoring, args.out)
     else:
         analyze(
             args.campaign,

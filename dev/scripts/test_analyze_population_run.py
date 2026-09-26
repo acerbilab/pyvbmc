@@ -3,13 +3,16 @@
 The statistics are checked against SciPy and an independent count; the
 comparison of two arms of array mode runs on campaign directories that the
 fixtures here write (sidecars, boost reports, completion records,
-verification reports and rescored metrics), which test the reader and the
-statistics, not VBMC. Two such arms, run at a stand-in site
+verification reports, rescored metrics and the rescoring's record), which
+test the reader and the statistics, not VBMC; ``test_population_run.py``
+runs the comparison on arms that the harness itself verified and
+rescored. Two such arms, run at a stand-in site
 (``campaign_slurm_stubs.FakeSite``), are compared as they are and as their
 redacted tracked copies.
 """
 
 import copy
+import hashlib
 import json
 from fractions import Fraction
 
@@ -270,7 +273,7 @@ def write_arm(root, role, pyvbmc_commit, files=None, site=None):
         manifest.update(
             site=site.site_block("dev/scripts/population_run.py"),
             pip_freeze=[f"gpyreg @ file://{site.gpyreg.as_posix()}"],
-            tracked_copies=runner.TRACKED_COPIES,
+            tracked_copies=runner.tracked_copies(role == "candidate"),
         )
     runner.write_json(path / "manifest.json", manifest)
     cases, rescored = [], {}
@@ -320,22 +323,34 @@ def write_arm(root, role, pyvbmc_commit, files=None, site=None):
         report_path = path / files_of["boost_report"]
         runner.write_json(report_path, report)
         artifacts = {
+            files_of["trace"]: {"sha256": fake_sha256(role, "trace", stem)},
+            files_of["posterior"]: {
+                "sha256": fake_sha256(role, "posterior", stem)
+            },
             files_of["sidecar"]: {"sha256": runner.sha256(side_path)},
             files_of["boost_report"]: {"sha256": runner.sha256(report_path)},
         }
+        record_path = contract.record_path(path, tag)
         runner.write_json(
-            contract.record_path(path, tag),
+            record_path,
             {"tag": tag, "identity": identity, "artifacts": artifacts},
         )
         cases.append(
-            {"index": index, "tag": tag, "case": line, "status": "verified"}
+            {
+                "index": index,
+                "tag": tag,
+                "case": line,
+                "status": "verified",
+                "record_sha256": runner.sha256(record_path),
+            }
         )
         rescored[stem] = {
             "status": "rescored",
             "metrics": again,
             "equal_to_in_run": {k: again[k] == in_run[k] for k in again},
             "artifacts": {
-                files_of["sidecar"]: artifacts[files_of["sidecar"]]["sha256"]
+                files_of[key]: artifacts[files_of[key]]["sha256"]
+                for key in ("trace", "posterior", "sidecar")
             },
         }
     counts = {status: 0 for status in contract.STATUSES}
@@ -360,33 +375,53 @@ def write_arm(root, role, pyvbmc_commit, files=None, site=None):
     return path, rescored
 
 
-def write_rescored(candidate, arm, cases, site=None):
-    identity = {"source": source(HARNESS)}
+def write_rescoring(candidate, arms, site=None, rescoring_source=None):
+    """The rescored metrics of ``arms`` (``{arm directory: cases}``) and the
+    rescoring's record, in the candidate, as ``population_run.py rescore``
+    writes them: by a process of the candidate's source identity unless
+    ``rescoring_source`` names another."""
+    identity = {"source": rescoring_source or source(HARNESS)}
     if site is not None:
         identity = sited(site, identity)
-    runner.write_json(
-        candidate / "rescored" / f"{arm.name}.json",
-        {
-            "campaign": {
-                "name": arm.name,
-                "path": str(arm),
-                "manifest_sha256": runner.sha256(arm / "manifest.json"),
-                "verification_sha256": runner.sha256(
-                    arm / "verification.json"
-                ),
+    rescored = {}
+    for arm, cases in arms.items():
+        rel = f"rescored/{arm.name}.json"
+        runner.write_json(
+            candidate / rel,
+            {
+                "campaign": {
+                    "name": arm.name,
+                    "path": str(arm),
+                    "manifest_sha256": runner.sha256(arm / "manifest.json"),
+                    "verification_sha256": runner.sha256(
+                        arm / "verification.json"
+                    ),
+                },
+                "rescoring": {"identity": identity},
+                "cases": cases,
             },
-            "rescoring": {"identity": identity},
-            "cases": cases,
-        },
+        )
+        rescored[arm.name] = {
+            "file": rel,
+            "sha256": runner.sha256(candidate / rel),
+            "path": str(arm),
+        }
+    runner.write_json(
+        candidate / runner.RESCORING,
+        {"identity": identity, "rescored": rescored},
     )
+
+
+def fake_sha256(*words):
+    """The SHA-256 a record gives a file that the comparison never reads."""
+    return hashlib.sha256(" ".join(words).encode()).hexdigest()
 
 
 @pytest.fixture
 def arms(tmp_path):
     reference, before = write_arm(tmp_path, "reference", "b" * 40)
     candidate, after = write_arm(tmp_path, "candidate", HARNESS)
-    write_rescored(candidate, reference, before)
-    write_rescored(candidate, candidate, after)
+    write_rescoring(candidate, {reference: before, candidate: after})
     return reference, candidate
 
 
@@ -408,9 +443,16 @@ def test_analyze_arms_on_100_paired_seeds(arms, tmp_path):
         (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
     }
     assert len(confirmatory) == result["confirmatory_family"]["tests"] == 8
+    assert all(
+        t["computed"] and t["planned_pairs"] == 100
+        for t in confirmatory.values()
+    )
+    assert result["confirmatory_not_computed"] == []
     halved = confirmatory[(LABELS[0], "gskl")]
     assert halved["n_pairs"] == 100 and halved["improved"] == 100
+    assert halved["nonfinite_pairs"] == 0
     assert halved["pvalue"] == 2 / 2**100 and halved["holm_rejected"]
+    assert halved["holm_adjusted_pvalue"] == 8 * 2 / 2**100
     assert not any(
         t["holm_rejected"]
         for (label, _), t in confirmatory.items()
@@ -428,6 +470,8 @@ def test_analyze_arms_on_100_paired_seeds(arms, tmp_path):
     for role in ("reference", "candidate"):
         summary = result["boost_summary"][role]
         assert summary["attempted"] == summary["accepted"] == 200
+    # The boost stages are scored by each arm's own code, and say so.
+    assert "in-run" in result["boost_usability_basis"]
     written = json.loads((tmp_path / "report" / "assessment.json").read_text())
     assert written["paired_cases"] == 200
     comparison = (tmp_path / "report" / "comparison.md").read_text()
@@ -451,7 +495,7 @@ def test_arms_refuse_a_failed_or_rewritten_verification(arms, tmp_path):
     report["cases"][3]["status"] = "verify_failed"
     report["exit_code"] = 1
     runner.write_json(path, report)
-    with pytest.raises(AssertionError):
+    with pytest.raises(contract.ContractError, match="failed its verif"):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
     report["cases"][3]["status"] = "verified"
     report["exit_code"] = 0
@@ -465,10 +509,158 @@ def test_arms_refuse_other_harness_files(tmp_path):
         tmp_path, "reference", "b" * 40, files={"other": "2" * 64}
     )
     candidate, after = write_arm(tmp_path, "candidate", HARNESS)
-    write_rescored(candidate, reference, before)
-    write_rescored(candidate, candidate, after)
+    write_rescoring(candidate, {reference: before, candidate: after})
     with pytest.raises(AssertionError, match="harness files"):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_arms_refuse_the_same_code(tmp_path):
+    reference, before = write_arm(tmp_path, "reference", HARNESS)
+    candidate, after = write_arm(tmp_path, "candidate", HARNESS)
+    write_rescoring(candidate, {reference: before, candidate: after})
+    with pytest.raises(AssertionError, match="the code with itself"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def rescored_cases(candidate, arm):
+    """The rescored cases of ``arm`` that the candidate holds."""
+    path = candidate / "rescored" / f"{arm.name}.json"
+    return json.loads(path.read_text())["cases"]
+
+
+def test_arms_refuse_a_verification_older_than_the_directory(arms, tmp_path):
+    # A case the report places as missing has a completion record now.
+    reference, candidate = arms
+    path = reference / "verification.json"
+    report = json.loads(path.read_text())
+    case = report["cases"][5]
+    case["status"] = "missing"
+    del case["record_sha256"]
+    report["counts"].update(verified=199, missing=1)
+    runner.write_json(path, report)
+    with pytest.raises(contract.ContractError, match="is older than"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_arms_refuse_rescored_metrics_their_rescoring_did_not_write(
+    arms, tmp_path
+):
+    reference, candidate = arms
+    path = candidate / "rescored" / "reference.json"
+    rescored = json.loads(path.read_text())
+    rescored["cases"][f"{LABELS[0]}_seed0"]["metrics"]["gskl"] *= 2
+    runner.write_json(path, rescored)
+    with pytest.raises(AssertionError, match="not the file its rescoring"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    (candidate / runner.RESCORING).unlink()
+    with pytest.raises(AssertionError, match="holds no rescoring.json"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_arms_refuse_a_rescoring_by_other_code_than_the_candidates(
+    arms, tmp_path
+):
+    reference, candidate = arms
+    other = source(HARNESS)
+    other["versions"]["numpy"] = "2.6.0"
+    write_rescoring(
+        candidate,
+        {
+            reference: rescored_cases(candidate, reference),
+            candidate: rescored_cases(candidate, candidate),
+        },
+        rescoring_source=other,
+    )
+    with pytest.raises(AssertionError, match="not the candidate's"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_arms_refuse_a_candidate_whose_rescored_metrics_differ(arms, tmp_path):
+    # The flag says equal; the values are compared all the same.
+    reference, candidate = arms
+    cases = rescored_cases(candidate, candidate)
+    cases[f"{LABELS[1]}_seed7"]["metrics"]["mmtv"] += 1e-9
+    write_rescoring(
+        candidate,
+        {reference: rescored_cases(candidate, reference), candidate: cases},
+    )
+    with pytest.raises(AssertionError, match="differ from its in-run"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_the_confirmatory_family_keeps_the_size_fixed_before_the_runs(
+    arms, tmp_path
+):
+    # Every case of the second configuration failed in the reference arm:
+    # its four tests cannot be computed and enter the family at p = 1.
+    reference, candidate = arms
+    path = reference / "verification.json"
+    report = json.loads(path.read_text())
+    cases = rescored_cases(candidate, reference)
+    for case in report["cases"]:
+        _, label, seed = runner.parse_case(case["case"])
+        if label == LABELS[1]:
+            case["status"] = "failed"
+            case["reason"] = "x: RuntimeError: the run broke"
+            del case["record_sha256"]
+            contract.record_path(reference, case["tag"]).unlink()
+            cases[f"{label}_seed{seed}"] = {"status": "failed"}
+    report["counts"].update(verified=100, failed=100)
+    runner.write_json(path, report)
+    write_rescoring(
+        candidate,
+        {reference: cases, candidate: rescored_cases(candidate, candidate)},
+    )
+    result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    assert result["paired_cases"] == 100
+    tests = {
+        (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
+    }
+    assert len(tests) == 8
+    for metric in ("elbo_err", "gskl", "mmtv", "usable"):
+        test = tests[(LABELS[1], metric)]
+        assert not test["computed"] and "no seed" in test["reason"]
+        assert test["pvalue"] == 1.0 and not test["holm_rejected"]
+        assert (test["n_pairs"], test["planned_pairs"]) == (0, 100)
+    assert len(result["confirmatory_not_computed"]) == 4
+    # Holm runs over the eight tests fixed before the runs, not the four
+    # that could be computed.
+    halved = tests[(LABELS[0], "gskl")]
+    assert halved["holm_adjusted_pvalue"] == 8 * 2 / 2**100
+    assert result["arms"]["reference"]["verification_counts"]["failed"] == 100
+
+
+def test_rescored_metrics_that_are_not_finite_are_left_out(arms, tmp_path):
+    reference, candidate = arms
+    cases = rescored_cases(candidate, reference)
+    for seed in range(10):
+        entry = cases[f"{LABELS[1]}_seed{seed}"]
+        entry["metrics"]["gskl"] = float("inf") if seed < 5 else float("nan")
+        entry["equal_to_in_run"]["gskl"] = False
+    write_rescoring(
+        candidate,
+        {reference: cases, candidate: rescored_cases(candidate, candidate)},
+    )
+    result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    tests = {
+        (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
+    }
+    test = tests[(LABELS[1], "gskl")]
+    assert test["computed"] and test["nonfinite_pairs"] == 10
+    assert test["n_pairs"] == 100
+    assert test["improved"] + test["worsened"] + test["tied"] == 90
+    assert result["arms"]["reference"]["rescored_nonfinite"]["gskl"] == 10
+    assert result["aggregate"]["reference"]["nonfinite"]["gskl"] == 10
+    assert np.isfinite(
+        result["aggregate"]["reference"]["metrics"]["gskl"]["max"]
+    )
+    # A run whose metric is not finite is not usable.
+    changes = {c["tag"]: c for c in result["paired_changes"]}
+    assert not any(
+        changes[f"{LABELS[1]}_seed{seed}"]["old_usable"] for seed in range(10)
+    )
+    written = json.loads((tmp_path / "r" / "assessment.json").read_text())
+    assert written["confirmatory_tests"] == result["confirmatory_tests"]
 
 
 def test_the_redacted_copies_give_the_same_assessment(tmp_path):
@@ -479,8 +671,9 @@ def test_the_redacted_copies_give_the_same_assessment(tmp_path):
     runs = site.home / "runs"
     reference, before = write_arm(runs, "reference", "b" * 40, site=site)
     candidate, after = write_arm(runs, "candidate", HARNESS, site=site)
-    write_rescored(candidate, reference, before, site=site)
-    write_rescored(candidate, candidate, after, site=site)
+    write_rescoring(
+        candidate, {reference: before, candidate: after}, site=site
+    )
     assert site.leaks(reference) and site.leaks(candidate)
     analysis.analyze_arms(reference, candidate, None, tmp_path / "raw")
     tracked = tmp_path / "handback" / "release_gate"
@@ -503,7 +696,8 @@ def test_the_redacted_copies_give_the_same_assessment(tmp_path):
         if p.is_file()
     )
     assert "rescored/reference.json" in after_copies
-    assert len(after_copies) == 6 + 3 * len(LABELS) * len(SEEDS)
+    assert runner.RESCORING in after_copies
+    assert len(after_copies) == 7 + 3 * len(LABELS) * len(SEEDS)
     result = analysis.analyze_arms(
         tracked / "population_before",
         tracked / "population_after",
