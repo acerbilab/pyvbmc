@@ -19,9 +19,35 @@ it and what the branch gives it.
 - [x] Phase 5: the stacking harness (2026-09-25).
 - [ ] Phase 6: smoke campaigns on Turso.
 - [ ] Phase 7: the operator guide, the brief, an independent review; merge
-  into `dev-next`.
+  into `dev-next`. The guide, the redaction and two review rounds are
+  done (2026-09-26); the brief waits for Phase 6's limits.
 - [ ] Phase 8: the campaigns, on the PI's instruction.
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
+
+**Pickup point.** The code is complete on `feat-slurm-campaigns`
+(pushed), and every harness test module passes on it on the developer's
+machine. Next is the cluster, in the PI's account: Phase 1b,
+then Phase 6. The first cluster session has four steps:
+
+1. **Survey and environment,** in one login session. Survey the
+   installation the campaigns run on, with the checks of Phase 1b and the
+   real output of `sacct -n -X -P -j <job>_<task> -o State`,
+   `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
+   source trees as the operator's guide (`dev/scripts/hpc/README.md`)
+   says, build the environment with `campaign_env.sh build`, freeze it into
+   `campaign_requirements.txt`, and commit and push the freeze to the
+   branch.
+2. **The environment check,** as a batch job. It is also the first run of
+   the harnesses in an environment that installs neither PyVBMC nor
+   gpyreg: the developer's machine could test that only by hiding the
+   packages' metadata.
+3. **A canary of each harness,** and the heaviest cases, for the `TIME`
+   and `MEM` of every job.
+4. **The failure paths of Phase 6,** then a finish and a redaction.
+
+The brief for the postdoc follows, then the merge into `dev-next`. Any
+change to the code that the smoke campaigns need is a commit on the
+branch, with the test modules it touches run again.
 
 ## Purpose and scope
 
@@ -1011,3 +1037,15 @@ run reproduces bit for bit.
   wait for a step job; tests that run the pool and stacking with neither
   package's metadata present. The PI set this as the last review round:
   what only the cluster can show goes to the smoke campaigns of Phase 6.
+- 2026-09-26: the final tests on the developer's machine, at the merged
+  branch (`c714d88d`, then `da25e5dc`), all with none skipped:
+  - on Windows: the contract (133), driver (74), population (59), analysis
+    (55), pool (76), honest-ELBO (14) and stacking (54) modules;
+  - under Linux in WSL: the contract (133) and driver (74) modules.
+
+  No package code has changed since `17cac66c`, at which the S-VBMC suite
+  (276), `pyvbmc/testing/test_golden_replay.py` (67) and the oracle gate
+  (12 of 12 exact) passed. Not run: the population, analysis and pool
+  modules under Linux at the final commit, which passed there at
+  `17cac66c`, and the harnesses in a Linux environment without PyVBMC and
+  gpyreg, which the environment check of Phase 6 is.
