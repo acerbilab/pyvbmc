@@ -1579,11 +1579,21 @@ def test_the_tracked_copies_of_a_campaign_are_redacted(campaign, tmp_path):
     site.write_slurm(out)
     assert site.leaks(out)
     target = tmp_path / "handback" / "stacking"
+    # What lies outside the stand-in site: the checkout the campaign ran
+    # from (the fixtures under it), the interpreter and its libraries, and
+    # the baseline with its Torch overlay, which the records and sources
+    # name. They are named here, as an operator names them with --path.
+    outside = [
+        ("CHECKOUT", str(ROOT)),
+        ("PYTHON", sys.prefix),
+        ("BASELINE", str(Path(BASELINE).resolve())),
+    ]
     contract.redact(
         out,
         target,
         operator=site.operator(),
         environ={},
+        paths=outside,
         host="fakelogin9",
         say=lambda message: None,
     )
@@ -1614,6 +1624,7 @@ def test_the_tracked_copies_of_a_campaign_are_redacted(campaign, tmp_path):
             tmp_path / "handback" / "again",
             operator=site.operator(),
             environ={},
+            paths=outside,
             say=lambda message: None,
         )
     assert not (tmp_path / "handback" / "again").exists()
@@ -2050,7 +2061,9 @@ def test_the_worker_refuses_a_line_outside_the_campaign(campaign, tmp_path):
         "no_such_condition/M2 M=2 repetitions=0-1 arms=integrated",
     ):
         result = run_script("worker", "--out", str(out), "--case", line)
-        assert result.returncode == 64, line + result.stdout + result.stderr
+        assert result.returncode == contract.EXIT_USAGE, (
+            line + result.stdout + result.stderr
+        )
         assert "is not a case of" in result.stderr
     assert snapshot(out) == before
     other = tmp_path / "other"
@@ -2059,7 +2072,7 @@ def test_the_worker_refuses_a_line_outside_the_campaign(campaign, tmp_path):
     result = run_script(
         "worker", "--out", str(other), "--case", tasks[1]["line"]
     )
-    assert result.returncode == 64
+    assert result.returncode == contract.EXIT_USAGE
     assert "is not a manifest of" in result.stderr
     assert sorted(p.name for p in other.iterdir()) == ["manifest.json"]
 
