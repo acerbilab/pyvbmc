@@ -12,9 +12,9 @@ population was::
     python dev/scripts/golden_replay.py --report-only --out <dir>   # re-render
 
 Run it as a script from the repository root (it imports its neighbours by
-module name). It replays this checkout's package, or the tree that
-``PYVBMC_SOURCE`` names (as ``golden_trace.py`` does), which the report then
-names beside this checkout's commit. For each (config, seed) the script
+module name). It replays this checkout's package, whichever checkout is
+installed; the report names the commit and the directory PyVBMC was
+imported from. For each (config, seed) the script
 runs VBMC in this process with one BLAS thread (as the baseline was run),
 writes the new trace under ``--out`` and reports, against the stored trace
 of the same (config, seed) under ``--baseline``:
@@ -46,6 +46,15 @@ of the same (config, seed) under ``--baseline``:
   (Tukey far-out fence, ``Q3 + 3 IQR`` over the seeds' sidecars under
   ``--sidecars``, in git; the plain maximum is vacuous where a seed is a
   known failure, e.g. ``student_D4`` seed 19).
+
+``--sidecars`` is a flat directory of sidecars, as ``dev/golden/baseline/``
+is, or a population of ``population_run.py``'s array mode (a campaign
+directory or its tracked copies), which holds each configuration's
+sidecars in ``<label>/``: a configuration's sidecars are read from
+``<label>/`` where that directory exists, and from the top otherwise. Where
+the directory holds a ``verification.json``, only the cases it places as
+verified count. A replayed configuration without a sidecar there is an
+error, not a replay without an envelope.
 
 The exact verdict excludes only the NPZ ``timer`` array and timing, memory,
 and provenance fields in the sidecar.  The toleranced horizons and population
@@ -450,6 +459,75 @@ def envelope(values):
     return float(q3 + FENCE_IQR * (q3 - q1))
 
 
+def sidecar_directory(sidecars, label):
+    """Where ``--sidecars`` holds the sidecars of ``label``.
+
+    ``<sidecars>/<label>/`` in the per-configuration layout of
+    ``population_run.py``'s array mode, where that directory exists, and
+    ``sidecars`` itself, a flat directory, otherwise.
+    """
+    folder = Path(sidecars) / label
+    return folder if folder.is_dir() else Path(sidecars)
+
+
+def verified_seeds(sidecars):
+    """``{label: seeds}`` that ``<sidecars>/verification.json`` verifies.
+
+    None when the directory holds no verification report: every sidecar
+    then counts.
+    """
+    path = Path(sidecars) / "verification.json"
+    if not path.is_file():
+        return None
+    verified = {}
+    for case in json.loads(path.read_text())["cases"]:
+        _, label, seed = case["case"].split(" ")
+        if case["status"] == "verified":
+            verified.setdefault(label, set()).add(int(seed))
+    return verified
+
+
+def load_envelopes(sidecars, labels):
+    """The populations of ``labels`` under ``--sidecars`` (module docstring).
+
+    Returns ``{label: entry}``, each entry in the form of
+    ``golden_trace.load_population``'s, for every label that has at least
+    one sidecar with a finite evaluation count; a label without one is left
+    out, and the caller refuses it.
+    """
+    import numpy as np
+    from golden_trace import load_population, merge_populations
+
+    verified = verified_seeds(sidecars)
+    loaded, found = {}, {}
+    for label in labels:
+        folder = sidecar_directory(sidecars, label)
+        if folder not in loaded:
+            loaded[folder] = load_population(folder)
+        entry = loaded[folder].get(label)
+        if entry is None:
+            continue
+        keep = [
+            i
+            for i, seed in enumerate(entry["seeds"])
+            if verified is None or seed in verified.get(label, ())
+        ]
+        population = merge_populations(
+            [
+                {
+                    label: {
+                        "seeds": [entry["seeds"][i] for i in keep],
+                        "rows": [entry["rows"][i] for i in keep],
+                        "fails": entry["fails"],
+                    }
+                }
+            ]
+        )
+        if np.isfinite(population[label]["func_count"]).any():
+            found[label] = population[label]
+    return found
+
+
 def compare_run(label, seed, out_dir, baseline, sidecars, pop):
     """One row of the report for a finished (label, seed) under out_dir."""
     import numpy as np
@@ -463,7 +541,7 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
 
     ref_npz, new_npz = baseline / f"{tag}.npz", out_dir / f"{tag}.npz"
     baseline_json = baseline / f"{tag}.json"
-    population_json = sidecars / f"{tag}.json"
+    population_json = sidecar_directory(sidecars, label) / f"{tag}.json"
     # Bind semantic finals to the trace selected by --baseline. The tracked
     # --sidecars population supplies accuracy fences, and is only a semantic
     # fallback when the selected baseline has no trace/sidecar pair.
@@ -623,7 +701,7 @@ def render(rows, git, args, minutes, package=None):
     """The Markdown report; ``package`` is where PyVBMC was imported from.
 
     ``git`` is this checkout's commit; a package imported from another tree
-    (``PYVBMC_SOURCE``) is named beside it.
+    is named beside it.
     """
     calibration = (
         "historical default budgets"
@@ -722,13 +800,9 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     sys.path.insert(0, str(HERE))
-    # The package of this checkout, whichever checkout is installed, or the
-    # tree PYVBMC_SOURCE names, which goes ahead of it (as golden_trace.py
-    # does when it is imported).
+    # The package of this checkout, whichever checkout is installed.
     sys.path.insert(0, str(REPO_ROOT))
-    if os.environ.get("PYVBMC_SOURCE"):
-        sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
-    from golden_trace import _tag, load_population, parse_seeds, run_task
+    from golden_trace import _tag, parse_seeds, run_task
     from profile_run import git_info, module_source
 
     try:
@@ -743,8 +817,17 @@ def main(argv=None):
     out_dir = args.out or (
         DEFAULT_OUT_ROOT / f"replay_{time.strftime('%Y%m%d_%H%M%S')}"
     )
+    if not args.sidecars.is_dir():
+        sys.exit(f"--sidecars {args.sidecars} is not a directory")
+    pop = load_envelopes(args.sidecars, labels)
+    unenveloped = [label for label in labels if label not in pop]
+    if unenveloped:
+        sys.exit(
+            f"--sidecars {args.sidecars} holds no population of "
+            f"{', '.join(unenveloped)}, so no envelope would judge "
+            "their replays"
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
-    pop = load_population(args.sidecars) if args.sidecars.exists() else {}
     have_traces = args.baseline.exists()
     git = git_info()
     package = module_source("pyvbmc")

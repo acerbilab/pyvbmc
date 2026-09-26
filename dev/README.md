@@ -416,7 +416,7 @@ reason.
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
   `--cprofile`, a cProfile attribution of the hot paths. It runs this
-  checkout's package, or the tree that `PYVBMC_SOURCE` names.
+  checkout's package.
 - `scripts/profile_suite.py` — run `profile_run.py` over a whole suite
   (plain and/or cProfile, resumable) and aggregate the summaries into one
   markdown table. `--probe CONFIG` runs a short reference config plain
@@ -438,8 +438,7 @@ reason.
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
   for a null check). Populations live under `scripts/runs/golden/`. It runs
-  this checkout's package, or the tree that `PYVBMC_SOURCE` names, which
-  goes ahead of the checkout on `sys.path`; each sidecar's `meta` records
+  this checkout's package; each sidecar's `meta` records
   the checkout's commit, the path and commit of the imported PyVBMC and
   gpyreg, and the versions their installed distributions name, labelled as
   such.
@@ -452,19 +451,30 @@ reason.
   production final boost to retain the pre-boost posterior, the raw
   candidate and the decision without changing the calculation or the
   random stream, and writes, beside the trace and the sidecar, the arrays
-  that rebuild the returned posterior exactly; `verify` reconciles the
+  that rebuild the returned posterior exactly, failing a case whose
+  artifacts fail the checks `verify` repeats; `verify` reconciles the
   contract's states and re-checks every case in the campaign's own trees;
-  `summarize` and `rescore` are its finishing steps, the second
-  recomputing the metrics of both arms with the release code; its tracked
-  copies (`TRACKED_COPIES`) are the summary, the rescored metrics and every
-  verified case's record, sidecar and boost report; `run` is the
-  same campaign one case after another on a workstation. `PYVBMC_SOURCE`
-  names the package tree of an arm of other code and `PYVBMC_GPYREG_SOURCE`
-  the gpyreg checkout; the harness, the targets module and its data are
-  this checkout's in every arm. `validate_case` checks the records of the
-  campaigns of September 2026, which ran before array mode.
-  `test_population_run.py` checks the capture, the contract's states,
-  `verify`, `rescore` and the rebuilt posterior without inference.
+  `summarize`, which tabulates the verified cases, and `rescore` are its
+  finishing steps, the second recomputing the metrics of both arms with the release
+  code, resuming from its work files, and recording in `rescoring.json` its
+  identity and the SHA-256 of what it wrote; what reads `verification.json`
+  refuses one older than the directory (a case it does not place as
+  verified has a record), so the other arm is finished before the arm that
+  rescores, which is finished again after any later finish of the other;
+  `prepare --pair` takes as the other arm only a campaign that differs
+  from this one in its code and in nothing else; its tracked copies (`tracked_copies`) are the summary,
+  the rescored metrics and their record where it rescores, and every
+  verified case's record, sidecar and boost report; `run` is the same
+  campaign one case after another on a workstation. `PYVBMC_SOURCE` names
+  the package tree of an arm of other code, which the harness alone, run
+  as a script, imports (no other script reads the variable), and
+  `PYVBMC_GPYREG_SOURCE` the gpyreg checkout; the harness, the targets
+  module and its data are this checkout's in every arm. `validate_case`
+  checks the records of the campaigns of September 2026, which ran before
+  array mode. `test_population_run.py` checks the capture, the contract's
+  states, `verify`, `rescore`, the comparison of two arms it verified and
+  rescored and the rebuilt posterior on hand-made cases, and runs one real
+  case through `run` and through `worker`.
 - `scripts/analyze_population_run.py` — assesses finished campaigns without
   inference. By default, campaigns of one treatment against the golden
   reference: it revalidates every case and the reference sidecars, pools a
@@ -476,10 +486,14 @@ reason.
   fixed in its manifest. With `--arms REFERENCE CANDIDATE`, two arms of
   `population_run.py`'s array mode, each checked against its own
   `verification.json` and compared seed by seed on the metrics that
-  `rescore` recomputed, with the confirmatory family of their manifests;
-  either arm may be a campaign directory or its redacted tracked copies,
-  which give the same report. Writes `assessment.json` and `comparison.md`
-  (and, by default, the campaign manifests) under `--out`.
+  `rescore` recomputed (in the campaign `--rescoring` names, by default the
+  candidate, whose `rescoring.json` binds them by SHA-256 to a process of
+  the candidate's own identity), with the confirmatory family of their
+  manifests at the size they fix: a test that cannot be computed enters it
+  at p = 1 and is flagged. Either arm may be a campaign directory or its
+  redacted tracked copies, which give the same report. Writes
+  `assessment.json` and `comparison.md` (and, by default, the campaign
+  manifests) under `--out`.
   `test_analyze_population_run.py` checks the statistics and the
   comparison of two arms on campaign directories it writes and on their
   redacted copies.
@@ -518,8 +532,7 @@ reason.
   [pilot results](results/2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
-  (this checkout's package, or the tree that `PYVBMC_SOURCE` names, which
-  the report then names), about 7 minutes for the default set, and
+  (this checkout's package), about 7 minutes for the default set, and
   compares each run with its stored trace: exact shapes and values of every non-timer NPZ array and
   all semantic final-result fields, the ELBO/live-point agreement horizons,
   the initial design (see below), and final accuracy against the baseline
@@ -542,8 +555,12 @@ reason.
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/reference_990_20260913/`, the current reference
-  population, exists only on the machine that made it), `--sidecars`,
-  `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
+  population, exists only on the machine that made it), `--sidecars`
+  (the envelope population: a flat directory of sidecars, by default
+  `golden/baseline/`, or a population of `population_run.py`'s array mode,
+  a campaign directory or its tracked copies, of which only the verified
+  cases count; a replayed configuration without a sidecar there is an
+  error), `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
   all three chunk budgets to this integer for a nondefault-profile check;
   omitted means historical defaults, independent of the local cache).
   Replay reports retain this setting, including on `--report-only`.

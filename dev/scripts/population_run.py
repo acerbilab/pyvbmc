@@ -33,12 +33,15 @@ package tree and gpyreg. The package tree is the checkout that
 ``PYVBMC_SOURCE`` names (for code other than the harness checkout's, a
 detached worktree at that commit), or the harness checkout itself when the
 variable is unset; gpyreg is the checkout that ``PYVBMC_GPYREG_SOURCE``
-names, which every process needs. Importing this module puts the harness
-checkout, then gpyreg, then the package tree first on ``sys.path``, and
-``golden_trace.py`` and ``profile_run.py``, imported before PyVBMC, keep
-``PYVBMC_SOURCE`` ahead of the checkout. The identity refuses a process
-whose ``pyvbmc`` or ``gpyreg`` resolves outside its tree, or whose harness
-modules come from anywhere but this directory. It also hashes the harness
+names, which every process needs. This module puts the harness checkout,
+then gpyreg, first on ``sys.path``; run as a script, it then puts the
+package tree ahead of them and imports PyVBMC from it
+(:func:`use_package_tree`) before it imports ``golden_trace.py`` and
+``profile_run.py``. No other script reads ``PYVBMC_SOURCE``, and a process
+that imports this module (the analysis, the tests) takes PyVBMC from the
+harness checkout. The identity refuses a process whose ``pyvbmc`` or
+``gpyreg`` resolves outside its tree, or whose harness modules come from
+anywhere but this directory. It also hashes the harness
 modules, the targets module and ``dev/scripts/data``. The sidecar of every
 case holds the ``source`` and ``imports`` parts of its process's identity
 under ``provenance``: each tree's commit and path, the import paths, the
@@ -49,7 +52,7 @@ labelled as such.
 all of them by default, and one seed range for every label), the options
 (:data:`DEFAULT_OPTIONS` and ``--options``) and the confirmatory family of
 the comparison of two arms (:func:`confirmatory_family`), and names the
-finishing steps and the tracked copies (:data:`TRACKED_COPIES`, which
+finishing steps and the tracked copies (:func:`tracked_copies`, which
 ``campaign_contract.py redact`` writes for the repository). Case ``i``
 is line ``i`` of the list that ``cases`` prints,
 ``<label>/<label>_seed<seed> <label> <seed>``, the labels in suite order
@@ -84,8 +87,11 @@ ones and the identity where it does not; ``<stem>.vp.npz`` holds those
 the posterior in whatever package is imported (:func:`returned_posterior`).
 The worker fails a case unless the rebuilt posterior equals the one the run
 returned, in every array and transformer attribute, and scores exactly as
-the run's own metrics say; ``verify`` repeats the first check against the
-boost capture.
+the run's own metrics say, and unless its artifacts pass
+:func:`check_case_artifacts` (finite metrics, 750 evaluations for
+``cigar_D15_exhaust``, the campaign's options requested and applied, a
+boost report consistent with its capture): such a case gets an error file
+and no completion record. ``verify`` repeats the checks.
 
 **Verification.** ``verify`` runs in the campaign's own trees (a different
 source identity is refused, exit 78), since the boost captures unpickle
@@ -93,24 +99,47 @@ only in the package that wrote them. It reconciles the allocation by the
 contract's states, re-checks each completion record (its identity, the
 SHA-256 of every artifact, the node feature and the CPU affinity where the
 manifest's site block names a node feature) and each case's artifacts
-(:func:`check_case_artifacts`), and writes ``verification.json``.
+(:func:`check_case_artifacts`), and writes ``verification.json``, which
+holds the SHA-256 of each verified case's record. What reads the report
+(``summarize``, ``rescore``, the comparison of two arms) takes it only as
+a description of the directory as it stands (:func:`checked_verification`):
+a report written while cases were missing or in flight, such as that of a
+finish that looked at the canary, is refused once one of those cases has a
+record, until the campaign is verified again. ``summarize`` tabulates the
+verified cases alone.
 
 **Rescoring.** The in-run metrics come from the package each run imported,
 so two arms of different code are compared on metrics recomputed by one
 code. ``rescore`` runs in a process of the harness checkout's own package
-(the release code) and refuses any other. For each verified case of the
-campaign at ``--out`` and of each ``--campaign`` it rebuilds the returned
-posterior from its plain arrays and recomputes the evidence error, gsKL,
-MMTV and the RMSE of the mean with ``benchmark_targets.metrics``, whose
-random draws come from generators of fixed seeds, as they do in the run;
-the evidence error uses the run's own ELBO. It writes
-``<out>/rescored/<campaign directory name>.json``, with the rescoring
-process's identity and, for each case, the metrics and whether each equals
-the run's own. The files it reads must be the ones verification checked.
+(the release code) and in the trees and environment of the campaign at
+``--out`` (its source identity is the manifest's), and refuses any other.
+For each verified case of that campaign and of each ``--campaign`` it
+rebuilds the returned posterior from its plain arrays and recomputes the
+evidence error, gsKL, MMTV and the RMSE of the mean with
+``benchmark_targets.metrics``, whose random draws come from generators of
+fixed seeds, as they do in the run; the evidence error uses the run's own
+ELBO. The files it reads must be the ones verification checked. A campaign
+of the rescoring's own code must reproduce every case's in-run metrics
+exactly, or the step fails. It writes ``<out>/rescored/<campaign directory
+name>.json``, with the rescoring process's identity and, for each case, the
+metrics, whether each equals the run's own and whether each is finite; and
+then ``<out>/rescoring.json`` (:data:`RESCORING`), with that identity and
+the SHA-256 of each file of rescored metrics, which the comparison checks.
+Its work files, ``<out>/rescored/<name>.parts/<label>.json``, are written
+after every case, and a later ``rescore`` takes from them every case whose
+files are unchanged and that code of the same source identity rescored, so
+that a finish run again rescores only what it lacks.
+
 A campaign of the release code lists ``rescore`` among its finishing
 steps, with ``--campaign`` for the campaign given to ``prepare --pair``
-(the other arm, which must be verified first); a campaign of other code
-lists only ``summarize``.
+(the other arm); a campaign of other code lists only ``summarize``.
+``prepare --pair`` refuses a campaign that is not the other arm of this
+one: another allocation, options or confirmatory family, another harness
+checkout, other harness files or environment versions, or a package tree
+at the same commit. Since ``rescore`` reads the other arm's
+``verification.json``, the other arm is finished completely before this
+one's finish, and this one is finished again after any later finish of
+the other.
 
 **Workstation runs.** ``run`` works on a prepared directory: it writes
 ``cases.txt``, runs each case of the list (or of ``--subset``, the first
@@ -146,8 +175,33 @@ os.environ["MPLBACKEND"] = "Agg"
 sys.path.insert(0, str(ROOT))
 if os.environ.get("PYVBMC_GPYREG_SOURCE"):
     sys.path.insert(0, os.environ["PYVBMC_GPYREG_SOURCE"])
-if os.environ.get("PYVBMC_SOURCE"):
-    sys.path.insert(0, os.environ["PYVBMC_SOURCE"])
+
+
+def use_package_tree(environ=None):
+    """Import PyVBMC from the campaign's package tree, before anything else.
+
+    The tree that ``PYVBMC_SOURCE`` names goes first on ``sys.path``, and
+    PyVBMC is imported at once, from that tree or, when the variable is
+    unset, from the harness checkout, so that the harness modules, which
+    put the harness checkout first on ``sys.path`` when they are imported,
+    find the package imported already. Only this module, run as a script,
+    calls it; a process that imports this module takes PyVBMC from the
+    harness checkout whatever ``PYVBMC_SOURCE`` says, and its identity
+    (:func:`this_identity`) then refuses a tree that the variable names.
+    """
+    tree = (os.environ if environ is None else environ).get("PYVBMC_SOURCE")
+    if tree:
+        sys.path.insert(0, tree)
+    package = importlib.import_module("pyvbmc")
+    where = Path(package.__file__).resolve().parents[1]
+    if tree and where != Path(tree).resolve():
+        raise ImportError(
+            f"PyVBMC is imported from {where}, not from PYVBMC_SOURCE={tree}"
+        )
+
+
+if __name__ == "__main__":
+    use_package_tree()
 
 import campaign_contract as contract
 import dill
@@ -197,15 +251,21 @@ PAIRED_METRICS = ("elbo_err", "gskl", "mmtv", "func_count")
 RESCORED_METRICS = ("elbo_err", "gskl", "mmtv", "rmse")
 #: The named subsets beside one per label.
 SUBSETS = ("canary", "noisy", "noiseless")
+#: The record ``rescore`` writes in the campaign it runs for: the rescoring
+#: process's identity and the SHA-256 of every file of rescored metrics.
+RESCORING = "rescoring.json"
 #: What of a finished campaign enters the repository, beside its manifest
 #: and verification report (``campaign_contract.tracked_copies``): the
-#: summary, the rescored metrics, and for every verified case its
-#: completion record, its sidecar and its boost report, which are what the
-#: comparison of two arms reads (``analyze_population_run.py --arms``).
+#: summary, and for every verified case its completion record, its sidecar
+#: and its boost report, which are what the comparison of two arms reads
+#: (``analyze_population_run.py --arms``). A campaign that rescores adds
+#: :data:`RESCORED_COPIES` (:func:`tracked_copies`).
 TRACKED_COPIES = {
-    "files": ["summary.md", "rescored/*.json"],
+    "files": ["summary.md"],
     "cases": {"record": True, "artifacts": ["*.json"]},
 }
+#: The rescored metrics and the rescoring's record.
+RESCORED_COPIES = ["rescored/*.json", RESCORING]
 EXIT_USAGE = 64
 
 sha256 = contract.sha256_file
@@ -491,11 +551,88 @@ def confirmatory_family(spec, labels):
     return family
 
 
+def tracked_copies(rescores):
+    """The tracked copies of a campaign; ``rescores``: it runs ``rescore``."""
+    spec = copy.deepcopy(TRACKED_COPIES)
+    if rescores:
+        spec["files"] += RESCORED_COPIES
+    return spec
+
+
 def read_manifest(out):
     path = Path(out) / "manifest.json"
     if not path.is_file():
         raise SystemExit(f"{path} does not exist; run prepare first")
     return contract.read_json(path)
+
+
+def checked_verification(campaign, manifest):
+    """A campaign's ``verification.json``, checked against the campaign.
+
+    The report must reconcile the manifest's allocation, name the
+    manifest's SHA-256 and have passed (exit code 0). It must also describe
+    the directory as it stands: every case it places as verified keeps the
+    completion record it checked (``record_sha256``), and no case it places
+    in another state has a record. A case in another state that has one
+    completed after the report was written, as the cases of a campaign do
+    after a finish that looked at its canary; the report is then older
+    than the directory, and is refused until the campaign is verified
+    again. ``campaign`` may be the tracked copies of a campaign
+    (``campaign_contract.source_sha256``), which hold the records of the
+    verified cases alone.
+
+    Returns
+    -------
+    dict
+        The report.
+
+    Raises
+    ------
+    campaign_contract.ContractError
+        When a check fails.
+    """
+    campaign = Path(campaign)
+    path = campaign / "verification.json"
+    if not path.is_file():
+        raise contract.ContractError(
+            f"{campaign} has no verification.json; run verify first"
+        )
+    report = contract.read_json(path)
+    if [case["case"] for case in report["cases"]] != case_lines(manifest):
+        raise contract.ContractError(
+            f"{path} does not reconcile the allocation of its manifest"
+        )
+    if report.get("exit_code") != 0:
+        raise contract.ContractError(f"{campaign} failed its verification")
+    if report.get("manifest_sha256") != contract.source_sha256(
+        campaign, "manifest.json"
+    ):
+        raise contract.ContractError(
+            f"{path} verified another manifest than {campaign}'s"
+        )
+    completed = []
+    for case in report["cases"]:
+        tag = case["tag"]
+        rel = f"{contract.RECORDS}/{tag}{contract.RECORD_SUFFIX}"
+        if case["status"] != "verified":
+            if (campaign / rel).exists():
+                completed.append(tag)
+            continue
+        if not (campaign / rel).is_file():
+            raise contract.ContractError(
+                f"{tag}: the completion record that {path} verified is gone"
+            )
+        if contract.source_sha256(campaign, rel) != case.get("record_sha256"):
+            raise contract.ContractError(
+                f"{tag}: {rel} is not the record that {path} verified"
+            )
+    if completed:
+        raise contract.ContractError(
+            f"{path} is older than {campaign}: {len(completed)} cases it "
+            "places as not verified have completion records now (the first "
+            f"{completed[0]}); verify the campaign again, by its finish"
+        )
+    return report
 
 
 def write_case_list(out, lines):
@@ -847,8 +984,13 @@ def run_case(out, label, seed, options, identity):
     The contract's worker calls it (``campaign_contract.run_worker``) with
     the process's identity, whose ``source`` and ``imports`` parts become
     the sidecar's ``provenance``. Raises when the run fails, with the
-    traceback that ``golden_trace.run_task`` wrote, and when the plain
-    arrays do not rebuild the returned posterior or its metrics exactly.
+    traceback that ``golden_trace.run_task`` wrote; when the plain arrays
+    do not rebuild the returned posterior or its metrics exactly; and when
+    the artifacts fail the checks that ``verify`` repeats
+    (:func:`check_case_artifacts`: finite metrics, the exhaust budget, the
+    options requested and applied, the boost's consistency). The worker
+    then writes the case's error file and no completion record, so that
+    ``verify`` places the case as failed.
     """
     files = {
         key: Path(out) / rel for key, rel in case_files(label, seed).items()
@@ -905,6 +1047,7 @@ def run_case(out, label, seed, options, identity):
     }
     # The same form golden_trace.run_task writes.
     files["sidecar"].write_text(json.dumps(side, indent=1))
+    check_case_artifacts(stem, files, options)
     return list(files.values()), {
         "harness": "population_run",
         "label": label,
@@ -919,6 +1062,35 @@ def run_case(out, label, seed, options, identity):
 # --------------------------------------------------------------------------
 # Subcommands
 # --------------------------------------------------------------------------
+
+
+def pair_differences(identity, other):
+    """Why two identities cannot be the two arms of one comparison.
+
+    The arms differ in their code alone: they share the harness checkout's
+    commit and clean state, the SHA-256 of the harness files (the targets
+    module and its data among them) and the imported versions of Python,
+    NumPy, SciPy, cma and Torch, and their package trees are at different
+    commits. Returns the reasons, an empty list when the two can be paired.
+    """
+    a, b = identity["source"], other["source"]
+    found = [
+        f"the arms have different {what}"
+        for key, what in (
+            ("files", "harness files"),
+            ("versions", "environment versions"),
+        )
+        if a.get(key) != b.get(key)
+    ]
+    if a["trees"].get("harness") != b["trees"].get("harness"):
+        found.insert(0, "the arms have different harness checkouts")
+    commit = [s["trees"].get("pyvbmc", {}).get("commit") for s in (a, b)]
+    if commit[0] == commit[1]:
+        found.append(
+            f"both arms' package trees are at {commit[0]}, so the comparison "
+            "would compare the code with itself"
+        )
+    return found
 
 
 def cmd_prepare(args):
@@ -937,6 +1109,7 @@ def cmd_prepare(args):
     spec = contract.read_json(args.confirmatory) if args.confirmatory else None
     family = confirmatory_family(spec, alloc["labels"])
     release = release_code()
+    identity = this_identity()
     steps = [["summarize"]]
     pair = None
     if args.pair:
@@ -961,6 +1134,12 @@ def cmd_prepare(args):
                     f"the paired campaign {pair} has another {key}; the arms "
                     "pair seed by seed on one allocation and one family"
                 )
+        differing = pair_differences(identity, other["identity"])
+        if differing:
+            raise SystemExit(
+                f"the paired campaign {pair} cannot be this one's other arm: "
+                + "; ".join(differing)
+            )
         if pair.name == out.name:
             raise SystemExit(
                 "the paired campaigns' directories share the name "
@@ -978,11 +1157,11 @@ def cmd_prepare(args):
         "options": options,
         "confirmatory": family,
         "pair": None if pair is None else str(pair),
-        "identity": this_identity(),
+        "identity": identity,
         "site": contract.site_block(),
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": steps,
-        "tracked_copies": TRACKED_COPIES,
+        "tracked_copies": tracked_copies(release),
         "created": contract.now(),
     }
     contract.finishing_steps(manifest)
@@ -1149,6 +1328,9 @@ def cmd_verify(args):
         return {
             "elapsed_seconds": record["elapsed_seconds"],
             "boost": record.get("boost"),
+            # What the readers of the report check the record against
+            # (checked_verification).
+            "record_sha256": sha256(contract.record_path(out, tag)),
         }
 
     def partial(tag):
@@ -1180,72 +1362,162 @@ def cmd_verify(args):
 
 
 def cmd_summarize(args):
+    """Write ``summary.md``: the population of the verified cases alone.
+
+    The table is ``golden_trace.summary_text``'s, of the sidecars of the
+    cases that ``verification.json`` places as verified (a case in flight
+    may have written its sidecar already), with a configuration's failed
+    cases counted as its failures; the counts of every state and the boost
+    decisions follow.
+    """
     out = args.out.resolve()
     manifest = read_manifest(out)
-    labels = manifest["allocation"]["labels"]
+    report = checked_verification(out, manifest)
+    population = {}
+    for case in report["cases"]:
+        _, label, seed = parse_case(case["case"])
+        entry = population.setdefault(
+            label, {"seeds": [], "rows": [], "fails": 0}
+        )
+        if case["status"] == "failed":
+            entry["fails"] += 1
+        elif case["status"] == "verified":
+            side = contract.read_json(out / case_files(label, seed)["sidecar"])
+            entry["seeds"].append(seed)
+            entry["rows"].append(side["final"])
     population = golden_trace.merge_populations(
         [
-            golden_trace.load_population(out / label)
-            for label in labels
-            if (out / label).is_dir()
+            {
+                label: entry
+                for label, entry in population.items()
+                if entry["rows"] or entry["fails"]
+            }
         ]
     )
     lines = [golden_trace.summary_text(population, out.name), ""]
-    verification = out / "verification.json"
-    if verification.exists():
-        report = contract.read_json(verification)
-        counts = report["counts"]
-        lines.append(
-            f"Cases: {len(report['cases'])}; "
-            + ", ".join(
-                f"{state.replace('_', ' ')} {counts[state]}"
-                for state in (*contract.STATUSES, "stray")
-                if counts.get(state)
-            )
-            + "."
+    counts = report["counts"]
+    lines.append(
+        f"Cases: {len(report['cases'])}; "
+        + ", ".join(
+            f"{state.replace('_', ' ')} {counts[state]}"
+            for state in (*contract.STATUSES, "stray")
+            if counts.get(state)
         )
-        boosts = [
-            case.get("boost") or {}
-            for case in report["cases"]
-            if case["status"] == "verified"
-        ]
-        attempted = sum(bool(b.get("attempted")) for b in boosts)
-        accepted = sum(bool(b.get("accepted")) for b in boosts)
-        lines.append(
-            f"Final boost: attempted {attempted} (accepted {accepted}, "
-            f"rejected {attempted - accepted}), skipped "
-            f"{len(boosts) - attempted}."
-        )
+        + "."
+    )
+    boosts = [
+        case.get("boost") or {}
+        for case in report["cases"]
+        if case["status"] == "verified"
+    ]
+    attempted = sum(bool(b.get("attempted")) for b in boosts)
+    accepted = sum(bool(b.get("accepted")) for b in boosts)
+    lines.append(
+        f"Final boost: attempted {attempted} (accepted {accepted}, "
+        f"rejected {attempted - accepted}), skipped "
+        f"{len(boosts) - attempted}."
+    )
     text = "\n".join(lines)
     (out / "summary.md").write_text(text + "\n", encoding="utf-8")
     print(text, flush=True)
     return 0
 
 
-def rescore_campaign(campaign, identity):
-    """Rescore every verified case of one campaign (module docstring)."""
-    campaign = Path(campaign)
-    manifest = read_manifest(campaign)
-    path = campaign / "verification.json"
+#: The method of the rescoring, recorded with its results.
+RESCORING_METHOD = (
+    "benchmark_targets.metrics of this process's package on the returned "
+    "posterior rebuilt from its plain arrays "
+    "(population_run.returned_posterior); the evidence error from the run's "
+    "own ELBO; the random draws from the generators of fixed seeds that the "
+    "in-run metrics use"
+)
+
+
+def rescore_case(campaign, label, seed, hashes):
+    """The rescored metrics of one verified case (module docstring).
+
+    ``hashes`` holds the SHA-256 of the case's trace, posterior arrays and
+    sidecar, which the caller checked against the case's record; the entry
+    returned carries them, and ``finite`` says which rescored metric is
+    finite.
+    """
+    files = case_files(label, seed)
+    side = json.loads((Path(campaign) / files["sidecar"]).read_text())
+    final = side["final"]
+    problem = find_config(label).make(seed=seed)
+    with np.load(Path(campaign) / files["trace"], allow_pickle=False) as trace:
+        with np.load(
+            Path(campaign) / files["posterior"], allow_pickle=False
+        ) as extras:
+            vp = returned_posterior(trace, extras, problem, final["best_iter"])
+    again = rescore_metrics(problem, vp, final["elbo"])
+    return {
+        "status": "rescored",
+        "label": label,
+        "seed": seed,
+        "metrics": {key: again[key] for key in RESCORED_METRICS},
+        "moment_method": again["moment_method"],
+        "equal_to_in_run": {
+            key: same_value(again[key], final[key]) for key in RESCORED_METRICS
+        },
+        "finite": {
+            key: bool(np.isfinite(again[key])) for key in RESCORED_METRICS
+        },
+        "artifacts": dict(hashes),
+    }
+
+
+def _read_part(path, source):
+    """The cases of a rescoring work file made by code of ``source``; none
+    when the file does not exist or other code made it."""
     if not path.is_file():
-        raise contract.ContractError(f"{campaign} has no verification.json")
-    verification = contract.read_json(path)
-    lines = case_lines(manifest)
-    if [case["case"] for case in verification["cases"]] != lines:
-        raise contract.ContractError(
-            f"{path} does not reconcile the allocation of its manifest"
+        return {}
+    part = contract.read_json(path)
+    if part.get("rescoring_source") != source:
+        print(
+            f"[rescore] {path} was made by other code; its cases are "
+            "rescored anew",
+            flush=True,
         )
-    if verification.get("exit_code") != 0:
-        raise contract.ContractError(f"{campaign} failed its verification")
-    if verification.get("manifest_sha256") != sha256(
-        campaign / "manifest.json"
-    ):
-        raise contract.ContractError(
-            f"{path} verified another manifest than {campaign}'s"
-        )
+        return {}
+    return part.get("cases") or {}
+
+
+def rescore_campaign(campaign, identity, parts):
+    """Rescore every verified case of one campaign (module docstring).
+
+    Parameters
+    ----------
+    campaign : path
+        The campaign directory, whose ``verification.json`` must pass
+        :func:`checked_verification`.
+    identity : dict
+        This process's identity.
+    parts : path
+        The directory of the campaign's work files, one per configuration
+        (``<label>.json``), written after every case. A case whose entry
+        there names the SHA-256 its files have now, made by code of this
+        process's source identity, is taken from it and not rescored, so
+        that a rescoring that stopped, or a finish run again, rescores only
+        the cases it lacks.
+
+    Returns
+    -------
+    dict
+        The rescored metrics of the campaign. A campaign of this process's
+        source identity must reproduce the in-run metrics of every case
+        exactly, and raises :class:`campaign_contract.ContractError` when
+        one does not.
+    """
+    campaign, parts = Path(campaign), Path(parts)
+    manifest = read_manifest(campaign)
+    verification = checked_verification(campaign, manifest)
+    source = identity["source"]
+    own = not contract.source_differences(identity, manifest["identity"])
     started = time.time()
-    cases, counts = {}, {"rescored": 0, "not_verified": 0}
-    equal = {key: 0 for key in RESCORED_METRICS}
+    cases = {}
+    counts = {"rescored": 0, "reused": 0, "not_verified": 0}
+    work = {}
     for entry in verification["cases"]:
         tag, label, seed = parse_case(entry["case"])
         stem = golden_trace._tag(label, seed)
@@ -1264,37 +1536,56 @@ def rescore_campaign(campaign, identity):
                     f"{campaign / rel} is not the file its verification "
                     "checked"
                 )
-        side = json.loads((campaign / files["sidecar"]).read_text())
-        final = side["final"]
-        problem = find_config(label).make(seed=seed)
-        with np.load(campaign / files["trace"], allow_pickle=False) as trace:
-            with np.load(
-                campaign / files["posterior"], allow_pickle=False
-            ) as extras:
-                vp = returned_posterior(
-                    trace, extras, problem, final["best_iter"]
-                )
-        again = rescore_metrics(problem, vp, final["elbo"])
-        same = {
-            key: same_value(again[key], final[key]) for key in RESCORED_METRICS
-        }
-        for key, value in same.items():
-            equal[key] += value
-        cases[stem] = {
-            "status": "rescored",
-            "label": label,
-            "seed": seed,
-            "metrics": {key: again[key] for key in RESCORED_METRICS},
-            "moment_method": again["moment_method"],
-            "equal_to_in_run": same,
-            "artifacts": hashes,
-        }
+        if label not in work:
+            work[label] = _read_part(parts / f"{label}.json", source)
+        done = work[label]
+        if stem in done and done[stem]["artifacts"] == hashes:
+            cases[stem] = done[stem]
+            counts["reused"] += 1
+        else:
+            cases[stem] = done[stem] = rescore_case(
+                campaign, label, seed, hashes
+            )
+            write_json(
+                parts / f"{label}.json",
+                {
+                    "campaign": campaign.name,
+                    "rescoring_source": source,
+                    "cases": done,
+                },
+            )
         counts["rescored"] += 1
         if counts["rescored"] % 50 == 0:
             print(
-                f"[rescore] {campaign.name}: {counts['rescored']} cases, "
+                f"[rescore] {campaign.name}: {counts['rescored']} cases "
+                f"({counts['reused']} from earlier work), "
                 f"{(time.time() - started) / 60:.1f} min",
                 flush=True,
+            )
+    rescored = [
+        case for case in cases.values() if case["status"] == "rescored"
+    ]
+    counts["equal_to_in_run"] = {
+        key: sum(bool(case["equal_to_in_run"][key]) for case in rescored)
+        for key in RESCORED_METRICS
+    }
+    counts["nonfinite"] = {
+        key: sum(not case["finite"][key] for case in rescored)
+        for key in RESCORED_METRICS
+    }
+    if own:
+        unequal = sorted(
+            stem
+            for stem, case in cases.items()
+            if case["status"] == "rescored"
+            and not all(case["equal_to_in_run"].values())
+        )
+        if unequal:
+            raise contract.ContractError(
+                f"{campaign} ran the code of this process, and the rescored "
+                f"metrics of {len(unequal)} of its cases differ from their "
+                f"in-run metrics (the first {unequal[0]}; the work files "
+                f"under {parts} hold them)"
             )
     return {
         "harness": "population_run",
@@ -1304,16 +1595,10 @@ def rescore_campaign(campaign, identity):
             "path": str(campaign),
             "arm": manifest.get("arm"),
             "manifest_sha256": sha256(campaign / "manifest.json"),
-            "verification_sha256": sha256(path),
+            "verification_sha256": sha256(campaign / "verification.json"),
             "source": manifest["identity"]["source"],
         },
-        "method": (
-            "benchmark_targets.metrics of this process's package on the "
-            "returned posterior rebuilt from its plain arrays "
-            "(population_run.returned_posterior); the evidence error from "
-            "the run's own ELBO; the random draws from the generators of "
-            "fixed seeds that the in-run metrics use"
-        ),
+        "method": RESCORING_METHOD,
         "rescoring": {
             "identity": identity,
             "started": time.strftime(
@@ -1322,12 +1607,19 @@ def rescore_campaign(campaign, identity):
             "finished": contract.now(),
             "elapsed_seconds": time.time() - started,
         },
-        "counts": {**counts, "equal_to_in_run": equal},
+        "counts": counts,
         "cases": cases,
     }
 
 
 def cmd_rescore(args):
+    """Rescore the campaign at ``--out`` and each ``--campaign``.
+
+    Writes ``rescored/<name>.json`` for each campaign, then
+    :data:`RESCORING` with this process's identity and the SHA-256 of each
+    of those files, which the comparison of two arms checks. The work
+    files lie under ``rescored/<name>.parts/``.
+    """
     out = args.out.resolve()
     if not release_code():
         print(
@@ -1337,21 +1629,59 @@ def cmd_rescore(args):
             flush=True,
         )
         return contract.EXIT_IDENTITY
-    identity = this_identity()
+    manifest = read_manifest(out)
+    try:
+        identity = this_identity()
+    except Exception as error:
+        print(f"rescore refused: no identity ({error})", flush=True)
+        return contract.EXIT_IDENTITY
+    differing = contract.source_differences(identity, manifest["identity"])
+    if differing:
+        print(
+            "rescore refused: it runs in the trees and environment of the "
+            f"campaign at {out}, and this process's source identity differs "
+            f"from its manifest's in {differing}",
+            flush=True,
+        )
+        return contract.EXIT_IDENTITY
     campaigns = [out] + [Path(path).resolve() for path in args.campaign or ()]
     names = [campaign.name for campaign in campaigns]
     if len(set(names)) != len(names):
         raise SystemExit(f"the campaigns' directory names repeat: {names}")
+    rescored = {}
     for campaign in campaigns:
-        report = rescore_campaign(campaign, identity)
-        target = out / "rescored" / f"{campaign.name}.json"
-        write_json(target, report)
+        rel = f"rescored/{campaign.name}.json"
+        report = rescore_campaign(
+            campaign, identity, out / "rescored" / f"{campaign.name}.parts"
+        )
+        write_json(out / rel, report)
+        rescored[campaign.name] = {
+            "file": rel,
+            "sha256": sha256(out / rel),
+            "path": str(campaign),
+            "manifest_sha256": report["campaign"]["manifest_sha256"],
+            "verification_sha256": report["campaign"]["verification_sha256"],
+        }
+        counts = report["counts"]
         print(
-            f"[rescore] {target}: {report['counts']['rescored']} cases "
-            f"rescored, equal to their in-run metrics "
-            f"{report['counts']['equal_to_in_run']}",
+            f"[rescore] {out / rel}: {counts['rescored']} cases rescored "
+            f"({counts['reused']} from earlier work), equal to their in-run "
+            f"metrics {counts['equal_to_in_run']}, not finite "
+            f"{counts['nonfinite']}",
             flush=True,
         )
+    write_json(
+        out / RESCORING,
+        {
+            "harness": "population_run",
+            "contract": contract.CONTRACT_VERSION,
+            "campaign": out.name,
+            "identity": identity,
+            "method": RESCORING_METHOD,
+            "finished": contract.now(),
+            "rescored": rescored,
+        },
+    )
     return 0
 
 
@@ -1478,7 +1808,8 @@ def parse_args(argv=None):
     sub.add_parser("verify", help="reconcile and re-check every case")
     sub.add_parser("summarize", help="write summary.md")
     rescore = sub.add_parser(
-        "rescore", help="rescore verified campaigns with the release code"
+        "rescore",
+        help="rescore verified campaigns with the release code, resuming",
     )
     rescore.add_argument("--campaign", type=Path, action="append")
     run = sub.add_parser("run", help="run the cases one after another")
