@@ -467,7 +467,8 @@ reason.
   verified case's record, sidecar and boost report; `run` is the same
   campaign one case after another on a workstation. `PYVBMC_SOURCE` names
   the package tree of an arm of other code, which the harness alone, run
-  as a script, imports (no other script reads the variable), and
+  as a script, imports (no other script reads the variable; a tree that
+  PyVBMC does not import from exits 78, having written nothing), and
   `PYVBMC_GPYREG_SOURCE` the gpyreg checkout; the harness, the targets
   module and its data are this checkout's in every arm. `validate_case`
   checks the records of the campaigns of September 2026, which ran before

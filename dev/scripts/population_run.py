@@ -37,7 +37,10 @@ names, which every process needs. This module puts the harness checkout,
 then gpyreg, first on ``sys.path``; run as a script, it then puts the
 package tree ahead of them and imports PyVBMC from it
 (:func:`use_package_tree`) before it imports ``golden_trace.py`` and
-``profile_run.py``. No other script reads ``PYVBMC_SOURCE``, and a process
+``profile_run.py``, and when PyVBMC does not import from that tree it
+exits 78, the contract's exit code for an identity that cannot be
+established, having written nothing. No other script reads
+``PYVBMC_SOURCE``, and a process
 that imports this module (the analysis, the tests) takes PyVBMC from the
 harness checkout. The identity refuses a process whose ``pyvbmc`` or
 ``gpyreg`` resolves outside its tree, or whose harness modules come from
@@ -69,7 +72,9 @@ A case writes, relative to the campaign directory::
                                                   metrics
 
 with its completion record, claim and error file where the contract puts
-them. Each configuration's directory is a population directory of
+them. The worker refuses with exit 64, touching nothing, a line that is
+not a case of the allocation and a directory without a readable manifest
+of this harness. Each configuration's directory is a population directory of
 ``golden_trace.py`` (``summary``, ``load_population``, the ``--baseline``
 of ``golden_replay.py``); the boost files lie apart from it, out of reach of
 its sidecar discovery (``*_seed*.json``).
@@ -112,7 +117,8 @@ verified cases alone.
 so two arms of different code are compared on metrics recomputed by one
 code. ``rescore`` runs in a process of the harness checkout's own package
 (the release code) and in the trees and environment of the campaign at
-``--out`` (its source identity is the manifest's), and refuses any other.
+``--out`` (its source identity is the manifest's), and refuses any other,
+and a process without ``PYVBMC_GPYREG_SOURCE``, with exit 78.
 For each verified case of that campaign and of each ``--campaign`` it
 rebuilds the returned posterior from its plain arrays and recomputes the
 evidence error, gsKL, MMTV and the RMSE of the mean with
@@ -201,7 +207,24 @@ def use_package_tree(environ=None):
 
 
 if __name__ == "__main__":
-    use_package_tree()
+    try:
+        use_package_tree()
+    except Exception as error:  # noqa: BLE001
+        # No identity can be established without the package tree; the
+        # contract's exit code for that, and no error file (the case's
+        # files are not touched).
+        import traceback
+
+        from campaign_contract import EXIT_IDENTITY
+
+        traceback.print_exc()
+        print(
+            "population_run.py refused: PyVBMC cannot be imported from "
+            f"the campaign's package tree ({type(error).__name__}: {error})",
+            file=sys.stderr,
+            flush=True,
+        )
+        sys.exit(EXIT_IDENTITY)
 
 import campaign_contract as contract
 import dill
@@ -1215,8 +1238,28 @@ def cmd_cases(args):
 
 
 def cmd_worker(args):
+    """One case under the contract's worker sequence.
+
+    A directory without a readable manifest of this harness
+    (``"harness": "population_run"``) and a line that is not a case of its
+    allocation are refused with :data:`EXIT_USAGE`, touching nothing.
+    """
     out = args.out.resolve()
-    manifest = read_manifest(out)
+    path = out / "manifest.json"
+    try:
+        manifest = contract.read_json(path)
+    except (OSError, ValueError) as error:
+        print(
+            f"{out} holds no readable manifest.json ({error}); the worker "
+            "runs cases in a directory that `prepare` wrote",
+            flush=True,
+        )
+        return EXIT_USAGE
+    if not isinstance(manifest, dict) or (
+        manifest.get("harness") != "population_run"
+    ):
+        print(f"{path} is not a manifest of population_run", flush=True)
+        return EXIT_USAGE
     if args.case not in case_lines(manifest):
         print(f"{args.case!r} is not a case of {out}", flush=True)
         return EXIT_USAGE
@@ -1621,11 +1664,16 @@ def cmd_rescore(args):
     files lie under ``rescored/<name>.parts/``.
     """
     out = args.out.resolve()
-    if not release_code():
+    try:
+        trees = source_trees()
+    except contract.IdentityError as error:
+        print(f"rescore refused: no identity ({error})", flush=True)
+        return contract.EXIT_IDENTITY
+    if trees["pyvbmc"] != ROOT:
         print(
             "rescore refused: it runs in a process of the harness checkout's "
             "own package (the release code), and PYVBMC_SOURCE names "
-            f"{source_trees()['pyvbmc']}",
+            f"{trees['pyvbmc']}",
             flush=True,
         )
         return contract.EXIT_IDENTITY
