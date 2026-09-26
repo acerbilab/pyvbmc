@@ -47,11 +47,13 @@ Each script's header documents it in full.
   directory.
 - `campaign_finish.sh CAMPAIGN_DIR [--no-archive] [--allow-missing]
   [--allow-running]`: the accounting, the queue check, `verify` and the
-  harness's finishing steps as batch jobs, then the archive.
-- `campaign_redact.sh CAMPAIGN_DIR OUT_DIR [--path NAME=PATH]`: the
-  tracked copies of a finished campaign, redacted for the repository; with
-  `--check FILE ...` in place of `OUT_DIR`, the same search in files it did
-  not write.
+  harness's finishing steps as batch jobs, then the archive; with
+  `--allow-running`, a look at the campaign as it stands, which stops
+  after `verify` and its report.
+- `campaign_redact.sh CAMPAIGN_DIR OUT_DIR [--path NAME=PATH ...]
+  [--allow STRING ...]`: the tracked copies of a finished campaign,
+  redacted for the repository; with `--check FILE ...` in place of
+  `OUT_DIR`, the same search in files it did not write.
 
 The submission and the finish run on the login node, from the harness
 checkout (the clone of this repository whose code the campaign runs), and
@@ -81,6 +83,7 @@ finishing steps included, is a batch job.
 | `SBATCH_EXTRA` | further `sbatch` arguments of every job, split into words at spaces, tabs and newlines, with no quoting and no pathname expansion | no |
 | `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` | no |
 | `STEP_POLL` | the seconds between two looks at the accounting while the finish waits for a step job; default 30 | no |
+| `STEP_WAIT_LIMIT` | the seconds after which the finish stops waiting for a step job; default 86400, a day, and 0 for no limit | no |
 | `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` | no |
 
 `prepare` records every setting in the `site` block of the campaign's
@@ -165,7 +168,10 @@ line of its own, from the first column; the build refuses a file with
 none or two), `zstd` for the archive, `gh` for the hand-back and `git`,
 which every worker runs on its compute node for its source identity, and
 every package from PyPI at its pinned version. PyVBMC and gpyreg are not
-installed in it; they come from the campaign's source trees. Build it from
+installed in it; they come from the campaign's source trees, and the
+versions that the records read from installed metadata
+(`installed_metadata_versions`, in the identity's `imports` and in the
+pool artifacts' host part) are null for both. Build it from
 the harness checkout, with the site's settings exported and
 `CAMPAIGN_ENV` naming a prefix that does not exist yet:
 
@@ -366,12 +372,15 @@ which rescores the verified cases of both arms with the release code and
 writes `rescored/<name>.json` for each arm, `rescoring.json` beside them,
 and work files under `rescored/<name>.parts/`, from which a later
 `rescore` resumes. `rescore` exits 78 unless it runs with the after arm's
-own source identity, and fails when a case of the after arm does not
-reproduce its in-run metrics exactly. A failed case of a population is one
-whose run raised, or whose artifacts fail the harness's checks: finite
-metrics, the options requested and applied, a boost report consistent
-with its capture, and 750 evaluations for `cigar_D15_exhaust`, a run of
-which that stops short of them fails.
+own source identity and `PYVBMC_GPYREG_SOURCE` set, and fails when a case
+of the after arm does not reproduce its in-run metrics exactly. A failed
+case of a population is one whose run raised, or whose artifacts fail the
+harness's checks: finite metrics, the options requested and applied, a
+boost report consistent with its capture, and 750 evaluations for
+`cigar_D15_exhaust`, a run of which that stops short of them fails. A
+boost stage other than the returned posterior whose scoring failed keeps
+the error as its metrics and fails no case; the analysis counts and lists
+such stages, apart from the boost summary's usability counts.
 
 #### The pools
 
@@ -406,7 +415,10 @@ VERIFY_TIME=$POOL_VERIFY_TIME VERIFY_MEM=$POOL_VERIFY_MEM \
 that pass the filters, up to the target of 320. It stops the finish when a
 seed below a condition's last selected run is missing, interrupted, in
 flight or partial, since that seed would have come first had it finished:
-resubmit the seeds it names and finish again. `selection.md` shows each
+resubmit the seeds it names and finish again. A seed that stays missing
+or interrupted at every resubmission is given up
+([Giving a case up](#giving-a-case-up)), and `select` then reads it as a
+failed seed, whatever files its task left. `selection.md` shows each
 condition's selected runs against its target, and under `unfinished` the
 seeds above its last selected run that have not finished; those are
 resubmitted first, and a shortfall means that the condition's seeds ran
@@ -425,7 +437,10 @@ Both arms at `M` = 2, 4, 8 and 16 and the integrated arm alone at 3, 5 and
 gpyreg v1.3.3 checkout and `BASELINE_DIR` the S-VBMC checkout, from a
 finished pool: `prepare` refuses a pool whose `verification.json` is
 absent or did not pass, or whose `selection.json` is absent, was made
-before its last `verify` or disagrees with it, and a dirty harness
+before its last `verify`, disagrees with it or was not made with the
+allocation's first seed, seed cap and target (or the target that `select
+--target` gave, which the stacking's manifest records as
+`target_override`), and a dirty harness
 checkout (the release gate never passes `--allow-dirty`). The grid below
 is `prepare`'s default, written out. A task holds every repetition of one
 condition and `M` below 16, and one cell from 16 on. The first submission
@@ -480,7 +495,10 @@ The finish goes in this order.
 
 1. **The accounting** of every job that `slurm/jobs.txt` and
    `slurm/steps.txt` record, into `slurm/sacct.txt`, which is removed when
-   `sacct` fails.
+   `sacct` fails. It holds the rows of the jobs' steps (`.batch`,
+   `.extern`), whose `MaxRSS` sizes `MEM` ([Limits](#limits)); the checks
+   below judge the allocation rows alone, since a step's row can stay
+   `RUNNING` after its node failed.
 2. **The queue check** (`campaign_contract.py queue-check`): `squeue` for
    every recorded job. A task it lists in a state that has not ended is
    queued; a job it cannot answer for is judged from `sacct.txt`, and one
@@ -488,13 +506,17 @@ The finish goes in this order.
    finish unless `--allow-running`, and a finish that sees one never
    archives.
 3. **`verify`, then each finishing step**, as batch jobs: each is
-   submitted with `--parsable`, its job id recorded in `slurm/steps.txt`
-   (`<job> step=<name> submitted <date>`) before the finish waits for it,
-   looking at the accounting every `STEP_POLL` seconds, and its exit code
-   recorded when it ends (`<job> step=<name> rc=<code> <date>`); a
-   submission that `sbatch` refused is recorded as `? step=<name>
-   sbatch=<rc> <date>`. Interrupting the finish while it waits (Ctrl-C) is
-   safe: the job keeps running, and the next finish's queue check sees it.
+   submitted with `--parsable` and `--no-requeue`, its job id recorded in
+   `slurm/steps.txt` (`<job> step=<name> submitted <date>`) before the
+   finish waits for it, looking at the accounting every `STEP_POLL`
+   seconds, and its exit code recorded when it ends (`<job> step=<name>
+   rc=<code> <date>`); a submission that `sbatch` refused is recorded as
+   `? step=<name> sbatch=<rc> <date>`. The wait prints a notice after every
+   20 looks in a row that find the job unknown to the accounting, and
+   after `STEP_WAIT_LIMIT` seconds it gives up, records `rc=124` and stops
+   the finish. Interrupting the finish while it waits (Ctrl-C) is safe: the
+   job keeps running, and the next finish's queue check sees it, as it
+   sees a job that the wait gave up on.
 4. **The archive**, unless `--no-archive`, only when nothing is queued, may
    still run or is in flight, and the accounting shows every recorded task
    ended (`campaign_contract.py archive-check`).
@@ -504,9 +526,10 @@ of every state but `verified`:
 
 - **failed**: the case raised, or its artifacts failed the harness's
   checks; `<tag>.error.txt` in its condition's directory holds the
-  traceback. Rerun it with `ARRAY=<index>`; leaving a case out is the PI's
-  ruling. A rerun sets the earlier error file aside as
-  `claims/<tag>.error.txt` when it starts.
+  traceback. Rerun it with `ARRAY=<index>`. A rerun sets the earlier error
+  file aside as `claims/<tag>.error.txt` when it starts. A case that the
+  operator gave up is failed too, its error file starting with the ruling
+  ([Giving a case up](#giving-a-case-up)), and no task runs it again.
 - **missing**: the case never ran, or Slurm stopped its task with SIGTERM
   (its time limit, `scancel`) and the worker cleaned up. A rerun of a
   failed case that is stopped so reads as missing, with the earlier
@@ -525,7 +548,11 @@ of every state but `verified`:
 The finish exits 1 on a failed verification, a partial case or a stray
 file, 4 on cases in flight (unless `--allow-running`) and 3 on missing or
 interrupted cases (unless `--allow-missing`), printing the `ARRAY=...` to
-resubmit. Before resubmitting, see in the accounting what stopped them:
+resubmit. With `--allow-running` the finish is a look at the campaign as
+it stands: `verify` and its report, and neither the finishing steps nor
+the archive; it exits 0 when nothing but cases in flight remains, and 3
+on missing or interrupted cases without `--allow-missing`. Before
+resubmitting, see in the accounting what stopped them:
 
 ```bash
 grep -E 'TIMEOUT|OUT_OF_MEMORY|NODE_FAIL' "$RUNS/<campaign>/slurm/sacct.txt"
@@ -536,6 +563,28 @@ A time limit asks for a larger `TIME`, the memory limit for a larger
 campaign_submit.sh "$RUNS/<campaign>"`) and run the finish again. It runs
 `verify` and the finishing steps again, and writes the archive only once
 no task is queued, may still run or is in flight.
+
+#### Giving a case up
+
+A case that stays missing or interrupted at every resubmission (its time
+limit stops it every time, say) is ruled out, from the harness checkout,
+with its tag, the first field of line `<index>` of `cases.txt`:
+
+```bash
+"$CAMPAIGN_ENV/bin/python" dev/scripts/campaign_contract.py give-up \
+    --out "$RUNS/<campaign>" --case <tag> --reason "<one line>"
+```
+
+Its error file then starts with `given up by the operator: <reason>`, and
+`slurm/given_up.txt` logs the ruling: the time, the tag, the user and the
+reason. `verify` places the case as failed with that reason, the worker
+of any later task for it exits 0 at once, and the pool's `select` reads it
+as a failed seed, whatever files a killed task left. `give-up` refuses a
+case that has a record or is given up already, a tag that is not a case
+of the campaign, a reason that is empty or longer than one line, and a
+case whose claim is live. The reason enters `verification.json`, and so
+the tracked copies, whose search for site details covers it: keep
+hostnames, paths and usernames out of it.
 
 ### Limits
 
@@ -551,13 +600,16 @@ tasks, `POP_VERIFY_TIME` and `POP_VERIFY_MEM` for their `verify`, and
 and `ASSEMBLE_TIME` and `ASSEMBLE_MEM` for its finishing step; and
 `CHECK_TIME` and `CHECK_MEM` for the environment check. Their values come
 from the accounting of the smoke campaigns (the plan's Phase 6, `sacct`
-and `seff`), and the operator's notes hold them. For the stacking, the
-developer's machine gives an order of size: an S-VBMC `optimize()` at
-`M = 32` peaks near 2.1 GB, in its gradient steps, and its final entropy
-evaluation near 350 MiB; a task's `MEM` is still Phase 6's. `THROTTLE`
-applies to each submission, so a campaign submitted in several chunks or
-subsets, and two campaigns that run together, run that many tasks at once
-for each submission.
+and `seff`), and the operator's notes hold them; `MEM` comes from the
+`MaxRSS` of the accounting's step rows. The population sidecars hold each
+case's peak resident set as `max_rss_mb`, and as `peak_rss_mb`, on Linux,
+the resident set at the end of the run, which is not a peak. For the
+stacking, the developer's machine gives an order of size: an S-VBMC
+`optimize()` at `M = 32` peaks near 2.1 GB, in its gradient steps, and its
+final entropy evaluation near 350 MiB; a task's `MEM` is still Phase 6's.
+`THROTTLE` applies to each submission, so a campaign submitted in several
+chunks or subsets, and two campaigns that run together, run that many
+tasks at once for each submission.
 
 ### The tracked copies, the archive and the hand-back
 
@@ -604,14 +656,22 @@ population analysis on the copies gives the numbers it gives on the
 campaign; the archive's parts with theirs; and the cases the verification
 report does not place as verified (`cases_not_verified`: failed,
 interrupted, missing). A report that places a case in flight is refused.
-The redaction then searches every copy, as plain substrings, for each
+The redaction then searches every copy: as plain substrings, for each
 value of the site block that is a path or a command, every named
-directory, your username and home directory, and every hostname that the
-campaign's records, manifest, claims, logs and accounting hold, in any
-letter case; and for any absolute path outside the system's directories
-(`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`, `/opt/conda`, `/proc`, `/sbin`,
-`/sys`, `/tmp`, `/usr`, `/var/tmp`) that no name covers. If any remains, it
-writes nothing and names the file and the string.
+directory and your home directory; as whole names, which no letter,
+digit, `_` or `-` flanks, for your username and every hostname that the
+campaign's records, manifest, claims, logs and accounting hold, a
+hostname in any letter case; and for any absolute path outside the
+system's directories (`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`,
+`/opt/conda`, `/proc`, `/sbin`, `/sys`, `/tmp`, `/usr`, `/var/tmp`) that
+no name covers. If any remains, it writes nothing and names the file and
+the string. A hit that is benign, such as a short username that is also a
+word of a copy, is exempted with `--allow STRING`, repeatable and taken by
+`--check` too, and `redaction.json` records each allowed string under
+`allowed` with the hits it cleared. A username, or a hostname that the
+copies name otherwise, that is itself a name the copies write (`login`,
+the node family) is refused, since the search could not tell the two
+apart.
 
 **Where it runs.** On the login node, in the account that ran the
 campaign, after the finish has passed. The username and the home directory
@@ -681,9 +741,9 @@ of `slurm/sacct.txt`), is its worker's, one of:
 
 | Code | Meaning |
 |---|---|
-| 0 | the case is complete: the worker completed it, it had a record already, or something failed after its record was written, which leaves the case complete |
+| 0 | the case is complete: the worker completed it, it had a record already, or something failed after its record was written, which leaves the case complete; or the operator gave it up, and the worker exits at once |
 | 1 | the case failed; its `<tag>.error.txt` holds why |
-| 64 | the case line or the campaign directory is not this harness's; nothing was touched |
+| 64 | the case line or the campaign directory is not this harness's, or the directory holds no readable manifest; nothing was touched |
 | 75 | a live task holds the case's claim; nothing was touched |
 | 78 | the source identity differs from the manifest's, or could not be established; nothing was touched |
 | 128 + n | signal n stopped the run (143 for SIGTERM); one that came after the completion record leaves the case complete |
@@ -692,8 +752,14 @@ of `slurm/sacct.txt`), is its worker's, one of:
   holds the case, and the accounting does not show it ended, or could not
   be asked. A duplicate submission leaves these, harmlessly. The claim is
   `claims/<tag>` and names its owner; a stale one is retired as
-  `claims/<tag>.stale.<owner>.<key>`, and a worker finishes a retirement
-  that another stopped halfway. Where the accounting cannot be asked from
+  `claims/<tag>.stale.<owner>.<key>`. A worker removes a stale claim, or
+  replaces one for a requeue, only while it holds the claim's retirement
+  mark, the dot-file `.<name>.retiring.<owner>.<key>.<level>` beside it
+  (`<name>` the last component of the tag). A worker that finds the mark
+  held by a task that may still run refuses with 75 (`... is retiring it,
+  and may still run`); one whose holder's task has ended takes the mark's
+  next level. A `.retiring.` file that remains is the harmless trace of a
+  retirer that was killed. Where the accounting cannot be asked from
   a compute node, every claim of an ended task stays live: check its owner
   with `sacct -j <job>_<task> -o State`, remove the claim once that task
   has ended, and resubmit the case.
@@ -706,10 +772,16 @@ of `slurm/sacct.txt`), is its worker's, one of:
   and 10 s. A tree moved or was edited, or the environment changed: put it
   back to the recorded commit or pins. A campaign's identity never
   changes, and a fix to the harness is a new commit and a new campaign
-  directory.
+  directory. A population task that exits 78 with `population_run.py
+  refused: PyVBMC cannot be imported from the campaign's package tree`
+  could not import PyVBMC from the tree that `PYVBMC_SOURCE` names, or
+  from the harness checkout where it is unset; the traceback before that
+  line says why.
 - **Exit 64**: the task gave the harness a line that is not a case of its
-  allocation, or the directory is not a campaign of that harness; `HARNESS`
-  names another harness than the one the campaign was prepared with.
+  allocation, a directory that is not a campaign of that harness
+  (`HARNESS` names another harness than the one the campaign was prepared
+  with), or one that holds no readable manifest (`holds no readable
+  manifest.json`).
 - **A submission that stops** (`sbatch exited ...`, or `sbatch printed no
   job id`): the refusal names the `ARRAY=` still to submit, the chunks
   before it being submitted and recorded in `slurm/jobs.txt`. Without a job
@@ -726,10 +798,12 @@ of `slurm/sacct.txt`), is its worker's, one of:
   campaign.
 - **A finish that refuses**: tasks still queued or running, or a job that
   neither the queue nor the accounting shows ended (wait, or pass
-  `--allow-running` for a look, which never archives); a fixed setting
-  that differs from the manifest's (the shell holds another campaign's
-  settings; the manifest's `site` block shows the ones it was prepared
-  with); a step whose submission failed (`? step=` in `slurm/steps.txt`;
+  `--allow-running` for a look, which runs no finishing step and never
+  archives); a step job that the wait gave up on (`rc=124` in
+  `slurm/steps.txt`; the next finish's queue check sees the job while it
+  may still run); a fixed setting that differs from the manifest's (the
+  shell holds another campaign's settings; the manifest's `site` block
+  shows the ones it was prepared with); a step whose submission failed (`? step=` in `slurm/steps.txt`;
   look for its job with `squeue -n <campaign directory's name>_<step>`); a
   failed verification, or missing and interrupted cases (see
   [Reading the finish's report](#reading-the-finishs-report-and-resubmitting)).
@@ -741,10 +815,12 @@ of `slurm/sacct.txt`), is its worker's, one of:
   that shared its core breaks that rule; how the site gives a task a whole
   core is a setting of the site, `SBATCH_EXTRA`, and goes to the PI.
 - **A redaction that refuses**: the file and the string it names are what
-  the rules did not remove, or an absolute path that no name covers. A
-  directory that holds nothing to hide once named can be given a name
-  with `--path NAME=PATH`; anything else goes to the PI, since it is a
-  site detail the redaction does not know.
+  the rules did not remove, or an absolute path that no name covers; or,
+  before any search, a username or hostname that is a name the copies
+  write. A directory that holds nothing to hide once named can be given a
+  name with `--path NAME=PATH`, and a hit where the string stands for no
+  site detail is exempted with `--allow STRING`; anything else goes to the
+  PI, since it is a site detail the redaction does not know.
 
 ## The September pool scripts
 
