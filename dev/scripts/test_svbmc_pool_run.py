@@ -1,6 +1,8 @@
 """Contracts of the S-VBMC pool harness, ``svbmc_pool_run.py``.
 
-The artifact, resumption, selection and summary; the campaign contract
+The artifact, resumption, selection (its walk over every seed, its
+refusal of an unfinished seed below a selected run, and what makes it
+stackable after a verification) and summary; the campaign contract
 (the case list and its subsets, the worker's early exit and refusals, its
 claim, its clean-up after a failure or a SIGTERM, the identity and host
 fields, every state of ``verify``); the identity of a case run by the array
@@ -249,6 +251,19 @@ def claim_by(out, tag, job, array_task, restart_count=0):
     return record
 
 
+def retired_claims(out, tag, owner):
+    """The retired claims of ``tag`` that the task ``owner``
+    (``<job>_<task>``) held: ``claims/<tag>.stale.<owner>``, with or without
+    a further ``.<key>`` after the owner."""
+    claim = contract.claim_path(out, tag)
+    name = f"{claim.name}.stale.{owner}"
+    return [
+        path
+        for path in claim.parent.glob(f"{name}*")
+        if path.name == name or path.name.startswith(f"{name}.")
+    ]
+
+
 def answer(state, step, text=None, fail=False):
     """What the stub ``sacct`` says of the task ``step``."""
     folder = state / "sacct"
@@ -416,6 +431,7 @@ def test_manifest_records_the_allocation_identity_and_site(campaign):
         "dev/scripts/svbmc_pool_io.py",
         "dev/scripts/benchmark_targets.py",
         "dev/scripts/campaign_contract.py",
+        "dev/scripts/profile_run.py",
         "dev/scripts/data/",
     }
     assert files["dev/scripts/svbmc_pool_run.py"] == contract.sha256_file(
@@ -782,7 +798,11 @@ def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
         condition["selected"] / condition["seeds_scanned"]
     )
     assert selection["totals"]["selected"] == condition["selected"]
+    assert condition["unfinished"] == []
     assert selection["identity"] == manifest_of(out)["identity"]
+    assert selection["manifest_sha256"] == contract.sha256_file(
+        out / "manifest.json"
+    )
     markdown = (out / "selection.md").read_text(encoding="utf-8")
     assert markdown.startswith("# S-VBMC filtered pool")
     assert "pass rate over the scanned seeds" in markdown
@@ -793,6 +813,172 @@ def test_select_takes_the_lowest_seeds_that_pass(campaign, tmp_path):
     lowered = read_json(copy / "selection.json")
     assert lowered["target_override"] == 1
     assert [r["tag"] for r in lowered["conditions"][0]["runs"]] == passing[:1]
+
+
+def synthetic_pool(out, states, target):
+    """A pool directory whose cases hold what ``states`` names, seed by seed
+    from ``SEED_START``: ``passes`` or ``filtered_out`` (a completion
+    record with that verdict), ``failed`` (an error file), ``claimed`` (a
+    claim alone, a case in flight or interrupted) or ``missing``
+    (nothing). Only what ``select`` reads of a case is written."""
+    contract.write_json(
+        Path(out) / "manifest.json",
+        {
+            "campaign": "svbmc_pool",
+            "contract": contract.CONTRACT_VERSION,
+            "identity": {},
+            "allocation": [
+                {
+                    "label": LABEL,
+                    "seed_start": SEED_START,
+                    "max_seeds": len(states),
+                    "target_filtered": target,
+                }
+            ],
+        },
+    )
+    for seed, state in enumerate(states, start=SEED_START):
+        tag = tag_of(seed)
+        if state in ("passes", "filtered_out"):
+            contract.write_json(
+                contract.record_path(out, tag),
+                {"tag": tag, "verdict": {"passes": state == "passes"}},
+            )
+        elif state == "failed":
+            plant(out, f"{tag}.error.txt", f"{tag}: ValueError: x\n")
+        elif state == "claimed":
+            claim_by(out, tag, "700", str(seed))
+    return Path(out)
+
+
+def select_in_process(out, capsys):
+    code = runner.main(["select", "--out", str(out)])
+    return code, capsys.readouterr()
+
+
+@pytest.mark.parametrize("unfinished", ["missing", "claimed"])
+def test_select_refuses_an_unfinished_seed_below_a_selected_run(
+    tmp_path, capsys, unfinished
+):
+    """A missing or claimed seed would have come first had it finished, so
+    the selection is not the pool, and nothing is written."""
+    states = ["passes", unfinished, "filtered_out", "passes", "passes"]
+    out = synthetic_pool(tmp_path / "pool", states, target=3)
+    code, printed = select_in_process(out, capsys)
+    assert code == 1
+    assert f"seeds {SEED_START + 1} lie below the last selected seed" in (
+        printed.err
+    )
+    assert "select refuses" in printed.err
+    assert not (out / "selection.json").exists()
+    assert not (out / "selection.md").exists()
+
+
+def test_select_lists_the_unfinished_seeds_past_a_shortfall(tmp_path, capsys):
+    """Short of its target, the walk reaches the end of the range; the
+    unfinished seeds past the last selected run are listed, and the
+    selection is written."""
+    states = ["failed", "passes", "filtered_out", "missing", "claimed"]
+    out = synthetic_pool(tmp_path / "pool", states, target=2)
+    code, printed = select_in_process(out, capsys)
+    assert code == 0, printed.err
+    selection = read_json(out / "selection.json")
+    (condition,) = selection["conditions"]
+    assert condition["runs"] == [
+        {"tag": tag_of(SEED_START + 1), "seed": SEED_START + 1}
+    ]
+    assert condition["shortfall"] == 1
+    assert condition["unfinished"] == [SEED_START + 3, SEED_START + 4]
+    assert condition["seeds_scanned"] == 3
+    assert condition["failed_while_scanning"] == 1
+    assert condition["pass_rate_scanned"] == 1 / 3
+    assert selection["totals"]["unfinished"] == 2
+    assert selection["verification_sha256"] is None
+    markdown = (out / "selection.md").read_text(encoding="utf-8")
+    assert f"- {LABEL}: seeds {SEED_START + 3}-{SEED_START + 4}" in markdown
+    # Met at the fourth seed, the walk stops there and the rest is never
+    # looked at.
+    states = ["passes", "failed", "filtered_out", "passes", "missing"]
+    out = synthetic_pool(tmp_path / "met", states, target=2)
+    code, printed = select_in_process(out, capsys)
+    assert code == 0, printed.err
+    (condition,) = read_json(out / "selection.json")["conditions"]
+    assert [run["seed"] for run in condition["runs"]] == [
+        SEED_START,
+        SEED_START + 3,
+    ]
+    assert condition["unfinished"] == []
+    assert condition["seeds_scanned"] == 4
+
+
+def test_a_selection_is_stackable_only_after_a_passing_verification(
+    campaign, tmp_path
+):
+    """What the stacking comparison's `prepare` requires of a pool: a
+    verification that passed, a selection made after it, and a selection
+    that is the stopping rule on the verified cases."""
+    out, _ = campaign
+    copy = copied(out, tmp_path)
+    ok(cli("select", "--out", copy))
+    with pytest.raises(RuntimeError, match="holds no verification.json"):
+        runner.stackable_selection(copy)
+    ok(cli("verify", "--out", copy))
+    with pytest.raises(RuntimeError, match="held no verification.json"):
+        runner.stackable_selection(copy)
+    ok(cli("select", "--out", copy))
+    read = runner.stackable_selection(copy)
+    assert read["verification_sha256"] == contract.sha256_file(
+        copy / "verification.json"
+    )
+    assert read["verification_counts"] == verification(copy)["counts"]
+    # A verification after the selection makes it stale.
+    ok(cli("verify", "--out", copy))
+    with pytest.raises(RuntimeError, match="another verification.json"):
+        runner.stackable_selection(copy)
+    ok(cli("select", "--out", copy))
+    runner.stackable_selection(copy)
+    # A selection that records no hashes is dated against the report.
+    selection = read_json(copy / "selection.json")
+    undated = {
+        key: value
+        for key, value in selection.items()
+        if key not in ("manifest_sha256", "verification_sha256")
+    }
+    contract.write_json(
+        copy / "selection.json", dict(undated, generated="2000-01-01 00:00:00")
+    )
+    with pytest.raises(RuntimeError, match="precedes"):
+        runner.stackable_selection(copy)
+    contract.write_json(
+        copy / "selection.json", dict(undated, generated="2999-01-01 00:00:00")
+    )
+    runner.stackable_selection(copy)
+    # A selection that leaves out a passing run is not the pool.
+    runs = selection["conditions"][0]["runs"]
+    assert runs
+    edited = json.loads(json.dumps(selection))
+    edited["conditions"][0]["runs"] = runs[1:]
+    contract.write_json(copy / "selection.json", edited)
+    with pytest.raises(
+        RuntimeError, match="the stopping rule on the verified"
+    ):
+        runner.stackable_selection(copy)
+    # A report that places a seed of the walk neither verified nor failed,
+    # while the files the selection is made from are complete.
+    report = verification(copy)
+    report["cases"][0]["status"] = "missing"
+    contract.write_json(copy / "verification.json", report)
+    ok(cli("select", "--out", copy))
+    with pytest.raises(RuntimeError, match="neither verified nor failed"):
+        runner.stackable_selection(copy)
+    # A report that did not pass.
+    report = verification(copy)
+    report["cases"][0]["status"] = "verified"
+    report["counts"]["partial"], report["exit_code"] = 1, 1
+    contract.write_json(copy / "verification.json", report)
+    ok(cli("select", "--out", copy))
+    with pytest.raises(RuntimeError, match="verification did not pass"):
+        runner.stackable_selection(copy)
 
 
 def test_the_stack_harness_reads_the_selection(campaign, tmp_path):
@@ -1396,9 +1582,7 @@ def test_a_stale_claim_is_retired_and_the_case_starts_clean(
     assert worker(fresh, tag) == 0
     assert seen["files"] == []
     assert seen["claim"]["job"] == "700"
-    assert (
-        fresh / "claims" / LABEL / f"{LABEL}_seed{SEED_START}.stale.600_7"
-    ).exists()
+    assert len(retired_claims(fresh, tag, "600_7")) == 1
     assert not contract.claim_path(fresh, tag).exists()
     runner.check_record(fresh, tag, manifest_of(fresh)["identity"])
     assert runner.partial_artifacts(fresh, tag) == [
@@ -1506,9 +1690,7 @@ def test_a_killed_case_is_interrupted_and_its_resubmission_completes(
     as_task(monkeypatch, 900, 2)
     assert worker(fresh, tag) == 0
     assert seen["files"] == []
-    assert (
-        fresh / "claims" / LABEL / f"{LABEL}_seed{SEED_START + 1}.stale.800_2"
-    ).exists()
+    assert len(retired_claims(fresh, tag, "800_2")) == 1
     ok(cli("verify", "--out", fresh, env=stub_environment(slurm)))
     assert reported(verification(fresh), tag)["status"] == "verified"
 
@@ -1671,6 +1853,7 @@ def test_verify_checks_the_node_feature_and_the_core(stored, tmp_path):
             cpu_affinity={
                 "cpus": list(range(len(cores))),
                 "physical_cores": cores,
+                "core_threads": {c: [i] for i, c in enumerate(cores)},
             },
         )
         contract.write_json(path, record)
@@ -2189,17 +2372,25 @@ def test_a_flat_pool_verifies_selects_and_summarizes(flat, tmp_path):
         for tag in tags
         if read_json(pool_io.record_path(copy, tag))["verdict"]["passes"]
     ][:TARGET]
+    # Selected after its verification, the flat pool can be stacked.
+    assert runner.stackable_selection(copy)["verification_sha256"] == (
+        contract.sha256_file(copy / "verification.json")
+    )
     ok(cli("summarize", "--out", copy))
-    (summary,) = read_json(copy / "summary.json")["conditions"]
+    written = read_json(copy / "summary.json")
+    (summary,) = written["conditions"]
     assert summary["completed"] == len(tags)
     assert summary["success_flag"] == sum(
         read_json(pool_io.record_path(copy, tag))["success_flag"]
         for tag in tags
     )
-    assert summary["convergence_status"] == {}
-    assert summary["iterations"]["n"] == 0
+    assert written["totals"]["success_flag"] == summary["success_flag"]
+    # The flat records hold no convergence status, and the summary holds
+    # no field for one.
+    assert not set(runner.CONTRACT_SUMMARY_KEYS) & set(summary)
     text = (copy / "summary.md").read_text(encoding="utf-8")
     assert f"| {LABEL} |" in text
+    assert "| success |" in text and "converged" not in text
 
 
 def test_a_flat_pool_reports_its_faults(flat, tmp_path):
@@ -2232,8 +2423,7 @@ def test_a_flat_pool_is_never_extended(flat, tmp_path):
     assert result.returncode == runner.EXIT_USAGE
     result = cli("run", "--out", copy)
     assert result.returncode != 0 and "flat layout" in result.stderr
-    after = snapshot(copy)
-    assert {k: v for k, v in after.items() if k != "campaign.lock"} == before
+    assert snapshot(copy) == before
 
 
 def test_the_stack_harness_reads_every_passing_record_of_a_flat_pool(
@@ -2380,6 +2570,7 @@ def test_a_pool_campaign_through_the_slurm_driver(tmp_path, driver_template):
     record["identity"]["host"]["cpu_affinity"] = {
         "cpus": [3],
         "physical_cores": ["0:3"],
+        "core_threads": {"0:3": [3]},
     }
     contract.write_json(path, record)
     again = world.task("c1", 1, **settings)

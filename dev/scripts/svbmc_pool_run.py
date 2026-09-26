@@ -39,7 +39,8 @@ process of the campaign imports, and must name the directory of
 ``campaign_contract.identity`` over two trees, the whole harness checkout
 (``harness``) and gpyreg: their commits and clean states,
 the SHA-256 of this harness, ``svbmc_pool_io.py``, ``benchmark_targets.py``,
-``campaign_contract.py`` and the data directory ``dev/scripts/data``, and
+``campaign_contract.py``, ``profile_run.py`` (whose helpers shape the
+artifact's metadata) and the data directory ``dev/scripts/data``, and
 the imported versions of Python, NumPy, SciPy and cma; ``pyvbmc`` must be
 imported from the harness checkout and ``gpyreg`` from its checkout. A
 gpyreg checkout with any uncommitted or untracked change is refused, and so
@@ -80,7 +81,8 @@ signal's number, so that ``verify`` reports the case as missing. A line
 that is not a case of the allocation is refused with exit 64 and touches
 nothing.
 
-``run`` is the workstation supervisor: it refuses a source identity that
+``run`` is the workstation supervisor: it refuses a directory of the flat
+layout before it writes anything there, refuses a source identity that
 differs from the manifest's, takes the campaign lock and walks the
 conditions in manifest order, seeds upward, one ``worker`` subprocess at a
 time, stopping each condition at its filtered target or its seed cap
@@ -97,14 +99,29 @@ run with ``--pilot-seeds`` or under a lowered target leaves more, and
 ``status.json`` and ``finished.json`` belong to ``run`` alone.
 
 ``select`` applies the campaign's stopping rule after the fact: per
-condition it takes the lowest-seed runs that pass the filters, up to the
-filtered target, and writes them to ``selection.json`` (per condition in
-``conditions``, the selected ``tag`` and ``seed`` pairs in seed order in
-``runs``), the authoritative definition of the filtered pool, which the
-stacking comparison reads. ``summarize`` writes the per-condition counts,
-pass rates, convergence (``success_flag``, ``convergence_status``,
-``message``, ``r_index``, ``iterations``), wall times and metric quartiles
-of every case the directory holds, to ``summary.json`` and ``summary.md``.
+condition it walks every seed of the range in order and takes the runs
+that pass the filters, up to the filtered target, and writes them to
+``selection.json`` (per condition in ``conditions``, the selected ``tag``
+and ``seed`` pairs in seed order in ``runs``), the authoritative definition
+of the filtered pool, which the stacking comparison reads. A seed below the
+last selected one whose case holds neither a completion record nor an
+error file (never run, in flight, interrupted or partial) would have come
+first had it finished, so ``select`` refuses, naming the seeds and writing
+nothing; a condition that falls short of its target with such seeds above
+its last selected run lists them under ``unfinished``, and the stacking
+comparison refuses it. The selection records the SHA-256 of the manifest
+and of ``verification.json`` it was made after, and the stacking
+comparison stacks a pool only when that verification passed and the
+selection agrees with it (:func:`stackable_selection`). ``summarize``
+writes the per-condition counts, pass rates, convergence
+(``success_flag``, ``convergence_status``, ``message``, ``r_index``,
+``iterations``), wall times and metric quartiles of every case the
+directory holds, to ``summary.json`` and ``summary.md``. On the flat layout,
+whose records hold ``success_flag`` alone of the convergence fields, it
+writes the fields of the summaries tracked with those pools
+(``dev/experiments/svbmc_pool/pool_20260914/summary.*``) and adds
+``success_flag`` alone: per condition and in the totals, and as the
+``success`` column and its sentence in ``summary.md``.
 
 ``verify`` re-checks every completed case against its record and the
 manifest, and reconciles the allocation case by case with
@@ -258,6 +275,7 @@ IDENTITY_FILES = (
     "dev/scripts/svbmc_pool_io.py",
     "dev/scripts/benchmark_targets.py",
     "dev/scripts/campaign_contract.py",
+    "dev/scripts/profile_run.py",
     "dev/scripts/data",
 )
 #: The packages whose import path the identity records, each with the
@@ -402,12 +420,13 @@ def campaign_identity(gpyreg_source, host=True):
     )
 
 
-def dirty_trees(record, allow_dirty):
+def dirty_trees(record, allow_dirty, product="the pool"):
     """Refuse a dirty source tree of a contract identity.
 
-    The gpyreg checkout must be clean, since the pin is what makes the
-    pool reproducible; the harness checkout may be dirty only with
-    ``allow_dirty``. Returns the names of the dirty trees.
+    The gpyreg checkout must be clean, since the pin is what makes
+    ``product`` (what the campaign computes, named in the messages)
+    reproducible; every other tree may be dirty only with ``allow_dirty``.
+    Returns the names of the dirty trees.
     """
     trees = record["source"]["trees"]
     status = record.get("imports", {}).get("trees", {})
@@ -420,7 +439,7 @@ def dirty_trees(record, allow_dirty):
     if not trees["gpyreg"]["clean"]:
         raise RuntimeError(
             "the gpyreg checkout has uncommitted or untracked changes "
-            f"({detail('gpyreg')}); the pin is what makes the pool "
+            f"({detail('gpyreg')}); the pin is what makes {product} "
             "reproducible"
         )
     dirty = [name for name, tree in trees.items() if not tree["clean"]]
@@ -429,7 +448,7 @@ def dirty_trees(record, allow_dirty):
             "uncommitted or untracked changes in the "
             + ", ".join(f"{name} checkout ({detail(name)})" for name in dirty)
             + "; commit them, or prepare with --allow-dirty to record that "
-            "the pool is generated from a dirty tree"
+            f"{product} is generated from a dirty tree"
         )
     return dirty
 
@@ -1146,14 +1165,24 @@ def died_worker(out, tag, returncode, log_path, pid):
         claim.unlink(missing_ok=True)
 
 
-def cmd_run(args):
-    out = args.out.resolve()
+def extensible_manifest(out):
+    """The manifest of a directory ``run`` may generate cases in.
+
+    Raises before anything is written in it: ``out`` must hold a manifest,
+    and one prepared under the campaign contract.
+    """
     manifest = read_manifest(out)
     if not is_contract(manifest):
         raise RuntimeError(
             f"{out} is a pool of the flat layout, prepared before the "
             "campaign contract; it is never extended"
         )
+    return manifest
+
+
+def cmd_run(args):
+    out = args.out.resolve()
+    manifest = extensible_manifest(out)
     source = activate_gpyreg(manifest["gpyreg_source"])
     expected = manifest["identity"]
     differing = contract.source_differences(
@@ -1328,44 +1357,107 @@ def read_record(out, tag):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def condition_selection(out, entry, target, contract_layout=True):
-    """The campaign's stopping rule applied to one condition's records.
+#: What one seed of a condition holds, as the stopping rule reads it: a
+#: completed run that passes the filters, a completed run that does not, a
+#: case that failed (an error file), or none of these: a case that never
+#: ran, runs now, was interrupted or left partial files.
+SEED_STATES = ("passes", "filtered_out", "failed", "unfinished")
 
-    The completed runs are walked in seed order and the ones that pass the
-    filters are taken until ``target`` of them are in hand, the paper's
-    "lowest indices" rule. Returns the selected tags, how many seeds were
-    scanned to find them, and the shortfall when the records run out
-    first. ``pass_rate_scanned`` is the selected runs over those scanned
-    seeds, which is not the condition's pass rate: the scan stops at the
-    target rather than at the end of the condition, and a seed whose case
-    failed is scanned like any other. The pass rate over every completed
-    case is ``summarize``'s.
+
+def stopping_rule(seed_start, seed_cap, target, state_of):
+    """The campaign's stopping rule over one condition's seeds.
+
+    Walks the seeds from ``seed_start`` upward, ``seed_cap`` of them at
+    most, and takes the seeds whose state (``state_of(seed)``, one of
+    :data:`SEED_STATES`) is ``passes`` until ``target`` are in hand, the
+    paper's "lowest indices" rule. Returns ``(selected, settled, failed,
+    unfinished)``: the selected seeds, how many seeds walked hold a
+    completion record or an error file, how many of those failed, and the
+    unfinished seeds walked, in seed order.
     """
-    label = entry["label"]
-    selected, scanned, failed = [], 0, 0
-    for tag in condition_runs(out, label, contract_layout):
+    selected, settled, failed, unfinished = [], 0, 0, []
+    start = int(seed_start)
+    for seed in range(start, start + int(seed_cap)):
         if len(selected) >= target:
             break
-        scanned += 1
-        if not (Path(out) / "records" / f"{tag}.complete.json").exists():
-            failed += 1  # the case failed and left an error file
+        state = state_of(seed)
+        if state not in SEED_STATES:
+            raise ValueError(f"seed {seed}: unknown state {state!r}")
+        if state == "unfinished":
+            unfinished.append(seed)
             continue
-        record = read_record(out, tag)
-        if record["verdict"]["passes"]:
-            selected.append({"tag": tag, "seed": int(record["seed"])})
-    return {
+        settled += 1
+        failed += state == "failed"
+        if state == "passes":
+            selected.append(seed)
+    return selected, settled, failed, unfinished
+
+
+def seed_state(out, tag):
+    """The state of one case as the stopping rule reads it from its files.
+
+    A completion record settles the case, by its filter verdict. Without
+    one, a claim (the case runs, or its task was killed) or artifact files
+    leave it unfinished, as ``verify`` places them before an error file; an
+    error file alone is a failed case; and nothing at all is a case that
+    never ran.
+    """
+    if contract.record_path(out, tag).exists():
+        passes = read_record(out, tag)["verdict"]["passes"]
+        return "passes" if passes else "filtered_out"
+    if contract.claim_path(out, tag).exists() or partial_artifacts(out, tag):
+        return "unfinished"
+    if contract.error_path(out, tag).exists():
+        return "failed"
+    return "unfinished"
+
+
+def condition_selection(out, entry, target, contract_layout=True):
+    """The campaign's stopping rule applied to one condition's cases.
+
+    Every seed of the condition's range is walked in order, the runs that
+    pass the filters are taken until ``target`` of them are in hand, and a
+    failed case is walked like any other seed (:func:`stopping_rule` over
+    :func:`seed_state`). Returns the condition's entry of
+    ``selection.json`` and the unfinished seeds below its last selected
+    seed, whose runs would have come first had they finished: a selection
+    with such a gap is not the pool, and :func:`cmd_select` refuses it.
+    Unfinished seeds above the last selected one are walked only when the
+    target is not met, and the entry lists them under ``unfinished``.
+    ``seeds_scanned`` counts the seeds walked that hold a record or an
+    error file, and ``pass_rate_scanned`` is the selected runs over them,
+    which is not the condition's pass rate: the walk stops at the target
+    rather than at the end of the condition, and a seed whose case failed
+    counts like any other. The pass rate over every completed case is
+    ``summarize``'s.
+    """
+    label = entry["label"]
+    seeds, settled, failed, unfinished = stopping_rule(
+        entry["seed_start"],
+        entry["max_seeds"],
+        target,
+        lambda seed: seed_state(out, case_tag(label, seed, contract_layout)),
+    )
+    last = seeds[-1] if seeds else None
+    gaps = [seed for seed in unfinished if last is not None and seed < last]
+    condition = {
         "label": label,
         "seed_start": int(entry["seed_start"]),
         "seed_cap": int(entry["max_seeds"]),
         "target_filtered": int(target),
-        "selected": len(selected),
-        "shortfall": max(0, int(target) - len(selected)),
-        "seeds_scanned": scanned,
+        "selected": len(seeds),
+        "shortfall": max(0, int(target) - len(seeds)),
+        "seeds_scanned": settled,
         "failed_while_scanning": failed,
-        "pass_rate_scanned": (len(selected) / scanned) if scanned else None,
-        "last_seed": selected[-1]["seed"] if selected else None,
-        "runs": selected,
+        "pass_rate_scanned": (len(seeds) / settled) if settled else None,
+        "last_seed": last,
+        "unfinished": [seed for seed in unfinished if seed not in gaps],
+        "runs": [
+            {"tag": case_tag(label, seed, contract_layout), "seed": seed}
+            for seed in seeds
+        ],
     }
+    return condition, gaps
 
 
 def selection_markdown(selection):
@@ -1388,6 +1480,22 @@ def selection_markdown(selection):
         "reports over every completed case.",
         "",
     ]
+    unfinished = [
+        f"- {condition['label']}: seeds "
+        f"{contract.compress_indices(condition['unfinished'])}"
+        for condition in selection["conditions"]
+        if condition["unfinished"]
+    ]
+    if unfinished:
+        lines += [
+            "These conditions fall short of their target with seeds of "
+            "their range still unfinished (neither a completion record nor "
+            "an error file), so their runs are not yet the pool; the "
+            "stacking comparison refuses the selection until they finish:",
+            "",
+            *unfinished,
+            "",
+        ]
     if selection["target_override"] is not None:
         lines += [
             f"Every condition was selected to {selection['target_override']} "
@@ -1426,28 +1534,60 @@ def cmd_select(args):
     The authoritative definition of the filtered pool, applied after the
     fact to whatever runs the directory holds. ``run``'s sequential
     stopping rule produces the same set when it walks the seeds in order;
-    an array job that runs every seed of the range needs this step.
+    an array job that runs every seed of the range needs this step. It
+    refuses, writing nothing, when a condition has an unfinished seed below
+    its last selected one (:func:`condition_selection`). The selection
+    records the SHA-256 of the manifest and of the verification report it
+    was made after (null when the directory holds no report), which the
+    stacking comparison checks (:func:`stackable_selection`).
     """
     out = args.out.resolve()
     manifest = read_manifest(out)
-    conditions = [
-        condition_selection(
+    conditions, gaps = [], {}
+    for entry in manifest["allocation"]:
+        condition, below = condition_selection(
             out,
             entry,
             entry["target_filtered"] if args.target is None else args.target,
             is_contract(manifest),
         )
-        for entry in manifest["allocation"]
-    ]
+        conditions.append(condition)
+        if below:
+            gaps[entry["label"]] = (below, condition["last_seed"])
+    if gaps:
+        for label, (seeds, last) in gaps.items():
+            print(
+                f"{label}: seeds {contract.compress_indices(seeds)} lie below "
+                f"the last selected seed {last} and hold neither a "
+                "completion record nor an error file (never run, in flight, "
+                "interrupted or partial)",
+                file=sys.stderr,
+            )
+        print(
+            "select refuses: the first passing runs in seed order are not "
+            "known until those cases finish; resubmit or wait for them, "
+            "then select again",
+            file=sys.stderr,
+            flush=True,
+        )
+        return 1
+    verification = out / "verification.json"
     selection = {
         "campaign": manifest["campaign"],
         "directory": str(out),
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "target_override": args.target,
         "identity": manifest["identity"],
+        "manifest_sha256": contract.sha256_file(out / "manifest.json"),
+        "verification_sha256": (
+            contract.sha256_file(verification)
+            if verification.exists()
+            else None
+        ),
         "totals": {
             "selected": sum(c["selected"] for c in conditions),
             "shortfall": sum(c["shortfall"] for c in conditions),
+            "unfinished": sum(len(c["unfinished"]) for c in conditions),
         },
         "conditions": conditions,
     }
@@ -1456,6 +1596,140 @@ def cmd_select(args):
     (out / "selection.md").write_text(text, encoding="utf-8")
     print(text, flush=True)
     return 0
+
+
+def _report_time(text):
+    """A ``generated`` time of a selection or a verification report, naive
+    local time, or None; the reports write it with or without an offset."""
+    from datetime import datetime
+
+    for layout in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(str(text), layout).replace(tzinfo=None)
+        except ValueError:
+            continue
+    return None
+
+
+def stackable_selection(out, labels=None):
+    """Check that a pool's selection may be stacked; return what was read.
+
+    The stacking comparison's ``prepare`` stacks a pool only through this
+    check, which raises ``RuntimeError`` naming every problem:
+
+    - ``verification.json`` must exist and have passed: no case failed its
+      verification, none is partial, no file is stray, and its
+      ``exit_code``, where it records one, is 0;
+    - ``selection.json`` must exist and have been made after that
+      verification: the SHA-256 of the manifest and of the verification
+      report it records must be those of the files, or, for a selection
+      that records neither (written before ``select`` recorded them), its
+      ``generated`` time must not precede the report's;
+    - each condition of the selection (of ``labels``, when given) must be
+      the stopping rule applied to the report's cases, which
+      :func:`stopping_rule` replays with the selection's first seed, seed
+      cap and target: every seed walked must be verified or failed, and the
+      verified ones that pass must be the selected runs.
+
+    Returns ``{"verification_sha256", "verification_generated",
+    "verification_counts"}``, what the stacking records of the report.
+    """
+    out = Path(out).resolve()
+    problems = []
+    paths = {
+        name: out / f"{name}.json" for name in ("verification", "selection")
+    }
+    absent = [path.name for path in paths.values() if not path.exists()]
+    if absent:
+        raise RuntimeError(
+            f"{out} holds no {' and no '.join(absent)}; a pool is stacked "
+            "once `verify` and then `select` have run on it"
+        )
+    report = contract.read_json(paths["verification"])
+    selection = contract.read_json(paths["selection"])
+    counts = report.get("counts") or {}
+    fatal = {key: counts.get(key) for key in contract.FATAL if counts.get(key)}
+    if fatal or report.get("exit_code", 0) != 0:
+        problems.append(
+            f"its verification did not pass (exit code "
+            f"{report.get('exit_code')}, {fatal or 'no fatal count'}); "
+            "settle the cases it reports and verify again"
+        )
+    if "verification_sha256" in selection:
+        for name, key in (
+            ("manifest.json", "manifest_sha256"),
+            ("verification.json", "verification_sha256"),
+        ):
+            if selection.get(key) is None:
+                problems.append(
+                    f"selection.json was made when the directory held no "
+                    f"{name}; run `select` again after `verify`"
+                )
+            elif selection[key] != contract.sha256_file(out / name):
+                problems.append(
+                    f"selection.json was made against another {name} than "
+                    "the directory holds; run `select` again after `verify`"
+                )
+    else:
+        selected_at = _report_time(selection.get("generated"))
+        verified_at = _report_time(report.get("generated"))
+        if selected_at is None or verified_at is None:
+            problems.append(
+                "selection.json records no hashes and the dates of the "
+                "selection and of the verification cannot be read"
+            )
+        elif selected_at < verified_at:
+            problems.append(
+                f"selection.json ({selection.get('generated')}) precedes "
+                f"verification.json ({report.get('generated')}); run "
+                "`select` again after `verify`"
+            )
+    by_label = {}
+    for case in report.get("cases", []):
+        by_label.setdefault(case["label"], {})[int(case["seed"])] = case
+
+    def state(cases, seed):
+        case = cases.get(seed) or {}
+        if case.get("status") == "verified":
+            return "passes" if case.get("passes") else "filtered_out"
+        if case.get("status") == "failed":
+            return "failed"
+        return "unfinished"
+
+    for condition in selection["conditions"]:
+        label = condition["label"]
+        if labels and label not in labels:
+            continue
+        cases = by_label.get(label, {})
+        seeds, _, _, unfinished = stopping_rule(
+            condition["seed_start"],
+            condition["seed_cap"],
+            condition["target_filtered"],
+            lambda seed: state(cases, seed),
+        )
+        if unfinished:
+            problems.append(
+                f"{label}: the verification places seeds "
+                f"{contract.compress_indices(unfinished)} of the walk "
+                "neither verified nor failed"
+            )
+        chosen = [int(run["seed"]) for run in condition["runs"]]
+        if chosen != seeds:
+            problems.append(
+                f"{label}: the selection holds seeds "
+                f"{contract.compress_indices(chosen) or 'none'}, and the "
+                "stopping rule on the verified cases gives "
+                f"{contract.compress_indices(seeds) or 'none'}"
+            )
+    if problems:
+        raise RuntimeError(
+            f"the pool {out} cannot be stacked: " + "; ".join(problems)
+        )
+    return {
+        "verification_sha256": contract.sha256_file(paths["verification"]),
+        "verification_generated": report.get("generated"),
+        "verification_counts": counts,
+    }
 
 
 # --------------------------------------------------------------------------
@@ -1485,6 +1759,16 @@ def tally(values):
     return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
 
 
+#: The convergence fields of a condition's summary that a pool of the flat
+#: layout has no data for: its records hold ``success_flag`` alone.
+CONTRACT_SUMMARY_KEYS = (
+    "convergence_status",
+    "messages",
+    "iterations",
+    "r_index",
+)
+
+
 def condition_summary(out, entry, contract_layout=True):
     """One condition of a pool, counted from the cases it holds.
 
@@ -1492,8 +1776,10 @@ def condition_summary(out, entry, contract_layout=True):
     file is counted, whatever seed cap the sweeps that generated them
     worked under; the allocation contributes the first seed, the cap and
     the filtered target the counts are read against. The convergence
-    counts and quartiles are over the completed runs whose record holds
-    the field (the flat layout's records hold ``success_flag`` alone).
+    counts and quartiles are over the completed runs. A pool of the flat
+    layout, whose records hold ``success_flag`` alone of the convergence
+    fields, gets ``success_flag`` and none of
+    :data:`CONTRACT_SUMMARY_KEYS`.
     """
     label = entry["label"]
     records, failures = [], []
@@ -1550,10 +1836,18 @@ def condition_summary(out, entry, contract_layout=True):
     }
     for key in ("elbo_err", "gskl", "mmtv", "rmse"):
         summary[key] = quartiles([r["metrics"][key] for r in passed])
+    if not contract_layout:
+        for key in CONTRACT_SUMMARY_KEYS:
+            del summary[key]
     return summary
 
 
 def summary_markdown(summary, contract_layout=True):
+    """``summary.md``: the prose and one table row per condition.
+
+    The ``converged`` column and its sentence are the contract layout's
+    alone, since the records of the flat layout hold no convergence status.
+    """
     pyvbmc_commit, gpyreg_commit, hostname = identity_summary(
         summary["identity"], contract_layout
     )
@@ -1569,9 +1863,13 @@ def summary_markdown(summary, contract_layout=True):
         "directory holds, against the allocation's seed caps and filtered "
         "targets, and the metric quartiles are over the filtered runs, "
         "the wall times over every completed run. `success` counts the "
-        "completed runs whose `success_flag` is true and `converged` those "
-        "whose `convergence_status` is `probable`, where the records hold "
-        "it.",
+        "completed runs whose `success_flag` is true"
+        + (
+            " and `converged` those whose `convergence_status` is "
+            "`probable`."
+            if contract_layout
+            else "."
+        ),
         "",
     ]
     if summary["pilot_seeds"]:
@@ -1581,12 +1879,6 @@ def summary_markdown(summary, contract_layout=True):
             "that many seeds whatever its filtered target.",
             "",
         ]
-    lines += [
-        "| condition | seeds | filtered | pass rate | usable | success | "
-        "converged | wall min (med [IQR]) | evals | K | elbo_err | gskl | "
-        "mmtv |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
-    ]
 
     def cell(q, digits=2):
         if q["median"] is None:
@@ -1596,35 +1888,39 @@ def summary_markdown(summary, contract_layout=True):
             f"[{q['q1']:.{digits}f}, {q['q3']:.{digits}f}]"
         )
 
-    for condition in summary["conditions"]:
-        rate = condition["pass_rate"]
-        usable = condition["usable_fraction"]
+    def fraction(value):
+        return "-" if value is None else f"{value:.2f}"
+
+    def converged(condition):
         statuses = condition["convergence_status"]
+        if not statuses:
+            return "-"
+        return f"{statuses.get('probable', 0)}/{sum(statuses.values())}"
+
+    columns = [
+        ("condition", lambda c: c["label"]),
+        ("seeds", lambda c: f"{c['seeds_run']}/{c['seed_cap']}"),
+        ("filtered", lambda c: f"{c['filtered']}/{c['target_filtered']}"),
+        ("pass rate", lambda c: fraction(c["pass_rate"])),
+        ("usable", lambda c: fraction(c["usable_fraction"])),
+        ("success", lambda c: f"{c['success_flag']}/{c['completed']}"),
+        ("converged", converged),
+        ("wall min (med [IQR])", lambda c: cell(c["wall_minutes"], 1)),
+        ("evals", lambda c: cell(c["func_count"], 0)),
+        ("K", lambda c: cell(c["K"], 0)),
+        ("elbo_err", lambda c: cell(c["elbo_err"])),
+        ("gskl", lambda c: cell(c["gskl"])),
+        ("mmtv", lambda c: cell(c["mmtv"], 3)),
+    ]
+    if not contract_layout:
+        columns = [column for column in columns if column[0] != "converged"]
+    lines += [
+        "| " + " | ".join(name for name, _ in columns) + " |",
+        "|" + "---|" * len(columns),
+    ]
+    for condition in summary["conditions"]:
         lines.append(
-            "| {label} | {seeds}/{cap} | {filtered}/{target} | {rate} | "
-            "{usable} | {success}/{completed} | {converged} | {wall} | "
-            "{evals} | {K} | {elbo} | {gskl} | {mmtv} |".format(
-                label=condition["label"],
-                seeds=condition["seeds_run"],
-                cap=condition["seed_cap"],
-                filtered=condition["filtered"],
-                target=condition["target_filtered"],
-                rate="-" if rate is None else f"{rate:.2f}",
-                usable="-" if usable is None else f"{usable:.2f}",
-                success=condition["success_flag"],
-                completed=condition["completed"],
-                converged=(
-                    f"{statuses.get('probable', 0)}/{sum(statuses.values())}"
-                    if statuses
-                    else "-"
-                ),
-                wall=cell(condition["wall_minutes"], 1),
-                evals=cell(condition["func_count"], 0),
-                K=cell(condition["K"], 0),
-                elbo=cell(condition["elbo_err"]),
-                gskl=cell(condition["gskl"]),
-                mmtv=cell(condition["mmtv"], 3),
-            )
+            "| " + " | ".join(text(condition) for _, text in columns) + " |"
         )
     failures = [
         f"- `{f['tag']}`: {f['reason']}"
@@ -1637,6 +1933,8 @@ def summary_markdown(summary, contract_layout=True):
 
 
 def cmd_summarize(args):
+    """Write ``summary.json`` and ``summary.md`` from the cases the directory
+    holds (:func:`condition_summary`, :func:`summary_markdown`)."""
     out = args.out.resolve()
     manifest = read_manifest(out)
     contract_layout = is_contract(manifest)
@@ -2089,11 +2387,13 @@ def verify_flat(args, out, manifest):
 def cmd_verify(args):
     """Re-check every artifact of a campaign and reconcile the allocation.
 
-    What makes ``select`` and ``summarize`` trustworthy on a pool: those
-    two read the cases that left a completion record or an error file,
-    and a task that Slurm stopped leaves neither, so it would silently be
-    left out. Every case of the allocation is placed instead, and every
-    artifact file the allocation does not name is reported as stray.
+    What makes ``summarize`` and the stacking comparison trustworthy on a
+    pool: ``summarize`` counts the cases that left a completion record or
+    an error file, and a task that Slurm stopped leaves neither, so it
+    would silently be left out; the stacking comparison stacks a selection
+    only when it agrees with this report (:func:`stackable_selection`).
+    Every case of the allocation is placed, and every artifact file the
+    allocation does not name is reported as stray.
     """
     out = args.out.resolve()
     manifest = read_manifest(out)
@@ -2266,14 +2566,16 @@ def main(argv=None):
         return cmd_verify(args)
     # The sequential sweep below is the workstation supervisor: the
     # campaign lock, `status.json` and the idle-sleep request are its own,
-    # and no other sub-command takes them. Process-scoped request: permit
-    # display sleep, prevent idle system sleep while a long sweep works.
+    # and no other sub-command takes them. A directory the sweep may not
+    # extend is refused before the lock is taken, so that nothing is
+    # written in it. Process-scoped request: permit display sleep, prevent
+    # idle system sleep while a long sweep works.
+    extensible_manifest(args.out.resolve())
     if sys.platform == "win32":
         import ctypes
 
         ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
     try:
-        args.out.mkdir(parents=True, exist_ok=True)
         with FileLock(str(args.out / "campaign.lock"), timeout=0):
             return cmd_run(args)
     finally:
