@@ -844,3 +844,26 @@ reason.
   the fit's output under the `logp` key that the port review's W6-23
   removed from its hyperparameter dictionary; no sidecar describes them,
   and a capture written anew leaves them out.
+- `scripts/execute_notebooks.py` — executes the example notebooks and
+  stores their outputs, which the docs build renders without executing
+  them (`nb_execution_mode = "off"`). One process runs them in order in a
+  scratch directory under `--record-dir` (default
+  `scripts/runs/notebooks_<date>/`), where Example 6 finds the posterior
+  that Example 4 saves, through a temporary kernel of the interpreter that
+  `--python` names: BLAS single-threaded, this checkout first on
+  `PYTHONPATH`, Example 2's Plotly figure stored as HTML beside its JSON.
+  The script removes from that HTML the MathJax that Plotly loads, which
+  breaks the math of the docs page it is on; Example 2 executed any other
+  way stores it again.
+  Check cells assert what each notebook's text says about its results
+  (`CHECKS` in the script, to be kept in step with the text); they are
+  removed, with a cell recording the versions, before the notebook is
+  stored, and a notebook is written back to `examples/` only when it runs
+  without error and its checks pass. `--no-write` keeps every executed
+  notebook in the scratch directory; `--only` picks examples (6 needs 4).
+  Each run writes `record_<time>.json` (commit, versions, durations, check
+  results). Examples 7 to 9 need the `torch`, `arviz` and `pymc` extras and
+  JAX; the machine that runs it lists the environment in
+  `scripts/runs/LOCAL.md`. About seven minutes for all nine. The tips a run
+  prints come from an unseeded generator, so they differ between
+  executions. Regenerate `examples/scripts/` with its Makefile afterwards.
