@@ -14,6 +14,12 @@ chunk of rows at a time instead of whole. At every chunk size, from one row
 to more rows than the matrix has, that path must equal the whole matrix
 exactly: the same calls to the generator, the same rows, the same mixture
 log densities, entropy and variance.
+
+The transforms of ``torch.func`` give the weights a batch dimension or a
+tangent and no ``requires_grad``, so they take the chunked path. At the
+same draws, ``vmap`` over a batch of weight vectors must equal one call per
+vector, and the forward-mode Jacobian (``jacfwd``) must equal the
+reverse-mode gradient, up to rounding in both cases.
 """
 
 import importlib
@@ -346,3 +352,81 @@ def test_only_a_weight_gradient_reduces_the_whole_matrix(monkeypatch):
         "log_density_chunks",
         "log_density_chunks",
     ]
+
+
+# The default chunk, which holds every row of these stacks, and chunks of
+# seven rows.
+FUNC_CHUNK_ROWS = [None, 7]
+FUNC_GROUPS = ["bounded_D2", "upstream_GMM"]
+
+
+def _entropy_at_fixed_draws(stacked, n_samples):
+    """``stacked_entropy`` with the generator reset before every call."""
+    state = stacked.rng.bit_generator.state
+
+    def entropy(w):
+        stacked.rng.bit_generator.state = state
+        return stacked.stacked_entropy(w, n_samples)[0]
+
+    return entropy
+
+
+def _set_default_chunk_rows(monkeypatch, K_total, chunk_rows):
+    """Make the default chunk hold ``chunk_rows`` rows, unless ``None``."""
+    if chunk_rows is not None:
+        row_bytes = _entropy._CHUNK_COPIES * 8 * K_total
+        monkeypatch.setattr(_entropy, "_CHUNK_BYTES", chunk_rows * row_bytes)
+
+
+@pytest.mark.parametrize("chunk_rows", FUNC_CHUNK_ROWS)
+@pytest.mark.parametrize("group", FUNC_GROUPS)
+def test_vmap_over_the_weights_equals_separate_calls(
+    group, chunk_rows, monkeypatch
+):
+    torch = pytest.importorskip("torch")
+    from pyvbmc.svbmc import SVBMC
+
+    logging.getLogger("SVBMC").setLevel(logging.WARNING)
+    stacked = SVBMC(_posteriors(group), seed=5)
+    K_total = int(np.sum(stacked.K))
+    _set_default_chunk_rows(monkeypatch, K_total, chunk_rows)
+    entropy = _entropy_at_fixed_draws(stacked, 3)
+    W = torch.as_tensor(
+        np.random.default_rng(1).uniform(0.5, 2.0, (4, K_total))
+    )
+
+    H_batch = torch.func.vmap(entropy)(W)
+    state_batch = stacked.rng.bit_generator.state
+
+    assert H_batch.shape == (4,) and H_batch.dtype == torch.float64
+    for b, w in enumerate(W):
+        H = entropy(w)
+        assert stacked.rng.bit_generator.state == state_batch
+        # A weight gradient takes the whole matrix, with the same values.
+        H_whole = entropy(w.clone().requires_grad_(True))
+        assert H.item() == H_whole.item()
+        # The batched reductions round differently from single ones.
+        np.testing.assert_allclose(H_batch[b].item(), H.item(), **TOLERANCE)
+
+
+@pytest.mark.parametrize("chunk_rows", FUNC_CHUNK_ROWS)
+@pytest.mark.parametrize("group", FUNC_GROUPS)
+def test_forward_mode_jacobian_equals_the_gradient(
+    group, chunk_rows, monkeypatch
+):
+    torch = pytest.importorskip("torch")
+    from pyvbmc.svbmc import SVBMC
+
+    logging.getLogger("SVBMC").setLevel(logging.WARNING)
+    stacked = SVBMC(_posteriors(group), seed=5)
+    K_total = int(np.sum(stacked.K))
+    _set_default_chunk_rows(monkeypatch, K_total, chunk_rows)
+    entropy = _entropy_at_fixed_draws(stacked, 3)
+    w_np = np.linspace(0.5, 2.0, K_total)
+
+    jacobian = torch.func.jacfwd(entropy)(torch.as_tensor(w_np))
+    w = torch.tensor(w_np, dtype=torch.float64, requires_grad=True)
+    entropy(w).backward()
+
+    assert jacobian.shape == (K_total,)
+    np.testing.assert_allclose(jacobian.numpy(), w.grad.numpy(), **TOLERANCE)
