@@ -773,9 +773,9 @@ def test_a_task_takes_over_a_stale_claim(world):
     world.answer("900_2", "TIMEOUT\n")
     result = ok(world.task("c1", 7))
     assert "took over the stale claim of 900_2" in result.stdout
-    retired = json.loads(
-        (out / "claims" / "g1" / "c007.stale.900_2").read_text("utf-8")
-    )
+    [path] = contract.retired_claims(out, "g1/c007")
+    assert path.name == f"c007.stale.900_2.{held['token'][:8]}"
+    retired = json.loads(path.read_text("utf-8"))
     assert retired["token"] == held["token"]
     assert not (out / "claims" / "g1" / "c007").exists()
     assert (out / "records" / "g1" / "c007.complete.json").exists()
@@ -1046,7 +1046,8 @@ def test_a_killed_task_is_interrupted_and_its_resubmission_completes(world):
     assert "took over the stale claim of 1001_2" in result.stdout
     assert "removed 1 files of an earlier attempt" in result.stdout
     assert (out / "g0" / "c002.out").read_text("utf-8") == "case 2\n"
-    assert (out / "claims" / "g0" / "c002.stale.1001_2").exists()
+    [retired] = contract.retired_claims(out, "g0/c002")
+    assert retired.name.startswith("c002.stale.1001_2.")
     ok(world.finish("c1", "--no-archive"))
 
 

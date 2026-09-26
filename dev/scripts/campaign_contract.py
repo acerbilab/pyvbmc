@@ -39,10 +39,16 @@ The layout, relative to the campaign directory ``out``::
     subsets/<name>.txt            a subset: "<index> <case>" per line
     records/<tag>.complete.json   completion records
     claims/<tag>                  claims; retired ones are
-                                  claims/<tag>.stale.<job>_<task>
+                                  claims/<tag>.stale.<owner>.<key>
+    claims/<tag>.error.txt        an earlier attempt's error file, which
+                                  the worker of a later one set aside
     <tag>.error.txt               the error file of a failed case
     slurm/                        the driver's job ids, logs, accounting
     tmp/                          TMPDIR of every process of the campaign
+
+A retired claim's ``<owner>`` is the Slurm task that made it,
+``<job>_<task>`` (``<host>-<pid>`` outside Slurm), and its ``<key>`` the
+first eight hex digits of its token (:func:`retired_claim_path`).
 
 A case line is ``<tag> [<field> ...]``: its first field, up to the first
 space, is the case's tag, unique in the campaign, and the rest is the
@@ -373,6 +379,12 @@ def claim_path(out, tag):
     return Path(out) / CLAIMS / tag
 
 
+def earlier_error_path(out, tag):
+    """``<out>/claims/<tag>.error.txt``: the error file of an earlier
+    attempt, which the worker of a later one sets aside when it starts."""
+    return Path(out) / CLAIMS / f"{tag}{ERROR_SUFFIX}"
+
+
 # --------------------------------------------------------------------------
 # Cases
 # --------------------------------------------------------------------------
@@ -686,20 +698,62 @@ def _replace(path, record):
     os.replace(temporary, path)
 
 
-def _retire(path, judged):
-    """Rename the stale claim ``judged`` to ``<tag>.stale.<owner>``.
+def claim_key(record):
+    """Eight hex digits that tell one claim from another of the same owner.
 
-    The rename is a hard link that fails when the name exists, then the
-    removal of the claim, so that of two workers that judged the same
-    claim stale only one retires it. A worker whose link reached another
-    claim than the one it judged (the claim changed between its read and
-    its link) undoes the link and reports failure.
+    The first eight of the claim's token, or, for a claim that holds no
+    token (one not made by :func:`new_claim`), of the SHA-256 of its JSON.
     """
-    stale = path.with_name(f"{path.name}{STALE_INFIX}{claim_owner(judged)}")
+    token = record.get("token")
+    if isinstance(token, str) and re.fullmatch(r"[0-9a-f]{8,}", token):
+        return token[:8]
+    text = json.dumps(record, sort_keys=True)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
+
+
+def retired_claim_path(path, record):
+    """``claims/<tag>.stale.<owner>.<key>``, the name the claim at ``path``
+    holding ``record`` is retired to (:func:`claim_owner`,
+    :func:`claim_key`)."""
+    path = Path(path)
+    return path.with_name(
+        f"{path.name}{STALE_INFIX}{claim_owner(record)}.{claim_key(record)}"
+    )
+
+
+def retired_claims(out, tag):
+    """The retired claims of one case, sorted by name."""
+    path = claim_path(out, tag)
+    prefix = f"{path.name}{STALE_INFIX}"
+    return sorted(
+        Path(entry.path)
+        for entry in _listing(path.parent)
+        if entry.is_file() and entry.name.startswith(prefix)
+    )
+
+
+def _retire(path, judged):
+    """Rename the stale claim ``judged`` to its retired name.
+
+    The retired name (:func:`retired_claim_path`) holds the claim's owner
+    and key, so that no earlier retirement leaves it taken. The rename is
+    a hard link that fails when the name exists, then the removal of the
+    claim, so that of two workers that judged the same claim stale only
+    one retires it. A worker whose link reached another claim than the one
+    it judged (the claim changed between its read and its link) undoes the
+    link and reports failure. When the retired name exists already and
+    holds the judged claim, a retirement of this very claim stopped
+    between its link and its removal (its worker was killed, or a network
+    filesystem retried the link), and it is finished here
+    (:func:`_finish_retirement`).
+    """
+    stale = retired_claim_path(path, judged)
     try:
         os.link(path, stale)
-    except (FileExistsError, FileNotFoundError):
+    except FileNotFoundError:
         return False
+    except FileExistsError:
+        return _finish_retirement(path, stale, judged)
     try:
         retired = read_json(stale)
     except (OSError, ValueError):
@@ -708,6 +762,41 @@ def _retire(path, judged):
         stale.unlink(missing_ok=True)
         return False
     path.unlink(missing_ok=True)
+    return True
+
+
+def _finish_retirement(path, stale, judged):
+    """Remove the claim at ``path`` whose retired copy ``stale`` exists.
+
+    Only when ``stale`` holds the judged claim, and only the claim file
+    that holds it: the claim is first renamed to a name of this worker's
+    own, which no other worker can reach, and a claim found there that is
+    not the judged one (another worker's, made after the retirement) is
+    linked back into place. Returns whether the judged claim is gone.
+    """
+    try:
+        retired = read_json(stale)
+    except (OSError, ValueError):
+        return False
+    if retired != judged:
+        return False
+    mine = path.with_name(f".{path.name}.{uuid.uuid4().hex}.retiring")
+    try:
+        os.rename(path, mine)
+    except FileNotFoundError:
+        return True
+    try:
+        taken = read_json(mine)
+    except (OSError, ValueError):
+        taken = None
+    if taken != judged:
+        try:
+            os.link(mine, path)
+        except FileExistsError:
+            pass
+        mine.unlink(missing_ok=True)
+        return False
+    mine.unlink(missing_ok=True)
     return True
 
 
@@ -738,8 +827,9 @@ def acquire_claim(out, tag, query=None, task=None, attempts=3):
     job and array task (a requeue) is taken over, rewritten with the
     current restart count. Otherwise it is judged by
     :func:`claim_liveness`: a live claim refuses the case, and a stale one
-    is renamed to ``claims/<tag>.stale.<job>_<task>`` before this process
-    creates its own. Nothing but the claim files is touched.
+    is renamed to ``claims/<tag>.stale.<owner>.<key>``
+    (:func:`retired_claim_path`) before this process creates its own.
+    Nothing but the claim files is touched.
 
     Returns the claim, a mapping with its ``path`` and ``token``, which
     :func:`release_claim` takes. ``query`` replaces
@@ -1347,6 +1437,14 @@ def _say(message):
     print(message, flush=True)
 
 
+def _say_safely(message):
+    """:func:`_say`, where an output that cannot be written costs nothing."""
+    try:
+        _say(message)
+    except (OSError, ValueError):
+        pass
+
+
 def _remove(out, paths):
     removed = []
     for path in paths:
@@ -1412,18 +1510,24 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         differs from ``expected``'s source; :data:`EXIT_CLAIMED` when the
         case is claimed by a live task or the claim cannot be made; 1 when
         the case failed; 128 plus the signal's number when a signal of
-        :data:`STOP_SIGNALS` stopped it. The two refusals touch none of the
-        case's files. From the claim to its release, the stop signals raise
+        :data:`STOP_SIGNALS` stopped it, even after its completion record.
+        The two refusals touch none of the case's files. From the claim to
+        its release, the stop signals raise
         :class:`Interrupted` (the previous handlers are restored after).
-        A failure removes the case's partial files, writes
-        ``<tag>.error.txt`` with the traceback and removes the claim; a
-        stop removes the partial files and the claim and writes no error
-        file, so that ``verify`` reports the case as missing, unless the
-        completion record was already written, which leaves the case
-        complete; a success writes the completion record, removes an
-        earlier attempt's error file and then the claim. While the
-        clean-up of a failure or a stop runs, and while the claim is
-        released, further stop signals are ignored.
+        Before the run, the case's partial files are removed and an
+        earlier attempt's ``<tag>.error.txt`` is set aside as
+        ``claims/<tag>.error.txt`` (:func:`earlier_error_path`). A failure
+        removes the partial files, writes ``<tag>.error.txt`` with the
+        traceback and removes the set-aside file and the claim; a stop
+        removes the partial files and the claim, writes no error file and
+        keeps the set-aside one, so that ``verify`` reports the case as
+        missing, with the earlier attempt's error; a success writes the
+        completion record, removes both error files and then the claim.
+        Whatever happens once the completion record is written, a stop
+        signal or an exception (the removal of an error file, a message
+        whose output fails), leaves the case complete with every file it
+        wrote. While the clean-up of a failure or a stop runs, and while
+        the claim is released, further stop signals are ignored.
     """
     out = Path(out)
     tag = case_tag(case)
@@ -1461,12 +1565,20 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 f"{previous['owner']}"
             )
         started = time.time()
+        earlier = earlier_error_path(out, tag)
         try:
             removed = _remove(out, partial_files())
             if removed:
                 _say(
                     f"{tag}: removed {len(removed)} files of an earlier "
                     "attempt before the run"
+                )
+            if error_path(out, tag).exists():
+                earlier.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(error_path(out, tag), earlier)
+                _say(
+                    f"{tag}: set the error file of an earlier attempt aside "
+                    f"as {earlier}"
                 )
             artifacts, extra = run(actual)
             write_completion(
@@ -1479,25 +1591,26 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 time.time() - started,
                 extra,
             )
-            error_path(out, tag).unlink(missing_ok=True)
-            _say(f"{tag}: complete in {time.time() - started:.1f} s")
             # No stop signal may interrupt what follows a complete case.
             _handle_stop_signals(signal.SIG_IGN)
+            error_path(out, tag).unlink(missing_ok=True)
+            earlier.unlink(missing_ok=True)
+            _say(f"{tag}: complete in {time.time() - started:.1f} s")
         except Interrupted as stop:
             _handle_stop_signals(signal.SIG_IGN)
             name = signal.Signals(stop.signum).name
             if record.exists():
-                _say(f"{tag}: {name} came after the completion record")
+                _say_safely(f"{tag}: {name} came after the completion record")
                 return 128 + stop.signum
             try:
                 removed = _remove(out, partial_files())
             except Exception:
                 removed = []
-                _say(
+                _say_safely(
                     "removing the partial files failed:\n"
                     + traceback.format_exc()
                 )
-            _say(
+            _say_safely(
                 f"{tag}: stopped by {name}; removed {len(removed)} partial "
                 "files and the claim, and left the case to be resubmitted"
             )
@@ -1505,6 +1618,15 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         except Exception as error:
             _handle_stop_signals(signal.SIG_IGN)
             text = traceback.format_exc()
+            if record.exists():
+                # The case is complete: what failed came after its record
+                # (the removal of an earlier error file, a message), and
+                # every file of the case stays.
+                _say_safely(
+                    f"{tag}: complete, then {type(error).__name__}: {error}; "
+                    "the case keeps its files\n" + text
+                )
+                return 0
             try:
                 removed = _remove(out, partial_files())
             except Exception:
@@ -1519,8 +1641,9 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 f"{tag}: {type(error).__name__}: {error}\n{text}",
                 encoding="utf-8",
             )
-            _say(text)
-            _say(
+            earlier.unlink(missing_ok=True)
+            _say_safely(text)
+            _say_safely(
                 f"{tag}: failed; removed {len(removed)} partial files, "
                 f"see {path}"
             )
@@ -1807,8 +1930,9 @@ def stray_files(out, tags):
     Only the directories the allocation's tags live in are listed (and the
     top of ``records/`` and ``claims/``, for subdirectories no tag names),
     so that nothing walks a campaign directory. Dot-files are temporary
-    files and are ignored; a retired claim ``<tag>.stale.<owner>`` belongs
-    to its tag.
+    files and are ignored; a retired claim ``<tag>.stale.<owner>.<key>``
+    and a set-aside error file ``<tag>.error.txt`` under ``claims/`` belong
+    to their tag.
     """
     out = Path(out)
     tags = set(tags)
@@ -1831,8 +1955,13 @@ def stray_files(out, tags):
         for entry in _listing(out / CLAIMS / group):
             name = entry.name
             if entry.is_file() and not name.startswith("."):
-                tag = prefix + name.split(STALE_INFIX, 1)[0]
-                if tag not in tags:
+                owners = {
+                    prefix + name,
+                    prefix + name.split(STALE_INFIX, 1)[0],
+                }
+                if name.endswith(ERROR_SUFFIX):
+                    owners.add(prefix + name[: -len(ERROR_SUFFIX)])
+                if not owners & tags:
                     stray.append(f"{CLAIMS}/{prefix}{name}")
         for entry in _listing(out / group if group else out):
             name = entry.name
@@ -1883,7 +2012,10 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         case without a record or a claim is ``partial`` when artifacts
         remain, which no path of the contract leaves, ``failed`` when its
         error file does, and ``missing`` otherwise: it never ran, or a
-        stop signal ended it and it removed its files and its claim.
+        stop signal ended it and it removed its files and its claim. An
+        interrupted or missing case whose earlier attempt failed carries
+        that attempt's reason as ``earlier_error``, from its error file or
+        from the copy a later worker set aside (:func:`earlier_error_path`).
         ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
     """
     query = accounting_state if query is None else query
@@ -1911,13 +2043,21 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         else:
             claim = claim_status(out, tag, query=ask)
             error = error_path(out, tag)
+            earlier = next(
+                (
+                    path
+                    for path in (error, earlier_error_path(out, tag))
+                    if path.exists()
+                ),
+                None,
+            )
             if claim["state"] == "live":
                 entry.update(status="in_flight", claim=claim)
             elif claim["state"] == "stale":
                 files = [Path(f).as_posix() for f in partial_files(tag)]
                 entry.update(status="interrupted", files=files, claim=claim)
-                if error.exists():
-                    entry["earlier_error"] = error_reason(error)
+                if earlier is not None:
+                    entry["earlier_error"] = error_reason(earlier)
             else:
                 files = [Path(f).as_posix() for f in partial_files(tag)]
                 if files:
@@ -1926,6 +2066,8 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
                     entry.update(status="failed", reason=error_reason(error))
                 else:
                     entry["status"] = "missing"
+                    if earlier is not None:
+                        entry["earlier_error"] = error_reason(earlier)
         entries.append(entry)
     strays = sorted(set(stray) | set(stray_files(out, tags)))
     counts = {status: 0 for status in STATUSES}

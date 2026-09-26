@@ -15,9 +15,11 @@ lacks (the CPU affinity) is checked to be recorded as null there and to
 raise on Linux.
 """
 
+import errno
 import json
 import os
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -171,7 +173,9 @@ def test_a_stale_claim_is_retired_and_replaced(tmp_path, slurm, state):
     set_answer(slurm, "500_3", f"{state}\n")
     claim = contract.acquire_claim(tmp_path, TAG, task=TASK_B)
     folder = tmp_path / "claims" / "g0"
-    retired = json.loads((folder / "c001.stale.500_3").read_text("utf-8"))
+    [path] = contract.retired_claims(tmp_path, TAG)
+    assert path.name == f"c001.stale.500_3.{held['token'][:8]}"
+    retired = json.loads(path.read_text("utf-8"))
     assert retired["token"] == held["token"]
     current = json.loads((folder / "c001").read_text("utf-8"))
     assert current["token"] == claim["token"] and current["job"] == "600"
@@ -225,18 +229,79 @@ def test_a_requeued_task_takes_over_its_own_claim(tmp_path):
     assert not list((tmp_path / "claims" / "g0").glob("*.stale.*"))
 
 
-def test_of_two_workers_only_one_retires_a_stale_claim(tmp_path):
+def test_an_unfinished_retirement_is_finished(tmp_path):
+    """The retired name holds the judged claim, which is still in place: a
+    retirer was killed between its link and its removal, or a network
+    filesystem retried the link. The next worker finishes it."""
+    held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = Path(held["path"])
+    record = json.loads(path.read_text("utf-8"))
+    os.link(path, contract.retired_claim_path(path, record))
+    claim = contract.acquire_claim(
+        tmp_path, TAG, query=answer(False, "TIMEOUT"), task=TASK_B
+    )
+    assert json.loads(path.read_text("utf-8"))["token"] == claim["token"]
+    assert claim["previous"]["owner"] == "500_3"
+    [retired] = contract.retired_claims(tmp_path, TAG)
+    assert json.loads(retired.read_text("utf-8")) == record
+    assert not [p for p in path.parent.iterdir() if p.name.startswith(".")]
+
+
+def test_a_leftover_retired_name_does_not_block_the_case(tmp_path):
+    """An earlier claim of the same task, retired before a requeue: its
+    retired name holds another key, so the new claim retires beside it."""
     contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
     folder = tmp_path / "claims" / "g0"
-    # Another worker has linked the stale claim to its retired name and not
-    # yet removed it.
-    os.link(folder / "c001", folder / "c001.stale.500_3")
+    earlier = dict(contract.new_claim(TAG, task=TASK_A), token="0" * 32)
+    contract.write_json(folder / "c001.stale.500_3.00000000", earlier)
+    claim = contract.acquire_claim(
+        tmp_path, TAG, query=answer(False, "TIMEOUT"), task=TASK_B
+    )
+    assert claim["previous"]["reason"] == "stale"
+    assert len(contract.retired_claims(tmp_path, TAG)) == 2
+
+
+def test_a_retired_name_that_holds_something_else_refuses(tmp_path):
+    held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = Path(held["path"])
+    record = json.loads(path.read_text("utf-8"))
+    contract.retired_claim_path(path, record).write_text("{", "utf-8")
     before = snapshot(tmp_path / "claims")
     with pytest.raises(contract.ClaimRefused, match="another worker"):
         contract.acquire_claim(
             tmp_path, TAG, query=answer(False, "TIMEOUT"), task=TASK_B
         )
     assert snapshot(tmp_path / "claims") == before
+
+
+def test_finishing_a_retirement_leaves_a_later_claim_in_place(tmp_path):
+    """Another worker finished the retirement and made its own claim: the
+    claim in place is not the judged one, and stays."""
+    held = contract.acquire_claim(tmp_path, TAG, query=never, task=TASK_A)
+    path = Path(held["path"])
+    judged = json.loads(path.read_text("utf-8"))
+    stale = contract.retired_claim_path(path, judged)
+    os.link(path, stale)
+    later = contract.new_claim(TAG, task=TASK_B)
+    contract.write_json(path, later)
+    assert not contract._finish_retirement(path, stale, judged)
+    assert json.loads(path.read_text("utf-8")) == later
+    assert not [p for p in path.parent.iterdir() if p.name.startswith(".")]
+    path.unlink()
+    assert contract._finish_retirement(path, stale, judged)
+
+
+def test_claim_keys():
+    claim = contract.new_claim(TAG, task=TASK_A)
+    assert contract.claim_key(claim) == claim["token"][:8]
+    tokenless = {"job": "500", "array_task": "3", "host": "n1"}
+    key = contract.claim_key(tokenless)
+    assert re.fullmatch(r"[0-9a-f]{8}", key)
+    assert contract.claim_key(dict(tokenless, host="n2")) != key
+    path = contract.claim_path("out", TAG)
+    assert contract.retired_claim_path(path, tokenless).name == (
+        f"c001.stale.500_3.{key}"
+    )
 
 
 def test_retiring_undoes_a_link_to_another_claim(tmp_path):
@@ -544,6 +609,127 @@ def test_a_stop_signal_after_the_record_leaves_the_case_complete(
     assert not contract.claim_path(out, TAG).exists()
 
 
+@pytest.mark.parametrize("where", ["after the record", "in a message"])
+def test_a_failure_after_the_record_leaves_the_case_complete(
+    repo, tmp_path, monkeypatch, where
+):
+    """EIO on the log's or the directory's filesystem once the record is
+    written: the case keeps every file, and no error file is written."""
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    contract.error_path(out, TAG).parent.mkdir(parents=True)
+    contract.error_path(out, TAG).write_text("an earlier attempt\n", "utf-8")
+    if where == "after the record":
+        write = contract.write_completion
+
+        def write_then_fail(*args, **kwargs):
+            write(*args, **kwargs)
+            raise OSError(errno.EIO, "Input/output error")
+
+        monkeypatch.setattr(contract, "write_completion", write_then_fail)
+    else:
+        say = contract._say
+
+        def fail_on_completion(message):
+            if "complete in" in message:
+                raise OSError(errno.ENOSPC, "No space left on device")
+            say(message)
+
+        monkeypatch.setattr(contract, "_say", fail_on_completion)
+
+    def run(identity):
+        path = out / f"{TAG}.out"
+        path.write_text("whole\n", encoding="utf-8")
+        return [path], None
+
+    code = contract.run_worker(
+        out,
+        TAG,
+        expected,
+        lambda: expected,
+        run,
+        lambda: [f"{TAG}.out"],
+        query=never,
+    )
+    assert code == 0
+    contract.check_completion(out, TAG, expected, [f"{TAG}.out"])
+    assert (out / f"{TAG}.out").read_text("utf-8") == "whole\n"
+    assert not contract.error_path(out, TAG).exists()
+    assert not contract.claim_path(out, TAG).exists()
+    report = contract.reconcile(out, [TAG], lambda tag: None, lambda tag: [])
+    assert report["cases"][0]["status"] == "verified"
+
+
+def test_a_stopped_rerun_of_a_failed_case_is_missing(repo, tmp_path):
+    """The rerun sets the earlier error file aside when it starts; stopped,
+    it leaves the case missing with the earlier error attached."""
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    error = contract.error_path(out, TAG)
+    error.parent.mkdir(parents=True)
+    error.write_text(f"{TAG}: ValueError: the first attempt\n", "utf-8")
+    seen = []
+
+    def stopped(identity):
+        seen.append(error.exists())
+        signal.raise_signal(signal.SIGTERM)
+
+    code = contract.run_worker(
+        out, TAG, expected, lambda: expected, stopped, lambda: [], never
+    )
+    assert code == 128 + signal.SIGTERM
+    assert seen == [False]
+    earlier = contract.earlier_error_path(out, TAG)
+    assert earlier == out / "claims" / "g0" / "c001.error.txt"
+    assert earlier.read_text("utf-8").startswith(f"{TAG}: ValueError")
+    report = contract.reconcile(out, [TAG], None, lambda tag: [], query=never)
+    [case] = report["cases"]
+    assert case["status"] == "missing"
+    assert case["earlier_error"] == f"{TAG}: ValueError: the first attempt"
+    assert report["stray"] == [] and report["exit_code"] == 0
+    # Killed outright on its next attempt: interrupted, with the error.
+    claim_by(out, TAG, "800", "1")
+    report = contract.reconcile(
+        out, [TAG], None, lambda tag: [], query=answer(False, "TIMEOUT")
+    )
+    assert report["cases"][0]["status"] == "interrupted"
+    assert report["cases"][0]["earlier_error"].endswith("the first attempt")
+    contract.claim_path(out, TAG).unlink()
+
+    # A failing attempt writes its own error and drops the set-aside one.
+    def fails(identity):
+        raise RuntimeError("the second attempt")
+
+    assert (
+        contract.run_worker(
+            out, TAG, expected, lambda: expected, fails, lambda: [], never
+        )
+        == 1
+    )
+    assert not earlier.exists()
+    assert "the second attempt" in contract.error_reason(error)
+    report = contract.reconcile(out, [TAG], None, lambda tag: [], query=never)
+    assert report["cases"][0]["status"] == "failed"
+    # A stop, then a success: both error files go.
+    contract.run_worker(
+        out, TAG, expected, lambda: expected, stopped, lambda: [], never
+    )
+    assert earlier.exists() and not error.exists()
+
+    def succeeds(identity):
+        path = out / f"{TAG}.out"
+        path.write_text("whole\n", encoding="utf-8")
+        return [path], None
+
+    assert (
+        contract.run_worker(
+            out, TAG, expected, lambda: expected, succeeds, lambda: [], never
+        )
+        == 0
+    )
+    assert not earlier.exists() and not error.exists()
+
+
 def test_a_resubmission_takes_over_and_starts_from_clean(repo, tmp_path):
     """After a kill: the stale claim is taken over, the old files go first."""
     out = tmp_path / "out"
@@ -574,7 +760,8 @@ def test_a_resubmission_takes_over_and_starts_from_clean(repo, tmp_path):
     record = contract.check_completion(out, TAG, expected, [f"{TAG}.out"])
     assert set(record["artifacts"]) == {f"{TAG}.out"}
     assert (out / f"{TAG}.out").read_text("utf-8") == "the resubmission's\n"
-    assert (out / "claims" / "g0" / "c001.stale.800_1").exists()
+    [retired] = contract.retired_claims(out, TAG)
+    assert retired.name.startswith("c001.stale.800_1.")
     assert not contract.claim_path(out, TAG).exists()
 
 
@@ -1123,7 +1310,10 @@ def test_reconcile_places_every_case(tmp_path):
     contract.error_path(out, tags[3]).write_text("earlier\n", "utf-8")
     artifact(tags[4])  # 5 partial
     claim_by(out, tags[5], "901", "6")  # 6 interrupted: a stale claim alone
-    # 7 missing
+    # 7 missing: a rerun of a failed case, stopped, set its error aside
+    contract.earlier_error_path(out, tags[6]).write_text(
+        "c007: E: earlier\n", "utf-8"
+    )
     artifact(tags[7])  # 8 partial, beside an earlier error file
     contract.error_path(out, tags[7]).write_text("earlier\n", "utf-8")
     complete(tags[8])  # 9 verified, although a stale claim remains
@@ -1139,6 +1329,7 @@ def test_reconcile_places_every_case(tmp_path):
     # the allocation does not name.
     (out / "records" / "g0" / "c099.complete.json").write_text("{}", "utf-8")
     (out / "claims" / "g0" / "c099").write_text("{}", "utf-8")
+    (out / "claims" / "g0" / "c099.error.txt").write_text("x", "utf-8")
     (out / "g1" / "c099.error.txt").write_text("x", "utf-8")
     (out / "records" / "g7").mkdir()
 
@@ -1186,9 +1377,12 @@ def test_reconcile_places_every_case(tmp_path):
     assert cases[4]["files"] == ["g0/c005.out"]
     assert cases[5]["claim"]["state"] == "stale" and cases[5]["files"] == []
     assert "claim" not in cases[6]
+    assert cases[6]["earlier_error"] == "c007: E: earlier"
+    assert "earlier_error" not in cases[0] and "earlier_error" not in cases[4]
     assert [case["index"] for case in cases] == list(range(1, 11))
     assert report["stray"] == [
         "claims/g0/c099",
+        "claims/g0/c099.error.txt",
         "g1/c099.error.txt",
         "g1/c099.out",
         "records/g0/c099.complete.json",
@@ -1202,7 +1396,7 @@ def test_reconcile_places_every_case(tmp_path):
         "interrupted": 1,
         "partial": 2,
         "missing": 1,
-        "stray": 5,
+        "stray": 6,
     }
     assert report["exit_code"] == 1
     # One question per task, the record of case 9 asking none.
