@@ -245,6 +245,7 @@ minutes (September pool README, "Resource fit").
 | `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` |
 | `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
 | `STEP_POLL` | seconds between the finish's accounting polls of a step job; default 30 |
+| `STEP_WAIT_LIMIT` | seconds the finish waits for a step job before it gives up; default 86400, 0 for no limit |
 
 The driver passes them to the harness's `prepare`, which records them,
 all but the limits of the verify and finishing jobs, `STEP_POLL` and
@@ -274,8 +275,9 @@ Each harness that the driver runs has these subcommands.
   subdirectory of its condition.
 - **`worker --out DIR --case LINE`** runs one case, given as the text of its
   line, in a fresh process. It exits 0 at once when the case has a
-  completion record; exits 64 on a line or a directory that is not the
-  harness's; compares its source identity with the manifest's and refuses
+  completion record or was given up (below); exits 64 on a line or a
+  directory that is not the harness's, one without a readable manifest
+  included; compares its source identity with the manifest's and refuses
   a difference, or an identity it cannot establish (exit 78; the node's
   features are asked of `scontrol` with retries); claims the case (below;
   exit 75 when the claim is refused); sets an earlier attempt's error file
@@ -296,7 +298,8 @@ Each harness that the driver runs has these subcommands.
   it ran on one physical core: the affinity, or the job's cpuset, equals
   the hardware threads of one core (`core_threads` and `job_cpuset` of the
   host part). It reconciles the allocation case
-  by case, each with its index: verified; failed (an error file); in
+  by case, each with its index: verified; failed (an error file, or a
+  case the operator gave up, whatever its task left); in
   flight (a claim that is live by the rule below, which takes precedence
   over files without a record); interrupted (a stale claim without a
   record, with whatever files the task left, possibly none, as a task
@@ -308,11 +311,18 @@ Each harness that the driver runs has these subcommands.
   exits non-zero on a failed check, a partial case or a stray file.
 - The harness's own **finishing steps**, which run only on a verified
   directory; the finish runs each with `--out DIR` appended, in order.
+- **`campaign_contract.py give-up --out DIR --case TAG --reason TEXT`**,
+  the operator's ruling on a case that stays missing or interrupted at
+  every resubmission: it writes the case's error file with the line
+  `given up by the operator: <reason>`, logs the ruling in
+  `slurm/given_up.txt`, and refuses a case with a record, a live claim or
+  a reason of more than one line.
 
 A campaign directory holds, beside each case's artifacts,
 `records/<tag>.complete.json`, `claims/<tag>` and `<tag>.error.txt`, and
 `subsets/<name>.txt`, `slurm/` (the task logs, the job ids, the
-accounting) and `tmp/` (`TMPDIR`).
+accounting, the rulings of `give-up`) and `tmp/` (`TMPDIR`); `claims/`
+also holds the retirement marks of the claim below.
 
 **The claim.** A claim is `claims/<tag>`, holding the job id, the array
 task id, the restart count (`SLURM_RESTART_COUNT`), the host and the start
@@ -328,11 +338,16 @@ workers never both hold one. When a claim exists:
   fails or answers nothing, the claim is live: the worker exits with code
   75 without touching the case's files;
 - a claim whose task has ended (completed, failed, cancelled, timed out,
-  node failure, out of memory, preempted) is stale: the worker renames it
-  to `claims/<tag>.stale.<job>_<task>.<key>`, `<key>` being eight hex
-  digits of the claim's token, so that of two workers only one succeeds,
-  and then creates its own; a worker that finds the retired name already
-  holding that very claim finishes the retirement.
+  node failure, out of memory, preempted) is stale. To retire it a worker
+  first takes a retirement mark, a dot-file beside the claim created by
+  the same hard link; holding it, the worker reads the claim again, and
+  only if it is still the one it judged renames it to
+  `claims/<tag>.stale.<job>_<task>.<key>` (`<key>` being eight hex digits
+  of the claim's token) and creates its own. A worker that finds the mark
+  held by a task that may still run refuses with 75; one whose holder's
+  task has ended takes the mark at the next level. A requeue's takeover
+  takes the mark too. No worker moves a claim it did not judge, so no
+  interleaving of workers lets two hold one case.
 
 A refusal never takes the failure path, which deletes the case's files.
 A claim made outside Slurm, by `run` on a workstation, is live while its
@@ -362,7 +377,8 @@ version: the sidecars of `golden_trace.py` record the harness checkout's
 commit (`profile_run.git_info`) and read the versions of `pyvbmc` and
 `gpyreg` through `importlib.metadata`, which on a workstation name the
 installed distributions whatever tree is imported. The campaign
-environment installs neither package, so there those versions are null.
+environment installs neither package, so there those versions are null,
+in the sidecars as in the pool artifacts' `installed_metadata_versions`.
 The identity and the sidecars record each tree's commit and import path,
 and label a version read from the installed distribution as such.
 
@@ -424,7 +440,11 @@ What is new:
   (`squeue -r`) to their case indices and counts a missing case whose task
   is queued as in flight. It lists the interrupted and missing cases as
   the indices to resubmit, and archives only when the accounting shows
-  every recorded task ended.
+  every recorded task ended. It judges the accounting's allocation rows
+  only, the step rows staying in `sacct.txt` for their `MaxRSS`; submits
+  its step jobs with `--no-requeue`; and gives up waiting for one after
+  `STEP_WAIT_LIMIT`. Under `--allow-running` it is a look: `verify` and
+  its report, without finishing steps or archive.
 - **The environment of a task** has `PYTHONPATH` unset, so that the
   source trees reach `sys.path` only through their own variables; the
   build installs `git` for the identity; `NODE_FEATURE` must be one
@@ -459,8 +479,12 @@ state. It gains:
   a condition's last selected run has no record and no error file
   (missing, interrupted or in flight), lists such seeds past a shortfall
   as `unfinished`, and records the SHA-256 of the manifest and of the
-  verification it selected from; `profile_run.py` among the hashed
-  harness files.
+  verification it selected from; a case given up counts as a failed
+  seed; `profile_run.py` among the hashed harness files. The stacking
+  checks a selection against the allocation's first seed, seed cap and
+  target (or the `select --target` value it records as
+  `target_override`); a pool verified again after its selection is made
+  stackable by selecting again.
 
 Its test module `dev/scripts/test_svbmc_pool_run.py` reads the gpyreg
 checkout from `PYVBMC_GPYREG_SOURCE`, which the campaign environment
@@ -577,7 +601,8 @@ reference and refuses any overlap with it.
   with a non-finite rescored metric leaves that metric's test and is
   counted. The boost-stage usability counts come from each arm's in-run
   metrics, since only each arm's package reads its boost captures, and the
-  report labels them so.
+  report labels them so; a stage other than the returned posterior whose
+  metrics could not be computed leaves the boost summary and is counted.
 - **Binding.** `rescore` runs only with the after arm's source identity,
   requires the after arm to reproduce its in-run metrics exactly, resumes
   from per-configuration work files, and records the SHA-256 of what it
@@ -587,7 +612,8 @@ reference and refuses any overlap with it.
   arm's finish, and the after arm is finished again after any later finish
   of the before arm. `prepare --pair` refuses two arms with the same
   `pyvbmc` commit, or with different harness commits, harness files or
-  environment versions.
+  environment versions. `rescore` without `PYVBMC_GPYREG_SOURCE`, and a
+  worker whose package tree PyVBMC cannot be imported from, exit 78.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
   for 100 pairs (on `dev-next` its exact enumeration refuses more than 62),
   a
@@ -595,7 +621,8 @@ reference and refuses any overlap with it.
   `verification.json` in place of the 870-entry manifest of
   `golden/noisy_extension_20260907/` that it asserts, and a reader for
   array-mode campaigns, which write no `launch.json`, `finished.json` or
-  `comparison.md`.
+  `comparison.md`. The September mode keeps that manifest's check, on the
+  870 sidecars that `--reference DIR` names.
 
 ### The stacking: `svbmc_pool_stack.py`
 
@@ -725,9 +752,12 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   `$CAMPAIGN_PARENT`), and partitions are replaced in the fields that hold
   one. It refuses when a path or command setting, a named directory, the
   operator's username, the home or a hostname remains anywhere in its
-  output (a substring search, hostnames in any case), when an absolute
-  path outside the system prefixes remains unnamed, and when a case is in
-  flight; `redaction.json` records the SHA-256 of each copy beside its
+  output (paths, the home and the settings as substrings, the username
+  and hostnames as whole names, hostnames in any case), when an absolute
+  path outside the system prefixes remains unnamed, when a username or
+  hostname equals a name the copies write, and when a case is in flight.
+  `--allow STRING` exempts a benign hit, which `redaction.json` records
+  with its count; `redaction.json` records the SHA-256 of each copy beside its
   source's, which the population analysis checks when it reads the
   copies, and lists the cases not verified. `.gitattributes` keeps the
   bytes of `dev/experiments/release_gate_*/` as written. The operator
@@ -968,3 +998,16 @@ run reproduces bit for bit.
   that also refuses unnamed absolute paths, and `.gitattributes` keeps the
   tracked copies' bytes; the chunked S-VBMC entropy concatenates its
   chunks so that `torch.func.vmap` works (`dev-next`, `d4add1b8`).
+- 2026-09-26: a short re-review (the code fixes, the documents against
+  the code, and every test module on Windows and in WSL) found two
+  must-fix problems. The pool worker and the stacking's original arm read
+  the installed metadata of `pyvbmc` and `gpyreg`, which the campaign
+  environment does not install; and the finishing of a halfway claim
+  retirement let two workers hold one case. Both are fixed, with the
+  should-fix findings, in `3e7c64e7` to `3f1573af`, `fb9fa3a0` and
+  `c714d88d`: the retirement mark; whole-name matching of usernames and
+  hostnames in the redaction, with `--allow`; `--allow-running` as a look;
+  `give-up`; the accounting's allocation rows alone; the limit of the
+  wait for a step job; tests that run the pool and stacking with neither
+  package's metadata present. The PI set this as the last review round:
+  what only the cluster can show goes to the smoke campaigns of Phase 6.
