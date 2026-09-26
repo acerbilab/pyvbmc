@@ -244,6 +244,7 @@ minutes (September pool README, "Resource fit").
 | `LOGIN_PROFILE` | the login profile the environment script reads when `module` is not defined; default `/etc/profile` |
 | `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` |
 | `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
+| `STEP_POLL` | seconds between the finish's accounting polls of a step job; default 30 |
 
 The driver passes them to the harness's `prepare`, which records them in
 the `site` block of the raw manifest. Only the raw campaign directory holds
@@ -272,30 +273,37 @@ Each harness that the driver runs has these subcommands.
   subdirectory of its condition.
 - **`worker --out DIR --case LINE`** runs one case, given as the text of its
   line, in a fresh process. It exits 0 at once when the case has a
-  completion record; compares its source identity with the manifest's and
-  refuses a difference (exit 78); claims the case (below; exit 75 when the
-  claim is refused); removes whatever an interrupted attempt left; runs
-  it; and on success writes the artifacts and a completion record holding
-  the SHA-256 of every file, the elapsed time and the identity with its
-  host part, then removes its claim. Neither refusal touches the case's
-  files. On failure it removes the case's partial files, writes
-  `<tag>.error.txt` with the traceback, removes its claim and exits
-  non-zero. A SIGTERM or SIGINT, which Slurm sends at the time limit and
-  on `scancel`, makes it remove the case's partial files and its claim and
-  exit non-zero without an error file, so that a killed case counts as
-  missing, not failed.
+  completion record; exits 64 on a line or a directory that is not the
+  harness's; compares its source identity with the manifest's and refuses
+  a difference, or an identity it cannot establish (exit 78; the node's
+  features are asked of `scontrol` with retries); claims the case (below;
+  exit 75 when the claim is refused); sets an earlier attempt's error file
+  aside as `claims/<tag>.error.txt` and removes whatever an interrupted
+  attempt left; runs it; and on success writes the artifacts and a
+  completion record holding the SHA-256 of every file, the elapsed time
+  and the identity with its host part, then removes its claim. None of
+  the refusals touches the case's files. On failure it removes the case's
+  partial files, writes `<tag>.error.txt` with the traceback, removes its
+  claim and exits 1; a failure after the completion record is written
+  leaves the case complete. A SIGTERM or SIGINT, which Slurm sends at the
+  time limit and on `scancel`, makes it remove the case's partial files
+  and its claim and exit 128 plus the signal's number without an error
+  file, so that a killed case counts as missing, not failed.
 - **`verify --out DIR`** re-checks every completed case against its record
   and the manifest, in the campaign's own environment and source trees; it
   checks that each record's node features include `NODE_FEATURE` and that
-  its CPU affinity is one physical core. It reconciles the allocation case
+  it ran on one physical core: the affinity, or the job's cpuset, equals
+  the hardware threads of one core (`core_threads` and `job_cpuset` of the
+  host part). It reconciles the allocation case
   by case, each with its index: verified; failed (an error file); in
   flight (a claim that is live by the rule below, which takes precedence
   over files without a record); interrupted (a stale claim without a
   record, with whatever files the task left, possibly none, as a task
   leaves it when it is killed without a SIGTERM, by SIGKILL or by its
   memory limit); partial (files without a record and without a claim);
-  missing (never ran, or stopped by a SIGTERM that removed its claim); and
-  stray. It writes `verification.json`, and
+  missing (never ran, or stopped by a SIGTERM that removed its claim, with
+  an earlier attempt's error attached as `earlier_error` when one was set
+  aside); and stray. It writes `verification.json`, and
   exits non-zero on a failed check, a partial case or a stray file.
 - The harness's own **finishing steps**, which run only on a verified
   directory; the finish runs each with `--out DIR` appended, in order.
@@ -320,8 +328,10 @@ workers never both hold one. When a claim exists:
   75 without touching the case's files;
 - a claim whose task has ended (completed, failed, cancelled, timed out,
   node failure, out of memory, preempted) is stale: the worker renames it
-  to `claims/<tag>.stale.<job>_<task>`, so that of two workers only one
-  succeeds, and then creates its own.
+  to `claims/<tag>.stale.<job>_<task>.<key>`, `<key>` being eight hex
+  digits of the claim's token, so that of two workers only one succeeds,
+  and then creates its own; a worker that finds the retired name already
+  holding that very claim finishes the retirement.
 
 A refusal never takes the failure path, which deletes the case's files.
 A claim made outside Slurm, by `run` on a workstation, is live while its
@@ -396,14 +406,27 @@ What is new:
   own `TIME`; `verify` reconciles against the full allocation. The
   populations need it: by the laptop medians `cigar_D15_exhaust` takes
   about 86 times as long as `halfnormal_D2`.
-- **The finish** runs `verify` and every finishing step that computes as
-  batch jobs (`sbatch --wait`); a `verify` submitted while the campaign's
-  tasks run may queue behind them. It counts in-flight cases apart from
-  missing ones, so that `--allow-running` works without `--allow-missing`;
-  a task still queued holds no claim, so the finish maps the queued and
-  running array tasks (`squeue -r`) to their case indices and counts a
-  missing case whose task is queued as in flight. It lists the
-  interrupted and missing cases as the indices to resubmit.
+- **The finish** writes the accounting of every recorded job to
+  `slurm/sacct.txt` (removed when `sacct` fails), then checks the queue:
+  `squeue` states that have ended do not count, and a job `squeue` cannot
+  answer for is judged from `sacct.txt`; one that stays unresolved stops
+  the finish unless `--allow-running`. It runs `verify` and every
+  finishing step as step jobs, submitted with `--parsable`, recorded in
+  `slurm/steps.txt` before it waits for them by polling the accounting, so
+  that an interrupted finish leaves no step job unrecorded; a `verify`
+  submitted while the campaign's tasks run may queue behind them. It
+  counts in-flight cases apart from missing ones, so that
+  `--allow-running` works without `--allow-missing`; a task still queued
+  holds no claim, so the finish maps the queued and running array tasks
+  (`squeue -r`) to their case indices and counts a missing case whose task
+  is queued as in flight. It lists the interrupted and missing cases as
+  the indices to resubmit, and archives only when the accounting shows
+  every recorded task ended.
+- **The environment of a task** has `PYTHONPATH` unset, so that the
+  source trees reach `sys.path` only through their own variables; the
+  build installs `git` for the identity; `NODE_FEATURE` must be one
+  feature name; and `slurm/jobs.txt` records each submission's variable
+  settings, `SBATCH_EXTRA`, `CONDA_SETUP` and `LOGIN_PROFILE` among them.
 - **Limits.** `TIME` and `MEM` per harness come from the smoke campaigns'
   accounting (Phase 6). The throttle applies per submission, so a campaign
   in several chunks runs up to `THROTTLE` times the number of chunks.
@@ -429,6 +452,12 @@ state. It gains:
 - the convergence fields: `convergence_status`, `message`, `r_index` and
   `iterations` in the completion record and in `summarize`, beside
   `success_flag`.
+- a `select` that walks every seed in order and refuses when a seed below
+  a condition's last selected run has no record and no error file
+  (missing, interrupted or in flight), lists such seeds past a shortfall
+  as `unfinished`, and records the SHA-256 of the manifest and of the
+  verification it selected from; `profile_run.py` among the hashed
+  harness files.
 
 Its test module `dev/scripts/test_svbmc_pool_run.py` reads the gpyreg
 checkout from `PYVBMC_GPYREG_SOURCE`, which the campaign environment
@@ -466,15 +495,17 @@ gains:
   the laptop.
 - **Two source trees.** The package comes from a detached worktree at the
   arm's commit, named by `PYVBMC_SOURCE` and put first on `sys.path`, as
-  `PYVBMC_GPYREG_SOURCE` does for gpyreg. `golden_trace.py`,
-  `profile_run.py` and `golden_replay.py` insert the harness checkout first
-  on `sys.path` when they are imported, and `population_run.py` imports
-  them before `pyvbmc`, so their inserts put `PYVBMC_SOURCE` ahead of the
-  checkout when it is set. The identity checks that `pyvbmc.__file__`
-  resolves under that worktree and records its commit. On `dev-next` the
-  identity requires the package inside the harness checkout, which would make the
-  before arm a branch of `f91fdf0` carrying the new harness with that
-  commit's targets module. The harness, the targets module and its data
+  `PYVBMC_GPYREG_SOURCE` does for gpyreg. Only `population_run.py`, run
+  as a script, reads `PYVBMC_SOURCE`: before it imports `golden_trace` and
+  `profile_run` it puts the tree first on `sys.path` and imports the
+  package from it, so that no other script and no process that imports
+  the module, a gate among them, is redirected by the variable. The
+  identity checks that `pyvbmc.__file__` resolves under that worktree,
+  whose own checkout encloses it (a worktree nested inside another tree
+  does not pass for it), and records its commit. On `dev-next` the
+  identity requires the package inside the harness checkout, which would
+  make the before arm a branch of `f91fdf0` carrying the new harness with
+  that commit's targets module. The harness, the targets module and its data
   come from the harness checkout and are the same files in both arms. The
   targets module has changed since `f91fdf0` (the uncertainty-level-1
   switch, the `oracle` suite, the smoke printout and its help text); every
@@ -535,7 +566,23 @@ reference and refuses any overlap with it.
   configuration (seeds paired across the arms): signed-rank tests of the
   evidence error, gsKL and MMTV, and McNemar tests of usability. The
   confirmatory family is fixed in the campaigns' manifests before the
-  runs, as that plan requires.
+  runs, as that plan requires, and keeps its size: a test that cannot be
+  computed (no seed paired across the arms, or no finite difference)
+  enters the Holm family with p = 1 and is listed as not computed. A pair
+  with a non-finite rescored metric leaves that metric's test and is
+  counted. The boost-stage usability counts come from each arm's in-run
+  metrics, since only each arm's package reads its boost captures, and the
+  report labels them so.
+- **Binding.** `rescore` runs only with the after arm's source identity,
+  requires the after arm to reproduce its in-run metrics exactly, resumes
+  from per-configuration work files, and records the SHA-256 of what it
+  writes in `rescoring.json`, which the analysis checks. `summarize`,
+  `rescore` and the analysis refuse a `verification.json` older than its
+  directory, so the before arm is finished completely before the after
+  arm's finish, and the after arm is finished again after any later finish
+  of the before arm. `prepare --pair` refuses two arms with the same
+  `pyvbmc` commit, or with different harness commits, harness files or
+  environment versions.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
   for 100 pairs (on `dev-next` its exact enumeration refuses more than 62),
   a
@@ -571,6 +618,11 @@ repetitions draw independent subsets, which can overlap. It gains:
   and the bootstrap drawn in that order, so that no partial results are
   ever merged.
 - **Disjoint subsets** as decision 6 describes.
+- **A verified pool.** `prepare` stacks a pool only when its
+  `verification.json` passed and its `selection.json` was made from that
+  verification and agrees with it, and records each pool's verification;
+  it refuses a dirty harness checkout without `--allow-dirty`; the worker
+  exits 64 on a line that is not a task of the manifest.
 - **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` and
   CPU Torch 2.14.0 in `BASELINE_DIR`, recreated as
   `experiments/svbmc_pool/baseline_environment.json` describes and verified
@@ -661,12 +713,19 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   (`NODE_FEATURE`, which the copies keep so that the family of every run
   stays checkable) or to `login`, paths under a path setting to its name
   and paths under the home to `~`; the `site` block, the `pip freeze`
-  paths and the Slurm accounting stay in the archive. It refuses when a
-  path setting, the operator's username, the home or a hostname remains in
-  its output, and `redaction.json` records the SHA-256 of each copy beside
-  its source's, which the population analysis checks when it reads the
-  copies. The operator writes the README of `release_gate_<date>/`, which
-  nothing redacts, so it names no host, path or account.
+  paths and the Slurm accounting stay in the archive. The identity trees
+  and the campaign's parent get names of their own (`$<TREE>_TREE`,
+  `$CAMPAIGN_PARENT`), and partitions are replaced in the fields that hold
+  one. It refuses when a path or command setting, a named directory, the
+  operator's username, the home or a hostname remains anywhere in its
+  output (a substring search, hostnames in any case), when an absolute
+  path outside the system prefixes remains unnamed, and when a case is in
+  flight; `redaction.json` records the SHA-256 of each copy beside its
+  source's, which the population analysis checks when it reads the
+  copies, and lists the cases not verified. `.gitattributes` keeps the
+  bytes of `dev/experiments/release_gate_*/` as written. The operator
+  writes the README of `release_gate_<date>/` and checks it with
+  `campaign_redact.sh CAMPAIGN_DIR --check FILE`.
 - A machine that holds a raw directory lists it in its
   `dev/scripts/runs/LOCAL.md`.
 - The tracked records of the September pool
@@ -807,9 +866,9 @@ exists. One seed (seed 0) of each of the 24 `production` configurations,
 with `golden_trace.py`: about 70 to 80 minutes by the laptop medians, and
 `lumpy_D10_noise3_production`, which Phase 6 times. Each run must lie
 inside the after arm's accuracy envelope (`golden_replay.py --sidecars`,
-which reads a flat directory of sidecars, so it is given the tracked copies
-or learns to read the per-configuration directories of array mode), a
-coarse check that the machine and the cluster sample the same
+which reads the per-configuration directories of the after arm or of its
+tracked copies, counts verified cases only, and fails for a configuration
+it finds no population of), a coarse check that the machine and the cluster sample the same
 distribution. The six seeded gate runs, wrapped so that their record
 carries the commit, the gpyreg source, the thread settings and the host,
 and run with `performance_calibration="off"` so that no calibration cache
@@ -880,3 +939,23 @@ run reproduces bit for bit.
   operator's account and writes into a checkout; every harness's test
   module passes with none skipped. The guide leaves `TIME` and `MEM` of
   every job to the accounting of Phase 6.
+- 2026-09-25/26: a doublecheck of the branch by five fresh reviewers (the
+  contract and driver, the pool and stacking harnesses, the population
+  harness, the redaction and the documents, and one that ran every test
+  module on Windows and, for the first time, the contract, driver,
+  population and pool modules under Linux in WSL, where the host part's
+  affinity, topology and BLAS paths and an external SIGTERM worked). The
+  PI had every must-fix and should-fix finding fixed, on four branches
+  merged into `feat-slurm-campaigns`: a failure after the completion
+  record no longer deletes the case; retired claims carry a key; a stopped
+  rerun of a failed case reads as missing; the one-core check reads the
+  core's threads and the job's cpuset; a failed `squeue` never reads as an
+  empty queue and step jobs are recorded before the finish waits; `select`
+  refuses a gap below a selected run and the stacking's `prepare` requires
+  a verified pool; a semantic failure of a population case is a failed
+  case; the rescoring is bound, resumable and tied to the after arm; the
+  confirmatory family keeps its size; `PYVBMC_SOURCE` redirects the
+  population harness alone; the redaction's check is a substring search
+  that also refuses unnamed absolute paths, and `.gitattributes` keeps the
+  tracked copies' bytes; the chunked S-VBMC entropy concatenates its
+  chunks so that `torch.func.vmap` works (`dev-next`, `d4add1b8`).
