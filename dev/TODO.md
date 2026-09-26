@@ -168,6 +168,10 @@ records its execution.
   as of its installation. Update Example 7's account of the headline
   estimate to the headline decision, read each notebook's text against its
   new outputs, and regenerate `examples/scripts/` with its Makefile.
+  Example 7's text needs at least one of its four runs to miss a mode, which
+  its check asserts; if none does, choose other seeds (on 2026-09-26, 9 of
+  24 single runs on its target missed one; `dev/scripts/runs/LOCAL.md`,
+  "Example notebooks").
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. The package checks include what
   the sdist ships: setuptools_scm puts every tracked file in it, and of
