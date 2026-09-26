@@ -7,3 +7,7 @@
 # These are explicitly windows files and should use crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# The redacted copies of the release gate's campaigns, whose SHA-256
+# redaction.json records: kept byte for byte
+dev/experiments/release_gate_*/** -text

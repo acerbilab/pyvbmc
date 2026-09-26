@@ -1510,6 +1510,17 @@ def test_the_redaction_of_a_finished_campaign(world):
     redaction = contract.read_json(target / contract.REDACTION)
     assert redaction["campaign"] == "c1"
     assert redaction["archive"]["parts"]
+    # The README the operator writes beside the copies, checked as they are.
+    readme = world.root / "handback" / "README.md"
+    readme.write_text("# The campaign\n\nRun on stubfeat nodes.\n", "utf-8")
+    check = ("campaign_redact.sh", posix(world.campaign()), "--check")
+    result = world.run(*check, posix(readme), *interpreter, env=account)
+    assert result.returncode == 0, result.stdout + result.stderr
+    with open(readme, "a", encoding="utf-8") as stream:
+        stream.write(f"Run by {site.user} from {posix(world.repo)}.\n")
+    result = world.run(*check, posix(readme), *interpreter, env=account)
+    assert result.returncode == 1
+    assert "the username" in result.stderr and "README.md:4" in result.stderr
     # A copy that would keep the username is refused, and nothing written.
     summary = world.campaign() / "summary.json"
     site.rewrite(summary, lambda value: value.update(by=site.user))
