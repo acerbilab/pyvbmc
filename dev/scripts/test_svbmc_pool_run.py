@@ -2807,3 +2807,19 @@ def test_a_pool_campaign_through_the_slurm_driver(tmp_path, driver_template):
     report = read_json(target / "verification.json")
     assert report["verifier"]["host"]["hostname"] == "stubfeat"
     assert report["counts"] == verification(out)["counts"]
+
+
+def test_a_case_given_up_is_failed_whatever_its_task_left(tmp_path):
+    tag = f"{LABEL}/{LABEL}_seed{SEED_START}"
+    (tmp_path / LABEL).mkdir()
+    (tmp_path / f"{tag}.npz").write_bytes(b"partial")
+    claim = contract.claim_path(tmp_path, tag)
+    claim.parent.mkdir(parents=True)
+    claim.write_text("{}\n", encoding="utf-8")
+    assert runner.seed_state(tmp_path, tag) == "unfinished"
+    error = contract.error_path(tmp_path, tag)
+    error.parent.mkdir(parents=True, exist_ok=True)
+    error.write_text(
+        f"{contract.GIVEN_UP}times out at every limit\n", encoding="utf-8"
+    )
+    assert runner.seed_state(tmp_path, tag) == "failed"

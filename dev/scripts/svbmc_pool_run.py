@@ -1434,14 +1434,17 @@ def seed_state(out, tag):
     """The state of one case as the stopping rule reads it from its files.
 
     A completion record settles the case, by its filter verdict. Without
-    one, a claim (the case runs, or its task was killed) or artifact files
-    leave it unfinished, as ``verify`` places them before an error file; an
-    error file alone is a failed case; and nothing at all is a case that
-    never ran.
+    one, a case the operator gave up (:func:`campaign_contract.give_up`) is
+    failed whatever its task left behind; otherwise a claim (the case runs,
+    or its task was killed) or artifact files leave it unfinished, as
+    ``verify`` places them before an error file; an error file alone is a
+    failed case; and nothing at all is a case that never ran.
     """
     if contract.record_path(out, tag).exists():
         passes = read_record(out, tag)["verdict"]["passes"]
         return "passes" if passes else "filtered_out"
+    if contract.given_up(out, tag) is not None:
+        return "failed"
     if contract.claim_path(out, tag).exists() or partial_artifacts(out, tag):
         return "unfinished"
     if contract.error_path(out, tag).exists():
