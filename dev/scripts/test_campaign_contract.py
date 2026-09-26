@@ -1281,9 +1281,46 @@ def test_read_requirements(tmp_path):
         ("numpy==2.*\n", "not pinned"),
         ("numpy==2\nnumpy==3\n", "twice"),
         ("-r other.txt\n", "unsupported"),
+        ("# python==3.12\nnumpy==2\n#python==3.13\n", ":3: a second"),
     ):
         with pytest.raises(contract.ContractError, match=message):
             contract.read_requirements(write_requirements(tmp_path, text))
+    # The pin is a line of its own from the first column, as the build's
+    # sed reads it; an indented one, or one with more on its line, is a
+    # comment.
+    for text in ("  # python==3.12\n", "# python==3.12 or so\n"):
+        path = write_requirements(tmp_path, text)
+        assert contract.read_requirements(path)["python"] is None
+    path = write_requirements(tmp_path, "#python==3.12.6  \n")
+    assert contract.read_requirements(path)["python"] == "3.12.6"
+
+
+def test_the_build_reads_the_python_pin_as_the_check_does(tmp_path):
+    """``campaign_env.sh build`` takes the one ``# python==`` line that
+    ``read_requirements`` takes, and refuses two."""
+    script = (HERE / "hpc" / "campaign_env.sh").read_text(encoding="utf-8")
+    command = re.search(r"_campaign_pins=\$\((sed .*?)\)\n", script, re.S)
+    assert command, "the build's sed of the '# python==' line"
+    bash = stubs.find_bash()
+    for text, pins in (
+        ("# python==3.12\nnumpy==2\n", ["3.12"]),
+        ("#python==3.12.6  \n", ["3.12.6"]),
+        ("  # python==3.12\n# python==3.12 or so\n", []),
+        ("# python==3.12\n# python==3.13\n", ["3.12", "3.13"]),
+    ):
+        path = write_requirements(tmp_path, text)
+        sed = command.group(1).replace(
+            '"$CAMPAIGN_REQUIREMENTS"', f"'{path.as_posix()}'"
+        )
+        result = subprocess.run(
+            [bash, "-c", sed], capture_output=True, text=True, check=True
+        )
+        assert result.stdout.split() == pins
+        if len(pins) == 1:
+            assert contract.read_requirements(path)["python"] == pins[0]
+        elif pins:
+            with pytest.raises(contract.ContractError, match="a second"):
+                contract.read_requirements(path)
 
 
 def test_environment_differences(tmp_path):
@@ -1398,6 +1435,11 @@ def test_site_block_and_differences(tmp_path):
         "HARNESS is None here but 'dev/scripts/x.py' in the manifest",
         "NODE_FEATURE is 'intel' here but 'amd' in the manifest",
     ]
+    # A node feature is one name, never an expression of several.
+    for feature in ("amd&avx2", "amd|intel", "[amd]", "amd,x", "a b", "*"):
+        with pytest.raises(contract.ContractError, match="one node feature"):
+            contract.site_block(dict(environment, NODE_FEATURE=feature))
+    assert contract.site_block(dict(environment, NODE_FEATURE="epyc_7.x-2"))
 
 
 def test_finishing_steps():
@@ -1727,6 +1769,181 @@ def test_finish_stops_on_a_failed_verification():
             report, allow_missing=True, allow_running=True
         )
         assert code == contract.FINISH_FATAL
+
+
+# --------------------------------------------------------------------------
+# The queue and the accounting, for the finish
+# --------------------------------------------------------------------------
+
+
+def slurm_records(out, jobs, steps=(), accounting=None):
+    slurm = out / "slurm"
+    slurm.mkdir(parents=True, exist_ok=True)
+    (slurm / "jobs.txt").write_text("".join(f"{j}\n" for j in jobs), "utf-8")
+    (slurm / "steps.txt").write_text("".join(f"{s}\n" for s in steps), "utf-8")
+    if accounting is not None:
+        (slurm / "sacct.txt").write_text(
+            "JobID|JobName|State|ExitCode|NodeList\n"
+            + "".join(f"{row}\n" for row in accounting),
+            "utf-8",
+        )
+    return slurm
+
+
+def test_recorded_jobs(tmp_path):
+    slurm = slurm_records(
+        tmp_path,
+        [
+            "1001 array=1-3 offset=0 subset=- throttle=200 partition=- "
+            r"sbatch_extra=--comment=offset=9\ x 2026-10-01T10:00:00",
+            "1002 array=1-2 offset=3 subset=odd throttle=200",
+        ],
+        [
+            "1005 step=verify submitted 2026-10-01T11:00:00",
+            "1005 step=verify rc=0 2026-10-01T11:05:00",
+            "? step=summarize rc=1 2026-10-01T11:06:00",
+        ],
+    )
+    assert contract.recorded_jobs(slurm) == [
+        {"job": "1001", "offset": 0},
+        {"job": "1002", "offset": 3},
+        {"job": "1005", "offset": None},
+    ]
+    assert contract.recorded_jobs(tmp_path / "nowhere") == []
+
+
+def test_the_queue_counts_only_tasks_that_have_not_ended(tmp_path, slurm):
+    out = tmp_path / "c1"
+    records = slurm_records(
+        out,
+        ["1001 array=1-4 offset=0", "1002 array=1-2 offset=4"],
+        ["1005 step=verify submitted x"],
+    )
+    queue = slurm / "squeue"
+    queue.mkdir()
+    # squeue lists a task that ended moments ago beside the live ones.
+    (queue / "1001").write_text(
+        "1001_1 COMPLETED\n1001_2 RUNNING\n1001_3 COMPLETING\n"
+        "1001_4 CANCELLED\n",
+        "utf-8",
+    )
+    (queue / "1002").write_text("1002_2 PENDING\n", "utf-8")
+    (queue / "1005").write_text("1005 CONFIGURING\n", "utf-8")
+    state = contract.queue_state(records)
+    assert state["live"] == [
+        ("1001", "1001_2", "RUNNING"),
+        ("1001", "1001_3", "COMPLETING"),
+        ("1002", "1002_2", "PENDING"),
+        ("1005", "1005", "CONFIGURING"),
+    ]
+    assert state["cases"] == [
+        (2, "RUNNING"),
+        (3, "COMPLETING"),
+        (6, "PENDING"),
+    ]
+    assert state["unknown"] == []
+    for name in ("1001", "1002", "1005"):
+        (queue / name).unlink()
+    assert contract.queue_state(records) == {
+        "live": [],
+        "cases": [],
+        "unknown": [],
+    }
+
+
+def test_a_failed_queue_query_is_resolved_by_the_accounting(tmp_path, slurm):
+    out = tmp_path / "c1"
+    queue = slurm / "squeue"
+    queue.mkdir()
+    for job in ("1001", "1002", "1003"):
+        (queue / f"{job}.fail").write_text("", "utf-8")
+    jobs = ["1001 array=1-2 offset=0", "1002 array=1 offset=2", "1003 x"]
+    # No accounting at all: nothing is known.
+    records = slurm_records(out, jobs)
+    state = contract.queue_state(records)
+    assert [job for job, _ in state["unknown"]] == ["1001", "1002", "1003"]
+    assert "Invalid job id" in state["unknown"][0][1]
+    assert "no accounting" in state["unknown"][0][1]
+    # The accounting shows 1001 ended, 1002 still running, and no 1003.
+    records = slurm_records(
+        out,
+        jobs,
+        accounting=[
+            "1001_1|c1|COMPLETED|0:0|n1",
+            "1001_1.batch|batch|COMPLETED|0:0|n1",
+            "1001_2|c1|CANCELLED by 5|0:15|n1",
+            "1002_1|c1|RUNNING|0:0|n2",
+        ],
+    )
+    state = contract.queue_state(records)
+    assert [job for job, _ in state["unknown"]] == ["1002", "1003"]
+    assert "does not show its tasks ended" in state["unknown"][0][1]
+    assert "holds no row" in state["unknown"][1][1]
+    assert state["live"] == [] and state["cases"] == []
+
+
+def test_the_archive_waits_for_the_accounting(tmp_path):
+    out = tmp_path / "c1"
+    assert contract.accounting_problems(slurm_records(out, [])) == []
+    records = slurm_records(out, ["1001 array=1-3 offset=0"])
+    [problem] = contract.accounting_problems(records)
+    assert "is missing" in problem
+    records = slurm_records(
+        out,
+        ["1001 array=1-3 offset=0"],
+        ["1005 step=verify rc=0"],
+        accounting=[
+            "1001_1|c1|COMPLETED|0:0|n1",
+            "1001_2|c1|RUNNING|0:0|n1",
+            "1001_[3]|c1|PENDING|0:0|None assigned",
+            "1005|c1_verify|COMPLETED|0:0|n2",
+            "999|other|RUNNING|0:0|n3",
+        ],
+    )
+    assert contract.accounting_problems(records) == [
+        "1001_2 is RUNNING in slurm/sacct.txt",
+        "1001_[3] is PENDING in slurm/sacct.txt",
+    ]
+
+
+@pytest.mark.parametrize(
+    "state, exitcode, code",
+    [
+        ("COMPLETED", "0:0", 0),
+        ("FAILED", "1:0", 1),
+        ("FAILED", "3:0", 3),
+        ("TIMEOUT", "0:15", 143),
+        ("CANCELLED by 5", "0:0", 1),
+        ("OUT_OF_MEMORY", "0:9", 137),
+    ],
+)
+def test_the_exit_code_of_a_job(slurm, state, exitcode, code):
+    set_answer(slurm, "1005", f"{state}\n")
+    (slurm / "sacct" / "1005.exitcode").write_text(f"{exitcode}\n", "utf-8")
+    assert contract.job_exit("1005") == (state.split()[0], code)
+
+
+def test_waiting_for_a_job(slurm, monkeypatch):
+    assert contract.job_exit("1006") == (None, None)
+    set_answer(slurm, "1006", "PENDING\n")
+    assert contract.job_exit("1006") == ("PENDING", None)
+    set_answer(slurm, "1007", fail=True)
+    assert contract.job_exit("1007") == (None, None)
+    answers = iter(
+        [(None, None), ("PENDING", None), ("RUNNING", None), ("FAILED", 1)]
+    )
+    said, slept = [], []
+    monkeypatch.setattr(contract.time, "sleep", slept.append)
+    code = contract.wait_job(
+        "1006", poll=0.5, say=said.append, query=lambda job: next(answers)
+    )
+    assert code == 1 and slept == [0.5, 0.5, 0.5]
+    assert said == [
+        "job 1006: not in the accounting yet",
+        "job 1006: PENDING",
+        "job 1006: RUNNING",
+        "job 1006: FAILED, exit 1",
+    ]
 
 
 def run_cli(*args):

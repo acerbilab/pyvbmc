@@ -26,7 +26,10 @@ of its run, after it has written its file: with ``STUB_HOLD`` set it waits
 there (up to a minute) for a test to signal or kill it, and with
 ``STUB_SIGNAL_SELF`` set it sends itself SIGTERM, which is how a test
 delivers the signal on Windows, where one process cannot send another
-SIGTERM.
+SIGTERM. Three make a subcommand break the contract, for the driver's
+refusals: ``STUB_PREPARE_NOTHING`` (``prepare`` writes no manifest),
+``STUB_VERIFY_NOTHING`` (``verify`` writes no report and fails) and
+``STUB_SUMMARIZE_FAIL`` (``summarize`` fails).
 """
 
 import argparse
@@ -84,6 +87,9 @@ def read_manifest(out):
 
 def cmd_prepare(args):
     out = args.out.resolve()
+    if os.environ.get("STUB_PREPARE_NOTHING"):
+        print("the stub prepares nothing", flush=True)
+        return 0
     fail = [int(i) for i in args.fail.split(",") if i] if args.fail else []
     manifest = {
         "campaign": "stub",
@@ -160,6 +166,9 @@ def cmd_worker(args):
 
 def cmd_verify(args):
     out = args.out.resolve()
+    if os.environ.get("STUB_VERIFY_NOTHING"):
+        print("the stub verifies nothing", flush=True)
+        return 1
     manifest = read_manifest(out)
     lines = case_lines(manifest["cases"])
     tags = [contract.case_tag(line) for line in lines]
@@ -196,6 +205,9 @@ def cmd_verify(args):
 
 def cmd_summarize(args):
     out = args.out.resolve()
+    if os.environ.get("STUB_SUMMARIZE_FAIL"):
+        print("the stub fails its summary on purpose", flush=True)
+        return 1
     report = contract.read_json(out / "verification.json")
     contract.write_json(out / "summary.json", {"counts": report["counts"]})
     print(f"summary of {out}: {report['counts']}", flush=True)

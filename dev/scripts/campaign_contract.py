@@ -27,6 +27,10 @@ meet it through this module, which holds what they have in common:
   :func:`site_differences`);
 - **the reconciliation** of ``verify``'s states (:func:`reconcile`) and the
   finish's decision on its report (:func:`finish_decision`);
+- **the finish's view of Slurm**: which recorded jobs the queue or the
+  accounting shows may still run (:func:`queue_state`,
+  :func:`accounting_problems`), and the wait for a step job
+  (:func:`wait_job`);
 - **the tracked copies** of a finished campaign, which its harness declares
   in the manifest (:func:`tracked_copies`), redacted for the repository
   (:func:`redact`), and read back where the analysis needs the files the
@@ -102,6 +106,9 @@ call::
     python dev/scripts/campaign_contract.py finish-check \\
         --verification FILE [--queued FILE] [--allow-missing] \\
         [--allow-running]
+    python dev/scripts/campaign_contract.py queue-check --slurm DIR
+    python dev/scripts/campaign_contract.py archive-check --slurm DIR
+    python dev/scripts/campaign_contract.py wait-job --job ID [--poll S]
 
 and the redaction, which ``hpc/campaign_redact.sh`` runs after the finish::
 
@@ -266,7 +273,9 @@ TAG_PATTERN = re.compile(rf"{_COMPONENT}(?:/{_COMPONENT})*")
 #: The characters a finishing step's arguments may hold, so that the
 #: driver passes them through the shell as words.
 STEP_ARGUMENT = re.compile(r"[A-Za-z0-9_.,=:+/@%-]+")
-PYTHON_PIN = re.compile(r"#\s*python==([0-9]+(?:\.[0-9]+)*)\s*")
+#: The line of a requirements file that pins the interpreter, from its first
+#: column; ``campaign_env.sh`` reads it with the same pattern.
+PYTHON_PIN = re.compile(r"# *python==([0-9]+(?:\.[0-9]+)*) *")
 _RECORD_KEYS = (
     "contract",
     "tag",
@@ -1841,19 +1850,24 @@ def read_requirements(path):
     Every requirement must pin one version with ``==``; a requirement whose
     environment marker is false here is skipped; index options
     (``--index-url``, ``--extra-index-url``, ``--find-links``) are pip's and
-    are skipped. The comment ``# python==X.Y[.Z]`` pins the interpreter,
-    which the build installs from conda-forge.
+    are skipped. The comment ``# python==X.Y[.Z]``, a line of its own from
+    the first column (:data:`PYTHON_PIN`), pins the interpreter, which the
+    build installs from conda-forge; a file may hold one such line.
     """
     from packaging.requirements import InvalidRequirement, Requirement
 
     python, packages = None, {}
     lines = Path(path).read_text(encoding="utf-8").splitlines()
     for number, raw in enumerate(lines, start=1):
-        line = raw.strip()
-        pin = PYTHON_PIN.fullmatch(line)
+        pin = PYTHON_PIN.fullmatch(raw)
         if pin:
+            if python is not None:
+                raise ContractError(
+                    f"{path}:{number}: a second '# python==' line"
+                )
             python = pin.group(1)
             continue
+        line = raw.strip()
         line = re.split(r"\s+#", line, maxsplit=1)[0].strip()
         if not line or line.startswith("#"):
             continue
@@ -2021,10 +2035,27 @@ def pip_freeze():
     return result.stdout.splitlines()
 
 
+def check_feature(value):
+    """``value`` if it is one node feature (:data:`FEATURE_PATTERN`)."""
+    if not isinstance(value, str) or not FEATURE_PATTERN.fullmatch(value):
+        raise ContractError(
+            f"NODE_FEATURE={value!r} is not one node feature: letters, "
+            "digits and _.- alone"
+        )
+    return value
+
+
 def site_block(environ=None):
-    """The operator settings as ``prepare`` records them (unset: null)."""
+    """The operator settings as ``prepare`` records them (unset: null).
+
+    A ``NODE_FEATURE`` that is not one feature name raises
+    :class:`ContractError` (:func:`check_feature`).
+    """
     env = os.environ if environ is None else environ
-    return {name: env.get(name) or None for name in SETTINGS}
+    site = {name: env.get(name) or None for name in SETTINGS}
+    if site["NODE_FEATURE"] is not None:
+        check_feature(site["NODE_FEATURE"])
+    return site
 
 
 def site_differences(site, environ=None):
@@ -2332,6 +2363,253 @@ def finish_decision(
         )
         return FINISH_MISSING, lines
     return 0, lines
+
+
+# --------------------------------------------------------------------------
+# The queue and the accounting, for the finish
+# --------------------------------------------------------------------------
+
+#: The files of ``slurm/`` where the driver records its jobs: the array
+#: submissions and the finish's step jobs.
+JOB_FILES = ("jobs.txt", "steps.txt")
+#: What ``squeue`` prints when it does not know a job id, which it does for
+#: a job the controller has dropped as well as for one it never held.
+SQUEUE_UNKNOWN_JOB = "Invalid job id"
+
+
+def recorded_jobs(slurm_dir):
+    """The jobs that ``slurm/jobs.txt`` and ``slurm/steps.txt`` record.
+
+    Each line of those files starts with a job id (lines that do not, such
+    as a step whose submission failed, are skipped), and a submission's
+    first ``offset=<n>`` field is its index offset. Returns ``[{"job",
+    "offset"}]``, one per job in the order first recorded, ``offset`` None
+    for a job that names none (a step job).
+    """
+    jobs = {}
+    for name in JOB_FILES:
+        path = Path(slurm_dir) / name
+        if not path.is_file():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            fields = line.split()
+            if not fields or not fields[0].isdigit():
+                continue
+            offset = next(
+                (
+                    int(f[len("offset=") :])
+                    for f in fields[1:]
+                    if f.startswith("offset=")
+                    and f[len("offset=") :].isdigit()
+                ),
+                None,
+            )
+            entry = jobs.setdefault(
+                fields[0], {"job": fields[0], "offset": None}
+            )
+            if entry["offset"] is None:
+                entry["offset"] = offset
+    return list(jobs.values())
+
+
+def _state_word(text):
+    """The state of a Slurm answer's field: ``CANCELLED by 5`` is
+    ``CANCELLED``, ``RUNNING+`` is ``RUNNING``."""
+    words = text.split()
+    return words[0].rstrip("+").upper() if words else ""
+
+
+def accounting_rows(slurm_dir):
+    """The rows of ``slurm/sacct.txt`` by job: ``{job: [(JobID, state)]}``.
+
+    None when the file is absent (the finish removes it when ``sacct``
+    fails). A row belongs to the job its JobID starts with (``1001_3``,
+    ``1001_3.batch``, ``1001_[4-9]``, ``1005.extern``).
+    """
+    path = Path(slurm_dir) / "sacct.txt"
+    if not path.is_file():
+        return None
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    header = lines[0].split("|") if lines else []
+    if "JobID" not in header or "State" not in header:
+        return {}
+    job_column, state_column = header.index("JobID"), header.index("State")
+    rows = {}
+    for line in lines[1:]:
+        fields = line.split("|")
+        if len(fields) <= max(job_column, state_column):
+            continue
+        match = re.match(r"\d+", fields[job_column])
+        if match:
+            rows.setdefault(match.group(0), []).append(
+                (fields[job_column], _state_word(fields[state_column]))
+            )
+    return rows
+
+
+def squeue_tasks(job, timeout=60):
+    """What ``squeue -h -r -j <job> -o "%i %T"`` says of one job.
+
+    Returns ``{"ok": bool, "tasks": [(task id, state)], "detail": str}``;
+    ``ok`` is False when the query fails, which ``squeue`` does for a job
+    the controller has dropped as for a controller it cannot reach.
+    """
+    try:
+        result = _command(
+            ["squeue", "-h", "-r", "-j", str(job), "-o", "%i %T"], timeout
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        return {"ok": False, "tasks": [], "detail": f"squeue failed: {error}"}
+    if result.returncode != 0:
+        message = (result.stderr or result.stdout).strip()
+        return {
+            "ok": False,
+            "tasks": [],
+            "detail": f"squeue exited {result.returncode}: {message}",
+        }
+    tasks = []
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) >= 2:
+            tasks.append((fields[0], _state_word(" ".join(fields[1:]))))
+    return {"ok": True, "tasks": tasks, "detail": ""}
+
+
+def queue_state(slurm_dir, query=None):
+    """Which recorded jobs may still run, from the queue and the accounting.
+
+    Every job of :func:`recorded_jobs` is asked of ``squeue``
+    (:func:`squeue_tasks`, or ``query`` with its signature). A task it
+    lists in any state but one of :data:`ENDED_STATES` (``squeue`` lists
+    jobs that ended moments ago) is ``live``. A job it cannot answer for
+    is resolved by the accounting of ``slurm/sacct.txt``
+    (:func:`accounting_rows`): ended when it holds rows of the job and all
+    of them have ended, and ``unknown`` otherwise, since a failed query
+    shows nothing.
+
+    Returns ``{"live": [(job, task, state)], "cases": [(case index,
+    state)], "unknown": [(job, detail)]}``, ``cases`` the live array tasks
+    mapped to case indices by their submission's offset.
+    """
+    query = squeue_tasks if query is None else query
+    accounting = accounting_rows(slurm_dir)
+    live, cases, unknown = [], [], []
+    for entry in recorded_jobs(slurm_dir):
+        job = entry["job"]
+        answer = query(job)
+        if not answer["ok"]:
+            rows = (accounting or {}).get(job) or []
+            if not rows or any(state not in ENDED_STATES for _, state in rows):
+                where = (
+                    "no accounting (slurm/sacct.txt)"
+                    if accounting is None
+                    else "the accounting "
+                    + (
+                        "does not show its tasks ended"
+                        if rows
+                        else "holds no row of it"
+                    )
+                )
+                unknown.append((job, f"{answer['detail']}; {where}"))
+            continue
+        for task, state in answer["tasks"]:
+            if state in ENDED_STATES:
+                continue
+            live.append((job, task, state))
+            head, _, index = task.partition("_")
+            if entry["offset"] is not None and head == job and index.isdigit():
+                cases.append((int(index) + entry["offset"], state))
+    return {"live": live, "cases": cases, "unknown": unknown}
+
+
+def accounting_problems(slurm_dir):
+    """Why the accounting does not show every recorded task ended.
+
+    Each row of ``slurm/sacct.txt`` of a recorded job whose state is not
+    one of :data:`ENDED_STATES`, and the file's absence when any job is
+    recorded. Empty when there is nothing to hold the archive back.
+    """
+    jobs = [entry["job"] for entry in recorded_jobs(slurm_dir)]
+    if not jobs:
+        return []
+    rows = accounting_rows(slurm_dir)
+    if rows is None:
+        return [
+            "the accounting of the recorded jobs (slurm/sacct.txt) is "
+            "missing: sacct failed"
+        ]
+    return [
+        f"{job_id} is {state} in slurm/sacct.txt"
+        for job in jobs
+        for job_id, state in rows.get(job, [])
+        if state not in ENDED_STATES
+    ]
+
+
+def job_exit(job, timeout=60):
+    """``(state, exit code)`` of a job from the accounting.
+
+    Runs ``sacct -n -X -P -j <job> -o State,ExitCode``. The code is None
+    while the job may still run (any state but one of
+    :data:`ENDED_STATES`, a failed query, an empty answer). For an ended
+    job it is the batch script's exit status, 128 plus the signal's number
+    when a signal ended it, and 1 for a job that ended in any state but
+    ``COMPLETED`` with a status of 0 (cancelled before it started, say).
+    """
+    try:
+        result = _command(
+            [
+                "sacct",
+                "-n",
+                "-X",
+                "-P",
+                "-j",
+                str(job),
+                "-o",
+                "State,ExitCode",
+            ],
+            timeout,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None, None
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    if result.returncode != 0 or not lines:
+        return None, None
+    state_text, _, exit_text = lines[0].partition("|")
+    state = _state_word(state_text)
+    if state not in ENDED_STATES:
+        return state, None
+    status, _, signum = exit_text.strip().partition(":")
+    try:
+        status, signum = int(status or 0), int(signum or 0)
+    except ValueError:
+        status, signum = 1, 0
+    code = 128 + signum if signum else status
+    if code == 0 and state != "COMPLETED":
+        code = 1
+    return state, code
+
+
+def wait_job(job, poll=30.0, say=None, query=None):
+    """Wait until a job has ended in the accounting; return its exit code.
+
+    ``query`` replaces :func:`job_exit`; each change of the job's state is
+    reported with ``say`` (:func:`print` by default).
+    """
+    say = _say if say is None else say
+    query = job_exit if query is None else query
+    last = ()
+    while True:
+        state, code = query(job)
+        if state != last:
+            say(
+                f"job {job}: {state or 'not in the accounting yet'}"
+                + ("" if code is None else f", exit {code}")
+            )
+            last = state
+        if code is not None:
+            return code
+        time.sleep(poll)
 
 
 # --------------------------------------------------------------------------
@@ -3391,6 +3669,46 @@ def _cmd_finish_check(args):
     return code
 
 
+def _cmd_queue_check(args):
+    state = queue_state(args.slurm)
+    lines = [f"{index} {status}\n" for index, status in state["cases"]]
+    (Path(args.slurm) / "queued.txt").write_text(
+        "".join(lines), encoding="utf-8", newline="\n"
+    )
+    if state["live"]:
+        print(
+            "tasks of the recorded jobs are still queued or running:",
+            file=sys.stderr,
+        )
+        for _, task, status in state["live"]:
+            print(f"{task} {status}", file=sys.stderr)
+    for job, detail in state["unknown"]:
+        print(
+            f"the queue does not answer for job {job}, so its tasks may "
+            f"still run: {detail}",
+            file=sys.stderr,
+        )
+    if state["live"]:
+        print("queued")
+    elif state["unknown"]:
+        print("unknown")
+    else:
+        print("clear")
+    return 0
+
+
+def _cmd_archive_check(args):
+    problems = accounting_problems(args.slurm)
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    return 1 if problems else 0
+
+
+def _cmd_wait_job(args):
+    code = wait_job(args.job, poll=args.poll)
+    return min(max(int(code), 0), 255)
+
+
 def _cmd_redact(args):
     paths = []
     for item in args.path or ():
@@ -3444,6 +3762,31 @@ def parse_args(argv=None):
     )
     finish.add_argument("--allow-missing", action="store_true")
     finish.add_argument("--allow-running", action="store_true")
+    queue = sub.add_parser(
+        "queue-check",
+        help="ask the queue for every job of slurm/jobs.txt and "
+        "slurm/steps.txt, write the queued case indices to "
+        "slurm/queued.txt, and print clear, queued or unknown",
+    )
+    queue.add_argument("--slurm", type=Path, required=True)
+    archive = sub.add_parser(
+        "archive-check",
+        help="refuse while slurm/sacct.txt shows a recorded task that has "
+        "not ended, or is missing",
+    )
+    archive.add_argument("--slurm", type=Path, required=True)
+    wait = sub.add_parser(
+        "wait-job",
+        help="wait until a job has ended in the accounting, and exit with "
+        "its exit code",
+    )
+    wait.add_argument("--job", required=True)
+    wait.add_argument(
+        "--poll",
+        type=float,
+        default=30.0,
+        help="seconds between two queries of the accounting (default 30)",
+    )
     redaction = sub.add_parser(
         "redact",
         help="write a finished campaign's tracked copies, redacted, and "
@@ -3474,6 +3817,9 @@ COMMANDS = {
     "check-cases": _cmd_check_cases,
     "finishing-steps": _cmd_finishing_steps,
     "finish-check": _cmd_finish_check,
+    "queue-check": _cmd_queue_check,
+    "archive-check": _cmd_archive_check,
+    "wait-job": _cmd_wait_job,
     "redact": _cmd_redact,
 }
 

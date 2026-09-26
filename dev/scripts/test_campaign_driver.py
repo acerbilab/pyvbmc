@@ -73,6 +73,7 @@ LEAKS = {
     "FINISH_TIME",
     "FINISH_MEM",
     "ARCHIVE_PART_SIZE",
+    "STEP_POLL",
     *contract.SETTINGS,
 }
 
@@ -230,6 +231,7 @@ class World:
             LOGIN_PROFILE=posix(self.profile),
             CONDA_SETUP=CONDA_STUB,
             STUB_FAKE_AFFINITY="1",
+            STEP_POLL="0.05",
         )
         self.environ = environment
 
@@ -678,6 +680,120 @@ def test_submit_refuses_a_campaign_directory_the_checkout_tracks(world):
     assert (ignored / "manifest.json").exists()
 
 
+@pytest.mark.parametrize(
+    "settings, message",
+    [
+        ({"THROTTLE": "0"}, "THROTTLE=0 is not a positive integer"),
+        ({"THROTTLE": "20x"}, "is not a positive integer"),
+        ({"CASES_SUBSET": "../odd"}, "is not a subset name"),
+        ({"CASES_SUBSET": "a b"}, "is not a subset name"),
+        ({"NODE_FEATURE": "stubfeat&avx2"}, "is not one node feature"),
+        ({"NODE_FEATURE": "[a|b]"}, "is not one node feature"),
+    ],
+)
+def test_submit_refuses_a_malformed_setting(world, settings, message):
+    refused(world.submit("c1", **settings), message)
+    assert not world.campaign().exists() and not world.calls()
+
+
+def test_submit_refuses_a_prepare_that_writes_no_manifest(world):
+    result = refused(world.submit("c1", STUB_PREPARE_NOTHING=1), "wrote no")
+    assert "manifest.json" in result.stderr
+    assert not (world.campaign() / "cases.txt").exists()
+    assert not world.calls()
+
+
+def jobs_lines(world, name="c1"):
+    path = world.campaign(name) / "slurm" / "jobs.txt"
+    return path.read_text("utf-8").splitlines() if path.exists() else []
+
+
+def test_submit_refuses_when_sbatch_fails(world):
+    (world.state / "sbatch_fail").write_text("", encoding="utf-8")
+    result = refused(world.submit("c1", "--cases", "5"), "ARRAY=1-5")
+    assert "sbatch exited 1" in result.stderr
+    assert jobs_lines(world) == []
+    # sbatch answers, but with no job id: the job may exist, unrecorded.
+    (world.state / "sbatch_fail").unlink()
+    (world.state / "sbatch_output").write_text("oops\n", encoding="utf-8")
+    result = refused(world.submit("c1"), "ARRAY=1-5")
+    assert "printed no job id" in result.stderr and "'oops'" in result.stderr
+    assert "squeue -n c1" in result.stderr
+    assert jobs_lines(world) == []
+
+
+def test_a_failure_between_chunks_leaves_the_earlier_ones_recorded(world):
+    (world.state / "max_array_size").write_text("4", encoding="utf-8")
+    (world.state / "sbatch_fail_from").write_text("1003", encoding="utf-8")
+    result = refused(world.submit("c1", "--cases", "10"), "ARRAY=7-10")
+    assert "--array=1-3 (index offset 6)" in result.stderr
+    lines = jobs_lines(world)
+    assert [line.split()[:3] for line in lines] == [
+        ["1001", "array=1-3", "offset=0"],
+        ["1002", "array=1-3", "offset=3"],
+    ]
+    # The rest, once sbatch works again: the chunks it names alone.
+    (world.state / "sbatch_fail_from").unlink()
+    ok(world.submit("c1", ARRAY="7-10"))
+    assert arrays(world.calls()[-2:]) == [
+        ("--array=1-3%200", "6"),
+        ("--array=1%200", "9"),
+    ]
+    assert len(jobs_lines(world)) == 4
+
+
+def test_jobs_txt_records_every_submission_setting(world):
+    """The sbatch arguments, the conda setup and the login profile, quoted;
+    the sbatch arguments are split into words and never glob-expanded."""
+    ok(
+        world.submit(
+            "c1",
+            "--cases",
+            "3",
+            SBATCH_EXTRA="--qos=x  dev/*\n--comment=offset=9",
+        )
+    )
+    [call] = world.calls()
+    assert call["args"][-4:-1] == ["--qos=x", "dev/*", "--comment=offset=9"]
+    [line] = jobs_lines(world)
+    assert line.split()[:3] == ["1001", "array=1-3", "offset=0"]
+    fields = line.split(" sbatch_extra=", 1)[1]
+    extra, rest = fields.split(" conda_setup=", 1)
+    conda, profile = rest.split(" login_profile=", 1)
+    unquote = r'eval "printf %s $1"'
+    for quoted, expected in (
+        (extra, "--qos=x  dev/*\n--comment=offset=9"),
+        (conda, CONDA_STUB),
+        (profile, posix(world.profile)),
+    ):
+        result = subprocess.run(
+            [world.bash, "-c", unquote, "x", quoted],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert result.stdout == expected
+    ok(world.submit("c1", ARRAY="1", CONDA_SETUP=None))
+    assert " sbatch_extra=- conda_setup=- login_profile=" in (
+        jobs_lines(world)[-1]
+    )
+    # The finish reads the offsets of such lines.
+    run_tasks(world, "c1", (1, 2, 3))
+    ok(world.finish("c1", "--no-archive"))
+
+
+def test_pythonpath_from_the_calling_shell_reaches_no_task(world):
+    elsewhere = world.root / "elsewhere"
+    result = ok(
+        world.submit("c1", "--cases", "2", PYTHONPATH=posix(elsewhere))
+    )
+    assert "unsetting PYTHONPATH" in result.stderr
+    [call] = world.calls()
+    assert "PYTHONPATH" not in call["env"]
+    task = ok(world.task("c1", 1, PYTHONPATH=posix(elsewhere)))
+    assert "unsetting PYTHONPATH" in task.stderr
+
+
 # --------------------------------------------------------------------------
 # Tasks
 # --------------------------------------------------------------------------
@@ -834,20 +950,24 @@ def test_finish_verifies_runs_the_steps_and_archives(world):
     verify, summarize = world.calls()[1:]
     for call, step in ((verify, "verify"), (summarize, "summarize")):
         assert call["env"]["CAMPAIGN_STEP"] == step
-        assert (
-            "--wait" in call["args"]
-            and value(call["args"], "-C") == "stubfeat"
-        )
+        assert "--parsable" in call["args"] and "--wait" not in call["args"]
+        assert value(call["args"], "-C") == "stubfeat"
         assert "--hint=nomultithread" in call["args"]
         assert value(call["args"], "--output").endswith(
             f"/slurm/{step}_%j.out"
         )
     assert "--time=01:00:00" in verify["args"] and "--mem=2G" in verify["args"]
     steps = (out / "slurm" / "steps.txt").read_text("utf-8").splitlines()
-    assert [line.split()[1:3] for line in steps] == [
-        ["step=verify", "rc=0"],
-        ["step=summarize", "rc=0"],
+    # Each step's job id is recorded when it is submitted, and again with
+    # its exit code once the accounting shows it ended.
+    assert [line.split()[:3] for line in steps] == [
+        [verify["job"], "step=verify", "submitted"],
+        [verify["job"], "step=verify", "rc=0"],
+        [summarize["job"], "step=summarize", "submitted"],
+        [summarize["job"], "step=summarize", "rc=0"],
     ]
+    queries = (world.state / "sacct_queries").read_text("utf-8").split()
+    assert verify["job"] in queries and summarize["job"] in queries
     assert "-j 1001" in (world.state / "sacct_calls").read_text("utf-8")
     assert (out / "slurm" / "sacct.txt").exists()
     # The archive: parts and their SHA-256, which restore the directory.
@@ -1090,6 +1210,232 @@ def test_finish_refusals(world):
     assert len(world.calls()) == 1
 
 
+def finished_tasks(world, count=2):
+    ok(world.submit("c1", "--cases", str(count)))
+    run_tasks(world, "c1", range(1, count + 1))
+    return world.campaign()
+
+
+def test_finish_refuses_an_environment_that_differs(world):
+    finished_tasks(world)
+    requirements = (
+        world.repo / "dev" / "scripts" / "hpc" / "campaign_requirements.txt"
+    )
+    text = requirements.read_text("utf-8")
+    text = re.sub(r"^pytest==.*$", "pytest==0.0.1", text, flags=re.MULTILINE)
+    requirements.write_bytes(text.encode("utf-8"))
+    world.git("commit", "-q", "-am", "another pin")
+    result = refused(world.finish("c1"), "differs from")
+    assert "0.0.1 is pinned" in result.stderr
+    assert len(world.calls()) == 1
+
+
+def test_finish_stops_when_verify_writes_no_report(world):
+    out = finished_tasks(world)
+    result = world.finish("c1", STUB_VERIFY_NOTHING=1)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "verify wrote no" in result.stderr and "(exit 1)" in result.stderr
+    assert not (out / "verification.json").exists()
+    assert not (out / "summary.json").exists()
+    assert len(world.calls()) == 2
+
+
+def test_finish_refuses_finishing_steps_that_break_the_contract(world):
+    out = finished_tasks(world)
+    manifest = contract.read_json(out / "manifest.json")
+    manifest["finishing_steps"] = [["summarize;rm", "-rf"]]
+    contract.write_json(out / "manifest.json", manifest)
+    refused(world.finish("c1"), "finishing steps break the contract")
+    assert (out / "verification.json").exists()
+    assert len(world.calls()) == 2
+
+
+def test_finish_stops_on_a_failed_finishing_step(world):
+    out = finished_tasks(world)
+    result = world.finish("c1", STUB_SUMMARIZE_FAIL=1)
+    assert result.returncode == 1
+    assert "the finishing step 'summarize' failed" in result.stderr
+    last = (out / "slurm" / "steps.txt").read_text("utf-8").splitlines()[-1]
+    assert last.split()[1:3] == ["step=summarize", "rc=1"]
+    assert not list(world.campaigns.glob("c1.tar.zst*"))
+
+
+def path_without(tool, path, scratch):
+    """``path`` with no ``tool`` on it: a directory of the test's that holds
+    one loses it, and any other is replaced by links to all else it holds."""
+    entries = []
+    for index, entry in enumerate(p for p in path.split(os.pathsep) if p):
+        folder = Path(entry)
+        names = (tool, f"{tool}.exe", f"{tool}.cmd")
+        if not any((folder / name).exists() for name in names):
+            entries.append(entry)
+            continue
+        shadow = scratch / f"shadow{index}"
+        shadow.mkdir(parents=True)
+        for item in folder.iterdir():
+            if item.name in names:
+                continue
+            try:
+                (shadow / item.name).symlink_to(item)
+            except OSError:
+                if item.is_file():
+                    try:
+                        os.link(item, shadow / item.name)
+                    except OSError:
+                        shutil.copy2(item, shadow / item.name)
+        entries.append(str(shadow))
+    found = os.pathsep.join(entries)
+    assert shutil.which(tool, path=found) is None
+    return found
+
+
+def test_finish_refuses_to_archive_without_zstd(world):
+    out = finished_tasks(world)
+    path = path_without("zstd", world.environ["PATH"], world.root / "path")
+    refused(world.finish("c1", PATH=path), "zstd is not on the PATH")
+    assert (out / "summary.json").exists()
+    assert not list(world.campaigns.glob("c1.tar.zst*"))
+
+
+def test_the_real_affinity_of_a_task_reaches_verify(world):
+    """Without the stubs' one-core affinity, the record holds this host's,
+    which a workstation cannot make one physical core: on Linux it spans
+    the cores the test runs on, and on Windows it is null."""
+    ok(world.submit("c1", "--cases", "2"))
+    for index in (1, 2):
+        ok(world.task("c1", index, STUB_FAKE_AFFINITY=None))
+    host = {
+        "node_features": {"available": ["stubfeat"]},
+        "cpu_affinity": contract.cpu_affinity(False),
+    }
+    expected = contract.host_problems(host, "stubfeat")
+    result = world.finish("c1", "--no-archive")
+    report = json.loads(
+        (world.campaign() / "verification.json").read_text("utf-8")
+    )
+    if not expected:  # a Linux host of one core, with no SMT
+        assert result.returncode == 0, result.stderr
+        return
+    assert result.returncode == 1
+    assert "verify_failed indices: 1-2" in result.stderr
+    if sys.platform.startswith("linux"):
+        assert "physical cores" in expected[0]
+    else:
+        assert expected[0] == "the record holds no CPU affinity"
+    for case in report["cases"]:
+        assert case["status"] == "verify_failed"
+        assert expected[0].split(" [")[0] in case["error"]
+
+
+def test_a_queue_that_cannot_answer_holds_the_finish(world):
+    out = finished_tasks(world)
+    (world.state / "squeue").mkdir(exist_ok=True)
+    (world.state / "squeue" / "1001.fail").write_text("", encoding="utf-8")
+    result = world.finish("c1")
+    assert result.returncode == 1
+    assert "does not answer for job 1001" in result.stderr
+    assert "--allow-running" in result.stderr
+    assert len(world.calls()) == 1
+    # A look at the campaign as it stands: verified, finished, not archived.
+    result = world.finish("c1", "--allow-running")
+    assert result.returncode == 1 and "not archiving" in result.stderr
+    assert (out / "summary.json").exists()
+    assert not list(world.campaigns.glob("c1.tar.zst*"))
+    # The accounting shows every task of the job ended: the finish goes on.
+    (world.state / "sacct_accounting").write_text(
+        "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
+        "1001_1|c1|COMPLETED|0:0|00:01:00|10M|1|node1\n"
+        "1001_1.batch|batch|COMPLETED|0:0|00:01:00|10M|1|node1\n"
+        "1001_2|c1|COMPLETED|0:0|00:01:00|10M|1|node1\n",
+        encoding="utf-8",
+    )
+    ok(world.finish("c1"))
+    assert list(world.campaigns.glob("c1.tar.zst.000"))
+
+
+def test_the_queue_counts_no_task_that_has_ended(world):
+    """squeue can list tasks that ended moments ago."""
+    finished_tasks(world)
+    world.queue(1001, "1001_1 COMPLETED\n1001_2 CANCELLED\n")
+    ok(world.finish("c1", "--no-archive"))
+    assert (world.campaign() / "slurm" / "queued.txt").read_text("utf-8") == ""
+    world.queue(1001, "1001_1 COMPLETED\n1001_2 COMPLETING\n")
+    result = world.finish("c1", "--no-archive")
+    assert result.returncode == 1 and "1001_2 COMPLETING" in result.stderr
+
+
+def test_the_archive_waits_for_the_accounting(world):
+    out = finished_tasks(world)
+    (world.state / "sacct_accounting").write_text(
+        "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList\n"
+        "1001_1|c1|COMPLETED|0:0|00:01:00|10M|1|node1\n"
+        "1001_2|c1|RUNNING|0:0|00:01:00|10M|1|node1\n",
+        encoding="utf-8",
+    )
+    result = world.finish("c1")
+    assert result.returncode == 1
+    assert "1001_2 is RUNNING in slurm/sacct.txt" in result.stderr
+    assert "not archiving" in result.stderr
+    assert (out / "summary.json").exists()
+    # sacct fails: the finish has no accounting, and archives nothing.
+    (world.state / "sacct_accounting").unlink()
+    (world.state / "sacct_fail").write_text("", encoding="utf-8")
+    result = world.finish("c1")
+    assert result.returncode == 1
+    assert "sacct failed" in result.stderr and "is missing" in result.stderr
+    assert not (out / "slurm" / "sacct.txt").exists()
+    assert not list(world.campaigns.glob("c1.tar.zst*"))
+    (world.state / "sacct_fail").unlink()
+    ok(world.finish("c1"))
+    assert list(world.campaigns.glob("c1.tar.zst.000"))
+
+
+def test_a_step_job_is_recorded_before_the_finish_waits_for_it(world):
+    """A finish stopped while it waits leaves a job the next one sees."""
+    out = finished_tasks(world)
+    (world.state / "step_hold").write_text("", encoding="utf-8")
+    log = world.root / "finish.log"
+    command = [
+        world.bash,
+        world.script("campaign_finish.sh"),
+        posix(out),
+        "--no-archive",
+    ]
+    process = world.start(command, {}, log)
+    steps = out / "slurm" / "steps.txt"
+    deadline = time.monotonic() + 300
+    while "submitted" not in (
+        steps.read_text("utf-8") if steps.exists() else ""
+    ):
+        if process.poll() is not None:
+            pytest.fail(log.read_text("utf-8"))
+        if time.monotonic() > deadline:
+            process.kill()
+            pytest.fail("the verify job was never submitted")
+        time.sleep(0.05)
+    [line] = steps.read_text("utf-8").splitlines()
+    job = line.split()[0]
+    assert line.split()[1:3] == ["step=verify", "submitted"]
+    time.sleep(0.5)
+    assert process.poll() is None  # still waiting for the pending job
+    # The job is cancelled while it waits in the queue.
+    (world.state / "sacct" / f"{job}.exitcode").write_text("0:15\n", "utf-8")
+    (world.state / "sacct" / job).write_text("CANCELLED by 1000\n", "utf-8")
+    assert process.wait(timeout=300) == 1
+    output = log.read_text("utf-8")
+    assert "verify wrote no" in output and "(exit 143)" in output
+    assert steps.read_text("utf-8").splitlines()[-1].split()[:3] == [
+        job,
+        "step=verify",
+        "rc=143",
+    ]
+    # The queue still holds the recorded job: the next finish waits.
+    (world.state / "step_hold").unlink()
+    result = world.finish("c1", "--no-archive")
+    assert result.returncode == 1
+    assert f"{job} PENDING" in result.stderr
+
+
 # --------------------------------------------------------------------------
 # The redaction of the tracked copies
 # --------------------------------------------------------------------------
@@ -1193,6 +1539,7 @@ echo "tmpdir=${TMPDIR:-}"
 echo "profile=${STUB_PROFILE_READ:-no} module=$(type -t module || echo none)"
 echo "flags=$-"
 echo "trees=${PYVBMC_GPYREG_SOURCE:-}"
+echo "pythonpath=${PYTHONPATH-unset}"
 """
 
 
@@ -1243,8 +1590,45 @@ def test_the_environment_script_activates_and_exports(world):
     assert values["profile"] == "1 module=function"
     assert "e" in values["flags"] and "u" in values["flags"]
     assert values["trees"] == "/x/gpyreg"
+    assert values["pythonpath"] == "unset"
     calls = (world.state / "conda_calls").read_text("utf-8").splitlines()
     assert calls[-1] == f"conda activate {posix(world.prefix)}"
+
+
+def test_the_environment_script_unsets_pythonpath(world):
+    for value in ("/x/elsewhere", ""):
+        result = show(world, PYTHONPATH=value)
+        assert shown(result)["pythonpath"] == "unset"
+        assert "unsetting PYTHONPATH" in result.stderr
+    assert "PYTHONPATH" not in show(world).stderr
+
+
+def test_the_environment_build_refuses_two_python_pins(world):
+    requirements = (
+        world.repo / "dev" / "scripts" / "hpc" / "campaign_requirements.txt"
+    )
+    text = requirements.read_text("utf-8")
+    requirements.write_bytes(f"{text}# python==3.13\n".encode("utf-8"))
+    env = {"CAMPAIGN_ENV": posix(world.root / "built_env")}
+    result = world.run("campaign_env.sh", "build", env=env)
+    assert result.returncode == 1
+    assert "more than one '# python==' line" in result.stderr
+    assert not (world.root / "built_env").exists()
+
+
+def test_the_environment_build_fails_when_conda_create_does(world):
+    """conda create runs with errexit and nounset relaxed, as conda's own
+    functions need; its failure is reported."""
+    failing = BUILD_CONDA.replace(
+        'cp -r "$STUB_STATE/built/." "$4"', 'echo "$UNSET_VARIABLE"; false'
+    )
+    env = {
+        "CAMPAIGN_ENV": posix(world.root / "built_env"),
+        "CONDA_SETUP": failing,
+    }
+    result = world.run("campaign_env.sh", "build", env=env)
+    assert result.returncode == 1
+    assert "conda create failed (exit 1)" in result.stderr
 
 
 def test_the_environment_script_activates_by_path_without_conda(world):
@@ -1310,7 +1694,7 @@ def test_the_environment_build(world):
     assert create == (
         f"conda create -y -p {posix(prefix)} --override-channels "
         "-c conda-forge "
-        f"python={pin} zstd gh"
+        f"python={pin} zstd gh git"
     )
     calls = (world.state / "python_calls").read_text("utf-8").splitlines()
     assert calls[0].startswith("-m pip install -r ")

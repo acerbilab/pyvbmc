@@ -7,19 +7,30 @@ the state directory named by ``STUB_STATE``:
 
 - ``sbatch`` takes the next job id from ``next_job`` (1001 first), records
   its arguments one per line in ``sbatch/<job>/args`` and the variables the
-  driver passes in ``sbatch/<job>/env``, prints the job id, and with
-  ``--wait`` runs the batch script in the foreground, as Slurm would with
-  ``SLURM_JOB_ID`` and ``SLURMD_NODENAME`` set, exiting with its code. A
-  file ``sbatch_fail`` makes it fail.
+  driver passes in ``sbatch/<job>/env``, and prints the job id. It leaves
+  an array job to the test, which runs its tasks. A job that is not an
+  array (a step of the finish) it runs at once in the foreground, as Slurm
+  would with ``SLURM_JOB_ID`` and ``SLURMD_NODENAME`` set, and records how
+  it ended for ``sacct`` (``sacct/<job>`` and ``sacct/<job>.exitcode``),
+  exiting with the script's code under ``--wait`` and 0 otherwise; with a
+  file ``step_hold``, it runs none and leaves the job pending in the queue
+  and the accounting. A file ``sbatch_fail`` makes every submission fail,
+  ``sbatch_fail_from`` those from the job id it holds on, and
+  ``sbatch_output`` makes it print that file in place of the job id.
 - ``squeue -j <job>`` prints ``squeue/<job>`` when it exists, and fails as
   for a job the controller has dropped when ``squeue/<job>.fail`` does.
-- ``sacct ... -j <step> -o State`` prints ``sacct/<step>``, fails when
-  ``sacct/<step>.fail`` exists and prints nothing otherwise; any other
-  ``sacct`` call (the finish's accounting) is recorded in ``sacct_calls``.
+- ``sacct ... -j <step> -o State`` prints ``sacct/<step>``, and ``-o
+  State,ExitCode`` that and ``sacct/<step>.exitcode`` (``0:0`` by default)
+  joined by ``|``; either fails when ``sacct/<step>.fail`` exists and
+  prints nothing when ``sacct/<step>`` does not. Any other ``sacct`` call
+  (the finish's accounting) is recorded in ``sacct_calls`` and prints
+  ``sacct_accounting`` (a header alone by default), or fails when
+  ``sacct_fail`` exists.
 - ``scontrol show config`` prints ``MaxArraySize = <max_array_size>`` (1001
   by default) unless ``scontrol_fail`` exists; ``scontrol show node <name>``
   prints the node with the features of ``features`` (``stubfeat`` by
-  default).
+  default), and fails while ``scontrol_node_fail`` exists or while the
+  count in ``scontrol_node_fail_count`` is above zero, lowering it.
 - ``zstd ... -c`` copies its input, which is all the finish's archive needs.
 
 On Windows the scripts run under Git Bash, and each also gets a ``.cmd``
@@ -46,18 +57,22 @@ n=$(( $(cat "$state/next_job" 2>/dev/null || echo 1000) + 1 ))
 echo "$n" > "$state/next_job"
 mkdir -p "$state/sbatch/$n"
 printf '%s\n' "$@" > "$state/sbatch/$n/args"
-env | grep -E '^(INDEX_OFFSET|CAMPAIGN_DIR|CAMPAIGN_STEP|HARNESS|NODE_FEATURE|PARTITION|TIME|MEM|THROTTLE|CASES_SUBSET)=' \
+env | grep -E '^(INDEX_OFFSET|CAMPAIGN_DIR|CAMPAIGN_STEP|HARNESS|NODE_FEATURE|PARTITION|TIME|MEM|THROTTLE|CASES_SUBSET|PYTHONPATH)=' \
     | sort > "$state/sbatch/$n/env" || true
-if [ -f "$state/sbatch_fail" ]; then
+if [ -f "$state/sbatch_fail" ] \
+    || { [ -f "$state/sbatch_fail_from" ] \
+        && [ "$n" -ge "$(cat "$state/sbatch_fail_from")" ]; }; then
     echo "sbatch: error: the stub refuses" >&2
     exit 1
 fi
 wait=0
+array=0
 output=""
 previous=""
 for argument in "$@"; do
     case $argument in
         --wait) wait=1 ;;
+        --array=*) array=1 ;;
         --output=*) output=${argument#--output=} ;;
     esac
     if [ "$previous" = --output ]; then
@@ -66,12 +81,34 @@ for argument in "$@"; do
     previous=$argument
 done
 script=${!#}
+if [ -f "$state/sbatch_output" ]; then
+    cat "$state/sbatch_output"
+    exit 0
+fi
+if [ "$array" = 1 ]; then
+    echo "$n"
+    exit 0
+fi
+mkdir -p "$state/sacct" "$state/squeue"
+if [ -f "$state/step_hold" ]; then
+    echo PENDING > "$state/sacct/$n"
+    echo "$n PENDING" > "$state/squeue/$n"
+    echo "$n"
+    exit 0
+fi
+output=${output//%j/$n}
+rc=0
+SLURM_JOB_ID=$n SLURMD_NODENAME=${STUB_NODE:-stubnode} \
+    bash "$script" > "${output:-/dev/null}" 2>&1 < /dev/null || rc=$?
+echo "$rc:0" > "$state/sacct/$n.exitcode"
+if [ "$rc" = 0 ]; then
+    echo COMPLETED > "$state/sacct/$n"
+else
+    echo FAILED > "$state/sacct/$n"
+fi
 echo "$n"
 if [ "$wait" = 1 ]; then
-    output=${output//%j/$n}
-    SLURM_JOB_ID=$n SLURMD_NODENAME=${STUB_NODE:-stubnode} \
-        bash "$script" > "${output:-/dev/null}" 2>&1 < /dev/null
-    exit $?
+    exit "$rc"
 fi
 """
 
@@ -101,19 +138,29 @@ set -u
 state=${STUB_STATE:?}
 job=""
 previous=""
-query=0
+query=""
 for argument in "$@"; do
     if [ "$previous" = -j ]; then
         job=$argument
     fi
-    if [ "$previous" = -o ] && [ "$argument" = State ]; then
-        query=1
+    if [ "$previous" = -o ]; then
+        case $argument in
+            State | State,ExitCode) query=$argument ;;
+        esac
     fi
     previous=$argument
 done
-if [ "$query" = 0 ]; then
+if [ -z "$query" ]; then
     echo "$*" >> "$state/sacct_calls"
-    echo "JobID|JobName|State"
+    if [ -f "$state/sacct_fail" ]; then
+        echo "sacct: error: Problem talking to the database" >&2
+        exit 1
+    fi
+    if [ -f "$state/sacct_accounting" ]; then
+        cat "$state/sacct_accounting"
+    else
+        echo "JobID|JobName|State"
+    fi
     exit 0
 fi
 echo "$job" >> "$state/sacct_queries"
@@ -122,7 +169,11 @@ if [ -f "$state/sacct/$job.fail" ]; then
     exit 1
 fi
 if [ -f "$state/sacct/$job" ]; then
-    cat "$state/sacct/$job"
+    if [ "$query" = State ]; then
+        cat "$state/sacct/$job"
+    else
+        echo "$(head -n 1 "$state/sacct/$job")|$(cat "$state/sacct/$job.exitcode" 2>/dev/null || echo 0:0)"
+    fi
 fi
 """
 

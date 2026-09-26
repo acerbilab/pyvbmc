@@ -11,11 +11,14 @@
 #
 # on the login node, it builds the environment instead: it runs
 # LOGIN_SETUP, defines conda as below, creates CAMPAIGN_ENV (refusing an
-# existing prefix) from conda-forge alone with the Python that the
-# `# python==` line of campaign_requirements.txt pins, zstd and gh, installs
-# campaign_requirements.txt with pip, prints the installed versions as
-# pins (`pip list --format=freeze --exclude-editable`) and checks the
-# environment against the file (campaign_contract.py check-env).
+# existing prefix) from conda-forge alone with the Python that the one
+# `# python==` line of campaign_requirements.txt pins (a line of its own
+# from the first column, as campaign_contract.py reads it; the build refuses
+# a file with none or two), zstd for the archive, gh for the hand-back and
+# git, which every worker runs for its source identity on the compute node,
+# installs campaign_requirements.txt with pip, prints the installed
+# versions as pins (`pip list --format=freeze --exclude-editable`) and
+# checks the environment against the file (campaign_contract.py check-env).
 #
 # Settings read here; every value particular to a site is one of them:
 #   CAMPAIGN_ENV   the prefix of the campaign's conda environment (required)
@@ -35,9 +38,12 @@
 # defined, and otherwise, saying so, by putting CAMPAIGN_ENV/bin first on
 # the PATH; it fails unless `python` is then the environment's. It exports
 # single-threaded BLAS, MPLBACKEND=Agg and PYTHONNOUSERSITE=1, so that no
-# package in the operator's user site shadows the environment's. It also
-# defines campaign_check_trees, the refusal of a dirty source tree that the
-# submission and the finish share, and campaign_tmpdir.
+# package in the operator's user site shadows the environment's, and
+# unsets PYTHONPATH, saying so, since a path from the operator's shell
+# would reach every task through `sbatch --export=ALL` and shadow the
+# source trees, which reach sys.path through the variables above alone. It
+# also defines campaign_check_trees, the refusal of a dirty source tree
+# that the submission and the finish share, and campaign_tmpdir.
 
 _campaign_env_build=0
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
@@ -111,14 +117,26 @@ if [ "$_campaign_env_build" = 1 ]; then
         campaign_env_fail "conda is not defined; set CONDA_SETUP"
         exit 1
     fi
-    _campaign_python=$(sed -n 's/^# *python==\([0-9.]*\) *$/\1/p' \
-        "$CAMPAIGN_REQUIREMENTS" | head -n 1)
-    if [ -z "$_campaign_python" ]; then
+    # The pattern of campaign_contract.PYTHON_PIN.
+    _campaign_pins=$(sed -n 's/^# *python==\([0-9][0-9]*\(\.[0-9][0-9]*\)*\) *$/\1/p' "$CAMPAIGN_REQUIREMENTS")
+    if [ -z "$_campaign_pins" ]; then
         campaign_env_fail "$CAMPAIGN_REQUIREMENTS has no '# python==' line"
         exit 1
     fi
+    if [ "$(printf '%s\n' "$_campaign_pins" | wc -l)" -ne 1 ]; then
+        campaign_env_fail "$CAMPAIGN_REQUIREMENTS has more than one" \
+            "'# python==' line:" $_campaign_pins
+        exit 1
+    fi
+    campaign_relax
     conda create -y -p "$CAMPAIGN_ENV" --override-channels -c conda-forge \
-        "python=$_campaign_python" zstd gh
+        "python=$_campaign_pins" zstd gh git
+    _campaign_rc=$?
+    campaign_restore
+    if [ "$_campaign_rc" != 0 ]; then
+        campaign_env_fail "conda create failed (exit $_campaign_rc)"
+        exit 1
+    fi
 fi
 
 campaign_relax
@@ -150,10 +168,16 @@ if [ -z "$_campaign_python" ] \
     return 1 2>/dev/null || exit 1
 fi
 unset _campaign_flags _campaign_rc _campaign_profile _campaign_python \
-    _campaign_bin
+    _campaign_bin _campaign_pins
 
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export MPLBACKEND=Agg PYTHONNOUSERSITE=1
+if [ -n "${PYTHONPATH+set}" ]; then
+    echo "campaign_env.sh: unsetting PYTHONPATH, which the calling shell" \
+        "set; the campaign's source trees reach sys.path through" \
+        "PYVBMC_SOURCE, PYVBMC_GPYREG_SOURCE and BASELINE_DIR alone" >&2
+    unset PYTHONPATH
+fi
 for _campaign_tree in PYVBMC_SOURCE PYVBMC_GPYREG_SOURCE BASELINE_DIR; do
     if [ -n "${!_campaign_tree:-}" ]; then
         export "${_campaign_tree?}"
