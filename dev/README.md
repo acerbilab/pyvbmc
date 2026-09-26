@@ -184,8 +184,8 @@ plan and consolidated human summary.
   before arm, the S-VBMC pools and stacking on the cluster; exact replay
   fingerprints on the developer's machine), the campaign contract every
   harness meets, the generic driver grown from `scripts/hpc/`, the
-  harness changes, what it assumes of the cluster, costs and phases. For
-  the PI's review (2026-09-25).
+  harness changes, what it assumes of the cluster, costs and phases, with
+  the worklog of their execution.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the

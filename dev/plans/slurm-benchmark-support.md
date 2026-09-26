@@ -1,8 +1,8 @@
 # Slurm benchmark support for the release gate
 
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
-to 5 and the code of Phase 7 implemented on `feat-slurm-campaigns`**, which
-has not merged into `dev-next`. What it assumes of the cluster rests on a
+to 5, and Phase 7's redaction and operator's guide, implemented on
+`feat-slurm-campaigns`**, which has not merged into `dev-next`. What it assumes of the cluster rests on a
 survey of the cluster on 2026-09-25 and on the records of the September
 pool. The harness sections below describe each harness as `dev-next` holds
 it and what the branch gives it.
@@ -211,8 +211,8 @@ What the design assumes of the cluster:
 - **Batch jobs only.** Every computation, `verify` and the finishing steps
   included, is a batch job, so that every step is in the accounting and
   none depends on the operator's session.
-- **Storage without backup.** Campaign directories live in the operator's
-  home on the shared filesystem. Cluster storage is commonly neither backed
+- **Storage without backup.** Campaign directories live on the shared
+  filesystem, in the operator's home or a scratch area. Cluster storage is commonly neither backed
   up nor kept indefinitely, so a campaign is archived as soon as it
   verifies ("Records and hand-back"). Compute nodes may have no local
   disk, so `TMPDIR` goes under the campaign directory.
@@ -237,7 +237,7 @@ minutes (September pool README, "Resource fit").
 | `PARTITION` | optional, no default; `-p` is omitted when it is unset |
 | `LOGIN_SETUP` | optional commands the environment script runs on the login node before a step that needs the network |
 | `PYVBMC_SOURCE`, `PYVBMC_GPYREG_SOURCE` | the package and gpyreg source trees of the campaign (of the arm, for a population) |
-| `BASELINE_DIR` | the original S-VBMC checkout and its Torch, for the stacking's original arm |
+| `BASELINE_DIR` | the original S-VBMC checkout, for the stacking's original arm |
 | `CASES_SUBSET` | optional, a named subset of the cases, submitted as its own array |
 | `THROTTLE`, `TIME`, `MEM`, `ARRAY`, `SBATCH_EXTRA` | as in the September scripts |
 | `CONDA_SETUP` | optional commands that define `conda`, such as loading a site module |
@@ -246,8 +246,9 @@ minutes (September pool README, "Resource fit").
 | `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
 | `STEP_POLL` | seconds between the finish's accounting polls of a step job; default 30 |
 
-The driver passes them to the harness's `prepare`, which records them in
-the `site` block of the raw manifest. Only the raw campaign directory holds
+The driver passes them to the harness's `prepare`, which records them,
+all but the limits of the verify and finishing jobs, `STEP_POLL` and
+`ARCHIVE_PART_SIZE`, in the `site` block of the raw manifest. Only the raw campaign directory holds
 that block ("Records and hand-back"). `HARNESS`, `CAMPAIGN_ENV`,
 `NODE_FEATURE`, the source trees and `BASELINE_DIR` are fixed for a
 campaign: a later submission and the finish refuse a value that differs
@@ -359,11 +360,11 @@ Versions come from what is imported, not from the installed distribution.
 With a tree pinned by path, the installed metadata can name another
 version: the sidecars of `golden_trace.py` record the harness checkout's
 commit (`profile_run.git_info`) and read the versions of `pyvbmc` and
-`gpyreg` through `importlib.metadata`, and in the before arm the installed
-distributions are the release's while the imported trees are `f91fdf0` and
-gpyreg 1.2.1. The identity and the sidecars record each tree's commit and
-import path, and label a version read from the installed distribution as
-such.
+`gpyreg` through `importlib.metadata`, which on a workstation name the
+installed distributions whatever tree is imported. The campaign
+environment installs neither package, so there those versions are null.
+The identity and the sidecars record each tree's commit and import path,
+and label a version read from the installed distribution as such.
 
 ## The driver: `dev/scripts/hpc/`
 
@@ -372,7 +373,8 @@ and `campaign_finish.sh`, drive any harness that meets the contract. The
 September scripts (`svbmc_pool_env.sh`, `svbmc_pool_submit.sh`,
 `svbmc_pool_task.sbatch`, `svbmc_pool_finish.sh`) stay as they are, since
 that campaign's records cite them. From them the new scripts keep: the
-refusal of a dirty tree (now of every source tree), `cases.txt` written
+refusal of a dirty tree, which the new scripts apply to every source
+tree, `cases.txt` written
 once and a later submission refused on a different list, the chunks below
 `MaxArraySize` with an index offset, `ARRAY` naming case indices for a
 canary or a resubmission, the job ids in `slurm/jobs.txt`, and a finish
@@ -386,7 +388,8 @@ What is new:
   Python 3.12 as in September, `zstd` for the archive and `gh` for the
   hand-back from conda-forge (a cluster need not have either), and the rest
   from pip at the versions pinned in
-  `dev/scripts/hpc/campaign_requirements.txt`, which pins every package the
+  `dev/scripts/hpc/campaign_requirements.txt`, which holds the direct
+  requirements until Phase 1b freezes into it every package the
   environment takes from PyPI, dependencies included, so that the
   environments of the smoke campaigns and of the campaigns, built in
   different accounts, hold the same libraries. The submission compares the
@@ -472,9 +475,11 @@ The allocation of the release pools is set with the existing flags:
 The scripts that read a pool (`svbmc_shrink_elbo.py`, `svbmc_cap_kappa.py`,
 `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`, and
 `svbmc_honest_elbo.py`) default on `dev-next` to the September gpyreg path
-and check nothing; on the branch they take the gpyreg source as a required
-argument and check it against the pool's manifest. `svbmc_headline_numbers.py` takes its
-directories and labels as arguments instead of the dated names it holds.
+and check nothing. On the branch the first four take the gpyreg source as
+a required argument, and `svbmc_honest_elbo.py` takes it or else the path
+its pools' manifests record; all five check it against every pool's
+manifest. `svbmc_headline_numbers.py` takes its directories as arguments
+instead of the dated names it holds.
 
 ### The populations: `population_run.py`, `golden_trace.py`
 
@@ -611,8 +616,9 @@ repetitions draw independent subsets, which can overlap. It gains:
   `M` ≤ 8, and one cell for `M` = 16 and 32, writing one result file per
   cell. Each task runs the harness's `warm_up` before its first timed
   cell, so that first-call costs stay out of the timings of criterion 4,
-  and runs both arms of a cell, the order alternating from cell to cell as
-  it does today, so that a cell's runtime ratio is measured on one node.
+  and runs both arms of a cell, the order alternating from repetition to
+  repetition (the integrated arm first on even ones), so that a cell's
+  runtime ratio is measured on one node.
 - **Assembly**, a finishing step: `results.json` built from the cell files
   in their canonical order, the single-run rows computed from the pool,
   and the bootstrap drawn in that order, so that no partial results are
@@ -623,14 +629,15 @@ repetitions draw independent subsets, which can overlap. It gains:
   verification and agrees with it, and records each pool's verification;
   it refuses a dirty harness checkout without `--allow-dirty`; the worker
   exits 64 on a line that is not a task of the manifest.
-- **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` and
-  CPU Torch 2.14.0 in `BASELINE_DIR`, recreated as
+- **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` in
+  `BASELINE_DIR`, with CPU Torch 2.14.0 from the campaign environment,
+  recreated as
   `experiments/svbmc_pool/baseline_environment.json` describes and verified
   by the SHA-256 of the committed content of every `svbmc/*.py` it records
   (`files_sha256_committed`; its `files_sha256` are those of a Windows
   working tree whose line endings git converted) and the Torch version,
-  not by its paths. The integrated arm's environment holds the same Torch.
-  A task of the integrated arm alone neither needs nor checks it.
+  not by its paths. Both arms therefore import one Torch. A task of the
+  integrated arm alone neither needs nor checks the baseline.
 
 Its test module `dev/scripts/test_svbmc_pool_stack.py` reads the gpyreg
 checkout from `PYVBMC_GPYREG_SOURCE` and the baseline from `BASELINE_DIR`,
@@ -813,9 +820,10 @@ disjoint; a recreated baseline verifies by content.
 
 ### Phase 6: smoke campaigns on Turso
 
-In the PI's account. First the environment check: the three harnesses'
-test modules, run from the branch as a batch job, pass with no test
-skipped. Then each harness through the driver on the `smoke` suite
+In the PI's account. First the environment check: the test modules of
+the contract, the driver and the three harnesses with their analyses, run
+from the branch as a batch job in the campaign environment, pass with no
+test skipped. Then each harness through the driver on the `smoke` suite
 or a few cases, and the heaviest cases of each (`cigar_D15_exhaust`,
 `lumpy_D10_noise3_production`, a stacking cell at `M = 32`): a canary; a
 resubmission of a finished range; a task cancelled while running, which
@@ -839,7 +847,8 @@ whose worker takes `--case`; the guide and the `scripts/hpc/` entry of
 redaction ("Records and hand-back") is implemented here, before the
 hand-back needs it. The limits of the verify and finishing jobs of the
 populations (a `verify` of 2400 cases, a `rescore` of 4800) and of the
-pools are set explicitly in the guide, from the accounting of Phase 6. A
+pools are settings the guide names for every finish, whose values come
+from the accounting of Phase 6. A
 brief in the manner of [the September one](svbmc-pool-handoff.md) tells the
 postdoc what to run, in what order, and what to hand back. It gives the
 `TIME` and `MEM` of every job that Phase 6 measured, and names without

@@ -75,9 +75,9 @@ records its execution.
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
-  `feat-slurm-campaigns`; next are the fixes of its review, Phase 1b
-  and the smoke campaigns on the cluster, then the brief, and the merge
-  into `dev-next`. Needed before relying on that workflow for further
+  `feat-slurm-campaigns`, reviewed twice and fixed; next are Phase 1b and
+  the smoke campaigns on the cluster, then the brief, and the merge into
+  `dev-next`. Needed before relying on that workflow for further
   cluster campaigns, not before local experiments; the final large-scale
   check and the new reference below are the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
@@ -187,12 +187,13 @@ records its execution.
   artifacts attach to the release as archives rather than commits: the
   golden reference traces, the run pools, the captured frozen states and
   the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
-  holding machine, and the release gate's campaigns and replay
-  fingerprints (the [Slurm plan](plans/slurm-benchmark-support.md),
-  "Records and hand-back": their raw archives hold site details and stay
-  in draft releases, and their redacted copies are the tracked record).
-  The draft releases `svbmc-pool-20260914` and `svbmc-analyses-20260915`
-  already hold the pool and its analyses that way, so the decision is which of the remaining artifacts a reader of the
+  holding machine, the release gate's campaigns (the
+  [Slurm plan](plans/slurm-benchmark-support.md), "Records and
+  hand-back": their raw archives hold site details and stay in draft
+  releases, and their redacted copies are the tracked record) and its
+  replay fingerprints (that plan's Phase 9). The draft releases
+  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the
+  pool and its analyses as archives, so the decision is which of the remaining artifacts a reader of the
   release needs to revalidate its results. Search the whole repository's
   documentation for references to the `dev-next` branch and remove those
   that are not historical: `dev-next` merges into `main` for the release,
