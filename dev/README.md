@@ -676,7 +676,7 @@ reason.
   `filter_verdict` applies the pool's stability and `J_sjk` filters.
 - `scripts/hpc/` — Slurm tooling ([README](scripts/hpc/README.md), which
   holds the operator's guide to the release gate's campaigns: the
-  settings, the environment and its frozen pins, the source trees, the
+  settings, the source trees, the environment and its frozen pins, the
   environment check, each campaign command by command in the order of the
   plan's Phase 8, the finish's report, the limits, the redaction and the
   hand-back, and what to do when something refuses). The generic driver of
@@ -688,13 +688,21 @@ reason.
   operator setting that differs from the manifest's, prepares a campaign
   once, writes its case list once and submits `campaign_task.sbatch` in
   chunks below `MaxArraySize`, a named subset of the cases as its own
-  array; `campaign_finish.sh` refuses while tasks are queued or running,
-  runs `verify` and the harness's finishing steps as batch jobs, counts
-  the cases in flight apart from the missing ones and writes the archive
-  in parts with their SHA-256; `campaign_redact.sh` writes a finished
-  campaign's tracked copies, redacted, on the login node in the account
-  that ran it (`campaign_contract.py redact`); `campaign_env.sh`
-  activates the environment, or builds it (`build`).
+  array, each submission recorded in `slurm/jobs.txt` and one that `sbatch`
+  refuses stopping it with the indices still to submit;
+  `campaign_finish.sh` records the accounting, stops while the queue shows
+  a task that has not ended or a job that neither the queue nor the
+  accounting shows ended (`queue-check`), runs `verify` and the harness's
+  finishing steps as batch jobs, each recorded in `slurm/steps.txt` before
+  it waits for the job in the accounting (`wait-job`), counts the cases in
+  flight apart from the missing ones, and writes the archive in parts with
+  their SHA-256 only once the accounting shows every recorded task ended
+  (`archive-check`); `campaign_redact.sh` writes a finished campaign's
+  tracked copies, redacted, on the login node in the account that ran it,
+  or searches other files, such as the hand-back's README, as it searches
+  the copies (`--check`); `campaign_env.sh` activates the environment and
+  unsets `PYTHONPATH`, or builds it (`build`: Python, `zstd`, `gh` and
+  `git` from conda-forge and the pinned packages from PyPI).
   `test_campaign_driver.py` runs them against stub Slurm commands
   (`campaign_slurm_stubs.py`) and a stub harness
   (`campaign_stub_harness.py`). Beside them, `svbmc_pool_submit.sh`,
@@ -707,28 +715,48 @@ reason.
   `plans/slurm-benchmark-support.md` that the Slurm-driven harnesses
   share: the layout of a campaign directory (a case line starts with its
   tag; `records/<tag>.complete.json`, `claims/<tag>`, `<tag>.error.txt`);
-  the claim of a case, hard-linked into place and judged stale only when
-  the Slurm accounting shows that its task has ended (`acquire_claim`);
-  the identity, whose source part (each tree's commit and clean state,
-  file and directory hashes, the imported modules' versions) every worker
+  the claim of a case, hard-linked into place, judged stale only when the
+  Slurm accounting shows that its task has ended, and retired under a key
+  of its own (`claims/<tag>.stale.<owner>.<key>`), a retirement that
+  stopped halfway being finished by the next worker (`acquire_claim`); the
+  identity, whose source part (each tree's commit and clean state, file
+  and directory hashes, the imported modules' versions) every worker
   compares with the manifest's, and whose import paths, installed-metadata
   versions and host part (CPU model, node features, BLAS threads, CPU
-  affinity and its physical cores, Slurm ids) are recorded only
-  (`identity`); the completion record and its check; the worker sequence
-  with its refusals, and its clean-up when Slurm's SIGTERM stops a case
+  affinity with its physical cores and their hardware threads, the job's
+  cpuset, Slurm ids) are recorded only (`identity`); the completion record
+  and its check, which requires the campaign's node feature and one
+  physical core that the task had to itself; the worker sequence with its
+  exit codes (0 complete, 1 failed, 64 not the harness's case or
+  directory, 75 claimed by a live task, 78 an identity that differs or
+  cannot be established, 128 + n a signal), its refusals, which touch no
+  file of the case, the setting aside of an earlier attempt's error file
+  as `claims/<tag>.error.txt`, and its clean-up when Slurm's SIGTERM stops
+  a case, a failure after the completion record leaving the case complete
   (`run_worker`); the environment check against a pinned requirements
   file; the reconciliation of `verify`'s states, among them the
-  `interrupted` case that a task killed outright leaves, which is
-  resubmitted like a missing one (`reconcile`); and the tracked copies of
-  a finished campaign, which its harness declares in the manifest
-  (`tracked_copies`) and `redact` writes for the repository: hostnames
-  reduced to the node family, paths under the operator's home to `~` and
-  under a path setting to its name, the site block, the `pip freeze` paths
-  and the Slurm accounting left in the archive, and every copy searched
-  for what must not remain, with `redaction.json` recording each copy's
-  SHA-256 beside its source file's, which `source_sha256` gives the
-  readers that check the records' hashes. Run as a script, it offers the
-  checks the driver's shell scripts call and `redact`.
+  `interrupted` case, a stale claim without a record, which is
+  resubmitted like a missing one, and the `partial` case, which is fatal
+  (`reconcile`); the finish's view of Slurm: which recorded jobs the queue
+  or the accounting shows may still run, and the wait for a step job
+  (`queue_state`, `accounting_problems`, `wait_job`); and the tracked
+  copies of a finished campaign, which its harness declares in the
+  manifest (`tracked_copies`) and `redact` writes for the repository:
+  hostnames reduced to the node family, a path under a named directory
+  written with its name (a path setting, a `--path`, the operator's home
+  as `~`, and where none of those holds it a source tree as
+  `$<TREE>_TREE` or the campaign's parent as `$CAMPAIGN_PARENT`), the
+  fields that hold a partition as `$PARTITION`, the site block, the `pip
+  freeze` paths and the Slurm accounting left in the archive, and every
+  copy searched, as plain substrings, for what must not remain and for any
+  absolute path outside the system's directories that no name covers, with
+  `redaction.json` recording each copy's SHA-256 beside its source file's,
+  which `source_sha256` gives the readers that check the records' hashes,
+  and the cases not verified; `check_files` searches other files, such as
+  a hand-written README, the same way. Run as a script, it offers the
+  checks the driver's shell scripts call (`check-env`, `check-site`,
+  `check-cases`, `finishing-steps`, `finish-check`, `queue-check`,
+  `archive-check`, `wait-job`) and `redact` (`--out`, or `--check`).
   `test_campaign_contract.py` checks it.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
