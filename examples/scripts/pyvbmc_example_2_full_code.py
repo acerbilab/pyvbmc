@@ -72,8 +72,8 @@ Xs, _ = vp.sample(n_samples)
 # We compute the pdf of the approximate posterior on a 2-D grid
 plot_lb = np.zeros(2)
 plot_ub = np.quantile(Xs, 0.999, axis=0)
-x1 = np.linspace(plot_lb[0], plot_ub[0], 400)
-x2 = np.linspace(plot_lb[1], plot_ub[1], 400)
+x1 = np.linspace(plot_lb[0], plot_ub[0], 200)
+x2 = np.linspace(plot_lb[1], plot_ub[1], 200)
 
 xa, xb = np.meshgrid(x1, x2)  # Build the grid
 xx = np.vstack(
@@ -82,13 +82,13 @@ xx = np.vstack(
 yy = vp.pdf(xx)  # Compute PDF values on specified points
 
 
-# You may need to run "jupyter labextension install jupyterlab-plotly" for plotly
+# Plotly is not a PyVBMC dependency: pip install "pyvbmc[examples]"
 # Plot approximate posterior pdf (this interactive plot does not work in higher D)
 import plotly.graph_objects as go
 
 fig = go.Figure(
     data=[
-        go.Surface(z=yy.reshape(x1.size, x2.size), x=xa, y=xb, showscale=False)
+        go.Surface(z=yy.reshape(x2.size, x1.size), x=x1, y=x2, showscale=False)
     ]
 )
 fig.update_layout(
