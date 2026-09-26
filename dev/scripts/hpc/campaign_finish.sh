@@ -11,7 +11,10 @@
 # differs from the manifest's site block. Then:
 #
 # 1. The accounting of every job of slurm/jobs.txt and slurm/steps.txt,
-#    into slurm/sacct.txt (removed when sacct fails).
+#    into slurm/sacct.txt (removed when sacct fails), with the rows of the
+#    jobs' steps (.batch, .extern), where MaxRSS is. The finish judges the
+#    allocation rows alone: a step's row can stay RUNNING in the database
+#    after its node failed.
 # 2. The queue: `squeue` for every recorded job (campaign_contract.py
 #    queue-check). A task it lists in a state that has not ended (pending,
 #    running, completing, suspended, requeued and the like) is queued; a
@@ -32,9 +35,10 @@
 #    was killed outright (SIGKILL, out of memory) and left its claim, with
 #    or without files. Both are resubmitted alike: the finish prints their
 #    indices for `ARRAY=... campaign_submit.sh CAMPAIGN_DIR` (raise TIME or
-#    MEM when the accounting shows that a limit stopped them). Cases in
-#    flight are counted apart from missing ones, so --allow-running works
-#    without --allow-missing.
+#    MEM when the accounting shows that a limit stopped them). A case that
+#    no task can finish is given up with `campaign_contract.py give-up`,
+#    and verify then places it as failed. Cases in flight are counted apart
+#    from missing ones, so --allow-running works without --allow-missing.
 # 4. The harness's finishing steps, the manifest's "finishing_steps", each
 #    a batch job in turn (slurm/<step>_<job>.out).
 # 5. Unless --no-archive, and never while a task is queued, may still run
@@ -46,17 +50,28 @@
 #    <parent>/<name>.tar.zst.sha256.
 #    `cat <name>.tar.zst.[0-9][0-9][0-9] | zstd -d | tar x` restores it.
 #
-# Each batch job of steps 3 and 4 is submitted, its job id recorded in
-# slurm/steps.txt ("<job> step=<name> submitted <date>"), and then waited
-# for in the accounting (campaign_contract.py wait-job), which gives its
-# exit code ("<job> step=<name> rc=<code> <date>"), so that a finish
-# stopped while it waits leaves a job that the next finish's queue check
-# sees.
+# With --allow-running the finish is a look at the campaign as it stands:
+# steps 1 to 3, reporting the cases in flight, and neither the finishing
+# steps nor the archive, since a case that completes while they run would
+# make a finishing step refuse (the pools' select, which refuses a gap
+# below a selected run; the populations' summarize, which refuses a
+# verification older than the directory). It exits as step 3 decides, 0
+# when nothing but cases in flight stands in the way.
+#
+# Each batch job of steps 3 and 4 is submitted with --no-requeue, its job
+# id recorded in slurm/steps.txt ("<job> step=<name> submitted <date>"),
+# and then waited for in the accounting (campaign_contract.py wait-job),
+# which gives its exit code ("<job> step=<name> rc=<code> <date>"), so
+# that a finish stopped while it waits leaves a job that the next finish's
+# queue check sees. The wait gives up after STEP_WAIT_LIMIT seconds, as
+# after a sacct that keeps failing, and the finish stops (rc=124).
 #
 # Environment (optional, beyond the submission's): VERIFY_TIME (01:00:00)
 # and VERIFY_MEM (2G) size the verify job, FINISH_TIME (01:00:00) and
 # FINISH_MEM (2G) each finishing step; STEP_POLL (30) is the seconds between
-# two looks at the accounting while a step job runs.
+# two looks at the accounting while a step job runs, and STEP_WAIT_LIMIT
+# (86400, a day) the seconds the finish waits for one step job, 0 for no
+# limit.
 set -euo pipefail
 
 usage() {
@@ -108,6 +123,9 @@ SBATCH_EXTRA=${SBATCH_EXTRA:-}
 STEP_POLL=${STEP_POLL:-30}
 [[ $STEP_POLL =~ ^[0-9]+([.][0-9]+)?$ ]] \
     || refuse "STEP_POLL=$STEP_POLL is not a number of seconds"
+STEP_WAIT_LIMIT=${STEP_WAIT_LIMIT:-86400}
+[[ $STEP_WAIT_LIMIT =~ ^[0-9]+([.][0-9]+)?$ ]] \
+    || refuse "STEP_WAIT_LIMIT=$STEP_WAIT_LIMIT is not a number of seconds"
 export HARNESS CAMPAIGN_ENV NODE_FEATURE PARTITION LOGIN_SETUP CONDA_SETUP \
     LOGIN_PROFILE PYVBMC_SOURCE PYVBMC_GPYREG_SOURCE BASELINE_DIR SBATCH_EXTRA
 unset CAMPAIGN_STEP INDEX_OFFSET
@@ -162,12 +180,13 @@ if [ -n "$SBATCH_EXTRA" ]; then
 fi
 
 # step NAME TIME MEM WORDS...: one harness step as a batch job, its job id
-# recorded before the wait for it.
+# recorded before the wait for it. A requeue would restart the step while
+# the wait takes its first run's end for the step's.
 step() {
     local name=$1 time=$2 mem=$3 jid rc=0
     shift 3
     jid=$(CAMPAIGN_STEP="$*" sbatch --parsable -J "${JOB_NAME}_$name" \
-        -C "$NODE_FEATURE" --hint=nomultithread \
+        --no-requeue -C "$NODE_FEATURE" --hint=nomultithread \
         ${PARTITION_ARGS[@]+"${PARTITION_ARGS[@]}"} \
         --cpus-per-task=1 --mem="$mem" --time="$time" \
         --output "$SLURM_DIR/${name}_%j.out" --export=ALL \
@@ -183,8 +202,15 @@ step() {
     fi
     echo "$jid step=$name submitted $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
     echo "step '$*': job $jid submitted; waiting for it"
-    python -u "$CONTRACT" wait-job --job "$jid" --poll "$STEP_POLL" || rc=$?
+    python -u "$CONTRACT" wait-job --job "$jid" --poll "$STEP_POLL" \
+        --limit "$STEP_WAIT_LIMIT" || rc=$?
     echo "$jid step=$name rc=$rc $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
+    if [ "$rc" = 124 ]; then
+        echo "step '$*': the finish stopped waiting for job $jid after" \
+            "STEP_WAIT_LIMIT=$STEP_WAIT_LIMIT seconds; slurm/steps.txt" \
+            "records it, and the next finish waits while it may still run" >&2
+        exit 1
+    fi
     echo "step '$*': job $jid exited $rc (log $SLURM_DIR/${name}_$jid.out)"
     return "$rc"
 }
@@ -204,6 +230,12 @@ in_flight=$(python "$CONTRACT" finish-check \
 if [ "$rc" -ne 0 ]; then
     echo "verify exited $rc; fix or remove the reported cases first" >&2
     exit "$rc"
+fi
+if [ "$ALLOW_RUNNING" = 1 ]; then
+    echo "a look at the campaign as it stands (--allow-running): the" \
+        "finishing steps and the archive are skipped; finish again without" \
+        "--allow-running once no task runs" >&2
+    exit "$decision"
 fi
 if [ "$decision" -ne 0 ]; then
     exit "$decision"
