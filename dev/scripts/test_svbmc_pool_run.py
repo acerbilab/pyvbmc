@@ -2216,11 +2216,16 @@ def test_the_tracked_copies_of_a_pool_are_redacted(campaign, tmp_path):
     site.write_slurm(pool)
     assert site.leaks(pool)
     target = tmp_path / "handback" / "pools"
+    # The interpreter and its libraries, which the host parts of the
+    # identities name, lie outside the stand-in site; they are named here,
+    # as an operator names them with --path.
+    python = [("PYTHON", sys.prefix)]
     contract.redact(
         pool,
         target,
         operator=site.operator(),
         environ={},
+        paths=python,
         host="fakelogin9",
         say=lambda message: None,
     )
@@ -2255,6 +2260,7 @@ def test_the_tracked_copies_of_a_pool_are_redacted(campaign, tmp_path):
             tmp_path / "handback" / "again",
             operator=site.operator(),
             environ={},
+            paths=python,
             say=lambda message: None,
         )
     assert not (tmp_path / "handback" / "again").exists()
@@ -2583,8 +2589,10 @@ def test_a_pool_campaign_through_the_slurm_driver(tmp_path, driver_template):
     assert report["counts"]["verified"] == 1
     assert report["counts"]["missing"] == 1
     assert report["node_feature"] == "stubfeat"
+    # Each step's job has a "submitted" line and then its exit code's line.
     steps = (out / "slurm" / "steps.txt").read_text("utf-8").splitlines()
-    assert [line.split()[1:3] for line in steps] == [
+    ended = [line.split()[1:3] for line in steps if " rc=" in line]
+    assert ended == [
         ["step=verify", "rc=0"],
         ["step=select", "rc=0"],
         ["step=summarize", "rc=0"],

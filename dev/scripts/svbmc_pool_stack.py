@@ -234,7 +234,6 @@ sys.path.insert(0, str(HERE))
 # module imports only the standard library.
 import campaign_contract as contract  # noqa: E402
 from svbmc_pool_run import (  # noqa: E402
-    EXIT_USAGE,
     THREAD_KEYS,
     activate_gpyreg,
     dirty_trees,
@@ -3524,7 +3523,7 @@ def cmd_worker(args):
             file=sys.stderr,
             flush=True,
         )
-        return EXIT_USAGE
+        return contract.EXIT_USAGE
     task = task_of_line(manifest, args.case)
     if task is None:
         print(
@@ -3533,7 +3532,7 @@ def cmd_worker(args):
             file=sys.stderr,
             flush=True,
         )
-        return EXIT_USAGE
+        return contract.EXIT_USAGE
     with_baseline = "original" in task["arms"]
     state = {}
 
