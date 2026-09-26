@@ -1654,6 +1654,10 @@ def test_run_verifies_and_rescores_its_real_cases_exactly(real):
     # The package is the harness checkout's, and so is every tree.
     source = side["meta"]["pyvbmc_source"]
     assert Path(source["path"]).parent == runner.ROOT
+    # The process's peak resident set, which is never below the field that
+    # earlier sidecars hold (the peak on Windows, the final resident set
+    # elsewhere).
+    assert side["final"]["max_rss_mb"] >= side["final"]["peak_rss_mb"] > 0
     record = contract.read_json(contract.record_path(ran, cases[1]["tag"]))
     assert side["provenance"] == {
         "source": record["identity"]["source"],
@@ -1676,8 +1680,9 @@ def test_run_verifies_and_rescores_its_real_cases_exactly(real):
     assert f"| {LABEL} | 1 | 0 |" in (ran / "summary.md").read_text()
 
 
-#: What says when a case ran and how long it took, in its sidecar.
-TIMING_FINAL = ("wall_s", "target_eval_s", "peak_rss_mb")
+#: What says when a case ran, how long it took and how much memory its
+#: process held, in its sidecar.
+TIMING_FINAL = ("wall_s", "target_eval_s", "peak_rss_mb", "max_rss_mb")
 TIMING_META = ("started", "finished", "pid")
 
 

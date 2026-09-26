@@ -24,7 +24,13 @@ run writes ``<tag>.error.txt`` and the sweep continues.
 Each run produces ``<label>_seed<seed>.npz`` (per-iteration vectors, ragged
 blocks with index vectors, final arrays) and ``<label>_seed<seed>.json``
 (config, seed, options as requested and as effective, provenance, final
-scalar metrics). ``summary`` and ``compare`` read only the sidecars.
+scalar metrics). ``summary`` and ``compare`` read only the sidecars. The
+sidecar's ``final`` holds two measures of the memory of the process that
+ran the task: ``max_rss_mb``, its peak resident set (:func:`max_rss_mb`),
+and ``peak_rss_mb``, which the sidecars of earlier populations hold too:
+psutil's peak working set on Windows, where the two agree, and elsewhere
+the resident set at the end of the run, not its peak. A worker process of
+``run`` runs several tasks, so both cover its earlier tasks too.
 
 The package run is this checkout's, whichever checkout is installed:
 importing this module puts the checkout first on ``sys.path``. A process
@@ -112,6 +118,31 @@ def _nan(v):
 
 def _tag(label, seed):
     return f"{label}_seed{seed}"
+
+
+def max_rss_mb():
+    """The peak resident set of this process over its life, in MiB, or None.
+
+    ``getrusage(RUSAGE_SELF).ru_maxrss`` where the ``resource`` module
+    exists (KiB on Linux, bytes on macOS); elsewhere psutil's peak working
+    set (``peak_wset``, which Windows reports); None where neither is
+    available.
+    """
+    try:
+        import resource
+    except ImportError:
+        resource = None
+    if resource is not None:
+        peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        scale = 2**20 if sys.platform == "darwin" else 2**10
+        return peak / scale
+    try:
+        import psutil
+
+        peak = getattr(psutil.Process().memory_info(), "peak_wset", None)
+    except Exception:  # noqa: BLE001
+        return None
+    return None if peak is None else peak / 2**20
 
 
 def run_task(label, seed, extra_options, out_dir):
@@ -229,9 +260,14 @@ def run_task(label, seed, extra_options, out_dir):
         met = metrics(prob, vp, results["elbo"])
         fl = vbmc.function_logger
         live = fl.X_flag
+        # `peak_rss_mb` keeps the meaning the stored sidecars give it:
+        # psutil's peak working set where it reports one (Windows), and
+        # otherwise the resident set at this point, the end of the run.
+        # `max_rss_mb` is the peak everywhere (:func:`max_rss_mb`).
         proc = psutil.Process()
         mi = proc.memory_info()
         peak_mb = getattr(mi, "peak_wset", mi.rss) / 2**20
+        max_mb = max_rss_mb()
 
         arrays = dict(per_iter)
         arrays.update(
@@ -307,6 +343,7 @@ def run_task(label, seed, extra_options, out_dir):
                 "rmse": met["rmse"],
                 "moment_method": met["moment_method"],
                 "peak_rss_mb": peak_mb,
+                "max_rss_mb": max_mb,
             },
             "meta": {
                 "git": git_info(),

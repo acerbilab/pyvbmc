@@ -441,7 +441,9 @@ reason.
   this checkout's package; each sidecar's `meta` records
   the checkout's commit, the path and commit of the imported PyVBMC and
   gpyreg, and the versions their installed distributions name, labelled as
-  such.
+  such. Its `final` holds the process's peak resident set as `max_rss_mb`;
+  `peak_rss_mb`, which earlier sidecars hold too, is that peak on Windows
+  alone and the resident set at the end of the run elsewhere.
 - `scripts/population_run.py` — the population harness of the release gate
   (`plans/slurm-benchmark-support.md`), meeting the campaign contract of
   `scripts/campaign_contract.py`: `prepare` fixes the allocation (a suite,
