@@ -1,8 +1,11 @@
 # Slurm benchmark support for the release gate
 
-Created: 2026-09-25. Status: **design, reviewed by the PI on 2026-09-25**;
-nothing in it is implemented. What it assumes of the cluster rests on a survey of the
-cluster on 2026-09-25 and on the records of the September pool.
+Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
+to 5 and the code of Phase 7 implemented on `feat-slurm-campaigns`**, which
+has not merged into `dev-next`. What it assumes of the cluster rests on a
+survey of the cluster on 2026-09-25 and on the records of the September
+pool. The harness sections below describe each harness as `dev-next` holds
+it and what the branch gives it.
 
 ## Live checklist
 
@@ -409,8 +412,8 @@ What is new:
 
 ### The pools: `svbmc_pool_run.py`, `svbmc_pool_io.py`
 
-The harness has `cases`, a standalone `worker` and `verify`, but not the
-contract: its worker takes `--label L --seed S` and has no early exit (the
+On `dev-next` the harness has `cases`, a standalone `worker` and `verify`,
+but not the contract: its worker takes `--label L --seed S` and has no early exit (the
 September task script holds it); its compared identity lacks cma, the data
 directory (which the multisensory conditions read) and the clean state of
 the whole harness checkout; its host part lacks the CPU model, the node
@@ -438,15 +441,16 @@ The allocation of the release pools is set with the existing flags:
 `--target 320 --max-seeds 350 --allocation ring_D2_noise3_svbmc=320/480`.
 
 The scripts that read a pool (`svbmc_shrink_elbo.py`, `svbmc_cap_kappa.py`,
-`svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`) default to the
-September gpyreg path and check nothing; they check the gpyreg source they
-are given against the pool's manifest. `svbmc_headline_numbers.py` takes its
+`svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`, and
+`svbmc_honest_elbo.py`) default on `dev-next` to the September gpyreg path
+and check nothing; on the branch they take the gpyreg source as a required
+argument and check it against the pool's manifest. `svbmc_headline_numbers.py` takes its
 directories and labels as arguments instead of the dated names it holds.
 
 ### The populations: `population_run.py`, `golden_trace.py`
 
-`population_run.py` runs a manifest's cases one fresh process at a time
-under one supervisor, which alone writes `launch.json`, `status.json` and
+On `dev-next`, `population_run.py` runs a manifest's cases one fresh
+process at a time under one supervisor, which alone writes `launch.json`, `status.json` and
 `finished.json`; its worker needs `launch.json` and records no failure. It
 gains:
 
@@ -467,8 +471,8 @@ gains:
   on `sys.path` when they are imported, and `population_run.py` imports
   them before `pyvbmc`, so their inserts put `PYVBMC_SOURCE` ahead of the
   checkout when it is set. The identity checks that `pyvbmc.__file__`
-  resolves under that worktree and records its commit. Today the identity
-  requires the package inside the harness checkout, which would make the
+  resolves under that worktree and records its commit. On `dev-next` the
+  identity requires the package inside the harness checkout, which would make the
   before arm a branch of `f91fdf0` carrying the new harness with that
   commit's targets module. The harness, the targets module and its data
   come from the harness checkout and are the same files in both arms. The
@@ -533,7 +537,8 @@ reference and refuses any overlap with it.
   confirmatory family is fixed in the campaigns' manifests before the
   runs, as that plan requires.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
-  for 100 pairs (its exact enumeration refuses more than 62), a
+  for 100 pairs (on `dev-next` its exact enumeration refuses more than 62),
+  a
   verification of the reference arm against that arm's own
   `verification.json` in place of the 870-entry manifest of
   `golden/noisy_extension_20260907/` that it asserts, and a reader for
@@ -542,7 +547,7 @@ reference and refuses any overlap with it.
 
 ### The stacking: `svbmc_pool_stack.py`
 
-The comparison runs in one process today. It verifies the original
+On `dev-next` the comparison runs in one process. It verifies the original
 baseline at the paths its record holds, the Windows paths of the machine
 that ran the campaign, at every start, even for the integrated arm alone.
 It cannot resume: a new run truncates `cells.jsonl`, and `results.json` is
@@ -636,8 +641,10 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   `release-gate-population-after-<date>`,
   `release-gate-population-before-<date>`, `release-gate-stacking-<date>`),
   uploaded with `gh` or from the operator's machine. An archive holds site
-  details and the operator's paths, so it is published only after the
-  redaction below.
+  details and the operator's paths, so it stays in its draft release,
+  which only the repository's collaborators see; the public record is the
+  redacted copies below. Nothing redacts an archive itself, so none is
+  published.
 - **The tracked copies are redacted.** They go under
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
   `population_before/`, `stacking/`, with a README) in a pull request to
@@ -773,10 +780,12 @@ whose worker takes `--case`; the guide and the `scripts/hpc/` entry of
 redaction ("Records and hand-back") is implemented here, before the
 hand-back needs it. The limits of the verify and finishing jobs of the
 populations (a `verify` of 2400 cases, a `rescore` of 4800) and of the
-pools are set explicitly in the guide, from the accounting of Phase 6. A brief in the manner of
-[the September one](svbmc-pool-handoff.md) tells the postdoc what to run,
-in what order, and what to hand back, and names the settings the operator
-supplies without their values. A doublecheck by fresh reviewers reads the
+pools are set explicitly in the guide, from the accounting of Phase 6. A
+brief in the manner of [the September one](svbmc-pool-handoff.md) tells the
+postdoc what to run, in what order, and what to hand back. It gives the
+`TIME` and `MEM` of every job that Phase 6 measured, and names without
+their values the settings particular to the site (the node feature, the
+modules, the paths), which the operator's notes hold. A doublecheck by fresh reviewers reads the
 branch against this plan. **Acceptance:** the review's findings are fixed
 or ruled on, and the branch merges into `dev-next` after the PI's review.
 
