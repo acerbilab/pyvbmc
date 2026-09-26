@@ -597,14 +597,22 @@ reason.
   time, stopping each condition once its filtered target or its seed cap
   is reached (`--pilot-seeds K` runs exactly K seeds per condition
   instead; `--save-vbmc` also pickles the whole `VBMC` object); `select`
-  then defines the filtered pool post hoc, per condition the lowest-seed
-  runs that pass the filters up to the target, in `selection.json`, which
-  the comparison reads, and reports its pass rate over the seeds it
-  scanned before the target was met, which is not `summarize`'s over every
-  completed case; `summarize` writes the per-condition pass rates,
-  convergence, wall times and metric quartiles from the cases the
-  directory holds; `verify` re-checks every stored artifact post hoc
-  against its completion record and the manifest (the source identity,
+  then defines the filtered pool post hoc, walking every seed of each
+  condition in order and taking the runs that pass the filters up to the
+  target, in `selection.json`, which the comparison reads, and reports its
+  pass rate over the seeds it scanned before the target was met, which is
+  not `summarize`'s over every completed case; it refuses, writing
+  nothing, when a seed below a selected run holds neither a record nor an
+  error file (never run, in flight, interrupted or partial), lists such
+  seeds of a condition short of its target under `unfinished`, and
+  records the SHA-256 of the manifest and of `verification.json`, against
+  which `stackable_selection` checks a pool before the comparison's
+  `prepare` stacks it (a passing verification, the selection made after
+  it, and the stopping rule replayed on the verified cases); `summarize`
+  writes the per-condition pass rates, convergence, wall times and metric
+  quartiles from the cases the directory holds; `verify` re-checks every
+  stored artifact post hoc against its completion record and the manifest
+  (the source identity,
   the SHA-256 of every file, the node feature and one physical core where
   the `site` block names `NODE_FEATURE`), the recomputation gate
   included, reconciles the allocation with `campaign_contract.reconcile`
@@ -621,10 +629,15 @@ reason.
   `pool_20260914`, keeps its flat layout (artifacts and records named
   `<label>_seed<seed>`, the flat identity of `identity()`), which the
   September scripts under `scripts/hpc/` generated: `verify`, `select`,
-  `summarize` and `cases` read it with its own checks, and `prepare`,
-  `worker` and `run` refuse it. `test_svbmc_pool_run.py` generates a short
-  campaign and checks the artifact, resume, revision, selection, summary,
-  the contract's refusals, claims, clean-up and `verify` states, the
+  `summarize` and `cases` read it with its own checks (its `summarize`
+  writes the fields of the summaries tracked with `pool_20260914` plus
+  `success_flag`, since its records hold no other convergence field), and
+  `prepare`, `worker` and `run` refuse it, before writing anything in it.
+  `test_svbmc_pool_run.py` generates a short campaign and checks the
+  artifact, resume, revision, selection (a gap below a selected run, the
+  unfinished seeds past a shortfall, the checks of
+  `stackable_selection`), summary, the contract's refusals, claims,
+  clean-up and `verify` states, the
   identity of a case run by the array worker and by `run`, the flat
   layout, and one campaign through the driver; it reads the gpyreg
   checkout from `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
@@ -713,8 +726,9 @@ reason.
   condition and `M`), so a pool of `n` runs gives at most `n // M`
   repetitions, and the cells beyond are listed as skipped. A
   condition's filtered pool is what its directory's `selection.json`
-  names, or every passing completion record when the directory holds no
-  selection; the printed lines and `sources.json` say which. A run's
+  names, or, in the single-process run, every passing completion record
+  when the directory holds no selection; the printed lines and
+  `sources.json` say which. A run's
   files are `<pool>/<tag>.npz` and `.json` whatever its tag holds, flat
   or in one subdirectory per condition, and their SHA-256, taken when the
   pool is read, is checked before a posterior is rebuilt. Each cell
@@ -753,8 +767,14 @@ reason.
   driver under `scripts/hpc/`: a task computes every repetition of one
   condition and `M` below `--split-from` (16) and one cell from it on,
   warms both implementations up first and writes one file per cell;
-  `prepare` defaults to the release gate's grid; `assemble` refuses a
-  campaign that does not verify whole and writes the outputs of the
+  `prepare` defaults to the release gate's grid, stacks a pool only once
+  `svbmc_pool_run.stackable_selection` accepts it (a passing
+  `verification.json`, a `selection.json` made after it that is the
+  stopping rule on its verified cases) and records each pool's report by
+  its SHA-256, and refuses a dirty harness checkout without
+  `--allow-dirty`; `worker` refuses a line that is not a case with exit
+  64, touching nothing; `assemble` refuses a campaign that does not
+  verify whole and writes the outputs of the
   single-process run from the cell files, in the plan's order, with the
   same numbers but for the seconds. `--summarize-only --out DIR` rebuilds
   the summaries from a finished `results.json` without running a cell or
@@ -766,8 +786,12 @@ reason.
   GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
   which is what `test_svbmc_pool_stack.py` runs, in one process and as a
   campaign split into tasks, whose assembly it checks against the single
-  process; the test module skips unless `PYVBMC_GPYREG_SOURCE` and
-  `BASELINE_DIR` are set.
+  process; it does the same on two small generated pools of the campaign
+  contract's layout, and runs the four scripts below that read a pool
+  and a comparison's cells (`svbmc_cap_kappa.py`, `svbmc_shrink_elbo.py`,
+  `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`) on one of them;
+  the test module skips unless `PYVBMC_GPYREG_SOURCE` and `BASELINE_DIR`
+  are set.
 - `scripts/svbmc_honest_elbo.py` — the Phase 2 estimator of the S-VBMC
   ELBO optimism note on the pool artifacts: for every component of a
   stacked cell (a pool directory plus the comparison's `results.json`),
@@ -791,9 +815,13 @@ reason.
   `--ratios`; `--self-check` runs the run-level checks on a pool without
   cells; `--summarize-only` rebuilds summaries and figures. Needs no
   Torch. It reads the artifacts of a pool of either layout of
-  `svbmc_pool_run.py`. `test_svbmc_honest_elbo.py` (the gpyreg checkout
-  from `PYVBMC_GPYREG_SOURCE`, skipped when that is unset) checks the
-  contracts on a generated two-run pool and, synthetically, the combination rules, the checks and
+  `svbmc_pool_run.py`, against `--gpyreg-source` or the path the pools'
+  manifests name, a clean checkout at their gpyreg commit
+  (`pinned_gpyreg_source`). `test_svbmc_honest_elbo.py` (the gpyreg
+  checkout from `PYVBMC_GPYREG_SOURCE`, skipped when that is unset) checks
+  the contracts on a generated two-run pool and on its copy in the flat
+  layout, the refusal of a gpyreg checkout at another commit and,
+  synthetically, the combination rules, the checks and
   the mapping between two different transformers; the first run, on the
   pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).

@@ -11,8 +11,10 @@ equals the recorded one, a Gaussian target fitted by two runs is fully
 cross-covered and estimated within a small tolerance of the truth, the
 outputs carry what the analysis reads, ``--summarize-only`` rebuilds the
 same summary, ``--self-check`` runs without cells, the original arm is
-scored under its own variant names, and a headline ratio outside the grid
-or ``--self-check`` with ``--cells`` are parse errors. Three synthetic
+scored under its own variant names, the runs of a copy of the pool in the
+flat layout are the same runs, a gpyreg checkout at a commit the pool's
+manifest does not record is refused, and a headline ratio outside the
+grid or ``--self-check`` with ``--cells`` are parse errors. Three synthetic
 checks need no pool: the combination rules and correlated standard errors
 on hand-built arrays, the own-run checks flagging a broken mapping, and
 the mapping of draws between two runs with different transformers (one
@@ -27,6 +29,7 @@ the pool is generated against (every test skips when it is unset)::
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -359,6 +362,67 @@ def test_self_check_runs_without_cells(pool, tmp_path):
     assert "--self-check" in markdown
     # The run table is written even though no cell was scored.
     assert all(f"| {tag} |" in markdown for tag in tags)
+
+
+def test_runs_read_a_pool_of_the_flat_layout(pool, tmp_path):
+    """A pool of the flat layout holds its artifacts at the top of the
+    directory, and a run's tag is then its file name; it is the same run
+    as the contract layout's."""
+    out, tags = pool
+    flat = tmp_path / "flat"
+    flat.mkdir()
+    for tag in tags:
+        for suffix in (".npz", ".json"):
+            shutil.copyfile(
+                out / f"{tag}{suffix}",
+                flat / f"{tag.split('/', 1)[1]}{suffix}",
+            )
+    runs = honest.Runs([flat])
+    names = [tag.split("/", 1)[1] for tag in tags]
+    assert runs.tags() == sorted(names)
+    nested = honest.Runs([out])
+    assert nested.tags() == sorted(tags)
+    for tag, name in zip(tags, names):
+        run, same = runs.get(name), nested.get(tag)
+        assert run["tag"] == name
+        assert (run["label"], run["seed"]) == (LABEL, runner.tag_seed(tag))
+        np.testing.assert_array_equal(run["I_corr"], same["I_corr"])
+        np.testing.assert_array_equal(run["mu"], same["mu"])
+
+
+def test_the_gpyreg_source_is_checked_against_the_pools(pool, tmp_path):
+    """The checkout the pools are read against is at the gpyreg commit their
+    manifests record, whether it is named or taken from them."""
+    out, _ = pool
+    manifests = honest.read_manifests([out])
+    assert honest.gpyreg_source(manifests, None) == str(GPYREG_SOURCE)
+    assert honest.gpyreg_source(manifests, GPYREG_SOURCE) == str(GPYREG_SOURCE)
+    other = tmp_path / "other_gpyreg"
+    (other / "gpyreg").mkdir(parents=True)
+    (other / "gpyreg" / "__init__.py").write_text("\n", encoding="utf-8")
+    author = ["-c", "user.name=t", "-c", "user.email=t@example.com"]
+    author += ["-c", "commit.gpgsign=false"]
+    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
+        check=True,
+    )
+    with pytest.raises(RuntimeError, match="not the manifest's"):
+        honest.gpyreg_source(manifests, other)
+    result = cli(
+        SCRIPT,
+        "--pool",
+        str(out),
+        "--out",
+        str(tmp_path / "refused"),
+        "--self-check",
+        "--gpyreg-source",
+        str(other),
+    )
+    assert result.returncode != 0
+    assert "not the manifest's" in result.stderr
+    assert not (tmp_path / "refused").exists()
 
 
 def test_combine_median_and_precision_on_synthetic_arrays():
