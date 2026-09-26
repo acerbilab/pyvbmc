@@ -10,39 +10,53 @@
 # that differs from campaign_requirements.txt and a fixed setting that
 # differs from the manifest's site block. Then:
 #
-# 1. The queue: `squeue` for every job of slurm/jobs.txt and
-#    slurm/steps.txt. It stops while any task is queued or running, unless
-#    --allow-running; the case indices of the queued and running array
-#    tasks go to slurm/queued.txt.
-# 2. The accounting of every recorded job, into slurm/sacct.txt.
+# 1. The accounting of every job of slurm/jobs.txt and slurm/steps.txt,
+#    into slurm/sacct.txt (removed when sacct fails).
+# 2. The queue: `squeue` for every recorded job (campaign_contract.py
+#    queue-check). A task it lists in a state that has not ended (pending,
+#    running, completing, suspended, requeued and the like) is queued; a
+#    job it cannot answer for, as it cannot for one the controller has
+#    dropped, is looked up in the accounting, and one that the accounting
+#    does not show ended may still run. It stops while any task is queued
+#    or may still run, unless --allow-running; the case indices of the
+#    queued array tasks go to slurm/queued.txt.
 # 3. `$HARNESS verify` as a batch job on the campaign's node family
-#    (sbatch --wait; slurm/verify_<job>.out), which writes
-#    verification.json; a verify submitted while the campaign's tasks run
-#    may queue behind them. It stops when verify fails (a record that fails
-#    its check, a stray file, or artifacts with neither a record nor a
-#    claim), when cases are in flight (a live claim, or a task still
-#    queued) unless --allow-running, and when cases are missing or
-#    interrupted unless --allow-missing. A case is missing when its task
-#    never ran, or stopped on SIGTERM (its time limit, scancel) and cleaned
-#    up; it is interrupted when its task was killed outright (SIGKILL, out
-#    of memory) and left its claim, with or without files. Both are
-#    resubmitted alike: the finish prints their indices for `ARRAY=...
-#    campaign_submit.sh CAMPAIGN_DIR` (raise TIME or MEM when the
-#    accounting shows that a limit stopped them). Cases in flight are
-#    counted apart from missing ones, so --allow-running works without
-#    --allow-missing.
+#    (slurm/verify_<job>.out), which writes verification.json; a verify
+#    submitted while the campaign's tasks run may queue behind them. It
+#    stops when verify fails (a record that fails its check, a stray file,
+#    or artifacts with neither a record nor a claim), when cases are in
+#    flight (a live claim, or a task still queued) unless --allow-running,
+#    and when cases are missing or interrupted unless --allow-missing. A
+#    case is missing when its task never ran, or stopped on SIGTERM (its
+#    time limit, scancel) and cleaned up; it is interrupted when its task
+#    was killed outright (SIGKILL, out of memory) and left its claim, with
+#    or without files. Both are resubmitted alike: the finish prints their
+#    indices for `ARRAY=... campaign_submit.sh CAMPAIGN_DIR` (raise TIME or
+#    MEM when the accounting shows that a limit stopped them). Cases in
+#    flight are counted apart from missing ones, so --allow-running works
+#    without --allow-missing.
 # 4. The harness's finishing steps, the manifest's "finishing_steps", each
 #    a batch job in turn (slurm/<step>_<job>.out).
-# 5. Unless --no-archive, and never while tasks are queued, running or in
-#    flight: the whole directory as <parent>/<name>.tar.zst.000, .001, ...,
-#    zstd-compressed parts of at most ARCHIVE_PART_SIZE (default 1900M,
-#    below GitHub's 2 GiB per release asset), with their SHA-256 in
+# 5. Unless --no-archive, and never while a task is queued, may still run
+#    or is in flight, or while the accounting of step 1 shows a recorded
+#    task that has not ended or is missing (campaign_contract.py
+#    archive-check): the whole directory as <parent>/<name>.tar.zst.000,
+#    .001, ..., zstd-compressed parts of at most ARCHIVE_PART_SIZE (default
+#    1900M, below GitHub's 2 GiB per release asset), with their SHA-256 in
 #    <parent>/<name>.tar.zst.sha256.
 #    `cat <name>.tar.zst.[0-9][0-9][0-9] | zstd -d | tar x` restores it.
 #
+# Each batch job of steps 3 and 4 is submitted, its job id recorded in
+# slurm/steps.txt ("<job> step=<name> submitted <date>"), and then waited
+# for in the accounting (campaign_contract.py wait-job), which gives its
+# exit code ("<job> step=<name> rc=<code> <date>"), so that a finish
+# stopped while it waits leaves a job that the next finish's queue check
+# sees.
+#
 # Environment (optional, beyond the submission's): VERIFY_TIME (01:00:00)
 # and VERIFY_MEM (2G) size the verify job, FINISH_TIME (01:00:00) and
-# FINISH_MEM (2G) each finishing step.
+# FINISH_MEM (2G) each finishing step; STEP_POLL (30) is the seconds between
+# two looks at the accounting while a step job runs.
 set -euo pipefail
 
 usage() {
@@ -85,8 +99,15 @@ for name in HARNESS CAMPAIGN_ENV NODE_FEATURE; do
             "dev/plans/slurm-benchmark-support.md)"
     fi
 done
+# The pattern of campaign_contract.FEATURE_PATTERN.
+[[ $NODE_FEATURE =~ ^[A-Za-z0-9_.-]+$ ]] \
+    || refuse "NODE_FEATURE=$NODE_FEATURE is not one node feature:" \
+        "letters, digits and _.- alone"
 PARTITION=${PARTITION:-}
 SBATCH_EXTRA=${SBATCH_EXTRA:-}
+STEP_POLL=${STEP_POLL:-30}
+[[ $STEP_POLL =~ ^[0-9]+([.][0-9]+)?$ ]] \
+    || refuse "STEP_POLL=$STEP_POLL is not a number of seconds"
 export HARNESS CAMPAIGN_ENV NODE_FEATURE PARTITION LOGIN_SETUP CONDA_SETUP \
     LOGIN_PROFILE PYVBMC_SOURCE PYVBMC_GPYREG_SOURCE BASELINE_DIR SBATCH_EXTRA
 unset CAMPAIGN_STEP INDEX_OFFSET
@@ -106,63 +127,65 @@ mkdir -p "$SLURM_DIR"
 touch "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt"
 JOB_NAME=$(basename "$CAMPAIGN_DIR" | tr -c 'A-Za-z0-9_.+=\n-' '_')
 
-# 1. The queue, one query per job: an id that has aged out of the queue
-#    makes squeue fail, which must not hide another job's tasks.
-QUEUED="$SLURM_DIR/queued.txt"
-: > "$QUEUED"
-running=""
-while read -r job fields; do
-    [ -n "$job" ] || continue
-    tasks=$(squeue -h -r -j "$job" -o "%i %T" 2>/dev/null < /dev/null || true)
-    [ -n "$tasks" ] || continue
-    running+="$tasks"$'\n'
-    offset=$(echo "$fields" | sed -n 's/.*offset=\([0-9][0-9]*\).*/\1/p')
-    if [ -n "$offset" ]; then
-        # "<job>_<array index> <state>" -> "<case index> <state>"
-        echo "$tasks" | awk -v o="$offset" '{
-            n = split($1, p, "_")
-            if (n == 2 && p[2] ~ /^[0-9]+$/) print p[2] + o, $2
-        }' >> "$QUEUED"
-    fi
-done < <(cat "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt")
-if [ -n "$running" ]; then
-    echo "tasks of the recorded jobs are still queued or running:" >&2
-    printf '%s' "$running" >&2
-    if [ "$ALLOW_RUNNING" = 0 ]; then
-        exit 1
+# 1. The accounting of every recorded job.
+JOBS=$(cat "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt" \
+    | awk '$1 ~ /^[0-9]+$/ && !seen[$1]++ { print $1 }' | paste -sd, -)
+if [ -n "$JOBS" ]; then
+    if sacct -P --units=M -j "$JOBS" \
+        --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,AllocCPUS,NodeList \
+        > "$SLURM_DIR/sacct.txt" < /dev/null; then
+        echo "accounting in $SLURM_DIR/sacct.txt"
+    else
+        rm -f "$SLURM_DIR/sacct.txt"
+        echo "sacct failed; the finish has no accounting of the campaign" >&2
     fi
 fi
 
-# 2. The accounting of every recorded job.
-JOBS=$(cat "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt" \
-    | awk '$1 ~ /^[0-9]+$/ { print $1 }' | paste -sd, -)
-if [ -n "$JOBS" ]; then
-    sacct -P --units=M -j "$JOBS" \
-        --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,AllocCPUS,NodeList \
-        > "$SLURM_DIR/sacct.txt" < /dev/null || echo "sacct failed" >&2
-    echo "accounting in $SLURM_DIR/sacct.txt"
+# 2. The queue, one query per job: an id that has aged out of the queue
+#    makes squeue fail, which must not hide another job's tasks.
+QUEUED="$SLURM_DIR/queued.txt"
+queue=$(python "$CONTRACT" queue-check --slurm "$SLURM_DIR") \
+    || refuse "the queue check of $SLURM_DIR failed"
+if [ "$queue" != clear ] && [ "$ALLOW_RUNNING" = 0 ]; then
+    echo "pass --allow-running for a look at the campaign as it stands" >&2
+    exit 1
 fi
 
 PARTITION_ARGS=()
 if [ -n "$PARTITION" ]; then
     PARTITION_ARGS=(-p "$PARTITION")
 fi
+# SBATCH_EXTRA as words, split without pathname expansion.
+SBATCH_EXTRA_ARGS=()
+if [ -n "$SBATCH_EXTRA" ]; then
+    read -r -d '' -a SBATCH_EXTRA_ARGS <<< "$SBATCH_EXTRA" || true
+fi
 
-# step NAME TIME MEM WORDS...: one harness step as a batch job, waited for.
+# step NAME TIME MEM WORDS...: one harness step as a batch job, its job id
+# recorded before the wait for it.
 step() {
     local name=$1 time=$2 mem=$3 jid rc=0
     shift 3
-    # SBATCH_EXTRA is meant to word-split.
-    # shellcheck disable=SC2086
-    jid=$(CAMPAIGN_STEP="$*" sbatch --parsable --wait -J "${JOB_NAME}_$name" \
+    jid=$(CAMPAIGN_STEP="$*" sbatch --parsable -J "${JOB_NAME}_$name" \
         -C "$NODE_FEATURE" --hint=nomultithread \
         ${PARTITION_ARGS[@]+"${PARTITION_ARGS[@]}"} \
         --cpus-per-task=1 --mem="$mem" --time="$time" \
         --output "$SLURM_DIR/${name}_%j.out" --export=ALL \
-        $SBATCH_EXTRA "$HERE/campaign_task.sbatch" < /dev/null) || rc=$?
+        ${SBATCH_EXTRA_ARGS[@]+"${SBATCH_EXTRA_ARGS[@]}"} \
+        "$HERE/campaign_task.sbatch" < /dev/null) || rc=$?
     jid=${jid%%;*}
-    echo "${jid:-?} step=$name rc=$rc $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
-    echo "step '$*': job ${jid:-?} exited $rc (log $SLURM_DIR/${name}_${jid:-?}.out)"
+    if [ "$rc" != 0 ] || ! [[ $jid =~ ^[0-9]+$ ]]; then
+        echo "? step=$name sbatch=$rc $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
+        echo "step '$*': sbatch exited $rc and printed '$jid', no job id;" \
+            "a job it may have submitted is not in slurm/steps.txt: look for" \
+            "it with squeue -n ${JOB_NAME}_$name" >&2
+        return 1
+    fi
+    echo "$jid step=$name submitted $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
+    echo "step '$*': job $jid submitted; waiting for it"
+    python -u "$CONTRACT" wait-job --job "$jid" --poll "$STEP_POLL" || rc=$?
+    echo "$jid step=$name rc=$rc $(date +%FT%T)" >> "$SLURM_DIR/steps.txt"
+    echo "step '$*': job $jid exited $rc (log $SLURM_DIR/${name}_$jid.out)"
     return "$rc"
 }
 
@@ -192,7 +215,7 @@ steps_text=$(python "$CONTRACT" finishing-steps \
     || refuse "the manifest's finishing steps break the contract"
 while read -r line; do
     [ -n "$line" ] || continue
-    # The step is its words.
+    # The step is its words, which the contract limits to plain ones.
     # shellcheck disable=SC2086
     step "${line%% *}" "${FINISH_TIME:-01:00:00}" "${FINISH_MEM:-2G}" $line \
         || { echo "the finishing step '$line' failed" >&2; exit 1; }
@@ -200,9 +223,14 @@ done <<< "$steps_text"
 
 # 5. The archive: the whole directory, next to it.
 if [ "$ARCHIVE" = 1 ]; then
-    if [ -n "$running" ] || [ "${in_flight:-0}" != 0 ]; then
-        echo "not archiving a campaign whose tasks are queued, running or" \
-            "in flight; run again when they are done" >&2
+    if [ "$queue" != clear ] || [ "${in_flight:-0}" != 0 ]; then
+        echo "not archiving a campaign whose tasks are queued, may still" \
+            "run or are in flight; run again when they are done" >&2
+        exit 1
+    fi
+    if ! python "$CONTRACT" archive-check --slurm "$SLURM_DIR"; then
+        echo "not archiving: the accounting does not show every recorded" \
+            "task ended; run again when it does" >&2
         exit 1
     fi
     if ! command -v zstd > /dev/null 2>&1; then

@@ -30,7 +30,8 @@
 #                  dev/scripts/svbmc_pool_run.py (required)
 #   CAMPAIGN_ENV   the environment's prefix (required; campaign_env.sh)
 #   NODE_FEATURE   the Slurm feature of the campaign's node family, which
-#                  every task requests with -C (required)
+#                  every task requests with -C (required): one feature
+#                  name, letters, digits and _.-, never an expression
 #   PARTITION      -p for every task; omitted when unset
 #   PYVBMC_SOURCE, PYVBMC_GPYREG_SOURCE, BASELINE_DIR
 #                  the campaign's source trees, where the harness takes them
@@ -46,12 +47,23 @@
 #   THROTTLE       concurrent tasks per submission, the %N of --array
 #                  (default 200)
 #   TIME, MEM      --time and --mem per task (default 00:30:00 and 2G)
-#   SBATCH_EXTRA   further sbatch arguments, split into words
+#   SBATCH_EXTRA   further sbatch arguments, split into words at spaces,
+#                  tabs and newlines, with no quoting and no pathname
+#                  expansion
 #   CONDA_SETUP, LOGIN_PROFILE   see campaign_env.sh
 #
 # Every task passes -C $NODE_FEATURE, --hint=nomultithread and
-# --cpus-per-task=1, writes CAMPAIGN_DIR/slurm/<job>_<array index>.out, and
-# its job id and settings go to CAMPAIGN_DIR/slurm/jobs.txt.
+# --cpus-per-task=1, and writes CAMPAIGN_DIR/slurm/<job>_<array index>.out.
+# Each submission adds a line to CAMPAIGN_DIR/slurm/jobs.txt:
+#
+#   <job> array=<spec> offset=<n> subset=<name> throttle=<n> time=<t> \
+#       mem=<m> partition=<p> <date> sbatch_extra=<s> conda_setup=<s> \
+#       login_profile=<s>
+#
+# with - for an unset value; the last three are quoted as bash's `printf
+# %q` quotes them and may hold spaces. A submission that sbatch refuses, or
+# whose job id it does not print, stops the script with the indices still
+# to submit: the chunks before it are submitted and recorded.
 set -euo pipefail
 
 usage() {
@@ -80,6 +92,10 @@ for name in HARNESS CAMPAIGN_ENV NODE_FEATURE; do
             "dev/plans/slurm-benchmark-support.md)"
     fi
 done
+# The pattern of campaign_contract.FEATURE_PATTERN.
+[[ $NODE_FEATURE =~ ^[A-Za-z0-9_.-]+$ ]] \
+    || refuse "NODE_FEATURE=$NODE_FEATURE is not one node feature:" \
+        "letters, digits and _.- alone"
 case $HARNESS in
     /* | ../* | */../* | *..) refuse "HARNESS=$HARNESS must be a path inside" \
         "the checkout, relative to it" ;;
@@ -265,23 +281,57 @@ PARTITION_ARGS=()
 if [ -n "$PARTITION" ]; then
     PARTITION_ARGS=(-p "$PARTITION")
 fi
+# SBATCH_EXTRA as words, split without pathname expansion.
+SBATCH_EXTRA_ARGS=()
+if [ -n "$SBATCH_EXTRA" ]; then
+    read -r -d '' -a SBATCH_EXTRA_ARGS <<< "$SBATCH_EXTRA" || true
+fi
 
+# quoted VALUE: VALUE as `printf %q` quotes it, or - when it is empty.
+quoted() {
+    if [ -n "$1" ]; then
+        printf '%q' "$1"
+    else
+        printf '%s' -
+    fi
+}
+
+# submit SPEC OFFSET FIRST: one array submission, recorded in jobs.txt;
+# FIRST is the first case index it holds.
 submit() {
-    local spec=$1 offset=$2 jid
-    # SBATCH_EXTRA is meant to word-split.
-    # shellcheck disable=SC2086
+    local spec=$1 offset=$2 first=$3 jid rc=0 rest
     jid=$(INDEX_OFFSET=$offset sbatch --parsable -J "$JOB_NAME" \
         -C "$NODE_FEATURE" --hint=nomultithread \
         ${PARTITION_ARGS[@]+"${PARTITION_ARGS[@]}"} \
         --cpus-per-task=1 --mem="$MEM" --time="$TIME" \
         --output "$CAMPAIGN_DIR/slurm/%A_%a.out" \
         --array="${spec}%${THROTTLE}" --export=ALL \
-        $SBATCH_EXTRA "$HERE/campaign_task.sbatch" < /dev/null)
+        ${SBATCH_EXTRA_ARGS[@]+"${SBATCH_EXTRA_ARGS[@]}"} \
+        "$HERE/campaign_task.sbatch" < /dev/null) || rc=$?
     jid=${jid%%;*}
-    [[ $jid =~ ^[0-9]+$ ]] || refuse "sbatch printed no job id: $jid"
+    if [ "$rc" != 0 ] || ! [[ $jid =~ ^[0-9]+$ ]]; then
+        rest=$(echo "$indices" | awk -v f="$first" '$1 >= f' \
+            | compress_ranges)
+        if [ "$rc" != 0 ]; then
+            echo "sbatch exited $rc for --array=${spec} (index offset" \
+                "$offset)" >&2
+        else
+            echo "sbatch printed no job id for --array=${spec} (index" \
+                "offset $offset) but '$jid'; a job it may have submitted is" \
+                "not in slurm/jobs.txt: look for it with squeue -n" \
+                "$JOB_NAME" >&2
+        fi
+        refuse "the submissions before it are in" \
+            "$CAMPAIGN_DIR/slurm/jobs.txt; submit the rest with" \
+            "ARRAY=$rest${CASES_SUBSET:+ CASES_SUBSET=$CASES_SUBSET}" \
+            "campaign_submit.sh once sbatch works"
+    fi
     echo "$jid array=$spec offset=$offset subset=${CASES_SUBSET:--}" \
         "throttle=$THROTTLE time=$TIME mem=$MEM partition=${PARTITION:--}" \
-        "$(date +%FT%T)" >> "$CAMPAIGN_DIR/slurm/jobs.txt"
+        "$(date +%FT%T) sbatch_extra=$(quoted "$SBATCH_EXTRA")" \
+        "conda_setup=$(quoted "${CONDA_SETUP:-}")" \
+        "login_profile=$(quoted "${LOGIN_PROFILE:-}")" \
+        >> "$CAMPAIGN_DIR/slurm/jobs.txt"
     echo "submitted job $jid: --array=${spec}%${THROTTLE} (index offset $offset)"
 }
 
@@ -291,6 +341,8 @@ for chunk in $chunks; do
     offset=$((chunk * LIMIT))
     spec=$(echo "$indices" | awk -v L="$LIMIT" -v c="$chunk" -v o="$offset" \
         'int(($1 - 1) / L) == c { print $1 - o }' | compress_ranges)
-    submit "$spec" "$offset"
+    first=$(echo "$indices" | awk -v L="$LIMIT" -v c="$chunk" \
+        'int(($1 - 1) / L) == c && !seen { print $1; seen = 1 }')
+    submit "$spec" "$offset" "$first"
 done
 echo "watch with: squeue -u \$USER -n $JOB_NAME"

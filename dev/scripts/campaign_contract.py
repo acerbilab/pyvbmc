@@ -27,6 +27,10 @@ meet it through this module, which holds what they have in common:
   :func:`site_differences`);
 - **the reconciliation** of ``verify``'s states (:func:`reconcile`) and the
   finish's decision on its report (:func:`finish_decision`);
+- **the finish's view of Slurm**: which recorded jobs the queue or the
+  accounting shows may still run (:func:`queue_state`,
+  :func:`accounting_problems`), and the wait for a step job
+  (:func:`wait_job`);
 - **the tracked copies** of a finished campaign, which its harness declares
   in the manifest (:func:`tracked_copies`), redacted for the repository
   (:func:`redact`), and read back where the analysis needs the files the
@@ -39,10 +43,16 @@ The layout, relative to the campaign directory ``out``::
     subsets/<name>.txt            a subset: "<index> <case>" per line
     records/<tag>.complete.json   completion records
     claims/<tag>                  claims; retired ones are
-                                  claims/<tag>.stale.<job>_<task>
+                                  claims/<tag>.stale.<owner>.<key>
+    claims/<tag>.error.txt        an earlier attempt's error file, which
+                                  the worker of a later one set aside
     <tag>.error.txt               the error file of a failed case
     slurm/                        the driver's job ids, logs, accounting
     tmp/                          TMPDIR of every process of the campaign
+
+A retired claim's ``<owner>`` is the Slurm task that made it,
+``<job>_<task>`` (``<host>-<pid>`` outside Slurm), and its ``<key>`` the
+first eight hex digits of its token (:func:`retired_claim_path`).
 
 A case line is ``<tag> [<field> ...]``: its first field, up to the first
 space, is the case's tag, unique in the campaign, and the rest is the
@@ -54,11 +64,16 @@ and error paths above are fixed, because the driver's task script reads
 the record path of a case from its line alone.
 
 The worker's exit codes: 0 for a completed case (or one that already has a
-record), 1 for a case that failed, :data:`EXIT_CLAIMED` (75) when a live
-task holds the case's claim, :data:`EXIT_IDENTITY` (78) when the worker's
-source identity differs from the manifest's, and 128 plus the signal's
-number (143 for SIGTERM) when a signal stopped the run. The claim and the
-identity refusals leave the case's files as they are.
+record), 1 for a case that failed, :data:`EXIT_USAGE` (64) when the
+harness finds the case line or the directory is not its own (a line
+outside the allocation, a directory that is not its campaign),
+:data:`EXIT_CLAIMED` (75) when a live task holds the case's claim,
+:data:`EXIT_IDENTITY` (78) when the worker's identity cannot be
+established (a source tree that git cannot read, a host fact such as the
+node's features unavailable) or its source part differs from the
+manifest's, and 128 plus the signal's number (143 for SIGTERM) when a
+signal stopped the run. The usage, claim and identity refusals leave the
+case's files as they are.
 
 A task that Slurm stops ends in one of two ways. At its time limit or on
 ``scancel`` it receives SIGTERM, and KillWait seconds later SIGKILL; the
@@ -91,11 +106,17 @@ call::
     python dev/scripts/campaign_contract.py finish-check \\
         --verification FILE [--queued FILE] [--allow-missing] \\
         [--allow-running]
+    python dev/scripts/campaign_contract.py queue-check --slurm DIR
+    python dev/scripts/campaign_contract.py archive-check --slurm DIR
+    python dev/scripts/campaign_contract.py wait-job --job ID [--poll S]
 
-and the redaction, which ``hpc/campaign_redact.sh`` runs after the finish::
+and the redaction, which ``hpc/campaign_redact.sh`` runs after the finish,
+and its check of files it did not write::
 
     python dev/scripts/campaign_contract.py redact --campaign DIR \\
         --out DIR [--path NAME=PATH ...]
+    python dev/scripts/campaign_contract.py redact --campaign DIR \\
+        --check FILE [FILE ...] [--path NAME=PATH ...]
 """
 
 import argparse
@@ -123,6 +144,11 @@ from pathlib import Path
 #: The version of this contract, recorded in every identity, claim,
 #: completion record and verification report.
 CONTRACT_VERSION = 1
+#: Exit code of a worker whose case line or campaign directory is not its
+#: harness's (a line outside the allocation, a directory that is not its
+#: campaign), a refusal of the harness's own that touches nothing
+#: (``EX_USAGE``).
+EXIT_USAGE = 64
 #: Exit code of a worker that finds its case claimed by a live task
 #: (``EX_TEMPFAIL``).
 EXIT_CLAIMED = 75
@@ -135,6 +161,12 @@ EXIT_IDENTITY = 78
 STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT)
 
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
+#: The seconds :func:`node_features` waits before each repetition of a
+#: failed ``scontrol show node``.
+SCONTROL_WAITS = (2, 5, 10)
+#: A Slurm node feature, as ``NODE_FEATURE`` names the campaign's family:
+#: one name, no feature expression.
+FEATURE_PATTERN = re.compile(r"[A-Za-z0-9_.-]+")
 #: The operator settings of the plan, recorded in the ``site`` block of the
 #: manifest (``CONDA_SETUP`` and ``LOGIN_PROFILE`` are the driver's own).
 SETTINGS = (
@@ -244,7 +276,9 @@ TAG_PATTERN = re.compile(rf"{_COMPONENT}(?:/{_COMPONENT})*")
 #: The characters a finishing step's arguments may hold, so that the
 #: driver passes them through the shell as words.
 STEP_ARGUMENT = re.compile(r"[A-Za-z0-9_.,=:+/@%-]+")
-PYTHON_PIN = re.compile(r"#\s*python==([0-9]+(?:\.[0-9]+)*)\s*")
+#: The line of a requirements file that pins the interpreter, from its first
+#: column; ``campaign_env.sh`` reads it with the same pattern.
+PYTHON_PIN = re.compile(r"# *python==([0-9]+(?:\.[0-9]+)*) *")
 _RECORD_KEYS = (
     "contract",
     "tag",
@@ -371,6 +405,12 @@ def error_path(out, tag):
 def claim_path(out, tag):
     """``<out>/claims/<tag>``."""
     return Path(out) / CLAIMS / tag
+
+
+def earlier_error_path(out, tag):
+    """``<out>/claims/<tag>.error.txt``: the error file of an earlier
+    attempt, which the worker of a later one sets aside when it starts."""
+    return Path(out) / CLAIMS / f"{tag}{ERROR_SUFFIX}"
 
 
 # --------------------------------------------------------------------------
@@ -686,20 +726,62 @@ def _replace(path, record):
     os.replace(temporary, path)
 
 
-def _retire(path, judged):
-    """Rename the stale claim ``judged`` to ``<tag>.stale.<owner>``.
+def claim_key(record):
+    """Eight hex digits that tell one claim from another of the same owner.
 
-    The rename is a hard link that fails when the name exists, then the
-    removal of the claim, so that of two workers that judged the same
-    claim stale only one retires it. A worker whose link reached another
-    claim than the one it judged (the claim changed between its read and
-    its link) undoes the link and reports failure.
+    The first eight of the claim's token, or, for a claim that holds no
+    token (one not made by :func:`new_claim`), of the SHA-256 of its JSON.
     """
-    stale = path.with_name(f"{path.name}{STALE_INFIX}{claim_owner(judged)}")
+    token = record.get("token")
+    if isinstance(token, str) and re.fullmatch(r"[0-9a-f]{8,}", token):
+        return token[:8]
+    text = json.dumps(record, sort_keys=True)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
+
+
+def retired_claim_path(path, record):
+    """``claims/<tag>.stale.<owner>.<key>``, the name the claim at ``path``
+    holding ``record`` is retired to (:func:`claim_owner`,
+    :func:`claim_key`)."""
+    path = Path(path)
+    return path.with_name(
+        f"{path.name}{STALE_INFIX}{claim_owner(record)}.{claim_key(record)}"
+    )
+
+
+def retired_claims(out, tag):
+    """The retired claims of one case, sorted by name."""
+    path = claim_path(out, tag)
+    prefix = f"{path.name}{STALE_INFIX}"
+    return sorted(
+        Path(entry.path)
+        for entry in _listing(path.parent)
+        if entry.is_file() and entry.name.startswith(prefix)
+    )
+
+
+def _retire(path, judged):
+    """Rename the stale claim ``judged`` to its retired name.
+
+    The retired name (:func:`retired_claim_path`) holds the claim's owner
+    and key, so that no earlier retirement leaves it taken. The rename is
+    a hard link that fails when the name exists, then the removal of the
+    claim, so that of two workers that judged the same claim stale only
+    one retires it. A worker whose link reached another claim than the one
+    it judged (the claim changed between its read and its link) undoes the
+    link and reports failure. When the retired name exists already and
+    holds the judged claim, a retirement of this very claim stopped
+    between its link and its removal (its worker was killed, or a network
+    filesystem retried the link), and it is finished here
+    (:func:`_finish_retirement`).
+    """
+    stale = retired_claim_path(path, judged)
     try:
         os.link(path, stale)
-    except (FileExistsError, FileNotFoundError):
+    except FileNotFoundError:
         return False
+    except FileExistsError:
+        return _finish_retirement(path, stale, judged)
     try:
         retired = read_json(stale)
     except (OSError, ValueError):
@@ -708,6 +790,41 @@ def _retire(path, judged):
         stale.unlink(missing_ok=True)
         return False
     path.unlink(missing_ok=True)
+    return True
+
+
+def _finish_retirement(path, stale, judged):
+    """Remove the claim at ``path`` whose retired copy ``stale`` exists.
+
+    Only when ``stale`` holds the judged claim, and only the claim file
+    that holds it: the claim is first renamed to a name of this worker's
+    own, which no other worker can reach, and a claim found there that is
+    not the judged one (another worker's, made after the retirement) is
+    linked back into place. Returns whether the judged claim is gone.
+    """
+    try:
+        retired = read_json(stale)
+    except (OSError, ValueError):
+        return False
+    if retired != judged:
+        return False
+    mine = path.with_name(f".{path.name}.{uuid.uuid4().hex}.retiring")
+    try:
+        os.rename(path, mine)
+    except FileNotFoundError:
+        return True
+    try:
+        taken = read_json(mine)
+    except (OSError, ValueError):
+        taken = None
+    if taken != judged:
+        try:
+            os.link(mine, path)
+        except FileExistsError:
+            pass
+        mine.unlink(missing_ok=True)
+        return False
+    mine.unlink(missing_ok=True)
     return True
 
 
@@ -738,8 +855,9 @@ def acquire_claim(out, tag, query=None, task=None, attempts=3):
     job and array task (a requeue) is taken over, rewritten with the
     current restart count. Otherwise it is judged by
     :func:`claim_liveness`: a live claim refuses the case, and a stale one
-    is renamed to ``claims/<tag>.stale.<job>_<task>`` before this process
-    creates its own. Nothing but the claim files is touched.
+    is renamed to ``claims/<tag>.stale.<owner>.<key>``
+    (:func:`retired_claim_path`) before this process creates its own.
+    Nothing but the claim files is touched.
 
     Returns the claim, a mapping with its ``path`` and ``token``, which
     :func:`release_claim` takes. ``query`` replaces
@@ -929,8 +1047,28 @@ def installed_version(name):
         return None
 
 
+def enclosing_checkout(path):
+    """The top of the git checkout that holds ``path``, or None.
+
+    The nearest of ``path`` and its parents that holds a ``.git`` entry, a
+    directory in a clone and a file in a worktree or a submodule, so that
+    a checkout nested inside another is told apart from it.
+    """
+    path = Path(path).resolve()
+    for folder in (path, *path.parents):
+        if (folder / ".git").exists():
+            return folder
+    return None
+
+
 def module_origin(name, tree=None):
-    """Where the package ``name`` is imported from; under ``tree`` if given."""
+    """Where the package ``name`` is imported from; from ``tree`` if given.
+
+    With ``tree``, the package must lie inside it, and the checkout that
+    holds the package (:func:`enclosing_checkout`) must be the tree itself,
+    not a checkout of another commit nested inside it, such as a worktree
+    under its ignored ``dev/scripts/runs/``.
+    """
     try:
         module = importlib.import_module(name)
     except ImportError as error:
@@ -941,6 +1079,13 @@ def module_origin(name, tree=None):
         if location != tree and tree not in location.parents:
             raise IdentityError(
                 f"{name} is imported from {location}, not from the tree {tree}"
+            )
+        checkout = enclosing_checkout(location)
+        if checkout != tree:
+            raise IdentityError(
+                f"{name} is imported from {location}, which lies in the "
+                f"checkout {checkout} inside the tree {tree}, not in the tree "
+                "itself"
             )
     return str(location)
 
@@ -1100,23 +1245,37 @@ def _features(text, key):
     return [] if value in ("", "(null)") else value.split(",")
 
 
-def node_features(strict, environ=None):
+def node_features(strict, environ=None, waits=None):
     """The features of the Slurm node this process runs on; None outside Slurm.
 
     From ``scontrol show node <SLURMD_NODENAME> -o`` (the short hostname
-    when the variable is unset): ``{"node", "available", "active"}``.
+    when the variable is unset): ``{"node", "available", "active"}``. A
+    query that fails is repeated after each of the ``waits``, in seconds
+    (:data:`SCONTROL_WAITS` by default), so that a controller busy for a
+    moment does not cost a task its case.
     """
     env = os.environ if environ is None else environ
     if not env.get("SLURM_JOB_ID"):
         return None
     node = env.get("SLURMD_NODENAME") or socket.gethostname().split(".")[0]
-    try:
-        result = _command(["scontrol", "show", "node", node, "-o"], 60)
-    except (OSError, subprocess.SubprocessError) as error:
-        return _unavailable(strict, f"scontrol show node {node}", error)
-    if result.returncode != 0:
+    waits = SCONTROL_WAITS if waits is None else waits
+    failure = None
+    for wait in (None, *waits):
+        if wait is not None:
+            time.sleep(wait)
+        try:
+            result = _command(["scontrol", "show", "node", node, "-o"], 60)
+        except (OSError, subprocess.SubprocessError) as error:
+            failure = error
+            continue
+        if result.returncode == 0:
+            break
+        failure = (result.stderr or result.stdout).strip()
+    else:
         return _unavailable(
-            strict, f"scontrol show node {node}", result.stderr.strip()
+            strict,
+            f"scontrol show node {node}",
+            f"{failure} ({len(waits) + 1} attempts)",
         )
     available = _features(result.stdout, "AvailableFeatures")
     active = _features(result.stdout, "ActiveFeatures")
@@ -1154,29 +1313,118 @@ def blas_libraries(strict):
     return libraries
 
 
-def cpu_affinity(strict):
-    """``{"cpus", "physical_cores"}`` of ``os.sched_getaffinity(0)``.
+def cpu_list(text):
+    """The CPUs of a kernel CPU list such as ``0-3,8``, sorted."""
+    cpus = set()
+    for part in text.strip().split(","):
+        if not part:
+            continue
+        first, _, last = part.partition("-")
+        cpus.update(range(int(first), int(last or first) + 1))
+    return sorted(cpus)
 
-    ``physical_cores`` holds one ``<package>:<core>`` per physical core
-    that the CPUs belong to, from ``/sys/devices/system/cpu``, so that a
-    record read on another machine still shows whether its task ran on one
-    physical core. None where the platform has no affinity call.
+
+def job_cpuset(environ=None, proc_cgroup="/proc/self/cgroup", root=None):
+    """The CPUs of the cgroup cpuset of this process's Slurm job, or None.
+
+    The cgroup is the process's own (``/proc/self/cgroup``), cut at its
+    ``job_<SLURM_JOB_ID>`` component where it has one, so that it is the
+    whole job's; its cpuset is ``cpuset.cpus.effective`` under cgroup v2
+    (``/sys/fs/cgroup``) and ``cpuset.effective_cpus`` or ``cpuset.cpus``
+    under the cpuset controller of cgroup v1. It is where Slurm confines
+    the job to the CPUs it allocated, so that it shows which hardware
+    threads of a core are the job's, although a task bound to one of them
+    has only that one in its affinity. Recorded where it can be read, and
+    null elsewhere, on any platform.
     """
-    getter = getattr(os, "sched_getaffinity", None)
+    env = os.environ if environ is None else environ
+    root = Path("/sys/fs/cgroup" if root is None else root)
+    try:
+        lines = Path(proc_cgroup).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    job = env.get("SLURM_JOB_ID")
+    for line in lines:
+        fields = line.split(":", 2)
+        if len(fields) != 3:
+            continue
+        _, controllers, path = fields
+        if controllers == "":
+            bases = [root, root / "unified"]
+            names = ["cpuset.cpus.effective"]
+        elif "cpuset" in controllers.split(","):
+            bases = [root / "cpuset", root / controllers]
+            names = ["cpuset.effective_cpus", "cpuset.cpus"]
+        else:
+            continue
+        parts = [part for part in path.split("/") if part]
+        if job and f"job_{job}" in parts:
+            parts = parts[: parts.index(f"job_{job}") + 1]
+        for base in bases:
+            for name in names:
+                try:
+                    text = (base.joinpath(*parts) / name).read_text()
+                except OSError:
+                    continue
+                try:
+                    return cpu_list(text) or None
+                except ValueError:
+                    return None
+    return None
+
+
+def cpu_affinity(
+    strict,
+    getter=None,
+    topology="/sys/devices/system/cpu",
+    environ=None,
+    cpuset=None,
+):
+    """The CPU affinity of this process, with the cores it lies on.
+
+    ``cpus`` is ``os.sched_getaffinity(0)`` (``getter(0)`` in its place);
+    ``physical_cores`` holds one ``<package>:<core>`` per physical core
+    that the CPUs belong to, and ``core_threads`` maps each of them to the
+    hardware threads of that core (``topology/core_cpus_list``, or
+    ``thread_siblings_list`` on an older kernel), all from ``topology``,
+    ``/sys/devices/system/cpu``; ``job_cpuset`` is :func:`job_cpuset`
+    (``cpuset()`` in its place). A record read on another machine thus
+    still shows whether its task had one physical core to itself
+    (:func:`host_problems`). None where the platform has no affinity call.
+    """
+    getter = (
+        getattr(os, "sched_getaffinity", None) if getter is None else getter
+    )
     if getter is None:
         return _unavailable(strict, "os.sched_getaffinity")
     cpus = sorted(getter(0))
-    cores = set()
+    cores, threads = set(), {}
     for cpu in cpus:
-        topology = Path(f"/sys/devices/system/cpu/cpu{cpu}/topology")
+        folder = Path(topology) / f"cpu{cpu}" / "topology"
         try:
-            package = (topology / "physical_package_id").read_text().strip()
-            core = (topology / "core_id").read_text().strip()
-        except OSError as error:
+            package = (folder / "physical_package_id").read_text().strip()
+            core = (folder / "core_id").read_text().strip()
+            name = f"{package}:{core}"
+            if name not in threads:
+                siblings = folder / "core_cpus_list"
+                if not siblings.is_file():
+                    siblings = folder / "thread_siblings_list"
+                threads[name] = cpu_list(siblings.read_text())
+        except (OSError, ValueError) as error:
             _unavailable(strict, f"the topology of CPU {cpu}", error)
-            return {"cpus": cpus, "physical_cores": None}
-        cores.add(f"{package}:{core}")
-    return {"cpus": cpus, "physical_cores": sorted(cores)}
+            return {
+                "cpus": cpus,
+                "physical_cores": None,
+                "core_threads": None,
+                "job_cpuset": None,
+            }
+        cores.add(name)
+    return {
+        "cpus": cpus,
+        "physical_cores": sorted(cores),
+        "core_threads": dict(sorted(threads.items())),
+        "job_cpuset": (job_cpuset(environ) if cpuset is None else cpuset()),
+    }
 
 
 def slurm_ids(environ=None):
@@ -1212,7 +1460,7 @@ def host_part(strict=None, environ=None):
         "cpu_model": cpu_model(strict),
         "node_features": node_features(strict, env),
         "blas": blas_libraries(strict),
-        "cpu_affinity": cpu_affinity(strict),
+        "cpu_affinity": cpu_affinity(strict, environ=env),
         "threads": {key: env.get(key) for key in THREAD_KEYS},
         "slurm": slurm_ids(env),
     }
@@ -1221,9 +1469,13 @@ def host_part(strict=None, environ=None):
 def host_problems(host, node_feature):
     """Why a record's host part does not show the campaign's node and core.
 
-    The node's features must include ``node_feature`` and the CPU affinity
-    must lie on one physical core. Returns the problems, empty when there
-    are none.
+    The node's features must include ``node_feature``, and the task must
+    have had one physical core to itself: its CPU affinity lies on one
+    physical core, and the affinity or the job's cpuset holds exactly the
+    hardware threads of that core, so that no other job could run on the
+    core's other threads. Where the core has one thread (no SMT), the
+    affinity is that thread. Returns the problems, empty when there are
+    none.
     """
     host = host or {}
     problems = []
@@ -1245,6 +1497,26 @@ def host_problems(host, node_feature):
             f"the CPU affinity {affinity.get('cpus')} spans "
             f"{len(affinity['physical_cores'])} physical cores"
         )
+    else:
+        [core] = affinity["physical_cores"]
+        threads = (affinity.get("core_threads") or {}).get(core)
+        cpus = affinity.get("cpus") or []
+        cpuset = affinity.get("job_cpuset")
+        if not threads:
+            problems.append(
+                f"the record holds no hardware threads of core {core}"
+            )
+        elif set(cpus) != set(threads) and set(cpuset or ()) != set(threads):
+            job = (
+                "the record holds no cpuset of the job"
+                if cpuset is None
+                else f"the job's cpuset {cpuset} is not those threads either"
+            )
+            problems.append(
+                f"the CPU affinity {cpus} is not the hardware threads "
+                f"{threads} of core {core}, and {job}: another job may have "
+                "run on the core"
+            )
     return problems
 
 
@@ -1347,6 +1619,14 @@ def _say(message):
     print(message, flush=True)
 
 
+def _say_safely(message):
+    """:func:`_say`, where an output that cannot be written costs nothing."""
+    try:
+        _say(message)
+    except (OSError, ValueError):
+        pass
+
+
 def _remove(out, paths):
     removed = []
     for path in paths:
@@ -1412,18 +1692,24 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         differs from ``expected``'s source; :data:`EXIT_CLAIMED` when the
         case is claimed by a live task or the claim cannot be made; 1 when
         the case failed; 128 plus the signal's number when a signal of
-        :data:`STOP_SIGNALS` stopped it. The two refusals touch none of the
-        case's files. From the claim to its release, the stop signals raise
+        :data:`STOP_SIGNALS` stopped it, even after its completion record.
+        The two refusals touch none of the case's files. From the claim to
+        its release, the stop signals raise
         :class:`Interrupted` (the previous handlers are restored after).
-        A failure removes the case's partial files, writes
-        ``<tag>.error.txt`` with the traceback and removes the claim; a
-        stop removes the partial files and the claim and writes no error
-        file, so that ``verify`` reports the case as missing, unless the
-        completion record was already written, which leaves the case
-        complete; a success writes the completion record, removes an
-        earlier attempt's error file and then the claim. While the
-        clean-up of a failure or a stop runs, and while the claim is
-        released, further stop signals are ignored.
+        Before the run, the case's partial files are removed and an
+        earlier attempt's ``<tag>.error.txt`` is set aside as
+        ``claims/<tag>.error.txt`` (:func:`earlier_error_path`). A failure
+        removes the partial files, writes ``<tag>.error.txt`` with the
+        traceback and removes the set-aside file and the claim; a stop
+        removes the partial files and the claim, writes no error file and
+        keeps the set-aside one, so that ``verify`` reports the case as
+        missing, with the earlier attempt's error; a success writes the
+        completion record, removes both error files and then the claim.
+        Whatever happens once the completion record is written, a stop
+        signal or an exception (the removal of an error file, a message
+        whose output fails), leaves the case complete with every file it
+        wrote. While the clean-up of a failure or a stop runs, and while
+        the claim is released, further stop signals are ignored.
     """
     out = Path(out)
     tag = case_tag(case)
@@ -1461,12 +1747,20 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 f"{previous['owner']}"
             )
         started = time.time()
+        earlier = earlier_error_path(out, tag)
         try:
             removed = _remove(out, partial_files())
             if removed:
                 _say(
                     f"{tag}: removed {len(removed)} files of an earlier "
                     "attempt before the run"
+                )
+            if error_path(out, tag).exists():
+                earlier.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(error_path(out, tag), earlier)
+                _say(
+                    f"{tag}: set the error file of an earlier attempt aside "
+                    f"as {earlier}"
                 )
             artifacts, extra = run(actual)
             write_completion(
@@ -1479,25 +1773,26 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 time.time() - started,
                 extra,
             )
-            error_path(out, tag).unlink(missing_ok=True)
-            _say(f"{tag}: complete in {time.time() - started:.1f} s")
             # No stop signal may interrupt what follows a complete case.
             _handle_stop_signals(signal.SIG_IGN)
+            error_path(out, tag).unlink(missing_ok=True)
+            earlier.unlink(missing_ok=True)
+            _say(f"{tag}: complete in {time.time() - started:.1f} s")
         except Interrupted as stop:
             _handle_stop_signals(signal.SIG_IGN)
             name = signal.Signals(stop.signum).name
             if record.exists():
-                _say(f"{tag}: {name} came after the completion record")
+                _say_safely(f"{tag}: {name} came after the completion record")
                 return 128 + stop.signum
             try:
                 removed = _remove(out, partial_files())
             except Exception:
                 removed = []
-                _say(
+                _say_safely(
                     "removing the partial files failed:\n"
                     + traceback.format_exc()
                 )
-            _say(
+            _say_safely(
                 f"{tag}: stopped by {name}; removed {len(removed)} partial "
                 "files and the claim, and left the case to be resubmitted"
             )
@@ -1505,6 +1800,15 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
         except Exception as error:
             _handle_stop_signals(signal.SIG_IGN)
             text = traceback.format_exc()
+            if record.exists():
+                # The case is complete: what failed came after its record
+                # (the removal of an earlier error file, a message), and
+                # every file of the case stays.
+                _say_safely(
+                    f"{tag}: complete, then {type(error).__name__}: {error}; "
+                    "the case keeps its files\n" + text
+                )
+                return 0
             try:
                 removed = _remove(out, partial_files())
             except Exception:
@@ -1519,8 +1823,9 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
                 f"{tag}: {type(error).__name__}: {error}\n{text}",
                 encoding="utf-8",
             )
-            _say(text)
-            _say(
+            earlier.unlink(missing_ok=True)
+            _say_safely(text)
+            _say_safely(
                 f"{tag}: failed; removed {len(removed)} partial files, "
                 f"see {path}"
             )
@@ -1548,19 +1853,24 @@ def read_requirements(path):
     Every requirement must pin one version with ``==``; a requirement whose
     environment marker is false here is skipped; index options
     (``--index-url``, ``--extra-index-url``, ``--find-links``) are pip's and
-    are skipped. The comment ``# python==X.Y[.Z]`` pins the interpreter,
-    which the build installs from conda-forge.
+    are skipped. The comment ``# python==X.Y[.Z]``, a line of its own from
+    the first column (:data:`PYTHON_PIN`), pins the interpreter, which the
+    build installs from conda-forge; a file may hold one such line.
     """
     from packaging.requirements import InvalidRequirement, Requirement
 
     python, packages = None, {}
     lines = Path(path).read_text(encoding="utf-8").splitlines()
     for number, raw in enumerate(lines, start=1):
-        line = raw.strip()
-        pin = PYTHON_PIN.fullmatch(line)
+        pin = PYTHON_PIN.fullmatch(raw)
         if pin:
+            if python is not None:
+                raise ContractError(
+                    f"{path}:{number}: a second '# python==' line"
+                )
             python = pin.group(1)
             continue
+        line = raw.strip()
         line = re.split(r"\s+#", line, maxsplit=1)[0].strip()
         if not line or line.startswith("#"):
             continue
@@ -1728,10 +2038,27 @@ def pip_freeze():
     return result.stdout.splitlines()
 
 
+def check_feature(value):
+    """``value`` if it is one node feature (:data:`FEATURE_PATTERN`)."""
+    if not isinstance(value, str) or not FEATURE_PATTERN.fullmatch(value):
+        raise ContractError(
+            f"NODE_FEATURE={value!r} is not one node feature: letters, "
+            "digits and _.- alone"
+        )
+    return value
+
+
 def site_block(environ=None):
-    """The operator settings as ``prepare`` records them (unset: null)."""
+    """The operator settings as ``prepare`` records them (unset: null).
+
+    A ``NODE_FEATURE`` that is not one feature name raises
+    :class:`ContractError` (:func:`check_feature`).
+    """
     env = os.environ if environ is None else environ
-    return {name: env.get(name) or None for name in SETTINGS}
+    site = {name: env.get(name) or None for name in SETTINGS}
+    if site["NODE_FEATURE"] is not None:
+        check_feature(site["NODE_FEATURE"])
+    return site
 
 
 def site_differences(site, environ=None):
@@ -1807,8 +2134,9 @@ def stray_files(out, tags):
     Only the directories the allocation's tags live in are listed (and the
     top of ``records/`` and ``claims/``, for subdirectories no tag names),
     so that nothing walks a campaign directory. Dot-files are temporary
-    files and are ignored; a retired claim ``<tag>.stale.<owner>`` belongs
-    to its tag.
+    files and are ignored; a retired claim ``<tag>.stale.<owner>.<key>``
+    and a set-aside error file ``<tag>.error.txt`` under ``claims/`` belong
+    to their tag.
     """
     out = Path(out)
     tags = set(tags)
@@ -1831,8 +2159,13 @@ def stray_files(out, tags):
         for entry in _listing(out / CLAIMS / group):
             name = entry.name
             if entry.is_file() and not name.startswith("."):
-                tag = prefix + name.split(STALE_INFIX, 1)[0]
-                if tag not in tags:
+                owners = {
+                    prefix + name,
+                    prefix + name.split(STALE_INFIX, 1)[0],
+                }
+                if name.endswith(ERROR_SUFFIX):
+                    owners.add(prefix + name[: -len(ERROR_SUFFIX)])
+                if not owners & tags:
                     stray.append(f"{CLAIMS}/{prefix}{name}")
         for entry in _listing(out / group if group else out):
             name = entry.name
@@ -1883,7 +2216,10 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         case without a record or a claim is ``partial`` when artifacts
         remain, which no path of the contract leaves, ``failed`` when its
         error file does, and ``missing`` otherwise: it never ran, or a
-        stop signal ended it and it removed its files and its claim.
+        stop signal ended it and it removed its files and its claim. An
+        interrupted or missing case whose earlier attempt failed carries
+        that attempt's reason as ``earlier_error``, from its error file or
+        from the copy a later worker set aside (:func:`earlier_error_path`).
         ``exit_code`` is 1 when a state of :data:`FATAL` occurs.
     """
     query = accounting_state if query is None else query
@@ -1911,13 +2247,21 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
         else:
             claim = claim_status(out, tag, query=ask)
             error = error_path(out, tag)
+            earlier = next(
+                (
+                    path
+                    for path in (error, earlier_error_path(out, tag))
+                    if path.exists()
+                ),
+                None,
+            )
             if claim["state"] == "live":
                 entry.update(status="in_flight", claim=claim)
             elif claim["state"] == "stale":
                 files = [Path(f).as_posix() for f in partial_files(tag)]
                 entry.update(status="interrupted", files=files, claim=claim)
-                if error.exists():
-                    entry["earlier_error"] = error_reason(error)
+                if earlier is not None:
+                    entry["earlier_error"] = error_reason(earlier)
             else:
                 files = [Path(f).as_posix() for f in partial_files(tag)]
                 if files:
@@ -1926,6 +2270,8 @@ def reconcile(out, cases, check, partial_files, stray=(), query=None):
                     entry.update(status="failed", reason=error_reason(error))
                 else:
                     entry["status"] = "missing"
+                    if earlier is not None:
+                        entry["earlier_error"] = error_reason(earlier)
         entries.append(entry)
     strays = sorted(set(stray) | set(stray_files(out, tags)))
     counts = {status: 0 for status in STATUSES}
@@ -2020,6 +2366,253 @@ def finish_decision(
         )
         return FINISH_MISSING, lines
     return 0, lines
+
+
+# --------------------------------------------------------------------------
+# The queue and the accounting, for the finish
+# --------------------------------------------------------------------------
+
+#: The files of ``slurm/`` where the driver records its jobs: the array
+#: submissions and the finish's step jobs.
+JOB_FILES = ("jobs.txt", "steps.txt")
+#: What ``squeue`` prints when it does not know a job id, which it does for
+#: a job the controller has dropped as well as for one it never held.
+SQUEUE_UNKNOWN_JOB = "Invalid job id"
+
+
+def recorded_jobs(slurm_dir):
+    """The jobs that ``slurm/jobs.txt`` and ``slurm/steps.txt`` record.
+
+    Each line of those files starts with a job id (lines that do not, such
+    as a step whose submission failed, are skipped), and a submission's
+    first ``offset=<n>`` field is its index offset. Returns ``[{"job",
+    "offset"}]``, one per job in the order first recorded, ``offset`` None
+    for a job that names none (a step job).
+    """
+    jobs = {}
+    for name in JOB_FILES:
+        path = Path(slurm_dir) / name
+        if not path.is_file():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            fields = line.split()
+            if not fields or not fields[0].isdigit():
+                continue
+            offset = next(
+                (
+                    int(f[len("offset=") :])
+                    for f in fields[1:]
+                    if f.startswith("offset=")
+                    and f[len("offset=") :].isdigit()
+                ),
+                None,
+            )
+            entry = jobs.setdefault(
+                fields[0], {"job": fields[0], "offset": None}
+            )
+            if entry["offset"] is None:
+                entry["offset"] = offset
+    return list(jobs.values())
+
+
+def _state_word(text):
+    """The state of a Slurm answer's field: ``CANCELLED by 5`` is
+    ``CANCELLED``, ``RUNNING+`` is ``RUNNING``."""
+    words = text.split()
+    return words[0].rstrip("+").upper() if words else ""
+
+
+def accounting_rows(slurm_dir):
+    """The rows of ``slurm/sacct.txt`` by job: ``{job: [(JobID, state)]}``.
+
+    None when the file is absent (the finish removes it when ``sacct``
+    fails). A row belongs to the job its JobID starts with (``1001_3``,
+    ``1001_3.batch``, ``1001_[4-9]``, ``1005.extern``).
+    """
+    path = Path(slurm_dir) / "sacct.txt"
+    if not path.is_file():
+        return None
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    header = lines[0].split("|") if lines else []
+    if "JobID" not in header or "State" not in header:
+        return {}
+    job_column, state_column = header.index("JobID"), header.index("State")
+    rows = {}
+    for line in lines[1:]:
+        fields = line.split("|")
+        if len(fields) <= max(job_column, state_column):
+            continue
+        match = re.match(r"\d+", fields[job_column])
+        if match:
+            rows.setdefault(match.group(0), []).append(
+                (fields[job_column], _state_word(fields[state_column]))
+            )
+    return rows
+
+
+def squeue_tasks(job, timeout=60):
+    """What ``squeue -h -r -j <job> -o "%i %T"`` says of one job.
+
+    Returns ``{"ok": bool, "tasks": [(task id, state)], "detail": str}``;
+    ``ok`` is False when the query fails, which ``squeue`` does for a job
+    the controller has dropped as for a controller it cannot reach.
+    """
+    try:
+        result = _command(
+            ["squeue", "-h", "-r", "-j", str(job), "-o", "%i %T"], timeout
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        return {"ok": False, "tasks": [], "detail": f"squeue failed: {error}"}
+    if result.returncode != 0:
+        message = (result.stderr or result.stdout).strip()
+        return {
+            "ok": False,
+            "tasks": [],
+            "detail": f"squeue exited {result.returncode}: {message}",
+        }
+    tasks = []
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) >= 2:
+            tasks.append((fields[0], _state_word(" ".join(fields[1:]))))
+    return {"ok": True, "tasks": tasks, "detail": ""}
+
+
+def queue_state(slurm_dir, query=None):
+    """Which recorded jobs may still run, from the queue and the accounting.
+
+    Every job of :func:`recorded_jobs` is asked of ``squeue``
+    (:func:`squeue_tasks`, or ``query`` with its signature). A task it
+    lists in any state but one of :data:`ENDED_STATES` (``squeue`` lists
+    jobs that ended moments ago) is ``live``. A job it cannot answer for
+    is resolved by the accounting of ``slurm/sacct.txt``
+    (:func:`accounting_rows`): ended when it holds rows of the job and all
+    of them have ended, and ``unknown`` otherwise, since a failed query
+    shows nothing.
+
+    Returns ``{"live": [(job, task, state)], "cases": [(case index,
+    state)], "unknown": [(job, detail)]}``, ``cases`` the live array tasks
+    mapped to case indices by their submission's offset.
+    """
+    query = squeue_tasks if query is None else query
+    accounting = accounting_rows(slurm_dir)
+    live, cases, unknown = [], [], []
+    for entry in recorded_jobs(slurm_dir):
+        job = entry["job"]
+        answer = query(job)
+        if not answer["ok"]:
+            rows = (accounting or {}).get(job) or []
+            if not rows or any(state not in ENDED_STATES for _, state in rows):
+                where = (
+                    "no accounting (slurm/sacct.txt)"
+                    if accounting is None
+                    else "the accounting "
+                    + (
+                        "does not show its tasks ended"
+                        if rows
+                        else "holds no row of it"
+                    )
+                )
+                unknown.append((job, f"{answer['detail']}; {where}"))
+            continue
+        for task, state in answer["tasks"]:
+            if state in ENDED_STATES:
+                continue
+            live.append((job, task, state))
+            head, _, index = task.partition("_")
+            if entry["offset"] is not None and head == job and index.isdigit():
+                cases.append((int(index) + entry["offset"], state))
+    return {"live": live, "cases": cases, "unknown": unknown}
+
+
+def accounting_problems(slurm_dir):
+    """Why the accounting does not show every recorded task ended.
+
+    Each row of ``slurm/sacct.txt`` of a recorded job whose state is not
+    one of :data:`ENDED_STATES`, and the file's absence when any job is
+    recorded. Empty when there is nothing to hold the archive back.
+    """
+    jobs = [entry["job"] for entry in recorded_jobs(slurm_dir)]
+    if not jobs:
+        return []
+    rows = accounting_rows(slurm_dir)
+    if rows is None:
+        return [
+            "the accounting of the recorded jobs (slurm/sacct.txt) is "
+            "missing: sacct failed"
+        ]
+    return [
+        f"{job_id} is {state} in slurm/sacct.txt"
+        for job in jobs
+        for job_id, state in rows.get(job, [])
+        if state not in ENDED_STATES
+    ]
+
+
+def job_exit(job, timeout=60):
+    """``(state, exit code)`` of a job from the accounting.
+
+    Runs ``sacct -n -X -P -j <job> -o State,ExitCode``. The code is None
+    while the job may still run (any state but one of
+    :data:`ENDED_STATES`, a failed query, an empty answer). For an ended
+    job it is the batch script's exit status, 128 plus the signal's number
+    when a signal ended it, and 1 for a job that ended in any state but
+    ``COMPLETED`` with a status of 0 (cancelled before it started, say).
+    """
+    try:
+        result = _command(
+            [
+                "sacct",
+                "-n",
+                "-X",
+                "-P",
+                "-j",
+                str(job),
+                "-o",
+                "State,ExitCode",
+            ],
+            timeout,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None, None
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    if result.returncode != 0 or not lines:
+        return None, None
+    state_text, _, exit_text = lines[0].partition("|")
+    state = _state_word(state_text)
+    if state not in ENDED_STATES:
+        return state, None
+    status, _, signum = exit_text.strip().partition(":")
+    try:
+        status, signum = int(status or 0), int(signum or 0)
+    except ValueError:
+        status, signum = 1, 0
+    code = 128 + signum if signum else status
+    if code == 0 and state != "COMPLETED":
+        code = 1
+    return state, code
+
+
+def wait_job(job, poll=30.0, say=None, query=None):
+    """Wait until a job has ended in the accounting; return its exit code.
+
+    ``query`` replaces :func:`job_exit`; each change of the job's state is
+    reported with ``say`` (:func:`print` by default).
+    """
+    say = _say if say is None else say
+    query = job_exit if query is None else query
+    last = ()
+    while True:
+        state, code = query(job)
+        if state != last:
+            say(
+                f"job {job}: {state or 'not in the accounting yet'}"
+                + ("" if code is None else f", exit {code}")
+            )
+            last = state
+        if code is not None:
+            return code
+        time.sleep(poll)
 
 
 # --------------------------------------------------------------------------
@@ -2182,11 +2775,13 @@ def source_sha256(directory, relative):
     """The SHA-256 of a campaign's file as the campaign wrote it.
 
     In a campaign directory it is the file's own. In a directory of tracked
-    copies that :func:`redact` wrote, the file's own SHA-256 must be the one
-    :data:`REDACTION` records for it, and the one returned is that of the
+    copies that :func:`redact` wrote, the file must be the copy that
+    :data:`REDACTION` records, and the one returned is the SHA-256 of the
     file it was made from, which the campaign's records and reports hash;
     a file the record does not list, or one changed since, raises
-    :class:`ContractError`.
+    :class:`ContractError`. A copy is the recorded one when its SHA-256 is
+    the recorded one, or when it is once its CRLF line endings are read as
+    LF, as git may check out a text file on Windows.
     """
     directory = Path(directory)
     redaction = read_redaction(directory)
@@ -2194,6 +2789,10 @@ def source_sha256(directory, relative):
     if redaction is None:
         return actual
     entry = redaction["files"].get(Path(relative).as_posix())
+    if entry is not None and entry["sha256"] != actual:
+        data = (directory / relative).read_bytes()
+        if b"\r\n" in data:
+            actual = hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
     if entry is None or entry["sha256"] != actual:
         raise ContractError(
             f"{directory / relative} is not the copy that "
@@ -2225,11 +2824,45 @@ LOG_HOST_LINES = (
 #: The most occurrences of forbidden strings reported for one file.
 MAX_LEAKS = 100
 _HOST_WORD = "A-Za-z0-9"
-_NAME_WORD = "A-Za-z0-9_"
-#: The characters that continue a path component, around a path that the
-#: redaction replaces or the check looks for.
-_PATH_BEFORE = "A-Za-z0-9_.+=-"
+#: The characters of a path component (``=`` aside, which in a copy mostly
+#: joins a name to its value, ``X=/path``).
+_PATH_CHARS = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.+-"
+)
+#: The characters after a path that continue its last component, so that
+#: the redaction does not replace the head of a longer name
+#: (``/proj/envs`` for ``/proj/env``); a dot continues it when a character
+#: of this class follows it (``/proj/env.old``), and ends a sentence
+#: otherwise.
 _PATH_AFTER = "A-Za-z0-9_+=-"
+_HEX = frozenset("0123456789abcdef")
+#: A run of this many lower-case hex digits or more is a digest or a token
+#: (the SHA-256 of a file, a claim's token), whose characters are random:
+#: the check does not read a username or a hostname into it.
+DIGEST_LENGTH = 32
+#: The directories an absolute path in a copy may lie in without a name,
+#: those of the operating system: its programs and libraries, its
+#: configuration, its kernel interfaces and its temporary directories, and
+#: the conda of a container image.
+SYSTEM_PREFIXES = (
+    "/bin",
+    "/dev",
+    "/etc",
+    "/lib",
+    "/lib64",
+    "/opt/conda",
+    "/proc",
+    "/sbin",
+    "/sys",
+    "/tmp",
+    "/usr",
+    "/var/tmp",
+)
+#: What replaces a partition in a field that holds one.
+PARTITION_TOKEN = "$PARTITION"
+#: The name of the directory that holds the campaign directory, where no
+#: other name covers it.
+CAMPAIGN_PARENT = "CAMPAIGN_PARENT"
 
 
 def _trie(words):
@@ -2266,14 +2899,90 @@ def _bounded(words, word, flags=0):
 
 
 def _paths_pattern(paths):
-    """The path prefixes ``paths``, longest first, matched as whole path
-    components; None for none."""
-    if not paths:
+    """The directories ``paths``, the longest that fits first, each where
+    the character after it does not continue its last component
+    (:data:`_PATH_AFTER`); None for none."""
+    body = _trie(paths)
+    if body is None:
         return None
-    body = "|".join(
-        re.escape(p) for p in sorted(paths, key=lambda p: (-len(p), p))
+    return re.compile(rf"(?:{body})(?![{_PATH_AFTER}]|\.[{_PATH_AFTER}])")
+
+
+def _continues_a_path(text, start):
+    """Whether what starts at ``start`` of ``text`` continues a path.
+
+    It does when the characters just before it are those of a path
+    component (:data:`_PATH_CHARS`), as ``b`` in ``/a/b/proj/env`` or in
+    ``b/proj/env`` is before ``/proj/env``, unless they are a flag such as
+    the ``-L`` of ``-L/proj/env``. A path after ``=``, ``:``, a quote, a
+    space or a separator (``file:///proj/env``) does not.
+    """
+    index = start
+    while index > 0 and text[index - 1] in _PATH_CHARS:
+        index -= 1
+    run = text[index:start]
+    return bool(run) and not re.fullmatch(r"-[A-Za-z]+", run)
+
+
+def absolute_paths(text):
+    """The absolute paths a text names: ``[(offset, path)]``.
+
+    A POSIX path starts at a ``/`` followed by a character of a path
+    component and does not continue a path (:func:`_continues_a_path`) or
+    follow ``~`` or another separator, the ``file://`` of a URL aside; a
+    Windows path starts at a drive letter that no letter, digit or
+    separator precedes, then a colon and a separator. Each ends at a space,
+    a quote, a colon or another character no path of a copy holds.
+    """
+    found = []
+    end = 0
+    for match in _PATH_START.finditer(text):
+        start = match.start()
+        if start < end:
+            continue
+        if text[start] == "/":
+            before = text[start - 1] if start else ""
+            if before in ("~", "\\") or (
+                before == "/" and not text.endswith("file://", 0, start)
+            ):
+                continue
+            if _continues_a_path(text, start):
+                continue
+            extent = _PATH_EXTENT.match(text, start + 1)
+        else:
+            extent = _PATH_EXTENT.match(text, start + 2)
+        end = extent.end()
+        found.append((start, text[start:end]))
+    return found
+
+
+#: Where an absolute path may start, and the characters that end one, in a
+#: copy's text.
+_PATH_START = re.compile(
+    r"/(?=[A-Za-z0-9_.+-])|(?<![A-Za-z0-9/\\])[A-Za-z](?=:[\\/])"
+)
+_PATH_EXTENT = re.compile(r"[^\s\"'<>|;,()\[\]{}`*?:]*")
+
+
+def _system_path(path):
+    """Whether an absolute path lies in one of :data:`SYSTEM_PREFIXES`."""
+    return any(
+        path == prefix or path.startswith(f"{prefix}/")
+        for prefix in SYSTEM_PREFIXES
     )
-    return re.compile(rf"(?<![{_PATH_BEFORE}])(?:{body})(?![{_PATH_AFTER}])")
+
+
+def _inside_digest(text, start, length):
+    """Whether ``text[start:start + length]`` lies inside a run of at least
+    :data:`DIGEST_LENGTH` lower-case hex digits."""
+    end = start + length
+    if any(character not in _HEX for character in text[start:end]):
+        return False
+    while start > 0 and text[start - 1] in _HEX:
+        start -= 1
+    while end < len(text) and text[end] in _HEX:
+        end += 1
+    return end - start >= DIGEST_LENGTH
 
 
 def _is_root(path):
@@ -2497,83 +3206,104 @@ def _command_words(value):
     return found
 
 
-def _partitions(slurm_dir):
-    """The partitions ``slurm/jobs.txt`` records for each submission."""
-    path = Path(slurm_dir) / "jobs.txt"
-    if not path.is_file():
-        return set()
-    found = re.findall(
-        r"\bpartition=(\S+)",
-        path.read_text(encoding="utf-8", errors="replace"),
+def _partition_field(mapping, key, path):
+    """Whether ``mapping[key]`` holds a partition: ``SLURM_JOB_PARTITION``,
+    the ``partition`` of a host part's ``slurm`` block, or the
+    ``PARTITION`` of a site block (a mapping that names ``NODE_FEATURE``)."""
+    return (
+        key == "SLURM_JOB_PARTITION"
+        or (key == "partition" and path[-1:] == ("slurm",))
+        or (key == "PARTITION" and "NODE_FEATURE" in mapping)
     )
-    return {p for p in found if p != "-"}
 
 
 class Redaction:
     """The rules that make one campaign's tracked copies, and their check.
 
+    The replacements (:meth:`text`, :meth:`value`):
+
+    - a path that starts with a named directory starts with its name
+      instead, the longest directory that fits first; the directory is
+      replaced where the character after it does not continue its last
+      component (:data:`_PATH_AFTER`) and the characters before it do not
+      continue a longer path (:func:`_continues_a_path`), so that
+      ``X=/proj/env/lib`` and ``-L/proj/env/lib`` are replaced and neither
+      ``/proj/envs`` nor ``/a/proj/env`` is corrupted;
+    - a hostname, as a whole name in any letter case, is its family or
+      :data:`LOGIN_HOST`;
+    - in a JSON value, the string of a field that holds a partition
+      (:func:`_partition_field`) is :data:`PARTITION_TOKEN`, whatever the
+      partition's name.
+
+    The check (:meth:`leaks`) does not rely on them: it searches each copy
+    for every forbidden string as a plain substring (a hostname in any
+    letter case), so that whatever a replacement left is refused. Before
+    the search, the names the replacements write are blanked where they
+    stand as whole words, so that a forbidden string inside one of them
+    (a host named ``login``) is not taken for a leak, and an occurrence
+    inside a run of :data:`DIGEST_LENGTH` hex digits or more is a digest's
+    and not one. It also refuses every absolute path that no name covers
+    and that lies outside :data:`SYSTEM_PREFIXES`.
+
     Parameters
     ----------
     paths : mapping of str to str
-        Path prefixes and what replaces each: a path setting's value by
-        ``$NAME``, the operator's home by ``~``.
+        Directories, each in every form it may take (:func:`path_variants`),
+        and the name that replaces each: ``$NAME`` or ``~``.
     hosts : mapping of str to str
         Lower-case hostnames and the family or :data:`LOGIN_HOST` that
-        replaces each, as a whole name.
-    names : mapping of str to str
-        Values that replace a JSON string equal to them (a partition by
-        ``$PARTITION``).
+        replaces each.
     forbidden : mapping of str to list of (str, str)
-        What may remain in no copy, by how it is matched: ``paths`` (as a
-        substring), ``users`` and ``hosts`` (as a whole name, the hosts in
-        any case), ``names`` (as a whole JSON string, and as a whole word
-        of a text), each ``(string, what it is)``.
+        What may remain in no copy, each ``(string, what it is)``:
+        ``paths`` (the named directories, the command settings and their
+        words that name a path), ``users`` and ``hosts``.
     """
 
-    def __init__(self, paths, hosts, names, forbidden):
+    def __init__(self, paths, hosts, forbidden):
         self.paths = dict(paths)
         self.hosts = dict(hosts)
-        self.names = dict(names)
         self.forbidden = {key: list(value) for key, value in forbidden.items()}
         self.counts = Counter()
         self._paths = _paths_pattern(self.paths)
         self._hosts = _bounded(self.hosts, _HOST_WORD, re.IGNORECASE)
-        self._find = {
-            "paths": _paths_pattern([s for s, _ in self.forbidden["paths"]]),
-            "users": _bounded(
-                [s for s, _ in self.forbidden["users"]], _HOST_WORD
-            ),
-            "hosts": _bounded(
-                [s for s, _ in self.forbidden["hosts"]],
-                _HOST_WORD,
-                re.IGNORECASE,
-            ),
-            "names": _bounded(
-                [s for s, _ in self.forbidden["names"]], _NAME_WORD
-            ),
+        tokens = {
+            token
+            for token in (
+                *self.paths.values(),
+                *self.hosts.values(),
+                PARTITION_TOKEN,
+                "<redacted>",
+            )
+            if len(token) > 1
         }
-        self._what = {
-            kind: {
-                (s.lower() if kind == "hosts" else s): what
-                for s, what in items
-            }
-            for kind, items in self.forbidden.items()
-        }
-
-    def _path(self, match):
-        token = self.paths[match.group(0)]
-        self.counts[token] += 1
-        return token
+        self._tokens = _bounded(tokens, "A-Za-z0-9_")
 
     def _host(self, match):
         token = self.hosts[match.group(0).lower()]
         self.counts["hosts"] += 1
         return token
 
+    def _replace_paths(self, text):
+        if self._paths is None:
+            return text
+        pieces, done, position = [], 0, 0
+        while True:
+            match = self._paths.search(text, position)
+            if match is None:
+                break
+            if _continues_a_path(text, match.start()):
+                position = match.start() + 1
+                continue
+            token = self.paths[match.group(0)]
+            self.counts[token] += 1
+            pieces += [text[done : match.start()], token]
+            done = position = match.end()
+        pieces.append(text[done:])
+        return "".join(pieces)
+
     def text(self, text):
         """``text`` with its paths and then its hostnames replaced."""
-        if self._paths is not None:
-            text = self._paths.sub(self._path, text)
+        text = self._replace_paths(text)
         if self._hosts is not None:
             text = self._hosts.sub(self._host, text)
         return text
@@ -2581,9 +3311,6 @@ class Redaction:
     def value(self, value, path=()):
         """A JSON value, every string and key of it redacted."""
         if isinstance(value, str):
-            if value in self.names:
-                self.counts[self.names[value]] += 1
-                return self.names[value]
             return self.text(value)
         if isinstance(value, list):
             return [self.value(item, path) for item in value]
@@ -2596,51 +3323,53 @@ class Redaction:
                         f"two keys of {'.'.join(path) or 'the document'} "
                         f"become {new!r}"
                     )
-                result[new] = self.value(item, (*path, key))
+                if (
+                    isinstance(item, str)
+                    and item
+                    and _partition_field(value, key, path)
+                ):
+                    self.counts[PARTITION_TOKEN] += 1
+                    result[new] = PARTITION_TOKEN
+                else:
+                    result[new] = self.value(item, (*path, key))
             return result
         return value
 
-    def leaks(self, text, parsed=None):
-        """Where the forbidden strings occur in one file's text.
+    def leaks(self, text):
+        """Where what may remain in no copy occurs in one file's text.
 
-        ``parsed`` is the file's JSON value, whose keys and strings a name
-        may not equal; a text without one may not hold a name as a word.
         Returns ``(line, string, what it is)`` for each occurrence, at most
-        :data:`MAX_LEAKS`, in the order of the text (a name in a JSON value
-        has no line).
+        :data:`MAX_LEAKS`, in the order of the text.
         """
+        masked = text
+        if self._tokens is not None:
+            masked = self._tokens.sub(
+                lambda match: "\0" * len(match.group(0)), text
+            )
+        lowered = masked.lower()
         found = set()
-        for kind, pattern in self._find.items():
-            if pattern is None or (kind == "names" and parsed is not None):
-                continue
-            for match in pattern.finditer(text):
-                string = match.group(0)
-                what = self._what[kind][
-                    string.lower() if kind == "hosts" else string
-                ]
-                line = text.count("\n", 0, match.start()) + 1
-                found.add((line, string, what))
-                if len(found) >= MAX_LEAKS:
-                    break
-        if parsed is not None:
-            names = self._what["names"]
-            for string in _all_strings(parsed):
-                if string in names:
-                    found.add((0, string, names[string]))
+        for kind, items in self.forbidden.items():
+            for string, what in items:
+                if not string:
+                    continue
+                haystack, needle = (
+                    (lowered, string.lower())
+                    if kind == "hosts"
+                    else (masked, string)
+                )
+                index = haystack.find(needle)
+                while index >= 0 and len(found) < MAX_LEAKS:
+                    if not _inside_digest(masked, index, len(needle)):
+                        line = text.count("\n", 0, index) + 1
+                        found.add((line, string, what))
+                    index = haystack.find(needle, index + 1)
+        for offset, path in absolute_paths(text):
+            if len(found) >= MAX_LEAKS:
+                break
+            if not _system_path(path):
+                line = text.count("\n", 0, offset) + 1
+                found.add((line, path, "an absolute path that no name covers"))
         return sorted(found)[:MAX_LEAKS]
-
-
-def _all_strings(value):
-    """Every key and every string of a JSON value."""
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, list):
-        for item in value:
-            yield from _all_strings(item)
-    elif isinstance(value, dict):
-        for key, item in value.items():
-            yield key
-            yield from _all_strings(item)
 
 
 def _json_layout(text):
@@ -2685,16 +3414,65 @@ def _inside(path, directory):
     return path == directory or directory in path.parents
 
 
+def _covered(value, named):
+    """Whether a directory lies in one of the ``named`` forms, or is one."""
+    for form in path_variants(value):
+        for prefix in named:
+            if form == prefix or any(
+                form.startswith(prefix + separator)
+                for separator in ("/", "\\", "\\\\")
+            ):
+                return True
+    return False
+
+
+def _tree_paths(documents):
+    """``{tree name: [path, ...]}`` of every identity the documents hold
+    (``imports.trees.<name>.path``)."""
+    found = {}
+    for document in documents:
+        for mapping in _dicts(document):
+            imports = mapping.get("imports")
+            trees = imports.get("trees") if isinstance(imports, dict) else None
+            if not isinstance(trees, dict):
+                continue
+            for name, tree in trees.items():
+                if isinstance(tree, dict) and isinstance(
+                    tree.get("path"), str
+                ):
+                    if tree["path"]:
+                        found.setdefault(name, []).append(tree["path"])
+    return found
+
+
+def tree_token(name):
+    """The name a source tree's path takes in the copies: ``harness`` is
+    ``$HARNESS_TREE``."""
+    return "$" + re.sub(r"[^A-Z0-9]+", "_", name.upper()).strip("_") + "_TREE"
+
+
 def redaction_rules(
     campaign, manifest, documents, operator, environ=None, paths=(), host=None
 ):
     """The :class:`Redaction` of one campaign.
 
+    The named directories, each replaced by its name at the start of a path
+    and forbidden in every form (:func:`path_variants`), in this order of
+    precedence where two are one directory: the path settings of the site
+    block and of this process (``$CAMPAIGN_ENV``, ``$PYVBMC_SOURCE``, ...,
+    ``$LOGIN_PROFILE``), the ``paths`` given (``$NAME``), the operator's
+    homes and ``~<username>`` (``~``); then, where none of those holds
+    them, the path of every source tree the identities of ``documents``
+    name (:func:`tree_token`, ``$HARNESS_TREE``) and the directory that
+    holds the campaign directory (``$CAMPAIGN_PARENT``). The command
+    settings, whole and each of their words that names a path, the
+    usernames and every hostname are forbidden too.
+
     Parameters
     ----------
     campaign : path
-        The campaign directory, whose ``slurm/`` holds the task logs, the
-        accounting and the submissions' partitions.
+        The campaign directory, whose ``slurm/`` holds the task logs and
+        the accounting.
     manifest : dict
         Its manifest, whose ``site`` block names the operator settings.
     documents : sequence
@@ -2703,8 +3481,8 @@ def redaction_rules(
     operator : dict
         :func:`operator_identity`.
     environ : mapping, optional
-        The settings of this process (:func:`site_block`), which join the
-        manifest's; this process's environment by default.
+        The settings of this process, which join the manifest's; this
+        process's environment by default.
     paths : sequence of (str, str)
         Further directories to name, ``(NAME, PATH)``: their paths become
         ``$NAME``.
@@ -2718,37 +3496,55 @@ def redaction_rules(
             "the manifest's site block names no NODE_FEATURE, the node "
             "family that the tracked copies name the campaign's hosts by"
         )
-    family = site["NODE_FEATURE"]
-    here = site_block(environ)
+    family = check_feature(site["NODE_FEATURE"])
+    env = os.environ if environ is None else environ
     slurm_dir = Path(campaign) / "slurm"
 
     def values(name):
-        return {v for v in (site.get(name), here.get(name)) if v}
+        return {v for v in (site.get(name), env.get(name)) if v}
 
-    replace, forbidden = {}, {k: [] for k in ("paths", "users", "hosts")}
-    forbidden["names"] = []
-    for name in REDACTED_PATH_SETTINGS:
-        for value in values(name):
-            for form in path_variants(value):
-                replace[form] = f"${name}"
-                forbidden["paths"].append((form, name))
-    for name, value in paths:
-        if not re.fullmatch(r"[A-Z][A-Z0-9_]*", name) or name in SETTINGS:
-            raise ContractError(
-                f"--path {name}=...: the name is upper case, and no operator "
-                "setting's"
-            )
+    replace, forbidden = {}, {"paths": [], "users": [], "hosts": []}
+
+    def name(value, token, what, first=True):
         for form in path_variants(value):
-            replace[form] = f"${name}"
-            forbidden["paths"].append((form, f"--path {name}"))
+            if first:
+                replace[form] = token
+            else:
+                replace.setdefault(form, token)
+            forbidden["paths"].append((form, what))
+
+    for setting in REDACTED_PATH_SETTINGS:
+        for value in values(setting):
+            name(value, f"${setting}", setting)
+    reserved = {*SETTINGS, CAMPAIGN_PARENT}
+    for key, value in paths:
+        if (
+            not re.fullmatch(r"[A-Z][A-Z0-9_]*", key)
+            or key in reserved
+            or key.endswith("_TREE")
+        ):
+            raise ContractError(
+                f"--path {key}=...: the name is upper case, no operator "
+                f"setting's, not {CAMPAIGN_PARENT} and not one ending in "
+                "_TREE, which name the campaign's own directories"
+            )
+        name(value, f"${key}", f"--path {key}")
     for home in operator["homes"]:
-        for form in path_variants(home):
-            replace.setdefault(form, "~")
-            forbidden["paths"].append((form, "the home directory"))
-    for name in COMMAND_SETTINGS:
-        for value in values(name):
-            forbidden["paths"].append((value, name))
-            forbidden["paths"] += [(w, name) for w in _command_words(value)]
+        name(home, "~", "the home directory", first=False)
+    for user in operator["users"]:
+        replace.setdefault(f"~{user}", "~")
+        forbidden["paths"].append((f"~{user}", "the home directory"))
+    for tree, found in sorted(_tree_paths(documents).items()):
+        for value in found:
+            if not _covered(value, replace):
+                name(value, tree_token(tree), f"the {tree} tree")
+    parent = Path(campaign).resolve().parent
+    if not _is_root(parent) and not _covered(parent, replace):
+        name(parent, f"${CAMPAIGN_PARENT}", "the campaign's parent")
+    for setting in COMMAND_SETTINGS:
+        for value in values(setting):
+            forbidden["paths"].append((value, setting))
+            forbidden["paths"] += [(w, setting) for w in _command_words(value)]
     forbidden["users"] = [(u, "the username") for u in operator["users"]]
 
     hosts = Hosts()
@@ -2757,25 +3553,90 @@ def redaction_rules(
     hosts.add(socket.gethostname() if host is None else host, False)
     tokens = hosts.tokens(family)
     forbidden["hosts"] = [(h, "a hostname") for h in tokens]
+    return Redaction(replace, tokens, forbidden)
 
-    partitions = set(values("PARTITION")) | _partitions(slurm_dir)
-    for document in documents:
-        for mapping in _dicts(document):
-            slurm = mapping.get("slurm")
-            if isinstance(slurm, dict) and slurm.get("partition"):
-                partitions.add(slurm["partition"])
-    names = {p: "$PARTITION" for p in partitions}
-    forbidden["names"] = [(p, "a partition") for p in partitions]
 
-    redaction = Redaction(replace, tokens, names, forbidden)
-    for token in {family, LOGIN_HOST}:
-        leaked = redaction.leaks(token)
-        if leaked:
+def _read_campaign(campaign):
+    """What the redaction reads of a campaign directory.
+
+    The manifest and the verification report, the completion record of
+    every case the report places as verified, the claims of the allocated
+    cases (for the hosts they name), and the tracked copies with their
+    bytes, text and, for a ``.json`` file, JSON value. Raises
+    :class:`ContractError` for any of them that is missing or unreadable.
+    """
+    campaign = Path(campaign)
+
+    def document(path):
+        try:
+            return read_json(path)
+        except FileNotFoundError as error:
+            raise ContractError(f"{path} is missing") from error
+        except (OSError, ValueError) as error:
+            raise ContractError(f"{path} cannot be read: {error}") from error
+
+    manifest = document(campaign / "manifest.json")
+    verification_path = campaign / "verification.json"
+    if not verification_path.is_file():
+        raise ContractError(f"{campaign} holds no verification.json")
+    verification = document(verification_path)
+    cases = verification.get("cases", [])
+    records, documents = {}, [manifest, verification]
+    for case in cases:
+        if case.get("status") == "verified":
+            records[case["tag"]] = document(record_path(campaign, case["tag"]))
+            documents.append(records[case["tag"]])
+    tags = [case["tag"] for case in cases]
+    for group in sorted({Path(t).parent.as_posix() for t in tags}):
+        folder = campaign / CLAIMS / ("" if group == "." else group)
+        for entry in _listing(folder):
+            if entry.is_file() and not entry.name.startswith("."):
+                try:
+                    documents.append(read_json(entry.path))
+                except (OSError, ValueError):
+                    pass
+    names = tracked_files(campaign, manifest, verification, records)
+    sources = {}
+    for name in names:
+        data = (campaign / name).read_bytes()
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            text = None
+        if text is None or "\0" in text:
             raise ContractError(
-                f"the copies name hosts by {token!r}, which holds "
-                f"{leaked[0][2]} {leaked[0][1]!r}"
+                f"{campaign / name} is not text; a tracked copy is JSON or "
+                "text"
             )
-    return redaction
+        parsed = None
+        if name.endswith(".json"):
+            try:
+                parsed = json.loads(text)
+            except ValueError as error:
+                raise ContractError(
+                    f"{campaign / name} is not JSON: {error}"
+                ) from error
+        if parsed is not None and name not in TRACKED_ALWAYS:
+            documents.append(parsed)
+        sources[name] = (data, text, parsed)
+    return {
+        "manifest": manifest,
+        "verification": verification,
+        "records": records,
+        "documents": documents,
+        "names": names,
+        "sources": sources,
+    }
+
+
+def _leak_lines(leaks, limit=40):
+    """The refusal's lines for ``(file, line, string, what)`` leaks."""
+    shown = [
+        f"  {name}{f':{line}' if line else ''}: {what} {string!r}"
+        for name, line, string, what in leaks[:limit]
+    ]
+    more = len(leaks) - len(shown)
+    return "\n".join(shown) + (f"\n  and {more} more" if more else "")
 
 
 def redact(
@@ -2785,30 +3646,35 @@ def redact(
 
     The copies are the files its manifest declares (:func:`tracked_files`),
     at the same paths relative to ``out``, with :data:`REDACTION` beside
-    them. The campaign's verification report must have passed. In every
-    copy (:func:`redaction_rules`):
+    them. The campaign's verification report must have passed and show no
+    case in flight; its failed, interrupted and missing cases are listed in
+    :data:`REDACTION`. In every copy (:func:`redaction_rules`,
+    :class:`Redaction`):
 
     - every host that ran a Slurm job of the campaign (a record's host
       part, a task's or a step's log, the accounting) is named by the
       campaign's node family, the value of ``NODE_FEATURE``, and every
       other host (the login node where ``prepare`` and the driver ran, and
       the host that redacts) by :data:`LOGIN_HOST`;
-    - a path under a path setting of the site block (or a ``--path``)
-      starts with the setting's name, ``$PYVBMC_GPYREG_SOURCE/gpyreg``, and
-      a path under the operator's home with ``~``;
-    - a JSON string that names a partition is ``$PARTITION``;
+    - a path under a named directory starts with its name: a path setting
+      of the site block (``$PYVBMC_GPYREG_SOURCE/gpyreg``), a ``--path``,
+      the operator's home (``~``), a source tree of the identities
+      (``$HARNESS_TREE``) or the directory that holds the campaign
+      (``$CAMPAIGN_PARENT``);
+    - a field that holds a partition is :data:`PARTITION_TOKEN`;
     - the manifest keeps no ``site`` block, and its ``pip freeze`` lines
       that name a path keep their package's name alone;
     - the task logs, the accounting, the claims and the error files are
       not copied.
 
     Then every copy, :data:`REDACTION` included, is searched for each value
-    of the site block that is a path, a command or a partition, the
-    operator's username and home directory, and every hostname; any of
-    them raises :class:`ContractError` naming the file and the string, and
-    nothing is written. The copies are written into a directory beside
-    ``out`` and renamed into place, so ``out`` holds either all of them or
-    none.
+    of the site block that is a path or a command, every named directory,
+    the operator's username and home directory, and every hostname, as
+    plain substrings, and for any absolute path outside
+    :data:`SYSTEM_PREFIXES` (:meth:`Redaction.leaks`); any of them raises
+    :class:`ContractError` naming the file and the string, and nothing is
+    written. The copies are written into a directory beside ``out`` and
+    renamed into place, so ``out`` holds either all of them or none.
 
     Parameters
     ----------
@@ -2834,7 +3700,12 @@ def redact(
     say = _say if say is None else say
     campaign = Path(campaign).resolve()
     out = Path(out).resolve()
-    manifest = read_json(campaign / "manifest.json")
+    try:
+        manifest = read_json(campaign / "manifest.json")
+    except (OSError, ValueError) as error:
+        raise ContractError(
+            f"{campaign / 'manifest.json'} cannot be read: {error}"
+        ) from error
     trees = (manifest.get("identity") or {}).get("imports", {}).get("trees")
     for where in [campaign] + [
         Path(t["path"]).resolve()
@@ -2852,49 +3723,33 @@ def redact(
     verification_path = campaign / "verification.json"
     if not verification_path.is_file():
         raise ContractError(f"{campaign} holds no verification.json")
-    verification = read_json(verification_path)
+    try:
+        verification = read_json(verification_path)
+    except (OSError, ValueError) as error:
+        raise ContractError(
+            f"{verification_path} cannot be read: {error}"
+        ) from error
     if verification.get("exit_code") != 0:
         raise ContractError(
             f"{verification_path} did not pass; the copies are made of a "
             "finished campaign"
         )
+    statuses = Counter(
+        case.get("status") for case in verification.get("cases", [])
+    )
+    if statuses["in_flight"]:
+        raise ContractError(
+            f"{verification_path} places {statuses['in_flight']} cases in "
+            "flight; the copies are made of a finished campaign, so finish "
+            "it again once they are done"
+        )
     operator = operator_identity(environ) if operator is None else operator
     say(f"reading {campaign}")
-    tags = [case["tag"] for case in verification.get("cases", [])]
-    records, documents = {}, [manifest, verification]
-    for tag in tags:
-        path = record_path(campaign, tag)
-        if path.is_file():
-            records[tag] = read_json(path)
-            documents.append(records[tag])
-    for group in sorted({Path(t).parent.as_posix() for t in tags}):
-        folder = campaign / CLAIMS / ("" if group == "." else group)
-        for entry in _listing(folder):
-            if entry.is_file() and not entry.name.startswith("."):
-                try:
-                    documents.append(read_json(entry.path))
-                except (OSError, ValueError):
-                    pass
-    names = tracked_files(campaign, manifest, verification, records)
-    sources = {}
-    for name in names:
-        data = (campaign / name).read_bytes()
-        try:
-            text = data.decode("utf-8")
-        except UnicodeDecodeError:
-            text = None
-        if text is None or "\0" in text:
-            raise ContractError(
-                f"{campaign / name} is not text; a tracked copy is JSON or "
-                "text"
-            )
-        parsed = json.loads(text) if name.endswith(".json") else None
-        if parsed is not None and name not in TRACKED_ALWAYS:
-            documents.append(parsed)
-        sources[name] = (data, text, parsed)
+    read = _read_campaign(campaign)
+    names, sources = read["names"], read["sources"]
     say(f"redacting {len(names)} files")
     redaction = redaction_rules(
-        campaign, manifest, documents, operator, environ, paths, host
+        campaign, manifest, read["documents"], operator, environ, paths, host
     )
     written, files, cut = {}, {}, 0
     for name in names:
@@ -2917,7 +3772,7 @@ def redact(
                     "\n" if newline else ""
                 )
                 new = new_text.encode("utf-8")
-        written[name] = (new, new_text, None if parsed is None else value)
+        written[name] = (new, new_text)
         files[name] = {
             "source_sha256": hashlib.sha256(data).hexdigest(),
             "sha256": hashlib.sha256(new).hexdigest(),
@@ -2933,9 +3788,12 @@ def redact(
             "node family, NODE_FEATURE; any other host, "
             f"{LOGIN_HOST!r}",
             "a path under a path setting starts with its name "
-            "($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), one under the "
-            "operator's home with ~",
-            "a partition is $PARTITION",
+            "($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), one under a --path "
+            "directory with its name, one under the operator's home "
+            "with ~, and one under a source tree or the directory that "
+            "holds the campaign, where none of those holds them, with "
+            f"$<TREE>_TREE or ${CAMPAIGN_PARENT}",
+            f"a field that holds a partition is {PARTITION_TOKEN}",
             "the manifest keeps no site block, and its pip freeze lines "
             "that name a path keep their package's name alone",
             "each file's source_sha256 is that of the campaign's own file, "
@@ -2943,32 +3801,33 @@ def redact(
         ],
         "replaced": dict(sorted(redaction.counts.items())),
         "pip_freeze_paths": cut,
+        "cases_not_verified": {
+            status: [
+                case["tag"]
+                for case in verification.get("cases", [])
+                if case.get("status") == status
+            ]
+            for status in ("failed", "interrupted", "missing")
+        },
         "archive": _archive(campaign),
         "files": files,
     }
     record_text = json.dumps(record, indent=2) + "\n"
-    written[REDACTION] = (record_text.encode("utf-8"), record_text, record)
+    written[REDACTION] = (record_text.encode("utf-8"), record_text)
     leaks = [
         (name, line, string, what)
-        for name, (_, text, value) in sorted(written.items())
-        for line, string, what in redaction.leaks(text, value)
+        for name, (_, text) in sorted(written.items())
+        for line, string, what in redaction.leaks(text)
     ]
     if leaks:
-        shown = [
-            f"  {name}{f':{line}' if line else ''}: {what} {string!r}"
-            for name, line, string, what in leaks[:40]
-        ]
-        more = len(leaks) - len(shown)
         raise ContractError(
             "the redacted copies still hold what they may not, so none was "
-            "written:\n"
-            + "\n".join(shown)
-            + (f"\n  and {more} more" if more else "")
+            "written:\n" + _leak_lines(leaks)
         )
     out.parent.mkdir(parents=True, exist_ok=True)
     staging = out.parent / f".{out.name}.{uuid.uuid4().hex}.redacting"
     try:
-        for name, (data, _, _) in written.items():
+        for name, (data, _) in written.items():
             path = staging / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
@@ -2983,13 +3842,49 @@ def redact(
     finally:
         if staging.exists():
             shutil.rmtree(staging)
+    forbidden = sum(len(v) for v in redaction.forbidden.values())
     say(
         f"{len(names)} copies and {REDACTION} in {out}; replaced "
         + ", ".join(f"{k} {v}" for k, v in record["replaced"].items())
-        + f"; none of {sum(len(v) for v in redaction.forbidden.values())} "
-        "forbidden strings remains"
+        + f"; none of {forbidden} forbidden strings remains"
     )
     return record
+
+
+def check_files(
+    campaign, files, operator=None, environ=None, paths=(), host=None
+):
+    """Search files that :func:`redact` did not write for a campaign's leaks.
+
+    The same search as :func:`redact`'s (:meth:`Redaction.leaks`), with the
+    campaign's forbidden strings and names (:func:`redaction_rules`), in
+    files such as the hand-written README of the directory that holds the
+    tracked copies. Returns ``(file, line, string, what it is)`` for each
+    occurrence; none for files that hold nothing forbidden.
+    """
+    campaign = Path(campaign).resolve()
+    read = _read_campaign(campaign)
+    operator = operator_identity(environ) if operator is None else operator
+    redaction = redaction_rules(
+        campaign,
+        read["manifest"],
+        read["documents"],
+        operator,
+        environ,
+        paths,
+        host,
+    )
+    found = []
+    for path in files:
+        try:
+            text = Path(path).read_bytes().decode("utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            raise ContractError(f"{path} cannot be read as text: {error}")
+        found += [
+            (str(path), line, string, what)
+            for line, string, what in redaction.leaks(text)
+        ]
+    return found
 
 
 # --------------------------------------------------------------------------
@@ -3079,6 +3974,46 @@ def _cmd_finish_check(args):
     return code
 
 
+def _cmd_queue_check(args):
+    state = queue_state(args.slurm)
+    lines = [f"{index} {status}\n" for index, status in state["cases"]]
+    (Path(args.slurm) / "queued.txt").write_text(
+        "".join(lines), encoding="utf-8", newline="\n"
+    )
+    if state["live"]:
+        print(
+            "tasks of the recorded jobs are still queued or running:",
+            file=sys.stderr,
+        )
+        for _, task, status in state["live"]:
+            print(f"{task} {status}", file=sys.stderr)
+    for job, detail in state["unknown"]:
+        print(
+            f"the queue does not answer for job {job}, so its tasks may "
+            f"still run: {detail}",
+            file=sys.stderr,
+        )
+    if state["live"]:
+        print("queued")
+    elif state["unknown"]:
+        print("unknown")
+    else:
+        print("clear")
+    return 0
+
+
+def _cmd_archive_check(args):
+    problems = accounting_problems(args.slurm)
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    return 1 if problems else 0
+
+
+def _cmd_wait_job(args):
+    code = wait_job(args.job, poll=args.poll)
+    return min(max(int(code), 0), 255)
+
+
 def _cmd_redact(args):
     paths = []
     for item in args.path or ():
@@ -3088,8 +4023,22 @@ def _cmd_redact(args):
             return 1
         paths.append((name, value))
     try:
-        redact(args.campaign, args.out, paths=paths)
-    except ContractError as error:
+        if args.check:
+            leaks = check_files(args.campaign, args.check, paths=paths)
+            if leaks:
+                print(
+                    "refusing: the files hold what the tracked copies may "
+                    "not:\n" + _leak_lines(leaks),
+                    file=sys.stderr,
+                )
+                return 1
+            print(
+                f"none of {len(args.check)} files holds what the tracked "
+                "copies may not"
+            )
+        else:
+            redact(args.campaign, args.out, paths=paths)
+    except (ContractError, OSError, ValueError) as error:
         print(f"refusing: {error}", file=sys.stderr)
         return 1
     return 0
@@ -3132,18 +4081,54 @@ def parse_args(argv=None):
     )
     finish.add_argument("--allow-missing", action="store_true")
     finish.add_argument("--allow-running", action="store_true")
+    queue = sub.add_parser(
+        "queue-check",
+        help="ask the queue for every job of slurm/jobs.txt and "
+        "slurm/steps.txt, write the queued case indices to "
+        "slurm/queued.txt, and print clear, queued or unknown",
+    )
+    queue.add_argument("--slurm", type=Path, required=True)
+    archive = sub.add_parser(
+        "archive-check",
+        help="refuse while slurm/sacct.txt shows a recorded task that has "
+        "not ended, or is missing",
+    )
+    archive.add_argument("--slurm", type=Path, required=True)
+    wait = sub.add_parser(
+        "wait-job",
+        help="wait until a job has ended in the accounting, and exit with "
+        "its exit code",
+    )
+    wait.add_argument("--job", required=True)
+    wait.add_argument(
+        "--poll",
+        type=float,
+        default=30.0,
+        help="seconds between two queries of the accounting (default 30)",
+    )
     redaction = sub.add_parser(
         "redact",
         help="write a finished campaign's tracked copies, redacted, and "
-        "check that no site detail, username, home or hostname remains",
+        "check that no site detail, username, home or hostname remains; "
+        "or, with --check, search other files for them",
     )
     redaction.add_argument("--campaign", type=Path, required=True)
-    redaction.add_argument(
+    target = redaction.add_mutually_exclusive_group(required=True)
+    target.add_argument(
         "--out",
         type=Path,
-        required=True,
-        help="an empty or new directory in the checkout that the copies go "
-        "into, outside the campaign's source trees",
+        help="the new or empty directory the copies go into, in the "
+        "checkout that the hand-back is committed from; it may lie neither "
+        "inside the campaign directory nor inside a source tree of the "
+        "campaign, the harness checkout among them",
+    )
+    target.add_argument(
+        "--check",
+        type=Path,
+        nargs="+",
+        metavar="FILE",
+        help="files that redact did not write, such as the README beside "
+        "the tracked copies, to search as it searches the copies",
     )
     redaction.add_argument(
         "--path",
@@ -3162,6 +4147,9 @@ COMMANDS = {
     "check-cases": _cmd_check_cases,
     "finishing-steps": _cmd_finishing_steps,
     "finish-check": _cmd_finish_check,
+    "queue-check": _cmd_queue_check,
+    "archive-check": _cmd_archive_check,
+    "wait-job": _cmd_wait_job,
     "redact": _cmd_redact,
 }
 
