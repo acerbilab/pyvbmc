@@ -62,7 +62,7 @@ the driver under ``dev/scripts/hpc/`` runs as array tasks::
     python dev/scripts/svbmc_pool_stack.py prepare --out DIR \\
         (--pool DIR ... | --fixtures G1,G2) [--conditions L1,L2] \\
         [--M ...] [--repetitions ...] [--arms ...] [--seed 0] \\
-        [--max-steps 500] [--split-from 16]
+        [--max-steps 500] [--split-from 16] [--allow-dirty]
     python dev/scripts/svbmc_pool_stack.py cases --out DIR [--subset NAME]
     python -u dev/scripts/svbmc_pool_stack.py worker --out DIR --case LINE
     python dev/scripts/svbmc_pool_stack.py verify --out DIR
@@ -77,10 +77,12 @@ single-process run, ``--gpyreg-source`` or the pool manifest's path).
 
 A condition's filtered pool is the runs its pool directory's
 ``selection.json`` names, written by ``svbmc_pool_run.py select``, which
-is the campaign's stopping rule applied to the generated runs; a directory
-without one contributes every run whose completion record says it passed
-the filters. The line printed for each condition, ``sources.json`` and the
-campaign manifest say which of the two it was. A run's files are
+is the campaign's stopping rule applied to the generated runs; in the
+single-process run, a directory without one contributes every run whose
+completion record says it passed the filters, while a campaign's
+``prepare`` requires the selection and checks it (below). The line
+printed for each condition, ``sources.json`` and the campaign manifest say
+which of the two it was. A run's files are
 ``<pool>/<tag>.npz`` and ``<pool>/<tag>.json``, whatever the tag holds: a
 flat ``<label>_seed<seed>`` in the September pools,
 ``<label>/<label>_seed<seed>`` in the pools of the campaign contract. The
@@ -170,18 +172,30 @@ SciPy, cma and Torch), the operator settings, the environment's
 (``TRACKED_COPIES``: the assembled outputs, which
 ``campaign_contract.py redact`` writes for the repository). Its defaults
 are the release gate's grid (``RELEASE_M``, ``RELEASE_REPETITIONS``,
-``RELEASE_ARMS``). A task, one line of ``cases``, computes every
-repetition of one condition and ``M`` below ``--split-from``
-(``<condition>/M<M>``) and one cell at ``M`` from it on
+``RELEASE_ARMS``). It stacks a pool only once the pool has verified and
+been selected after that verification: ``svbmc_pool_run.py``'s
+``stackable_selection`` requires the pool's ``verification.json`` to have
+passed, its ``selection.json`` to record the SHA-256 of the manifest and of
+that report, and every selected condition to be the stopping rule applied
+to the report's cases, so that no seed before a selected run is left
+unfinished; the manifest records each pool's report by its SHA-256. It
+refuses a dirty gpyreg checkout, and a dirty harness checkout unless
+``--allow-dirty``, which the manifest records. A task, one line of
+``cases``, computes every repetition of one condition and ``M`` below
+``--split-from`` (``<condition>/M<M>``) and one cell at ``M`` from it on
 (``<condition>/M<M>_r<r>``), writing one file per cell,
 ``<condition>/M<M>_r<r>.cell.json``; it runs ``warm_up`` before its first
 timed cell and both arms of every two-arm cell, so that a cell's runtime
 ratio is measured on one node. ``worker`` runs one task under the claim
 and refusals of the contract; the identity it compares leaves the baseline
-out for a task of the integrated arm alone. Its completion record adds
-the original arm's import paths, the baseline's verification, the
-warm-up's seconds and the peak resident memory of the task's process and
-of the original arm's subprocess. ``verify`` re-checks every record and
+out for a task of the integrated arm alone, and a line that is not a case
+of the campaign is refused with exit 64, touching nothing. The error of a
+task whose original arm's subprocess died gives the subprocess's exit
+code, and the signal that killed it where one did (SIGKILL, exit code -9,
+for an out-of-memory kill). A task's completion record adds the original
+arm's import paths, the baseline's verification, the warm-up's seconds
+and the peak resident memory of the task's process and of the original
+arm's subprocess. ``verify`` re-checks every record and
 cell file against the manifest's plan and reconciles the allocation.
 ``assemble``, the finishing step, runs on a campaign whose every task
 verifies and writes the outputs the single-process run writes, but for
@@ -219,7 +233,14 @@ sys.path.insert(0, str(HERE))
 # NumPy is imported, so its import stays above the one below; the contract
 # module imports only the standard library.
 import campaign_contract as contract  # noqa: E402
-from svbmc_pool_run import THREAD_KEYS, activate_gpyreg, identity  # noqa: E402
+from svbmc_pool_run import (  # noqa: E402
+    EXIT_USAGE,
+    THREAD_KEYS,
+    activate_gpyreg,
+    dirty_trees,
+    identity,
+    stackable_selection,
+)
 
 # isort: split
 import numpy as np  # noqa: E402
@@ -1406,10 +1427,27 @@ class OriginalArm:
         line = self.process.stdout.readline()
         if not line:
             raise RuntimeError(
-                "the original arm's subprocess exited; its traceback is in "
-                "its log, or on this process's standard error"
+                f"the original arm's subprocess {self._ending()}; its "
+                "traceback, if it wrote one, is in its log or on this "
+                "process's standard error"
             )
         return json.loads(line)
+
+    def _ending(self):
+        """How the subprocess ended, once its standard output has closed:
+        its exit code, or the signal that killed it (a SIGKILL, -9, is
+        what the out-of-memory killer sends)."""
+        try:
+            code = self.process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            return "closed its output and is still running"
+        if code < 0:
+            try:
+                name = signal.Signals(-code).name
+            except ValueError:
+                name = f"signal {-code}"
+            return f"was killed by {name} (exit code {code})"
+        return f"exited with code {code}"
 
     def request(self, payload):
         self.process.stdin.write(json.dumps(payload) + "\n")
@@ -3150,6 +3188,12 @@ def parse_campaign_args(argv):
         help="the M from which a task holds one cell rather than every "
         f"repetition of its condition and M (default {SPLIT_FROM})",
     )
+    prepare.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="record that the comparison may be computed from a harness "
+        "checkout with uncommitted or untracked changes",
+    )
     cases = sub.add_parser("cases", help="print the case list")
     cases.add_argument("--out", type=Path, required=True)
     cases.add_argument(
@@ -3200,6 +3244,7 @@ STRUCTURAL_KEYS = (
     "plan",
     "skipped",
     "pools",
+    "allow_dirty",
     "finishing_steps",
     "tracked_copies",
 )
@@ -3225,10 +3270,19 @@ def manifest_entry(entry):
 
 
 def cmd_prepare(args):
+    """Write the campaign's manifest, or check that a prepared one is this.
+
+    Refuses a dirty gpyreg checkout, and a dirty harness checkout without
+    ``--allow-dirty``, which the manifest records; and a pool that has not
+    verified, or whose selection was not made after its verification or
+    disagrees with it (``svbmc_pool_run.stackable_selection``).
+    """
     out = args.out.resolve()
     arms_by_M = args.arms_by_M
     with_baseline = any("original" in ARM_SETS[a] for a in arms_by_M)
     state = campaign_process(with_baseline)
+    source_identity = campaign_identity(state["gpyreg"], state["checkout"])
+    dirty = dirty_trees(source_identity, args.allow_dirty, "the comparison")
     kind = "fixture" if args.fixtures else "run"
     only = [s.strip() for s in (args.conditions or "").split(",") if s.strip()]
     if kind == "run":
@@ -3240,9 +3294,12 @@ def cmd_prepare(args):
             for pool in args.pool
         ]
         check_gpyreg_against_pools(state["gpyreg"], manifests)
+        verified = [stackable_selection(pool, only) for pool in args.pool]
         conditions, pools, labels = pool_conditions(
             args.pool, only, gpyreg_source=state["gpyreg"]
         )
+        for pool, verification in zip(pools, verified):
+            pool["verification"] = verification
         fixtures = []
     else:
         groups = [s.strip() for s in args.fixtures.split(",") if s.strip()]
@@ -3311,7 +3368,8 @@ def cmd_prepare(args):
             "verification": state["baseline"],
         },
         "gpyreg_source": str(state["gpyreg"]),
-        "identity": campaign_identity(state["gpyreg"], state["checkout"]),
+        "identity": source_identity,
+        "allow_dirty": bool(args.allow_dirty),
         "site": contract.site_block(),
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": [["assemble"]],
@@ -3343,7 +3401,10 @@ def cmd_prepare(args):
     tasks = campaign_tasks(manifest)
     print(
         f"{path}: {len(conditions)} conditions, {len(plan)} cells in "
-        f"{len(tasks)} tasks; {describe_arms(args.M, arms_by_M)}",
+        f"{len(tasks)} tasks; {describe_arms(args.M, arms_by_M)}"
+        + (
+            f"; computed from a dirty {', '.join(dirty)} tree" if dirty else ""
+        ),
         flush=True,
     )
     for entry in skipped:
@@ -3443,17 +3504,36 @@ def run_task(out, manifest, task, state, actual):
     }
 
 
-def task_of_line(manifest, line, out):
+def task_of_line(manifest, line):
+    """The task a line of ``cases`` names, or None."""
     for task in campaign_tasks(manifest):
         if task["line"] == line:
             return task
-    raise SystemExit(f"{line!r} is not a case of {out}")
+    return None
 
 
 def cmd_worker(args):
+    """One task under the contract's worker sequence; a line that is not a
+    case of the campaign, or a directory that is not one of this harness's
+    campaigns, is refused with exit 64 and touches nothing."""
     out = args.out.resolve()
-    manifest = read_manifest(out)
-    task = task_of_line(manifest, args.case, out)
+    manifest = contract.read_json(out / "manifest.json")
+    if manifest.get("campaign") != CAMPAIGN:
+        print(
+            f"{out / 'manifest.json'} is not a manifest of {CAMPAIGN}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return EXIT_USAGE
+    task = task_of_line(manifest, args.case)
+    if task is None:
+        print(
+            f"{args.case!r} is not a case of {out}; the worker takes a line "
+            "of `cases`",
+            file=sys.stderr,
+            flush=True,
+        )
+        return EXIT_USAGE
     with_baseline = "original" in task["arms"]
     state = {}
 
