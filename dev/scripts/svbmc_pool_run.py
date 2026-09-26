@@ -78,8 +78,10 @@ artifact and its completion record. A case that raises leaves
 ``<tag>.error.txt`` with the traceback and no artifact and exits 1; a
 SIGTERM or SIGINT removes the partial files and exits 128 plus the
 signal's number, so that ``verify`` reports the case as missing. A line
-that is not a case of the allocation is refused with exit 64 and touches
-nothing.
+that is not a case of the allocation, and a directory that is not one of
+this harness's campaigns under the contract (without a readable manifest,
+with another harness's, or a pool of the flat layout), are refused with
+exit 64, touching nothing.
 
 ``run`` is the workstation supervisor: it refuses a directory of the flat
 layout before it writes anything there, refuses a source identity that
@@ -109,10 +111,14 @@ error file (never run, in flight, interrupted or partial) would have come
 first had it finished, so ``select`` refuses, naming the seeds and writing
 nothing; a condition that falls short of its target with such seeds above
 its last selected run lists them under ``unfinished``, and the stacking
-comparison refuses it. The selection records the SHA-256 of the manifest
+comparison refuses it. ``--target N`` selects ``N`` runs per condition in
+place of the manifest's filtered targets, and the selection records it as
+``target_override``. The selection records the SHA-256 of the manifest
 and of ``verification.json`` it was made after, and the stacking
 comparison stacks a pool only when that verification passed and the
-selection agrees with it (:func:`stackable_selection`). ``summarize``
+selection agrees with it and with the allocation
+(:func:`stackable_selection`); a pool selected before its latest
+verification is made stackable by running ``select`` again. ``summarize``
 writes the per-condition counts, pass rates, convergence
 (``success_flag``, ``convergence_status``, ``message``, ``r_index``,
 ``iterations``), wall times and metric quartiles of every case the
@@ -1036,16 +1042,46 @@ def run_case(out, manifest, tag, label, seed, save_vbmc=False):
     return artifacts, fields
 
 
-def cmd_worker(args):
-    """One case in one fresh process, through ``run_worker``."""
-    out = args.out.resolve()
-    manifest = read_manifest(out)
-    if not is_contract(manifest):
-        print(
-            f"{out} is a pool of the flat layout, prepared before the "
-            "campaign contract; no case runs in it",
-            file=sys.stderr,
+def worker_manifest(out):
+    """``(manifest, None)`` for a directory the worker runs cases in, or
+    ``(None, reason)``.
+
+    The directory must hold a readable ``manifest.json`` of this harness
+    (``"campaign": "svbmc_pool"``) prepared under the campaign contract: a
+    directory without one, another harness's campaign and a pool of the
+    flat layout are not.
+    """
+    path = Path(out) / "manifest.json"
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return None, (
+            f"{out} holds no readable manifest.json ({error}); the worker "
+            "runs cases in a directory that `prepare` wrote"
         )
+    if not isinstance(manifest, dict) or manifest.get("campaign") != (
+        "svbmc_pool"
+    ):
+        return None, f"{path} is not a manifest of svbmc_pool"
+    if not is_contract(manifest):
+        return None, (
+            f"{out} is a pool of the flat layout, prepared before the "
+            "campaign contract; no case runs in it"
+        )
+    return manifest, None
+
+
+def cmd_worker(args):
+    """One case in one fresh process, through ``run_worker``.
+
+    A directory that is not one of this harness's contract campaigns
+    (:func:`worker_manifest`) and a line that is not a case of its
+    allocation are refused with :data:`EXIT_USAGE`, touching nothing.
+    """
+    out = args.out.resolve()
+    manifest, refused = worker_manifest(out)
+    if refused:
+        print(refused, file=sys.stderr, flush=True)
         return EXIT_USAGE
     case = allocated_case(manifest, args.case)
     if case is None:
@@ -1465,20 +1501,33 @@ def selection_markdown(selection):
     lines = [
         f"# S-VBMC filtered pool: {selection['directory']}",
         "",
-        f"Written {selection['generated']} from the completion records of "
-        "the campaign. Per condition the runs are walked in seed order and "
-        "the ones that pass the filters (stable and `sqrt(max J_sjk) < "
-        "sqrt(5)`) are taken until the filtered target is met, so the pool "
-        "is the lowest-seed runs that pass, whatever order the cases were "
-        "generated in. The stacking comparison reads this file.",
+        f"Written {selection['generated']}. Per condition every seed of "
+        "its range is walked in order from its first seed, and the runs "
+        "that pass the filters (stable and `sqrt(max J_sjk) < sqrt(5)`) "
+        "are taken until the filtered target is met, so the pool is the "
+        "lowest-seed runs that pass, whatever order the cases ran in. A "
+        "seed whose case failed (an error file) is walked like any other "
+        "and leaves no run; no selection is written while a seed below a "
+        "condition's last selected run is unfinished (neither a completion "
+        "record nor an error file). The stacking comparison reads "
+        "`selection.json`, and stacks the pool only when that file was made "
+        "after a `verify` that passed and agrees with its report.",
         "",
-        "The walk stops as soon as the target is met, so the seeds it "
-        "scanned are a prefix of the condition and the seeds beyond them "
-        "were never looked at; a seed whose case failed is scanned like "
-        "any other and leaves no run. `pass rate over the scanned seeds` "
-        "is the selected runs over that prefix, failures included, and is "
-        "therefore not the condition's pass rate, which `summarize` "
+        "The walk stops as soon as the target is met, and the seeds beyond "
+        "were never looked at. `seeds scanned` counts the seeds walked that "
+        "hold a completion record or an error file, and `pass rate over the "
+        "scanned seeds` is the selected runs over them, failures included; "
+        "it is therefore not the condition's pass rate, which `summarize` "
         "reports over every completed case.",
+        "",
+        (
+            "The directory held no `verification.json` when this selection "
+            "was made, so the stacking comparison refuses it until `select` "
+            "runs again after `verify`."
+            if selection.get("verification_sha256") is None
+            else "Made after the verification report of SHA-256 "
+            f"`{selection['verification_sha256']}`."
+        ),
         "",
     ]
     unfinished = [
@@ -1627,20 +1676,37 @@ def stackable_selection(out, labels=None):
       that records neither (written before ``select`` recorded them), its
       ``generated`` time must not precede the report's;
     - each condition of the selection (of ``labels``, when given) must be
-      the stopping rule applied to the report's cases, which
-      :func:`stopping_rule` replays with the selection's first seed, seed
-      cap and target: every seed walked must be verified or failed, and the
-      verified ones that pass must be the selected runs.
+      a condition of the manifest's allocation, with its first seed and
+      seed cap, and with its filtered target, or the selection's
+      ``target_override`` where ``select --target`` set one;
+    - each such condition must be the stopping rule applied to the
+      report's cases, which :func:`stopping_rule` replays with the
+      allocation's numbers (the target being the override where there is
+      one): every seed walked must be verified or failed, and the verified
+      ones that pass must be the selected runs.
+
+    A selection made with ``select --target N`` is stacked with ``N`` runs
+    per condition, and what this returns names ``N``. A pool whose
+    selection records no hashes and was verified again after it was
+    selected fails the date rule, which stays strict, since such a
+    selection is not known to agree with the newer report; running
+    ``select`` again after that verification writes a selection that
+    records both hashes and makes the pool stackable.
 
     Returns ``{"verification_sha256", "verification_generated",
-    "verification_counts"}``, what the stacking records of the report.
+    "verification_counts", "target_override"}``, what the stacking
+    records of the report and of the selection's target.
     """
     out = Path(out).resolve()
     problems = []
     paths = {
         name: out / f"{name}.json" for name in ("verification", "selection")
     }
-    absent = [path.name for path in paths.values() if not path.exists()]
+    absent = [
+        path.name
+        for path in (out / "manifest.json", *paths.values())
+        if not path.exists()
+    ]
     if absent:
         raise RuntimeError(
             f"{out} holds no {' and no '.join(absent)}; a pool is stacked "
@@ -1697,15 +1763,41 @@ def stackable_selection(out, labels=None):
             return "failed"
         return "unfinished"
 
+    override = selection.get("target_override")
+    allocated = {
+        entry["label"]: entry
+        for entry in read_manifest(out).get("allocation", [])
+    }
     for condition in selection["conditions"]:
         label = condition["label"]
         if labels and label not in labels:
             continue
+        entry = allocated.get(label)
+        if entry is None:
+            problems.append(f"{label}: not a condition of the allocation")
+            continue
+        planned = {
+            "seed_start": int(entry["seed_start"]),
+            "seed_cap": int(entry["max_seeds"]),
+            "target_filtered": int(
+                entry["target_filtered"] if override is None else override
+            ),
+        }
+        differing = [
+            f"{key} {condition.get(key)}, not {value}"
+            for key, value in planned.items()
+            if condition.get(key) != value
+        ]
+        if differing:
+            problems.append(
+                f"{label}: the selection was not made with the allocation's "
+                f"numbers ({', '.join(differing)})"
+            )
         cases = by_label.get(label, {})
         seeds, _, _, unfinished = stopping_rule(
-            condition["seed_start"],
-            condition["seed_cap"],
-            condition["target_filtered"],
+            planned["seed_start"],
+            planned["seed_cap"],
+            planned["target_filtered"],
             lambda seed: state(cases, seed),
         )
         if unfinished:
@@ -1730,6 +1822,7 @@ def stackable_selection(out, labels=None):
         "verification_sha256": contract.sha256_file(paths["verification"]),
         "verification_generated": report.get("generated"),
         "verification_counts": counts,
+        "target_override": override,
     }
 
 

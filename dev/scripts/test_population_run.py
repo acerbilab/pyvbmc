@@ -730,6 +730,27 @@ def test_worker_success_writes_the_record(campaign, monkeypatch):
     assert runner.main(unknown) == runner.EXIT_USAGE
 
 
+def test_worker_refuses_a_directory_that_is_not_its_campaign(tmp_path, capsys):
+    """A directory without a manifest, or with another harness's, exits 64
+    and is left as it is."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    args = ["worker", "--out", str(empty), "--case", line_of(0)]
+    assert runner.main(args) == runner.EXIT_USAGE
+    assert "holds no readable manifest.json" in capsys.readouterr().out
+    assert list(empty.iterdir()) == []
+    other = tmp_path / "other"
+    other.mkdir()
+    contract.write_json(
+        other / "manifest.json",
+        {"campaign": "svbmc_pool", "contract": contract.CONTRACT_VERSION},
+    )
+    args = ["worker", "--out", str(other), "--case", line_of(0)]
+    assert runner.main(args) == runner.EXIT_USAGE
+    assert "is not a manifest of population_run" in capsys.readouterr().out
+    assert sorted(path.name for path in other.iterdir()) == ["manifest.json"]
+
+
 def verification(out):
     report = contract.read_json(out / "verification.json")
     return report, {case["index"]: case for case in report["cases"]}
@@ -931,6 +952,21 @@ def test_rescore_runs_in_the_release_code_alone(
         runner.main(["rescore", "--out", str(campaign)])
         == contract.EXIT_IDENTITY
     )
+
+
+def test_rescore_without_the_gpyreg_checkout_is_refused(
+    campaign, monkeypatch, capsys
+):
+    """Without ``PYVBMC_GPYREG_SOURCE`` no identity can be established."""
+    monkeypatch.delenv("PYVBMC_GPYREG_SOURCE")
+    assert (
+        runner.main(["rescore", "--out", str(campaign)])
+        == contract.EXIT_IDENTITY
+    )
+    printed = capsys.readouterr().out
+    assert "rescore refused: no identity" in printed
+    assert "PYVBMC_GPYREG_SOURCE is not set" in printed
+    assert not (campaign / "rescored").exists()
 
 
 def test_rescore_requires_its_own_code_to_reproduce_the_in_run_metrics(
@@ -1474,6 +1510,44 @@ def test_the_harness_run_as_a_script_takes_the_package_tree(tmp_path):
     assert run_python(script, tree).endswith("ok")
 
 
+@pytest.mark.parametrize("holds", ["no package", "a package that fails"])
+def test_a_package_tree_that_does_not_import_leaves_no_identity(
+    tmp_path, holds
+):
+    """Run as a script, the harness imports PyVBMC from the tree that
+    ``PYVBMC_SOURCE`` names before anything else. From a tree that holds no
+    package, or one whose import fails, no identity can be established:
+    the worker exits 78 and writes nothing, an error file included."""
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    if holds == "a package that fails":
+        (tree / "pyvbmc").mkdir()
+        (tree / "pyvbmc" / "__init__.py").write_text(
+            "raise ImportError('a tree that does not import')\n"
+        )
+    out = tmp_path / "campaign"
+    out.mkdir()
+    (out / "manifest.json").write_text("{}\n")
+    env = dict(os.environ, PYVBMC_SOURCE=str(tree))
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [sys.executable, "-u", str(runner.HERE / "population_run.py")]
+        + ["worker", "--out", str(out), "--case", line_of(0)],
+        cwd=runner.ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        stdin=subprocess.DEVNULL,
+    )
+    assert result.returncode == contract.EXIT_IDENTITY, (
+        result.stdout + result.stderr
+    )
+    assert "cannot be imported from the campaign's package tree" in (
+        result.stderr
+    )
+    assert sorted(path.name for path in out.iterdir()) == ["manifest.json"]
+
+
 @pytest.mark.parametrize(
     "imports",
     [
@@ -1580,6 +1654,10 @@ def test_run_verifies_and_rescores_its_real_cases_exactly(real):
     # The package is the harness checkout's, and so is every tree.
     source = side["meta"]["pyvbmc_source"]
     assert Path(source["path"]).parent == runner.ROOT
+    # The process's peak resident set, which is never below the field that
+    # earlier sidecars hold (the peak on Windows, the final resident set
+    # elsewhere).
+    assert side["final"]["max_rss_mb"] >= side["final"]["peak_rss_mb"] > 0
     record = contract.read_json(contract.record_path(ran, cases[1]["tag"]))
     assert side["provenance"] == {
         "source": record["identity"]["source"],
@@ -1602,8 +1680,9 @@ def test_run_verifies_and_rescores_its_real_cases_exactly(real):
     assert f"| {LABEL} | 1 | 0 |" in (ran / "summary.md").read_text()
 
 
-#: What says when a case ran and how long it took, in its sidecar.
-TIMING_FINAL = ("wall_s", "target_eval_s", "peak_rss_mb")
+#: What says when a case ran, how long it took and how much memory its
+#: process held, in its sidecar.
+TIMING_FINAL = ("wall_s", "target_eval_s", "peak_rss_mb", "max_rss_mb")
 TIMING_META = ("started", "finished", "pid")
 
 

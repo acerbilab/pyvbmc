@@ -981,6 +981,39 @@ def test_a_selection_is_stackable_only_after_a_passing_verification(
         runner.stackable_selection(copy)
 
 
+def test_a_selection_is_stacked_with_the_allocations_numbers(
+    campaign, tmp_path
+):
+    """The stopping rule is replayed with the allocation's first seed, seed
+    cap and filtered target, or with the target that `select --target`
+    gave, which the check returns for the stacking to record."""
+    out, _ = campaign
+    copy = copied(out, tmp_path)
+    ok(cli("verify", "--out", copy))
+    ok(cli("select", "--out", copy, "--target", "1"))
+    assert runner.stackable_selection(copy)["target_override"] == 1
+    ok(cli("select", "--out", copy))
+    assert runner.stackable_selection(copy)["target_override"] is None
+    selection = read_json(copy / "selection.json")
+    for key, value in (
+        ("seed_start", SEED_START - 1),
+        ("seed_cap", MAX_SEEDS + 1),
+        ("target_filtered", TARGET + 1),
+    ):
+        edited = json.loads(json.dumps(selection))
+        edited["conditions"][0][key] = value
+        contract.write_json(copy / "selection.json", edited)
+        with pytest.raises(
+            RuntimeError, match=f"allocation's numbers \\({key} {value}, not"
+        ):
+            runner.stackable_selection(copy)
+    edited = json.loads(json.dumps(selection))
+    edited["conditions"][0]["label"] = "gmm_D2_svbmc"
+    contract.write_json(copy / "selection.json", edited)
+    with pytest.raises(RuntimeError, match="not a condition of the alloc"):
+        runner.stackable_selection(copy)
+
+
 def test_the_stack_harness_reads_the_selection(campaign, tmp_path):
     """The comparison's pool reader resolves the selected runs' files.
 
@@ -1486,6 +1519,135 @@ def test_the_worker_refuses_a_line_outside_the_allocation(
     assert result.returncode == runner.EXIT_USAGE
     assert "is not a case of the allocation" in result.stderr
     assert snapshot(copy) == before
+
+
+def test_the_worker_refuses_a_directory_that_is_not_its_campaign(
+    stored, tmp_path, capsys
+):
+    """A directory without a readable manifest, or with another harness's,
+    exits 64 and is left as it is."""
+    _, tag = stored
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    assert worker(empty, tag) == runner.EXIT_USAGE
+    assert "holds no readable manifest.json" in capsys.readouterr().err
+    assert list(empty.iterdir()) == []
+    other = tmp_path / "other"
+    other.mkdir()
+    contract.write_json(
+        other / "manifest.json",
+        {"harness": "population_run", "contract": contract.CONTRACT_VERSION},
+    )
+    assert worker(other, tag) == runner.EXIT_USAGE
+    assert "is not a manifest of svbmc_pool" in capsys.readouterr().err
+    assert sorted(path.name for path in other.iterdir()) == ["manifest.json"]
+
+
+#: A ``sitecustomize`` under which ``importlib.metadata`` finds no installed
+#: distribution of the names it holds, in every process whose
+#: ``PYTHONPATH`` names its directory.
+HIDDEN_METADATA = """\
+import importlib.metadata as _metadata
+
+_HIDDEN = {names!r}
+_from_name = _metadata.Distribution.from_name.__func__
+
+
+def _hiding_from_name(cls, name):
+    if name.lower().replace("_", "-") in _HIDDEN:
+        raise _metadata.PackageNotFoundError(name)
+    return _from_name(cls, name)
+
+
+_metadata.Distribution.from_name = classmethod(_hiding_from_name)
+"""
+#: What a process prints of the installed versions of these packages.
+METADATA_PROBE = """
+import importlib.metadata as metadata
+for name in ("pyvbmc", "gpyreg", "numpy"):
+    try:
+        print(metadata.version(name))
+    except metadata.PackageNotFoundError:
+        print("absent")
+"""
+
+
+def without_metadata(directory, names=("pyvbmc", "gpyreg")):
+    """``PYTHONPATH`` for processes in which no distribution of ``names`` is
+    installed, as in the campaign environment, which imports PyVBMC and
+    gpyreg from their source trees on ``sys.path``: ``directory`` holds a
+    ``sitecustomize`` that hides them, ahead of this process's path."""
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "sitecustomize.py").write_text(
+        HIDDEN_METADATA.format(names=set(names)), encoding="utf-8"
+    )
+    inherited = os.environ.get("PYTHONPATH")
+    return os.pathsep.join(
+        [str(directory), *([inherited] if inherited else [])]
+    )
+
+
+def hide_metadata(monkeypatch, *names):
+    """Make ``importlib.metadata`` find no distribution of ``names`` in this
+    process, for the duration of a test."""
+    from importlib import metadata
+
+    original = metadata.Distribution.from_name.__func__
+
+    def from_name(cls, name):
+        if name.lower().replace("_", "-") in names:
+            raise metadata.PackageNotFoundError(name)
+        return original(cls, name)
+
+    monkeypatch.setattr(
+        metadata.Distribution, "from_name", classmethod(from_name)
+    )
+
+
+def test_a_case_runs_where_the_packages_have_no_metadata(tmp_path):
+    """The campaign environment installs neither PyVBMC nor gpyreg, and
+    ``importlib.metadata`` finds no distribution of either: a case
+    prepared, run and verified there completes, and its artifact and
+    record give None for the versions the installed metadata would name."""
+    env = environment(PYTHONPATH=without_metadata(tmp_path / "site"))
+    probe = subprocess.run(
+        [sys.executable, "-c", METADATA_PROBE],
+        cwd=str(ROOT),
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert probe.returncode == 0, probe.stderr
+    assert probe.stdout.split()[:2] == ["absent", "absent"]
+    assert probe.stdout.split()[2] == np.__version__
+    out = tmp_path / "pool"
+    ok(cli(*prepare_args(out, 1, 1, DIRTY), env=env))
+    (line,) = ok(cli("cases", "--out", out, env=env)).stdout.splitlines()
+    ok(cli("worker", "--out", out, "--case", line, env=env))
+    tag = contract.case_tag(line)
+    unnamed = {"pyvbmc": None, "gpyreg": None}
+    meta = pool_io.load_run(out / tag)["meta"]
+    assert meta["identity"]["host"]["installed_metadata_versions"] == unnamed
+    record = read_json(pool_io.record_path(out, tag))
+    assert record["identity"]["imports"]["installed_metadata_versions"] == (
+        unnamed
+    )
+    ok(cli("verify", "--out", out, env=env))
+    assert verification(out)["counts"]["verified"] == 1
+
+
+def test_the_flat_identity_names_no_version_it_cannot_read(monkeypatch):
+    """The flat identity, which the pool readers record and the stacking's
+    original arm reports, reads four versions from the installed metadata;
+    each is None where no distribution is installed."""
+    hide_metadata(monkeypatch, "pyvbmc", "gpyreg", "numpy", "scipy")
+    record = runner.identity(GPYREG_SOURCE)
+    assert record["host"]["installed_metadata_versions"] == {
+        "pyvbmc": None,
+        "gpyreg": None,
+    }
+    assert record["source"]["numpy"] is None
+    assert record["source"]["scipy"] is None
 
 
 def test_a_fresh_claim_holds_the_case_while_it_runs(

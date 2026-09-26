@@ -441,7 +441,9 @@ reason.
   this checkout's package; each sidecar's `meta` records
   the checkout's commit, the path and commit of the imported PyVBMC and
   gpyreg, and the versions their installed distributions name, labelled as
-  such.
+  such. Its `final` holds the process's peak resident set as `max_rss_mb`;
+  `peak_rss_mb`, which earlier sidecars hold too, is that peak on Windows
+  alone and the resident set at the end of the run elsewhere.
 - `scripts/population_run.py` — the population harness of the release gate
   (`plans/slurm-benchmark-support.md`), meeting the campaign contract of
   `scripts/campaign_contract.py`: `prepare` fixes the allocation (a suite,
@@ -467,7 +469,8 @@ reason.
   verified case's record, sidecar and boost report; `run` is the same
   campaign one case after another on a workstation. `PYVBMC_SOURCE` names
   the package tree of an arm of other code, which the harness alone, run
-  as a script, imports (no other script reads the variable), and
+  as a script, imports (no other script reads the variable; a tree that
+  PyVBMC does not import from exits 78, having written nothing), and
   `PYVBMC_GPYREG_SOURCE` the gpyreg checkout; the harness, the targets
   module and its data are this checkout's in every arm. `validate_case`
   checks the records of the campaigns of September 2026, which ran before
@@ -476,14 +479,23 @@ reason.
   rescored and the rebuilt posterior on hand-made cases, and runs one real
   case through `run` and through `worker`.
 - `scripts/analyze_population_run.py` — assesses finished campaigns without
-  inference. By default, campaigns of one treatment against the golden
-  reference: it revalidates every case and the reference sidecars, pools a
+  inference. By default, campaigns of one treatment (those of September
+  2026) against the 870-case golden reference of 2026-09-07: it revalidates
+  every case and the reference's sidecars, which `--reference` names and
+  which must be exactly those of
+  `golden/noisy_extension_20260907/sha256_manifest.json`, pools a
   first-stage campaign with its extensions, recomputes the KS screen and a
   within-configuration paired family (exact signed-rank tests by dynamic
   programming over midranks, exact at any number of pairs, and exact
   McNemar tests of usability), checks every boost decision against the
   guard, and reports each extension on its own with the confirmatory family
-  fixed in its manifest. With `--arms REFERENCE CANDIDATE`, two arms of
+  fixed in its manifest. The default `--reference`, `golden/baseline/`,
+  holds `reference_990_20260913`, so the default command stops at that
+  check; the 870 sidecars are `golden/baseline/` at commit `b2ea8597`
+  (`git worktree add --detach DIR b2ea8597`, then `--reference
+  DIR/dev/golden/baseline`) and the traces directory
+  `scripts/runs/golden/reference_870_20260907/` of the machine that
+  `scripts/runs/LOCAL.md` lists. With `--arms REFERENCE CANDIDATE`, two arms of
   `population_run.py`'s array mode, each checked against its own
   `verification.json` and compared seed by seed on the metrics that
   `rescore` recomputed (in the campaign `--rescoring` names, by default the
@@ -491,12 +503,15 @@ reason.
   the candidate's own identity), with the confirmatory family of their
   manifests at the size they fix: a test that cannot be computed enters it
   at p = 1 and is flagged. Either arm may be a campaign directory or its
-  redacted tracked copies, which give the same report. Writes
-  `assessment.json` and `comparison.md` (and, by default, the campaign
-  manifests) under `--out`.
-  `test_analyze_population_run.py` checks the statistics and the
-  comparison of two arms on campaign directories it writes and on their
-  redacted copies.
+  redacted tracked copies, which give the same report. In both, a boost
+  stage other than the returned posterior whose metrics are the error of
+  a scoring that failed, which the harness keeps and `verify` accepts, is
+  left out of the boost summary's usability counts, counted and listed.
+  Writes `assessment.json` and `comparison.md` (and, by default, the
+  campaign manifests) under `--out`.
+  `test_analyze_population_run.py` checks the statistics, the reference
+  check, and the comparison of two arms on campaign directories it writes
+  and on their redacted copies.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous
@@ -609,7 +624,9 @@ reason.
   exit, the identity and claim refusals, the clean-up after a failure or a
   SIGTERM, a completion record holding the run's filter verdict, metrics,
   `success_flag`, `convergence_status`, `message`, `r_index` and
-  `iterations`); `run` is the workstation supervisor, walking the
+  `iterations`), and refuses with exit 64 a line that is not a case and a
+  directory that is not one of this harness's contract campaigns;
+  `run` is the workstation supervisor, walking the
   conditions in manifest order, seeds upward, one `worker` process at a
   time, stopping each condition once its filtered target or its seed cap
   is reached (`--pilot-seeds K` runs exactly K seeds per condition
@@ -625,7 +642,11 @@ reason.
   records the SHA-256 of the manifest and of `verification.json`, against
   which `stackable_selection` checks a pool before the comparison's
   `prepare` stacks it (a passing verification, the selection made after
-  it, and the stopping rule replayed on the verified cases); `summarize`
+  it, and the stopping rule replayed on the verified cases with the
+  allocation's first seed, seed cap and filtered target, or the target
+  `select --target` gave, which the selection records as
+  `target_override`); a pool selected before its latest verification is
+  made stackable by running `select` again; `summarize`
   writes the per-condition pass rates, convergence, wall times and metric
   quartiles from the cases the directory holds; `verify` re-checks every
   stored artifact post hoc against its completion record and the manifest
@@ -655,14 +676,17 @@ reason.
   unfinished seeds past a shortfall, the checks of
   `stackable_selection`), summary, the contract's refusals, claims,
   clean-up and `verify` states, the
-  identity of a case run by the array worker and by `run`, the flat
-  layout, and one campaign through the driver; it reads the gpyreg
-  checkout from `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
+  identity of a case run by the array worker and by `run`, a case run
+  where neither package has installed metadata, the flat layout, and one
+  campaign through the driver; it reads the gpyreg checkout from
+  `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
   the transformer, every evaluation, the run's state, options and
-  metadata) and verifies it against the live objects, posterior,
+  metadata, whose identity gives None for a version the installed
+  metadata cannot name, as where PyVBMC and gpyreg are imported from
+  their source trees) and verifies it against the live objects, posterior,
   statistics and evaluations alike; `load_run` rebuilds every object
   through the public constructors; `verify_run` re-runs the checks on a
   stored artifact, including the recomputation gate (`_gp_log_joint`

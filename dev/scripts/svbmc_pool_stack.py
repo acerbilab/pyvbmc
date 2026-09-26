@@ -177,8 +177,11 @@ been selected after that verification: ``svbmc_pool_run.py``'s
 ``stackable_selection`` requires the pool's ``verification.json`` to have
 passed, its ``selection.json`` to record the SHA-256 of the manifest and of
 that report, and every selected condition to be the stopping rule applied
-to the report's cases, so that no seed before a selected run is left
-unfinished; the manifest records each pool's report by its SHA-256. It
+to the report's cases with the allocation's first seed, seed cap and
+filtered target (or the target ``select --target`` gave), so that no seed
+before a selected run is left unfinished; the manifest records each pool's
+report by its SHA-256 and the selection's ``target_override`` (null for the
+allocation's targets). It
 refuses a dirty gpyreg checkout, and a dirty harness checkout unless
 ``--allow-dirty``, which the manifest records. A task, one line of
 ``cases``, computes every repetition of one condition and ``M`` below
@@ -3516,13 +3519,23 @@ def cmd_worker(args):
     case of the campaign, or a directory that is not one of this harness's
     campaigns, is refused with exit 64 and touches nothing."""
     out = args.out.resolve()
-    manifest = contract.read_json(out / "manifest.json")
-    if manifest.get("campaign") != CAMPAIGN:
-        print(
-            f"{out / 'manifest.json'} is not a manifest of {CAMPAIGN}",
-            file=sys.stderr,
-            flush=True,
+    path = out / "manifest.json"
+    try:
+        manifest = contract.read_json(path)
+    except (OSError, ValueError) as error:
+        manifest, refused = None, (
+            f"{out} holds no readable manifest.json ({error}); the worker "
+            "runs tasks in a directory that `prepare` wrote"
         )
+    else:
+        refused = (
+            None
+            if isinstance(manifest, dict)
+            and manifest.get("campaign") == CAMPAIGN
+            else f"{path} is not a manifest of {CAMPAIGN}"
+        )
+    if refused:
+        print(refused, file=sys.stderr, flush=True)
         return contract.EXIT_USAGE
     task = task_of_line(manifest, args.case)
     if task is None:
