@@ -564,16 +564,19 @@ Generator, optional
             )
             logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
         else:
-            logq_orig = torch.empty(
-                K_total * n_samples, dtype=dtype, device=device
-            )
-            for r0, r1, logq_rows in log_density_chunks(
+            # The chunks' results are concatenated rather than written into
+            # a preallocated tensor: under ``torch.func.vmap`` the weights,
+            # and with them each chunk's result, carry a batch dimension,
+            # which an in-place write into a plain tensor cannot take.
+            logq_chunks = []
+            for _, _, logq_rows in log_density_chunks(
                 self.vp_list, n_samples, self.rng, chunk_rows=chunk_rows
             ):
                 logq_rows = torch.as_tensor(
                     logq_rows, dtype=dtype, device=device
                 )
-                logq_orig[r0:r1] = torch.logsumexp(logq_rows + log_w, dim=1)
+                logq_chunks.append(torch.logsumexp(logq_rows + log_w, dim=1))
+            logq_orig = torch.cat(logq_chunks)  # (S,)
 
         # E_{q_mk}[log q(x)] for every component: ``component_log_densities``
         # lays the rows out by component, ``n_samples`` consecutive rows
