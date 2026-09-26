@@ -290,8 +290,9 @@ TRACKED_COPIES = {
     "files": ["selection.json", "selection.md", "summary.json", "summary.md"]
 }
 #: Exit code of a worker given a line that is not a case of the
-#: allocation, or a directory it may not generate cases in (``EX_USAGE``).
-EXIT_USAGE = 64
+#: allocation, or a directory it may not generate cases in: the contract's
+#: ``EXIT_USAGE``, kept here under its name for the modules that import it.
+EXIT_USAGE = contract.EXIT_USAGE
 #: The convergence fields of a run's results that its completion record
 #: holds, beside ``success_flag``.
 CONVERGENCE_KEYS = ("convergence_status", "message", "r_index", "iterations")
