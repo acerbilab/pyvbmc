@@ -43,7 +43,7 @@
   },
   "import_path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc\\__init__.py",
   "pin": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
-  "recreation": "git clone https://github.com/acerbilab/S-VBMC and check out 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01; install CPU Torch 2.14.0 with `pip install --target deps torch==2.14.0` ; the files_sha256_committed entries verify the source tree, with CRLF read as LF.",
+  "recreation": "In the directory BASELINE_DIR names: `git clone https://github.com/acerbilab/S-VBMC source` and check out 13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01 in it; install CPU Torch 2.14.0 beside it from the PyTorch CPU index with `pip install --target deps --index-url https://download.pytorch.org/whl/cpu torch==2.14.0+cpu`, whose wheels report the recorded version 2.14.0+cpu (PyPI's Linux wheels of 2.14.0 are CUDA builds, which the verification refuses); the files_sha256_committed entries verify the source tree, with CRLF read as LF.",
   "source_dir": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\dev\\scripts\\runs\\svbmc_compat_20260908\\source\\src\\svbmc",
   "status_porcelain": "",
   "upstream_repository": "https://github.com/acerbilab/S-VBMC",

@@ -9,11 +9,24 @@ process, a variational posterior and an ELBO are, and nothing about
 VBMC's internals. The reference implementation is
 `dev/scripts/svbmc_shrink_elbo.py`. The numbers quoted here come from
 the tracked per-subset records under `dev/experiments/svbmc_pool/`,
-and most are printed by `python dev/scripts/svbmc_headline_numbers.py`;
-the worked example of section 7 is printed by
+and most are printed by `dev/scripts/svbmc_headline_numbers.py` run on
+the tracked scorings of the run pool `pool_20260914` (the command
+below); the
+worked example of section 7 is printed by
 `dev/scripts/svbmc_shrink_worked_example.py`, which rebuilds three
 stacks from the run pool, and the GP-calibration figure of section 8
 is from the Phase 2 scoring's summary.*
+
+```console
+E=dev/experiments/svbmc_pool
+python dev/scripts/svbmc_headline_numbers.py \
+    --shrink $E/shrink_20260915 --shrink $E/shrink_M35_20260915 \
+    --shrink $E/shrink_M32_20260916 \
+    --caps $E/cap_kappa_20260915 --caps $E/cap_kappa_M35_20260915 \
+    --caps $E/cap_kappa_M32_20260916 \
+    --single-run $E/single_run_20260915 \
+    --shrink-opt $E/shrink_opt_20260915
+```
 
 ## 1. What is being estimated
 
