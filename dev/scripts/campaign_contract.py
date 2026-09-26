@@ -60,11 +60,16 @@ and error paths above are fixed, because the driver's task script reads
 the record path of a case from its line alone.
 
 The worker's exit codes: 0 for a completed case (or one that already has a
-record), 1 for a case that failed, :data:`EXIT_CLAIMED` (75) when a live
-task holds the case's claim, :data:`EXIT_IDENTITY` (78) when the worker's
-source identity differs from the manifest's, and 128 plus the signal's
-number (143 for SIGTERM) when a signal stopped the run. The claim and the
-identity refusals leave the case's files as they are.
+record), 1 for a case that failed, :data:`EXIT_USAGE` (64) when the
+harness finds the case line or the directory is not its own (a line
+outside the allocation, a directory that is not its campaign),
+:data:`EXIT_CLAIMED` (75) when a live task holds the case's claim,
+:data:`EXIT_IDENTITY` (78) when the worker's identity cannot be
+established (a source tree that git cannot read, a host fact such as the
+node's features unavailable) or its source part differs from the
+manifest's, and 128 plus the signal's number (143 for SIGTERM) when a
+signal stopped the run. The usage, claim and identity refusals leave the
+case's files as they are.
 
 A task that Slurm stops ends in one of two ways. At its time limit or on
 ``scancel`` it receives SIGTERM, and KillWait seconds later SIGKILL; the
@@ -129,6 +134,11 @@ from pathlib import Path
 #: The version of this contract, recorded in every identity, claim,
 #: completion record and verification report.
 CONTRACT_VERSION = 1
+#: Exit code of a worker whose case line or campaign directory is not its
+#: harness's (a line outside the allocation, a directory that is not its
+#: campaign), a refusal of the harness's own that touches nothing
+#: (``EX_USAGE``).
+EXIT_USAGE = 64
 #: Exit code of a worker that finds its case claimed by a live task
 #: (``EX_TEMPFAIL``).
 EXIT_CLAIMED = 75
@@ -141,6 +151,12 @@ EXIT_IDENTITY = 78
 STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT)
 
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
+#: The seconds :func:`node_features` waits before each repetition of a
+#: failed ``scontrol show node``.
+SCONTROL_WAITS = (2, 5, 10)
+#: A Slurm node feature, as ``NODE_FEATURE`` names the campaign's family:
+#: one name, no feature expression.
+FEATURE_PATTERN = re.compile(r"[A-Za-z0-9_.-]+")
 #: The operator settings of the plan, recorded in the ``site`` block of the
 #: manifest (``CONDA_SETUP`` and ``LOGIN_PROFILE`` are the driver's own).
 SETTINGS = (
@@ -1019,8 +1035,28 @@ def installed_version(name):
         return None
 
 
+def enclosing_checkout(path):
+    """The top of the git checkout that holds ``path``, or None.
+
+    The nearest of ``path`` and its parents that holds a ``.git`` entry, a
+    directory in a clone and a file in a worktree or a submodule, so that
+    a checkout nested inside another is told apart from it.
+    """
+    path = Path(path).resolve()
+    for folder in (path, *path.parents):
+        if (folder / ".git").exists():
+            return folder
+    return None
+
+
 def module_origin(name, tree=None):
-    """Where the package ``name`` is imported from; under ``tree`` if given."""
+    """Where the package ``name`` is imported from; from ``tree`` if given.
+
+    With ``tree``, the package must lie inside it, and the checkout that
+    holds the package (:func:`enclosing_checkout`) must be the tree itself,
+    not a checkout of another commit nested inside it, such as a worktree
+    under its ignored ``dev/scripts/runs/``.
+    """
     try:
         module = importlib.import_module(name)
     except ImportError as error:
@@ -1031,6 +1067,13 @@ def module_origin(name, tree=None):
         if location != tree and tree not in location.parents:
             raise IdentityError(
                 f"{name} is imported from {location}, not from the tree {tree}"
+            )
+        checkout = enclosing_checkout(location)
+        if checkout != tree:
+            raise IdentityError(
+                f"{name} is imported from {location}, which lies in the "
+                f"checkout {checkout} inside the tree {tree}, not in the tree "
+                "itself"
             )
     return str(location)
 
@@ -1190,23 +1233,37 @@ def _features(text, key):
     return [] if value in ("", "(null)") else value.split(",")
 
 
-def node_features(strict, environ=None):
+def node_features(strict, environ=None, waits=None):
     """The features of the Slurm node this process runs on; None outside Slurm.
 
     From ``scontrol show node <SLURMD_NODENAME> -o`` (the short hostname
-    when the variable is unset): ``{"node", "available", "active"}``.
+    when the variable is unset): ``{"node", "available", "active"}``. A
+    query that fails is repeated after each of the ``waits``, in seconds
+    (:data:`SCONTROL_WAITS` by default), so that a controller busy for a
+    moment does not cost a task its case.
     """
     env = os.environ if environ is None else environ
     if not env.get("SLURM_JOB_ID"):
         return None
     node = env.get("SLURMD_NODENAME") or socket.gethostname().split(".")[0]
-    try:
-        result = _command(["scontrol", "show", "node", node, "-o"], 60)
-    except (OSError, subprocess.SubprocessError) as error:
-        return _unavailable(strict, f"scontrol show node {node}", error)
-    if result.returncode != 0:
+    waits = SCONTROL_WAITS if waits is None else waits
+    failure = None
+    for wait in (None, *waits):
+        if wait is not None:
+            time.sleep(wait)
+        try:
+            result = _command(["scontrol", "show", "node", node, "-o"], 60)
+        except (OSError, subprocess.SubprocessError) as error:
+            failure = error
+            continue
+        if result.returncode == 0:
+            break
+        failure = (result.stderr or result.stdout).strip()
+    else:
         return _unavailable(
-            strict, f"scontrol show node {node}", result.stderr.strip()
+            strict,
+            f"scontrol show node {node}",
+            f"{failure} ({len(waits) + 1} attempts)",
         )
     available = _features(result.stdout, "AvailableFeatures")
     active = _features(result.stdout, "ActiveFeatures")
@@ -1244,29 +1301,118 @@ def blas_libraries(strict):
     return libraries
 
 
-def cpu_affinity(strict):
-    """``{"cpus", "physical_cores"}`` of ``os.sched_getaffinity(0)``.
+def cpu_list(text):
+    """The CPUs of a kernel CPU list such as ``0-3,8``, sorted."""
+    cpus = set()
+    for part in text.strip().split(","):
+        if not part:
+            continue
+        first, _, last = part.partition("-")
+        cpus.update(range(int(first), int(last or first) + 1))
+    return sorted(cpus)
 
-    ``physical_cores`` holds one ``<package>:<core>`` per physical core
-    that the CPUs belong to, from ``/sys/devices/system/cpu``, so that a
-    record read on another machine still shows whether its task ran on one
-    physical core. None where the platform has no affinity call.
+
+def job_cpuset(environ=None, proc_cgroup="/proc/self/cgroup", root=None):
+    """The CPUs of the cgroup cpuset of this process's Slurm job, or None.
+
+    The cgroup is the process's own (``/proc/self/cgroup``), cut at its
+    ``job_<SLURM_JOB_ID>`` component where it has one, so that it is the
+    whole job's; its cpuset is ``cpuset.cpus.effective`` under cgroup v2
+    (``/sys/fs/cgroup``) and ``cpuset.effective_cpus`` or ``cpuset.cpus``
+    under the cpuset controller of cgroup v1. It is where Slurm confines
+    the job to the CPUs it allocated, so that it shows which hardware
+    threads of a core are the job's, although a task bound to one of them
+    has only that one in its affinity. Recorded where it can be read, and
+    null elsewhere, on any platform.
     """
-    getter = getattr(os, "sched_getaffinity", None)
+    env = os.environ if environ is None else environ
+    root = Path("/sys/fs/cgroup" if root is None else root)
+    try:
+        lines = Path(proc_cgroup).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    job = env.get("SLURM_JOB_ID")
+    for line in lines:
+        fields = line.split(":", 2)
+        if len(fields) != 3:
+            continue
+        _, controllers, path = fields
+        if controllers == "":
+            bases = [root, root / "unified"]
+            names = ["cpuset.cpus.effective"]
+        elif "cpuset" in controllers.split(","):
+            bases = [root / "cpuset", root / controllers]
+            names = ["cpuset.effective_cpus", "cpuset.cpus"]
+        else:
+            continue
+        parts = [part for part in path.split("/") if part]
+        if job and f"job_{job}" in parts:
+            parts = parts[: parts.index(f"job_{job}") + 1]
+        for base in bases:
+            for name in names:
+                try:
+                    text = (base.joinpath(*parts) / name).read_text()
+                except OSError:
+                    continue
+                try:
+                    return cpu_list(text) or None
+                except ValueError:
+                    return None
+    return None
+
+
+def cpu_affinity(
+    strict,
+    getter=None,
+    topology="/sys/devices/system/cpu",
+    environ=None,
+    cpuset=None,
+):
+    """The CPU affinity of this process, with the cores it lies on.
+
+    ``cpus`` is ``os.sched_getaffinity(0)`` (``getter(0)`` in its place);
+    ``physical_cores`` holds one ``<package>:<core>`` per physical core
+    that the CPUs belong to, and ``core_threads`` maps each of them to the
+    hardware threads of that core (``topology/core_cpus_list``, or
+    ``thread_siblings_list`` on an older kernel), all from ``topology``,
+    ``/sys/devices/system/cpu``; ``job_cpuset`` is :func:`job_cpuset`
+    (``cpuset()`` in its place). A record read on another machine thus
+    still shows whether its task had one physical core to itself
+    (:func:`host_problems`). None where the platform has no affinity call.
+    """
+    getter = (
+        getattr(os, "sched_getaffinity", None) if getter is None else getter
+    )
     if getter is None:
         return _unavailable(strict, "os.sched_getaffinity")
     cpus = sorted(getter(0))
-    cores = set()
+    cores, threads = set(), {}
     for cpu in cpus:
-        topology = Path(f"/sys/devices/system/cpu/cpu{cpu}/topology")
+        folder = Path(topology) / f"cpu{cpu}" / "topology"
         try:
-            package = (topology / "physical_package_id").read_text().strip()
-            core = (topology / "core_id").read_text().strip()
-        except OSError as error:
+            package = (folder / "physical_package_id").read_text().strip()
+            core = (folder / "core_id").read_text().strip()
+            name = f"{package}:{core}"
+            if name not in threads:
+                siblings = folder / "core_cpus_list"
+                if not siblings.is_file():
+                    siblings = folder / "thread_siblings_list"
+                threads[name] = cpu_list(siblings.read_text())
+        except (OSError, ValueError) as error:
             _unavailable(strict, f"the topology of CPU {cpu}", error)
-            return {"cpus": cpus, "physical_cores": None}
-        cores.add(f"{package}:{core}")
-    return {"cpus": cpus, "physical_cores": sorted(cores)}
+            return {
+                "cpus": cpus,
+                "physical_cores": None,
+                "core_threads": None,
+                "job_cpuset": None,
+            }
+        cores.add(name)
+    return {
+        "cpus": cpus,
+        "physical_cores": sorted(cores),
+        "core_threads": dict(sorted(threads.items())),
+        "job_cpuset": (job_cpuset(environ) if cpuset is None else cpuset()),
+    }
 
 
 def slurm_ids(environ=None):
@@ -1302,7 +1448,7 @@ def host_part(strict=None, environ=None):
         "cpu_model": cpu_model(strict),
         "node_features": node_features(strict, env),
         "blas": blas_libraries(strict),
-        "cpu_affinity": cpu_affinity(strict),
+        "cpu_affinity": cpu_affinity(strict, environ=env),
         "threads": {key: env.get(key) for key in THREAD_KEYS},
         "slurm": slurm_ids(env),
     }
@@ -1311,9 +1457,13 @@ def host_part(strict=None, environ=None):
 def host_problems(host, node_feature):
     """Why a record's host part does not show the campaign's node and core.
 
-    The node's features must include ``node_feature`` and the CPU affinity
-    must lie on one physical core. Returns the problems, empty when there
-    are none.
+    The node's features must include ``node_feature``, and the task must
+    have had one physical core to itself: its CPU affinity lies on one
+    physical core, and the affinity or the job's cpuset holds exactly the
+    hardware threads of that core, so that no other job could run on the
+    core's other threads. Where the core has one thread (no SMT), the
+    affinity is that thread. Returns the problems, empty when there are
+    none.
     """
     host = host or {}
     problems = []
@@ -1335,6 +1485,26 @@ def host_problems(host, node_feature):
             f"the CPU affinity {affinity.get('cpus')} spans "
             f"{len(affinity['physical_cores'])} physical cores"
         )
+    else:
+        [core] = affinity["physical_cores"]
+        threads = (affinity.get("core_threads") or {}).get(core)
+        cpus = affinity.get("cpus") or []
+        cpuset = affinity.get("job_cpuset")
+        if not threads:
+            problems.append(
+                f"the record holds no hardware threads of core {core}"
+            )
+        elif set(cpus) != set(threads) and set(cpuset or ()) != set(threads):
+            job = (
+                "the record holds no cpuset of the job"
+                if cpuset is None
+                else f"the job's cpuset {cpuset} is not those threads either"
+            )
+            problems.append(
+                f"the CPU affinity {cpus} is not the hardware threads "
+                f"{threads} of core {core}, and {job}: another job may have "
+                "run on the core"
+            )
     return problems
 
 

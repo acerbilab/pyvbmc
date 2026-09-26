@@ -12,9 +12,12 @@
 # exits 0 at once, before the environment is even activated; otherwise it
 # runs `$HARNESS worker --out CAMPAIGN_DIR --case <line>` and exits with the
 # worker's code: 0 done, 1 failed (the case's <tag>.error.txt holds the
-# traceback), 75 claimed by a live task, 78 a source identity that differs
-# from the manifest's (these two leaving the case's files as they are) and
-# 128 plus the signal's number when a signal stopped it. The script execs
+# traceback), 64 a case line or a directory that is not the harness's, 75
+# claimed by a live task, 78 an identity that cannot be established (a
+# source tree git cannot read, the node's features that `scontrol show
+# node` does not give after its retries) or whose source part differs from
+# the manifest's (these three leaving the case's files as they are) and 128
+# plus the signal's number when a signal stopped it. The script execs
 # the worker, so that the signals Slurm sends reach it. At the time limit
 # or on scancel Slurm sends SIGTERM, and the worker removes the case's
 # partial files and its claim before it exits: `verify` reports the case as

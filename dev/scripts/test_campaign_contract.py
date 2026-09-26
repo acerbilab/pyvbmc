@@ -880,6 +880,46 @@ def test_identity_records_trees_imports_and_metadata(tmp_path, monkeypatch):
         )
 
 
+@pytest.mark.parametrize("kind", ["clone", "worktree"])
+def test_a_package_from_a_checkout_nested_in_the_tree_is_refused(
+    tmp_path, monkeypatch, kind
+):
+    """A checkout of another commit inside the tree, as a frozen worktree
+    under the harness checkout's ignored dev/scripts/runs/ is."""
+    environment = git_env(tmp_path)
+    tree = make_repo(
+        tmp_path / "tree",
+        {".gitignore": "runs/\n", "fakepkg_nested/__init__.py": ""},
+        environment,
+    )
+    nested = tree / "runs" / "old"
+    if kind == "clone":
+        make_repo(
+            nested,
+            {"fakepkg_nested/__init__.py": "__version__ = 'old'\n"},
+            environment,
+        )
+    else:
+        subprocess.run(
+            ["git", "worktree", "add", "-q", "--detach", str(nested)],
+            cwd=tree,
+            env=environment,
+            check=True,
+        )
+    assert contract.enclosing_checkout(nested / "fakepkg_nested") == (
+        nested.resolve()
+    )
+    monkeypatch.syspath_prepend(str(nested))
+    with pytest.raises(contract.IdentityError, match="inside the tree"):
+        contract.module_origin("fakepkg_nested", tree)
+    sys.modules.pop("fakepkg_nested")
+    monkeypatch.syspath_prepend(str(tree))
+    assert contract.module_origin("fakepkg_nested", tree) == str(
+        (tree / "fakepkg_nested").resolve()
+    )
+    sys.modules.pop("fakepkg_nested")
+
+
 def test_source_differences():
     base = {
         "source": {
@@ -933,7 +973,10 @@ def test_host_part_is_strict_on_linux(monkeypatch):
     if LINUX:
         host = contract.host_part(strict=True)
         assert any(entry["user_api"] == "blas" for entry in host["blas"])
-        assert host["cpu_affinity"]["physical_cores"]
+        affinity = host["cpu_affinity"]
+        assert set(affinity["core_threads"]) == set(affinity["physical_cores"])
+        for threads in affinity["core_threads"].values():
+            assert threads and set(threads) & set(affinity["cpus"])
     else:
         with pytest.raises(contract.HostError, match="sched_getaffinity"):
             contract.host_part(strict=True)
@@ -951,10 +994,38 @@ def test_node_features_from_scontrol(slurm, monkeypatch):
     (slurm / "features").write_text("(null)\n", encoding="utf-8")
     assert contract.node_features(True, environment)["available"] == []
     (slurm / "scontrol_node_fail").write_text("", encoding="utf-8")
-    assert contract.node_features(False, environment) is None
-    with pytest.raises(contract.HostError, match="node7"):
-        contract.node_features(True, environment)
+    assert contract.node_features(False, environment, waits=()) is None
+    with pytest.raises(contract.HostError, match="node7.*1 attempts"):
+        contract.node_features(True, environment, waits=())
     assert contract.node_features(True, {}) is None
+
+
+def test_node_features_retries_a_failed_query(slurm, monkeypatch):
+    """The controller fails twice, then answers: the third query counts."""
+    environment = {"SLURM_JOB_ID": "5", "SLURMD_NODENAME": "node7"}
+    slept = []
+    monkeypatch.setattr(contract.time, "sleep", slept.append)
+    (slurm / "scontrol_node_fail_count").write_text("2", encoding="utf-8")
+    features = contract.node_features(True, environment)
+    assert features["available"] == ["stubfeat"]
+    assert slept == list(contract.SCONTROL_WAITS[:2])
+    # Failing every time: each wait, then the refusal.
+    (slurm / "scontrol_node_fail").write_text("", encoding="utf-8")
+    slept.clear()
+    with pytest.raises(contract.HostError, match="4 attempts"):
+        contract.node_features(True, environment)
+    assert slept == list(contract.SCONTROL_WAITS)
+
+
+def affinity(cpus, threads, cpuset=None):
+    """A recorded affinity on one core ``0:4`` whose threads are
+    ``threads``."""
+    return {
+        "cpus": cpus,
+        "physical_cores": ["0:4"],
+        "core_threads": {"0:4": threads},
+        "job_cpuset": cpuset,
+    }
 
 
 def test_host_problems():
@@ -964,18 +1035,134 @@ def test_host_problems():
             "available": ["amd", "x"],
             "active": [],
         },
-        "cpu_affinity": {"cpus": [4, 68], "physical_cores": ["0:4"]},
+        "cpu_affinity": affinity([4, 68], [4, 68]),
     }
     assert contract.host_problems(good, "amd") == []
     assert (
         "lacks the feature intel" in contract.host_problems(good, "intel")[0]
     )
     two = dict(
-        good, cpu_affinity={"cpus": [4, 5], "physical_cores": ["0:4", "0:5"]}
+        good,
+        cpu_affinity={
+            "cpus": [4, 5],
+            "physical_cores": ["0:4", "0:5"],
+            "core_threads": {"0:4": [4], "0:5": [5]},
+            "job_cpuset": None,
+        },
     )
     assert "2 physical cores" in contract.host_problems(two, "amd")[0]
     bare = {"node_features": None, "cpu_affinity": None}
     assert len(contract.host_problems(bare, "amd")) == 2
+    # No SMT: the core's one thread.
+    smt_off = dict(good, cpu_affinity=affinity([4], [4]))
+    assert contract.host_problems(smt_off, "amd") == []
+    # One hardware thread of a two-thread core: another job may hold the
+    # other, unless the job's cpuset shows the whole core as the job's.
+    [problem] = contract.host_problems(
+        dict(good, cpu_affinity=affinity([4], [4, 68])), "amd"
+    )
+    assert "not the hardware threads [4, 68]" in problem
+    assert "no cpuset of the job" in problem
+    [problem] = contract.host_problems(
+        dict(good, cpu_affinity=affinity([4], [4, 68], [4])), "amd"
+    )
+    assert "cpuset [4] is not those threads" in problem
+    whole = dict(good, cpu_affinity=affinity([4], [4, 68], [4, 68]))
+    assert contract.host_problems(whole, "amd") == []
+    # A record written without the threads of its core.
+    legacy = dict(good, cpu_affinity={"cpus": [4], "physical_cores": ["0:4"]})
+    [problem] = contract.host_problems(legacy, "amd")
+    assert "no hardware threads of core 0:4" in problem
+    # The stubs' one-core affinity passes.
+    stub = dict(good, cpu_affinity=stubs.ONE_CORE_AFFINITY)
+    assert contract.host_problems(stub, "amd") == []
+
+
+def fake_topology(root, cores, name="core_cpus_list"):
+    """``/sys/devices/system/cpu`` with ``cores``: ``{(package, core):
+    [cpu, ...]}``."""
+    for (package, core), cpus in cores.items():
+        for cpu in cpus:
+            folder = root / f"cpu{cpu}" / "topology"
+            folder.mkdir(parents=True)
+            (folder / "physical_package_id").write_text(f"{package}\n")
+            (folder / "core_id").write_text(f"{core}\n")
+            text = ",".join(str(c) for c in cpus)
+            (folder / name).write_text(f"{text}\n")
+    return root
+
+
+def test_cpu_affinity_from_the_topology(tmp_path):
+    smt = fake_topology(tmp_path / "smt", {(0, 4): [4, 68], (0, 5): [5, 69]})
+    found = contract.cpu_affinity(
+        True, lambda pid: {4}, smt, cpuset=lambda: [4, 68]
+    )
+    assert found == {
+        "cpus": [4],
+        "physical_cores": ["0:4"],
+        "core_threads": {"0:4": [4, 68]},
+        "job_cpuset": [4, 68],
+    }
+    host = {"node_features": {"available": ["f"]}, "cpu_affinity": found}
+    assert contract.host_problems(host, "f") == []
+    both = contract.cpu_affinity(
+        True, lambda pid: {4, 68}, smt, cpuset=lambda: None
+    )
+    assert both["core_threads"] == {"0:4": [4, 68]}
+    assert contract.host_problems(dict(host, cpu_affinity=both), "f") == []
+    lone = contract.cpu_affinity(
+        True, lambda pid: {69}, smt, cpuset=lambda: None
+    )
+    assert lone["physical_cores"] == ["0:5"]
+    assert contract.host_problems(dict(host, cpu_affinity=lone), "f")
+    # No SMT, on a kernel that names the threads thread_siblings_list.
+    flat = fake_topology(
+        tmp_path / "flat", {(1, 0): [8], (1, 1): [9]}, "thread_siblings_list"
+    )
+    one = contract.cpu_affinity(
+        True, lambda pid: {9}, flat, cpuset=lambda: None
+    )
+    assert one["core_threads"] == {"1:1": [9]}
+    assert contract.host_problems(dict(host, cpu_affinity=one), "f") == []
+    spread = contract.cpu_affinity(
+        True, lambda pid: {8, 9}, flat, cpuset=lambda: None
+    )
+    assert spread["physical_cores"] == ["1:0", "1:1"]
+    # A topology that cannot be read: recorded as unknown, or refused.
+    with pytest.raises(contract.HostError, match="topology of CPU 3"):
+        contract.cpu_affinity(True, lambda pid: {3}, flat)
+    unknown = contract.cpu_affinity(False, lambda pid: {3}, flat)
+    assert unknown["physical_cores"] is None
+
+
+def test_the_job_cpuset_from_its_cgroup(tmp_path):
+    job = {"SLURM_JOB_ID": "812"}
+    proc = tmp_path / "cgroup"
+    root = tmp_path / "fs"
+    # cgroup v2: the task's cgroup lies under the job's, whose cpuset is
+    # the job's allocation.
+    proc.write_text(
+        "0::/system.slice/slurmstepd.scope/job_812/step_batch/user/task_0\n"
+    )
+    job_dir = root / "system.slice" / "slurmstepd.scope" / "job_812"
+    (job_dir / "step_batch" / "user" / "task_0").mkdir(parents=True)
+    (job_dir / "cpuset.cpus.effective").write_text("4,68\n")
+    assert contract.job_cpuset(job, proc, root) == [4, 68]
+    # Without the job's component, the process's own cgroup.
+    task = job_dir / "step_batch" / "user" / "task_0"
+    (task / "cpuset.cpus.effective").write_text("4\n")
+    assert contract.job_cpuset({"SLURM_JOB_ID": "9"}, proc, root) == [4]
+    # cgroup v1: the cpuset controller's hierarchy.
+    proc.write_text("7:cpuset:/slurm/uid_1/job_812/step_0\n4:memory:/x\n")
+    v1 = root / "cpuset" / "slurm" / "uid_1" / "job_812"
+    v1.mkdir(parents=True)
+    (v1 / "cpuset.effective_cpus").write_text("10-11\n")
+    assert contract.job_cpuset(job, proc, root) == [10, 11]
+    # Nothing to read: null.
+    assert contract.job_cpuset(job, tmp_path / "absent", root) is None
+    proc.write_text("0::/elsewhere\n")
+    assert contract.job_cpuset(job, proc, root) is None
+    assert contract.cpu_list("0-2,7,9-10") == [0, 1, 2, 7, 9, 10]
 
 
 # --------------------------------------------------------------------------
@@ -983,7 +1170,7 @@ def test_host_problems():
 # --------------------------------------------------------------------------
 
 
-def identity_with_host(features=("stubfeat",), cores=("0:3",)):
+def identity_with_host(features=("stubfeat",)):
     return {
         "source": {"trees": {"harness": {"commit": "a", "clean": True}}},
         "host": {
@@ -992,7 +1179,7 @@ def identity_with_host(features=("stubfeat",), cores=("0:3",)):
                 "available": list(features),
                 "active": [],
             },
-            "cpu_affinity": {"cpus": [3], "physical_cores": list(cores)},
+            "cpu_affinity": dict(stubs.ONE_CORE_AFFINITY),
         },
     }
 

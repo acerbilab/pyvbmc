@@ -67,9 +67,13 @@ def subset_indices(name, count):
 def this_identity():
     record = contract.identity({"harness": ROOT}, FILES)
     if os.environ.get("STUB_FAKE_AFFINITY"):
+        # campaign_slurm_stubs.ONE_CORE_AFFINITY, which this harness's
+        # scratch repositories do not hold.
         record["host"]["cpu_affinity"] = {
             "cpus": [3],
             "physical_cores": ["0:3"],
+            "core_threads": {"0:3": [3]},
+            "job_cpuset": None,
         }
     return record
 

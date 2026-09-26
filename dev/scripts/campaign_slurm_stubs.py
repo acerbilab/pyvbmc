@@ -144,6 +144,12 @@ if [ "${1:-}" = show ] && [ "${2:-}" = node ]; then
         echo "Node ${3:-} not found" >&2
         exit 1
     fi
+    count=$(cat "$state/scontrol_node_fail_count" 2>/dev/null || echo 0)
+    if [ "$count" -gt 0 ]; then
+        echo $((count - 1)) > "$state/scontrol_node_fail_count"
+        echo "slurm_load_node error: Socket timed out on send/recv" >&2
+        exit 1
+    fi
     features=$(cat "$state/features" 2>/dev/null || echo stubfeat)
     echo "NodeName=${3:-} Arch=x86_64 CoresPerSocket=4 CPUAlloc=1" \
         "AvailableFeatures=$features ActiveFeatures=$features State=MIXED"
@@ -163,6 +169,17 @@ STUBS = {
     "sacct": SACCT,
     "scontrol": SCONTROL,
     "zstd": ZSTD,
+}
+
+#: The CPU affinity of a task that had one physical core to itself, as
+#: ``campaign_contract.cpu_affinity`` records it: CPU 3, the one hardware
+#: thread of core 3 of package 0, for a test to give a record that the host
+#: it runs on cannot.
+ONE_CORE_AFFINITY = {
+    "cpus": [3],
+    "physical_cores": ["0:3"],
+    "core_threads": {"0:3": [3]},
+    "job_cpuset": None,
 }
 
 
@@ -307,7 +324,7 @@ class FakeSite:
                     "filepath": f"{env}/lib/libopenblas.so",
                 }
             ],
-            "cpu_affinity": {"cpus": [3], "physical_cores": ["0:3"]},
+            "cpu_affinity": json.loads(json.dumps(ONE_CORE_AFFINITY)),
             "threads": {"OMP_NUM_THREADS": "1"},
             "slurm": {
                 "job_id": None,
