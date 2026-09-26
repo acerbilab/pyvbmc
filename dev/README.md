@@ -609,7 +609,9 @@ reason.
   exit, the identity and claim refusals, the clean-up after a failure or a
   SIGTERM, a completion record holding the run's filter verdict, metrics,
   `success_flag`, `convergence_status`, `message`, `r_index` and
-  `iterations`); `run` is the workstation supervisor, walking the
+  `iterations`), and refuses with exit 64 a line that is not a case and a
+  directory that is not one of this harness's contract campaigns;
+  `run` is the workstation supervisor, walking the
   conditions in manifest order, seeds upward, one `worker` process at a
   time, stopping each condition once its filtered target or its seed cap
   is reached (`--pilot-seeds K` runs exactly K seeds per condition
@@ -625,7 +627,11 @@ reason.
   records the SHA-256 of the manifest and of `verification.json`, against
   which `stackable_selection` checks a pool before the comparison's
   `prepare` stacks it (a passing verification, the selection made after
-  it, and the stopping rule replayed on the verified cases); `summarize`
+  it, and the stopping rule replayed on the verified cases with the
+  allocation's first seed, seed cap and filtered target, or the target
+  `select --target` gave, which the selection records as
+  `target_override`); a pool selected before its latest verification is
+  made stackable by running `select` again; `summarize`
   writes the per-condition pass rates, convergence, wall times and metric
   quartiles from the cases the directory holds; `verify` re-checks every
   stored artifact post hoc against its completion record and the manifest
@@ -655,14 +661,17 @@ reason.
   unfinished seeds past a shortfall, the checks of
   `stackable_selection`), summary, the contract's refusals, claims,
   clean-up and `verify` states, the
-  identity of a case run by the array worker and by `run`, the flat
-  layout, and one campaign through the driver; it reads the gpyreg
-  checkout from `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
+  identity of a case run by the array worker and by `run`, a case run
+  where neither package has installed metadata, the flat layout, and one
+  campaign through the driver; it reads the gpyreg checkout from
+  `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
   the transformer, every evaluation, the run's state, options and
-  metadata) and verifies it against the live objects, posterior,
+  metadata, whose identity gives None for a version the installed
+  metadata cannot name, as where PyVBMC and gpyreg are imported from
+  their source trees) and verifies it against the live objects, posterior,
   statistics and evaluations alike; `load_run` rebuilds every object
   through the public constructors; `verify_run` re-runs the checks on a
   stored artifact, including the recomputation gate (`_gp_log_joint`

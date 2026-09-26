@@ -49,7 +49,7 @@ import platform
 import subprocess
 import sys
 import time
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path, PurePosixPath
 
 HERE = Path(__file__).resolve().parent
@@ -156,6 +156,18 @@ def _git(path, *args):
         return None
 
 
+def installed_version(name):
+    """The version the installed distribution ``name`` names, or None.
+
+    None where no distribution of that name is installed: a package
+    imported from a source tree on ``sys.path`` has none.
+    """
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return None
+
+
 def environment(gpyreg_source=None):
     """This process's identity, in two halves: ``source`` and ``host``.
 
@@ -165,9 +177,15 @@ def environment(gpyreg_source=None):
     of the harness modules. Every process of one campaign must agree on
     it, so that a resumed or distributed campaign cannot mix versions.
     ``host`` is where the process ran: hostname, platform, interpreter,
-    import paths, the versions the installed distributions report and the
-    thread environment. It is recorded and never compared, so that any
-    node may run any case of a campaign.
+    import paths, the thread environment and, under
+    ``installed_metadata_versions``, the versions that the installed
+    distributions of PyVBMC and gpyreg name. It is recorded and never
+    compared, so that any node may run any case of a campaign.
+
+    Every version read from an installed distribution's metadata
+    (:func:`installed_version`) is None where no distribution of that name
+    is installed, as in the campaign environment of the Slurm plan, which
+    imports PyVBMC and gpyreg from their source trees on ``sys.path``.
 
     With ``gpyreg_source`` given, raises unless gpyreg was imported from
     ``<gpyreg_source>/gpyreg``: every process of a campaign must use the
@@ -190,20 +208,22 @@ def environment(gpyreg_source=None):
             "python": sys.version.split()[0],
             "pyvbmc_commit": _git(ROOT, "rev-parse", "HEAD"),
             "gpyreg_commit": _git(gp_dir.parent, "rev-parse", "HEAD"),
-            "numpy": version("numpy"),
-            "scipy": version("scipy"),
+            "numpy": installed_version("numpy"),
+            "scipy": installed_version("scipy"),
         },
         "host": {
             "hostname": platform.node(),
             "platform": platform.platform(),
             "executable": sys.executable,
             "pyvbmc_import": str(Path(pyvbmc.__file__).resolve().parent),
-            # What the installed distributions report, which an editable
-            # install freezes at install time: provenance of the node, not
-            # of the source.
-            "pyvbmc_version": version("pyvbmc"),
             "gpyreg_import": str(gp_dir),
-            "gpyreg_version": version("gpyreg"),
+            # What the installed distributions name, which an editable
+            # install freezes at install time and which a tree imported by
+            # path need not match: provenance of the node, not of the
+            # source.
+            "installed_metadata_versions": {
+                name: installed_version(name) for name in ("pyvbmc", "gpyreg")
+            },
             "threads": {k: os.environ.get(k) for k in THREAD_KEYS},
         },
     }

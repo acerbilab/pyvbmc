@@ -1406,6 +1406,72 @@ def test_a_live_claim_refuses_a_second_worker(campaign, tmp_path, slurm):
     assert code == 0 and case["status"] == "in_flight"
 
 
+#: A ``sitecustomize`` under which ``importlib.metadata`` finds no installed
+#: distribution of PyVBMC and gpyreg, in every process whose ``PYTHONPATH``
+#: names its directory: the original arm's subprocess inherits it.
+HIDDEN_METADATA = """\
+import importlib.metadata as _metadata
+
+_from_name = _metadata.Distribution.from_name.__func__
+
+
+def _hiding_from_name(cls, name):
+    if name.lower().replace("_", "-") in {"pyvbmc", "gpyreg"}:
+        raise _metadata.PackageNotFoundError(name)
+    return _from_name(cls, name)
+
+
+_metadata.Distribution.from_name = classmethod(_hiding_from_name)
+"""
+
+
+def test_a_two_arm_task_runs_where_the_packages_have_no_metadata(
+    campaign, tmp_path
+):
+    """The campaign environment installs neither PyVBMC nor gpyreg, and
+    ``importlib.metadata`` finds no distribution of either, in the task's
+    process and in the original arm's subprocess: the task completes, with
+    the cells of the finished campaign, and its record gives None for the
+    versions the installed metadata would name."""
+    out, _, tasks = campaign_copy(campaign, tmp_path, missing=[1])
+    task = tasks[0]
+    assert "original" in task["arms"]
+    site = tmp_path / "site"
+    site.mkdir()
+    (site / "sitecustomize.py").write_text(HIDDEN_METADATA, encoding="utf-8")
+    environment = harness_environment()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        [str(site), *[p for p in [environment.get("PYTHONPATH")] if p]]
+    )
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import importlib.metadata as m\n"
+            "try:\n    m.version('pyvbmc')\n"
+            "except m.PackageNotFoundError:\n    print('absent')\n",
+        ],
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+    assert probe.stdout.strip() == "absent", probe.stdout + probe.stderr
+    result = run_script(
+        "worker", "--out", str(out), "--case", task["line"], env=environment
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    record = contract.read_json(contract.record_path(out, task["tag"]))
+    assert record["identity"]["imports"]["installed_metadata_versions"] == {
+        "pyvbmc": None,
+        "gpyreg": None,
+    }
+    assert str(site) in record["original_arm"]["pythonpath"].split(os.pathsep)
+    for number, path in zip(task["cells"], task["paths"]):
+        rerun = contract.read_json(out / path)["cell"]
+        first = campaign["results"]["cells"][number]
+        assert canonical(rerun) == canonical(first)
+
+
 def test_a_two_arm_task_without_the_baseline_is_refused(campaign, tmp_path):
     """Without BASELINE_DIR the original arm's identity cannot be
     established: the worker refuses before it claims or touches anything."""
@@ -2075,6 +2141,14 @@ def test_the_worker_refuses_a_line_outside_the_campaign(campaign, tmp_path):
     assert result.returncode == contract.EXIT_USAGE
     assert "is not a manifest of" in result.stderr
     assert sorted(p.name for p in other.iterdir()) == ["manifest.json"]
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    result = run_script(
+        "worker", "--out", str(empty), "--case", tasks[1]["line"]
+    )
+    assert result.returncode == contract.EXIT_USAGE
+    assert "holds no readable manifest.json" in result.stderr
+    assert list(empty.iterdir()) == []
 
 
 def test_an_original_arm_that_died_says_how(tmp_path):
