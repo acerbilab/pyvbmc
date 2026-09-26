@@ -130,6 +130,21 @@ records its execution.
   record (PI, 2026-09-25; the
   [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
 
+- [ ] **The swing of the ELBO after a rotoscaling in Example 2.** In
+  Example 2, executed on 2026-09-26 with the numerics of `1f9c207a` (the
+  notebook as committed on `feat-notebooks-1.5`; seeded, bounded, `D = 2`),
+  the rotoscaling of iteration 10 is kept, and the ELBO reads -0.82 ± 0.87
+  there (sKL 118), then -104.79 ± 10.60 in iteration 11, -2.44 in
+  iteration 12 and -2.03 in iteration 13; the run ends stable at -1.871
+  against the true -1.836. In the other eight notebooks every rotoscaling
+  is undone and no such swing appears, and the output that Example 2 stored
+  before (executed in 2022) shows the ELBO moving by less than 0.2 around
+  its rotoscaling. Find out whether the
+  warp leaves the GP or the variational posterior in a state that a later
+  iteration has to repair, which would be a defect, or whether the swing is
+  a transient to expect; the notebook's text describes such swings in
+  general terms (PI, 2026-09-26).
+
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
   test targets with the release code on the cluster, the latest
