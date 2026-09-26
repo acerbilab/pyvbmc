@@ -5,6 +5,7 @@ The loggers are named after the package, not after the instance, so every
 user has configured on them.
 """
 
+import io
 import logging
 import os
 
@@ -12,6 +13,7 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.testing._logging import unconfigured_logging
 
 LOGGER_NAMES = ("VBMC", "VBMC_init", "VBMC.stream_only")
 
@@ -44,6 +46,21 @@ def _vbmc(log_file, **options):
         np.full((1, D), -1.0),
         np.full((1, D), 1.0),
         options={"log_file_name": str(log_file), "display": "off", **options},
+        seed=1,
+    )
+
+
+def _vbmc_from_a_vector():
+    """A ``VBMC`` whose starting point is a vector, which it reshapes and
+    reports reshaping."""
+    D = 2
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros(D),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
         seed=1,
     )
 
@@ -148,3 +165,50 @@ def test_log_file_level_that_is_no_level_is_refused(
     message = execinfo.value.args[0]
     assert "log_file_level" in message
     assert '"iter"' in message and "non-negative integer" in message
+
+
+def test_messages_go_to_standard_output_without_logging_configuration(
+    capsys, restored_loggers
+):
+    """Where the application configures no logging, as a script or a
+    notebook, VBMC's messages are written to standard output as bare text,
+    and the root logger, which belongs to the application, stays without a
+    handler."""
+    with unconfigured_logging():
+        _vbmc_from_a_vector()
+        root_handlers = list(logging.getLogger().handlers)
+    assert root_handlers == []
+    assert "Reshaping x0 to row vector.\n" in capsys.readouterr().out
+
+
+def test_log_records_of_other_libraries_are_left_to_them(
+    capsys, restored_loggers
+):
+    """A library that writes its log records through a handler of its own,
+    as PyMC does, shows each record once, and none on standard output."""
+    stream = io.StringIO()
+    other = logging.getLogger("pyvbmc_test_other_library")
+    handler = logging.StreamHandler(stream)
+    other.addHandler(handler)
+    other.setLevel(logging.INFO)
+    try:
+        with unconfigured_logging():
+            _vbmc_from_a_vector()
+            other.info("Sampling: [y]")
+    finally:
+        other.removeHandler(handler)
+        other.setLevel(logging.NOTSET)
+    assert stream.getvalue() == "Sampling: [y]\n"
+    assert "Sampling" not in capsys.readouterr().out
+
+
+def test_configured_logging_receives_each_message_once(
+    capsys, caplog, restored_loggers
+):
+    """Where the application has configured logging, VBMC's messages reach
+    its handlers, once each, and VBMC does not write them to standard output
+    itself."""
+    caplog.set_level(logging.INFO)
+    _vbmc_from_a_vector()
+    assert caplog.messages.count("Reshaping x0 to row vector.") == 1
+    assert "Reshaping" not in capsys.readouterr().out

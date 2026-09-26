@@ -1,9 +1,10 @@
 """Shared normalization of VBMC hard and plausible bounds."""
 
-import logging
 import sys
 
 import numpy as np
+
+from pyvbmc._logging import get_logger
 
 
 def _effective_bounds(lower_bounds, upper_bounds):
@@ -153,16 +154,24 @@ def _normalize_bounds(
     plausible_upper_bounds = np.atleast_1d(plausible_upper_bounds)
     try:
         if lower_bounds.shape != (1, D):
-            logging.warning("Reshaping lower bounds to (1, %d).", D)
+            get_logger("VBMC_init").warning(
+                "Reshaping lower bounds to (1, %d).", D
+            )
             lower_bounds = lower_bounds.reshape((1, D))
         if upper_bounds.shape != (1, D):
-            logging.warning("Reshaping upper bounds to (1, %d).", D)
+            get_logger("VBMC_init").warning(
+                "Reshaping upper bounds to (1, %d).", D
+            )
             upper_bounds = upper_bounds.reshape((1, D))
         if plausible_lower_bounds.shape != (1, D):
-            logging.warning("Reshaping plausible lower bounds to (1, %d).", D)
+            get_logger("VBMC_init").warning(
+                "Reshaping plausible lower bounds to (1, %d).", D
+            )
             plausible_lower_bounds = plausible_lower_bounds.reshape((1, D))
         if plausible_upper_bounds.shape != (1, D):
-            logging.warning("Reshaping plausible upper bounds to (1, %d).", D)
+            get_logger("VBMC_init").warning(
+                "Reshaping plausible upper bounds to (1, %d).", D
+            )
             plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
     except ValueError as exc:
         raise ValueError(
@@ -179,15 +188,25 @@ def _normalize_bounds(
 
     # Preserve warnings for integer inputs after validation and widening.
     if integer_inputs[0]:
-        logging.warning("Casting initial points to floating point.")
+        get_logger("VBMC_init").warning(
+            "Casting initial points to floating point."
+        )
     if integer_inputs[1]:
-        logging.warning("Casting lower bounds to floating point.")
+        get_logger("VBMC_init").warning(
+            "Casting lower bounds to floating point."
+        )
     if integer_inputs[2]:
-        logging.warning("Casting upper bounds to floating point.")
+        get_logger("VBMC_init").warning(
+            "Casting upper bounds to floating point."
+        )
     if integer_inputs[3]:
-        logging.warning("Casting plausible lower bounds to floating point.")
+        get_logger("VBMC_init").warning(
+            "Casting plausible lower bounds to floating point."
+        )
     if integer_inputs[4]:
-        logging.warning("Casting plausible upper bounds to floating point.")
+        get_logger("VBMC_init").warning(
+            "Casting plausible upper bounds to floating point."
+        )
 
     # Fixed variables (all bounds equal) are not supported
     fixidx = (

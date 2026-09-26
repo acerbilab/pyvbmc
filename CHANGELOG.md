@@ -1132,6 +1132,13 @@ its entry below.
 - The summaries of PyVBMC objects (`print(vp)`, `format_dict(results)` and
   the like) show a NumPy number as the value it holds, `'elbo': -1.88`,
   where with NumPy 2 they showed `'elbo': np.float64(-1.88)`.
+- PyVBMC leaves the configuration of logging to your program. Creating a
+  `VBMC` object configured Python's root logger to write to standard output,
+  so the log messages of other libraries went there too, those of a library
+  with a handler of its own, such as PyMC, twice, and a later call of
+  `logging.basicConfig` had no effect. PyVBMC's messages still appear on
+  standard output when your program configures no logging, and go to its
+  handlers when it does.
 
 ### Removed
 

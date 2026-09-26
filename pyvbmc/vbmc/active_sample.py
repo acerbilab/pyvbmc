@@ -6,6 +6,7 @@ import cma
 import gpyreg as gpr
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.acquisition_functions import AbstractAcqFcn
 from pyvbmc.acquisition_functions.utilities import string_to_acq
 from pyvbmc.function_logger import FunctionLogger
@@ -101,7 +102,7 @@ def active_sample(
         The updated GP.
     """
     # Logging
-    logger = logging.getLogger("ActiveSample")
+    logger = get_logger("ActiveSample")
     logger.setLevel(logging.INFO)
     if options.get("display") == "off":
         logger.setLevel(logging.WARN)

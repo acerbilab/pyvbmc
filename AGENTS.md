@@ -340,6 +340,14 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
 - **Rounding.** Where MATLAB has `round`, call `round_half_away_from_zero`
   (`pyvbmc/stats/_rounding.py`): Python's `round` and `np.round` send a half
   to the even integer.
+- **Logging.** Package code logs through named loggers taken from
+  `pyvbmc._logging.get_logger`, whose shared handler writes to standard
+  output only while the root logger has no handler. Nothing in the package
+  configures the root logger, which belongs to the application, and
+  nothing calls the module-level `logging.warning` and its kin, which
+  configure it on first use: a root logger configured by the package sends
+  other libraries' log records to standard output as well, and shows twice
+  those of a library with a handler of its own, PyMC among them.
 - **Heavy computation.** Run one heavy process at a time (the full test
   suite, benchmark and campaign runs): concurrent VBMC runs, each
   multi-threaded, can bring a workstation down. Short gates (the oracles, one
