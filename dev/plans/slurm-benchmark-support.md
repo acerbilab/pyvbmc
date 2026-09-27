@@ -1049,3 +1049,21 @@ run reproduces bit for bit.
   modules under Linux at the final commit, which passed there at
   `17cac66c`, and the harnesses in a Linux environment without PyVBMC and
   gpyreg, which the environment check of Phase 6 is.
+- 2026-09-27: `dev-next` merged into the branch (`aeb783bb`), bringing
+  `1f9c207a`, with which PyVBMC leaves the root logger to the application,
+  and `1bde36eb`, with which `display="off"` prints warnings only; the
+  package tree of the branch is `dev-next`'s at `3e6b813e`. The same
+  modules pass again with none skipped: on Windows the contract (133),
+  driver (74), population (59), analysis (55), pool (76), honest-ELBO
+  (14) and stacking (54) modules, under Linux in WSL the contract (133)
+  and driver (74). The workers' logs still receive PyVBMC's output: no
+  harness, and nothing a worker imports, configures the root logger, so
+  PyVBMC's handler writes to the worker's standard output, which the
+  sequential supervisors' `<tag>.log`, a task's `slurm/%A_%a.out` (which
+  holds standard error too) and the stacking's `original_arm.log` (the
+  original arm points its standard output at standard error) receive. A
+  process that imported the harness modules as a worker does and ran a
+  VBMC too short to converge at `display="off"` wrote the caution and a
+  timer warning to its captured log, its root logger without a handler
+  before and after the run. A converged run at `display="off"`, the
+  harnesses' setting, leaves only the harness's own lines in its log.
