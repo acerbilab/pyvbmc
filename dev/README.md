@@ -543,6 +543,51 @@ reason.
   configuration). `record-replay` adds a finished `golden_replay.py`
   report of the new configurations against the combined traces to that
   record. The README of the record is written by hand from its output.
+- `scripts/reference_promote.py` — promotes the after arm of the release
+  gate's population campaigns (`plans/slurm-benchmark-support.md`) to the
+  golden reference, in the manner of `golden/promotion_20260913/promote.py`;
+  `reference_join.py` cannot, since it extends a reference and refuses any
+  overlap with it. It runs on the machine of the replay fingerprints, one
+  step at a time: `fingerprints` runs `golden_replay.py` on every
+  configuration of the after arm at seed 0, each judged against the
+  population's envelopes alone (the Slurm plan's Phase 9); `prepare` checks
+  that `golden/baseline/` still holds `reference_990_20260913`, the after arm
+  against its verification report and rescored metrics (a case it does not
+  place as verified needs a ruling in `--rulings`), the assessment against
+  the SHA-256 the PI accepted, the fingerprints (one BLAS thread, historical
+  calibration budgets, the after arm's options, code and gpyreg, inside the
+  envelope) and the gate runs (`seeded_gate_runs.py`'s check, the after
+  arm's code, this host), then copies the fingerprints and the gate runs
+  into `scripts/runs/golden/<name>_fingerprints/` and writes the record
+  under `golden/promotion_<date>/` (`golden/README.md` as it stands, the
+  fingerprints' replay report, the gate runs' record, the even/odd null
+  check, a SHA-256 manifest and `validation.json`); `replay` replays the new
+  defaults against the prepared fingerprints; `publish`, once the record's
+  README is written and that replay is identical from a clean `HEAD`,
+  replaces the sidecars and the summary in `golden/baseline/` with the
+  reference's and rewrites together `golden_replay.py`'s `DEFAULT_BASELINE`
+  and `DEFAULT_CONFIGS`, the "Trajectories" entry of `AGENTS.md`, the
+  current reference's section and the `golden_replay.py` entry of this
+  file, `golden/README.md`, and the lines of this file and of
+  `analyze_population_run.py` that name what `golden/baseline/` holds. It
+  rewrites a passage only if it is the text the script was written against
+  (`PASSAGES`, by SHA-256), so an edit to one of those passages before the
+  promotion is carried into the script's template as well:
+  `test_reference_promote.py` fails until it is. The test module also runs
+  a whole promotion on a small release gate under a temporary root.
+- `scripts/seeded_gate_runs.py` — the six seeded gate runs of
+  `experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`
+  with the provenance that script does not record: `run --out DIR` records
+  them twice, each time in a fresh process with one BLAS thread and with
+  `performance_calibration="off"` added to every run's options, compares
+  the two recordings with the script's own `compare`, and writes
+  `gate_runs.json`, which holds each recording's identity
+  (`campaign_contract.identity`: this checkout's commit, the gpyreg
+  checkout, the imported versions, the host with its BLAS libraries and
+  thread variables) and the SHA-256 of every file; `check DIR` re-checks a
+  record. It refuses a dirty checkout without `--allow-dirty`. Its record
+  joins the replay fingerprints of the release gate (the Slurm plan, Phase
+  9); `test_seeded_gate_runs.py` records a stand-in gate script.
 - `scripts/boost_comparison.py` (kept at `764a177` on `retain/final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for

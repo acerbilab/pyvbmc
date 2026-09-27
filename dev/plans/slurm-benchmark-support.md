@@ -47,7 +47,10 @@ then Phase 6. The first cluster session has four steps:
 
 The brief for the postdoc follows, then the merge into `dev-next`. Any
 change to the code that the smoke campaigns need is a commit on the
-branch, with the test modules it touches run again.
+branch, with the test modules it touches run again. The tools of Phase 9
+and of the promotion that follows it, `seeded_gate_runs.py` and
+`reference_promote.py`, are on the branch and tested; the records they
+make wait for the release code.
 
 ## Purpose and scope
 
@@ -593,13 +596,18 @@ iteration history).
 `golden_replay.py` already takes the population whose accuracy envelope a
 run that parts is judged against (`--sidecars`); what changes at the
 promotion is its defaults, `DEFAULT_BASELINE` (the traces of
-`reference_990_20260913`) and `DEFAULT_CONFIGS` (which holds the golden
-label `rosenbrock_D2_noise1`). They change with the promotion, which the
-golden references item owns, together with `AGENTS.md` ("Trajectories"),
-the `golden_replay.py` entry of `dev/README.md` and `dev/golden/README.md`;
-the promotion itself needs a script in the manner of
+`reference_990_20260913`, in place of which come the replay fingerprints
+of Phase 9) and `DEFAULT_CONFIGS` (which holds the golden label
+`rosenbrock_D2_noise1`, in place of which comes
+`rosenbrock_D2_noise1_production`). The promotion, which the golden
+references item owns, is `reference_promote.py`'s, in the manner of
 `golden/promotion_20260913/promote.py`, since `reference_join.py` extends a
-reference and refuses any overlap with it.
+reference and refuses any overlap with it: it copies the after arm's
+verified sidecars into `dev/golden/baseline/` and the fingerprints into the
+reference's local traces directory, and changes the two defaults together
+with `AGENTS.md` ("Trajectories"), the current reference's section and the
+`golden_replay.py` entry of `dev/README.md`, and `dev/golden/README.md`
+(its steps are in `dev/README.md`).
 
 ### The arm comparison
 
@@ -928,18 +936,20 @@ with the missing and failed cases named and ruled on.
 
 On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
-with `golden_trace.py`: about 70 to 80 minutes by the laptop medians, and
+with `reference_promote.py fingerprints`, which runs them through
+`golden_replay.py`: about 70 to 80 minutes by the laptop medians, and
 `lumpy_D10_noise3_production`, which Phase 6 times. Each run must lie
 inside the after arm's accuracy envelope (`golden_replay.py --sidecars`,
 which reads the per-configuration directories of the after arm or of its
 tracked copies, counts verified cases only, and fails for a configuration
 it finds no population of), a coarse check that the machine and the cluster sample the same
-distribution. The six seeded gate runs, wrapped so that their record
-carries the commit, the gpyreg source, the thread settings and the host,
-and run with `performance_calibration="off"` so that no calibration cache
-enters them, are recorded twice and compared with the script's own
-`--compare`; they have no population, so no envelope applies. The set goes
-to the golden references item's promotion, with the populations.
+distribution. The six seeded gate runs are recorded twice by
+`seeded_gate_runs.py`, whose record carries the commit, the gpyreg source,
+the thread settings and the host, with `performance_calibration="off"` so
+that no calibration cache enters them, and compared with the gate script's
+own `compare`; they have no population, so no envelope applies. The set
+goes to the golden references item's promotion
+(`reference_promote.py prepare`), with the populations.
 **Acceptance:** every fingerprint lies inside its envelope, and each gate
 run reproduces bit for bit.
 
