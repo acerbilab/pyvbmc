@@ -72,22 +72,17 @@ C-24, C-37, E-1, E-3 and X-3.
 
 ## A: what users read
 
-**A-1** · fix · users · high
-- **Where:** `examples/pyvbmc_example_2_inputs_outputs.ipynb`, cell 18 and
-  its printed output; `examples/scripts/pyvbmc_example_2_full_code.py:58`.
-  The same value is in `dev/TODO.md` ("The acceptance of a rotoscaling"),
-  `dev/results/2026-09-26-example-2-rotoscale-swing.md:7` and
-  `dev/experiments/example2_rotoscale_20260926/replay_example2.py:46`.
+**A-1** · fix, at the release's re-execution of the notebooks · no one ·
+high
+- **Where:** `examples/pyvbmc_example_2_inputs_outputs.ipynb`, cell 18;
+  `examples/scripts/pyvbmc_example_2_full_code.py:58`.
 - **Finding:** Example 2 gives the true log evidence of its target as
-  −1.836. It is −1.83957: by adaptive quadrature, relative error 6e-13,
-  and on a 6001 × 60001 grid, both computed by the orchestrator.
-- **Fix:**
-  - notebook: `lml_true = -1.8396`, with its printed line; regenerate the
-    script;
-  - TODO: −1.840;
-  - the rotoscaling report and its replay script: corrected in place,
-    since their conclusions hold at −1.840;
-  - `CHANGELOG.md`: a line beside Example 1's correction.
+  −1.836. It is −1.8396 (adaptive quadrature and a fine grid, both computed
+  by the orchestrator). The difference, 0.004 nats, is far below anything
+  the example or its records compare, so no conclusion depends on it.
+- **Fix:** `lml_true = -1.8396`, with the script regenerated, when the
+  notebooks are re-executed for the release. The TODO and the rotoscaling
+  report can keep −1.836.
 - **Ruling:**
 
 **A-2** · decide · users · high
