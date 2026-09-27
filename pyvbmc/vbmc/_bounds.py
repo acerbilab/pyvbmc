@@ -109,7 +109,7 @@ def _normalize_bounds(
 
     if plausible_lower_bounds is None or plausible_upper_bounds is None:
         if N0 > 1:
-            logger.warning(
+            logger.info(
                 "PLB and/or PUB not specified. Estimating"
                 "plausible bounds from starting set X0..."
             )
@@ -154,22 +154,22 @@ def _normalize_bounds(
     plausible_upper_bounds = np.atleast_1d(plausible_upper_bounds)
     try:
         if lower_bounds.shape != (1, D):
-            get_logger("VBMC_init").warning(
+            get_logger("VBMC_init").info(
                 "Reshaping lower bounds to (1, %d).", D
             )
             lower_bounds = lower_bounds.reshape((1, D))
         if upper_bounds.shape != (1, D):
-            get_logger("VBMC_init").warning(
+            get_logger("VBMC_init").info(
                 "Reshaping upper bounds to (1, %d).", D
             )
             upper_bounds = upper_bounds.reshape((1, D))
         if plausible_lower_bounds.shape != (1, D):
-            get_logger("VBMC_init").warning(
+            get_logger("VBMC_init").info(
                 "Reshaping plausible lower bounds to (1, %d).", D
             )
             plausible_lower_bounds = plausible_lower_bounds.reshape((1, D))
         if plausible_upper_bounds.shape != (1, D):
-            get_logger("VBMC_init").warning(
+            get_logger("VBMC_init").info(
                 "Reshaping plausible upper bounds to (1, %d).", D
             )
             plausible_upper_bounds = plausible_upper_bounds.reshape((1, D))
@@ -186,25 +186,21 @@ def _normalize_bounds(
             "Plausible interval bounds PLB and PUB need to be finite."
         )
 
-    # Preserve warnings for integer inputs after validation and widening.
+    # Preserve the notices of integer inputs after validation and widening.
     if integer_inputs[0]:
-        get_logger("VBMC_init").warning(
+        get_logger("VBMC_init").info(
             "Casting initial points to floating point."
         )
     if integer_inputs[1]:
-        get_logger("VBMC_init").warning(
-            "Casting lower bounds to floating point."
-        )
+        get_logger("VBMC_init").info("Casting lower bounds to floating point.")
     if integer_inputs[2]:
-        get_logger("VBMC_init").warning(
-            "Casting upper bounds to floating point."
-        )
+        get_logger("VBMC_init").info("Casting upper bounds to floating point.")
     if integer_inputs[3]:
-        get_logger("VBMC_init").warning(
+        get_logger("VBMC_init").info(
             "Casting plausible lower bounds to floating point."
         )
     if integer_inputs[4]:
-        get_logger("VBMC_init").warning(
+        get_logger("VBMC_init").info(
             "Casting plausible upper bounds to floating point."
         )
 

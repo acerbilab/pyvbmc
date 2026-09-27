@@ -544,8 +544,9 @@ class VBMC:
         # and a list of lists several. The bounds check casts the values to
         # floating point.
         x0 = np.atleast_1d(np.asarray(x0))
-        if x0.ndim == 1:
-            get_logger("VBMC_init").warning("Reshaping x0 to row vector.")
+        # Reported once the logger follows the display level.
+        x0_reshaped = x0.ndim == 1
+        if x0_reshaped:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
@@ -605,6 +606,8 @@ class VBMC:
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
+        if x0_reshaped:
+            self.logger.info("Reshaping x0 to row vector.")
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -1435,7 +1438,7 @@ class VBMC:
             )
 
         if self.is_finished:
-            self.logger.warning("Continuing optimization from previous state.")
+            self.logger.info("Continuing optimization from previous state.")
             self.is_finished = False
             # Copies, not the history's entries themselves: those describe
             # the last recorded iteration and must not follow the live
@@ -2176,9 +2179,9 @@ class VBMC:
         else:
             success_flag = False
 
-        # Print final message
-        self.logger.warning(termination_message)
-        self.logger.warning(
+        # Print final message. At display "off" only the caution shows.
+        self.logger.info(termination_message)
+        self.logger.info(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
         if not success_flag:

@@ -717,6 +717,11 @@ its entry below.
 - The iteration display ends with a `finalize` line whenever the returned
   posterior is not that of the last iteration, including when it is the
   posterior of an earlier iteration.
+- With `display="off"`, a run prints warnings only, such as the caution that
+  the returned posterior may not have converged. 1.0.4 also printed why the
+  run ended and its estimate of the ELBO, which `results["message"]` and
+  `results["elbo"]` hold, and notes on how it prepared the inputs, such as
+  reshaping a vector `x0` to a row.
 - **Runs are faster.** The acquisition function is evaluated for a whole
   CMA-ES generation in one call, and `vp.pdf`, the expected log joint and the
   Monte Carlo entropy work on whole arrays where they looped over mixture

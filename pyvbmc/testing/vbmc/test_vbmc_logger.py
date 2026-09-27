@@ -212,3 +212,59 @@ def test_configured_logging_receives_each_message_once(
     _vbmc_from_a_vector()
     assert caplog.messages.count("Reshaping x0 to row vector.") == 1
     assert "Reshaping" not in capsys.readouterr().out
+
+
+def test_display_off_normalizes_the_inputs_without_a_word(
+    capsys, restored_loggers
+):
+    """At display "off" VBMC reshapes and casts its inputs, vectors of
+    integers here, without printing anything; at "iter" it reports each
+    change."""
+
+    def construct(display):
+        D = 2
+        return VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros(D, dtype=int),
+            np.full(D, -10),
+            np.full(D, 10),
+            np.full(D, -1),
+            np.full(D, 1),
+            options={"display": display},
+            seed=1,
+        )
+
+    with unconfigured_logging():
+        construct("off")
+        quiet = capsys.readouterr().out
+        construct("iter")
+        reported = capsys.readouterr().out
+    assert quiet == ""
+    assert "Reshaping x0 to row vector." in reported
+    assert "Reshaping lower bounds to (1, 2)." in reported
+    assert "Casting initial points to floating point." in reported
+
+
+def test_display_off_prints_only_the_caution_of_an_unconverged_run(
+    capsys, restored_loggers
+):
+    """At display "off" a run prints neither its termination message nor
+    its estimate of the ELBO, which the result dict holds; a run that stops
+    before converging still prints the caution."""
+    D = 2
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"display": "off", "max_iter": D},
+        seed=1,
+    )
+    with unconfigured_logging():
+        _, results = vbmc.optimize()
+    assert not results["success_flag"]
+    assert capsys.readouterr().out == (
+        "Caution: Returned variational solution may have not converged.\n"
+    )
