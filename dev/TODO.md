@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-26. These lists describe scope, not priority or execution
+Updated 2026-09-27. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -77,9 +77,14 @@ records its execution.
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed; next are Phase 1b and
   the smoke campaigns on the cluster, then the brief, and the merge into
-  `dev-next`. Needed before relying on that workflow for further
-  cluster campaigns, not before local experiments; the final large-scale
-  check and the new reference below are the first such campaigns. See
+  `dev-next`. The branch lacks two logging changes of `dev-next`:
+  `1f9c207a` leaves the root logger to the application, and `1bde36eb`
+  makes `display="off"` print warnings only (no harness reads the lines
+  that stopped printing). Merge `dev-next` into the branch and run its
+  harness test modules again before the cluster session. Needed before
+  relying on that workflow for further cluster campaigns, not before local
+  experiments; the final large-scale check and the new reference below are
+  the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
