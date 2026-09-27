@@ -118,3 +118,7 @@ suppress_warnings = [
     for filename in os.listdir("../../examples")
     if os.path.isfile(os.path.join("../../examples", filename))
 ]  # Avoid duplicate label warnings for Jupyter notebooks.
+# Example 2 stores its Plotly figure twice: as HTML, which the page shows, and
+# as Plotly JSON for notebook viewers, which myst-nb cannot render and warns
+# about. The suppression covers any output type myst-nb cannot render.
+suppress_warnings.append("mystnb.unknown_mime_type")
