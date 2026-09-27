@@ -4,7 +4,10 @@ The September 8 campaigns addressed three problems: the final posterior
 refinement could destroy a good solution, mixture-weight optimization could
 return a gradient inconsistent with its objective, and several controls for
 GP sampling and acquisition were incorrect or inactive. The selected repairs
-are implemented; the final population benchmark remains pending.
+are implemented; the integrated population assessment was completed and
+promoted on 2026-09-13
+([promotion record](golden/promotion_20260913/README.md)); the benchmark of
+the release code follows the port correctness review ([TODO.md](TODO.md)).
 
 The sections below explain each component, its defect, and the evidence behind
 the chosen repair. Detailed experiment reports remain in `results/`, and the
@@ -195,12 +198,13 @@ covariance falls back to the existing default proposal widths.
 candidate locations for the next expensive target evaluation. Its variance
 regularizer is meant to suppress candidates whose GP uncertainty is already
 below `tol_gp_var`, discouraging repeated effort in well-constrained regions.
-Initialization wrote `variance_regularized_acq_fcn`, while the reader looked for
-the older `variance_regularized_acqfcn` spelling, so new runs silently left the
-regularizer inactive. Column-vector acquisition outputs could also broadcast
-against pointwise masks into a matrix. The repair gives the canonical key
-precedence with a legacy fallback and normalizes supported vector shapes to one
-value per candidate before regularization and bound masks.
+Initialization wrote `variance_regularized_acqfcn`, while the reader looked for
+`variance_regularized_acq_fcn`, so new runs silently left the regularizer
+inactive. Column-vector acquisition outputs could also broadcast against
+pointwise masks into a matrix. The repair makes `variance_regularized_acq_fcn`
+the key that initialization writes and gives it precedence, with the `acqfcn`
+spelling read as a legacy fallback, and normalizes supported vector shapes to
+one value per candidate before regularization and bound masks.
 
 **Termination of GP hyperparameter sampling.** Early in a run, fitting the GP
 uses multiple hyperparameter samples to represent uncertainty. Once their
@@ -244,12 +248,17 @@ The eta and final-boost policies are implemented, the main-loop repairs are
 integrated, and the supported CI matrix is green. The optional gpyreg step-out
 repair is deferred to issue #44; current PyVBMC GP training does not enable that
 path, so it is not a release prerequisite and the dependency pin stays unchanged.
+*2026-09-27:* gpyreg fixed issue #44 on 2026-09-13 (`f610e11`, released in
+1.2.1); PyVBMC requires gpyreg 1.3.3 or later.
 
 The integrated population assessment starts with an
 [overnight first stage](plans/final-population-benchmark.md): 273 candidate
 runs compared with the existing 870-run reference. Assess quality, usability
 and boost acceptance/rejection tradeoffs, then decide whether further sampling
 is useful. A full 870-run candidate population is an optional extension.
+*Completed 2026-09-13:* the full 870-run candidate population was assessed
+and promoted with the 120 real-data pairs as `reference_990_20260913`; see
+the [promotion record](golden/promotion_20260913/README.md).
 
 S-VBMC compatibility and future algorithm delivery are discussed separately in
 the [ecosystem proposal](2026-09-08-ecosystem-integration.md). The completed
