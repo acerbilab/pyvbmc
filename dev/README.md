@@ -64,8 +64,8 @@ For the release overview, start with
   on noisy targets is a cross-run selection effect, the decision to leave
   the objective alone, and the two agreed phases: corrections, reporting
   and tips from the stored posteriors alone, then an exploration of a
-  cross-run honest estimate using the runs' GPs. Phase 1 is implemented,
-  verified and merged into `dev-next`; the execution record is
+  cross-run honest estimate using the runs' GPs. Phase 1 is implemented
+  and verified; the execution record is
   [plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).
 
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
