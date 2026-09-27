@@ -30,9 +30,12 @@ All four flags are 1 here.
 
 `get_matlab_vp()` in `test_variational_posterior.py` rebuilds a
 `VariationalPosterior` from these arrays with a default
-`ParameterTransformer`. Two tests use it, `test_mode_no_orig_flag` and
-`test_mode_orig_flag`; both compare `vp.mode()` against the mode MATLAB found
-for the same mixture, `[0.0540, -0.1818]`, at `atol=1e-4`. That pinned mode
+`ParameterTransformer`. Four tests use it. `test_mode_no_orig_flag` and
+`test_mode_orig_flag` compare `vp.mode()` against the mode MATLAB found for
+the same mixture, `[0.0540, -0.1818]`, at `atol=1e-4`;
+`test_mode_leaves_the_random_stream_alone` and
+`test_mode_screens_its_starting_points_without_the_gradient` (its
+`matlab_vp` case) use the mixture only as a test posterior. That pinned mode
 lives in the test, not in this file.
 
 ## `test_moments_no_orig_flag_2_MATLAB.npz`
