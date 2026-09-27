@@ -335,7 +335,7 @@ class AbstractAcqFcn(ABC):
     def _sq_dist(a: np.array, b: np.array):
         """
         Compute matrix of all pairwise squared distances between two sets
-        of vectors, stored in the columns of the two matrices `a` and `b`.
+        of vectors, stored in the rows of the two matrices `a` and `b`.
 
         Parameters
         ----------
@@ -384,7 +384,8 @@ class AbstractAcqFcn(ABC):
             The estimated observation noise.
         """
 
-        # unravel_index as the indicies are 1D otherwise
+        # The nearest training input of each test point, in length-scale
+        # units.
         pos = np.argmin(
             self._sq_dist(
                 Xs / optim_state.get("gp_length_scale"),

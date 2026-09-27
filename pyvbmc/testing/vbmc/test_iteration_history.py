@@ -52,6 +52,21 @@ def test__str__and__repr__():
     assert "r_index" in iteration_history.__str__()
     print(iteration_history.__repr__(full=True))
     assert "'r_index': [0.5]" in iteration_history.__repr__(full=True)
+    assert "self.check_keys: True" in iteration_history.__repr__(full=True)
+
+
+def test_str_counts_the_recorded_iterations():
+    """The summary gives the number of iterations recorded, the length of
+    the longest entry, and not the number of keys."""
+    iteration_history = IterationHistory(["elbo", "gp", "r_index", "vp"])
+    assert "num. iterations = 0" in str(iteration_history)
+    for iteration in range(3):
+        iteration_history.record_iteration(
+            {"elbo": -1.0 * iteration, "r_index": 0.1}, iteration
+        )
+    iteration_history.record("gp", "gp", 0)
+    assert len(iteration_history) == 4
+    assert "num. iterations = 3" in str(iteration_history)
 
 
 def test_len():

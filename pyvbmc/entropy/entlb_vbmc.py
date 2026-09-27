@@ -28,11 +28,6 @@ def entlb_vbmc(
     dH: np.ndarray
         Gradient of entropy lower bound.
 
-    Raises
-    ------
-    NotImplementedError
-        Not implemented for K > BigK.
-
     References
     ----------
     .. [1] Gershman, S. J., Hoffman, M. D., & Blei, D. M. (2012).

@@ -269,6 +269,11 @@ its entry below.
     (`PyMCTarget(..., setup_budget=)`, by default `20 + 5 * D`, where a
     Hessian costs `D`). The run reuses these evaluations, and their cost
     counts once against `max_fun_evals`.
+  - The adapter's warnings about its setup (a gradient it cannot use, a mode
+    search that reached its call cap, plausible bounds it had to clip) go
+    through PyVBMC's logging, as PyVBMC's other messages do: to standard
+    output while your program configures no logging, and to its handlers when
+    it does.
   - See the `PyMCTarget` page of the documentation and Example 8.
 - **Vectorized targets.** With `options={"vectorized_target": True}`, the
   target receives an array of shape `(N, D)` and returns one value per row. A
@@ -841,6 +846,9 @@ its entry below.
   for each of them.
 - The title of the final plot (`plot=True`, `create_vbmc_animation`) gave one
   iteration fewer than the run had performed.
+- `create_vbmc_animation` with `suptitle="full"`, the default, titles the
+  frame of an iteration with the actions that the iteration log lists for it
+  (such as "end warm-up"), as documented. It gave the iteration number alone.
 - After `VBMC.load`, the run, its posterior and its function logger share one
   parameter transformer, that of the loaded iteration. For a run that had
   warped its input space, `vbmc.parameter_transformer` was the transformer of
@@ -849,6 +857,12 @@ its entry below.
   which always printed as `None`, and shows the starting point in original
   coordinates, which was wrong after an input warp. The starting points in
   original coordinates are available as `vbmc.x0_orig`.
+- `print(vbmc.iteration_history)` gives the number of iterations recorded,
+  where it gave the number of keys of the history.
+- `repr(vbmc)` lists the prior and the number of components of the
+  variational posterior (`self.vp.K`) among its first lines. In their place it
+  listed `log_prior`, `sample_prior` and `K`, which a `VBMC` object does not
+  have, as `None`.
 - `entropy_switch=True` raised `TypeError` in the first iteration of any
   problem with five or more variables.
 - When SciPy's optimizer did not converge in a variational optimization with

@@ -17,6 +17,12 @@ def handle_0D_1D_input(
     result carries one row per row of its input, that is a ``(1, 1)``
     array.
 
+    The decorated function must be a method: the wrapper takes the first
+    positional argument as ``self`` and counts `patched_argpos` from the
+    argument after it. `patched_kwargs` and `patched_argpos` are paired by
+    position. The call must pass the patched argument, by keyword or by
+    position.
+
     Parameters
     ----------
     patched_kwargs : list of str

@@ -797,8 +797,8 @@ def test_set_parameters_not_raw():
 
 
 def test_set_parameters_not_raw_negative_error():
-    """The entries that hold ``sigma``, ``lambd`` and the weights must be
-    positive. The means are left positive here, so that the refusal can
+    """The entries that hold ``sigma``, ``lambd`` and the weights must not
+    be negative. The means are left positive here, so that the refusal can
     only come from those entries."""
     K = 2
     D = 3
@@ -808,7 +808,7 @@ def test_set_parameters_not_raw_negative_error():
     rng = np.random.default_rng(20260921)
     theta = rng.random(theta_size)
     theta[D * K :] *= -1
-    with pytest.raises(ValueError, match="must be positive"):
+    with pytest.raises(ValueError, match="must not be negative"):
         vp.set_parameters(theta, raw_flag=False)
 
 
@@ -821,7 +821,7 @@ def test_set_parameters_not_raw_checks_the_constrained_entries(
     D, K, optimize_mu, optimize_sigma, optimize_lambd, optimize_weights
 ):
     """With ``raw_flag=False`` every entry that holds ``sigma``, ``lambd``
-    or a weight is required to be positive, and those entries alone: the
+    or a weight is required not to be negative, and those entries alone: the
     means are unconstrained, and a vector that carries none of the three
     leaves nothing to check."""
     vp = VariationalPosterior(D, K, np.array([[5]]))
@@ -849,7 +849,7 @@ def test_set_parameters_not_raw_checks_the_constrained_entries(
     for idx in range(n_unconstrained, theta.size):
         negative = theta.copy()
         negative[idx] = -negative[idx]
-        with pytest.raises(ValueError, match="must be positive"):
+        with pytest.raises(ValueError, match="must not be negative"):
             vp.set_parameters(negative, raw_flag=False)
 
 

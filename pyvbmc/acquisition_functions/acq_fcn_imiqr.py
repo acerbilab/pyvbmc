@@ -63,12 +63,12 @@ class AcqFcnIMIQR(AbstractAcqFcn):
         optim_state : dict
             The dictionary describing PyVBMC's internal state.
         f_mu : np.ndarray
-            A ``(N, Ns_gp)`` array of GP predictive means at the importance
-            sampling points, where ``Ns_gp`` is the number of GP posterior
+            A ``(N, Ns_gp)`` array of GP predictive means at the candidate
+            points, where ``Ns_gp`` is the number of GP posterior
             hyperparameter samples.
         f_s2 : np.ndarray
-            A ``(N, Ns_gp)`` array of GP predictive variances at the importance
-            sampling points, where ``Ns_gp`` is the number of GP posterior
+            A ``(N, Ns_gp)`` array of GP predictive variances at the candidate
+            points, where ``Ns_gp`` is the number of GP posterior
             hyperparameter samples.
         f_bar : None
             Unused for this acquisition function.
@@ -212,9 +212,9 @@ class AcqFcnIMIQR(AbstractAcqFcn):
 
         The added term in the importance sampling proposal log density: The
         full proposal log density is ``is_log_full = is_log_base +
-        is_log_added``. Added part for VIQR/IMIQR is :math: `\\log [\\sinh(u *
-        f_s)]``, where ``f_s`` is the GP predictive variance at the input
-        points.
+        is_log_added``. Added part for VIQR/IMIQR is
+        :math:`\log [2 \sinh(u f_s)]`, where :math:`f_s` is the GP
+        predictive standard deviation at the input points.
 
         Parameters
         ----------
