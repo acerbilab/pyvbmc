@@ -281,7 +281,7 @@ class VBMC:
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
 
     VBMC computes a variational approximation of the full posterior and a lower
-    bound on the normalization constant (marginal likelhood or model evidence)
+    bound on the normalization constant (marginal likelihood or model evidence)
     for a provided unnormalized log posterior.
 
     Initialize a ``VBMC`` object to set up the inference problem, then run
@@ -355,7 +355,7 @@ class VBMC:
     prior, optional
         An optional separate prior. It can be a ``pyvbmc.priors.Prior``
         subclass, an appropriate ``scipy.stats`` distribution, or a list of
-        one-dimensional PyVBMC ``Prior`` and/or one-dimenional continuous
+        one-dimensional PyVBMC ``Prior`` and/or one-dimensional continuous
         ``scipy.stats`` distributions. (see the documentation on priors for
         more details). If ``prior`` is not `None`, the argument ``log_density``
         is assumed to represent the log-likelihood (otherwise it is assumed to
@@ -429,6 +429,19 @@ class VBMC:
         `plausible_upper_bounds`) are specified.
     ValueError
         When various checks for the bounds (LB, UB, PLB, PUB) of VBMC fail.
+    ValueError
+        When an option value, ``precomputed_evaluations`` or
+        ``initialization_cost`` is refused, when ``initialization_cost``
+        leaves too few evaluations of ``max_fun_evals`` for the initial
+        design, when the hard bounds reach outside the support of
+        ``prior``, or when at least ``fun_eval_start`` starting points are
+        given and the first ``fun_eval_start`` of them take one value in a
+        coordinate.
+    NotImplementedError
+        When the options select a feature of MATLAB VBMC that is not ported
+        (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
+        ``"slicesample"``, an acquisition function that asks for the MCMC
+        step of the importance sampler).
 
     References
     ----------
@@ -510,10 +523,13 @@ class VBMC:
         if uses_pymc_target:
             self._uses_pymc_target = True
 
-        # Random generator used by this instance: shared with its VP, handed
-        # to the GP hyperparameter fit (`train_gp` -> `gpyreg.GP.fit`) and
-        # to the CMA-ES noise handler, so a run never touches NumPy's global
-        # random state.
+        # Random generator used by this instance: shared with its VP, from
+        # which active sampling draws (the initial design, the search
+        # candidates, the CMA-ES population through cma's `randn` option and
+        # the importance samples), as does the variational optimization, and
+        # handed to the GP hyperparameter fit (`train_gp` ->
+        # `gpyreg.GP.fit`), so a run never touches NumPy's global random
+        # state.
         self.rng = get_rng(seed)
 
         # Initialize variables and algorithm structures
@@ -1197,7 +1213,7 @@ class VBMC:
                 raise ValueError(
                     """Hard bounds of integer variables need to be
                  set at +/- 0.5 points from their boundary values (e.g., -0.5
-                 nd 10.5 for a variable that takes values from 0 to 10)"""
+                 and 10.5 for a variable that takes values from 0 to 10)"""
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
@@ -1396,7 +1412,7 @@ class VBMC:
 
         VBMC computes a variational approximation of the full posterior and the
         ELBO (evidence lower bound), a lower bound on the log normalization
-        constant (log marginal likelhood or log model evidence) for the provided
+        constant (log marginal likelihood or log model evidence) for the provided
         unnormalized log posterior.
 
         Returns
@@ -2760,8 +2776,8 @@ class VBMC:
         ----------
         vp : VariationalPosterior
             The VariationalPosterior that should be boosted.
-        gp : GaussianProcess
-            The corresponding GaussianProcess of the VariationalPosterior.
+        gp : gpyreg.GP
+            The Gaussian process the VariationalPosterior was fitted with.
 
         Returns
         -------
@@ -2773,24 +2789,49 @@ class VBMC:
             The ELBO_SD of the VariationalPosterior resulting from the
             final boost.
         changed_flag : bool
-           Indicates if the final boost has taken place or not.
+            Whether the returned VariationalPosterior is the boosted one:
+            False when no boost was needed and when the guard rejected the
+            boosted posterior.
 
         Raises
         ------
         ValueError
-            With ``variable_means`` off, when ``gp`` has fewer training
-            inputs than ``vp`` has components.
+            If the option ``tol_elcbo_boost`` is neither None nor a finite
+            nonnegative number; or, with ``variable_means`` off, when ``gp``
+            has fewer training inputs than ``vp`` has components.
+        RuntimeError
+            If, with the guard on, neither ``vp`` nor the boosted posterior
+            has a finite ELBO and a finite nonnegative ELBO SD.
 
         Notes
         -----
-        The guard compares the optimizer's stored pre- and post-boost ELBO
-        and GP-based ELBO SD. It performs no diagnostic rescoring, and the SD
-        does not include Monte Carlo uncertainty from the entropy estimate.
+        A boost is needed when ``vp`` has fewer components than the boost
+        gives it (``min_final_components`` with ``variable_means`` on, the
+        number of training inputs of ``gp`` with it off), or when
+        ``ns_ent_boost`` or ``ns_ent_fine_boost`` changes the corresponding
+        entropy sample size.
 
-        The boost optimizes with warm-up over and the entropy annealing
-        switched off, on copies of the options and of the optimization
-        state; neither the instance's options nor its optimization state
-        is changed.
+        With the option ``tol_elcbo_boost`` set (0.1 by default), a guard
+        keeps the boosted posterior only if neither its ELBO nor its ELBO
+        minus five times its ELBO SD falls more than ``tol_elcbo_boost``
+        below that of ``vp``; otherwise it warns and returns ``vp``. A
+        boosted posterior whose ELBO or ELBO SD is not finite, or whose SD
+        is negative, is rejected in the same way, and one whose statistics
+        are valid is kept when those of ``vp`` are not. With
+        ``tol_elcbo_boost=None`` the boosted posterior is always returned.
+        The guard compares the optimizer's stored pre- and post-boost ELBO
+        and GP-based ELBO SD. It performs no diagnostic rescoring, and the
+        SD does not include Monte Carlo uncertainty from the entropy
+        estimate.
+
+        The boost optimizes with warm-up over, without pruning of
+        components, with the entropy sample sizes of the boost options
+        (``ns_ent_boost`` and its kin), with the stochastic optimization
+        allowed its ceiling of 10000 iterations whatever
+        ``max_iter_stochastic`` says and, under the guard, without the
+        weight penalty (``weight_penalty``). It runs on copies of the
+        options and of the optimization state; neither the instance's
+        options nor its optimization state is changed.
 
         With ``variable_means`` off the components of the boosted posterior
         sit at the training inputs of ``gp``, one each, and

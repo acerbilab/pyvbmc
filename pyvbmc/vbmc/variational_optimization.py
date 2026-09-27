@@ -142,7 +142,9 @@ def optimize_vp(
     ValueError
         If the full ELCBO evaluation of every optimized solution returns
         NaN, so that no variational parameters can be selected, or if the
-        option ``stochastic_optimizer`` is not ``"adam"``.
+        entropy is estimated by Monte Carlo, which the stochastic
+        optimization follows, and the option ``stochastic_optimizer`` is not
+        ``"adam"``.
 
     Notes
     =====
@@ -584,9 +586,9 @@ def _vp_bound_loss(
 
     """
 
-    # Mixture weights are controlled by the separate small-weight penalty
-    # below. Keep their parameters in the optimization vector, but exclude
-    # eta from the generic soft-bound loss.
+    # Mixture weights are controlled by the small-weight penalty that
+    # _neg_elcbo adds. Keep their parameters in the optimization vector, but
+    # exclude eta from the generic soft-bound loss.
     if vp.optimize_weights:
         bound_lb = np.array(theta_bnd["lb"], dtype=float, copy=True)
         bound_ub = np.array(theta_bnd["ub"], dtype=float, copy=True)
@@ -1179,16 +1181,19 @@ def _neg_elcbo(
     =======
     F : float
         Negative evidence lower confidence bound objective.
-    dF : np.ndarray
-        Gradient of NELCBO.
+    dF : np.ndarray or None
+        Gradient of NELCBO; ``None`` without ``compute_grad``.
     G : object
         The expected variational log joint probability.
     H : float
         Entropy term.
     varF : float
         Variance of NELCBO.
-    dH : np.ndarray
-        Gradient of entropy term.
+    dH : np.ndarray or None
+        Gradient of entropy term; ``None`` without ``compute_grad``. This
+        and the outputs below are returned only with ``separate_K``;
+        otherwise the function returns the first five, ``F, dF, G, H,
+        varF``.
     varG_ss : float
         Spread of the expected variational log joint across the GP
         hyperparameter samples: the sample variance of its value from

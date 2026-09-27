@@ -67,9 +67,11 @@ def active_sample(
 
     Parameters
     ----------
-    gp : GaussianProcess
+    gp : gpyreg.GP or None
         The GaussianProcess from the VBMC instance this function is called
-        from.
+        from. ``None`` runs the initial design instead of the acquisition:
+        the starting points and, where they fall short of `sample_count`,
+        points drawn in the plausible box.
     sample_count : int
         The number of samples.
     optim_state : dict
@@ -98,8 +100,8 @@ def active_sample(
         The updated optim_state.
     vp : VariationalPosterior
         The updated VP.
-    gp : gpyreg.GaussianProcess
-        The updated GP.
+    gp : gpyreg.GP or None
+        The updated GP; ``None`` after the initial design.
     """
     # Logging
     logger = get_logger("ActiveSample")
@@ -117,9 +119,10 @@ def active_sample(
     if gp is None:
         # No GP yet, just use provided points or sample from plausible box.
 
-        # TODO: if the uncertainty_level is 2 the user needs to fill in
-        # the cache for the noise S (not just for y) at each x0
-        # this is also not implemented in MATLAB yet.
+        # With specify_target_noise, `f_vals` is refused at construction,
+        # since it holds no noise SD: such observations come with their SDs
+        # through `precomputed_evaluations`, which the constructor logs
+        # itself, marking in `skip_logger` the starting points they cover.
 
         x0 = optim_state["cache"]["x_orig"]
         skip_logger_cache = optim_state["cache"].get("skip_logger")
@@ -677,53 +680,13 @@ def active_sample(
                     )
                     idx_cache_acq = np.nan
 
-            # region
-            ## Missing port
-            # if (
-            #     options["uncertainty_handling"]
-            #     and options["max_repeated_observations"] > 0
-            # ):
-            #     if (
-            #         optim_state["repeated_observations_streak"]
-            #         >= options["max_repeated_observations"]
-            #     ):
-            #         # Maximum number of consecutive repeated observations
-            #         # (to prevent getting stuck in a wrong belief state)
-            #         optim_state["repeated_observations_streak"] = 0
-            #     else:
-            #         from pyvbmc.vbmc.gaussian_process_train import (
-            #             _get_training_data,
-            #         )
-
-            #         # Re-evaluate acquisition function on training set
-            #         X_train = _get_training_data(function_logger)
-            #         # Disable variance-based regularization first
-            #         oldflag = optim_state["variance_regularized_acq_fcn"]
-            #         optim_state["variance_regularized_acq_fcn"] = False
-            #         # Use current cost of GP instead of future cost
-            #         old_t_algo_per_fun_eval = optim_state["t_algo_per_fun_eval"]
-            #         optim_state["t_algo_per_fun_eval"] = t_base / deltaN_eff
-            #         acq_train = acq_eval(
-            #             X_train, gp, vp, function_logger, optim_state
-            #         )
-            #         optim_state["variance_regularized_acq_fcn"] = oldflag
-            #         optim_state["t_algo_per_fun_eval"] = old_t_algo_per_fun_eval
-
-            #         idx_train = np.argmin(acq_train)
-            #         acq_train = acq_train[idx_train]
-
-            #         acq_now = acq_eval(
-            #             X_acq[0], gp, vp, function_logger, optim_state
-            #         )
-
-            #         if acq_train < options["repeated_acq_discount"]*acq_now:
-            #             X_acq[0] = X_train[idx_train]
-            #             optim_state["repeated_observations_streak"] += 1
-            #         else:
-            #             optim_state["repeated_observations_streak"] = 0
-            # endregion
-
-            # Missing port: line 356-361, unused?
+            # MATLAB compares the best training input with the search result
+            # after the search (`private/activesample_vbmc.m:334-365`) and
+            # repeats the observation when the input wins by
+            # `RepeatedAcqDiscount`. Here repeats are selected inside the
+            # sieve (above), so that comparison and its cost model have no
+            # counterpart (`README.md`, "Repeated observations are selected
+            # inside the sieve").
 
             xnew = X_acq
             # See if chosen point comes from starting cache
