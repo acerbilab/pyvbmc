@@ -304,11 +304,18 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1`. Elsewhere the
   tests and the generator's `--check` skip them unless
   `PYVBMC_ORACLES_ALL=1`, and the generator's targeted modes refuse to run.
-- **Trajectories.** `python dev/scripts/golden_replay.py` checks a change
-  step by step against the golden traces. A change that moves the default
-  trajectories is assessed on the benchmark suite before it is accepted; the
-  golden references are then updated and the old ones preserved
-  (`dev/README.md`).
+- **Trajectories.** `python dev/scripts/golden_replay.py` replays golden
+  configurations and compares each run step by step with its stored trace;
+  a run that parts from its trace passes when its finals stay inside the
+  population's envelope. The golden reference `reference_990_20260913`
+  predates the port review's fixes, which moved default trajectories, so
+  until it is replaced (`dev/TODO.md`, "The golden references after the
+  port review") the default configurations part from it whatever the
+  change. For a change that must move nothing, replay at the parent commit
+  first and pass that replay's `--out` directory as `--baseline`. A change
+  that moves the default trajectories is assessed on the benchmark suite
+  before it is accepted; the golden references are then updated and the old
+  ones preserved (`dev/README.md`).
 - **S-VBMC.** `pyvbmc/testing/svbmc/fixtures/references.npz` pins a seeded
   short optimization: the gate for changes to the numerics of `pyvbmc/svbmc/`,
   its entropy code in particular.
