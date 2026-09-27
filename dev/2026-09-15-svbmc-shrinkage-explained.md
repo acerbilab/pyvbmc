@@ -189,8 +189,10 @@ $$
 \nu = \frac{\operatorname{tr} \Sigma - \mathbf{1}^{\top} \Sigma \, \mathbf{1} / K}{K - 1},
 $$
 
-with $\mathbf{1}$ the vector of ones, which reduces to the mean $V_k$
-when $\Sigma$ is diagonal and is smaller otherwise. The reason: an
+with $\mathbf{1}$ the vector of ones. It equals the mean $V_k$ less the
+mean off-diagonal entry of $\Sigma$: the mean $V_k$ when $\Sigma$ is
+diagonal, and smaller when the errors covary positively on average, as
+one GP's estimates do here. The reason: an
 error shared by all components moves all the $I_k$ together and adds
 nothing to their spread, so it must not be subtracted from it.
 Derivation: with $I_k = \theta_k + \varepsilon_k$, take the expectation
