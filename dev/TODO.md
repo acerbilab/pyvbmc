@@ -75,13 +75,11 @@ records its execution.
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
-  `feat-slurm-campaigns`, reviewed twice and fixed; next are Phase 1b and
-  the smoke campaigns on the cluster, then the brief, and the merge into
-  `dev-next`. The branch lacks two logging changes of `dev-next`:
-  `1f9c207a` leaves the root logger to the application, and `1bde36eb`
-  makes `display="off"` print warnings only (no harness reads the lines
-  that stopped printing). Merge `dev-next` into the branch and run its
-  harness test modules again before the cluster session. Needed before
+  `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
+  in on 2026-09-27 (its package tree, the logging changes `1f9c207a` and
+  `1bde36eb` included, under which every harness test module passes); next
+  are Phase 1b and the smoke campaigns on the cluster, then the brief, and
+  the merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
