@@ -1077,3 +1077,27 @@ run reproduces bit for bit.
   timer warning to its captured log, its root logger without a handler
   before and after the run. A converged run at `display="off"`, the
   harnesses' setting, leaves only the harness's own lines in its log.
+- 2026-09-27/28: `dev-next` merged into the branch again (`52b16c96`),
+  bringing the release sweep's fixes and records. The same modules pass
+  again on Windows with none skipped: the contract (133), driver (74),
+  population (59), analysis (55), pool (76), honest-ELBO (14) and stacking
+  (54) modules. The tools of Phase 9 and of the promotion that follows it
+  are on the branch, since the promotion reads the array-mode campaigns of
+  `population_run.py` and the wrapper records its identity through
+  `campaign_contract.py`, and both run after the branch's merge:
+  `seeded_gate_runs.py` (`d6645999`), the wrapper of the six seeded gate
+  runs, and `reference_promote.py` (`4efee154`), the promotion
+  (`dev/README.md` describes both). Their test modules pass (8 and 7 tests);
+  the promotion's runs a whole promotion, from the fingerprints to the
+  rewritten documents, on two arms of `normal_D2` at seeds 0–2. The wrapper
+  recorded the real six runs twice at `4efee154` from clean checkouts,
+  with gpyreg at `d96d0d9`, in 9 minutes each: the 138 arrays of the two
+  recordings are identical. That run checks the wrapper and enters no
+  record; the records wait for the release code. The promotion copies the
+  after arm's verified sidecars into `dev/golden/baseline/` as the earlier
+  promotions did, so that `golden_trace.py compare dev/golden/baseline` and
+  the default `--sidecars` of `golden_replay.py` read the new reference
+  unchanged; the copies repeat the tracked copies' sidecars, about 12 MB for
+  2400 cases of about 5 KB. The reference's local traces directory,
+  `<name>_fingerprints`, holds its fingerprints and the gate runs; the
+  population's traces stay in its archive.

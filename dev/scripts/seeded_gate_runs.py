@@ -33,10 +33,9 @@ and receives, for each recording ``first`` and ``second``:
                    SHA-256 of this file, the imported versions and import
                    paths, and the host part: the hostname, the CPU, the
                    BLAS libraries with their thread counts and the thread
-                   variables), the gate script's path and SHA-256, the
-                   versions of PyVBMC and gpyreg, and each run's digest
-                   (the SHA-256 the gate script prints), counts, final ELBO
-                   and seconds
+                   variables), the gate script's path and SHA-256, and
+                   each run's digest (the SHA-256 the gate script prints),
+                   counts, final ELBO and seconds
 
 and ``gate_runs.json``, which holds both records, the SHA-256 of every file
 above, the comparison, and whether the recordings are identical. The exit
@@ -235,12 +234,6 @@ def run_summary(arrays, name):
     }
 
 
-def module_version(name):
-    module = sys.modules.get(name)
-    version = getattr(module, "__version__", None)
-    return version if isinstance(version, str) else None
-
-
 # --------------------------------------------------------------------------
 # One recording
 # --------------------------------------------------------------------------
@@ -281,10 +274,6 @@ def cmd_record(args):
             "files": {
                 "pyvbmc": pyvbmc.__file__,
                 "gpyreg": gpyreg.__file__,
-            },
-            "versions": {
-                "pyvbmc": module_version("pyvbmc"),
-                "gpyreg": module_version("gpyreg"),
             },
             "runs": {
                 name: {
