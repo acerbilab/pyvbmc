@@ -10,7 +10,7 @@ PyVBMC is developed by members (past and current) of the `Machine and Human Inte
 Development team
 ****************
 
-PyVBMC is actively developed mainly by members of `Luigi Acerbi's research group <https://www2.helsinki.fi/en/researchgroups/machine-and-human-intelligence>`_ at the University of Helsinki.
+PyVBMC is actively developed mainly by members of `Luigi Acerbi's research group <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence>`_ at the University of Helsinki.
 
 Core developers
 ------------------------

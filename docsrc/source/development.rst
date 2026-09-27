@@ -31,7 +31,7 @@ Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but de
      cd ../pyvbmc
      pip install -e ".[dev]"
 
-4. Install Jupyter to view the examples You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
+4. Install Jupyter to view the examples. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
 
      conda install jupyter
 
@@ -44,7 +44,7 @@ Coding conventions
 
 We try to follow common conventions whenever possible. Some useful reading:
 
-- `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`__
+- `PEP 8 -- Style Guide for Python Code <https://peps.python.org/pep-0008/>`__
 - `Code style in The Hitchhiker's Guide to Python <https://docs.python-guide.org/writing/style/>`__
 
 These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.
@@ -81,7 +81,7 @@ GitHub workflows automatically build and update the documentation whenever a com
 
 1. From your working branch, render new documentation::
 
-     cd /docsrc  # navigate to documentation source folder
+     cd docsrc  # navigate to documentation source folder
      make github  # build the docs and copy them to ./docs
 
    (If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
@@ -102,7 +102,7 @@ General structure
 .................
 
 For each new class, function, etc. a ``.rst`` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have ``functions``, ``classes``, etc.
-The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example::
+The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphinx where to compile the documentation, for example::
 
     .. autoclass:: pyvbmc.vbmc.VBMC
       :members:
@@ -125,7 +125,7 @@ Please use standard Python exceptions whenever it is sensible. Here is a list of
 ``git`` commits
 ---------------
 
-Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet is can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
+Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
 
 Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. `Read this <https://martinfowler.com/bliki/FeatureBranch.html>`__ ::
 
