@@ -514,7 +514,8 @@ reason.
   a scoring that failed, which the harness keeps and `verify` accepts, is
   left out of the boost summary's usability counts, counted and listed.
   Writes `assessment.json` and `comparison.md` (and, by default, the
-  campaign manifests) under `--out`.
+  campaign manifests) under `--out`, which is required: a report is a
+  record, so it has no default location.
   `test_analyze_population_run.py` checks the statistics, the reference
   check, and the comparison of two arms on campaign directories it writes
   and on their redacted copies.

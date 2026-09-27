@@ -1271,21 +1271,14 @@ def main(argv=None):
     parser.add_argument(
         "--out",
         type=Path,
-        help="where the report goes (default for the campaigns of one"
-        " treatment: dev/experiments/population_extension_20260911)",
+        required=True,
+        help="the directory the report is written to; a report is a"
+        " record, so it has no default location",
     )
     args = parser.parse_args(argv)
     if args.arms:
-        if args.out is None:
-            parser.error("--arms needs --out")
         return analyze_arms(*args.arms, args.rescoring, args.out)
-    return analyze(
-        args.campaign,
-        args.extension,
-        args.out
-        or runner.ROOT / "dev/experiments/population_extension_20260911",
-        args.reference,
-    )
+    return analyze(args.campaign, args.extension, args.out, args.reference)
 
 
 if __name__ == "__main__":
