@@ -94,7 +94,7 @@ To standardize the interface, when a user provides a ``scipy.stats`` distributio
 ``UserFunction`` priors
 -----------------------
 
-To standardize the interface, when a user provides a function as a log-prior it is wrapped in a ``UserPrior`` class.
+To standardize the interface, when a user provides a function as a log-prior it is wrapped in a ``UserFunction`` prior.
 
 .. autoclass:: pyvbmc.priors.UserFunction
   :special-members: __init__
