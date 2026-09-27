@@ -72,7 +72,9 @@ the final summary. Text hashes normalize line endings to LF so Git checkouts
 on different platforms can verify them; NPZ hashes use the raw file bytes.
 Machine-readable replay reports are alongside the Markdown
 reports. The [first-batch summary](batch1_summary.md) preserves the intermediate
-700-run population; the [current summary](../baseline/summary.md) covers all 810.
+700-run population; the summary published with it
+(`dev/golden/baseline/summary.md` at `2a09fcd7`) covers all 810; the file
+at that path has since been replaced by the summaries of later references.
 
 The initial supervisor stopped after the successful preflight because it
 compared the rendered verdict to exactly `identical`; that text also includes
@@ -106,7 +108,7 @@ The full traces remain gitignored under
 `dev/scripts/runs/golden/item7_20260906/` (55.9 MiB of NPZ files). Copy that
 directory to use exact replay in another checkout; release-asset publication
 remains part of the 1.5 release work. The JSON sidecars (2.42 MiB) and summary
-are tracked in `dev/golden/baseline/`, 811 files in total.
+are tracked in `dev/golden/baseline/`, 811 files at the time.
 
 Local logs and operational state remain under
 `dev/scripts/runs/reference_extension_20260906/`,
@@ -115,6 +117,6 @@ Local logs and operational state remain under
 `.venv/reference_extension_20260906.*.log`. The temporary supervisor and its
 keep-awake request have ended. There is no job or watcher to reattach to.
 
-The reference boundary is complete. Next is the planned latent-fix work
-(roadmap pickup 9), with each trajectory-moving fix replayed and the final
-release code checked against this expanded reference population.
+The reference boundary was complete. The work planned next was the
+latent-fix work (roadmap pickup 9); the current reference is described in
+[`../README.md`](../README.md).

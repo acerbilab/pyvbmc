@@ -7,6 +7,11 @@ The previous `reference_990_20260912` remains intact on the generating
 machine, with its [manifest](../realdata_extension_20260912/sha256_manifest.json)
 and [execution record](../realdata_extension_20260912/README.md).
 
+`previous_reference_README.md` is `dev/golden/README.md` as it stood before
+this promotion, copied verbatim by `promote.py prepare`. Its "Current
+reference" is `reference_990_20260912`, and its relative links resolve
+from `dev/golden/`, not from this directory.
+
 The PI accepted the completed assessment and authorized promotion on
 2026-09-13. The acceptance criterion is preservation of algorithmic behavior
 without evidence of meaningful degradation. Correcting existing occasional

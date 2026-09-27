@@ -30,10 +30,11 @@ directories:
 
 ```console
 python dev/scripts/gp_box_probe.py --source-root BASELINE_ROOT --gpyreg-source GPYREG_ROOT --seed 1000 --out NORMAL_OUT
-python dev/scripts/gp_box_probe.py --source-root . --gpyreg-source GPYREG_ROOT --seed 1000 --out UNIFORM_OUT
+python dev/scripts/gp_box_probe.py --source-root UNIFORM_ROOT --gpyreg-source GPYREG_ROOT --seed 1000 --out UNIFORM_OUT
 ```
 
 Repeat for seeds 1001 and 1002, with one process at a time. The probe sets
 the BLAS thread variables before importing NumPy and verifies both
-package import paths. Run the uniform arm from the box-sampler fix's
-source; later numerical changes produce a different comparison.
+package import paths. Run the uniform arm from `pyvbmc/` archived at
+commit `40a6f18c`, the box-sampler fix; later numerical changes produce a
+different comparison.

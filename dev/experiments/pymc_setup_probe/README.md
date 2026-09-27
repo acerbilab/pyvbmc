@@ -4,8 +4,8 @@ Preapproval experiments for the [adapter plan](../../plans/pymc-target-adapter.m
 run from `dev-next` at `741d635` with gpyreg 1.2.1 (`9e70e6b`). The
 [report](../../results/2026-09-16-pymc-setup-probe.md) explains the methods,
 findings and unresolved design choices. The runner is
-[`pymc_setup_probe.py`](../../scripts/pymc_setup_probe.py); the historical
-feasibility prototype and the package remain unchanged.
+[`pymc_setup_probe.py`](../../scripts/pymc_setup_probe.py). The experiment
+changed neither the historical feasibility prototype nor the package.
 
 - `part_a.json`: eleven-model setup comparison, reference and capped search
   results, stopping-rule candidates, prior-location flags, and timings.
