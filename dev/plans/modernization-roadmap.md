@@ -1136,11 +1136,12 @@ its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
   [Slurm plan](slurm-benchmark-support.md) ("What runs where") separates the
   reference populations from the replay fingerprints.
 
-## Pre-release documentation review
+## Pre-release checklist
 
-Documentation review can proceed alongside implementation. The final
-validation pass must cover the settled release code, API and behavior
-before publication.
+The steps before the release, with their procedure; `TODO.md` ("Release
+documentation and validation") lists those still open. Documentation
+review can proceed alongside implementation. The final validation pass
+must cover the settled release code, API and behavior before publication.
 
 - [x] Refresh the main [README.md](../../README.md), including the
   project overview, installation, quick start, capabilities and links.
@@ -1153,7 +1154,10 @@ before publication.
   example checks are the last item of this list.
 - [ ] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
-  options, diagnostics and linked guidance against the final implementation.
+  options, diagnostics and linked guidance against the final implementation:
+  the release-wide API, tutorial and compatibility review. The focused
+  Torch/JAX workflow and teaching consistency review is recorded in the
+  [teaching-material plan](teaching-material.md).
 - [x] Review references to the MATLAB VBMC wiki and assess which guidance
   should be ported into the PyVBMC repository. Adapt retained material to
   Python APIs, examples, defaults and terminology; update links to the
@@ -1193,7 +1197,7 @@ before publication.
   to `MANIFEST.in` by hand had no effect and is not in the new file).
   `known_differences.md` of the port review cites the old file by section,
   and says so in its header.
-- [ ] Sweep every tracked document and record before the release for
+- [x] Sweep every tracked document and record before the release for
   acknowledgments of a wrong value or defect that the affected file does
   not itself carry as a correction or flag, and for statements that were
   true when written and are stale now (branch names, counts, work
@@ -1202,9 +1206,70 @@ before publication.
   `dev/README.md`, `AGENTS.md`, the README, `docsrc/` and the docstrings.
   Fix each in place; where a record cannot change, put the flag in the
   record or as close to it as its format allows. Read-only reviewers by
-  area; the PI triages. `TODO.md` states the rule and its origin.
+  area; the PI triages. Done on 2026-09-27 at `05dc5dc9`, and the fixes
+  merged into `dev-next` at `46200293`: the
+  [ledger](../results/2026-09-27-release-sweep.md) holds every finding, the
+  PI's ruling and its fix. The rule (`AGENTS.md`, "Records") was set on
+  2026-09-19 after three cases surfaced in one day: a gpyreg version label
+  wrong in 252 run sidecars, upper medians quoted as medians in a report,
+  and a publication index missing four entries, each acknowledged only in a
+  note elsewhere.
+- [ ] A delta pass of the sweep, under the same rule, over what changes
+  after it: the diff since `46200293`, which includes the Slurm branch's
+  documents once they merge and the text that the open items of `TODO.md`
+  rewrite.
 - [ ] Verify revised examples and links, build the documentation and check
-  the rendered pages before release.
+  the rendered pages on the settled release code, and check the
+  [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
+  2026-09-27 the Sphinx build of `dev-next` gave no warning, `linkcheck` and
+  an inspection of the rendered pages found nothing broken, and the skill
+  matched the docs. The links to `main` in the skill and the docs resolve
+  only once the release merge puts the 1.5 files there, so a `linkcheck`
+  follows that merge.
+- [ ] Re-execute every example notebook with the release code and commit
+  its outputs, which the docs build renders as stored
+  (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
+  (`dev/README.md`) runs all nine and writes back only those whose checks of
+  their text's claims pass. Reinstall `pyvbmc` in the notebooks'
+  environment at the release commit first: Example 3 prints
+  `results["version"]`, which an editable install reads from its metadata as
+  of its installation. Update Example 7's account of the headline estimate
+  to the headline decision, read each notebook's text against its new
+  outputs, and regenerate `examples/scripts/` with its Makefile. Example 7's
+  text needs at least one of its four runs to miss a mode, which its check
+  asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single
+  runs on its target missed one; `dev/scripts/runs/LOCAL.md`, "Example
+  notebooks").
+- [ ] Run the final integrated tests, the required CI matrix and the
+  package checks, and prepare the golden-trace release archive (the
+  [reference record](../golden/promotion_20260913/README.md)). The package
+  checks include what the sdist ships: setuptools_scm puts every tracked
+  file in it, and of `MANIFEST.in` only the `prune` lines have an effect
+  (`docsrc`, `dev`, `papers`), its `include` lines naming files that the
+  sdist holds already. Built on 2026-09-25 the sdist was 11.8 MB (37.7 MB
+  before `dev` and `papers` were pruned) and the wheel unchanged; from the
+  sdist the tests that read `dev/scripts` skip, among them 7 of the oracle
+  tests.
+- [ ] Decide which locally held artifacts attach to the release as archives
+  rather than commits: the golden reference traces, the run pools, the
+  captured frozen states and the raw campaign records that
+  `dev/scripts/runs/LOCAL.md` lists on the holding machine, the release
+  gate's campaigns (the [Slurm plan](slurm-benchmark-support.md), "Records
+  and hand-back": their raw archives hold site details and stay in draft
+  releases, and their redacted copies are the tracked record) and its
+  replay fingerprints (that plan's Phase 9). The draft releases
+  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the pool
+  and its analyses as archives, so the decision is which of the remaining
+  artifacts a reader of the release needs to revalidate its results.
+- [ ] At the release merge, remove the references to the `dev-next` branch
+  that are not historical: `dev-next` merges into `main` for the release,
+  so nothing a user or contributor reads after it points at `dev-next`;
+  dated devlogs and plan worklogs may keep it as history. The agent skill's
+  source links point at `main` since 2026-09-27. What still names
+  `dev-next` as the working branch is true until the release merge and
+  changes with it: the working rules at the end of `TODO.md`, the header of
+  this roadmap, the [Slurm plan](slurm-benchmark-support.md)'s account of
+  the harnesses on `dev-next`, and the open items of `TODO.md`.
 
 ## Post-release follow-up
 

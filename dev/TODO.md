@@ -174,76 +174,20 @@ records its execution.
   `dev/scripts/` through the cluster workflow of the HPC item above.
   PI, 2026-09-16.
 
-- [ ] **Release documentation and validation.** Finish the release-wide
-  API/tutorial and compatibility review; run examples, check links, build
-  Sphinx and inspect rendered pages against the settled release code. The
-  focused Torch/JAX workflow and teaching consistency review are recorded
-  in the [teaching-material plan](plans/teaching-material.md).
-  Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
-  Re-execute every example notebook with the release code and commit its
-  outputs, which the docs build renders as stored
-  (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
-  (`dev/README.md`) runs all nine and writes back only those whose checks
-  of their text's claims pass. Reinstall `pyvbmc` in the notebooks'
-  environment at the release commit first: Example 3 prints
-  `results["version"]`, which an editable install reads from its metadata
-  as of its installation. Update Example 7's account of the headline
-  estimate to the headline decision, read each notebook's text against its
-  new outputs, and regenerate `examples/scripts/` with its Makefile.
-  Example 7's text needs at least one of its four runs to miss a mode, which
-  its check asserts; if none does, choose other seeds (on 2026-09-26, 9 of
-  24 single runs on its target missed one; `dev/scripts/runs/LOCAL.md`,
-  "Example notebooks").
-  Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. The package checks include what
-  the sdist ships: setuptools_scm puts every tracked file in it, and of
-  `MANIFEST.in` only the `prune` lines have an effect (`docsrc`, `dev`,
-  `papers`), its `include` lines naming files that the sdist holds
-  already. Built on 2026-09-25 the sdist was 11.8 MB (37.7 MB before `dev`
-  and `papers` were pruned) and the wheel unchanged; from the sdist the
-  tests that read `dev/scripts` skip, among them 7 of the oracle tests.
-  Decide which locally held
-  artifacts attach to the release as archives rather than commits: the
-  golden reference traces, the run pools, the captured frozen states and
-  the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
-  holding machine, the release gate's campaigns (the
-  [Slurm plan](plans/slurm-benchmark-support.md), "Records and
-  hand-back": their raw archives hold site details and stay in draft
-  releases, and their redacted copies are the tracked record) and its
-  replay fingerprints (that plan's Phase 9). The draft releases
-  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the
-  pool and its analyses as archives, so the decision is which of the remaining artifacts a reader of the
-  release needs to revalidate its results. Search the whole repository's
-  documentation for references to the `dev-next` branch and remove those
-  that are not historical: `dev-next` merges into `main` for the release,
-  so nothing a user or contributor reads after it should point at
-  `dev-next`; dated devlogs and plan worklogs may keep it as history.
-  The agent skill's source links point at `main` since 2026-09-27. What
-  still names `dev-next` as the working branch is true until the release
-  merge and changes with it: the working rules at the end of this file,
-  the header of the [roadmap](plans/modernization-roadmap.md), the
-  [Slurm plan](plans/slurm-benchmark-support.md)'s account of the
-  harnesses on `dev-next`, and the open items here.
-  Before the release, sweep every tracked document and record for two
-  kinds of statement: an acknowledgment that a value or a defect in some
-  file is wrong while that file itself carries neither the correction
-  nor a flag, and a statement that was true when written and is stale
-  now (branch names, counts, work described as continuing or remaining).
-  The scope is the developer notes and plans, the results, the review
-  copies under `dev/experiments/`, `dev/README.md`, `AGENTS.md`, the
-  README, the Sphinx sources and the docstrings. The rule: an error in a
-  record, document or code is fixed in that file; where a record cannot
-  change, the flag goes into the record, or as close to it as its format
-  allows; a note somewhere else is not a fix. Read-only reviewers work by
-  area and the PI triages their findings. The rule was set on 2026-09-19
-  after three cases surfaced in one day: a gpyreg version label wrong in
-  252 run sidecars, upper medians quoted as medians in a report, and a
-  publication index missing four entries, each acknowledged only in a
-  note elsewhere.
-  Documentation can proceed
-  alongside implementation; final checks must cover settled release code.
-  See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
-  and [reference record](golden/promotion_20260913/README.md).
+- [ ] **Release documentation and validation.** The final pass on the
+  settled release code; each step's procedure is in the roadmap's
+  [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
+  - re-execute the example notebooks at the release commit and commit their
+    outputs, Example 7's account of the headline following the headline
+    decision;
+  - the API and tutorial review, the Sphinx build, `linkcheck`, the rendered
+    pages and the agent skill, with a `linkcheck` again after the merge into
+    `main`;
+  - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
+    over the diff since `46200293`;
+  - the final tests, the CI matrix and the package checks;
+  - the choice of the artifacts that attach to the release as archives;
+  - the references to `dev-next` that change with the release merge.
 
 - [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
   interactive three.js page that plays back a recorded two-dimensional run
