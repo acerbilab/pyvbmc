@@ -238,15 +238,22 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated. The shape of x
-            should be (1, D) or (D,).
+            The point, in the transformed space, at which the function will
+            be evaluated; the function is called with the point mapped to
+            the original space. The shape of x should be (1, D) or (D,).
 
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: the observation in the original space, pooled with the
+            earlier observations at the same point, plus
+            ``log_abs_det_jacobian`` of the parameter transformer at `x`
+            where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: the one the function returned at
+            uncertainty handling level 2, 1 at level 1, and ``None`` at
+            level 0.
         idx : int
             The index of the last updated entry.
 
@@ -503,10 +510,12 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function has been evaluated. The shape of x
+            The point, in the transformed space, at whose image in the
+            original space the function has been evaluated. The shape of x
             should be (1, D) or (D,).
         f_val_orig : float
-            The result of the evaluation of the function.
+            The result of the evaluation of the function, in the original
+            space.
         f_sd : float, optional
             The (estimated) SD of the added value. At uncertainty handling
             level 2 it is required, the noise of an observation being the
@@ -519,9 +528,13 @@ class FunctionLogger:
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: `f_val_orig`, pooled with the earlier observations at the
+            same point, plus ``log_abs_det_jacobian`` of the parameter
+            transformer at `x` where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: `f_sd` at uncertainty handling
+            level 2, `f_sd` or 1 at level 1, and ``None`` at level 0.
         idx : int
             The index of the last updated entry.
 
