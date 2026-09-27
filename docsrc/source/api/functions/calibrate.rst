@@ -26,8 +26,7 @@ actual full path for your machine. For example (with the path abbreviated):
 
 .. code-block:: text
 
-   Calibration finished in 43 seconds.
-   The standard settings performed well; no reliable improvement was found.
+   Calibration finished in 43 seconds. The standard settings performed well; no reliable improvement was found.
    Results saved to: <cache-root>/calibration/v1/<fingerprint>.json
    Future runs will use these settings automatically.
    To recalibrate, run pyvbmc.calibrate() again.
@@ -38,10 +37,10 @@ if the cache override is relative). The displayed location reflects any
 attempted location and explains that the settings are usable in the current
 process but were not saved.
 
-Expect a duration in the tens of seconds, depending on your machine.
-Thirty seconds is an estimate, not a cutoff: the campaign completes its
-measurements and validation. A generous watchdog stops unexpectedly long
-campaigns. Run it when the machine is otherwise quiet for useful timings.
+Expect a duration in the tens of seconds, depending on your machine. This
+is an estimate, not a time limit: the campaign completes its measurements
+and validation, and a watchdog stops only a campaign that runs longer than
+five minutes. Run it when the machine is otherwise quiet for useful timings.
 
 Every call starts a fresh campaign. To recalibrate, call
 ``pyvbmc.calibrate()`` again. Calibration never starts automatically during
@@ -65,7 +64,8 @@ profile explicitly:
 
 Set ``performance_calibration="off"`` in the options dictionary to use
 historical chunk settings. Missing or incompatible cache records also use
-these defaults, with a calibration suggestion unless ``display="off"``.
+these defaults, and the first such run of a Python session suggests
+calibrating unless ``display="off"``.
 There is no unexpected campaign after a software upgrade or cache deletion.
 
 Each run keeps one profile through optimization, final boost and save/resume.
