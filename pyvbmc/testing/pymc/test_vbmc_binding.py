@@ -188,13 +188,19 @@ def test_direct_target_hard_bounds_must_match_support(target):
     assert np.array_equal(accepted.lower_bounds, target.lb)
     assert np.array_equal(accepted.upper_bounds, target.ub)
 
-    with pytest.raises(ValueError, match="lower_bounds.*model support"):
+    with pytest.raises(
+        ValueError,
+        match="lower_bounds must equal the PyMCTarget's hard bounds",
+    ):
         VBMC(
             target,
             lower_bounds=np.array([[-2.1, -3.0]]),
             options=_options(),
         )
-    with pytest.raises(ValueError, match="upper_bounds.*model support"):
+    with pytest.raises(
+        ValueError,
+        match="upper_bounds must equal the PyMCTarget's hard bounds",
+    ):
         VBMC(
             target,
             upper_bounds=np.array([[2.0, 3.1]]),

@@ -1,7 +1,8 @@
 # Package-integrated calibration verification
 
-These artifacts describe the PyVBMC package implementation on
-`dev-machine-calibration`, based on `f7f0ce1`. They are separate from the
+These artifacts describe the package implementation of machine-local
+calibration, based on `f7f0ce1` and merged into `dev-next` as `f2f99e36`.
+They are separate from the
 historical source-cloning experiment in the parent directory. See the
 [results](../../../results/2026-09-09-machine-local-calibration.md) and
 [implementation plan](../../../plans/machine-local-calibration.md).

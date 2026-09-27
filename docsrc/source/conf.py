@@ -81,7 +81,8 @@ html_title = "PyVBMC"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["css/custom.css"]
+html_static_path = ["css/wrap.css"]
+html_css_files = ["wrap.css"]
 html_show_sourcelink = False
 html_theme_options = {
     "repository_url": "https://github.com/acerbilab/pyvbmc",
@@ -117,3 +118,7 @@ suppress_warnings = [
     for filename in os.listdir("../../examples")
     if os.path.isfile(os.path.join("../../examples", filename))
 ]  # Avoid duplicate label warnings for Jupyter notebooks.
+# Example 2 stores its Plotly figure twice: as HTML, which the page shows, and
+# as Plotly JSON for notebook viewers, which myst-nb cannot render and warns
+# about. The suppression covers any output type myst-nb cannot render.
+suppress_warnings.append("mystnb.unknown_mime_type")

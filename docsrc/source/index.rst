@@ -56,7 +56,7 @@ Example run
 
 The figure below shows an example PyVBMC run on a "banana" target density.
 The corner plot shows the approximate posterior across iterations (contour plot and histograms of the marginals).
-The dots represent evaluations of the target density (*blue*: previously sampled points, *green*: points sampled in the current iteration).
+The dots represent evaluations of the target density (*hollow blue*: previously sampled points, *solid orange*: points sampled in the current iteration).
 PyVBMC converges to an excellent approximation of the true posterior with a few dozen evaluations of the target density.
 
 .. image:: _static/vbmc_animation.gif

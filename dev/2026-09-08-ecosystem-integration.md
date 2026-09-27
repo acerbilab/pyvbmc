@@ -8,7 +8,10 @@ with the execution record, in the
 [integration plan](plans/svbmc-integration.md). Where the plan and this
 proposal differ (independent sampling with a balanced option, a `seed`
 argument replacing `testing`, the toy targets staying upstream, `ValueError`
-for an unknown mode), the plan and the code are current.
+for an unknown mode, `SVBMC.save` and `SVBMC.load` added on 2026-09-24), the
+plan and the code are current. `stacked.elbo` is a float since 2026-09-12,
+with the raw and capped values in `stacked.elbo_details`
+([plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md)).
 
 The PI direction is to make the existing S-VBMC
 implementation directly available from PyVBMC and, more generally, to avoid a
@@ -41,7 +44,7 @@ from pyvbmc.svbmc import SVBMC
 stacked = SVBMC(vp_list)  # Existing fitted posteriors from the same problem.
 stacked.optimize()
 samples = stacked.sample(1000)
-print(stacked.elbo["estimated"])
+print(stacked.elbo["estimated"])  # Proposal; the shipped class reports stacked.elbo, a float.
 ```
 
 Also expose `SVBMC` lazily at the package root for discoverability, so
@@ -138,6 +141,8 @@ regeneration. They do not test pickled `SVBMC` instances. S-VBMC supplies no
 must not promise transparent migration of arbitrary pickled `SVBMC` objects.
 The forwarding package may preserve imports needed by such objects, but that
 behavior needs a dedicated fixture before it becomes a compatibility claim.
+*Added 2026-09-24:* PyVBMC's `SVBMC` has `save` and `load`, and a stack they
+saved is a test fixture ([integration plan](plans/svbmc-integration.md)).
 
 Both projects use BSD-3-Clause, with separate copyright notices. Retain the
 S-VBMC 2025 copyright and license notice in the migrated source and source

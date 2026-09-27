@@ -10,6 +10,11 @@ Everything was measured in the Claude Code container (four cores, one
 BLAS thread per process, several runs sharing the cores unless a file
 says otherwise) on the branch `claude/pyvbmc-noisy-acq-funcs-9kwdny`;
 each JSON records the commit it ran at under `meta.git`. gpyreg 1.1.0.
+The branch was merged; the commits under `meta.git` are reachable from
+`dev-next`. The `eig`, `eig_components`, `var_reduction` and `combo` arms,
+and `hard_var_reduction` and `hard_combo`, use acquisitions that were
+removed from the package on 2026-09-14; their implementation is retained
+on `retain/experimental-acquisitions` at `fa6922f`.
 
 ## `arms/`: the end-to-end arms
 

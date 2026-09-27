@@ -473,9 +473,9 @@ class AcqFcnVIQR(AbstractAcqFcn):
 
         The added term in the importance sampling proposal log density: The
         full proposal log density is ``is_log_full = is_log_base +
-        is_log_added``. Added part for VIQR/IMIQR is :math: `\\log [\\sinh(u *
-        f_s)]``, where ``f_s`` is the GP predictive variance at the input
-        points.
+        is_log_added``. Added part for VIQR/IMIQR is
+        :math:`\log [2 \sinh(u f_s)]`, where :math:`f_s` is the GP
+        predictive standard deviation at the input points.
 
         Parameters
         ----------

@@ -386,10 +386,12 @@ defect *n*" is entry *n* of
   of iterations on both sides; MATLAB's per-iteration total run time
   (`stats.timer(iter).totalruntime`) has no counterpart.
 - **An empty warm-up stability window means no stability count yet**
-  (deliberate change): with `tol_stable_warmup <= fun_evals_per_iter`
-  `_check_warmup_end_conditions` leaves the flag false, where
-  `private/vbmc_warmup.m:39`, `:87` hands an empty value to `&&` (by reading,
-  an error; MATLAB-side defect 4).
+  (deliberate change): `_check_warmup_end_conditions` leaves the flag false
+  when the window of recent iterations is empty, which happens at its first
+  check when `0 < tol_stable_warmup <= fun_evals_per_iter` and at every
+  check when `tol_stable_warmup = 0`; `private/vbmc_warmup.m:39`, `:87`
+  hands the empty value to `&&` (by reading, an error; MATLAB-side
+  defect 4).
 - **The true-posterior diagnostic draws from a copy of the generator**
   (deliberate change): the 10^6 samples behind `sKL_true`
   (`_compute_true_diagnostic`) leave the run's stream alone, where
@@ -455,8 +457,10 @@ defect *n*" is entry *n* of
 - **Vectorized targets, precomputed evaluations and the initialization
   cost** (Python-only addition). `vectorized_target=True` evaluates the
   missing rows of the initial design in one call; `precomputed_evaluations`
-  supplies evaluated points whose `setup_cost` is charged once; MATLAB's
-  `misc/funlogger_vbmc.m` evaluates one point at a time
+  supplies evaluated points that are not charged as evaluations of the run,
+  and `initialization_cost` (a `PyMCTarget` passes its `setup_cost`) is
+  charged once against `max_fun_evals`; MATLAB's `misc/funlogger_vbmc.m`
+  evaluates one point at a time
   (`dev/plans/stage3-pipeline-features.md`,
   `dev/plans/pymc-target-adapter.md`).
 - **The iteration history records `optim_state`, without the noisy
@@ -807,9 +811,11 @@ defect *n*" is entry *n* of
   `nkde = 2^13` (`verification/wave5_P7.md`, P7-6a to P7-6d).
 - **The interface of `vp.sample`** (deliberate change; the draws are
   MATLAB's). The component indices are a 0-based `(N,)` array; a whole float
-  count is taken and a fractional one refused; a negative `df` is refused;
-  weights that do not sum to one raise (`verification/wave5.md`, W5-15,
-  W5-16).
+  count is taken and a fractional one refused; a negative `df` is refused
+  (`verification/wave5.md`, W5-15, W5-16). In the unbalanced draw of a
+  posterior of several components, weights that do not sum to one raise
+  (`rng.choice`), where MATLAB's `catrnd` draws from the normalized weights
+  (`verification/wave5_P7.md`, Q2).
 - **`vbmc_isavp.m` has no counterpart** (deliberate change): Python checks
   the class.
 - **The log density is taken in log space where the density underflows**
@@ -1069,8 +1075,10 @@ the Python line (`dev/plans/svbmc-integration.md`,
   Whether they should stay public, or the steps of a run should be opened to
   users in a designed way, is open.
 - The logging was noted during the port as not working well, to be
-  redesigned around a logging concept; its shortcomings are not recorded in
-  this repository.
+  redesigned around a logging concept. The one shortcoming on record, that
+  the package configured Python's root logger, was fixed in `1f9c207a`.
+  PyVBMC's named loggers and their shared handler (`pyvbmc/_logging.py`,
+  "Logging" in `AGENTS.md`) are the design, and no redesign is planned.
 
 ## Design notes
 

@@ -177,7 +177,7 @@ def warp_input(vp, optim_state, function_logger, options):
 
     Currently supports only a whitening transformation: a rotation and
     rescaling of the inference space such that the variational posterior
-    acheives unit diagonal covariance.
+    achieves unit diagonal covariance.
 
     Parameters
     ----------
@@ -192,6 +192,9 @@ def warp_input(vp, optim_state, function_logger, options):
         The record including cached function values. Its parameter
         transformer defines the current inference space, the one the
         search bounds and the cached search points are given in.
+    options : Options
+        The options of the run: ``warp_rotoscaling``,
+        ``warp_roto_corr_thresh`` and ``warp_cov_reg`` are read.
 
     Returns
     -------
@@ -205,6 +208,12 @@ def warp_input(vp, optim_state, function_logger, options):
         An updated copy of the original function logger.
     warp_action : str
         The label of the warp in the iteration display, "rotoscale".
+
+    Raises
+    ------
+    ValueError
+        If ``warp_cov_reg`` is neither a finite real number nor a function
+        of the number of training points that returns one.
 
     Notes
     -----
@@ -347,7 +356,8 @@ def warp_input(vp, optim_state, function_logger, options):
     optim_state["last_warping"] = optim_state["iter"]
     optim_state["last_successful_warping"] = optim_state["iter"]
 
-    # Reset GP Hyperparameters
+    # Restart the running mean and covariance of the variational
+    # posterior, which were taken in the old inference space
     optim_state["run_mean"] = []
     optim_state["run_cov"] = []
     optim_state["last_run_avg"] = np.nan

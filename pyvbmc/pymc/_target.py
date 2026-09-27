@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import copy
-import logging
 from collections.abc import Mapping
 from numbers import Integral
 
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.rng import get_rng
 from pyvbmc.vbmc._bounds import _effective_bounds, _normalize_bounds
 
@@ -17,7 +17,7 @@ from . import _compat, _plausible
 _PRIOR_DRAWS = 4000
 _LOG_SUPPORT_PROBE_DECADES = (1, 2, 4, 8, 16)
 _TRANSFORM_KEYS = {"log", "logodds", "interval", "interval_base"}
-_LOGGER = logging.getLogger("pyvbmc.pymc")
+_LOGGER = get_logger("pyvbmc.pymc")
 
 
 def _compatibility_error(pm, capability, exc=None):

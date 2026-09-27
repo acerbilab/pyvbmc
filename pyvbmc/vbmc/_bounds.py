@@ -110,7 +110,7 @@ def _normalize_bounds(
     if plausible_lower_bounds is None or plausible_upper_bounds is None:
         if N0 > 1:
             logger.info(
-                "PLB and/or PUB not specified. Estimating"
+                "PLB and/or PUB not specified. Estimating "
                 "plausible bounds from starting set X0..."
             )
             width = x0.max(0) - x0.min(0)

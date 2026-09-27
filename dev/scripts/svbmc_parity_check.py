@@ -9,8 +9,9 @@ initial weights, and ``sample`` under a seeded global NumPy state.
 Matched draws need both implementations to draw their entropy samples the
 same way. Upstream does so only in its ``testing=True`` mode (a fixed legacy
 ``RandomState`` per call), so this check applies to the moved code while it
-still carries that flag: run it from the source-move commit ``a8ae260``,
-the last one where it does. Since the ``seed`` argument replaced the flag,
+still carries that flag: run it from ``6103be8``, the commit that added this
+script, whose package is that of the source move ``a8ae260`` and the last
+where the moved class carries the flag. Since the ``seed`` argument replaced the flag,
 the moved class draws from its own generator, the two implementations
 cannot be matched draw for draw, and the shipped regression references
 (``pyvbmc/testing/svbmc/fixtures/references.npz``) are the numerical gate.

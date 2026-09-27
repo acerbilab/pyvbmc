@@ -1,7 +1,10 @@
 # Stage 3: pipeline features
 
-Created: 2026-09-06. Status: **implemented, integrated and verified; reference campaign awaits start instruction**.
-Branch: `dev-next-stage3`, based on `dev-next` at `4d91a5e`.
+Created: 2026-09-06. Status: **implemented, integrated into `dev-next` at
+`4bff1a5` and verified**; the reference extension on the frozen code ran on
+2026-09-06/07 (roadmap pickup 3f). Implementation ran on `dev-next-stage3`,
+based on `dev-next` at `4d91a5e`; `reference/stage3-20260906` names the
+frozen checkout.
 This file owns the Stage 3 implementation design, decisions, gates and live
 tracker for maintainers. The roadmap owns release sequencing; this plan
 implements its pickup 11 and the pipeline features of devlog sections 8/10.

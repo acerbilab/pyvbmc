@@ -116,7 +116,9 @@ class Product(Prior):
         rng : None, int, SeedSequence or Generator, optional
             Random generator or seed; if None a generator is derived from
             NumPy's global random state. The same generator is shared by all
-            marginals, so the whole product draws from one stream.
+            marginals, so the whole product draws from one stream, except a
+            `UserFunction` marginal, which draws with its own
+            ``sample_prior``, which takes no generator.
 
         Returns
         -------
@@ -188,11 +190,7 @@ class Product(Prior):
         return self._support_box()[1]
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

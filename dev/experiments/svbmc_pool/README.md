@@ -36,8 +36,7 @@ integrated arm alone neither needs the baseline nor verifies it. Each
 generated pool has its own
 subdirectory with a README that describes every key of its JSON files
 and the exact commands that generated it; this file indexes them and
-owns the description of the comparison's outputs once the campaign's
-stacking runs are in.
+describes the comparison's outputs.
 
 ## Pilot (2026-09-14)
 

@@ -2,7 +2,7 @@
 
 The PI parked the paired final-boost experiment on 2026-09-08 and authorized
 continuing the independent main-loop repairs. Boost work is preserved at
-local commit `764a177` on `dev-final-boost`; its
+local commit `764a177` on `dev-final-boost` (kept as `retain/final-boost`); its
 [restart record](2026-09-08-boost-penalty-pilot.md#parked-experiment-restart)
 specifies the remaining experiment. No boost batch is scheduled.
 
@@ -11,7 +11,7 @@ Main-loop work starts from validated `dev-next` commit `3e879b6` on
 The [live plan](../plans/latent-bug-fixes.md) owns the implementation checklist.
 Final Q1/Q4 choices and the existing PyTorch feasibility decisions are unchanged.
 
-## Weighted GP covariance (Phase 3 complete; population assessment pending)
+## Weighted GP covariance (Phase 3 complete; population assessment accepted 2026-09-13)
 
 The correction treats each historical GP hyperparameter matrix as sample
 rows, distributes an iteration's total weight across its samples, and uses
@@ -91,7 +91,8 @@ code passes all 11 fixtures exactly (`committed_exact.log`).
 
 ## Acquisition regularization (Phase 4 complete)
 
-The isolated implementation `1ec320e` was applied as `90d08d3`. New state
+The isolated implementation `1ec320e` (kept on
+`retain/acq-regularization-stage`) was applied as `90d08d3`. New state
 uses the canonical key; old saves and snapshots activate the legacy alias
 only when the canonical key is absent. Results are normalized to one value
 per point before regularization and bounds masks. Zero variance uses the
@@ -186,3 +187,9 @@ the Phase 7 upstream gpyreg step-out repair and final integration gates,
 and the explicitly parked paired boost campaign. Q1/Q4 and PyTorch decisions
 have not been selected or revised by this work. No population campaign was
 started, and no numerical job remains attached to this task.
+
+Afterwards, all of it followed: Phase 6 chose treatment A, the step-out
+repair was deferred to gpyreg #44, which gpyreg fixed on 2026-09-13
+(`f610e11`, #48, released in 1.2.1), the boost campaign ran on 2026-09-08,
+and the integrated population was accepted on 2026-09-13
+([promotion record](../golden/promotion_20260913/README.md)).

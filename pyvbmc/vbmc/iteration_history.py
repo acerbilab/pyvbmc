@@ -162,6 +162,21 @@ class IterationHistory(MutableMapping, dict):
             else:
                 self.record(key, value, iteration)
 
+    def _iteration_count(self):
+        """The number of iterations recorded: the length of the longest
+        entry.
+
+        ``record`` stores the values of a key in an array indexed by
+        iteration, so an entry is as long as the last iteration it holds,
+        plus one. A key that holds no array counts no iteration.
+        """
+        lengths = [
+            len(value)
+            for value in dict.values(self)
+            if isinstance(value, np.ndarray) and value.ndim > 0
+        ]
+        return max(lengths, default=0)
+
     def __str__(self):
         """Construct a string summary.
 
@@ -171,7 +186,7 @@ class IterationHistory(MutableMapping, dict):
             The string summarizing the IterationHistory object.
         """
         return "IterationHistory:\n" + indent(
-            f"num. iterations = {len(self)}\nkeys = \n"
+            f"num. iterations = {self._iteration_count()}\nkeys = \n"
             + indent(",\n".join(key for key in self.keys()), "    "),
             "    ",
         )
@@ -198,7 +213,7 @@ class IterationHistory(MutableMapping, dict):
         """
         if full:  # Output every class attribute (for debugging)
             return "IterationHistory:\n" + indent(
-                "self.check_keys: {self.check_keys},\ndict: "
+                f"self.check_keys: {self.check_keys},\ndict: "
                 + format_dict(self, arr_size_thresh=arr_size_thresh),
                 "    ",
             )

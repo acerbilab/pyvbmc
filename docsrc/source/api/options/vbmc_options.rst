@@ -13,6 +13,7 @@ We expect that these options are changed by many users.
 
 .. include:: ./../../../../pyvbmc/vbmc/option_configs/basic_vbmc_options.ini
    :literal:
+   :class: wrap
 
 Advanced Options
 =====================
@@ -21,3 +22,4 @@ what you are doing.
 
 .. include:: ./../../../../pyvbmc/vbmc/option_configs/advanced_vbmc_options.ini
    :literal:
+   :class: wrap

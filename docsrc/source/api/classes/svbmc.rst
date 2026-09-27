@@ -235,8 +235,8 @@ Monte Carlo. *Transactions on Machine Learning Research*.
 `TMLR <https://openreview.net/forum?id=M2ilYAJdPe>`_. Please cite it
 together with the VBMC and PyVBMC papers when you use S-VBMC.
 
-The implementation is the S-VBMC package (``acerbilab/svbmc``) integrated
-into PyVBMC; its BSD 3-Clause license notice ships with the subpackage.
+The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
+version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
 
 .. autoclass:: pyvbmc.svbmc.SVBMC
    :members:

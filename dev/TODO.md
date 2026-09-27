@@ -3,7 +3,8 @@
 Updated 2026-09-27. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
-Completed 1.5 work is not listed here: the
+Completed 1.5 work is not listed here, apart from the active reference and
+the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
@@ -67,6 +68,28 @@ records its execution.
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
+- [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
+  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27). On
+  2026-09-27 gpyreg's `main` was at `d96d0d9`, six commits past `v1.3.3`,
+  among them a prior's log mass taken in log space where it underflows and
+  an opt-in switch that makes a failed Cholesky factorization an error.
+  The local environments install the sibling checkout editable and so run
+  that `main` while CI pins `v1.3.3`: the example notebooks executed on
+  2026-09-26 and 27 ran on gpyreg `1.3.4.dev10+gd96d0d9f7`. With the
+  release, `pyproject.toml`'s minimum and CI's `GPYREG_PIN` move to it
+  (`AGENTS.md`), PyVBMC's whole suite and the exact oracle check run
+  against it, and the [Slurm plan](plans/slurm-benchmark-support.md) and
+  its operator's guide (`scripts/hpc/README.md` on `feat-slurm-campaigns`)
+  name it where they name `v1.3.3`: the after arm, the pools and the
+  stacking in "What runs where", Phase 1b's source trees, and the guide's
+  clones, environment check and campaign commands. The campaigns of the
+  Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
+  Phase 6 test the machinery and do not wait for it. On 2026-09-27 the
+  default suite and the exact oracle check (12 of 12) passed against
+  gpyreg `main` at `d96d0d9`, so its six commits past `v1.3.3` move
+  nothing the oracles pin; what gpyreg gains after it needs the same
+  check.
+
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
   design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
@@ -75,13 +98,11 @@ records its execution.
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
-  `feat-slurm-campaigns`, reviewed twice and fixed; next are Phase 1b and
-  the smoke campaigns on the cluster, then the brief, and the merge into
-  `dev-next`. The branch lacks two logging changes of `dev-next`:
-  `1f9c207a` leaves the root logger to the application, and `1bde36eb`
-  makes `display="off"` print warnings only (no harness reads the lines
-  that stopped printing). Merge `dev-next` into the branch and run its
-  harness test modules again before the cluster session. Needed before
+  `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
+  in on 2026-09-27 (its package tree, the logging changes `1f9c207a` and
+  `1bde36eb` included, under which every harness test module passes); next
+  are Phase 1b and the smoke campaigns on the cluster, then the brief, and
+  the merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
@@ -109,7 +130,17 @@ records its execution.
   [population plan](plans/final-population-benchmark.md), and the
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
-  Phase 8, on the PI's instruction.
+  Phase 8, on the PI's instruction. The promotion needs a script in the
+  manner of `golden/promotion_20260913/promote.py`, since
+  `scripts/reference_join.py` extends a reference and refuses any overlap
+  with it; with the promotion, `golden_replay.py`'s `DEFAULT_BASELINE` and
+  `DEFAULT_CONFIGS` change, together with `AGENTS.md` ("Trajectories"), the
+  `golden_replay.py` entry of `dev/README.md` and `golden/README.md` (the
+  Slurm plan, "The populations"). The script reads the array-mode campaigns
+  of `population_run.py`, which exist on `feat-slurm-campaigns`, so it is
+  written there, and it can be written and tested on small campaigns of
+  that mode before Phase 8 (PI, 2026-09-27: next, with the wrapper of the
+  item below).
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -133,7 +164,10 @@ records its execution.
   code, wrapped so that their record carries the commit, the gpyreg
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper
+  can be written and tested before the release code is settled, and the
+  runs that enter the records wait for it (PI, 2026-09-27: next, with the
+  promotion script of the item above).
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
@@ -157,70 +191,20 @@ records its execution.
   `dev/scripts/` through the cluster workflow of the HPC item above.
   PI, 2026-09-16.
 
-- [ ] **Release documentation and validation.** Finish the release-wide
-  API/tutorial and compatibility review; run examples, check links, build
-  Sphinx and inspect rendered pages against the settled release code. The
-  focused Torch/JAX workflow and teaching consistency review are recorded
-  in the [teaching-material plan](plans/teaching-material.md).
-  Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
-  Re-execute every example notebook with the release code and commit its
-  outputs, which the docs build renders as stored
-  (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
-  (`dev/README.md`) runs all nine and writes back only those whose checks
-  of their text's claims pass. Reinstall `pyvbmc` in the notebooks'
-  environment at the release commit first: Example 3 prints
-  `results["version"]`, which an editable install reads from its metadata
-  as of its installation. Update Example 7's account of the headline
-  estimate to the headline decision, read each notebook's text against its
-  new outputs, and regenerate `examples/scripts/` with its Makefile.
-  Example 7's text needs at least one of its four runs to miss a mode, which
-  its check asserts; if none does, choose other seeds (on 2026-09-26, 9 of
-  24 single runs on its target missed one; `dev/scripts/runs/LOCAL.md`,
-  "Example notebooks").
-  Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. The package checks include what
-  the sdist ships: setuptools_scm puts every tracked file in it, and of
-  `MANIFEST.in` only the `prune` lines have an effect (`docsrc`, `dev`,
-  `papers`), its `include` lines naming files that the sdist holds
-  already. Built on 2026-09-25 the sdist was 11.8 MB (37.7 MB before `dev`
-  and `papers` were pruned) and the wheel unchanged; from the sdist the
-  tests that read `dev/scripts` skip, among them 7 of the oracle tests.
-  Decide which locally held
-  artifacts attach to the release as archives rather than commits: the
-  golden reference traces, the run pools, the captured frozen states and
-  the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
-  holding machine, the release gate's campaigns (the
-  [Slurm plan](plans/slurm-benchmark-support.md), "Records and
-  hand-back": their raw archives hold site details and stay in draft
-  releases, and their redacted copies are the tracked record) and its
-  replay fingerprints (that plan's Phase 9). The draft releases
-  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the
-  pool and its analyses as archives, so the decision is which of the remaining artifacts a reader of the
-  release needs to revalidate its results. Search the whole repository's
-  documentation for references to the `dev-next` branch and remove those
-  that are not historical: `dev-next` merges into `main` for the release,
-  so nothing a user or contributor reads after it should point at
-  `dev-next`; dated devlogs and plan worklogs may keep it as history.
-  Before the release, sweep every tracked document and record for two
-  kinds of statement: an acknowledgment that a value or a defect in some
-  file is wrong while that file itself carries neither the correction
-  nor a flag, and a statement that was true when written and is stale
-  now (branch names, counts, work described as continuing or remaining).
-  The scope is the developer notes and plans, the results, the review
-  copies under `dev/experiments/`, `dev/README.md`, `AGENTS.md`, the
-  README, the Sphinx sources and the docstrings. The rule: an error in a
-  record, document or code is fixed in that file; where a record cannot
-  change, the flag goes into the record, or as close to it as its format
-  allows; a note somewhere else is not a fix. Read-only reviewers work by
-  area and the PI triages their findings. The rule was set on 2026-09-19
-  after three cases surfaced in one day: a gpyreg version label wrong in
-  252 run sidecars, upper medians quoted as medians in a report, and a
-  publication index missing four entries, each acknowledged only in a
-  note elsewhere.
-  Documentation can proceed
-  alongside implementation; final checks must cover settled release code.
-  See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
-  and [reference record](golden/promotion_20260913/README.md).
+- [ ] **Release documentation and validation.** The final pass on the
+  settled release code; each step's procedure is in the roadmap's
+  [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
+  - re-execute the example notebooks at the release commit and commit their
+    outputs, Example 7's account of the headline following the headline
+    decision;
+  - the API and tutorial review, the Sphinx build, `linkcheck`, the rendered
+    pages and the agent skill, with a `linkcheck` again after the merge into
+    `main`;
+  - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
+    over the diff since `46200293`;
+  - the final tests, the CI matrix and the package checks;
+  - the choice of the artifacts that attach to the release as archives;
+  - the references to `dev-next` that change with the release merge.
 
 - [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
   interactive three.js page that plays back a recorded two-dimensional run

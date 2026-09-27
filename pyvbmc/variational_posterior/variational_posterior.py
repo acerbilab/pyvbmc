@@ -105,7 +105,7 @@ class VariationalPosterior:
     x0 : np.ndarray, optional
         The starting points for the mixture component means, one per row.
         A single point of `D` elements, given as a flat array, a row or a
-        column, starts every component; a single element starts every
+        column, starts every component; a 1-by-1 array starts every
         coordinate of every component; an `n0`-by-`D` matrix starts the
         components at its rows, repeated in order where `n0` is below `K`
         and cut after the `K`-th row where it is above. By default
@@ -826,7 +826,10 @@ class VariationalPosterior:
             posterior, in which the multivariate normal components
             have been replaced by multivariate `t`-distributions with
             `df` degrees of freedom. The default is `df` = ``np.inf``, limit in
-            which the `t`-distribution becomes a multivariate normal.
+            which the `t`-distribution becomes a multivariate normal. A
+            negative `df` replaces them instead by products of `D`
+            univariate `t`-distributions with ``abs(df)`` degrees of
+            freedom; ``df = 0`` also gives the normal components.
 
         Returns
         -------
@@ -916,15 +919,12 @@ class VariationalPosterior:
 
             # common normalization factor
             nf = 1 / (2 * np.pi) ** (D / 2) / np.prod(lamd_row)
-            # Broadcast over the K components (the former loop over k
-            # accumulated y and dy one component at a time). Each
-            # component's term is computed with the same products in the
-            # same order as before; only the summation over K changes
-            # order. Rows are chunked so that no (n, K, D) temporary exceeds
-            # the profile's fixed element budget (unless one row is already
-            # larger). The historical default is 2^16 elements.
-            # Rows are independent, so the chunk size does not affect
-            # the result.
+            # The K components are handled together by broadcasting, in
+            # blocks of rows small enough that no (n, K, D) temporary
+            # exceeds the profile's fixed element budget (unless one row is
+            # already larger); the historical default is 2^16 elements.
+            # Rows are independent, so the block size does not affect the
+            # result.
             # `K` is a NumPy integer in some stored VPs (uint8 in the
             # MATLAB fixtures), and NumPy 2 refuses division of a Python
             # integer by a uint8 here.
@@ -1136,7 +1136,10 @@ class VariationalPosterior:
             posterior, in which the multivariate normal components have been
             replaced by multivariate `t`-distributions with `df` degrees of
             freedom. The default is `df` = ``np.inf``, limit in which the
-            `t`-distribution becomes a multivariate normal.
+            `t`-distribution becomes a multivariate normal. A negative `df`
+            replaces them instead by products of `D` univariate
+            `t`-distributions with ``abs(df)`` degrees of freedom; ``df = 0``
+            also gives the normal components.
 
         Returns
         -------
@@ -1178,8 +1181,9 @@ class VariationalPosterior:
         Parameters
         ----------
         raw_flag : bool, optional
-            Specifies whether the sigma and lambda parameters are
-            returned as raw (unconstrained) or not, by default ``True``.
+            Specifies whether the scales ``sigma`` and ``lambd`` and the
+            weights ``w`` are returned as raw (unconstrained) parameters,
+            their logarithms, or as they are, by default ``True``.
 
         Returns
         -------
@@ -1253,20 +1257,24 @@ class VariationalPosterior:
         theta : np.ndarray
             The array with the parameters that should be assigned.
         raw_flag : bool, optional
-            Specifies whether the sigma and lambda parameters are
-            passed as raw (unconstrained) or not, by default ``True``.
+            Specifies whether the scales ``sigma`` and ``lambd`` and the
+            weights are passed as raw (unconstrained) parameters or as they
+            are, by default ``True``. The raw scales are their logarithms,
+            and the raw weights are the parameters of a softmax: the weights
+            are their exponentials, normalized to sum to one.
 
         Raises
         ------
         ValueError
-            Raised if sigma, lambda and weights are not positive
-            and raw_flag = ``False``.
+            Raised if `raw_flag` is ``False`` and a scale or a weight in
+            `theta` is negative.
         """
 
         # Make sure we don't get issues with references.
         theta = theta.copy()
 
-        # check if sigma, lambda and weights are positive when raw_flag = False
+        # check that sigma, lambda and weights are not negative when
+        # raw_flag = False
         # They occupy the tail of the vector, after the means, which are
         # unconstrained; an empty tail leaves nothing to check.
         if not raw_flag:
@@ -1279,8 +1287,8 @@ class VariationalPosterior:
                 n_constrained += self.K
             if n_constrained > 0 and np.any(theta[-n_constrained:] < 0.0):
                 raise ValueError(
-                    """sigma, lambda and weights must be positive
-                    when raw_flag = False"""
+                    "sigma, lambda and weights must not be negative when "
+                    "raw_flag = False"
                 )
 
         if self.optimize_mu:
@@ -1420,11 +1428,12 @@ class VariationalPosterior:
             Maximum number of optimization runs from different starting points
             to find the mode. By default `n_opts` is the square root of the
             number of mixture components K, that is
-            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call that leaves
-            `n_opts` out returns the mode that an earlier such call found in
-            the original space, if the posterior still carries one, and
-            stores the mode it finds otherwise. A call that gives `n_opts`
-            runs the search and neither reads nor replaces that stored mode.
+            :math:`n\_opts = \lceil \sqrt{K} \rceil`. A call in the
+            original space that leaves `n_opts` out returns the mode that
+            an earlier such call found, if the posterior still carries one,
+            and otherwise stores the mode it finds. A call in the
+            transformed space, or one that gives `n_opts`, runs the search
+            and neither reads nor replaces that stored mode.
 
         Returns
         -------
@@ -1550,10 +1559,10 @@ class VariationalPosterior:
 
         Returns
         -------
-        mtv: np.ndarray
-            A `D`-element vector whose elements are the total variation distance
-            between the marginal distributions of `vp` and `vp1` or `samples`,
-            for each coordinate dimension.
+        mtv : np.ndarray
+            An array of shape ``(1, D)`` holding, for each coordinate, the
+            total variation distance between the marginal distributions of
+            this posterior and of `vp2` or `samples`.
 
         Raises
         ------
@@ -1678,6 +1687,9 @@ class VariationalPosterior:
             Raised if neither `vp2` nor `samples` are specified.
         ValueError
             Raised if `vp2` is not provided but `gauss_flag` = ``False``.
+        ValueError
+            Raised if `gauss_flag` is ``True`` and `N` is 0: the moments are
+            estimated from `N` samples in the original space.
 
         Notes
         -----
@@ -1738,7 +1750,7 @@ class VariationalPosterior:
         n_samples: int = int(1e5),
         title: str = None,
         plot_data: bool = False,
-        highlight_data: list = None,
+        highlight_data: np.ndarray = None,
         plot_vp_centres: bool = False,
         plot_style: dict = None,
         gp: GaussianProcess = None,
@@ -1765,7 +1777,7 @@ class VariationalPosterior:
             The title of the plot, by default ``None``.
         plot_data : bool, optional
             Whether to plot the datapoints of the GP, by default ``False``.
-        highlight_data : list, optional
+        highlight_data : np.ndarray, optional
             Indices of the GP datapoints that should be plotted in a different
             way than the other datapoints, by default ``None``.
         plot_vp_centres : bool, optional
@@ -1774,7 +1786,7 @@ class VariationalPosterior:
             A dictionary of plot styling options. The possible options are:
                 **corner** : dict, optional
                     Styling options directly passed to the corner function.
-                    By default: ``{"fig": plt.figure(figsize=(8, 8)),
+                    By default: ``{"fig": plt.figure(figsize=(6, 6)),
                     "labels": labels}``. See the documentation of `corner
                     <https://corner.readthedocs.io/en/latest/index.html>`_.
                 **data** : dict, optional
@@ -1937,9 +1949,13 @@ class VariationalPosterior:
             The file name or path to read from. Default file extension `.pkl`
             will be added if no extension is specified.
         calibration : CalibrationProfile, {"cached", "off"}, or None, optional
-            Optional pending-mode/profile override. Resolved saved settings
-            cannot be changed; a matching explicit profile is accepted while
-            retaining the saved provenance.
+            For a posterior saved while its calibration request
+            (``"cached"``) was still pending, the settings that replace the
+            request; ``None`` leaves it pending. For a posterior with
+            resolved settings, ``None``, a profile with the same settings,
+            and ``"off"`` where the saved settings are the historical
+            defaults keep the saved profile and its provenance; any other
+            value raises.
 
         Returns
         -------
@@ -1950,6 +1966,11 @@ class VariationalPosterior:
         ------
         OSError
             If the file cannot be found, or cannot be opened for other reasons.
+        ValueError
+            If `calibration` asks for other settings than the resolved ones
+            the file holds (``"cached"``, ``"off"`` where the saved settings
+            are not the historical defaults, or a profile with other
+            settings), or is not one of the accepted values.
         """
         filepath = Path(file)
         if filepath.suffix == "":
