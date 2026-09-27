@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-27. These lists describe scope, not priority or execution
+Updated 2026-09-28. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -99,10 +99,11 @@ records its execution.
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
-  in on 2026-09-27 (its package tree, the logging changes `1f9c207a` and
-  `1bde36eb` included, under which every harness test module passes); next
-  are Phase 1b and the smoke campaigns on the cluster, then the brief, and
-  the merge into `dev-next`. Needed before
+  in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
+  harness test module passes, and with the tools of the plan's Phase 9 and
+  of the promotion of the new reference (the two items below); next are
+  Phase 1b and the smoke campaigns on the cluster, then the brief, and the
+  merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
@@ -130,17 +131,22 @@ records its execution.
   [population plan](plans/final-population-benchmark.md), and the
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
-  Phase 8, on the PI's instruction. The promotion needs a script in the
-  manner of `golden/promotion_20260913/promote.py`, since
+  Phase 8, on the PI's instruction. The promotion is
+  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-27), in
+  the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
-  with it; with the promotion, `golden_replay.py`'s `DEFAULT_BASELINE` and
-  `DEFAULT_CONFIGS` change, together with `AGENTS.md` ("Trajectories"), the
-  `golden_replay.py` entry of `dev/README.md` and `golden/README.md` (the
-  Slurm plan, "The populations"). The script reads the array-mode campaigns
-  of `population_run.py`, which exist on `feat-slurm-campaigns`, so it is
-  written there, and it can be written and tested on small campaigns of
-  that mode before Phase 8 (PI, 2026-09-27: next, with the wrapper of the
-  item below).
+  with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
+  after arm's envelopes, `prepare` checks the previous reference, the after
+  arm, the accepted assessment, the fingerprints and the gate runs and
+  writes the record, `replay` replays the new defaults, and `publish`
+  replaces the sidecars of `golden/baseline/` and changes
+  `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS` together
+  with `AGENTS.md` ("Trajectories"), the current reference's section and
+  the `golden_replay.py` entry of `dev/README.md`, and `golden/README.md`
+  (its `dev/README.md` entry on the branch gives the steps). Its test module
+  runs a whole promotion on small array-mode campaigns. It rewrites those
+  passages only as they stood when it was written (a SHA-256 guard), so an
+  edit to one before the promotion is carried into its template.
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -164,10 +170,15 @@ records its execution.
   code, wrapped so that their record carries the commit, the gpyreg
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper
-  can be written and tested before the release code is settled, and the
-  runs that enter the records wait for it (PI, 2026-09-27: next, with the
-  promotion script of the item above).
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
+  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-27): it
+  records the six runs twice, each in a fresh process with one BLAS thread
+  and `performance_calibration="off"`, compares them with the script's own
+  `compare`, and writes each recording's identity (the commit, the gpyreg
+  checkout, the thread settings, the host) beside them. On 2026-09-28 it
+  recorded them at the branch's `4efee154` with gpyreg `d96d0d9`, identical
+  in all 138 arrays; that run checked the wrapper and is no record. The
+  runs that enter the records wait for the release code.
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
