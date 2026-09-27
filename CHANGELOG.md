@@ -852,6 +852,10 @@ its entry below.
   original coordinates are available as `vbmc.x0_orig`.
 - `print(vbmc.iteration_history)` gives the number of iterations recorded,
   where it gave the number of keys of the history.
+- `repr(vbmc)` lists the prior and the number of components of the
+  variational posterior (`self.vp.K`) among its first lines. In their place it
+  listed `log_prior`, `sample_prior` and `K`, which a `VBMC` object does not
+  have, as `None`.
 - `entropy_switch=True` raised `TypeError` in the first iteration of any
   problem with five or more variables.
 - When SciPy's optimizer did not converge in a variational optimization with
