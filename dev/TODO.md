@@ -84,7 +84,11 @@ records its execution.
   stacking in "What runs where", Phase 1b's source trees, and the guide's
   clones, environment check and campaign commands. The campaigns of the
   Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
-  Phase 6 test the machinery and do not wait for it.
+  Phase 6 test the machinery and do not wait for it. On 2026-09-27 the
+  default suite and the exact oracle check (12 of 12) passed against
+  gpyreg `main` at `d96d0d9`, so its six commits past `v1.3.3` move
+  nothing the oracles pin; what gpyreg gains after it needs the same
+  check.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -126,7 +130,17 @@ records its execution.
   [population plan](plans/final-population-benchmark.md), and the
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
-  Phase 8, on the PI's instruction.
+  Phase 8, on the PI's instruction. The promotion needs a script in the
+  manner of `golden/promotion_20260913/promote.py`, since
+  `scripts/reference_join.py` extends a reference and refuses any overlap
+  with it; with the promotion, `golden_replay.py`'s `DEFAULT_BASELINE` and
+  `DEFAULT_CONFIGS` change, together with `AGENTS.md` ("Trajectories"), the
+  `golden_replay.py` entry of `dev/README.md` and `golden/README.md` (the
+  Slurm plan, "The populations"). The script reads the array-mode campaigns
+  of `population_run.py`, which exist on `feat-slurm-campaigns`, so it is
+  written there, and it can be written and tested on small campaigns of
+  that mode before Phase 8 (PI, 2026-09-27: next, with the wrapper of the
+  item below).
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -150,7 +164,10 @@ records its execution.
   code, wrapped so that their record carries the commit, the gpyreg
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper
+  can be written and tested before the release code is settled, and the
+  runs that enter the records wait for it (PI, 2026-09-27: next, with the
+  promotion script of the item above).
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
