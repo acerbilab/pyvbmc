@@ -862,8 +862,8 @@ reason.
   asserted bit-identical and an audit entry in the capture's `.json`.
   The three captures still hold the arrays `capture/ref/fit/hyp_dict_logp`,
   the fit's output under the `logp` key that the port review's W6-23
-  removed from its hyperparameter dictionary; no sidecar describes them,
-  and a capture written anew leaves them out.
+  removed from its hyperparameter dictionary; no reference names them, each
+  capture's sidecar says so, and a capture written anew leaves them out.
 - `scripts/execute_notebooks.py` — executes the example notebooks and
   stores their outputs, which the docs build renders without executing
   them (`nb_execution_mode = "off"`). One process runs them in order in a
