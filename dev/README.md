@@ -119,10 +119,12 @@ plan and consolidated human summary.
   psychometric-model design, Torch/JAX targets, posterior-export workflow,
   consistency review and notebook/script/rendered-documentation verification.
 - [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
-  — completed guarded-sum and kernel-reuse optimizations, and the completed
-  integration/search experiment: fixed-state comparisons, independent
-  judging, conditional adaptation and a ten-seed paired inference
-  comparison, with the E6 assessment and proposed follow-ups.
+  — completed guarded-sum and kernel-reuse optimizations, and the
+  integration/search experiment, closed on 2026-09-19 without a change of
+  default: fixed-state comparisons with independent judging, a ten-seed
+  paired inference comparison and its E6 assessment, the F3 trajectory
+  diagnosis, and the F2 node rule, run in two stages and not promoted; the
+  conditional adaptation (E4) was not entered, its gates unmet.
   Its [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records sources, coverage, verification and measured results.
 - [plans/port-correctness-review.md](plans/port-correctness-review.md) —
@@ -140,10 +142,14 @@ plan and consolidated human summary.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local
-  numerical, lifecycle, documentation and distribution validation is complete;
-  delivery status and remaining CI gates are tracked in the plan and `TODO.md`.
+  numerical, lifecycle, documentation and distribution validation is complete.
+  Merged into `dev-next` at `46c16b7` with the full CI matrix passed; the
+  recipe was revised (v2) on 2026-09-23 after the port review.
   The [first results](results/2026-09-09-machine-local-calibration.md) retain
   current defaults in both balanced sweeps and establish discovery costs.
+- [plans/runtime-tips.md](plans/runtime-tips.md) — the optional startup tips
+  (`show_tips`): policy, catalog, wording and acceptance checks; complete
+  (2026-09-10).
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates
@@ -152,6 +158,12 @@ plan and consolidated human summary.
   records acceptance and the active 990-run reference.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
+- [plans/final-population-benchmark.md](plans/final-population-benchmark.md) —
+  the staged population assessment of the integrated 1.5 code against the
+  870-run reference (2026-09-10 to 09-13): allocation, launcher, the
+  overnight stage, the noisy follow-up, the full allocation and its
+  acceptance; the resulting reference is in the
+  [promotion record](golden/promotion_20260913/README.md).
 - [plans/svbmc-integration.md](plans/svbmc-integration.md) — S-VBMC
   integration (complete): the settled decisions (Torch retained,
   independent sampling with a balanced option, `seed`, float64, snapshot
@@ -268,13 +280,13 @@ plan and consolidated human summary.
   `active_sample_step` oracle's need for single-threaded BLAS on the
   machine that generated the fixtures.
 
-- `plans/stage3-pipeline-features.md` - approved Stage 3 plan and live
-  worklog: connect torch/JAX models through opt-in initial-design batching,
+- `plans/stage3-pipeline-features.md` - Stage 3 plan and worklog
+  (complete): connect torch/JAX models through opt-in initial-design batching,
   use fitted posteriors through torch and current ArviZ DataTree exports,
   optional dependencies, documentation, CI wiring and verification gates.
-  Implementation is complete on `dev-next-stage3` at code `4ee612d`
-  (records/docs `285cd74`); merged into `dev-next` at `4bff1a5`, with
-  branch/full-matrix/integrated CI and all local integration checks passed.
+  Implemented at code `4ee612d` (records/docs `285cd74`); merged into
+  `dev-next` at `4bff1a5`, with branch/full-matrix/integrated CI and all
+  local integration checks passed.
   Reference snapshot: `reference/stage3-20260906`.
 
 - [plans/pymc-target-adapter.md](plans/pymc-target-adapter.md) — the
@@ -320,7 +332,7 @@ plain module name, so run them as `python dev/scripts/<name>.py`. They need
 `psutil` (not a package dependency; `pip install psutil`). Keep to **one
 heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
 the default; eight concurrent VBMC processes hard-crashed the machine on
-2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
+2026-09-02) and export `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
 which was made single-threaded. Long campaigns start only on explicit PI
 instruction. Light browser/email use is compatible with reference-quality
@@ -476,23 +488,23 @@ reason.
   configuration). `record-replay` adds a finished `golden_replay.py`
   report of the new configurations against the combined traces to that
   record. The README of the record is written by hand from its output.
-- `scripts/boost_comparison.py` (parked at `764a177` on `dev-final-boost`) — reads stored pre/final boost scores and
+- `scripts/boost_comparison.py` (kept at `764a177` on `retain/final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for
   rejected/near-threshold candidates and the new noisy configurations.
-- `scripts/boost_replay.py` (parked at `764a177` on `dev-final-boost`) — runs Phase 2's seven specified trajectories,
+- `scripts/boost_replay.py` (kept at `764a177` on `retain/final-boost`) — runs Phase 2's seven specified trajectories,
   with explicit `--out`, one worker and one BLAS thread. Each trajectory
   generates one unpenalized boost candidate; both tolerances are evaluated
   on it. Authentic restart state and raw candidates are retained under
   `captures/`. Results and limitations are in the
   [Phase 2 evidence note](results/2026-09-07-final-boost-comparison.md).
-- `scripts/boost_reconstruction.py` (parked at `764a177` on `dev-final-boost`) — rebuilds boost inputs from compact
+- `scripts/boost_reconstruction.py` (kept at `764a177` on `retain/final-boost`) — rebuilds boost inputs from compact
   traces and compares them with authentic restart captures. Optional
   `--population-numerics` checks all stored pre-boost SDs; `--replay TAG...`
   compares authentic/reconstructed boosts with a common RNG. These are
   reconstruction checks, not a penalty-on/off campaign. See the
   [reconstruction findings](results/2026-09-08-boost-reconstruction.md).
-- `scripts/boost_penalty_pilot.py` (parked at `764a177` on `dev-final-boost`) — times three fixed seed-0 pairs with
+- `scripts/boost_penalty_pilot.py` (kept at `764a177` on `retain/final-boost`) — times three fixed seed-0 pairs with
   weight penalty 0.1 versus zero, starting from identical reconstructed
   states and fresh RNGs. Requires `--out`; retains full paired captures and
   separate optimization/diagnostic/save timings. See the
@@ -793,20 +805,22 @@ reason.
   [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
 - `scripts/pymc_setup_probe.py` — preapproval setup and evaluation-reuse
   experiments for the [PyMC adapter plan](plans/pymc-target-adapter.md).
-  Subcommands `a`, `references`, `b`, `check` and `summarize` compare
-  capped gradient searches, generate and assess sequential NUTS references,
-  run the three reuse arms at matched total budgets, verify derivatives
-  and cached observations, and publish compact evidence. It uses the
-  feasibility environment in `scripts/runs/LOCAL.md` and imports the
-  historical prototype's coordinate mapping without editing it. Raw
-  paths and draws stay under `scripts/runs/`; summaries belong under
+  Subcommands `a`, `references`, `b`, `check`, `summarize`, `coverage` and
+  `coverage_summary` compare capped gradient searches, generate and assess
+  sequential NUTS references, run the three reuse arms at matched total
+  budgets, verify derivatives and cached observations, run the focused
+  coverage follow-up on the two hard models, and publish compact evidence.
+  It needs a PyMC environment, which `scripts/runs/LOCAL.md` lists, and
+  imports the historical prototype's coordinate mapping without editing it.
+  Raw paths and draws stay under `scripts/runs/`; summaries belong under
   `experiments/pymc_setup_probe/`. See the
   [setup report](results/2026-09-16-pymc-setup-probe.md).
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only
-  from the source-move commit `a8ae260`, the last where the moved class
-  carries that flag; its result (every difference exactly zero) is in
+  from `6103be8`, the commit that added it, whose package is that of the
+  source move `a8ae260` and the last where the moved class carries that
+  flag; its result (every difference exactly zero) is in
   `plans/svbmc-integration.md`.
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
   fixtures under `pyvbmc/testing/oracles/fixtures/`: short seeded runs on
@@ -832,9 +846,9 @@ reason.
   NAME --reason "..."` adds a newly registered oracle's references to the
   existing fixtures from their stored state (audit entry under
   `meta["oracles_added"]`); `--check --exact` compares the working tree
-  with the committed references bit for bit, the gate for an
-  identity-preserving refactor since the references were re-baselined to
-  the current numerics at the end of Stage 2 (2026-09-06); `--dump-outputs
+  with the committed references bit for bit (they equal the current
+  numerics on the generating platform), the gate for a change that must
+  move nothing; `--dump-outputs
   DIR` writes the current code's outputs of every oracle on every snapshot
   and `--check --exact --against DIR` compares with such a dump, for a
   change made while the references are known to lag. The authentic
