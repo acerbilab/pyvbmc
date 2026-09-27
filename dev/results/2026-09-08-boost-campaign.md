@@ -56,7 +56,8 @@ resume. One detached worker uses single-threaded BLAS.
 ## Code, inputs and evidence
 
 - Isolated checkout: `dev/scripts/runs/latent_fixes/boost_campaign_worktree/`,
-  branch `dev-boost-campaign`, runner commit `8c7919f`, numerical base `764a177`.
+  branch `dev-boost-campaign` (kept as `retain/boost-campaign`), runner
+  commit `8c7919f`, numerical base `764a177`.
 - Python: original `.venv/Scripts/python.exe`; actual imported PyVBMC source
   must resolve inside the isolated checkout, regardless of editable metadata.
 - gpyreg: clean sibling at `a2f8ddce867f502e29717959cf0ff3529f598618`.

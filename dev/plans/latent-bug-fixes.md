@@ -1,5 +1,12 @@
 # Plan: PyVBMC 1.5 latent bug fixes
 
+Status: complete. The fixes are integrated into `dev-next`; the population
+of the integrated code was accepted on 2026-09-13 and promoted as
+`reference_990_20260913`
+([promotion record](../golden/promotion_20260913/README.md); execution in
+[final-population-benchmark.md](final-population-benchmark.md)). The
+entries below are dated records.
+
 **Full-matrix pickup (2026-09-08):** PI authorized the full supported
 OS/Python matrix on integrated `dev-next`.
 
@@ -71,6 +78,10 @@ and its per-dimension bracket initialization avoids this Python bug.
 No upstream implementation or dependency pin bump is required for this
 release. Phase7 now retains only the remaining integration/release gates;
 the full OS/Python matrix and final population assessment remain pending.
+Afterwards (2026-09-13): gpyreg fixed the step-out brackets in `f610e11`
+("keep slice-sampler step-out brackets on the current coordinate line
+(#48)", which fixes #44), released in gpyreg 1.2.1; every gpyreg release
+that PyVBMC accepts carries the fix.
 
 **CI follow-up (2026-09-08):** run 34240597505 discovered the historical
 eta-variant experiment tests through bare pytest. Their pinned-source guard
@@ -1580,6 +1591,9 @@ release's prerequisites. Keep the current dependency pin. Their repair/test
 contract is retained for optional future work. Items 3–4 remain applicable;
 the local full suite and reduced `dev-next` CI already pass, while the full
 matrix and final population assessment remain later gates.
+Afterwards (2026-09-13): gpyreg carried out the repair of item 1 upstream
+in `f610e11` (#48, which fixes #44), released in gpyreg 1.2.1; every gpyreg
+release that PyVBMC accepts carries it.
 
 1. On an isolated gpyreg feature branch, resync both step-out bracket vectors
    from accepted current coordinates before processing each dimension. Test

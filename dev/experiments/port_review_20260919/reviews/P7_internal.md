@@ -10,7 +10,11 @@ session scratchpad and are kept only on the machine that ran them
 unedited. Its answer on the underflowed log density, that the mode search
 cannot reach it in practice, is corrected by wave 7
 (`../verification/wave7.md`, W7-3): `vp.mode()` reaches it at the first
-trial step of its optimizer on a narrow posterior.
+trial step of its optimizer on a narrow posterior. Its claim at F11 that
+the default fraction 0.8 gives a half-integer at `N = 5, 15, 25` is
+corrected by wave 5 (`../verification/wave5.md`, W5-6; the plan's wave-5
+entry): `4N/5` is never a half-integer, and a tie needs
+`hpd_search_frac > 0`.
 
 ---
 

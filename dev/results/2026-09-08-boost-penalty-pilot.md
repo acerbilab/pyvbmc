@@ -7,8 +7,8 @@ The parked instructions below preserve the original restart contract.
 ## Parked experiment restart
 
 **PI direction, 2026-09-08: defer the full boost experiment; proceed with
-main-loop fixes.** Checkpoint `764a177` on branch `dev-final-boost` preserves
-the experimental code and harness. No batch or watcher is scheduled.
+main-loop fixes.** Checkpoint `764a177` on branch `dev-final-boost` (kept as
+`retain/final-boost`) preserves the experimental code and harness. No batch or watcher is scheduled.
 
 To resume later:
 

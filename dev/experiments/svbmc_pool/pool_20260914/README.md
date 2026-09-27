@@ -14,8 +14,9 @@ on the machine that holds it, which lists it in its `LOCAL.md`.
 
 ## How it was generated
 
-- Code: commit `d63c477` of the branch `dev-svbmc-pool-hpc` (a descendant
-  of `dev-next` at `613f2a8`), clean tree; gpyreg `v1.2.1`
+- Code: commit `d63c477`, on `dev-next`, made on the since-deleted branch
+  `dev-svbmc-pool-hpc` (a descendant of `dev-next` at `613f2a8`), clean
+  tree; gpyreg `v1.2.1`
   (`9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b`) from a detached clone at
   the harness default path, imported through `PYVBMC_GPYREG_SOURCE`. The
   manifest's `identity.source` half is what every worker matched.

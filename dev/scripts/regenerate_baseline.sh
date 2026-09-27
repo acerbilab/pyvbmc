@@ -10,9 +10,10 @@
 #     bash dev/scripts/regenerate_baseline.sh profile    # profile campaign only
 #
 # Estimated wall time on the 2026-09-02 laptop: profile campaign about 1.5 h
-# (plain + cProfile, including the 15-D cigar exhaust run twice), golden
-# sweep 14 configs x 20 seeds about 8-10 h. Resumable: rerunning skips
-# finished runs. Outputs go to dev/scripts/runs/ (gitignored); at the end the
+# (plain + cProfile, including the 15-D cigar exhaust run twice); golden
+# sweep: every configuration of the golden suite at seeds 0-19, far longer
+# than the 2026-09-02 estimate of 8-10 h for its 14 configurations then.
+# Resumable: rerunning skips finished runs. Outputs go to dev/scripts/runs/ (gitignored); at the end the
 # reference sidecars and summary are copied into dev/golden/baseline/ (in
 # git). Log: dev/scripts/runs/regenerate_<stamp>.log (this script tees).
 set -euo pipefail

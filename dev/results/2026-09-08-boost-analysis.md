@@ -28,6 +28,9 @@ scores as specified by Phase 2; this campaign used independent common-GP
 diagnostic rescoring. Combined main-loop fixes also change endpoints, so
 859 accepted is campaign evidence, not a predicted final benchmark count.
 The full benchmark launch remains a later explicit PI instruction.
+Afterwards: the integrated population with these defaults ran from
+2026-09-10 to 09-13 and was accepted
+([population plan](../plans/final-population-benchmark.md)).
 
 Implementation on `dev-final-boost-default` reuses the previously reviewed
 guard and selects 0.1 as its default. Explicit `None`, or a missing option

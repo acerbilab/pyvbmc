@@ -17,7 +17,10 @@ conditions, by more than the raw estimate is high, for a reason the
 per-component records make visible; at `M = 3` the existing
 component-median cap is closer to the reference than the honest estimate
 on four of the five conditions. The full pools will decide; this report
-records what the prototype measures and how.
+records what the prototype measures and how. Afterwards (2026-09-15): the
+full pools decided; the [stage D report](2026-09-15-svbmc-pool-comparison.md)
+scores the estimator on them ("Phase 2: the cross-run estimator on these
+cells").
 
 Tracked outputs: [`experiments/svbmc_pool/pilot/phase2/`](../experiments/svbmc_pool/pilot/phase2/)
 (`results.json`, `cells.jsonl`, `summary.md`, `summary.json`,

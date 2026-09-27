@@ -14,8 +14,8 @@ Design inputs: the
 [feasibility report](../results/2026-09-14-pymc-feasibility.md) and the
 prototype `dev/scripts/pymc_feasibility.py`, whose module docstring is the
 specification of the route through PyMC. The PI chose the scope on
-2026-09-14 on the feasibility record, and `dev/TODO.md` carries the
-decision; this plan settles the design questions that decision left to
+2026-09-14 on the feasibility record ("Scope" below records it); this
+plan settles the design questions that decision left to
 the implementation and lays out the work.
 
 ## Pickup: 2026-09-16
