@@ -55,10 +55,11 @@ trapezoidal prior with pivots at the plausible bounds:
                 vectorized over rows, about 7 ms per 100 rows
 
 Their data are the plain archives under ``data/`` (layout and provenance in
-``data/README.md``), and their ground truths the files ``data/truths/``
-holds once ``make_benchmark_truths.py`` has run: until then ``ln_Z``, the
-moments and the sampler stay ``None`` and the metrics that need them are
-NaN. Both likelihoods are ports of the lab's benchflow implementations and
+``data/README.md``), and their ground truths the tracked files under
+``data/truths/``, which ``make_benchmark_truths.py`` writes. A target
+without its files (a new target before the generator has run) has no truth:
+``ln_Z``, the moments and the sampler stay ``None`` and the metrics that
+need them are NaN. Both likelihoods are ports of the lab's benchflow implementations and
 are pinned in ``--check`` to values computed by those implementations (for
 timing, by the original MATLAB code).
 

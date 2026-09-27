@@ -37,21 +37,19 @@ independent review and the validated `reference_990_20260913`, which retains
 records execution. Future candidate checks may use smaller allocations;
 reference size does not prescribe their run count.
 
-The remaining numerical work for 1.5 is improving the efficiency of existing
-noisy acquisitions (sieve/search, integration and criterion evaluation)
-and checking/improving S-VBMC's reported ELBO
-debiasing. The S-VBMC preparation/entropy speedups that preserve the
+The noisy-acquisition efficiency work closed on 2026-09-19 without a change
+of default ([noisy-acquisition-efficiency.md](noisy-acquisition-efficiency.md));
+the selection of the S-VBMC headline estimate remains (`TODO.md`).
+The S-VBMC preparation/entropy speedups that preserve the
 method are implemented, measured and merged into `dev-next` (2026-09-13,
 [svbmc-speedups.md](svbmc-speedups.md)).
 GP fitting, initialization and retraining policy are outside the noisy-
 acquisition efficiency work (PI decision, 2026-09-16). The
 [integration and search experiment](noisy-acquisition-efficiency.md#integration-and-search-experiment)
-defines its bounded comparisons and validation. Its first 11-hour
-capture/integration/search window is authorized; the possible inference
-window remains separate. The [experiment report](../results/2026-09-16-noisy-acquisition-integration-search.md)
-records frozen-source verification and state coverage. A usage-limit
-interruption paused the experiment after all 960 panel selection cells
-completed; independent judging, timing and search allocations remain pending.
+defines its bounded comparisons and validation. The
+[experiment report](../results/2026-09-16-noisy-acquisition-integration-search.md)
+records its sources, coverage and outcomes: no integration or search change
+was adopted, and the F2 node rule was not promoted.
 Designing new acquisition functions or criteria is outside scope. Keep
 standard VIQR (`loss="iqr"`); evaluating `iqr_reduction` as a reformulation
 for numerical search is within the efficiency work and requires validation.
@@ -160,7 +158,7 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   §Results (regenerated)). D8 cigar and Student-t and the D15 exhaust
   are now in the golden set; their reference runs completed 2026-09-07
   (pickup 3f).
-- [~] **Stage 2 — NumPy vectorization + memory fix.** Order measured
+- [x] **Stage 2 — NumPy vectorization + memory fix.** Order measured
   2026-09-02 on the first suite and **confirmed 2026-09-03/04 on the
   regenerated suite** (papers' procedure; the shares below are the
   regenerated ones, `plans/benchmark-suite-and-golden-traces.md` §Results
@@ -278,10 +276,12 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   for the reference), the runner's high-water mark 474 → 402 MB; one
   descriptive shift, lumpy_D10's median evaluations 242 → 308 with its
   quality metrics unchanged or better.
-- [~] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
+- [x] **Latent bug fixes for 1.5** (pickup 9; PI decision 2026-09-06: 1.5
   leaves the VBMC algorithm as designed and fixes the latent bugs of
   devlog §9, the trajectory-moving ones included, each replayed and the
-  set checked as a population against the extended reference).
+  set checked as a population against the extended reference). Complete;
+  the population of the integrated code was accepted on 2026-09-13
+  ([promotion record](../golden/promotion_20260913/README.md)).
 - [x] **Stage 3: connect models and use posteriors downstream.** Merged
   into `dev-next` at `4bff1a5`. Branch smoke 34043031387, all nine jobs of
   full matrix 34043071150, and integrated smoke 34043979358 passed.
@@ -294,16 +294,15 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   Two workflows (PI confirmed 2026-09-06): bring torch/JAX models into
   PyVBMC through documented adapters and an opt-in batched initial design;
   take the fitted posterior into torch as a distribution or ArviZ as
-  samples. The plan is `plans/stage3-pipeline-features.md` on
-  `dev-next-stage3`. Current ArviZ DataTree support is agreed; the core
-  stays Python >=3.10 and the ArviZ export requires >=3.12. Stage 4 later
+  samples. The plan is `plans/stage3-pipeline-features.md`. Current ArviZ
+  DataTree support is agreed; the core stays Python >=3.10 and the ArviZ
+  export requires >=3.12. Stage 4 later
   retained those version floors. Ships in 1.5 with Stages
   0–2 (PI decision 2026-09-06: the whole body of work in one release, for
   visibility, rather than a 1.5 followed by a 1.6 within days). Both
   trajectory-neutral and trajectory-moving latent bug fixes were held behind
   the reference boundary. That boundary completed on 2026-09-07 (pickup 3f).
-  Pickup 9 is in progress: Phase 1 neutral fixes are complete; Q1/Q4 decisions
-  and moving groups remain open.
+  The latent fixes of pickup 9 followed; they are complete (pickup 9).
 - [x] **PyMC model adapter and structured posterior export** (2026-09-16).
   `PyMCTarget(model)` snapshots model data, handles supported continuous
   coordinates and Jacobians, and supplies `VBMC(target)` with budgeted
@@ -352,8 +351,9 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   rationale: devlog §10 and the
   [1.5 overview](../2026-09-06-pyvbmc-1.5-overview.md).
   Prototype completed (2026-09-09): the bounded
-  [variational-step feasibility results](stage4-torch-feasibility.md) are on
-  `dev-stage4-torch-feasibility`, from `dev-next` at `bf43c20`.
+  [variational-step feasibility results](stage4-torch-feasibility.md) are in
+  that plan, run on a branch from `dev-next` at `bf43c20` and merged into
+  `dev-next`.
   Float64 CPU/CUDA diagnostics pass. The 24 trace-disabled whole-fit controls
   show Torch CPU at 2.12-6.26x NumPy and synchronized CUDA at 3.35-23.34x on
   the tested laptop (one clean observation per workload/arm; 72 additional
@@ -370,6 +370,9 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
   The 1.5 NumPy decision stands; this did not authorize a full port.
 
 ## Pickup point
+
+The open work for 1.5 is the list "In scope for 1.5" of
+[TODO.md](../TODO.md); the points below record the pickups that led here.
 
 0. ~~Regenerate the benchmark results~~ done 2026-09-03/04 in two sessions
    (profile campaign plain + cProfile, golden population 20 × 14, null check
@@ -449,8 +452,8 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
    and required by `pyproject.toml`), PyBADS's
    suite passes against it with one metadata-dependent test deselected,
    PyVBMC's seam is removed, and the profile campaign is recorded (plan
-   §Results; `runs/profile_20260905_item8/`). **Open:** (i) whether
-   to run
+   §Results; `runs/profile_20260905_item8/`). ~~**Open:**~~ Both settled on
+   2026-09-06 (3e): (i) whether to run
    the 20-seed population right after item 8 (the seam removal changed
    every stream) or at the end of the stage; (ii) Open question 8 of the
    plan: re-baseline the committed oracle references that items 3, 1, 2
@@ -642,13 +645,12 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
      current `dev-next`, preserving the newer PyTorch feasibility decisions.
      The frozen reference branch is unchanged. No campaign process remains.
 
-   **Next:** prepare the pickup 9 latent-fix plan and implement its approved
-   sequence, with each trajectory-moving fix replayed against this reference.
-   Complete the remaining S-VBMC/extension and PyTorch feasibility scope,
-   then validate the final release code as a population before the 1.5 PR.
-   Read `dev/golden/extension_20260907/README.md`, pickups 9–11, and devlog
-   §9 before starting correctness work. Neither a latent fix nor a solver
-   implementation was made as part of the reference extension.
+   Done: the latent fixes (point 9), the S-VBMC integration (point 10) and
+   the Stage 4 decision followed, and the population of the integrated code
+   was accepted on 2026-09-13
+   ([promotion record](../golden/promotion_20260913/README.md)). Neither a
+   latent fix nor a solver implementation was made as part of the reference
+   extension.
 4. ~~Run the `tests` workflow on `dev-next` for the package fix~~ done
    2026-09-03 (full matrix green, run 33715620257); pushes to `dev*` now
    run a smoke automatically.
@@ -691,7 +693,9 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
    With the 1.5 release that follows it, attach the reference population's
    `.npz` traces as a release asset (PI decision 2026-09-06): one zip per
    reference, made from the traces of the population the released code
-   was validated against (currently 870 traces across 19 configurations),
+   was validated against (the active reference, `reference_990_20260913`,
+   holds 990 traces across 23 configurations; its replacement is the
+   `TODO.md` item "The golden references after the port review"),
    unpacked to
    `dev/scripts/runs/golden/<population>/`
    for `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
@@ -700,11 +704,14 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
    the traces exist only on the machine that ran the population
    (regenerable from the sidecars' code SHA, seeds and options);
    a copy on the lab server is cheap insurance.
-9. **Latent bug fixes for 1.5** (PI decision 2026-09-06: 1.5 does not
-   change the VBMC algorithm, but it fixes the latent bugs; own plan under
-   `plans/` before it starts). PI update (2026-09-08): the boost default is
-   unpenalized final refinement with the joint ELBO/ELCBO(beta5) tolerance
-   0.1 guard (implemented, CI passed). The PI also selected eta treatment A:
+9. ~~**Latent bug fixes for 1.5**~~ Done: the fixes are integrated, and the
+   population of the integrated code was accepted on 2026-09-13
+   ([promotion record](../golden/promotion_20260913/README.md)). The text
+   below records the decisions on the way. PI decision 2026-09-06: 1.5 does
+   not change the VBMC algorithm, but it fixes the latent bugs, with its own
+   plan under `plans/` before it starts. PI update (2026-09-08): the boost
+   default is unpenalized final refinement with the joint ELBO/ELCBO(beta5)
+   tolerance 0.1 guard (implemented, CI passed). The PI also selected eta treatment A:
    remove eta bounds and caller-theta mutation, retaining the separate
    main-loop small-weight penalty and other bounds. Production integration
    passes 64 focused tests and all 11 exact fixtures. All six bounded paired
@@ -802,11 +809,12 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
    `pyproject.toml`; the scipy private imports in `priors/`; gpyreg's
    `step_out` stale coordinates (inert for current PyVBMC; PI deferred to
    [gpyreg #44](https://github.com/acerbilab/gpyreg/issues/44) on 2026-09-08;
-   no repair or pin bump required for this release).
+   no repair or pin bump required for this release; gpyreg fixed it on
+   2026-09-13 in `f610e11`, #48, released in gpyreg 1.2.1).
    Stays deferred as algorithmic (devlog §12): `compute_var == 2`, noise
    shaping, log-space mixture sums.
 10. **S-VBMC integration and compatibility** (PI, 2026-09-06: part of the
-    1.5 work; how to integrate is still to be decided). The broader goal
+    1.5 work; delivered 2026-09-11, below). The broader goal
     is to bring in or connect better to S-VBMC and other upcoming VBMC
     extensions; individual extension integration details remain open
     (PI clarification, 2026-09-06). `acerbilab/svbmc`
@@ -1007,8 +1015,7 @@ measurement. The standalone `svbmc` compatibility release follows PyVBMC
     budget returns the default budget's output bit for bit, and since
     `7c7972f` the campaign accepts a budget only on identical output, so
     one seed gives one trajectory whatever profile is in force.)
-    S-VBMC integration is in progress (item 10), and the final
-    870-case benchmark remains deferred. Run only one heavy computation at a time.
+    Run only one heavy computation at a time.
 
 13. **Optional runtime hints — implemented and verified** (2026-09-10).
     The [runtime-tips plan](runtime-tips.md) owns the approved policy, PI-edited
@@ -1109,21 +1116,25 @@ its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
   suite; no additional packaged regression tests are needed for 1.5.
 - [ ] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
-  with reproducible run provenance. The design, for the PI's review, is in
-  [slurm-benchmark-support.md](slurm-benchmark-support.md) (2026-09-25).
+  with reproducible run provenance. The design, reviewed by the PI on
+  2026-09-25, is in [slurm-benchmark-support.md](slurm-benchmark-support.md);
+  its status is in that plan and `TODO.md`.
   The S-VBMC run-pool campaign
   ([svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md)) is the
   first cluster job: its per-case worker, `cases` enumeration and
   hash-verified completion records are cluster-ready, and its sbatch
   scripts under `dev/scripts/hpc/` are the seed of this item.
-- [ ] Make the distinction between reference generation and candidate
+- [x] Make the distinction between reference generation and candidate
   checking explicit in benchmark workflows and documentation. A golden
   reference may contain many traces and require a long campaign to generate.
   Candidate checks can use a smaller allocation against that existing
   reference; they need not repeat its full run count. Select coverage and
   seeds for the question and compute budget, retain paired comparisons where
   seeds overlap, and extend the candidate sample when the evidence warrants it.
-  See the [staged benchmark plan](final-population-benchmark.md).
+  See the [staged benchmark plan](final-population-benchmark.md). Done: the
+  "Purpose" section of that plan separates the two budgets, and the
+  [Slurm plan](slurm-benchmark-support.md) ("What runs where") separates the
+  reference populations from the replay fingerprints.
 
 ## Pre-release documentation review
 
@@ -1139,7 +1150,7 @@ before publication.
   normalization.
   Independent review, standalone RST parsing, syntax checks for nine Python
   snippets and local link checks passed. Full Sphinx rendering and runtime
-  example checks remain deferred during the golden campaign.
+  example checks are the last item of this list.
 - [ ] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation.
@@ -1176,11 +1187,12 @@ before publication.
   omits the test directory that exists; the MATLAB text fixtures and the two
   static pickles have `FIXTURES.md` entries. Recorded and not fixed: a
   candidate about `load(new_options=)` in the
-  [port review plan](port-correctness-review.md), and what the sdist ships
-  in `TODO.md` (an sdist built that day holds every tracked file but
-  `docsrc/`, so the rule of adding fixtures to `MANIFEST.in` by hand had no
-  effect and is not in the new file). `known_differences.md` of the port
-  review cites the old file by section, and says so in its header.
+  [port review plan](port-correctness-review.md), fixed later as W6-37
+  (`e657eba8`), and what the sdist ships in `TODO.md` (an sdist built that
+  day holds every tracked file but `docsrc/`, so the rule of adding fixtures
+  to `MANIFEST.in` by hand had no effect and is not in the new file).
+  `known_differences.md` of the port review cites the old file by section,
+  and says so in its header.
 - [ ] Sweep every tracked document and record before the release for
   acknowledgments of a wrong value or defect that the affected file does
   not itself carry as a correction or flag, and for statements that were

@@ -38,7 +38,7 @@ class Timer:
         Parameters
         ----------
         name : str
-            The name of the timer that should be started.
+            The name of the timer that should be stopped.
         """
 
         if name in self._start_times:
@@ -94,7 +94,7 @@ class Timer:
             If ``expand`` is `False`, then describe any complex child
             attributes of the object by their name and memory location.
             Otherwise, recursively expand the child attributes into their own
-            representations. Default `False`.
+            representations. Default `True`.
 
         Returns
         -------

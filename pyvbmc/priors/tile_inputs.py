@@ -22,9 +22,15 @@ def tile_inputs(*args, size=None, squeeze=False):
     *args : [Union[float, np.ndarray]]
         The inputs to tile.
     size : Union[int, tuple], optional
-        The desired size/shape of the output, default `(1,)`.
+        The desired size/shape of the output. By default the shape of the
+        non-scalar inputs, or `(1,)` when every input is a scalar.
     squeeze : bool
         If `True`, then drop 1-d axes from inputs. Default `False`.
+
+    Returns
+    -------
+    args : list of np.ndarray
+        The inputs, in their order, each of shape `size`.
 
     Raises
     ------

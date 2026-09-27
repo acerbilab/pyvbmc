@@ -27,13 +27,15 @@ class ParameterTransformer:
         original space. Each parameter is bounded on both sides or on
         neither. By default `None`.
     plb_orig : np.ndarray, optional
-        The plausible lower bounds such that ``lb_orig < plb_orig < pub_orig <
-        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
-        for each parameter, given in the original space. By default `None`.
+        The plausible lower bounds such that ``lb_orig <= plb_orig < pub_orig
+        <= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"
+        range for each parameter, given in the original space. By default
+        `None`, which takes the hard bounds.
     pub_orig : np.ndarray, optional
-        The plausible upper bounds such that ``lb_orig < plb_orig < pub_orig <
-        ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible" range
-        for each parameter, given in the original space. By default `None`.
+        The plausible upper bounds such that ``lb_orig <= plb_orig < pub_orig
+        <= ub_orig``. ``plb_orig`` and ``pub_orig`` represent a "plausible"
+        range for each parameter, given in the original space. By default
+        `None`, which takes the hard bounds.
     scale : np.ndarray, optional
         Per-coordinate scale applied after transforming and rotating the
         parameters, of shape ``(D,)`` and finite and positive throughout.
@@ -110,7 +112,7 @@ class ParameterTransformer:
         if pub_orig is None:
             pub_orig = np.copy(ub_orig)
 
-        # Convert scalar inputs to row vectors (I do not think it is necessary)
+        # Check that LB <= PLB < PUB <= UB in every variable.
         if not (
             np.all(lb_orig <= plb_orig)
             and np.all(plb_orig < pub_orig)
@@ -134,7 +136,7 @@ class ParameterTransformer:
                 f"{dimensions}."
             )
 
-        # Transform to log coordinates
+        # Keep copies of the hard bounds, in the original space.
         self.lb_orig = np.copy(lb_orig)
         self.ub_orig = np.copy(ub_orig)
 
@@ -273,9 +275,9 @@ class ParameterTransformer:
     )
     def log_abs_det_jacobian(self, u: np.ndarray):
         r"""
-        ``log_abs_det_jacobian(u)`` returns the log absolute value of the
-        determinant of the Jacobian of the parameter transformation evaluated
-        at ``u``, that is :math: `log \|D \du(g^-1(u))\|`.
+        The log absolute determinant of the Jacobian of the inverse
+        transform at ``u``, :math:`\log |\det J_{g^{-1}}(u)|`, where
+        :math:`g` maps the original space to the transformed space.
 
         Parameters
         ----------
@@ -376,7 +378,8 @@ class ParameterTransformer:
                 self._bounded_transforms[t]["jacobian"] = bounded_jacobian
 
             elif t == 12:
-                # probit: inverse normal CDF (probit) transform (default)
+                # probit: inverse normal CDF transform (the default of
+                # VBMC's option bounded_transform; the class defaults to logit)
 
                 def bounded_transform(self, x, mask):
                     return _center(

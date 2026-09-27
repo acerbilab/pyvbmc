@@ -8,6 +8,10 @@ select criteria post hoc. The PI proposed comparing penalty-on/off candidates
 across the population; reconstruction of boost inputs from compact traces is
 being checked before scheduling main-loop reruns.
 
+Decision (PI, 2026-09-08): the default is the joint tolerance 0.1 guard
+without the boost weight penalty (`tol_elcbo_boost = 0.1`); the evidence is
+the [paired boost analysis](2026-09-08-boost-analysis.md).
+
 Phase 2 started on `dev-final-boost`, based on validated `dev-next` commit
 `3e879b6`. The [latent-bug plan](../plans/latent-bug-fixes.md) owns execution
 and the PI's decisions. The production tolerance remains open. The tested

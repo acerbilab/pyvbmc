@@ -4,7 +4,9 @@ Completed 2026-09-09 on `dev-svbmc-numpy-prototype` from `dev-next` at
 `48ed027`. The PI authorized this experiment and specifically requested an
 optimized NumPy implementation. Astra orchestrates and runs computations
 serially; Sol implements and reviews. PyVBMC's NumPy/SciPy solver decision
-for 1.5 is settled. S-VBMC integration remains parked. Results are summarized
+for 1.5 is settled. S-VBMC integration was parked at the time; it was
+approved and implemented on 2026-09-11
+([svbmc-integration.md](svbmc-integration.md)). Results are summarized
 in the existing ecosystem proposal and detailed in
 [the report](../results/2026-09-09-svbmc-numpy-prototype.md).
 

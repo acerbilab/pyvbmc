@@ -36,6 +36,9 @@
   },
   "hyp_n": 9,
   "iteration": 6,
+  "notes": [
+   "The `.npz` still holds `capture/ref/fit/hyp_dict_logp`, the fit's `logp` output that the port review's W6-23 removed; no reference names it, and a capture written anew leaves it out."
+  ],
   "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
   "problem_seed": 0,

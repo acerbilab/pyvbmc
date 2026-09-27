@@ -30,17 +30,27 @@ def minimize_adam(
     lb : np.ndarray, shape (D,), optional
         Optional lower bounds. If not given we won't have lower bounds.
     ub : np.ndarray, shape (D,), optional
-        Optional upper bounds. If not givven we won't have upper bounds.
+        Optional upper bounds. If not given we won't have upper bounds.
     tol_fun : float, defaults to 0.001
-        ?
+        Tolerance on the function values for early stopping. At the end of
+        each batch of 20 iterations a line is fitted to the batch's
+        function values, and the optimization stops when its slope is
+        within the slope's standard error combined in quadrature with
+        ``tol_fun`` and the mean iterate of the batch lies within a scaled
+        distance of 0.1 from that of the batch before, or when the slope is
+        within the error combined with ``100 * tol_fun`` and that distance
+        is below 0.001.
     max_iter : int, defaults to 10000
         Maximum number of iteration to perform.
     master_min : float, defaults to 0.001
-        ?
+        The step size that the schedule decays to: at iteration ``i``,
+        counted from 1, the step size is ``master_min + (master_max -
+        master_min) * exp(-i / master_decay)``.
     master_max : float, defaults to 0.1
-        ?
+        The step size at the start of the schedule (see `master_min`).
     master_decay : float, defaults to 200
-        ?
+        The decay constant of the step size schedule, in iterations (see
+        `master_min`).
     use_early_stopping : bool, defaults to True
         Whether to complete all iterations or use early stopping
         when little improvement is made.
@@ -48,9 +58,10 @@ def minimize_adam(
     Returns
     -------
     x : np.ndarray, shape (D,)
-        The optimized point.
+        The mean of the iterates over the last 20 iterations, or over all
+        of them when fewer were performed.
     y : float
-        The value of the given function at the optimized point.
+        The mean of the function values over the same iterations.
     x_tab : np.ndarray, shape (D, iterations)
         Intermediate values for ADAM
     y_tab : np.ndarray, shape (iterations,)

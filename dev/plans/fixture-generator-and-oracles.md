@@ -1,8 +1,9 @@
 # Fixture generator and stage-level oracles (Stage 0)
 
-Created: 2026-09-04 05:10. Status: **DONE 2026-09-04 07:50** (commit
-pending; the CI matrix has not yet run the oracles on another BLAS build,
-see the tolerance paragraph). Decided with the PI on
+Created: 2026-09-04 05:10. Status: **DONE 2026-09-04 07:50**; committed
+and pushed the same day, and the full CI matrix (33865996373) passed on
+three BLAS builds (tracker). Phases 3 to 5 below extend the snapshots and
+oracles (2026-09-08 to 09-24). Decided with the PI on
 2026-09-04: an arithmetic-preserving refactor (Stage 2) is gated by
 fixed-state oracles that run in seconds, not by the 10-hour statistical
 golden run, which becomes the end-of-stage check and the Stage 4 gate.

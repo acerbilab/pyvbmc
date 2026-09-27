@@ -117,11 +117,7 @@ class UniformBox(Prior):
         )
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

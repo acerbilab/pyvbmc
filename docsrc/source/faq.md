@@ -570,10 +570,10 @@ PyVBMC supports noisy target functions as input, as explained below.
 (faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)=
 ### Does VBMC automatically detect that the target function is noisy?
 
-No. In order to perform inference with a noisy target function, you need to:
+No. You tell VBMC that the target function is noisy when constructing `VBMC`, in one of two ways:
 
-- manually set `options={"specify_target_noise": True}` when constructing `VBMC`;
-- pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
+- If the target can estimate the noise of each evaluation, which is the recommended setup, set `options={"specify_target_noise": True}` and pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
+- Otherwise, set `options={"uncertainty_handling": True}` and leave `specify_target_noise` unset: `fun` returns `log_density` alone, and VBMC infers the noise level from the evaluations.
 
 With a separate `prior=` or `log_prior=`, `log_density` is the noisy log
 likelihood; otherwise it is the noisy log joint. The SD describes the
@@ -583,12 +583,12 @@ or across parameter values.
 (faq-does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function)=
 ### Does VBMC automatically infer the amount of noise in the target function?
 
-No. See [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy).
+Only when asked to. With `options={"uncertainty_handling": True}` and without `specify_target_noise`, the target returns the log density alone and VBMC infers the noise level from the evaluations. A target that can estimate the SD of each evaluation should return it instead, as described [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy).
 
 (faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood)=
 ### Can I use *any* technique to estimate a noisy log-likelihood?
 
-Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, with an available estimate of the standard deviation. [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
+Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
 
 (faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood)=
 ### How do I estimate the standard deviation of the noisy log-likelihood?

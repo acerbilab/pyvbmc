@@ -24,12 +24,14 @@ Machine-readable results of the paired before/after timing described in
   digest. `status: complete` marks a finished campaign; the script exits 0
   only when `all_passed` and `no_cell_slower` both hold. The committed file
   is a verbatim copy of the raw output written under the ignored
-  `dev/scripts/runs/svbmc_speedups_20260913/`.
+  `dev/scripts/runs/svbmc_speedups_20260913/` (`benchmark_v2.json` there).
 - `benchmark_first.json`: the same 18 cells run 23 minutes earlier with
   an earlier revision of the harness, kept as a repeat measurement. Its
   outputs are identical to `benchmark.json` cell for cell; its summary
   lacks `no_cell_slower`, the construction times and the digests, and
   its `median_speedup` is the upper middle value rather than the median.
+  It is a verbatim copy of the first raw output, which the raw directory
+  holds under the name `benchmark.json`.
 
 The controller keeps one worker process per tree, each importing its own
 `pyvbmc` with one BLAS and one Torch thread and warmed by an unrecorded

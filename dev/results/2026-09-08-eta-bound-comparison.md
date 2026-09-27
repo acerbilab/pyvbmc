@@ -9,6 +9,8 @@ Branch: `dev-eta-bound-comparison`, based on `03650a2`; its numerical code
 passed CI 138 at `b0d3437`. The [live plan](../plans/latent-bug-fixes.md) owns
 the checklist. The paired boost experiment remains parked. No production
 penalty choice or whole-trajectory campaign is part of this pickup.
+Afterwards (2026-09-08): the paired boost experiment ran later the same
+day ([campaign](2026-09-08-boost-campaign.md)).
 
 ## Treatments and mathematical contract
 

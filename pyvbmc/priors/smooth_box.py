@@ -39,10 +39,10 @@ class SmoothBox(Prior):
         b : np.ndarray | float
             The upper pivot(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
-        scale : np.ndarray
+        scale : np.ndarray | float, optional
             The standard deviation of the Gaussian tails, shape `(D,)` where
             `D` is the dimension (parameters of type ``float`` will be tiled to
-            this shape).
+            this shape). Default `1`.
         D : int, optional
             The distribution dimension. If given, will convert scalar `a`, `b`,
             and `scale` to this dimension.
@@ -163,11 +163,7 @@ class SmoothBox(Prior):
         )
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

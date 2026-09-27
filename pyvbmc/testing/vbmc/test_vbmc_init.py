@@ -1644,7 +1644,13 @@ def test_an_unseeded_construction_advances_the_global_random_state():
 def test__str__and__repr__():
     vbmc = create_vbmc(3, 3, 1, 5, 2, 4)
     vbmc.__str__()
-    vbmc.__repr__()
+    representation = vbmc.__repr__()
+    # The attributes listed first are attributes of the instance; those of
+    # the posterior are indented one level further.
+    assert "\n    self.prior = None," in representation
+    assert f"\n    self.vp.K = {vbmc.vp.K}," in representation
+    for missing in ("log_prior", "sample_prior", "K"):
+        assert f"\n    self.{missing} =" not in representation
 
 
 class TrackingPrior(Prior):

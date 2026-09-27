@@ -17,7 +17,10 @@ so treat the numbers as fixed.
 | `test_warp_gp_and_vp_gp_hyps.txt` | (9,) | its hyperparameters, one sample (squared-exponential ARD covariance, constant Gaussian noise, negative-quadratic mean) |
 
 `test_warp_input_rands.txt` is read by `test_warp_input`,
-`test_warp_input_cov_reg`, `test_warp_input_search_cache`,
+`test_warp_input_cov_reg`,
+`test_warp_cov_reg_function_must_return_a_finite_number`,
+`test_warp_cov_reg_written_into_built_options_is_checked_at_use` (these
+three through `_cov_reg_state`), `test_warp_input_search_cache`,
 `test_warp_input_rewrites_every_filled_row_of_the_logger`,
 `test_warp_input_inverts_the_search_state_with_the_current_transform` and
 `test_warp_gp_and_vp`; the three GP files by `test_warp_gp_and_vp` alone.

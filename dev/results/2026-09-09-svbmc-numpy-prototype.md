@@ -12,7 +12,9 @@ can be implemented efficiently in NumPy while preserving its sampled
 objective and optimization behavior. It is separate from the completed
 PyVBMC variational-step feasibility study. S-VBMC keeps the input component
 parameters and GP integrals fixed and optimizes component weights, or one
-weight per input posterior. The production integration remains parked.
+weight per input posterior. S-VBMC integration was parked at the time; it
+was approved and implemented on 2026-09-11
+([svbmc-integration.md](../plans/svbmc-integration.md)).
 
 ## Scope and implementation
 

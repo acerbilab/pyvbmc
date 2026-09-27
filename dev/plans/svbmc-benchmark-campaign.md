@@ -1,6 +1,9 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **complete**. The design was approved by
+Created 2026-09-13. Status: **complete**. The release gate reruns the
+campaign on fresh pools (decisions 12 and 14); that work is open
+(`TODO.md`, "Final large-scale check before the release"). The design was
+approved by
 the PI on 2026-09-13
 and revised on 2026-09-14 (decisions 7–10); the harness was merged
 into `dev-next` on 2026-09-14 (`647698b`); the pools were generated on

@@ -1,5 +1,11 @@
 # PyVBMC 1.5 overnight population assessment
 
+Afterwards (PI, 2026-09-12): the remaining 567 runs of the 870-case
+allocation were run, and the full candidate population was accepted and
+promoted as `reference_990_20260913` on 2026-09-13
+([population plan](../plans/final-population-benchmark.md), "Full-allocation
+completion"; [promotion record](../golden/promotion_20260913/README.md)).
+
 ## Findings
 
 The first stage shows no broad deterioration in the integrated solver. All

@@ -37,7 +37,9 @@ The combined reference has 853 converged runs and 17 budget terminations:
 the original ten deliberate D15 exhaust runs plus the seven new Rosenbrock
 runs. These outcomes record the frozen algorithm's behavior, rather than
 establishing a final boost tolerance or a claim of uniform inference accuracy.
-The [baseline summary](../baseline/summary.md) contains the full distributions.
+The summary published with it (`dev/golden/baseline/summary.md` at
+`b2ea859`) contains the full distributions; the file at that path has since
+been replaced.
 
 ## Source and timing provenance
 
@@ -93,7 +95,8 @@ The focused harness tests (`test_golden_replay.py` and
 23.3.0 formatting verification.
 Independent Sol review of the publication and provenance passed with no
 remaining findings; the review was static and did not duplicate numerical runs.
-Publication commit `b2ea859` was pushed to `dev-latent-neutral-fixes`.
+Publication commit `b2ea859` was pushed to `dev-latent-neutral-fixes`,
+since merged into `dev-next` and deleted.
 [CI 136](https://github.com/acerbilab/pyvbmc/actions/runs/34153489140) passed
 on Ubuntu/Python 3.12: 1,043 tests, 49 skipped, no retries, 558 seconds of
 tests (10m27s for the job).

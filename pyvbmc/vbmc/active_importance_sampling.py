@@ -95,6 +95,18 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     NotImplementedError
         If the acquisition function sets
         ``acq_info["mcmc_importance_sampling"]``.
+    ValueError
+        If the option ``active_importance_sampling_mcmc_samples`` is not, or
+        does not return, a finite real number.
+    ValueError
+        If the acquisition function samples from the variational posterior
+        alone (``acq_info["variational_importance_sampling"]``) and the
+        option ``active_importance_sampling_mcmc_samples`` gives no positive
+        number of samples.
+    ValueError
+        If, in the MCMC step, no importance sample carries any weight under
+        one of the GP hyperparameter samples, so that the chain has no
+        starting point.
 
     Notes
     -----
@@ -381,8 +393,7 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
         box-uniform sampling.
     acq_fcn : AbstractAcqFcn
         The acquisition function callable.
-    vp : VariationalPosterior
-        The unsmoothed VP.
+
     Returns
     -------
     ln_weights : np.ndarray

@@ -3,7 +3,8 @@
 Updated 2026-09-27. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
-Completed 1.5 work is not listed here: the
+Completed 1.5 work is not listed here, apart from the active reference and
+the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
