@@ -67,6 +67,24 @@ records its execution.
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
+- [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
+  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27). On
+  2026-09-27 gpyreg's `main` was at `d96d0d9`, six commits past `v1.3.3`,
+  among them a prior's log mass taken in log space where it underflows and
+  an opt-in switch that makes a failed Cholesky factorization an error.
+  The local environments install the sibling checkout editable and so run
+  that `main` while CI pins `v1.3.3`: the example notebooks executed on
+  2026-09-26 and 27 ran on gpyreg `1.3.4.dev10+gd96d0d9f7`. With the
+  release, `pyproject.toml`'s minimum and CI's `GPYREG_PIN` move to it
+  (`AGENTS.md`), PyVBMC's whole suite and the exact oracle check run
+  against it, and the [Slurm plan](plans/slurm-benchmark-support.md) and
+  its operator's guide (`scripts/hpc/README.md` on `feat-slurm-campaigns`)
+  name it where they name `v1.3.3`: the after arm, the pools and the
+  stacking in "What runs where", Phase 1b's source trees, and the guide's
+  clones, environment check and campaign commands. The campaigns of the
+  Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
+  Phase 6 test the machinery and do not wait for it.
+
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
   design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
