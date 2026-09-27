@@ -6,8 +6,13 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; F3 EXECUTED; F2 EXECUTED IN TWO STAGES, NOT PROMOTED; F1, F4 AND THE FOUR-RUN BUDGET CONTINUATION PROPOSED, NOT APPROVED**. Branch:
-`dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
+Experimental extension drafted 2026-09-16 and closed on 2026-09-19 without
+a change of default: E2, E3 and E5 complete; E4 not entered, its gates
+unmet; E6 assessment recorded; F3 executed; F2 executed in two stages and
+not promoted (retained on `retain/viqr-rqmc-nodes`); F1, F4 and the
+four-run budget continuation proposed and not approved. The work ran on
+`dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`,
+which `dev-next` fast-forwarded to.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
 the recorded windows; the exploratory E5 pilot and its continuation are

@@ -1,7 +1,10 @@
 # Stage 2 item 8: gpyreg `predict` and slice-sampler overhead, one gpyreg PR
 
-Created: 2026-09-05 07:50. Status: **IN PROGRESS** (this file is the plan
-and the worklog; tracker at the end). Roadmap pickup point 3
+Created: 2026-09-05 07:50. Status: **DONE 2026-09-05** (gpyreg PR #43
+merged as `a2f8ddc`, gpyreg v1.1.0 released; roadmap pickup 3a); the
+20-seed population of Open question 3 ran after items 8, 5, 6 and 7 on
+2026-09-06 and passed (roadmap pickup 3e). This file is the plan and the
+worklog; tracker at the end. Roadmap pickup point 3
 (`plans/modernization-roadmap.md`: "Next: item 8 as one gpyreg PR");
 rationale in `dev/2026-09-02-modernization-discussion.md` §2, §4, §9, §10;
 the inherited gpyreg half of item 3 in `plans/stage2-batched-acquisition.md`
@@ -648,7 +651,8 @@ question 3).
    of a profiled D = 4 run, mostly per-call overhead, so this is the
    next `predict` step if one is wanted.
 3. Run the 20-seed population after Step 8 or at the end of Stage 2?
-   **Open (PI)**: depends on a free night; nothing before Step 8 needs it.
+   **Settled**: run once after items 8, 5, 6 and 7 (2026-09-06, roadmap
+   pickup 3e).
 4. Run PyBADS's suite against the branch before the merge? **Yes, as a
    pre-merge gate** (review): `predict_full`, `quad` and `random_function`
    are the PyBADS-facing surface the `cdist` change reaches. PyBADS is
@@ -1278,4 +1282,5 @@ written from an estimated clock that ran up to five hours ahead).
   yet (`-x` stopped both runs at this test), so the gpyreg branch is
   untested there until the next push — 09:48 (the 1e-4 class was itself
   superseded by 2e-2 after the second CI round, see below)
-- [ ] (open) 20-seed population after Step 8, see Open question 3
+- [x] 20-seed population after items 8, 5, 6 and 7: 2026-09-06, no config
+  flagged (roadmap pickup 3e)

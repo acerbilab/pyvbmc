@@ -402,8 +402,8 @@ pickup. Prototype scripts/tests and recipes are tracked; raw arrays/logs are
 ignored, with identifying hashes and compact evidence in the manifest/plan.
 No public `.rst` is needed until public API work is authorized.
 
-The [current pickup](../TODO.md) tracks follow-up integration, calibration
-and population work. The [user-facing skill note](../2026-09-02-user-agent-skill.md)
+The follow-up integration, calibration and population work is complete;
+[TODO.md](../TODO.md) lists what remains for 1.5. The [user-facing skill note](../2026-09-02-user-agent-skill.md)
 records the scope and maintenance of the documentation wrapper.
 
 ## Planning review and approval history

@@ -292,9 +292,11 @@ The other three hooks were left at their pins on purpose; bumping black past
 
 ## 8. Next steps
 
+Steps 2 to 5 followed; the roadmap records them.
+
 1. ~~Re-run the full suite after the fix and commit as above.~~ Done (§7).
 2. Stage 1 (RNG `Generator` threading) as the first PR, bundled with the §9
-   one-liners. This is the pickup point.
+   one-liners.
 3. Stage 0 continued: fixture generator script and golden-trace harness
    (plan §10), finite-difference checks for the transformer Jacobian and
    gpyreg derivatives.
