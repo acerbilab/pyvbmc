@@ -199,6 +199,12 @@ records its execution.
   that are not historical: `dev-next` merges into `main` for the release,
   so nothing a user or contributor reads after it should point at
   `dev-next`; dated devlogs and plan worklogs may keep it as history.
+  The agent skill's source links point at `main` since 2026-09-27. What
+  still names `dev-next` as the working branch is true until the release
+  merge and changes with it: the working rules at the end of this file,
+  the header of the [roadmap](plans/modernization-roadmap.md), the
+  [Slurm plan](plans/slurm-benchmark-support.md)'s account of the
+  harnesses on `dev-next`, and the open items here.
   Before the release, sweep every tracked document and record for two
   kinds of statement: an acknowledgment that a value or a defect in some
   file is wrong while that file itself carries neither the correction
