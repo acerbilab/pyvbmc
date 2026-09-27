@@ -101,20 +101,13 @@ If any changes have been made to the Jupyter Notebook examples, it is advisable 
 General structure
 .................
 
-For each new class, function, etc. a ``.rst`` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have ``functions``, ``classes``, etc.
-The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphinx where to compile the documentation, for example::
+Nothing generates the API pages: each new public class or function needs a hand-written ``.rst`` file under ``docsrc/source/api/``, in ``classes``, ``functions``, ``methods`` or ``options``.
+The ``.rst`` file contains text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphinx where to compile the documentation: an autodoc directive, which renders the docstrings, and any usage notes, for example::
 
     .. autoclass:: pyvbmc.vbmc.VBMC
       :members:
 
-Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
-
-- Status of the port (what is missing?);
-- Reference to the respective file of the original :labrepos:`MATLAB <vbmc>` implementation;
-- Known issues (if something is currently suboptimal in PyVBMC);
-- The documentation of the Python code (generated from the docstrings).
-
-For each new file, a link needs to be added manually to the :mainbranch:`index page <docsrc/source/index.rst>`.
+Each new page also needs an entry in the toctree that owns it: ``documentation.rst`` for a headline page, ``api/classes/classes.rst`` or ``api/functions/functions.rst`` otherwise, and the page of its class for a method.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
 
 Exceptions
