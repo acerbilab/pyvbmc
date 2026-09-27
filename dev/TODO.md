@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-25. These lists describe scope, not priority or execution
+Updated 2026-09-26. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -129,21 +129,6 @@ records its execution.
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
   [Slurm plan](plans/slurm-benchmark-support.md), Phase 9).
-
-- [ ] **The swing of the ELBO after a rotoscaling in Example 2.** In
-  Example 2, executed on 2026-09-26 with the numerics of `1f9c207a` (the
-  notebook as committed on `feat-notebooks-1.5`; seeded, bounded, `D = 2`),
-  the rotoscaling of iteration 10 is kept, and the ELBO reads -0.82 ± 0.87
-  there (sKL 118), then -104.79 ± 10.60 in iteration 11, -2.44 in
-  iteration 12 and -2.03 in iteration 13; the run ends stable at -1.871
-  against the true -1.836. In the other eight notebooks every rotoscaling
-  is undone and no such swing appears, and the output that Example 2 stored
-  before (executed in 2022) shows the ELBO moving by less than 0.2 around
-  its rotoscaling. Find out whether the
-  warp leaves the GP or the variational posterior in a state that a later
-  iteration has to repair, which would be a defect, or whether the swing is
-  a transient to expect; the notebook's text describes such swings in
-  general terms (PI, 2026-09-26).
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
@@ -274,6 +259,17 @@ records its execution.
   evidence of degradation. These questions do not block the release. See the
   [assessment](golden/promotion_20260913/README.md) and
   [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
+- **The acceptance of a rotoscaling.** The undo check keeps a warp whose
+  refit ELBO exceeds the previous iteration's by `warp_tol_improvement`, as
+  MATLAB VBMC does, and a refit posterior that spreads where the refit GP
+  has no data can pass it on a gain of the surrogate: Example 2 keeps such
+  a warp, reports an ELBO of −0.82 where the true log evidence is −1.836,
+  and recovers two iterations later. One run in the 990 of the golden
+  reference does the same. A warp only reparameterizes the space, so a
+  guard could undo a warp whose refit posterior moves far from the one
+  before (a threshold on their sKL); untested, and it moves default
+  trajectories. See the
+  [report](results/2026-09-26-example-2-rotoscale-swing.md).
 - **The Goris neuronal-model benchmark.** It remains deferred; see the
   [target decisions](plans/benchmark-realistic-targets.md#decisions-pi-2026-09-11).
 - **Debiasing the VBMC ELBO itself on noisy targets.** A single run's

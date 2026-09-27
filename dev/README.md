@@ -53,6 +53,12 @@ For the release overview, start with
   the normal-versus-uniform porting bug. Exact batch replays and 50-digit
   checks explain the remaining VIQR/refit behavior; algorithmic remedies
   are deferred beyond 1.5. Both reports link to the preserved evidence.
+- [The ELBO swing after a kept rotoscaling](results/2026-09-26-example-2-rotoscale-swing.md) —
+  Why Example 2's ELBO reads −0.82, then −104.79, around the rotoscaling it
+  keeps: the warp is exact, and the undo check, as in MATLAB VBMC, accepts
+  a gain that the refit posterior obtains by spreading where the refit GP
+  extrapolates optimistically. One golden run in 990 does the same; both
+  recover. The rule stays for 1.5.
 - [S-VBMC ELBO optimism](2026-09-12-svbmc-elbo-optimism.md) —
   What the stacking implementation reports today, why the ELBO optimism
   on noisy targets is a cross-run selection effect, the decision to leave
