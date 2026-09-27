@@ -148,4 +148,5 @@ variables are handed over with per-coordinate bounds, the structured
 export and the return path work, and prior quantiles fail as a default
 plausible box where the mode's Laplace box with fallbacks succeeds. On
 that record the PI chose (2026-09-14) the target adapter with the tested
-scope for 1.5; `dev/TODO.md` carries the decision.
+scope for 1.5; the [adapter plan](plans/pymc-target-adapter.md) records the
+decision and its implementation.
