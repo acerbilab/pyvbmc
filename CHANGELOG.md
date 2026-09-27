@@ -839,6 +839,9 @@ its entry below.
   for each of them.
 - The title of the final plot (`plot=True`, `create_vbmc_animation`) gave one
   iteration fewer than the run had performed.
+- `create_vbmc_animation` with `suptitle="full"`, the default, titles the
+  frame of an iteration with the actions that the iteration log lists for it
+  (such as "end warm-up"), as documented. It gave the iteration number alone.
 - After `VBMC.load`, the run, its posterior and its function logger share one
   parameter transformer, that of the loaded iteration. For a run that had
   warped its input space, `vbmc.parameter_transformer` was the transformer of
