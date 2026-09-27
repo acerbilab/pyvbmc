@@ -69,7 +69,7 @@ line.
 
 The PI ruled on 2026-09-27. The fixes were made on four branches, one
 per area, and merged into `docs-release-sweep`; each ruling below names
-its commits. B-28, found while fixing B-9, awaits a ruling.
+its commits. B-28 was found while fixing B-9.
 
 ## A: what users read
 
@@ -549,7 +549,7 @@ its commits. B-28, found while fixing B-9, awaits a ruling.
   on the developer's machine). 1.0.4 has the same line.
 - **Fix:** pass the shape positionally, which every NumPy that PyVBMC
   supports accepts, and a `CHANGELOG.md` line under "Fixed".
-- **Ruling:**
+- **Ruling:** fix now (PI); `e659a1a1`. A capped run on NumPy 2.5.2 wrote its animation, and the animation tests pass.
 
 ## C: what contributors and agents read
 
