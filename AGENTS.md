@@ -46,7 +46,12 @@ are gitignored under `dev/scripts/runs/` and exist only on the machines that
 produced them; such a machine lists them in the gitignored
 `dev/scripts/runs/LOCAL.md`. The frozen worktrees are whole copies of the
 repository at old revisions, so a file search that does not respect
-`.gitignore` returns their stale copies of every file.
+`.gitignore` returns their stale copies of every file. Any worktree of the
+repository can hold such artifacts under its own `dev/scripts/runs/`, and
+`git worktree remove` deletes them with the worktree, without a word, since
+git ignores them. Before removing a worktree, list its ignored files
+(`git status --ignored`), move what is kept, and check that each move
+succeeded before the removal runs, as a separate command.
 
 ## Setup and commands
 
