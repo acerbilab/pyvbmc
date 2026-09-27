@@ -33,10 +33,12 @@ variants. This note answers two questions about the port.
 
 ## The benchmark
 
-For each of eight targets, 100 independent VBMC runs were generated (50
-for the two noiseless targets), each saved with its posterior and the
-GP behind it. Six targets are noisy (a Gaussian noise of standard
-deviation 3 on the log density, 1.3 in one case): a multisensory model
+For each of eight targets, the first 100 VBMC runs (50 for the two
+noiseless targets) that passed the pool's stability and `J_sjk` filters
+were kept, out of 150 seeded runs (200 for the ring, 75 for the
+noiseless targets), each saved with its posterior and the GP behind it.
+Six targets are noisy (a Gaussian noise of standard deviation 3 on the
+log density, 1.3 in one case): a multisensory model
 on real data in 6 dimensions at both noise levels, and Rosenbrock, a
 Gaussian mixture and a ring in 2 dimensions and a Student-t product in
 8 dimensions at noise 3. Two are noiseless controls: the Gaussian
