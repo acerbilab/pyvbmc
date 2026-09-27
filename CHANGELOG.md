@@ -849,6 +849,9 @@ its entry below.
 - `create_vbmc_animation` with `suptitle="full"`, the default, titles the
   frame of an iteration with the actions that the iteration log lists for it
   (such as "end warm-up"), as documented. It gave the iteration number alone.
+- `create_vbmc_animation` works with current NumPy. It passed the keyword
+  `newshape` to `np.reshape`, which recent NumPy releases no longer accept,
+  and every call failed with a `TypeError`.
 - After `VBMC.load`, the run, its posterior and its function logger share one
   parameter transformer, that of the loaded iteration. For a run that had
   warped its input space, `vbmc.parameter_transformer` was the transformer of
