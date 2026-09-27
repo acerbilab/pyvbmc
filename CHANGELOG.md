@@ -103,8 +103,8 @@ its entry below.
   the tails, where 1.0.4 returned `-inf`, and `vp.set_parameters` leaves
   `sigma` or `lambd` as it is when its `optimize_sigma` or `optimize_lambd`
   flag is off.
-  `vp.moments` and `vp.kl_div` refuse a number of samples that is not
-  whole, which 1.0.4 truncated.
+  `vp.moments` and `vp.kl_div(gauss_flag=True)` refuse a number of samples
+  that is not whole, which 1.0.4 truncated.
   `vp.set_parameters(theta, raw_flag=False)` refuses a negative scale or
   weight and accepts negative means. `pyvbmc.stats.get_hpd` rounds the size
   of its subset away from zero at a tie. `pyvbmc.stats.kl_div_mvn`, and
@@ -139,11 +139,12 @@ its entry below.
   where 1.0.4 passed it by position.
 - `ParameterTransformer`, `FunctionLogger` and `unscent_warp` used on their
   own: a variable with one finite bound, a `scale` that is not positive, a
-  noise flag that contradicts the uncertainty handling level, and `add`
-  without an SD for a target that provides its noise raise an error. The
-  logger returns a float for a repeated point, `unscent_warp` returns
-  floating-point values, and a transformer given a rotation or a scale
-  together with plausible bounds centres the plausible box differently.
+  `rotation_matrix` that is not orthogonal, a noise flag that contradicts
+  the uncertainty handling level, and `add` without an SD for a target that
+  provides its noise raise an error. The logger returns a float for a
+  repeated point, `unscent_warp` returns floating-point values, and a
+  transformer given a rotation or a scale together with plausible bounds
+  centres the plausible box differently.
 
 ### Added
 
@@ -749,7 +750,8 @@ its entry below.
   as it was sampled or evaluated, because the file stored functions as
   bytecode. Files written by earlier versions of PyVBMC work too. You can run
   VBMC on one machine and analyze the posteriors, or stack them with S-VBMC,
-  on another. A saved *run* (`VBMC.save`) still contains the target function:
+  on another. A saved *run* (`VBMC.save`) still holds Python bytecode, that
+  of the options whose value is a function and often that of the target:
   under another Python version it can be loaded and inspected, but should not
   be continued or saved again there.
 - **Long runs.** With NumPy 2.4 or later, a run that went past
@@ -1047,8 +1049,9 @@ its entry below.
     the flags, so that with `sigma` fixed and `lambd` optimized the
     variational optimization rescaled the fixed `sigma` at every evaluation
     of its objective.
-  - `vp.set_parameters(theta, raw_flag=False)` requires the entries that
-    hold `sigma`, `lambd` and the weights to be positive, and those alone.
+  - `vp.set_parameters(theta, raw_flag=False)` refuses a negative value in
+    the entries that hold `sigma`, `lambd` and the weights, and checks those
+    alone.
     1.0.4 checked other entries: a negative scale could pass, and a
     negative component mean could be refused.
   - `vp.moments(cov_flag=True)` returns a 1-by-1 covariance matrix for a
@@ -1073,7 +1076,9 @@ its entry below.
     reported `[0, 1]`. The interval is read from the distribution at every
     call, so a prior loaded from a file that 1.0.4 wrote reports it too;
     `prior.a` and `prior.b` of a `SciPy` or `Product` prior are read-only
-    arrays, which a script can no longer assign to.
+    attributes, recomputed from the distribution at each access: a script
+    can no longer assign to them, and a change made to the array one of
+    them returns does not reach the prior.
   - The density of a prior is computed in double precision whatever the
     type of the point. In 1.0.4 an array of integers truncated the log
     density, and gave a trapezoidal or spline-trapezoidal prior a density
@@ -1081,10 +1086,10 @@ its entry below.
     array gave a float32 result.
   - A point with a NaN coordinate has density zero under `UniformBox`, as
     under the other box priors. 1.0.4 gave it the full density.
-  - A list of one-dimensional priors that holds a `UserFunction` works as a
-    prior, whether the function returns a float or an array of one
-    element. In 1.0.4 the first evaluation of the target raised a
-    `TypeError`.
+  - A list of one-dimensional priors that holds a `UserFunction` made with
+    `D=1` works as a prior, whether the function returns a float or an
+    array of one element. In 1.0.4 the first evaluation of the target
+    raised a `TypeError`.
   - `Trapezoidal` no longer warns of a division by zero at a point on its
     lower bound, and neither trapezoid leaves NumPy's floating-point error
     settings changed when an error interrupts it.

@@ -62,8 +62,9 @@ pymc = [
 examples = [
     "plotly >= 5.11.0",
 ]
-# What the test suite needs (`pytest --pyargs pyvbmc --reruns=3`); CI
-# installs this extra.
+# What the test suite needs. The tests ship in the sdist, not in the wheel:
+# CI installs this extra and runs `python -m pytest --reruns=5 -x` from a
+# checkout.
 test = [
     "pytest >= 6.2.5",
     "pytest-mock >= 3.6.1",
