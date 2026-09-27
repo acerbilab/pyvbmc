@@ -847,6 +847,8 @@ its entry below.
   which always printed as `None`, and shows the starting point in original
   coordinates, which was wrong after an input warp. The starting points in
   original coordinates are available as `vbmc.x0_orig`.
+- `print(vbmc.iteration_history)` gives the number of iterations recorded,
+  where it gave the number of keys of the history.
 - `entropy_switch=True` raised `TypeError` in the first iteration of any
   problem with five or more variables.
 - When SciPy's optimizer did not converge in a variational optimization with
