@@ -282,9 +282,9 @@ integration; this note stays the narrative.
    [boost analysis](results/2026-09-08-boost-analysis.md#penalty-effects-before-any-guard).
 5. **Documentation.** The class docstring, `docsrc/source/api/classes/svbmc.rst`
    and Example 7 (`examples/pyvbmc_example_7_stacking.ipynb`, regenerated
-   script) state the same guidance and name the values. The existing VBMC
-   tip `svbmc` links to the standalone package's GitHub README; once the
-   docs with Example 7 are published it should link there.
+   script) state the same guidance and name the values. The VBMC tip
+   `svbmc` linked to the standalone package's GitHub README until
+   2026-09-27, when it was pointed at Example 7 in the published docs.
 6. **Tests, fixtures and gates.** `references.json` and `references.npz`
    under `pyvbmc/testing/svbmc/fixtures/` move by design, since the
    objective loses its per-step noise and the reported values change; they
