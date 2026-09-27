@@ -268,6 +268,11 @@ its entry below.
     (`PyMCTarget(..., setup_budget=)`, by default `20 + 5 * D`, where a
     Hessian costs `D`). The run reuses these evaluations, and their cost
     counts once against `max_fun_evals`.
+  - The adapter's warnings about its setup (a gradient it cannot use, a mode
+    search that reached its call cap, plausible bounds it had to clip) go
+    through PyVBMC's logging, as PyVBMC's other messages do: to standard
+    output while your program configures no logging, and to its handlers when
+    it does.
   - See the `PyMCTarget` page of the documentation and Example 8.
 - **Vectorized targets.** With `options={"vectorized_target": True}`, the
   target receives an array of shape `(N, D)` and returns one value per row. A

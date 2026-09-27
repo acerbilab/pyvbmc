@@ -295,11 +295,14 @@ class VBMC:
         function, starting point, bounds, setup evaluations, and setup cost;
         explicitly supplied constructor arguments override its starting
         point, plausible bounds, evaluations, and cost. Supplied hard bounds
-        must equal the target's model support. An additional ``prior`` or
-        ``log_prior`` cannot be combined with a ``PyMCTarget``. For an
-        ordinary callable, if ``log_prior`` is ``None``, ``log_density``
-        accepts input ``x`` and returns the value of the target log-joint,
-        that is, the unnormalized log-posterior density at ``x``. If
+        must equal ``target.lb`` and ``target.ub``, which are in the target's
+        flat coordinates: the support of a variable the adapter leaves
+        untransformed, and infinite for a variable that keeps its PyMC
+        transform. An additional ``prior`` or ``log_prior`` cannot be
+        combined with a ``PyMCTarget``. For an ordinary callable, if
+        ``log_prior`` is ``None``, ``log_density`` accepts input ``x`` and
+        returns the value of the target log-joint, that is, the unnormalized
+        log-posterior density at ``x``. If
         ``log_prior`` is not ``None``, ``log_density`` should return the
         unnormalized log-likelihood. In either case, if
         ``options["specify_target_noise"]`` is true, ``log_density`` should
@@ -824,7 +827,8 @@ class VBMC:
             target_bound = cls._normalized_hard_bound(expected, dimension)
             if not np.array_equal(normalized, target_bound):
                 raise ValueError(
-                    f"{name} must match the PyMCTarget model support."
+                    f"{name} must equal the PyMCTarget's hard bounds "
+                    "(target.lb and target.ub, in its flat coordinates)."
                 )
 
         if x0 is None:
