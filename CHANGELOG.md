@@ -141,10 +141,10 @@ its entry below.
   own: a variable with one finite bound, a `scale` that is not positive, a
   `rotation_matrix` that is not orthogonal, a noise flag that contradicts
   the uncertainty handling level, and `add` without an SD for a target that
-  provides its noise raise an error. The
-  logger returns a float for a repeated point, `unscent_warp` returns
-  floating-point values, and a transformer given a rotation or a scale
-  together with plausible bounds centres the plausible box differently.
+  provides its noise raise an error. The logger returns a float for a
+  repeated point, `unscent_warp` returns floating-point values, and a
+  transformer given a rotation or a scale together with plausible bounds
+  centres the plausible box differently.
 
 ### Added
 
@@ -1088,8 +1088,8 @@ its entry below.
     under the other box priors. 1.0.4 gave it the full density.
   - A list of one-dimensional priors that holds a `UserFunction` made with
     `D=1` works as a prior, whether the function returns a float or an
-    array of one element. In 1.0.4 the first evaluation of the target raised a
-    `TypeError`.
+    array of one element. In 1.0.4 the first evaluation of the target
+    raised a `TypeError`.
   - `Trapezoidal` no longer warns of a division by zero at a point on its
     lower bound, and neither trapezoid leaves NumPy's floating-point error
     settings changed when an error interrupts it.
