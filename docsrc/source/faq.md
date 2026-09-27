@@ -588,7 +588,7 @@ Only when asked to. With `options={"uncertainty_handling": True}` and without `s
 (faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood)=
 ### Can I use *any* technique to estimate a noisy log-likelihood?
 
-Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, with an available estimate of the standard deviation. [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
+Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
 
 (faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood)=
 ### How do I estimate the standard deviation of the noisy log-likelihood?
