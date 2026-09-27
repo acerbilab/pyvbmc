@@ -2,7 +2,6 @@ import copy
 import logging
 import math
 import os
-import sys
 from collections.abc import Iterable
 from importlib.metadata import PackageNotFoundError, version
 from numbers import Real
@@ -15,6 +14,7 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.calibration.profile import CalibrationProfile
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
@@ -481,9 +481,6 @@ class VBMC:
         precomputed_evaluations=_PRECOMPUTED_NOT_PROVIDED,
         initialization_cost=_INITIALIZATION_COST_NOT_PROVIDED,
     ):
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
-
         (
             log_density,
             x0,
@@ -547,8 +544,9 @@ class VBMC:
         # and a list of lists several. The bounds check casts the values to
         # floating point.
         x0 = np.atleast_1d(np.asarray(x0))
-        if x0.ndim == 1:
-            logging.warning("Reshaping x0 to row vector.")
+        # Reported once the logger follows the display level.
+        x0_reshaped = x0.ndim == 1
+        if x0_reshaped:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
@@ -608,6 +606,8 @@ class VBMC:
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
+        if x0_reshaped:
+            self.logger.info("Reshaping x0 to row vector.")
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -1438,7 +1438,7 @@ class VBMC:
             )
 
         if self.is_finished:
-            self.logger.warning("Continuing optimization from previous state.")
+            self.logger.info("Continuing optimization from previous state.")
             self.is_finished = False
             # Copies, not the history's entries themselves: those describe
             # the last recorded iteration and must not follow the live
@@ -2179,9 +2179,9 @@ class VBMC:
         else:
             success_flag = False
 
-        # Print final message
-        self.logger.warning(termination_message)
-        self.logger.warning(
+        # Print final message. At display "off" only the caution shows.
+        self.logger.info(termination_message)
+        self.logger.info(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
         if not success_flag:
@@ -3727,7 +3727,7 @@ class VBMC:
             self.rng.bit_generator.state = get_rng().bit_generator.state
             np.random.set_state(random_state)
             self.random_state = self._get_random_state()
-            logging.getLogger("VBMC").warning(
+            get_logger("VBMC").warning(
                 "This file was saved before VBMC had its own random "
                 "generator: only NumPy's global random state was stored. "
                 "Restored it and derived a fresh generator from it; the "
@@ -3791,7 +3791,7 @@ class VBMC:
         except PackageNotFoundError:
             # package is not installed
             __version__ = None
-            logger = logging.getLogger("VBMC")
+            logger = get_logger("VBMC")
             logger.warning("Cannot read version number from package metadata.")
 
         output["version"] = __version__
@@ -3893,7 +3893,7 @@ class VBMC:
             The main logging interface.
         """
         # set up VBMC logger
-        logger = logging.getLogger("VBMC" + substring)
+        logger = get_logger("VBMC" + substring)
         logger.setLevel(logging.INFO)
         if self.options.get("display") == "off":
             logger.setLevel(logging.WARN)
@@ -3901,7 +3901,9 @@ class VBMC:
             logger.setLevel(logging.INFO)
         elif self.options.get("display") == "full":
             logger.setLevel(logging.DEBUG)
-        # Add a special logger for sending messages only to the default stream:
+        # Add a special logger for sending messages only to the default stream
+        # (it writes through the output handler of its parent, "VBMC"):
+        get_logger("VBMC")
         logger.stream_only = logging.getLogger("VBMC.stream_only")
 
         # Options and special handling for writing to a file:

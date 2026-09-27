@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-25. These lists describe scope, not priority or execution
+Updated 2026-09-27. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here: the
@@ -77,9 +77,14 @@ records its execution.
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed; next are Phase 1b and
   the smoke campaigns on the cluster, then the brief, and the merge into
-  `dev-next`. Needed before relying on that workflow for further
-  cluster campaigns, not before local experiments; the final large-scale
-  check and the new reference below are the first such campaigns. See
+  `dev-next`. The branch lacks two logging changes of `dev-next`:
+  `1f9c207a` leaves the root logger to the application, and `1bde36eb`
+  makes `display="off"` print warnings only (no harness reads the lines
+  that stopped printing). Merge `dev-next` into the branch and run its
+  harness test modules again before the cluster session. Needed before
+  relying on that workflow for further cluster campaigns, not before local
+  experiments; the final large-scale check and the new reference below are
+  the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
@@ -159,22 +164,19 @@ records its execution.
   in the [teaching-material plan](plans/teaching-material.md).
   Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
   Re-execute every example notebook with the release code and commit its
-  outputs: the docs build renders the stored outputs
-  (`nb_execution_mode = "off"`), and on 2026-09-25 every notebook's
-  outputs differed from what the code produces (Examples 4 and 5 were last
-  executed in 2023). Read each notebook's text against its new outputs;
-  Example 7's runs, for one, no longer split between the modes as the
-  stored output shows. Executed through nbclient, Example 2's Plotly figure
-  keeps only its Plotly JSON, which the docs build skips, so the execution
-  has to produce the figure's HTML as well. Example 4 prints its list of
-  ELBOs as NumPy 2 writes them, `np.float64(-1.52)`. Example 2's
-  `print(vp)` shows an entropy near zero where the stored output shows
-  2.40: the stored split into expected log joint and entropy comes from
-  code before 1.0, and the new one equals a Monte Carlo entropy of the
-  posterior in the transformed space (checked on 2026-09-25). Examples 7
-  and 8 need the `torch` and `pymc` extras and Example 9 Torch and JAX;
-  Example 6 loads the posterior that Example 4 saves, and Examples 3, 4
-  and 7 write files into the working directory.
+  outputs, which the docs build renders as stored
+  (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
+  (`dev/README.md`) runs all nine and writes back only those whose checks
+  of their text's claims pass. Reinstall `pyvbmc` in the notebooks'
+  environment at the release commit first: Example 3 prints
+  `results["version"]`, which an editable install reads from its metadata
+  as of its installation. Update Example 7's account of the headline
+  estimate to the headline decision, read each notebook's text against its
+  new outputs, and regenerate `examples/scripts/` with its Makefile.
+  Example 7's text needs at least one of its four runs to miss a mode, which
+  its check asserts; if none does, choose other seeds (on 2026-09-26, 9 of
+  24 single runs on its target missed one; `dev/scripts/runs/LOCAL.md`,
+  "Example notebooks").
   Run final integrated tests, the required CI matrix and package checks;
   prepare the golden-trace release archive. The package checks include what
   the sdist ships: setuptools_scm puts every tracked file in it, and of
@@ -262,6 +264,17 @@ records its execution.
   evidence of degradation. These questions do not block the release. See the
   [assessment](golden/promotion_20260913/README.md) and
   [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
+- **The acceptance of a rotoscaling.** The undo check keeps a warp whose
+  refit ELBO exceeds the previous iteration's by `warp_tol_improvement`, as
+  MATLAB VBMC does, and a refit posterior that spreads where the refit GP
+  has no data can pass it on a gain of the surrogate: Example 2 keeps such
+  a warp, reports an ELBO of −0.82 where the true log evidence is −1.836,
+  and recovers two iterations later. One run in the 990 of the golden
+  reference does the same. A warp only reparameterizes the space, so a
+  guard could undo a warp whose refit posterior moves far from the one
+  before (a threshold on their sKL); untested, and it moves default
+  trajectories. See the
+  [report](results/2026-09-26-example-2-rotoscale-swing.md).
 - **The Goris neuronal-model benchmark.** It remains deferred; see the
   [target decisions](plans/benchmark-realistic-targets.md#decisions-pi-2026-09-11).
 - **Debiasing the VBMC ELBO itself on noisy targets.** A single run's

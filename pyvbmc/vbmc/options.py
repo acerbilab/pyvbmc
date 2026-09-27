@@ -4,7 +4,10 @@ from __future__ import annotations
 import configparser
 import copy
 import inspect
-import logging
+
+# The values of an options file are evaluated in this module's namespace,
+# where a log_file_level may name a level of the logging module.
+import logging  # nopycln: import
 import re
 from collections.abc import MutableMapping
 from math import ceil
@@ -14,6 +17,7 @@ from textwrap import indent
 
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
 from pyvbmc.parameter_transformer.parameter_transformer import (
@@ -671,7 +675,7 @@ class Options(MutableMapping, dict):
                 "another minimum."
             )
         if self.get("max_iter") < min_iter:
-            logging.warning(
+            get_logger("VBMC_init").warning(
                 "The option max_iter cannot be smaller than min_iter. "
                 "Raising max_iter to %s.",
                 self.get("min_iter"),
@@ -900,7 +904,7 @@ class Options(MutableMapping, dict):
                 continue
             if callable(default) or _equals_default(self[key], default):
                 continue
-            logging.warning(
+            get_logger("VBMC_init").warning(
                 "The option %s has no effect in PyVBMC: the value %s is "
                 "accepted and ignored.",
                 key,
@@ -937,7 +941,7 @@ class Options(MutableMapping, dict):
             return
         if _stated_boolean(self.get("specify_target_noise")) is not True:
             return
-        logging.warning(
+        get_logger("VBMC_init").warning(
             "The option noise_size has no effect with specify_target_noise, "
             "because the target returns its own noise estimates: the value "
             "%s is accepted and ignored.",

@@ -488,7 +488,13 @@ defect *n*" is entry *n* of
   an expression that always holds (MATLAB-side defects 10 and 11).
 - **`display` takes `"off"`, `"iter"` and `"full"`** (deliberate change),
   the levels of Python's `logging`; MATLAB has `'iter'`, `'notify'`,
-  `'final'` and `'off'`. Other values act as `"iter"`.
+  `'final'` and `'off'`. Other values act as `"iter"`. `"off"` prints
+  warnings only. Among them is the caution that the returned posterior may
+  not have converged, which MATLAB prints with its final message, and only
+  from `'final'` up (`vbmc.m:925-931`). Like MATLAB's `'off'`, `"off"`
+  prints neither the final message nor the notes on how the inputs were
+  prepared, such as the plausible bounds estimated from the starting set
+  (`misc/boundscheck_vbmc.m:14-15`).
 - **Declared options that nothing reads** (deliberate change). The names of
   `INERT_OPTIONS` (`options.py`) stay declared with their defaults, so that
   recorded option sets still load, and a value other than the default draws a

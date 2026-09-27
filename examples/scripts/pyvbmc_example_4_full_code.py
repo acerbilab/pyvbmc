@@ -78,13 +78,13 @@ for i in range(n_runs):
     result_dicts.append(results)
 
 
-print(elbos)
+print(np.array(elbos))
 
 
 kl_matrix = np.zeros((n_runs, n_runs))
 for i in range(n_runs):
     for j in range(i, n_runs):
-        # The `kldiv` method computes the divergence in both directions:
+        # The `kl_div` method computes the divergence in both directions:
         kl_ij, kl_ji = vps[i].kl_div(vp2=vps[j])
         kl_matrix[i, j] = kl_ij
         kl_matrix[j, i] = kl_ji

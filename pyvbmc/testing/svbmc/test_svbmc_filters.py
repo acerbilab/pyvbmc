@@ -15,6 +15,7 @@ pytest.importorskip("torch")
 from pyvbmc import VariationalPosterior  # noqa: E402
 from pyvbmc.parameter_transformer import ParameterTransformer  # noqa: E402
 from pyvbmc.svbmc import SVBMC  # noqa: E402
+from pyvbmc.testing._logging import unconfigured_logging  # noqa: E402
 from pyvbmc.testing.svbmc._fixtures import load_group  # noqa: E402
 
 
@@ -300,6 +301,21 @@ def test_construction_logs_progress(caplog):
         if record.name == "SVBMC" and record.levelno == logging.INFO
     ]
     assert any("well-converged runs" in message for message in messages)
+
+
+def test_progress_goes_to_standard_output_without_logging_configuration(
+    capsys,
+):
+    """Where the application configures no logging, the progress messages
+    are written to standard output and the root logger stays without a
+    handler."""
+    # The autouse fixture puts the level back.
+    logging.getLogger("SVBMC").setLevel(logging.INFO)
+    with unconfigured_logging():
+        SVBMC([make_vp(), make_vp()])
+        root_handlers = list(logging.getLogger().handlers)
+    assert root_handlers == []
+    assert "well-converged runs" in capsys.readouterr().out
 
 
 def test_user_set_level_is_respected(caplog):

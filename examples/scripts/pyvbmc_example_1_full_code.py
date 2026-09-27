@@ -3,6 +3,10 @@ import scipy.stats as scs
 
 from pyvbmc import VBMC
 
+# Fix the random state, so that the results below are reproducible:
+np.random.seed(42)
+
+
 D = 2  # We consider a 2-D problem
 
 

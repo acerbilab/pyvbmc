@@ -341,7 +341,10 @@ its entry below.
   New quickstart sections on reproducible runs, Torch and JAX targets,
   vectorized targets, PyMC models and the use of a fitted posterior. The
   noisy target of Example 6 computes its noise point by point, so it also
-  works when it is called with several points at once.
+  works when it is called with several points at once. Every example shows
+  the output of this release, Examples 1 and 6 fix their random state so
+  that they reproduce, and the notebook of Example 2 is a tenth of its
+  former size.
   `skills/pyvbmc/SKILL.md` in the repository guides a coding agent through the
   documentation.
 
@@ -714,6 +717,11 @@ its entry below.
 - The iteration display ends with a `finalize` line whenever the returned
   posterior is not that of the last iteration, including when it is the
   posterior of an earlier iteration.
+- With `display="off"`, a run prints warnings only, such as the caution that
+  the returned posterior may not have converged. 1.0.4 also printed why the
+  run ended and its estimate of the ELBO, which `results["message"]` and
+  `results["elbo"]` hold, and notes on how it prepared the inputs, such as
+  reshaping a vector `x0` to a row.
 - **Runs are faster.** The acquisition function is evaluated for a whole
   CMA-ES generation in one call, and `vp.pdf`, the expected log joint and the
   Monte Carlo entropy work on whole arrays where they looped over mixture
@@ -1132,6 +1140,13 @@ its entry below.
 - The summaries of PyVBMC objects (`print(vp)`, `format_dict(results)` and
   the like) show a NumPy number as the value it holds, `'elbo': -1.88`,
   where with NumPy 2 they showed `'elbo': np.float64(-1.88)`.
+- PyVBMC leaves the configuration of logging to your program. Creating a
+  `VBMC` object configured Python's root logger to write to standard output,
+  so the log messages of other libraries went there too, those of a library
+  with a handler of its own, such as PyMC, twice, and a later call of
+  `logging.basicConfig` had no effect. PyVBMC's messages still appear on
+  standard output when your program configures no logging, and go to its
+  handlers when it does.
 
 ### Removed
 

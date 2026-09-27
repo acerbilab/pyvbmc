@@ -1,13 +1,13 @@
 """Variational optimization / training of variational posterior"""
 
 import copy
-import logging
 import math
 
 import gpyreg as gpr
 import numpy as np
 import scipy as sp
 
+from pyvbmc._logging import get_logger
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from pyvbmc.stats import get_hpd
 from pyvbmc.stats._rounding import round_half_away_from_zero
@@ -254,7 +254,7 @@ def optimize_vp(
             if not res.success:
                 # Outcomes such as a loss of precision or the iteration
                 # limit still leave a usable iterate.
-                logging.getLogger("VariationalOptimization").warning(
+                get_logger("VariationalOptimization").warning(
                     "scipy.optimize.minimize did not converge while "
                     "optimizing the variational parameters: %s",
                     res.message,

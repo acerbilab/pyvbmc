@@ -14,13 +14,13 @@ __all__ = ["SVBMC"]
 
 import copy
 import logging
-import sys
 import warnings
 from pathlib import Path
 
 import dill
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.rng import get_rng
 
 from ._elbo_shrinkage import _two_level_shrinkage
@@ -58,9 +58,7 @@ def _import_torch():
 
 def _svbmc_logger():
     """Return the ``"SVBMC"`` logger, showing progress by default."""
-    # Root logger as in VBMC (a no-op if one is configured already).
-    logging.basicConfig(stream=sys.stdout, format="%(message)s")
-    logger = logging.getLogger("SVBMC")
+    logger = get_logger("SVBMC")
     if logger.level == logging.NOTSET:
         # Progress is shown by default; a level set by the user stays.
         logger.setLevel(logging.INFO)

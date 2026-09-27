@@ -1,6 +1,6 @@
-import logging
 import time
 
+from pyvbmc._logging import get_logger
 from pyvbmc.formatting import full_repr
 
 
@@ -49,7 +49,7 @@ class Timer:
                 self._durations[name] = end_time - self._start_times[name]
             self._start_times.pop(name)
         else:
-            logging.getLogger("timer").warning(
+            get_logger("timer").warning(
                 "Timer start not found for key '%s'.", name
             )
 
@@ -69,7 +69,7 @@ class Timer:
         """
         time_ = self._durations.get(name)
         if time_ is None:
-            logging.getLogger("timer").warning(
+            get_logger("timer").warning(
                 "Timer duration not found for key '%s'.", name
             )
         return time_
