@@ -128,8 +128,9 @@ def test_two_recordings_identical_with_their_provenance(
     assert "0 differ" in record["comparison"]["output"]
     assert record["script"] == {
         "path": str(script.resolve()),
-        "sha256": contract.sha256_file(script),
+        "sha256": gates.text_sha256(script),
     }
+    assert record["reasons"] == []
     head = contract.git(gates.ROOT, "rev-parse", "HEAD")
     for name in gates.RECORDINGS:
         entry = record["recordings"][name]
@@ -172,7 +173,8 @@ def test_two_recordings_identical_with_their_provenance(
     # and nothing else.
     _, problems = gates.check_record(out)
     assert problems == [
-        f"{name} holds the runs of another gate script"
+        f"{name} holds the runs {list(RUNS)}, not those of the gate script "
+        f"({list(gates.GATE_RUNS)})"
         for name in gates.RECORDINGS
     ]
     monkeypatch.setattr(gates, "GATE_RUNS", RUNS)
@@ -193,10 +195,28 @@ def test_the_check_finds_a_changed_file_or_script(
     arrays["first_run/elbo"] = arrays["first_run/elbo"] + 1e-15
     np.savez(out / "second.npz", **arrays)
     problems = gates.check_record(out)[1]
-    assert problems == ["second.npz is not the file recorded"]
+    digest = (
+        "second.npz: the arrays of first_run are not the ones its digest names"
+    )
+    assert problems == ["second.npz is not the file recorded", digest]
     assert gates.main(["check", str(out)]) == 1
+    # The archive replaced together with its hash in the record: the runs'
+    # digests still tell.
+    record = contract.read_json(out / gates.RECORD)
+    entry = record["recordings"]["second"]["files"]["npz"]
+    entry["sha256"] = contract.sha256_file(out / "second.npz")
+    contract.write_json(out / gates.RECORD, record)
+    assert gates.check_record(out)[1] == [digest]
     (out / "second.npz").write_bytes(saved)
-    script.write_text(script.read_text() + "\n# changed\n")
+    entry["sha256"] = contract.sha256_file(out / "second.npz")
+    contract.write_json(out / gates.RECORD, record)
+    assert gates.check_record(out)[1] == []
+    # The gate script: compared with LF line endings, so a checkout that
+    # writes CRLF reads as the same script; an edit does not.
+    text = script.read_text()
+    script.write_bytes(text.replace("\n", "\r\n").encode())
+    assert gates.check_record(out)[1] == []
+    script.write_text(text + "\n# changed\n")
     problems = gates.check_record(out)[1]
     assert problems == [
         f"the gate script {record_script(out)} is not the one the "
@@ -231,6 +251,92 @@ def test_a_failed_recording_stops_the_run(tmp_path, gpyreg_checkout):
     assert record["identical"] is False and "comparison" not in record
     assert "RuntimeError: boom" in (out / "first.log").read_text()
     assert not (out / "second.log").exists()
+
+
+def verdict_record(first_clean=True, second_clean=True, identical=True):
+    """A finished record's fields that :func:`seeded_gate_runs.verdict`
+    reads."""
+
+    def identity(clean):
+        return {
+            "source": {
+                "trees": {
+                    "harness": {"commit": "0" * 40, "clean": clean},
+                    "gpyreg": {"commit": "1" * 40, "clean": True},
+                }
+            }
+        }
+
+    return {
+        "exit_codes": {"first": 0, "second": 0},
+        "comparison": {"identical": identical},
+        "recordings": {
+            "first": {"record": {"identity": identity(first_clean)}},
+            "second": {"record": {"identity": identity(second_clean)}},
+        },
+    }
+
+
+def test_the_verdict_of_two_recordings():
+    assert gates.verdict(verdict_record(), False) == (True, 0, [])
+    # The second recording found the checkout dirty: its identity differs,
+    # and the record says so rather than only "not identical".
+    identical, code, reasons = gates.verdict(
+        verdict_record(second_clean=False), False
+    )
+    assert (identical, code) == (False, gates.EXIT_IDENTITY)
+    assert reasons == [
+        "the recordings' source identities differ in "
+        "['trees.harness.clean']",
+        "the checkouts ['harness'] were not clean",
+    ]
+    # Both dirty and allowed: identical.
+    record = verdict_record(first_clean=False, second_clean=False)
+    assert gates.verdict(record, True) == (True, 0, [])
+    assert gates.verdict(record, False)[:2] == (False, gates.EXIT_IDENTITY)
+    assert gates.verdict(verdict_record(identical=False), False) == (
+        False,
+        gates.EXIT_FAILED,
+        ["the comparison finds differences"],
+    )
+    # A crashed recording is exit 1, whatever its own code; one without an
+    # identity keeps 78.
+    record = verdict_record()
+    record["exit_codes"] = {"first": 3221225477}
+    assert gates.verdict(record, False)[:2] == (False, gates.EXIT_FAILED)
+    record["exit_codes"] = {"first": 0, "second": gates.EXIT_IDENTITY}
+    assert gates.verdict(record, False)[:2] == (False, gates.EXIT_IDENTITY)
+
+
+def test_an_output_that_is_a_file_or_unignored_in_the_checkout_is_refused(
+    tmp_path, capsys
+):
+    path = tmp_path / "a_file"
+    path.write_text("x")
+    assert gates.main(["run", "--out", str(path)]) == gates.EXIT_USAGE
+    assert "is a file" in capsys.readouterr().out
+    inside = gates.ROOT / "dev" / "gate_runs_refused_by_the_test"
+    assert gates.unignored_in_checkout(inside)
+    assert not gates.unignored_in_checkout(
+        gates.ROOT / "dev" / "scripts" / "runs" / "gate_runs"
+    )
+    assert not gates.unignored_in_checkout(tmp_path / "out")
+    assert gates.main(["run", "--out", str(inside)]) == gates.EXIT_USAGE
+    assert "does not ignore it" in capsys.readouterr().out
+    assert not inside.exists()
+
+
+def test_a_gpyreg_the_enclosing_checkout_does_not_track_is_refused(
+    monkeypatch, gpyreg_checkout
+):
+    # As a gpyreg installed into an environment inside this checkout
+    # would be found: this checkout encloses it but does not track it.
+    monkeypatch.delenv("PYVBMC_GPYREG_SOURCE", raising=False)
+    monkeypatch.setattr(
+        contract, "enclosing_checkout", lambda path: gates.ROOT
+    )
+    with pytest.raises(contract.IdentityError, match="no git checkout"):
+        gates.gpyreg_tree()
 
 
 def test_a_directory_in_use_or_a_dirty_checkout_is_refused(

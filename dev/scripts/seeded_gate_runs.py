@@ -38,19 +38,32 @@ and receives, for each recording ``first`` and ``second``:
                    counts, final ELBO and seconds
 
 and ``gate_runs.json``, which holds both records, the SHA-256 of every file
-above, the comparison, and whether the recordings are identical. The exit
-code is 0 when they are, 1 when they differ or a recording fails, 64 for a
-``DIR`` that is not new or empty, and 78 when a process has no identity
-(PyVBMC or gpyreg does not import from a checkout) or, without
-``--allow-dirty``, a checkout is not clean: a record of a dirty tree names
-no commit that reproduces it.
+above, the comparison, and whether the recordings are identical: they are
+when the comparison finds no difference and both processes had one source
+identity, from clean checkouts unless ``--allow-dirty``. ``DIR`` must be
+new or empty and, inside this checkout, a path git ignores (under
+``dev/scripts/runs/``, say), since the recordings' files would otherwise
+make the checkout dirty between them. Without ``PYVBMC_GPYREG_SOURCE`` the
+checkout that holds the imported gpyreg must track its ``__init__.py``, so
+that a gpyreg installed into an environment inside another checkout is not
+taken for that checkout. The exit code is 0 when the recordings are
+identical, 1 when they differ or a recording fails, 64 for a ``DIR`` that is
+a file, holds files or lies unignored in the checkout, and 78 when a
+process has no identity (PyVBMC or gpyreg does not import from a checkout)
+or, without ``--allow-dirty``, a checkout is not clean: a record of a dirty
+tree names no commit that reproduces it.
 
 ``check`` re-reads a finished ``DIR``: every file must be the one
-``gate_runs.json`` hashes, the two recordings must hold one source identity
-and compare identical again, and the gate script at its recorded path must
-be the one they ran. It prints what fails and exits 1 if anything does.
-``--script`` names another gate script, one that defines ``build_runs``,
-``record`` and ``compare`` as the gate script does; the tests use it.
+``gate_runs.json`` hashes and each run's arrays the ones its digest names,
+the recordings must hold the runs of :data:`GATE_RUNS` with
+:data:`OPTIONS_ADDED`, one source identity and, unless the record allowed
+dirty checkouts, clean ones, and compare identical again, and the gate
+script at its recorded path must be the one they ran (compared with LF
+line endings, as git may check the script out with CRLF). It prints what
+fails and exits 1 if anything does. ``--script`` names another gate
+script, one that defines ``build_runs``, ``record`` and ``compare`` as the
+gate script does; the tests use it, and ``check`` refuses its records for
+their runs.
 """
 
 import argparse
@@ -152,13 +165,18 @@ def gpyreg_tree():
         raise contract.IdentityError(
             f"gpyreg cannot be imported: {error}"
         ) from error
-    tree = contract.enclosing_checkout(Path(gpyreg.__file__).parent)
-    if tree is None:
-        raise contract.IdentityError(
-            f"gpyreg is imported from {Path(gpyreg.__file__).parent}, which "
-            "lies in no git checkout; name its checkout with "
-            "PYVBMC_GPYREG_SOURCE"
+    init = Path(gpyreg.__file__).resolve()
+    tree = contract.enclosing_checkout(init.parent)
+    try:
+        contract.git(
+            tree, "ls-files", "--error-unmatch", init.relative_to(tree)
         )
+    except (OSError, TypeError, ValueError, subprocess.CalledProcessError):
+        raise contract.IdentityError(
+            f"gpyreg is imported from {init.parent}, which no git checkout "
+            f"tracks (the enclosing one is {tree}); name gpyreg's checkout "
+            "with PYVBMC_GPYREG_SOURCE"
+        ) from None
     return tree
 
 
@@ -173,10 +191,16 @@ def this_identity(host=True):
     )
 
 
+def text_sha256(path):
+    """The SHA-256 of a text file with its line endings read as LF."""
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def script_record(script):
     """The gate script's path, as :func:`script_path` gives it, and its
-    SHA-256."""
-    return {"path": script, "sha256": contract.sha256_file(resolve(script))}
+    SHA-256 with LF line endings."""
+    return {"path": script, "sha256": text_sha256(resolve(script))}
 
 
 def dirty_trees(identity):
@@ -185,6 +209,54 @@ def dirty_trees(identity):
         for name, tree in identity["source"]["trees"].items()
         if not tree["clean"]
     )
+
+
+def unignored_in_checkout(path):
+    """Whether ``path`` lies in this checkout where git does not ignore it."""
+    path = Path(path).resolve()
+    if ROOT not in path.parents:
+        return False
+    result = subprocess.run(
+        ["git", "-C", str(ROOT), "check-ignore", "-q", str(path)],
+        capture_output=True,
+        stdin=subprocess.DEVNULL,
+    )
+    return result.returncode != 0
+
+
+def verdict(record, allow_dirty):
+    """Whether the recordings of ``record`` are identical, its exit code and
+    the reasons for a verdict other than identical.
+
+    A recording that exits 78 had no identity; any other failure is exit 1,
+    whatever the child's own code (a crashed process's code on Windows is
+    too large for an exit status). The recordings are identical when both
+    completed, the comparison finds no difference, both processes had one
+    source identity, and, unless ``allow_dirty``, every checkout was clean.
+    """
+    codes = record["exit_codes"]
+    failed = [code for code in codes.values() if code != 0]
+    if failed or sorted(codes) != sorted(RECORDINGS):
+        code = EXIT_IDENTITY if EXIT_IDENTITY in failed else EXIT_FAILED
+        return False, code, [f"a recording exited {failed}"]
+    identities = [
+        record["recordings"][name]["record"]["identity"] for name in RECORDINGS
+    ]
+    reasons = []
+    if not record["comparison"]["identical"]:
+        reasons.append("the comparison finds differences")
+    differing = contract.source_differences(*identities)
+    if differing:
+        reasons.append(
+            f"the recordings' source identities differ in {differing}"
+        )
+    dirty = sorted({tree for i in identities for tree in dirty_trees(i)})
+    if dirty and not allow_dirty:
+        reasons.append(f"the checkouts {dirty} were not clean")
+    if not reasons:
+        return True, 0, []
+    code = EXIT_IDENTITY if dirty and not allow_dirty else EXIT_FAILED
+    return False, code, reasons
 
 
 def with_options_added(runs):
@@ -271,10 +343,6 @@ def cmd_record(args):
             "script": script_record(script),
             "options_added": OPTIONS_ADDED,
             "identity": identity,
-            "files": {
-                "pyvbmc": pyvbmc.__file__,
-                "gpyreg": gpyreg.__file__,
-            },
             "runs": {
                 name: {
                     "sha256": run_digest(arrays, name),
@@ -324,6 +392,7 @@ def start_recording(out, name, script, gpyreg):
     env = dict(os.environ)
     env.update({key: "1" for key in THREAD_KEYS})
     env["PYTHONUNBUFFERED"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
     env["PYVBMC_GPYREG_SOURCE"] = str(gpyreg)
     command = [
         sys.executable,
@@ -357,9 +426,19 @@ def start_recording(out, name, script, gpyreg):
 
 def cmd_run(args):
     out = Path(args.out).resolve()
+    if out.exists() and not out.is_dir():
+        raise Refusal(EXIT_USAGE, f"{out} is a file, not a directory")
     if out.exists() and any(out.iterdir()):
         raise Refusal(
             EXIT_USAGE, f"{out} is not empty; a record is not revised"
+        )
+    if unignored_in_checkout(out):
+        raise Refusal(
+            EXIT_USAGE,
+            f"{out} lies in the checkout where git does not ignore it, so "
+            "the first recording's files would make the checkout dirty for "
+            "the second; write the record under dev/scripts/runs/ or outside "
+            "the checkout",
         )
     script = script_path(args.script)
     try:
@@ -414,25 +493,18 @@ def cmd_run(args):
         record["same_source_identity"] = not contract.source_differences(
             *identities
         )
-        record["identical"] = bool(
-            record["comparison"]["identical"]
-            and record["same_source_identity"]
-        )
-    else:
-        record["identical"] = False
-    failed = [code for code in codes.values() if code != 0]
-    record["exit_code"] = (
-        0 if record["identical"] else (failed[0] if failed else EXIT_FAILED)
-    )
+    identical, code, reasons = verdict(record, args.allow_dirty)
+    record.update(identical=identical, exit_code=code, reasons=reasons)
     contract.write_json(out / RECORD, record)
     if "comparison" in record:
         print(record["comparison"]["output"], end="", flush=True)
     print(
-        f"[run] {'identical' if record['identical'] else 'NOT identical'}; "
-        f"record {out / RECORD}",
+        f"[run] {'identical' if identical else 'NOT identical'}"
+        + "".join(f"; {reason}" for reason in reasons)
+        + f"; record {out / RECORD}",
         flush=True,
     )
-    return record["exit_code"]
+    return code
 
 
 # --------------------------------------------------------------------------
@@ -443,6 +515,8 @@ def cmd_run(args):
 def check_record(directory):
     """Re-check a finished record (module docstring); return it and the
     problems found, an empty list when there are none."""
+    import numpy as np
+
     directory = Path(directory)
     record = contract.read_json(directory / RECORD)
     problems = []
@@ -467,17 +541,38 @@ def check_record(directory):
             problems.append(
                 f"{name}.json is not the record gate_runs.json holds"
             )
-        if list(recordings[name]["record"]["runs"]) != list(GATE_RUNS):
-            problems.append(f"{name} holds the runs of another gate script")
+        runs = recordings[name]["record"]["runs"]
+        if list(runs) != list(GATE_RUNS):
+            problems.append(
+                f"{name} holds the runs {list(runs)}, not those of the gate "
+                f"script ({list(GATE_RUNS)})"
+            )
         if recordings[name]["record"]["options_added"] != OPTIONS_ADDED:
             problems.append(f"{name} ran with other options")
-    differing = contract.source_differences(
-        *(recordings[name]["record"]["identity"] for name in RECORDINGS)
-    )
+        npz = directory / f"{name}.npz"
+        if npz.is_file():
+            with np.load(npz, allow_pickle=False) as data:
+                arrays = {key: data[key] for key in data.files}
+            held = {key.split("/", 1)[0] for key in arrays}
+            if held != set(runs):
+                problems.append(f"{name}.npz holds the runs {sorted(held)}")
+            problems += [
+                f"{name}.npz: the arrays of {run} are not the ones its "
+                "digest names"
+                for run in runs
+                if run_digest(arrays, run) != runs[run]["sha256"]
+            ]
+    identities = [
+        recordings[name]["record"]["identity"] for name in RECORDINGS
+    ]
+    differing = contract.source_differences(*identities)
     if differing:
         problems.append(
             f"the recordings' source identities differ in {differing}"
         )
+    dirty = sorted({tree for i in identities for tree in dirty_trees(i)})
+    if dirty and not record.get("allow_dirty"):
+        problems.append(f"the checkouts {dirty} were not clean")
     if any(
         recordings[name]["record"]["script"] != record["script"]
         for name in RECORDINGS
@@ -488,7 +583,7 @@ def check_record(directory):
         problems.append(
             f"the gate script {record['script']['path']} is missing"
         )
-    elif contract.sha256_file(script) != record["script"]["sha256"]:
+    elif text_sha256(script) != record["script"]["sha256"]:
         problems.append(
             f"the gate script {record['script']['path']} is not the one the "
             "recordings ran"
@@ -545,7 +640,7 @@ def main(argv=None):
     except Refusal as refusal:
         print(f"seeded_gate_runs.py refused: {refusal}", flush=True)
         return refusal.code
-    except contract.IdentityError as error:
+    except contract.ContractError as error:
         print(
             f"seeded_gate_runs.py refused: no identity ({error})", flush=True
         )
