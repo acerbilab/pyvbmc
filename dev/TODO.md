@@ -223,9 +223,11 @@ records its execution.
   - the final tests, the CI matrix and the package checks;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
-    hand-back"): the release gate's after-arm population and its pools and
-    stacking results, each built apart from its draft release from the
-    numeric files and the redacted copies, by a step still to be written;
+    hand-back"): the release gate's after-arm population and its pools,
+    each built apart from its draft release from the numeric files and the
+    redacted copies by `scripts/hpc/campaign_public.sh` on
+    `feat-slurm-campaigns`, in the operator's account after the redaction
+    (the stacking's tracked copies hold every cell already);
     the draft releases of the campaigns stay drafts, since their raw
     archives hold the cluster's details and the operator's paths; the
     replay fingerprints and the earlier references' traces are backed up

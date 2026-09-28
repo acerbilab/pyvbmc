@@ -693,8 +693,9 @@ The open work for 1.5 is the list "In scope for 1.5" of
    With the 1.5 release that follows it, attach as release assets the
    traces of the population the released code was validated against, the
    release gate's after arm (the `TODO.md` item "The golden references
-   after the port review"), and the gate's S-VBMC pools and stacking
-   results (PI decisions 2026-09-06 and 2026-09-28): each an archive of the
+   after the port review"), and the gate's S-VBMC pools, whose stacking
+   results are in git (PI decisions 2026-09-06 and 2026-09-28): each an
+   archive of the
    campaign's numeric files and redacted copies, built apart from its draft
    release, as the TODO's release item and the
    [Slurm plan](slurm-benchmark-support.md), "Records and hand-back",
