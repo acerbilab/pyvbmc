@@ -607,7 +607,14 @@ verified sidecars into `dev/golden/baseline/` and the fingerprints into the
 reference's local traces directory, and changes the two defaults together
 with `AGENTS.md` ("Trajectories"), the current reference's section and the
 `golden_replay.py` entry of `dev/README.md`, and `dev/golden/README.md`
-(its steps are in `dev/README.md`).
+(its steps are in `dev/README.md`). The fingerprints, the gate runs and the
+promotion's own process run the after arm's code: equal in the package,
+but for its tests and S-VBMC, which no VBMC run imports, and in the harness
+files that build a run, which leaves the documentation and the S-VBMC
+headline free to change after the launch (decision 13; PI, 2026-09-28).
+The script copies itself into its record as `promote.py`, and the
+promotion commit removes it and its test from `dev/scripts/`, as the
+previous promotion's script lives in its record (PI, 2026-09-28).
 
 ### The arm comparison
 
@@ -764,6 +771,19 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   details and the operator's paths, so it stays in its draft release,
   which only the repository's collaborators see; the public record is the
   redacted copies below. Nothing redacts an archive itself, so none is
+  published: these draft releases stay drafts, since publishing one would
+  make its archive public.
+- **Public assets are built apart from the archives** (PI, 2026-09-28).
+  The PyVBMC 1.5 release attaches the after arm's population and the
+  pools and stacking results, each as an archive of its numeric files (the
+  traces, `.npz`, and the posterior arrays, `.vp.npz`) and its redacted
+  tracked copies, without the logs, the Slurm accounting, the `site` block,
+  the `pip freeze` and the boost pickles, and searched for the site's
+  details as the redaction searches the copies. The step that builds them
+  is still to be written. The before arm and the raw archives stay in
+  their draft releases; the replay fingerprints and the traces of the
+  earlier golden references, of which the developer's machine holds the
+  only copies, are kept in a draft release of their own as a backup, not
   published.
 - **The tracked copies are redacted.** They go under
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
@@ -938,20 +958,27 @@ On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
 with `reference_promote.py fingerprints`, which runs them through
 `golden_replay.py`: about 70 to 80 minutes by the laptop medians, and
-`lumpy_D10_noise3_production`, which Phase 6 times. Each run must lie
-inside the after arm's accuracy envelope (`golden_replay.py --sidecars`,
+`lumpy_D10_noise3_production`, which Phase 6 times. Each run is judged
+against the after arm's accuracy envelope (`golden_replay.py --sidecars`,
 which reads the per-configuration directories of the after arm or of its
 tracked copies, counts verified cases only, and fails for a configuration
-it finds no population of), a coarse check that the machine and the cluster sample the same
-distribution. The six seeded gate runs are recorded twice by
+it finds no population of). Together the runs are a coarse check that the
+machine and the cluster sample the same distribution: one run per
+configuration can lie outside its envelope as the population's own runs
+sometimes do (4.2 % of the runs of `reference_990_20260913` lie outside
+their configuration's envelope), so the set is judged, not each run (PI,
+2026-09-28). The six seeded gate runs are recorded twice by
 `seeded_gate_runs.py`, whose record carries the commit, the gpyreg source,
 the thread settings and the host, with `performance_calibration="off"` so
 that no calibration cache enters them, and compared with the gate script's
 own `compare`; they have no population, so no envelope applies. The set
 goes to the golden references item's promotion
 (`reference_promote.py prepare`), with the populations.
-**Acceptance:** every fingerprint lies inside its envelope, and each gate
-run reproduces bit for bit.
+**Acceptance:** every fingerprint completes with finite metrics; no more of
+them lie outside their envelopes than the after arm's own rate of runs
+outside theirs makes plausible, a binomial tail of at least 0.01 (at the
+rate of 4.2 %, four of 24 pass and five do not); and each gate run
+reproduces bit for bit.
 
 ## Worklog
 
@@ -1101,3 +1128,30 @@ run reproduces bit for bit.
   2400 cases of about 5 KB. The reference's local traces directory,
   `<name>_fingerprints`, holds its fingerprints and the gate runs; the
   population's traces stay in its archive.
+- 2026-09-28: a doublecheck of the two tools by three fresh reviewers (the
+  wrapper, the promotion's logic, the documents and templates), and the
+  PI's rulings on what it raised. A fingerprint has no trace to be
+  identical to, so golden_replay's exemption of identical runs never
+  applies to it, and 4.2 % of the runs of `reference_990_20260913` lie
+  outside their own configuration's envelope: a check of each of the 24
+  fingerprints would refuse a correct promotion about two times in three,
+  so the set is judged against the population's own rate (Phase 9). The
+  code the checks compare leaves out the package's tests and S-VBMC, and
+  the script leaves `dev/scripts` for its record at the promotion ("The
+  populations"). What the release publishes is built apart from the draft
+  releases ("Records and hand-back"). The fixes: `prepare` takes only the
+  after arm's redacted tracked copies, since `publish` copies their
+  sidecars into the repository; the after arm's trees must be clean;
+  every step checks first that it runs the after arm's code and gpyreg;
+  `publish` computes all it writes before the first write; tracked JSON is
+  hashed with LF line endings; `publish` also rewrites the
+  `regenerate_baseline.sh` paragraph of `dev/README.md` and the previous
+  population's example in `golden_replay.py`, and names the documents to
+  carry by hand; the generated READMEs say how another machine makes
+  fingerprints of its own, who sees the draft archive and that the PI
+  accepted the assessment. The wrapper takes an output directory in the
+  checkout only where git ignores it, checks both recordings for clean
+  trees, refuses a gpyreg that no checkout tracks, maps a crashed
+  recording's exit code to 1, hashes the gate script with LF line endings
+  and re-checks each run's digest. The test modules pass (11 and 9 tests),
+  the promotion's now on redacted copies of arms made at a stand-in site.

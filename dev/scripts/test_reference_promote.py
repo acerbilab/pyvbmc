@@ -6,15 +6,16 @@ and rewrites in the checkout (``AGENTS.md``, ``dev/README.md``,
 manifest, ``golden_replay.py`` and ``analyze_population_run.py``) and the
 records of a small release gate: two campaigns of array mode on the
 ``smoke`` suite's ``normal_D2`` at seeds 0-2, written as
-``test_population_run.py`` writes them, an after arm of the harness
-checkout's code and a before arm of other code, verified, rescored and
-assessed. The fingerprints and the replay of the defaults are real runs of
-``normal_D2`` at seed 0 (seconds each) through ``golden_replay.py``; the
-gate runs are those of the stand-in gate script of
+``test_population_run.py`` writes them at a stand-in site
+(``campaign_slurm_stubs.FakeSite``), an after arm of the harness checkout's
+code and a before arm of other code, verified and rescored, redacted into
+the root as a hand-back puts them in the repository, and assessed there. The fingerprints and the replay of the defaults are real
+runs of ``normal_D2`` at seed 0 (seconds each) through ``golden_replay.py``;
+the gate runs are those of the stand-in gate script of
 ``test_seeded_gate_runs.py``. The identities name the checkout's commit and
-its gpyreg's, and the checks of clean checkouts are off, so that the module
-runs on a working tree with changes. The tests that record skip without a
-gpyreg checkout.
+its gpyreg's; the checks of clean checkouts are off, and git's tracking of
+the copies is taken as given, so that the module runs on a working tree
+with changes. The tests that record skip without a gpyreg checkout.
 
 The checkout's own passages are checked against the text the promotion was
 written against: an edit to one of them fails here until its template and
@@ -27,6 +28,7 @@ import shutil
 import socket
 from pathlib import Path
 
+import campaign_slurm_stubs as stubs
 import pytest
 import reference_promote as promote
 import seeded_gate_runs as gates
@@ -50,7 +52,7 @@ GATE = "dev/experiments/release_gate_test"
 
 
 # --------------------------------------------------------------------------
-# The checkout's passages
+# The checkout's passages, and the pure parts
 # --------------------------------------------------------------------------
 
 
@@ -59,6 +61,8 @@ def test_the_passages_are_those_the_promotion_rewrites():
     for file, old, _ in promote.REPLACEMENTS:
         text, _ = promote.read_text(promote.REPO / file)
         assert text.count(old) == 1, (file, old)
+    file, start, end = promote.OWN_ENTRY
+    promote.span(promote.read_text(promote.REPO / file)[0], start, end)
 
 
 def test_reflow_wraps_without_opening_a_markdown_block():
@@ -78,6 +82,28 @@ def test_reflow_wraps_without_opening_a_markdown_block():
     for line in body:
         assert not promote.BLOCK_MARKER.match(line.strip()), line
     assert "| a | b |" in lines and "keep   this" in lines
+
+
+def test_fingerprints_outside_their_envelopes_are_judged_together():
+    # At the rate of the reference of 2026-09-13, 4.2 %, four of 24
+    # fingerprints outside their envelopes are plausible and five are not.
+    rate = 42 / 990
+    assert promote.outside_probability(0, 24, rate) == 1.0
+    assert promote.outside_probability(4, 24, rate) > promote.FINGERPRINT_ALPHA
+    assert promote.outside_probability(5, 24, rate) < promote.FINGERPRINT_ALPHA
+    # A population none of whose runs lies outside its envelope admits no
+    # fingerprint outside.
+    assert promote.outside_probability(1, 24, 0.0) == 0.0
+    # One run of eight far beyond the others' Q3 + 3 IQR.
+    envelopes = {
+        "a": {
+            "seeds": list(range(8)),
+            "elbo_err": promote.np.array([0.1] * 7 + [5.0]),
+            "gskl": promote.np.full(8, 0.1),
+            "mmtv": promote.np.full(8, 0.1),
+        }
+    }
+    assert promote.outlier_rate(envelopes) == 1 / 8
 
 
 # --------------------------------------------------------------------------
@@ -120,9 +146,10 @@ def effective(seed):
     return effective_options(vbmc, options.keys())
 
 
-def write_arm_case(out, seed, identity, shift=0.0):
+def write_arm_case(site, out, seed, identity, shift=0.0):
     """A verified-looking case (``test_population_run.complete_case``)
-    whose sidecar holds the effective options of a real run."""
+    whose sidecar holds the effective options of a real run, recorded on a
+    compute node of the stand-in ``site``."""
     tag, files = tp.complete_case(
         out, seed, exact_metrics=True, identity=identity, shift=shift
     )
@@ -132,12 +159,13 @@ def write_arm_case(out, seed, identity, shift=0.0):
     side["D"] = 2
     files["sidecar"].write_text(json.dumps(side, indent=1))
     line = tp.line_of(seed)
+    node = site.nodes[seed % len(site.nodes)]
     contract.write_completion(
         out,
         tag,
         line,
         list(files.values()),
-        copy.deepcopy(identity),
+        site.plant(copy.deepcopy(identity), node=node, task=str(seed + 1)),
         0.0,
         1.0,
         {"boost": {"attempted": False, "accepted": False}},
@@ -146,19 +174,35 @@ def write_arm_case(out, seed, identity, shift=0.0):
 
 def use_constants(patch):
     """The promotion of this module's small gate: its allocation and
-    defaults, the stand-in gate script, and no check of clean checkouts."""
+    defaults, the stand-in gate script, no check of clean checkouts, and
+    the copies taken as tracked."""
     patch.setattr(promote, "SUITE", "smoke")
     patch.setattr(promote, "LABELS", [LABEL])
     patch.setattr(promote, "SEEDS", "0-2")
     patch.setattr(promote, "DEFAULT_CONFIGS", (LABEL,))
     patch.setattr(promote, "clean_required", lambda: False)
+    patch.setattr(promote, "is_tracked", lambda path: True)
     patch.setattr(gates, "GATE_RUNS", tg.RUNS)
+
+
+def redact(site, campaign, target):
+    """The tracked copies of ``campaign``, run at the stand-in ``site``,
+    redacted as its operator redacts them."""
+    contract.redact(
+        campaign,
+        target,
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        say=lambda m: None,
+    )
 
 
 @pytest.fixture(scope="module")
 def world(tmp_path_factory):
     """The root of a promotion before ``prepare``, with the local
-    directories of the fingerprints and the gate runs under ``local/``."""
+    directories of the raw arms, the fingerprints and the gate runs under
+    ``local/``."""
     try:
         gates.gpyreg_tree()
     except contract.IdentityError as error:
@@ -172,7 +216,11 @@ def world(tmp_path_factory):
     gate = root / GATE
     gate.mkdir(parents=True)
     (gate / "README.md").write_text("The release gate's records.\n")
-    after_identity, before_identity = identities()
+    # The arms run at a stand-in site, in its operator's home.
+    site = stubs.FakeSite(base)
+    raw = site.home / "runs"
+    raw.mkdir(parents=True)
+    after_identity, before_identity = (site.plant(i) for i in identities())
     script = tg.stand_in(base)
     assert (
         gates.main(
@@ -183,18 +231,26 @@ def world(tmp_path_factory):
     )
     with pytest.MonkeyPatch.context() as patch:
         use_constants(patch)
-        patch.setenv("PYVBMC_GPYREG_SOURCE", str(base / "gpyreg"))
+        block = site.site_block("dev/scripts/population_run.py")
+        for name, value in block.items():
+            if value is None:
+                patch.delenv(name, raising=False)
+            else:
+                patch.setenv(name, value)
         patch.delenv("PYVBMC_SOURCE", raising=False)
         patch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
         before = tp.prepare_other_arm(
-            gate, patch, "population_before", before_identity
+            raw, patch, "population_before", before_identity
         )
         for seed in range(3):
-            write_arm_case(before, seed, before_identity, 0.2 * (seed + 1))
+            write_arm_case(
+                site, before, seed, before_identity, 0.2 * (seed + 1)
+            )
         tp.use_identity(patch, before_identity)
         assert runner.main(["verify", "--out", str(before)]) == 0
+        tp.finish(before)
         tp.use_identity(patch, after_identity)
-        after = gate / "population_after"
+        after = raw / "population_after"
         assert (
             runner.main(
                 ["prepare", "--out", str(after), *tp.ARGUMENTS]
@@ -203,20 +259,32 @@ def world(tmp_path_factory):
             == 0
         )
         for seed in range(3):
-            write_arm_case(after, seed, after_identity)
+            write_arm_case(site, after, seed, after_identity)
         assert runner.main(["verify", "--out", str(after)]) == 0
         tp.finish(after)
-        promote.analysis.analyze_arms(before, after, None, gate / "assessment")
+        for arm in (before, after):
+            redact(site, arm, gate / arm.name)
+        promote.analysis.analyze_arms(
+            gate / "population_before",
+            gate / "population_after",
+            None,
+            gate / "assessment",
+        )
         fingerprints = base / "local/fingerprints"
         assert (
             promote.main(
-                ["fingerprints", "--after", str(after)]
+                ["fingerprints", "--after", str(gate / "population_after")]
                 + ["--out", str(fingerprints)],
                 root=root,
             )
             == 0
         )
-    return {"base": base, "script": str(script.resolve())}
+    assert site.leaks(gate) == []
+    return {
+        "base": base,
+        "script": str(script.resolve()),
+        "raw_after": raw.relative_to(base) / "population_after",
+    }
 
 
 @pytest.fixture
@@ -230,6 +298,7 @@ def gate(world, tmp_path, monkeypatch):
     return {
         "root": root,
         "after": root / GATE / "population_after",
+        "raw_after": base / world["raw_after"],
         "assessment": root / GATE / "assessment",
         "record": root / "dev/golden/promotion_test",
         "fingerprints": base / "local/fingerprints",
@@ -238,15 +307,15 @@ def gate(world, tmp_path, monkeypatch):
     }
 
 
-def prepare(gate, *extra, accepted=None):
+def prepare(gate, *extra, accepted=None, after=None):
     accepted = accepted or promote.sha256(
-        gate["assessment"] / "assessment.json"
+        gate["assessment"] / "assessment.json", True
     )
     return promote.main(
         [
             "prepare",
             "--after",
-            str(gate["after"]),
+            str(after or gate["after"]),
             "--assessment",
             str(gate["assessment"]),
             "--accepted-assessment",
@@ -273,10 +342,10 @@ def replay(gate):
     )
 
 
-def publish(gate):
+def publish(gate, *extra):
     return promote.main(
         ["publish", "--record", str(gate["record"])]
-        + ["--final-replay", str(gate["replay"])],
+        + ["--final-replay", str(gate["replay"]), *extra],
         root=gate["root"],
     )
 
@@ -294,6 +363,10 @@ def snapshot(root):
         for p in Path(root).rglob("*")
         if p.is_file()
     }
+
+
+def flat(text):
+    return " ".join(text.split())
 
 
 # --------------------------------------------------------------------------
@@ -330,8 +403,14 @@ def test_prepare_replay_and_publish(gate):
     assert validation["status"] == "prepared"
     assert validation["reference"] == NAME
     assert validation["population"]["runs"] == 3
+    # Three seeds give the KS screen too few runs to test; the count is
+    # read from the report, whose real form the previous promotion's has.
+    assert validation["population"]["even_odd_tests"] == 0
+    previous = promote.REPO / promote.PREVIOUS_RECORD / "even_vs_odd.md"
+    assert promote.ks_tests(previous.read_text(encoding="utf-8")) == 92
     assert validation["population"]["even_odd_flagged"] == []
     assert validation["fingerprints"]["cases"] == 1
+    assert validation["fingerprints"]["outside_envelope"] == {}
     assert validation["gate_runs"]["identical"] is True
     assert validation["gate_runs"]["host"] == socket.gethostname()
     assert validation["previous"]["traces"] == "absent from this machine"
@@ -357,8 +436,30 @@ def test_prepare_replay_and_publish(gate):
     assert (traces / "gate_runs" / gates.RECORD).is_file()
     # prepare changes nothing tracked but the record.
     assert snapshot(root / "dev/golden/baseline") == before
-    # Again: the copies match, and the record is written anew.
-    assert prepare(gate) == 0
+    # Again: the copies match, and the record is written anew under the
+    # name it has.
+    assert (
+        promote.main(
+            [
+                "prepare",
+                "--after",
+                str(gate["after"]),
+                "--assessment",
+                str(gate["assessment"]),
+                "--accepted-assessment",
+                promote.sha256(gate["assessment"] / "assessment.json", True),
+                "--fingerprints",
+                str(gate["fingerprints"]),
+                "--gate-runs",
+                str(gate["gates"]),
+                "--record",
+                str(record),
+            ],
+            root=root,
+        )
+        == 0
+    )
+    assert contract.read_json(record / promote.VALIDATION)["reference"] == NAME
 
     assert replay(gate) == 0
     # The documents link to the record's README.
@@ -368,7 +469,8 @@ def test_prepare_replay_and_publish(gate):
         file: promote.read_text(root / file)[1]
         for file in ("AGENTS.md", "dev/README.md", "dev/golden/README.md")
     }
-    assert publish(gate) == 0
+    public = "the asset `population_after_traces.tar.zst` of the release"
+    assert publish(gate, "--public-traces", public) == 0
 
     baseline = root / promote.BASELINE
     assert sorted(p.name for p in baseline.iterdir()) == sorted(
@@ -387,6 +489,9 @@ def test_prepare_replay_and_publish(gate):
     module = load_module(root / "dev/scripts/golden_replay.py")
     assert module.DEFAULT_BASELINE.name == f"{NAME}_fingerprints"
     assert module.DEFAULT_CONFIGS == (LABEL,)
+    assert (
+        "student_D4" not in (root / "dev/scripts/golden_replay.py").read_text()
+    )
     for file, eol in eols.items():
         assert promote.read_text(root / file)[1] == eol
     agents = promote.passage(root, "agents")
@@ -398,6 +503,8 @@ def test_prepare_replay_and_publish(gate):
         )
     ]
     assert reference.endswith(".\n\n")
+    assert "scripts/reference_promote.py" not in text
+    assert "- `scripts/seeded_gate_runs.py` —" in text
     entry = promote.passage(root, "readme_replay")
     readme = promote.read_text(root / "dev/golden/README.md")[0]
     for passage, phrases in (
@@ -405,7 +512,10 @@ def test_prepare_replay_and_publish(gate):
             reference,
             [
                 f"`{NAME}`: **3 runs of the 1",
+                "at seeds 0–2",
                 "(golden/promotion_test/README.md)",
+                "which the PI accepted",
+                "The one default cases",
             ],
         ),
         (entry, [f"`scripts/runs/golden/{NAME}_fingerprints/`"]),
@@ -416,13 +526,17 @@ def test_prepare_replay_and_publish(gate):
                 "(promotion_test/README.md)",
                 "(../experiments/release_gate_test/population_after)",
                 "(../experiments/release_gate_test/README.md)",
+                "only the repository's collaborators see",
+                f"They are published as {public}.",
+                "none lies outside its configuration's accuracy envelope",
                 "0 of the 1 equal the cluster's run of seed 0",
+                "the same runs of the code of `bbbbbbbb`",
+                "A machine gets replay fingerprints of its own",
             ],
         ),
     ):
-        flat = " ".join(passage.split())
         for phrase in phrases:
-            assert phrase in flat, phrase
+            assert phrase in flat(passage), phrase
     for passage in (agents, reference, entry, readme):
         for line in passage.split("\n"):
             assert not line.startswith(("+ ", "1. ")), line
@@ -430,9 +544,13 @@ def test_prepare_replay_and_publish(gate):
         text = promote.read_text(root / file)[0]
         assert old not in text
         assert new.format(name=NAME, traces=f"{NAME}_fingerprints") in text
+    assert (record / "promote.py").read_bytes() == (
+        promote.HERE / "reference_promote.py"
+    ).read_bytes()
     validation = contract.read_json(record / promote.VALIDATION)
     assert validation["status"] == "promoted"
     assert validation["publication"]["final_replay"]["identical"] == 1
+    assert validation["publication"]["public_traces"] == public
     assert (record / "final_replay.json").is_file()
     # Once only.
     assert publish(gate) == 1
@@ -449,33 +567,81 @@ def load_module(path):
 
 def test_prepare_refuses_and_writes_nothing(gate, monkeypatch, capsys):
     root = gate["root"]
-    before = snapshot(root)
-    assert prepare(gate, accepted="0" * 64) == 1
-    assert "is not the accepted assessment" in capsys.readouterr().out
-    # A fingerprint judged against another population.
+
+    def refused(*phrases, **kwargs):
+        before = snapshot(root)
+        assert prepare(gate, **kwargs) == 1
+        out = capsys.readouterr().out
+        for phrase in phrases:
+            assert phrase in out, (phrase, out)
+        assert snapshot(root) == before
+
+    refused("is not the accepted assessment", accepted="0" * 64)
+    # The campaign directory in place of its redacted copies, where a
+    # hand-back would unpack it.
+    raw = root / "dev/scripts/runs/population_after"
+    shutil.copytree(gate["raw_after"], raw)
+    refused("holds no redaction.json", after=raw)
+    with monkeypatch.context() as patch:
+        patch.setattr(promote, "is_tracked", lambda path: False)
+        refused("is not tracked by git")
+    # This process's code, or the fingerprints', is not the after arm's.
+    with monkeypatch.context() as patch:
+        patch.setattr(promote, "numerics_differ", lambda a, b: ["pyvbmc/x.py"])
+        refused("prepare: HEAD's code differs from the after arm's")
+    # A fingerprint judged against another population, and one outside its
+    # envelope where no run of the population lies outside its own.
     path = gate["fingerprints"] / "replay.json"
     saved = path.read_bytes()
     report = json.loads(saved)
     report["rows"][0]["pop_fence"]["gskl"] += 1.0
     path.write_text(json.dumps(report))
-    assert prepare(gate) == 1
-    assert "judged by another population" in capsys.readouterr().out
+    refused("judged by another population")
+    report = json.loads(saved)
+    report["rows"][0]["outside"] = ["gskl"]
+    path.write_text(json.dumps(report))
+    refused("1 of 1 fingerprints lie outside their envelopes")
     path.write_bytes(saved)
+    # A fingerprint of another gpyreg, and one of other options.
+    side_path = gate["fingerprints"] / f"{LABEL}_seed0.json"
+    saved = side_path.read_bytes()
+    side = json.loads(saved)
+    side["meta"]["gpyreg_source"]["git"]["sha"] = "d" * 7
+    side_path.write_text(json.dumps(side))
+    refused("the fingerprint's gpyreg is not the after arm's")
+    side = json.loads(saved)
+    side["effective_options"]["max_fun_evals"] += 1
+    side_path.write_text(json.dumps(side))
+    refused("other options than the after arm's runs: ['max_fun_evals']")
+    side_path.write_bytes(saved)
     # Gate runs of another machine.
     with monkeypatch.context() as patch:
         patch.setattr(promote.socket, "gethostname", lambda: "elsewhere")
-        assert prepare(gate) == 1
-    assert "not on this machine" in capsys.readouterr().out
-    assert snapshot(root) == before
+        refused("not on this machine")
+    # An assessment of another candidate, accepted as it is.
+    path = gate["assessment"] / "assessment.json"
+    saved = path.read_bytes()
+    assessment = json.loads(saved)
+    assessment["arms"]["candidate"]["name"] = "elsewhere"
+    path.write_text(json.dumps(assessment))
+    refused(
+        "does not assess population_after",
+        accepted=promote.sha256(path, True),
+    )
+    path.write_bytes(saved)
     # A baseline that no longer holds the previous reference.
     (root / promote.BASELINE / "normal_D5_seed0.json").unlink()
-    before = snapshot(root)
-    assert prepare(gate) == 1
-    assert "does not hold the sidecars" in capsys.readouterr().out
-    assert snapshot(root) == before
+    refused("does not hold the sidecars")
 
 
-def test_cases_not_verified_need_a_ruling(gate, monkeypatch, tmp_path):
+def test_the_gate_runs_must_come_from_clean_checkouts(gate, monkeypatch):
+    campaign, _, _ = promote.read_after(gate["after"], {})
+    monkeypatch.setattr(promote, "clean_required", lambda: True)
+    with pytest.raises(promote.PromotionError, match="dirty checkout"):
+        promote.check_gate_runs(gate["gates"], campaign)
+
+
+def test_cases_not_verified_need_a_ruling(gate, monkeypatch):
     load = promote.analysis.load_array_campaign
 
     def with_a_failure(*args):
@@ -491,7 +657,7 @@ def test_cases_not_verified_need_a_ruling(gate, monkeypatch, tmp_path):
     with pytest.raises(promote.PromotionError, match="without a ruling"):
         promote.read_after(gate["after"], {})
     rulings = {f"{LABEL}/{LABEL}_seed2": "a node failure, not the code's"}
-    campaign, sidecars, files = promote.read_after(gate["after"], rulings)
+    _, sidecars, _ = promote.read_after(gate["after"], rulings)
     assert sorted(sidecars) == [f"{LABEL}_seed0", f"{LABEL}_seed1"]
     with pytest.raises(promote.PromotionError, match="verified or unknown"):
         promote.read_after(
@@ -499,27 +665,43 @@ def test_cases_not_verified_need_a_ruling(gate, monkeypatch, tmp_path):
         )
 
 
-def test_publish_refuses_a_changed_passage_or_replay(gate, capsys):
+def test_publish_refuses_and_writes_nothing(gate, capsys):
     root = gate["root"]
     assert prepare(gate) == 0
     assert replay(gate) == 0
     write_record_readme(gate)
+
+    def refused(phrase):
+        before = snapshot(root)
+        assert publish(gate) == 1
+        out = capsys.readouterr().out
+        assert phrase in out, out
+        assert snapshot(root) == before
+
+    # A passage edited since the script was written.
     agents = root / "AGENTS.md"
     saved = agents.read_bytes()
     agents.write_bytes(
         saved.replace(b"step by step with its stored trace", b"step by step")
     )
-    before = snapshot(root)
-    assert publish(gate) == 1
-    out = capsys.readouterr().out
-    assert "AGENTS.md: the passage '- **Trajectories.**' has changed" in out
-    assert snapshot(root) == before
+    refused("AGENTS.md: the passage '- **Trajectories.**' has changed")
     agents.write_bytes(saved)
-    before = snapshot(root)
+    # A line to replace that is no longer there once.
+    path = root / "dev/scripts/analyze_population_run.py"
+    saved = path.read_bytes()
+    path.write_bytes(saved + promote.REPLACEMENTS[-1][1].encode())
+    refused("times")
+    path.write_bytes(saved)
+    # A sidecar of the after arm changed since prepare.
+    rel = runner.case_files(LABEL, 1)["sidecar"]
+    side_path = gate["after"] / rel
+    saved = side_path.read_bytes()
+    side_path.write_bytes(saved.replace(b'"seed": 1', b'"seed":  1'))
+    refused("is not the prepared sidecar")
+    side_path.write_bytes(saved)
+    # A replay that is not identical.
     path = gate["replay"] / "replay.json"
     report = json.loads(path.read_text())
     report["rows"][0]["identical"] = False
     path.write_text(json.dumps(report))
-    assert publish(gate) == 1
-    assert "the replay is not identical" in capsys.readouterr().out
-    assert snapshot(root) == before
+    refused("the replay is not identical")

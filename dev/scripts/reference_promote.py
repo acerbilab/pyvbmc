@@ -3,7 +3,7 @@
 The reference that replaces ``reference_990_20260913`` is the after arm of
 the release gate's population campaigns (``dev/plans/slurm-benchmark-
 support.md``): every configuration of the ``production`` suite at seeds
-0-99, run on the cluster by ``population_run.py``'s array mode with the
+0-99, run on a Slurm cluster by ``population_run.py``'s array mode with the
 release code. Exact replay depends on the machine and its BLAS, so the
 traces ``golden_replay.py`` compares with are the reference's replay
 fingerprints instead: one run at seed 0 of each configuration made with the
@@ -23,15 +23,25 @@ of the fingerprints, as one process at a time::
     python -u dev/scripts/reference_promote.py replay --record RECORD \\
         --out REPLAY
     python dev/scripts/reference_promote.py publish --record RECORD \\
-        --final-replay REPLAY
+        --final-replay REPLAY [--public-traces TEXT]
 
-``AFTER`` is the after arm, its tracked copies under
-``dev/experiments/release_gate_<date>/`` or the campaign directory;
-``ASSESSMENT`` the output of ``analyze_population_run.py --arms BEFORE
-AFTER``, whose SHA-256 the PI accepted (``--accepted-assessment``);
-``RECORD`` the promotion's record, ``dev/golden/promotion_<date>/``. These
-three lie in the checkout. The reference is named
-``reference_<runs>_<date of prepare>`` unless ``--name`` names it.
+``AFTER`` is the after arm's redacted tracked copies,
+``dev/experiments/release_gate_<date>/population_after/``
+(``campaign_contract.redact``), tracked by git: a campaign directory is
+refused, since ``publish`` copies its sidecars into the repository.
+``ASSESSMENT`` is the output of ``analyze_population_run.py --arms BEFORE
+AFTER``, whose SHA-256 with LF line endings the PI accepted
+(``--accepted-assessment``; a refusal prints it), and ``RECORD`` the
+promotion's record, ``dev/golden/promotion_<date>/``. These three lie in
+the checkout. The reference is named ``reference_<runs>_<date>``, the date
+of the first ``prepare``, unless ``--name`` names it.
+
+Every step that runs code first checks that this process runs the after
+arm's code (:func:`check_code`): ``HEAD`` equals the after arm's commit in
+:data:`NUMERIC_PATHS` (the package, but for its tests and S-VBMC, which no
+VBMC run imports, and the harness files that build a run), the working tree
+equals ``HEAD`` there, and the imported gpyreg is the after arm's commit,
+clean.
 
 ``fingerprints`` runs ``golden_replay.py`` on every configuration of the
 after arm at seed 0, with the after arm as ``--sidecars`` and no baseline
@@ -43,24 +53,27 @@ envelope alone; its ``--out`` holds the fingerprints and the report.
 - that ``dev/golden/baseline/`` holds the previous reference, as its
   promotion's manifest says, and, where this machine holds them, the
   previous reference's traces;
-- the after arm: its allocation (the whole ``production`` suite at seeds
-  0-99), its options (``population_run.DEFAULT_OPTIONS``), that it ran the
-  release code (its package tree is its harness checkout), its
-  verification report, which must still describe it, the record and
-  rescored metrics of every verified case
+- the after arm: its redaction record, its allocation (the whole
+  ``production`` suite at seeds 0-99), its options
+  (``population_run.DEFAULT_OPTIONS``), that it ran its harness checkout's
+  own package from clean trees, its verification report, which must still
+  describe it, the record and rescored metrics of every verified case
   (``analyze_population_run.load_array_campaign``), and that every case it
   does not place as verified has a ruling in ``--rulings`` (a JSON object
   of case tags and rulings), which leaves that case out of the reference;
 - that the assessment is the accepted file and compares this after arm;
 - the fingerprints: every configuration at seed 0, each a pair with no
   error file and an intact archive, run with one BLAS thread, historical
-  calibration budgets and the options of the after arm's runs of it,
-  from clean checkouts whose package and harness equal the after arm's in
-  ``NUMERIC_PATHS`` and whose gpyreg is the after arm's commit, each
-  judged by the replay against the after arm's envelopes and not flagged;
+  calibration budgets and the options of the after arm's runs of it, from
+  clean checkouts of the after arm's code and gpyreg, completed with finite
+  metrics and consistent files, and judged by the replay against the after
+  arm's envelopes (:func:`check_fingerprints`): some may lie outside their
+  envelopes, as some of the population's own runs lie outside theirs, and
+  more of them than that rate makes plausible refuses (a binomial tail
+  below :data:`FINGERPRINT_ALPHA`);
 - the gate runs (``seeded_gate_runs.check_record``): the gate script,
-  identical recordings, the same code as the after arm, clean checkouts,
-  and this host.
+  identical recordings from clean checkouts of the after arm's code and
+  gpyreg, on this host.
 
 It then copies the fingerprints and the gate runs' directory into
 ``dev/scripts/runs/golden/<name>_fingerprints/`` (gitignored; a copy that
@@ -78,22 +91,28 @@ after arm's envelopes. Write the record's ``README.md`` from the record
 before ``publish``: the generated documents link to it.
 
 ``publish`` requires the prepared record, its README naming the reference,
-a replay of the defaults that is identical in every case from the clean
-``HEAD``, whose package and harness equal the after arm's, and the previous
-reference still in ``dev/golden/baseline/``. It then replaces the sidecars
-and the summary in ``dev/golden/baseline/`` with the reference's, and
-rewrites, together, ``golden_replay.py``'s ``DEFAULT_BASELINE`` and
-``DEFAULT_CONFIGS``, the ``Trajectories`` entry of ``AGENTS.md``, the
-current reference's section and the ``golden_replay.py`` entry of
-``dev/README.md``, and ``dev/golden/README.md``, and names the reference
-where ``dev/README.md`` and ``analyze_population_run.py`` say what
-``dev/golden/baseline/`` holds. Each rewritten passage must be the text
-this script was written against (:data:`PASSAGES`, compared by SHA-256
-with LF line endings; ``test_reference_promote.py`` checks the checkout's
-files), so that an edit made to one since is carried into its template
-rather than overwritten; every check runs before the first write. The
-commit is the operator's, with ``dev/TODO.md`` and the machine's
-``dev/scripts/runs/LOCAL.md``.
+the README of the release gate's records beside ``AFTER``, which names the
+campaign's archive, a replay of the defaults that is identical in every
+case from ``HEAD``, and the previous reference still in
+``dev/golden/baseline/``, and computes everything it writes before it
+writes anything. It then replaces the sidecars and the summary in
+``dev/golden/baseline/`` with the reference's; rewrites, together,
+``golden_replay.py``'s ``DEFAULT_BASELINE`` and ``DEFAULT_CONFIGS``, the
+``Trajectories`` entry of ``AGENTS.md``, the current reference's section
+and the ``golden_replay.py`` entry of ``dev/README.md``, and
+``dev/golden/README.md``; names the reference where ``dev/README.md`` and
+``analyze_population_run.py`` say what ``dev/golden/baseline/`` holds, and
+drops the previous population's examples from ``golden_replay.py``; copies
+this script into the record as ``promote.py``; and removes its entry from
+``dev/README.md``. ``--public-traces`` names where the population's traces
+are published, for ``dev/golden/README.md``. Each rewritten passage must be
+the text this script was written against (:data:`PASSAGES`, compared by
+SHA-256 with LF line endings; ``test_reference_promote.py`` checks the
+checkout's files), so that an edit made to one since is carried into its
+template rather than overwritten. The commit is the operator's: it removes
+this script and ``test_reference_promote.py``, whose promotion is done, and
+carries by hand into the documents of :data:`HAND_EDITS` and the machine's
+``dev/scripts/runs/LOCAL.md`` what they say of the reference.
 """
 
 import argparse
@@ -103,6 +122,7 @@ import os
 import re
 import shutil
 import socket
+import subprocess
 import sys
 import textwrap
 import time
@@ -119,6 +139,7 @@ import population_run as runner  # isort: skip  (single-thread env first)
 # isort: split
 import analyze_population_run as analysis
 import golden_replay
+import numpy as np
 import reference_join as join
 import seeded_gate_runs as gates
 
@@ -145,9 +166,12 @@ PREVIOUS_RECORD = "dev/golden/promotion_20260913"
 BASELINE = "dev/golden/baseline"
 GOLDEN_RUNS = "dev/scripts/runs/golden"
 #: The code whose equality between two commits makes their runs the same
-#: runs: the package and the harness files that build a run.
+#: runs, as git pathspecs: the package, but for its tests and S-VBMC, which
+#: no VBMC run imports, and the harness files that build a run.
 NUMERIC_PATHS = (
     "pyvbmc",
+    ":(exclude)pyvbmc/testing",
+    ":(exclude)pyvbmc/svbmc",
     "dev/scripts/golden_trace.py",
     "dev/scripts/benchmark_targets.py",
     "dev/scripts/profile_run.py",
@@ -156,6 +180,14 @@ NUMERIC_PATHS = (
 #: The ``--baseline`` of the fingerprints' replay, a directory that does not
 #: exist, so that no trace is compared and every run meets the envelope.
 NO_TRACES = "no-traces"
+#: The probability under which the count of fingerprints outside their
+#: envelopes refuses the promotion: the binomial tail of that count, at the
+#: rate at which the population's own runs lie outside theirs.
+FINGERPRINT_ALPHA = 0.01
+#: What the assessment's before arm is, by its package commit.
+BEFORE_CODE = {
+    "f91fdf0": "the code at the start of the port correctness review"
+}
 NORMALIZATION = join.NORMALIZATION
 USABLE = join.USABLE
 #: The passages ``publish`` rewrites: file, the start of their first line
@@ -193,8 +225,14 @@ PASSAGES = {
         "2f443d0b88df41fa4b4b5f0c14cb63e074149415ca51a98f5b23be1b8aae95e0",
     ),
 }
-#: The lines ``publish`` replaces where they name the previous reference
-#: (file, lines, their replacement, a template).
+#: This script's own entry in ``dev/README.md``, which ``publish`` removes.
+OWN_ENTRY = (
+    "dev/README.md",
+    "- `scripts/reference_promote.py` —",
+    "- `scripts/seeded_gate_runs.py` —",
+)
+#: The lines ``publish`` replaces where they name the previous reference or
+#: its population (file, lines, their replacement, a template).
 REPLACEMENTS = (
     (
         "dev/scripts/golden_replay.py",
@@ -202,9 +240,38 @@ REPLACEMENTS = (
         'DEFAULT_BASELINE = DEFAULT_BASELINE / "{traces}"\n',
     ),
     (
+        "dev/scripts/golden_replay.py",
+        "  known failure, e.g. ``student_D4`` seed 19).\n",
+        "  known failure).\n",
+    ),
+    (
+        "dev/scripts/golden_replay.py",
+        "        # (the reference seed may itself be the population's far "
+        "outlier,\n"
+        "        # e.g. student_D4 seed 19), so the envelope applies only to "
+        "runs\n",
+        "        # (the reference seed may itself be the population's far "
+        "outlier),\n"
+        "        # so the envelope applies only to runs\n",
+    ),
+    (
         "dev/README.md",
         f"  holds `{PREVIOUS}`, so the default command stops at that\n",
         "  holds `{name}`, so the default command stops at that\n",
+    ),
+    (
+        "dev/README.md",
+        "seed allocation differs from the extended reference and it masks "
+        "comparison\n"
+        "failures, so it must not be used to republish this reference. "
+        "Follow the\n"
+        "extension record's commands and fail-fast checks instead. The "
+        "benchmark follows\n",
+        "seed allocation differs from the reference's and it masks "
+        "comparison\n"
+        "failures, so it must not be used to republish this reference, which "
+        "the\n"
+        "release gate's campaigns made. The benchmark follows\n",
     ),
     (
         "dev/scripts/analyze_population_run.py",
@@ -213,15 +280,38 @@ REPLACEMENTS = (
     ),
     (
         "dev/scripts/analyze_population_run.py",
-        "#: the real-data pairs joined it (``535590dd``), and holds\n"
         f"#: ``{PREVIOUS}`` now, which :func:`verify_reference` refuses.\n",
-        "#: the real-data pairs joined it (``535590dd``), then\n"
-        f"#: ``{PREVIOUS}``, and holds ``{{name}}`` now, which\n"
-        "#: :func:`verify_reference` refuses.\n",
+        "#: ``{name}`` now, which :func:`verify_reference` refuses.\n",
     ),
+)
+#: What else names the current reference and is carried into the new one
+#: by hand, since each is a record or a plan whose other text the promotion
+#: does not know; and the record-only scripts that read or hash
+#: ``golden_replay.py``'s defaults, which name the previous reference's
+#: directories from then on.
+HAND_EDITS = (
+    "dev/TODO.md",
+    "dev/plans/modernization-roadmap.md",
+    "dev/plans/final-population-benchmark.md",
+    "dev/2026-09-06-pyvbmc-1.5-overview.md",
+    "dev/scripts/validate_viqr_sinh.py (record-only; reads the defaults)",
+    "dev/scripts/noisy_acq_inference.py (record-only; hashes golden_replay.py)",
 )
 VALIDATION = "validation.json"
 MANIFEST = "sha256_manifest.json"
+NUMBER_WORDS = (
+    "no",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+)
 
 
 class PromotionError(RuntimeError):
@@ -270,6 +360,15 @@ def working_changes():
     return git("status", "--porcelain", "--", *NUMERIC_PATHS).splitlines()
 
 
+def is_tracked(path):
+    """Whether git tracks the file ``path`` in this checkout."""
+    try:
+        git("ls-files", "--error-unmatch", str(Path(path).resolve()))
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return True
+
+
 def clean_required():
     """Whether the checkouts of the runs must be clean (tests say not)."""
     return True
@@ -289,6 +388,35 @@ def same_float(a, b):
     return a == b or (a != a and b != b)
 
 
+def check_code(source, what):
+    """This process runs the after arm's code (module docstring).
+
+    ``source`` is the after arm's source identity; returns ``HEAD``.
+    """
+    from profile_run import module_source
+
+    head = head_commit()
+    differing = numerics_differ(head, source["trees"]["pyvbmc"]["commit"])
+    check(
+        not differing,
+        f"{what}: HEAD's code differs from the after arm's in {differing}",
+    )
+    gpyreg = (module_source("gpyreg") or {}).get("git") or {}
+    check(
+        same_commit(gpyreg.get("sha"), source["trees"]["gpyreg"]["commit"]),
+        f"{what}: the imported gpyreg ({gpyreg.get('sha')}) is not the after "
+        f"arm's ({source['trees']['gpyreg']['commit']})",
+    )
+    if clean_required():
+        changes = working_changes()
+        check(
+            not changes,
+            f"{what}: the working tree differs from HEAD: {changes}",
+        )
+        check(not gpyreg.get("dirty"), f"{what}: the gpyreg checkout is dirty")
+    return head
+
+
 # --------------------------------------------------------------------------
 # Files and text
 # --------------------------------------------------------------------------
@@ -300,6 +428,12 @@ def sha256(path, normalize_text=False):
 
 def text_sha256(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def bytes_sha256(data):
+    """The SHA-256 of text bytes with their line endings read as LF."""
+    data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def read_text(path):
@@ -359,13 +493,16 @@ def passage(root, key):
 
 def passage_problems(root):
     """The passages that are not the text this script was written against."""
-    return [
-        f"{PASSAGES[key][0]}: the passage {PASSAGES[key][1] or '(the file)'!r}"
-        " has changed since this script was written; carry the change into "
-        f"its template and its SHA-256 into PASSAGES ({text_sha256(found)})"
-        for key in PASSAGES
-        if text_sha256(found := passage(root, key)) != PASSAGES[key][3]
-    ]
+    problems = []
+    for key, (file, start, _, expected) in PASSAGES.items():
+        found = text_sha256(passage(root, key))
+        if found != expected:
+            problems.append(
+                f"{file}: the passage {start or '(the file)'!r} has changed "
+                "since this script was written; carry the change into its "
+                f"template and its SHA-256 into PASSAGES ({found})"
+            )
+    return problems
 
 
 #: What opens a Markdown block at the start of a line, which a wrapped line
@@ -388,11 +525,9 @@ def reflow(text, width=79):
         bullet = re.match(r"(\s*)- ", block[0])
         lead = bullet.group(1) if bullet else ""
         indent = lead + "  " if bullet else lead
-        words = " ".join(line.strip() for line in block).replace(
-            " + ", "\0+\0"
-        )
+        words = " ".join(line.strip() for line in block)
         lines = textwrap.wrap(
-            words,
+            words.replace(" + ", "\0+\0"),
             width=width,
             initial_indent=lead,
             subsequent_indent=indent,
@@ -479,10 +614,22 @@ def expected_allocation():
     return runner.allocation(SUITE, labels, SEEDS)
 
 
-def read_after(after, rulings):
-    """The after arm, checked (module docstring); the verified cases' rows,
-    sidecars and the SHA-256 of their files."""
-    manifest = read_json(Path(after) / "manifest.json")
+def read_manifest(after):
+    """The after arm's manifest, once it is known to be the redacted
+    tracked copies of a campaign of the expected allocation."""
+    after = Path(after)
+    check(
+        contract.read_redaction(after) is not None,
+        f"{after} holds no {contract.REDACTION}: AFTER is the after arm's "
+        "redacted tracked copies (campaign_contract.redact), not its "
+        "campaign directory, whose sidecars hold the operator's paths",
+    )
+    check(
+        is_tracked(after / "manifest.json"),
+        f"{after} is not tracked by git: the documents that publish writes "
+        "link to it",
+    )
+    manifest = read_json(after / "manifest.json")
     check(
         manifest.get("harness") == "population_run",
         f"{after} is not a campaign of population_run.py",
@@ -491,6 +638,13 @@ def read_after(after, rulings):
         manifest["allocation"] == expected_allocation(),
         f"{after} does not allocate the {SUITE} suite at seeds {SEEDS}",
     )
+    return manifest
+
+
+def read_after(after, rulings):
+    """The after arm, checked (module docstring); the verified cases' rows,
+    sidecars and the SHA-256 of their files."""
+    manifest = read_manifest(after)
     check(
         manifest["options"] == runner.DEFAULT_OPTIONS,
         f"{after} ran with other options than population_run's defaults",
@@ -500,6 +654,11 @@ def read_after(after, rulings):
         trees["pyvbmc"] == trees["harness"],
         f"{after} did not run its harness checkout's own package",
     )
+    if clean_required():
+        dirty = sorted(
+            name for name, tree in trees.items() if not tree["clean"]
+        )
+        check(not dirty, f"{after} ran from the dirty trees {dirty}")
     campaign = analysis.load_array_campaign(
         after, after, analysis.read_rescoring(after)
     )
@@ -579,10 +738,11 @@ def outcomes(sidecars, labels):
 
 def check_assessment(directory, accepted, campaign):
     path = Path(directory) / "assessment.json"
-    digest = sha256(path)
+    digest = sha256(path, True)
     check(
         digest == accepted,
-        f"{path} is not the accepted assessment ({digest})",
+        f"{path} is not the accepted assessment (its SHA-256 with LF line "
+        f"endings is {digest})",
     )
     assessment = read_json(path)
     candidate = assessment["arms"]["candidate"]
@@ -627,13 +787,11 @@ def option_differences(fingerprint, cluster):
     arm's runs request more (``population_run.DEFAULT_OPTIONS``). An option
     only they hold is compared with its value in a VBMC built as the
     fingerprint's run built one, from its configuration and its requested
-    options, by the package of this process, whose code the checks bind to
-    the fingerprints'.
+    options, by the package of this process, which :func:`check_code` binds
+    to the after arm's code.
     """
-    ours, theirs = (
-        fingerprint["effective_options"],
-        cluster["effective_options"],
-    )
+    ours = fingerprint["effective_options"]
+    theirs = cluster["effective_options"]
     differing = sorted(
         k for k in set(ours) & set(theirs) if ours[k] != theirs[k]
     )
@@ -659,6 +817,30 @@ def option_differences(fingerprint, cluster):
     return differing + sorted(set(ours) - set(theirs))
 
 
+def outlier_rate(envelopes):
+    """The fraction of a population's runs that lie outside their own
+    configuration's envelope in some accuracy metric."""
+    outside = total = 0
+    for entry in envelopes.values():
+        fences = {
+            m: golden_replay.envelope(entry[m]) for m in golden_replay.ACCURACY
+        }
+        for i in range(len(entry["seeds"])):
+            total += 1
+            outside += any(
+                entry[m][i] > fences[m] for m in golden_replay.ACCURACY
+            )
+    return outside / total if total else 0.0
+
+
+def outside_probability(outside, n, rate):
+    """The probability that ``outside`` or more of ``n`` runs lie outside
+    their envelopes, each with probability ``rate``."""
+    from scipy.stats import binom
+
+    return float(binom.sf(outside - 1, n, rate)) if outside else 1.0
+
+
 def check_fingerprints(directory, after, campaign, sidecars):
     """The fingerprints (module docstring); their summary for the record."""
     directory = Path(directory)
@@ -678,12 +860,20 @@ def check_fingerprints(directory, after, campaign, sidecars):
     envelopes = golden_replay.load_envelopes(after, labels)
     commits = set()
     seed0_identical = 0
+    outside = {}
     for label in labels:
         row = rows[(label, 0)]
         tag = golden_trace._tag(label, 0)
+        final = row.get("final_new") or {}
         check(
-            row["ok"] and not row["flagged"] and not row["outside"],
-            f"{tag}: the fingerprint is flagged: {row.get('verdict')}",
+            row["ok"]
+            and not row.get("consistency_issues")
+            and not row.get("final_validity_issues")
+            and all(
+                np.isfinite(float(final.get(m) or np.nan))
+                for m in golden_replay.ACCURACY
+            ),
+            f"{tag}: the fingerprint failed: {row.get('verdict')}",
         )
         check(
             "elbo_exact_iter" not in row,
@@ -699,6 +889,8 @@ def check_fingerprints(directory, after, campaign, sidecars):
             ),
             f"{tag}: the fingerprint was judged by another population",
         )
+        if row["outside"]:
+            outside[tag] = row["outside"]
         check(
             not (directory / f"{tag}.error.txt").exists(),
             f"{tag}: the fingerprint has an error file",
@@ -740,6 +932,15 @@ def check_fingerprints(directory, after, campaign, sidecars):
         )
         commits.add(meta["git"]["sha"])
         seed0_identical += bool(row.get("semantic_final_identical"))
+    rate = outlier_rate(envelopes)
+    probability = outside_probability(len(outside), len(labels), rate)
+    check(
+        probability >= FINGERPRINT_ALPHA,
+        f"{len(outside)} of {len(labels)} fingerprints lie outside their "
+        f"envelopes ({outside}), which the population's own rate of runs "
+        f"outside theirs, {rate:.3f}, makes improbable (p = "
+        f"{probability:.2g} < {FINGERPRINT_ALPHA})",
+    )
     check(len(commits) == 1, f"the fingerprints ran at commits {commits}")
     commit = commits.pop()
     differing = numerics_differ(commit, source["pyvbmc"]["commit"])
@@ -755,6 +956,9 @@ def check_fingerprints(directory, after, campaign, sidecars):
         "versions": {
             k: first["meta"][k] for k in ("python", "numpy", "scipy", "cma")
         },
+        "outside_envelope": outside,
+        "population_outlier_rate": rate,
+        "outside_probability": probability,
         "semantic_finals_identical_to_cluster_seed0": seed0_identical,
         "minutes": report["minutes"],
     }
@@ -831,6 +1035,15 @@ def gate_files(record):
     )
 
 
+def ks_tests(report):
+    """The KS tests an even/odd comparison's report holds."""
+    return sum(
+        1
+        for line in report.splitlines()
+        if re.match(r"^\| \S+ \| (elbo_err|gskl|mmtv|func_count) \|", line)
+    )
+
+
 # --------------------------------------------------------------------------
 # Subcommands
 # --------------------------------------------------------------------------
@@ -843,16 +1056,12 @@ def cmd_fingerprints(args, root):
         not out.exists() or not any(out.iterdir()),
         f"{out} is not empty; the fingerprints are made once",
     )
-    allocation = read_json(after / "manifest.json")["allocation"]
-    check(
-        allocation == expected_allocation(),
-        f"{after} does not allocate the {SUITE} suite at seeds {SEEDS}",
-    )
-    labels = allocation["labels"]
+    manifest = read_manifest(after)
+    check_code(manifest["identity"]["source"], "fingerprints")
     return golden_replay.main(
         [
             "--configs",
-            ",".join(labels),
+            ",".join(manifest["allocation"]["labels"]),
             "--seeds",
             "0",
             "--baseline",
@@ -865,7 +1074,12 @@ def cmd_fingerprints(args, root):
     )
 
 
-def reference_name(runs):
+def reference_name(runs, record):
+    """The reference's name: that of an earlier ``prepare`` of the record,
+    or ``reference_<runs>_<today>``."""
+    path = Path(record) / VALIDATION
+    if path.is_file():
+        return read_json(path)["reference"]
     return f"reference_{runs}_{time.strftime('%Y%m%d')}"
 
 
@@ -884,6 +1098,7 @@ def cmd_prepare(args, root):
     previous = check_active_baseline(root)
     previous_traces = check_previous_traces(root)
     campaign, sidecars, files = read_after(after, rulings)
+    head = check_code(campaign["identity"]["source"], "prepare")
     assessment = check_assessment(
         args.assessment, args.accepted_assessment, campaign
     )
@@ -892,7 +1107,7 @@ def cmd_prepare(args, root):
     )
     gate_record, gate_summary = check_gate_runs(args.gate_runs, campaign)
     labels = campaign["manifest"]["allocation"]["labels"]
-    name = args.name or reference_name(len(sidecars))
+    name = args.name or reference_name(len(sidecars), record)
     traces = root / GOLDEN_RUNS / f"{name}_fingerprints"
     print(
         f"Checked {len(sidecars)} cases, the fingerprints and the gate "
@@ -908,10 +1123,8 @@ def cmd_prepare(args, root):
             copy_checked(
                 fingerprint_dir / f"{tag}{suffix}", traces / f"{tag}{suffix}"
             )
-    for name_ in gate_files(gate_record):
-        copy_checked(
-            Path(args.gate_runs) / name_, traces / "gate_runs" / name_
-        )
+    for file in gate_files(gate_record):
+        copy_checked(Path(args.gate_runs) / file, traces / "gate_runs" / file)
     golden_trace.cmd_summary(argparse.Namespace(dir=str(traces)))
 
     record.mkdir(parents=True, exist_ok=True)
@@ -955,8 +1168,8 @@ def cmd_prepare(args, root):
         },
         "fingerprints_summary_sha256": sha256(traces / "summary.md", True),
         "gate_runs": {
-            name_: sha256(traces / "gate_runs" / name_)
-            for name_ in gate_files(gate_record)
+            file: sha256(traces / "gate_runs" / file)
+            for file in gate_files(gate_record)
         },
         "text_hash_normalization": NORMALIZATION,
     }
@@ -985,19 +1198,19 @@ def cmd_prepare(args, root):
             "runs": len(sidecars),
             "configs": {label: table[label]["runs"] for label in labels},
             "outcomes": table,
-            "even_odd_tests": 4 * len(population),
+            "even_odd_tests": ks_tests(text),
             "even_odd_flagged": sorted(flagged),
         },
         "fingerprints": {
             "source": str(Path(args.fingerprints).resolve()),
             "traces": inside(root, traces, "the fingerprints' traces"),
             **fingerprints,
-            "report_sha256": sha256(record / "fingerprint_replay.json"),
+            "report_sha256": sha256(record / "fingerprint_replay.json", True),
         },
         "gate_runs": {
             "source": str(Path(args.gate_runs).resolve()),
             **gate_summary,
-            "record_sha256": sha256(record / gates.RECORD),
+            "record_sha256": sha256(record / gates.RECORD, True),
         },
         "previous": {
             "name": PREVIOUS,
@@ -1010,15 +1223,16 @@ def cmd_prepare(args, root):
         "record": record_rel,
         "host": contract.host_part(strict=False),
         "promotion_script": {
-            "sha256": sha256(Path(__file__)),
-            "head": head_commit(),
+            "sha256": sha256(Path(__file__), True),
+            "head": head,
         },
     }
     write_json(record / VALIDATION, validation)
     print(
         f"Prepared {name}: {len(sidecars)} sidecars to publish, "
-        f"{len(labels)} fingerprints in {traces}; even/odd flags: "
-        f"{sorted(flagged)}",
+        f"{len(labels)} fingerprints in {traces}, "
+        f"{len(fingerprints['outside_envelope'])} outside their envelopes; "
+        f"even/odd flags: {sorted(flagged)}",
         flush=True,
     )
     if flagged:
@@ -1042,6 +1256,7 @@ def prepared(root, record):
 
 def cmd_replay(args, root):
     record, validation = prepared(root, args.record)
+    check_code(validation["after"]["source"], "replay")
     return golden_replay.main(
         [
             "--configs",
@@ -1064,7 +1279,7 @@ def check_final_replay(root, directory, validation):
     traces = Path(validation["fingerprints"]["traces"]).name
     check(report["calibration_budget"] is None, "the replay pinned budgets")
     check(report["threads"] == 1, "the replay ran with other threads")
-    head = head_commit()
+    head = check_code(validation["after"]["source"], "publish")
     check(
         same_commit(report["git"]["sha"], head),
         f"the replay ran at {report['git']['sha']}, not at HEAD {head}",
@@ -1073,8 +1288,6 @@ def check_final_replay(root, directory, validation):
         check(
             not report["git"]["dirty"], "the replay ran from a dirty checkout"
         )
-        changes = working_changes()
-        check(not changes, f"the working tree differs from HEAD: {changes}")
     header = (directory / "replay.md").read_text(encoding="utf-8")
     check(
         f"baseline `{traces}`" in header,
@@ -1106,16 +1319,12 @@ def check_final_replay(root, directory, validation):
             ),
             f"{row['label']}: the replay's gpyreg is not the after arm's",
         )
-    differing = numerics_differ(
-        head, validation["after"]["source"]["trees"]["pyvbmc"]["commit"]
-    )
-    check(
-        not differing, f"HEAD's code differs from the after arm's: {differing}"
-    )
     return report, head
 
 
 def check_prepared_files(root, validation, manifest):
+    """The prepared fingerprints and gate runs are as the record hashes
+    them; returns the new sidecars' bytes, checked, by stem."""
     traces = Path(root) / validation["fingerprints"]["traces"]
     for tag, hashes in manifest["fingerprints"].items():
         check(
@@ -1129,19 +1338,28 @@ def check_prepared_files(root, validation, manifest):
             f"{traces}: gate_runs/{name} is not the prepared file",
         )
     after = Path(root) / validation["after"]["path"]
+    new = {}
     for stem, entry in manifest["sidecars"].items():
+        data = (after / entry["file"]).read_bytes()
         check(
-            sha256(after / entry["file"], True) == entry["sha256"],
+            bytes_sha256(data) == entry["sha256"],
             f"{after / entry['file']} is not the prepared sidecar",
         )
+        new[stem] = data
+    return new
 
 
-def facts(root, validation, report, head):
+def number(n):
+    return NUMBER_WORDS[n] if n < len(NUMBER_WORDS) else str(n)
+
+
+def facts(root, validation, report, head, public_traces):
     """What the rewritten documents say, from the record."""
     after = validation["after"]
     trees = after["source"]["trees"]
     versions = after["source"]["versions"]
     population = validation["population"]
+    fingerprints = validation["fingerprints"]
     table = population["outcomes"]
     labels = list(table)
     noisy = [label for label in labels if table[label]["noisy"]]
@@ -1161,6 +1379,8 @@ def facts(root, validation, report, head):
         )
     reached = sum(row["reached_budget"] for row in table.values())
     excluded = len(after["rulings"])
+    outside = len(fingerprints["outside_envelope"])
+    before = validation["assessment"]["before"]["pyvbmc"]
     root = Path(root)
 
     def link(target, start):
@@ -1168,10 +1388,11 @@ def facts(root, validation, report, head):
 
     return {
         "name": validation["reference"],
-        "traces": Path(validation["fingerprints"]["traces"]).name,
+        "traces": Path(fingerprints["traces"]).name,
         "runs": population["runs"],
         "configs": len(labels),
-        "noisy_runs": sum(table[l]["runs"] for l in noisy),
+        "seeds": SEEDS.replace("-", "–"),
+        "noisy_runs": sum(table[label]["runs"] for label in noisy),
         "noisy_configs": len(noisy),
         "tests": population["even_odd_tests"],
         "converged": sum(row["converged"] for row in table.values()),
@@ -1179,8 +1400,9 @@ def facts(root, validation, report, head):
         + (f" ({', and '.join(parts)})" if parts else ""),
         "usable": sum(row["usable"] for row in table.values()),
         "excluded_sentence": (
-            f"{excluded} cases of the allocation are not in the reference; "
-            "the promotion record gives the ruling on each. "
+            f"{excluded} case{'s' if excluded > 1 else ''} of the allocation "
+            f"{'are' if excluded > 1 else 'is'} not in the reference; the "
+            "promotion record gives the ruling on each. "
             if excluded
             else ""
         ),
@@ -1190,16 +1412,34 @@ def facts(root, validation, report, head):
         "numpy": versions.get("numpy"),
         "scipy": versions.get("scipy"),
         "cma": versions.get("cma"),
-        "before_commit": validation["assessment"]["before"]["pyvbmc"][:8],
+        "before": next(
+            (
+                f"{text} (`{before[:8]}`)"
+                for prefix, text in BEFORE_CODE.items()
+                if before.startswith(prefix)
+            ),
+            f"the code of `{before[:8]}`",
+        ),
         "after_rel": after["path"],
         "after_dev": link(after["path"], "dev"),
         "after_link": link(after["path"], "dev/golden"),
         "gate_readme_link": link(
             f"{Path(after['path']).parent.as_posix()}/README.md", "dev/golden"
         ),
+        "public_traces": (
+            f" They are published as {public_traces}." if public_traces else ""
+        ),
         "record_link": link(validation["record"], "dev/golden"),
         "readme_record_link": link(validation["record"], "dev"),
-        "seed0_identical": validation["fingerprints"][
+        "envelope_sentence": (
+            "none lies outside its configuration's accuracy envelope"
+            if not outside
+            else f"{outside} of them lie outside their configuration's "
+            "accuracy envelope, which the population's own rate of runs "
+            f"outside theirs ({fingerprints['population_outlier_rate']:.3f}) "
+            "makes plausible"
+        ),
+        "seed0_identical": fingerprints[
             "semantic_finals_identical_to_cluster_seed0"
         ],
         "duration": (
@@ -1209,6 +1449,7 @@ def facts(root, validation, report, head):
         ),
         "date": time.strftime("%Y-%m-%d"),
         "previous_commit": head[:8],
+        "defaults": number(len(DEFAULT_CONFIGS)),
         "default_configs": ", ".join(f"`{c}`" for c in DEFAULT_CONFIGS),
     }
 
@@ -1217,25 +1458,37 @@ def cmd_publish(args, root):
     root = Path(root)
     record, validation = prepared(root, args.record)
     manifest = read_json(record / MANIFEST)
+    name = validation["reference"]
     check(
         (record / "README.md").is_file()
-        and validation["reference"]
-        in (record / "README.md").read_text(encoding="utf-8"),
+        and name in (record / "README.md").read_text(encoding="utf-8"),
         f"{record}/README.md, which the documents link to, does not name "
-        f"{validation['reference']}",
+        f"{name}",
     )
-    report, head = check_final_replay(root, args.final_replay, validation)
-    check_prepared_files(root, validation, manifest)
-    check_active_baseline(root)
-    problems = passage_problems(root)
-    check(not problems, "\n".join(problems))
-
     gate_readme = Path(validation["after"]["path"]).parent / "README.md"
     check(
         (root / gate_readme).is_file(),
         f"{gate_readme}, which names the campaign's archive, does not exist",
     )
-    values = facts(root, validation, report, head)
+    report, head = check_final_replay(root, args.final_replay, validation)
+    new = check_prepared_files(root, validation, manifest)
+    check_active_baseline(root)
+    check(
+        sha256(record / "previous_reference_README.md", True)
+        == sha256(root / "dev/golden/README.md", True),
+        "dev/golden/README.md has changed since prepare copied it",
+    )
+    problems = passage_problems(root)
+    check(not problems, "\n".join(problems))
+
+    # Everything written is computed and checked first.
+    sidecars = {stem: json.loads(data) for stem, data in new.items()}
+    summary = golden_trace.summary_text(population_of(sidecars), name) + "\n"
+    check(
+        text_sha256(summary) == manifest["summary_sha256"],
+        "the summary of the sidecars is not the prepared one",
+    )
+    values = facts(root, validation, report, head, args.public_traces)
     rewrites = {}
 
     def rewritten(file):
@@ -1252,45 +1505,37 @@ def cmd_publish(args, root):
         file, start, end, _ = PASSAGES[key]
         entry = rewritten(file)
         i, j = span(entry[0], start, end)
-        new = reflow(template.format(**values)).rstrip("\n") + "\n"
+        text = reflow(template.format(**values)).rstrip("\n") + "\n"
         if end is not None and entry[0][j - 2 : j] == "\n\n":
-            new += "\n"
-        entry[0] = entry[0][:i] + new + entry[0][j:]
+            text += "\n"
+        entry[0] = entry[0][:i] + text + entry[0][j:]
     file, start, end, _ = PASSAGES["replay_configs"]
     entry = rewritten(file)
     i, j = span(entry[0], start, end)
     entry[0] = entry[0][:i] + replay_configs(values) + entry[0][j:]
-    for file, old, new in REPLACEMENTS:
+    for file, old, new_text in REPLACEMENTS:
         entry = rewritten(file)
-        check(
-            entry[0].count(old) == 1,
-            f"{file} holds {old!r} {entry[0].count(old)} times",
-        )
-        entry[0] = entry[0].replace(old, new.format(**values))
+        count = entry[0].count(old)
+        check(count == 1, f"{file} holds {old!r} {count} times")
+        entry[0] = entry[0].replace(old, new_text.format(**values))
+    file, start, end = OWN_ENTRY
+    entry = rewritten(file)
+    i, j = span(entry[0], start, end)
+    entry[0] = entry[0][:i] + entry[0][j:]
     compile(
         rewrites["dev/scripts/golden_replay.py"][0], "golden_replay.py", "exec"
     )
 
-    # Every check has passed: the writes.
+    # The writes.
     baseline = root / BASELINE
     for path in baseline.glob("*_seed*.json"):
         path.unlink()
-    after = root / validation["after"]["path"]
-    for stem, entry in manifest["sidecars"].items():
-        shutil.copyfile(after / entry["file"], baseline / f"{stem}.json")
-        check(
-            sha256(baseline / f"{stem}.json", True) == entry["sha256"],
-            f"{BASELINE}/{stem}.json is not the prepared sidecar",
-        )
-    population = golden_trace.load_population(baseline)
-    summary = golden_trace.summary_text(population, validation["reference"])
-    write_text(baseline / "summary.md", summary + "\n")
-    check(
-        sha256(baseline / "summary.md", True) == manifest["summary_sha256"],
-        f"{BASELINE}/summary.md is not the prepared summary",
-    )
+    for stem, data in new.items():
+        (baseline / f"{stem}.json").write_bytes(data)
+    write_text(baseline / "summary.md", summary)
     for file, (text, eol) in rewrites.items():
         write_text(root / file, text, eol)
+    shutil.copyfile(Path(__file__), record / "promote.py")
     previous_traces = root / GOLDEN_RUNS / PREVIOUS
     if (
         previous_traces.is_dir()
@@ -1300,31 +1545,35 @@ def cmd_publish(args, root):
             record / "previous_reference_README.md",
             previous_traces / "README.md",
         )
-    validation["status"] = "promoted"
-    validation["publication"] = {
-        "published": contract.now(),
-        "head": head,
-        "previous_sidecars_commit": head,
-        "script_sha256": sha256(Path(__file__)),
-        "final_replay": {
-            "cases": len(report["rows"]),
-            "identical": sum(bool(r["identical"]) for r in report["rows"]),
-            "minutes": report["minutes"],
-            "report_sha256": sha256(Path(args.final_replay) / "replay.json"),
-        },
-        "rewritten": sorted(rewrites),
-    }
     for source, target in (
         ("replay.json", "final_replay.json"),
         ("replay.md", "final_replay.md"),
     ):
         shutil.copyfile(Path(args.final_replay) / source, record / target)
+    validation["status"] = "promoted"
+    validation["publication"] = {
+        "published": contract.now(),
+        "head": head,
+        "previous_sidecars_commit": head,
+        "script_sha256": sha256(Path(__file__), True),
+        "public_traces": args.public_traces,
+        "final_replay": {
+            "cases": len(report["rows"]),
+            "identical": sum(bool(r["identical"]) for r in report["rows"]),
+            "minutes": report["minutes"],
+            "report_sha256": sha256(record / "final_replay.json", True),
+        },
+        "rewritten": sorted(rewrites),
+    }
     write_json(record / VALIDATION, validation)
     print(
-        f"Published {validation['reference']}: {len(manifest['sidecars'])} "
-        f"sidecars in {BASELINE}; rewrote {', '.join(sorted(rewrites))}. "
-        "Review the diff, update dev/TODO.md and this machine's "
-        "dev/scripts/runs/LOCAL.md, and commit.",
+        f"Published {name}: {len(new)} sidecars in {BASELINE}; rewrote "
+        f"{', '.join(sorted(rewrites))}; copied this script to "
+        f"{record / 'promote.py'}. In the promotion commit, remove "
+        "dev/scripts/reference_promote.py and "
+        "dev/scripts/test_reference_promote.py, carry the reference into "
+        f"{', '.join(HAND_EDITS)}, and list the fingerprints in this "
+        "machine's dev/scripts/runs/LOCAL.md.",
         flush=True,
     )
     return 0
@@ -1369,14 +1618,15 @@ references are then updated and the old ones preserved (`dev/README.md`).
 
 README_REFERENCE_TEMPLATE = """\
 The current golden reference is `{name}`: **{runs} runs of the {configs}
-configurations of the `production` suite at seeds 0–99, {noisy_runs} of
-them noisy, with {tests} population KS tests**. The `production` suite is
-the golden suite with its noisy entries freed of the 2020 paper's budget of
-50 (D + 2) evaluations and given `production`-tagged labels, so that they
-run at the package's defaults for a specified-noise target (75 (D + 2)
-evaluations); its noiseless entries are the golden ones. The runs were made
-on the cluster by `population_run.py`'s array mode from PyVBMC `{commit}`
-with gpyreg `{gpyreg}`
+configurations of the `production` suite at seeds {seeds}, {noisy_runs} of
+them noisy, with {tests} population KS tests**. Release checks and new
+experiments use the `production` suite: the golden suite with its noisy
+entries freed of the 2020 paper's budget of 50 (D + 2) evaluations and
+given `production`-tagged labels, so that they run at the package's
+defaults for a specified-noise target (75 (D + 2) evaluations); its
+noiseless entries are the golden ones. The runs were made on a Slurm
+cluster by `population_run.py`'s array mode from PyVBMC `{commit}` with
+gpyreg `{gpyreg}`
 ([plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md)).
 Their JSON sidecars and `summary.md` live under `golden/baseline/`, so
 `python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
@@ -1385,17 +1635,19 @@ works from a fresh checkout; the campaign's redacted records are under
 the reference's replay fingerprints, one run at seed 0 of each
 configuration made with the same code on the machine that
 `scripts/runs/LOCAL.md` lists, gitignored under
-`scripts/runs/golden/{traces}/` with the record of the six seeded gate runs
+`scripts/runs/golden/{traces}/` with the record of the port review's six
+seeded gate runs, two of them with a prior object, recorded twice there
 (`scripts/seeded_gate_runs.py`). The previous references,
 `reference_990_20260913` of the golden suite and those before it, remain
 preserved for historical comparisons.
 
 The [promotion record]({readme_record_link}/README.md) contains the
-assessment, provenance, hashes and verification. The {tests}-test even/odd
-check had no flags. The five default cases replayed exactly under the code
-at promotion ({date}) in every non-timer NPZ loop/final array, semantic
-final-result field and initial design. The returned posterior's transformer
-is absent from the traces and remains uncertifiable.
+assessment, which the PI accepted, the provenance, hashes and
+verification. The {tests}-test even/odd check had no flags. The {defaults}
+default cases replayed exactly under the code at promotion ({date}) in
+every non-timer NPZ loop/final array, semantic final-result field and
+initial design. The returned posterior's transformer is absent from the
+traces and remains uncertifiable.
 """
 
 README_REPLAY_TEMPLATE = """\
@@ -1462,7 +1714,7 @@ an intentional correctness fix may change its results.
 ## Current reference
 
 **`{name}`: {runs} runs of the {configs} configurations of the `production`
-suite, at seeds 0–99.** {noisy_runs} of them are noisy, across
+suite, at seeds {seeds}.** {noisy_runs} of them are noisy, across
 {noisy_configs} configurations. The `production` suite is the `golden`
 suite at PyVBMC's production defaults: its noiseless configurations are the
 golden ones, and its noisy ones, under `production`-tagged labels, run at
@@ -1475,35 +1727,38 @@ The runs were made on a Slurm cluster by the array mode of
 `population_run.py`, one case per task, from PyVBMC `{commit}` with gpyreg
 `{gpyreg}` (Python {python}, NumPy {numpy}, SciPy {scipy}, cma {cma}). The
 campaign's redacted records, with every case's completion record, sidecar
-and boost report, are under [`{after_rel}`]({after_link}); its traces are in
-its archive, which the [README of the release gate's
-records]({gate_readme_link}) names. {converged} of the {runs} runs converged
-and {budgets}; {usable} meet the usability thresholds below.
+and boost report, are under [`{after_rel}`]({after_link}). Its traces are
+in its archive, a draft release that only the repository's collaborators
+see, which the [README of the release gate's records]({gate_readme_link})
+names.{public_traces} {converged} of the {runs} runs converged and
+{budgets}; {usable} meet the usability thresholds below.
 
 The [promotion record]({record_link}/README.md) gives the assessment, which
-compares the population seed by seed with the same runs of the code of
-`{before_commit}`, and the provenance, hashes and validation. The
+compares the population seed by seed with the same runs of {before} and
+which the PI accepted, and the provenance, hashes and validation. The
 {tests}-test even/odd comparison of the population had no flags.
 
 Exact replay depends on the machine and its BLAS, so the traces that
 `golden_replay.py` compares with are not the cluster's: they are the
 reference's replay fingerprints, one run at seed 0 of each of the
 {configs} configurations, made with the same code on the machine that
-`dev/scripts/runs/LOCAL.md` lists, each inside the population's accuracy
-envelope; {seed0_identical} of the {configs} equal the cluster's run of
-seed 0 in every semantic final field. The six seeded gate runs
-(`dev/scripts/seeded_gate_runs.py`) were recorded twice on that machine and
-reproduced bit for bit. The five default cases replayed with identical
-non-timer NPZ arrays, semantic final results and initial designs under the
-code at promotion ({date}). No trace stores the returned posterior's
-transformer, so replay reports that field as uncertifiable.
+`dev/scripts/runs/LOCAL.md` lists and judged against the population's
+accuracy envelopes: {envelope_sentence}. {seed0_identical} of the
+{configs} equal the cluster's run of seed 0 in every semantic final field.
+The port review's six seeded gate runs, two of them with a prior object
+(`dev/scripts/seeded_gate_runs.py`), were recorded twice on that machine
+and reproduced bit for bit. The {defaults} default cases replayed with
+identical non-timer NPZ arrays, semantic final results and initial designs
+under the code at promotion ({date}). No trace stores the returned
+posterior's transformer, so replay reports that field as uncertifiable.
 
 The previous reference, `reference_990_20260913`, 990 runs of the `golden`
 suite, is preserved with its
 [promotion record](promotion_20260913/README.md): its sidecars are
 `dev/golden/baseline/` at commit `{previous_commit}`, its traces are under
 `dev/scripts/runs/golden/reference_990_20260913/` on the machine that
-`dev/scripts/runs/LOCAL.md` lists, and this file as it stood for it is
+`dev/scripts/runs/LOCAL.md` lists, and this file as it stood for it, whose
+links resolve from `dev/golden/`, is
 [`previous_reference_README.md`]({record_link}/previous_reference_README.md).
 
 | Target | Dimensions | What it exercises |
@@ -1591,7 +1846,7 @@ coverage, complete JSON/NPZ pairs and absence of error files separately:
 the statistical comparison alone does not certify completeness.
 
 On the machine that holds the replay fingerprints, run the default
-five-case replay:
+{defaults}-case replay:
 
 ```console
 python dev/scripts/golden_replay.py
@@ -1603,6 +1858,15 @@ trajectories diverge and checks changed runs against the reference
 population's accuracy ranges. Elsewhere, replay at the parent commit first
 and pass that replay's `--out` directory as `--baseline`. Both commands
 return nonzero when their checks flag a problem.
+
+A machine gets replay fingerprints of its own by making them at the commit
+the promotion record names, as they were made for the reference:
+`golden_replay.py` on every configuration of the `production` suite at seed
+0, with `--sidecars dev/golden/baseline` and a `--baseline` that holds no
+traces, so that each run is judged against the population's envelopes, and
+the gate runs with `seeded_gate_runs.py run`. That machine's
+`dev/scripts/runs/LOCAL.md` then lists them, and its replays pass them as
+`--baseline`.
 
 ## Code and reproducibility
 
@@ -1647,6 +1911,11 @@ def parse_args(argv=None):
     publish = sub.add_parser("publish", help="publish the reference")
     publish.add_argument("--record", required=True)
     publish.add_argument("--final-replay", required=True)
+    publish.add_argument(
+        "--public-traces",
+        help="where the population's traces are published, as the golden "
+        "README names it (e.g. an asset of the release)",
+    )
     publish.set_defaults(func=cmd_publish)
     return parser.parse_args(argv)
 
@@ -1659,8 +1928,18 @@ def main(argv=None, root=None):
     args = parse_args(argv)
     try:
         return args.func(args, Path(root) if root else REPO)
-    except (PromotionError, contract.ContractError, AssertionError) as error:
-        print(f"reference_promote.py refused: {error}", flush=True)
+    except (
+        PromotionError,
+        contract.ContractError,
+        AssertionError,
+        RuntimeError,
+        subprocess.CalledProcessError,
+        KeyError,
+    ) as error:
+        print(
+            f"reference_promote.py refused: {type(error).__name__}: {error}",
+            flush=True,
+        )
         return 1
 
 

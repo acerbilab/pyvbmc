@@ -618,7 +618,9 @@ it, as `$RUNS/<campaign>.tar.zst.000`, `.001`, ..., parts below GitHub's
 2 GiB per release asset, with their SHA-256 in
 `$RUNS/<campaign>.tar.zst.sha256`. It holds everything, the site's
 details and your paths among them, so it goes to a draft release, which
-only those with write access to the repository see.
+only those with write access to the repository see. Never publish that
+draft release: publishing it makes the archive public. What the PyVBMC
+release publishes of a campaign is built apart from it.
 `cat <campaign>.tar.zst.[0-9][0-9][0-9] | zstd -d | tar x` restores it.
 
 **The tracked copies.** The files of a campaign that enter the repository
