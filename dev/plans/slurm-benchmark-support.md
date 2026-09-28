@@ -13,7 +13,8 @@ it and what the branch gives it.
 - [x] The PI's review of this plan (2026-09-25).
 - [x] Phase 1a: the cluster survey (2026-09-25).
 - [ ] Phase 1b: the survey where the campaigns run, the environment and
-  the source trees.
+  the source trees. The survey, the trees and the freeze are done
+  (2026-09-28); the acceptance waits for the environment check to pass.
 - [x] Phase 2: the generic Slurm driver (2026-09-25).
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
@@ -27,18 +28,23 @@ it and what the branch gives it.
 
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
 (pushed), and every harness test module passes on it on the developer's
-machine. Next is the cluster, in the PI's account: Phase 1b,
-then Phase 6. The first cluster session has four steps:
+machine. The cluster work, in the PI's account, is Phase 1b, then Phase
+6, in the four steps below. The first session (2026-09-28) did step 1
+and a first run of step 2, whose failures were all in the tests and are
+fixed (the worklog, 2026-09-28). Next: pull the branch into the harness
+checkout, read the stacking module's result in that run's output, which
+the session ended before, run the check again, then steps 3 and 4.
 
-1. **Survey and environment,** in one login session. Survey the
-   installation the campaigns run on, with the checks of Phase 1b and the
+1. **Survey and environment** (done 2026-09-28), in one login session.
+   Survey the installation the campaigns run on, with the checks of Phase 1b and the
    real output of `sacct -n -X -P -j <job>_<task> -o State`,
    `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
    source trees as the operator's guide (`dev/scripts/hpc/README.md`)
    says, build the environment with `campaign_env.sh build`, freeze it into
    `campaign_requirements.txt`, and commit and push the freeze to the
    branch.
-2. **The environment check,** as a batch job. It is also the first run of
+2. **The environment check** (first run 2026-09-28, to run again with
+   the fixes), as a batch job. It is also the first run of
    the harnesses in an environment that installs neither PyVBMC nor
    gpyreg: the developer's machine could test that only by hiding the
    packages' metadata.
@@ -864,7 +870,8 @@ harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
 environment built from the direct pins (`campaign_env.sh build`) is
 frozen into `campaign_requirements.txt`, every package and Python to its
 patch release (`python -m pip list --format=freeze --exclude-editable`),
-and the file is committed and pulled into the harness checkout before the
+but `pip`, `setuptools` and `wheel`, which conda installs with the
+interpreter, and the file is committed and pulled into the harness checkout before the
 first submission, since the submission refuses a package the file does
 not pin. The site-specific results go into the operator's notes; what
 bears on the design revises "The cluster". **Acceptance:** the
@@ -1176,3 +1183,43 @@ reproduces bit for bit.
   holds numbers alone; a pool run's JSON is no tracked copy, so the asset
   redacts it, which is why the asset is built in the operator's account.
   The operator's guide gives the step.
+- 2026-09-28: Phase 1b's first session, on the cluster's new
+  installation, in the PI's account; the site's values are in the
+  operator's notes. The survey: `sacct -n -X -P -j <job>_<task> -o State`
+  prints one state word; `squeue -h -r -j <job> -o "%i %T"` prints a line
+  per task while the job runs, nothing with exit 0 once it has ended and
+  the controller still holds it, and an error with exit 1 once the
+  controller has dropped it; all three commands, `scontrol show node -o`
+  among them, answer from a compute node, so the claim judges staleness
+  there as the contract assumes. A task with `--cpus-per-task=1
+  --hint=nomultithread` ran on both hardware threads of one core, its
+  job's cpuset equal to them, and the accounting counted one CPU. One
+  feature selects the campaigns' node family; another family of the site
+  has no feature of its own and could hold no campaign. The five source
+  trees are clean at their commits. The first environment built from the
+  direct pins is frozen into `campaign_requirements.txt` (`f0d2789e`), and
+  the environment built from the frozen file matches it. The freeze found
+  that `check-env` did not know conda-forge's own Python packages as
+  conda's: `setuptools` and `wheel` carry no `INSTALLER` file, and `pip`
+  and `packaging` a `direct_url.json` naming their feedstock's build
+  directory, which the check read as a source tree installed from a path.
+  It now reads the environment's `conda-meta` records (`551e194f`), and
+  the frozen file leaves `pip`, `setuptools` and `wheel` to conda. The
+  first run of the environment check then failed in the tests alone,
+  where the batch job's surroundings reached them: the site's conda on
+  the job's `PATH`, which the driver's test of a submission without
+  `CONDA_SETUP` must not find (1 test); the operator's exported
+  `NODE_FEATURE`, which the population tests' `prepare` recorded and
+  against which `verify` checked their hand-made records, and a fresh
+  interpreter that imported PyVBMC without gpyreg (12 tests and 3
+  errors); and a detached automatic `git gc` that repacked a test
+  repository while the pool test copied it (1 test). The contract,
+  analysis and honest-ELBO modules passed; the session ended before the
+  stacking module's result. The fixes (`5c7b409d`) keep the population
+  and stacking tests outside any Slurm task and away from the operator's
+  settings, as the pool tests already were, take conda's directories and
+  variables out of the driver's test environment, and run the tests' git
+  without automatic `gc`. On the developer's machine the four modules pass
+  with none skipped, with those surroundings reproduced (a failing
+  `conda` first on the `PATH`, `NODE_FEATURE` and a Slurm job id
+  exported).
