@@ -1,7 +1,8 @@
 # Slurm benchmark support for the release gate
 
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
-to 5, and Phase 7's redaction and operator's guide, implemented on
+to 5, Phase 7's redaction and operator's guide, and the tools of Phase 9,
+the promotion and the public assets implemented on
 `feat-slurm-campaigns`**, which has not merged into `dev-next`. What it assumes of the cluster rests on a
 survey of the cluster on 2026-09-25 and on the records of the September
 pool. The harness sections below describe each harness as `dev-next` holds
@@ -43,14 +44,19 @@ then Phase 6. The first cluster session has four steps:
    packages' metadata.
 3. **A canary of each harness,** and the heaviest cases, for the `TIME`
    and `MEM` of every job.
-4. **The failure paths of Phase 6,** then a finish and a redaction.
+4. **The failure paths of Phase 6,** then a finish, a redaction and a
+   public asset (`campaign_public.sh`), whose shell wrapper runs there for
+   the first time.
 
 The brief for the postdoc follows, then the merge into `dev-next`. Any
 change to the code that the smoke campaigns need is a commit on the
 branch, with the test modules it touches run again. The tools of Phase 9
 and of the promotion that follows it, `seeded_gate_runs.py` and
-`reference_promote.py`, are on the branch and tested; the records they
-make wait for the release code.
+`reference_promote.py`, and the builder of the public assets,
+`campaign_public.py`, are on the branch and tested; the records they make
+wait for the release code. The PI's rulings of 2026-09-28 on the
+promotion and on the release's assets are in "The populations", "Records
+and hand-back", Phase 9 and the worklog.
 
 ## Purpose and scope
 
