@@ -714,6 +714,32 @@ scratch area say; `--path NAME=PATH` gives a directory a name of your
 choosing, ahead of the automatic ones, and a name may be no setting's,
 not `CAMPAIGN_PARENT` and not one ending in `_TREE`.
 
+**The public asset**, of `population_after` and `pools`, which the PyVBMC
+release publishes: the tracked copies with the numeric files of every
+verified case (the population's traces and posterior arrays, the pools'
+runs) and the cases' other JSON files redacted as the copies are, without
+the pickles and the logs. `campaign_public.sh` builds it from the campaign
+and its tracked copies, after the redaction and with the same `--path` and
+`--allow`, and refuses, writing nothing, a file that still holds what the
+copies may not, or a numeric file that holds more than numbers:
+
+```bash
+dev/scripts/hpc/campaign_public.sh "$RUNS/population_after" \
+    "$TREES/handback/dev/experiments/release_gate_<date>/population_after" \
+    "$RUNS/public"
+dev/scripts/hpc/campaign_public.sh --check "$RUNS/public"
+"$CAMPAIGN_ENV/bin/gh" release create release-gate-public-<date> \
+    --draft --repo acerbilab/pyvbmc \
+    --title "Release gate: public assets" \
+    --notes "What the release publishes; see dev/experiments/release_gate_<date>/"
+"$CAMPAIGN_ENV/bin/gh" release upload release-gate-public-<date> \
+    "$RUNS"/public/population_after.public.tar.gz.* --repo acerbilab/pyvbmc
+```
+
+and likewise `pools`, into the same release. Its parts are
+`<campaign>.public.tar.gz.000`, ... below 2 GiB, with their SHA-256 in
+`<campaign>.public.tar.gz.sha256`; the release attaches them from there.
+
 Then write `dev/experiments/release_gate_<date>/README.md` in the
 hand-back clone, in the manner of
 [experiments/svbmc_pool/pool_20260914/README.md](../../experiments/svbmc_pool/pool_20260914/README.md):

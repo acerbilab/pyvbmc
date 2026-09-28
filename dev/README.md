@@ -803,7 +803,14 @@ reason.
   tracked copies, redacted, on the login node in the account that ran it,
   or searches other files, such as the hand-back's README, as it searches
   the copies (`--check`), exempting the hits of `--allow` strings;
-  `campaign_env.sh` activates the environment and unsets `PYTHONPATH`, or
+  `campaign_public.sh` (`scripts/campaign_public.py`) builds after it, in
+  the same account, the public asset that the release attaches: the
+  tracked copies with every verified case's numeric `.npz` files, which
+  must hold numbers alone, and its other JSON files redacted as the copies
+  are, without pickles or logs, in parts below 2 GiB with their SHA-256
+  (`test_campaign_public.py` checks the Python, and that the script
+  parses); `campaign_env.sh` activates the environment and unsets
+  `PYTHONPATH`, or
   builds it (`build`: Python, `zstd`, `gh` and `git` from conda-forge and
   the pinned packages from PyPI).
   `test_campaign_driver.py` runs them against stub Slurm commands

@@ -775,16 +775,21 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   make its archive public.
 - **Public assets are built apart from the archives** (PI, 2026-09-28).
   The PyVBMC 1.5 release attaches the after arm's population and the
-  pools and stacking results, each as an archive of its numeric files (the
-  traces, `.npz`, and the posterior arrays, `.vp.npz`) and its redacted
-  tracked copies, without the logs, the Slurm accounting, the `site` block,
-  the `pip freeze` and the boost pickles, and searched for the site's
-  details as the redaction searches the copies. The step that builds them
-  is still to be written. The before arm and the raw archives stay in
-  their draft releases; the replay fingerprints and the traces of the
-  earlier golden references, of which the developer's machine holds the
-  only copies, are kept in a draft release of their own as a backup, not
-  published.
+  pools, each as an archive of its redacted tracked copies and of every
+  verified case's numeric files (the population's traces and posterior
+  arrays, the pools' runs, `.npz` files that must hold numbers alone) and
+  other JSON files, redacted as the copies are, without the logs, the
+  Slurm accounting, the `site` block and the pickles; the stacking's
+  tracked copies hold every cell already. `hpc/campaign_public.sh`
+  (`campaign_public.py`) builds such an asset in parts below 2 GiB, in the
+  operator's account after the redaction, since it redacts with that
+  account's username and home, and refuses, writing nothing, a file that
+  still holds what the copies may not; the operator uploads the parts to
+  the draft release `release-gate-public-<date>`, from which the release
+  attaches them. The before arm and the raw archives stay in their draft
+  releases; the replay fingerprints and the traces of the earlier golden
+  references, of which the developer's machine holds the only copies, are
+  kept in a draft release of their own as a backup, not published.
 - **The tracked copies are redacted.** They go under
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
   `population_before/`, `stacking/`, with a README) in a pull request to
@@ -915,8 +920,9 @@ resubmission of a finished range; a task cancelled while running, which
 warning (by SIGKILL, or by exceeding its memory), which `verify` must
 report as interrupted, then resubmitted, which must take over the stale
 claim; a duplicate submission of a running case, which the claim must
-refuse; a finish with and without `--allow-running`; the redaction and the
-archive. The before arm's worker on a few cases of `f91fdf0`, the boost
+refuse; a finish with and without `--allow-running`; the redaction, the
+public asset (`campaign_public.sh`, whose tests run only its Python and
+parse the script) and the archive. The before arm's worker on a few cases of `f91fdf0`, the boost
 capture among them. **Acceptance:** every check above passes, and the
 accounting (`sacct`, `seff`) gives `TIME` and `MEM` per harness and the
 per-case times that replace the estimates above.
@@ -1155,3 +1161,12 @@ reproduces bit for bit.
   recording's exit code to 1, hashes the gate script with LF line endings
   and re-checks each run's digest. The test modules pass (11 and 9 tests),
   the promotion's now on redacted copies of arms made at a stand-in site.
+- 2026-09-28: the public assets ("Records and hand-back"):
+  `campaign_public.py` and `hpc/campaign_public.sh`, with
+  `test_campaign_public.py` (6 tests, on a population campaign at a
+  stand-in site, redacted; among them an asset in parts, a damaged part, a
+  case's JSON that is no tracked copy, redacted, and a trace that holds
+  text, refused). A trace of `golden_trace.py`, like a pool run's `.npz`,
+  holds numbers alone; a pool run's JSON is no tracked copy, so the asset
+  redacts it, which is why the asset is built in the operator's account.
+  The operator's guide gives the step.
