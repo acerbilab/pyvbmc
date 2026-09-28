@@ -204,7 +204,11 @@ the file first holds gives the pins and the patch release,
 "$CAMPAIGN_ENV/bin/python" -m pip list --format=freeze --exclude-editable
 ```
 
-which replace the direct pins and the `# python==` line's version. Keep
+which replace the direct pins and the `# python==` line's version, all
+but `pip`, `setuptools` and `wheel`: conda installs them with the
+interpreter, the check exempts them, and a pin that differs from the
+version conda-forge gives a later build would have pip replace conda's
+copy, which it may be unable to uninstall. Keep
 the `--extra-index-url` line, from which the `+cpu` build of Torch comes,
 and one `# python==` line, and say in the file's header that it is frozen.
 Run the check above on the frozen file, commit it and push it to the
