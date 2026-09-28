@@ -132,7 +132,7 @@ records its execution.
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
   Phase 8, on the PI's instruction. The promotion is
-  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-27), in
+  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
   with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
@@ -146,7 +146,14 @@ records its execution.
   (its `dev/README.md` entry on the branch gives the steps). Its test module
   runs a whole promotion on small array-mode campaigns. It rewrites those
   passages only as they stood when it was written (a SHA-256 guard), so an
-  edit to one before the promotion is carried into its template.
+  edit to one before the promotion is carried into its template. The PI's
+  rulings of 2026-09-28 (the Slurm plan, "The populations" and Phase 9):
+  the 24 fingerprints are judged as a set, since a correct run lies
+  outside its envelope now and then (4.2 % of the runs of
+  `reference_990_20260913`), and more of them outside than the after arm's
+  own rate makes plausible refuses; the code the promotion compares with
+  the after arm's leaves out the package's tests and S-VBMC; and the
+  script moves into its record at the promotion.
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -171,7 +178,7 @@ records its execution.
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
   [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
-  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-27): it
+  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-28): it
   records the six runs twice, each in a fresh process with one BLAS thread
   and `performance_calibration="off"`, compares them with the script's own
   `compare`, and writes each recording's identity (the commit, the gpyreg
@@ -214,7 +221,15 @@ records its execution.
   - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
     over the diff since `46200293`;
   - the final tests, the CI matrix and the package checks;
-  - the choice of the artifacts that attach to the release as archives;
+  - the artifacts that attach to the release as archives (PI, 2026-09-28;
+    the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
+    hand-back"): the release gate's after-arm population and its pools and
+    stacking results, each built apart from its draft release from the
+    numeric files and the redacted copies, by a step still to be written;
+    the draft releases of the campaigns stay drafts, since their raw
+    archives hold the cluster's details and the operator's paths; the
+    replay fingerprints and the earlier references' traces are backed up
+    in a draft release of their own;
   - the references to `dev-next` that change with the release merge.
 
 - [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
