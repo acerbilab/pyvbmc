@@ -2074,8 +2074,44 @@ def read_requirements(path):
     return {"python": python, "packages": packages}
 
 
+def conda_metadata_directories(prefix=None):
+    """The metadata directories of the distributions conda linked into an
+    environment (``sys.prefix`` by default), as real, case-normalized paths.
+
+    conda records the files of every package it installs in
+    ``<prefix>/conda-meta/<package>.json`` (``files``, relative to the
+    prefix). These records, not a distribution's own metadata, tell what
+    conda installed: conda-forge's ``setuptools`` and ``wheel`` carry no
+    ``INSTALLER`` file, and its ``pip`` and ``packaging`` carry a
+    ``direct_url.json`` that names the build directory of their feedstock.
+    """
+    prefix = sys.prefix if prefix is None else str(prefix)
+    relative = set()
+    for record in sorted(Path(prefix, "conda-meta").glob("*.json")):
+        try:
+            files = json.loads(record.read_text(encoding="utf-8"))["files"]
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        for name in files if isinstance(files, list) else ():
+            parts = str(name).split("/")
+            for index, part in enumerate(parts):
+                if part.endswith((".dist-info", ".egg-info")):
+                    relative.add(tuple(parts[: index + 1]))
+                    break
+    return {
+        os.path.normcase(os.path.realpath(os.path.join(prefix, *parts)))
+        for parts in relative
+    }
+
+
 def installed_distributions():
-    """Every distribution the interpreter sees, with how it was installed."""
+    """Every distribution the interpreter sees, with how it was installed.
+
+    ``conda`` is true for a distribution whose ``INSTALLER`` is conda or
+    whose metadata directory conda linked into the environment
+    (:func:`conda_metadata_directories`).
+    """
+    by_conda = conda_metadata_directories()
     found = []
     for dist in importlib.metadata.distributions():
         name = dist.metadata["Name"]
@@ -2088,13 +2124,19 @@ def installed_distributions():
                 direct = json.loads(text)
             except ValueError:
                 direct = {"url": "unreadable direct_url.json"}
+        installer = (dist.read_text("INSTALLER") or "").strip().lower()
+        metadata = getattr(dist, "_path", None)
         found.append(
             {
                 "name": name,
                 "version": dist.version,
-                "installer": (dist.read_text("INSTALLER") or "")
-                .strip()
-                .lower(),
+                "installer": installer,
+                "conda": installer == "conda"
+                or (
+                    metadata is not None
+                    and os.path.normcase(os.path.realpath(metadata))
+                    in by_conda
+                ),
                 "direct_url": direct,
                 "location": str(dist.locate_file("")),
             }
@@ -2133,7 +2175,10 @@ def environment_differences(
     installed version with one), and every installed package must be
     pinned, except those installed from a path or editable (the source
     trees, such as PyVBMC and gpyreg) and those conda installed (the
-    interpreter's own ``pip``, ``setuptools`` and ``wheel``). The
+    interpreter's own ``pip``, ``setuptools`` and ``wheel``, and what they
+    depend on, ``packaging`` among them). A package conda installed is
+    never one installed from a path, whatever its ``direct_url.json``
+    says, and when pinned it must be at its pinned version. The
     interpreter must match the ``# python==`` pin to its precision.
     """
     pins = read_requirements(requirements)
@@ -2168,7 +2213,8 @@ def environment_differences(
             continue
         dist = found[0]
         pinned = pins["packages"].get(name)
-        from_path = _from_path(dist["direct_url"])
+        by_conda = dist.get("conda", dist["installer"] == "conda")
+        from_path = not by_conda and _from_path(dist["direct_url"])
         if pinned is not None:
             if from_path:
                 problems.append(f"{name} is pinned but installed from a path")
@@ -2177,7 +2223,7 @@ def environment_differences(
                     f"{name} {dist['version']} is installed, "
                     f"{pinned} is pinned"
                 )
-        elif not from_path and dist["installer"] != "conda":
+        elif not from_path and not by_conda:
             problems.append(
                 f"{name} {dist['version']} is installed but not pinned"
             )

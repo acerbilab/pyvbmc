@@ -145,10 +145,7 @@ def environment_pins(scripts):
     )
     pins = {}
     for dist in json.loads(listing.stdout):
-        if (
-            contract._from_path(dist["direct_url"])
-            or dist["installer"] == "conda"
-        ):
+        if dist["conda"] or contract._from_path(dist["direct_url"]):
             continue
         pins[
             contract.canonical_name(dist["name"])

@@ -1647,13 +1647,16 @@ def test_completion_record_refusals(tmp_path):
 # --------------------------------------------------------------------------
 
 
-def dist(name, version, installer="pip", direct=None, location="/site"):
+def dist(
+    name, version, installer="pip", direct=None, location="/site", **extra
+):
     return {
         "name": name,
         "version": version,
         "installer": installer,
         "direct_url": direct,
         "location": location,
+        **extra,
     }
 
 
@@ -1765,6 +1768,93 @@ def test_environment_differences(tmp_path):
     )
 
 
+def test_what_conda_installed_is_exempt_and_never_from_a_path(tmp_path):
+    """conda-forge's ``packaging`` carries ``INSTALLER`` conda and a
+    ``direct_url.json`` naming its feedstock's build directory, and its
+    ``setuptools`` and ``wheel`` no ``INSTALLER`` at all; the environment's
+    ``conda-meta`` records mark all three as conda's."""
+    path = write_requirements(
+        tmp_path, "# python==3.12\nnumpy==2.5.2\npackaging==26.3\n"
+    )
+    build = {
+        "url": "file:///home/conda/feedstock_root/build_artifacts/x/work",
+        "dir_info": {},
+    }
+    conda_packages = [
+        dist("packaging", "26.3", installer="conda", direct=build, conda=True),
+        dist("pip", "26.2.1", installer="conda", direct=build, conda=True),
+        dist("setuptools", "84.0.0", installer="", conda=True),
+        dist("wheel", "0.48.0", installer="", conda=True),
+    ]
+    good = [dist("numpy", "2.5.2", conda=False)] + conda_packages
+    assert contract.environment_differences(path, good, "3.12.14") == []
+    moved = [dist("numpy", "2.5.2")] + [
+        dict(d, version="26.4") if d["name"] == "packaging" else d
+        for d in conda_packages
+    ]
+    assert contract.environment_differences(path, moved, "3.12.14") == [
+        "packaging 26.4 is installed, 26.3 is pinned"
+    ]
+    # Without the conda-meta mark, INSTALLER alone tells: conda's packaging
+    # and pip are still conda's, and setuptools and wheel are pip's to pin.
+    unmarked = [dist("numpy", "2.5.2")] + [
+        {k: v for k, v in d.items() if k != "conda"} for d in conda_packages
+    ]
+    assert contract.environment_differences(path, unmarked, "3.12.14") == [
+        "setuptools 84.0.0 is installed but not pinned",
+        "wheel 0.48.0 is installed but not pinned",
+    ]
+    # A package that pip installed from a path is a source tree, pinned or
+    # not.
+    tree = {"url": "file:///src/numpy", "dir_info": {}}
+    source = [dist("numpy", "2.5.2", direct=tree)] + conda_packages
+    assert contract.environment_differences(path, source, "3.12.14") == [
+        "numpy is pinned but installed from a path"
+    ]
+
+
+def test_conda_metadata_directories(tmp_path):
+    site = "lib/python3.12/site-packages"
+    meta = tmp_path / "conda-meta"
+    meta.mkdir()
+    (meta / "wheel-0.48.0-pyhd8ed1ab_0.json").write_text(
+        json.dumps(
+            {
+                "name": "wheel",
+                "files": [
+                    f"{site}/wheel/__init__.py",
+                    f"{site}/wheel-0.48.0.dist-info/METADATA",
+                    f"{site}/wheel-0.48.0.dist-info/RECORD",
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (meta / "setuptools-84.0.0-pyh332efcf_0.json").write_text(
+        json.dumps(
+            {"files": [f"{site}/setuptools-84.0.0-py3.10.egg-info/PKG-INFO"]}
+        ),
+        encoding="utf-8",
+    )
+    (meta / "zstd-1.5.7-h0_0.json").write_text(
+        json.dumps({"files": ["bin/zstd", "lib/libzstd.so"]}),
+        encoding="utf-8",
+    )
+    (meta / "history").write_text("not a record\n", encoding="utf-8")
+    (meta / "broken-1-0.json").write_text("{", encoding="utf-8")
+    (meta / "nofiles-1-0.json").write_text('{"name": "x"}', encoding="utf-8")
+    found = contract.conda_metadata_directories(tmp_path)
+    expected = {
+        os.path.normcase(os.path.realpath(tmp_path / site / name))
+        for name in (
+            "wheel-0.48.0.dist-info",
+            "setuptools-84.0.0-py3.10.egg-info",
+        )
+    }
+    assert found == expected
+    assert contract.conda_metadata_directories(tmp_path / "elsewhere") == set()
+
+
 def test_local_version_labels_follow_pep_440(tmp_path):
     public = write_requirements(tmp_path, "torch==2.14.0\n")
     assert (
@@ -1810,7 +1900,7 @@ def test_installed_distributions_describe_this_environment():
     names = {contract.canonical_name(d["name"]) for d in found}
     assert {"numpy", "packaging", "pytest"} <= names
     assert all(
-        {"version", "installer", "direct_url", "location"} <= set(d)
+        {"version", "installer", "conda", "direct_url", "location"} <= set(d)
         for d in found
     )
 
