@@ -101,9 +101,35 @@ import svbmc_pool_stack as harness  # noqa: E402
 WEIGHT_TOLERANCE = 0.05
 
 
+def outside_campaign(key):
+    """Whether a variable is Slurm's, or an operator setting other than the
+    two trees these tests name, which a test that is no campaign task must
+    not see: the environment check runs these tests inside a Slurm job, in
+    a shell that exports the campaign settings."""
+    key = key.upper()
+    return key.startswith("SLURM") or (
+        key in contract.SETTINGS
+        and key not in ("PYVBMC_GPYREG_SOURCE", "BASELINE_DIR")
+    )
+
+
+@pytest.fixture(autouse=True)
+def outside_any_campaign(monkeypatch):
+    """This process, which calls the harness in-process too, outside any
+    Slurm task and campaign (:func:`outside_campaign`)."""
+    for key in list(os.environ):
+        if outside_campaign(key):
+            monkeypatch.delenv(key)
+
+
 def harness_environment(drop=()):
-    """The environment every invocation of the harness is given here."""
-    environment = dict(os.environ)
+    """The environment every invocation of the harness is given here: this
+    process's, outside any Slurm task and campaign."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not outside_campaign(key)
+    }
     if OVERLAY is not None:
         environment["PYTHONPATH"] = os.pathsep.join(
             [str(OVERLAY), *[p for p in [environment.get("PYTHONPATH")] if p]]

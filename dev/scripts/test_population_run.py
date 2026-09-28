@@ -47,6 +47,21 @@ from pyvbmc import VBMC
 contract = runner.contract
 
 
+@pytest.fixture(autouse=True)
+def outside_any_campaign(monkeypatch):
+    """Every test outside any Slurm task, and without the operator settings
+    that a campaign's environment exports (the node feature among them,
+    which ``prepare`` would record and ``verify`` then check every record
+    against), but for the gpyreg checkout; a test that needs a setting sets
+    it."""
+    for key in list(os.environ):
+        upper = key.upper()
+        if upper.startswith("SLURM") or (
+            upper in contract.SETTINGS and upper != "PYVBMC_GPYREG_SOURCE"
+        ):
+            monkeypatch.delenv(key)
+
+
 def make_vbmc(skip=False):
     vbmc = VBMC(
         lambda x: -np.sum(x**2),
@@ -1565,12 +1580,19 @@ def test_importers_of_the_harness_modules_ignore_PYVBMC_SOURCE(
     tmp_path, imports
 ):
     tree = stand_in_tree(tmp_path)
+    # gpyreg from the checkout PYVBMC_GPYREG_SOURCE names, where the
+    # environment does not install it, as the campaign environment does not.
     script = (
+        "import os\n"
         "import sys\n"
         "from pathlib import Path\n"
         "root = Path.cwd().resolve().parents[1]\n"
         "sys.path.insert(0, str(Path.cwd()))\n"
-        "sys.path.insert(0, str(root))\n" + imports + "import pyvbmc\n"
+        "sys.path.insert(0, str(root))\n"
+        "if os.environ.get('PYVBMC_GPYREG_SOURCE'):\n"
+        "    sys.path.append(os.environ['PYVBMC_GPYREG_SOURCE'])\n"
+        + imports
+        + "import pyvbmc\n"
         "assert Path(pyvbmc.__file__).resolve().parents[1] == root, pyvbmc\n"
         "print('ok')\n"
     )

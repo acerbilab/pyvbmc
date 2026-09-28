@@ -84,10 +84,19 @@ def posix(path):
 
 
 def git_environment(home):
+    """git with an empty configuration of the test's own, and no automatic
+    ``gc`` or maintenance, which git may detach into the background after
+    a commit and which would then repack the objects of a repository that
+    a test is copying."""
     return {
         "HOME": str(home),
         "GIT_CONFIG_GLOBAL": str(Path(home) / ".gitconfig"),
         "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_COUNT": "2",
+        "GIT_CONFIG_KEY_0": "gc.auto",
+        "GIT_CONFIG_VALUE_0": "0",
+        "GIT_CONFIG_KEY_1": "maintenance.auto",
+        "GIT_CONFIG_VALUE_1": "false",
         "GIT_AUTHOR_NAME": "test",
         "GIT_AUTHOR_EMAIL": "test@example.invalid",
         "GIT_COMMITTER_NAME": "test",
@@ -95,13 +104,28 @@ def git_environment(home):
     }
 
 
+def without_conda(path):
+    """``path`` without the directories that hold a ``conda`` executable,
+    such as those of a conda installation that the calling shell loaded,
+    so that a test has only the conda its own settings define."""
+    names = ("conda", "conda.exe", "conda.bat")
+    return os.pathsep.join(
+        entry
+        for entry in path.split(os.pathsep)
+        if entry and not any((Path(entry) / n).is_file() for n in names)
+    )
+
+
 def base_environment():
-    return {
+    environment = {
         key: value
         for key, value in os.environ.items()
         if key.upper() not in LEAKS
-        and not key.upper().startswith(("SLURM", "BASH_FUNC_"))
+        and not key.upper().startswith(("SLURM", "BASH_FUNC_", "CONDA_"))
     }
+    for key in [k for k in environment if k.upper() == "PATH"]:
+        environment[key] = without_conda(environment[key])
+    return environment
 
 
 def git(path, *args, home):
