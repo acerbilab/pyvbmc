@@ -41,9 +41,11 @@ default 1900 MiB, below GitHub's 2 GiB per release asset), with their
 SHA-256 in ``<campaign>.public.tar.gz.sha256``;
 ``cat <campaign>.public.tar.gz.[0-9][0-9][0-9] | tar xz`` restores it.
 
-``check DIR`` re-reads an asset in ``DIR``: every part against its SHA-256,
-and every member of the archive against ``public.json``, which must list
-them all. It prints what fails and exits 1 if anything does.
+``check DIR`` re-reads every asset in ``DIR``, as many as the directory
+holds (a release's directory holds one per campaign): every part against
+its SHA-256, and every member of the archive against ``public.json``,
+which must list them all. It prints what fails and exits 1 if anything
+does, or if the directory holds no asset.
 """
 
 import argparse
@@ -352,14 +354,32 @@ def split(path, target, part_size):
     return written
 
 
+def assets(directory):
+    """The assets in ``directory``, named as :func:`asset_name` names
+    them, by their listings (``<asset>.sha256``)."""
+    return [
+        path.name[: -len(".sha256")]
+        for path in sorted(Path(directory).glob("*.public.tar.gz.sha256"))
+    ]
+
+
 def check(directory):
-    """The problems of the asset in ``directory`` (module docstring)."""
+    """The problems of every asset in ``directory`` (module docstring)."""
     directory = Path(directory)
-    listings = sorted(directory.glob("*.public.tar.gz.sha256"))
-    if len(listings) != 1:
-        return [f"{directory} holds {len(listings)} asset listings, not one"]
+    names = assets(directory)
+    if not names:
+        return [f"{directory} holds no asset listing"]
+    problems = []
+    for name in names:
+        problems += _check_asset(directory, name)
+    return problems
+
+
+def _check_asset(directory, asset):
+    """The problems of the asset ``asset`` in ``directory``."""
+    listing = directory / f"{asset}.sha256"
     problems, parts = [], []
-    for line in listings[0].read_text(encoding="utf-8").splitlines():
+    for line in listing.read_text(encoding="utf-8").splitlines():
         digest, _, name = line.partition("  ")
         path = directory / name
         if not path.is_file():
@@ -377,7 +397,7 @@ def check(directory):
             found[member.name] = data
     publics = [name for name in found if name.endswith(f"/{PUBLIC}")]
     if len(publics) != 1:
-        return [f"the archive holds {len(publics)} {PUBLIC}, not one"]
+        return [f"{asset} holds {len(publics)} {PUBLIC}, not one"]
     prefix = publics[0][: -len(PUBLIC)]
     record = json.loads(found.pop(publics[0]))
     listed = {f"{prefix}{name}" for name in record["files"]}
@@ -422,7 +442,8 @@ def cmd_check(args):
     for problem in problems:
         print(f"check: {problem}")
     if not problems:
-        print(f"check: the asset in {args.directory} is whole")
+        names = ", ".join(assets(args.directory))
+        print(f"check: every asset in {args.directory} is whole ({names})")
     return 1 if problems else 0
 
 

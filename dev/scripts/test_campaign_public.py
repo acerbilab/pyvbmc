@@ -168,6 +168,50 @@ def test_an_asset_in_parts_and_a_damaged_part(tmp_path, monkeypatch):
     assert public.main(["check", str(out)]) == 1
 
 
+def write_small_asset(out, name):
+    """A whole asset ``name`` in ``out``: one file and its ``public.json``,
+    in one part, with its listing."""
+    data = b"x\n"
+    record = {"files": {"a.txt": {"sha256": public.sha256(data)}}}
+    members = {
+        f"{name}/a.txt": data,
+        f"{name}/{public.PUBLIC}": json.dumps(record).encode("utf-8"),
+    }
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode="w:gz") as archive:
+        for member, content in members.items():
+            info = tarfile.TarInfo(member)
+            info.size = len(content)
+            archive.addfile(info, io.BytesIO(content))
+    part = out / f"{name}.public.tar.gz.000"
+    part.write_bytes(stream.getvalue())
+    (out / f"{name}.public.tar.gz.sha256").write_text(
+        f"{public.sha256(part.read_bytes())}  {part.name}\n", encoding="utf-8"
+    )
+    return part
+
+
+def test_the_check_reads_every_asset_of_a_directory(tmp_path, monkeypatch):
+    """A release's directory holds the asset of each campaign; the check
+    reads them all, and a damaged one fails it."""
+    site, campaign, copies = finished_campaign(tmp_path, monkeypatch)
+    out = tmp_path / "public"
+    build(site, campaign, copies, out)
+    part = write_small_asset(out, "other")
+    assert public.assets(out) == sorted(
+        ["other.public.tar.gz", public.asset_name(campaign)]
+    )
+    assert public.check(out) == []
+    assert public.main(["check", str(out)]) == 0
+    part.write_bytes(part.read_bytes() + b"\0")
+    assert public.check(out) == [
+        f"{part.name} is not the part its listing hashes"
+    ]
+    assert public.check(tmp_path / "nothing") == [
+        f"{tmp_path / 'nothing'} holds no asset listing"
+    ]
+
+
 def test_a_json_artifact_that_is_no_tracked_copy_is_redacted(
     tmp_path, monkeypatch
 ):

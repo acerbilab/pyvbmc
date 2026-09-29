@@ -21,8 +21,9 @@
 # the copies may not hold refuses the asset, which is then not written.
 # Give the same --path and --allow as to campaign_redact.sh.
 #
-# With --check, it re-reads the asset in OUT_DIR: every part against its
-# SHA-256 and every file against the asset's public.json.
+# With --check, it re-reads every asset in OUT_DIR, one per campaign built
+# into it: every part against its SHA-256 and every file against the
+# asset's public.json.
 set -euo pipefail
 
 usage() {
