@@ -101,9 +101,14 @@ records its execution.
   `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
   in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
   harness test module passes, and with the tools of the plan's Phase 9 and
-  of the promotion of the new reference (the two items below); next are
-  Phase 1b and the smoke campaigns on the cluster, then the brief, and the
-  merge into `dev-next`. Needed before
+  of the promotion of the new reference (the two items below). Phase 1b
+  (the survey, the source trees, the frozen environment and its check) and
+  Phase 6 (the smoke campaigns, which measured every job's time and
+  memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
+  branch; the plan's pickup point, on the branch, lists the three checks
+  left for the next cluster session. Next are the brief, which needs only
+  the stacking's finishing limits from those checks, a review of the
+  branch, and the merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
