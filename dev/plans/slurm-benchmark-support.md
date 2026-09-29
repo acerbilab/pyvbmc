@@ -12,9 +12,8 @@ it and what the branch gives it.
 
 - [x] The PI's review of this plan (2026-09-25).
 - [x] Phase 1a: the cluster survey (2026-09-25).
-- [ ] Phase 1b: the survey where the campaigns run, the environment and
-  the source trees. The survey, the trees and the freeze are done
-  (2026-09-28); the acceptance waits for the environment check to pass.
+- [x] Phase 1b: the survey where the campaigns run, the environment and
+  the source trees (2026-09-28/29).
 - [x] Phase 2: the generic Slurm driver (2026-09-25).
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
@@ -29,22 +28,19 @@ it and what the branch gives it.
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
 (pushed), and every harness test module passes on it on the developer's
 machine. The cluster work, in the PI's account, is Phase 1b, then Phase
-6, in the four steps below. The first session (2026-09-28) did step 1
-and a first run of step 2, whose failures were all in the tests and are
-fixed (the worklog, 2026-09-28). Next: pull the branch into the harness
-checkout, read the stacking module's result in that run's output, which
-the session ended before, run the check again, then steps 3 and 4.
+6, in the four steps below. Steps 1 and 2 are done (the worklog,
+2026-09-28 and 29), and step 3's canaries were submitted on 2026-09-29.
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
-   Survey the installation the campaigns run on, with the checks of Phase 1b and the
-   real output of `sacct -n -X -P -j <job>_<task> -o State`,
+   Survey the installation the campaigns run on, with the checks of
+   Phase 1b and the real output of `sacct -n -X -P -j <job>_<task> -o State`,
    `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
    source trees as the operator's guide (`dev/scripts/hpc/README.md`)
    says, build the environment with `campaign_env.sh build`, freeze it into
    `campaign_requirements.txt`, and commit and push the freeze to the
    branch.
-2. **The environment check** (first run 2026-09-28, to run again with
-   the fixes), as a batch job. It is also the first run of
+2. **The environment check** (passed 2026-09-29), as a batch job. It is
+   also the first run of
    the harnesses in an environment that installs neither PyVBMC nor
    gpyreg: the developer's machine could test that only by hiding the
    packages' metadata.
@@ -1223,3 +1219,18 @@ reproduces bit for bit.
   with none skipped, with those surroundings reproduced (a failing
   `conda` first on the `PATH`, `NODE_FEATURE` and a Slurm job id
   exported).
+- 2026-09-29: the first run's stacking module had failed one test
+  (`test_an_interrupted_task_is_taken_over`) for the same reason, the
+  job's Slurm variables and `NODE_FEATURE` reaching the worker and the
+  `prepare` of its campaign, which `5c7b409d` removes. The environment
+  check, run again at `2356f12d`, passes:
+  the contract (135), driver (74), population (59), analysis (55), pool
+  (76), honest-ELBO (14) and stacking (54) modules, none failed or
+  skipped, the checkout clean after it; the job took 19 minutes and
+  peaked at 1.5 GB. Phase 1b's acceptance is met. Step 3's canaries went
+  out the same day, as smoke campaigns in the PI's account: the two
+  population arms at the `production` allocation, seeds 0–99, with the
+  subset `canary` submitted (the first seed of every configuration); the
+  pools at the release allocation, with the first case of every
+  condition and seeds 1001–1039 of `student_D8_noise3_svbmc`, from which
+  the stacking takes an `M = 16` and an `M = 32` cell.
