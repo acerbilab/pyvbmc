@@ -26,6 +26,8 @@
 #   record, a task's or a step's log, the accounting) is named by the node
 #   family, the value of NODE_FEATURE, and every other host (the login
 #   node) by "login";
+# - a host part's lists of node features hold NODE_FEATURE alone, and its
+#   CPU model stays;
 # - a path under a path setting of the site block starts with the
 #   setting's name ($CAMPAIGN_ENV, $PYVBMC_GPYREG_SOURCE, ...), one under a
 #   directory given with --path NAME=PATH (a scratch area that holds the
@@ -47,7 +49,9 @@
 # or a command, a named directory or the home directory (as a plain
 # substring), the username or a hostname of the campaign (as a whole name,
 # which no letter, digit, _ or - flanks, nor a dot that continues the name;
-# a hostname in any letter case), or an absolute path outside the system's
+# a hostname in any letter case), a node feature of the campaign's hosts
+# other than NODE_FEATURE (in the quotes a list of them holds), or an
+# absolute path outside the system's
 # directories (/usr, /etc, /tmp and the like) that no name covers, naming
 # the file and the string. It also refuses a username or a hostname that is
 # itself a name the copies write (login, the node family), which the check

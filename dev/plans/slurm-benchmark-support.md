@@ -812,15 +812,18 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   reads from its own process. Each harness declares its tracked copies in
   its manifest (`tracked_copies`). Hostnames reduce to the node family
   (`NODE_FEATURE`, which the copies keep so that the family of every run
-  stays checkable) or to `login`, paths under a path setting to its name
-  and paths under the home to `~`; the `site` block, the `pip freeze`
-  paths and the Slurm accounting stay in the archive. The identity trees
+  stays checkable) or to `login`, a host part's lists of node features to
+  that feature alone (PI, 2026-09-29), paths under a path setting to its
+  name and paths under the home to `~`; the CPU model stays. The `site`
+  block, the `pip freeze` paths and the Slurm accounting stay in the
+  archive. The identity trees
   and the campaign's parent get names of their own (`$<TREE>_TREE`,
   `$CAMPAIGN_PARENT`), and partitions are replaced in the fields that hold
   one. It refuses when a path or command setting, a named directory, the
-  operator's username, the home or a hostname remains anywhere in its
-  output (paths, the home and the settings as substrings, the username
-  and hostnames as whole names, hostnames in any case), when an absolute
+  operator's username, the home, a hostname or another node feature
+  remains anywhere in its output (paths, the home and the settings as
+  substrings, the username and hostnames as whole names, hostnames in any
+  case, a feature in the quotes a list of them holds), when an absolute
   path outside the system prefixes remains unnamed, when a username or
   hostname equals a name the copies write, and when a case is in flight.
   `--allow STRING` exempts a benign hit, which `redaction.json` records

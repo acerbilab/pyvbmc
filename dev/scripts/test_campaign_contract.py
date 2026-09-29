@@ -2875,7 +2875,9 @@ def test_redact_removes_every_site_detail(site, tmp_path):
     ]["host"]
     assert host["hostname"] == site.family
     assert host["node_features"]["node"] == site.family
-    assert host["node_features"]["available"] == [site.family, "avx2"]
+    # The node features reduce to the family, the only one the copies keep.
+    assert host["node_features"]["available"] == [site.family]
+    assert host["node_features"]["active"] == [site.family]
     assert host["slurm"]["node"] == site.family
     assert host["slurm"]["partition"] == "$PARTITION"
     assert host["slurm"]["array_job_id"] == "4242"  # job ids stay
@@ -2904,6 +2906,7 @@ def test_redact_removes_every_site_detail(site, tmp_path):
     ).read_bytes()
     assert record["replaced"]["hosts"] > 0 and record["replaced"]["~"] > 0
     assert record["replaced"][contract.PARTITION_TOKEN] == 2
+    assert record["replaced"]["features"] > 0
     assert record["cases_not_verified"] == {
         "failed": [],
         "interrupted": ["g1/c003"],
@@ -2931,6 +2934,9 @@ def test_redact_refuses_what_survives_and_writes_nothing(site, tmp_path):
         # a longer directory and a path that continues another.
         (f"{env}s/pyvbmc2", "CAMPAIGN_ENV"),
         (f"/mnt{env}/lib", "CAMPAIGN_ENV"),
+        # A node feature other than the family, outside a list of node
+        # features, as the message of a failed host check prints them.
+        (f"it has ['{site.family}', 'fakefeature']", "a node feature"),
     ):
         site.rewrite(
             out / "summary.json", lambda value: value.update(note=planted)

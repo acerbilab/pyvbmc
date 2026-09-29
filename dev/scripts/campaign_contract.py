@@ -3497,10 +3497,12 @@ def _dicts(value):
 
 
 class Hosts:
-    """The hosts a campaign names, and whether each ran a Slurm job of it."""
+    """The hosts a campaign names, whether each ran a Slurm job of it, and
+    the node features its host parts list (:attr:`features`)."""
 
     def __init__(self):
         self.in_slurm = {}
+        self.features = set()
 
     def add(self, name, in_slurm):
         """Add a hostname, and its short name if it is a domain name."""
@@ -3542,6 +3544,9 @@ class Hosts:
                                 f"{node_feature}, the family its copies "
                                 "would name it by"
                             )
+                        self.features |= {
+                            f for f in found if isinstance(f, str) and f
+                        }
                     in_slurm = bool(slurm.get("job_id") or features)
                     for name in (
                         mapping["hostname"],
@@ -3633,12 +3638,19 @@ class Redaction:
       :data:`LOGIN_HOST`;
     - in a JSON value, the string of a field that holds a partition
       (:func:`_partition_field`) is :data:`PARTITION_TOKEN`, whatever the
-      partition's name.
+      partition's name;
+    - in a JSON value, the lists of a host part's node features
+      (``node_features.available`` and ``.active``) are ``family`` alone,
+      the campaign's node feature, so that the copies name the node family
+      by that feature and by nothing else of the site.
 
     The check (:meth:`leaks`) does not rely on them: it searches each copy
     for every forbidden string, so that whatever a replacement left is
-    refused. The named directories and the command settings are found as
-    plain substrings; the usernames and the hostnames as whole names, a
+    refused. The named directories, the command settings and the node
+    features other than the family, each in the quotes of a JSON list or a
+    Python list's text, are found as plain substrings (a feature is often
+    a short word or a letter, and the CPU model, which the copies keep,
+    names the vendor); the usernames and the hostnames as whole names, a
     hostname in any letter case, since a short name is also a word or a
     part of one (``d2`` in ``rosenbrock_D2``, ``ab`` in ``lab``): a
     username where nothing of :data:`_USER_WORD` flanks it, a hostname
@@ -3664,13 +3676,17 @@ class Redaction:
     forbidden : mapping of str to list of (str, str)
         What may remain in no copy, each ``(string, what it is)``:
         ``paths`` (the named directories, the command settings and their
-        words that name a path), ``users`` and ``hosts``.
+        words that name a path), ``users``, ``hosts`` and ``features`` (the
+        other node features, quoted).
     allow : sequence of str
         Strings whose hits the operator found benign (``redact --allow``),
         a hostname in any letter case.
     system_prefixes : sequence of str
         The directories where an absolute path may lie unnamed
         (:data:`SYSTEM_PREFIXES`).
+    family : str, optional
+        The campaign's node feature, to which the lists of node features
+        reduce; without it they are left as they are.
     """
 
     def __init__(
@@ -3680,9 +3696,11 @@ class Redaction:
         forbidden,
         allow=(),
         system_prefixes=SYSTEM_PREFIXES,
+        family=None,
     ):
         self.paths = dict(paths)
         self.hosts = dict(hosts)
+        self.family = family
         self.forbidden = {key: list(value) for key, value in forbidden.items()}
         self.counts = Counter()
         #: The hits each allowed string cleared, in the texts searched.
@@ -3793,6 +3811,16 @@ class Redaction:
                 ):
                     self.counts[PARTITION_TOKEN] += 1
                     result[new] = PARTITION_TOKEN
+                elif (
+                    self.family is not None
+                    and path[-1:] == ("node_features",)
+                    and key in ("available", "active")
+                    and isinstance(item, list)
+                    and self.family in item
+                ):
+                    if item != [self.family]:
+                        self.counts["features"] += 1
+                    result[new] = [self.family]
                 else:
                     result[new] = self.value(item, (*path, key))
             return result
@@ -3957,7 +3985,9 @@ def redaction_rules(
     name (:func:`tree_token`, ``$HARNESS_TREE``) and the directory that
     holds the campaign directory (``$CAMPAIGN_PARENT``). The command
     settings, whole and each of their words that names a path, the
-    usernames and every hostname are forbidden too.
+    usernames, every hostname and every node feature that a host part of
+    ``documents`` lists but the campaign's (in quotes) are forbidden too,
+    and the lists of node features reduce to the campaign's.
 
     Parameters
     ----------
@@ -4046,7 +4076,14 @@ def redaction_rules(
     hosts.add(socket.gethostname() if host is None else host, False)
     tokens = hosts.tokens(family)
     forbidden["hosts"] = [(h, "a hostname") for h in tokens]
-    return Redaction(replace, tokens, forbidden, allow, system_prefixes)
+    forbidden["features"] = [
+        (f"{quote}{feature}{quote}", "a node feature")
+        for feature in sorted(hosts.features - {family})
+        for quote in ('"', "'")
+    ]
+    return Redaction(
+        replace, tokens, forbidden, allow, system_prefixes, family=family
+    )
 
 
 def _read_campaign(campaign):

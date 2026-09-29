@@ -392,14 +392,17 @@ The 8 conditions of the `svbmc_pool` suite, seeds from 1000, 350 seeds
 each and 480 for the ring, 2930 cases, with
 `HARNESS=dev/scripts/svbmc_pool_run.py` and `PYVBMC_GPYREG_SOURCE` the
 gpyreg v1.3.3 checkout. The first submission prepares the pool and runs
-its first case; the canary then runs the first case of every condition:
+its first case; the canary then runs the first case of every other
+condition (case 1 is the first condition's, already submitted; a second
+task for it would find its claim and exit 75):
 
 ```bash
 ARRAY=1 TIME=$POOL_TIME MEM=$POOL_MEM \
     dev/scripts/hpc/campaign_submit.sh "$RUNS/pools" \
     --gpyreg-source "$PYVBMC_GPYREG_SOURCE" --target 320 --max-seeds 350 \
     --allocation ring_D2_noise3_svbmc=320/480
-first=$(awk -F/ '!seen[$1]++ { print NR }' "$RUNS/pools/cases.txt" | paste -sd, -)
+first=$(awk -F/ '!seen[$1]++ && NR > 1 { print NR }' "$RUNS/pools/cases.txt" \
+    | paste -sd, -)
 ARRAY=$first TIME=$POOL_TIME MEM=$POOL_MEM \
     dev/scripts/hpc/campaign_submit.sh "$RUNS/pools"
 dev/scripts/hpc/campaign_finish.sh "$RUNS/pools" --allow-missing --no-archive
@@ -644,6 +647,8 @@ redacted, into the hand-back clone:
 - every host that ran a Slurm job of the campaign is named by the node
   family, the value of `NODE_FEATURE`, and any other host (the login node)
   by `login`;
+- a host part's lists of node features hold the node family's feature
+  alone, and its CPU model stays;
 - a path under a named directory starts with its name: a path setting of
   the site block (`$PYVBMC_GPYREG_SOURCE/...`), a directory given as
   `--path NAME=PATH` (`$NAME/...`), your home (`~/...`), and, where none of
@@ -667,7 +672,9 @@ value of the site block that is a path or a command, every named
 directory and your home directory; as whole names, which no letter,
 digit, `_` or `-` flanks, for your username and every hostname that the
 campaign's records, manifest, claims, logs and accounting hold, a
-hostname in any letter case; and for any absolute path outside the
+hostname in any letter case; in the quotes a list of them holds (`"c"`,
+`'c'`), for every node feature other than the family that a host part of
+the campaign lists; and for any absolute path outside the
 system's directories (`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`,
 `/opt/conda`, `/proc`, `/sbin`, `/sys`, `/tmp`, `/usr`, `/var/tmp`) that
 no name covers. If any remains, it writes nothing and names the file and

@@ -302,9 +302,9 @@ class FakeSite:
     operator's username and home (under ``root``), a login host, compute
     nodes by their domain names, one node that only a task log names and
     two that only the accounting names, a partition, an environment and a
-    gpyreg checkout outside the home, and the login, conda and sbatch
-    settings. ``family``, the node feature, names every compute node in
-    the copies, and may remain.
+    gpyreg checkout outside the home, the login, conda and sbatch settings,
+    and a node feature besides the family. ``family``, the node feature of
+    the campaign, names every compute node in the copies, and may remain.
     """
 
     #: What no redacted copy may hold, in any letter case.
@@ -316,6 +316,7 @@ class FakeSite:
         "fakeproject",
         "fakeproxy",
         "fakeconda",
+        "fakefeature",
     )
 
     def __init__(self, root):
@@ -392,8 +393,8 @@ class FakeSite:
             part["hostname"] = node
             part["node_features"] = {
                 "node": short,
-                "available": [self.family, "avx2"],
-                "active": [self.family, "avx2"],
+                "available": [self.family, "fakefeature"],
+                "active": [self.family, "fakefeature"],
             }
             part["slurm"] = {
                 "job_id": f"{job}{int(task):03d}",
