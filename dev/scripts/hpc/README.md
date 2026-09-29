@@ -208,7 +208,13 @@ which replace the direct pins and the `# python==` line's version, all
 but `pip`, `setuptools` and `wheel`: conda installs them with the
 interpreter, the check exempts them, and a pin that differs from the
 version conda-forge gives a later build would have pip replace conda's
-copy, which it may be unable to uninstall. Keep
+copy, which it may be unable to uninstall (conda-forge's `setuptools` is
+an egg-info installation). `packaging`, which conda also installs, stays
+pinned as a direct requirement: its conda copy is a dist-info, which pip
+replaces where the versions differ. Torch requires a `setuptools` of at
+least 77.0.3, which conda-forge's has been; a build that received an older
+one would have pip install another, unpinned, and the check refuse the
+environment. Keep
 the `--extra-index-url` line, from which the `+cpu` build of Torch comes,
 and one `# python==` line, and say in the file's header that it is frozen.
 Run the check above on the frozen file, commit it and push it to the
@@ -354,11 +360,10 @@ ARRAY=$rest TIME=$POP_TIME MEM=$POP_MEM \
     dev/scripts/hpc/campaign_submit.sh "$RUNS/population_$ARM"
 ```
 
-A configuration whose smoke cases (Phase 6) ask for a limit of their own,
-`lumpy_D10_noise3_production` perhaps, which had never run before them,
-goes the same way: a subset of its own, and one more condition in the
-`awk` that lists the rest. When the queue is empty, finish the before arm
-and then the after arm:
+In the smoke campaigns (the plan's Phase 6) no other configuration needed
+a limit of its own; one that does goes the same way: a subset of its own,
+and one more condition in the `awk` that lists the rest. When the queue is
+empty, finish the before arm and then the after arm:
 
 ```bash
 VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
@@ -393,8 +398,7 @@ each and 480 for the ring, 2930 cases, with
 `HARNESS=dev/scripts/svbmc_pool_run.py` and `PYVBMC_GPYREG_SOURCE` the
 gpyreg v1.3.3 checkout. The first submission prepares the pool and runs
 its first case; the canary then runs the first case of every other
-condition (case 1 is the first condition's, already submitted; a second
-task for it would find its claim and exit 75):
+condition (case 1 is the first condition's, already submitted):
 
 ```bash
 ARRAY=1 TIME=$POOL_TIME MEM=$POOL_MEM \
@@ -610,10 +614,10 @@ from the accounting of the smoke campaigns (the plan's Phase 6, `sacct`
 and `seff`), and the operator's notes hold them; `MEM` comes from the
 `MaxRSS` of the accounting's step rows. The population sidecars hold each
 case's peak resident set as `max_rss_mb`, and as `peak_rss_mb`, on Linux,
-the resident set at the end of the run, which is not a peak. For the
-stacking, the developer's machine gives an order of size: an S-VBMC
-`optimize()` at `M = 32` peaks near 2.1 GB, in its gradient steps, and its
-final entropy evaluation near 350 MiB; a task's `MEM` is still Phase 6's.
+the resident set at the end of the run, which is not a peak. Phase 6
+measured a stacking task at `M = 32` near 3.1 GB, in the S-VBMC
+`optimize()`'s gradient steps, on one condition; the other conditions'
+may differ, which the margin of `M32_MEM` covers.
 `THROTTLE` applies to each submission, so a campaign submitted in several
 chunks or subsets, and two campaigns that run together, run that many
 tasks at once for each submission.
@@ -672,17 +676,19 @@ value of the site block that is a path or a command, every named
 directory and your home directory; as whole names, which no letter,
 digit, `_` or `-` flanks, for your username and every hostname that the
 campaign's records, manifest, claims, logs and accounting hold, a
-hostname in any letter case; in the quotes a list of them holds (`"c"`,
-`'c'`), for every node feature other than the family that a host part of
-the campaign lists; and for any absolute path outside the
-system's directories (`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`,
+hostname in any letter case; in the quotes a list of them holds
+(`"<feature>"`, `'<feature>'`), for every node feature other than the
+family that a host part of the campaign lists; and for any absolute path
+outside the system's directories (`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`,
 `/opt/conda`, `/proc`, `/sbin`, `/sys`, `/tmp`, `/usr`, `/var/tmp`) that
 no name covers. If any remains, it writes nothing and names the file and
 the string. A hit that is benign, such as a short username that is also a
 word of a copy, is exempted with `--allow STRING`, repeatable and taken by
 `--check` too, and `redaction.json` records each allowed string under
-`allowed` with the hits it cleared. A username, or a hostname that the
-copies name otherwise, that is itself a name the copies write (`login`,
+`allowed` with the hits it cleared. A node feature is exempted in its
+quoted form, as the refusal names it (`--allow '"<feature>"'`). A
+username, or a hostname that the copies name otherwise, that is itself a
+name the copies write (`login`,
 the node family) is refused, since the search could not tell the two
 apart.
 
@@ -758,8 +764,9 @@ the release commit and the trees' commits, the dates, the job ids, the
 node family, each campaign's counts from its `verification.json`, the
 resubmissions and every case that failed or went missing, the time and
 memory the accounting shows, and each archive part with its size and
-SHA-256. Keep hostnames, the username, paths and the site's names out of
-it, and search it as the copies are searched, once for each campaign,
+SHA-256. Keep hostnames, the username, paths, the site's names and its
+node features other than the family out of it, and search it as the
+copies are searched, once for each campaign,
 since each has its own hosts and settings:
 
 ```bash

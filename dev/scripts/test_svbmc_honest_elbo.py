@@ -69,7 +69,15 @@ pytestmark = pytest.mark.skipif(
 
 
 def cli(script, *args):
-    environment = dict(os.environ)
+    """Run ``script`` outside any Slurm task and campaign: without the
+    Slurm variables and the operator settings that the environment check's
+    batch job exports, but for the gpyreg checkout, which it sets."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("SLURM")
+        and key.upper() not in runner.contract.SETTINGS
+    }
     environment.update({k: "1" for k in runner.THREAD_KEYS})
     environment["MPLBACKEND"] = "Agg"
     environment["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)

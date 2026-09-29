@@ -203,6 +203,13 @@ def test_the_check_reads_every_asset_of_a_directory(tmp_path, monkeypatch):
     )
     assert public.check(out) == []
     assert public.main(["check", str(out)]) == 0
+    # A part that no listing names, as a failed build may leave one.
+    stray = out / "third.public.tar.gz.000"
+    stray.write_bytes(b"\0")
+    assert public.check(out) == [
+        f"{stray.name} is a part that no listing names"
+    ]
+    stray.unlink()
     part.write_bytes(part.read_bytes() + b"\0")
     assert public.check(out) == [
         f"{part.name} is not the part its listing hashes"

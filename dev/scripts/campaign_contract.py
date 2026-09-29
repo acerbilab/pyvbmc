@@ -3639,18 +3639,21 @@ class Redaction:
     - in a JSON value, the string of a field that holds a partition
       (:func:`_partition_field`) is :data:`PARTITION_TOKEN`, whatever the
       partition's name;
-    - in a JSON value, the lists of a host part's node features
-      (``node_features.available`` and ``.active``) are ``family`` alone,
-      the campaign's node feature, so that the copies name the node family
-      by that feature and by nothing else of the site.
+    - in a JSON value, a list of a host part's node features
+      (``node_features.available`` or ``.active``) that holds ``family``,
+      the campaign's node feature, is ``family`` alone, so that the copies
+      name the node family by that feature and by nothing else of the
+      site; a list without it is left as it is, for the check to refuse
+      what it holds.
 
     The check (:meth:`leaks`) does not rely on them: it searches each copy
     for every forbidden string, so that whatever a replacement left is
-    refused. The named directories, the command settings and the node
-    features other than the family, each in the quotes of a JSON list or a
-    Python list's text, are found as plain substrings (a feature is often
-    a short word or a letter, and the CPU model, which the copies keep,
-    names the vendor); the usernames and the hostnames as whole names, a
+    refused. The named directories and the command settings are found as
+    plain substrings, and so are the node features other than the family,
+    each in the quotes of a JSON list or of a Python list's text (``"f"``,
+    ``'f'``), since a feature is often a short word or a letter, and the
+    CPU model, which the copies keep, names the vendor; the usernames and
+    the hostnames as whole names, a
     hostname in any letter case, since a short name is also a word or a
     part of one (``d2`` in ``rosenbrock_D2``, ``ab`` in ``lab``): a
     username where nothing of :data:`_USER_WORD` flanks it, a hostname
@@ -4194,6 +4197,8 @@ def redact(
       campaign's node family, the value of ``NODE_FEATURE``, and every
       other host (the login node where ``prepare`` and the driver ran, and
       the host that redacts) by :data:`LOGIN_HOST`;
+    - a host part's lists of node features hold that node family alone;
+      the CPU model stays;
     - a path under a named directory starts with its name: a path setting
       of the site block (``$PYVBMC_GPYREG_SOURCE/gpyreg``), a ``--path``,
       the operator's home (``~``), a source tree of the identities
@@ -4208,8 +4213,10 @@ def redact(
     Then every copy, :data:`REDACTION` included, is searched for each value
     of the site block that is a path or a command, every named directory
     and the operator's home directory, as plain substrings, for the
-    operator's username and every hostname, as whole names, and for any
-    absolute path outside ``system_prefixes`` (:meth:`Redaction.leaks`);
+    operator's username and every hostname, as whole names, for every node
+    feature of the campaign's host parts but the family, in the quotes a
+    list of them holds, and for any absolute path outside
+    ``system_prefixes`` (:meth:`Redaction.leaks`);
     any of them raises :class:`ContractError` naming the file and the
     string, and nothing is written. A hit of a string of ``allow``, which
     the operator judged benign, is exempted, and :data:`REDACTION` records
@@ -4343,6 +4350,8 @@ def redact(
             "a host that ran a Slurm job of the campaign is named by the "
             "node family, NODE_FEATURE; any other host, "
             f"{LOGIN_HOST!r}",
+            "a host part's lists of node features hold the node family "
+            "alone; the CPU model stays",
             "a path under a path setting starts with its name "
             "($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), one under a --path "
             "directory with its name, one under the operator's home "

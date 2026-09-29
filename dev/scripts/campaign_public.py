@@ -41,11 +41,12 @@ default 1900 MiB, below GitHub's 2 GiB per release asset), with their
 SHA-256 in ``<campaign>.public.tar.gz.sha256``;
 ``cat <campaign>.public.tar.gz.[0-9][0-9][0-9] | tar xz`` restores it.
 
-``check DIR`` re-reads every asset in ``DIR``, as many as the directory
-holds (a release's directory holds one per campaign): every part against
-its SHA-256, and every member of the archive against ``public.json``,
-which must list them all. It prints what fails and exits 1 if anything
-does, or if the directory holds no asset.
+``check DIR`` re-reads every asset in ``DIR`` (a release's directory holds
+one per campaign): every part against its SHA-256, and every member of the
+archive against ``public.json``, which must list them all. A part that no
+listing names, which a build that failed may leave and an upload's glob
+would pick up, fails the check. It prints what fails and exits 1 if
+anything does, or if the directory holds no asset.
 """
 
 import argparse
@@ -369,9 +370,20 @@ def check(directory):
     names = assets(directory)
     if not names:
         return [f"{directory} holds no asset listing"]
-    problems = []
+    problems, listed = [], set()
     for name in names:
         problems += _check_asset(directory, name)
+        for line in (
+            (directory / f"{name}.sha256")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        ):
+            listed.add(line.partition("  ")[2])
+    problems += [
+        f"{path.name} is a part that no listing names"
+        for path in sorted(directory.glob("*.public.tar.gz.[0-9]*"))
+        if path.name not in listed
+    ]
     return problems
 
 

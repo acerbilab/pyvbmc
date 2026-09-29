@@ -112,7 +112,8 @@ def without_conda(path):
     return os.pathsep.join(
         entry
         for entry in path.split(os.pathsep)
-        if entry and not any((Path(entry) / n).is_file() for n in names)
+        if entry
+        and not any(os.path.isfile(os.path.join(entry, n)) for n in names)
     )
 
 

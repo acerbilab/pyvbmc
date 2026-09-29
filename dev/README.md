@@ -858,15 +858,17 @@ reason.
   `accounting_problems`, `wait_job`); and the tracked
   copies of a finished campaign, which its harness declares in the
   manifest (`tracked_copies`) and `redact` writes for the repository:
-  hostnames reduced to the node family, a path under a named directory
-  written with its name (a path setting, a `--path`, the operator's home
-  as `~`, and where none of those holds it a source tree as
-  `$<TREE>_TREE` or the campaign's parent as `$CAMPAIGN_PARENT`), the
+  hostnames reduced to the node family, a host part's lists of node
+  features to that family alone (the CPU model stays), a path under a
+  named directory written with its name (a path setting, a `--path`, the
+  operator's home as `~`, and where none of those holds it a source tree
+  as `$<TREE>_TREE` or the campaign's parent as `$CAMPAIGN_PARENT`), the
   fields that hold a partition as `$PARTITION`, the site block, the `pip
   freeze` paths and the Slurm accounting left in the archive, and every
   copy searched for what must not remain (the paths, the home and the
   settings as plain substrings, the username and the hostnames as whole
-  names) and for any absolute path outside the system's directories that
+  names, the other node features in the quotes a list of them holds)
+  and for any absolute path outside the system's directories that
   no name covers, a hit of an `--allow` string exempted, and a username or
   hostname that is a name the copies write refused, with `redaction.json`
   recording each copy's SHA-256 beside its source file's, which

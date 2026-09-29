@@ -1895,6 +1895,48 @@ def test_the_campaign_requirements_file():
     assert "--extra-index-url https://download.pytorch.org/whl/cpu" in text
 
 
+def test_installed_distributions_mark_what_conda_installed(
+    tmp_path, monkeypatch
+):
+    """A distribution whose metadata directory a ``conda-meta`` record of
+    the prefix lists is conda's, whatever its ``INSTALLER`` says; one that
+    pip installed beside it is not."""
+    import importlib.metadata
+
+    site = tmp_path / "lib" / "python3.12" / "site-packages"
+    for name, installer in (("foo", None), ("bar", "pip")):
+        info = site / f"{name}-1.0.dist-info"
+        info.mkdir(parents=True)
+        (info / "METADATA").write_text(
+            f"Metadata-Version: 2.1\nName: {name}\nVersion: 1.0\n",
+            encoding="utf-8",
+        )
+        if installer:
+            (info / "INSTALLER").write_text(installer, encoding="utf-8")
+    (tmp_path / "conda-meta").mkdir()
+    (tmp_path / "conda-meta" / "foo-1.0-0.json").write_text(
+        json.dumps(
+            {
+                "files": [
+                    "lib/python3.12/site-packages/foo-1.0.dist-info/METADATA"
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    distributions = importlib.metadata.distributions
+    monkeypatch.setattr(sys, "prefix", str(tmp_path))
+    monkeypatch.setattr(
+        importlib.metadata,
+        "distributions",
+        lambda: distributions(path=[str(site)]),
+    )
+    found = {d["name"]: d for d in contract.installed_distributions()}
+    assert set(found) == {"foo", "bar"}
+    assert found["foo"]["conda"] and found["foo"]["installer"] == ""
+    assert not found["bar"]["conda"] and found["bar"]["installer"] == "pip"
+
+
 def test_installed_distributions_describe_this_environment():
     found = contract.installed_distributions()
     names = {contract.canonical_name(d["name"]) for d in found}
@@ -2947,6 +2989,15 @@ def test_redact_refuses_what_survives_and_writes_nothing(site, tmp_path):
         assert "summary.json" in message and "none was written" in message
         assert what in message, message
         assert not target.parent.exists()
+    # A node feature other than the family in a JSON list that is no host
+    # part's, which the reduction does not reach.
+    site.rewrite(
+        out / "summary.json",
+        lambda value: value.update(note="", nodes=["fakefeature"]),
+    )
+    with pytest.raises(contract.ContractError, match="a node feature"):
+        redacted(site, out, target)
+    assert not target.parent.exists()
 
 
 def test_the_redaction_rewrites_every_form_of_a_name(site, tmp_path):
