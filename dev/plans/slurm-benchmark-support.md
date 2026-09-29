@@ -1311,6 +1311,6 @@ reproduces bit for bit.
   the developer's machine the contract (135), public asset (6),
   promotion (9), population (59), analysis (55), pool (76), honest-ELBO
   (14) and stacking (54) modules pass at `e293893c`, and the public
-  asset's (7) at `eb7538de`; the driver module passed 73 of 74, its
-  `test_array_refusals` failing once while another pytest process ran
-  beside it and passing alone.
+  asset's (7) at `eb7538de`; the driver module, whose
+  `test_array_refusals` failed once while another pytest process ran
+  beside it, passes whole (74) at `6ff30208`, run alone.
