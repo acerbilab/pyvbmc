@@ -18,7 +18,9 @@ it and what the branch gives it.
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
 - [x] Phase 5: the stacking harness (2026-09-25).
-- [ ] Phase 6: smoke campaigns on Turso.
+- [ ] Phase 6: smoke campaigns on Turso. Every check passed on 2026-09-29
+  but one: `campaign_public.sh --check` over a directory of two assets,
+  fixed in `eb7538de`, runs again on the cluster.
 - [ ] Phase 7: the operator guide, the brief, an independent review; merge
   into `dev-next`. The guide, the redaction and two review rounds are
   done (2026-09-26); the brief waits for Phase 6's limits.
@@ -28,27 +30,30 @@ it and what the branch gives it.
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
 (pushed), and every harness test module passes on it on the developer's
 machine. The cluster work, in the PI's account, is Phase 1b, then Phase
-6, in the four steps below. Steps 1 and 2 are done (the worklog,
-2026-09-28 and 29), and step 3's canaries were submitted on 2026-09-29.
+6, in the four steps below, all done (the worklog, 2026-09-28 and 29)
+but one check of step 4. Next: in a login session, pull the branch into
+the harness checkout and run `campaign_public.sh --check` on the smoke
+campaigns' public directory, which holds two assets; then the brief,
+with the limits that "Resources and cost" gives, and the merge.
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
-   Phase 1b and the real output of `sacct -n -X -P -j <job>_<task> -o State`,
+   Phase 1b and the real output of
+   `sacct -n -X -P -j <job>_<task> -o State`,
    `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
    source trees as the operator's guide (`dev/scripts/hpc/README.md`)
    says, build the environment with `campaign_env.sh build`, freeze it into
    `campaign_requirements.txt`, and commit and push the freeze to the
    branch.
 2. **The environment check** (passed 2026-09-29), as a batch job. It is
-   also the first run of
-   the harnesses in an environment that installs neither PyVBMC nor
-   gpyreg: the developer's machine could test that only by hiding the
-   packages' metadata.
+   also the first run of the harnesses in an environment that installs
+   neither PyVBMC nor gpyreg: the developer's machine could test that
+   only by hiding the packages' metadata.
 3. **A canary of each harness,** and the heaviest cases, for the `TIME`
-   and `MEM` of every job.
+   and `MEM` of every job (done 2026-09-29).
 4. **The failure paths of Phase 6,** then a finish, a redaction and a
    public asset (`campaign_public.sh`), whose shell wrapper runs there for
-   the first time.
+   the first time (done 2026-09-29, but the check of two assets).
 
 The brief for the postdoc follows, then the merge into `dev-next`. Any
 change to the code that the smoke campaigns need is a commit on the
@@ -758,6 +763,42 @@ build the whole matrix at 20 draws per component. The `M = 16` and
 `M = 32` tasks are submitted as their own subsets (`CASES_SUBSET=M16`,
 `M32`) with their own `MEM`, which Phase 6 sets from their accounting.
 
+**Measured in Phase 6** (2026-09-29, on the campaigns' node family, from
+the smoke campaigns' accounting; one task per core, the accounting
+counting one CPU):
+
+- Populations, seed 0 of every `production` configuration (before arm /
+  after arm): `cigar_D15_exhaust` 20.8 / 22.4 minutes;
+  `lumpy_D10_noise3_production` 10.0 / 10.8, so it needs no subset of its
+  own; `student_D8_noise3_production` 8.1 / 9.1; every other configuration
+  8 minutes or less. The 24 cases add up to about 1.65 CPU-hours per arm,
+  about 165 for 100 seeds if seed 0 is typical. Peak resident memory
+  430 MB.
+- Pools, the first seed of every condition and 40 seeds of
+  `student_D8_noise3_svbmc`: the student condition about 10.5 minutes a
+  run, `multisensory_s1_D6_noise3_svbmc` 7.3, the ring 5.9, the others 4.3
+  or less; with the allocation's seed counts about 225 CPU-hours, as
+  estimated. Peak 375 MB.
+- Stacking, `student_D8_noise3_svbmc` alone: a task of 16 repetitions at
+  `M = 2`, both arms, 1.3 minutes and 0.75 GB; 4 repetitions at `M = 8`
+  2.8 minutes and 1.0 GB; one cell at `M = 16`, both arms, 2.8 minutes and
+  1.4 GB; one cell at `M = 32` 4.3 minutes and 3.1 GB, above the
+  developer's machine's 2.1 GB. Other conditions were not measured.
+- Step jobs: a pool `verify` of 47 cases 10 s and 128 MB; a population
+  `verify` of 24 cases 11 to 18 s and up to 450 MB; `rescore` of 48 cases
+  42 s and 241 MB; `select` and `summarize` a few seconds. The environment
+  check 19 minutes and 1.5 GB.
+
+The limits the brief gives, with a margin for seeds slower than those
+measured: `POP_TIME` 1 hour, `CIGAR_TIME` 1.5 hours, `POP_MEM` 2 GB;
+`POOL_TIME` 45 minutes, `POOL_MEM` 2 GB; `STACK_TIME` 1 hour and
+`STACK_MEM` 4 GB, `M16_TIME` 30 minutes and `M16_MEM` 4 GB, `M32_TIME`
+1 hour and `M32_MEM` 6 GB; `POP_VERIFY_TIME` 2 hours and
+`POP_VERIFY_MEM` 4 GB (2400 cases at about 0.75 s), `RESCORE_TIME` 3
+hours and `RESCORE_MEM` 4 GB (4800 cases at about 0.9 s); the pools'
+`verify` fits the default limits (2930 cases at about 0.2 s);
+`CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB.
+
 ## Records and hand-back
 
 - The harness checkout and every source tree are real git repositories at
@@ -1237,3 +1278,39 @@ reproduces bit for bit.
   pools at the release allocation, with the first case of every
   condition and seeds 1001–1039 of `student_D8_noise3_svbmc`, from which
   the stacking takes an `M = 16` and an `M = 32` cell.
+- 2026-09-29: Phase 6's smoke campaigns, steps 3 and 4; the measurements
+  are in "Resources and cost". Every canary case completed and verified:
+  24 in each population arm, whose finishes ran `verify` and `summarize`
+  and, in the after arm, `rescore`, which rescored the 48 cases and
+  reproduced the after arm's in-run metrics exactly (the before arm's,
+  from the code of `f91fdf0`, differ, as the rescoring expects); 47 in
+  the pools, of which `select --target 32` made the student condition
+  stackable; and a stacking campaign on that condition, one task per `M`
+  (2, 8 and 16 with both arms, 32 with the integrated arm). The failure
+  paths ran on a pool campaign of the `smoke` suite (12 cases): a task
+  cancelled while it ran cleaned up and read as missing; a task whose
+  worker was killed by SIGKILL read as interrupted, and its resubmission
+  took over the stale claim; a duplicate submission of a running case was
+  refused with 75; the finish with `--allow-running` counted the cases in
+  flight and queued and exited 3 on the missing and interrupted ones, and
+  without it named `ARRAY=6-8`; a resubmission of the finished range
+  exited at once; the full finish verified 12 of 12 and wrote the
+  archive, which matches its SHA-256; the redaction and the public asset
+  passed their own checks. On this Slurm `scancel --signal=KILL` is an
+  ordinary cancel, whose SIGTERM the worker handles, so the kill was a
+  step inside the task's allocation (`srun --jobid=<job> --overlap kill
+  -9 <pid>`, the claim giving the job and the pid). Three findings, fixed
+  on the branch: an independent search of the redacted copies found the
+  site's other node features in a host part's lists, which the redaction
+  kept, and the PI ruled that the copies keep the campaign's feature
+  alone and the CPU model (`e293893c`; the pool and both population arms,
+  redacted again, then hold nothing of the site, nor do their public
+  assets); the guide's pool canary submitted case 1 a second time, whose
+  task exits 75 (`e293893c`); and `campaign_public.sh --check` refused a
+  directory holding two assets, as the guide builds them (`eb7538de`). On
+  the developer's machine the contract (135), public asset (6),
+  promotion (9), population (59), analysis (55), pool (76), honest-ELBO
+  (14) and stacking (54) modules pass at `e293893c`, and the public
+  asset's (7) at `eb7538de`; the driver module passed 73 of 74, its
+  `test_array_refusals` failing once while another pytest process ran
+  beside it and passing alone.
