@@ -3,10 +3,13 @@
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
 to 5, Phase 7's redaction and operator's guide, and the tools of Phase 9,
 the promotion and the public assets implemented on
-`feat-slurm-campaigns`**, which has not merged into `dev-next`. What it assumes of the cluster rests on a
-survey of the cluster on 2026-09-25 and on the records of the September
-pool. The harness sections below describe each harness as `dev-next` holds
-it and what the branch gives it.
+`feat-slurm-campaigns`, Phase 1b done and Phase 6 done but for its last
+checks on the cluster (2026-09-28/29)**; the branch has not merged into
+`dev-next`. What it assumes of the cluster rests on the surveys of
+2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of Phase 6
+and on the records of the September pool. The harness sections below
+describe each harness as `dev-next` holds it and what the branch gives
+it.
 
 ## Live checklist
 
@@ -18,23 +21,36 @@ it and what the branch gives it.
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
 - [x] Phase 5: the stacking harness (2026-09-25).
-- [ ] Phase 6: smoke campaigns on Turso. Every check passed on 2026-09-29
-  but one: `campaign_public.sh --check` over a directory of two assets,
-  fixed in `eb7538de`, runs again on the cluster.
+- [ ] Phase 6: smoke campaigns on Turso. The checks passed on 2026-09-29
+  (the worklog); three remain for the next cluster session (the pickup
+  point).
 - [ ] Phase 7: the operator guide, the brief, an independent review; merge
   into `dev-next`. The guide, the redaction and two review rounds are
-  done (2026-09-26); the brief waits for Phase 6's limits.
+  done (2026-09-26); Phase 6 measured the limits the brief gives
+  ("Resources and cost").
 - [ ] Phase 8: the campaigns, on the PI's instruction.
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
 (pushed), and every harness test module passes on it on the developer's
 machine. The cluster work, in the PI's account, is Phase 1b, then Phase
-6, in the four steps below, all done (the worklog, 2026-09-28 and 29)
-but one check of step 4. Next: in a login session, pull the branch into
-the harness checkout and run `campaign_public.sh --check` on the smoke
-campaigns' public directory, which holds two assets; then the brief,
-with the limits that "Resources and cost" gives, and the merge.
+6, in the four steps below, done (the worklog, 2026-09-28 and 29) but for
+three checks of the next cluster session, whose places the operator's
+notes give:
+
+- with the harness checkout at `2356f12d`, the commit of the smoke
+  campaigns, the finish of the smoke stacking campaign, whose four tasks
+  completed but which was neither verified nor assembled, for its
+  `verify` and the `ASSEMBLE_TIME` and `ASSEMBLE_MEM` of the brief;
+- with the checkout at the branch's tip, `campaign_public.sh --check` on
+  the smoke campaigns' public directory, which holds two assets;
+- a search of the smoke campaigns' redacted copies and public assets for
+  every site detail the operator's notes list, whole: the one made after
+  the redaction's fix showed at most ten hits per directory.
+
+The brief for the postdoc, with the limits of "Resources and cost", and
+the merge into `dev-next` need none of them but the stacking's finishing
+limits.
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
@@ -53,10 +69,9 @@ with the limits that "Resources and cost" gives, and the merge.
    and `MEM` of every job (done 2026-09-29).
 4. **The failure paths of Phase 6,** then a finish, a redaction and a
    public asset (`campaign_public.sh`), whose shell wrapper runs there for
-   the first time (done 2026-09-29, but the check of two assets).
+   the first time (done 2026-09-29, but for the checks above).
 
-The brief for the postdoc follows, then the merge into `dev-next`. Any
-change to the code that the smoke campaigns need is a commit on the
+Any change to the code that the smoke campaigns need is a commit on the
 branch, with the test modules it touches run again. The tools of Phase 9
 and of the promotion that follows it, `seeded_gate_runs.py` and
 `reference_promote.py`, and the builder of the public assets,
@@ -141,10 +156,10 @@ comparison then stacks subsets of each pool.
    [ledger](../results/2026-09-23-port-correctness-review.md), "The fixes
    that move default trajectories"), so the noiseless runs are regenerated
    along with the noisy ones. The 100 seeds hold for the two costliest
-   configurations as well: `cigar_D15_exhaust`, about a quarter of a
-   population's cost, and `lumpy_D10_noise3_production`, which has never
-   run and whose seed count is revisited only if its first smoke case
-   takes hours.
+   configurations as well: `cigar_D15_exhaust`, about a fifth of a
+   population's cost, and `lumpy_D10_noise3_production`, whose seed
+   count was to be revisited had its first smoke case taken hours; it
+   took about 11 minutes (Phase 6).
 3. **A before arm.** The only old-code runs of the noisy `production`
    configurations are the 80 runs of 2026-09-18/19 (six configurations,
    10 to 20 seeds each), too few to judge the fixes on those targets. The
@@ -240,11 +255,15 @@ What the design assumes of the cluster:
   "Outcome"), so every task requests one node type with `-C`. The two
   population arms, the pools and the stacking use the same feature, so
   that the arms differ in their code alone and the stacking's runtime
-  ratios come from one CPU model.
+  ratios come from one CPU model. A family that no single feature
+  selects, one whose nodes carry only features that other families share,
+  cannot hold a campaign.
 - **Physical cores.** Where Slurm counts hardware threads as CPUs,
   `--cpus-per-task=1` is one thread and two tasks can share a core, so
   every task passes `--hint=nomultithread`; the accounting may then count
-  both threads of the core.
+  both threads of the core. On Turso (Phase 1b) a task so placed holds
+  both threads of one core, the job's cpuset equal to them, and the
+  accounting counts one CPU.
 - **Short tasks.** Every task of this plan takes minutes, and `TIME` is set
   from the measured durations (Phase 6).
 - **Network on the login node only.** Environments and source trees are
@@ -397,10 +416,11 @@ process runs on the host that made it, and on any other host until the
 operator removes it. The accounting keeps a job's state after the job ends. `squeue` answers
 only for the jobs the controller still holds and can answer with an
 error for one it has dropped, as it does when the query fails, so it
-cannot tell an ended task from an unreachable controller. Phase 1b checks
-that the accounting answers from a compute node; where it does not, every
-claim is live, and a resubmission waits for the operator to clear the
-stale ones.
+cannot tell an ended task from an unreachable controller. Where the
+accounting does not answer from a compute node, every claim is live, and
+a resubmission waits for the operator to clear the stale ones; on Turso
+it answers (Phase 1b), and Phase 6's resubmission of a killed task took
+over its stale claim.
 
 **The source identity**, compared by every worker: the commit and the
 clean state of each source tree (the whole harness checkout, the package
@@ -446,9 +466,9 @@ What is new:
   Python 3.12 as in September, `zstd` for the archive and `gh` for the
   hand-back from conda-forge (a cluster need not have either), and the rest
   from pip at the versions pinned in
-  `dev/scripts/hpc/campaign_requirements.txt`, which holds the direct
-  requirements until Phase 1b freezes into it every package the
-  environment takes from PyPI, dependencies included, so that the
+  `dev/scripts/hpc/campaign_requirements.txt`, into which Phase 1b froze
+  every package the environment takes from PyPI, dependencies included
+  (conda's `pip`, `setuptools` and `wheel` aside), so that the
   environments of the smoke campaigns and of the campaigns, built in
   different accounts, hold the same libraries. The submission compares the
   environment's installed versions with the file before `prepare` and
@@ -731,73 +751,61 @@ read the assembled results (`svbmc_shrink_elbo.py`,
 
 ## Resources and cost
 
-Estimates from the September records; Phase 6 measures them.
+Phase 6 measured each harness's tasks on the campaigns' node family
+(2026-09-29), from the smoke campaigns' accounting: one task per core,
+which the accounting counts as one CPU; where an accounting counts both
+threads of a core, the accounted figures double. The population and pool
+tasks' figures are in the logs that `dev/scripts/runs/LOCAL.md` lists;
+those of the stacking tasks and of the step jobs were read from the
+accounting (`sacct -j <job>`), whose job ids the operator's notes list.
 
-| Campaign | Cases | CPU-hours on Turso |
+| Campaign | Cases | CPU-hours |
 |---|---|---|
-| Pools | 2930 | about 220, from the September medians per condition |
-| Population, per arm | 2400 | about 220, without `lumpy_D10_noise3_production`, which has never run |
-| Stacking | 560 two-arm cells and 400 integrated-only cells | about 25, without the per-task overhead |
-
-About 685 CPU-hours in all, before `lumpy_D10_noise3_production` in both
-arms and the stacking's per-task overhead (Torch imports, the reference
-draws of each condition, loading the pool); where the accounting counts
-both threads of a core, the accounted figure doubles. The population
-estimate adds the laptop medians of the 16 noiseless configurations
-(`golden/baseline/summary.md`, 30 minutes for one seed of each), the
-production-budget runs of 2026-09-18/19 for noisy Rosenbrock, logistic
-regression and Student D8, and 1.5 times the paper-budget medians for the
-timing and multisensory configurations, which ran at the production budget
-without a tracked record of their time; that makes about 110 laptop hours
-per arm, doubled for the cluster. `cigar_D15_exhaust` alone takes about
-27.5 of them. The stacking estimate doubles the September laptop times
-(8.1 hours for the two-arm cells, 15 minutes for the integrated cells at
-`M` = 3 and 5, 237 minutes at `M = 32`). Phase 5 found one `M = 32` cell
-taking about 150 s at three optimization steps on the developer's
-machine, so the stacking may cost more than this estimate; Phase 6
-measures it. S-VBMC's final entropy evaluation reduces its matrix of log
-densities by chunks of rows (`ca4e8259`), with results identical bit for
-bit, so its peak at `M = 32` is about 350 MiB; the peak of an
-`optimize()` at `M = 32` is then its gradient steps, about 2.1 GB, which
-build the whole matrix at 20 draws per component. The `M = 16` and
-`M = 32` tasks are submitted as their own subsets (`CASES_SUBSET=M16`,
-`M32`) with their own `MEM`, which Phase 6 sets from their accounting.
-
-**Measured in Phase 6** (2026-09-29, on the campaigns' node family, from
-the smoke campaigns' accounting; one task per core, the accounting
-counting one CPU):
+| Pools | 2930 | about 225, from the first seed of every condition and 40 seeds of `student_D8_noise3_svbmc` |
+| Population, per arm | 2400 | about 155 (before arm) and 165 (after arm), from seed 0 of every configuration |
+| Stacking | 560 two-arm cells and 400 integrated-only cells | not measured whole; about 25 by the September laptop times doubled, which the `M = 32` cell below makes a low figure |
 
 - Populations, seed 0 of every `production` configuration (before arm /
-  after arm): `cigar_D15_exhaust` 20.8 / 22.4 minutes;
-  `lumpy_D10_noise3_production` 10.0 / 10.8, so it needs no subset of its
-  own; `student_D8_noise3_production` 8.1 / 9.1; every other configuration
-  8 minutes or less. The 24 cases add up to about 1.65 CPU-hours per arm,
-  about 165 for 100 seeds if seed 0 is typical. Peak resident memory
-  430 MB.
+  after arm): `cigar_D15_exhaust` 20.8 / 22.4 minutes, about a fifth of
+  the arm; `lumpy_D10_noise3_production` 10.0 / 10.8, so it needs no
+  subset of its own; `student_D8_noise3_production` 8.1 / 9.1; every
+  other configuration 8.1 minutes or less. The 24 cases add up to 1.56
+  and 1.65 CPU-hours. Peak resident memory 430 MB.
 - Pools, the first seed of every condition and 40 seeds of
   `student_D8_noise3_svbmc`: the student condition about 10.5 minutes a
   run, `multisensory_s1_D6_noise3_svbmc` 7.3, the ring 5.9, the others 4.3
-  or less; with the allocation's seed counts about 225 CPU-hours, as
-  estimated. Peak 375 MB.
+  or less. Peak 375 MB.
 - Stacking, `student_D8_noise3_svbmc` alone: a task of 16 repetitions at
   `M = 2`, both arms, 1.3 minutes and 0.75 GB; 4 repetitions at `M = 8`
   2.8 minutes and 1.0 GB; one cell at `M = 16`, both arms, 2.8 minutes and
-  1.4 GB; one cell at `M = 32` 4.3 minutes and 3.1 GB, above the
-  developer's machine's 2.1 GB. Other conditions were not measured.
+  1.4 GB; one cell at `M = 32` 4.3 minutes and 3.1 GB. A campaign's task
+  below `M = 16` holds 20 repetitions, so its task at `M = 8` takes about
+  14 minutes by this one. S-VBMC's final entropy evaluation reduces its
+  matrix of log densities by chunks of rows (`ca4e8259`), with results
+  identical bit for bit, so the peak of a task at `M = 32` is the
+  gradient steps of its `optimize()`, which build the whole matrix at 20
+  draws per component: 3.1 GB here, 2.1 GB on the developer's machine.
+  Other conditions were not measured. The `M = 16` and `M = 32` tasks are
+  submitted as their own subsets (`CASES_SUBSET=M16`, `M32`) with their
+  own `MEM`.
 - Step jobs: a pool `verify` of 47 cases 10 s and 128 MB; a population
   `verify` of 24 cases 11 to 18 s and up to 450 MB; `rescore` of 48 cases
-  42 s and 241 MB; `select` and `summarize` a few seconds. The environment
-  check 19 minutes and 1.5 GB.
+  42 s and 241 MB; `select` and `summarize` a few seconds. The stacking's
+  `assemble` has not run: the smoke stacking campaign was not finished.
+- The environment check: 19 minutes and 1.5 GB.
 
-The limits the brief gives, with a margin for seeds slower than those
-measured: `POP_TIME` 1 hour, `CIGAR_TIME` 1.5 hours, `POP_MEM` 2 GB;
+The limits, with a margin for seeds slower than those measured and, for
+the finishing steps, for campaigns a hundred times the size of the smoke
+ones: `POP_TIME` 1 hour, `CIGAR_TIME` 1.5 hours, `POP_MEM` 2 GB;
 `POOL_TIME` 45 minutes, `POOL_MEM` 2 GB; `STACK_TIME` 1 hour and
 `STACK_MEM` 4 GB, `M16_TIME` 30 minutes and `M16_MEM` 4 GB, `M32_TIME`
 1 hour and `M32_MEM` 6 GB; `POP_VERIFY_TIME` 2 hours and
 `POP_VERIFY_MEM` 4 GB (2400 cases at about 0.75 s), `RESCORE_TIME` 3
 hours and `RESCORE_MEM` 4 GB (4800 cases at about 0.9 s); the pools'
 `verify` fits the default limits (2930 cases at about 0.2 s);
-`CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB.
+`CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. `ASSEMBLE_TIME` and
+`ASSEMBLE_MEM` wait for the smoke stacking campaign's finish (the pickup
+point).
 
 ## Records and hand-back
 
@@ -908,13 +916,14 @@ campaigns' node family, and whether `sacct` answers from a compute node
 harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
 `f91fdf0` as a detached worktree, and the S-VBMC baseline. The first
 environment built from the direct pins (`campaign_env.sh build`) is
-frozen into `campaign_requirements.txt`, every package and Python to its
+frozen into `campaign_requirements.txt`: every package and Python to its
 patch release (`python -m pip list --format=freeze --exclude-editable`),
-but `pip`, `setuptools` and `wheel`, which conda installs with the
-interpreter, and the file is committed and pulled into the harness checkout before the
-first submission, since the submission refuses a package the file does
-not pin. The site-specific results go into the operator's notes; what
-bears on the design revises "The cluster". **Acceptance:** the
+leaving out `pip`, `setuptools` and `wheel`, which conda installs with
+the interpreter. The file is committed and pulled into the harness
+checkout before the first submission, since the submission refuses a
+package the file does not pin. The site-specific results go into the
+operator's notes; what bears on the design revises "The cluster".
+**Acceptance:** the
 environment built from the frozen file passes the environment check, and
 every source tree is clean at its commit.
 
@@ -1017,7 +1026,9 @@ On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
 with `reference_promote.py fingerprints`, which runs them through
 `golden_replay.py`: about 70 to 80 minutes by the laptop medians, and
-`lumpy_D10_noise3_production`, which Phase 6 times. Each run is judged
+`lumpy_D10_noise3_production`, whose seed 0 took about 11 minutes on the
+cluster in Phase 6, where the 24 seeds 0 took about 1.6 CPU-hours per
+arm. Each run is judged
 against the after arm's accuracy envelope (`golden_replay.py --sidecars`,
 which reads the per-configuration directories of the after arm or of its
 tracked copies, counts verified cases only, and fails for a configuration
@@ -1234,8 +1245,7 @@ reproduces bit for bit.
   there as the contract assumes. A task with `--cpus-per-task=1
   --hint=nomultithread` ran on both hardware threads of one core, its
   job's cpuset equal to them, and the accounting counted one CPU. One
-  feature selects the campaigns' node family; another family of the site
-  has no feature of its own and could hold no campaign. The five source
+  feature selects the campaigns' node family ("The cluster"). The five source
   trees are clean at their commits. The first environment built from the
   direct pins is frozen into `campaign_requirements.txt` (`f0d2789e`), and
   the environment built from the frozen file matches it. The freeze found
@@ -1277,16 +1287,19 @@ reproduces bit for bit.
   subset `canary` submitted (the first seed of every configuration); the
   pools at the release allocation, with the first case of every
   condition and seeds 1001–1039 of `student_D8_noise3_svbmc`, from which
-  the stacking takes an `M = 16` and an `M = 32` cell.
+  the stacking campaign of the next entry took its runs.
 - 2026-09-29: Phase 6's smoke campaigns, steps 3 and 4; the measurements
-  are in "Resources and cost". Every canary case completed and verified:
+  are in "Resources and cost". The canary cases completed and verified:
   24 in each population arm, whose finishes ran `verify` and `summarize`
   and, in the after arm, `rescore`, which rescored the 48 cases and
   reproduced the after arm's in-run metrics exactly (the before arm's,
-  from the code of `f91fdf0`, differ, as the rescoring expects); 47 in
-  the pools, of which `select --target 32` made the student condition
-  stackable; and a stacking campaign on that condition, one task per `M`
-  (2, 8 and 16 with both arms, 32 with the integrated arm). The failure
+  from the code of `f91fdf0`, differ, as the rescoring expects); the
+  before arm's `verify` loaded the boost captures that `f91fdf0`'s worker
+  wrote. And 47 in the pools, of which `select --target 32` made the
+  student condition stackable. A stacking campaign on that condition ran
+  one task per `M` (2, 8 and 16 with both arms, 32 with the integrated
+  arm); the four completed, and the campaign was neither verified nor
+  assembled (the pickup point). The failure
   paths ran on a pool campaign of the `smoke` suite (12 cases): a task
   cancelled while it ran cleaned up and read as missing; a task whose
   worker was killed by SIGKILL read as interrupted, and its resubmission
@@ -1296,17 +1309,25 @@ reproduces bit for bit.
   without it named `ARRAY=6-8`; a resubmission of the finished range
   exited at once; the full finish verified 12 of 12 and wrote the
   archive, which matches its SHA-256; the redaction and the public asset
-  passed their own checks. On this Slurm `scancel --signal=KILL` is an
-  ordinary cancel, whose SIGTERM the worker handles, so the kill was a
-  step inside the task's allocation (`srun --jobid=<job> --overlap kill
-  -9 <pid>`, the claim giving the job and the pid). Three findings, fixed
+  passed their own checks. On the site's Slurm `scancel --full
+  --signal=KILL` is an ordinary cancel, whose SIGTERM the worker handles,
+  so the kill was a step inside the task's allocation (`srun
+  --jobid=<job_id> --overlap kill -9 <pid>`, from the claim's `job_id` and
+  `pid` fields; `job_id` is the task's own job, which for every task but
+  an array's last differs from the array's `job`). Three findings, fixed
   on the branch: an independent search of the redacted copies found the
   site's other node features in a host part's lists, which the redaction
   kept, and the PI ruled that the copies keep the campaign's feature
-  alone and the CPU model (`e293893c`; the pool and both population arms,
-  redacted again, then hold nothing of the site, nor do their public
-  assets); the guide's pool canary submitted case 1 a second time, whose
-  task exits 75 (`e293893c`); and `campaign_public.sh --check` refused a
+  alone and the CPU model (`e293893c`). After the fix the redaction of the
+  failure-paths pool, again, and of both population arms, for the first
+  time, reduced the lists; its own search found none of the site's
+  details in the copies or in the two public assets built from them (the
+  failure-paths pool's and the after arm's), and an independent search,
+  which showed at most ten hits per directory, found only benign ones
+  (citations in the targets' descriptions, a chance byte pair in a
+  compressed array); a whole search remains (the pickup point). The
+  guide's pool canary submitted case 1 a second time, and that task
+  exited 75 (`e293893c`), and `campaign_public.sh --check` refused a
   directory holding two assets, as the guide builds them (`eb7538de`). On
   the developer's machine the contract (135), public asset (6),
   promotion (9), population (59), analysis (55), pool (76), honest-ELBO
@@ -1314,3 +1335,24 @@ reproduces bit for bit.
   asset's (7) at `eb7538de`; the driver module, whose
   `test_array_refusals` failed once while another pytest process ran
   beside it, passes whole (74) at `6ff30208`, run alone.
+- 2026-09-29: a doublecheck of the session's commits by three fresh
+  reviewers (the environment check and the tests' isolation; the
+  redaction and the public asset; the records and their privacy), and
+  its fixes. The operator's guide gave one of the site's node features as
+  its example of a quoted feature; it gives a placeholder. The two
+  entries above claimed a verification of the smoke stacking campaign,
+  which was not made, and more of the redaction's second pass than was
+  done; they are corrected in place. `redaction.json`'s rules, the
+  `redact` docstring and `dev/README.md` state the reduction of the node
+  features; `campaign_public.py check` also fails on a part that no
+  listing names; a test marks conda's distributions in a stand-in prefix
+  through its `conda-meta` record, and another refuses a leftover feature
+  in a JSON list; the honest-ELBO tests leave out the Slurm variables and
+  the operator's settings as the other modules' do; the driver tests read
+  a `PATH` entry they cannot open as holding no conda. The plan's
+  estimates give way to Phase 6's measurements ("Resources and cost"),
+  and decision 2, "The cluster", the driver's environment, Phase 1b and
+  Phase 9 state what Phases 1b and 6 found. With the fixes the contract
+  (136), public asset (7), honest-ELBO (14) and driver (74) modules pass
+  on the developer's machine, none skipped. Three checks remain for the
+  next cluster session (the pickup point).
