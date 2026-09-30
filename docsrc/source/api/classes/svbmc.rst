@@ -226,6 +226,34 @@ compare the individual runs with the stacked posterior, and
 ``find_init_bounds`` returns the box to draw VBMC starting points from
 given the bounds and plausible bounds of a problem.
 
+Differences from the standalone ``svbmc`` package
+-------------------------------------------------
+
+The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
+version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
+The method and the optimizer of the weights are the same, and on our
+benchmark the two reach the same weights. What differs:
+
+- It is faster. The work that the components of one run share, its parameter
+  transform above all, is done once per run rather than once per component.
+- The reported ELBO is more precise. The corrections that bring the expected
+  log-joint of each run to the original parameter space are computed once,
+  when the object is created, exactly or by numerical quadrature, where the
+  standalone package estimated them by Monte Carlo at every step. After the
+  optimization the ELBO is evaluated again with more draws
+  (``optimize(n_samples_final=...)``), and it comes with an uncertainty,
+  ``elbo_sd``.
+- ``elbo`` is a number. The entries of the standalone package's ``elbo``
+  dictionary are in ``elbo_details``, under the names given in
+  `ELBO reporting`_.
+- ``seed`` takes the place of ``testing``: every random draw comes from the
+  generator of the ``SVBMC`` object, and the input posteriors are neither
+  modified nor advanced.
+- ``sample(n)`` returns exactly ``n`` draws. The standalone package rounded
+  the share of each run separately and could return a few more or fewer.
+- Results are float64, problems with one variable work, and malformed inputs
+  raise errors.
+
 Citation
 --------
 
@@ -234,9 +262,6 @@ Monte Carlo. *Transactions on Machine Learning Research*.
 `arXiv:2504.05004 <https://arxiv.org/abs/2504.05004>`_,
 `TMLR <https://openreview.net/forum?id=M2ilYAJdPe>`_. Please cite it
 together with the VBMC and PyVBMC papers when you use S-VBMC.
-
-The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
-version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
 
 .. autoclass:: pyvbmc.svbmc.SVBMC
    :members:
