@@ -29,6 +29,10 @@ for using it effectively. Highlights include:
 - **Faster inference and lower memory use**, with numerical improvements and more
   compact run histories. Optional :doc:`performance calibration <api/functions/calibrate>`
   tunes PyVBMC for your machine.
+- **Corrections to the algorithm**, most of them from a systematic comparison
+  with the original MATLAB VBMC, a check that keeps the final boost from
+  replacing a good posterior with a worse one, and clear errors for option
+  values that earlier versions ignored or misread.
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC
   to combine posteriors from independent runs
   (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__;
