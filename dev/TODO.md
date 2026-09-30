@@ -79,9 +79,9 @@ records its execution.
   output, the platform-bound ones included (a dump made with 1.3.3 by
   `make_oracle_fixtures.py --dump-outputs`, checked with `--check --exact
   --against`), the three GP-fit-history captures and the five default
-  golden replays. gpyreg `d96d0d9`, on which the example notebooks' stored
-  outputs were executed on 2026-09-26 and 27, gives the same oracle
-  outputs. Two
+  golden replays. The checks of the nine example notebooks passed under
+  Python 3.12. gpyreg `d96d0d9`, on which the notebooks' stored outputs
+  were executed on 2026-09-26 and 27, gives the same oracle outputs. Two
   steps remain. The exact oracle check against the committed references
   (`python dev/scripts/make_oracle_fixtures.py --check --exact`) runs on
   the machine that generated them (`dev/scripts/runs/LOCAL.md`), since
