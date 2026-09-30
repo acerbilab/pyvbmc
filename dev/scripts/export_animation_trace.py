@@ -33,7 +33,7 @@ affine), so its covariance is ``M M^T``.
 Usage, from the repository root::
 
     python -u dev/scripts/export_animation_trace.py --seed 8
-    python -u dev/scripts/export_animation_trace.py --target banana --seed 22
+    python -u dev/scripts/export_animation_trace.py --target banana --seed 57
 
 The first writes ``trace.js`` (``window.VBMC_TRACE = {...}``), the run
 that ``index.html`` plays; the second writes ``trace_wordmark.js``, the

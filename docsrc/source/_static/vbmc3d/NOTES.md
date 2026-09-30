@@ -9,16 +9,19 @@ including what was tried and set aside.
 
 The page, the recorded run and the exporter are complete and consistent with
 each other: the page's self-check (`?debug=1`) passes on the committed trace
-with the numbers quoted in the README, and exporting again on the machine
-that made the trace gives a byte-identical file.
+with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
+`5e5fa188`, which exporting again at that revision on the machine that made
+it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
+another run (Seeds, below).
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
-in the README, and exporting seed 22 again reproduces the sweep's run
-(ELBO, iterations and evaluations). The owner has watched it in a desktop
-browser on the development machine; their feedback so far (a flash of the
-target's sheet as the story starts, and the finale's caption) has been
-acted on, and the rest of the finale's look is still theirs to steer.
+in the README, and exporting seed 57 again gives a byte-identical file. The
+owner has watched the page in a desktop browser on the development machine
+while it played the run of seed 22 that the trace held before (Seeds,
+below); their feedback so far (a flash of the target's sheet as the story
+starts, and the finale's caption) has been acted on, and the rest of the
+finale's look is still theirs to steer.
 
 How it has been verified:
 
@@ -35,8 +38,9 @@ How it has been verified:
   recordings, has since recorded PNG frames, a short MP4 and the finale GIF
   (8.8 MB), not the whole loop.
 - One independent read-only review of the whole change, which re-derived the
-  target's moments, decoded the trace itself, reproduced every number in the
-  README, and confirmed that the recorder does not alter the run (the
+  target's moments, decoded the trace itself, reproduced every number that
+  the README then quoted (on the runs of seeds 8 and 22), and confirmed
+  that the recorder does not alter the run (the
   unobserved run of the same seed has the same ELBO, iteration count and
   gsKL). Its findings were fixed afterwards; the fixes were checked with the
   self-check and stills, not reviewed again.
@@ -49,6 +53,8 @@ What nobody has verified:
   whose first fit looked pinched. The remedy for that (`drawable_samples`)
   has been seen only as stills. (The rest of the page is shared with
   `wordmark.html`, which the owner has watched.)
+- **`wordmark.html` playing the run of seed 57.** Seen only in headless
+  stills; the recordings were made from the run of seed 22.
 - Frame rate on phones. Phones draw the full 64 x 64 mesh with half the
   segments per cell; no measurement exists.
 - The multisampled render target on a real GPU (it runs under software
@@ -165,38 +171,52 @@ was decided:
 
 ### `trace_wordmark.js`
 
-Seeds 0 to 59 on the banana alone, PyVBMC `1.0.5.dev156+g4d91a5e61`,
-default options, BLAS single-threaded, on the machine that made the trace:
-the runs of `--target banana --sweep 0:60` (the sweep itself was checked on
-seeds 22 and 2, which it reproduces). Here, evaluations are the ones still
-in the training set at the end; `--sweep` also counts the ones trimmed at
-the end of warm-up (95 for seed 22). `arms` is `arm_coverage`. The ELBO SD
-is 0.001 for every run. 25 runs ended with 80 to 100 evaluations; the table
-has the eight of them with the best arm coverage, and seeds 3 and 2, which
-leave the arm tips bare.
+Seeds 0 to 59 on the banana alone, the PyVBMC of `254dd6cc` (unchanged at
+`36e52d36`, the revision the trace records) with gpyreg 1.4.0, default options,
+BLAS single-threaded, on the machine that made the trace: the runs of `--target
+banana --sweep 0:60`. Exporting a seed reproduces its sweep line (checked on
+the 28 seeds exported for this table). Here, evaluations are the ones still in
+the training set at the end; `--sweep` also counts the ones trimmed at the end
+of warm-up (95 for seed 57). `arms` is `arm_coverage`. The ELBO SD is 0.001 for
+every run. The table has the six runs that end with 80 to 100 evaluations and
+the best arm coverage, the two in that range with the best ELBO and the best
+gsKL, three runs outside it that cover both arms with better numbers, seed 3,
+which leaves the arm tips bare, and seed 22.
 
 | seed | iterations | evaluations | ELBO | gsKL | arms |
 |---:|---:|---:|---:|---:|---:|
-| **22** | 18 | 93 | -0.013 | 0.058 | 1.00 |
-| 50 | 18 | 92 | -0.025 | 0.084 | 0.97 |
-| 4 | 17 | 87 | -0.029 | 0.087 | 0.96 |
-| 6 | 16 | 84 | -0.026 | 0.105 | 0.96 |
-| 14 | 16 | 83 | -0.022 | 0.076 | 0.94 |
-| 47 | 16 | 82 | -0.025 | 0.099 | 0.92 |
-| 48 | 16 | 83 | -0.027 | 0.088 | 0.91 |
-| 41 | 18 | 93 | -0.032 | 0.096 | 0.91 |
-| 3 | 15 | 80 | -0.048 | 0.191 | 0.63 |
-| 2 | 15 | 80 | -0.050 | 0.168 | 0.57 |
+| **57** | 18 | 94 | -0.033 | 0.090 | 1.00 |
+| 49 | 18 | 94 | -0.036 | 0.088 | 0.93 |
+| 4 | 17 | 87 | -0.033 | 0.120 | 0.92 |
+| 16 | 16 | 84 | -0.031 | 0.116 | 0.92 |
+| 34 | 20 | 100 | -0.041 | 0.113 | 0.88 |
+| 31 | 16 | 82 | -0.037 | 0.157 | 0.85 |
+| 59 | 17 | 90 | -0.023 | 0.086 | 0.84 |
+| 55 | 17 | 86 | -0.021 | 0.094 | 0.82 |
+| 42 | 20 | 103 | -0.019 | 0.056 | 1.00 |
+| 50 | 20 | 102 | -0.021 | 0.059 | 1.00 |
+| 21 | 22 | 112 | -0.012 | 0.042 | 1.00 |
+| 3 | 15 | 80 | -0.066 | 0.263 | 0.26 |
+| 22 | 13 | 68 | -0.057 | 0.259 | 0.71 |
 
-Within the range of evaluations, seed 22 has the best ELBO, gsKL and arm
-coverage; its ELBO is the best of all 60 runs. Its smallest hyperparameter
-length scale is 1.05 (seed 8 of `trace.js`: 0.010), so no GP state of its
-trace leaves a sample out (`drawable_samples`).
+Seed 57 is the only run that ends with 80 to 100 evaluations and covers
+both arms. In that range seed 55 has the best ELBO and seed 59 the best
+gsKL, better than seed 57's by 0.012 and 0.004, with arm coverage 0.82 and
+0.84. Seed 57's smallest hyperparameter length scale is 1.52 (seed 8 of
+`trace.js`: 0.010), so no GP state of its trace leaves a sample out
+(`drawable_samples`). Seeds 42, 50 and 21 cover both arms with a better
+ELBO and gsKL (seed 21's ELBO is the best of the 60 runs), but keep more
+than 100 evaluations and run 20 or 22 iterations.
+
+Before this sweep, the trace was the run of seed 22 with the PyVBMC of
+`5e5fa188`, chosen the same way from a sweep of that code: 18 iterations,
+93 evaluations, ELBO -0.013, gsKL 0.058, arm coverage 1.00. The code of
+this table gives seed 22 the run of its last row.
 
 ### `trace.js`
 
-`--sweep` on the machine that made the trace, PyVBMC
-`1.0.5.dev156+g4d91a5e61`, default options. The target's log evidence is 0.
+`--sweep` on the machine that made the trace, with the PyVBMC of
+`5e5fa188`, default options. The target's log evidence is 0.
 `min ell` is the smallest length scale of any hyperparameter sample over
 the run, in the target's units (one grid cell is 0.22); it was computed for
 the five seeds with an ELBO above -0.1 only. Seeds above 12 were not run.
@@ -222,9 +242,12 @@ numbers for the same seeds.
 The owner asked for an ELBO above -0.1 and a low gsKL. Seed 12 has the
 lowest gsKL and a shorter run, and was the choice until its first fit
 rendered as a serrated comb, which is the needle problem above at its
-worst. Seed 8 replaced it before `drawable_samples` existed. Seed 12 has
-not been looked at with that remedy in place, and may now be the better
-run to show.
+worst. Seed 8 replaced it before `drawable_samples` existed.
+
+The PyVBMC of `254dd6cc` gives seed 8 another run: 27 iterations, 135
+evaluations, ELBO -0.234, gsKL 0.234. This table describes the code of
+`5e5fa188`; if `index.html` stays, its seed is chosen again from a sweep
+of the current code.
 
 ## Previews
 

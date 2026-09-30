@@ -9,10 +9,15 @@ is in `README.md`.
 
 In this order. The first two are decisions for the project owner.
 
-1. **Steer `wordmark.html`'s finale.** The owner has watched it and the
-   recordings of item 3; what is still open is the camera's pull-back, how
-   long the wordmark holds, the letters' color, weight and brightness
-   against the V, and the V in the log view against `?wmview=density`.
+1. **Steer `wordmark.html`'s finale.** The owner has watched it, and the
+   recordings of item 3, with the run of seed 22; the page now plays the
+   run of seed 57 (`NOTES.md`, "Seeds"), which only headless stills have
+   shown, so the first thing to settle is whether its V is the one to keep.
+   Seeds 42 and 50 cover both arms with a better ELBO and gsKL but keep 103
+   and 102 evaluations, above the limit of 100 that the choice held to.
+   What is open after that is the camera's pull-back, how long the wordmark
+   holds, the letters' color, weight and brightness against the V, and the
+   V in the log view against `?wmview=density`.
 2. **Decide which page the documentation shows, and how**: `wordmark.html`,
    `index.html` or both; a link next to the corner-plot GIF on the index
    page, or a page embedded as the hero. Then publish the folder
@@ -36,11 +41,12 @@ In this order. The first two are decisions for the project owner.
    wires add up to white. The frame rate on phones, which draw the full
    64 x 64 mesh, is unmeasured.
 
-If `index.html` stays, two of its questions are open: whether the owner
-accepts `drawable_samples` on its first fit (5 of 8 samples shown; the
-alternatives are in `NOTES.md`, "Needles after the first fit"), and whether
-seed 12, set aside before `drawable_samples` existed, is now the better run
-to show (`NOTES.md`, "Seeds").
+If `index.html` stays, its trace needs a seed chosen again: `trace.js` is a
+run of the PyVBMC of `5e5fa188`, and the PyVBMC of `254dd6cc` gives seed 8 a
+worse run (`NOTES.md`, "Seeds"). Sweep the default target
+(`--sweep 0:60`) and choose as before; then, if the chosen run's first fit
+leaves samples out, settle whether the owner accepts `drawable_samples`
+there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 
 ## Constraints
 
@@ -54,11 +60,10 @@ to show (`NOTES.md`, "Seeds").
   machine the committed seeds give other trajectories: choose seeds again
   with `--sweep`, and expect the numbers quoted in `README.md` and
   `NOTES.md` to change.
-- The branch `feat-3d-animation` is based on `5e5fa188`, behind `dev-next`.
-  Outside this folder it touches `dev/scripts/export_animation_trace.py`
-  (new), `dev/README.md` (one entry in the scripts list, a merge conflict
-  with `dev-next`) and `docsrc/source/conf.py` (the exclusion of this
-  folder's Markdown files). `dev-next` also changes `pyvbmc/` in ways that
-  can move a noiseless run (among them the carried-over GP bounds and the
-  tie-breaking of the warm-up trim), so after merging, export both seeds
-  again and compare with the committed traces before trusting them.
+- Outside this folder the branch `feat-3d-animation` touches
+  `dev/scripts/export_animation_trace.py` (new), `dev/README.md` (one entry
+  in the scripts list) and `docsrc/source/conf.py` (the exclusion of this
+  folder's Markdown files). A change to `pyvbmc/` or gpyreg can move a
+  noiseless run, so after the branch takes in `dev-next`, export the
+  committed seeds again and compare with the traces, which record the
+  revisions that made them (`meta.pyvbmc`, `meta.gpyreg`).
