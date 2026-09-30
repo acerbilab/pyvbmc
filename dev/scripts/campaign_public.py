@@ -30,8 +30,21 @@ the campaign:
   redacted as the tracked copies are, or the tracked copy where it is one;
   and nothing else (the boost pickles and the ``.vbmc.pkl`` saves, which
   load only in the package that wrote them and may hold paths);
+- of each such case, its completion record, redacted as the tracked copies
+  are, or the tracked copy where it is one: the record lists the SHA-256
+  of each artifact as the campaign wrote it, which is the
+  ``source_sha256`` that ``public.json`` gives the published file, so
+  that every published file is tied to its case's record. The asset is
+  a record of the campaign, not a campaign directory that ``verify``
+  accepts: a redacted ``.json`` artifact no longer holds its record's
+  hash;
 - ``public.json``: each file's SHA-256 and that of the campaign's file it
-  comes from, what was left out, and the redaction's rules.
+  comes from, what was left out, the redaction's rules, the exemptions it
+  applied (the ``--allow`` strings with the hits each exempted, those the
+  tracked copies' redaction did not list, and the names of the ``--path``
+  directories), and the code that built it (``built_by``: the harness
+  checkout's commit and the SHA-256 of this module and of
+  ``campaign_contract.py``).
 
 Every text file of the asset is searched as the redaction searches the
 copies, and any hit, or any ``.npz`` file that is not numbers alone,
@@ -45,14 +58,21 @@ SHA-256 in ``<campaign>.public.tar.gz.sha256``;
 one per campaign): every part against its SHA-256, and every member of the
 archive against ``public.json``, which must list them all. A part that no
 listing names, which a build that failed may leave and an upload's glob
-would pick up, fails the check. It prints what fails and exits 1 if
-anything does, or if the directory holds no asset.
+would pick up, fails the check. It then applies the rules that need no
+campaign: the asset must have been built by this check's code (its
+``built_by``), each ``.npz`` member must hold numbers alone, every other
+member must be a tracked copy that its ``redaction.json`` lists or a
+``.json`` file, and no text member may name an absolute path outside the
+system directories that an ``--allow`` of the build did not exempt. It
+prints what fails and exits 1 if anything does, or if the directory holds
+no asset.
 """
 
 import argparse
 import hashlib
 import io
 import json
+import subprocess
 import sys
 import tarfile
 from collections import Counter
@@ -82,9 +102,10 @@ def asset_name(campaign):
     return f"{Path(campaign).name}.public.tar.gz"
 
 
-def npz_problems(data, redaction):
+def npz_problems(data, redaction=None):
     """Why the ``.npz`` file ``data`` may not be published as it is; empty
-    when it may."""
+    when it may. Without ``redaction``, the arrays' names are not
+    searched."""
     problems = []
     try:
         with np.load(io.BytesIO(data), allow_pickle=False) as archive:
@@ -99,11 +120,33 @@ def npz_problems(data, redaction):
                     problems.append(f"{name}: an array of kind {kind!r}")
     except (OSError, ValueError) as error:
         return [f"not a readable .npz file ({error})"]
-    problems += [
-        f"an array's name holds {what} {string!r}"
-        for _, string, what in redaction.leaks("\n".join(names), count=False)
-    ]
+    if redaction is not None:
+        problems += [
+            f"an array's name holds {what} {string!r}"
+            for _, string, what in redaction.leaks(
+                "\n".join(names), count=False
+            )
+        ]
     return problems
+
+
+def building_code():
+    """What built an asset: the harness checkout's commit and the SHA-256
+    of the two modules whose rules decide what it holds, which ``check``
+    compares with its own. The modules are hashed with LF line endings, so
+    that a checkout that git wrote with CRLF (on Windows) agrees with one
+    that it wrote with LF."""
+    try:
+        commit = contract.git(HERE.parents[1], "rev-parse", "HEAD")
+    except (OSError, subprocess.CalledProcessError):
+        commit = None
+    return {
+        "commit": commit,
+        "sha256": {
+            name: sha256((HERE / name).read_bytes().replace(b"\r\n", b"\n"))
+            for name in ("campaign_public.py", "campaign_contract.py")
+        },
+    }
 
 
 def check_copies(campaign, copies, names):
@@ -215,6 +258,18 @@ def build(
     members[contract.REDACTION] = (None, data, sha256(data), None)
     texts[contract.REDACTION] = data.decode("utf-8")
     kinds = Counter({"tracked copy": len(redaction_record["files"])})
+
+    def redacted_json(data):
+        text = data.decode("utf-8")
+        parsed = json.loads(text)
+        value = redaction.value(parsed)
+        if value == parsed:
+            return data
+        indent, newline = contract._json_layout(text)
+        return (
+            json.dumps(value, indent=indent) + ("\n" if newline else "")
+        ).encode("utf-8")
+
     for tag, record in sorted(read["records"].items()):
         for name, entry in sorted((record.get("artifacts") or {}).items()):
             if name in members:
@@ -234,22 +289,22 @@ def build(
                 members[name] = (path, None, entry["sha256"], entry["sha256"])
                 kinds["numeric"] += 1
             elif name.endswith(".json"):
-                text = data.decode("utf-8")
-                parsed = json.loads(text)
-                value = redaction.value(parsed)
-                if value == parsed:
-                    new = data
-                else:
-                    indent, newline = contract._json_layout(text)
-                    new = (
-                        json.dumps(value, indent=indent)
-                        + ("\n" if newline else "")
-                    ).encode("utf-8")
+                new = redacted_json(data)
                 members[name] = (None, new, sha256(new), entry["sha256"])
                 texts[name] = new.decode("utf-8")
                 kinds["redacted"] += 1
             else:
                 left_out["".join(Path(name).suffixes) or name] += 1
+        # The case's completion record, redacted, where it is no tracked
+        # copy: it ties the case's published files to their source hashes.
+        name = contract.record_path(campaign, tag).relative_to(campaign)
+        name = name.as_posix()
+        if name not in members:
+            data = (campaign / name).read_bytes()
+            new = redacted_json(data)
+            members[name] = (None, new, sha256(new), sha256(data))
+            texts[name] = new.decode("utf-8")
+            kinds["record"] += 1
     if refused:
         raise contract.ContractError(
             "numeric files that are not numbers alone, so nothing was "
@@ -259,6 +314,17 @@ def build(
                 for name, problems in refused
             )
         )
+    # The files' search first, so that the record counts the hits that the
+    # allowed strings exempted in them.
+    leaks = [
+        (name, line, string, what)
+        for name, text in sorted(texts.items())
+        for line, string, what in redaction.leaks(
+            text, count=name != contract.REDACTION
+        )
+    ]
+    exempted = dict(sorted(redaction.allowed.items()))
+    new_allowed = sorted(set(allow) - set(redaction_record.get("allowed", {})))
     record = {
         "contract": contract.CONTRACT_VERSION,
         "campaign": campaign.name,
@@ -266,11 +332,17 @@ def build(
         "node_family": manifest["site"]["NODE_FEATURE"],
         "cases": len(read["records"]),
         "copies_redaction_sha256": members[contract.REDACTION][2],
+        "built_by": building_code(),
+        "exemptions": {
+            "allowed": exempted,
+            "allowed_beyond_the_copies": new_allowed,
+            "paths": sorted(key for key, _ in paths),
+        },
         "rules": [
             "the tracked copies, as campaign_redact.sh wrote them",
             "of every verified case, its .npz artifacts as they are, each "
-            "holding numbers and booleans alone, and its other .json "
-            "artifacts redacted as the tracked copies are",
+            "holding numbers and booleans alone, its other .json artifacts "
+            "and its completion record redacted as the tracked copies are",
             "no other artifact: pickles and logs are left out",
             "each file's source_sha256 is that of the campaign's own file, "
             "which the completion records hash",
@@ -284,13 +356,15 @@ def build(
     }
     record_text = json.dumps(record, indent=2) + "\n"
     texts[PUBLIC] = record_text
-    leaks = [
-        (name, line, string, what)
-        for name, text in sorted(texts.items())
-        for line, string, what in redaction.leaks(
-            text, count=name not in (PUBLIC, contract.REDACTION)
-        )
+    leaks += [
+        (PUBLIC, line, string, what)
+        for line, string, what in redaction.leaks(record_text, count=False)
     ]
+    if new_allowed:
+        say(
+            "allowed here beyond the tracked copies' redaction: "
+            + ", ".join(repr(string) for string in new_allowed)
+        )
     if leaks:
         raise contract.ContractError(
             "the asset would hold what the tracked copies may not, so "
@@ -403,15 +477,30 @@ def _check_asset(directory, asset):
         return problems
     stream = io.BytesIO(b"".join(path.read_bytes() for path in parts))
     found = {}
-    with tarfile.open(fileobj=stream, mode="r:gz") as archive:
-        for member in archive:
-            data = archive.extractfile(member).read()
-            found[member.name] = data
+    try:
+        with tarfile.open(fileobj=stream, mode="r:gz") as archive:
+            for member in archive:
+                if not member.isfile():
+                    problems.append(f"{member.name} is not a regular file")
+                    continue
+                found[member.name] = archive.extractfile(member).read()
+    except (tarfile.TarError, OSError, EOFError) as error:
+        return [f"{asset} is not a readable archive ({error})"]
     publics = [name for name in found if name.endswith(f"/{PUBLIC}")]
     if len(publics) != 1:
         return [f"{asset} holds {len(publics)} {PUBLIC}, not one"]
     prefix = publics[0][: -len(PUBLIC)]
-    record = json.loads(found.pop(publics[0]))
+    try:
+        record = json.loads(found.pop(publics[0]))
+        copies = json.loads(found.get(prefix + contract.REDACTION, b"null"))
+    except ValueError as error:
+        return [
+            f"{asset}: {PUBLIC} or {contract.REDACTION} is no JSON ({error})"
+        ]
+    if not isinstance(record, dict) or not isinstance(
+        record.get("files"), dict
+    ):
+        return [f"{asset}: its {PUBLIC} lists no files"]
     listed = {f"{prefix}{name}" for name in record["files"]}
     problems += [
         f"{name} is not in {PUBLIC}" for name in found.keys() - listed
@@ -423,6 +512,50 @@ def _check_asset(directory, asset):
         if f"{prefix}{name}" in found
         and sha256(found[f"{prefix}{name}"]) != entry["sha256"]
     ]
+    # The code that built it must be this check's, whose rules follow.
+    built = (record.get("built_by") or {}).get("sha256")
+    own = building_code()["sha256"]
+    if built != own:
+        differing = sorted(
+            name for name in own if (built or {}).get(name) != own[name]
+        )
+        problems.append(
+            f"{asset} was built by other code than this check's (in "
+            f"{', '.join(differing)}); build it again with this code"
+        )
+    # The rules that need no campaign: numbers alone in the numeric files;
+    # beside them, the tracked copies and .json files alone, which name no
+    # absolute path that the redaction's names do not cover.
+    if not isinstance(copies, dict) or not isinstance(
+        copies.get("files"), dict
+    ):
+        problems.append(f"{asset} holds no {contract.REDACTION} of its copies")
+        copies = {"files": {}}
+    allowed = set((record.get("exemptions") or {}).get("allowed") or {})
+    for member, data in sorted(found.items()):
+        name = member[len(prefix) :]
+        if name.endswith(".npz"):
+            problems += [f"{member}: {p}" for p in npz_problems(data)]
+            continue
+        if not (
+            name in copies["files"]
+            or name == contract.REDACTION
+            or name.endswith(".json")
+        ):
+            problems.append(
+                f"{member} is neither a tracked copy nor a .npz or .json file"
+            )
+            continue
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            problems.append(f"{member} is not UTF-8 text")
+            continue
+        problems += [
+            f"{member} names the absolute path {path}"
+            for _, path in contract.absolute_paths(text)
+            if not contract._system_path(path) and path not in allowed
+        ]
     return problems
 
 

@@ -26,15 +26,16 @@
 #   record, a task's or a step's log, the accounting) is named by the node
 #   family, the value of NODE_FEATURE, and every other host (the login
 #   node) by "login";
-# - a host part's lists of node features hold NODE_FEATURE alone, and its
-#   CPU model stays;
-# - a path under a path setting of the site block starts with the
-#   setting's name ($CAMPAIGN_ENV, $PYVBMC_GPYREG_SOURCE, ...), one under a
-#   directory given with --path NAME=PATH (a scratch area that holds the
-#   campaign, say) with $NAME, and one under the home directory with ~; a
-#   path under a source tree of the campaign's identity, or under the
-#   directory that holds the campaign directory, that none of those names
-#   starts with $<TREE>_TREE ($HARNESS_TREE, ...) or $CAMPAIGN_PARENT;
+# - a host part's lists of node features hold NODE_FEATURE alone, its
+#   platform the operating system and machine type alone, and its CPU
+#   model stays;
+# - a path starts with the name of the longest named directory that holds
+#   it: a path setting of the site block ($CAMPAIGN_ENV,
+#   $PYVBMC_GPYREG_SOURCE, ...), a directory given with --path NAME=PATH
+#   ($NAME), a source tree of the campaign's identity ($HARNESS_TREE, ...)
+#   or the directory that holds the campaign directory ($CAMPAIGN_PARENT),
+#   under the home directory or not; any other path under the home starts
+#   with ~;
 # - a field that holds a partition (a record's SLURM_JOB_PARTITION) is
 #   $PARTITION;
 # - the manifest keeps no site block, and its pip freeze lines that name a

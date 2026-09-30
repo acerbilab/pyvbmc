@@ -14,16 +14,21 @@
 # checkout of the campaign. OUT_DIR receives
 # <campaign>.public.tar.gz.000, .001, ... and their SHA-256 in
 # <campaign>.public.tar.gz.sha256: the tracked copies, the .npz artifacts
-# of every verified case, which must hold numbers alone, and its other
-# .json artifacts redacted as the copies are, but no pickle and no log.
-# The redaction's rules are campaign_redact.sh's, with this process's
-# username and home, and it takes the same --path and --allow; a string
-# the copies may not hold refuses the asset, which is then not written.
-# Give the same --path and --allow as to campaign_redact.sh.
+# of every verified case, which must hold numbers alone, and its
+# completion record and other .json artifacts redacted as the copies are,
+# but no pickle and no log. The redaction's rules are campaign_redact.sh's,
+# with this process's username and home, and it takes the same --path and
+# --allow; a string the copies may not hold refuses the asset, which is
+# then not written. Give the same --path and --allow as to
+# campaign_redact.sh. The asset's public.json records the code that built
+# it and the exemptions it applied.
 #
 # With --check, it re-reads every asset in OUT_DIR, one per campaign built
 # into it: every part against its SHA-256 and every file against the
-# asset's public.json.
+# asset's public.json; then it fails an asset that other code than this
+# checkout's built, and applies the rules that need no campaign (numbers
+# alone in the .npz files, the copies and .json files alone beside them,
+# no absolute path that no name covers).
 set -euo pipefail
 
 usage() {

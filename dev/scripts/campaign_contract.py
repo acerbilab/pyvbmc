@@ -3672,6 +3672,21 @@ def _partition_field(mapping, key, path):
     )
 
 
+#: The machine types that :func:`reduced_platform` keeps.
+_MACHINES = ("x86_64", "aarch64", "arm64", "ppc64le", "AMD64", "ARM64")
+
+
+def reduced_platform(text):
+    """The operating system and machine type of a ``platform.platform()``
+    string, its release and build left out, which name the site's system
+    image: ``Linux-5.14.0-427.el9.x86_64-x86_64-with-glibc2.34`` is
+    ``Linux x86_64``, and ``Windows-11-10.0.26200-SP0`` is ``Windows``."""
+    system = text.split("-", 1)[0]
+    words = re.split(r"[-.]", text)
+    machine = next((m for m in _MACHINES if m in words), None)
+    return f"{system} {machine}" if machine else system
+
+
 class Redaction:
     """The rules that make one campaign's tracked copies, and their check.
 
@@ -3695,7 +3710,11 @@ class Redaction:
       the campaign's node feature, is ``family`` alone, so that the copies
       name the node family by that feature and by nothing else of the
       site; a list without it is left as it is, for the check to refuse
-      what it holds.
+      what it holds;
+    - in a JSON value, the ``platform`` string of a host part (a mapping
+      that names a ``hostname``) is its operating system and machine type
+      alone (:func:`reduced_platform`), without the release and build that
+      name the site's system image.
 
     The check (:meth:`leaks`) does not rely on them: it searches each copy
     for every forbidden string, so that whatever a replacement left is
@@ -3875,6 +3894,15 @@ class Redaction:
                     if item != [self.family]:
                         self.counts["features"] += 1
                     result[new] = [self.family]
+                elif (
+                    key == "platform"
+                    and isinstance(item, str)
+                    and "hostname" in value
+                ):
+                    reduced = reduced_platform(item)
+                    if reduced != item:
+                        self.counts["platform"] += 1
+                    result[new] = reduced
                 else:
                     result[new] = self.value(item, (*path, key))
             return result
@@ -4033,11 +4061,13 @@ def redaction_rules(
     and forbidden in every form (:func:`path_variants`), in this order of
     precedence where two are one directory: the path settings of the site
     block and of this process (``$CAMPAIGN_ENV``, ``$PYVBMC_SOURCE``, ...,
-    ``$LOGIN_PROFILE``), the ``paths`` given (``$NAME``), the operator's
-    homes and ``~<username>`` (``~``); then, where none of those holds
-    them, the path of every source tree the identities of ``documents``
-    name (:func:`tree_token`, ``$HARNESS_TREE``) and the directory that
-    holds the campaign directory (``$CAMPAIGN_PARENT``). The command
+    ``$LOGIN_PROFILE``) and the ``paths`` given (``$NAME``); then, where
+    none of those holds them, the path of every source tree the identities
+    of ``documents`` name (:func:`tree_token`, ``$HARNESS_TREE``) and the
+    directory that holds the campaign directory (``$CAMPAIGN_PARENT``),
+    under the operator's home or not, unless one is the home itself; then
+    the operator's homes and ``~<username>`` (``~``). A path takes the name
+    of the longest named directory it lies in. The command
     settings, whole and each of their words that names a path, the
     usernames, every hostname and every node feature that a host part of
     ``documents`` lists but the campaign's (in quotes) are forbidden too,
@@ -4106,18 +4136,31 @@ def redaction_rules(
                 "_TREE, which name the campaign's own directories"
             )
         name(value, f"${key}", f"--path {key}")
+    # The source trees and the campaign's parent are named before the
+    # homes, so that a tree or a campaign under a home is its own name and
+    # the copies do not spell out the directories below the home; a home
+    # itself stays ~.
+    homes = {
+        form for home in operator["homes"] for form in path_variants(home)
+    }
+
+    def own_name(value):
+        return not _covered(value, replace) and not homes.intersection(
+            path_variants(value)
+        )
+
+    for tree, found in sorted(_tree_paths(documents).items()):
+        for value in found:
+            if own_name(value):
+                name(value, tree_token(tree), f"the {tree} tree")
+    parent = Path(campaign).resolve().parent
+    if not _is_root(parent) and own_name(parent):
+        name(parent, f"${CAMPAIGN_PARENT}", "the campaign's parent")
     for home in operator["homes"]:
         name(home, "~", "the home directory", first=False)
     for user in operator["users"]:
         replace.setdefault(f"~{user}", "~")
         forbidden["paths"].append((f"~{user}", "the home directory"))
-    for tree, found in sorted(_tree_paths(documents).items()):
-        for value in found:
-            if not _covered(value, replace):
-                name(value, tree_token(tree), f"the {tree} tree")
-    parent = Path(campaign).resolve().parent
-    if not _is_root(parent) and not _covered(parent, replace):
-        name(parent, f"${CAMPAIGN_PARENT}", "the campaign's parent")
     for setting in COMMAND_SETTINGS:
         for value in values(setting):
             forbidden["paths"].append((value, setting))
@@ -4248,13 +4291,15 @@ def redact(
       campaign's node family, the value of ``NODE_FEATURE``, and every
       other host (the login node where ``prepare`` and the driver ran, and
       the host that redacts) by :data:`LOGIN_HOST`;
-    - a host part's lists of node features hold that node family alone;
-      the CPU model stays;
-    - a path under a named directory starts with its name: a path setting
-      of the site block (``$PYVBMC_GPYREG_SOURCE/gpyreg``), a ``--path``,
-      the operator's home (``~``), a source tree of the identities
-      (``$HARNESS_TREE``) or the directory that holds the campaign
-      (``$CAMPAIGN_PARENT``);
+    - a host part's lists of node features hold that node family alone,
+      and its platform the operating system and machine type alone; the
+      CPU model stays;
+    - a path starts with the name of the longest named directory that
+      holds it: a path setting of the site block
+      (``$PYVBMC_GPYREG_SOURCE/gpyreg``), a ``--path``, a source tree of
+      the identities (``$HARNESS_TREE``) or the directory that holds the
+      campaign (``$CAMPAIGN_PARENT``), under the operator's home or not,
+      and any other path under the home ``~``;
     - a field that holds a partition is :data:`PARTITION_TOKEN`;
     - the manifest keeps no ``site`` block, and its ``pip freeze`` lines
       that name a path keep their package's name alone;
@@ -4402,13 +4447,14 @@ def redact(
             "node family, NODE_FEATURE; any other host, "
             f"{LOGIN_HOST!r}",
             "a host part's lists of node features hold the node family "
-            "alone; the CPU model stays",
-            "a path under a path setting starts with its name "
-            "($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), one under a --path "
-            "directory with its name, one under the operator's home "
-            "with ~, and one under a source tree or the directory that "
-            "holds the campaign, where none of those holds them, with "
-            f"$<TREE>_TREE or ${CAMPAIGN_PARENT}",
+            "alone, and its platform the operating system and machine "
+            "type alone; the CPU model stays",
+            "a path starts with the name of the longest named directory "
+            "that holds it: a path setting ($CAMPAIGN_ENV, $PYVBMC_SOURCE, "
+            "...), a --path directory, a source tree ($<TREE>_TREE) or the "
+            f"directory that holds the campaign (${CAMPAIGN_PARENT}), under "
+            "the operator's home or not, and any other path under the "
+            "home with ~",
             f"a field that holds a partition is {PARTITION_TOKEN}",
             "the manifest keeps no site block, and its pip freeze lines "
             "that name a path keep their package's name alone",

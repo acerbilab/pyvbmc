@@ -1162,7 +1162,8 @@ def test_the_tracked_copies_of_a_campaign_are_redacted(sited, tmp_path):
     raw = json.loads(files["sidecar"].read_text())
     assert side["final"] == raw["final"]
     trees = side["provenance"]["imports"]["trees"]
-    assert trees["pyvbmc"]["path"].startswith("~")
+    # A tree under the home is named for itself.
+    assert trees["pyvbmc"]["path"] == "$PYVBMC_TREE"
     assert trees["gpyreg"]["path"] == "$PYVBMC_GPYREG_SOURCE"
     record = contract.read_json(contract.record_path(target, tag))
     assert record["identity"]["host"]["hostname"] == site.family
@@ -1172,7 +1173,7 @@ def test_the_tracked_copies_of_a_campaign_are_redacted(sited, tmp_path):
             == record["artifacts"][rels[key]]["sha256"]
         )
     rescored = contract.read_json(target / "rescored/population_after.json")
-    assert rescored["campaign"]["path"].startswith("~")
+    assert rescored["campaign"]["path"].startswith("$CAMPAIGN_PARENT")
     assert rescored["rescoring"]["identity"]["host"]["hostname"] == "login"
     # The rescoring's record names the SHA-256 of the file as it was
     # written, which the copy's source SHA-256 is.

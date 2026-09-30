@@ -2407,10 +2407,13 @@ def test_the_tracked_copies_of_a_pool_are_redacted(campaign, tmp_path):
     assert copied_manifest["identity"]["host"]["hostname"] == "login"
     assert copied_manifest["allocation"] == manifest["allocation"]
     report = read_json(target / "verification.json")
-    assert report["directory"].startswith("~")
+    # A campaign under the home is named by its parent.
+    assert report["directory"].startswith("$CAMPAIGN_PARENT")
     assert report["verifier"]["host"]["hostname"] == site.family
     assert report["counts"] == read_json(pool / "verification.json")["counts"]
-    assert read_json(target / "selection.json")["directory"].startswith("~")
+    assert read_json(target / "selection.json")["directory"].startswith(
+        "$CAMPAIGN_PARENT"
+    )
     assert read_json(target / "selection.json")["conditions"] == (
         read_json(pool / "selection.json")["conditions"]
     )

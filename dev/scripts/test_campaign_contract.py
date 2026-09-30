@@ -2964,7 +2964,8 @@ def test_redact_removes_every_site_detail(site, tmp_path):
     )
     trees = manifest["identity"]["imports"]["trees"]
     assert trees["gpyreg"]["path"] == "$PYVBMC_GPYREG_SOURCE"
-    assert trees["harness"]["path"].startswith("~")
+    # A tree under the home is named for itself.
+    assert trees["harness"]["path"] == "$HARNESS_TREE"
     host = contract.read_json(target / "records/g0/c002.complete.json")[
         "identity"
     ]["host"]
@@ -2979,8 +2980,15 @@ def test_redact_removes_every_site_detail(site, tmp_path):
     summary = contract.read_json(target / "summary.json")
     assert summary["slowest"] == f"{site.family} and {site.family}"
     note = (target / "notes" / "prepared.md").read_text(encoding="utf-8")
-    assert note.startswith("Prepared on login, redacted on login, in ~")
-    assert (target / "g0/c001.out").read_text().startswith("case 1 in ~")
+    # A campaign under the home is named by its parent.
+    assert note.startswith(
+        "Prepared on login, redacted on login, in $CAMPAIGN_PARENT"
+    )
+    assert (
+        (target / "g0/c001.out")
+        .read_text()
+        .startswith("case 1 in $CAMPAIGN_PARENT")
+    )
     # The record of the redaction, and the SHA-256 chain through it.
     assert record == contract.read_json(target / contract.REDACTION)
     assert record["campaign"] == "c1"
@@ -3083,6 +3091,45 @@ def test_the_redaction_rewrites_every_form_of_a_name(site, tmp_path):
     assert summary["tilde"] == "~/runs/c1"
     note = (target / "notes" / "prepared.md").read_text(encoding="utf-8")
     assert f"Run on {site.family}, from ~/src." in note
+
+
+def test_the_platform_keeps_its_system_and_machine():
+    reduced = contract.reduced_platform
+    assert (
+        reduced("Linux-5.14.0-427.el9.x86_64-x86_64-with-glibc2.34")
+        == "Linux x86_64"
+    )
+    assert reduced("Linux-6.1-aarch64-with-glibc2.34") == "Linux aarch64"
+    assert reduced("macOS-14.5-arm64-arm-64bit") == "macOS arm64"
+    assert reduced("Windows-11-10.0.26200-SP0") == "Windows"
+
+
+def test_trees_and_a_campaign_under_the_home_take_their_own_names(
+    site, tmp_path
+):
+    """A source tree or a campaign under the operator's home is named for
+    itself, so that the copies do not spell out the directories below the
+    home; the host part's platform keeps its system and machine alone."""
+    out = finished_campaign(site, where=site.home / "runs" / "c1")
+    home = site.home.as_posix()
+    site.rewrite(
+        out / "summary.json",
+        lambda value: value.update(
+            campaign=f"{home}/runs/c1/summary.json",
+            tree=f"{home}/src/harness/dev/scripts",
+            elsewhere=f"{home}/notes.txt",
+        ),
+    )
+    target = tmp_path / "handback" / "c1"
+    redacted(site, out, target)
+    assert site.leaks(target) == []
+    summary = contract.read_json(target / "summary.json")
+    assert summary["campaign"] == "$CAMPAIGN_PARENT/c1/summary.json"
+    assert summary["tree"] == "$HARNESS_TREE/dev/scripts"
+    assert summary["elsewhere"] == "~/notes.txt"
+    record = next((target / "records").rglob("*.complete.json"))
+    host = contract.read_json(record)["identity"]["host"]
+    assert host["platform"] == "Linux x86_64"
 
 
 def test_a_digest_is_not_read_as_a_name(site, tmp_path):

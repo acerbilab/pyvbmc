@@ -168,15 +168,19 @@ def test_an_asset_in_parts_and_a_damaged_part(tmp_path, monkeypatch):
     assert public.main(["check", str(out)]) == 1
 
 
-def write_small_asset(out, name):
-    """A whole asset ``name`` in ``out``: one file and its ``public.json``,
+def write_small_asset(out, name, files=None, built_by=None):
+    """A whole asset ``name`` in ``out``: ``files`` (a tracked copy
+    ``a.txt`` by default), a ``redaction.json`` that lists ``a.txt`` as a
+    copy, and ``public.json`` with ``built_by`` (this code's by default),
     in one part, with its listing."""
-    data = b"x\n"
-    record = {"files": {"a.txt": {"sha256": public.sha256(data)}}}
-    members = {
-        f"{name}/a.txt": data,
-        f"{name}/{public.PUBLIC}": json.dumps(record).encode("utf-8"),
+    files = {"a.txt": b"x\n"} if files is None else dict(files)
+    files[contract.REDACTION] = json.dumps({"files": {"a.txt": {}}}).encode()
+    record = {
+        "built_by": public.building_code() if built_by is None else built_by,
+        "files": {n: {"sha256": public.sha256(d)} for n, d in files.items()},
     }
+    members = {f"{name}/{n}": d for n, d in files.items()}
+    members[f"{name}/{public.PUBLIC}"] = json.dumps(record).encode("utf-8")
     stream = io.BytesIO()
     with tarfile.open(fileobj=stream, mode="w:gz") as archive:
         for member, content in members.items():
@@ -217,6 +221,79 @@ def test_the_check_reads_every_asset_of_a_directory(tmp_path, monkeypatch):
     assert public.check(tmp_path / "nothing") == [
         f"{tmp_path / 'nothing'} holds no asset listing"
     ]
+
+
+def test_the_check_applies_the_rules_that_need_no_campaign(tmp_path):
+    """An asset built by other code, a member that is no copy and no .npz
+    or .json file, a numeric file that holds text and an absolute path in a
+    copy each fail the check."""
+    out = tmp_path / "public"
+    out.mkdir()
+    write_small_asset(out, "other", built_by={"commit": None, "sha256": {}})
+    [problem] = public.check(out)
+    assert "was built by other code than this check's" in problem
+    assert "campaign_contract.py" in problem and "build it again" in problem
+    for path in out.iterdir():
+        path.unlink()
+    buffer = io.BytesIO()
+    np.savez(buffer, words=np.array(["a"]))
+    write_small_asset(
+        out,
+        "other",
+        files={
+            "a.txt": b"made in /home/someone/runs\n",
+            "run.boost.pkl": b"\x80\x04.",
+            "t.npz": buffer.getvalue(),
+        },
+    )
+    assert public.check(out) == [
+        "other/a.txt names the absolute path /home/someone/runs",
+        "other/run.boost.pkl is neither a tracked copy nor a .npz or .json "
+        "file",
+        "other/t.npz: words: an array of kind 'U'",
+    ]
+
+
+def test_the_asset_holds_each_case_record_where_no_copy_does(
+    tmp_path, monkeypatch
+):
+    """A harness whose tracked copies hold no case records (the pools'):
+    the asset holds each verified case's completion record, redacted,
+    which ties the case's published files to their source hashes; it
+    records the code that built it and the exemptions it applied, and
+    passes the check."""
+    site, campaign, copies = finished_campaign(
+        tmp_path, monkeypatch, spec={"files": ["summary.md"]}
+    )
+    out = tmp_path / "public"
+    record = build(site, campaign, copies, out)
+    assert record["kinds"]["record"] == 2
+    found = members(out)
+    for seed in (0, 1):
+        tag = f"{LABEL}/{LABEL}_seed{seed}"
+        name = contract.record_path(campaign, tag).relative_to(campaign)
+        name = name.as_posix()
+        text = found[f"{campaign.name}/{name}"].decode("utf-8")
+        assert site.user not in text and site.family in text
+        assert record["files"][name]["source_sha256"] == public.sha256(
+            (campaign / name).read_bytes()
+        )
+        # Each published artifact's source hash is the one its record lists.
+        listed = json.loads(text)["artifacts"]
+        published = [a for a in listed if a in record["files"]]
+        assert published
+        for artifact in published:
+            assert (
+                record["files"][artifact]["source_sha256"]
+                == listed[artifact]["sha256"]
+            )
+    assert record["built_by"] == public.building_code()
+    assert record["exemptions"] == {
+        "allowed": {},
+        "allowed_beyond_the_copies": [],
+        "paths": [],
+    }
+    assert public.check(out) == []
 
 
 def test_a_json_artifact_that_is_no_tracked_copy_is_redacted(
