@@ -38,10 +38,12 @@ records its execution.
   release.
 
 - [ ] **Update reminders.** A reminder, with no network access, when the
-  installed release is more than a year old, and `pyvbmc.check_for_updates()`,
-  which asks PyPI when the user calls it; no automatic network check (PI,
-  2026-09-30). The [plan](plans/version-check.md) holds the design, the
-  decisions awaiting the PI and the phases. The work merges before the launch
+  installed release is more than a year old (at most three times per
+  version, 90 days apart), and `pyvbmc.check_for_updates()`, which asks PyPI
+  when the user calls it; no automatic network check (PI, 2026-09-30). The
+  12-month threshold stands on a release at least once a year. The
+  [plan](plans/version-check.md) holds the design, the decisions still
+  awaiting the PI and the phases. The work merges before the launch
   of the Slurm plan's Phase 8, unless the PI rules otherwise. The reminder
   shares the start-of-run slot with the tips, so the review of the tips
   covers both.

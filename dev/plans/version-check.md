@@ -1,7 +1,8 @@
 # Update reminders: an old-release reminder and `check_for_updates()`
 
-Created: 2026-09-30. Status: **PLANNED** — scope settled with the PI; the
-decisions below, and the wording of the reminder, await the PI's rulings.
+Created: 2026-09-30. Status: **PLANNED** — scope settled with the PI; D1
+and D8 ruled (2026-09-30); the other decisions, and the wording of the
+reminder, await the PI's rulings.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
 of phase 4. `dev/TODO.md` ("Update reminders") links here.
 
@@ -15,16 +16,19 @@ scripts, in CI and on cluster nodes without internet access. The PI chose
 
 1. **An old-release reminder, with no network access.** The package ships
    the date of its release. When a new run starts and the installed release
-   is older than a threshold, PyVBMC prints one line, at most once per Python
-   session, saying that a newer version may exist and how to find out.
+   is older than a threshold, PyVBMC prints one line saying that a newer
+   version may exist and how to find out: at most three times for each
+   installed version, at least 90 days apart, and at most once per Python
+   session (D8).
 2. **`pyvbmc.check_for_updates()`, on request.** It asks PyPI for the latest
    release, compares it with the installed version, and says how to update.
    It is the only code in the package that opens a network connection, and
    only when the user calls it.
 
-Both only print and return; neither touches a run's results, its random
-stream, NumPy's global state or any file. The rejected option, a check of
-PyPI made automatically in the background (the pattern of pip's own
+Neither touches a run's results, its random stream or NumPy's global state.
+The reminder writes one small file in PyVBMC's user cache directory, to count
+its showings; `check_for_updates()` writes nothing. The rejected option, a
+check of PyPI made automatically in the background (the pattern of pip's own
 update check), stays out: an unsolicited network request from a library
 called inside other code, which some users and institutions forbid.
 
@@ -35,14 +39,46 @@ headline selection change" (`dev/TODO.md`), so this work merges before the
 launch of the Slurm plan's Phase 8, unless the PI rules it a presentation
 change that may follow (decision D6).
 
+## Prior art
+
+A survey of update notices on 2026-09-30 (primary sources: each tool's source
+code or documentation) found:
+
+- Offline reminders from the age of a release are rare: yt-dlp warns when
+  its version is more than 90 days old (the command line only; its library
+  interface stays quiet unless asked), browserslist and
+  baseline-browser-mapping when their bundled data is 6 and 2 months old,
+  Chrome when its build is 8 weeks old and the clock is not behind the build.
+  None stops by itself: each shows on every run until the user updates or
+  silences it.
+- Network checks (pip, npm's `update-notifier`, `gh`, `huggingface_hub`,
+  conda) keep a timestamp in the user's cache or configuration directory and
+  check every 1 to 7 days. pip writes its state to a temporary file, renames
+  it into place and swallows every error. The command-line tools of npm and
+  GitHub stay quiet in CI (`CI` set) and without a terminal. Each has an
+  opt-out environment variable of its own (`PIP_DISABLE_PIP_VERSION_CHECK`,
+  `NO_UPDATE_NOTIFIER`, `GH_NO_UPDATE_NOTIFIER`,
+  `HF_HUB_DISABLE_UPDATE_CHECK`); no convention exists for Python libraries.
+- No tool caps its notice per version on its own. The nearest are Sparkle's
+  "Skip This Version", a user's choice that a manual check ignores, and
+  Homebrew's notice on analytics, shown once and counted as shown only when
+  it reached a terminal.
+- The complaints are about notices the user cannot act on (installs managed
+  by a system package manager or an institution, a notice from a dependency),
+  noise in CI, output that cannot be filtered, and unsolicited network
+  requests (streamlit removed its check); not about repetition as such.
+
 ## Decisions for the PI
 
 Each has a recommendation; the phases below assume it.
 
-- **D1. Threshold.** Remind when the release is more than 365 days old.
-  Releases of PyVBMC are infrequent, so a shorter threshold would remind
-  users of the latest release too; the wording (D4) stays true either way,
-  since it says a newer version *may* exist.
+- **D1. Threshold: 12 months** (365 days; PI, 2026-09-30). The reminder cannot
+  know whether a newer release exists, only how old the installed one is, so
+  a gap of more than 12 months between releases gives users of the latest
+  release reminders they cannot act on. The threshold therefore stands on a
+  release at least once a year, a small maintenance release included (PI,
+  2026-09-30); the cap (D8) bounds the cost of a longer gap to three lines
+  per version. The wording (D4) says that a newer version *may* exist.
 - **D2. What silences the reminder.** The same switches as the tips:
   `options={"show_tips": False}` and `display="off"`. The description of
   `show_tips` then names both. An option of its own is the alternative; it
@@ -84,6 +120,13 @@ Each has a recommendation; the phases below assume it.
   Between releases the constant holds the date of the last release, which a
   development install never reads (D5); before the first release that sets
   it, it is `None` and the reminder is off.
+- **D8. Cap: at most three times per installed version, at least 90 days
+  apart** (PI, 2026-09-30). The offline reminders found elsewhere never stop
+  by themselves ("Prior art"); PyVBMC's users pin versions for
+  reproducibility, so the reminder stops for a version after its third
+  showing. With the 12-month threshold it shows at about 12, 15 and 18
+  months after the release. The count and the spacing are judgements; no
+  prior art sets either.
 
 ## Design
 
@@ -94,19 +137,46 @@ Each has a recommendation; the phases below assume it.
   to the date of the changelog heading.
 - A private module `pyvbmc/vbmc/_release_reminder.py` holds the policy:
   `consider_release_reminder(*, display, enabled, slot_taken, today=None,
-  installed=None, release_date=None) -> bool`. The keyword arguments with
-  `None` defaults read the real clock (`datetime.date.today()`), the installed
-  version (`importlib.metadata.version("pyvbmc")`, as
-  `VBMC._create_result_dict` reads it) and `_release.RELEASE_DATE`; tests pass
-  their own. It returns whether it printed.
+  installed=None, release_date=None, interactive=None, environ=None,
+  state_path=None) -> bool`. The keyword arguments with `None` defaults read
+  the real clock (`datetime.date.today()`), the installed version
+  (`importlib.metadata.version("pyvbmc")`, as `VBMC._create_result_dict`
+  reads it), `_release.RELEASE_DATE`, whether the session is interactive,
+  `os.environ` and the path of the state file; tests pass their own. It
+  returns whether it printed.
 - It prints nothing when display is off, when `enabled` is false, when the
   slot is taken, when the installed version is not a final `X.Y.Z` (D5), when
-  the release date is `None` or unreadable, when the release is not older than
-  the threshold (D1), or when it has printed already in this Python session.
-  A process-local flag, under a lock as `_runtime_tips.py` keeps its state,
-  records that it printed; nothing is written to disk and nothing travels
-  with a saved run. A start at which it cannot print (display off, slot
-  taken) leaves it eligible for the next start.
+  the release date is `None` or unreadable, when the date of the run is
+  earlier than the release date (a wrong clock), when the release is not
+  older than the threshold (D1), when the session is not interactive, when
+  `CI`, `PYVBMC_NO_UPDATE_REMINDER` or `NO_UPDATE_NOTIFIER` is set to a
+  non-empty value, when the cap forbids it (D8, below), or when it has
+  printed already in this Python session. A process-local flag, under a
+  lock as `_runtime_tips.py` keeps its state, records that it printed in
+  this session; nothing travels with a saved run. A start at which it does
+  not print writes nothing and leaves it eligible for the next start.
+- The session is interactive when standard output is a terminal
+  (`sys.stdout.isatty()`) or the code runs in an IPython kernel, as in a
+  Jupyter notebook; the log of a batch job is neither. The test suite stays
+  quiet through the fixture of phase 1, not through a check for pytest in the
+  package.
+- **The cap (D8)** is kept in `update_reminder.json` in PyVBMC's user cache
+  directory, the one the calibration cache uses
+  (`platformdirs.user_cache_dir("pyvbmc", appauthor=False, opinion=False)`:
+  `~/.cache/pyvbmc` on Linux, `~/Library/Caches/pyvbmc` on macOS,
+  `%LOCALAPPDATA%\pyvbmc` on Windows). The file maps each installed version
+  to the dates of its showings, as in `{"1.5.0": ["2027-11-02",
+  "2028-02-14"]}`, and holds nothing else. Before printing, the reminder
+  reads it: when the installed version has three dates, or its last date is
+  less than 90 days before the date of the run, nothing prints. After
+  printing, it appends the date and writes the file as pip writes its own
+  state: to a temporary file in the same directory, renamed over the old
+  one, every error swallowed. The file first appears when the reminder first
+  shows, so nothing is written in a release's first year. A file that
+  cannot be read, holds malformed content or cannot be written makes the
+  reminder fall back to once per session. A newly installed version has a
+  list of its own, and deleting the file resets every count. Parallel starts
+  may each print before any of them writes; later starts see their dates.
 - It prints through `pyvbmc._user_hints.emit_user_hint`, with the PyPI URL
   as its `urls`, so it reaches standard output as the tips and the
   calibration reminder do and stays out of the log file.
@@ -116,8 +186,9 @@ Each has a recommendation; the phases below assume it.
   calibration reminder, then the old-release reminder, then a tip. When the
   old-release reminder prints, the tip is skipped for that run and the tips'
   cadence does not advance, as for a calibration reminder
-  (`dev/plans/runtime-tips.md`, "Approved user experience"). Resumed and
-  continued runs consider neither, as now.
+  (`dev/plans/runtime-tips.md`, "Approved user experience"): the tip that
+  start would have shown comes at the next start instead of being lost.
+  Resumed and continued runs consider neither, as now.
 - `consider_runtime_tip` learns of the reminder through its slot argument;
   generalizing `calibration_reminder_emitted` to a slot flag, or adding a
   second flag, is the implementer's choice, with the tips' tests kept green
@@ -160,7 +231,9 @@ Each has a recommendation; the phases below assume it.
 
 ### Phase 0 — the PI's rulings (PI)
 
-- [ ] D1 to D7 ruled, and the wording of D4 edited or approved. Record the
+- [x] D1 (12 months) and D8 (three times per version, 90 days apart) ruled
+  on 2026-09-30.
+- [ ] D2 to D7 ruled, and the wording of D4 edited or approved. Record the
   rulings in "Decisions for the PI", marked with the date.
 
 ### Phase 1 — the release date and the reminder (Sol)
@@ -174,10 +247,12 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 3. If D2 stands, edit the description of `show_tips` in
    `pyvbmc/vbmc/option_configs/basic_vbmc_options.ini` to name the reminder.
 4. Add `pyvbmc/testing/conftest.py` with an autouse fixture that resets the
-   reminder's state and makes it inert (the session flag set, or the release
-   date `None`), so that no shipped test's output depends on the calendar.
-   Without it, the test suite of a release would print the reminder, and
-   fail where a test captures startup output, a year after the release.
+   reminder's state, points its state file into pytest's temporary
+   directory, and makes it inert (the session flag set, or the release date
+   `None`), so that no shipped test's output depends on the calendar and no
+   test writes the user's cache directory. Without it, the test suite of a
+   release would print the reminder, and fail where a test captures startup
+   output, a year after the release.
 5. Tests in `pyvbmc/testing/vbmc/test_release_reminder.py`, with injected
    dates and versions:
    - [ ] under and over the threshold, and on its boundary;
@@ -185,10 +260,19 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
      injected dates: "more than a year ago" between one and two years, "more
      than N years ago" beyond;
    - [ ] printed once per session, and eligible again after the state reset;
-   - [ ] nothing for a development version, a local version, `None` or an
-     unreadable release date;
+   - [ ] the cap: printed at the first eligible start, not again within 90
+     days, again after 90, never after the third time; a new version starts
+     a list of its own; the file holds only versions and dates;
+   - [ ] a state file that cannot be read, holds malformed content or cannot
+     be written: once per session, nothing raised; a write goes through a
+     temporary file and a rename;
+   - [ ] nothing printed and nothing written for a development version, a
+     local version, a release date that is `None` or unreadable, a date of
+     the run earlier than the release date, a session that is not
+     interactive, and each of `CI`, `PYVBMC_NO_UPDATE_REMINDER` and
+     `NO_UPDATE_NOTIFIER` set;
    - [ ] nothing with `display="off"` or (D2) `show_tips=False`, and such a
-     start does not use up the session's reminder;
+     start does not use up the session's reminder or write the file;
    - [ ] a calibration reminder takes the slot and the old-release reminder
      waits for the next start; when the old-release reminder prints, no tip
      prints and the tips' cadence does not advance;
@@ -232,19 +316,22 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
    the API pages).
 2. `docsrc/source/faq.md`: a question under "Installing PyVBMC", "How do I
    know whether a newer version of PyVBMC exists?", with its anchor and its
-   line in the table of contents: the reminder, `check_for_updates()`, and
-   the two update commands.
+   line in the table of contents: the reminder (when it shows, how often,
+   where it records its showings, what silences it), `check_for_updates()`,
+   and the two update commands.
 3. The "Startup tips" section of `docsrc/source/api/classes/vbmc.rst` and the
    tips paragraph of `docsrc/source/quickstart.rst`: the reminder, its place
    in the start-of-run slot, and what silences it.
-4. `CHANGELOG.md`, under Added (`AGENTS.md`, "Changelog"), one entry: a run
-   of a release more than a year old says once per session that a newer
-   version may exist, and `pyvbmc.check_for_updates()` asks PyPI. No
-   Upgrading line: nothing a script relies on changes.
+4. `CHANGELOG.md`, under Added (`AGENTS.md`, "Changelog"), one entry: in an
+   interactive session, a run of a release more than a year old says that a
+   newer version may exist, at most three times per version, and
+   `pyvbmc.check_for_updates()` asks PyPI. No Upgrading line: nothing a
+   script relies on changes.
 5. `AGENTS.md`, "Conventions": the package opens a network connection only in
    `check_for_updates()`, which the user calls; the old-release reminder reads
-   only `pyvbmc/_release.py`. This is a rule nothing enforces, and an agent
-   adding a convenience could break it.
+   only `pyvbmc/_release.py` and its state file, and writes only the latter.
+   This is a rule nothing enforces, and an agent adding a convenience could
+   break it.
 6. The pre-release checklist of `dev/plans/modernization-roadmap.md`: a step
    to set `RELEASE_DATE` in the release pull request to the date of the
    changelog heading, which the release-date test then checks.
@@ -269,20 +356,24 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 - [ ] A fresh Sol reviewer, read-only: the diff against this plan, the
   decisions as ruled, the invariants (no network request outside
   `check_for_updates()`, no effect on results or random streams, no file
-  written), the tests' independence from the calendar and the network, and
-  the documentation. Findings resolved, affected checks rerun.
+  written but the reminder's state file), the tests' independence from the
+  calendar, the network and the user's cache directory, and the
+  documentation. Findings resolved, affected checks rerun.
 - [ ] The CI test matrix on the feature branch, as the tips work ran it
   (`dev/plans/runtime-tips.md`, "Delivery checklist"); merge into `dev-next`
   with the PI's approval, before the Phase 8 launch (D6); remove the branch.
 
 ## Acceptance
 
-- A run of a final release older than the threshold prints the reminder once
-  per session, in the start-of-run slot, and nothing else changes: results,
-  random streams, files, the log file and the tips' cadence when no reminder
+- In an interactive session, a run of a final release older than the
+  threshold prints the reminder in the start-of-run slot, at most once per
+  session and three times per installed version, at least 90 days apart.
+  Nothing else changes: results, random streams, the log file, files other
+  than the reminder's state file, and the tips' cadence when no reminder
   prints.
 - `check_for_updates()` reports correctly in every case above, never raises on
   a network or parse failure, and is the only network access in the package.
-- No test depends on the date or on the network.
+- No test depends on the date or on the network, or writes the user's cache
+  directory.
 - `RELEASE_DATE` and the changelog's latest release heading cannot disagree
   on a commit that passes the tests.
