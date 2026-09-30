@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-28. These lists describe scope, not priority or execution
+Updated 2026-09-30. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -19,11 +19,20 @@ records its execution.
   the whole-run timings of "Runs are faster", measured on 2026-09-03 to
   09-05, before the corrections that change how long a run takes, and the
   S-VBMC speed figure, both to be measured again on the release benchmark;
-  the S-VBMC entry's account of the reported `elbo`, which the item below
-  may change; and the "What's new in PyVBMC 1.5" blocks of `README.md` and
-  `docsrc/source/index.rst`, which link to the changelog and are to be
-  revised against it (the link of the docs resolves once the file is on
-  `main`).
+  and the S-VBMC entry's account of the reported `elbo`, which the item
+  below may change. The "What's new in PyVBMC 1.5" blocks of `README.md`
+  and `docsrc/source/index.rst` follow the changelog (revised against it on
+  2026-09-30); the docs' link to the changelog resolves once the file is on
+  `main`.
+
+- [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
+  run starts (`show_tips`; `pyvbmc/vbmc/_tip_catalog.py`,
+  `pyvbmc/svbmc/_tip_catalog.py`) are to be reviewed before the release (PI,
+  2026-09-30). The [tips plan](plans/runtime-tips.md) records their policy,
+  catalog, wording and acceptance checks. A change the review makes to what
+  a user sees goes into the changelog's "Tips" entry, the quickstart's
+  section on tips and the "What's new" blocks, which mention tips during
+  runs.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
