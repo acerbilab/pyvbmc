@@ -209,6 +209,12 @@ plan and consolidated human summary.
   harness meets, the generic driver grown from `scripts/hpc/`, the
   harness changes, what it assumes of the cluster, costs and phases, with
   the worklog of their execution.
+- [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) — how many
+  evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs
+  to match PyVBMC's posterior accuracy on a benchmark target: the
+  definitions, the reference runs, the matched budget and its interval,
+  and the use of the number in the video of `feat-3d-animation`; not run
+  yet.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
