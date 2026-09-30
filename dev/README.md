@@ -213,8 +213,17 @@ plan and consolidated human summary.
   evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs
   to match PyVBMC's posterior accuracy on a benchmark target: the
   definitions, the reference runs, the matched budget and its interval,
-  and the use of the number in the video of `feat-3d-animation`; not run
-  yet.
+  and the use of the number in the video of `feat-3d-animation`. Run on
+  2026-09-30 for the banana of the video (steps 1 to 6); the video's
+  update (step 7) is not done yet.
+- [results/2026-09-30-matched-mcmc-budget.md](results/2026-09-30-matched-mcmc-budget.md) —
+  the matched budget on the banana of the video: emcee, the fastest of the
+  three samplers, needs a median of 27,828 evaluations (90% interval 23,098
+  to 31,764) to match the MMTV of a typical PyVBMC run, which uses 85;
+  slice sampling and zeus need about 57,000 and 51,000. gsKL, which misses
+  the ridge, is matched 4 to 18 times sooner. The evidence, from
+  which the report reruns, is in
+  `experiments/matched_mcmc_budget_20260930/`.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
@@ -1237,3 +1246,24 @@ reason.
   and checks: `t`, `paused`, `speed`, `hud=0`, `capture=1` (frames on
   request), `debug=1` (a self-check of the anchoring, reported in the page
   title), `tremble` and `wobble`; `wordmark.html` adds `cam` and `wmview`.
+- `scripts/matched_mcmc_budget.py` — the number of target evaluations
+  that a black-box MCMC sampler needs to reach PyVBMC's posterior accuracy
+  on one target, as
+  [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) defines it.
+  `--config exporter` is the banana run of `export_animation_trace.py
+  --target banana`; `--target NAME --D D` takes an eligible target of
+  `benchmark_targets.py` (noiseless, exact sampler, known moments; `check`
+  lists them). `check` runs the checks before the runs, among them that the
+  tool's PyVBMC runs reproduce the exporter's `--sweep` on the executing
+  machine; `pyvbmc` runs the reference seeds; `pilot` runs the grid of
+  settings of one sampler (slice sampling from gpyreg, emcee, zeus,
+  random-walk Metropolis) on seeds 1000 to 1009 and prints the setting to
+  use for each metric; `mcmc` runs one setting's replicates, each one long
+  chain up to `--n-max` evaluations whose prefixes are the smaller budgets,
+  and records gsKL and MMTV at 30 log-spaced budgets for burn-in fractions
+  0.5, 0.1 and 0.25 (`--sampler exact` records exact draws instead);
+  `report RUN` computes the median curves, `N*`, the bootstrap intervals
+  and the figures into `RUN`. Each seed runs in a forked process of its
+  own; run with BLAS single-threaded when `--jobs` is above one. Every
+  subcommand resumes, and each invocation appends its provenance and wall
+  time to `invocations.jsonl`. The module docstring gives the file layout.

@@ -1,6 +1,9 @@
 # Evaluations that MCMC needs to match PyVBMC
 
-Created 2026-09-30 on `dev-next`. Status: **not run**. Everything this plan
+Created 2026-09-30 on `dev-next`. Status: steps 1 to 6 **run** on
+2026-09-30 for the `exporter` configuration, reported in
+[results/2026-09-30-matched-mcmc-budget.md](../results/2026-09-30-matched-mcmc-budget.md);
+step 7 not done. Everything this plan
 references is on `dev-next` from the commit that adds it, apart from the
 video of step 7, which is on the branch `feat-3d-animation`.
 
@@ -170,12 +173,15 @@ seed for a general target, where seed `r` shares `x0` on both sides. It
 then recomputes the medians and `N*`, counting a resample without a
 crossing as `+inf`. The interval is the 5th to 95th percentile.
 
-**The headline** is the smallest `N*` over the three black-box samplers
-(slice sampling, emcee, zeus) and the two metrics. It is the value most
-favourable to MCMC. Its interval takes the minimum over those six
-combinations inside each resample, so that the choice of the minimum is
-part of the interval. A claim quotes the headline with its sampler, its
-metric, the number of replicates and its interval, and calls it a median.
+**The headline** is the smallest MMTV `N*` over the three black-box
+samplers (slice sampling, emcee, zeus), the value most favourable to MCMC
+among them. gsKL does not enter it: it compares only the first two
+moments, so a sampler can match it without having found the shape of the
+posterior (on the banana, without the ridge). Its `N*` is reported beside
+MMTV's. The headline's interval takes the minimum over the three samplers
+inside each resample, so that the choice of the minimum is part of the
+interval. A claim quotes the headline with its sampler, its metric, the
+number of replicates and its interval, and calls it a median.
 The report also shows the curve of exact independent draws, with `N / 2`
 draws at budget `N`. It bounds what any sampler can reach under this
 burn-in rule.
@@ -320,8 +326,6 @@ before the runs.
 
 Defaults that the PI may change before the runs:
 
-- The headline takes the metric that gives the smaller `N*`. The
-  alternative is MMTV alone, since gsKL cannot see the banana's ridge.
 - The headline takes the best of the three black-box samplers. The
   alternative is slice sampling alone.
 - The reference is PyVBMC's median over 100 seeds.
@@ -330,4 +334,82 @@ Defaults that the PI may change before the runs:
 
 ## Worklog
 
-Nothing has run yet.
+**2026-09-30, steps 1 to 6, `exporter` configuration.** One cloud
+container: Linux x86_64, 4 CPUs (Intel Xeon at 2.10 GHz), 15 GB; every
+process of steps 2 to 5 ran with BLAS single-threaded. Each output directory
+holds `invocations.jsonl` with the command line, commit, versions, platform
+and wall time of each invocation. Every invocation of steps 3 to 5 ran the
+code that produces the data as it is at `159237c`, where `check` passed.
+The commits they record, `bad806e` and `0d3cc54`, change only documents,
+the report, and when the commit is read (at the end of an invocation
+before `0d3cc54`, at its start since). The raw logs stayed in the
+container, which is not kept; `dev/experiments/matched_mcmc_budget_20260930/`
+holds everything that `report` reads, and `check.log` there is the log of
+step 2.
+
+- **Step 1**, about 2 minutes. A full clone of `dev-next` at `695385e`,
+  with its tags; `git describe` gives `v1.0.4-1239-g695385eb`. Python
+  3.12.3 in a venv, PyVBMC editable from the checkout (installed as
+  1.0.5.dev1239+g695385eb5), gpyreg 1.4.0 from PyPI, NumPy 2.5.3, SciPy
+  1.18.1, emcee 3.1.6, zeus-mcmc 2.5.4. zeus imports and passes its checks.
+- **Step 2**, about 20 minutes to write and smoke-test the script.
+  `check --config exporter` then passes all 70 checks at `159237c`, in
+  105 s. The tool's PyVBMC runs of seeds 0 to 4 reproduce the exporter's
+  sweep in the same container: 95, 105, 75, 85 and 85 evaluations, and
+  the exporter's gsKL to the four digits printed. Beyond the plan's list,
+  `check` confirms that the tool's gsKL and MMTV equal `sample_metrics`
+  (bit for bit), that a run of half the length is a prefix of the full
+  one for every setting of the grid, and that the exporter's `x0`,
+  plausible box, bounds and options are the ones the samplers receive.
+  Two points of the plan could not be done as written:
+  - zeus's `ncall` leaves out the `W` evaluations of the initial walkers,
+    which the plan counts. The check compares the wrapper's count with
+    `ncall + W`, and the two agree for every `W` of the grid.
+  - `logreg` leaves `sampler_n_eff` unset, although its sampler resamples a
+    stored importance-sampling population, so the rule of "Targets" does
+    not exclude it. The script excludes it by name (`RESAMPLING`).
+
+  Choices the plan leaves open, made in the script: the slice sampler's
+  `n` is the fewest sweeps that reach `N_max` evaluations whatever the
+  sweeps cost (one evaluation per coordinate, three with stepping out on
+  an unbounded target), and the states past `N_max` are dropped; a tie
+  between pilot settings goes to the smaller mean log median error over
+  the budgets; budgets beyond `N_max` continue the grid's spacing; the
+  exact draws of replicate `r` come from
+  `np.random.SeedSequence(r).spawn(2)[1]` and run as `mcmc --sampler
+  exact`; an error of `+inf` is written as `null`.
+- **Step 3**, 8.0 minutes on 4 processes. 100 runs, none raised. Medians:
+  85 evaluations (quartiles 80 and 90), gsKL 0.171, MMTV 0.0440, evidence
+  error 0.0454.
+- **Step 4**, 21.5 minutes (slice sampling 12.9, emcee 3.4, zeus 3.0,
+  random-walk Metropolis 2.3), no run raised. Pilot `N*` of the chosen
+  settings:
+
+  | Sampler | gsKL | MMTV |
+  |---|---|---|
+  | slice sampling | `c=1,step_out=0,adaptive=1`, 6,006 | `c=0.3,step_out=0,adaptive=1`, 33,306 |
+  | emcee | `W=16`, 639 | `W=32`, 33,640 |
+  | zeus | `W=16`, 1,368 | `W=32`, 42,242 |
+  | random-walk Metropolis | `c=0.4`, 996 | `c=0.2`, 26,140 |
+- **The headline's metric.** While step 5 ran, the PI ruled that the
+  headline takes MMTV alone rather than the smaller of the two metrics'
+  `N*`, since gsKL misses what the first two moments miss ("The headline").
+  The runs are the same either way; the ruling changes only `report`.
+- **Step 5**, 66.3 minutes: slice sampling 13.1 and 12.0, emcee 6.9 and
+  6.1, zeus 7.0 and 6.0, random-walk Metropolis 5.8 and 5.6 (the gsKL
+  setting first), exact draws 3.6. 900 replicates, none raised. Every
+  median error at `N_max` lies below the reference by both metrics, so no
+  sampler went on to `10 N_max`.
+- **Step 6.** `report` takes 3 s and reruns unchanged from the
+  experiments directory. `N*` (90% interval) on 100 replicates:
+
+  | Sampler | MMTV | gsKL |
+  |---|---|---|
+  | slice sampling | 56,902 (47,246 to 65,988) | 14,916 (10,885 to 18,024) |
+  | emcee | 27,828 (23,098 to 31,764) | 1,530 (1,065 to 3,114) |
+  | zeus | 51,317 (39,088 to 61,217) | 3,498 (1,530 to 4,642) |
+  | random-walk Metropolis | 24,134 (19,365 to 30,327) | 1,896 (1,735 to 3,504) |
+
+  The headline is emcee (`W=32`) on MMTV: 27,828 evaluations, 90%
+  interval 23,098 to 31,764, 100 replicates against 100 PyVBMC runs whose
+  median budget is 85 evaluations.
