@@ -37,6 +37,15 @@ records its execution.
   outputs of Examples 4, 5 and 7 show tips, and are executed again at the
   release.
 
+- [ ] **Update reminders.** A reminder, with no network access, when the
+  installed release is more than a year old, and `pyvbmc.check_for_updates()`,
+  which asks PyPI when the user calls it; no automatic network check (PI,
+  2026-09-30). The [plan](plans/version-check.md) holds the design, the
+  decisions awaiting the PI and the phases. The work merges before the launch
+  of the Slurm plan's Phase 8, unless the PI rules otherwise. The reminder
+  shares the start-of-run slot with the tips, so the review of the tips
+  covers both.
+
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
   `dev-next`; see the [integration plan](plans/svbmc-shrinkage-estimator.md).
