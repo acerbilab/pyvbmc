@@ -434,8 +434,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 - [x] The CI test matrix on the feature branch, as the tips work ran it
   (`dev/plans/runtime-tips.md`, "Delivery checklist"): the dispatched runs
   of `tests.yml` on `feat-update-reminders` passed all nine cells at
-  `4b247bfd` (run 36720287353) and at `21fb1d6a`, after the review's fixes
-  (run 36722167050), on 2026-09-30.
+  `4b247bfd` (run 36720287353), at `21fb1d6a`, after the review's fixes
+  (run 36722167050), and at `dff13b5b`, after the review of those fixes
+  (run 36727376436), on 2026-09-30.
 - [ ] The merge into `dev-next`, with the PI's approval, before the Phase 8
   launch (D6), and the removal of the branch.
 
