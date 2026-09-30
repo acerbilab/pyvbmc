@@ -81,11 +81,12 @@ records its execution.
   --against`), the three GP-fit-history captures and the five default
   golden replays. The checks of the nine example notebooks passed under
   Python 3.12. gpyreg `d96d0d9`, on which the notebooks' stored outputs
-  were executed on 2026-09-26 and 27, gives the same oracle outputs. Two
-  steps remain. The exact oracle check against the committed references
-  (`python dev/scripts/make_oracle_fixtures.py --check --exact`) runs on
-  the machine that generated them (`dev/scripts/runs/LOCAL.md`), since
-  their platform-bound references reproduce nowhere else. The
+  were executed on 2026-09-26 and 27, gives the same oracle outputs. On
+  the machine that generated the committed oracle references
+  (`dev/scripts/runs/LOCAL.md`), the only one where their platform-bound
+  references reproduce, the exact oracle check against them
+  (`make_oracle_fixtures.py --check --exact`, one BLAS thread) passed
+  with 1.4.0 on 2026-09-30, 12 of 12. One step remains. The
   [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
   (`scripts/hpc/README.md`), both rewritten on `feat-slurm-campaigns`, name
   `v1.4.0` (`682585f`) where they name `v1.3.3`: the after arm, the pools
