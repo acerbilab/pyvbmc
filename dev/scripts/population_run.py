@@ -141,8 +141,11 @@ steps, with ``--campaign`` for the campaign given to ``prepare --pair``
 (the other arm); a campaign of other code lists only ``summarize``.
 ``prepare --pair`` refuses a campaign that is not the other arm of this
 one: another allocation, options or confirmatory family, another harness
-checkout, other harness files or environment versions, or a package tree
-at the same commit. Since ``rescore`` reads the other arm's
+checkout, other harness files or environment versions, another
+``NODE_FEATURE`` or ``CAMPAIGN_ENV``, or a package tree at the same
+commit. Every ``prepare`` refuses a gpyreg checkout that is not the
+release the package tree requires (:func:`gpyreg_release_problem`).
+Since ``rescore`` reads the other arm's
 ``verification.json``, the other arm is finished completely before this
 one's finish, and this one is finished again after any later finish of
 the other.
@@ -402,6 +405,81 @@ def source_trees(environ=None):
 def release_code(environ=None):
     """Whether the package tree is the harness checkout (the release code)."""
     return source_trees(environ)["pyvbmc"] == ROOT
+
+
+def gpyreg_minimum(tree):
+    """The gpyreg minimum (``gpyreg >= X``) that the ``pyproject.toml`` of a
+    package tree names, or None."""
+    import tomllib
+
+    from packaging.requirements import Requirement
+
+    try:
+        text = (Path(tree) / "pyproject.toml").read_text(encoding="utf-8")
+        dependencies = tomllib.loads(text)["project"]["dependencies"]
+    except (OSError, KeyError, tomllib.TOMLDecodeError):
+        return None
+    for line in dependencies:
+        requirement = Requirement(line)
+        if contract.canonical_name(requirement.name) == "gpyreg":
+            for spec in requirement.specifier:
+                if spec.operator == ">=":
+                    return spec.version
+    return None
+
+
+def gpyreg_release_problem(trees, release):
+    """Why the gpyreg tree is not the release the package tree runs with,
+    or None.
+
+    The package tree's ``pyproject.toml`` names gpyreg's minimum release.
+    The release code (``release``, the harness checkout's own package) runs
+    that release or a later commit; other code, an arm that reproduces an
+    earlier state, runs that release exactly. A commit's release is its
+    nearest ``v`` tag (``git describe --tags``).
+    """
+    import re
+
+    from packaging.version import InvalidVersion, Version
+
+    minimum = gpyreg_minimum(trees["pyvbmc"])
+    if minimum is None:
+        return (
+            f"the package tree {trees['pyvbmc']} names no gpyreg minimum "
+            "(gpyreg >= X) in its pyproject.toml"
+        )
+    try:
+        described = contract.git(
+            trees["gpyreg"],
+            "describe",
+            "--tags",
+            "--long",
+            "--match",
+            "v[0-9]*",
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return (
+            f"the gpyreg tree {trees['gpyreg']} has no release tag that git "
+            "can describe its commit by"
+        )
+    match = re.fullmatch(r"v(.+)-(\d+)-g[0-9a-f]+", described)
+    try:
+        tag = Version(match.group(1)) if match else None
+    except InvalidVersion:
+        tag = None
+    if tag is None:
+        return f"the gpyreg tree's commit is {described}, not a release"
+    distance = int(match.group(2))
+    wanted = Version(minimum)
+    if release and tag >= wanted:
+        return None
+    if not release and tag == wanted and distance == 0:
+        return None
+    return (
+        f"the gpyreg tree {trees['gpyreg']} is at {described}, and the "
+        f"package tree needs gpyreg {minimum}"
+        + (" or later" if release else " exactly, its minimum release")
+    )
 
 
 def helper_origins():
@@ -1132,7 +1210,11 @@ def cmd_prepare(args):
     spec = contract.read_json(args.confirmatory) if args.confirmatory else None
     family = confirmatory_family(spec, alloc["labels"])
     release = release_code()
+    problem = gpyreg_release_problem(source_trees(), release)
+    if problem:
+        raise SystemExit(problem)
     identity = this_identity()
+    site = contract.site_block()
     steps = [["summarize"]]
     pair = None
     if args.pair:
@@ -1158,6 +1240,13 @@ def cmd_prepare(args):
                     "pair seed by seed on one allocation and one family"
                 )
         differing = pair_differences(identity, other["identity"])
+        # The arms run on one node family in one environment (the site
+        # block of each manifest), so that they differ in their code alone.
+        differing += [
+            f"the arms have different {key}"
+            for key in ("NODE_FEATURE", "CAMPAIGN_ENV")
+            if (other.get("site") or {}).get(key) != site.get(key)
+        ]
         if differing:
             raise SystemExit(
                 f"the paired campaign {pair} cannot be this one's other arm: "
@@ -1181,7 +1270,7 @@ def cmd_prepare(args):
         "confirmatory": family,
         "pair": None if pair is None else str(pair),
         "identity": identity,
-        "site": contract.site_block(),
+        "site": site,
         "pip_freeze": contract.pip_freeze(),
         "finishing_steps": steps,
         "tracked_copies": tracked_copies(release),

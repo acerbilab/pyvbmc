@@ -341,9 +341,13 @@ ARGUMENTS = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0-2"]
 
 
 def use_identity(monkeypatch, identity):
-    """Make ``identity`` this process's (the real one needs clean trees)."""
+    """Make ``identity`` this process's (the real one needs clean trees),
+    and pass the check of the gpyreg release, which reads the trees too."""
     monkeypatch.setattr(
         runner, "this_identity", lambda host=True: copy.deepcopy(identity)
+    )
+    monkeypatch.setattr(
+        runner, "gpyreg_release_problem", lambda trees, release: None
     )
 
 
@@ -600,9 +604,74 @@ def test_prepare_pairs_arms(campaign, tmp_path, monkeypatch):
         other = prepare_other_arm(tmp_path, monkeypatch, name, identity)
         with pytest.raises(SystemExit, match=message):
             paired_with(other)
+    # And they run on one node family, in one environment.
+    for key in ("NODE_FEATURE", "CAMPAIGN_ENV"):
+        monkeypatch.setenv(key, "elsewhere")
+        name = f"site_{key.lower()}"
+        other = prepare_other_arm(tmp_path, monkeypatch, name, OTHER_IDENTITY)
+        monkeypatch.delenv(key)
+        with pytest.raises(SystemExit, match=f"different {key}"):
+            paired_with(other)
     monkeypatch.setenv("PYVBMC_SOURCE", str(tmp_path / "before_tree"))
     with pytest.raises(SystemExit, match="only a campaign"):
         paired_with(before)
+
+
+def test_the_gpyreg_tree_is_the_release_the_package_needs(
+    tmp_path, monkeypatch
+):
+    """The release code takes its minimum gpyreg release or a later commit;
+    other code takes its minimum release exactly."""
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    for key, value in {
+        "HOME": str(home),
+        "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }.items():
+        monkeypatch.setenv(key, value)
+    package = tmp_path / "package"
+    package.mkdir()
+    needs = '[project]\nname = "pyvbmc"\ndependencies = ["numpy", "{}"]\n'
+    (package / "pyproject.toml").write_text(
+        needs.format("gpyreg >= 1.4.0"), encoding="utf-8"
+    )
+
+    def repository(path, *tags):
+        path.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=path, check=True)
+        for tag in tags:
+            subprocess.run(
+                ["git", "commit", "-q", "--allow-empty", "-m", str(tag)],
+                cwd=path,
+                check=True,
+            )
+            if tag:
+                subprocess.run(["git", "tag", tag], cwd=path, check=True)
+        return path
+
+    trees = {"pyvbmc": package, "gpyreg": repository(tmp_path / "g", "v1.3.3")}
+    problem = runner.gpyreg_release_problem(trees, True)
+    assert "is at v1.3.3-0-g" in problem and "1.4.0 or later" in problem
+    trees["gpyreg"] = repository(tmp_path / "h", "v1.3.3", "v1.4.0")
+    assert runner.gpyreg_release_problem(trees, True) is None
+    assert runner.gpyreg_release_problem(trees, False) is None
+    trees["gpyreg"] = repository(tmp_path / "i", "v1.4.0", None)
+    assert runner.gpyreg_release_problem(trees, True) is None
+    assert "exactly" in runner.gpyreg_release_problem(trees, False)
+    trees["gpyreg"] = repository(tmp_path / "j", None)
+    assert "no release tag" in runner.gpyreg_release_problem(trees, True)
+    (package / "pyproject.toml").write_text(
+        needs.format("gpyreg"), encoding="utf-8"
+    )
+    assert "names no gpyreg minimum" in runner.gpyreg_release_problem(
+        trees, True
+    )
 
 
 def test_confirmatory_family_override_and_refusals():
