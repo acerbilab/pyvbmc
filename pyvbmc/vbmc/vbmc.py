@@ -36,6 +36,7 @@ from pyvbmc.whitening.whitening import (
 )
 
 from ._bounds import _expand_scalar_bound, _normalize_bounds
+from ._release_reminder import consider_release_reminder
 from ._runtime_tips import consider_runtime_tip
 from .active_importance_sampling import _MCMC_SAMPLES_FORMS
 from .active_sample import _refresh_training_counts, active_sample
@@ -1501,12 +1502,21 @@ class VBMC:
         self._ensure_runtime_tip_state()
         if not self._runtime_tip_handled:
             self._runtime_tip_handled = True
+            # At most one hint in the start-of-run slot: the calibration
+            # reminder, then the old-release reminder, then a tip.
+            calibration_reminder_emitted = bool(
+                getattr(self.vp, "_calibration_hint_emitted", False)
+            )
+            release_reminder_emitted = consider_release_reminder(
+                display=self.options.get("display"),
+                enabled=bool(self.options.get("show_tips")),
+                slot_taken=calibration_reminder_emitted,
+            )
             consider_runtime_tip(
                 display=self.options.get("display"),
                 enabled=bool(self.options.get("show_tips")),
-                calibration_reminder_emitted=bool(
-                    getattr(self.vp, "_calibration_hint_emitted", False)
-                ),
+                calibration_reminder_emitted=calibration_reminder_emitted,
+                release_reminder_emitted=release_reminder_emitted,
             )
         # Samples for the symmetrized KL-divergence between successive
         # variational posteriors.

@@ -16,6 +16,9 @@ or with Conda::
 
   conda install --channel=conda-forge pyvbmc
 
+To learn whether a newer release exists and how to update, see the
+:ref:`FAQ <faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists>`.
+
 Optional integrations
 =====================
 

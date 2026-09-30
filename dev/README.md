@@ -151,10 +151,10 @@ plan and consolidated human summary.
   (`show_tips`): policy, catalog, wording and acceptance checks; complete
   (2026-09-10).
 - [plans/version-check.md](plans/version-check.md) — the reminder that the
-  installed release is more than a year old, which reads only the release
-  date shipped with the package, and `pyvbmc.check_for_updates()`, which asks
-  PyPI on request: design, the PI's decisions, phases and acceptance;
-  planned (2026-09-30).
+  installed release is more than a year old, which makes no network request,
+  and `pyvbmc.check_for_updates()`, which asks PyPI on request: design, the
+  prior art, the PI's decisions, phases and acceptance; implemented on
+  `feat-update-reminders` (2026-09-30).
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates

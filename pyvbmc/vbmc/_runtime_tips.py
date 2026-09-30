@@ -70,16 +70,21 @@ def consider_runtime_tip(
     display: bool | str,
     enabled: bool,
     calibration_reminder_emitted: bool,
+    release_reminder_emitted: bool = False,
     catalog: Sequence[Tip] = TIPS,
     rng: random.Random | None = None,
     emitter: Callable[..., bool] = emit_user_hint,
 ) -> Tip | None:
-    """Consider and possibly emit one tip for an eligible new-run start."""
+    """Consider and possibly emit one tip for an eligible new-run start.
+
+    A start at which the calibration reminder or the old-release reminder
+    printed shows no tip and leaves the cadence where it was.
+    """
     global _ELIGIBLE_STARTS, _LAST_FREQUENCY
 
     if not display or display == "off" or not enabled:
         return None
-    if calibration_reminder_emitted:
+    if calibration_reminder_emitted or release_reminder_emitted:
         return None
 
     with _STATE_LOCK:

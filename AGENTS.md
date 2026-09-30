@@ -348,6 +348,12 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   returns, is also covered by the "Upgrading from" list that opens the
   section, one line for each kind of change, not for each option or method,
   kept in step with the entries.
+- **Release date.** The pull request that dates a release in `CHANGELOG.md`
+  (`## [X.Y.Z] - YYYY-MM-DD`) sets `RELEASE_DATE` in `pyvbmc/_release.py` to
+  the same date, by which the old-release reminder tells the age of the
+  installed release. `pyvbmc/testing/vbmc/test_release_reminder.py` fails
+  while the two disagree, but a pull request that changes only the
+  changelog runs no tests in CI.
 - **Branches.** Work on feature branches; `feat-*` and `dev-*` branches are
   live work. An implementation that is rejected or parked after evaluation
   leaves the working line and is kept for the record on a branch named
@@ -371,6 +377,14 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   configure it on first use: a root logger configured by the package sends
   other libraries' log records to standard output as well, and shows twice
   those of a library with a handler of its own, PyMC among them.
+- **Network access.** The package opens a network connection only in
+  `pyvbmc.check_for_updates()` (`pyvbmc/_update_check.py`), which the user
+  calls, and which imports its networking modules inside the function. The
+  old-release reminder at the start of a run
+  (`pyvbmc/vbmc/_release_reminder.py`) takes the release date from
+  `pyvbmc/_release.py` and its past showings from its state file,
+  `update_reminder.json` in the cache directory, and writes no file but
+  that one.
 - **Heavy computation.** Run one heavy process at a time (the full test
   suite, benchmark and campaign runs): concurrent VBMC runs, each
   multi-threaded, can bring a workstation down. Short gates (the oracles, one

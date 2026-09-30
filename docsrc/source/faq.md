@@ -29,6 +29,7 @@ NumPy arrays for the starting point and bounds.
   - [Where can I download PyVBMC?](#faq-where-can-i-download-vbmc)
   - [Which external packages does PyVBMC require?](#faq-which-external-packages-does-pyvbmc-require)
   - [Which version of Python do I need?](#faq-which-version-of-python-do-i-need)
+  - [How do I know whether a newer version of PyVBMC exists?](#faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists)
   - [I am having trouble installing PyVBMC. Can you help?](#faq-i-am-having-trouble-installing-vbmc-can-you-help)
 - [Input arguments (target function: `fun`)](#faq-input-arguments-target-function-fun)
   - [What is the target function?](#faq-what-is-the-target-function)
@@ -138,6 +139,38 @@ instructions.
 
 PyVBMC requires Python 3.10 or newer. The optional ArviZ export and PyMC
 adapter require Python 3.12 or newer.
+
+(faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists)=
+### How do I know whether a newer version of PyVBMC exists?
+
+Run `pyvbmc.check_for_updates()`. It asks PyPI for the latest release and
+prints whether it is newer than yours, with the command that updates your
+installation: `python -m pip install --upgrade pyvbmc`, or
+`conda update --channel=conda-forge pyvbmc` for an installation from
+conda-forge. See the [`check_for_updates` API](api/functions/check_for_updates.rst)
+for its messages and return value.
+
+PyVBMC contacts PyPI only when you call that function. Otherwise it knows only
+the date of its own release, shipped with the package: when a new run starts
+in an interactive session (output to a terminal or a Jupyter notebook, not to
+a file) and the installed release is more than a year old, a reminder prints
+before the iteration display:
+
+```text
+Note: PyVBMC 1.5.0 was released more than a year ago. Run pyvbmc.check_for_updates() to see whether a newer version is available.
+https://pypi.org/project/pyvbmc/
+```
+
+The reminder appears at most once per Python session and three times for each
+installed version, at least 90 days apart; the third adds that it is the last.
+It records the dates of its showings in `update_reminder.json` in PyVBMC's
+cache directory: `%LOCALAPPDATA%\pyvbmc` on Windows, `~/Library/Caches/pyvbmc`
+on macOS, `~/.cache/pyvbmc` on Linux (or under `$XDG_CACHE_HOME`), or the
+directory that `PYVBMC_CACHE_DIR` names. To turn it off, pass
+`options={"show_tips": False}` to `VBMC`, which also turns off the tips, or
+`options={"display": "off"}`, or set the environment variable
+`PYVBMC_NO_UPDATE_REMINDER`; `NO_UPDATE_NOTIFIER` and `CI` turn it off as well.
+A variable set to an empty value, `0` or `false` counts as unset.
 
 (faq-i-am-having-trouble-installing-vbmc-can-you-help)=
 ### I am having trouble installing PyVBMC. Can you help?

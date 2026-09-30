@@ -9,6 +9,7 @@ Functions
 
    active_sample
    calibrate
+   check_for_updates
    create_vbmc_animation
    decorators
    entropy

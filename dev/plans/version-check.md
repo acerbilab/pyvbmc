@@ -15,7 +15,7 @@ scripts, in CI and on cluster nodes without internet access. The PI chose
 
 1. **An old-release reminder, with no network access.** The package ships
    the date of its release. When a new run starts and the installed release
-   is older than a threshold, PyVBMC prints one line saying that a newer
+   is older than a threshold, PyVBMC prints a note saying that a newer
    version may exist and how to find out: at most three times for each
    installed version, at least 90 days apart, and at most once per Python
    session (D8).
@@ -72,8 +72,11 @@ code or documentation) found:
 The PI ruled every decision on 2026-09-30: D1, D4 and D8 as stated, the
 others as recommended.
 
-- **D1. Threshold: 12 months** (365 days; PI, 2026-09-30). The reminder cannot
-  know whether a newer release exists, only how old the installed one is, so
+- **D1. Threshold: 12 months** (PI, 2026-09-30): the reminder shows only
+  after the first anniversary of the release, counted in calendar dates, so
+  that a year holding 29 February does not make the anniversary itself
+  "more than a year ago". The reminder cannot know whether a newer release
+  exists, only how old the installed one is, so
   a gap of more than 12 months between releases gives users of the latest
   release reminders they cannot act on. The threshold therefore stands on a
   release at least once a year, a small maintenance release included (PI,
@@ -116,8 +119,9 @@ others as recommended.
 - **D7. Where the release date comes from** (PI, 2026-09-30). A tracked
   constant, `RELEASE_DATE` in `pyvbmc/_release.py`, set in the release pull
   request to the date of the changelog heading `## [X.Y.Z] - YYYY-MM-DD`,
-  with a test that the two agree. It survives every build path: the wheel, the sdist,
-  and conda-forge's build from the sdist, which has no git history.
+  with a test that the two agree. It survives every build path: the wheel,
+  the sdist, and conda-forge's build from the sdist, which has no git
+  history.
   Rejected: a date written at build time by `setuptools_scm` (a build from the
   sdist has no git history to date, and what the template receives there
   would have to be verified on every path); the modification time of the
@@ -156,8 +160,9 @@ others as recommended.
   earlier than the release date (a wrong clock), when the release is not
   older than the threshold (D1), when the session is not interactive, when
   `CI`, `PYVBMC_NO_UPDATE_REMINDER` or `NO_UPDATE_NOTIFIER` is set to a
-  non-empty value, when the cap forbids it (D8, below), or when it has
-  printed already in this Python session. A process-local flag, under a
+  value other than empty, `0` or `false` (read as CI detection reads `CI`),
+  when the cap forbids it (D8, below), or when it has printed already in
+  this Python session. A process-local flag, under a
   lock as `_runtime_tips.py` keeps its state, records that it printed in
   this session; nothing travels with a saved run. A start at which it does
   not print writes nothing and leaves it eligible for the next start.
@@ -178,9 +183,13 @@ others as recommended.
   printing, it appends the date and writes the file as pip writes its own
   state: to a temporary file in the same directory, renamed over the old
   one, every error swallowed. The file first appears when the reminder first
-  shows, so nothing is written in a release's first year. A file that
-  cannot be read, holds malformed content or cannot be written makes the
-  reminder fall back to once per session. A newly installed version has a
+  shows, so nothing is written in a release's first year. A file whose
+  content is malformed (not a mapping from `X.Y.Z` versions to lists of ISO
+  dates, or larger than 64 KiB) counts as empty and is replaced at the next
+  showing, so that corruption cannot turn the cap into a reminder in every
+  session. A file that cannot be read or written makes the reminder fall
+  back to once per session. The file honors `PYVBMC_CACHE_DIR`, as the
+  calibration cache does. A newly installed version has a
   list of its own, and deleting the file resets every count. Parallel starts
   may each print before any of them writes; later starts see their dates.
 - It prints through `pyvbmc._user_hints.emit_user_hint`, with the PyPI URL
@@ -195,10 +204,12 @@ others as recommended.
   (`dev/plans/runtime-tips.md`, "Approved user experience"): the tip that
   start would have shown comes at the next start instead of being lost.
   Resumed and continued runs consider neither, as now.
-- `consider_runtime_tip` learns of the reminder through its slot argument;
-  generalizing `calibration_reminder_emitted` to a slot flag, or adding a
-  second flag, is the implementer's choice, with the tips' tests kept green
-  and their behavior unchanged when no reminder prints.
+- `consider_runtime_tip` learns of the reminder through a second flag,
+  `release_reminder_emitted`, beside `calibration_reminder_emitted`; the
+  tips behave as before when no reminder prints. The shared emitter,
+  `pyvbmc._user_hints.emit_user_hint`, returns without printing when the
+  output stream fails (a closed pipe), so that neither this reminder, nor a
+  tip, nor the calibration reminder can stop a run.
 
 ### `pyvbmc.check_for_updates()`
 
@@ -206,19 +217,28 @@ others as recommended.
   where `UpdateCheck` is a `NamedTuple` of `installed` (`str` or `None`),
   `latest` (`str` or `None` when PyPI could not be read) and
   `update_available` (`bool` or `None`). It prints one message and returns
-  the tuple; it raises only for an invalid `timeout`, never for a network or
-  parse failure.
+  the tuple; it raises only for an invalid `timeout` (not a positive number
+  of seconds of at most 3600, which also keeps the socket layer from
+  refusing it), never for a network or parse failure. The timeout bounds
+  each network operation, not the lookup of PyPI's address.
 - It lives in a private module, `pyvbmc/_update_check.py`, and is exported
   as `pyvbmc.check_for_updates` from `pyvbmc/__init__.py` beside `calibrate`.
   `urllib.request` and `json` are imported inside the function, so that
   `import pyvbmc` imports no networking code.
 - The request: a GET of `https://pypi.org/pypi/pyvbmc/json` with
   `urllib.request`, the given timeout, and a `User-Agent` of
-  `pyvbmc/<installed version> (check_for_updates)`. Nothing else is sent.
-  `urllib` honors the proxy environment variables.
+  `pyvbmc/<installed version> (check_for_updates)` and an `Accept` of
+  `application/json`; nothing else about the installation or the user is
+  sent. `urllib` honors the proxy environment variables. At most 16 MiB of
+  the reply are read; a longer one is unreadable.
 - The latest release is the highest final `X.Y.Z` among the response's
-  `releases` whose files are not all yanked. Pre-releases, development
-  releases and yanked releases are ignored.
+  `releases` with at least one file that is not yanked, so that a release
+  with no files, pre-releases, development releases and yanked releases are
+  ignored. PyPI documents the `releases` key as deprecated in favor of its
+  Index API (https://docs.pypi.org/api/json/, 2026-09-30); a reply without
+  a mapping of releases gives `info.version`, PyPI's latest release, when
+  that is a final `X.Y.Z` ("no release found" when it is another version,
+  "unreadable reply" when it is missing).
 - The message, one of (wording approved by the PI with D4):
   - a newer release: `PyVBMC {latest} is available; you have {installed}.
     Update with: {command}`, where the command is the installer's (below);
@@ -228,10 +248,22 @@ others as recommended.
     version; the latest release is {latest}.`;
   - PyPI unreachable or its reply unreadable: `Could not reach PyPI
     ({reason}); see https://pypi.org/project/pyvbmc/.`, the reason a few
-    words (`timed out`, `HTTP 503`, `unreadable reply`).
-  A final installed version newer than PyPI's latest, which happens only
-  before a release reaches PyPI, gives `PyVBMC {installed} is newer than the
-  latest release on PyPI, {latest}.`, in the same style.
+    words (`timed out`, `HTTP 503`, `unreadable reply`, the reason of a
+    `URLError`).
+  Written in the same style during the implementation, and approved by the
+  PI on 2026-09-30:
+  - a final installed version newer than PyPI's latest, which happens
+    before a release reaches PyPI, or when the installed release has been
+    yanked: `PyVBMC {installed} is newer than the
+    latest release on PyPI, {latest}.`;
+  - an installed version that cannot be read: `PyVBMC's installed version
+    is unknown; the latest release is {latest}.`;
+  - a readable reply with no release that counts: the failure message with
+    the reason `no release found`;
+  - an installer other than pip or conda: `... Update with: python -m pip
+    install --upgrade pyvbmc, or with conda: conda update
+    --channel=conda-forge pyvbmc (the conda-forge package can follow PyPI
+    by a few days)`.
 - The update command follows the installer, read from the `INSTALLER` file of
   the installed distribution (`importlib.metadata.distribution("pyvbmc")`):
   `pip` gives `python -m pip install --upgrade pyvbmc`; `conda` gives
@@ -242,10 +274,13 @@ others as recommended.
 ## Live checklist
 
 - [x] Phase 0: every decision ruled (2026-09-30).
-- [ ] Phase 1: the release date and the reminder.
-- [ ] Phase 2: `check_for_updates()`.
-- [ ] Phase 3: documentation and records.
-- [ ] Phase 4: verification and delivery.
+- [x] Phase 1: the release date and the reminder (tests pass; a malformed
+  state file starts afresh, and `0`/`false` leave an opt-out unset).
+- [x] Phase 2: `check_for_updates()` (its tests pass; the messages written
+  during the implementation approved by the PI, 2026-09-30).
+- [x] Phase 3: documentation and records (API page, FAQ, tips sections,
+  changelog, `AGENTS.md`, the roadmap's checklist, the user skill).
+- [~] Phase 4: verification and delivery.
 
 ## Phases
 
@@ -267,7 +302,7 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 2. Add `pyvbmc/vbmc/_release_reminder.py` as designed above, and wire it
    into `VBMC.optimize()` at the start-of-run slot. Add a private
    `_reset_release_reminder_state()` for tests, as `_runtime_tips.py` has.
-3. If D2 stands, edit the description of `show_tips` in
+3. As D2 rules, edit the description of `show_tips` in
    `pyvbmc/vbmc/option_configs/basic_vbmc_options.ini` to name the reminder.
 4. Add `pyvbmc/testing/conftest.py` with an autouse fixture that resets the
    reminder's state, points its state file into pytest's temporary
@@ -278,40 +313,42 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
    output, a year after the release.
 5. Tests in `pyvbmc/testing/vbmc/test_release_reminder.py`, with injected
    dates and versions:
-   - [ ] under and over the threshold, and on its boundary;
-   - [ ] the line starts with `Note:` and names the installed version and
+   - [x] under and over the threshold, and on its boundary;
+   - [x] the line starts with `Note:` and names the installed version and
      the age computed from the injected dates: "more than a year ago"
      between one and two years, "more than N years ago" beyond;
-   - [ ] the third showing for a version, and only it, ends with the
+   - [x] the third showing for a version, and only it, ends with the
      last-reminder sentence;
-   - [ ] printed once per session, and eligible again after the state reset;
-   - [ ] the cap: printed at the first eligible start, not again within 90
+   - [x] printed once per session, and eligible again after the state reset;
+   - [x] the cap: printed at the first eligible start, not again within 90
      days, again after 90, never after the third time; a new version starts
      a list of its own; the file holds only versions and dates;
-   - [ ] a state file that cannot be read, holds malformed content or cannot
-     be written: once per session, nothing raised; a write goes through a
+   - [x] a state file with malformed content: counted as empty and
+     replaced at the showing; one that cannot be read or written: once per
+     session; nothing raised in either case; a write goes through a
      temporary file and a rename;
-   - [ ] nothing printed and nothing written for a development version, a
+   - [x] nothing printed and nothing written for a development version, a
      local version, a release date that is `None` or unreadable, a date of
      the run earlier than the release date, a session that is not
      interactive, and each of `CI`, `PYVBMC_NO_UPDATE_REMINDER` and
      `NO_UPDATE_NOTIFIER` set;
-   - [ ] nothing with `display="off"` or (D2) `show_tips=False`, and such a
+   - [x] nothing with `display="off"` or (D2) `show_tips=False`, and such a
      start does not use up the session's reminder or write the file;
-   - [ ] a calibration reminder takes the slot and the old-release reminder
+   - [x] a calibration reminder takes the slot and the old-release reminder
      waits for the next start; when the old-release reminder prints, no tip
      prints and the tips' cadence does not advance;
-   - [ ] resumed and continued runs print neither;
-   - [ ] the random streams (the run's generator, NumPy's global state, the
+   - [x] resumed and continued runs print neither;
+   - [x] the random streams (the run's generator, NumPy's global state, the
      tips' private `random.Random`) are unchanged, as the tips' tests check;
-   - [ ] a short seeded run gives the same results with the reminder printed
-     and without it, sharing an existing fixture rather than adding an
-     `optimize()` run (`AGENTS.md`, "Tests and their traps");
-   - [ ] the release-date test: when `CHANGELOG.md` has a released section
-     `## [X.Y.Z] - YYYY-MM-DD`, the first such heading's date equals
-     `RELEASE_DATE`; with none, `RELEASE_DATE` is `None`. The test reads
-     `CHANGELOG.md` from the repository root and skips where the file is
-     absent.
+   - [x] a short seeded run gives the same results with the reminder printed
+     and without it (two runs capped at two iterations, since the shared
+     fixture of `test_vbmc_seed.py` asserts that a tip prints, which the
+     reminder would displace; `AGENTS.md`, "Tests and their traps");
+   - [x] the release-date test: the first section heading of `CHANGELOG.md`
+     other than `## [Unreleased]` must read `## [X.Y.Z] - YYYY-MM-DD`, and
+     its date equals `RELEASE_DATE`; with no such heading, `RELEASE_DATE` is
+     `None`. The test reads `CHANGELOG.md` from the repository root, and
+     skips where the file is absent or is not PyVBMC's.
 
 ### Phase 2 — `check_for_updates()` (Sol)
 
@@ -319,19 +356,19 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 2. Tests in `pyvbmc/testing/test_update_check.py`, with
    `urllib.request.urlopen` patched (`pytest-mock`), so that no test opens a
    connection:
-   - [ ] newer release available; latest installed; installed newer than
+   - [x] newer release available; latest installed; installed newer than
      PyPI's latest; development install; each prints its message of the
      design, word for word;
-   - [ ] pre-releases, development releases and fully yanked releases are
+   - [x] pre-releases, development releases and fully yanked releases are
      ignored, a partly yanked release is not;
-   - [ ] `URLError`, `HTTPError`, a timeout, malformed JSON and a JSON without
-     `releases` each give the failure message and a tuple with
-     `latest=None`, and raise nothing;
-   - [ ] the update command for `INSTALLER` of `pip`, `conda`, another value
+   - [x] `URLError`, `HTTPError`, a timeout, malformed JSON, and a JSON
+     without `releases` and without a final `info.version`, each give the
+     failure message and a tuple with `latest=None`, and raise nothing;
+   - [x] the update command for `INSTALLER` of `pip`, `conda`, another value
      and a missing file;
-   - [ ] the request's URL, timeout and `User-Agent`; nothing else sent;
-   - [ ] an invalid `timeout` raises `ValueError`;
-   - [ ] `import pyvbmc` leaves `pyvbmc._update_check` unimported, or imports
+   - [x] the request's URL, timeout and `User-Agent`; nothing else sent;
+   - [x] an invalid `timeout` raises `ValueError`;
+   - [x] `import pyvbmc` leaves `pyvbmc._update_check` unimported, or imports
      it without importing `urllib.request` through it.
 
 ### Phase 3 — documentation and records (Sol)
@@ -367,27 +404,41 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 
 ### Phase 4 — verification and delivery
 
-- [ ] Sol: the focused tests (the two new modules, `test_runtime_tips.py`, the
+- [x] Sol: the focused tests (the two new modules, `test_runtime_tips.py`, the
   calibration and options tests, `test_vbmc_seed.py`), then the whole suite
   once (`python -m pytest --reruns=5 -x -vv`), one heavy process at a time.
-- [ ] Sol: `python dev/scripts/make_oracle_fixtures.py --check --exact` on the
+  2026-09-30, at `4b247bfd`, BLAS single-threaded: 2574 passed, 81 skipped,
+  one test passing on its rerun.
+- [x] Sol: `python dev/scripts/make_oracle_fixtures.py --check --exact` on the
   machine that generated the fixtures (`dev/scripts/runs/LOCAL.md`), BLAS
-  single-threaded: the change must move nothing.
-- [ ] Sol: the Sphinx build with the example notebooks copied in, as
+  single-threaded: the change must move nothing. 2026-09-30: 12 of 12
+  fixtures exact.
+- [x] Sol: the Sphinx build with the example notebooks copied in, as
   `make github` does; the new API page, the FAQ entry and the tips sections
-  render, and the build adds no warning.
-- [ ] Sol: one call of `pyvbmc.check_for_updates()` against the real PyPI from
+  render, and the build adds no warning. 2026-09-30: no warning at all.
+- [x] Sol: one call of `pyvbmc.check_for_updates()` against the real PyPI from
   the development environment; before 1.5 is on PyPI it reports a development
-  install and 1.0.4 as the latest release.
-- [ ] A fresh Sol reviewer, read-only: the diff against this plan, the
+  install and 1.0.4 as the latest release. 2026-09-30: it did, and
+  `import pyvbmc` left `urllib.request` unimported.
+- [x] A fresh Sol reviewer, read-only: the diff against this plan, the
   decisions as ruled, the invariants (no network request outside
   `check_for_updates()`, no effect on results or random streams, no file
   written but the reminder's state file), the tests' independence from the
   calendar, the network and the user's cache directory, and the
-  documentation. Findings resolved, affected checks rerun.
-- [ ] The CI test matrix on the feature branch, as the tips work ran it
-  (`dev/plans/runtime-tips.md`, "Delivery checklist"); merge into `dev-next`
-  with the PI's approval, before the Phase 8 launch (D6); remove the branch.
+  documentation. Findings resolved, affected checks rerun. 2026-09-30:
+  three reviewers (the reminder, `check_for_updates()`, the documentation)
+  found nothing that must be fixed; their other findings are resolved (the
+  timeout's bound, a bounded read, the fallback without `releases`, a
+  failing output stream, the release-date test's strictness, comments and
+  documentation).
+- [x] The CI test matrix on the feature branch, as the tips work ran it
+  (`dev/plans/runtime-tips.md`, "Delivery checklist"): the dispatched runs
+  of `tests.yml` on `feat-update-reminders` passed all nine cells at
+  `4b247bfd` (run 36720287353), at `21fb1d6a`, after the review's fixes
+  (run 36722167050), and at `dff13b5b`, after the review of those fixes
+  (run 36727376436), on 2026-09-30.
+- [ ] The merge into `dev-next`, with the PI's approval, before the Phase 8
+  launch (D6), and the removal of the branch.
 
 ## Acceptance
 

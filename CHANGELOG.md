@@ -157,6 +157,12 @@ An error is raised for calls and values that 1.0.4 accepted:
   at most once per Python session. `options={"show_tips": False}`, or
   `display="off"`, turns them off; `SVBMC(..., show_tips=False)` does the same
   for S-VBMC.
+- **Update reminders.** In an interactive session, a new run of a release more
+  than a year old starts with a note that a newer version may exist, at most
+  three times for each installed version. The note makes no network request,
+  and `options={"show_tips": False}`, or `display="off"`, turns it off with
+  the tips. `pyvbmc.check_for_updates()` asks PyPI whether a newer version
+  exists and gives the command that installs it.
 - **Repeated observations of a noisy target.** With `max_repeated_observations`
   above 0, active sampling may evaluate a noisy target again at a point it has
   already evaluated, and pools the observations into one. In 1.0.4 the option

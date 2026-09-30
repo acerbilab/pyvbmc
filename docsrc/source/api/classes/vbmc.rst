@@ -109,12 +109,19 @@ Startup tips
 With ``show_tips=True`` (default), a new run may print one tip before the
 iteration headings. Tips appear on the first eligible start and every third
 eligible start thereafter, in shuffled order, with no repeats within a Python
-session. Resumed or continued runs do not show another tip. A calibration
-reminder takes priority, including one already shown by an early call on that
-run's ``vbmc.vp``. Quiet starts, disabled tips and calibration reminders do
-not advance the tip cadence. Set ``show_tips=False`` to disable tips, or
-``display="off"`` to suppress both tips and calibration reminders. These
-settings belong in the ``options`` dictionary passed to ``VBMC``.
+session. Resumed or continued runs show no tip and no old-release reminder.
+
+A start prints at most one hint, in this order of priority: a calibration
+reminder, including one already shown by an early call on that run's
+``vbmc.vp``; the reminder that the installed release is more than a year old,
+which suggests :doc:`../functions/check_for_updates` (the
+:ref:`FAQ <faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists>` says
+when it appears); a tip. Quiet starts, disabled tips and either reminder do
+not advance the tip cadence, so a tip displaced by a reminder comes at the
+next start. Set ``show_tips=False`` to disable tips and the old-release
+reminder, or ``display="off"`` to suppress tips and both reminders. These
+settings belong in the ``options`` dictionary passed to ``VBMC``; the FAQ
+also lists the environment variables that turn off the old-release reminder.
 
 .. autoclass:: pyvbmc.VBMC
    :exclude-members: optimize, save, load
