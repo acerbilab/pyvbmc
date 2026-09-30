@@ -1,0 +1,71 @@
+# The campaign environment (dev/plans/slurm-benchmark-support.md, "The
+# driver"): what the conda environment at CAMPAIGN_ENV takes from PyPI,
+# pinned. `bash dev/scripts/hpc/campaign_env.sh build` creates the
+# environment from conda-forge with the Python pinned below, zstd, gh and
+# git, and installs this file with pip; campaign_submit.sh and
+# campaign_finish.sh refuse an environment that differs from it
+# (campaign_contract.py check-env). PyVBMC and gpyreg come from the
+# campaign's source trees and are not pinned here: the check exempts a
+# package installed from a source tree, editable or not, and one that
+# conda installed.
+#
+# The file is frozen (Phase 1b of the plan, 2026-09-28): it pins every
+# package of the first environment built from the direct requirements,
+# dependencies included (`python -m pip list --format=freeze
+# --exclude-editable` of that environment), and the Python below to its
+# patch release, so that every environment built from the file, in any
+# account, holds the same libraries, but for the pip, setuptools and wheel
+# of conda-forge on the day of the build. The direct requirements were PyVBMC's
+# dependencies (the same at the release and at f91fdf0, the before arm's
+# commit), gpyreg's (the same at v1.2.1 and v1.3.3; those of v1.4.0, which
+# the release requires, are a subset), the test extra for the harnesses'
+# test modules, psutil for the benchmark scripts, packaging for
+# the environment check and CPU Torch for the stacking. pip, setuptools and
+# wheel, which conda installs with the interpreter, are left to conda
+# (dev/scripts/hpc/README.md, "The frozen requirements", says why);
+# conda also installs packaging, which stays pinned as a direct
+# requirement.
+#
+# The interpreter, which the build takes from conda-forge:
+# python==3.12.14
+
+cma==4.4.4
+contourpy==1.4.0
+corner==2.3.0
+cycler==0.12.1
+dill==0.4.1
+filelock==3.32.5
+fonttools==4.66.0
+fsspec==2026.9.0
+ImageIO==2.37.4
+iniconfig==2.3.0
+Jinja2==3.1.6
+kiwisolver==1.5.1
+MarkupSafe==3.0.3
+matplotlib==3.11.1
+mpmath==1.3.0
+networkx==3.7
+numdifftools==0.11.1
+numpy==2.5.2
+packaging==26.3
+pillow==12.3.0
+platformdirs==4.11.7
+pluggy==1.6.0
+psutil==7.2.2
+Pygments==2.21.0
+pyparsing==3.3.3
+pytest==9.1.1
+pytest-mock==3.15.1
+pytest-rerunfailures==16.6
+python-dateutil==2.9.0.post0
+scipy==1.18.1
+six==1.17.0
+sympy==1.14.0
+threadpoolctl==3.6.0
+typing_extensions==4.16.0
+
+# CPU Torch 2.14.0, as dev/experiments/svbmc_pool/baseline_environment.json
+# records it, from the PyTorch CPU index, whose Linux wheels carry the local
+# label +cpu (PyPI's Linux wheels of the same version are CUDA builds).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu

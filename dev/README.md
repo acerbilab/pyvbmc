@@ -438,7 +438,8 @@ reason.
   (timing costs about 40 to 50 ms per evaluation).
 - `scripts/profile_run.py` — run VBMC on one target or suite config under a
   fixed seed and report per-stage timers, truth-based metrics and, with
-  `--cprofile`, a cProfile attribution of the hot paths.
+  `--cprofile`, a cProfile attribution of the hot paths. It runs this
+  checkout's package.
 - `scripts/profile_suite.py` — run `profile_run.py` over a whole suite
   (plain and/or cProfile, resumable) and aggregate the summaries into one
   markdown table. `--probe CONFIG` runs a short reference config plain
@@ -459,28 +460,86 @@ reason.
   suite over many seeds (one process by default), storing one compact
   `.npz` trace and a JSON sidecar per run; `summary` a population; `compare`
   two populations with KS tests under a Holm family correction (`--split`
-  for a null check). Populations live under `scripts/runs/golden/`.
-- `scripts/population_run.py` — the staged population benchmark's
-  supervisor: runs a manifest's configuration/seed pairs one fresh process
-  at a time from a frozen checkout (`PYVBMC_GPYREG_SOURCE` names the frozen
-  gpyreg checkout), verifying before every case that imports, commits,
-  dependency versions and thread settings match the manifest, and wraps
-  the production final boost to retain the pre-boost posterior, the raw
+  for a null check). Populations live under `scripts/runs/golden/`. It runs
+  this checkout's package; each sidecar's `meta` records
+  the checkout's commit, the path and commit of the imported PyVBMC and
+  gpyreg, and the versions their installed distributions name, labelled as
+  such. Its `final` holds the process's peak resident set as `max_rss_mb`;
+  `peak_rss_mb`, which earlier sidecars hold too, is that peak on Windows
+  alone and the resident set at the end of the run elsewhere.
+- `scripts/population_run.py` — the population harness of the release gate
+  (`plans/slurm-benchmark-support.md`), meeting the campaign contract of
+  `scripts/campaign_contract.py`: `prepare` fixes the allocation (a suite,
+  its labels, one seed range), the options, the identity and the
+  confirmatory family of the comparison of two arms; `cases` and its
+  subsets; `worker` runs one case in a fresh process, wrapping the
+  production final boost to retain the pre-boost posterior, the raw
   candidate and the decision without changing the calculation or the
-  random stream. A hash-verified completion record per case permits
-  resumption; partial artifacts stop the run for inspection. `--limit N`
-  runs the first N cases. `test_population_run.py` checks the capture and
-  resume behavior.
-- `scripts/analyze_population_run.py` — assesses finished campaigns of one
-  treatment without inference: revalidates every case and the reference
-  sidecars, pools a first-stage campaign with its extensions, recomputes
-  the KS screen and a within-configuration paired family (exact signed-rank
-  tests by dynamic programming over midranks, exact McNemar tests of
-  usability), checks every boost decision against the guard, and reports
-  each extension on its own with the confirmatory family fixed in its
-  manifest. Writes `assessment.json`, `comparison.md` and the campaign
-  manifests under `--out`. `test_analyze_population_run.py` checks the
-  statistics.
+  random stream, and writes, beside the trace and the sidecar, the arrays
+  that rebuild the returned posterior exactly, failing a case whose
+  artifacts fail the checks `verify` repeats; `verify` reconciles the
+  contract's states and re-checks every case in the campaign's own trees;
+  `summarize`, which tabulates the verified cases, and `rescore` are its
+  finishing steps, the second recomputing the metrics of both arms with the release
+  code, resuming from its work files, and recording in `rescoring.json` its
+  identity and the SHA-256 of what it wrote; what reads `verification.json`
+  refuses one older than the directory (a case it does not place as
+  verified has a record), so the other arm is finished before the arm that
+  rescores, which is finished again after any later finish of the other;
+  `prepare --pair` takes as the other arm only a campaign that differs
+  from this one in its code and in nothing else, its node family and
+  environment included; `prepare` refuses a gpyreg checkout that is not
+  the release its package tree's `pyproject.toml` names as the minimum,
+  exactly for an arm of other code and that release or a later commit for
+  the release code; its tracked copies (`tracked_copies`) are the summary,
+  the rescored metrics and their record where it rescores, and every
+  verified case's record, sidecar and boost report; `run` is the same
+  campaign one case after another on a workstation. `PYVBMC_SOURCE` names
+  the package tree of an arm of other code, which the harness alone, run
+  as a script, imports (no other script reads the variable; a tree that
+  PyVBMC does not import from exits 78, having written nothing), and
+  `PYVBMC_GPYREG_SOURCE` the gpyreg checkout; the harness, the targets
+  module and its data are this checkout's in every arm. `validate_case`
+  checks the records of the campaigns of September 2026, which ran before
+  array mode. `test_population_run.py` checks the capture, the contract's
+  states, `verify`, `rescore`, the comparison of two arms it verified and
+  rescored and the rebuilt posterior on hand-made cases, and runs one real
+  case through `run` and through `worker`.
+- `scripts/analyze_population_run.py` — assesses finished campaigns without
+  inference. By default, campaigns of one treatment (those of September
+  2026) against the 870-case golden reference of 2026-09-07: it revalidates
+  every case and the reference's sidecars, which `--reference` names and
+  which must be exactly those of
+  `golden/noisy_extension_20260907/sha256_manifest.json`, pools a
+  first-stage campaign with its extensions, recomputes the KS screen and a
+  within-configuration paired family (exact signed-rank tests by dynamic
+  programming over midranks, exact at any number of pairs, and exact
+  McNemar tests of usability), checks every boost decision against the
+  guard, and reports each extension on its own with the confirmatory family
+  fixed in its manifest. The default `--reference`, `golden/baseline/`,
+  holds `reference_990_20260913`, so the default command stops at that
+  check; the 870 sidecars are `golden/baseline/` at commit `b2ea8597`
+  (`git worktree add --detach DIR b2ea8597`, then `--reference
+  DIR/dev/golden/baseline`) and the traces directory
+  `scripts/runs/golden/reference_870_20260907/` of the machine that
+  `scripts/runs/LOCAL.md` lists. With `--arms REFERENCE CANDIDATE`, two arms of
+  `population_run.py`'s array mode, each checked against its own
+  `verification.json` and compared seed by seed on the metrics that
+  `rescore` recomputed (in the campaign `--rescoring` names, by default the
+  candidate, whose `rescoring.json` binds them by SHA-256 to a process of
+  the candidate's own identity), with the confirmatory family of their
+  manifests at the size they fix: a test that cannot be computed enters it
+  at p = 1 and is flagged. Either arm may be a campaign directory or its
+  redacted tracked copies, which give the same report. In both, a boost
+  stage other than the returned posterior whose metrics are the error of
+  a scoring that failed, which the harness keeps and `verify` accepts, is
+  left out of the boost summary's usability counts, counted and listed.
+  Writes `assessment.json` and `comparison.md` (and, by default, the
+  campaign manifests) under `--out`, which is required: a report is a
+  record, so it has no default location.
+  `test_analyze_population_run.py` checks the statistics, the reference
+  check, and the comparison of two arms on campaign directories it writes
+  and on their redacted copies.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous
@@ -493,6 +552,65 @@ reason.
   configuration). `record-replay` adds a finished `golden_replay.py`
   report of the new configurations against the combined traces to that
   record. The README of the record is written by hand from its output.
+- `scripts/reference_promote.py` — promotes the after arm of the release
+  gate's population campaigns (`plans/slurm-benchmark-support.md`) to the
+  golden reference, in the manner of `golden/promotion_20260913/promote.py`;
+  `reference_join.py` cannot, since it extends a reference and refuses any
+  overlap with it. It runs on the machine of the replay fingerprints, one
+  step at a time, and each step that runs code first checks that `HEAD` and
+  the working tree equal the after arm's code (the package, but for its
+  tests and S-VBMC, and the harness files that build a run) and that the
+  imported gpyreg is the after arm's. `fingerprints` runs `golden_replay.py`
+  on every configuration of the after arm at seed 0, each judged against
+  the population's envelopes alone (the Slurm plan's Phase 9), and exits
+  0 once every run is made, whatever the replay flags, since `prepare`
+  judges the runs as a set. `prepare`
+  checks that `golden/baseline/` still holds `reference_990_20260913`; the
+  after arm, which must be its redacted tracked copies, against its
+  verification report and rescored metrics (a case it does not place as
+  verified needs a ruling in `--rulings`); the assessment against the
+  SHA-256 the PI accepted; the fingerprints (one BLAS thread, historical
+  calibration budgets, the after arm's options, code and gpyreg, and no
+  more of them outside their envelopes than the population's own rate of
+  runs outside theirs makes plausible); and the gate runs
+  (`seeded_gate_runs.py`'s check, the after arm's code, this host). It then
+  copies the fingerprints and the gate runs into
+  `scripts/runs/golden/<name>_fingerprints/` and writes the record under
+  `golden/promotion_<date>/` (`golden/README.md` as it stands, the
+  fingerprints' replay report, the gate runs' record, the even/odd null
+  check, a SHA-256 manifest and `validation.json`). `replay` replays the new
+  defaults against the prepared fingerprints. `publish`, once the record's
+  README is written and that replay is identical, replaces the sidecars and
+  the summary in `golden/baseline/` with the reference's and rewrites
+  together `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS`,
+  the "Trajectories" entry of `AGENTS.md`, the current reference's section
+  and the `golden_replay.py` entry of this file, `golden/README.md`, and the
+  lines of this file, `golden_replay.py` and `analyze_population_run.py`
+  that name the previous reference or its population, all computed before
+  the first write; it copies itself into the record as `promote.py` and
+  removes this entry, and the promotion commit removes the script and its
+  test. It rewrites a passage only if it is the text the script was written
+  against (`PASSAGES`, by SHA-256), so an edit to one of those passages
+  before the promotion is carried into the script's template as well:
+  `test_reference_promote.py` fails until it is. The test module also runs
+  a whole promotion on a small release gate under a temporary root.
+- `scripts/seeded_gate_runs.py` — the six seeded gate runs of
+  `experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`
+  with the provenance that script does not record: `run --out DIR` records
+  them twice, each time in a fresh process with one BLAS thread and with
+  `performance_calibration="off"` added to every run's options, compares
+  the two recordings with the script's own `compare`, and writes
+  `gate_runs.json`, which holds each recording's identity
+  (`campaign_contract.identity`: this checkout's commit, the gpyreg
+  checkout, the imported versions, the host with its BLAS libraries and
+  thread variables) and the SHA-256 of every file; `check DIR` re-checks a
+  record, the runs' digests included. It refuses, unless `--allow-dirty`,
+  recordings from a dirty checkout; an output directory inside the checkout
+  that git does not ignore; and, without `PYVBMC_GPYREG_SOURCE`, a gpyreg
+  that no checkout tracks. Its record joins the replay fingerprints of the
+  release gate (the Slurm plan, Phase 9), and a machine that makes
+  fingerprints of its own runs it too; `test_seeded_gate_runs.py` records a
+  stand-in gate script.
 - `scripts/boost_comparison.py` (kept at `764a177` on `retain/final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for
@@ -516,8 +634,8 @@ reason.
   [pilot results](results/2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
   replays a few golden configurations in-process with the current code
-  (about 7 minutes for the default set) and compares each run with its
-  stored trace: exact shapes and values of every non-timer NPZ array and
+  (this checkout's package), about 7 minutes for the default set, and
+  compares each run with its stored trace: exact shapes and values of every non-timer NPZ array and
   all semantic final-result fields, the ELBO/live-point agreement horizons,
   the initial design (see below), and final accuracy against the baseline
   population's `Q3 + 3 IQR` envelope. It reports "same loop, changed final"
@@ -539,8 +657,12 @@ reason.
   finished run. Flags: `--configs`, `--seeds`
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/reference_990_20260913/`, the current reference
-  population, exists only on the machine that made it), `--sidecars`,
-  `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
+  population, exists only on the machine that made it), `--sidecars`
+  (the envelope population: a flat directory of sidecars, by default
+  `golden/baseline/`, or a population of `population_run.py`'s array mode,
+  a campaign directory or its tracked copies, of which only the verified
+  cases count; a replayed configuration without a sidecar there is an
+  error), `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
   all three chunk budgets to this integer for a nondefault-profile check;
   omitted means historical defaults, independent of the local cache).
   Replay reports retain this setting, including on `--report-only`.
@@ -567,59 +689,93 @@ reason.
   for `plans/svbmc-speedups.md`; the evidence is in
   `experiments/svbmc_speedups/`.
 - `scripts/svbmc_pool_run.py` — the run-pool generator of the S-VBMC
-  benchmark campaign (`plans/svbmc-benchmark-campaign.md`): `prepare`
-  fixes the allocation (every condition of the named suite, which for
-  `svbmc_pool` is the campaign's eight pool conditions, `POOL_LABELS`,
-  with a first seed, a seed cap and a filtered target each; `--only`
-  allocates a subset), the run options and the identity of the code the
-  pool is generated with; re-running it on a prepared directory is how its
-  targets and seed caps are revised, the previous allocation kept in
-  `allocation_history`, and nothing else about the campaign can change;
-  `run` is the laptop supervisor, walking the conditions in manifest
-  order, seeds upward, one fresh worker process at a time, stopping each
-  condition once its filtered target or its seed cap is reached
-  (`--pilot-seeds K` runs exactly K seeds per condition instead;
-  `--save-vbmc` also pickles the whole `VBMC` object); `worker` is one run
-  and is invocable on its own; `cases` prints every `label seed` of the
-  allocation, one per line, so a Slurm array can map its index to one
-  `worker` call (the plan's "Cluster generation"; `scripts/hpc/` holds the
-  Slurm scripts that implement the docstring's sketch);
-  `select` then defines the filtered pool post hoc, per condition the
-  lowest-seed runs that pass the filters up to the target, in
-  `selection.json`, which the comparison reads, and reports its pass rate
-  over the seeds it scanned before the target was met, which is not
-  `summarize`'s over every completed case; `summarize` writes the
-  per-condition pass rates, wall times and metric quartiles from the cases
-  the directory holds; `verify` re-checks every stored artifact post hoc
-  against its completion record and the manifest's source identity, the
-  recomputation gate included, reconciles the allocation (failed, partial,
-  missing and stray cases, the missing ones printed with their array index
-  for resubmission) into `verification.json`, and takes `--gpyreg-source`
-  for a pool copied to another machine (a clean checkout at the manifest's
-  gpyreg commit, checked by `pinned_gpyreg_source`, which the stacking
-  comparison shares). On such a machine the recomputation gate is met up
-  to the other BLAS's rounding amplified by each run's GP condition
-  number, which `verify_run` allows and reports (`--rounding-factor`
-  scales the allowance); the report also records the verifying checkout's
-  identity next to the pool's. gpyreg is pinned to a frozen
-  worktree through `PYVBMC_GPYREG_SOURCE` as in `population_run.py`; the
-  identity is split into a `source` half (commits, library versions,
-  working-tree state and the hashes of the suite module and both pool
-  scripts) that every process of one campaign must match and a `host` half
-  that is recorded only, so any node may run any case. Hash-verified
-  completion records permit resumption; a failing case leaves
-  `<tag>.error.txt` and no artifact, written by the worker itself so that
-  an array task records its failure as a sweep does, and is skipped by
-  later sweeps; an artifact file without a completion record or an error
-  file stops the sweep for inspection (the log of an interrupted case is
-  not one). `test_svbmc_pool_run.py` generates a short campaign and checks
-  the artifact, resume, revision, selection, summary and post-hoc
-  verification contracts.
+  benchmark campaign (`plans/svbmc-benchmark-campaign.md`), a harness of
+  the campaign contract (`plans/slurm-benchmark-support.md`), which the
+  driver under `scripts/hpc/` runs with
+  `HARNESS=dev/scripts/svbmc_pool_run.py`: `prepare` fixes the allocation
+  (every condition of the named suite, which for `svbmc_pool` is the
+  campaign's eight pool conditions, `POOL_LABELS`, with a first seed, a
+  seed cap and a filtered target each; `--only` allocates a subset; the
+  release pools are `--target 320 --max-seeds 350 --allocation
+  ring_D2_noise3_svbmc=320/480`, 2930 cases), the run options, the
+  contract's identity over the harness checkout and the gpyreg checkout
+  that `--gpyreg-source` names (required), the `site` block, the `pip
+  freeze` and the finishing steps (`select`, `summarize`); it refuses a
+  dirty gpyreg checkout, and a dirty harness checkout without
+  `--allow-dirty`, and re-running it on a prepared directory revises the
+  targets and seed caps alone, the previous allocation kept in
+  `allocation_history`; `cases` prints one tag
+  `<label>/<label>_seed<seed>` per case over every seed of each range
+  (`--subset LABEL`, one condition's as `<index> <line>`); `worker --case
+  LINE` runs one case through `campaign_contract.run_worker` (the early
+  exit, the identity and claim refusals, the clean-up after a failure or a
+  SIGTERM, a completion record holding the run's filter verdict, metrics,
+  `success_flag`, `convergence_status`, `message`, `r_index` and
+  `iterations`), and refuses with exit 64 a line that is not a case and a
+  directory that is not one of this harness's contract campaigns;
+  `run` is the workstation supervisor, walking the
+  conditions in manifest order, seeds upward, one `worker` process at a
+  time, stopping each condition once its filtered target or its seed cap
+  is reached (`--pilot-seeds K` runs exactly K seeds per condition
+  instead; `--save-vbmc` also pickles the whole `VBMC` object); `select`
+  then defines the filtered pool post hoc, walking every seed of each
+  condition in order and taking the runs that pass the filters up to the
+  target, in `selection.json`, which the comparison reads, and reports its
+  pass rate over the seeds it scanned before the target was met, which is
+  not `summarize`'s over every completed case; it refuses, writing
+  nothing, when a seed below a selected run holds neither a record nor an
+  error file (never run, in flight, interrupted or partial), lists such
+  seeds of a condition short of its target under `unfinished`, and
+  records the SHA-256 of the manifest and of `verification.json`, against
+  which `stackable_selection` checks a pool before the comparison's
+  `prepare` stacks it (a passing verification, the selection made after
+  it, both made in the pool's own directory, so that a copied or unpacked
+  pool is verified and selected again where it lies, and the stopping
+  rule replayed on the verified cases with the
+  allocation's first seed, seed cap and filtered target, or the target
+  `select --target` gave, which the selection records as
+  `target_override`); a pool selected before its latest verification is
+  made stackable by running `select` again; `summarize`
+  writes the per-condition pass rates, convergence, wall times and metric
+  quartiles from the cases the directory holds; `verify` re-checks every
+  stored artifact post hoc against its completion record and the manifest
+  (the source identity,
+  the SHA-256 of every file, the node feature and one physical core where
+  the `site` block names `NODE_FEATURE`), the recomputation gate
+  included, reconciles the allocation with `campaign_contract.reconcile`
+  into `verification.json`, and takes `--gpyreg-source` for a pool copied
+  to another machine (a clean checkout at the manifest's gpyreg commit,
+  checked by `pinned_gpyreg_source`, which the stacking comparison
+  shares). On such a machine the recomputation gate is met up to the other
+  BLAS's rounding amplified by each run's GP condition number, which
+  `verify_run` allows and reports (`--rounding-factor` scales the
+  allowance); the report also records the verifying checkout's identity
+  next to the pool's. Each condition's artifacts, error files and logs lie
+  in its own directory, its records and claims under `records/<label>/`
+  and `claims/<label>/`. A pool prepared before the contract, such as
+  `pool_20260914`, keeps its flat layout (artifacts and records named
+  `<label>_seed<seed>`, the flat identity of `identity()`), which the
+  September scripts under `scripts/hpc/` generated: `verify`, `select`,
+  `summarize` and `cases` read it with its own checks (its `summarize`
+  writes the fields of the summaries tracked with `pool_20260914` plus
+  `success_flag`, since its records hold no other convergence field), and
+  `prepare`, `worker` and `run` refuse it, before writing anything in it.
+  `test_svbmc_pool_run.py` generates a short campaign and checks the
+  artifact, resume, revision, selection (a gap below a selected run, the
+  unfinished seeds past a shortfall, the checks of
+  `stackable_selection`), summary, the contract's refusals, claims,
+  clean-up and `verify` states, the
+  identity of a case run by the array worker and by `run`, a case run
+  where neither package has installed metadata, the flat layout, and one
+  campaign through the driver; it reads the gpyreg checkout from
+  `PYVBMC_GPYREG_SOURCE` and skips when that is unset.
 - `scripts/svbmc_pool_io.py` — the campaign's per-run artifact: `save_run`
   stores one finished run through the oracle snapshot codec (the returned
   posterior with all of `stats`, the GP that produced those statistics,
   the transformer, every evaluation, the run's state, options and
-  metadata) and verifies it against the live objects, posterior,
+  metadata, whose identity gives None for a version the installed
+  metadata cannot name, as where PyVBMC and gpyreg are imported from
+  their source trees) and verifies it against the live objects, posterior,
   statistics and evaluations alike; `load_run` rebuilds every object
   through the public constructors; `verify_run` re-runs the checks on a
   stored artifact, including the recomputation gate (`_gp_log_joint`
@@ -628,30 +784,139 @@ reason.
   another, within that machine's rounding amplified by the condition
   number of the GP's kernel matrix, which the gate allows as a fixed
   multiple of `eps` times that number and reports) without the live run,
-  and post hoc also against the hashes of the completion record;
+  and post hoc also against the hashes of the completion record, in the
+  contract's shape or the flat layout's (`recorded_hashes`);
   `filter_verdict` applies the pool's stability and `J_sjk` filters.
-- `scripts/hpc/` — Slurm tooling for generating the S-VBMC pools on a
-  cluster ([README](scripts/hpc/README.md)): `svbmc_pool_submit.sh`
-  refuses a dirty checkout, prepares a campaign once and submits
-  `svbmc_pool_task.sbatch` as a throttled array (chunked below the site's
-  `MaxArraySize` with an index offset, the checkout frozen until the array
-  is done because every worker compares the identity fixed at `prepare`);
-  `svbmc_pool_finish.sh` collects the Slurm accounting, runs `verify`
-  under `srun`, then `select`, `summarize` and the archive with its
-  SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
-  University of Helsinki's Turso cluster; every site-specific value is an
-  environment variable.
+- `scripts/hpc/` — Slurm tooling ([README](scripts/hpc/README.md), which
+  holds the operator's guide to the release gate's campaigns: the
+  settings, the source trees, the environment and its frozen pins, the
+  environment check, each campaign command by command in the order of the
+  plan's Phase 8, the finish's report, the limits, the redaction and the
+  hand-back, and what to do when something refuses). The generic driver of
+  the release gate (`plans/slurm-benchmark-support.md`, "The driver"),
+  which each script's header documents, runs any harness that meets the
+  campaign contract (`campaign_contract.py`) and holds no value particular
+  to a site: `campaign_submit.sh` refuses a dirty source tree, an
+  environment that differs from `campaign_requirements.txt` and a fixed
+  operator setting that differs from the manifest's, prepares a campaign
+  once, writes its case list once and submits `campaign_task.sbatch` in
+  chunks below `MaxArraySize`, a named subset of the cases as its own
+  array, each submission recorded in `slurm/jobs.txt` and one that `sbatch`
+  refuses stopping it with the indices still to submit;
+  `campaign_finish.sh` records the accounting, stops while the queue shows
+  a task that has not ended or a job that neither the queue nor the
+  accounting shows ended (`queue-check`), runs `verify` and the harness's
+  finishing steps as batch jobs that are never requeued, each recorded in
+  `slurm/steps.txt` before it waits for the job in the accounting
+  (`wait-job`, which gives up after `STEP_WAIT_LIMIT`), counts the cases in
+  flight apart from the missing ones, and writes the archive in parts with
+  their SHA-256 only once the accounting shows every recorded task ended
+  (`archive-check`), or with `--allow-running` is a look that runs
+  `verify` alone; `campaign_redact.sh` writes a finished campaign's
+  tracked copies, redacted, on the login node in the account that ran it,
+  or searches other files, such as the hand-back's README, as it searches
+  the copies (`--check`), exempting the hits of `--allow` strings;
+  `campaign_public.sh` (`scripts/campaign_public.py`) builds after it, in
+  the same account, the public asset that the release attaches: the
+  tracked copies with every verified case's numeric `.npz` files, which
+  must hold numbers alone, and its completion record and other JSON files
+  redacted as the copies are, without pickles or logs, in parts below
+  2 GiB with their SHA-256, recording the code that built it and the
+  exemptions it applied; its `--check` re-reads an asset, applies the
+  rules that need no campaign and fails one that other code built
+  (`test_campaign_public.py` checks the Python, and that the script
+  parses); `campaign_env.sh` activates the environment and unsets
+  `PYTHONPATH`, or
+  builds it (`build`: Python, `zstd`, `gh` and `git` from conda-forge and
+  the pinned packages from PyPI).
+  `test_campaign_driver.py` runs them against stub Slurm commands
+  (`campaign_slurm_stubs.py`) and a stub harness
+  (`campaign_stub_harness.py`). Beside them, `svbmc_pool_submit.sh`,
+  `svbmc_pool_task.sbatch`, `svbmc_pool_finish.sh` and `svbmc_pool_env.sh`
+  are the record of the September pool (`pool_20260914`), which they
+  generated on the University of Helsinki's Turso cluster; they no longer
+  run against the pool harness, whose worker takes a case line where they
+  pass a label and a seed.
+- `scripts/campaign_contract.py` — the part of the campaign contract of
+  `plans/slurm-benchmark-support.md` that the Slurm-driven harnesses
+  share: the layout of a campaign directory (a case line starts with its
+  tag; `records/<tag>.complete.json`, `claims/<tag>`, `<tag>.error.txt`);
+  the claim of a case, hard-linked into place, judged stale only when the
+  Slurm accounting shows that its task has ended, and retired under a key
+  of its own (`claims/<tag>.stale.<owner>.<key>`), a stale claim being
+  removed, or a requeue's replaced, only by the worker that holds its
+  retirement mark, the dot-file `.<name>.retiring.<owner>.<key>.<level>`
+  beside it (`acquire_claim`); the operator's ruling on a case that no
+  task can finish (`give_up`), whose error file starts with `given up by
+  the operator: <reason>`, logged in `slurm/given_up.txt`; the
+  identity, whose source part (each tree's commit and clean state, file
+  and directory hashes, the imported modules' versions) every worker
+  compares with the manifest's, and whose import paths, installed-metadata
+  versions and host part (CPU model, node features, BLAS threads, CPU
+  affinity with its physical cores and their hardware threads, the job's
+  cpuset, Slurm ids) are recorded only (`identity`); the completion record
+  and its check, which requires the campaign's node feature and one
+  physical core that the task had to itself; the worker sequence with its
+  exit codes (0 complete or given up, 1 failed, 64 not the harness's case or
+  directory, 75 claimed by a live task, 78 an identity that differs or
+  cannot be established, 128 + n a signal), its refusals, which touch no
+  file of the case, the setting aside of an earlier attempt's error file
+  as `claims/<tag>.error.txt`, and its clean-up when Slurm's SIGTERM stops
+  a case, a failure after the completion record leaving the case complete
+  (`run_worker`); the environment check against a pinned requirements
+  file; the reconciliation of `verify`'s states, among them the
+  `interrupted` case, a stale claim without a record, which is
+  resubmitted like a missing one, the `partial` case, which is fatal, and
+  the given-up case, failed with the ruling's reason (`reconcile`); the
+  finish's view of Slurm: which recorded jobs the queue or the
+  accounting's allocation rows show may still run, and the wait for a step
+  job, which gives up after a limit (`queue_state`,
+  `accounting_problems`, `wait_job`); and the tracked
+  copies of a finished campaign, which its harness declares in the
+  manifest (`tracked_copies`) and `redact` writes for the repository:
+  hostnames reduced to the node family, a host part's lists of node
+  features to that family alone and its platform to the operating system
+  and machine type (the CPU model stays), a path under a named directory
+  written with the longest name that holds it (a path setting, a
+  `--path`, a source tree as `$<TREE>_TREE` or the campaign's parent as
+  `$CAMPAIGN_PARENT`, under the home or not, and another path under the
+  operator's home as `~`), the
+  fields that hold a partition as `$PARTITION`, the site block, the `pip
+  freeze` paths and the Slurm accounting left in the archive, and every
+  copy searched for what must not remain (the paths, the home and the
+  settings as plain substrings, the username and the hostnames as whole
+  names, the other node features in the quotes a list of them holds)
+  and for any absolute path outside the system's directories that
+  no name covers, a hit of an `--allow` string exempted, and a username or
+  hostname that is a name the copies write refused, with `redaction.json`
+  recording each copy's SHA-256 beside its source file's, which
+  `source_sha256` gives the readers that check the records' hashes, the
+  cases not verified and the allowed strings with their hits;
+  `check_files` searches other files, such as a hand-written README, the
+  same way. Run as a script, it offers the checks the driver's shell
+  scripts call (`check-env`, `check-site`, `check-cases`,
+  `finishing-steps`, `finish-check`, `queue-check`, `archive-check`,
+  `wait-job`), `give-up` and `redact` (`--out`, or `--check`).
+  `test_campaign_contract.py` checks it.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
   one subset of the filtered pool is stacked by both the integrated
   `pyvbmc.svbmc.SVBMC` (in process) and the original standalone `svbmc`
-  0.1.1 (in a long-lived worker whose `PYTHONPATH` carries the pinned
-  checkout, so no controller can import it), never at the same time and
-  alternating which goes first, both arms rebuilding the subset's
-  posteriors with one seed per entry derived from the cell's seed. A
+  0.1.1 (in a long-lived subprocess whose `PYTHONPATH` alone carries the
+  pinned checkout's `src`, so no other process can import it), never at
+  the same time and alternating which goes first, both arms rebuilding the
+  subset's posteriors with one seed per entry derived from the cell's
+  seed. The subsets of one condition and `M` are disjoint (repetition `r`
+  takes the `r`-th block of `M` runs of a permutation drawn for that
+  condition and `M`), so a pool of `n` runs gives at most `n // M`
+  repetitions, and the cells beyond are listed as skipped. A
   condition's filtered pool is what its directory's `selection.json`
-  names, or every passing completion record when the directory holds no
-  selection; the printed lines and `sources.json` say which. Each cell
+  names, or, in the single-process run, every passing completion record
+  when the directory holds no selection; the printed lines and
+  `sources.json` say which. A run's
+  files are `<pool>/<tag>.npz` and `.json` whatever its tag holds, flat
+  or in one subdirectory per condition, and their SHA-256, taken when the
+  pool is read, is checked before a posterior is rebuilt. Each cell
   records the weights, every ELBO variant, the entropy, the seconds and
   the quality of 100 000 draws (`benchmark_targets.sample_metrics`, plus
   the Monte Carlo expected log joint over a random subsample of them).
@@ -666,16 +931,38 @@ reason.
   `summary.md` (medians with bootstrap intervals, the biases with
   criterion 3's gates, paired differences with exact signed-rank tests
   Holm-corrected over every condition and `M`, `max |dw|`, runtime ratio)
-  and `sources.json`. It refuses to start unless
-  `experiments/svbmc_pool/baseline_environment.json` re-verifies, and
-  needs `PYTHONPATH` to carry that record's Torch overlay. Both arms
-  import gpyreg from the checkout the pool's manifest names, or, for a
-  pool copied from another machine, from `--gpyreg-source`, a local clean
-  checkout at the manifest's gpyreg commit.
-  `--arms integrated` stacks every cell with the integrated class alone,
-  for the larger-`M` regime where the original's cost (quadratic in `M`,
-  two to four times the integrated arm's) is not worth paying; such
-  cells carry no paired quantity. `--summarize-only --out DIR` rebuilds
+  and `sources.json`. It needs Torch importable (the campaign
+  environment's, or the overlay `<BASELINE_DIR>/deps` on `PYTHONPATH`).
+  A run of the original arm needs `BASELINE_DIR`, the upstream checkout
+  or the directory holding it, and refuses to start unless that checkout
+  verifies by content against
+  `experiments/svbmc_pool/baseline_environment.json`, wherever it lies:
+  the recorded commit, a clean tree, the committed content of every file
+  of `src/svbmc` (CRLF read as LF) and the recorded Torch version; a run
+  of the integrated arm alone needs no baseline. Both arms import gpyreg
+  from `--gpyreg-source`, `PYVBMC_GPYREG_SOURCE` or the path the pool's
+  manifest names, which must be a clean checkout at the gpyreg commit
+  every pool's manifest records. `--arms` names the arms of every `M`,
+  `both` or `integrated` (the integrated class alone, for the larger-`M`
+  regime where the original's cost, quadratic in `M` and two to four
+  times the integrated arm's, is not worth paying; such cells carry no
+  paired quantity), once or once per `M`. The subcommands `prepare`,
+  `cases`, `worker`, `verify` and the finishing step `assemble` meet the
+  campaign contract of `plans/slurm-benchmark-support.md`, for the
+  driver under `scripts/hpc/`: a task computes every repetition of one
+  condition and `M` below `--split-from` (16) and one cell from it on,
+  warms both implementations up first and writes one file per cell;
+  `prepare` defaults to the release gate's grid, stacks a pool only once
+  `svbmc_pool_run.stackable_selection` accepts it (a passing
+  `verification.json`, a `selection.json` made after it that is the
+  stopping rule on its verified cases, both made in the pool's
+  directory), refuses a selected run whose files differ from its
+  completion record, records each pool's report by its SHA-256, and
+  refuses a dirty harness checkout without `--allow-dirty`; `worker` refuses a line that is not a case with exit
+  64, touching nothing; `assemble` refuses a campaign that does not
+  verify whole and writes the outputs of the
+  single-process run from the cell files, in the plan's order, with the
+  same numbers but for the seconds. `--summarize-only --out DIR` rebuilds
   the summaries from a finished `results.json` without running a cell or
   needing Torch, describing that comparison by the settings it recorded
   rather than by the script's current constants, and with several
@@ -683,7 +970,14 @@ reason.
   to one `M`, the integrated arm beyond it), the paired quantities and
   equivalence tests covering the cell sets both arms ran. `--fixtures
   GROUP` compares the shipped S-VBMC posterior fixtures instead of a pool,
-  which is what `test_svbmc_pool_stack.py` runs.
+  which is what `test_svbmc_pool_stack.py` runs, in one process and as a
+  campaign split into tasks, whose assembly it checks against the single
+  process; it does the same on two small generated pools of the campaign
+  contract's layout, and runs the four scripts below that read a pool
+  and a comparison's cells (`svbmc_cap_kappa.py`, `svbmc_shrink_elbo.py`,
+  `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`) on one of them;
+  the test module skips unless `PYVBMC_GPYREG_SOURCE` and `BASELINE_DIR`
+  are set.
 - `scripts/svbmc_honest_elbo.py` — the Phase 2 estimator of the S-VBMC
   ELBO optimism note on the pool artifacts: for every component of a
   stacked cell (a pool directory plus the comparison's `results.json`),
@@ -706,8 +1000,14 @@ reason.
   and of the cells file; `--headline-ratio` moves the headline within
   `--ratios`; `--self-check` runs the run-level checks on a pool without
   cells; `--summarize-only` rebuilds summaries and figures. Needs no
-  Torch. `test_svbmc_honest_elbo.py` checks the contracts on a generated
-  two-run pool and, synthetically, the combination rules, the checks and
+  Torch. It reads the artifacts of a pool of either layout of
+  `svbmc_pool_run.py`, against `--gpyreg-source` or the path the pools'
+  manifests name, a clean checkout at their gpyreg commit
+  (`pinned_gpyreg_source`). `test_svbmc_honest_elbo.py` (the gpyreg
+  checkout from `PYVBMC_GPYREG_SOURCE`, skipped when that is unset) checks
+  the contracts on a generated two-run pool and on its copy in the flat
+  layout, the refusal of a gpyreg checkout at another commit and,
+  synthetically, the combination rules, the checks and
   the mapping between two different transformers; the first run, on the
   pilot artifacts, is
   [results/2026-09-14-svbmc-honest-elbo-pilot.md](results/2026-09-14-svbmc-honest-elbo-pilot.md).
@@ -720,8 +1020,8 @@ reason.
   `kappa` (the crossing component included; `kappa = 1` is the class's
   cap) and at the weighted median, every variant's bias scored against
   the cell's `elbo_mc`. Needs Torch on `PYTHONPATH` and the pool's
-  gpyreg through `--gpyreg-source`; writes `cells.jsonl`, `summary.json`
-  and `summary.md`. Its runs are
+  gpyreg through `--gpyreg-source`, a clean checkout at the manifest's
+  gpyreg commit; writes `cells.jsonl`, `summary.json` and `summary.md`. Its runs are
   `experiments/svbmc_pool/cap_kappa_20260915/`, `cap_kappa_M35_20260915/`
   and `cap_kappa_M32_20260916/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
@@ -757,7 +1057,9 @@ reason.
   `results.json`, repeatable) and `--shrink` (a shrinkage `cells.jsonl`,
   repeatable) every stacked estimate's bias is restated as the **added
   bias**, the stack's bias minus the mean bias of its input runs, the
-  yardstick of the campaign plan's decision 11. Its run is
+  yardstick of the campaign plan's decision 11. The pool's gpyreg comes
+  through `--gpyreg-source`, checked against the manifest's gpyreg
+  commit, as for every script below that reads a pool. Its run is
   `experiments/svbmc_pool/single_run_20260915/`, read in the
   [stage D report](results/2026-09-15-svbmc-pool-comparison.md)
   (section "The inputs' own bias") and the
@@ -781,10 +1083,12 @@ reason.
   the hybrid threshold sweep, the caps' bind fractions, paired
   bootstrap intervals, the single-run biases and added-bias ranges,
   the re-optimization's rows; every aggregate over `M` both for the
-  grid through 16 and for every `M`) from the tracked `cells.jsonl`,
-  `summary.json` and `added.json` files under
-  `experiments/svbmc_pool/`; NumPy only, no pool or raw directory
-  needed. The check for a quoted number.
+  grid through 16 and for every `M`) from the `cells.jsonl`,
+  `summary.json` and `added.json` files of the directories it is given
+  (`--shrink`, `--caps`, `--single-run`, `--shrink-opt`; the quoted
+  numbers are those of the tracked directories under
+  `experiments/svbmc_pool/`, which its docstring's command names); NumPy
+  only, no pool or raw directory needed. The check for a quoted number.
 - `scripts/svbmc_shrink_worked_example.py` — prints the worked example
   of the [tutorial note](2026-09-15-svbmc-shrinkage-explained.md)
   (section 7): one recorded `M = 4` stack per condition rebuilt from

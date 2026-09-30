@@ -49,8 +49,8 @@ import platform
 import subprocess
 import sys
 import time
-from importlib.metadata import version
-from pathlib import Path
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path, PurePosixPath
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -129,12 +129,42 @@ def artifact_hashes(out_dir, tag):
     return {s: sha256(Path(out_dir) / f"{tag}{s}") for s in SUFFIXES}
 
 
+def recorded_hashes(record, name):
+    """``{suffix: SHA-256}`` of a run's two files, from its completion record.
+
+    ``name`` is the artifact's file name without suffix. A record of the
+    campaign contract lists every artifact file under ``artifacts`` by its
+    path relative to the campaign directory; a record of the flat layout
+    holds ``hashes`` by suffix. A file the record does not list maps to
+    None.
+    """
+    if "hashes" in record:
+        return {suffix: record["hashes"].get(suffix) for suffix in SUFFIXES}
+    listed = {
+        PurePosixPath(path).name: entry.get("sha256")
+        for path, entry in (record.get("artifacts") or {}).items()
+    }
+    return {suffix: listed.get(f"{name}{suffix}") for suffix in SUFFIXES}
+
+
 def _git(path, *args):
     try:
         return subprocess.check_output(
             ["git", "-C", str(path), *args], text=True
         ).strip()
     except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def installed_version(name):
+    """The version the installed distribution ``name`` names, or None.
+
+    None where no distribution of that name is installed: a package
+    imported from a source tree on ``sys.path`` has none.
+    """
+    try:
+        return version(name)
+    except PackageNotFoundError:
         return None
 
 
@@ -147,9 +177,15 @@ def environment(gpyreg_source=None):
     of the harness modules. Every process of one campaign must agree on
     it, so that a resumed or distributed campaign cannot mix versions.
     ``host`` is where the process ran: hostname, platform, interpreter,
-    import paths, the versions the installed distributions report and the
-    thread environment. It is recorded and never compared, so that any
-    node may run any case of a campaign.
+    import paths, the thread environment and, under
+    ``installed_metadata_versions``, the versions that the installed
+    distributions of PyVBMC and gpyreg name. It is recorded and never
+    compared, so that any node may run any case of a campaign.
+
+    Every version read from an installed distribution's metadata
+    (:func:`installed_version`) is None where no distribution of that name
+    is installed, as in the campaign environment of the Slurm plan, which
+    imports PyVBMC and gpyreg from their source trees on ``sys.path``.
 
     With ``gpyreg_source`` given, raises unless gpyreg was imported from
     ``<gpyreg_source>/gpyreg``: every process of a campaign must use the
@@ -172,20 +208,22 @@ def environment(gpyreg_source=None):
             "python": sys.version.split()[0],
             "pyvbmc_commit": _git(ROOT, "rev-parse", "HEAD"),
             "gpyreg_commit": _git(gp_dir.parent, "rev-parse", "HEAD"),
-            "numpy": version("numpy"),
-            "scipy": version("scipy"),
+            "numpy": installed_version("numpy"),
+            "scipy": installed_version("scipy"),
         },
         "host": {
             "hostname": platform.node(),
             "platform": platform.platform(),
             "executable": sys.executable,
             "pyvbmc_import": str(Path(pyvbmc.__file__).resolve().parent),
-            # What the installed distributions report, which an editable
-            # install freezes at install time: provenance of the node, not
-            # of the source.
-            "pyvbmc_version": version("pyvbmc"),
             "gpyreg_import": str(gp_dir),
-            "gpyreg_version": version("gpyreg"),
+            # What the installed distributions name, which an editable
+            # install freezes at install time and which a tree imported by
+            # path need not match: provenance of the node, not of the
+            # source.
+            "installed_metadata_versions": {
+                name: installed_version(name) for name in ("pyvbmc", "gpyreg")
+            },
             "threads": {k: os.environ.get(k) for k in THREAD_KEYS},
         },
     }
@@ -289,17 +327,21 @@ def gate_tolerance(stored, condition, rounding_factor):
     return TOL_STATS + rounding * scale
 
 
-def verify_run(path, vbmc=None, results=None, rounding_factor=None):
+def verify_run(
+    path, vbmc=None, results=None, rounding_factor=None, record=None
+):
     """Check one stored run against its contract; return a report.
 
     Always runs the recomputation gate (c) and the float64 canary (d) on
     the rebuilt state. With the live ``vbmc`` and its ``results`` it also
     runs (a) and (b) against the objects the run returned, and compares
     the rebuilt evaluations with the live ones. Checked on its own
-    instead, and with a completion record next to the artifact, it
-    compares both files against the hashes that record holds; a record
-    is written after the artifact it describes, so with live objects it
-    belongs to an earlier attempt and is not read. Raises
+    instead, and with a completion record, it compares both files against
+    the hashes that record holds (:func:`recorded_hashes`); a record is
+    written after the artifact it describes, so with live objects it
+    belongs to an earlier attempt and is not read. ``record`` is the
+    record's path; by default it is the flat layout's, ``records/`` beside
+    the artifact, and the check is left out where no record exists. Raises
     ``RuntimeError`` naming every check that failed.
 
     The gate allows ``TOL_STATS`` plus ``rounding_factor`` (default
@@ -357,9 +399,11 @@ def verify_run(path, vbmc=None, results=None, rounding_factor=None):
     )
     report["checks"].append("dtype_canary")
 
-    record = record_path(path.parent, tag)
+    record = record_path(path.parent, tag) if record is None else Path(record)
     if vbmc is None and record.exists():
-        stored = json.loads(record.read_text(encoding="utf-8"))["hashes"]
+        stored = recorded_hashes(
+            json.loads(record.read_text(encoding="utf-8")), tag
+        )
         actual = artifact_hashes(path.parent, tag)
         for suffix in SUFFIXES:
             if stored.get(suffix) != actual[suffix]:

@@ -1,53 +1,97 @@
 # Slurm benchmark support for the release gate
 
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
-to 5, and Phase 7's redaction and operator's guide, implemented on
-`feat-slurm-campaigns`**, which has not merged into `dev-next`. What it assumes of the cluster rests on a
-survey of the cluster on 2026-09-25 and on the records of the September
-pool. The harness sections below describe each harness as `dev-next` holds
-it and what the branch gives it.
+to 5, Phase 7's redaction and operator's guide, and the tools of Phase 9,
+the promotion and the public assets implemented on
+`feat-slurm-campaigns`, doublechecked and merged into `dev-next` after the
+PI's review; Phase 1b done and Phase 6 done but for its last checks on
+the cluster (2026-09-28/29)**. What it assumes of the cluster rests on the
+surveys of 2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of
+Phase 6 and on the records of the September pool. The harness sections
+below describe each harness as it stood before this plan's work and what
+the work gave it.
 
 ## Live checklist
 
 - [x] The PI's review of this plan (2026-09-25).
 - [x] Phase 1a: the cluster survey (2026-09-25).
-- [ ] Phase 1b: the survey where the campaigns run, the environment and
-  the source trees.
+- [x] Phase 1b: the survey where the campaigns run, the environment and
+  the source trees (2026-09-28/29).
 - [x] Phase 2: the generic Slurm driver (2026-09-25).
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
 - [x] Phase 5: the stacking harness (2026-09-25).
-- [ ] Phase 6: smoke campaigns on Turso.
-- [ ] Phase 7: the operator guide, the brief, an independent review; merge
-  into `dev-next`. The guide, the redaction and two review rounds are
-  done (2026-09-26); the brief waits for Phase 6's limits.
-- [ ] Phase 8: the campaigns, on the PI's instruction.
+- [ ] Phase 6: smoke campaigns on Turso. The checks passed on 2026-09-29
+  (the worklog); three remain for the next cluster session (the pickup
+  point).
+- [ ] Phase 7: the operator guide, an independent review, the merge into
+  `dev-next`, and the brief. The guide, the redaction, two review rounds
+  (2026-09-26), a doublecheck of Phase 6's commits (2026-09-29) and a
+  doublecheck of the whole branch before the merge, with its fixes
+  (2026-09-30), are done, and the branch has merged into `dev-next` after
+  the PI's review. The brief, with the limits Phase 6 measured
+  ("Resources and cost"), remains, before Phase 8 (PI, 2026-09-30).
+- [ ] Phase 8: the campaigns, on the PI's instruction, once the brief
+  exists and the source trees hold gpyreg `v1.4.0` with the environment
+  check passed on it (the pickup point).
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
-**Pickup point.** The code is complete on `feat-slurm-campaigns`
-(pushed), and every harness test module passes on it on the developer's
-machine. Next is the cluster, in the PI's account: Phase 1b,
-then Phase 6. The first cluster session has four steps:
+**Pickup point.** The code is complete on `dev-next`, and every test
+module of the harnesses passes on the developer's machine (the worklog,
+2026-09-30); the campaigns of Phase 8 run from the release commit. The cluster work, in the PI's account, is Phase 1b, then
+Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
+but for three checks of the next cluster session, whose places the
+operator's notes give:
 
-1. **Survey and environment,** in one login session. Survey the
-   installation the campaigns run on, with the checks of Phase 1b and the
-   real output of `sacct -n -X -P -j <job>_<task> -o State`,
+- with the harness checkout at `2356f12d`, the commit of the smoke
+  campaigns, the finish of the smoke stacking campaign, whose four tasks
+  completed but which was neither verified nor assembled, for its
+  `verify` and the `ASSEMBLE_TIME` and `ASSEMBLE_MEM` of the brief;
+- with the checkout at `dev-next`, the smoke campaigns' public assets built again into a new
+  directory (`campaign_public.sh`) and checked (`--check`): the two
+  assets built on 2026-09-29 predate the redaction's fix, and the check
+  fails an asset that other code than its own built;
+- a search of the smoke campaigns' redacted copies and public assets for
+  every site detail the operator's notes list, whole: the one made after
+  the redaction's fix showed at most ten hits per directory.
+
+The cluster's source trees hold gpyreg at `v1.3.3`, with which the
+environment check passed and the smoke campaigns ran. The finish of a
+smoke campaign refuses any other `PYVBMC_GPYREG_SOURCE`, so that tree
+stays. After those checks, with the harness checkout at `dev-next`, a
+cluster session clones gpyreg at `v1.4.0` (`682585f`), the
+release's minimum, beside it, as the operator's guide says ("The source
+trees"), and runs the environment check with the new tree, which passes
+as the guide's "The environment check" says. That, and the brief, come
+before Phase 8.
+
+1. **Survey and environment** (done 2026-09-28), in one login session.
+   Survey the installation the campaigns run on, with the checks of
+   Phase 1b and the real output of
+   `sacct -n -X -P -j <job>_<task> -o State`,
    `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
    source trees as the operator's guide (`dev/scripts/hpc/README.md`)
    says, build the environment with `campaign_env.sh build`, freeze it into
    `campaign_requirements.txt`, and commit and push the freeze to the
    branch.
-2. **The environment check,** as a batch job. It is also the first run of
-   the harnesses in an environment that installs neither PyVBMC nor
-   gpyreg: the developer's machine could test that only by hiding the
-   packages' metadata.
+2. **The environment check** (passed 2026-09-29), as a batch job. It is
+   also the first run of the harnesses in an environment that installs
+   neither PyVBMC nor gpyreg: the developer's machine could test that
+   only by hiding the packages' metadata.
 3. **A canary of each harness,** and the heaviest cases, for the `TIME`
-   and `MEM` of every job.
-4. **The failure paths of Phase 6,** then a finish and a redaction.
+   and `MEM` of every job (done 2026-09-29).
+4. **The failure paths of Phase 6,** then a finish, a redaction and a
+   public asset (`campaign_public.sh`), whose shell wrapper runs there for
+   the first time (done 2026-09-29, but for the checks above).
 
-The brief for the postdoc follows, then the merge into `dev-next`. Any
-change to the code that the smoke campaigns need is a commit on the
-branch, with the test modules it touches run again.
+Any change to the code that the smoke campaigns need is a commit, with
+the test modules it touches run again. The tools of Phase 9
+and of the promotion that follows it, `seeded_gate_runs.py` and
+`reference_promote.py`, and the builder of the public assets,
+`campaign_public.py`, are in place and tested; the records they make
+wait for the release code. The PI's rulings of 2026-09-28 on the
+promotion and on the release's assets are in "The populations", "Records
+and hand-back", Phase 9 and the worklog.
 
 ## Purpose and scope
 
@@ -102,7 +146,7 @@ comparison then stacks subsets of each pool.
 
 | Campaign | Where | Code | Size |
 |---|---|---|---|
-| Reference population, after arm | Turso | the release code, gpyreg `v1.3.3` (`98ab5a4`) | the 24 configurations of the `production` suite, seeds 0–99: 2400 runs |
+| Reference population, after arm | Turso | the release code, gpyreg `v1.4.0` (`682585f`) | the 24 configurations of the `production` suite, seeds 0–99: 2400 runs |
 | Reference population, before arm | Turso | PyVBMC `f91fdf0`, gpyreg `v1.2.1` (`9e70e6b`) | the same 2400 runs |
 | S-VBMC run pools | Turso | the release code | the 8 conditions of `svbmc_pool`, seeds 1000–1349 (1000–1479 for the ring): 2930 runs, of which 320 per condition are stacked |
 | Stacking comparison | Turso | the release code and the original S-VBMC 0.1.1 (`13a78f6`) | both arms at `M` = 2, 4, 8, 16 (560 cells); the integrated arm alone at 3, 5, 32 (400 cells); disjoint subsets |
@@ -125,10 +169,10 @@ comparison then stacks subsets of each pool.
    [ledger](../results/2026-09-23-port-correctness-review.md), "The fixes
    that move default trajectories"), so the noiseless runs are regenerated
    along with the noisy ones. The 100 seeds hold for the two costliest
-   configurations as well: `cigar_D15_exhaust`, about a quarter of a
-   population's cost, and `lumpy_D10_noise3_production`, which has never
-   run and whose seed count is revisited only if its first smoke case
-   takes hours.
+   configurations as well: `cigar_D15_exhaust`, about a fifth of a
+   population's cost, and `lumpy_D10_noise3_production`, whose seed
+   count was to be revisited had its first smoke case taken hours; it
+   took about 11 minutes (Phase 6).
 3. **A before arm.** The only old-code runs of the noisy `production`
    configurations are the 80 runs of 2026-09-18/19 (six configurations,
    10 to 20 seeds each), too few to judge the fixes on those targets. The
@@ -224,11 +268,15 @@ What the design assumes of the cluster:
   "Outcome"), so every task requests one node type with `-C`. The two
   population arms, the pools and the stacking use the same feature, so
   that the arms differ in their code alone and the stacking's runtime
-  ratios come from one CPU model.
+  ratios come from one CPU model. A family that no single feature
+  selects, one whose nodes carry only features that other families share,
+  cannot hold a campaign.
 - **Physical cores.** Where Slurm counts hardware threads as CPUs,
   `--cpus-per-task=1` is one thread and two tasks can share a core, so
   every task passes `--hint=nomultithread`; the accounting may then count
-  both threads of the core.
+  both threads of the core. On Turso (Phase 1b) a task so placed holds
+  both threads of one core, the job's cpuset equal to them, and the
+  accounting counts one CPU.
 - **Short tasks.** Every task of this plan takes minutes, and `TIME` is set
   from the measured durations (Phase 6).
 - **Network on the login node only.** Environments and source trees are
@@ -255,27 +303,13 @@ minutes (September pool README, "Resource fit").
 
 ## Operator settings
 
-| Variable | Meaning |
-|---|---|
-| `HARNESS` | the harness the driver runs: `dev/scripts/svbmc_pool_run.py`, `population_run.py` or `svbmc_pool_stack.py` |
-| `CAMPAIGN_ENV` | the prefix of the campaign's conda environment |
-| `NODE_FEATURE` | the Slurm feature that selects the campaign's node family |
-| `PARTITION` | optional, no default; `-p` is omitted when it is unset |
-| `LOGIN_SETUP` | optional commands the environment script runs on the login node before a step that needs the network |
-| `PYVBMC_SOURCE`, `PYVBMC_GPYREG_SOURCE` | the package and gpyreg source trees of the campaign (of the arm, for a population) |
-| `BASELINE_DIR` | the original S-VBMC checkout, for the stacking's original arm |
-| `CASES_SUBSET` | optional, a named subset of the cases, submitted as its own array |
-| `THROTTLE`, `TIME`, `MEM`, `ARRAY`, `SBATCH_EXTRA` | as in the September scripts |
-| `CONDA_SETUP` | optional commands that define `conda`, such as loading a site module |
-| `LOGIN_PROFILE` | the login profile the environment script reads when `module` is not defined; default `/etc/profile` |
-| `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` |
-| `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
-| `STEP_POLL` | seconds between the finish's accounting polls of a step job; default 30 |
-| `STEP_WAIT_LIMIT` | seconds the finish waits for a step job before it gives up; default 86400, 0 for no limit |
-
-The driver passes them to the harness's `prepare`, which records them,
-all but the limits of the verify and finishing jobs, `STEP_POLL` and
-`ARCHIVE_PART_SIZE`, in the `site` block of the raw manifest. Only the raw campaign directory holds
+The driver reads its settings from the operator's environment; the
+operator's guide (`dev/scripts/hpc/README.md`, "Settings") lists each
+one, its default and whether it is fixed for a campaign. The driver
+passes them to the harness's `prepare`, which records them in the `site`
+block of the raw manifest, all but the limits of the verify and
+finishing jobs, `STEP_POLL`, `STEP_WAIT_LIMIT` and `ARCHIVE_PART_SIZE`,
+which each finish reads afresh. Only the raw campaign directory holds
 that block ("Records and hand-back"). `HARNESS`, `CAMPAIGN_ENV`,
 `NODE_FEATURE`, the source trees and `BASELINE_DIR` are fixed for a
 campaign: a later submission and the finish refuse a value that differs
@@ -381,10 +415,11 @@ process runs on the host that made it, and on any other host until the
 operator removes it. The accounting keeps a job's state after the job ends. `squeue` answers
 only for the jobs the controller still holds and can answer with an
 error for one it has dropped, as it does when the query fails, so it
-cannot tell an ended task from an unreachable controller. Phase 1b checks
-that the accounting answers from a compute node; where it does not, every
-claim is live, and a resubmission waits for the operator to clear the
-stale ones.
+cannot tell an ended task from an unreachable controller. Where the
+accounting does not answer from a compute node, every claim is live, and
+a resubmission waits for the operator to clear the stale ones; on Turso
+it answers (Phase 1b), and Phase 6's resubmission of a killed task took
+over its stale claim.
 
 **The source identity**, compared by every worker: the commit and the
 clean state of each source tree (the whole harness checkout, the package
@@ -430,9 +465,9 @@ What is new:
   Python 3.12 as in September, `zstd` for the archive and `gh` for the
   hand-back from conda-forge (a cluster need not have either), and the rest
   from pip at the versions pinned in
-  `dev/scripts/hpc/campaign_requirements.txt`, which holds the direct
-  requirements until Phase 1b freezes into it every package the
-  environment takes from PyPI, dependencies included, so that the
+  `dev/scripts/hpc/campaign_requirements.txt`, into which Phase 1b froze
+  every package the environment takes from PyPI, dependencies included
+  (conda's `pip`, `setuptools` and `wheel` aside), so that the
   environments of the smoke campaigns and of the campaigns, built in
   different accounts, hold the same libraries. The submission compares the
   environment's installed versions with the file before `prepare` and
@@ -484,13 +519,13 @@ What is new:
 
 ### The pools: `svbmc_pool_run.py`, `svbmc_pool_io.py`
 
-On `dev-next` the harness has `cases`, a standalone `worker` and `verify`,
-but not the contract: its worker takes `--label L --seed S` and has no early exit (the
-September task script holds it); its compared identity lacks cma, the data
-directory (which the multisensory conditions read) and the clean state of
-the whole harness checkout; its host part lacks the CPU model, the node
-features, the BLAS library and the affinity; and `verify` has no in-flight
-state. It gains:
+Before this plan's work the harness had `cases`, a standalone `worker`
+and `verify`, but not the contract: its worker took `--label L --seed S`
+and had no early exit (the September task script held it); its compared
+identity lacked cma, the data directory (which the multisensory
+conditions read) and the clean state of the whole harness checkout; its
+host part lacked the CPU model, the node features, the BLAS library and
+the affinity; and `verify` had no in-flight state. It gained:
 
 - `--case`, the early exit, the claim, the identity and host fields, and
   the `verify` states and checks of the contract;
@@ -524,8 +559,13 @@ The allocation of the release pools is set with the existing flags:
 
 The scripts that read a pool (`svbmc_shrink_elbo.py`, `svbmc_cap_kappa.py`,
 `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`, and
-`svbmc_honest_elbo.py`) default on `dev-next` to the September gpyreg path
-and check nothing. On the branch the first four take the gpyreg source as
+`svbmc_honest_elbo.py`) took their gpyreg before this plan's work in
+three ways: the first four defaulted to the September gpyreg path, which
+`svbmc_single_run_bias.py` and `svbmc_shrink_optimize.py` checked
+(`pinned_gpyreg_source`) and `svbmc_shrink_elbo.py` and
+`svbmc_cap_kappa.py` did not; `svbmc_honest_elbo.py` took the path its
+pools' manifests record, or `--gpyreg-source`, and refused a gpyreg that
+resolved elsewhere. Since this work the first four take the gpyreg source as
 a required argument, and `svbmc_honest_elbo.py` takes it or else the path
 its pools' manifests record; all five check it against every pool's
 manifest. `svbmc_headline_numbers.py` takes its directories as arguments
@@ -533,10 +573,10 @@ instead of the dated names it holds.
 
 ### The populations: `population_run.py`, `golden_trace.py`
 
-On `dev-next`, `population_run.py` runs a manifest's cases one fresh
-process at a time under one supervisor, which alone writes `launch.json`, `status.json` and
-`finished.json`; its worker needs `launch.json` and records no failure. It
-gains:
+Before this plan's work, `population_run.py` ran a manifest's cases one
+fresh process at a time under one supervisor, which alone wrote
+`launch.json`, `status.json` and `finished.json`; its worker needed
+`launch.json` and recorded no failure. It gained:
 
 - **Array mode.** `prepare` writes the manifest with the allocation (a
   suite, its labels and a seed range), the options and the expected
@@ -557,8 +597,8 @@ gains:
   the module, a gate among them, is redirected by the variable. The
   identity checks that `pyvbmc.__file__` resolves under that worktree,
   whose own checkout encloses it (a worktree nested inside another tree
-  does not pass for it), and records its commit. On `dev-next` the
-  identity requires the package inside the harness checkout, which would
+  does not pass for it), and records its commit. Before this plan's work
+  the identity required the package inside the harness checkout, which would
   make the before arm a branch of `f91fdf0` carrying the new harness with
   that commit's targets module. The harness, the targets module and its data
   come from the harness checkout and are the same files in both arms. The
@@ -593,13 +633,25 @@ iteration history).
 `golden_replay.py` already takes the population whose accuracy envelope a
 run that parts is judged against (`--sidecars`); what changes at the
 promotion is its defaults, `DEFAULT_BASELINE` (the traces of
-`reference_990_20260913`) and `DEFAULT_CONFIGS` (which holds the golden
-label `rosenbrock_D2_noise1`). They change with the promotion, which the
-golden references item owns, together with `AGENTS.md` ("Trajectories"),
-the `golden_replay.py` entry of `dev/README.md` and `dev/golden/README.md`;
-the promotion itself needs a script in the manner of
+`reference_990_20260913`, in place of which come the replay fingerprints
+of Phase 9) and `DEFAULT_CONFIGS` (which holds the golden label
+`rosenbrock_D2_noise1`, in place of which comes
+`rosenbrock_D2_noise1_production`). The promotion, which the golden
+references item owns, is `reference_promote.py`'s, in the manner of
 `golden/promotion_20260913/promote.py`, since `reference_join.py` extends a
-reference and refuses any overlap with it.
+reference and refuses any overlap with it: it copies the after arm's
+verified sidecars into `dev/golden/baseline/` and the fingerprints into the
+reference's local traces directory, and changes the two defaults together
+with `AGENTS.md` ("Trajectories"), the current reference's section and the
+`golden_replay.py` entry of `dev/README.md`, and `dev/golden/README.md`
+(its steps are in `dev/README.md`). The fingerprints, the gate runs and the
+promotion's own process run the after arm's code: equal in the package,
+but for its tests and S-VBMC, which no VBMC run imports, and in the harness
+files that build a run, which leaves the documentation and the S-VBMC
+headline free to change after the launch (decision 13; PI, 2026-09-28).
+The script copies itself into its record as `promote.py`, and the
+promotion commit removes it and its test from `dev/scripts/`, as the
+previous promotion's script lives in its record (PI, 2026-09-28).
 
 ### The arm comparison
 
@@ -641,9 +693,8 @@ reference and refuses any overlap with it.
   environment versions. `rescore` without `PYVBMC_GPYREG_SOURCE`, and a
   worker whose package tree PyVBMC cannot be imported from, exit 78.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
-  for 100 pairs (on `dev-next` its exact enumeration refuses more than 62),
-  a
-  verification of the reference arm against that arm's own
+  for 100 pairs (before this plan's work its exact enumeration refused
+  more than 62), a verification of the reference arm against that arm's own
   `verification.json` in place of the 870-entry manifest of
   `golden/noisy_extension_20260907/` that it asserts, and a reader for
   array-mode campaigns, which write no `launch.json`, `finished.json` or
@@ -652,14 +703,15 @@ reference and refuses any overlap with it.
 
 ### The stacking: `svbmc_pool_stack.py`
 
-On `dev-next` the comparison runs in one process. It verifies the original
-baseline at the paths its record holds, the Windows paths of the machine
-that ran the campaign, at every start, even for the integrated arm alone.
-It cannot resume: a new run truncates `cells.jsonl`, and `results.json` is
-written at the end. A run split by condition or `M` and merged with
-`--summarize-only --from-results` takes the single-run rows from its first
-file only and draws its bootstrap in another order than an unsplit run. Its
-repetitions draw independent subsets, which can overlap. It gains:
+Before this plan's work the comparison ran in one process. It verified
+the original baseline at the paths its record holds, the Windows paths of
+the machine that ran the campaign, at every start, even for the
+integrated arm alone. It could not resume: a new run truncated
+`cells.jsonl`, and `results.json` was written at the end. A run split by
+condition or `M` and merged with `--summarize-only --from-results` took
+the single-run rows from its first file only and drew its bootstrap in
+another order than an unsplit run. Its repetitions drew independent
+subsets, which could overlap. It gained:
 
 - `prepare`, whose manifest holds the pools with their selections, the `M`
   values and repetition counts, the seed, the arms, the baseline's record
@@ -679,7 +731,10 @@ repetitions draw independent subsets, which can overlap. It gains:
 - **Disjoint subsets** as decision 6 describes.
 - **A verified pool.** `prepare` stacks a pool only when its
   `verification.json` passed and its `selection.json` was made from that
-  verification and agrees with it, and records each pool's verification;
+  verification and agrees with it, both in the pool's own directory, so
+  that a copied pool is verified and selected again where it lies (PI,
+  2026-09-30); it refuses a selected run whose files differ from its
+  completion record, and records each pool's verification;
   it refuses a dirty harness checkout without `--allow-dirty`; the worker
   exits 64 on a line that is not a task of the manifest.
 - **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` in
@@ -697,43 +752,72 @@ checkout from `PYVBMC_GPYREG_SOURCE` and the baseline from `BASELINE_DIR`,
 and skips only when they are unset, under the same no-skip rule; Torch
 comes from the environment, or else from the baseline's `deps/`. A pool
 too small for the repetitions at an `M` gives `floor(n / M)` of them, and
-`prepare` prints and records the shortfall. The scripts that
-read the assembled results (`svbmc_shrink_elbo.py`,
-`svbmc_single_run_bias.py`) run as batch jobs.
+`prepare` prints and records the shortfall. The analyses that read the
+raw pools beside the stacking's assembled cells (`svbmc_shrink_elbo.py`,
+`svbmc_single_run_bias.py`, each with `--pool`, `--cells` and the release
+trees' gpyreg as `--gpyreg-source`) run where the pools lie, in the
+operator's account, as batch jobs after the stacking's finish; the
+[campaign plan](svbmc-benchmark-campaign.md), which owns the release
+gate, owns what they compute and how their outputs are read, and the
+brief gives their commands.
 
 ## Resources and cost
 
-Estimates from the September records; Phase 6 measures them.
+Phase 6 measured each harness's tasks on the campaigns' node family
+(2026-09-29), from the smoke campaigns' accounting: one task per core,
+which the accounting counts as one CPU; where an accounting counts both
+threads of a core, the accounted figures double. The population and pool
+tasks' figures are in the logs that `dev/scripts/runs/LOCAL.md` lists;
+those of the stacking tasks and of the step jobs were read from the
+accounting (`sacct -j <job>`), whose job ids the operator's notes list.
 
-| Campaign | Cases | CPU-hours on Turso |
+| Campaign | Cases | CPU-hours |
 |---|---|---|
-| Pools | 2930 | about 220, from the September medians per condition |
-| Population, per arm | 2400 | about 220, without `lumpy_D10_noise3_production`, which has never run |
-| Stacking | 560 two-arm cells and 400 integrated-only cells | about 25, without the per-task overhead |
+| Pools | 2930 | about 225, from the first seed of every condition and 40 seeds of `student_D8_noise3_svbmc` |
+| Population, per arm | 2400 | about 155 (before arm) and 165 (after arm), from seed 0 of every configuration |
+| Stacking | 560 two-arm cells and 400 integrated-only cells | not measured whole; about 25 by the September laptop times doubled, which the `M = 32` cell below makes a low figure |
 
-About 685 CPU-hours in all, before `lumpy_D10_noise3_production` in both
-arms and the stacking's per-task overhead (Torch imports, the reference
-draws of each condition, loading the pool); where the accounting counts
-both threads of a core, the accounted figure doubles. The population
-estimate adds the laptop medians of the 16 noiseless configurations
-(`golden/baseline/summary.md`, 30 minutes for one seed of each), the
-production-budget runs of 2026-09-18/19 for noisy Rosenbrock, logistic
-regression and Student D8, and 1.5 times the paper-budget medians for the
-timing and multisensory configurations, which ran at the production budget
-without a tracked record of their time; that makes about 110 laptop hours
-per arm, doubled for the cluster. `cigar_D15_exhaust` alone takes about
-27.5 of them. The stacking estimate doubles the September laptop times
-(8.1 hours for the two-arm cells, 15 minutes for the integrated cells at
-`M` = 3 and 5, 237 minutes at `M = 32`). Phase 5 found one `M = 32` cell
-taking about 150 s at three optimization steps on the developer's
-machine, so the stacking may cost more than this estimate; Phase 6
-measures it. S-VBMC's final entropy evaluation reduces its matrix of log
-densities by chunks of rows (`ca4e8259`), with results identical bit for
-bit, so its peak at `M = 32` is about 350 MiB; the peak of an
-`optimize()` at `M = 32` is then its gradient steps, about 2.1 GB, which
-build the whole matrix at 20 draws per component. The `M = 16` and
-`M = 32` tasks are submitted as their own subsets (`CASES_SUBSET=M16`,
-`M32`) with their own `MEM`, which Phase 6 sets from their accounting.
+- Populations, seed 0 of every `production` configuration (before arm /
+  after arm): `cigar_D15_exhaust` 20.8 / 22.4 minutes, about a fifth of
+  the arm; `lumpy_D10_noise3_production` 10.0 / 10.8, so it needs no
+  subset of its own; `student_D8_noise3_production` 8.1 / 9.1; every
+  other configuration 8.1 minutes or less. The 24 cases add up to 1.56
+  and 1.65 CPU-hours. Peak resident memory 430 MB.
+- Pools, the first seed of every condition and 40 seeds of
+  `student_D8_noise3_svbmc`: the student condition about 10.5 minutes a
+  run, `multisensory_s1_D6_noise3_svbmc` 7.3, the ring 5.9, the others 4.3
+  or less. Peak 375 MB.
+- Stacking, `student_D8_noise3_svbmc` alone: a task of 16 repetitions at
+  `M = 2`, both arms, 1.3 minutes and 0.75 GB; 4 repetitions at `M = 8`
+  2.8 minutes and 1.0 GB; one cell at `M = 16`, both arms, 2.8 minutes and
+  1.4 GB; one cell at `M = 32` 4.3 minutes and 3.1 GB. A campaign's task
+  below `M = 16` holds 20 repetitions, so its task at `M = 8` takes about
+  14 minutes by this one. S-VBMC's final entropy evaluation reduces its
+  matrix of log densities by chunks of rows (`ca4e8259`), with results
+  identical bit for bit, so the peak of a task at `M = 32` is the
+  gradient steps of its `optimize()`, which build the whole matrix at 20
+  draws per component: 3.1 GB here, 2.1 GB on the developer's machine.
+  Other conditions were not measured. The `M = 16` and `M = 32` tasks are
+  submitted as their own subsets (`CASES_SUBSET=M16`, `M32`) with their
+  own `MEM`.
+- Step jobs: a pool `verify` of 47 cases 10 s and 128 MB; a population
+  `verify` of 24 cases 11 to 18 s and up to 450 MB; `rescore` of 48 cases
+  42 s and 241 MB; `select` and `summarize` a few seconds. The stacking's
+  `assemble` has not run: the smoke stacking campaign was not finished.
+- The environment check: 19 minutes and 1.5 GB.
+
+The limits, with a margin for seeds slower than those measured and, for
+the finishing steps, for campaigns a hundred times the size of the smoke
+ones: `POP_TIME` 1 hour, `CIGAR_TIME` 1.5 hours, `POP_MEM` 2 GB;
+`POOL_TIME` 45 minutes, `POOL_MEM` 2 GB; `STACK_TIME` 1 hour and
+`STACK_MEM` 4 GB, `M16_TIME` 30 minutes and `M16_MEM` 4 GB, `M32_TIME`
+1 hour and `M32_MEM` 6 GB; `POP_VERIFY_TIME` 2 hours and
+`POP_VERIFY_MEM` 4 GB (2400 cases at about 0.75 s), `RESCORE_TIME` 3
+hours and `RESCORE_MEM` 4 GB (4800 cases at about 0.9 s); the pools'
+`verify` fits the default limits (2930 cases at about 0.2 s);
+`CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. `ASSEMBLE_TIME` and
+`ASSEMBLE_MEM` wait for the smoke stacking campaign's finish (the pickup
+point).
 
 ## Records and hand-back
 
@@ -756,7 +840,30 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   details and the operator's paths, so it stays in its draft release,
   which only the repository's collaborators see; the public record is the
   redacted copies below. Nothing redacts an archive itself, so none is
-  published.
+  published: these draft releases stay drafts, since publishing one would
+  make its archive public.
+- **Public assets are built apart from the archives** (PI, 2026-09-28).
+  The PyVBMC 1.5 release attaches the after arm's population and the
+  pools, each as an archive of its redacted tracked copies and of every
+  verified case's numeric files (the population's traces and posterior
+  arrays, the pools' runs, `.npz` files that must hold numbers alone),
+  completion record and other JSON files, redacted as the copies are,
+  without the logs, the Slurm accounting, the `site` block and the
+  pickles; each record ties its case's published files to the hashes of
+  the files the campaign wrote (PI, 2026-09-30), and the stacking's
+  tracked copies hold every cell already. `hpc/campaign_public.sh`
+  (`campaign_public.py`) builds such an asset in parts below 2 GiB, in the
+  operator's account after the redaction, since it redacts with that
+  account's username and home, and refuses, writing nothing, a file that
+  still holds what the copies may not; the asset records the code that
+  built it and the exemptions it applied, and its check applies the rules
+  that need no campaign and fails an asset that other code built. The
+  operator uploads the parts to
+  the draft release `release-gate-public-<date>`, from which the release
+  attaches them. The before arm and the raw archives stay in their draft
+  releases; the replay fingerprints and the traces of the earlier golden
+  references, of which the developer's machine holds the only copies, are
+  kept in a draft release of their own as a backup, not published.
 - **The tracked copies are redacted.** They go under
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
   `population_before/`, `stacking/`, with a README) in a pull request to
@@ -771,15 +878,19 @@ build the whole matrix at 20 draws per component. The `M = 16` and
   reads from its own process. Each harness declares its tracked copies in
   its manifest (`tracked_copies`). Hostnames reduce to the node family
   (`NODE_FEATURE`, which the copies keep so that the family of every run
-  stays checkable) or to `login`, paths under a path setting to its name
-  and paths under the home to `~`; the `site` block, the `pip freeze`
-  paths and the Slurm accounting stay in the archive. The identity trees
-  and the campaign's parent get names of their own (`$<TREE>_TREE`,
-  `$CAMPAIGN_PARENT`), and partitions are replaced in the fields that hold
-  one. It refuses when a path or command setting, a named directory, the
-  operator's username, the home or a hostname remains anywhere in its
-  output (paths, the home and the settings as substrings, the username
-  and hostnames as whole names, hostnames in any case), when an absolute
+  stays checkable) or to `login`, a host part's lists of node features to
+  that feature alone (PI, 2026-09-29) and its platform to the operating
+  system and machine type (PI, 2026-09-30); the CPU model stays. Paths
+  under a path setting take its name; the identity trees and the
+  campaign's parent get names of their own (`$<TREE>_TREE`,
+  `$CAMPAIGN_PARENT`), under the home or not (PI, 2026-09-30); other paths
+  under the home become `~`. The `site` block, the `pip freeze` paths and
+  the Slurm accounting stay in the archive, and partitions are replaced in
+  the fields that hold one. It refuses when a path or command setting, a named directory, the
+  operator's username, the home, a hostname or another node feature
+  remains anywhere in its output (paths, the home and the settings as
+  substrings, the username and hostnames as whole names, hostnames in any
+  case, a feature in the quotes a list of them holds), when an absolute
   path outside the system prefixes remains unnamed, when a username or
   hostname equals a name the copies write, and when a case is in flight.
   `--allow STRING` exempts a benign hit, which `redaction.json` records
@@ -794,7 +905,12 @@ build the whole matrix at 20 draws per component. The `M = 16` and
 - The tracked records of the September pool
   (`experiments/svbmc_pool/pool_20260914/`) and the `sources.json` of the
   analyses built on it predate the redaction and are kept as written; that
-  pool's README says so.
+  pool's README says so. So are the other records of that campaign: the
+  default partition of its scripts (`hpc/svbmc_pool_submit.sh`,
+  `hpc/svbmc_pool_finish.sh`, and the operator's guide's account of them)
+  and the node families that the
+  [campaign plan](svbmc-benchmark-campaign.md) names in its record of the
+  pool (PI, 2026-09-30).
 
 ## Phases
 
@@ -820,15 +936,17 @@ and the storage quota. **1b**, where the campaigns will run: the same
 survey, with the per-user limits, the node features that select the
 campaigns' node family, and whether `sacct` answers from a compute node
 (a batch job); then the conda environment and the source trees: the
-harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
+harness checkout, gpyreg at `v1.4.0` and at `v1.2.1`, the package at
 `f91fdf0` as a detached worktree, and the S-VBMC baseline. The first
 environment built from the direct pins (`campaign_env.sh build`) is
-frozen into `campaign_requirements.txt`, every package and Python to its
+frozen into `campaign_requirements.txt`: every package and Python to its
 patch release (`python -m pip list --format=freeze --exclude-editable`),
-and the file is committed and pulled into the harness checkout before the
-first submission, since the submission refuses a package the file does
-not pin. The site-specific results go into the operator's notes; what
-bears on the design revises "The cluster". **Acceptance:** the
+leaving out `pip`, `setuptools` and `wheel`, which conda installs with
+the interpreter. The file is committed and pulled into the harness
+checkout before the first submission, since the submission refuses a
+package the file does not pin. The site-specific results go into the
+operator's notes; what bears on the design revises "The cluster".
+**Acceptance:** the
 environment built from the frozen file passes the environment check, and
 every source tree is clean at its commit.
 
@@ -887,8 +1005,9 @@ resubmission of a finished range; a task cancelled while running, which
 warning (by SIGKILL, or by exceeding its memory), which `verify` must
 report as interrupted, then resubmitted, which must take over the stale
 claim; a duplicate submission of a running case, which the claim must
-refuse; a finish with and without `--allow-running`; the redaction and the
-archive. The before arm's worker on a few cases of `f91fdf0`, the boost
+refuse; a finish with and without `--allow-running`; the redaction, the
+public asset (`campaign_public.sh`, whose tests run only its Python and
+parse the script) and the archive. The before arm's worker on a few cases of `f91fdf0`, the boost
 capture among them. **Acceptance:** every check above passes, and the
 accounting (`sacct`, `seff`) gives `TIME` and `MEM` per harness and the
 per-case times that replace the estimates above.
@@ -928,20 +1047,32 @@ with the missing and failed cases named and ruled on.
 
 On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
-with `golden_trace.py`: about 70 to 80 minutes by the laptop medians, and
-`lumpy_D10_noise3_production`, which Phase 6 times. Each run must lie
-inside the after arm's accuracy envelope (`golden_replay.py --sidecars`,
+with `reference_promote.py fingerprints`, which runs them through
+`golden_replay.py`: about 70 to 80 minutes for the 23 configurations
+whose laptop medians the golden references give, and about 11 minutes
+for `lumpy_D10_noise3_production`, which they hold no runs of, by its
+seed 0 on the cluster in Phase 6; about 1.5 hours in all (the 24 seeds 0
+took about 1.6 CPU-hours per arm on the cluster). Each run is judged
+against the after arm's accuracy envelope (`golden_replay.py --sidecars`,
 which reads the per-configuration directories of the after arm or of its
 tracked copies, counts verified cases only, and fails for a configuration
-it finds no population of), a coarse check that the machine and the cluster sample the same
-distribution. The six seeded gate runs, wrapped so that their record
-carries the commit, the gpyreg source, the thread settings and the host,
-and run with `performance_calibration="off"` so that no calibration cache
-enters them, are recorded twice and compared with the script's own
-`--compare`; they have no population, so no envelope applies. The set goes
-to the golden references item's promotion, with the populations.
-**Acceptance:** every fingerprint lies inside its envelope, and each gate
-run reproduces bit for bit.
+it finds no population of). Together the runs are a coarse check that the
+machine and the cluster sample the same distribution: one run per
+configuration can lie outside its envelope as the population's own runs
+sometimes do (4.2 % of the runs of `reference_990_20260913` lie outside
+their configuration's envelope), so the set is judged, not each run (PI,
+2026-09-28). The six seeded gate runs are recorded twice by
+`seeded_gate_runs.py`, whose record carries the commit, the gpyreg source,
+the thread settings and the host, with `performance_calibration="off"` so
+that no calibration cache enters them, and compared with the gate script's
+own `compare`; they have no population, so no envelope applies. The set
+goes to the golden references item's promotion
+(`reference_promote.py prepare`), with the populations.
+**Acceptance:** every fingerprint completes with finite metrics; no more of
+them lie outside their envelopes than the after arm's own rate of runs
+outside theirs makes plausible, a binomial tail of at least 0.01 (at the
+rate of 4.2 %, four of 24 pass and five do not); and each gate run
+reproduces bit for bit.
 
 ## Worklog
 
@@ -1049,3 +1180,312 @@ run reproduces bit for bit.
   modules under Linux at the final commit, which passed there at
   `17cac66c`, and the harnesses in a Linux environment without PyVBMC and
   gpyreg, which the environment check of Phase 6 is.
+- 2026-09-27: `dev-next` merged into the branch (`aeb783bb`), bringing
+  `1f9c207a`, with which PyVBMC leaves the root logger to the application,
+  and `1bde36eb`, with which `display="off"` prints warnings only; the
+  package tree of the branch is `dev-next`'s at `3e6b813e`. The same
+  modules pass again with none skipped: on Windows the contract (133),
+  driver (74), population (59), analysis (55), pool (76), honest-ELBO
+  (14) and stacking (54) modules, under Linux in WSL the contract (133)
+  and driver (74). The workers' logs still receive PyVBMC's output: no
+  harness, and nothing a worker imports, configures the root logger, so
+  PyVBMC's handler writes to the worker's standard output, which the
+  sequential supervisors' `<tag>.log`, a task's `slurm/%A_%a.out` (which
+  holds standard error too) and the stacking's `original_arm.log` (the
+  original arm points its standard output at standard error) receive. A
+  process that imported the harness modules as a worker does and ran a
+  VBMC too short to converge at `display="off"` wrote the caution and a
+  timer warning to its captured log, its root logger without a handler
+  before and after the run. A converged run at `display="off"`, the
+  harnesses' setting, leaves only the harness's own lines in its log.
+- 2026-09-27/28: `dev-next` merged into the branch again (`52b16c96`),
+  bringing the release sweep's fixes and records. The same modules pass
+  again on Windows with none skipped: the contract (133), driver (74),
+  population (59), analysis (55), pool (76), honest-ELBO (14) and stacking
+  (54) modules. The tools of Phase 9 and of the promotion that follows it
+  are on the branch, since the promotion reads the array-mode campaigns of
+  `population_run.py` and the wrapper records its identity through
+  `campaign_contract.py`, and both run after the branch's merge:
+  `seeded_gate_runs.py` (`d6645999`), the wrapper of the six seeded gate
+  runs, and `reference_promote.py` (`4efee154`), the promotion
+  (`dev/README.md` describes both). Their test modules pass (8 and 7 tests);
+  the promotion's runs a whole promotion, from the fingerprints to the
+  rewritten documents, on two arms of `normal_D2` at seeds 0–2. The wrapper
+  recorded the real six runs twice at `4efee154` from clean checkouts,
+  with gpyreg at `d96d0d9`, in 9 minutes each: the 138 arrays of the two
+  recordings are identical. That run checks the wrapper and enters no
+  record; the records wait for the release code. The promotion copies the
+  after arm's verified sidecars into `dev/golden/baseline/` as the earlier
+  promotions did, so that `golden_trace.py compare dev/golden/baseline` and
+  the default `--sidecars` of `golden_replay.py` read the new reference
+  unchanged; the copies repeat the tracked copies' sidecars, about 12 MB for
+  2400 cases of about 5 KB. The reference's local traces directory,
+  `<name>_fingerprints`, holds its fingerprints and the gate runs; the
+  population's traces stay in its archive.
+- 2026-09-28: a doublecheck of the two tools by three fresh reviewers (the
+  wrapper, the promotion's logic, the documents and templates), and the
+  PI's rulings on what it raised. A fingerprint has no trace to be
+  identical to, so golden_replay's exemption of identical runs never
+  applies to it, and 4.2 % of the runs of `reference_990_20260913` lie
+  outside their own configuration's envelope: a check of each of the 24
+  fingerprints would refuse a correct promotion about two times in three,
+  so the set is judged against the population's own rate (Phase 9). The
+  code the checks compare leaves out the package's tests and S-VBMC, and
+  the script leaves `dev/scripts` for its record at the promotion ("The
+  populations"). What the release publishes is built apart from the draft
+  releases ("Records and hand-back"). The fixes: `prepare` takes only the
+  after arm's redacted tracked copies, since `publish` copies their
+  sidecars into the repository; the after arm's trees must be clean;
+  every step checks first that it runs the after arm's code and gpyreg;
+  `publish` computes all it writes before the first write; tracked JSON is
+  hashed with LF line endings; `publish` also rewrites the
+  `regenerate_baseline.sh` paragraph of `dev/README.md` and the previous
+  population's example in `golden_replay.py`, and names the documents to
+  carry by hand; the generated READMEs say how another machine makes
+  fingerprints of its own, who sees the draft archive and that the PI
+  accepted the assessment. The wrapper takes an output directory in the
+  checkout only where git ignores it, checks both recordings for clean
+  trees, refuses a gpyreg that no checkout tracks, maps a crashed
+  recording's exit code to 1, hashes the gate script with LF line endings
+  and re-checks each run's digest. The test modules pass (11 and 9 tests),
+  the promotion's now on redacted copies of arms made at a stand-in site.
+- 2026-09-28: the public assets ("Records and hand-back"):
+  `campaign_public.py` and `hpc/campaign_public.sh`, with
+  `test_campaign_public.py` (6 tests, on a population campaign at a
+  stand-in site, redacted; among them an asset in parts, a damaged part, a
+  case's JSON that is no tracked copy, redacted, and a trace that holds
+  text, refused). A trace of `golden_trace.py`, like a pool run's `.npz`,
+  holds numbers alone; a pool run's JSON is no tracked copy, so the asset
+  redacts it, which is why the asset is built in the operator's account.
+  The operator's guide gives the step.
+- 2026-09-28: Phase 1b's first session, on the cluster's new
+  installation, in the PI's account; the site's values are in the
+  operator's notes. The survey: `sacct -n -X -P -j <job>_<task> -o State`
+  prints one state word; `squeue -h -r -j <job> -o "%i %T"` prints a line
+  per task while the job runs, nothing with exit 0 once it has ended and
+  the controller still holds it, and an error with exit 1 once the
+  controller has dropped it; all three commands, `scontrol show node -o`
+  among them, answer from a compute node, so the claim judges staleness
+  there as the contract assumes. A task with `--cpus-per-task=1
+  --hint=nomultithread` ran on both hardware threads of one core, its
+  job's cpuset equal to them, and the accounting counted one CPU. One
+  feature selects the campaigns' node family ("The cluster"). The five source
+  trees are clean at their commits. The first environment built from the
+  direct pins is frozen into `campaign_requirements.txt` (`f0d2789e`), and
+  the environment built from the frozen file matches it. The freeze found
+  that `check-env` did not know conda-forge's own Python packages as
+  conda's: `setuptools` and `wheel` carry no `INSTALLER` file, and `pip`
+  and `packaging` a `direct_url.json` naming their feedstock's build
+  directory, which the check read as a source tree installed from a path.
+  It now reads the environment's `conda-meta` records (`551e194f`), and
+  the frozen file leaves `pip`, `setuptools` and `wheel` to conda. The
+  first run of the environment check then failed in the tests alone,
+  where the batch job's surroundings reached them: the site's conda on
+  the job's `PATH`, which the driver's test of a submission without
+  `CONDA_SETUP` must not find (1 test); the operator's exported
+  `NODE_FEATURE`, which the population tests' `prepare` recorded and
+  against which `verify` checked their hand-made records, and a fresh
+  interpreter that imported PyVBMC without gpyreg (12 tests and 3
+  errors); and a detached automatic `git gc` that repacked a test
+  repository while the pool test copied it (1 test). The contract,
+  analysis and honest-ELBO modules passed; the session ended before the
+  stacking module's result. The fixes (`5c7b409d`) keep the population
+  and stacking tests outside any Slurm task and away from the operator's
+  settings, as the pool tests already were, take conda's directories and
+  variables out of the driver's test environment, and run the tests' git
+  without automatic `gc`. On the developer's machine the four modules pass
+  with none skipped, with those surroundings reproduced (a failing
+  `conda` first on the `PATH`, `NODE_FEATURE` and a Slurm job id
+  exported).
+- 2026-09-29: the first run's stacking module had failed one test
+  (`test_an_interrupted_task_is_taken_over`) for the same reason, the
+  job's Slurm variables and `NODE_FEATURE` reaching the worker and the
+  `prepare` of its campaign, which `5c7b409d` removes. The environment
+  check, run again at `2356f12d`, passes:
+  the contract (135), driver (74), population (59), analysis (55), pool
+  (76), honest-ELBO (14) and stacking (54) modules, none failed or
+  skipped, the checkout clean after it; the job took 19 minutes and
+  peaked at 1.5 GB. Phase 1b's acceptance is met. Step 3's canaries went
+  out the same day, as smoke campaigns in the PI's account: the two
+  population arms at the `production` allocation, seeds 0–99, with the
+  subset `canary` submitted (the first seed of every configuration); the
+  pools at the release allocation, with the first case of every
+  condition and seeds 1001–1039 of `student_D8_noise3_svbmc`, from which
+  the stacking campaign of the next entry took its runs.
+- 2026-09-29: Phase 6's smoke campaigns, steps 3 and 4; the measurements
+  are in "Resources and cost". The canary cases completed and verified:
+  24 in each population arm, whose finishes ran `verify` and `summarize`
+  and, in the after arm, `rescore`, which rescored the 48 cases and
+  reproduced the after arm's in-run metrics exactly (the before arm's,
+  from the code of `f91fdf0`, differ, as the rescoring expects); the
+  before arm's `verify` loaded the boost captures that `f91fdf0`'s worker
+  wrote. And 47 in the pools, of which `select --target 32` made the
+  student condition stackable. A stacking campaign on that condition ran
+  one task per `M` (2, 8 and 16 with both arms, 32 with the integrated
+  arm); the four completed, and the campaign was neither verified nor
+  assembled (the pickup point). The failure
+  paths ran on a pool campaign of the `smoke` suite (12 cases): a task
+  cancelled while it ran cleaned up and read as missing; a task whose
+  worker was killed by SIGKILL read as interrupted, and its resubmission
+  took over the stale claim; a duplicate submission of a running case was
+  refused with 75; the finish with `--allow-running` counted the cases in
+  flight and queued and exited 3 on the missing and interrupted ones, and
+  without it named `ARRAY=6-8`; a resubmission of the finished range
+  exited at once; the full finish verified 12 of 12 and wrote the
+  archive, which matches its SHA-256; the redaction and the public asset
+  passed their own checks. On the site's Slurm `scancel --full
+  --signal=KILL` is an ordinary cancel, whose SIGTERM the worker handles,
+  so the kill was a step inside the task's allocation (`srun
+  --jobid=<job_id> --overlap kill -9 <pid>`, from the claim's `job_id` and
+  `pid` fields; `job_id` is the task's own job, which for every task but
+  an array's last differs from the array's `job`). Three findings, fixed
+  on the branch: an independent search of the redacted copies found the
+  site's other node features in a host part's lists, which the redaction
+  kept, and the PI ruled that the copies keep the campaign's feature
+  alone and the CPU model (`e293893c`). After the fix the redaction of the
+  failure-paths pool, again, and of both population arms, for the first
+  time, reduced the lists; its own search found none of the site's
+  details in the copies or in the two public assets built from them (the
+  failure-paths pool's and the after arm's), and an independent search,
+  which showed at most ten hits per directory, found only benign ones
+  (citations in the targets' descriptions, a chance byte pair in a
+  compressed array); a whole search remains (the pickup point). The
+  guide's pool canary submitted case 1 a second time, and that task
+  exited 75 (`e293893c`), and `campaign_public.sh --check` refused a
+  directory holding two assets, as the guide builds them (`eb7538de`). On
+  the developer's machine the contract (135), public asset (6),
+  promotion (9), population (59), analysis (55), pool (76), honest-ELBO
+  (14) and stacking (54) modules pass at `e293893c`, and the public
+  asset's (7) at `eb7538de`; the driver module, whose
+  `test_array_refusals` failed once while another pytest process ran
+  beside it, passes whole (74) at `6ff30208`, run alone.
+- 2026-09-29: a doublecheck of the session's commits by three fresh
+  reviewers (the environment check and the tests' isolation; the
+  redaction and the public asset; the records and their privacy), and
+  its fixes. The operator's guide gave one of the site's node features as
+  its example of a quoted feature; it gives a placeholder. The two
+  entries above claimed a verification of the smoke stacking campaign,
+  which was not made, and more of the redaction's second pass than was
+  done; they are corrected in place. `redaction.json`'s rules, the
+  `redact` docstring and `dev/README.md` state the reduction of the node
+  features; `campaign_public.py check` also fails on a part that no
+  listing names; a test marks conda's distributions in a stand-in prefix
+  through its `conda-meta` record, and another refuses a leftover feature
+  in a JSON list; the honest-ELBO tests leave out the Slurm variables and
+  the operator's settings as the other modules' do; the driver tests read
+  a `PATH` entry they cannot open as holding no conda. The plan's
+  estimates give way to Phase 6's measurements ("Resources and cost"),
+  and decision 2, "The cluster", the driver's environment, Phase 1b and
+  Phase 9 state what Phases 1b and 6 found. With the fixes the contract
+  (136), public asset (7), honest-ELBO (14) and driver (74) modules pass
+  on the developer's machine, none skipped. Three checks remain for the
+  next cluster session (the pickup point).
+- 2026-09-30: gpyreg 1.4.0 released, and PyVBMC requires it
+  (`pyproject.toml`'s minimum and CI's pin, PR #178); `dev-next` merged
+  into the branch (`fb034058`). "What runs where", Phase 1b and the
+  operator's guide name gpyreg `v1.4.0` (`682585f`) for the after arm,
+  the pools and the stacking. It reproduces 1.3.3 bit for bit on every
+  oracle output, the GP-fit-history captures and the default golden
+  replays (`dev/TODO.md`, "The final gpyreg release"). The cluster's trees
+  hold `v1.3.3`; the pickup point gives the clone of `v1.4.0` and the
+  environment check with it.
+- 2026-09-30: a doublecheck of the whole branch before the merge, at
+  `86477269`, by seven fresh reviewers, read-only (the contract; the
+  driver; the population harness; the redaction, with a search of every
+  tracked file for the site's details; the pools and the stacking; the
+  promotion and the gate runs; the documents), while every harness test
+  module, the gate runs' and `pyvbmc/testing/test_golden_replay.py` ran
+  there on the developer's machine: 562 passed, none skipped. It found one
+  leak: the redaction's comment on the username's boundary and a test of
+  whole names held a cluster account's username and home path, since
+  2026-09-26; stand-ins replace them (`33070164`), and the branch's
+  history, which this plan, its worklog and `LOCAL.md` cite by hash,
+  stays. The PI's rulings on the rest (2026-09-30): a copied or unpacked
+  pool is verified and selected again where it lies before it is stacked,
+  in code; the source trees and the campaign's parent take names of their
+  own under the home too; the pools' public asset holds every verified
+  case's completion record; a host part's platform keeps its operating
+  system and machine type alone in the copies; the September campaign's
+  records keep their partition and node families as written ("Records
+  and hand-back"); and the branch merges after the PI's review, the brief
+  following before Phase 8. The fixes:
+  - the worker: a stop signal between its claim and its run is a stop,
+    so a takeover's killed files go with the claim and the case is
+    missing, not partial; `write_json` and the artifacts reach storage
+    before the completion record; the clean-tree checks pass
+    `--untracked-files=normal`, and `check-env` exempts a source tree but
+    not a local archive (`b9ce5e5f`);
+  - the finish takes the accounting again before the archive, which now
+    requires an allocation row of every recorded job, the verify and
+    finishing steps' included; `STEP_POLL` is above 0; the stub `sacct`
+    answers with a row per requested job; `campaign_requirements.txt`
+    keeps LF line endings in every checkout;
+  - `--pair` compares the arms' node family and environment, and the
+    population's `prepare` refuses a gpyreg tree that is not the release
+    the package tree's `pyproject.toml` requires, exactly for an arm of
+    other code and that release or a later commit for the release code;
+  - the stacking's `prepare` refuses a pool whose verification or
+    selection was made in another directory, and a selected run whose
+    files differ from its completion record;
+  - the redaction names trees and the campaign's parent under the home
+    and reduces the platform; the public asset holds the completion
+    records, records the code that built it and the exemptions it
+    applied, and its check applies the rules that need no campaign and
+    fails an asset that other code built;
+  - `fingerprints` exits 0 once every run is made, and a metric of 0.0
+    counts as finite;
+  - the documents: the guide's environment check stops on a failed
+    activation and prints its interpreter, its exit-code table gains 1
+    without an error file and 2, its limits point at "Resources and
+    cost" and the pools' `verify` runs at the default limits; this plan's
+    settings table gives way to the guide's, its pickup point and
+    checklist state the order the PI ruled, Phase 9's estimate is whole,
+    and the pools' analyses have an owner.
+
+  Left for after the merge and before Phase 9: the stubs running the
+  batch script where it lies rather than as Slurm's spooled copy, the
+  generated `golden/README.md`'s recipe for other machines, the
+  promotion's refusal of a checkout that a tracked edit makes dirty,
+  which comes only after the fingerprints' runs, the README check's
+  blind spots (hostnames that begin a name the copies write, host lists,
+  the site's domain, features in prose), the tests of the promotion's
+  refusals and of the release grid, and the note on `--sidecars` in the
+  `golden_replay.py` entry of `dev/README.md`, a passage the promotion
+  rewrites from its template. For the next cluster session: the arm
+  comparison (`analyze_population_run.py --arms`) on the smoke canaries,
+  its only run on real before-arm output. Not done, with the reason: a
+  task whose environment cannot be activated still exits 1 (a `source`
+  in an `||` list runs without `errexit`, which the activation relies
+  on), which the exit-code table now explains; the clean-tree checks
+  keep the operator's global excludes file, whose removal could newly
+  flag files that it hides in the S-VBMC tree the smoke finish needs.
+  The review's optional findings not listed here await the PI's ruling.
+
+  A fresh reviewer then read the fixes. The rules that each
+  `redaction.json` records, the usage of `campaign_redact.sh` and the
+  docstring of `redact` still gave the old order of the names and no
+  platform rule; they give the new ones. The public asset is a record of
+  its campaign and not a campaign directory that `verify` accepts, since
+  its redacted `.json` artifacts no longer hold their records' hashes:
+  the records tie each published file to its source hash, and the
+  documents said more, which they no longer do. Whether the released
+  pools should be verifiable and stackable from the asset, which would
+  need the published records to hash the redacted files and the error
+  files of the failed seeds published too, is for the PI. The asset's
+  `built_by` hashes the modules with LF line endings, so that a Windows
+  checkout checks an asset built on Linux; `check` reports a member that
+  is no file and a `public.json` without `files`; and the guide, the
+  population module's docstring, the task script's header, the
+  requirements file's header, the stacking's docstrings and this plan
+  describe the new checks.
+
+  The test modules on the developer's machine, one at a time: on the
+  fixes before that reviewer's, every harness test module, the gate runs'
+  and `test_golden_replay.py`, 623 passed and none skipped, but for one
+  fixture of the analysis module, which failed with a `MemoryError` while
+  the machine ran short of memory (the module had passed whole, 55, on the
+  same code before). After the reviewer's fixes the contract module passed
+  (139), and at `c5f56bd3`, whose code is that of the fixes, the public
+  asset's (9), analysis (55), pool (76) and driver (75) modules, none
+  skipped, the checkout clean after them; so every harness test module
+  passes on the fixes.

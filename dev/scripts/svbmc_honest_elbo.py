@@ -119,8 +119,9 @@ runs are located by tag among the pool directories, and the arm's
 recorded weights, component counts and reference terms are read from it.
 gpyreg is imported from the frozen worktree the pools' manifests name
 (they must agree), or from ``--gpyreg-source``, before PyVBMC is
-imported; the process refuses to continue when gpyreg resolves
-elsewhere. Every draw comes from a generator keyed by ``--seed``, a
+imported; either must be a clean checkout at the gpyreg commit every
+pool's manifest records, and the process refuses to continue when gpyreg
+resolves elsewhere. Every draw comes from a generator keyed by ``--seed``, a
 stream constant and the cell's seed (or the run's tag), so a cell is
 reproducible from its record. Nothing here needs Torch.
 
@@ -169,6 +170,7 @@ from svbmc_pool_run import (  # noqa: E402
     THREAD_KEYS,
     activate_gpyreg,
     git,
+    pinned_gpyreg_source,
     write_json,
 )
 
@@ -265,19 +267,28 @@ def coverage_rules(ratios, sd_cap, sd_floor=SD_FLOOR):
 
 
 class Runs:
-    """The pools' artifacts, rebuilt once each and cached by tag."""
+    """The pools' artifacts, rebuilt once each and cached by tag.
+
+    A run's tag is its artifact's path in the pool directory without the
+    suffix: ``<label>/<label>_seed<seed>`` in a pool of the campaign
+    contract, ``<label>_seed<seed>`` in one of the flat layout.
+    """
 
     def __init__(self, pool_dirs):
         self.paths = {}
         for directory in pool_dirs:
-            for npz in sorted(Path(directory).glob("*.npz")):
-                if npz.stem in self.paths:
+            directory = Path(directory)
+            for npz in sorted(
+                [*directory.glob("*.npz"), *directory.glob("*/*.npz")]
+            ):
+                tag = npz.relative_to(directory).with_suffix("").as_posix()
+                if tag in self.paths:
                     raise RuntimeError(
-                        f"the artifact {npz.stem} is in more than one pool "
-                        f"directory ({self.paths[npz.stem].parent} and "
+                        f"the artifact {tag} is in more than one pool "
+                        f"directory ({self.paths[tag].parent} and "
                         f"{npz.parent})"
                     )
-                self.paths[npz.stem] = npz.with_suffix("")
+                self.paths[tag] = npz.with_suffix("")
         self.cache = {}
 
     def tags(self):
@@ -1839,15 +1850,27 @@ def read_manifests(pool_dirs):
 
 
 def gpyreg_source(manifests, override):
+    """The gpyreg checkout the pools are read against, checked.
+
+    ``override`` (``--gpyreg-source``), or else the one path every pool's
+    manifest names. Either must be a clean checkout at the gpyreg commit
+    of every manifest (``svbmc_pool_run.pinned_gpyreg_source``), the
+    library the pools' numerics were produced by; anything else raises
+    ``RuntimeError`` naming what differs.
+    """
     if override is not None:
-        return str(Path(override).resolve())
-    sources = {m["manifest"]["gpyreg_source"] for m in manifests}
-    if len(sources) != 1:
-        raise RuntimeError(
-            f"the pools name different gpyreg sources {sorted(sources)}; "
-            "pass --gpyreg-source"
-        )
-    return sources.pop()
+        source = override
+    else:
+        sources = {m["manifest"]["gpyreg_source"] for m in manifests}
+        if len(sources) != 1:
+            raise RuntimeError(
+                f"the pools name different gpyreg sources {sorted(sources)}; "
+                "pass --gpyreg-source"
+            )
+        source = sources.pop()
+    for entry in manifests:
+        source = pinned_gpyreg_source(source, entry["manifest"])
+    return str(Path(source).resolve())
 
 
 def sources_record(manifests, source, cells_path, settings, tags):

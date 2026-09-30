@@ -3,7 +3,13 @@
 # Scripts
 *.sh text eol=lf
 *.sbatch text eol=lf
+# Read by campaign_env.sh, whose sed anchors its pins at the line's end
+dev/scripts/hpc/campaign_requirements.txt text eol=lf
 
 # These are explicitly windows files and should use crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# The redacted copies of the release gate's campaigns, whose SHA-256
+# redaction.json records: kept byte for byte
+dev/experiments/release_gate_*/** -text

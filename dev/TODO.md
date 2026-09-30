@@ -102,14 +102,14 @@ records its execution.
   (`dev/scripts/runs/LOCAL.md`), the only one where their platform-bound
   references reproduce, the exact oracle check against them
   (`make_oracle_fixtures.py --check --exact`, one BLAS thread) passed
-  with 1.4.0 on 2026-09-30, 12 of 12. One step remains. The
+  with 1.4.0 on 2026-09-30, 12 of 12. The
   [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
-  (`scripts/hpc/README.md`), both rewritten on `feat-slurm-campaigns`, name
-  `v1.4.0` (`682585f`) where they name `v1.3.3`: the after arm, the pools
-  and the stacking in "What runs where", Phase 1b's source trees, and the
-  guide's clones, environment check and campaign commands. The campaigns
-  of the Slurm plan's Phase 8 launch after the pin; the smoke campaigns of
-  its Phase 6 test the machinery and do not wait for it.
+  (`scripts/hpc/README.md`) name `v1.4.0` (`682585f`) for the after arm,
+  the pools and the stacking. One step remains, on the cluster: its source
+  trees hold gpyreg `v1.3.3`, with which the smoke campaigns of the plan's
+  Phase 6 ran, and before the campaigns of Phase 8 a cluster session clones
+  `v1.4.0` beside it and runs the environment check with it (the plan's
+  pickup point).
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -118,18 +118,20 @@ records its execution.
   a `worker` that claims its case, `verify`) that the pool, population and
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
-  to 5 and the redaction and guide of Phase 7 are on the branch
-  `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
-  in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
-  harness test module passes, and with the tools of the plan's Phase 9 and
-  of the promotion of the new reference (the two items below). Phase 1b
-  (the survey, the source trees, the frozen environment and its check) and
-  Phase 6 (the smoke campaigns, which measured every job's time and
-  memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
-  branch; the plan's pickup point, on the branch, lists the three checks
-  left for the next cluster session. Next are the brief, which needs only
-  the stacking's finishing limits from those checks, a review of the
-  branch, and the merge into `dev-next`. Needed before
+  to 5, the redaction and guide of Phase 7, and the tools of the plan's
+  Phase 9 and of the promotion of the new reference (the two items below)
+  are on `dev-next`, from the branch `feat-slurm-campaigns`, reviewed
+  twice and fixed. Phase 1b (the survey, the source trees, the frozen
+  environment and its check) and Phase 6 (the smoke campaigns, which
+  measured every job's time and memory) ran on the cluster on
+  2026-09-28/29, and their fixes are in. A doublecheck of the whole branch
+  before its merge (2026-09-30), by seven reviewers, found a privacy leak
+  and some twenty issues; the PI ruled on those that needed it, the fixes
+  are in, and every harness test module passes (the plan's worklog).
+  Next, before Phase 8, are the three checks of the next cluster session
+  and the clone of gpyreg `v1.4.0` with the environment check (the plan's
+  pickup point), and the brief, which needs the stacking's finishing
+  limits from those checks. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
@@ -158,7 +160,7 @@ records its execution.
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
   Phase 8, on the PI's instruction. The promotion is
-  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-28), in
+  `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
   with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
@@ -169,7 +171,7 @@ records its execution.
   `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS` together
   with `AGENTS.md` ("Trajectories"), the current reference's section and
   the `golden_replay.py` entry of `dev/README.md`, and `golden/README.md`
-  (its `dev/README.md` entry on the branch gives the steps). Its test module
+  (its `dev/README.md` entry gives the steps). Its test module
   runs a whole promotion on small array-mode campaigns. It rewrites those
   passages only as they stood when it was written (a SHA-256 guard), so an
   edit to one before the promotion is carried into its template. The PI's
@@ -204,12 +206,13 @@ records its execution.
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
   [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
-  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-28): it
+  `scripts/seeded_gate_runs.py` (2026-09-28): it
   records the six runs twice, each in a fresh process with one BLAS thread
   and `performance_calibration="off"`, compares them with the script's own
   `compare`, and writes each recording's identity (the commit, the gpyreg
   checkout, the thread settings, the host) beside them. On 2026-09-28 it
-  recorded them at the branch's `4efee154` with gpyreg `d96d0d9`, identical
+  recorded them at `4efee154` on `feat-slurm-campaigns` with gpyreg
+  `d96d0d9`, identical
   in all 138 arrays; that run checked the wrapper and is no record. The
   runs that enter the records wait for the release code.
 
@@ -251,8 +254,8 @@ records its execution.
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
     hand-back"): the release gate's after-arm population and its pools,
     each built apart from its draft release from the numeric files and the
-    redacted copies by `scripts/hpc/campaign_public.sh` on
-    `feat-slurm-campaigns`, in the operator's account after the redaction
+    redacted copies by `scripts/hpc/campaign_public.sh`, in the operator's
+    account after the redaction
     (the stacking's tracked copies hold every cell already);
     the draft releases of the campaigns stay drafts, since their raw
     archives hold the cluster's details and the operator's paths; the

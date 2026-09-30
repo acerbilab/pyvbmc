@@ -22,12 +22,18 @@ platform, interpreter, import paths, installed versions, thread settings)
 that is recorded and never compared, so that any machine may generate any
 case of one pool. `baseline_environment.json` is the
 identity of the comparison's baseline arm: the commit and per-file
-SHA-256 hashes of the pinned upstream checkout, the Torch overlay it runs
+SHA-256 hashes of the pinned upstream checkout (of the files as that
+machine's checkout held them, with the CRLF line endings Git gave them on
+Windows, and of their committed content, which verifies a recreation on
+any platform), the Torch overlay it runs
 against, and the interpreter, library versions, PyVBMC and gpyreg
 checkouts and thread settings of the machine that ran it. The checkout
 and the overlay are machine-local, so that record is what makes the
-baseline verifiable here and recoverable elsewhere; the stacking harness
-re-verifies it before every campaign. Each generated pool has its own
+baseline verifiable here and recoverable elsewhere: every process of the
+stacking harness that runs the original arm verifies the checkout it is
+given against the record, by content, and a comparison or campaign of the
+integrated arm alone neither needs the baseline nor verifies it. Each
+generated pool has its own
 subdirectory with a README that describes every key of its JSON files
 and the exact commands that generated it; this file indexes them and
 describes the comparison's outputs.
@@ -351,8 +357,19 @@ single-run join.
 
 ## The numbers the documents quote
 
-`python dev/scripts/svbmc_headline_numbers.py` prints, from the six
-tracked `cells.jsonl` files of the shrinkage and cap scorings, every
+```console
+E=dev/experiments/svbmc_pool
+python dev/scripts/svbmc_headline_numbers.py \
+    --shrink $E/shrink_20260915 --shrink $E/shrink_M35_20260915 \
+    --shrink $E/shrink_M32_20260916 \
+    --caps $E/cap_kappa_20260915 --caps $E/cap_kappa_M35_20260915 \
+    --caps $E/cap_kappa_M32_20260916 \
+    --single-run $E/single_run_20260915 \
+    --shrink-opt $E/shrink_opt_20260915
+```
+
+prints, from the six tracked `cells.jsonl` files of the shrinkage and cap
+scorings of `pool_20260914` above, every
 number the [headline note](../../2026-09-15-svbmc-headline-shrinkage.md)
 and the shrinkage, cap and `M = 32` sections of the
 [stage D report](../../results/2026-09-15-svbmc-pool-comparison.md)

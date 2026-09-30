@@ -4,20 +4,36 @@ The headline note (``dev/2026-09-15-svbmc-headline-shrinkage.md``) and the
 shrinkage and cap sections of the stage D report
 (``dev/results/2026-09-15-svbmc-pool-comparison.md``) quote medians over
 cells, worst and mean cases over the noisy conditions, threshold sweeps
-and paired bootstrap intervals. This prints all of them from the tracked
-per-cell records of ``svbmc_shrink_elbo.py`` and ``svbmc_cap_kappa.py``
-under ``dev/experiments/svbmc_pool/``, so that a sentence in those
-documents can be checked or updated without the raw directories::
+and paired bootstrap intervals. This prints all of them from the per-cell
+records of ``svbmc_shrink_elbo.py`` and ``svbmc_cap_kappa.py``, the
+single-run biases of ``svbmc_single_run_bias.py`` and the re-optimization
+of ``svbmc_shrink_optimize.py``, so that a sentence in those documents can
+be checked or updated without the raw directories::
 
-    python dev/scripts/svbmc_headline_numbers.py [--experiments DIR]
+    python dev/scripts/svbmc_headline_numbers.py \
+        --shrink DIR [--shrink DIR ...] --caps DIR [--caps DIR ...] \
+        --single-run DIR --shrink-opt DIR
 
-Reads ``shrink_20260915/cells.jsonl``, ``shrink_M35_20260915/cells.jsonl``,
-``shrink_M32_20260916/cells.jsonl``, ``cap_kappa_20260915/cells.jsonl``,
-``cap_kappa_M35_20260915/cells.jsonl``, ``cap_kappa_M32_20260916/cells.jsonl``,
-the ``summary.json`` and ``added.json`` of ``single_run_20260915/``
+Reads the ``cells.jsonl`` of every ``--shrink`` and ``--caps`` directory
+(the scorings of one comparison's cells, which together cover the grid
+of ``M``), the ``summary.json`` and ``added.json`` of ``--single-run``
 (the single-run biases and the added-bias ranges) and the
-``summary.json`` of ``shrink_opt_20260915/`` (the re-optimization).
-Needs NumPy only.
+``summary.json`` of ``--shrink-opt`` (the re-optimization), and names the
+last two by their directories. The numbers the documents quote are those
+of the tracked scorings of ``pool_20260914`` under
+``dev/experiments/svbmc_pool/``::
+
+    E=dev/experiments/svbmc_pool
+    python dev/scripts/svbmc_headline_numbers.py \
+        --shrink $E/shrink_20260915 --shrink $E/shrink_M35_20260915 \
+        --shrink $E/shrink_M32_20260916 \
+        --caps $E/cap_kappa_20260915 --caps $E/cap_kappa_M35_20260915 \
+        --caps $E/cap_kappa_M32_20260916 \
+        --single-run $E/single_run_20260915 \
+        --shrink-opt $E/shrink_opt_20260915
+
+A condition outside the eight of the ``svbmc_pool`` suite is printed
+under its label. Needs NumPy only.
 """
 
 import argparse
@@ -27,19 +43,6 @@ from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
-DEFAULT_EXPERIMENTS = ROOT / "dev" / "experiments" / "svbmc_pool"
-SHRINK_DIRS = (
-    "shrink_20260915",
-    "shrink_M35_20260915",
-    "shrink_M32_20260916",
-)
-CAP_DIRS = (
-    "cap_kappa_20260915",
-    "cap_kappa_M35_20260915",
-    "cap_kappa_M32_20260916",
-)
 GRID = (2, 3, 4, 5, 8, 16, 32)
 # The grid of stage D and the M = 3 and 5 run; the aggregates over M are
 # printed for it (the numbers quoted before the M = 32 run) and for GRID.
@@ -55,6 +58,13 @@ SHORT = {
     "gmm_D2_svbmc": "GMM (noiseless)",
     "multisensory_s1_D6_svbmc": "multisensory (noiseless)",
 }
+
+
+def short(label):
+    """The printed name of a condition: its short name, or its label."""
+    return SHORT.get(label, label)
+
+
 RULES = {
     "raw": lambda r: r["bias_raw"],
     "cap": lambda r: r["bias_class_cap"],
@@ -68,10 +78,10 @@ RULES = {
 }
 
 
-def load(experiments, names):
+def load(directories):
     rows = []
-    for name in names:
-        path = Path(experiments) / name / "cells.jsonl"
+    for directory in directories:
+        path = Path(directory) / "cells.jsonl"
         rows += [json.loads(line) for line in path.open(encoding="utf-8")]
     return rows
 
@@ -83,13 +93,36 @@ def median(values):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument(
-        "--experiments", type=Path, default=DEFAULT_EXPERIMENTS
+        "--shrink",
+        type=Path,
+        action="append",
+        required=True,
+        help="a directory of svbmc_shrink_elbo.py, repeatable",
+    )
+    parser.add_argument(
+        "--caps",
+        type=Path,
+        action="append",
+        required=True,
+        help="a directory of svbmc_cap_kappa.py, repeatable",
+    )
+    parser.add_argument(
+        "--single-run",
+        type=Path,
+        required=True,
+        help="the directory of svbmc_single_run_bias.py",
+    )
+    parser.add_argument(
+        "--shrink-opt",
+        type=Path,
+        required=True,
+        help="the directory of svbmc_shrink_optimize.py",
     )
     args = parser.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
-    rows = load(args.experiments, SHRINK_DIRS)
-    caps = load(args.experiments, CAP_DIRS)
+    rows = load(args.shrink)
+    caps = load(args.caps)
     conditions = list(dict.fromkeys(r["condition"] for r in rows))
     noisy = [c for c in conditions if "noise" in c]
     controls = [c for c in conditions if "noise" not in c]
@@ -118,7 +151,7 @@ def main(argv=None):
     )
     for c in conditions:
         print(
-            f"| {SHORT[c]} | {bias(c, 16, 'raw'):+.2f} | {bias(c, 16, 'cap'):+.2f} | "
+            f"| {short(c)} | {bias(c, 16, 'raw'):+.2f} | {bias(c, 16, 'cap'):+.2f} | "
             f"{bias(c, 16, 'within'):+.2f} [{factor(c, 16, 'within'):.2f}] | "
             f"{bias(c, 16, 'within_full'):+.2f} [{factor(c, 16, 'within_full'):.2f}] | "
             f"{bias(c, 16, 'stack'):+.2f} [{factor(c, 16, 'stack'):.2f}] | {share(c, 16):.2f} |"
@@ -148,7 +181,7 @@ def main(argv=None):
     )
     for c in conditions:
         print(
-            f"| {SHORT[c]} | "
+            f"| {short(c)} | "
             + " | ".join(
                 " / ".join(f"{bias(c, M, rule):+.2f}" for M in (2, 4, 8, 16))
                 for rule in ("two_level_full", "two_level", "run_level", "cap")
@@ -161,7 +194,7 @@ def main(argv=None):
     )
     for c in conditions:
         print(
-            f"| {SHORT[c]} | "
+            f"| {short(c)} | "
             + " | ".join(
                 " / ".join(
                     f"{bias(c, M, rule):+.2f}"
@@ -188,7 +221,7 @@ def main(argv=None):
     for c in conditions:
         rs = cells(c, 32)
         print(
-            f"| {SHORT[c]} | {bias(c, 32, 'raw'):+.2f} | {bias(c, 32, 'cap'):+.2f} | "
+            f"| {short(c)} | {bias(c, 32, 'raw'):+.2f} | {bias(c, 32, 'cap'):+.2f} | "
             f"{bias(c, 32, 'within_full'):+.2f} [{factor(c, 32, 'within_full'):.2f}] | "
             f"{bias(c, 32, 'run_level'):+.2f} [{factor(c, 32, 'run_level'):.2f}] | "
             f"{bias(c, 32, 'two_level_full'):+.2f} [{factor(c, 32, 'two_level_full'):.2f}] | "
@@ -198,7 +231,7 @@ def main(argv=None):
     print("  M = 16 -> 32, median bias: raw | cap | two_level_full | hybrid")
     for c in conditions:
         print(
-            f"    {SHORT[c]}: "
+            f"    {short(c)}: "
             + " | ".join(
                 f"{bias(c, 16, rule):+.2f} -> {bias(c, 32, rule):+.2f}"
                 for rule in ("raw", "cap", "two_level_full", "hybrid")
@@ -209,14 +242,14 @@ def main(argv=None):
     )
     for c in noisy:
         print(
-            f"    {SHORT[c]}: {abs(bias(c, 32, 'cap')) - abs(bias(c, 32, 'two_level_full')):+.2f}"
+            f"    {short(c)}: {abs(bias(c, 32, 'cap')) - abs(bias(c, 32, 'two_level_full')):+.2f}"
         )
     print(
         "  run_level minus raw at M = 16 and 32 (what the run-level shift removes):"
     )
     for c in noisy:
         print(
-            f"    {SHORT[c]}: "
+            f"    {short(c)}: "
             + ", ".join(
                 f"M={M}: {bias(c, M, 'run_level') - bias(c, M, 'raw'):+.2f}"
                 for M in (16, 32)
@@ -251,7 +284,7 @@ def main(argv=None):
         }
         worst = max(d, key=d.get)
         print(
-            f"  max |two_level_full - within_full| at M={M}: {d[worst]:.3f} ({SHORT[worst]})"
+            f"  max |two_level_full - within_full| at M={M}: {d[worst]:.3f} ({short(worst)})"
         )
     print(
         "  run-level tau2 == 0 fraction and factor 10th-90th percentile, per condition at M = 2 to 5:"
@@ -265,13 +298,13 @@ def main(argv=None):
             parts.append(
                 f"M={M}: zero {zero:.2f}, factor {np.percentile(f, 10):.2f}-{np.percentile(f, 90):.2f}"
             )
-        print(f"    {SHORT[c]}: " + "; ".join(parts))
+        print(f"    {short(c)}: " + "; ".join(parts))
     for label, grid in SCOPES:
         print(f"  hybrid chooses the cap, cells per condition ({label}):")
         for c in conditions:
             rs = [r for r in rows if r["condition"] == c and r["M"] in grid]
             print(
-                f"    {SHORT[c]}: {sum(r['variants']['hybrid']['cap'] for r in rs)}/{len(rs)}"
+                f"    {short(c)}: {sum(r['variants']['hybrid']['cap'] for r in rs)}/{len(rs)}"
             )
     for label, grid in SCOPES:
         print(
@@ -288,7 +321,7 @@ def main(argv=None):
                 ]
             )
             print(
-                f"    {SHORT[c]}: median {np.median(s):.3f}, 5-95% {np.percentile(s, 5):.3f}-{np.percentile(s, 95):.3f}, "
+                f"    {short(c)}: median {np.median(s):.3f}, 5-95% {np.percentile(s, 5):.3f}-{np.percentile(s, 95):.3f}, "
                 f"min {s.min():.3f}, max {s.max():.3f}"
             )
 
@@ -332,7 +365,7 @@ def main(argv=None):
                 abs(bias(c, M, "cap")) - abs(bias(c, M, "two_level_full"))
                 for M in grid
             ]
-            print(f"    {SHORT[c]}: {min(d):+.2f} .. {max(d):+.2f}")
+            print(f"    {short(c)}: {min(d):+.2f} .. {max(d):+.2f}")
     print(
         "  Student: |two_level_full| and |raw| at M = 2 to 5, fraction of cells where two_level_full is worse:"
     )
@@ -365,7 +398,7 @@ def main(argv=None):
                     for r in rs
                 ]
             )
-            print(f"    {SHORT[c]}: {inside:.2f}")
+            print(f"    {short(c)}: {inside:.2f}")
 
     print(
         "\n# Caps (svbmc_cap_kappa.py): max bind fraction and max |median move from raw| per cap"
@@ -428,7 +461,7 @@ def main(argv=None):
             return np.mean([r["caps"][name]["binds"] for r in rs])
 
         print(
-            f"    {SHORT[c]}: {median([r['bias_raw'] for r in rs]):+.2f} | "
+            f"    {short(c)}: {median([r['bias_raw'] for r in rs]):+.2f} | "
             f"{cap_bias('kappa_0.8', c, 32):+.2f} [{binds('kappa_0.8'):.2f}] | "
             f"{cap_bias('kappa_0.9', c, 32):+.2f} | {cap_bias('kappa_0.99', c, 32):+.2f} | "
             f"{cap_bias('E_max', c, 32):+.2f} [{binds('E_max'):.2f}] | "
@@ -455,18 +488,18 @@ def main(argv=None):
             print(f"  {a_name} minus {b_name} (positive: {b_name} closer):")
             for c in noisy:
                 print(
-                    f"    {SHORT[c]}: "
+                    f"    {short(c)}: "
                     + "; ".join(paired(a_name, b_name, c, M) for M in grid)
                 )
-    print("\n# Single runs and what stacking adds (single_run_20260915)")
-    single_dir = Path(args.experiments) / "single_run_20260915"
+    single_dir = args.single_run
+    print(f"\n# Single runs and what stacking adds ({single_dir.name})")
     single = json.loads(
         (single_dir / "summary.json").read_text(encoding="utf-8")
     )
     for c in single["conditions"]:
         v = c["bias_vbmc"]
         print(
-            f"  {SHORT[c['condition']]}: reported-ELBO bias median "
+            f"  {short(c['condition'])}: reported-ELBO bias median "
             f"{v['median']:+.2f} [{v['lo']:+.2f}, {v['hi']:+.2f}], quartiles "
             f"{v['q25']:+.2f}..{v['q75']:+.2f}; class raw "
             f"{c['bias_raw']['median']:+.2f}; cap {c['bias_cap']['median']:+.2f}"
@@ -526,22 +559,23 @@ def main(argv=None):
             if r["M"] != 32:
                 continue
             print(
-                f"  {SHORT[c['condition']]} at M = 32: inputs mean {r['inputs_mean_bias']:+.2f}, "
+                f"  {short(c['condition'])} at M = 32: inputs mean {r['inputs_mean_bias']:+.2f}, "
                 f"best input {r['inputs_best_bias']:+.2f}, stack raw {r['bias']['raw']:+.2f}, "
                 f"added raw {r['added']['raw']:+.2f}, two_level_full {r['added']['two_level_full']:+.2f}, "
                 f"positive on {r['raw_added_positive']:.2f} of cells"
             )
-    print("\n# Re-optimizing on the shrunken estimates (shrink_opt_20260915)")
+    print(
+        "\n# Re-optimizing on the shrunken estimates "
+        f"({args.shrink_opt.name})"
+    )
     opt = json.loads(
-        (
-            Path(args.experiments) / "shrink_opt_20260915" / "summary.json"
-        ).read_text(encoding="utf-8")
+        (args.shrink_opt / "summary.json").read_text(encoding="utf-8")
     )
     for c in opt["conditions"]:
         for r in c["by_M"]:
             b = r["bias"]
             print(
-                f"  {SHORT[c['condition']]} M={r['M']}: re-optimized "
+                f"  {short(c['condition'])} M={r['M']}: re-optimized "
                 f"{b['shrunk_opt']:+.2f}, value-only {b['two_level_full']:+.2f}, "
                 f"raw {b['raw']:+.2f}, raw at new weights {b['raw_at_opt']:+.2f}; "
                 f"added {r['added']['shrunk_opt']:+.2f}; gsKL "

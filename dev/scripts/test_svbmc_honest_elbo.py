@@ -11,20 +11,25 @@ equals the recorded one, a Gaussian target fitted by two runs is fully
 cross-covered and estimated within a small tolerance of the truth, the
 outputs carry what the analysis reads, ``--summarize-only`` rebuilds the
 same summary, ``--self-check`` runs without cells, the original arm is
-scored under its own variant names, and a headline ratio outside the grid
-or ``--self-check`` with ``--cells`` are parse errors. Three synthetic
+scored under its own variant names, the runs of a copy of the pool in the
+flat layout are the same runs, a gpyreg checkout at a commit the pool's
+manifest does not record is refused, and a headline ratio outside the
+grid or ``--self-check`` with ``--cells`` are parse errors. Three synthetic
 checks need no pool: the combination rules and correlated standard errors
 on hand-built arrays, the own-run checks flagging a broken mapping, and
 the mapping of draws between two runs with different transformers (one
 unbounded, one bounded probit) through stand-in GPs that know the target,
 whose estimates must agree to rounding. Outside default pytest discovery;
-run it by path::
+run it by path, with ``PYVBMC_GPYREG_SOURCE`` naming the gpyreg checkout
+the pool is generated against (every test skips when it is unset)::
 
-    python -m pytest dev/scripts/test_svbmc_honest_elbo.py -vv
+    PYVBMC_GPYREG_SOURCE=<gpyreg checkout> \\
+        python -m pytest dev/scripts/test_svbmc_honest_elbo.py -vv
 """
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -36,7 +41,11 @@ import svbmc_pool_run as runner
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 SCRIPT = HERE / "svbmc_honest_elbo.py"
-GPYREG_SOURCE = runner.DEFAULT_GPYREG
+GPYREG_SOURCE = (
+    Path(os.environ["PYVBMC_GPYREG_SOURCE"]).resolve()
+    if os.environ.get("PYVBMC_GPYREG_SOURCE")
+    else None
+)
 LABEL = "normal_D2"
 SEED_START = 4100
 SEEDS = 2
@@ -44,22 +53,31 @@ CELL_SEED = 123
 DRAWS = 200
 HEADLINE = f"ratio{2.0:g}"
 
-# The campaign pins gpyreg to a frozen worktree: the estimator's
-# subprocesses read the variable, and this process gets the same pin on
-# its path before anything imports PyVBMC.
-if (GPYREG_SOURCE / "gpyreg").is_dir():
+# The campaign pins gpyreg to one checkout: the estimator's subprocesses
+# read the variable, and this process gets the same pin on its path before
+# anything imports PyVBMC.
+if GPYREG_SOURCE is not None:
     runner.activate_gpyreg(GPYREG_SOURCE)
 
 import svbmc_honest_elbo as honest  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
-    not (GPYREG_SOURCE / "gpyreg").is_dir(),
-    reason="the campaign's frozen gpyreg worktree is machine-local",
+    GPYREG_SOURCE is None,
+    reason="PYVBMC_GPYREG_SOURCE, the gpyreg checkout the pool is "
+    "generated against, is unset",
 )
 
 
 def cli(script, *args):
-    environment = dict(os.environ)
+    """Run ``script`` outside any Slurm task and campaign: without the
+    Slurm variables and the operator settings that the environment check's
+    batch job exports, but for the gpyreg checkout, which it sets."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("SLURM")
+        and key.upper() not in runner.contract.SETTINGS
+    }
     environment.update({k: "1" for k in runner.THREAD_KEYS})
     environment["MPLBACKEND"] = "Agg"
     environment["PYVBMC_GPYREG_SOURCE"] = str(GPYREG_SOURCE)
@@ -91,6 +109,8 @@ def pool(tmp_path_factory):
         str(SEEDS),
         "--seed-start",
         str(SEED_START),
+        "--gpyreg-source",
+        str(GPYREG_SOURCE),
         # The estimator and the pool scripts are developed together, so
         # this pool is generated from whatever the tree holds.
         "--allow-dirty",
@@ -101,8 +121,8 @@ def pool(tmp_path_factory):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     tags = sorted(
-        p.name[: -len(".complete.json")]
-        for p in (out / "records").glob("*.complete.json")
+        f"{p.parent.name}/{p.name[: -len('.complete.json')]}"
+        for p in (out / "records").glob("*/*.complete.json")
     )
     assert len(tags) == SEEDS
     return out, tags
@@ -350,6 +370,67 @@ def test_self_check_runs_without_cells(pool, tmp_path):
     assert "--self-check" in markdown
     # The run table is written even though no cell was scored.
     assert all(f"| {tag} |" in markdown for tag in tags)
+
+
+def test_runs_read_a_pool_of_the_flat_layout(pool, tmp_path):
+    """A pool of the flat layout holds its artifacts at the top of the
+    directory, and a run's tag is then its file name; it is the same run
+    as the contract layout's."""
+    out, tags = pool
+    flat = tmp_path / "flat"
+    flat.mkdir()
+    for tag in tags:
+        for suffix in (".npz", ".json"):
+            shutil.copyfile(
+                out / f"{tag}{suffix}",
+                flat / f"{tag.split('/', 1)[1]}{suffix}",
+            )
+    runs = honest.Runs([flat])
+    names = [tag.split("/", 1)[1] for tag in tags]
+    assert runs.tags() == sorted(names)
+    nested = honest.Runs([out])
+    assert nested.tags() == sorted(tags)
+    for tag, name in zip(tags, names):
+        run, same = runs.get(name), nested.get(tag)
+        assert run["tag"] == name
+        assert (run["label"], run["seed"]) == (LABEL, runner.tag_seed(tag))
+        np.testing.assert_array_equal(run["I_corr"], same["I_corr"])
+        np.testing.assert_array_equal(run["mu"], same["mu"])
+
+
+def test_the_gpyreg_source_is_checked_against_the_pools(pool, tmp_path):
+    """The checkout the pools are read against is at the gpyreg commit their
+    manifests record, whether it is named or taken from them."""
+    out, _ = pool
+    manifests = honest.read_manifests([out])
+    assert honest.gpyreg_source(manifests, None) == str(GPYREG_SOURCE)
+    assert honest.gpyreg_source(manifests, GPYREG_SOURCE) == str(GPYREG_SOURCE)
+    other = tmp_path / "other_gpyreg"
+    (other / "gpyreg").mkdir(parents=True)
+    (other / "gpyreg" / "__init__.py").write_text("\n", encoding="utf-8")
+    author = ["-c", "user.name=t", "-c", "user.email=t@example.com"]
+    author += ["-c", "commit.gpgsign=false"]
+    subprocess.run(["git", "-C", str(other), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(other), *author, "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(other), *author, "commit", "-q", "-m", "x"],
+        check=True,
+    )
+    with pytest.raises(RuntimeError, match="not the manifest's"):
+        honest.gpyreg_source(manifests, other)
+    result = cli(
+        SCRIPT,
+        "--pool",
+        str(out),
+        "--out",
+        str(tmp_path / "refused"),
+        "--self-check",
+        "--gpyreg-source",
+        str(other),
+    )
+    assert result.returncode != 0
+    assert "not the manifest's" in result.stderr
+    assert not (tmp_path / "refused").exists()
 
 
 def test_combine_median_and_precision_on_synthetic_arrays():
