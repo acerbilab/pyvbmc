@@ -1237,3 +1237,24 @@ reason.
   and checks: `t`, `paused`, `speed`, `hud=0`, `capture=1` (frames on
   request), `debug=1` (a self-check of the anchoring, reported in the page
   title), `tremble` and `wobble`; `wordmark.html` adds `cam` and `wmview`.
+- `scripts/matched_mcmc_budget.py` — the number of target evaluations
+  that a black-box MCMC sampler needs to reach PyVBMC's posterior accuracy
+  on one target, as
+  [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) defines it.
+  `--config exporter` is the banana run of `export_animation_trace.py
+  --target banana`; `--target NAME --D D` takes an eligible target of
+  `benchmark_targets.py` (noiseless, exact sampler, known moments; `check`
+  lists them). `check` runs the checks before the runs, among them that the
+  tool's PyVBMC runs reproduce the exporter's `--sweep` on the executing
+  machine; `pyvbmc` runs the reference seeds; `pilot` runs the grid of
+  settings of one sampler (slice sampling from gpyreg, emcee, zeus,
+  random-walk Metropolis) on seeds 1000 to 1009 and prints the setting to
+  use for each metric; `mcmc` runs one setting's replicates, each one long
+  chain up to `--n-max` evaluations whose prefixes are the smaller budgets,
+  and records gsKL and MMTV at 30 log-spaced budgets for burn-in fractions
+  0.5, 0.1 and 0.25 (`--sampler exact` records exact draws instead);
+  `report RUN` computes the median curves, `N*`, the bootstrap intervals
+  and the figures into `RUN`. Each seed runs in a forked process of its
+  own; run with BLAS single-threaded when `--jobs` is above one. Every
+  subcommand resumes, and each invocation appends its provenance and wall
+  time to `invocations.jsonl`. The module docstring gives the file layout.
