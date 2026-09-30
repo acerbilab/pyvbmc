@@ -113,8 +113,8 @@ equals its own.
   states. By
   gsKL, exact draws beat PyVBMC at the smallest budget (50 draws).
 - **Burn-in.** With the first 10% or 25% of each budget discarded instead
-  of half, emcee's MMTV `N*` is 17,641 or 20,395. The other samplers' fall
-  by about the same factors (the table of `report.md` gives all of them).
+  of half, emcee's MMTV `N*` is 17,641 or 20,395. The other samplers' `N*`
+  fall by about the same factors (the table of `report.md` gives all of them).
 
 ## Error curves
 
