@@ -104,18 +104,22 @@ records its execution.
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
-  in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
-  harness test module passes, and on 2026-09-30 up to the move to gpyreg
-  1.4.0 (`fb034058`), and with the tools of the plan's Phase 9 and
-  of the promotion of the new reference (the two items below). Phase 1b
-  (the survey, the source trees, the frozen environment and its check) and
-  Phase 6 (the smoke campaigns, which measured every job's time and
-  memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
-  branch; the plan's pickup point, on the branch, lists the three checks
-  left for the next cluster session, and the clone of gpyreg `v1.4.0` with
-  the environment check before Phase 8. Next are the brief, which needs only
-  the stacking's finishing limits from those checks, a review of the
-  branch, and the merge into `dev-next`. Needed before
+  in on 2026-09-27 up to the release sweep (`52b16c96`) and on 2026-09-30
+  up to the move to gpyreg 1.4.0 (`fb034058`), and with the tools of the
+  plan's Phase 9 and of the promotion of the new reference (the two items
+  below). Phase 1b (the survey, the source trees, the frozen environment
+  and its check) and Phase 6 (the smoke campaigns, which measured every
+  job's time and memory) ran on the cluster on 2026-09-28/29, and their
+  fixes are on the branch. A doublecheck of the whole branch before the
+  merge (2026-09-30), by seven reviewers, found a privacy leak and some
+  twenty issues; the PI ruled on those that needed it, and the fixes are
+  on the branch, whose test modules pass but for four that run again
+  after the last fixes (the plan's worklog). Next are those four, the
+  PI's review and the merge into `dev-next` (PI, 2026-09-30);
+  then, before Phase 8, the three checks of the next cluster session and
+  the clone of gpyreg `v1.4.0` with the environment check (the plan's
+  pickup point), and the brief, which needs the stacking's finishing
+  limits from those checks. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See

@@ -24,40 +24,49 @@ it.
 - [ ] Phase 6: smoke campaigns on Turso. The checks passed on 2026-09-29
   (the worklog); three remain for the next cluster session (the pickup
   point).
-- [ ] Phase 7: the operator guide, the brief, an independent review; merge
-  into `dev-next`. The guide, the redaction and two review rounds are
-  done (2026-09-26); Phase 6 measured the limits the brief gives
-  ("Resources and cost").
-- [ ] Phase 8: the campaigns, on the PI's instruction.
+- [ ] Phase 7: the operator guide, an independent review, the merge into
+  `dev-next`, and the brief. The guide, the redaction, two review rounds
+  (2026-09-26), a doublecheck of Phase 6's commits (2026-09-29) and a
+  doublecheck of the whole branch before the merge, with its fixes
+  (2026-09-30), are done. The branch merges after the PI's review, and
+  the brief, with the limits Phase 6 measured ("Resources and cost"),
+  follows before Phase 8 (PI, 2026-09-30).
+- [ ] Phase 8: the campaigns, on the PI's instruction, once the brief
+  exists and the source trees hold gpyreg `v1.4.0` with the environment
+  check passed on it (the pickup point).
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
-(pushed), and every harness test module passes on it on the developer's
-machine. The cluster work, in the PI's account, is Phase 1b, then Phase
-6, in the four steps below, done (the worklog, 2026-09-28 and 29) but for
-three checks of the next cluster session, whose places the operator's
-notes give:
+(pushed), and every test module of the harnesses passes on it on the
+developer's machine (the worklog, 2026-09-30). The branch merges into
+`dev-next` after the PI's review; the campaigns of Phase 8 run from the
+release commit. The cluster work, in the PI's account, is Phase 1b, then
+Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
+but for three checks of the next cluster session, whose places the
+operator's notes give:
 
 - with the harness checkout at `2356f12d`, the commit of the smoke
   campaigns, the finish of the smoke stacking campaign, whose four tasks
   completed but which was neither verified nor assembled, for its
   `verify` and the `ASSEMBLE_TIME` and `ASSEMBLE_MEM` of the brief;
-- with the checkout at the branch's tip, `campaign_public.sh --check` on
-  the smoke campaigns' public directory, which holds two assets;
+- with the checkout at the branch's tip, or at `dev-next` once the branch
+  has merged, the smoke campaigns' public assets built again into a new
+  directory (`campaign_public.sh`) and checked (`--check`): the two
+  assets built on 2026-09-29 predate the redaction's fix, and the check
+  fails an asset that other code than its own built;
 - a search of the smoke campaigns' redacted copies and public assets for
   every site detail the operator's notes list, whole: the one made after
   the redaction's fix showed at most ten hits per directory.
 
-The brief for the postdoc, with the limits of "Resources and cost", and
-the merge into `dev-next` need none of them but the stacking's finishing
-limits.
-
 The cluster's source trees hold gpyreg at `v1.3.3`, with which the
 environment check passed and the smoke campaigns ran. The finish of a
 smoke campaign refuses any other `PYVBMC_GPYREG_SOURCE`, so that tree
-stays. Before Phase 8, a cluster session clones gpyreg at `v1.4.0`
-(`682585f`), the release's minimum, beside it, as the operator's guide
-says, and runs the environment check again with the new tree.
+stays. After those checks and the merge, with the harness checkout at
+`dev-next`, a cluster session clones gpyreg at `v1.4.0` (`682585f`), the
+release's minimum, beside it, as the operator's guide says ("The source
+trees"), and runs the environment check with the new tree, which passes
+as the guide's "The environment check" says. That, and the brief, come
+before Phase 8.
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
@@ -297,27 +306,13 @@ minutes (September pool README, "Resource fit").
 
 ## Operator settings
 
-| Variable | Meaning |
-|---|---|
-| `HARNESS` | the harness the driver runs: `dev/scripts/svbmc_pool_run.py`, `population_run.py` or `svbmc_pool_stack.py` |
-| `CAMPAIGN_ENV` | the prefix of the campaign's conda environment |
-| `NODE_FEATURE` | the Slurm feature that selects the campaign's node family |
-| `PARTITION` | optional, no default; `-p` is omitted when it is unset |
-| `LOGIN_SETUP` | optional commands the environment script runs on the login node before a step that needs the network |
-| `PYVBMC_SOURCE`, `PYVBMC_GPYREG_SOURCE` | the package and gpyreg source trees of the campaign (of the arm, for a population) |
-| `BASELINE_DIR` | the original S-VBMC checkout, for the stacking's original arm |
-| `CASES_SUBSET` | optional, a named subset of the cases, submitted as its own array |
-| `THROTTLE`, `TIME`, `MEM`, `ARRAY`, `SBATCH_EXTRA` | as in the September scripts |
-| `CONDA_SETUP` | optional commands that define `conda`, such as loading a site module |
-| `LOGIN_PROFILE` | the login profile the environment script reads when `module` is not defined; default `/etc/profile` |
-| `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` |
-| `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` |
-| `STEP_POLL` | seconds between the finish's accounting polls of a step job; default 30 |
-| `STEP_WAIT_LIMIT` | seconds the finish waits for a step job before it gives up; default 86400, 0 for no limit |
-
-The driver passes them to the harness's `prepare`, which records them,
-all but the limits of the verify and finishing jobs, `STEP_POLL` and
-`ARCHIVE_PART_SIZE`, in the `site` block of the raw manifest. Only the raw campaign directory holds
+The driver reads its settings from the operator's environment; the
+operator's guide (`dev/scripts/hpc/README.md`, "Settings") lists each
+one, its default and whether it is fixed for a campaign. The driver
+passes them to the harness's `prepare`, which records them in the `site`
+block of the raw manifest, all but the limits of the verify and
+finishing jobs, `STEP_POLL`, `STEP_WAIT_LIMIT` and `ARCHIVE_PART_SIZE`,
+which each finish reads afresh. Only the raw campaign directory holds
 that block ("Records and hand-back"). `HARNESS`, `CAMPAIGN_ENV`,
 `NODE_FEATURE`, the source trees and `BASELINE_DIR` are fixed for a
 campaign: a later submission and the finish refuse a value that differs
@@ -567,8 +562,14 @@ The allocation of the release pools is set with the existing flags:
 
 The scripts that read a pool (`svbmc_shrink_elbo.py`, `svbmc_cap_kappa.py`,
 `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`, and
-`svbmc_honest_elbo.py`) default on `dev-next` to the September gpyreg path
-and check nothing. On the branch the first four take the gpyreg source as
+`svbmc_honest_elbo.py`) take their gpyreg on `dev-next` in three ways:
+the first four default to the September gpyreg path, which
+`svbmc_single_run_bias.py` and `svbmc_shrink_optimize.py` check
+(`pinned_gpyreg_source`) and `svbmc_shrink_elbo.py` and
+`svbmc_cap_kappa.py` do not; `svbmc_honest_elbo.py` takes the path its
+pools' manifests record, or `--gpyreg-source`, and refuses a gpyreg that
+resolves elsewhere. On
+the branch the first four take the gpyreg source as
 a required argument, and `svbmc_honest_elbo.py` takes it or else the path
 its pools' manifests record; all five check it against every pool's
 manifest. `svbmc_headline_numbers.py` takes its directories as arguments
@@ -734,7 +735,10 @@ repetitions draw independent subsets, which can overlap. It gains:
 - **Disjoint subsets** as decision 6 describes.
 - **A verified pool.** `prepare` stacks a pool only when its
   `verification.json` passed and its `selection.json` was made from that
-  verification and agrees with it, and records each pool's verification;
+  verification and agrees with it, both in the pool's own directory, so
+  that a copied pool is verified and selected again where it lies (PI,
+  2026-09-30); it refuses a selected run whose files differ from its
+  completion record, and records each pool's verification;
   it refuses a dirty harness checkout without `--allow-dirty`; the worker
   exits 64 on a line that is not a task of the manifest.
 - **The baseline on the cluster**: the upstream S-VBMC at `13a78f6` in
@@ -752,9 +756,14 @@ checkout from `PYVBMC_GPYREG_SOURCE` and the baseline from `BASELINE_DIR`,
 and skips only when they are unset, under the same no-skip rule; Torch
 comes from the environment, or else from the baseline's `deps/`. A pool
 too small for the repetitions at an `M` gives `floor(n / M)` of them, and
-`prepare` prints and records the shortfall. The scripts that
-read the assembled results (`svbmc_shrink_elbo.py`,
-`svbmc_single_run_bias.py`) run as batch jobs.
+`prepare` prints and records the shortfall. The analyses that read the
+raw pools beside the stacking's assembled cells (`svbmc_shrink_elbo.py`,
+`svbmc_single_run_bias.py`, each with `--pool`, `--cells` and the release
+trees' gpyreg as `--gpyreg-source`) run where the pools lie, in the
+operator's account, as batch jobs after the stacking's finish; the
+[campaign plan](svbmc-benchmark-campaign.md), which owns the release
+gate, owns what they compute and how their outputs are read, and the
+brief gives their commands.
 
 ## Resources and cost
 
@@ -841,14 +850,19 @@ point).
   The PyVBMC 1.5 release attaches the after arm's population and the
   pools, each as an archive of its redacted tracked copies and of every
   verified case's numeric files (the population's traces and posterior
-  arrays, the pools' runs, `.npz` files that must hold numbers alone) and
-  other JSON files, redacted as the copies are, without the logs, the
-  Slurm accounting, the `site` block and the pickles; the stacking's
+  arrays, the pools' runs, `.npz` files that must hold numbers alone),
+  completion record and other JSON files, redacted as the copies are,
+  without the logs, the Slurm accounting, the `site` block and the
+  pickles; each record ties its case's published files to the hashes of
+  the files the campaign wrote (PI, 2026-09-30), and the stacking's
   tracked copies hold every cell already. `hpc/campaign_public.sh`
   (`campaign_public.py`) builds such an asset in parts below 2 GiB, in the
   operator's account after the redaction, since it redacts with that
   account's username and home, and refuses, writing nothing, a file that
-  still holds what the copies may not; the operator uploads the parts to
+  still holds what the copies may not; the asset records the code that
+  built it and the exemptions it applied, and its check applies the rules
+  that need no campaign and fails an asset that other code built. The
+  operator uploads the parts to
   the draft release `release-gate-public-<date>`, from which the release
   attaches them. The before arm and the raw archives stay in their draft
   releases; the replay fingerprints and the traces of the earlier golden
@@ -869,13 +883,14 @@ point).
   its manifest (`tracked_copies`). Hostnames reduce to the node family
   (`NODE_FEATURE`, which the copies keep so that the family of every run
   stays checkable) or to `login`, a host part's lists of node features to
-  that feature alone (PI, 2026-09-29), paths under a path setting to its
-  name and paths under the home to `~`; the CPU model stays. The `site`
-  block, the `pip freeze` paths and the Slurm accounting stay in the
-  archive. The identity trees
-  and the campaign's parent get names of their own (`$<TREE>_TREE`,
-  `$CAMPAIGN_PARENT`), and partitions are replaced in the fields that hold
-  one. It refuses when a path or command setting, a named directory, the
+  that feature alone (PI, 2026-09-29) and its platform to the operating
+  system and machine type (PI, 2026-09-30); the CPU model stays. Paths
+  under a path setting take its name; the identity trees and the
+  campaign's parent get names of their own (`$<TREE>_TREE`,
+  `$CAMPAIGN_PARENT`), under the home or not (PI, 2026-09-30); other paths
+  under the home become `~`. The `site` block, the `pip freeze` paths and
+  the Slurm accounting stay in the archive, and partitions are replaced in
+  the fields that hold one. It refuses when a path or command setting, a named directory, the
   operator's username, the home, a hostname or another node feature
   remains anywhere in its output (paths, the home and the settings as
   substrings, the username and hostnames as whole names, hostnames in any
@@ -894,7 +909,12 @@ point).
 - The tracked records of the September pool
   (`experiments/svbmc_pool/pool_20260914/`) and the `sources.json` of the
   analyses built on it predate the redaction and are kept as written; that
-  pool's README says so.
+  pool's README says so. So are the other records of that campaign: the
+  default partition of its scripts (`hpc/svbmc_pool_submit.sh`,
+  `hpc/svbmc_pool_finish.sh`, and the operator's guide's account of them)
+  and the node families that the
+  [campaign plan](svbmc-benchmark-campaign.md) names in its record of the
+  pool (PI, 2026-09-30).
 
 ## Phases
 
@@ -1032,10 +1052,11 @@ with the missing and failed cases named and ruled on.
 On the developer's machine, one process, after the after arm's population
 exists. One seed (seed 0) of each of the 24 `production` configurations,
 with `reference_promote.py fingerprints`, which runs them through
-`golden_replay.py`: about 70 to 80 minutes by the laptop medians, and
-`lumpy_D10_noise3_production`, whose seed 0 took about 11 minutes on the
-cluster in Phase 6, where the 24 seeds 0 took about 1.6 CPU-hours per
-arm. Each run is judged
+`golden_replay.py`: about 70 to 80 minutes for the 23 configurations
+whose laptop medians the golden references give, and about 11 minutes
+for `lumpy_D10_noise3_production`, which they hold no runs of, by its
+seed 0 on the cluster in Phase 6; about 1.5 hours in all (the 24 seeds 0
+took about 1.6 CPU-hours per arm on the cluster). Each run is judged
 against the after arm's accuracy envelope (`golden_replay.py --sidecars`,
 which reads the per-configuration directories of the after arm or of its
 tracked copies, counts verified cases only, and fails for a configuration
@@ -1372,3 +1393,92 @@ reproduces bit for bit.
   replays (`dev/TODO.md`, "The final gpyreg release"). The cluster's trees
   hold `v1.3.3`; the pickup point gives the clone of `v1.4.0` and the
   environment check with it.
+- 2026-09-30: a doublecheck of the whole branch before the merge, at
+  `86477269`, by seven fresh reviewers, read-only (the contract; the
+  driver; the population harness; the redaction, with a search of every
+  tracked file for the site's details; the pools and the stacking; the
+  promotion and the gate runs; the documents), while every harness test
+  module, the gate runs' and `pyvbmc/testing/test_golden_replay.py` ran
+  there on the developer's machine: 562 passed, none skipped. It found one
+  leak: the redaction's comment on the username's boundary and a test of
+  whole names held a cluster account's username and home path, since
+  2026-09-26; stand-ins replace them (`33070164`), and the branch's
+  history, which this plan, its worklog and `LOCAL.md` cite by hash,
+  stays. The PI's rulings on the rest (2026-09-30): a copied or unpacked
+  pool is verified and selected again where it lies before it is stacked,
+  in code; the source trees and the campaign's parent take names of their
+  own under the home too; the pools' public asset holds every verified
+  case's completion record; a host part's platform keeps its operating
+  system and machine type alone in the copies; the September campaign's
+  records keep their partition and node families as written ("Records
+  and hand-back"); and the branch merges after the PI's review, the brief
+  following before Phase 8. The fixes:
+  - the worker: a stop signal between its claim and its run is a stop,
+    so a takeover's killed files go with the claim and the case is
+    missing, not partial; `write_json` and the artifacts reach storage
+    before the completion record; the clean-tree checks pass
+    `--untracked-files=normal`, and `check-env` exempts a source tree but
+    not a local archive (`b9ce5e5f`);
+  - the finish takes the accounting again before the archive, which now
+    requires an allocation row of every recorded job, the verify and
+    finishing steps' included; `STEP_POLL` is above 0; the stub `sacct`
+    answers with a row per requested job; `campaign_requirements.txt`
+    keeps LF line endings in every checkout;
+  - `--pair` compares the arms' node family and environment, and the
+    population's `prepare` refuses a gpyreg tree that is not the release
+    the package tree's `pyproject.toml` requires, exactly for an arm of
+    other code and that release or a later commit for the release code;
+  - the stacking's `prepare` refuses a pool whose verification or
+    selection was made in another directory, and a selected run whose
+    files differ from its completion record;
+  - the redaction names trees and the campaign's parent under the home
+    and reduces the platform; the public asset holds the completion
+    records, records the code that built it and the exemptions it
+    applied, and its check applies the rules that need no campaign and
+    fails an asset that other code built;
+  - `fingerprints` exits 0 once every run is made, and a metric of 0.0
+    counts as finite;
+  - the documents: the guide's environment check stops on a failed
+    activation and prints its interpreter, its exit-code table gains 1
+    without an error file and 2, its limits point at "Resources and
+    cost" and the pools' `verify` runs at the default limits; this plan's
+    settings table gives way to the guide's, its pickup point and
+    checklist state the order the PI ruled, Phase 9's estimate is whole,
+    and the pools' analyses have an owner.
+
+  Left for after the merge and before Phase 9: the stubs running the
+  batch script where it lies rather than as Slurm's spooled copy, the
+  generated `golden/README.md`'s recipe for other machines, the
+  promotion's refusal of a checkout that a tracked edit makes dirty,
+  which comes only after the fingerprints' runs, the README check's
+  blind spots (hostnames that begin a name the copies write, host lists,
+  the site's domain, features in prose), the tests of the promotion's
+  refusals and of the release grid, and the note on `--sidecars` in the
+  `golden_replay.py` entry of `dev/README.md`, a passage the promotion
+  rewrites from its template. For the next cluster session: the arm
+  comparison (`analyze_population_run.py --arms`) on the smoke canaries,
+  its only run on real before-arm output. Not done, with the reason: a
+  task whose environment cannot be activated still exits 1 (a `source`
+  in an `||` list runs without `errexit`, which the activation relies
+  on), which the exit-code table now explains; the clean-tree checks
+  keep the operator's global excludes file, whose removal could newly
+  flag files that it hides in the S-VBMC tree the smoke finish needs.
+  The review's optional findings not listed here await the PI's ruling.
+
+  A fresh reviewer then read the fixes. The rules that each
+  `redaction.json` records, the usage of `campaign_redact.sh` and the
+  docstring of `redact` still gave the old order of the names and no
+  platform rule; they give the new ones. The public asset is a record of
+  its campaign and not a campaign directory that `verify` accepts, since
+  its redacted `.json` artifacts no longer hold their records' hashes:
+  the records tie each published file to its source hash, and the
+  documents said more, which they no longer do. Whether the released
+  pools should be verifiable and stackable from the asset, which would
+  need the published records to hash the redacted files and the error
+  files of the failed seeds published too, is for the PI. The asset's
+  `built_by` hashes the modules with LF line endings, so that a Windows
+  checkout checks an asset built on Linux; `check` reports a member that
+  is no file and a `public.json` without `files`; and the guide, the
+  population module's docstring, the task script's header, the
+  requirements file's header, the stacking's docstrings and this plan
+  describe the new checks.

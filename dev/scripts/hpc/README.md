@@ -82,12 +82,14 @@ finishing steps included, is a batch job.
 | `TIME`, `MEM` | `--time` and `--mem` of each task; default `00:30:00` and `2G` | no |
 | `SBATCH_EXTRA` | further `sbatch` arguments of every job, split into words at spaces, tabs and newlines, with no quoting and no pathname expansion | no |
 | `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` | no |
-| `STEP_POLL` | the seconds between two looks at the accounting while the finish waits for a step job; default 30 | no |
+| `STEP_POLL` | the seconds between two looks at the accounting while the finish waits for a step job, above 0; default 30 | no |
 | `STEP_WAIT_LIMIT` | the seconds after which the finish stops waiting for a step job; default 86400, a day, and 0 for no limit | no |
 | `ARCHIVE_PART_SIZE` | the largest part of the archive; default `1900M` | no |
 
-`prepare` records every setting in the `site` block of the campaign's
-manifest. A later submission and the finish refuse a fixed setting whose
+`prepare` records the settings in the `site` block of the campaign's
+manifest, all but the limits of the verify and finishing jobs,
+`STEP_POLL`, `STEP_WAIT_LIMIT` and `ARCHIVE_PART_SIZE`, which each finish
+reads afresh. A later submission and the finish refuse a fixed setting whose
 value differs from the manifest's; the others may change from one
 submission to the next, and `slurm/jobs.txt` records each submission's:
 its job id, `array=`, `offset=`, `subset=`, `throttle=`, `time=`, `mem=`,
@@ -248,8 +250,10 @@ you work in:
 #!/bin/bash
 set -uo pipefail
 cd "$REPO"
-# Activates the environment, with TMPDIR under $CAMPAIGN_DIR.
-source dev/scripts/hpc/campaign_env.sh
+# Activates the environment, with TMPDIR under $CAMPAIGN_DIR; without it
+# the tests would run in whatever environment the job inherited.
+source dev/scripts/hpc/campaign_env.sh || exit 1
+echo "python: $(command -v python)"
 status=0
 for module in campaign_contract campaign_driver population_run \
     analyze_population_run svbmc_pool_run svbmc_honest_elbo \
@@ -257,7 +261,7 @@ for module in campaign_contract campaign_driver population_run \
     python -m pytest "dev/scripts/test_$module.py" -q -rs \
         -p no:cacheprovider || status=1
 done
-git status --porcelain
+git status --porcelain --untracked-files=normal
 exit $status
 EOF
 )
@@ -268,7 +272,8 @@ stacking modules generate short pools (the stacking module also stacks the
 shipped S-VBMC fixtures), and `test_population_run.py` makes two short
 real VBMC runs; the contract, driver and analysis modules run on stub
 commands and hand-made records. The check passes
-when the job exits 0, every module's summary line counts tests passed and
+when the job exits 0, the `python:` line names the environment's
+interpreter (`$CAMPAIGN_ENV/bin/python`), every module's summary line counts tests passed and
 none failed or skipped (`grep -n skipped` on the output prints nothing;
 `-rs` gives the reason of any skip), and `git status` printed nothing. A
 module that skips proves nothing about the environment. The before arm's
@@ -308,8 +313,12 @@ Both arms use the same harness checkout, environment and node family, so
 that they differ in their code alone. Prepare the before arm first: the
 after arm's `--pair` names it, and refuses a campaign that is not its
 other arm (another allocation, options or confirmatory family, another
-harness commit, other harness files or environment versions, or a package
-tree at the after arm's own commit). Both arms are prepared with the same
+harness commit, other harness files or environment versions, another
+`NODE_FEATURE` or `CAMPAIGN_ENV`, or a package tree at the after arm's
+own commit). Each arm's `prepare` also refuses a gpyreg checkout that is
+not the release its package tree's `pyproject.toml` names as the
+minimum: `v1.2.1` exactly for the before arm, `v1.4.0` or a later commit
+for the after arm. Both arms are prepared with the same
 flags; with `--confirmatory FILE` where the PI fixes a family other than
 the default, in both. The canary is the subset `canary`, the first seed
 of every configuration, which includes `cigar_D15_exhaust` and so takes
@@ -418,9 +427,10 @@ stored GP), `select` and `summarize`:
 
 ```bash
 TIME=$POOL_TIME MEM=$POOL_MEM dev/scripts/hpc/campaign_submit.sh "$RUNS/pools"
-VERIFY_TIME=$POOL_VERIFY_TIME VERIFY_MEM=$POOL_VERIFY_MEM \
-    dev/scripts/hpc/campaign_finish.sh "$RUNS/pools"
+dev/scripts/hpc/campaign_finish.sh "$RUNS/pools"
 ```
+
+The pools' `verify` fits the default `VERIFY_TIME` and `VERIFY_MEM`.
 
 `select` walks every seed of each condition in order and takes the runs
 that pass the filters, up to the target of 320. It stops the finish when a
@@ -529,8 +539,10 @@ The finish goes in this order.
    job keeps running, and the next finish's queue check sees it, as it
    sees a job that the wait gave up on.
 4. **The archive**, unless `--no-archive`, only when nothing is queued, may
-   still run or is in flight, and the accounting shows every recorded task
-   ended (`campaign_contract.py archive-check`).
+   still run or is in flight, and the accounting, taken again just before
+   it so that it holds the verify and finishing-step jobs too, shows an
+   allocation row of every recorded job and every recorded task ended
+   (`campaign_contract.py archive-check`).
 
 After `verify`, the finish prints one line of counts and the case indices
 of every state but `verified`:
@@ -605,13 +617,14 @@ each subset that needs its own, and `VERIFY_TIME`, `VERIFY_MEM`,
 above they are: `POP_TIME`, `CIGAR_TIME` and `POP_MEM` for the population
 tasks, `POP_VERIFY_TIME` and `POP_VERIFY_MEM` for their `verify`, and
 `RESCORE_TIME` and `RESCORE_MEM` for the after arm's finishing steps;
-`POOL_TIME` and `POOL_MEM` for the pool tasks, `POOL_VERIFY_TIME` and
-`POOL_VERIFY_MEM` for their `verify`; `STACK_TIME`, `STACK_MEM`,
+`POOL_TIME` and `POOL_MEM` for the pool tasks, whose `verify` fits the
+defaults; `STACK_TIME`, `STACK_MEM`,
 `M16_TIME`, `M16_MEM`, `M32_TIME` and `M32_MEM` for the stacking tasks,
 and `ASSEMBLE_TIME` and `ASSEMBLE_MEM` for its finishing step; and
 `CHECK_TIME` and `CHECK_MEM` for the environment check. Their values come
 from the accounting of the smoke campaigns (the plan's Phase 6, `sacct`
-and `seff`), and the operator's notes hold them; `MEM` comes from the
+and `seff`), and the plan's "Resources and cost"
+(`dev/plans/slurm-benchmark-support.md`) gives them; `MEM` comes from the
 `MaxRSS` of the accounting's step rows. The population sidecars hold each
 case's peak resident set as `max_rss_mb`, and as `peak_rss_mb`, on Linux,
 the resident set at the end of the run, which is not a peak. Phase 6
@@ -652,13 +665,15 @@ redacted, into the hand-back clone:
   family, the value of `NODE_FEATURE`, and any other host (the login node)
   by `login`;
 - a host part's lists of node features hold the node family's feature
-  alone, and its CPU model stays;
-- a path under a named directory starts with its name: a path setting of
-  the site block (`$PYVBMC_GPYREG_SOURCE/...`), a directory given as
-  `--path NAME=PATH` (`$NAME/...`), your home (`~/...`), and, where none of
-  those holds it, a source tree of the campaign's identities
+  alone, its CPU model stays, and its `platform` keeps the operating
+  system and machine type alone (`Linux x86_64`);
+- a path under a named directory starts with the name of the longest
+  that holds it: a path setting of the site block
+  (`$PYVBMC_GPYREG_SOURCE/...`), a directory given as `--path NAME=PATH`
+  (`$NAME/...`), a source tree of the campaign's identities
   (`$HARNESS_TREE/...`, `$<TREE>_TREE`) or the directory that holds the
-  campaign directory (`$CAMPAIGN_PARENT/...`);
+  campaign directory (`$CAMPAIGN_PARENT/...`), under your home or not, and
+  any other path under your home (`~/...`);
 - a field that holds a partition is `$PARTITION`;
 - the manifest keeps no `site` block, and its `pip freeze` lines that name
   a path keep their package's name alone;
@@ -726,19 +741,23 @@ dev/scripts/hpc/campaign_redact.sh "$RUNS/population_after" \
 and likewise `population_before`, `pools` and `stacking`, with the
 releases `release-gate-population-before-<date>`,
 `release-gate-pools-<date>` and `release-gate-stacking-<date>`. The
-automatic names cover a campaign directory outside your home, on a
-scratch area say; `--path NAME=PATH` gives a directory a name of your
-choosing, ahead of the automatic ones, and a name may be no setting's,
-not `CAMPAIGN_PARENT` and not one ending in `_TREE`.
+automatic names cover the campaign's directory and the source trees
+wherever they lie; `--path NAME=PATH` gives another directory a name of
+your choosing, ahead of the automatic ones, and a name may be no
+setting's, not `CAMPAIGN_PARENT` and not one ending in `_TREE`.
 
 **The public asset**, of `population_after` and `pools`, which the PyVBMC
 release publishes: the tracked copies with the numeric files of every
 verified case (the population's traces and posterior arrays, the pools'
-runs) and the cases' other JSON files redacted as the copies are, without
-the pickles and the logs. `campaign_public.sh` builds it from the campaign
-and its tracked copies, after the redaction and with the same `--path` and
-`--allow`, and refuses, writing nothing, a file that still holds what the
-copies may not, or a numeric file that holds more than numbers:
+runs), and the cases' completion records and other JSON files redacted as
+the copies are, without the pickles and the logs. `campaign_public.sh`
+builds it from the campaign and its tracked copies, after the redaction
+and with the same `--path` and `--allow`, and refuses, writing nothing, a
+file that still holds what the copies may not, or a numeric file that
+holds more than numbers. Its `public.json` records the code that built it
+and the exemptions it applied. `--check` re-reads the asset and applies
+the rules that need no campaign; it fails an asset that other code built,
+which is built again with the code that checks it:
 
 ```bash
 dev/scripts/hpc/campaign_public.sh "$RUNS/population_after" \
@@ -783,14 +802,16 @@ to `dev-next`. List the raw campaign directories and the archives in
 ### When something goes wrong
 
 A task's exit code, which the accounting records (the `ExitCode` column
-of `slurm/sacct.txt`), is its worker's, one of:
+of `slurm/sacct.txt`), is its worker's, or the task script's before the
+worker runs, one of:
 
 | Code | Meaning |
 |---|---|
 | 0 | the case is complete: the worker completed it, it had a record already, or something failed after its record was written, which leaves the case complete; or the operator gave it up, and the worker exits at once |
-| 1 | the case failed; its `<tag>.error.txt` holds why |
+| 1 | the case failed; its `<tag>.error.txt` holds why. With no error file, the task failed before its worker ran, most often because the environment could not be activated; the task's log says why, and `verify` reports the case as missing |
+| 2 | the task's index names no line of `cases.txt` (an `ARRAY=` beyond the campaign's cases); nothing was touched |
 | 64 | the case line or the campaign directory is not this harness's, or the directory holds no readable manifest; nothing was touched |
-| 75 | a live task holds the case's claim; nothing was touched |
+| 75 | a live task holds the case's claim, or the claim could not be made (the task's log says why, an I/O error or a full quota among the causes); nothing was touched |
 | 78 | the source identity differs from the manifest's, or could not be established; nothing was touched |
 | 128 + n | signal n stopped the run (143 for SIGTERM); one that came after the completion record leaves the case complete |
 
@@ -852,7 +873,10 @@ of `slurm/sacct.txt`), is its worker's, one of:
   shows the ones it was prepared with); a step whose submission failed (`? step=` in `slurm/steps.txt`;
   look for its job with `squeue -n <campaign directory's name>_<step>`); a
   failed verification, or missing and interrupted cases (see
-  [Reading the finish's report](#reading-the-finishs-report-and-resubmitting)).
+  [Reading the finish's report](#reading-the-finishs-report-and-resubmitting));
+  or, before the archive, `<job> has no allocation row in
+  slurm/sacct.txt`, a recorded job the accounting database has not yet
+  received (wait a few minutes, and finish again).
 - **A record whose core `verify` refuses** (`the CPU affinity ... is not
   the hardware threads ... of core ...`): `verify` requires that each task
   ran on one physical core with the whole core to itself, its CPU affinity

@@ -482,7 +482,11 @@ reason.
   verified has a record), so the other arm is finished before the arm that
   rescores, which is finished again after any later finish of the other;
   `prepare --pair` takes as the other arm only a campaign that differs
-  from this one in its code and in nothing else; its tracked copies (`tracked_copies`) are the summary,
+  from this one in its code and in nothing else, its node family and
+  environment included; `prepare` refuses a gpyreg checkout that is not
+  the release its package tree's `pyproject.toml` names as the minimum,
+  exactly for an arm of other code and that release or a later commit for
+  the release code; its tracked copies (`tracked_copies`) are the summary,
   the rescored metrics and their record where it rescores, and every
   verified case's record, sidecar and boost report; `run` is the same
   campaign one case after another on a workstation. `PYVBMC_SOURCE` names
@@ -553,7 +557,9 @@ reason.
   tests and S-VBMC, and the harness files that build a run) and that the
   imported gpyreg is the after arm's. `fingerprints` runs `golden_replay.py`
   on every configuration of the after arm at seed 0, each judged against
-  the population's envelopes alone (the Slurm plan's Phase 9). `prepare`
+  the population's envelopes alone (the Slurm plan's Phase 9), and exits
+  0 once every run is made, whatever the replay flags, since `prepare`
+  judges the runs as a set. `prepare`
   checks that `golden/baseline/` still holds `reference_990_20260913`; the
   after arm, which must be its redacted tracked copies, against its
   verification report and rescored metrics (a case it does not place as
@@ -718,7 +724,9 @@ reason.
   records the SHA-256 of the manifest and of `verification.json`, against
   which `stackable_selection` checks a pool before the comparison's
   `prepare` stacks it (a passing verification, the selection made after
-  it, and the stopping rule replayed on the verified cases with the
+  it, both made in the pool's own directory, so that a copied or unpacked
+  pool is verified and selected again where it lies, and the stopping
+  rule replayed on the verified cases with the
   allocation's first seed, seed cap and filtered target, or the target
   `select --target` gave, which the selection records as
   `target_override`); a pool selected before its latest verification is
@@ -806,8 +814,11 @@ reason.
   `campaign_public.sh` (`scripts/campaign_public.py`) builds after it, in
   the same account, the public asset that the release attaches: the
   tracked copies with every verified case's numeric `.npz` files, which
-  must hold numbers alone, and its other JSON files redacted as the copies
-  are, without pickles or logs, in parts below 2 GiB with their SHA-256
+  must hold numbers alone, and its completion record and other JSON files
+  redacted as the copies are, without pickles or logs, in parts below
+  2 GiB with their SHA-256, recording the code that built it and the
+  exemptions it applied; its `--check` re-reads an asset, applies the
+  rules that need no campaign and fails one that other code built
   (`test_campaign_public.py` checks the Python, and that the script
   parses); `campaign_env.sh` activates the environment and unsets
   `PYTHONPATH`, or
@@ -859,10 +870,12 @@ reason.
   copies of a finished campaign, which its harness declares in the
   manifest (`tracked_copies`) and `redact` writes for the repository:
   hostnames reduced to the node family, a host part's lists of node
-  features to that family alone (the CPU model stays), a path under a
-  named directory written with its name (a path setting, a `--path`, the
-  operator's home as `~`, and where none of those holds it a source tree
-  as `$<TREE>_TREE` or the campaign's parent as `$CAMPAIGN_PARENT`), the
+  features to that family alone and its platform to the operating system
+  and machine type (the CPU model stays), a path under a named directory
+  written with the longest name that holds it (a path setting, a
+  `--path`, a source tree as `$<TREE>_TREE` or the campaign's parent as
+  `$CAMPAIGN_PARENT`, under the home or not, and another path under the
+  operator's home as `~`), the
   fields that hold a partition as `$PARTITION`, the site block, the `pip
   freeze` paths and the Slurm accounting left in the archive, and every
   copy searched for what must not remain (the paths, the home and the
@@ -937,9 +950,10 @@ reason.
   `prepare` defaults to the release gate's grid, stacks a pool only once
   `svbmc_pool_run.stackable_selection` accepts it (a passing
   `verification.json`, a `selection.json` made after it that is the
-  stopping rule on its verified cases) and records each pool's report by
-  its SHA-256, and refuses a dirty harness checkout without
-  `--allow-dirty`; `worker` refuses a line that is not a case with exit
+  stopping rule on its verified cases, both made in the pool's
+  directory), refuses a selected run whose files differ from its
+  completion record, records each pool's report by its SHA-256, and
+  refuses a dirty harness checkout without `--allow-dirty`; `worker` refuses a line that is not a case with exit
   64, touching nothing; `assemble` refuses a campaign that does not
   verify whole and writes the outputs of the
   single-process run from the cell files, in the plan's order, with the
