@@ -45,12 +45,14 @@ import argparse
 import base64
 import importlib
 import json
+import subprocess
 import sys
 import time
 import zlib
 from importlib.metadata import version
 from pathlib import Path
 
+import gpyreg
 import numpy as np
 from scipy.special import logsumexp
 
@@ -511,7 +513,8 @@ def build_trace(vbmc, recorder, results, grid, n_grid, seed):
 
     ``meta``: grid size and ranges, quantization constants, the number of
     grids of each width, and the run's provenance, which the page does not
-    read (``seed``, ``gskl``, ``min_ell``, ``target``, ``pyvbmc``).
+    read (``seed``, ``gskl``, ``min_ell``, ``target``, and ``pyvbmc`` and
+    ``gpyreg``, see ``source_revision``).
     ``points``: every evaluation in order, ``[x, y, log density]``.
     ``iterations[t]``: counters (``n_evals``, ``K``, ``elbo``, ``elbo_sd``,
     and for the record ``warmup`` and ``r_index``), ``actions`` (what the
@@ -633,7 +636,8 @@ def build_trace(vbmc, recorder, results, grid, n_grid, seed):
             "seed": seed,
             "gskl": round(gskl(vbmc.vp), 5),
             "min_ell": round(run_min_length_scale(vbmc), 4),
-            "pyvbmc": version("pyvbmc"),
+            "pyvbmc": source_revision(pyvbmc),
+            "gpyreg": source_revision(gpyreg),
             "n_init": int(iterations[0]["n_evals"]),
             "plausible": [[-5.0, -3.5], [5.0, 7.5]],
         },
@@ -653,6 +657,35 @@ def build_trace(vbmc, recorder, results, grid, n_grid, seed):
 def _finite(value):
     value = float(value)
     return round(value, 4) if np.isfinite(value) else None
+
+
+def source_revision(module):
+    """The revision of the source ``module`` is imported from.
+
+    ``git describe`` of the checkout that tracks the package, with
+    ``-dirty`` when its working tree has changes; the installed
+    distribution's version when git does not track it. An editable
+    install's version is fixed when it is installed, so it does not name
+    the code that runs.
+    """
+    path = Path(module.__file__).resolve()
+    try:
+        subprocess.run(
+            ["git", "ls-files", "--error-unmatch", path.name],
+            cwd=path.parent,
+            check=True,
+            capture_output=True,
+        )
+        described = subprocess.run(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=path.parent,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return version(module.__name__)
+    return described.stdout.strip()
 
 
 def main(argv=None):
@@ -691,7 +724,11 @@ def main(argv=None):
     global LOBE_W
     LOBE_W = TARGETS[args.target]
 
-    print(f"pyvbmc from {pyvbmc.__file__}", flush=True)
+    print(
+        f"pyvbmc {source_revision(pyvbmc)} from {pyvbmc.__file__}, "
+        f"gpyreg {source_revision(gpyreg)}",
+        flush=True,
+    )
     if args.sweep:
         if ":" in args.sweep:
             first, last = (int(v) for v in args.sweep.split(":"))
