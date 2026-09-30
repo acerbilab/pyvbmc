@@ -122,6 +122,9 @@ it does not remove every source of bias.
      - Per-retained-run provenance: ``"recorded"``, ``"inferred"`` or
        ``"override"``.
 
+Use the scalar ``stacked.elbo`` when the automatically selected headline is
+the desired result.
+
 ``stacked.elbo_sd`` combines the stratified entropy estimator's Monte Carlo
 variance with the GP quadrature uncertainty at the selected weights. It
 describes the uncapped ``raw`` value. It excludes selection bias and does not
@@ -145,9 +148,6 @@ The constructor defaults are ``s_max=np.sqrt(5)``, ``M_min=2/3``, ``seed=None``,
 ``show_tips=True`` and ``noisy=None``. Guidance tips appear only when
 ``show_tips`` is true and INFO logging is enabled. Setting ``show_tips=False``
 suppresses tips while leaving progress and applied-cap diagnostics available.
-
-Use the scalar ``stacked.elbo`` when the automatically selected headline is
-the desired result.
 
 A composite posterior
 ---------------------

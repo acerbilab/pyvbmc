@@ -58,10 +58,11 @@ An error is raised for calls and values that 1.0.4 accepted:
 - Option names and values are checked: an option name PyVBMC does not know,
   also in an options file or in `VBMC.load(new_options=...)`, and a value it
   cannot use raise an error that says what is expected.
-  `search_optimizer="Nelder-Mead"`, `acq_hedge=True`, `noise_shaping=True` and
-  `uncertainty_handling=[1]` are among them; a file saved by 1.0.4 that holds
-  `uncertainty_handling=[1]`, or `"Nelder-Mead"` for a problem of one
-  variable, loads with the value restated.
+  `search_optimizer="Nelder-Mead"`, `acq_hedge=True`, `noise_shaping=True`,
+  `uncertainty_handling=[1]` and an `integer_vars` of `D` entries that are all
+  0 or 1, which could be a mask or indices, are among them. A file saved by
+  1.0.4 that holds `uncertainty_handling=[1]`, or `"Nelder-Mead"` for a
+  problem of one variable, loads with the value restated.
 - An option given as a function of the number of components receives it by
   the keyword `K` or by position, so one that takes `unkn` by keyword alone,
   as 1.0.4 passed it to `adaptive_k`, raises an error when it is called.
@@ -125,7 +126,8 @@ An error is raised for calls and values that 1.0.4 accepted:
   names and shapes of the model's variables. It needs
   `pip install "pyvbmc[pymc]"`, PyMC 6.3 or later and Python 3.12 or later; a
   model it cannot handle, such as one with a discrete variable, is refused
-  with `pyvbmc.pymc.UnsupportedModel`. See the `PyMCTarget` page of the documentation and Example 8.
+  with `pyvbmc.pymc.UnsupportedModel`. See the `PyMCTarget` page of the
+  documentation and Example 8.
 - **Vectorized targets.** With `options={"vectorized_target": True}`, the
   target takes an `(N, D)` array and returns one value per row (and one noise
   SD per row with `specify_target_noise`), and PyVBMC evaluates the whole
@@ -140,9 +142,9 @@ An error is raised for calls and values that 1.0.4 accepted:
   `specify_target_noise`) gives a run target values computed beforehand; they
   do not count as evaluations of the run, and with a separate prior `y` holds
   log-likelihood values. `initialization_cost=k` charges `k` evaluations
-  against `max_fun_evals` for work done before the run. `results` reports the
-  evaluations in `precomputed_observations` and `precomputed_locations`, and
-  the charge in `evaluation_budget`.
+  against `max_fun_evals` for work done before the run. `results` counts the
+  evaluations in `precomputed_observations` and their points in
+  `precomputed_locations`, and reports the charge in `evaluation_budget`.
 - **Machine calibration (optional).** `pyvbmc.calibrate()` measures, in tens
   of seconds, the block sizes that suit your machine for the posterior density
   and the Monte Carlo entropy, and saves them for later runs. It changes
@@ -225,7 +227,8 @@ An error is raised for calls and values that 1.0.4 accepted:
   - The posterior a run returns when its last iteration is not stable, and the
     posterior an input warp starts from, are chosen by `rank_criterion`,
     `best_safe_sd` and `best_frac_back`, which 1.0.4 ignored; an iteration
-    whose ELCBO is NaN is passed over unless every one's is.
+    whose ELCBO is NaN ranks last by ELCBO, and without the ranking criterion
+    it is passed over.
   - Smaller corrections: the initial widths of the components in the
     variational optimization; the exact entropy of a posterior with one
     component; `x0` and the bounds converted to double precision whatever
@@ -248,14 +251,15 @@ An error is raised for calls and values that 1.0.4 accepted:
   included.
 - **Options are checked.** An option name PyVBMC does not know, or a value it
   cannot use, raises an error that says what is expected, at construction and
-  when `VBMC.load` finds it in `new_options` or in a saved run, where 1.0.4
-  could ignore it, misread it, or fail on it part-way through a run. The
+  in `VBMC.load(new_options=...)`, and a value also when `VBMC.load` finds it
+  in a saved run, where 1.0.4 could ignore it, misread it, or fail on it
+  part-way through a run. The
   options page of the documentation, and `repr(vbmc.options)`, give what each
   option accepts.
   - `integer_vars` takes a boolean mask or the 0-based indices of the integer
     variables, where 1.0.4 made every variable an integer variable when given
-    a plain list; an array of `D` integers that are all 0 or 1 is ambiguous
-    and refused (write the mask with `True` and `False`).
+    a plain list; a list or array of `D` integers that are all 0 or 1 is
+    ambiguous and refused (write the mask with `True` and `False`).
   - `uncertainty_handling` and `specify_target_noise` take `True` or `False`
     (or 1 and 0). 1.0.4 took other values: a list such as `[1]` switched the
     noise handling on, and `specify_target_noise` was read by its truth.
@@ -365,9 +369,9 @@ An error is raised for calls and values that 1.0.4 accepted:
   - `entropy_switch=True` with five or more variables;
   - a variational optimization whose SciPy optimizer does not converge, which
     goes on from the optimizer's last iterate with a warning;
-  - `max_fun_evals=np.inf` on a noisy target; a `max_fun_evals` equal to the
-    size of the initial design; a `tol_stable_warmup` no larger than
-    `fun_evals_per_iter`; a `search_cache_frac` above 0;
+  - a `max_fun_evals` equal to the size of the initial design, a
+    `tol_stable_warmup` no larger than `fun_evals_per_iter`, a
+    `search_cache_frac` above 0, and `max_fun_evals=np.inf` on a noisy target;
   - a failed local search of the acquisition function, after which the run
     goes on with the best candidate found before it;
   - a number given for `ns_elbo` or `ns_ent_fine_active` on a noisy target;
