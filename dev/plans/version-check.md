@@ -1,8 +1,7 @@
 # Update reminders: an old-release reminder and `check_for_updates()`
 
-Created: 2026-09-30. Status: **PLANNED** — scope settled with the PI; D1
-and D8 ruled (2026-09-30); the other decisions, and the wording of the
-reminder, await the PI's rulings.
+Created: 2026-09-30. Status: **PLANNED** — scope settled with the PI; D1,
+D4 and D8 ruled (2026-09-30); D2, D3, D5, D6 and D7 await the PI's rulings.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
 of phase 4. `dev/TODO.md` ("Update reminders") links here.
 
@@ -85,19 +84,22 @@ Each has a recommendation; the phases below assume it.
   adds an option for one line per session.
 - **D3. S-VBMC.** `SVBMC` shows no reminder: a session that stacks runs has
   usually made them in the same session, where the reminder has shown once.
-- **D4. Wording.** A template, filled when the run starts from the installed
-  release; proposed, for the PI to edit as the tips' wording was:
-  `PyVBMC {version} was released {age}. Run pyvbmc.check_for_updates() to
-  see whether a newer version is available.`
+- **D4. Wording** (approved by the PI, 2026-09-30). A template, filled when
+  the run starts from the installed release:
+  `Note: PyVBMC {version} was released {age}. Run
+  pyvbmc.check_for_updates() to see whether a newer version is available.`
+  On the third and last showing for a version (D8) the sentence
+  `This is the last reminder for PyVBMC {version}.` follows. The line is
   followed by `https://pypi.org/project/pyvbmc/` on its own line, rendered
   through the tips' emitter. `{version}` is the installed version
   (`importlib.metadata.version("pyvbmc")`), and `{age}` is computed from
   `RELEASE_DATE` and the date of the run: "more than a year ago" up to two
   years, then "more than N years ago", N the whole number of years. With
   1.5.0 installed two and a half years after its release, the line reads
-  `PyVBMC 1.5.0 was released more than 2 years ago. Run ...`. The template
-  is a constant at the top of `_release_reminder.py`, so that a wording edit
-  is a text edit.
+  `Note: PyVBMC 1.5.0 was released more than 2 years ago. Run ...`. The
+  templates are constants at the top of `_release_reminder.py`, so that a
+  wording edit is a text edit. The messages of `check_for_updates()`, below,
+  were approved with it.
 - **D5. No new dependency.** Both mechanisms count as a release only a
   version of the form `X.Y.Z`, parse it with a regular expression and compare
   versions as integer tuples; they treat any other installed version (a
@@ -213,13 +215,19 @@ Each has a recommendation; the phases below assume it.
 - The latest release is the highest final `X.Y.Z` among the response's
   `releases` whose files are not all yanked. Pre-releases, development
   releases and yanked releases are ignored.
-- The message covers:
-  - a newer release: the two versions and the update command;
-  - the latest release installed: say so;
-  - a development install (D5): the installed version and the latest
-    release, and that a development install is updated from its checkout;
-  - PyPI unreachable or its reply unreadable: say so in one line, with the
-    reason, and give `https://pypi.org/project/pyvbmc/`.
+- The message, one of (wording approved by the PI with D4):
+  - a newer release: `PyVBMC {latest} is available; you have {installed}.
+    Update with: {command}`, where the command is the installer's (below);
+  - the latest release installed: `PyVBMC {installed} is the latest
+    release.`;
+  - a development install (D5): `PyVBMC {installed} is a development
+    version; the latest release is {latest}.`;
+  - PyPI unreachable or its reply unreadable: `Could not reach PyPI
+    ({reason}); see https://pypi.org/project/pyvbmc/.`, the reason a few
+    words (`timed out`, `HTTP 503`, `unreadable reply`).
+  A final installed version newer than PyPI's latest, which happens only
+  before a release reaches PyPI, gives `PyVBMC {installed} is newer than the
+  latest release on PyPI, {latest}.`, in the same style.
 - The update command follows the installer, read from the `INSTALLER` file of
   the installed distribution (`importlib.metadata.distribution("pyvbmc")`):
   `pip` gives `python -m pip install --upgrade pyvbmc`; `conda` gives
@@ -233,8 +241,12 @@ Each has a recommendation; the phases below assume it.
 
 - [x] D1 (12 months) and D8 (three times per version, 90 days apart) ruled
   on 2026-09-30.
-- [ ] D2 to D7 ruled, and the wording of D4 edited or approved. Record the
-  rulings in "Decisions for the PI", marked with the date.
+- [x] D4, the wording of the reminder with its "Note:" label and its
+  last-reminder sentence, and the messages of `check_for_updates()`,
+  approved on 2026-09-30.
+- [ ] D2, D3, D5, D6 and D7 ruled, and the pointer in the user skill (phase 3,
+  step 7) decided. Record the rulings in "Decisions for the PI", marked with
+  the date.
 
 ### Phase 1 — the release date and the reminder (Sol)
 
@@ -256,9 +268,11 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 5. Tests in `pyvbmc/testing/vbmc/test_release_reminder.py`, with injected
    dates and versions:
    - [ ] under and over the threshold, and on its boundary;
-   - [ ] the line names the installed version and the age computed from the
-     injected dates: "more than a year ago" between one and two years, "more
-     than N years ago" beyond;
+   - [ ] the line starts with `Note:` and names the installed version and
+     the age computed from the injected dates: "more than a year ago"
+     between one and two years, "more than N years ago" beyond;
+   - [ ] the third showing for a version, and only it, ends with the
+     last-reminder sentence;
    - [ ] printed once per session, and eligible again after the state reset;
    - [ ] the cap: printed at the first eligible start, not again within 90
      days, again after 90, never after the third time; a new version starts
@@ -295,7 +309,8 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
    `urllib.request.urlopen` patched (`pytest-mock`), so that no test opens a
    connection:
    - [ ] newer release available; latest installed; installed newer than
-     PyPI's latest; development install;
+     PyPI's latest; development install; each prints its message of the
+     design, word for word;
    - [ ] pre-releases, development releases and fully yanked releases are
      ignored, a partly yanked release is not;
    - [ ] `URLError`, `HTTPError`, a timeout, malformed JSON and a JSON without
