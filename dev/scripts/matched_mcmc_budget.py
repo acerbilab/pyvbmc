@@ -95,6 +95,10 @@ EXPORTER_MAX_FUN_EVALS = 200
 
 SAMPLERS = ("slice", "emcee", "zeus", "rwm")
 BLACK_BOX = ("slice", "emcee", "zeus")
+# The headline's metric. gsKL compares only the first two moments, so it
+# misses what a Gaussian with the right moments misses; it is reported
+# beside MMTV but does not enter the headline.
+HEADLINE_METRIC = "mmtv"
 METRICS = ("gskl", "mmtv")
 METRIC_NAMES = {"gskl": "gsKL", "mmtv": "MMTV"}
 SAMPLER_NAMES = {
@@ -837,7 +841,9 @@ def provenance():
     }
 
 
-def log_invocation(directory, started, seeds_run, extra=None):
+def log_invocation(directory, started, prov, seeds_run, extra=None):
+    """Append an invocation to ``invocations.jsonl``; ``prov`` is the
+    provenance taken when it started."""
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     entry = {
@@ -845,7 +851,7 @@ def log_invocation(directory, started, seeds_run, extra=None):
         "started": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(started)),
         "wall_s": round(time.time() - started, 1),
         "seeds_run": seeds_run,
-        **provenance(),
+        **prov,
     }
     if extra:
         entry.update(extra)
@@ -1047,6 +1053,15 @@ def fmt_interval(lo, hi, n_max):
         return fmt_n(value, "below" if value <= N_MIN else None, n_max)
 
     return f"{one(lo)} to {one(hi)}"
+
+
+def join_names(names):
+    names = list(names)
+    return (
+        ", ".join(names[:-1]) + " and " + names[-1]
+        if len(names) > 1
+        else "".join(names)
+    )
 
 
 def fmt_err(value):
@@ -1259,6 +1274,7 @@ def cmd_check(args):
 def cmd_pyvbmc(args):
     setup = make_setup(args)
     started = time.time()
+    prov = provenance()
     seeds = parse_seeds(args.seeds)
     tasks = [
         (s, str(seed_path(args.out, s)))
@@ -1270,7 +1286,7 @@ def cmd_pyvbmc(args):
         flush=True,
     )
     run_tasks(_pyvbmc_task, tasks, args.jobs, setup)
-    log_invocation(args.out, started, [t[0] for t in tasks])
+    log_invocation(args.out, started, prov, [t[0] for t in tasks])
     return 0
 
 
@@ -1288,6 +1304,7 @@ def _mcmc_tasks(out, sampler, settings, seeds, n_max):
 def cmd_mcmc(args):
     setup = make_setup(args)
     started = time.time()
+    prov = provenance()
     setting = parse_setting(args.sampler, args.setting)
     seeds = parse_seeds(args.seeds)
     tasks = _mcmc_tasks(args.out, args.sampler, [setting], seeds, args.n_max)
@@ -1302,6 +1319,7 @@ def cmd_mcmc(args):
     log_invocation(
         Path(args.out) / args.sampler,
         started,
+        prov,
         [t[2] for t in tasks],
         {"setting": setting, "n_max": args.n_max},
     )
@@ -1311,6 +1329,7 @@ def cmd_mcmc(args):
 def cmd_pilot(args):
     setup = make_setup(args)
     started = time.time()
+    prov = provenance()
     settings = PILOT_GRID[args.sampler]
     seeds = parse_seeds(args.seeds)
     tasks = _mcmc_tasks(args.out, args.sampler, settings, seeds, args.n_max)
@@ -1324,6 +1343,7 @@ def cmd_pilot(args):
     log_invocation(
         Path(args.out) / args.sampler,
         started,
+        prov,
         [[t[1], t[2]] for t in tasks],
         {"n_max": args.n_max},
     )
@@ -1375,7 +1395,8 @@ def _percentiles(values):
 
 def bootstrap(ref, runs, paired, n_boot=N_BOOT, seed=BOOT_SEED):
     """Bootstrap ``N*`` of every (sampler, metric) in ``runs`` and the
-    headline minimum over the black-box ones.
+    headline: the minimum of ``HEADLINE_METRIC``'s over the black-box
+    samplers.
 
     ``ref`` holds PyVBMC's errors by metric and its seeds; ``runs`` maps
     ``(sampler, metric)`` to a replicate set (``load_curves``). A resample
@@ -1411,7 +1432,7 @@ def bootstrap(ref, runs, paired, n_boot=N_BOOT, seed=BOOT_SEED):
             med = median_curve(curves[m][idx])
             value, _ = matched_budget(curves["budgets"], med, ref_med[m])
             out[(s, m)][b] = value
-            if s in BLACK_BOX:
+            if s in BLACK_BOX and m == HEADLINE_METRIC:
                 best = min(best, value)
         headline[b] = best
     return out, headline
@@ -1633,7 +1654,11 @@ def cmd_report(args):
     lines.append("")
 
     # Headline.
-    candidates = [(n_star[key], key) for key in n_star if key[0] in BLACK_BOX]
+    candidates = [
+        (n_star[key], key)
+        for key in n_star
+        if key[0] in BLACK_BOX and key[1] == HEADLINE_METRIC
+    ]
     if candidates:
         value, (sampler, metric) = min(candidates)
         curves = runs[(sampler, metric)]
@@ -1642,19 +1667,20 @@ def cmd_report(args):
             curves["budgets"], median_curve(curves[metric]), ref_med[metric]
         )[1]
         n_max = int(curves["budgets"][-1])
-        used = [s for s in BLACK_BOX if any(k[0] == s for k in n_star)]
+        used = [s for s in BLACK_BOX if (s, metric) in n_star]
         text = (
             f"**Headline:** {SAMPLER_NAMES[sampler]} "
             f"(`{setting_text(sampler, curves['setting'])}`), {METRIC_NAMES[metric]}: "
-            f"median N* = {fmt_n(value, kind, n_max)} evaluations, 90% "
+            f"median N* {'' if kind == 'below' or not math.isfinite(value) else '= '}"
+            f"{fmt_n(value, kind, n_max)} evaluations, 90% "
             f"interval {fmt_interval(lo, hi, n_max)} "
             f"({len(curves['seeds'])} replicates against {len(ref['seeds'])} "
             f"PyVBMC runs, whose median budget is "
             f"{np.nanmedian(ref['func_count']):.0f} evaluations). The smallest "
-            f"N* over {', '.join(SAMPLER_NAMES[s] for s in used)} "
-            "and both metrics; the interval takes that minimum inside each "
-            "resample. MCMC gives no estimate of the model evidence, which "
-            "PyVBMC returns from the same evaluations."
+            f"{METRIC_NAMES[metric]} N* over "
+            f"{join_names(SAMPLER_NAMES[s] for s in used)}; the interval takes "
+            "that minimum inside each resample. MCMC gives no estimate of the "
+            "model evidence, which PyVBMC returns from the same evaluations."
         )
         summary["headline"] = {
             "sampler": sampler,

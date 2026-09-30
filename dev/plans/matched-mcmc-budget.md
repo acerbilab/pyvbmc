@@ -170,12 +170,15 @@ seed for a general target, where seed `r` shares `x0` on both sides. It
 then recomputes the medians and `N*`, counting a resample without a
 crossing as `+inf`. The interval is the 5th to 95th percentile.
 
-**The headline** is the smallest `N*` over the three black-box samplers
-(slice sampling, emcee, zeus) and the two metrics. It is the value most
-favourable to MCMC. Its interval takes the minimum over those six
-combinations inside each resample, so that the choice of the minimum is
-part of the interval. A claim quotes the headline with its sampler, its
-metric, the number of replicates and its interval, and calls it a median.
+**The headline** is the smallest MMTV `N*` over the three black-box
+samplers (slice sampling, emcee, zeus), the value most favourable to MCMC
+among them. gsKL does not enter it: it compares only the first two
+moments, so a sampler can match it without having found the shape of the
+posterior (on the banana, without the ridge). Its `N*` is reported beside
+MMTV's. The headline's interval takes the minimum over the three samplers
+inside each resample, so that the choice of the minimum is part of the
+interval. A claim quotes the headline with its sampler, its metric, the
+number of replicates and its interval, and calls it a median.
 The report also shows the curve of exact independent draws, with `N / 2`
 draws at budget `N`. It bounds what any sampler can reach under this
 burn-in rule.
@@ -320,8 +323,6 @@ before the runs.
 
 Defaults that the PI may change before the runs:
 
-- The headline takes the metric that gives the smaller `N*`. The
-  alternative is MMTV alone, since gsKL cannot see the banana's ridge.
 - The headline takes the best of the three black-box samplers. The
   alternative is slice sampling alone.
 - The reference is PyVBMC's median over 100 seeds.
@@ -382,3 +383,7 @@ entry to `dev/README.md`.
   | emcee | `W=16`, 639 | `W=32`, 33,640 |
   | zeus | `W=16`, 1,368 | `W=32`, 42,242 |
   | random-walk Metropolis | `c=0.4`, 996 | `c=0.2`, 26,140 |
+- **The headline's metric.** While step 5 ran, the PI ruled that the
+  headline takes MMTV alone rather than the smaller of the two metrics'
+  `N*`, since gsKL misses what the first two moments miss ("The headline").
+  The runs are the same either way; the ruling changes only `report`.
