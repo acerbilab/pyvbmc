@@ -207,13 +207,15 @@ campaign_check_tree() {
         echo "refusing: $name=$path is not the top of its checkout" >&2
         return 1
     fi
-    if ! status=$(git -C "$path" status --porcelain); then
+    # --untracked-files=normal: whatever status.showUntrackedFiles says.
+    if ! status=$(git -C "$path" status --porcelain \
+        --untracked-files=normal); then
         echo "refusing: git status fails in $name=$path" >&2
         return 1
     fi
     if [ -n "$status" ]; then
         echo "refusing: $name=$path has uncommitted or untracked changes:" >&2
-        git -C "$path" status --short >&2
+        git -C "$path" status --short --untracked-files=normal >&2
         return 1
     fi
     echo "$name: $(git -C "$path" rev-parse HEAD) $path"

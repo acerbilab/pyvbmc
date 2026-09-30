@@ -1023,6 +1023,46 @@ def test_a_resubmission_takes_over_and_starts_from_clean(repo, tmp_path):
     assert not contract.claim_path(out, TAG).exists()
 
 
+def test_a_stop_during_a_takeover_leaves_the_case_missing(
+    repo, tmp_path, monkeypatch
+):
+    """A stop signal while the takeover is reported, before the run removes
+    the killed attempt's files: they go with the claim, and the case is
+    missing rather than partial."""
+    out = tmp_path / "out"
+    expected = worker_identity(repo)
+    (out / "g0").mkdir(parents=True)
+    (out / f"{TAG}.out").write_text("the killed attempt's\n", "utf-8")
+    claim_by(out, TAG, "800", "1")
+    say = contract._say
+
+    def stop_on_takeover(message):
+        say(message)
+        if "took over" in message:
+            signal.raise_signal(signal.SIGTERM)
+
+    monkeypatch.setattr(contract, "_say", stop_on_takeover)
+
+    def run(identity):
+        raise AssertionError("a stopped case must not run")
+
+    code = contract.run_worker(
+        out,
+        TAG,
+        expected,
+        lambda: expected,
+        run,
+        lambda: [f"{TAG}.out"],
+        query=answer(False, "TIMEOUT"),
+    )
+    assert code == 128 + signal.SIGTERM
+    assert not (out / f"{TAG}.out").exists()
+    assert not contract.claim_path(out, TAG).exists()
+    assert not contract.error_path(out, TAG).exists()
+    report = contract.reconcile(out, [TAG], None, lambda tag: [], query=never)
+    assert report["cases"][0]["status"] == "missing"
+
+
 # --------------------------------------------------------------------------
 # A case given up
 # --------------------------------------------------------------------------
@@ -1738,10 +1778,13 @@ def test_environment_differences(tmp_path):
         dist("torch", "2.14.0+cpu"),
         dist("SciPy", "1.18.1"),
         dist("PyVBMC", "1.5.0.dev3", direct=editable),
-        dist("localthing", "0.1", direct=wheel),
         dist("pip", "25.2", installer="conda"),
     ]
     assert contract.environment_differences(path, good, "3.12.14") == []
+    archive = good + [dist("localthing", "0.1", direct=wheel)]
+    assert contract.environment_differences(path, archive, "3.12.14") == [
+        "localthing 0.1 is installed but not pinned"
+    ]
     assert contract.environment_differences(path, good, "3.13.0") == [
         "Python 3.13.0 runs, 3.12 is pinned"
     ]

@@ -364,13 +364,33 @@ def write_json(path, value):
 
     The temporary file is a dot-file beside the target with a unique name,
     so that a reader never sees a partial file and the stray scans of
-    :func:`reconcile` never see the temporary one.
+    :func:`reconcile` never see the temporary one. Its data reach storage
+    (``fsync``) before the rename, so that a node lost just after it cannot
+    leave the name holding less than the whole file; a failure removes it.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
-    temporary.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
+    try:
+        with open(temporary, "x", encoding="utf-8") as stream:
+            stream.write(json.dumps(value, indent=2) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
+def sync_file(path):
+    """Flush a written file's data to storage (``fsync``)."""
+    # POSIX syncs through a read-only descriptor; Windows needs write access.
+    flags = os.O_RDONLY if os.name == "posix" else os.O_RDWR
+    descriptor = os.open(path, flags | getattr(os, "O_BINARY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 def read_json(path):
@@ -1116,16 +1136,23 @@ def tree_state(path):
     """``(source, where)`` of one source tree, which must be a git checkout.
 
     ``source`` is what the identity compares, the commit and whether the
-    tree is clean (``git status --porcelain`` prints nothing, so no
-    uncommitted or untracked change); ``where`` is its resolved path and
-    the status lines of a dirty tree as git prints them, recorded only.
-    ``path`` must be the top of its checkout.
+    tree is clean (``git status --porcelain --untracked-files=normal``
+    prints nothing, so no uncommitted or untracked change, whatever the
+    operator's ``status.showUntrackedFiles``); ``where`` is its resolved
+    path and the status lines of a dirty tree as git prints them, recorded
+    only. ``path`` must be the top of its checkout.
     """
     path = Path(path).resolve()
     try:
         top = git(path, "rev-parse", "--show-toplevel")
         commit = git(path, "rev-parse", "HEAD")
-        status = git(path, "status", "--porcelain", strip=False)
+        status = git(
+            path,
+            "status",
+            "--porcelain",
+            "--untracked-files=normal",
+            strip=False,
+        )
     except (OSError, subprocess.CalledProcessError) as error:
         detail = getattr(error, "stderr", None) or error
         raise IdentityError(
@@ -1675,7 +1702,12 @@ def host_problems(host, node_feature):
 
 
 def artifact_entries(out, paths):
-    """``{relative POSIX path: {"sha256", "bytes"}}`` of a case's artifacts."""
+    """``{relative POSIX path: {"sha256", "bytes"}}`` of a case's artifacts.
+
+    Each artifact's data reach storage (:func:`sync_file`) before it is
+    hashed, so that the completion record written after them never lists
+    data that a node lost just after the record did not write out.
+    """
     out = Path(out).resolve()
     entries = {}
     for path in paths:
@@ -1685,6 +1717,7 @@ def artifact_entries(out, paths):
             relative = full.relative_to(out).as_posix()
         except ValueError as error:
             raise ContractError(f"{full} is outside {out}") from error
+        sync_file(full)
         entries[relative] = {
             "sha256": sha256_file(full),
             "bytes": full.stat().st_size,
@@ -1782,7 +1815,7 @@ def _remove(out, paths):
         path = Path(path)
         path = path if path.is_absolute() else Path(out) / path
         if path.exists():
-            path.unlink()
+            path.unlink(missing_ok=True)
             removed.append(str(path))
     return removed
 
@@ -1891,23 +1924,52 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
     except Exception as error:
         _say(f"{tag}: refused, {error}; the case's files are left as they are")
         return EXIT_CLAIMED
+
+    def stopped(stop):
+        # A stop signal before the completion record: the partial files go,
+        # the claim is released by the caller, and no error file is written.
+        _handle_stop_signals(signal.SIG_IGN)
+        name = signal.Signals(stop.signum).name
+        if record.exists():
+            _say_safely(f"{tag}: {name} came after the completion record")
+            return 128 + stop.signum
+        try:
+            removed = _remove(out, partial_files())
+        except Exception:
+            removed = []
+            _say_safely(
+                "removing the partial files failed:\n" + traceback.format_exc()
+            )
+        _say_safely(
+            f"{tag}: stopped by {name}; removed {len(removed)} partial "
+            "files and the claim, and left the case to be resubmitted"
+        )
+        return 128 + stop.signum
+
     handlers = _handle_stop_signals(_raise_interrupted)
     try:
-        if record.exists():
-            _say(f"{tag}: completed by another task; nothing to do")
-            return 0
-        # give_up writes its error file holding the claim, so a worker that
-        # claims the case after it finds the file.
-        reason = given_up(out, tag)
-        if reason is not None:
-            _say(f"{tag}: the operator gave it up ({reason}); nothing to do")
-            return 0
-        previous = claim.get("previous")
-        if previous:
-            _say(
-                f"{tag}: took over the {previous['reason']} claim of "
-                f"{previous['owner']}"
-            )
+        try:
+            if record.exists():
+                _say_safely(f"{tag}: completed by another task; nothing to do")
+                return 0
+            # give_up writes its error file holding the claim, so a worker
+            # that claims the case after it finds the file.
+            reason = given_up(out, tag)
+            if reason is not None:
+                _say_safely(
+                    f"{tag}: the operator gave it up ({reason}); nothing to do"
+                )
+                return 0
+            previous = claim.get("previous")
+            if previous:
+                _say_safely(
+                    f"{tag}: took over the {previous['reason']} claim of "
+                    f"{previous['owner']}"
+                )
+        except Interrupted as stop:
+            # A takeover leaves the stopped attempt's files in place until
+            # the run removes them, so a stop here removes them too.
+            return stopped(stop)
         started = time.time()
         earlier = earlier_error_path(out, tag)
         try:
@@ -1941,24 +2003,7 @@ def run_worker(out, case, expected, identity, run, partial_files, query=None):
             earlier.unlink(missing_ok=True)
             _say(f"{tag}: complete in {time.time() - started:.1f} s")
         except Interrupted as stop:
-            _handle_stop_signals(signal.SIG_IGN)
-            name = signal.Signals(stop.signum).name
-            if record.exists():
-                _say_safely(f"{tag}: {name} came after the completion record")
-                return 128 + stop.signum
-            try:
-                removed = _remove(out, partial_files())
-            except Exception:
-                removed = []
-                _say_safely(
-                    "removing the partial files failed:\n"
-                    + traceback.format_exc()
-                )
-            _say_safely(
-                f"{tag}: stopped by {name}; removed {len(removed)} partial "
-                "files and the claim, and left the case to be resubmitted"
-            )
-            return 128 + stop.signum
+            return stopped(stop)
         except Exception as error:
             _handle_stop_signals(signal.SIG_IGN)
             text = traceback.format_exc()
@@ -2145,12 +2190,10 @@ def installed_distributions():
 
 
 def _from_path(direct):
-    """Whether a distribution was installed from a path, editable or not."""
-    if not direct:
-        return False
-    return "dir_info" in direct or str(direct.get("url", "")).startswith(
-        "file:"
-    )
+    """Whether a distribution was installed from a source tree, editable or
+    not (``dir_info`` in its ``direct_url.json``, PEP 610). A local archive
+    (``archive_info``) is not a source tree: its library must be pinned."""
+    return bool(direct) and "dir_info" in direct
 
 
 def _version_matches(installed, pinned):
