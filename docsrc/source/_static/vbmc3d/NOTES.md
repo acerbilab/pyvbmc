@@ -167,6 +167,41 @@ was decided:
   already loads STIX Two for its captions. The medium weight made the
   letters outweigh the V.
 
+**A narrated video beside the page.** The page introduces every layer of
+the algorithm within fifteen seconds and captions each evaluation it
+acquires for a second or two. A viewer who does not know VBMC sees a lot
+happening without learning what any of it is. The owner decided to keep
+the page as an exhibit and to explain the algorithm in a separate video,
+which the same page draws in the same style. The video's audience is scientists who fit models,
+most of whom do not know Gaussian processes or variational inference. Its
+angle is Bayesian optimization applied to the whole posterior. Its
+narration is voiced with Kokoro, an open model, while the script changes.
+`STORYBOARD.md` has the rest.
+
+**The film page.** `film.html` is a copy of `wordmark.html` with its own
+timeline, HUD and opening, not a mode of that page. Almost everything that
+moves differs between the two (the pacing, the captions, the camera, the
+readouts), and a mode would have put a branch into most of the exhibit's
+update code. The price is two copies of the renderer and the sheets, which
+the README asks to keep in step. Other decisions:
+
+- *The opening explores the same target from the same starting point* as
+  the PyVBMC run (`x0` of the exporter's `run`). The MCMC run is emcee with
+  32 walkers, the fastest black-box sampler of the matched-budget
+  measurement (`dev/results/2026-09-30-matched-mcmc-budget.md` on
+  `dev-next`), stopped at its median matched budget, so that the count on
+  screen is the measured number. The first draft had a random-walk
+  Metropolis chain of 20,000 evaluations, a length chosen by hand; the
+  measurement and the footnote replaced it. The Bayesian
+  optimization is a real PyBADS run with the same plausible box, which ends
+  at the true maximum.
+- *A cost readout, not a speed factor.* The storyboard first had the
+  time-lapse show its playback speed. Counting every evaluation at the
+  3 minutes of the narration's first line puts the three methods on one
+  scale and leads to the payoff. The `timey-wimey` nod moved there.
+- *The number of mixture components and the evidence stay hidden* until the
+  narration introduces them, because a number nobody has explained is noise.
+
 ## Seeds
 
 ### `trace_wordmark.js`

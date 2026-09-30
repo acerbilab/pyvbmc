@@ -46,11 +46,25 @@ worse run (`NOTES.md`, "Seeds"). Sweep the default target
 leaves samples out, settle whether the owner accepts `drawable_samples`
 there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 
+### The video
+
+`STORYBOARD.md` has the script and the scenes, and README.md ("The film")
+the commands. In this order:
+
+1. **The owner watches and listens to the draft** (1280 x 720, Kokoro's
+   `af_heart`, the synthesized score) and steers the pictures, the pacing,
+   the script and the sound. Nobody has listened to the score yet. It was
+   checked only as levels and a spectrogram.
+2. **Choose the final voice**, then voice and time the film again.
+3. **Render at 1920 x 1080**, with and without captions, and write the
+   `.srt` of the final timeline.
+
 ## Constraints
 
-- This work is kept apart from the repository's trackers (`dev/TODO.md`, the
-  roadmap, the plans, `AGENTS.md`): nothing there refers to it, and its
-  notes stay in this folder.
+- The repository's trackers name this work in two places: an item of
+  `dev/TODO.md`, and the plan `dev/plans/matched-mcmc-budget.md`, whose
+  number the film quotes. The animation's design, status and next actions
+  stay in this folder.
 - After regenerating a trace, run its page's self-check (`?debug=1`, recipe
   in `README.md`) with a fresh browser profile. Nothing else gates the
   pages.
@@ -58,10 +72,13 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
   machine the committed seeds give other trajectories: choose seeds again
   with `--sweep`, and expect the numbers quoted in `README.md` and
   `NOTES.md` to change.
+- `film.html` shares its sections from "renderer" to "post" with
+  `wordmark.html` (README). A fix to one of them goes into both pages.
 - Outside this folder the branch `feat-3d-animation` touches
-  `dev/scripts/export_animation_trace.py` (new), `dev/README.md` (one entry
-  in the scripts list) and `docsrc/source/conf.py` (the exclusion of this
-  folder's Markdown files). A change to `pyvbmc/` or gpyreg can move a
+  `docsrc/source/conf.py` (the exclusion of this folder's Markdown files).
+  `dev/scripts/export_animation_trace.py` and its entry in the scripts list
+  of `dev/README.md` are on `dev-next` as well since `e723609f`, so a change
+  to either is made on `dev-next`. A change to `pyvbmc/` or gpyreg can move a
   noiseless run, so after the branch takes in `dev-next`, export the
   committed seeds again and compare with the traces, which record the
   revisions that made them (`meta.pyvbmc`, `meta.gpyreg`).
