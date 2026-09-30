@@ -1,0 +1,115 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "defaults": { "lead": 0.5, "gap": 0.35, "tail": 0.6 },
+  "scenes": [
+    {
+      "id": "cost",
+      "lead": 1.0,
+      "lines": [
+        { "id": "p1", "text": "Your model's likelihood takes minutes to compute." },
+        { "id": "p2", "text": "You want the posterior over its parameters.", "gap": 0.5 },
+        { "id": "p3", "text": "The posterior tells you how plausible each setting is, given your data." },
+        { "id": "p4", "text": "Picture the posterior as a landscape.", "gap": 0.7 },
+        { "id": "p5", "text": "The higher the ground, the more plausible the setting." }
+      ]
+    },
+    {
+      "id": "mcmc",
+      "min": 8.0,
+      "lines": [
+        { "id": "m1", "text": "The textbook method is Markov chain Monte Carlo." },
+        { "id": "m2", "text": "It needs tens of thousands of evaluations." },
+        { "id": "m3", "text": "At a few minutes each, you would wait weeks.", "gap": 0.5 }
+      ]
+    },
+    {
+      "id": "bayesopt",
+      "lines": [
+        { "id": "o1", "text": "Bayesian optimization finds the highest point of a landscape in far fewer evaluations." },
+        { "id": "o2", "text": "It learns the landscape from the points it has seen, then decides where to look next." },
+        { "id": "o3", "text": "Pie V B M C does the same for the whole posterior.", "caption": "PyVBMC does the same for the whole posterior.", "gap": 0.6 }
+      ]
+    },
+    {
+      "id": "dark",
+      "min": 6.0,
+      "lines": [
+        { "id": "s1", "text": "We start in the dark." },
+        { "id": "s2", "text": "Each evaluation reveals the height at a single point.", "gap": 0.5 }
+      ]
+    },
+    {
+      "id": "surrogate",
+      "lines": [
+        { "id": "g1", "text": "From these few points, Pie V B M C builds a surrogate.", "caption": "From these few points, PyVBMC builds a surrogate." },
+        { "id": "g2", "text": "The surrogate is a cheap statistical model of the whole landscape." },
+        { "id": "g3", "text": "At the evaluated points it holds still.", "gap": 0.5 },
+        { "id": "g4", "text": "Everywhere else it wobbles." },
+        { "id": "g5", "text": "The more it wobbles, the less it knows.", "gap": 0.5 }
+      ]
+    },
+    {
+      "id": "mixture",
+      "lines": [
+        { "id": "q1", "text": "On the surrogate, Pie V B M C fits a mixture of Gaussians.", "caption": "On the surrogate, PyVBMC fits a mixture of Gaussians." },
+        { "id": "q2", "text": "This is its first guess at the posterior." },
+        { "id": "q3", "text": "For now it is a crude one." }
+      ]
+    },
+    {
+      "id": "acquire",
+      "min": 15.0,
+      "lines": [
+        { "id": "a1", "text": "Where to evaluate next?" },
+        { "id": "a2", "text": "An optimizer would head for the peak.", "gap": 0.5 },
+        { "id": "a3", "text": "Pie V B M C is after the whole posterior, so it looks for places that are plausible and still uncertain.", "caption": "PyVBMC is after the whole posterior, so it looks for places that are plausible and still uncertain." }
+      ]
+    },
+    {
+      "id": "cycle",
+      "lines": [
+        { "id": "l1", "text": "Evaluate." },
+        { "id": "l2", "text": "Update the surrogate.", "gap": 0.6 },
+        { "id": "l3", "text": "Refit the mixture.", "gap": 0.6 }
+      ]
+    },
+    {
+      "id": "timelapse",
+      "lead": 2.0,
+      "min": 18.0,
+      "lines": [
+        { "id": "l4", "text": "Round after round, the wobbling dies down." },
+        { "id": "l5", "text": "The mixture grows new components to follow the ridge.", "gap": 1.5 }
+      ]
+    },
+    {
+      "id": "reveal",
+      "min": 5.0,
+      "lines": [
+        { "id": "r1", "text": "Pie V B M C never saw the true landscape.", "caption": "PyVBMC never saw the true landscape." },
+        { "id": "r2", "text": "Here it is.", "gap": 0.6 }
+      ]
+    },
+    {
+      "id": "evidence",
+      "lines": [
+        { "id": "e1", "text": "Pie V B M C also estimated the model's evidence.", "caption": "PyVBMC also estimated the model's evidence." },
+        { "id": "e2", "text": "You need that number to compare two models." },
+        { "id": "e3", "text": "The estimate lands close to the true value.", "gap": 0.5 }
+      ]
+    },
+    {
+      "id": "payoff",
+      "lead": 0.8,
+      "tail": 1.0,
+      "lines": [
+        { "id": "f1", "text": "All this from a hundred evaluations." },
+        { "id": "f2", "text": "Markov chain Monte Carlo would have needed tens of thousands.", "gap": 0.5 },
+        { "id": "f3", "text": "Weeks of waiting became an afternoon.", "gap": 0.7 }
+      ]
+    },
+    { "id": "wordmark", "min": 7.0, "lines": [] },
+    { "id": "end", "min": 8.0, "lines": [] }
+  ]
+}

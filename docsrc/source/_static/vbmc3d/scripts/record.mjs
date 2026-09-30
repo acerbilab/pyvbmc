@@ -1,4 +1,6 @@
 // Record an animation page through its capture hook, as an MP4, a GIF or a folder of PNG frames.
+// With OUT ending in .json, write instead the JSON that the page puts in its <pre id="events">
+// (film.html?events=1: the times that scripts/make_score.py follows).
 //
 //   node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--controls]
 //                                    [--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]
@@ -33,7 +35,7 @@ for (const argv = process.argv.slice(2); argv.length;) {
 }
 if (pos.length !== 2) { console.error(USAGE); process.exit(2); }
 const [page, out] = pos;
-const kind = /\.mp4$/i.test(out) ? "mp4" : /\.gif$/i.test(out) ? "gif" : "frames";
+const kind = /\.mp4$/i.test(out) ? "mp4" : /\.gif$/i.test(out) ? "gif" : /\.json$/i.test(out) ? "json" : "frames";
 const FPS = Number(opt.fps || (kind === "gif" ? 15 : 30));
 const [W, H] = (opt.size || "1280x720").split("x").map(Number);
 const CHROME = process.env.CHROME || {
@@ -87,6 +89,14 @@ if (!ready) throw new Error(`${url} did not start (is it one of the animation pa
 await evaluate("document.fonts.ready.then(() => true)");   // the captions' typefaces; the letters' has been waited for
 if (!opt.controls) await evaluate(`document.head.appendChild(Object.assign(document.createElement("style"),
   { textContent: "#transport, #chips { display: none !important; }" })) && true`);
+if (kind === "json") {
+  const text = await evaluate(`document.getElementById("events")?.textContent ?? null`);
+  if (!text) throw new Error(`${page} wrote no events (film.html?events=1 does)`);
+  writeFileSync(out, text); console.log(`wrote ${out}`);
+  sock.close(); chrome.kill(); server.close(); await sleep(500);
+  try { rmSync(profile, { recursive: true, force: true }); } catch { /* Chrome may still hold it on Windows */ }
+  process.exit(0);
+}
 const END = await evaluate("vbmcCapture.end");
 const T0 = Number(opt.from || 0), T1 = opt.to !== undefined ? Number(opt.to) : END;
 const n = Math.max(1, Math.round((T1 - T0) * FPS));
