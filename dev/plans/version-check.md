@@ -1,7 +1,7 @@
 # Update reminders: an old-release reminder and `check_for_updates()`
 
-Created: 2026-09-30. Status: **PLANNED** — scope settled with the PI; D1,
-D4 and D8 ruled (2026-09-30); D2, D3, D5, D6 and D7 await the PI's rulings.
+Created: 2026-09-30. Status: **IN PROGRESS** — every decision ruled by the
+PI on 2026-09-30; implementation on the branch `feat-update-reminders`.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
 of phase 4. `dev/TODO.md` ("Update reminders") links here.
 
@@ -69,7 +69,8 @@ code or documentation) found:
 
 ## Decisions for the PI
 
-Each has a recommendation; the phases below assume it.
+The PI ruled every decision on 2026-09-30: D1, D4 and D8 as stated, the
+others as recommended.
 
 - **D1. Threshold: 12 months** (365 days; PI, 2026-09-30). The reminder cannot
   know whether a newer release exists, only how old the installed one is, so
@@ -78,12 +79,13 @@ Each has a recommendation; the phases below assume it.
   release at least once a year, a small maintenance release included (PI,
   2026-09-30); the cap (D8) bounds the cost of a longer gap to three lines
   per version. The wording (D4) says that a newer version *may* exist.
-- **D2. What silences the reminder.** The same switches as the tips:
-  `options={"show_tips": False}` and `display="off"`. The description of
-  `show_tips` then names both. An option of its own is the alternative; it
-  adds an option for one line per session.
-- **D3. S-VBMC.** `SVBMC` shows no reminder: a session that stacks runs has
-  usually made them in the same session, where the reminder has shown once.
+- **D2. What silences the reminder** (PI, 2026-09-30). The same switches as
+  the tips: `options={"show_tips": False}` and `display="off"`. The
+  description of `show_tips` then names both. An option of its own was the
+  alternative; it adds an option for one line per session.
+- **D3. S-VBMC** (PI, 2026-09-30). `SVBMC` shows no reminder: a session that
+  stacks runs has usually made them in the same session, where the reminder
+  has shown once.
 - **D4. Wording** (approved by the PI, 2026-09-30). A template, filled when
   the run starts from the installed release:
   `Note: PyVBMC {version} was released {age}. Run
@@ -100,19 +102,21 @@ Each has a recommendation; the phases below assume it.
   templates are constants at the top of `_release_reminder.py`, so that a
   wording edit is a text edit. The messages of `check_for_updates()`, below,
   were approved with it.
-- **D5. No new dependency.** Both mechanisms count as a release only a
-  version of the form `X.Y.Z`, parse it with a regular expression and compare
-  versions as integer tuples; they treat any other installed version (a
-  `.dev` build, a local `+g<hash>` suffix) as a development install. The
-  alternative is `packaging.version`, installed today through Matplotlib;
+- **D5. No new dependency** (PI, 2026-09-30). Both mechanisms count as a
+  release only a version of the form `X.Y.Z`, parse it with a regular
+  expression and compare versions as integer tuples; they treat any other
+  installed version (a `.dev` build, a local `+g<hash>` suffix) as a
+  development install. The
+  alternative was `packaging.version`, installed today through Matplotlib;
   using it means declaring `packaging` in `pyproject.toml`, and the
   conda-forge recipe with it.
-- **D6. Sequencing.** Merge before the Phase 8 launch (recommended), or rule
-  that a change which only prints may follow the launch.
-- **D7. Where the release date comes from.** A tracked constant,
-  `RELEASE_DATE` in `pyvbmc/_release.py`, set in the release pull request to
-  the date of the changelog heading `## [X.Y.Z] - YYYY-MM-DD`, with a test
-  that the two agree. It survives every build path: the wheel, the sdist,
+- **D6. Sequencing** (PI, 2026-09-30). The work merges before the launch of
+  Phase 8; the alternative was to rule that a change which only prints may
+  follow the launch.
+- **D7. Where the release date comes from** (PI, 2026-09-30). A tracked
+  constant, `RELEASE_DATE` in `pyvbmc/_release.py`, set in the release pull
+  request to the date of the changelog heading `## [X.Y.Z] - YYYY-MM-DD`,
+  with a test that the two agree. It survives every build path: the wheel, the sdist,
   and conda-forge's build from the sdist, which has no git history.
   Rejected: a date written at build time by `setuptools_scm` (a build from the
   sdist has no git history to date, and what the template receives there
@@ -235,6 +239,14 @@ Each has a recommendation; the phases below assume it.
   conda-forge package can follow PyPI by a few days; anything else gives
   both.
 
+## Live checklist
+
+- [x] Phase 0: every decision ruled (2026-09-30).
+- [ ] Phase 1: the release date and the reminder.
+- [ ] Phase 2: `check_for_updates()`.
+- [ ] Phase 3: documentation and records.
+- [ ] Phase 4: verification and delivery.
+
 ## Phases
 
 ### Phase 0 — the PI's rulings (PI)
@@ -244,9 +256,8 @@ Each has a recommendation; the phases below assume it.
 - [x] D4, the wording of the reminder with its "Note:" label and its
   last-reminder sentence, and the messages of `check_for_updates()`,
   approved on 2026-09-30.
-- [ ] D2, D3, D5, D6 and D7 ruled, and the pointer in the user skill (phase 3,
-  step 7) decided. Record the rulings in "Decisions for the PI", marked with
-  the date.
+- [x] D2, D3, D5, D6 and D7 ruled as recommended, and the pointer in the
+  user skill (phase 3, step 7) approved, on 2026-09-30.
 
 ### Phase 1 — the release date and the reminder (Sol)
 
@@ -350,9 +361,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 6. The pre-release checklist of `dev/plans/modernization-roadmap.md`: a step
    to set `RELEASE_DATE` in the release pull request to the date of the
    changelog heading, which the release-date test then checks.
-7. `skills/pyvbmc/SKILL.md`: whether to point agents to
-   `check_for_updates()` when a user reports a problem is the PI's call; the
-   skill links documentation pages by name, so a new page is a candidate.
+7. `skills/pyvbmc/SKILL.md`: one line telling an agent to run
+   `pyvbmc.check_for_updates()` when a user reports a problem, since the fix
+   may be released already, linking the new API page (PI, 2026-09-30).
 
 ### Phase 4 — verification and delivery
 
