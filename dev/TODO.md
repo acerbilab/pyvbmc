@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-27. These lists describe scope, not priority or execution
+Updated 2026-09-28. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -69,26 +69,31 @@ records its execution.
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
 - [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
-  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27). On
-  2026-09-27 gpyreg's `main` was at `d96d0d9`, six commits past `v1.3.3`,
-  among them a prior's log mass taken in log space where it underflows and
-  an opt-in switch that makes a failed Cholesky factorization an error.
-  The local environments install the sibling checkout editable and so run
-  that `main` while CI pins `v1.3.3`: the example notebooks executed on
-  2026-09-26 and 27 ran on gpyreg `1.3.4.dev10+gd96d0d9f7`. With the
-  release, `pyproject.toml`'s minimum and CI's `GPYREG_PIN` move to it
-  (`AGENTS.md`), PyVBMC's whole suite and the exact oracle check run
-  against it, and the [Slurm plan](plans/slurm-benchmark-support.md) and
-  its operator's guide (`scripts/hpc/README.md` on `feat-slurm-campaigns`)
-  name it where they name `v1.3.3`: the after arm, the pools and the
-  stacking in "What runs where", Phase 1b's source trees, and the guide's
-  clones, environment check and campaign commands. The campaigns of the
-  Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
-  Phase 6 test the machinery and do not wait for it. On 2026-09-27 the
-  default suite and the exact oracle check (12 of 12) passed against
-  gpyreg `main` at `d96d0d9`, so its six commits past `v1.3.3` move
-  nothing the oracles pin; what gpyreg gains after it needs the same
-  check.
+  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27): gpyreg
+  1.4.0 (2026-09-30, the annotated tag `v1.4.0` on `682585f`, on PyPI).
+  PyVBMC requires it: `pyproject.toml`'s minimum and CI's `GPYREG_PIN`
+  name it (`AGENTS.md`). On 2026-09-30, on Linux with one BLAS thread,
+  under Python 3.12 with SciPy 1.18.1 and under Python 3.10 with SciPy
+  1.15.3, PyVBMC's whole suite passed against it, and it reproduced bit
+  for bit what gpyreg 1.3.3 computes on the same machine: every oracle
+  output, the platform-bound ones included (a dump made with 1.3.3 by
+  `make_oracle_fixtures.py --dump-outputs`, checked with `--check --exact
+  --against`), the three GP-fit-history captures and the five default
+  golden replays. The checks of the nine example notebooks passed under
+  Python 3.12. gpyreg `d96d0d9`, on which the notebooks' stored outputs
+  were executed on 2026-09-26 and 27, gives the same oracle outputs. On
+  the machine that generated the committed oracle references
+  (`dev/scripts/runs/LOCAL.md`), the only one where their platform-bound
+  references reproduce, the exact oracle check against them
+  (`make_oracle_fixtures.py --check --exact`, one BLAS thread) passed
+  with 1.4.0 on 2026-09-30, 12 of 12. One step remains. The
+  [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
+  (`scripts/hpc/README.md`), both rewritten on `feat-slurm-campaigns`, name
+  `v1.4.0` (`682585f`) where they name `v1.3.3`: the after arm, the pools
+  and the stacking in "What runs where", Phase 1b's source trees, and the
+  guide's clones, environment check and campaign commands. The campaigns
+  of the Slurm plan's Phase 8 launch after the pin; the smoke campaigns of
+  its Phase 6 test the machinery and do not wait for it.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -99,10 +104,16 @@ records its execution.
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
-  in on 2026-09-27 (its package tree, the logging changes `1f9c207a` and
-  `1bde36eb` included, under which every harness test module passes); next
-  are Phase 1b and the smoke campaigns on the cluster, then the brief, and
-  the merge into `dev-next`. Needed before
+  in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
+  harness test module passes, and with the tools of the plan's Phase 9 and
+  of the promotion of the new reference (the two items below). Phase 1b
+  (the survey, the source trees, the frozen environment and its check) and
+  Phase 6 (the smoke campaigns, which measured every job's time and
+  memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
+  branch; the plan's pickup point, on the branch, lists the three checks
+  left for the next cluster session. Next are the brief, which needs only
+  the stacking's finishing limits from those checks, a review of the
+  branch, and the merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
@@ -130,17 +141,29 @@ records its execution.
   [population plan](plans/final-population-benchmark.md), and the
   promotion of the new reference with its fingerprints, preserving the old
   references (the working rule below). The campaigns run in the plan's
-  Phase 8, on the PI's instruction. The promotion needs a script in the
-  manner of `golden/promotion_20260913/promote.py`, since
+  Phase 8, on the PI's instruction. The promotion is
+  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-28), in
+  the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
-  with it; with the promotion, `golden_replay.py`'s `DEFAULT_BASELINE` and
-  `DEFAULT_CONFIGS` change, together with `AGENTS.md` ("Trajectories"), the
-  `golden_replay.py` entry of `dev/README.md` and `golden/README.md` (the
-  Slurm plan, "The populations"). The script reads the array-mode campaigns
-  of `population_run.py`, which exist on `feat-slurm-campaigns`, so it is
-  written there, and it can be written and tested on small campaigns of
-  that mode before Phase 8 (PI, 2026-09-27: next, with the wrapper of the
-  item below).
+  with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
+  after arm's envelopes, `prepare` checks the previous reference, the after
+  arm, the accepted assessment, the fingerprints and the gate runs and
+  writes the record, `replay` replays the new defaults, and `publish`
+  replaces the sidecars of `golden/baseline/` and changes
+  `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS` together
+  with `AGENTS.md` ("Trajectories"), the current reference's section and
+  the `golden_replay.py` entry of `dev/README.md`, and `golden/README.md`
+  (its `dev/README.md` entry on the branch gives the steps). Its test module
+  runs a whole promotion on small array-mode campaigns. It rewrites those
+  passages only as they stood when it was written (a SHA-256 guard), so an
+  edit to one before the promotion is carried into its template. The PI's
+  rulings of 2026-09-28 (the Slurm plan, "The populations" and Phase 9):
+  the 24 fingerprints are judged as a set, since a correct run lies
+  outside its envelope now and then (4.2 % of the runs of
+  `reference_990_20260913`), and more of them outside than the after arm's
+  own rate makes plausible refuses; the code the promotion compares with
+  the after arm's leaves out the package's tests and S-VBMC; and the
+  script moves into its record at the promotion.
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -164,10 +187,15 @@ records its execution.
   code, wrapped so that their record carries the commit, the gpyreg
   source, the thread settings and the host, which the script does not
   record (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper
-  can be written and tested before the release code is settled, and the
-  runs that enter the records wait for it (PI, 2026-09-27: next, with the
-  promotion script of the item above).
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
+  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-28): it
+  records the six runs twice, each in a fresh process with one BLAS thread
+  and `performance_calibration="off"`, compares them with the script's own
+  `compare`, and writes each recording's identity (the commit, the gpyreg
+  checkout, the thread settings, the host) beside them. On 2026-09-28 it
+  recorded them at the branch's `4efee154` with gpyreg `d96d0d9`, identical
+  in all 138 arrays; that run checked the wrapper and is no record. The
+  runs that enter the records wait for the release code.
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
@@ -203,7 +231,17 @@ records its execution.
   - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
     over the diff since `46200293`;
   - the final tests, the CI matrix and the package checks;
-  - the choice of the artifacts that attach to the release as archives;
+  - the artifacts that attach to the release as archives (PI, 2026-09-28;
+    the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
+    hand-back"): the release gate's after-arm population and its pools,
+    each built apart from its draft release from the numeric files and the
+    redacted copies by `scripts/hpc/campaign_public.sh` on
+    `feat-slurm-campaigns`, in the operator's account after the redaction
+    (the stacking's tracked copies hold every cell already);
+    the draft releases of the campaigns stay drafts, since their raw
+    archives hold the cluster's details and the operator's paths; the
+    replay fingerprints and the earlier references' traces are backed up
+    in a draft release of their own;
   - the references to `dev-next` that change with the release merge.
 
 - [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
@@ -292,9 +330,11 @@ records its execution.
   metadata and merges itself once the feedstock's CI passes; otherwise the
   recipe's requirements, still those of 1.0.4, are updated by hand. Check
   the published package's requirements against `pyproject.toml`: 1.5 needs
-  gpyreg 1.3.3 or later, which is on conda-forge, and adds `filelock`,
-  `platformdirs` and `threadpoolctl`. conda-forge's `python_min`, 3.11 on
-  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
+  gpyreg 1.4.0 or later, which conda-forge did not serve on 2026-09-30
+  (gpyreg's feedstock publishes it through its bot's version update), and
+  adds `filelock`, `platformdirs` and `threadpoolctl`. conda-forge's
+  `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
+  where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 

@@ -690,20 +690,22 @@ The open work for 1.5 is the list "In scope for 1.5" of
    by `pyproject.toml`.
 8. One PR `dev-next` → `main` when the work is done, Stage 3 included
    (decided with the PI 2026-09-06: Stages 0–3 ship together as 1.5).
-   With the 1.5 release that follows it, attach the reference population's
-   `.npz` traces as a release asset (PI decision 2026-09-06): one zip per
-   reference, made from the traces of the population the released code
-   was validated against (the active reference, `reference_990_20260913`,
-   holds 990 traces across 23 configurations; its replacement is the
-   `TODO.md` item "The golden references after the port review"),
-   unpacked to
-   `dev/scripts/runs/golden/<population>/`
-   for `golden_replay.py`'s per-iteration verdict; `dev/golden/README.md`
-   names the asset. The sidecars stay in git, the traces stay out of it,
-   and anyone working on the numerics can fetch them. Until the release
-   the traces exist only on the machine that ran the population
-   (regenerable from the sidecars' code SHA, seeds and options);
-   a copy on the lab server is cheap insurance.
+   With the 1.5 release that follows it, attach as release assets the
+   traces of the population the released code was validated against, the
+   release gate's after arm (the `TODO.md` item "The golden references
+   after the port review"), and the gate's S-VBMC pools, whose stacking
+   results are in git (PI decisions 2026-09-06 and 2026-09-28): each an
+   archive of the
+   campaign's numeric files and redacted copies, built apart from its draft
+   release, as the TODO's release item and the
+   [Slurm plan](slurm-benchmark-support.md), "Records and hand-back",
+   describe; `dev/golden/README.md` names the asset. The sidecars stay in
+   git and the traces out of it, and anyone working on the numerics can
+   fetch them; exact replay still needs traces made on the replaying
+   machine, the reference's replay fingerprints. The campaigns' draft
+   releases stay drafts. The fingerprints and the earlier references'
+   traces exist only on the developer's machine, and go to a draft release
+   of their own as a backup.
 9. ~~**Latent bug fixes for 1.5**~~ Done: the fixes are integrated, and the
    population of the integrated code was accepted on 2026-09-13
    ([promotion record](../golden/promotion_20260913/README.md)). The text
