@@ -49,12 +49,19 @@ Each has a recommendation; the phases below assume it.
   adds an option for one line per session.
 - **D3. S-VBMC.** `SVBMC` shows no reminder: a session that stacks runs has
   usually made them in the same session, where the reminder has shown once.
-- **D4. Wording.** Proposed, for the PI to edit as the tips' wording was:
-  `PyVBMC 1.5.0 was released more than a year ago. Run
-  pyvbmc.check_for_updates() to see whether a newer version is available.`
-  with `https://pypi.org/project/pyvbmc/` on its own line, rendered through
-  the tips' emitter. The version and the "more than a year" follow the
-  installed release and D1.
+- **D4. Wording.** A template, filled when the run starts from the installed
+  release; proposed, for the PI to edit as the tips' wording was:
+  `PyVBMC {version} was released {age}. Run pyvbmc.check_for_updates() to
+  see whether a newer version is available.`
+  followed by `https://pypi.org/project/pyvbmc/` on its own line, rendered
+  through the tips' emitter. `{version}` is the installed version
+  (`importlib.metadata.version("pyvbmc")`), and `{age}` is computed from
+  `RELEASE_DATE` and the date of the run: "more than a year ago" up to two
+  years, then "more than N years ago", N the whole number of years. With
+  1.5.0 installed two and a half years after its release, the line reads
+  `PyVBMC 1.5.0 was released more than 2 years ago. Run ...`. The template
+  is a constant at the top of `_release_reminder.py`, so that a wording edit
+  is a text edit.
 - **D5. No new dependency.** Both mechanisms count as a release only a
   version of the form `X.Y.Z`, parse it with a regular expression and compare
   versions as integer tuples; they treat any other installed version (a
@@ -174,6 +181,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 5. Tests in `pyvbmc/testing/vbmc/test_release_reminder.py`, with injected
    dates and versions:
    - [ ] under and over the threshold, and on its boundary;
+   - [ ] the line names the installed version and the age computed from the
+     injected dates: "more than a year ago" between one and two years, "more
+     than N years ago" beyond;
    - [ ] printed once per session, and eligible again after the state reset;
    - [ ] nothing for a development version, a local version, `None` or an
      unreadable release date;
