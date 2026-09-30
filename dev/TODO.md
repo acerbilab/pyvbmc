@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-28. These lists describe scope, not priority or execution
+Updated 2026-09-30. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -86,14 +86,14 @@ records its execution.
   (`dev/scripts/runs/LOCAL.md`), the only one where their platform-bound
   references reproduce, the exact oracle check against them
   (`make_oracle_fixtures.py --check --exact`, one BLAS thread) passed
-  with 1.4.0 on 2026-09-30, 12 of 12. One step remains. The
+  with 1.4.0 on 2026-09-30, 12 of 12. The
   [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
-  (`scripts/hpc/README.md`), both rewritten on `feat-slurm-campaigns`, name
-  `v1.4.0` (`682585f`) where they name `v1.3.3`: the after arm, the pools
-  and the stacking in "What runs where", Phase 1b's source trees, and the
-  guide's clones, environment check and campaign commands. The campaigns
-  of the Slurm plan's Phase 8 launch after the pin; the smoke campaigns of
-  its Phase 6 test the machinery and do not wait for it.
+  (`scripts/hpc/README.md`) name `v1.4.0` (`682585f`) for the after arm,
+  the pools and the stacking. One step remains, on the cluster: its source
+  trees hold gpyreg `v1.3.3`, with which the smoke campaigns of the plan's
+  Phase 6 ran, and before the campaigns of Phase 8 a cluster session clones
+  `v1.4.0` beside it and runs the environment check with it (the plan's
+  pickup point).
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -105,13 +105,15 @@ records its execution.
   to 5 and the redaction and guide of Phase 7 are on the branch
   `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
   in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
-  harness test module passes, and with the tools of the plan's Phase 9 and
+  harness test module passes, and on 2026-09-30 up to the move to gpyreg
+  1.4.0 (`fb034058`), and with the tools of the plan's Phase 9 and
   of the promotion of the new reference (the two items below). Phase 1b
   (the survey, the source trees, the frozen environment and its check) and
   Phase 6 (the smoke campaigns, which measured every job's time and
   memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
   branch; the plan's pickup point, on the branch, lists the three checks
-  left for the next cluster session. Next are the brief, which needs only
+  left for the next cluster session, and the clone of gpyreg `v1.4.0` with
+  the environment check before Phase 8. Next are the brief, which needs only
   the stacking's finishing limits from those checks, a review of the
   branch, and the merge into `dev-next`. Needed before
   relying on that workflow for further cluster campaigns, not before local

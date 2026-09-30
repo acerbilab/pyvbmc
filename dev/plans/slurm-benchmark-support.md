@@ -52,6 +52,13 @@ The brief for the postdoc, with the limits of "Resources and cost", and
 the merge into `dev-next` need none of them but the stacking's finishing
 limits.
 
+The cluster's source trees hold gpyreg at `v1.3.3`, with which the
+environment check passed and the smoke campaigns ran. The finish of a
+smoke campaign refuses any other `PYVBMC_GPYREG_SOURCE`, so that tree
+stays. Before Phase 8, a cluster session clones gpyreg at `v1.4.0`
+(`682585f`), the release's minimum, beside it, as the operator's guide
+says, and runs the environment check again with the new tree.
+
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
    Phase 1b and the real output of
@@ -133,7 +140,7 @@ comparison then stacks subsets of each pool.
 
 | Campaign | Where | Code | Size |
 |---|---|---|---|
-| Reference population, after arm | Turso | the release code, gpyreg `v1.3.3` (`98ab5a4`) | the 24 configurations of the `production` suite, seeds 0–99: 2400 runs |
+| Reference population, after arm | Turso | the release code, gpyreg `v1.4.0` (`682585f`) | the 24 configurations of the `production` suite, seeds 0–99: 2400 runs |
 | Reference population, before arm | Turso | PyVBMC `f91fdf0`, gpyreg `v1.2.1` (`9e70e6b`) | the same 2400 runs |
 | S-VBMC run pools | Turso | the release code | the 8 conditions of `svbmc_pool`, seeds 1000–1349 (1000–1479 for the ring): 2930 runs, of which 320 per condition are stacked |
 | Stacking comparison | Turso | the release code and the original S-VBMC 0.1.1 (`13a78f6`) | both arms at `M` = 2, 4, 8, 16 (560 cells); the integrated arm alone at 3, 5, 32 (400 cells); disjoint subsets |
@@ -913,7 +920,7 @@ and the storage quota. **1b**, where the campaigns will run: the same
 survey, with the per-user limits, the node features that select the
 campaigns' node family, and whether `sacct` answers from a compute node
 (a batch job); then the conda environment and the source trees: the
-harness checkout, gpyreg at `v1.3.3` and at `v1.2.1`, the package at
+harness checkout, gpyreg at `v1.4.0` and at `v1.2.1`, the package at
 `f91fdf0` as a detached worktree, and the S-VBMC baseline. The first
 environment built from the direct pins (`campaign_env.sh build`) is
 frozen into `campaign_requirements.txt`: every package and Python to its
@@ -1356,3 +1363,12 @@ reproduces bit for bit.
   (136), public asset (7), honest-ELBO (14) and driver (74) modules pass
   on the developer's machine, none skipped. Three checks remain for the
   next cluster session (the pickup point).
+- 2026-09-30: gpyreg 1.4.0 released, and PyVBMC requires it
+  (`pyproject.toml`'s minimum and CI's pin, PR #178); `dev-next` merged
+  into the branch (`fb034058`). "What runs where", Phase 1b and the
+  operator's guide name gpyreg `v1.4.0` (`682585f`) for the after arm,
+  the pools and the stacking. It reproduces 1.3.3 bit for bit on every
+  oracle output, the GP-fit-history captures and the default golden
+  replays (`dev/TODO.md`, "The final gpyreg release"). The cluster's trees
+  hold `v1.3.3`; the pickup point gives the clone of `v1.4.0` and the
+  environment check with it.

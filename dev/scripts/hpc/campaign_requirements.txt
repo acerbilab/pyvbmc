@@ -16,8 +16,9 @@
 # account, holds the same libraries, but for the pip, setuptools and wheel
 # of conda-forge on the day of the build. The direct requirements were PyVBMC's
 # dependencies (the same at the release and at f91fdf0, the before arm's
-# commit), gpyreg's (the same at v1.2.1 and v1.3.3), the test extra for the
-# harnesses' test modules, psutil for the benchmark scripts, packaging for
+# commit), gpyreg's (the same at v1.2.1 and v1.3.3; those of v1.4.0, which
+# the release requires, are a subset), the test extra for the harnesses'
+# test modules, psutil for the benchmark scripts, packaging for
 # the environment check and CPU Torch for the stacking. pip, setuptools and
 # wheel, which conda installs with the interpreter, are left to conda
 # (dev/scripts/hpc/README.md, "The frozen requirements", says why);

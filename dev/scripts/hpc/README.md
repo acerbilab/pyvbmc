@@ -122,9 +122,9 @@ changed in it. Clone them on the login node, with `LOGIN_SETUP` run first:
 git clone https://github.com/acerbilab/pyvbmc "$TREES/pyvbmc"
 git -C "$TREES/pyvbmc" checkout --detach <release commit>
 
-# gpyreg at v1.3.3 (98ab5a4), for the after arm, the pools and the stacking.
-git clone https://github.com/acerbilab/gpyreg "$TREES/gpyreg-v1.3.3"
-git -C "$TREES/gpyreg-v1.3.3" checkout --detach v1.3.3
+# gpyreg at v1.4.0 (682585f), for the after arm, the pools and the stacking.
+git clone https://github.com/acerbilab/gpyreg "$TREES/gpyreg-v1.4.0"
+git -C "$TREES/gpyreg-v1.4.0" checkout --detach v1.4.0
 
 # gpyreg at v1.2.1 (9e70e6b), for the before arm.
 git clone https://github.com/acerbilab/gpyreg "$TREES/gpyreg-v1.2.1"
@@ -227,14 +227,14 @@ holds the same libraries.
 The test modules of the contract, the driver and the three harnesses run
 as one batch job on the campaigns' node family, from the harness checkout,
 with the release trees: `REPO` the harness checkout, `PYVBMC_GPYREG_SOURCE`
-the gpyreg v1.3.3 checkout, `BASELINE_DIR` the S-VBMC checkout, and
+the gpyreg v1.4.0 checkout, `BASELINE_DIR` the S-VBMC checkout, and
 `PYVBMC_SOURCE` unset. The subshell keeps those settings, and the
 `CAMPAIGN_DIR` whose `tmp/` becomes the job's `TMPDIR`, out of the shell
 you work in:
 
 ```bash
 (
-    export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.3.3 \
+    export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0 \
         BASELINE_DIR=$TREES/S-VBMC CAMPAIGN_DIR=$RUNS/environment_check
     unset PYVBMC_SOURCE
     mkdir -p "$CAMPAIGN_DIR"
@@ -302,7 +302,7 @@ cases in each arm, with `HARNESS=dev/scripts/population_run.py`:
 | Arm | `PYVBMC_SOURCE` | `PYVBMC_GPYREG_SOURCE` |
 |---|---|---|
 | before | `$TREES/pyvbmc-f91fdf0` | `$TREES/gpyreg-v1.2.1` |
-| after | unset (the harness checkout's own package) | `$TREES/gpyreg-v1.3.3` |
+| after | unset (the harness checkout's own package) | `$TREES/gpyreg-v1.4.0` |
 
 Both arms use the same harness checkout, environment and node family, so
 that they differ in their code alone. Prepare the before arm first: the
@@ -396,7 +396,7 @@ such stages, apart from the boost summary's usability counts.
 The 8 conditions of the `svbmc_pool` suite, seeds from 1000, 350 seeds
 each and 480 for the ring, 2930 cases, with
 `HARNESS=dev/scripts/svbmc_pool_run.py` and `PYVBMC_GPYREG_SOURCE` the
-gpyreg v1.3.3 checkout. The first submission prepares the pool and runs
+gpyreg v1.4.0 checkout. The first submission prepares the pool and runs
 its first case; the canary then runs the first case of every other
 condition (case 1 is the first condition's, already submitted):
 
@@ -445,7 +445,7 @@ makes.
 Both arms at `M` = 2, 4, 8 and 16 and the integrated arm alone at 3, 5 and
 32, on disjoint subsets of each condition's 320 selected runs, with
 `HARNESS=dev/scripts/svbmc_pool_stack.py`, `PYVBMC_GPYREG_SOURCE` the
-gpyreg v1.3.3 checkout and `BASELINE_DIR` the S-VBMC checkout, from a
+gpyreg v1.4.0 checkout and `BASELINE_DIR` the S-VBMC checkout, from a
 finished pool: `prepare` refuses a pool whose `verification.json` is
 absent or did not pass, or whose `selection.json` is absent, was made
 before its last `verify`, disagrees with it or was not made with the
@@ -886,7 +886,7 @@ harness, whose worker takes a case line where their task script passes a
 label and a seed; the harness and its test module have changed since in
 other ways too, and the sections below describe them as they were for
 that campaign. Its prerequisites install gpyreg 1.2.1, which the
-`pyproject.toml` of the release (gpyreg 1.3.3 or later) excludes.
+`pyproject.toml` of the release (gpyreg 1.4.0 or later) excludes.
 
 ### Prerequisites
 
