@@ -24,8 +24,11 @@ the state directory named by ``STUB_STATE``:
   joined by ``|``; either fails when ``sacct/<step>.fail`` exists and
   prints nothing when ``sacct/<step>`` does not. Any other ``sacct`` call
   (the finish's accounting) is recorded in ``sacct_calls`` and prints
-  ``sacct_accounting`` (a header alone by default), or fails when
-  ``sacct_fail`` exists.
+  ``sacct_accounting`` (a header by default), then an allocation row for
+  each requested job that it does not hold and ``sacct_absent`` does not
+  list (one job id per line): in the state ``sacct/<job>`` records for a
+  step job, ``COMPLETED`` for an array job. It fails when ``sacct_fail``
+  exists.
 - ``scontrol show config`` prints ``MaxArraySize = <max_array_size>`` (1001
   by default) unless ``scontrol_fail`` exists; ``scontrol show node <name>``
   prints the node with the features of ``features`` (``stubfeat`` by
@@ -156,11 +159,26 @@ if [ -z "$query" ]; then
         echo "sacct: error: Problem talking to the database" >&2
         exit 1
     fi
-    if [ -f "$state/sacct_accounting" ]; then
-        cat "$state/sacct_accounting"
+    accounting="$state/sacct_accounting"
+    if [ -f "$accounting" ]; then
+        cat "$accounting"
     else
-        echo "JobID|JobName|State"
+        echo "JobID|JobName|State|ExitCode|Elapsed|MaxRSS|AllocCPUS|NodeList"
     fi
+    # An allocation row for each requested job that the given accounting
+    # does not hold and sacct_absent does not list, in the state the stub
+    # recorded for a step job and COMPLETED for an array job.
+    for id in ${job//,/ }; do
+        if [ -f "$accounting" ] && grep -q "^${id}[_.|[]" "$accounting"; then
+            continue
+        fi
+        if [ -f "$state/sacct_absent" ] \
+            && grep -qx "$id" "$state/sacct_absent"; then
+            continue
+        fi
+        word=$(head -n 1 "$state/sacct/$id" 2>/dev/null || echo COMPLETED)
+        echo "$id|stub|${word:-COMPLETED}|0:0|00:00:01||1|stubnode"
+    done
     exit 0
 fi
 echo "$job" >> "$state/sacct_queries"

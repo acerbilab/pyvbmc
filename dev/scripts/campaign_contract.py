@@ -2216,12 +2216,13 @@ def environment_differences(
     Every pinned package must be installed once at its pinned version
     (PEP 440's ``==``, under which a pin without a local label matches an
     installed version with one), and every installed package must be
-    pinned, except those installed from a path or editable (the source
-    trees, such as PyVBMC and gpyreg) and those conda installed (the
-    interpreter's own ``pip``, ``setuptools`` and ``wheel``, and what they
-    depend on, ``packaging`` among them). A package conda installed is
-    never one installed from a path, whatever its ``direct_url.json``
-    says, and when pinned it must be at its pinned version. The
+    pinned, except those installed from a source tree, editable or not
+    (such as PyVBMC and gpyreg; a local archive is no source tree), and
+    those conda installed (the interpreter's own ``pip``, ``setuptools``
+    and ``wheel``, and what they depend on, ``packaging`` among them). A
+    package conda installed is never one installed from a source tree,
+    whatever its ``direct_url.json`` says, and when pinned it must be at
+    its pinned version. The
     interpreter must match the ``# python==`` pin to its precision.
     """
     pins = read_requirements(requirements)
@@ -2910,10 +2911,12 @@ def queue_state(slurm_dir, query=None):
 def accounting_problems(slurm_dir):
     """Why the accounting does not show every recorded task ended.
 
-    Each allocation row of ``slurm/sacct.txt`` (:func:`accounting_rows`,
-    the rows of the jobs' steps left out) of a recorded job whose state is
-    not one of :data:`ENDED_STATES`, and the file's absence when any job is
-    recorded. Empty when there is nothing to hold the archive back.
+    Each recorded job that has no allocation row in ``slurm/sacct.txt``
+    (:func:`accounting_rows`, the rows of the jobs' steps left out), as a
+    job the database has not yet received; each allocation row of a
+    recorded job whose state is not one of :data:`ENDED_STATES`; and the
+    file's absence when any job is recorded. Empty when there is nothing to
+    hold the archive back.
     """
     jobs = [entry["job"] for entry in recorded_jobs(slurm_dir)]
     if not jobs:
@@ -2924,12 +2927,17 @@ def accounting_problems(slurm_dir):
             "the accounting of the recorded jobs (slurm/sacct.txt) is "
             "missing: sacct failed"
         ]
-    return [
-        f"{job_id} is {state} in slurm/sacct.txt"
-        for job in jobs
-        for job_id, state in rows.get(job, [])
-        if state not in ENDED_STATES
-    ]
+    problems = []
+    for job in jobs:
+        if not rows.get(job):
+            problems.append(f"{job} has no allocation row in slurm/sacct.txt")
+            continue
+        problems.extend(
+            f"{job_id} is {state} in slurm/sacct.txt"
+            for job_id, state in rows[job]
+            if state not in ENDED_STATES
+        )
+    return problems
 
 
 def job_exit(job, timeout=60):

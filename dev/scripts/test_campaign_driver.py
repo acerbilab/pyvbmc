@@ -1439,6 +1439,8 @@ def test_the_real_affinity_of_a_task_reaches_verify(world):
 
 def test_a_queue_that_cannot_answer_holds_the_finish(world):
     out = finished_tasks(world)
+    # Neither the queue nor the accounting answers for the job yet.
+    (world.state / "sacct_absent").write_text("1001\n", encoding="utf-8")
     (world.state / "squeue").mkdir(exist_ok=True)
     (world.state / "squeue" / "1001.fail").write_text("", encoding="utf-8")
     result = world.finish("c1")
@@ -1541,6 +1543,33 @@ def test_the_archive_waits_for_the_accounting(world):
     assert list(world.campaigns.glob("c1.tar.zst.000"))
 
 
+def test_the_archive_waits_for_every_recorded_job_in_the_accounting(world):
+    """A recorded job that the accounting does not hold (the database has
+    not received it yet) holds the archive back; the accounting taken for
+    the archive holds the finish's own step jobs."""
+    out = finished_tasks(world)
+    (world.state / "sacct_absent").write_text("1001\n", encoding="utf-8")
+    result = world.finish("c1")
+    assert result.returncode == 1
+    assert "1001 has no allocation row in slurm/sacct.txt" in result.stderr
+    assert "not archiving" in result.stderr
+    assert not list(world.campaigns.glob("c1.tar.zst*"))
+    (world.state / "sacct_absent").unlink()
+    ok(world.finish("c1"))
+    assert list(world.campaigns.glob("c1.tar.zst.000"))
+    steps = [
+        line.split()[0]
+        for line in (out / "slurm" / "steps.txt")
+        .read_text("utf-8")
+        .splitlines()
+        if " submitted " in line
+    ]
+    assert steps
+    last = (world.state / "sacct_calls").read_text("utf-8").splitlines()[-1]
+    jobs = last.split("-j ", 1)[1].split()[0].split(",")
+    assert set(steps) <= set(jobs)
+
+
 def test_a_step_job_is_recorded_before_the_finish_waits_for_it(world):
     """A finish stopped while it waits leaves a job the next one sees."""
     out = finished_tasks(world)
@@ -1595,6 +1624,10 @@ def test_the_finish_stops_waiting_for_a_step_at_its_limit(world):
     refused(
         world.finish("c1", STEP_WAIT_LIMIT="1h"),
         "STEP_WAIT_LIMIT=1h is not a number of seconds",
+    )
+    refused(
+        world.finish("c1", STEP_POLL="0"),
+        "STEP_POLL=0 is not a positive number of seconds",
     )
     (world.state / "step_hold").write_text("", encoding="utf-8")
     result = world.finish("c1", "--no-archive", STEP_WAIT_LIMIT="0.3")

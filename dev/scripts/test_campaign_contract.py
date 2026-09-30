@@ -2479,6 +2479,16 @@ def test_the_archive_waits_for_the_accounting(tmp_path):
         "1001_2 is RUNNING in slurm/sacct.txt",
         "1001_[3] is PENDING in slurm/sacct.txt",
     ]
+    # A recorded job the database has not received holds the archive too.
+    records = slurm_records(
+        out,
+        ["1001 array=1-1 offset=0"],
+        ["1005 step=verify rc=0"],
+        accounting=["1001_1|c1|COMPLETED|0:0|n1"],
+    )
+    assert contract.accounting_problems(records) == [
+        "1005 has no allocation row in slurm/sacct.txt"
+    ]
 
 
 def test_the_finish_judges_the_allocation_rows_alone(tmp_path, slurm):

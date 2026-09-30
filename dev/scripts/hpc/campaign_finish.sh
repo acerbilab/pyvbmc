@@ -42,9 +42,11 @@
 # 4. The harness's finishing steps, the manifest's "finishing_steps", each
 #    a batch job in turn (slurm/<step>_<job>.out).
 # 5. Unless --no-archive, and never while a task is queued, may still run
-#    or is in flight, or while the accounting of step 1 shows a recorded
-#    task that has not ended or is missing (campaign_contract.py
-#    archive-check): the whole directory as <parent>/<name>.tar.zst.000,
+#    or is in flight: the accounting again (slurm/sacct.txt, now with the
+#    jobs of steps 3 and 4), and never while it is missing or shows a
+#    recorded job with no allocation row or a recorded task that has not
+#    ended (campaign_contract.py archive-check); then the whole directory as
+#    <parent>/<name>.tar.zst.000,
 #    .001, ..., zstd-compressed parts of at most ARCHIVE_PART_SIZE (default
 #    1900M, below GitHub's 2 GiB per release asset), with their SHA-256 in
 #    <parent>/<name>.tar.zst.sha256.
@@ -68,10 +70,10 @@
 #
 # Environment (optional, beyond the submission's): VERIFY_TIME (01:00:00)
 # and VERIFY_MEM (2G) size the verify job, FINISH_TIME (01:00:00) and
-# FINISH_MEM (2G) each finishing step; STEP_POLL (30) is the seconds between
-# two looks at the accounting while a step job runs, and STEP_WAIT_LIMIT
-# (86400, a day) the seconds the finish waits for one step job, 0 for no
-# limit.
+# FINISH_MEM (2G) each finishing step; STEP_POLL (30, above 0) is the
+# seconds between two looks at the accounting while a step job runs, and
+# STEP_WAIT_LIMIT (86400, a day) the seconds the finish waits for one step
+# job, 0 for no limit.
 set -euo pipefail
 
 usage() {
@@ -121,8 +123,10 @@ done
 PARTITION=${PARTITION:-}
 SBATCH_EXTRA=${SBATCH_EXTRA:-}
 STEP_POLL=${STEP_POLL:-30}
+# Above 0: a poll of 0 would query the accounting database without pause.
 [[ $STEP_POLL =~ ^[0-9]+([.][0-9]+)?$ ]] \
-    || refuse "STEP_POLL=$STEP_POLL is not a number of seconds"
+    && awk -v s="$STEP_POLL" 'BEGIN { exit !(s > 0) }' \
+    || refuse "STEP_POLL=$STEP_POLL is not a positive number of seconds"
 STEP_WAIT_LIMIT=${STEP_WAIT_LIMIT:-86400}
 [[ $STEP_WAIT_LIMIT =~ ^[0-9]+([.][0-9]+)?$ ]] \
     || refuse "STEP_WAIT_LIMIT=$STEP_WAIT_LIMIT is not a number of seconds"
@@ -145,11 +149,16 @@ mkdir -p "$SLURM_DIR"
 touch "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt"
 JOB_NAME=$(basename "$CAMPAIGN_DIR" | tr -c 'A-Za-z0-9_.+=\n-' '_')
 
-# 1. The accounting of every recorded job.
-JOBS=$(cat "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt" \
-    | awk '$1 ~ /^[0-9]+$/ && !seen[$1]++ { print $1 }' | paste -sd, -)
-if [ -n "$JOBS" ]; then
-    if sacct -P --units=M -j "$JOBS" \
+# account: the accounting of every recorded job into slurm/sacct.txt,
+# removed when sacct fails.
+account() {
+    local jobs
+    jobs=$(cat "$SLURM_DIR/jobs.txt" "$SLURM_DIR/steps.txt" \
+        | awk '$1 ~ /^[0-9]+$/ && !seen[$1]++ { print $1 }' | paste -sd, -)
+    if [ -z "$jobs" ]; then
+        return 0
+    fi
+    if sacct -P --units=M -j "$jobs" \
         --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS,AllocCPUS,NodeList \
         > "$SLURM_DIR/sacct.txt" < /dev/null; then
         echo "accounting in $SLURM_DIR/sacct.txt"
@@ -157,7 +166,10 @@ if [ -n "$JOBS" ]; then
         rm -f "$SLURM_DIR/sacct.txt"
         echo "sacct failed; the finish has no accounting of the campaign" >&2
     fi
-fi
+}
+
+# 1. The accounting of every recorded job.
+account
 
 # 2. The queue, one query per job: an id that has aged out of the queue
 #    makes squeue fail, which must not hide another job's tasks.
@@ -260,6 +272,9 @@ if [ "$ARCHIVE" = 1 ]; then
             "run or are in flight; run again when they are done" >&2
         exit 1
     fi
+    # The accounting again, which now holds the jobs of verify and the
+    # finishing steps too, and must show every recorded job ended.
+    account
     if ! python "$CONTRACT" archive-check --slurm "$SLURM_DIR"; then
         echo "not archiving: the accounting does not show every recorded" \
             "task ended; run again when it does" >&2

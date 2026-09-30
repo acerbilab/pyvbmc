@@ -6,7 +6,8 @@
 # campaign_finish.sh refuse an environment that differs from it
 # (campaign_contract.py check-env). PyVBMC and gpyreg come from the
 # campaign's source trees and are not pinned here: the check exempts a
-# package installed from a path or editable, and one that conda installed.
+# package installed from a source tree, editable or not, and one that
+# conda installed.
 #
 # The file is frozen (Phase 1b of the plan, 2026-09-28): it pins every
 # package of the first environment built from the direct requirements,

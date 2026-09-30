@@ -18,7 +18,9 @@
 # source tree git cannot read, the node's features that `scontrol show
 # node` does not give after its retries) or whose source part differs from
 # the manifest's (these three leaving the case's files as they are) and 128
-# plus the signal's number when a signal stopped it. The script execs
+# plus the signal's number when a signal stopped it. Before the worker, it
+# exits 2 when its line of cases.txt holds no case, and 1, with no error
+# file, when the environment cannot be activated. The script execs
 # the worker, so that the signals Slurm sends reach it. At the time limit
 # or on scancel Slurm sends SIGTERM, and the worker removes the case's
 # partial files and its claim before it exits: `verify` reports the case as
