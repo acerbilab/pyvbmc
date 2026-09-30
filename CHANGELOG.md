@@ -59,8 +59,8 @@ An error is raised for calls and values that 1.0.4 accepted:
   also in an options file or in `VBMC.load(new_options=...)`, and a value it
   cannot use raise an error that says what is expected.
   `search_optimizer="Nelder-Mead"`, `acq_hedge=True`, `noise_shaping=True`,
-  `uncertainty_handling=[1]` and an `integer_vars` of `D` entries that are all
-  0 or 1, which could be a mask or indices, are among them. A file saved by
+  `uncertainty_handling=[1]` and an `integer_vars` of `D` integers that are
+  all 0 or 1, which could be a mask or indices, are among them. A file saved by
   1.0.4 that holds `uncertainty_handling=[1]`, or `"Nelder-Mead"` for a
   problem of one variable, loads with the value restated.
 - An option given as a function of the number of components receives it by
@@ -143,7 +143,7 @@ An error is raised for calls and values that 1.0.4 accepted:
   do not count as evaluations of the run, and with a separate prior `y` holds
   log-likelihood values. `initialization_cost=k` charges `k` evaluations
   against `max_fun_evals` for work done before the run. `results` counts the
-  evaluations in `precomputed_observations` and their points in
+  evaluations in `precomputed_observations` and their distinct points in
   `precomputed_locations`, and reports the charge in `evaluation_budget`.
 - **Machine calibration (optional).** `pyvbmc.calibrate()` measures, in tens
   of seconds, the block sizes that suit your machine for the posterior density
@@ -228,7 +228,7 @@ An error is raised for calls and values that 1.0.4 accepted:
     posterior an input warp starts from, are chosen by `rank_criterion`,
     `best_safe_sd` and `best_frac_back`, which 1.0.4 ignored; an iteration
     whose ELCBO is NaN ranks last by ELCBO, and without the ranking criterion
-    it is passed over.
+    it is passed over unless every one's is.
   - Smaller corrections: the initial widths of the components in the
     variational optimization; the exact entropy of a posterior with one
     component; `x0` and the bounds converted to double precision whatever
@@ -252,10 +252,9 @@ An error is raised for calls and values that 1.0.4 accepted:
 - **Options are checked.** An option name PyVBMC does not know, or a value it
   cannot use, raises an error that says what is expected, at construction and
   in `VBMC.load(new_options=...)`, and a value also when `VBMC.load` finds it
-  in a saved run, where 1.0.4 could ignore it, misread it, or fail on it
-  part-way through a run. The
-  options page of the documentation, and `repr(vbmc.options)`, give what each
-  option accepts.
+  in a saved run. 1.0.4 could ignore such an option, misread it, or fail on it
+  part-way through a run. The options page of the documentation, and
+  `repr(vbmc.options)`, give what each option accepts.
   - `integer_vars` takes a boolean mask or the 0-based indices of the integer
     variables, where 1.0.4 made every variable an integer variable when given
     a plain list; a list or array of `D` integers that are all 0 or 1 is

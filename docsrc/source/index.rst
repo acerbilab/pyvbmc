@@ -29,10 +29,11 @@ for using it effectively. Highlights include:
 - **Faster inference and lower memory use**, with numerical improvements and more
   compact run histories. Optional :doc:`performance calibration <api/functions/calibrate>`
   tunes PyVBMC for your machine.
-- **Corrections to the algorithm**, most of them from a systematic comparison
-  with the original MATLAB VBMC, a check that keeps the final boost from
-  replacing a good posterior with a worse one, and clear errors for option
-  values that earlier versions ignored or misread.
+- **Corrections and safeguards**, with corrections to the algorithm, most of
+  them from a systematic comparison with the original MATLAB VBMC; a check
+  that keeps the final boost from replacing a good posterior with a much worse
+  one; and clear errors for option values that earlier versions ignored or
+  misread.
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC
   to combine posteriors from independent runs
   (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__;
@@ -47,8 +48,9 @@ for using it effectively. Highlights include:
   :ref:`Bring a PyMC model into PyVBMC`.
 - **Posterior exports to Torch and ArviZ** for further analysis;
   see :ref:`Use a fitted posterior downstream`.
-- **More practical guidance**, with tips during runs, a :doc:`PyVBMC FAQ <faq>`,
-  and a :mainbranch:`coding-agent skill <skills/pyvbmc/SKILL.md>` that points
+- **More practical guidance**, with tips when a run starts, a
+  :doc:`PyVBMC FAQ <faq>`, and a
+  :mainbranch:`coding-agent skill <skills/pyvbmc/SKILL.md>` that points
   agents to the relevant documentation.
 
 The :mainbranch:`changelog <CHANGELOG.md>` lists what changed since PyVBMC
