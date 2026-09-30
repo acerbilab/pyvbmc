@@ -112,10 +112,10 @@ records its execution.
   job's time and memory) ran on the cluster on 2026-09-28/29, and their
   fixes are on the branch. A doublecheck of the whole branch before the
   merge (2026-09-30), by seven reviewers, found a privacy leak and some
-  twenty issues; the PI ruled on those that needed it, and the fixes are
-  on the branch, whose test modules pass but for four that run again
-  after the last fixes (the plan's worklog). Next are those four, the
-  PI's review and the merge into `dev-next` (PI, 2026-09-30);
+  twenty issues; the PI ruled on those that needed it, the fixes are on
+  the branch, and every harness test module passes (the plan's
+  worklog). Next are the PI's review and the merge into `dev-next` (PI,
+  2026-09-30);
   then, before Phase 8, the three checks of the next cluster session and
   the clone of gpyreg `v1.4.0` with the environment check (the plan's
   pickup point), and the brief, which needs the stacking's finishing

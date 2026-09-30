@@ -37,9 +37,8 @@ it.
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
 **Pickup point.** The code is complete on `feat-slurm-campaigns`
-(pushed), and its test modules pass on the developer's machine but for
-four that run again after the last fixes (the worklog, 2026-09-30). The
-branch merges into
+(pushed), and every test module of the harnesses passes on it on the
+developer's machine (the worklog, 2026-09-30). The branch merges into
 `dev-next` after the PI's review; the campaigns of Phase 8 run from the
 release commit. The cluster work, in the PI's account, is Phase 1b, then
 Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
@@ -1490,6 +1489,7 @@ reproduces bit for bit.
   fixture of the analysis module, which failed with a `MemoryError` while
   the machine ran short of memory (the module had passed whole, 55, on the
   same code before). After the reviewer's fixes the contract module passed
-  (139); the runs of the public asset's, analysis, pool and driver modules
-  were stopped when the machine ran short of memory again, and those four
-  run again before the merge.
+  (139), and at `c5f56bd3`, whose code is that of the fixes, the public
+  asset's (9), analysis (55), pool (76) and driver (75) modules, none
+  skipped, the checkout clean after them; so every harness test module
+  passes on the fixes.
