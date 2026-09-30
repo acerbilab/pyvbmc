@@ -394,25 +394,30 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
 
 ### Phase 4 — verification and delivery
 
-- [ ] Sol: the focused tests (the two new modules, `test_runtime_tips.py`, the
+- [x] Sol: the focused tests (the two new modules, `test_runtime_tips.py`, the
   calibration and options tests, `test_vbmc_seed.py`), then the whole suite
   once (`python -m pytest --reruns=5 -x -vv`), one heavy process at a time.
-- [ ] Sol: `python dev/scripts/make_oracle_fixtures.py --check --exact` on the
+  2026-09-30, at `4b247bfd`, BLAS single-threaded: 2574 passed, 81 skipped,
+  one test passing on its rerun.
+- [x] Sol: `python dev/scripts/make_oracle_fixtures.py --check --exact` on the
   machine that generated the fixtures (`dev/scripts/runs/LOCAL.md`), BLAS
-  single-threaded: the change must move nothing.
-- [ ] Sol: the Sphinx build with the example notebooks copied in, as
+  single-threaded: the change must move nothing. 2026-09-30: 12 of 12
+  fixtures exact.
+- [x] Sol: the Sphinx build with the example notebooks copied in, as
   `make github` does; the new API page, the FAQ entry and the tips sections
-  render, and the build adds no warning.
-- [ ] Sol: one call of `pyvbmc.check_for_updates()` against the real PyPI from
+  render, and the build adds no warning. 2026-09-30: no warning at all.
+- [x] Sol: one call of `pyvbmc.check_for_updates()` against the real PyPI from
   the development environment; before 1.5 is on PyPI it reports a development
-  install and 1.0.4 as the latest release.
-- [ ] A fresh Sol reviewer, read-only: the diff against this plan, the
+  install and 1.0.4 as the latest release. 2026-09-30: it did, and
+  `import pyvbmc` left `urllib.request` unimported.
+- [~] A fresh Sol reviewer, read-only: the diff against this plan, the
   decisions as ruled, the invariants (no network request outside
   `check_for_updates()`, no effect on results or random streams, no file
   written but the reminder's state file), the tests' independence from the
   calendar, the network and the user's cache directory, and the
   documentation. Findings resolved, affected checks rerun.
-- [ ] The CI test matrix on the feature branch, as the tips work ran it
+- [~] The CI test matrix on the feature branch
+  ([run 36720287353](https://github.com/acerbilab/pyvbmc/actions/runs/36720287353)), as the tips work ran it
   (`dev/plans/runtime-tips.md`, "Delivery checklist"); merge into `dev-next`
   with the PI's approval, before the Phase 8 launch (D6); remove the branch.
 
