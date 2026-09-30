@@ -17,8 +17,9 @@ the published [documentation](https://acerbilab.github.io/pyvbmc/) is built.
 For another version, use the corresponding Git tag or branch and check API
 signatures and docstrings in that version.
 
-When the user reports a problem with PyVBMC, run `pyvbmc.check_for_updates()`,
-which asks PyPI for the latest release: the fix may be released already. See
+When the user reports a problem with PyVBMC, run `pyvbmc.check_for_updates()`
+(PyVBMC 1.5 or later; an earlier version has a newer release), which asks
+PyPI for the latest release: the fix may be released already. See
 the [`check_for_updates` API](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/functions/check_for_updates.rst).
 
 ## What to read

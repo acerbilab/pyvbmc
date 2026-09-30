@@ -35,18 +35,22 @@ records its execution.
   `basic_vbmc_options.ini`; a change to what the feature does also reaches
   the changelog's "Tips" entry and the "What's new" blocks. The stored
   outputs of Examples 4, 5 and 7 show tips, and are executed again at the
-  release.
+  release. The old-release reminder of the item below shares the tips' slot
+  and switches; it is described in the same places and in the FAQ's entry on
+  newer versions, the `check_for_updates` API page and the changelog's
+  "Update reminders" entry.
 
 - [ ] **Update reminders.** A reminder, with no network access, when the
   installed release is more than a year old (at most three times per
   version, 90 days apart), and `pyvbmc.check_for_updates()`, which asks PyPI
   when the user calls it; no automatic network check (PI, 2026-09-30). The
-  12-month threshold stands on a release at least once a year. The
-  [plan](plans/version-check.md) holds the design, the decisions still
-  awaiting the PI and the phases. The work merges before the launch
-  of the Slurm plan's Phase 8, unless the PI rules otherwise. The reminder
-  shares the start-of-run slot with the tips, so the review of the tips
-  covers both.
+  [plan](plans/version-check.md) holds the design, the PI's rulings and the
+  record of the work. Implemented and verified on `feat-update-reminders`
+  (2026-09-30); open: the CI matrix, the merge into `dev-next` before the
+  launch of the Slurm plan's Phase 8 (the PI's approval), and the PI's
+  reading of the four messages of `check_for_updates()` written during the
+  implementation (the plan, "Design"). The review of the tips covers the
+  reminder, which shares their slot.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -363,6 +367,11 @@ records its execution.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 
 ## Dependencies and working rules
+
+- A release at least once a year: the old-release reminder tells a user of
+  a release more than a year old that a newer version may exist, so a longer
+  gap reminds users of the latest release (PI, 2026-09-30;
+  [plans/version-check.md](plans/version-check.md), D1).
 
 - "In scope for 1.5" is empty when 1.5 is done: each of its items is either
   done or decided not to be done, with the reason recorded where its work

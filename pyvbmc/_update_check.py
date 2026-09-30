@@ -15,6 +15,9 @@ from importlib.metadata import PackageNotFoundError, distribution, version
 from typing import NamedTuple
 
 PYPI_JSON_URL = "https://pypi.org/pypi/pyvbmc/json"
+# The longest accepted timeout, in seconds, and the largest reply read.
+MAX_TIMEOUT = 3600.0
+MAX_REPLY_BYTES = 16 * 1024 * 1024
 
 PIP_COMMAND = "python -m pip install --upgrade pyvbmc"
 CONDA_COMMAND = "conda update --channel=conda-forge pyvbmc"
@@ -88,15 +91,18 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
 
     The latest release is the highest version of the form ``X.Y.Z`` on PyPI
     with at least one file that is not yanked, so that pre-releases,
-    development releases and yanked releases are ignored. An installed
-    version of any other form, such as a development install, is reported
-    beside the latest release without being compared with it.
+    development releases and yanked releases are ignored. PyPI documents the
+    list of releases in this reply as deprecated; a reply without it gives
+    the version PyPI reports as its latest. An installed version of any
+    other form, such as a development install, is reported beside the
+    latest release without being compared with it.
 
     Parameters
     ----------
     timeout : float, optional
-        Seconds to wait for PyPI to connect and to reply. The default is
-        ``5.0``.
+        Timeout in seconds for each network operation: the connection, and
+        each read of the reply. The lookup of PyPI's address is not bounded
+        by it. At most 3600; the default is ``5.0``.
 
     Returns
     -------
@@ -111,19 +117,15 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     Raises
     ------
     ValueError
-        If `timeout` is not a finite positive number, or is a bool. A
-        network, HTTP or parse failure raises nothing: the printed message
-        gives its reason, and the returned tuple holds ``latest=None``.
+        If `timeout` is not a positive number of seconds of at most 3600, or
+        is a bool. A network, HTTP or parse failure raises nothing: the
+        printed message gives its reason, and the returned tuple holds
+        ``latest=None``.
     """
-    if (
-        isinstance(timeout, bool)
-        or not isinstance(timeout, numbers.Real)
-        or not math.isfinite(timeout)
-        or timeout <= 0
-    ):
+    if not _is_valid_timeout(timeout):
         raise ValueError(
-            "timeout must be a finite positive number of seconds, "
-            f"got {timeout!r}"
+            "timeout must be a positive number of seconds, at most "
+            f"{MAX_TIMEOUT:g}, got {timeout!r}"
         )
 
     installed = _installed_version()
@@ -159,6 +161,17 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     return UpdateCheck(installed, latest, update_available)
 
 
+def _is_valid_timeout(timeout: object) -> bool:
+    """Return whether `timeout` is a real number in (0, MAX_TIMEOUT]."""
+    if isinstance(timeout, bool) or not isinstance(timeout, numbers.Real):
+        return False
+    try:
+        value = float(timeout)
+    except (OverflowError, ValueError):
+        return False
+    return math.isfinite(value) and 0.0 < value <= MAX_TIMEOUT
+
+
 def _installed_version() -> str | None:
     try:
         return version("pyvbmc")
@@ -192,7 +205,11 @@ def _parse_release(text: str | None) -> tuple[int, int, int] | None:
     match = _FINAL_RELEASE.fullmatch(text)
     if match is None:
         return None
-    return tuple(int(part) for part in match.groups())
+    try:
+        return tuple(int(part) for part in match.groups())
+    except ValueError:
+        # More digits than int() converts from a string.
+        return None
 
 
 def _latest_release(releases: dict) -> str | None:
@@ -235,7 +252,7 @@ def _fetch_latest_release(
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            body = response.read()
+            body = response.read(MAX_REPLY_BYTES + 1)
     except urllib.error.HTTPError as error:
         return None, f"HTTP {error.code}"
     except urllib.error.URLError as error:
@@ -244,15 +261,25 @@ def _fetch_latest_release(
         return None, _describe_error(error)
     except http.client.HTTPException:
         return None, "unreadable reply"
+    if len(body) > MAX_REPLY_BYTES:
+        return None, "unreadable reply"
 
     try:
         data = json.loads(body)
     except (ValueError, RecursionError):
         return None, "unreadable reply"
-    releases = data.get("releases") if isinstance(data, dict) else None
-    if not isinstance(releases, dict):
+    if not isinstance(data, dict):
         return None, "unreadable reply"
-    latest = _latest_release(releases)
+    releases = data.get("releases")
+    if isinstance(releases, dict):
+        latest = _latest_release(releases)
+    else:
+        # PyPI documents the releases key as deprecated; without it, the
+        # version of the project's info is PyPI's latest release.
+        info = data.get("info")
+        latest = info.get("version") if isinstance(info, dict) else None
+        if _parse_release(latest) is None:
+            return None, "unreadable reply"
     if latest is None:
         return None, "no release found"
     return latest, None

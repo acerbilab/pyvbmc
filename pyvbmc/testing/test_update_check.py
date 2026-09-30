@@ -56,10 +56,10 @@ class _Response:
         self.body = body
         self.read_error = read_error
 
-    def read(self):
+    def read(self, amount=-1):
         if self.read_error is not None:
             raise self.read_error
-        return self.body
+        return self.body if amount < 0 else self.body[:amount]
 
     def __enter__(self):
         return self
@@ -248,6 +248,38 @@ def test_releases_that_do_not_count_are_ignored(install, pypi, capsys):
     )
 
 
+def test_malformed_release_entries_are_skipped(install, pypi, capsys):
+    install("1.0.4")
+    pypi.reply = {
+        "releases": {
+            # Not a list of files, and a file that is not a mapping.
+            "1.6.0": "pyvbmc-1.6.0.tar.gz",
+            "1.5.0": ["pyvbmc-1.5.0.tar.gz"],
+            # More digits than int() converts from a string.
+            "1" * 5000 + ".0.0": [_file()],
+            # A file without the yanked key is not yanked.
+            "1.4.0": [{"filename": "pyvbmc-1.4.0.tar.gz"}],
+        }
+    }
+    assert check_for_updates() == UpdateCheck("1.0.4", "1.4.0", True)
+    assert "PyVBMC 1.4.0 is available" in capsys.readouterr().out
+
+
+def test_reply_without_releases_gives_the_info_version(install, pypi, capsys):
+    install("1.0.4")
+    pypi.reply = {"info": {"version": "1.5.0"}}
+    assert check_for_updates() == UpdateCheck("1.0.4", "1.5.0", True)
+    assert "PyVBMC 1.5.0 is available" in capsys.readouterr().out
+
+
+def test_oversized_reply_is_unreadable(install, pypi, capsys, monkeypatch):
+    install("1.0.4")
+    monkeypatch.setattr(_update_check, "MAX_REPLY_BYTES", 64)
+    pypi.reply = _releases(*[f"1.{minor}.0" for minor in range(20)])
+    assert check_for_updates() == UpdateCheck("1.0.4", None, None)
+    assert capsys.readouterr().out == _failure("unreadable reply")
+
+
 def test_fully_yanked_newest_release_is_not_offered(install, pypi, capsys):
     install("1.5.0")
     pypi.reply = {
@@ -350,9 +382,12 @@ def test_fully_yanked_newest_release_is_not_offered(install, pypi, capsys):
         pytest.param(
             None,
             None,
-            {"info": {"version": "1.5.0"}},
+            {"info": {"version": "2.0.0rc1"}},
             "unreadable reply",
-            id="no-releases",
+            id="no-releases-and-no-final-info-version",
+        ),
+        pytest.param(
+            None, None, {"info": {}}, "unreadable reply", id="no-version"
         ),
         pytest.param(
             None,
@@ -418,7 +453,13 @@ def test_update_command_follows_installer(
 
 @pytest.mark.parametrize(
     "timeout, expected",
-    [(None, 5.0), (2.5, 2.5), (3, 3.0), (np.float64(0.5), 0.5)],
+    [
+        (None, 5.0),
+        (2.5, 2.5),
+        (3, 3.0),
+        (np.float64(0.5), 0.5),
+        (3600, 3600.0),
+    ],
 )
 def test_request(install, pypi, timeout, expected):
     install("1.0.4")
@@ -456,6 +497,9 @@ def test_request(install, pypi, timeout, expected):
         "5",
         [5.0],
         1j,
+        3600.5,
+        1e9,
+        10**400,
     ],
 )
 def test_invalid_timeout_raises(install, pypi, capsys, timeout):
@@ -476,20 +520,23 @@ def test_module_imports_no_networking_code():
     namespace = vars(_update_check)
     assert "urllib" not in namespace
     assert "json" not in namespace
-    # ... and loading the module alone, in a fresh interpreter, leaves
-    # urllib.request unimported.
+    # ... and loading the module alone, in a fresh interpreter, imports no
+    # networking module that was not loaded before.
     script = textwrap.dedent(
         """
         import importlib.util
         import sys
 
+        before = set(sys.modules)
         path = sys.argv[1]
         spec = importlib.util.spec_from_file_location("_standalone", path)
         module = importlib.util.module_from_spec(spec)
         sys.modules["_standalone"] = module
         spec.loader.exec_module(module)
         assert callable(module.check_for_updates)
-        print("urllib.request" in sys.modules)
+        loaded = set(sys.modules) - before
+        networking = {"http", "json", "ssl", "urllib"}
+        print(sorted(m for m in loaded if m.split(".")[0] in networking))
         """
     )
     completed = subprocess.run(
@@ -499,4 +546,4 @@ def test_module_imports_no_networking_code():
         timeout=120,
         check=True,
     )
-    assert completed.stdout.strip() == "False"
+    assert completed.stdout.strip() == "[]"

@@ -2,16 +2,17 @@
 
 PyVBMC ships the date of its release (``pyvbmc._release.RELEASE_DATE``).
 When a new run starts in an interactive session and the installed release is
-more than a year old, one line says that a newer version may exist and how
-to find out. The reminder opens no network connection and writes no file but
-its state file.
+more than a year old, a note says that a newer version may exist and how to
+find out, with PyPI's address on a line of its own. The reminder opens no
+network connection and writes no file but its state file.
 
 The state file, ``update_reminder.json`` in PyVBMC's user cache directory,
 maps each installed version to the dates of its showings, which caps the
 reminder at three showings per version, at least 90 days apart. A file
 whose content is malformed is started afresh. A process-local flag allows one
-showing per Python session, and it is the only cap left when the file cannot
-be read or written.
+showing per Python session. When the file cannot be read, that flag is the
+only cap; when it can be read but not written, the showings it records still
+count.
 """
 
 from __future__ import annotations
@@ -30,6 +31,7 @@ from pathlib import Path
 from pyvbmc import _release
 from pyvbmc._user_hints import emit_user_hint
 
+# The FAQ (docsrc/source/faq.md) quotes this wording; change both together.
 REMINDER_TEMPLATE = (
     "Note: PyVBMC {version} was released {age}. Run "
     "pyvbmc.check_for_updates() to see whether a newer version is available."
@@ -108,8 +110,7 @@ def _parse_date(value: object) -> datetime.date | None:
 
 
 def _years_passed(released: datetime.date, today: datetime.date) -> int:
-    """Return the number of anniversaries of the release strictly before
-    *today*."""
+    """Return the number of anniversaries of the release before *today*."""
     years = today.year - released.year
     if (today.month, today.day) <= (released.month, released.day):
         years -= 1
@@ -300,7 +301,14 @@ def consider_release_reminder(
         )
         if len(dates) + 1 == MAX_SHOWINGS:
             message += " " + LAST_REMINDER_TEMPLATE.format(version=installed)
-        if not emit_user_hint(message, display=display, urls=(PYPI_URL,)):
+        try:
+            emitted = emit_user_hint(
+                message, display=display, urls=(PYPI_URL,)
+            )
+        except Exception:
+            # A failing output stream must not stop the run.
+            return False
+        if not emitted:
             return False
         _SHOWN_THIS_SESSION = True
         if state is not None:

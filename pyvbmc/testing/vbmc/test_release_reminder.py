@@ -650,10 +650,38 @@ def test_release_date_matches_the_changelog():
     changelog = REPOSITORY_ROOT / "CHANGELOG.md"
     if not changelog.is_file():
         pytest.skip("CHANGELOG.md is not beside the package")
-    heading = _RELEASE_HEADING.search(changelog.read_text(encoding="utf-8"))
+    text = changelog.read_text(encoding="utf-8")
+    if "changes to PyVBMC" not in text:
+        pytest.skip("the CHANGELOG.md beside the package is not PyVBMC's")
+    # The first section heading other than [Unreleased] is the latest
+    # release, and it must be written in the form the date is read from.
+    released = [
+        line
+        for line in text.splitlines()
+        if line.startswith("## [") and not line.startswith("## [Unreleased]")
+    ]
 
-    if heading is None:
+    if not released:
         assert _release.RELEASE_DATE is None
     else:
+        heading = _RELEASE_HEADING.fullmatch(released[0].rstrip())
+        assert heading is not None, released[0]
         assert _release.RELEASE_DATE == heading.group(2)
         assert _release_reminder._parse_date(_release.RELEASE_DATE)
+
+
+def test_failing_output_does_not_stop_the_run(reminder, monkeypatch):
+    emit = _release_reminder.emit_user_hint
+    failing = [True]
+
+    def flaky(*args, **kwargs):
+        if failing[0]:
+            raise BrokenPipeError(32, "Broken pipe")
+        return emit(*args, **kwargs)
+
+    monkeypatch.setattr(_release_reminder, "emit_user_hint", flaky)
+    assert not _consider(reminder.state_path)
+    assert not reminder.state_path.exists()
+    # Nothing was used up: the next start prints.
+    failing[0] = False
+    assert _consider(reminder.state_path)

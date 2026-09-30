@@ -24,17 +24,9 @@ The command follows the installer recorded with your installation:
 ``python -m pip install --upgrade pyvbmc`` for pip,
 ``conda update --channel=conda-forge pyvbmc`` for conda (the conda-forge
 package can follow PyPI by a few days), and both when the installer is
-another or unknown. Otherwise the line says that the installed version is the
-latest release, or newer than the latest release on PyPI (as before a release
-reaches PyPI); that it is a development version, or unknown, with the latest
-release beside it; or that PyPI could not be reached, with the reason. A
-network failure raises no error.
-
-The returned named tuple gives the same answer to a script:
-``check.installed`` is the installed version, ``check.latest`` the latest
-release on PyPI (``None`` when PyPI could not be read), and
-``check.update_available`` is ``True`` or ``False``, or ``None`` when either
-version is unknown or the installed version is a development version.
+another or unknown. The other messages, the returned named tuple, which gives
+a script the same answer, and the handling of network failures, which raise
+no error, are described below.
 
 Network access
 --------------
@@ -55,4 +47,4 @@ when it appears and how to turn it off.
 
 .. autofunction:: pyvbmc.check_for_updates
 
-See also :doc:`../classes/vbmc` (its section on startup tips).
+See also the :ref:`startup tips <Startup tips>` of ``VBMC``.
