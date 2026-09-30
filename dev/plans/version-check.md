@@ -116,8 +116,9 @@ others as recommended.
 - **D7. Where the release date comes from** (PI, 2026-09-30). A tracked
   constant, `RELEASE_DATE` in `pyvbmc/_release.py`, set in the release pull
   request to the date of the changelog heading `## [X.Y.Z] - YYYY-MM-DD`,
-  with a test that the two agree. It survives every build path: the wheel, the sdist,
-  and conda-forge's build from the sdist, which has no git history.
+  with a test that the two agree. It survives every build path: the wheel,
+  the sdist, and conda-forge's build from the sdist, which has no git
+  history.
   Rejected: a date written at build time by `setuptools_scm` (a build from the
   sdist has no git history to date, and what the template receives there
   would have to be verified on every path); the modification time of the
@@ -156,8 +157,9 @@ others as recommended.
   earlier than the release date (a wrong clock), when the release is not
   older than the threshold (D1), when the session is not interactive, when
   `CI`, `PYVBMC_NO_UPDATE_REMINDER` or `NO_UPDATE_NOTIFIER` is set to a
-  non-empty value, when the cap forbids it (D8, below), or when it has
-  printed already in this Python session. A process-local flag, under a
+  value other than empty, `0` or `false` (read as CI detection reads `CI`),
+  when the cap forbids it (D8, below), or when it has printed already in
+  this Python session. A process-local flag, under a
   lock as `_runtime_tips.py` keeps its state, records that it printed in
   this session; nothing travels with a saved run. A start at which it does
   not print writes nothing and leaves it eligible for the next start.
@@ -178,9 +180,13 @@ others as recommended.
   printing, it appends the date and writes the file as pip writes its own
   state: to a temporary file in the same directory, renamed over the old
   one, every error swallowed. The file first appears when the reminder first
-  shows, so nothing is written in a release's first year. A file that
-  cannot be read, holds malformed content or cannot be written makes the
-  reminder fall back to once per session. A newly installed version has a
+  shows, so nothing is written in a release's first year. A file whose
+  content is malformed (not a mapping from `X.Y.Z` versions to lists of ISO
+  dates, or larger than 64 KiB) counts as empty and is replaced at the next
+  showing, so that corruption cannot turn the cap into a reminder in every
+  session. A file that cannot be read or written makes the reminder fall
+  back to once per session. The file honors `PYVBMC_CACHE_DIR`, as the
+  calibration cache does. A newly installed version has a
   list of its own, and deleting the file resets every count. Parallel starts
   may each print before any of them writes; later starts see their dates.
 - It prints through `pyvbmc._user_hints.emit_user_hint`, with the PyPI URL
@@ -214,8 +220,11 @@ others as recommended.
   `import pyvbmc` imports no networking code.
 - The request: a GET of `https://pypi.org/pypi/pyvbmc/json` with
   `urllib.request`, the given timeout, and a `User-Agent` of
-  `pyvbmc/<installed version> (check_for_updates)`. Nothing else is sent.
-  `urllib` honors the proxy environment variables.
+  `pyvbmc/<installed version> (check_for_updates)` and an `Accept` of
+  `application/json`; nothing else about the installation or the user is
+  sent. `urllib` honors the proxy environment variables.
+  A release counts only when at least one of its files is not yanked, so a
+  release with no files does not count.
 - The latest release is the highest final `X.Y.Z` among the response's
   `releases` whose files are not all yanked. Pre-releases, development
   releases and yanked releases are ignored.
@@ -228,10 +237,21 @@ others as recommended.
     version; the latest release is {latest}.`;
   - PyPI unreachable or its reply unreadable: `Could not reach PyPI
     ({reason}); see https://pypi.org/project/pyvbmc/.`, the reason a few
-    words (`timed out`, `HTTP 503`, `unreadable reply`).
-  A final installed version newer than PyPI's latest, which happens only
-  before a release reaches PyPI, gives `PyVBMC {installed} is newer than the
-  latest release on PyPI, {latest}.`, in the same style.
+    words (`timed out`, `HTTP 503`, `unreadable reply`, the reason of a
+    `URLError`).
+  Written in the same style during the implementation, and awaiting the PI's
+  reading:
+  - a final installed version newer than PyPI's latest, which happens only
+    before a release reaches PyPI: `PyVBMC {installed} is newer than the
+    latest release on PyPI, {latest}.`;
+  - an installed version that cannot be read: `PyVBMC's installed version
+    is unknown; the latest release is {latest}.`;
+  - a readable reply with no release that counts: the failure message with
+    the reason `no release found`;
+  - an installer other than pip or conda: `... Update with: python -m pip
+    install --upgrade pyvbmc, or with conda: conda update
+    --channel=conda-forge pyvbmc (the conda-forge package can follow PyPI
+    by a few days)`.
 - The update command follows the installer, read from the `INSTALLER` file of
   the installed distribution (`importlib.metadata.distribution("pyvbmc")`):
   `pip` gives `python -m pip install --upgrade pyvbmc`; `conda` gives
@@ -242,9 +262,11 @@ others as recommended.
 ## Live checklist
 
 - [x] Phase 0: every decision ruled (2026-09-30).
-- [ ] Phase 1: the release date and the reminder.
-- [ ] Phase 2: `check_for_updates()`.
-- [ ] Phase 3: documentation and records.
+- [x] Phase 1: the release date and the reminder (tests pass; a malformed
+  state file starts afresh, and `0`/`false` leave an opt-out unset).
+- [x] Phase 2: `check_for_updates()` (61 tests pass; the messages written
+  during the implementation await the PI, in the design above).
+- [~] Phase 3: documentation and records.
 - [ ] Phase 4: verification and delivery.
 
 ## Phases
@@ -288,8 +310,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
    - [ ] the cap: printed at the first eligible start, not again within 90
      days, again after 90, never after the third time; a new version starts
      a list of its own; the file holds only versions and dates;
-   - [ ] a state file that cannot be read, holds malformed content or cannot
-     be written: once per session, nothing raised; a write goes through a
+   - [ ] a state file with malformed content: counted as empty and
+     replaced at the showing; one that cannot be read or written: once per
+     session; nothing raised in either case; a write goes through a
      temporary file and a rename;
    - [ ] nothing printed and nothing written for a development version, a
      local version, a release date that is `None` or unreadable, a date of
