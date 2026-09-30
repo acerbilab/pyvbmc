@@ -39,7 +39,7 @@ AGE_ONE_YEAR = "more than a year ago"
 AGE_YEARS_TEMPLATE = "more than {years} years ago"
 PYPI_URL = "https://pypi.org/project/pyvbmc/"
 
-THRESHOLD_DAYS = 365
+THRESHOLD_YEARS = 1
 SPACING_DAYS = 90
 MAX_SHOWINGS = 3
 STATE_FILE_NAME = "update_reminder.json"
@@ -107,11 +107,18 @@ def _parse_date(value: object) -> datetime.date | None:
         return None
 
 
-def _age_phrase(released: datetime.date, today: datetime.date) -> str:
-    """Return how long ago the release was, in whole years exceeded."""
+def _years_passed(released: datetime.date, today: datetime.date) -> int:
+    """Return the number of anniversaries of the release strictly before
+    *today*."""
     years = today.year - released.year
     if (today.month, today.day) <= (released.month, released.day):
         years -= 1
+    return years
+
+
+def _age_phrase(released: datetime.date, today: datetime.date) -> str:
+    """Return how long ago the release was, in whole years exceeded."""
+    years = _years_passed(released, today)
     if years >= 2:
         return AGE_YEARS_TEMPLATE.format(years=years)
     return AGE_ONE_YEAR
@@ -265,7 +272,7 @@ def consider_release_reminder(
             return False
         if today is None:
             today = _today()
-        if today < released or (today - released).days <= THRESHOLD_DAYS:
+        if _years_passed(released, today) < THRESHOLD_YEARS:
             return False
         if interactive is None:
             interactive = _is_interactive()

@@ -79,7 +79,8 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
 
     Prints one message: that a newer release is available, with the command
     that installs it; that the installed version is the latest release; that
-    the installed version is a development version, with the latest
+    it is newer than the latest release on PyPI; that it is a development
+    version, with the latest release; that it is unknown, with the latest
     release; or that PyPI could not be reached, with the reason. The update
     command follows the installer recorded with the installed package:
     pip's, conda's (the conda-forge package can follow PyPI by a few days),

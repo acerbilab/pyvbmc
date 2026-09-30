@@ -72,8 +72,11 @@ code or documentation) found:
 The PI ruled every decision on 2026-09-30: D1, D4 and D8 as stated, the
 others as recommended.
 
-- **D1. Threshold: 12 months** (365 days; PI, 2026-09-30). The reminder cannot
-  know whether a newer release exists, only how old the installed one is, so
+- **D1. Threshold: 12 months** (PI, 2026-09-30): the reminder shows only
+  after the first anniversary of the release, counted in calendar dates, so
+  that a year holding 29 February does not make the anniversary itself
+  "more than a year ago". The reminder cannot know whether a newer release
+  exists, only how old the installed one is, so
   a gap of more than 12 months between releases gives users of the latest
   release reminders they cannot act on. The threshold therefore stands on a
   release at least once a year, a small maintenance release included (PI,
@@ -266,8 +269,9 @@ others as recommended.
   state file starts afresh, and `0`/`false` leave an opt-out unset).
 - [x] Phase 2: `check_for_updates()` (61 tests pass; the messages written
   during the implementation await the PI, in the design above).
-- [~] Phase 3: documentation and records.
-- [ ] Phase 4: verification and delivery.
+- [x] Phase 3: documentation and records (API page, FAQ, tips sections,
+  changelog, `AGENTS.md`, the roadmap's checklist, the user skill).
+- [~] Phase 4: verification and delivery.
 
 ## Phases
 

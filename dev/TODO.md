@@ -263,7 +263,10 @@ records its execution.
     archives hold the cluster's details and the operator's paths; the
     replay fingerprints and the earlier references' traces are backed up
     in a draft release of their own;
-  - the references to `dev-next` that change with the release merge.
+  - the references to `dev-next` that change with the release merge;
+  - `RELEASE_DATE` in `pyvbmc/_release.py` set to the date of the
+    changelog's release heading, in the release pull request (`AGENTS.md`,
+    "Release date").
 
 - [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
   interactive three.js page that plays back a recorded two-dimensional run

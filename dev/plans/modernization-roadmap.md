@@ -1242,6 +1242,11 @@ must cover the settled release code, API and behavior before publication.
   asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single
   runs on its target missed one; `dev/scripts/runs/LOCAL.md`, "Example
   notebooks").
+- [ ] In the release pull request, set `RELEASE_DATE` in
+  `pyvbmc/_release.py` to the date of the changelog heading
+  `## [X.Y.Z] - YYYY-MM-DD` that the release gives its section: the
+  old-release reminder tells the age of the installed release by it, and
+  `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
 - [ ] Run the final integrated tests, the required CI matrix and the
   package checks, and prepare the golden-trace release archive (the
   [reference record](../golden/promotion_20260913/README.md)). The package

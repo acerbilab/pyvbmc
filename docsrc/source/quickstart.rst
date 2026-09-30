@@ -62,9 +62,15 @@ noise options.
 
 PyVBMC occasionally prints a tip when a new run starts. Tips appear at most
 once each within a Python session; restarting Python resets their history.
-Pass ``options={"show_tips": False}`` to ``VBMC`` to disable tips. This leaves
-the performance-calibration reminder enabled; ``options={"display": "off"}``
-suppresses both along with ordinary optimization output.
+A start prints at most one such message: a performance-calibration reminder
+first, then, in an interactive session with a release more than a year old, a
+reminder to run :doc:`pyvbmc.check_for_updates() <api/functions/check_for_updates>`
+(see the :ref:`FAQ <faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists>`),
+then a tip; a tip displaced by a reminder comes at the next start. Pass
+``options={"show_tips": False}`` to ``VBMC`` to disable tips and the
+old-release reminder. This leaves the performance-calibration reminder
+enabled; ``options={"display": "off"}`` suppresses all of them along with
+ordinary optimization output.
 
 Reproducible runs
 =================

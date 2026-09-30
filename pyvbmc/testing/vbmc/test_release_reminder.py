@@ -169,6 +169,27 @@ def test_prints_only_for_a_release_older_than_the_threshold(
 
 
 @pytest.mark.parametrize(
+    "released, today, printed",
+    [
+        # A year that holds 29 February has 366 days: the anniversary
+        # itself is not "more than a year" after the release.
+        ("2027-03-01", datetime.date(2028, 3, 1), False),
+        ("2027-03-01", datetime.date(2028, 3, 2), True),
+        ("2028-02-29", datetime.date(2029, 2, 28), False),
+        ("2028-02-29", datetime.date(2029, 3, 1), True),
+    ],
+)
+def test_threshold_is_the_first_anniversary(
+    reminder, capsys, released, today, printed
+):
+    assert (
+        _consider(reminder.state_path, release_date=released, today=today)
+        is printed
+    )
+    assert (NOTE in capsys.readouterr().out) is printed
+
+
+@pytest.mark.parametrize(
     "released, today, age",
     [
         ("2026-03-15", datetime.date(2027, 3, 16), "more than a year ago"),
