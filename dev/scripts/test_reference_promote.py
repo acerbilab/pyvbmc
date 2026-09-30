@@ -394,6 +394,35 @@ def test_the_fingerprints_meet_the_envelope_of_the_after_arm(gate):
     )
 
 
+def test_fingerprints_the_replay_flags_are_left_to_prepare(gate, monkeypatch):
+    """The replay exits 1 when a run lies outside its envelope: the step
+    succeeds once every configuration's run is made and reported, and fails
+    when a run was not made."""
+    report = contract.read_json(gate["fingerprints"] / "replay.json")
+    out = gate["fingerprints"].parent / "again"
+    arguments = ["fingerprints", "--after", str(gate["after"])]
+    arguments += ["--out", str(out)]
+
+    def replay_with(**changes):
+        def replay(argv):
+            out.mkdir(parents=True, exist_ok=True)
+            rows = [dict(row, **changes) for row in report["rows"]]
+            contract.write_json(out / "replay.json", dict(report, rows=rows))
+            return 1
+
+        return replay
+
+    monkeypatch.setattr(
+        promote.golden_replay,
+        "main",
+        replay_with(flagged=True, outside=["gskl"]),
+    )
+    assert promote.main(arguments, root=gate["root"]) == 0
+    shutil.rmtree(out)
+    monkeypatch.setattr(promote.golden_replay, "main", replay_with(ok=False))
+    assert promote.main(arguments, root=gate["root"]) == 1
+
+
 def test_prepare_replay_and_publish(gate):
     root = gate["root"]
     before = snapshot(root / "dev/golden/baseline")

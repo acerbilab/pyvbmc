@@ -46,7 +46,10 @@ clean.
 ``fingerprints`` runs ``golden_replay.py`` on every configuration of the
 after arm at seed 0, with the after arm as ``--sidecars`` and no baseline
 traces, so that each run is judged against the population's accuracy
-envelope alone; its ``--out`` holds the fingerprints and the report.
+envelope alone; its ``--out`` holds the fingerprints and the report. It
+exits 0 once every configuration's run is made and the report written,
+whatever the replay flags, since ``prepare`` judges the fingerprints as a
+set, and nonzero when a run was not made.
 
 ``prepare`` changes nothing that is tracked but the record. It checks:
 
@@ -870,7 +873,7 @@ def check_fingerprints(directory, after, campaign, sidecars):
             and not row.get("consistency_issues")
             and not row.get("final_validity_issues")
             and all(
-                np.isfinite(float(final.get(m) or np.nan))
+                final.get(m) is not None and np.isfinite(float(final[m]))
                 for m in golden_replay.ACCURACY
             ),
             f"{tag}: the fingerprint failed: {row.get('verdict')}",
@@ -1058,10 +1061,11 @@ def cmd_fingerprints(args, root):
     )
     manifest = read_manifest(after)
     check_code(manifest["identity"]["source"], "fingerprints")
-    return golden_replay.main(
+    labels = manifest["allocation"]["labels"]
+    code = golden_replay.main(
         [
             "--configs",
-            ",".join(manifest["allocation"]["labels"]),
+            ",".join(labels),
             "--seeds",
             "0",
             "--baseline",
@@ -1072,6 +1076,23 @@ def cmd_fingerprints(args, root):
             str(out),
         ]
     )
+    # The replay exits 1 when any run lies outside its envelope, which some
+    # correct runs do; prepare judges the fingerprints as a set, so the step
+    # has done its part once every configuration's run is made and reported.
+    report = out / "replay.json"
+    if code == 0 or not report.is_file():
+        return code
+    rows = read_json(report)["rows"]
+    made = {(row["label"], row["seed"]) for row in rows if row.get("ok")}
+    if made != {(label, 0) for label in labels}:
+        return code
+    flagged = sum(1 for row in rows if row.get("flagged"))
+    print(
+        f"[fingerprints] {len(rows)} made, {flagged} flagged by the replay; "
+        "prepare judges them as a set",
+        flush=True,
+    )
+    return 0
 
 
 def reference_name(runs, record):
