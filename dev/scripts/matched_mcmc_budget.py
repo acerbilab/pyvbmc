@@ -1222,7 +1222,7 @@ def cmd_check(args):
 
     if setup.exporter:
         # The tool's PyVBMC runs against the exporter's own sweep, both on
-        # this machine.
+        # the executing machine.
         print("\nPyVBMC seeds 0 to 4, the tool against the exporter's sweep:")
         sweep = subprocess.Popen(
             [
