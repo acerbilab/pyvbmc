@@ -92,8 +92,8 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     The latest release is the highest version of the form ``X.Y.Z`` on PyPI
     with at least one file that is not yanked, so that pre-releases,
     development releases and yanked releases are ignored. PyPI documents the
-    list of releases in this reply as deprecated; a reply without it gives
-    the version PyPI reports as its latest. An installed version of any
+    list of releases in this reply as deprecated; a reply without a mapping
+    of releases gives the version PyPI reports as its latest. An installed version of any
     other form, such as a development install, is reported beside the
     latest release without being compared with it.
 
@@ -278,8 +278,10 @@ def _fetch_latest_release(
         # version of the project's info is PyPI's latest release.
         info = data.get("info")
         latest = info.get("version") if isinstance(info, dict) else None
-        if _parse_release(latest) is None:
+        if not isinstance(latest, str):
             return None, "unreadable reply"
+        if _parse_release(latest) is None:
+            latest = None
     if latest is None:
         return None, "no release found"
     return latest, None

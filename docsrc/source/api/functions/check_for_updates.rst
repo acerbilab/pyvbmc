@@ -24,9 +24,9 @@ The command follows the installer recorded with your installation:
 ``python -m pip install --upgrade pyvbmc`` for pip,
 ``conda update --channel=conda-forge pyvbmc`` for conda (the conda-forge
 package can follow PyPI by a few days), and both when the installer is
-another or unknown. The other messages, the returned named tuple, which gives
-a script the same answer, and the handling of network failures, which raise
-no error, are described below.
+another or unknown. The other messages are listed below, with the returned
+named tuple, which gives a script the same answer. A network failure raises
+no error.
 
 Network access
 --------------

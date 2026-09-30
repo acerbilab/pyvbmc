@@ -301,14 +301,9 @@ def consider_release_reminder(
         )
         if len(dates) + 1 == MAX_SHOWINGS:
             message += " " + LAST_REMINDER_TEMPLATE.format(version=installed)
-        try:
-            emitted = emit_user_hint(
-                message, display=display, urls=(PYPI_URL,)
-            )
-        except Exception:
-            # A failing output stream must not stop the run.
-            return False
-        if not emitted:
+        # The emitter returns False, and raises nothing, when the output
+        # stream fails.
+        if not emit_user_hint(message, display=display, urls=(PYPI_URL,)):
             return False
         _SHOWN_THIS_SESSION = True
         if state is not None:

@@ -15,7 +15,7 @@ scripts, in CI and on cluster nodes without internet access. The PI chose
 
 1. **An old-release reminder, with no network access.** The package ships
    the date of its release. When a new run starts and the installed release
-   is older than a threshold, PyVBMC prints one line saying that a newer
+   is older than a threshold, PyVBMC prints a note saying that a newer
    version may exist and how to find out: at most three times for each
    installed version, at least 90 days apart, and at most once per Python
    session (D8).
@@ -206,9 +206,10 @@ others as recommended.
   Resumed and continued runs consider neither, as now.
 - `consider_runtime_tip` learns of the reminder through a second flag,
   `release_reminder_emitted`, beside `calibration_reminder_emitted`; the
-  tips behave as before when no reminder prints. A failure to print (a
-  broken output stream) makes the reminder return without printing, so it
-  cannot stop the run.
+  tips behave as before when no reminder prints. The shared emitter,
+  `pyvbmc._user_hints.emit_user_hint`, returns without printing when the
+  output stream fails (a closed pipe), so that neither this reminder, nor a
+  tip, nor the calibration reminder can stop a run.
 
 ### `pyvbmc.check_for_updates()`
 
@@ -235,8 +236,9 @@ others as recommended.
   with no files, pre-releases, development releases and yanked releases are
   ignored. PyPI documents the `releases` key as deprecated in favor of its
   Index API (https://docs.pypi.org/api/json/, 2026-09-30); a reply without
-  it gives `info.version`, PyPI's latest release, when that is a final
-  `X.Y.Z`.
+  a mapping of releases gives `info.version`, PyPI's latest release, when
+  that is a final `X.Y.Z` ("no release found" when it is another version,
+  "unreadable reply" when it is missing).
 - The message, one of (wording approved by the PI with D4):
   - a newer release: `PyVBMC {latest} is available; you have {installed}.
     Update with: {command}`, where the command is the installer's (below);
@@ -342,11 +344,11 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
      and without it (two runs capped at two iterations, since the shared
      fixture of `test_vbmc_seed.py` asserts that a tip prints, which the
      reminder would displace; `AGENTS.md`, "Tests and their traps");
-   - [x] the release-date test: when `CHANGELOG.md` has a released section
-     `## [X.Y.Z] - YYYY-MM-DD`, the first such heading's date equals
-     `RELEASE_DATE`; with none, `RELEASE_DATE` is `None`. The test reads
-     `CHANGELOG.md` from the repository root and skips where the file is
-     absent.
+   - [x] the release-date test: the first section heading of `CHANGELOG.md`
+     other than `## [Unreleased]` must read `## [X.Y.Z] - YYYY-MM-DD`, and
+     its date equals `RELEASE_DATE`; with no such heading, `RELEASE_DATE` is
+     `None`. The test reads `CHANGELOG.md` from the repository root, and
+     skips where the file is absent or is not PyVBMC's.
 
 ### Phase 2 — `check_for_updates()` (Sol)
 
@@ -359,9 +361,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
      design, word for word;
    - [x] pre-releases, development releases and fully yanked releases are
      ignored, a partly yanked release is not;
-   - [x] `URLError`, `HTTPError`, a timeout, malformed JSON and a JSON without
-     `releases` each give the failure message and a tuple with
-     `latest=None`, and raise nothing;
+   - [x] `URLError`, `HTTPError`, a timeout, malformed JSON, and a JSON
+     without `releases` and without a final `info.version`, each give the
+     failure message and a tuple with `latest=None`, and raise nothing;
    - [x] the update command for `INSTALLER` of `pip`, `conda`, another value
      and a missing file;
    - [x] the request's URL, timeout and `User-Agent`; nothing else sent;

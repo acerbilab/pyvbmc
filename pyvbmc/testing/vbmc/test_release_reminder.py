@@ -670,18 +670,30 @@ def test_release_date_matches_the_changelog():
         assert _release_reminder._parse_date(_release.RELEASE_DATE)
 
 
-def test_failing_output_does_not_stop_the_run(reminder, monkeypatch):
-    emit = _release_reminder.emit_user_hint
-    failing = [True]
+class _BrokenStream:
+    def write(self, text):
+        raise BrokenPipeError(32, "Broken pipe")
 
-    def flaky(*args, **kwargs):
-        if failing[0]:
-            raise BrokenPipeError(32, "Broken pipe")
-        return emit(*args, **kwargs)
+    def flush(self):
+        raise BrokenPipeError(32, "Broken pipe")
 
-    monkeypatch.setattr(_release_reminder, "emit_user_hint", flaky)
-    assert not _consider(reminder.state_path)
+
+def test_failing_output_stops_neither_the_reminder_nor_the_tip(
+    reminder, monkeypatch
+):
+    with monkeypatch.context() as patch:
+        patch.setattr(sys, "stdout", _BrokenStream())
+        assert not _consider(reminder.state_path)
+        # The slot passes to the tip, which prints through the same stream.
+        assert (
+            _runtime_tips.consider_runtime_tip(
+                display="iter",
+                enabled=True,
+                calibration_reminder_emitted=False,
+                release_reminder_emitted=False,
+            )
+            is None
+        )
     assert not reminder.state_path.exists()
     # Nothing was used up: the next start prints.
-    failing[0] = False
     assert _consider(reminder.state_path)

@@ -52,11 +52,13 @@ def _releases(*versions):
 
 
 class _Response:
-    def __init__(self, body, read_error=None):
+    def __init__(self, body, read_error=None, amounts=None):
         self.body = body
         self.read_error = read_error
+        self.amounts = [] if amounts is None else amounts
 
     def read(self, amount=-1):
+        self.amounts.append(amount)
         if self.read_error is not None:
             raise self.read_error
         return self.body if amount < 0 else self.body[:amount]
@@ -76,6 +78,7 @@ class _FakePyPI:
         self.error = None
         self.read_error = None
         self.calls = []
+        self.amounts = []
 
     def urlopen(self, *args, **kwargs):
         self.calls.append((args, kwargs))
@@ -84,7 +87,7 @@ class _FakePyPI:
         body = self.reply
         if not isinstance(body, bytes):
             body = json.dumps(body).encode("utf-8")
-        return _Response(body, self.read_error)
+        return _Response(body, self.read_error, self.amounts)
 
 
 class _Distribution:
@@ -255,8 +258,6 @@ def test_malformed_release_entries_are_skipped(install, pypi, capsys):
             # Not a list of files, and a file that is not a mapping.
             "1.6.0": "pyvbmc-1.6.0.tar.gz",
             "1.5.0": ["pyvbmc-1.5.0.tar.gz"],
-            # More digits than int() converts from a string.
-            "1" * 5000 + ".0.0": [_file()],
             # A file without the yanked key is not yanked.
             "1.4.0": [{"filename": "pyvbmc-1.4.0.tar.gz"}],
         }
@@ -272,10 +273,32 @@ def test_reply_without_releases_gives_the_info_version(install, pypi, capsys):
     assert "PyVBMC 1.5.0 is available" in capsys.readouterr().out
 
 
+@pytest.mark.skipif(
+    getattr(sys, "get_int_max_str_digits", lambda: 0)() == 0,
+    reason="int() converts strings of any length on this interpreter",
+)
+def test_version_too_long_for_int_is_skipped(install, pypi, capsys):
+    install("1.0.4")
+    digits = sys.get_int_max_str_digits() + 1
+    pypi.reply = {
+        "releases": {"9" * digits + ".0.0": [_file()], "1.4.0": [_file()]}
+    }
+    assert check_for_updates() == UpdateCheck("1.0.4", "1.4.0", True)
+    assert "PyVBMC 1.4.0 is available" in capsys.readouterr().out
+
+
+def test_reply_is_read_up_to_its_bound(install, pypi):
+    install("1.0.4")
+    check_for_updates()
+    assert pypi.amounts == [_update_check.MAX_REPLY_BYTES + 1]
+
+
 def test_oversized_reply_is_unreadable(install, pypi, capsys, monkeypatch):
     install("1.0.4")
-    monkeypatch.setattr(_update_check, "MAX_REPLY_BYTES", 64)
-    pypi.reply = _releases(*[f"1.{minor}.0" for minor in range(20)])
+    # A valid reply of more bytes than the bound.
+    pypi.reply = _releases("1.0.4", "1.5.0")
+    body = json.dumps(pypi.reply).encode("utf-8")
+    monkeypatch.setattr(_update_check, "MAX_REPLY_BYTES", len(body) - 1)
     assert check_for_updates() == UpdateCheck("1.0.4", None, None)
     assert capsys.readouterr().out == _failure("unreadable reply")
 
@@ -383,7 +406,7 @@ def test_fully_yanked_newest_release_is_not_offered(install, pypi, capsys):
             None,
             None,
             {"info": {"version": "2.0.0rc1"}},
-            "unreadable reply",
+            "no release found",
             id="no-releases-and-no-final-info-version",
         ),
         pytest.param(
@@ -527,6 +550,10 @@ def test_module_imports_no_networking_code():
         import importlib.util
         import sys
 
+        # What the module imports at load time, loaded before the snapshot:
+        # importlib.metadata loads urllib.parse through email.utils.
+        import importlib.metadata, math, numbers, re, typing
+
         before = set(sys.modules)
         path = sys.argv[1]
         spec = importlib.util.spec_from_file_location("_standalone", path)
@@ -535,8 +562,10 @@ def test_module_imports_no_networking_code():
         spec.loader.exec_module(module)
         assert callable(module.check_for_updates)
         loaded = set(sys.modules) - before
-        networking = {"http", "json", "ssl", "urllib"}
-        print(sorted(m for m in loaded if m.split(".")[0] in networking))
+        networking = {
+            "http.client", "json", "ssl", "urllib.error", "urllib.request"
+        }
+        print(sorted(loaded & networking))
         """
     )
     completed = subprocess.run(
