@@ -2080,8 +2080,10 @@ def test_a_campaign_on_two_pools_equals_the_single_process_run(
 
 
 def test_prepare_stacks_a_pool_only_after_its_verification(pool, tmp_path):
-    """A pool without a passing verification, or selected before it, is
-    refused before anything is written; selected after it, it is taken."""
+    """A pool without a passing verification, or selected before it, or
+    verified and selected elsewhere (a copy), is refused before anything is
+    written; verified and then selected where it lies, it is taken, and a
+    run whose files differ from its completion record is refused."""
     copy = tmp_path / "pool"
     shutil.copytree(pool, copy)
     out = tmp_path / "campaign"
@@ -2092,6 +2094,11 @@ def test_prepare_stacks_a_pool_only_after_its_verification(pool, tmp_path):
             "prepare", "--out", str(out), *arguments, "--allow-dirty"
         )
 
+    refused = prepare()
+    assert refused.returncode != 0
+    assert "its verification.json was made in" in refused.stderr
+    assert "its selection.json was made in" in refused.stderr
+    assert not out.exists()
     (copy / "verification.json").unlink()
     refused = prepare()
     assert refused.returncode != 0
@@ -2104,6 +2111,13 @@ def test_prepare_stacks_a_pool_only_after_its_verification(pool, tmp_path):
     assert run_runner("select", "--out", str(copy)).returncode == 0
     accepted = prepare()
     assert accepted.returncode == 0, accepted.stdout + accepted.stderr
+    for run in copy.rglob("*_seed*.npz"):
+        run.write_bytes(run.read_bytes() + b"\0")
+    out = tmp_path / "campaign_changed"
+    refused = prepare()
+    assert refused.returncode != 0
+    assert "differ from its completion record" in refused.stderr
+    assert not out.exists()
 
 
 def test_prepare_refuses_a_dirty_harness_without_allow_dirty(

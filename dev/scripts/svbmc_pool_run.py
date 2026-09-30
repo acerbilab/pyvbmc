@@ -115,9 +115,10 @@ comparison refuses it. ``--target N`` selects ``N`` runs per condition in
 place of the manifest's filtered targets, and the selection records it as
 ``target_override``. The selection records the SHA-256 of the manifest
 and of ``verification.json`` it was made after, and the stacking
-comparison stacks a pool only when that verification passed and the
-selection agrees with it and with the allocation
-(:func:`stackable_selection`); a pool selected before its latest
+comparison stacks a pool only when that verification passed, the
+selection agrees with it and with the allocation, and both were made in
+the pool's own directory (:func:`stackable_selection`); a pool selected
+before its latest
 verification is made stackable by running ``select`` again. ``summarize``
 writes the per-condition counts, pass rates, convergence
 (``success_flag``, ``convergence_status``, ``message``, ``r_index``,
@@ -385,7 +386,9 @@ def pinned_gpyreg_source(source, manifest):
     source = Path(source).resolve()
     try:
         commit = git(source, "rev-parse", "HEAD")
-        dirty = git(source, "status", "--porcelain")
+        dirty = git(
+            source, "status", "--porcelain", "--untracked-files=normal"
+        )
     except (OSError, subprocess.CalledProcessError) as error:
         raise RuntimeError(
             f"{source} is not a git checkout; --gpyreg-source names a clone "
@@ -1670,6 +1673,10 @@ def stackable_selection(out, labels=None):
     The stacking comparison's ``prepare`` stacks a pool only through this
     check, which raises ``RuntimeError`` naming every problem:
 
+    - ``verification.json`` and ``selection.json`` must have been made in
+      this directory (the ``directory`` each records): a copied or unpacked
+      pool is verified and selected again where it lies before it is
+      stacked;
     - ``verification.json`` must exist and have passed: no case failed its
       verification, none is partial, no file is stray, and its
       ``exit_code``, where it records one, is 0;
@@ -1717,6 +1724,18 @@ def stackable_selection(out, labels=None):
         )
     report = contract.read_json(paths["verification"])
     selection = contract.read_json(paths["selection"])
+    # A pool is stacked where it was verified and selected: a copy, or an
+    # unpacked archive, is verified and selected again where it lies.
+    for name, made in (
+        ("verification.json", report.get("directory")),
+        ("selection.json", selection.get("directory")),
+    ):
+        if made is None or Path(made).resolve() != out:
+            where = made or "a directory it does not record"
+            problems.append(
+                f"its {name} was made in {where}, not here; run `verify` "
+                f"and then `select` on {out}"
+            )
     counts = report.get("counts") or {}
     fatal = {key: counts.get(key) for key in contract.FATAL if counts.get(key)}
     if fatal or report.get("exit_code", 0) != 0:

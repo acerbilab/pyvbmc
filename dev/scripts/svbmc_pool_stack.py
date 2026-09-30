@@ -176,10 +176,12 @@ are the release gate's grid (``RELEASE_M``, ``RELEASE_REPETITIONS``,
 been selected after that verification: ``svbmc_pool_run.py``'s
 ``stackable_selection`` requires the pool's ``verification.json`` to have
 passed, its ``selection.json`` to record the SHA-256 of the manifest and of
-that report, and every selected condition to be the stopping rule applied
+that report, both to have been made in the pool's own directory, and every
+selected condition to be the stopping rule applied
 to the report's cases with the allocation's first seed, seed cap and
 filtered target (or the target ``select --target`` gave), so that no seed
-before a selected run is left unfinished; the manifest records each pool's
+before a selected run is left unfinished; a selected run whose files
+differ from its completion record is refused; the manifest records each pool's
 report by its SHA-256 and the selection's ``target_override`` (null for the
 allocation's targets). It
 refuses a dirty gpyreg checkout, and a dirty harness checkout unless
@@ -606,8 +608,9 @@ def pool_entry(directory, tag, origin="the pool directory"):
     wrong entry of that list rather than as an absent file. A pool is
     generated once and read many times, and the case that leads here is a
     selection copied without the artifacts it names, or one whose run
-    failed after the selection was written. The entry carries the SHA-256
-    of the run's two files, which :func:`load_entry` checks.
+    failed after the selection was written. The run's two files must hold
+    the SHA-256 that its completion record lists, and the entry carries
+    them, which :func:`load_entry` checks.
     """
     import svbmc_pool_io as pool_io
 
@@ -625,6 +628,14 @@ def pool_entry(directory, tag, origin="the pool directory"):
             f"{origin} names {tag}, whose artifact {directory} does not "
             f"hold: {', '.join(missing)} missing"
         )
+    hashes = {s: contract.sha256_file(p) for s, p in files.items()}
+    recorded = pool_io.recorded_hashes(record, Path(record["tag"]).name)
+    changed = [files[s].name for s in hashes if recorded.get(s) != hashes[s]]
+    if changed:
+        raise RuntimeError(
+            f"{origin} names {tag}, whose files differ from its completion "
+            f"record: {', '.join(changed)}; verify the pool again"
+        )
     return {
         "kind": "run",
         "name": record["tag"],
@@ -633,7 +644,7 @@ def pool_entry(directory, tag, origin="the pool directory"):
         "metrics": record["metrics"],
         "passes": bool(record["verdict"]["passes"]),
         "label": record["label"],
-        "sha256": {s: contract.sha256_file(p) for s, p in files.items()},
+        "sha256": hashes,
     }
 
 
