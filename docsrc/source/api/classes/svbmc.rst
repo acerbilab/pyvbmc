@@ -146,22 +146,6 @@ The constructor defaults are ``s_max=np.sqrt(5)``, ``M_min=2/3``, ``seed=None``,
 ``show_tips`` is true and INFO logging is enabled. Setting ``show_tips=False``
 suppresses tips while leaving progress and applied-cap diagnostics available.
 
-Code written for the previous dictionary-valued ``elbo`` API can be migrated
-as follows:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 45 55
-
-   * - Previous expression
-     - Current expression
-   * - ``stacked.elbo["estimated"]``
-     - ``stacked.elbo_details["raw"]``
-   * - ``stacked.elbo["debiased_I_median"]``
-     - ``stacked.elbo_details["capped_I_median"]``
-   * - ``stacked.elbo["debiased_E_median"]``
-     - ``stacked.elbo_details["capped_E_median"]``
-
 Use the scalar ``stacked.elbo`` when the automatically selected headline is
 the desired result.
 
@@ -229,10 +213,11 @@ given the bounds and plausible bounds of a problem.
 Differences from the standalone ``svbmc`` package
 -------------------------------------------------
 
-The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
-version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
-The method and the optimizer of the weights are the same, and on our
-benchmark the two reach the same weights. What differs:
+The implementation derives from the standalone S-VBMC package
+(``acerbilab/svbmc``, version 0.1.1); its BSD 3-Clause license notice ships
+with the subpackage, ``pyvbmc.svbmc``. The method and the optimizer of the
+weights are the same, and on our benchmark the two reach the same weights.
+What differs:
 
 - It is faster. The work that the components of one run share, its parameter
   transform above all, is done once per run rather than once per component.
@@ -243,9 +228,8 @@ benchmark the two reach the same weights. What differs:
   optimization the ELBO is evaluated again with more draws
   (``optimize(n_samples_final=...)``), and it comes with an uncertainty,
   ``elbo_sd``.
-- ``elbo`` is a number. The entries of the standalone package's ``elbo``
-  dictionary are in ``elbo_details``, under the names given in
-  `ELBO reporting`_.
+- ``elbo`` is a number, and the entries of the standalone package's ``elbo``
+  dictionary are in ``elbo_details``, under the names in the table below.
 - ``seed`` takes the place of ``testing``: every random draw comes from the
   generator of the ``SVBMC`` object, and the input posteriors are neither
   modified nor advanced.
@@ -253,6 +237,22 @@ benchmark the two reach the same weights. What differs:
   the share of each run separately and could return a few more or fewer.
 - Results are float64, problems with one variable work, and malformed inputs
   raise errors.
+
+Code written for the standalone package's dictionary-valued ``elbo`` can be
+migrated as follows:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Standalone ``svbmc``
+     - ``pyvbmc.svbmc``
+   * - ``stacked.elbo["estimated"]``
+     - ``stacked.elbo_details["raw"]``
+   * - ``stacked.elbo["debiased_I_median"]``
+     - ``stacked.elbo_details["capped_I_median"]``
+   * - ``stacked.elbo["debiased_E_median"]``
+     - ``stacked.elbo_details["capped_E_median"]``
 
 Citation
 --------
