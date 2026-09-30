@@ -20,7 +20,7 @@ names one.
 | `index.html` | The page: markup, styles, and one script. It loads three.js r128 from cdnjs and two typefaces from Google Fonts, which have system fallbacks. |
 | `trace.js` | The run `index.html` plays (banana with a lobe, seed 8), `window.VBMC_TRACE = {...}`, about 0.5 MB. Generated; do not edit. |
 | `wordmark.html` | The wordmark page. |
-| `trace_wordmark.js` | The run `wordmark.html` plays (banana alone, seed 57), about 0.4 MB. Generated; do not edit. |
+| `trace_wordmark.js` | The run `wordmark.html` plays (banana alone, seed 42), about 0.4 MB. Generated; do not edit. |
 | `scripts/record.mjs` | Records a page as an MP4, a GIF or PNG frames ("Recording" below). |
 | `dev/scripts/export_animation_trace.py` | Runs PyVBMC and writes a trace. Its docstrings define the trace format (`build_trace`, `Encoder`). |
 
@@ -43,7 +43,7 @@ Regenerate a run, from the repository root (about a minute; set
 
 ```console
 python -u dev/scripts/export_animation_trace.py                              # trace.js
-python -u dev/scripts/export_animation_trace.py --target banana --seed 57    # trace_wordmark.js
+python -u dev/scripts/export_animation_trace.py --target banana --seed 42    # trace_wordmark.js
 python -u dev/scripts/export_animation_trace.py --target banana --sweep 0:60 # score seeds, write nothing
 ```
 
@@ -97,10 +97,10 @@ chrome --headless=new --enable-unsafe-swiftshader --virtual-time-budget=5000 \
 On `trace.js` the self-check reports 3042 anchors in 66 GP states, no
 unanchored observation, a position error below 1e-7 cells, SD zero at the
 anchors, no folded cells, and a largest correction of the mean of 0.02 log
-units. On `trace_wordmark.js` it reports 2080 anchors in 58 states, a
-largest correction of 0.01 and otherwise the same, except for 4 unanchored
-observations of 95: the four that lie outside the display window, two past
-the tip of one arm and two below the vertex. `wordmark.html` adds to the title
+units. On `trace_wordmark.js` it reports 2245 anchors in 60 states, a
+largest correction of 0.01 and otherwise the same, except for 5 unanchored
+observations of 105: the five that lie outside the display window, four
+past the tip of one arm and one below the vertex. `wordmark.html` adds to the title
 the typeface its letters got (STIX Two Text, or a fallback when the font
 did not arrive within 2.5 s) and when the finale starts. A larger
 correction means the grid mean misses the data, which is a defect of the

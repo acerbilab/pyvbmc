@@ -11,10 +11,8 @@ In this order. The first two are decisions for the project owner.
 
 1. **Steer `wordmark.html`'s finale.** The owner has watched it, and the
    recordings of item 3, with the run of seed 22; the page now plays the
-   run of seed 57 (`NOTES.md`, "Seeds"), which only headless stills have
+   run of seed 42 (`NOTES.md`, "Seeds"), which only headless stills have
    shown, so the first thing to settle is whether its V is the one to keep.
-   Seeds 42 and 50 cover both arms with a better ELBO and gsKL but keep 103
-   and 102 evaluations, above the limit of 100 that the choice held to.
    What is open after that is the camera's pull-back, how long the wordmark
    holds, the letters' color, weight and brightness against the V, and the
    V in the log view against `?wmview=density`.
@@ -34,7 +32,7 @@ In this order. The first two are decisions for the project owner.
    recordings would shrink them. A GIF of an excerpt cuts where it loops,
    from the held wordmark back to the orbiting landscape; a fade at both
    ends would hide the cut.
-4. **Pacing.** A loop lasts about 91 s on `wordmark.html` and 95 s on
+4. **Pacing.** A loop lasts about 94 s on `wordmark.html` and 95 s on
    `index.html`. The durations are the `seg(...)` calls and the `DP` / `DF`
    arrays of the timeline section.
 5. **Phones.** On a portrait screen the wordmark is small and the V's dense
