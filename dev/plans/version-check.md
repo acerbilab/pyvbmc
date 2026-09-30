@@ -429,10 +429,13 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
   timeout's bound, a bounded read, the fallback without `releases`, a
   failing output stream, the release-date test's strictness, comments and
   documentation).
-- [~] The CI test matrix on the feature branch, as the tips work ran it
-  (`dev/plans/runtime-tips.md`, "Delivery checklist"; the dispatched runs of
-  `tests.yml` on `feat-update-reminders`); merge into `dev-next`
-  with the PI's approval, before the Phase 8 launch (D6); remove the branch.
+- [x] The CI test matrix on the feature branch, as the tips work ran it
+  (`dev/plans/runtime-tips.md`, "Delivery checklist"): the dispatched runs
+  of `tests.yml` on `feat-update-reminders` passed all nine cells at
+  `4b247bfd` (run 36720287353) and at `21fb1d6a`, after the review's fixes
+  (run 36722167050), on 2026-09-30.
+- [ ] The merge into `dev-next`, with the PI's approval, before the Phase 8
+  launch (D6), and the removal of the branch.
 
 ## Acceptance
 
