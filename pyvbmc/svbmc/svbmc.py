@@ -5,8 +5,8 @@
 # full text is in LICENSE.txt next to this file.
 #
 # This module derives from the standalone ``svbmc`` package
-# (acerbilab/svbmc, version 0.1.1, commit 13a78f6); the S-VBMC entry of
-# CHANGELOG.md lists how it differs.
+# (acerbilab/svbmc, version 0.1.1, commit 13a78f6); the SVBMC page of the
+# documentation (docsrc/source/api/classes/svbmc.rst) lists how it differs.
 """Stacking Variational Bayesian Monte Carlo (S-VBMC)."""
 
 from __future__ import annotations
