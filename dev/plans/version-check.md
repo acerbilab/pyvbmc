@@ -248,8 +248,8 @@ others as recommended.
     ({reason}); see https://pypi.org/project/pyvbmc/.`, the reason a few
     words (`timed out`, `HTTP 503`, `unreadable reply`, the reason of a
     `URLError`).
-  Written in the same style during the implementation, and awaiting the PI's
-  reading:
+  Written in the same style during the implementation, and approved by the
+  PI on 2026-09-30:
   - a final installed version newer than PyPI's latest, which happens
     before a release reaches PyPI, or when the installed release has been
     yanked: `PyVBMC {installed} is newer than the
@@ -274,8 +274,8 @@ others as recommended.
 - [x] Phase 0: every decision ruled (2026-09-30).
 - [x] Phase 1: the release date and the reminder (tests pass; a malformed
   state file starts afresh, and `0`/`false` leave an opt-out unset).
-- [x] Phase 2: `check_for_updates()` (61 tests pass; the messages written
-  during the implementation await the PI, in the design above).
+- [x] Phase 2: `check_for_updates()` (its tests pass; the messages written
+  during the implementation approved by the PI, 2026-09-30).
 - [x] Phase 3: documentation and records (API page, FAQ, tips sections,
   changelog, `AGENTS.md`, the roadmap's checklist, the user skill).
 - [~] Phase 4: verification and delivery.

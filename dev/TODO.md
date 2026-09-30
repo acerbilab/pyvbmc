@@ -46,11 +46,9 @@ records its execution.
   when the user calls it; no automatic network check (PI, 2026-09-30). The
   [plan](plans/version-check.md) holds the design, the PI's rulings and the
   record of the work. Implemented and verified on `feat-update-reminders`
-  (2026-09-30); open: the CI matrix, the merge into `dev-next` before the
-  launch of the Slurm plan's Phase 8 (the PI's approval), and the PI's
-  reading of the four messages of `check_for_updates()` written during the
-  implementation (the plan, "Design"). The review of the tips covers the
-  reminder, which shares their slot.
+  (2026-09-30), the CI matrix passed; open: the merge into `dev-next`
+  before the launch of the Slurm plan's Phase 8, with the PI's approval.
+  The review of the tips covers the reminder, which shares their slot.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
