@@ -153,8 +153,8 @@ plan and consolidated human summary.
 - [plans/version-check.md](plans/version-check.md) — the reminder that the
   installed release is more than a year old, which makes no network request,
   and `pyvbmc.check_for_updates()`, which asks PyPI on request: design, the
-  prior art, the PI's decisions, phases and acceptance; implemented on
-  `feat-update-reminders` (2026-09-30).
+  prior art, the PI's decisions, phases and acceptance; complete, merged
+  into `dev-next` at `01bd00de` (2026-09-30).
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates

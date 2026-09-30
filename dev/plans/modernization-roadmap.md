@@ -1053,6 +1053,18 @@ The open work for 1.5 is the list "In scope for 1.5" of
     post-merge full matrix and automatic smoke check both passed. The merged
     feature branch has been removed. The final benchmark schedule remains unchanged.
 
+14. **Update reminders — implemented and merged** (2026-09-30). A run of a
+    final release more than a year old says, in an interactive session, that
+    a newer version may exist: at most once per Python session and three
+    times per installed version, 90 days apart, in the start-of-run slot
+    after the calibration reminder. `pyvbmc.check_for_updates()` asks PyPI
+    when the user calls it, the package's only network access. The
+    [update-reminders plan](version-check.md) owns the prior art, the PI's
+    rulings, the approved wording and the verification (the full suite, the
+    exact oracle check, the docs build, two rounds of independent review and
+    the nine-job matrix on each round). Merged into `dev-next` at `01bd00de`;
+    the feature branch has been removed.
+
 ## S-VBMC ELBO corrections and reporting
 
 Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:

@@ -35,20 +35,11 @@ records its execution.
   `basic_vbmc_options.ini`; a change to what the feature does also reaches
   the changelog's "Tips" entry and the "What's new" blocks. The stored
   outputs of Examples 4, 5 and 7 show tips, and are executed again at the
-  release. The old-release reminder of the item below shares the tips' slot
-  and switches; it is described in the same places and in the FAQ's entry on
-  newer versions, the `check_for_updates` API page and the changelog's
-  "Update reminders" entry.
-
-- [ ] **Update reminders.** A reminder, with no network access, when the
-  installed release is more than a year old (at most three times per
-  version, 90 days apart), and `pyvbmc.check_for_updates()`, which asks PyPI
-  when the user calls it; no automatic network check (PI, 2026-09-30). The
-  [plan](plans/version-check.md) holds the design, the PI's rulings and the
-  record of the work. Implemented and verified on `feat-update-reminders`
-  (2026-09-30), the CI matrix passed; open: the merge into `dev-next`
-  before the launch of the Slurm plan's Phase 8, with the PI's approval.
-  The review of the tips covers the reminder, which shares their slot.
+  release. The old-release reminder
+  ([plans/version-check.md](plans/version-check.md)) shares the tips' slot
+  and switches, and the review covers it: it is described in the same places
+  and in the FAQ's entry on newer versions, the `check_for_updates` API page
+  and the changelog's "Update reminders" entry.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into

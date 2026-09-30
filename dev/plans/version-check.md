@@ -1,7 +1,7 @@
 # Update reminders: an old-release reminder and `check_for_updates()`
 
-Created: 2026-09-30. Status: **IN PROGRESS** — every decision ruled by the
-PI on 2026-09-30; implementation on the branch `feat-update-reminders`.
+Created: 2026-09-30. Status: **COMPLETE** — every decision ruled by the PI
+on 2026-09-30; merged into `dev-next` at `01bd00de` the same day.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
 of phase 4. `dev/TODO.md` ("Update reminders") links here.
 
@@ -280,7 +280,7 @@ others as recommended.
   during the implementation approved by the PI, 2026-09-30).
 - [x] Phase 3: documentation and records (API page, FAQ, tips sections,
   changelog, `AGENTS.md`, the roadmap's checklist, the user skill).
-- [~] Phase 4: verification and delivery.
+- [x] Phase 4: verification and delivery.
 
 ## Phases
 
@@ -437,8 +437,9 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
   `4b247bfd` (run 36720287353), at `21fb1d6a`, after the review's fixes
   (run 36722167050), and at `dff13b5b`, after the review of those fixes
   (run 36727376436), on 2026-09-30.
-- [ ] The merge into `dev-next`, with the PI's approval, before the Phase 8
-  launch (D6), and the removal of the branch.
+- [x] The merge into `dev-next`, with the PI's approval, before the Phase 8
+  launch (D6), and the removal of the branch: merged at `01bd00de` on
+  2026-09-30; the branch removed locally and on `origin`.
 
 ## Acceptance
 
