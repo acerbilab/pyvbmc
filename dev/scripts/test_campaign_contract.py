@@ -3055,14 +3055,14 @@ def test_names_are_found_as_whole_names(site, tmp_path):
     versions, and a username that begins another word: whole names are
     replaced and found, and the rest is left as it is."""
     site.nodes = ["d2.cluster.invalid", "c1"]
-    site.user = "acerbi"
+    site.user = "jdoe"
     out = finished_campaign(site, where=site.home / "runs" / "pools")
     benign = {
         "labels": ["rosenbrock_D2", "logreg_D5", "ring_D2_noise3_svbmc"],
         "versions": ["1.5.0.dev3+g1c1d2ab", "c1d2e3f", "abc1"],
         "files": ["D2-notes.md", "C1_summary"],
-        "url": "https://github.com/acerbilab/pyvbmc",
-        "people": "luigi.acerbi and acerbilab",
+        "url": "https://example.invalid/jdoelab/pyvbmc",
+        "people": "jane.jdoe and jdoelab",
     }
     site.rewrite(out / "summary.json", lambda value: value.update(benign))
     target = tmp_path / "handback" / "pools"
@@ -3078,12 +3078,12 @@ def test_names_are_found_as_whole_names(site, tmp_path):
     readme = tmp_path / "handback" / "README.md"
     readme.write_text(
         "# The pools\n"
-        "rosenbrock_D2 at 1.5.0.dev3+g1c1d2ab, from acerbilab.\n"
+        "rosenbrock_D2 at 1.5.0.dev3+g1c1d2ab, from jdoelab.\n"
         "Logged in to d2.cluster.invalid.\n"
         '{"host": "D2"}\n'
         "task 4242_1, case 1: g0/c001 1, on c1\n"
-        "Mail acerbi@example.invalid, or luigi.acerbi.\n"
-        "See ~acerbi/runs and the scratch of acerbi.\n",
+        "Mail jdoe@example.invalid, or jane.jdoe.\n"
+        "See ~jdoe/runs and the scratch of jdoe.\n",
         "utf-8",
     )
     arguments = dict(operator=site.operator(), environ={}, host="fakelogin9")
@@ -3092,9 +3092,9 @@ def test_names_are_found_as_whole_names(site, tmp_path):
         (3, "d2.cluster.invalid"),
         (4, "d2"),
         (5, "c1"),
-        (6, "acerbi"),
-        (7, "acerbi"),
-        (7, "~acerbi"),
+        (6, "jdoe"),
+        (7, "jdoe"),
+        (7, "~jdoe"),
     ]
 
 

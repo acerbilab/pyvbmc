@@ -3208,8 +3208,8 @@ _HOST_WORD = "A-Za-z0-9_-"
 #: The characters that continue a username, beside a dot that has one of
 #: them on its other side (``first.last``); a dot that ends a sentence does
 #: not. The check finds a username only where none of them flanks it, so
-#: that ``acerbi`` is not read into ``acerbilab``, while ``/home/acerbi/``
-#: and ``acerbi@host`` hold it.
+#: that ``jdoe`` is not read into ``jdoelab``, while ``/home/jdoe/``
+#: and ``jdoe@host`` hold it.
 _USER_WORD = "A-Za-z0-9_-"
 #: The characters of a path component (``=`` aside, which in a copy mostly
 #: joins a name to its value, ``X=/path``).
