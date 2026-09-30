@@ -69,26 +69,30 @@ records its execution.
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
 - [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
-  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27). On
-  2026-09-27 gpyreg's `main` was at `d96d0d9`, six commits past `v1.3.3`,
-  among them a prior's log mass taken in log space where it underflows and
-  an opt-in switch that makes a failed Cholesky factorization an error.
-  The local environments install the sibling checkout editable and so run
-  that `main` while CI pins `v1.3.3`: the example notebooks executed on
-  2026-09-26 and 27 ran on gpyreg `1.3.4.dev10+gd96d0d9f7`. With the
-  release, `pyproject.toml`'s minimum and CI's `GPYREG_PIN` move to it
-  (`AGENTS.md`), PyVBMC's whole suite and the exact oracle check run
-  against it, and the [Slurm plan](plans/slurm-benchmark-support.md) and
-  its operator's guide (`scripts/hpc/README.md` on `feat-slurm-campaigns`)
-  name it where they name `v1.3.3`: the after arm, the pools and the
-  stacking in "What runs where", Phase 1b's source trees, and the guide's
-  clones, environment check and campaign commands. The campaigns of the
-  Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
-  Phase 6 test the machinery and do not wait for it. On 2026-09-27 the
-  default suite and the exact oracle check (12 of 12) passed against
-  gpyreg `main` at `d96d0d9`, so its six commits past `v1.3.3` move
-  nothing the oracles pin; what gpyreg gains after it needs the same
-  check.
+  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27): gpyreg
+  1.4.0 (2026-09-30, the annotated tag `v1.4.0` on `682585f`, on PyPI).
+  PyVBMC requires it: `pyproject.toml`'s minimum and CI's `GPYREG_PIN`
+  name it (`AGENTS.md`). On 2026-09-30, on Linux with one BLAS thread,
+  under Python 3.12 with SciPy 1.18.1 and under Python 3.10 with SciPy
+  1.15.3, PyVBMC's whole suite passed against it, and it reproduced bit
+  for bit what gpyreg 1.3.3 computes on the same machine: every oracle
+  output, the platform-bound ones included (a dump made with 1.3.3 by
+  `make_oracle_fixtures.py --dump-outputs`, checked with `--check --exact
+  --against`), the three GP-fit-history captures and the five default
+  golden replays. gpyreg `d96d0d9`, on which the example notebooks' stored
+  outputs were executed on 2026-09-26 and 27, gives the same oracle
+  outputs. Two
+  steps remain. The exact oracle check against the committed references
+  (`python dev/scripts/make_oracle_fixtures.py --check --exact`) runs on
+  the machine that generated them (`dev/scripts/runs/LOCAL.md`), since
+  their platform-bound references reproduce nowhere else. The
+  [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
+  (`scripts/hpc/README.md`), both rewritten on `feat-slurm-campaigns`, name
+  `v1.4.0` (`682585f`) where they name `v1.3.3`: the after arm, the pools
+  and the stacking in "What runs where", Phase 1b's source trees, and the
+  guide's clones, environment check and campaign commands. The campaigns
+  of the Slurm plan's Phase 8 launch after the pin; the smoke campaigns of
+  its Phase 6 test the machinery and do not wait for it.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -325,9 +329,11 @@ records its execution.
   metadata and merges itself once the feedstock's CI passes; otherwise the
   recipe's requirements, still those of 1.0.4, are updated by hand. Check
   the published package's requirements against `pyproject.toml`: 1.5 needs
-  gpyreg 1.3.3 or later, which is on conda-forge, and adds `filelock`,
-  `platformdirs` and `threadpoolctl`. conda-forge's `python_min`, 3.11 on
-  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
+  gpyreg 1.4.0 or later, which conda-forge did not serve on 2026-09-30
+  (gpyreg's feedstock publishes it through its bot's version update), and
+  adds `filelock`, `platformdirs` and `threadpoolctl`. conda-forge's
+  `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
+  where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 

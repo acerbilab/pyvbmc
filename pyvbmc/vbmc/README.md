@@ -13,7 +13,7 @@ MATLAB file with its Python counterpart.
 The MATLAB reference is the `master` branch of acerbilab/vbmc at `396d649`
 (2023-05-03). A MATLAB citation `file:line` is at that revision, relative to
 the root of that repository. Python code is cited by module and function;
-gpyreg as of release 1.3.3.
+gpyreg as of release 1.4.0.
 
 The catalogue was consolidated from the known-differences sheet of the port
 correctness review of September 2026,
@@ -248,8 +248,9 @@ defect *n*" is entry *n* of
   bounds a log prior of `-inf` away from its value, a gradient of its own
   prior (zero where it has none) and its value in the space-filling design.
   `gplite/gplite_hypprior.m` has neither. The sum is constant in the
-  hyperparameters, so the optimizer and the sampler do not see it while each
-  mass is a positive double (to about 37.7 scales of a Gaussian prior). No
+  hyperparameters, so the optimizer and the sampler do not see it; a mass
+  that underflows to zero, beyond about 37.7 scales of a Gaussian prior, has
+  its log taken in log space, which keeps the sum finite (gpyreg 1.4.0). No
   PyVBMC number depends on it (`verification/wave6.md`, W6-24;
   `verification/wave7.md`, W7-14, W7-15).
 - **"No prior" is written `None`, not as an infinite scale** (deliberate
