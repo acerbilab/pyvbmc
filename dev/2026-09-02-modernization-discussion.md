@@ -1,7 +1,9 @@
 # 2026-09-02 — Modernizing the numerical core: assessment and plan
 
-**Status:** discussion and decisions only. No code changed except reverting an
-unfinished local edit (see §12).
+**Status:** assessment and plan of 2026-09-02, with dated addenda from the
+weeks that followed. Stage status is in `plans/modernization-roadmap.md`;
+the dispositions of the defects of §9 are in `plans/latent-bug-fixes.md`
+and the port-review ledger (`results/2026-09-23-port-correctness-review.md`).
 
 All timings below are op-count and BLAS-call estimates from reading the code.
 Nothing was profiled. A measured profile is the first action item.
@@ -241,6 +243,10 @@ hard-coded scalars: correct by agreement with MATLAB, not independently.
 1. `_neg_elcbo:1080-1084` mutates `vp` in place via `set_parameters` and does
    an in-place subtract on a view of the optimizer's `theta`; `minimize_adam.py:81,97`
    mutates the caller's `x0`. The objective must become a pure `theta → (F, dF)`.
+   **Fixed** for `theta` and `x0`: `_neg_elcbo` shifts a copy of `eta` since
+   2026-09-08 (pickup 9, `e2639a11`), and `minimize_adam` copies `x0` since
+   2026-09-19 (port review, `dccbc3d4`). `_neg_elcbo` still sets the
+   parameters of the `vp` it receives.
 2. `set_parameters` (`variational_posterior.py:643-650`, `:750-757`) silently
    renormalizes `lambd`/`sigma` by `‖λ‖/√D`. The hand gradients ignore this
    gauge Jacobian (the ELBO is invariant along the ray). Naive AD through it
@@ -400,6 +406,8 @@ End-to-end: 6 full `optimize()` runs asserting posterior-mean RMSE `< 0.5` and
 unlucky seed. Tolerances elsewhere span `1e-14` to `5e-2`.
 
 `testing/_compare_matlab.py:43` `rand_int` is broken (`res = lo`, undefined).
+**Fixed 2026-09-02** (`2bf0d1e4`): `res = 1`, the lower end of MATLAB's
+`randi(hi)`.
 
 ---
 
@@ -515,6 +523,14 @@ state used by resume.
 
 ## 9. Latent bugs and cleanups found along the way (fix regardless)
 
+*Dispositions (added 2026-09-27).* Most of the defects below that were
+recorded as not fixed have since been fixed or ruled on: a few in the
+first days of the work, most in roadmap pickup 9 on 2026-09-07/08
+(`plans/latent-bug-fixes.md`, "Investigation and candidate
+dispositions"), and some in the port correctness review (its ledger,
+`results/2026-09-23-port-correctness-review.md`). Each such entry carries
+its disposition, with the commit that made it.
+
 - `variational_optimization.py:1561` — `sigma_vargrad *= np.reshape(sigma_vargrad, …)`,
   `sigma` intended. `:1574` assembles `dvarG` from `grad_list` instead of
   `vargrad_list`. `:1556` drops the `order="F"` used at `:1525`. All in the
@@ -528,10 +544,15 @@ state used by resume.
   MATLAB's diagonal variance approximation would be a feature, not a fix.
 - `variational_optimization.py:561,583` — reference nonexistent
   `vp.optimize_lambda` (attribute is `optimize_lambd`); masked by short-circuit
-  because `optimize_sigma` is always `True`.
-- `testing/_compare_matlab.py:43` — `rand_int` broken.
+  because `optimize_sigma` is always `True`. **Fixed 2026-09-02**
+  (`3cfc960c`, with the `_vp_bound_loss` reshape below).
+- `testing/_compare_matlab.py:43` — `rand_int` broken. **Fixed 2026-09-02**
+  (`2bf0d1e4`).
 - `gaussian_process_train.py:768` — `noise_shaping` is an unported stub; the
-  option only flips a noise-function flag.
+  option only flips a noise-function flag. **Refused since 2026-09-19**
+  (port review, `bb6ab65d`): `noise_shaping=True` raises
+  `NotImplementedError`; the shaping stays unported
+  (`pyvbmc/vbmc/README.md`).
 - GPs retained for every iteration with all `Ns` Cholesky factors; `GP.clean()`
   never called (§4). **Resolved for the history 2026-09-05** (Stage 2
   item 7, `plans/stage2-memory.md`): the history records each GP without
@@ -539,8 +560,14 @@ state used by resume.
   live GP, one object, still holds its `Ns` factors, and `GP.clean()` is
   still never called.
 - `pyproject.toml:16-20` — `plotly`, `pytest*` as runtime deps. `matplotlib`
-  and `corner` imported at module top level.
+  and `corner` imported at module top level. **Fixed** except for
+  `matplotlib`: `plotly` and the `pytest` packages moved to the `examples`
+  and `test` extras on 2026-09-02 (`b606b2b2`, `9057a37d`), and `corner` is
+  imported inside `vp.plot` since Stage 3 (2026-09-06, `4ee612dc`).
+  `matplotlib` is still imported at module top level.
 - `priors/scipy.py:5-10`, `priors/product.py:5` — imports of scipy private classes.
+  **Fixed 2026-09-07** (pickup 9, `3e67d9e1`): `priors/` imports no private
+  SciPy class.
 - gpyreg `predict` tiles `sW` to `(N, N_star)` instead of broadcasting (13 MB
   per sample at `Nc = 8192`). **Fixed 2026-09-05** (Stage 2 item 8, gpyreg
   PR acerbilab/gpyreg#43, `plans/stage2-gpyreg-predict-and-sampler.md`):
@@ -572,9 +599,13 @@ state used by resume.
 - `vp.pdf(orig_flag=True, log_flag=False, grad_flag=True)` divides `y` by the
   transform Jacobian but returns `dy` uncorrected (a transformed-space
   gradient); the `log_flag=True` sibling raises `NotImplementedError` instead.
+  **Fixed 2026-09-07** (pickup 9, `3e67d9e1`): `vp.pdf` refuses every
+  gradient in the original space, with or without `log_flag`.
 - `_neg_elcbo` shifts `eta` to `max(eta) = 0` in place (on a view of the
   caller's `theta`) before the bound loss, so the eta upper soft bound
-  (`ub = 0`) can never fire.
+  (`ub = 0`) can never fire. **Fixed 2026-09-08** (pickup 9, `e2639a11`):
+  the soft bounds on `eta` are removed and the shift acts on a copy
+  (treatment A of `2026-09-08-numerical-campaigns.md`).
 - **Fixed 2026-09-02 (evening), `6f3f0ba`:** with a single GP
   hyperparameter sample (Ns = 1, the regime once GP sampling stops at
   `N ≥ 200 + 10D`), `_gp_log_joint` squeezed `G` and `dG` but not `varG`,
@@ -588,44 +619,63 @@ state used by resume.
   - `active_sample.py:336-338` calls `_gp_log_joint(..., compute_var=1)`
     only when the acquisition function sets `compute_var_log_joint`, which
     none does, and stores `optim_state["var_log_joint_samples"]`, which
-    nothing reads: unreachable code.
+    nothing reads: unreachable code. *Kept* as a hook for custom
+    acquisition functions (pickup 9), documented in `AbstractAcqFcn` since
+    2026-09-14 (`ce2c3b81`).
   - `vbmc.py:1341` tests `optim_state.get("stop_gp_sampling") == 0`, but
     only `"stop_sampling"` is ever set, so `_is_gp_sampling_finished` and
     the `tol_gp_var_mcmc` option are dead; the method itself reads history
     keys `N` and `gp_sample_var` that are never declared, so it is broken
-    code behind a dead guard.
+    code behind a dead guard. **Fixed 2026-09-08** (pickup 9, `b0d34374`):
+    the checks read `stop_sampling`, the history records `N`, and the
+    criterion weighs the recorded `var_ss`.
   - `true_mean`/`true_cov` options (`vbmc.py:1274-1278`): the guard
     evaluates the raw value's truthiness, so numpy arrays raise
     `ValueError`; when they do run (as lists) they draw 10⁶ samples from
     the run's own `vp.rng` every iteration inside the `finalize` timer,
-    changing the trajectory. No test exercises them.
+    changing the trajectory. No test exercises them. **Fixed 2026-09-07**
+    (pickup 9, `c8a284e0`): the guard checks presence and shape, and the
+    moments are drawn from a copy of the generator.
   - The `display` and `log_file_level` option comments advertise
     `"notify"`/`"final"`; the code handles `"off"`, `"iter"`, `"full"`.
+    **Fixed 2026-09-07** (pickup 9, `3e67d9e1`).
   - `FunctionLogger.finalize()` is never called by `VBMC` and does not trim
-    `n_evals`.
+    `n_evals`. **Fixed 2026-09-07** (pickup 9, `c8a284e0`): it trims
+    `n_evals`; `VBMC` still does not call it.
   - `results["rng_state"]` is the literal string `"rng"`; `search_cmaes_best`
     is read nowhere; the MCMC branch of `active_importance_sampling` is
     unreachable (`mcmc_importance_sampling` is never set by any acquisition
-    function).
+    function). **Fixed 2026-09-07** (pickup 9, `c8a284e0`):
+    `results["rng_state"]` is a snapshot of the generator's state.
+    `search_cmaes_best` is kept as an inert option that saved runs may
+    carry. The MCMC branch raises `NotImplementedError` since 2026-09-20
+    (port review, `1c23fda0`): its ensemble sampler is not ported.
   - `gaussian_process_train.py:610`: the cubic `f = lambda x_: a*x_**3 +
     b*x**2 + c*x + d` uses the closure `x` for the lower-order terms
-    (harmless as called with `f(x)`).
+    (harmless as called with `f(x)`). **Fixed 2026-09-07** (pickup 9,
+    `c8a284e0`).
   - `kl_div_mvn` is wrapped by `handle_0D_1D_input`, which swallows `mu1` as
     `self`: `mu1` is never promoted to 2-D and keyword calls fail. Call it
-    positionally with a `(1, D)` array.
+    positionally with a `(1, D)` array. **Fixed 2026-09-07** (pickup 9,
+    `3e67d9e1`): the decorator is gone and the function shapes its four
+    inputs itself.
   - Notebook 1 states `lml_true = -2.272` for Rosenbrock + N(0, 3²) at D=2;
     two independent quadratures give **−2.2598** (the x2 integral is
     analytic, leaving a 1-D integral). Notebook 6's heteroskedastic noise
     uses one norm for the whole batch and broadcasts `(n,) + (n,1)` to
     `(n,n)` for `n > 1`. `noisy_cigar` in `test_vbmc_optimize.py` is dead
-    code.
+    code. **Fixed 2026-09-07** (pickup 9): Notebook 1 reads −2.2598 and
+    Notebook 6 draws one noise value per row (`3e67d9e1`); `noisy_cigar` is
+    deleted (`c8a284e0`).
 - **Found 2026-09-05 (evening) by the bit-check of Stage 2 item 6**
   (`plans/stage2-memory.md`), not fixed (unreachable): `_vb_init` with
   `vb_type = 3`, `optimize_sigma = False` and `K_new > vp.K` keeps
   `sigma = np.zeros((1, K))` at the old `K` while `mu` grows to `K_new`, so
   the jitter `mu += sigma * lambd * randn(mu.shape)` raises `ValueError`
   (and `sigma` would stay zero if it did not). `optimize_sigma` is always
-  `True` in production (the `optimize_lambda` bullet above).
+  `True` in production (the `optimize_lambda` bullet above). **Fixed
+  2026-09-07** (pickup 9, `c8a284e0`): with fixed widths, a candidate with
+  more components reuses the supplied widths.
 - **Found 2026-09-06 by the finite-difference checks that closed Stage 0**
   (`testing/parameter_transformer/test_parameter_transformer_jacobian_fd.py`,
   `testing/vbmc/test_gpyreg_derivatives_fd.py`; every check passes, so
@@ -634,14 +684,18 @@ state used by resume.
     (`parameter_transformer.py:407`), so two transformers that differ only
     in `scale` compare equal; the tests asserting transformer identity
     across `vbmc`, `vp` and `function_logger` go through this `__eq__`.
+    **Fixed 2026-09-07** (pickup 9, `3e67d9e1`): `__eq__` compares `scale`
+    with the other transformer's.
   - The `logit` bounded Jacobian (`parameter_transformer.py:312–318`)
     computes `-log1p(exp(-y))`, which overflows to `-inf` for
     `y < -709.78` where the value is finite (`-708.61` at `y = -710`), with
     a `RuntimeWarning` rather than a NaN. Unreachable in a healthy run:
-    `inverse` saturates to the hard bound long before.
+    `inverse` saturates to the hard bound long before. **Fixed 2026-09-07**
+    (pickup 9, `3e67d9e1`): the tail takes a form that stays finite.
   - `log_abs_det_jacobian` takes `|det R_mat| = 1` for granted, true of
     every rotation `warp_input` installs (an orthogonal factor of an SVD)
-    and silently wrong for any other matrix.
+    and silently wrong for any other matrix. **Fixed 2026-09-07** (pickup 9,
+    `3e67d9e1`): the transformer refuses a rotation that is not orthogonal.
   - The MATLAB generator `testing/vbmc/compare_MATLAB/
     activesample_proposalpdf.m` misspelled its local function and its
     output file (`activcesample_proposalpdf`), so rerunning it would have
@@ -657,13 +711,17 @@ state used by resume.
     `ub_orig` keep the narrow dtype, while every downstream array is
     float64 holding the rounded values. Pinned as a strict `xfail` in
     `test_vbmc_init.py`; the widening cast is a no-op on float64 inputs
-    and waits for the reference extension of roadmap pickup 3f.
+    and waits for the reference extension of roadmap pickup 3f. **Fixed
+    2026-09-07** (pickup 9, `c8a284e0`): `VBMC.__init__` widens `x0` and
+    every bound to float64, and the `xfail` became a passing test.
   - `_neg_elcbo` initializes `varH` and `varF` to the integer literal `0`
     (`variational_optimization.py:1242`, `:1246`) and `_gp_log_joint`
     `var_ss` (`:1605`), so they are Python ints on the paths that do not
     fill them (`varH` always; `var_ss` and `varG_ss` with a single
     hyperparameter sample). `optimize_vp` documents `var_ss : int`
     (`:125`) and `_gp_log_joint`, which produces it, `float` (`:1357`).
+    **Fixed 2026-09-07** (pickup 9, `c8a284e0`): the placeholders are
+    float zeros and both docstrings say `float`.
   - The `active_sample_step` oracle reproduces its reference on the
     generating machine only with BLAS single-threaded; under default
     threading its CMA-ES search picks different points on 4 of 7
@@ -691,7 +749,10 @@ state used by resume.
   flat; 4 of 6 boost reruns from the same state fail. Algorithmic and
   inherited, not a port bug. *Ruled 2026-09-06 (PI):* a borderline bug
   rather than an algorithmic decision; the guard (option 1 of that
-  devlog) is a 1.5 fix (roadmap pickup 9).
+  devlog) is a 1.5 fix (roadmap pickup 9). **Fixed 2026-09-08** (pickup 9,
+  `4ab20036`): the boost runs without the small-weight penalty, and its
+  candidate is kept only if neither its ELBO nor its ELCBO falls by
+  `tol_elcbo_boost` (0.1) or more (`2026-09-08-numerical-campaigns.md`).
 - **Found 2026-09-04 by the review of the oracle plan**
   (`plans/fixture-generator-and-oracles.md`), not fixed:
   - `vbmc.py:755` sets `optim_state["variance_regularized_acqfcn"]` but
@@ -702,7 +763,10 @@ state used by resume.
     effect at all. The underscore spelling appears only in acquisition unit
     tests; `testing/vbmc/test_vbmc_init.py` asserts the misspelled key, so
     fixing the typo means updating that test. The oracle fixtures pin the
-    dead path as it is.
+    dead path as it is. **Fixed 2026-09-08** (pickup 9, `90d08d3d`):
+    initialization writes `variance_regularized_acq_fcn`, the key the
+    reader looks for, and the reader takes the old spelling as a fallback
+    for saved states.
   - `_gp_log_joint(..., compute_var=False, separate_K=True)` raises
     `UnboundLocalError`: `J_sjk` is created only under `if compute_var` but
     returned unconditionally in the `separate_K` branch. Unreachable in
@@ -727,18 +791,22 @@ state used by resume.
   `optimize_vp` prunes `J_sjk` along `axis=2` only
   (`variational_optimization.py:381`), so `vp.stats["J_sjk"]` is no
   longer square after a component is pruned; nothing in the package reads
-  that key.
+  that key. **Fixed 2026-09-07** (pickup 9, `c8a284e0`): both component
+  axes are pruned.
 - **Found 2026-09-04 by the reviews of the batched-acquisition plan**
   (`plans/stage2-batched-acquisition.md`), not fixed:
   - `testing/vbmc/test_vbmc_optimize.py:630` asserts `elbo_1 == elbo_1`
     (a self-comparison), so `test_vbmc_resume_optimization` does not pin
-    the resumed ELBO at all.
+    the resumed ELBO at all. **Fixed 2026-09-05** (Stage 2 item 7,
+    `564f53a7`): the test compares the two runs' ELBOs (§10).
   - The dead variance-regularization block in `AbstractAcqFcn.__call__`
     (`abstract_acq_fcn.py:121-127`, unreachable because of the misspelt
     option key above) would also fail on any batch of more than one point
     when `acq` is still 2-D, which is the case for VIQR/IMIQR with a single
     GP sample: `acq[mask] += ...` with a `(k, 1)` left side and a `(k,)`
-    right side. Fixing the key alone would expose it.
+    right side. Fixing the key alone would expose it. **Fixed 2026-09-08**
+    (pickup 9, `90d08d3d`, with the key): the acquisition values are
+    reshaped to one per point before the masks.
   - `AbstractAcqFcn._sq_dist` (`abstract_acq_fcn.py:214-216`) centres both
     point sets on a mean that depends on the size and content of the
     candidate batch, so the squared distances, and the nearest-training-
@@ -766,7 +834,9 @@ state used by resume.
     width vector *is* used. **Not fixed**: fixing changes the sampler's
     proposal widths and therefore every trajectory; it needs its own item
     with a population check. The `gp_fit` oracle asserts the drop so a fix
-    is noticed there.
+    is noticed there. **Fixed 2026-09-08** (pickup 9, `8f906d85`): each
+    sample is a row of the weighted outer-product covariance
+    (`2026-09-08-numerical-campaigns.md`).
   - gpyreg `GP.log_likelihood` / `GP.log_posterior` with `compute_grad=True`
     applied the unary minus to the returned `(nlZ, dnlZ)` tuple and raised
     `TypeError` (no PyVBMC caller; gpyreg's own gradient test bypasses the
@@ -777,7 +847,8 @@ state used by resume.
     (`slice_sample.py:387-388`) and never re-synced after `xx[dd] =
     xprime[dd]`, so the step-out evaluations of later axes carry stale
     coordinates from earlier ones (off the coordinate line). Inert for
-    PyVBMC; not fixed.
+    PyVBMC; not fixed. **Fixed** in gpyreg `f610e11` (#48, 2026-09-13;
+    gpyreg 1.2.1).
   - A trap, not a defect: after `_gp_hyp` installs PyVBMC's hyperprior on
     a GP and before `GP.fit` runs, `gp.log_posterior` is NaN (`_gp_hyp`
     leaves NaN bounds, so the normalization constants are NaN until
@@ -1131,6 +1202,13 @@ at representative and final-refinement shapes, and implementation simplicity.
 The NumPy transition, dependency policy, and Python floor remain design
 questions. No solver implementation was started as part of this decision.
 
+*Superseded 2026-09-09 (PI):* on the feasibility prototype
+(`plans/stage4-torch-feasibility.md`), 1.5 keeps the modernized
+NumPy/SciPy solver and makes no full Torch port. Torch stays an optional
+extra, and the Torch-specific process decisions of §11 and the
+torch-dependency question of §13 apply only if a port is taken up after
+1.5.
+
 Original technical scope and anticipated longer-term payoffs:
 
 Scope: vendored GP core, `variational_optimization`, `entropy`, `acquisition_functions`,
@@ -1218,7 +1296,10 @@ in §2 are estimates.
   current operating point does not need it.
 - Log-space rewrite of the mixture density sums (`entlb:94-97`, `entmc:77-80`,
   `_gp_log_joint:1402-1406`, `vp.pdf:451-464`), which currently rely on float64
-  headroom rather than log-sum-exp.
+  headroom rather than log-sum-exp. `vp.pdf` with `log_flag` takes the
+  log-sum-exp over the components where the density is below the smallest
+  normal double (`dev/experiments/port_review_20260919/verification/wave7.md`,
+  W7-3); its linear sum and the others do not.
 
 ---
 

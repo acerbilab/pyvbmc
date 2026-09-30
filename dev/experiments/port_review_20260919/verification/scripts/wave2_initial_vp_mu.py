@@ -2,7 +2,7 @@
 
 Wave-2 finding P1b internal F1: VBMC.__init__ hands the untransformed x0 to
 VariationalPosterior, which stores it in vp.mu, a transformed-space quantity.
-MATLAB (misc/setupvars_vbmc.m:66, :84) transforms x0 first.
+MATLAB (misc/setupvars_vbmc.m:65, :82) transforms x0 first.
 """
 
 import numpy as np

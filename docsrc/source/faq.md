@@ -1,6 +1,6 @@
 # PyVBMC: Frequently Asked Questions
 
-This FAQ is curated by [Luigi Acerbi](https://luigiacerbi.com/), and in constant expansion.
+This FAQ is curated by [Luigi Acerbi](https://lacerbi.github.io/), and in constant expansion.
 It is adapted from the [MATLAB VBMC FAQ](https://github.com/acerbilab/vbmc/wiki)
 for PyVBMC 1.5.
 
@@ -256,11 +256,19 @@ Alternatively, pass a separate prior with `prior=`. For independent uniform
 priors, the same problem can be written as:
 
 ```python
+import numpy as np
 from scipy.stats import uniform
 
-prior = [uniform(loc=low, scale=high - low) for low, high in zip(LB, UB)]
+prior = [
+    uniform(loc=low, scale=high - low)
+    for low, high in zip(np.ravel(LB), np.ravel(UB))
+]
 vbmc = VBMC(log_likelihood, x0, LB, UB, PLB, PUB, prior=prior)
 ```
+
+The list holds one distribution per variable: `np.ravel` reads the bounds
+one coordinate at a time, whether they are given as a row of shape `(1, D)`
+or as a flat array.
 
 In this case PyVBMC adds the log prior to the log likelihood, so do not
 include the prior in `log_likelihood` as well. Supported priors include
@@ -269,7 +277,14 @@ also supply a custom `log_prior=` callable. See the
 [prior documentation](api/classes/priors.rst) for details.
 
 The hard bounds constrain where PyVBMC evaluates the target; they do not
-by themselves add or normalize a prior.
+by themselves add or normalize a prior. A prior passed with `prior=` must
+have a support that covers the hard bounds, since the log joint would be
+`-inf` wherever the box reaches outside it; `VBMC` refuses a prior that does
+not. Inside the hard bounds the prior is used as it is given: the model
+evidence is that of the prior restricted to the hard bounds, not of a prior
+truncated to them and normalized again, so for a proper evidence choose hard
+bounds that hold essentially all of the prior's mass, or the support itself
+for a bounded prior.
 
 (faq-my-target-function-requires-additional-datainputs-how-do-i-pass-them-to-vbmc)=
 ### My target function requires additional data/inputs. How do I pass them to VBMC?
@@ -428,8 +443,17 @@ changes the inference problem.
 (faq-does-vbmc-support-inference-with-integer-parameters)=
 ### Does VBMC support inference with integer parameters?
 
-No, VBMC does not support integer parameters (that is, variables forced to be integers — or, more in general, constrained to discrete values).
-Be aware that simple workarounds might break down the VBMC approximation, in particular the assumption that the underlying target function (the log posterior) is continuous and reasonably smooth.
+Only as an experimental feature. `options['integer_vars']` names the variables that are forced to take integer values, either as a boolean array with one entry per variable or as an array of their 0-based indices.
+The hard bounds of such a variable must sit half an integer outside its range: `LB = -0.5` and `UB = 10.5` for a variable that takes the values 0 to 10.
+A prior passed with `prior=` has to cover those bounds, so a uniform prior over the values 0 to 10 is `UniformBox(-0.5, 10.5)`, whose density is 1/11.
+
+What the option does, and what it does not do:
+
+- The points of the active-sampling search are snapped to the integer grid, so every new point evaluated after the initial design has integer values of those variables.
+- The initial design is *not* snapped, as in MATLAB VBMC, and neither is an `x0` provided for it. The first `options['fun_eval_start']` evaluations are therefore made off the grid unless you provide starting points for the whole design, all of them on it.
+- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing. With `options['max_repeated_observations']` above zero, a noisy target can also be evaluated again at a point of the initial design, which is repeated where it is, off the grid.
+
+Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in all its variables, the integer ones included: the Gaussian process interpolates between the values on the grid.
 
 (faq-output-arguments)=
 ## Output arguments
@@ -546,10 +570,10 @@ PyVBMC supports noisy target functions as input, as explained below.
 (faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)=
 ### Does VBMC automatically detect that the target function is noisy?
 
-No. In order to perform inference with a noisy target function, you need to:
+No. You tell VBMC that the target function is noisy when constructing `VBMC`, in one of two ways:
 
-- manually set `options={"specify_target_noise": True}` when constructing `VBMC`;
-- pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](_examples/pyvbmc_example_6_noisy_likelihoods.ipynb) for further information.
+- If the target can estimate the noise of each evaluation, which is the recommended setup, set `options={"specify_target_noise": True}` and pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
+- Otherwise, set `options={"uncertainty_handling": True}` and leave `specify_target_noise` unset: `fun` returns `log_density` alone, and VBMC infers the noise level from the evaluations.
 
 With a separate `prior=` or `log_prior=`, `log_density` is the noisy log
 likelihood; otherwise it is the noisy log joint. The SD describes the
@@ -559,12 +583,12 @@ or across parameter values.
 (faq-does-vbmc-automatically-infer-the-amount-of-noise-in-the-target-function)=
 ### Does VBMC automatically infer the amount of noise in the target function?
 
-No. See [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy).
+Only when asked to. With `options={"uncertainty_handling": True}` and without `specify_target_noise`, the target returns the log density alone and VBMC infers the noise level from the evaluations. A target that can estimate the SD of each evaluation should return it instead, as described [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy).
 
 (faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood)=
 ### Can I use *any* technique to estimate a noisy log-likelihood?
 
-Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, with an available estimate of the standard deviation. [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
+Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
 
 (faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood)=
 ### How do I estimate the standard deviation of the noisy log-likelihood?
@@ -618,7 +642,7 @@ We list here the major failure modes, diagnostics, and possible solutions:
 - In the simplest case, the VBMC algorithm fails to converge within the allotted budget of target function evaluations.
   - This is easy to detect (look at `results["success_flag"]` and `results["message"]`). There may be several distinct reasons for failure of convergence (see below).
 - VBMC converges, but the variational optimization has only found a *local* optimum.
-  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](_examples/pyvbmc_example_4_validation.ipynb)).
+  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html)).
 - Multiple runs of VBMC converge to pretty much the same variational solution, which fails to capture important aspects of the true posterior.
   - This problem has no obvious solution, in that it is intrinsic to the fact that we are using an approximation that it may deviate from the true posterior. For example, variational posteriors, for how the variational objective is defined, tend to underestimate the true uncertainty of the posterior. You can use [*posterior predictive checks*](https://stats.stackexchange.com/questions/115157/what-are-posterior-predictive-checks-and-what-makes-them-useful) to gain confidence that the found solution makes sensible predictions, also in terms of calibration.
 
@@ -688,14 +712,28 @@ vp, results = continued.optimize()
 ```
 
 Here `1000` is the *total* budget, including evaluations already made. If
-the run reached its iteration limit, increase `max_iter` as well. Continue
-with the same model, data, prior and bounds, preferably in the same Python
-environment. See [`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
+the run reached its iteration limit, increase `max_iter` as well.
+`new_options` changes the options a running iteration reads. An option that
+PyVBMC reads only while it builds a `VBMC` object — `uncertainty_handling`,
+`gp_mean_fun`, `integer_vars` and `warmup` among them — keeps the value the
+run was built with. Giving that value again, in any form PyVBMC reads alike,
+is fine, so you can pass the run's original options together with the new
+budget; another value is refused, since the saved state already holds what
+was built from the original one, and running with another value means
+building a new `VBMC` object. A run saved by PyVBMC 1.0.4 with
+`uncertainty_handling=[1]`, a form that PyVBMC refuses, holds `True` once
+loaded, and `True` is the value to give. Continue with the same model, data,
+prior and bounds, and under the same minor version of Python (3.12, say)
+that saved the file: a saved run holds Python bytecode, so under another
+minor version it can be loaded and inspected but should not be continued or
+saved again, which can end the interpreter. See
+[`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
 
 If you only need to use the fitted posterior later, save it with
 `vp.save("posterior.pkl")` and load it with
-`VariationalPosterior.load("posterior.pkl")`. A saved posterior alone does
-not contain the full state needed to resume a run.
+`VariationalPosterior.load("posterior.pkl")`. A saved posterior holds no
+bytecode and moves between Python versions, but it does not contain the
+full state needed to resume a run.
 
 (faq-can-i-combine-the-posteriors-of-several-runs)=
 ### Can I combine the posteriors of several runs?
@@ -720,9 +758,11 @@ samples = stacked.sample(10000)
 The headline estimate is `stacked.elbo`; `stacked.elbo_details` contains
 the detailed estimates. On noisy targets the headline uses a cap to reduce
 optimism. `stacked.elbo_sd` describes uncertainty in the raw estimate,
-not a confidence interval for that capped headline. See the
+not a confidence interval for that capped headline. Keep the stacked
+posterior with `stacked.save("stacked.pkl")` and load it with
+`SVBMC.load("stacked.pkl")`. See the
 [S-VBMC documentation](api/classes/svbmc.rst) and
-[Example 7](_examples/pyvbmc_example_7_stacking.ipynb)
+[Example 7](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_7_stacking.html)
 for the filtering of input runs, reporting and examples.
 
 (faq-miscellanea)=

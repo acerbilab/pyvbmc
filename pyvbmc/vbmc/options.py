@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import configparser
 import copy
-import logging
+import inspect
+
+# The values of an options file are evaluated in this module's namespace,
+# where a log_file_level may name a level of the logging module.
+import logging  # nopycln: import
 import re
 from collections.abc import MutableMapping
 from math import ceil
@@ -13,8 +17,13 @@ from textwrap import indent
 
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.acquisition_functions import *
 from pyvbmc.formatting import full_repr
+from pyvbmc.parameter_transformer.parameter_transformer import (
+    _bounded_transform_type,
+)
+from pyvbmc.whitening.whitening import _is_finite_real_number
 
 #: Options declared in the ``.ini`` files that no PyVBMC module reads. They
 #: are kept so that option dictionaries recorded by earlier runs still load,
@@ -24,6 +33,7 @@ INERT_OPTIONS = frozenset(
     {
         "acq_hedge_decay",
         "acq_hedge_iter_window",
+        "active_importance_sampling_fess_thresh",
         "active_sample_fess_thresh",
         "active_variational_samples",
         "adaptive_entropy_alpha",
@@ -33,6 +43,7 @@ INERT_OPTIONS = frozenset(
         "diagnostics",
         "double_gp",
         "empirical_gp_prior",
+        "gp_int_mean_fun",
         "gp_stochastic_step_size",
         "integrate_gp_mean",
         "noise_shaping_factor",
@@ -40,6 +51,7 @@ INERT_OPTIONS = frozenset(
         "nonlinear_scaling",
         "optimistic_variational_bound",
         "output_fcn",
+        "proposal_fcn",
         "sample_extra_vp_means",
         "scale_lower_bound",
         "search_cmaes_best",
@@ -96,6 +108,21 @@ _UNCERTAINTY_HANDLING_FORMS = (
     "leave the choice to specify_target_noise"
 )
 
+# How the specify_target_noise option may be written, named in the error
+# raised for any other value.
+_SPECIFY_TARGET_NOISE_FORMS = (
+    "True or False (the integers 1 and 0 and their NumPy equivalents are "
+    "also accepted)"
+)
+
+# How the noise_size option may be written, named in the error raised for
+# any other value.
+_NOISE_SIZE_FORMS = (
+    "a positive finite number (a Python or NumPy integer or floating-point "
+    "number, or a 0-d array that holds one; not a boolean), or an empty "
+    "value ([], an empty array or None) to leave it unset"
+)
+
 
 def _is_positive_integer_valued(value):
     """
@@ -110,6 +137,119 @@ def _is_positive_integer_valued(value):
     if not value > 0:
         return False
     return bool(np.isinf(value)) or float(value).is_integer()
+
+
+def _is_finite_non_negative_integer_valued(value):
+    """
+    Whether a count that may be zero is a finite non-negative integer.
+
+    A floating value that lands on an integer counts, as for
+    `_is_positive_integer_valued`; infinity and NaN do not.
+    """
+    if not isinstance(value, Real):
+        return False
+    if not value >= 0 or np.isinf(value):
+        return False
+    return float(value).is_integer()
+
+
+def _stated_boolean(value):
+    """
+    The boolean that a value states, or `None` when it states none.
+
+    A boolean, the integers 1 and 0 and their NumPy equivalents state one.
+    """
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
+        return bool(value)
+    return None
+
+
+def _specify_target_noise_flag(value):
+    """
+    Read the ``specify_target_noise`` option as a boolean.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    flag : bool
+        Whether the target returns its own noise estimate.
+
+    Raises
+    ------
+    ValueError
+        When the value is not a boolean.
+    """
+    flag = _stated_boolean(value)
+    if flag is None:
+        raise ValueError(
+            "The option specify_target_noise must be "
+            + _SPECIFY_TARGET_NOISE_FORMS
+            + f"; got {value!r}."
+        )
+    return flag
+
+
+def _is_empty_value(value):
+    """Whether an option holds an empty value (``None``, ``[]``, an empty
+    tuple or an empty array), which states nothing."""
+    if value is None:
+        return True
+    return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0
+
+
+def _noise_size_reading(value):
+    """
+    Read the ``noise_size`` option.
+
+    An empty value leaves the option unset. Any other value has to be a
+    positive finite number, as ``misc/setupoptions_vbmc.m:131-132``
+    requires, since the GP fit starts its noise from the logarithm of the
+    value. A 0-d array counts as the number it holds; an array with an
+    axis, even of one entry, does not. Release 1.0.4 ran a number that is
+    not positive as it ran the option unset, and the refusal of such a
+    number says so.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option.
+
+    Returns
+    -------
+    noise_size : float or None
+        The value as a float, or `None` when the option is empty.
+
+    Raises
+    ------
+    ValueError
+        When the value is neither empty nor a positive finite number.
+    """
+    if _is_empty_value(value):
+        return None
+    if _is_finite_real_number(value) and value > 0:
+        return float(value)
+    message = "The option noise_size must be " + _NOISE_SIZE_FORMS
+    message += f"; got {value!r}."
+    unset = "VBMC.load(file, new_options={'noise_size': []})"
+    if _is_finite_real_number(value):
+        message += (
+            " Release 1.0.4 ran a value that is not positive as it ran the "
+            "option unset. A saved run that carries one is continued with "
+            f"the option unset, with {unset}, or with a positive noise_size "
+            "given the same way."
+        )
+    else:
+        message += (
+            " A saved run that carries such a value is continued with "
+            f"{unset}, which leaves the option unset."
+        )
+    raise ValueError(message)
 
 
 def _uncertainty_handling_flag(value):
@@ -135,10 +275,9 @@ def _uncertainty_handling_flag(value):
     """
     if value is None:
         return None
-    if isinstance(value, (bool, np.bool_)):
-        return bool(value)
-    if isinstance(value, (int, np.integer)) and int(value) in (0, 1):
-        return bool(value)
+    flag = _stated_boolean(value)
+    if flag is not None:
+        return flag
     if isinstance(value, (list, tuple, np.ndarray)) and np.size(value) == 0:
         return None
     raise ValueError(
@@ -146,6 +285,270 @@ def _uncertainty_handling_flag(value):
         + _UNCERTAINTY_HANDLING_FORMS
         + f"; got {value!r}."
     )
+
+
+def _uncertainty_handling_level(uncertainty_handling, specify_target_noise):
+    """
+    The uncertainty handling level that ``uncertainty_handling`` and
+    ``specify_target_noise`` select together, as construction reads them.
+
+    Parameters
+    ----------
+    uncertainty_handling : object
+        The value of the ``uncertainty_handling`` option.
+    specify_target_noise : object
+        The value of the ``specify_target_noise`` option.
+
+    Returns
+    -------
+    level : int
+        0 for a target without noise, 1 for a noisy target whose noise level
+        is inferred, and 2 for a target that returns its own noise
+        estimate. An empty ``uncertainty_handling`` follows
+        ``specify_target_noise``.
+
+    Raises
+    ------
+    ValueError
+        When ``uncertainty_handling`` holds a value that is neither a
+        boolean nor empty, when ``specify_target_noise`` holds a value that
+        is not a boolean, or when ``uncertainty_handling`` is off while
+        ``specify_target_noise`` is set.
+    """
+    requested = _uncertainty_handling_flag(uncertainty_handling)
+    if _specify_target_noise_flag(specify_target_noise):
+        if requested is False:
+            raise ValueError(
+                "A target that returns its own noise estimate is a "
+                "noisy target: with specify_target_noise set, "
+                "uncertainty_handling cannot be turned off. Leave it "
+                "empty or set it to True."
+            )
+        return 2
+    return 1 if requested else 0
+
+
+def _integer_vars_mask(value, D):
+    """
+    Read a value of the ``integer_vars`` option as a mask over the
+    variables; :py:meth:`Options.integer_vars_mask` describes the forms.
+    """
+    mask = np.full(D, False)
+    if value is None:
+        return mask
+    array = np.asarray(value)
+    if array.size == 0:
+        return mask
+    if array.ndim != 1 or not (
+        array.dtype == bool or np.issubdtype(array.dtype, np.integer)
+    ):
+        raise ValueError(
+            "The option integer_vars must be "
+            + _INTEGER_VARS_FORMS
+            + f"; got {value!r}."
+        )
+    if array.dtype == bool:
+        if array.size != D:
+            raise ValueError(
+                "The option integer_vars, written as a boolean mask, "
+                f"needs one entry per variable, that is {D}; got "
+                f"{array.size}."
+            )
+        mask[array] = True
+        return mask
+    if array.size == D and np.all((array == 0) | (array == 1)):
+        raise ValueError(
+            f"The option integer_vars holds {D} integers, each of them "
+            "zero or one, which reads both as a mask and as a list of "
+            "indices. Write a boolean array to give a mask."
+        )
+    if np.any(array < 0) or np.any(array >= D):
+        raise ValueError(
+            "The option integer_vars, written as indices, needs "
+            f"0-based indices of the {D} variables; got {value!r}."
+        )
+    if np.unique(array).size != array.size:
+        raise ValueError(
+            "The option integer_vars, written as indices, names a "
+            f"variable twice; got {value!r}."
+        )
+    mask[array] = True
+    return mask
+
+
+#: The options that construction reads by their truth.
+_OPTIONS_READ_BY_TRUTH = ("warmup", "entropy_switch", "fitness_shaping")
+
+
+def _construction_reading(name, value, D):
+    """
+    The value of an option as construction reads it.
+
+    ``uncertainty_handling`` and ``specify_target_noise`` are read as the
+    choices they state, ``integer_vars`` as its mask over the `D`
+    variables, ``f_vals`` as a flat array, ``bounded_transform`` as the
+    number of the transform it names, which ``ParameterTransformer`` gives
+    ``"probit"`` and ``"norminv"`` alike, and the options of
+    :data:`_OPTIONS_READ_BY_TRUTH` by their truth; any other option is read
+    as it is.
+
+    Raises
+    ------
+    ValueError
+        When construction refuses the value.
+    """
+    if name == "uncertainty_handling":
+        return _uncertainty_handling_flag(value)
+    if name == "specify_target_noise":
+        return _specify_target_noise_flag(value)
+    if name == "integer_vars":
+        return _integer_vars_mask(value, D)
+    if name == "f_vals":
+        return np.array(value).ravel()
+    if name == "bounded_transform":
+        return _bounded_transform_type(value)
+    if name in _OPTIONS_READ_BY_TRUTH:
+        return bool(value)
+    return value
+
+
+def _same_reading(value, other):
+    """
+    Whether two readings of an option are the same.
+
+    Two strings are the same when they are equal. Numbers, booleans and
+    arrays of them are the same when their values are equal and their
+    shapes agree, NaN matching NaN, so that a boolean and the number it
+    equals are the same. ``None`` is the same only as ``None``, and other
+    objects are compared as :func:`_equals_default` compares a value with
+    its default.
+    """
+    if value is other:
+        return True
+    if isinstance(value, str) or isinstance(other, str):
+        return (
+            isinstance(value, str)
+            and isinstance(other, str)
+            and value == other
+        )
+    if value is None or other is None:
+        return False
+    try:
+        value_array = np.asarray(value, dtype=np.float64)
+        other_array = np.asarray(other, dtype=np.float64)
+    except (TypeError, ValueError):
+        return _equals_default(value, other)
+    return value_array.shape == other_array.shape and bool(
+        np.array_equal(value_array, other_array, equal_nan=True)
+    )
+
+
+def _states_the_stored_value(name, value, stored, D):
+    """
+    Whether a value of an option that only construction reads states what
+    the value a run stores for it states.
+
+    Both are read as construction reads the option
+    (:func:`_construction_reading`) and compared by
+    :func:`_same_reading`. A stored value that construction would refuse,
+    which a run saved by an earlier release can hold, states nothing that a
+    value given now can match.
+
+    Parameters
+    ----------
+    name : str
+        The name of the option.
+    value : object
+        The value given for it.
+    stored : object
+        The value the run stores for it.
+    D : int
+        The number of variables of the run.
+
+    Returns
+    -------
+    same : bool
+        Whether the two values state the same.
+
+    Raises
+    ------
+    ValueError
+        When construction refuses ``value``.
+    """
+    reading = _construction_reading(name, value, D)
+    try:
+        stored_reading = _construction_reading(name, stored, D)
+    except ValueError:
+        return False
+    return _same_reading(reading, stored_reading)
+
+
+#: The two options that construction reads together, as the uncertainty
+#: handling level they select (:func:`_uncertainty_handling_level`).
+_UNCERTAINTY_HANDLING_OPTIONS = (
+    "uncertainty_handling",
+    "specify_target_noise",
+)
+
+
+def _states_the_stored_uncertainty_handling(given, stored):
+    """
+    Whether values given for ``uncertainty_handling`` or
+    ``specify_target_noise`` state the uncertainty handling level that the
+    values a run stores for the two state.
+
+    Construction reads the two options as a pair, an empty
+    ``uncertainty_handling`` following ``specify_target_noise``, so each
+    value given is read together with the one given for the other option or,
+    where none is, the stored one. A pair that construction refuses states
+    no level.
+
+    Parameters
+    ----------
+    given : dict
+        The values given for one or both of the two options, by name.
+    stored : dict
+        The values the run stores for both options, by name.
+
+    Returns
+    -------
+    same : bool
+        Whether the two pairs state the same level.
+    """
+    pair = {**stored, **given}
+    try:
+        level = _uncertainty_handling_level(
+            pair["uncertainty_handling"], pair["specify_target_noise"]
+        )
+        stored_level = _uncertainty_handling_level(
+            stored["uncertainty_handling"], stored["specify_target_noise"]
+        )
+    except ValueError:
+        return False
+    return level == stored_level
+
+
+def _takes_keyword(function, name):
+    """
+    Whether a callable takes an argument by the keyword `name`.
+
+    It does when it has a parameter of that name that is not
+    positional-only, or ``**kwargs``. A callable whose signature
+    :func:`inspect.signature` cannot read is taken not to.
+    """
+    try:
+        parameters = inspect.signature(function).parameters.values()
+    except (TypeError, ValueError):
+        return False
+    for parameter in parameters:
+        if parameter.kind is inspect.Parameter.VAR_KEYWORD:
+            return True
+        if parameter.name == name and parameter.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        ):
+            return True
+    return False
 
 
 class Options(MutableMapping, dict):
@@ -194,10 +597,16 @@ class Options(MutableMapping, dict):
         # load options from file
         self.load_options_file(default_options_path, evaluation_parameters)
 
-        # User options
+        # User options. They may be the options of another run, as an
+        # `Options` object or a dict copied from one, whose set of user
+        # options is left out: taken over, it would be shared between the
+        # two, and the names added here would change the other run's.
         if user_options is not None:
-            self.update(user_options)
-            self["useroptions"].update(user_options.keys())
+            supplied = {
+                k: v for k, v in user_options.items() if k != "useroptions"
+            }
+            self.update(supplied)
+            self["useroptions"].update(supplied.keys())
 
     def integer_vars_mask(self, D: int):
         """
@@ -225,62 +634,29 @@ class Options(MutableMapping, dict):
             When the value is neither a boolean mask of length `D` nor an
             array of distinct indices within range.
         """
-        mask = np.full(D, False)
-        value = self.get("integer_vars")
-        if value is None:
-            return mask
-        array = np.asarray(value)
-        if array.size == 0:
-            return mask
-        if array.ndim != 1 or not (
-            array.dtype == bool or np.issubdtype(array.dtype, np.integer)
-        ):
-            raise ValueError(
-                "The option integer_vars must be "
-                + _INTEGER_VARS_FORMS
-                + f"; got {value!r}."
-            )
-        if array.dtype == bool:
-            if array.size != D:
-                raise ValueError(
-                    "The option integer_vars, written as a boolean mask, "
-                    f"needs one entry per variable, that is {D}; got "
-                    f"{array.size}."
-                )
-            mask[array] = True
-            return mask
-        if array.size == D and np.all((array == 0) | (array == 1)):
-            raise ValueError(
-                f"The option integer_vars holds {D} integers, each of them "
-                "zero or one, which reads both as a mask and as a list of "
-                "indices. Write a boolean array to give a mask."
-            )
-        if np.any(array < 0) or np.any(array >= D):
-            raise ValueError(
-                "The option integer_vars, written as indices, needs "
-                f"0-based indices of the {D} variables; got {value!r}."
-            )
-        if np.unique(array).size != array.size:
-            raise ValueError(
-                "The option integer_vars, written as indices, names a "
-                f"variable twice; got {value!r}."
-            )
-        mask[array] = True
-        return mask
+        return _integer_vars_mask(self.get("integer_vars"), D)
 
     def validate_run_limits(self):
         """
         Check the limits on iterations and function evaluations.
 
-        ``max_fun_evals`` and ``max_iter`` have to be positive integers,
-        and a ``max_iter`` below ``min_iter`` is raised to it, as
-        ``misc/setupoptions_vbmc.m:109-119`` requires.
+        ``max_fun_evals`` and ``max_iter`` have to be positive integers, as
+        ``misc/setupoptions_vbmc.m:109-114`` requires, or infinity for no
+        limit. ``min_iter`` has to be a finite non-negative integer, 0 for a
+        run without a minimum: the minimum holds back every termination,
+        the one on the budget of evaluations included unless the run
+        accounts for evaluations made before it (``precomputed_evaluations``
+        or an ``initialization_cost``), so a run under an infinite one
+        would never stop, or would stop only at its budget. A floating
+        value that lands on an integer counts. A ``max_iter`` below
+        ``min_iter`` is raised to it, as ``misc/setupoptions_vbmc.m:115-119``
+        does.
 
         Raises
         ------
         ValueError
             When ``max_fun_evals`` or ``max_iter`` is not a positive
-            integer.
+            integer, or ``min_iter`` is not a finite non-negative integer.
         """
         for key in ("max_fun_evals", "max_iter"):
             value = self.get(key)
@@ -289,8 +665,17 @@ class Options(MutableMapping, dict):
                     f"The option {key} needs to be a positive integer; "
                     f"got {value!r}."
                 )
-        if self.get("max_iter") < self.get("min_iter"):
-            logging.warning(
+        min_iter = self.get("min_iter")
+        if not _is_finite_non_negative_integer_valued(min_iter):
+            raise ValueError(
+                "The option min_iter needs to be a finite non-negative "
+                f"integer (0 for no minimum); got {min_iter!r}. A saved run "
+                "that carries such a value is continued with "
+                "VBMC.load(file, new_options={'min_iter': 0}), or with "
+                "another minimum."
+            )
+        if self.get("max_iter") < min_iter:
+            get_logger("VBMC_init").warning(
                 "The option max_iter cannot be smaller than min_iter. "
                 "Raising max_iter to %s.",
                 self.get("min_iter"),
@@ -314,22 +699,14 @@ class Options(MutableMapping, dict):
         ------
         ValueError
             When ``uncertainty_handling`` holds a value that is neither a
-            boolean nor empty, or when it is off while
-            ``specify_target_noise`` is set.
+            boolean nor empty, when ``specify_target_noise`` holds a value
+            that is not a boolean, or when ``uncertainty_handling`` is off
+            while ``specify_target_noise`` is set.
         """
-        requested = _uncertainty_handling_flag(
-            self.get("uncertainty_handling")
+        level = _uncertainty_handling_level(
+            self.get("uncertainty_handling"), self.get("specify_target_noise")
         )
-        if self.get("specify_target_noise"):
-            if requested is False:
-                raise ValueError(
-                    "A target that returns its own noise estimate is a "
-                    "noisy target: with specify_target_noise set, "
-                    "uncertainty_handling cannot be turned off. Leave it "
-                    "empty or set it to True."
-                )
-            return True
-        return bool(requested)
+        return level > 0
 
     def update_defaults(self):
         """Change defaults as needed based on values of other options."""
@@ -418,10 +795,17 @@ class Options(MutableMapping, dict):
         options_list = _read_config_file(options_path)
         loaded = set()
         for key, value, description in options_list:
-            if key not in self.get("useroptions") and key != "useroptions":
+            if key == "useroptions":
+                continue
+            if key not in self.get("useroptions"):
                 self[key] = eval(value, globals(), evaluation_parameters)
-                self.descriptions[key] = description
                 loaded.add(key)
+                if description or key not in self.descriptions:
+                    self.descriptions[key] = description
+            elif key not in self.descriptions:
+                # The description belongs to the option, whoever set its
+                # value.
+                self.descriptions[key] = description
         if as_user_options:
             self["useroptions"].update(loaded)
 
@@ -474,11 +858,12 @@ class Options(MutableMapping, dict):
                 raise ValueError("The option {} does not exist.".format(key))
 
         self._warn_inert_options(options_paths)
+        self._warn_ignored_noise_size()
 
         # After initialzation is complete prevent changes to options:
         self.is_initialized = True
 
-    def _warn_inert_options(self, options_paths: list):
+    def _warn_inert_options(self, options_paths: list, names=None):
         """
         Warn about the options of :data:`INERT_OPTIONS` that the user set to
         a value other than the default declared in the ini files.
@@ -492,8 +877,13 @@ class Options(MutableMapping, dict):
         ----------
         options_paths : list of str
             A list of paths to the ini files that declare the defaults.
+        names : iterable of str, optional
+            The names of the options to weigh. Default the options the user
+            set (``useroptions``).
         """
-        supplied = set(self.get("useroptions")) & INERT_OPTIONS
+        if names is None:
+            names = self.get("useroptions")
+        supplied = set(names) & INERT_OPTIONS
         if len(supplied) == 0:
             return
 
@@ -514,12 +904,49 @@ class Options(MutableMapping, dict):
                 continue
             if callable(default) or _equals_default(self[key], default):
                 continue
-            logging.warning(
+            get_logger("VBMC_init").warning(
                 "The option %s has no effect in PyVBMC: the value %s is "
                 "accepted and ignored.",
                 key,
                 self[key],
             )
+
+    def _warn_ignored_noise_size(self, names=None):
+        """
+        Warn when the user set ``noise_size`` for a target that returns its
+        own noise estimates.
+
+        With ``specify_target_noise`` on, the GP takes the noise of each
+        observation from the target and does not read ``noise_size``, as
+        MATLAB VBMC warns (``misc/setupoptions_vbmc.m:139-140``). An empty
+        value states no noise size and is left alone, and so is a value
+        that is not a noise size, which the check of the option values
+        refuses (:func:`_noise_size_reading`).
+
+        Parameters
+        ----------
+        names : iterable of str, optional
+            The names of the options to weigh. Default the options the user
+            set (``useroptions``).
+        """
+        if names is None:
+            names = self.get("useroptions")
+        if "noise_size" not in names:
+            return
+        noise_size = self.get("noise_size")
+        try:
+            if _noise_size_reading(noise_size) is None:
+                return
+        except ValueError:
+            return
+        if _stated_boolean(self.get("specify_target_noise")) is not True:
+            return
+        get_logger("VBMC_init").warning(
+            "The option noise_size has no effect with specify_target_noise, "
+            "because the target returns its own noise estimates: the value "
+            "%s is accepted and ignored.",
+            noise_size,
+        )
 
     def __setitem__(self, key, val, force=False):
         # Prevent user from attempting to modify options after initialization
@@ -586,24 +1013,37 @@ class Options(MutableMapping, dict):
         Evaluate an option using `evaluation_parameters` if it is a callable,
         otherwise return the value of the option.
 
+        A callable evaluated with a single parameter receives its value by
+        keyword when it takes an argument of that name (a parameter so
+        named that is not positional-only, or ``**kwargs``), and by
+        position otherwise, as MATLAB VBMC's ``misc/evaloption_vbmc.m``
+        calls ``option(N)``, so the name of a single parameter does not
+        matter. A callable whose signature cannot be read receives it by
+        position. With several parameters it receives them as keyword
+        arguments, and its parameters have to carry their names.
+
         Parameters
         ----------
         key : str
             The name of the option.
         evaluation_parameters : dict
-            Parameters for the options in case it is a callable. These have to
-            match the key arguments of the callable and are ignored if it is not
-            a callable.
+            Parameters for the option in case it is a callable, by name.
+            They are ignored if it is not a callable.
 
         Returns
         -------
         val : object
             Value of the object which has been evaluated if it is a callable.
         """
-        if callable(self.get(key)):
-            return self.get(key)(**evaluation_parameters)
-        else:
-            return self.get(key)
+        value = self.get(key)
+        if not callable(value):
+            return value
+        if len(evaluation_parameters) == 1:
+            ((name, parameter),) = evaluation_parameters.items()
+            if _takes_keyword(value, name):
+                return value(**{name: parameter})
+            return value(parameter)
+        return value(**evaluation_parameters)
 
     def __str__(self):
         """

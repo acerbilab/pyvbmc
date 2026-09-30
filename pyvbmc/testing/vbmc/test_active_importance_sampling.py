@@ -1,3 +1,4 @@
+import copy
 import os.path
 from sys import float_info
 
@@ -84,7 +85,6 @@ def _scenario():
     # Initialize options:
     user_options = {
         "active_importance_sampling_mcmc_samples": 10,
-        "active_importance_sampling_fess_thresh": 0,
         "active_importance_sampling_mcmc_thin": 2,
         "active_importance_sampling_vp_samples": 11,
         "active_importance_sampling_box_samples": 12,
@@ -128,6 +128,21 @@ def test_active_importance_sampling():
         == active_is_imiqr["f_s2"].T.shape
         == (2, 10)
     )
+
+
+@pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
+def test_an_acquisition_asking_for_mcmc_importance_sampling_is_refused(
+    acq_fcn,
+):
+    """The refinement of the samples of step 1 by an ensemble sampler,
+    which ``acq_info["mcmc_importance_sampling"]`` asks for
+    (``private/activeimportancesampling_vbmc.m``, lines 57 to 92), is not
+    ported."""
+    vp, gp, vbmc_options = _scenario()
+    acq_fcn = copy.deepcopy(acq_fcn)
+    acq_fcn.acq_info["mcmc_importance_sampling"] = True
+    with pytest.raises(NotImplementedError, match="mcmc_importance_sampling"):
+        active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
 
 
 @pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
@@ -218,6 +233,157 @@ def test_fess():
         assert np.isclose(fess_gp, MATLAB["fess_gp"])
 
 
+class _RecordingGenerator(np.random.Generator):
+    """A generator that keeps the probabilities of the resampling draws.
+
+    The mixture components a variational posterior draws from are chosen
+    with replacement; the starting point of a chain is the one draw made
+    without.
+    """
+
+    def __init__(self, bit_generator):
+        super().__init__(bit_generator)
+        self.recorded_p = []
+
+    def choice(self, *args, **kwargs):
+        if kwargs.get("p") is not None and kwargs.get("replace") is False:
+            self.recorded_p.append(np.array(kwargs["p"], copy=True))
+        return super().choice(*args, **kwargs)
+
+
+def test_the_mcmc_chain_starts_at_a_sample_drawn_by_its_weight():
+    """The starting point of each chain of the MCMC step is drawn among
+    the samples of step 1 in proportion to ``exp(lnw - max(lnw))``, the
+    maximum taken over the samples
+    (``private/activeimportancesampling_vbmc.m:206-208``)."""
+    vp, gp, vbmc_options = _scenario()
+    acq_fcn = AcqFcnIMIQR()
+
+    rng = _RecordingGenerator(np.random.PCG64(20260920))
+    vp.rng = rng
+    assert vp.rng is rng
+    active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
+
+    # The same call with the MCMC step switched off, from the same seed,
+    # returns the samples of step 1 and the log weights the draw is made
+    # from, up to the constant the weights are renormalized by.
+    options_step_one = copy.deepcopy(vbmc_options)
+    options_step_one.__setitem__(
+        "active_importance_sampling_mcmc_samples", 0, force=True
+    )
+    vp._rng = np.random.Generator(np.random.PCG64(20260920))
+    step_one = active_importance_sampling(vp, gp, acq_fcn, options_step_one)
+
+    assert len(rng.recorded_p) == len(gp.posteriors)
+    gp1 = copy.deepcopy(gp)
+    for s, p in enumerate(rng.recorded_p):
+        gp1.posteriors = np.array([gp.posteriors[s]])
+        f_mu, f_s2 = gp1.predict(step_one["X"], separate_samples=True)
+        ln_weights = (
+            step_one["ln_weights"][s, :]
+            + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2).ravel()
+        )
+        expected = np.exp(ln_weights - np.amax(ln_weights))
+        expected = expected / np.sum(expected)
+        assert np.allclose(p, expected, rtol=1e-10)
+        # Not the uniform weights that a maximum over one sample gives.
+        assert p.max() / p.min() > 10
+
+
+def test_a_function_gives_the_number_of_samples_in_both_branches():
+    """``active_importance_sampling_mcmc_samples`` may be a function of the
+    keywords ``K``, ``n_vars`` and ``D``, as MATLAB VBMC evaluates a string
+    expression with ``K``, ``nvars`` and ``D`` in scope
+    (``private/activeimportancesampling_vbmc.m:40-45``). The MCMC step of
+    IMIQR draws, for each GP hyperparameter sample, the number the function
+    returns, rounded up, as VIQR draws it from the variational
+    posterior."""
+    vp, gp, vbmc_options = _scenario()
+    calls = []
+
+    def sample_count(K, n_vars, D):
+        calls.append({"K": K, "n_vars": n_vars, "D": D})
+        return 3 * K + 0.5
+
+    vbmc_options["active_importance_sampling_mcmc_samples"] = sample_count
+    imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), vbmc_options)
+    viqr = active_importance_sampling(vp, gp, AcqFcnVIQR(), vbmc_options)
+
+    assert calls == [{"K": 2, "n_vars": 3, "D": 3}] * 2
+    assert imiqr["X"].shape == (2, 7, 3)
+    assert imiqr["ln_weights"].shape == imiqr["f_s2"].T.shape == (2, 7)
+    assert viqr["X"].shape == (7, 3)
+
+
+def test_a_function_that_gives_zero_leaves_out_the_mcmc_step():
+    """In the branch that IMIQR takes, zero samples mean no MCMC step
+    (``private/activeimportancesampling_vbmc.m:155-157``): the importance
+    samples are those of step 1, drawn from the smoothed posterior and
+    from boxes around the training inputs."""
+    vp, gp, vbmc_options = _scenario()
+    vbmc_options[
+        "active_importance_sampling_mcmc_samples"
+    ] = lambda K, n_vars, D: 0
+    imiqr = active_importance_sampling(vp, gp, AcqFcnIMIQR(), vbmc_options)
+    step_one = (
+        vbmc_options["active_importance_sampling_vp_samples"]
+        + vbmc_options["active_importance_sampling_box_samples"]
+    )
+    assert imiqr["X"].shape == (step_one, vp.D)
+
+
+@pytest.mark.parametrize("acq_fcn", [AcqFcnVIQR(), AcqFcnIMIQR()])
+@pytest.mark.parametrize(
+    "value",
+    [np.nan, np.inf, True, "100", lambda K, n_vars, D: None],
+    ids=["nan", "inf", "bool", "str", "function-of-none"],
+)
+def test_a_count_that_is_not_a_finite_number_is_refused(acq_fcn, value):
+    """A number of samples is a finite number, or a function that returns
+    one; any other value is refused, naming the option, by both
+    branches."""
+    vp, gp, vbmc_options = _scenario()
+    vbmc_options["active_importance_sampling_mcmc_samples"] = value
+    with pytest.raises(ValueError, match="active_importance_sampling_mcmc"):
+        active_importance_sampling(vp, gp, acq_fcn, vbmc_options)
+
+
+def test_fess_draws_the_points_it_is_asked_for():
+    """``X`` may be a number of samples to draw from the variational
+    posterior, the documented default of 100 among them
+    (``misc/fess_vbmc.m:4-12``). The value is the fractional effective
+    sample size of the importance weights at the points drawn."""
+    vp, gp, __ = _scenario()
+    for N, call in (
+        (100, lambda: fess(vp, gp)),
+        (25, lambda: fess(vp, gp, 25)),
+    ):
+        vp.rng = np.random.default_rng(7)
+        value = call()
+        assert np.isscalar(value)
+
+        # The same draws, and the definition of the quantity.
+        vp.rng = np.random.default_rng(7)
+        X, __ = vp.sample(N, orig_flag=False)
+        f_bar, __ = gp.predict(X)
+        ln_weights = (
+            f_bar.ravel() - vp.pdf(X, orig_flag=False, log_flag=True).ravel()
+        )
+        weights = np.exp(ln_weights - np.amax(ln_weights))
+        weights = weights / np.sum(weights)
+        assert value == pytest.approx((1 / np.sum(weights**2)) / N)
+
+
+def test_fess_checks_the_number_of_given_gp_means():
+    """A matrix of GP means carries one row per sample point, whether the
+    points were given or drawn."""
+    vp, gp, __ = _scenario()
+    vp.rng = np.random.default_rng(7)
+    means = np.zeros((7, 2))
+    with pytest.raises(ValueError, match="Mismatch"):
+        fess(vp, means, 25)
+
+
 def test_active_sample_proposal_pdf():
     D = 3
     K = 2
@@ -293,6 +459,41 @@ def test_active_sample_proposal_pdf():
         assert np.allclose(f_s2_imiqr, MATLAB["f_s2_imiqr"])
 
 
+@pytest.mark.parametrize("distance", [40.0, 1e5, 1e200])
+def test_proposal_pdf_gives_no_weight_where_the_proposal_is_zero(distance):
+    """A point that lies outside every box of the proposal, and so far
+    from every component of its posterior that their density underflows
+    to zero, has zero proposal density and so no importance weight.
+    MATLAB's arithmetic gives NaN there and
+    ``activeimportancesampling_vbmc.m:148`` turns it into ``-Inf``, which
+    is what the caller does with every non-finite weight. The logarithm
+    of the density that ``vp.log_pdf`` returns there is finite (a
+    log-sum-exp over the components), but the proposal is the density as
+    it is held."""
+    vp, gp, __ = _scenario()
+    acq_fcn = AcqFcnIMIQR()
+    rect_delta = 2 * np.std(gp.X, ddof=1, axis=0)
+    w_vp = 0.5
+
+    Xa = 2 * np.arange(-4, 5).reshape((3, 3), order="F") / np.pi
+    far = np.full((1, vp.D), distance)
+    assert np.all(vp.pdf(far, orig_flag=False) == 0)
+    assert not np.any(np.all(np.abs(far - gp.X) < rect_delta, axis=1))
+
+    with np.errstate(over="ignore"):
+        ln_weights, f_s2 = active_sample_proposal_pdf(
+            np.vstack([Xa, far]), gp, vp, w_vp, rect_delta, acq_fcn
+        )
+    assert np.all(ln_weights[-1] == -np.inf)
+
+    # The other points are untouched.
+    ln_weights_alone, f_s2_alone = active_sample_proposal_pdf(
+        Xa, gp, vp, w_vp, rect_delta, acq_fcn
+    )
+    assert np.array_equal(ln_weights[:-1], ln_weights_alone)
+    assert np.array_equal(f_s2[:-1], f_s2_alone)
+
+
 def test_acq_log_f():
     D = 3
     K = 2
@@ -349,14 +550,12 @@ def test_acq_log_f():
     filepath = os.path.join(dirpath, "compare_MATLAB", "log_isbasefun.npz")
     print(filepath)
 
+    # What the stored MATLAB array holds for VIQR is the value of
+    # ``log_isbasefun``, which adds the variational log density to the
+    # added term of the acquisition; ``AcqFcnVIQR.is_log_full`` returns
+    # the added term alone, so the density is added here.
     viqr = AcqFcnVIQR()
-    # Use vp weights for this test, since IMIQR uses them.
-    viqr.acq_info["importance_sampling_vp"] = True
     y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
-    y_imiqr = AcqFcnIMIQR().is_log_full(Xa, gp=gp, vp=vp)
-    viqr = AcqFcnVIQR()
-    y_viqr = viqr.is_log_full(Xa, gp=gp, vp=vp)
-    # Add VP density to i.s. weights:
     y_viqr += np.maximum(
         vp.pdf(Xa, orig_flag=False, log_flag=True), np.log(float_info.min)
     )

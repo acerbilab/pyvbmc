@@ -3,7 +3,9 @@
 The shipped-corpus compatibility check passes. No PyVBMC production change or
 posterior-file regeneration was needed. This checks the current S-VBMC
 package against the integrated latent fixes; the form of future integration
-remains a separate decision (roadmap pickup 10).
+remains a separate decision (roadmap pickup 10). Afterwards (2026-09-11):
+the integration was decided and implemented
+([svbmc-integration.md](../plans/svbmc-integration.md)).
 
 ## Sources and environment
 

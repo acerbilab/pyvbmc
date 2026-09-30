@@ -7,9 +7,10 @@ import numpy as np
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.rng import get_rng
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 
 from .iteration_history import IterationHistory
-from .options import Options
+from .options import Options, _noise_size_reading
 
 
 def train_gp(
@@ -30,7 +31,8 @@ def train_gp(
     hyp_dict : dict
         Hyperparameter summary statistics dictionary.
         If it does not contain the appropriate keys they will be added
-        automatically.
+        automatically. A statistic whose shape does not match the number of
+        hyperparameters of the GP model is dropped and started afresh.
     optim_state : dict
         Optimization state from the VBMC instance we are calling this from.
     function_logger : FunctionLogger
@@ -66,8 +68,6 @@ def train_gp(
         hyp_dict["hyp"] = None
     if "warp" not in hyp_dict:
         hyp_dict["warp"] = None
-    if "logp" not in hyp_dict:
-        hyp_dict["logp"] = None
     if "full" not in hyp_dict:
         hyp_dict["full"] = None
     if "run_cov" not in hyp_dict:
@@ -112,6 +112,19 @@ def train_gp(
     gp, hyp0, gp_s_N = _gp_hyp(
         optim_state, options, plb_tran, pub_tran, gp, x_train, y_train
     )
+    # The stored statistics of the hyperparameters belong to the model that
+    # computed them, and a run saved by an earlier version can hold those of
+    # a model with another number of hyperparameters (release 1.0.4 fitted
+    # one noise hyperparameter at uncertainty level 1, where this model has
+    # two). Those that do not match the model are dropped, and start afresh
+    # as in a first fit.
+    hyp_n = np.size(hyp0)
+    stored_hyp = hyp_dict["hyp"]
+    if stored_hyp is not None and np.atleast_2d(stored_hyp).shape[1] != hyp_n:
+        hyp_dict["hyp"] = None
+    run_cov = hyp_dict["run_cov"]
+    if run_cov is not None and np.shape(run_cov) != (hyp_n, hyp_n):
+        hyp_dict["run_cov"] = None
     # Initial GP hyperparameters.
     if hyp_dict["hyp"] is None:
         hyp_dict["hyp"] = hyp0.copy()
@@ -123,7 +136,7 @@ def train_gp(
         options,
         hyp_dict,
         gp_s_N,
-        hyp_n=np.size(hyp0),
+        hyp_n=hyp_n,
     )
 
     # In some cases the model can change so be careful.
@@ -139,17 +152,15 @@ def train_gp(
         # The later half of the recorded GPs. With `n` of them, MATLAB
         # collects the 1-based `ceil(n/2):n`, which over the same records
         # is `range(ceil(n / 2) - 1, n)` here; a history holding no GP
-        # leaves nothing to collect.
+        # leaves nothing to collect, and a GP of another model, recorded by
+        # an earlier version, gives no starting point.
         n_recorded = np.size(iteration_history["gp"])
         for i in range(max(math.ceil(n_recorded / 2) - 1, 0), n_recorded):
-            hyp0 = np.concatenate(
-                (
-                    hyp0,
-                    iteration_history["gp"][i].get_hyperparameters(
-                        as_array=True
-                    ),
-                )
+            recorded_hyp = iteration_history["gp"][i].get_hyperparameters(
+                as_array=True
             )
+            if recorded_hyp.shape[1] == hyp_n:
+                hyp0 = np.concatenate((hyp0, recorded_hyp))
         N0 = hyp0.shape[0]
         if N0 > gp_train["init_N"] / 2:
             hyp0 = hyp0[
@@ -171,10 +182,8 @@ def train_gp(
     )
 
     if res is not None:
-        # Pre-thinning GP hyperparameters, with the log prior density of
-        # each of them.
+        # Pre-thinning GP hyperparameters.
         hyp_dict["full"] = res["samples"]
-        hyp_dict["logp"] = res["log_priors"]
 
         # Missing port: currently not used since we do
         # not support samplers other than slice sampling.
@@ -188,10 +197,8 @@ def train_gp(
         # end
     else:
         # A fit that draws no samples returns the optimized hyperparameters
-        # alone, and they take the place of the chain. The fit reports no
-        # density for them, so there is none to keep.
+        # alone, and they take the place of the chain.
         hyp_dict["full"] = np.atleast_2d(hyp_dict["hyp"]).copy()
-        hyp_dict["logp"] = None
 
     # Update running average of GP hyperparameter covariance (coarse)
     if hyp_dict["full"] is not None and hyp_dict["full"].shape[0] > 1:
@@ -330,25 +337,47 @@ def _gp_hyp(
 
     ## Set GP hyperparameter defaults for VBMC.
 
-    cov_bounds_info = gp.covariance.get_bounds_info(hpd_X, hpd_y)
-    mean_bounds_info = gp.mean.get_bounds_info(hpd_X, hpd_y)
-    noise_bounds_info = gp.noise.get_bounds_info(hpd_X, hpd_y)
+    # In a coordinate where every point of the subset shares one value, the
+    # recommendations built from the spread of the coordinate are log(0):
+    # the starting length scale and its lower bound, and the starting scale
+    # of the negative-quadratic mean. Those take the recommendations of the
+    # whole training set, from which MATLAB takes the bounds of the length
+    # scales (`misc/gptrain_vbmc.m:174-180` leaves them unset and
+    # `gplite/gplite_train.m:120` fills them), so NumPy's warning of the
+    # logarithm of zero is silenced here.
+    with np.errstate(divide="ignore"):
+        cov_bounds_info = gp.covariance.get_bounds_info(hpd_X, hpd_y)
+        mean_bounds_info = gp.mean.get_bounds_info(hpd_X, hpd_y)
+        noise_bounds_info = gp.noise.get_bounds_info(hpd_X, hpd_y)
+    shared = np.flatnonzero(np.max(hpd_X, axis=0) == np.min(hpd_X, axis=0))
+    if shared.size > 0:
+        # The length scales lead the covariance hyperparameters.
+        cov_full_info = gp.covariance.get_bounds_info(X, y)
+        for key in ("x0", "LB"):
+            cov_bounds_info[key][shared] = cov_full_info[key][shared]
+        if isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
+            # The constant and the location precede the scales.
+            omega = 1 + D + shared
+            mean_full_x0 = gp.mean.get_bounds_info(X, y)["x0"]
+            mean_bounds_info["x0"][omega] = mean_full_x0[omega]
     # Missing port: output warping hyperparameters not implemented
     cov_x0 = cov_bounds_info["x0"]
     mean_x0 = mean_bounds_info["x0"]
 
     noise_x0 = noise_bounds_info["x0"]
     min_noise = options["tol_gp_noise"]
+    # `None` when the option is empty, which leaves it unset.
+    given_noise_size = _noise_size_reading(options["noise_size"])
     noise_mult = None
     if optim_state["uncertainty_handling_level"] == 0:
-        if options["noise_size"] != []:
-            noise_size = max(options["noise_size"], min_noise)
+        if given_noise_size is not None:
+            noise_size = max(given_noise_size, min_noise)
         else:
             noise_size = min_noise
         noise_std = 0.5
     elif optim_state["uncertainty_handling_level"] == 1:
-        if options["noise_size"] != []:
-            noise_mult = max(options["noise_size"], min_noise)
+        if given_noise_size is not None:
+            noise_mult = max(given_noise_size, min_noise)
             noise_mult_std = np.log(10) / 2
         else:
             noise_mult = 1
@@ -389,14 +418,17 @@ def _gp_hyp(
         pass
     elif isinstance(gp.mean, gpr.mean_functions.ConstantMean):
         # Lower maximum constant mean
-        bounds["mean_const"] = (np.nan, np.min(hpd_y))
+        bounds["mean_const"] = (bounds["mean_const"][0], np.min(hpd_y))
     elif isinstance(gp.mean, gpr.mean_functions.NegativeQuadratic):
         if options["gp_quadratic_mean_bound"]:
             delta_y = max(
                 options["tol_sd"],
                 min(D, np.max(hpd_y) - np.min(hpd_y)),
             )
-            bounds["mean_const"] = (np.nan, np.max(hpd_y) + delta_y)
+            bounds["mean_const"] = (
+                bounds["mean_const"][0],
+                np.max(hpd_y) + delta_y,
+            )
     else:
         raise TypeError("The mean function is not supported by gpyreg.")
 
@@ -404,7 +436,7 @@ def _gp_hyp(
     if isinstance(gp.covariance, gpr.covariance_functions.SquaredExponential):
         bounds["covariance_log_outputscale"] = (
             cov_bounds_info["LB"][D],
-            np.nan,
+            bounds["covariance_log_outputscale"][1],
         )
         bounds["covariance_log_lengthscale"] = (
             cov_bounds_info["LB"][:D],
@@ -500,7 +532,7 @@ def _gp_hyp(
     gp.set_bounds(bounds)
     gp.set_priors(priors)
 
-    return gp, hyp0, round(gp_s_N)
+    return gp, hyp0, round_half_away_from_zero(gp_s_N)
 
 
 def _get_gp_training_options(
@@ -591,12 +623,25 @@ def _get_gp_training_options(
         # cover part of that design. At that point the finite end-of-horizon
         # training schedule is the meaningful limiting value.
         x = 1.0
+    elif schedule_span == 0:
+        # A budget equal to the initial design leaves the schedule no span
+        # to run over, and MATLAB divides by zero here
+        # (`misc/get_GPTrainOptions.m:98`). The count of the first fit
+        # equals `fun_eval_start`, and 0/0 is NaN; a count past it gives an
+        # infinite `x`, at which the terms of the cubic cancel to NaN. A
+        # count short of it, which the trimming of the warm-up can leave,
+        # sends MATLAB's cubic to infinity and its space-filling design to
+        # an error; it is given the value of the other two.
+        x = np.nan
     else:
         x = (optim_state["n_eff"] - options["fun_eval_start"]) / schedule_span
         if optim_state.get("budget_active", False):
             x = np.clip(x, 0.0, 1.0)
     f = lambda x_: a * x_**3 + b * x_**2 + c * x_ + d
-    init_N = max(round(f(x)), 0)
+    # MATLAB's `max` ignores NaN, so a NaN schedule asks for no
+    # space-filling points.
+    f_x = f(x)
+    init_N = 0 if np.isnan(f_x) else max(round_half_away_from_zero(f_x), 0)
 
     # Set other hyperparameter fitting parameters
     if optim_state["recompute_var_post"]:
@@ -625,8 +670,8 @@ def _get_gp_training_options(
             else:
                 gp_train["opts_N"] = 2
 
-    gp_train["n_samples"] = round(gp_s_N)
-    gp_train["burn"] = round(gp_train["burn"])
+    gp_train["n_samples"] = round_half_away_from_zero(gp_s_N)
+    gp_train["burn"] = round_half_away_from_zero(gp_train["burn"])
 
     return gp_train
 

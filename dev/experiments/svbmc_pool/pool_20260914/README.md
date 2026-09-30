@@ -4,7 +4,7 @@ The eight-condition run pool of the S-VBMC benchmark campaign
 ([`dev/plans/svbmc-benchmark-campaign.md`](../../../plans/svbmc-benchmark-campaign.md),
 section "Cluster generation"; the brief was
 [`dev/plans/svbmc-pool-handoff.md`](../../../plans/svbmc-pool-handoff.md)),
-generated as a Slurm array on the University of Helsinki `kale` cluster
+generated as a Slurm array on the University of Helsinki's Turso cluster
 with the scripts under [`dev/scripts/hpc/`](../../../scripts/hpc/README.md).
 This directory holds the tracked copies of the campaign's summary files;
 the raw directory (1100 per-run artifacts with their completion records,
@@ -14,8 +14,9 @@ on the machine that holds it, which lists it in its `LOCAL.md`.
 
 ## How it was generated
 
-- Code: commit `d63c477` of the branch `dev-svbmc-pool-hpc` (a descendant
-  of `dev-next` at `613f2a8`), clean tree; gpyreg `v1.2.1`
+- Code: commit `d63c477`, on `dev-next`, made on the since-deleted branch
+  `dev-svbmc-pool-hpc` (a descendant of `dev-next` at `613f2a8`), clean
+  tree; gpyreg `v1.2.1`
   (`9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b`) from a detached clone at
   the harness default path, imported through `PYVBMC_GPYREG_SOURCE`. The
   manifest's `identity.source` half is what every worker matched.
@@ -111,6 +112,12 @@ condition), so the plan's 45 CPU-hour estimate became 90 on these cores.
 In every file `campaign` is `svbmc_pool` and `generated` the time it was
 written; `directory` is the bare directory name in `summary.json` and
 the cluster's absolute path in `selection.json` and `verification.json`.
+The files are kept as the campaign wrote them, with the login host,
+compute-node names, Slurm job ids and the operator's paths on the cluster,
+as are the `sources.json` of the analyses built on the pool. The tracked
+records of the release gate's campaigns are redacted
+([Slurm plan](../../../plans/slurm-benchmark-support.md), "Records and
+hand-back"); these predate that rule.
 
 - `manifest.json` — written by `prepare`: `campaign` (`svbmc_pool`),
   `suite`, `options` (the base VBMC options every run used), `allocation`

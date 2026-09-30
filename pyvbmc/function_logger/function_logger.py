@@ -163,9 +163,11 @@ class FunctionLogger:
         The function to be logged.
         `fun` must take a vector input and return a scalar value and,
         optionally, the (estimated) SD of the returned value (if the
-        function fun is stochastic). If ``vectorized_target`` is true,
-        ``fun`` instead takes an ``(N, D)`` array and returns an ``(N,)`` or
-        ``(N, 1)`` array, or a pair of those arrays for user-provided noise.
+        function fun is stochastic); an array of one element stands for its
+        element, for the value and the SD alike. If ``vectorized_target`` is
+        true, ``fun`` instead takes an ``(N, D)`` array and returns an
+        ``(N,)`` or ``(N, 1)`` array, or a pair of those arrays for
+        user-provided noise.
     D : int
         The number of dimensions that the function takes as input.
     noise_flag : bool
@@ -236,15 +238,22 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function will be evaluated. The shape of x
-            should be (1, D) or (D,).
+            The point, in the transformed space, at which the function will
+            be evaluated; the function is called with the point mapped to
+            the original space. The shape of x should be (1, D) or (D,).
 
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: the observation in the original space, pooled with the
+            earlier observations at the same point, plus
+            ``log_abs_det_jacobian`` of the parameter transformer at `x`
+            where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: the one the function returned at
+            uncertainty handling level 2, 1 at level 1, and ``None`` at
+            level 0.
         idx : int
             The index of the last updated entry.
 
@@ -319,6 +328,10 @@ class FunctionLogger:
         # if f_val is an array with only one element, extract that element
         if not np.isscalar(f_val_orig) and np.size(f_val_orig) == 1:
             f_val_orig = np.array(f_val_orig).flat[0]
+        # and likewise for the SD, which a target written for a batch of
+        # points returns as an array of one element for a single point
+        if self.noise_flag and not np.isscalar(f_sd) and np.size(f_sd) == 1:
+            f_sd = np.asarray(f_sd).item()
 
         # Check function value
         if (
@@ -350,9 +363,10 @@ class FunctionLogger:
         self.func_count += 1
         f_val, idx = self._record(x_orig, x, f_val_orig, f_sd, funtime)
 
-        # optimstate.N = self.Xn
-        # optimstate.N_eff = np.sum(self.n_evals[self.X_flag])
-        # optimState.totalfunevaltime = optimState.totalfunevaltime + t;
+        # The logger holds no optimization state: the counts of the
+        # training set that the algorithm reads, ``optim_state["N"]`` and
+        # ``optim_state["n_eff"]``, are refreshed by ``active_sample`` after
+        # each evaluation it logs.
         return f_val, f_sd, idx
 
     def batch_call(self, x: np.ndarray, f_vals=None):
@@ -365,7 +379,9 @@ class FunctionLogger:
             coordinates.
         f_vals : array-like, optional
             Already evaluated original-space values. It must have length
-            ``N``; NaN rows are evaluated by the target.
+            ``N``; NaN rows are evaluated by the target. At uncertainty
+            handling level 2 every row has to be NaN: a supplied value
+            comes without the SD that an observation needs at that level.
 
         Returns
         -------
@@ -384,8 +400,9 @@ class FunctionLogger:
             If this logger was not created with ``vectorized_target=True``.
         ValueError
             If the input or any supplied or returned value has an invalid
-            shape or value. Target outputs are fully validated before any
-            row is recorded.
+            shape or value, or if ``f_vals`` supplies a value at uncertainty
+            handling level 2. The supplied values are validated before the
+            target is called, and its outputs before any row is recorded.
         """
         if not getattr(self, "vectorized_target", False):
             raise RuntimeError(
@@ -409,6 +426,14 @@ class FunctionLogger:
                 "Cached function values",
                 allow_nan=True,
             )
+            if self.uncertainty_handling_level == 2 and not np.all(
+                np.isnan(cached_values)
+            ):
+                raise ValueError(
+                    "Cached function values come without their SD, which an "
+                    "observation needs at uncertainty handling level 2; add "
+                    "such a value with its SD through FunctionLogger.add."
+                )
 
         if self.transform_parameters:
             x_orig = self.parameter_transformer.inverse(x)
@@ -485,10 +510,12 @@ class FunctionLogger:
         Parameters
         ----------
         x : np.ndarray
-            The point at which the function has been evaluated. The shape of x
+            The point, in the transformed space, at whose image in the
+            original space the function has been evaluated. The shape of x
             should be (1, D) or (D,).
         f_val_orig : float
-            The result of the evaluation of the function.
+            The result of the evaluation of the function, in the original
+            space.
         f_sd : float, optional
             The (estimated) SD of the added value. At uncertainty handling
             level 2 it is required, the noise of an observation being the
@@ -501,9 +528,13 @@ class FunctionLogger:
         Returns
         -------
         f_val : float
-            The result of the evaluation.
-        SD : float
-            The (estimated) SD of the returned value.
+            The value that the logger holds for the point in the transformed
+            space: `f_val_orig`, pooled with the earlier observations at the
+            same point, plus ``log_abs_det_jacobian`` of the parameter
+            transformer at `x` where the logger has a transformer.
+        SD : float or None
+            The SD of this observation: `f_sd` at uncertainty handling
+            level 2, `f_sd` or 1 at level 1, and ``None`` at level 0.
         idx : int
             The index of the last updated entry.
 
@@ -736,11 +767,15 @@ class FunctionLogger:
                     f_val + self.parameter_transformer.log_abs_det_jacobian(x)
                 )
             self.y[idx] = f_val
-            # An unknown evaluation time leaves the stored average alone.
+            # An unknown evaluation time leaves the stored average alone,
+            # and a known one takes the place of an average that is unknown.
             if not np.isnan(fun_eval_time):
-                self.fun_eval_time[idx] = (
-                    N * self.fun_eval_time[idx] + fun_eval_time
-                ) / (N + 1)
+                if np.isnan(self.fun_eval_time[idx, 0]):
+                    self.fun_eval_time[idx] = fun_eval_time
+                else:
+                    self.fun_eval_time[idx] = (
+                        N * self.fun_eval_time[idx] + fun_eval_time
+                    ) / (N + 1)
                 self.total_fun_eval_time += fun_eval_time
             self.n_evals[idx] += 1
             # The pooled value can move the maximum either way.

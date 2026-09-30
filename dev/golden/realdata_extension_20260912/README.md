@@ -152,9 +152,11 @@ establish equivalence or remove the low power of the smaller cohorts.
 The [final replay](final_replay.md) of seed 0 of each new configuration,
 run from the frozen checkout against the combined traces, reported
 identical stored loop and final and identical initial design for all four
-cases, zero flags. So the replay gate is bit-exact on the real-data
-configurations with the current code, while the older configurations
-still part early because their traces predate the 1.5 numerics. The
+cases, zero flags. So on 2026-09-12 the replay gate was bit-exact on the
+real-data configurations, while the older configurations parted early
+because their traces predated the 1.5 numerics. The promotion of
+2026-09-13 replaced those traces; the current state of the gate is in
+[`../README.md`](../README.md). The
 returned posterior's transformer is not stored by any trace and remains
 uncertifiable.
 

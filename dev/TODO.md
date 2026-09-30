@@ -1,9 +1,10 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-20. These lists describe scope, not priority or execution
+Updated 2026-09-28. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
-Completed 1.5 work is not listed here: the
+Completed 1.5 work is not listed here, apart from the active reference and
+the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
@@ -13,7 +14,12 @@ records its execution.
   covers the changes since `v1.0.4`; the worklog of the
   [port review plan](plans/port-correctness-review.md) records how it was
   written and checked (2026-09-20). Open before the release: the PI's
-  reading of the entries added that day; the whole-run timings of "Runs are
+  reading of the entries added that day, and of those added on 2026-09-23
+  and 24 by the rulings after the close of the port review and the round
+  of their check (its
+  [ledger](results/2026-09-23-port-correctness-review.md), "Findings ruled
+  after the close"), and of the S-VBMC entry's point on `save` and `load`,
+  added on 2026-09-24; the whole-run timings of "Runs are
   faster", measured on 2026-09-03 to 09-05, before the corrections that
   change how long a run takes, and the S-VBMC speed figure, both to be
   measured again on the release benchmark; the S-VBMC entry's account of the
@@ -31,18 +37,27 @@ records its execution.
   pools, judging the optimism added by stacking relative to its input runs.
   Promote it only if the campaign confirms it is the best estimator; decide
   separately whether noiseless stacks use shrinkage or retain the raw value.
-  Before that decision, compare two compositions of its stages on the
-  existing pools with the campaign's added-bias measure. The implemented
-  one adds the between-run change of a run's raw level to the
-  within-shrunk components, so the run's final own-weighted level is the
-  shrunk level plus whatever the within-run stage did to it; the
-  alternative pins each run's level to its shrunk value. They coincide
-  for uniform own weights and differ where a run's weights align with its
-  component estimates (0.16 and 0.30 nats in the constructed case of the
-  [port review's verification](experiments/port_review_20260919/verification/wave0.md)).
-  The implemented form keeps the within-run correction of the level, which
-  addresses the single-run optimism that regression across runs cannot
-  see; the comparison is to confirm that on data (PI, 2026-09-19).
+  The campaign scores two compositions of its stages with its added-bias
+  measure. The implemented one adds the between-run change of a run's raw
+  level to the within-shrunk components, so the run's final own-weighted
+  level is the shrunk level plus whatever the within-run stage did to it;
+  the alternative pins each run's level to its shrunk value, and is the
+  variant `two_level_anchored` of `scripts/svbmc_shrink_elbo.py`, which
+  computes both. They differ in each run by how much the within-run stage
+  moves the run's own-weighted level: 0.16 and 0.30 nats for the two runs
+  of the constructed case of the
+  [port review's verification](experiments/port_review_20260919/verification/wave0.md).
+  Uniform own weights make that change zero only when the run's components
+  also carry equal, uncorrelated estimation noise, which real runs do not
+  have. On the existing
+  pools the implemented form adds −0.23 to +0.15 nats, partly by removing
+  some of the runs' own optimism through its within-run term, and the
+  alternative adds −0.02 to +0.21 at `M` = 3 to 5 and +0.02 to +0.42 at
+  `M = 16` (the [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
+  "The inputs' own bias, and what stacking adds"). The implemented form
+  keeps the within-run correction of the level, which addresses the
+  single-run optimism that regression across runs cannot see (PI,
+  2026-09-19); the release pools are to confirm that.
   The stacking objective and selected posterior remain unchanged.
   Finalize the headline's qualitative caveat, distinguishing inherited VBMC
   bias from bias added by stacking and explaining that residual bias can
@@ -53,68 +68,142 @@ records its execution.
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
-- [ ] **Saving and loading an S-VBMC object.** `SVBMC` has no `save` or
-  `load`, unlike `VBMC` and `VariationalPosterior`, and neither the API
-  page nor Example 7 says how to keep a stack; the original standalone
-  package had no such methods either. The standard `pickle` fails on an
-  `SVBMC` object, as it does on a posterior, because the parameter
-  transformer holds local closures. `dill`, which the existing `save` and
-  `load` methods use, serializes a fresh or an optimized stack with an
-  exact round trip of the weights, the ELBO and the generator state, and
-  the object holds no Torch state (checked 2026-09-19 during the
-  [port correctness review](plans/port-correctness-review.md)). Add
-  `SVBMC.save` and `SVBMC.load` mirroring the posterior's (`dill`, the
-  overwrite guard), a round-trip test in the Torch CI cell, the API
-  documentation, and a short saving step in Example 7.
+- [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
+  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27). On
+  2026-09-27 gpyreg's `main` was at `d96d0d9`, six commits past `v1.3.3`,
+  among them a prior's log mass taken in log space where it underflows and
+  an opt-in switch that makes a failed Cholesky factorization an error.
+  The local environments install the sibling checkout editable and so run
+  that `main` while CI pins `v1.3.3`: the example notebooks executed on
+  2026-09-26 and 27 ran on gpyreg `1.3.4.dev10+gd96d0d9f7`. With the
+  release, `pyproject.toml`'s minimum and CI's `GPYREG_PIN` move to it
+  (`AGENTS.md`), PyVBMC's whole suite and the exact oracle check run
+  against it, and the [Slurm plan](plans/slurm-benchmark-support.md) and
+  its operator's guide (`scripts/hpc/README.md` on `feat-slurm-campaigns`)
+  name it where they name `v1.3.3`: the after arm, the pools and the
+  stacking in "What runs where", Phase 1b's source trees, and the guide's
+  clones, environment check and campaign commands. The campaigns of the
+  Slurm plan's Phase 8 launch after the pin; the smoke campaigns of its
+  Phase 6 test the machinery and do not wait for it. On 2026-09-27 the
+  default suite and the exact oracle check (12 of 12) passed against
+  gpyreg `main` at `d96d0d9`, so its six commits past `v1.3.3` move
+  nothing the oracles pin; what gpyreg gains after it needs the same
+  check.
 
-- [ ] **Slurm/HPC benchmark support.** Design reproducible submission,
-  resource settings, resumption and result collection. The pool campaign's
-  per-case worker and `cases` enumeration are the first cluster-ready
-  pieces, and the sbatch scripts the cluster developer returns with the
-  pool PR (under `dev/scripts/hpc/` or similar) are the seed of this item;
-  the general design remains open. Needed before relying on that workflow
-  for further cluster campaigns, not before local experiments; the
-  final large-scale check below is the first such campaign. See
+- [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
+  settings, resumption and result collection on the Turso cluster. The
+  design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
+  PI's decisions of 2026-09-25: one campaign contract (`prepare`, `cases`,
+  a `worker` that claims its case, `verify`) that the pool, population and
+  stacking harnesses meet, and generic scripts beside the pool campaign's
+  under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
+  to 5 and the redaction and guide of Phase 7 are on the branch
+  `feat-slurm-campaigns`, reviewed twice and fixed, with `dev-next` merged
+  in on 2026-09-27 up to the release sweep (`52b16c96`), under which every
+  harness test module passes, and with the tools of the plan's Phase 9 and
+  of the promotion of the new reference (the two items below). Phase 1b
+  (the survey, the source trees, the frozen environment and its check) and
+  Phase 6 (the smoke campaigns, which measured every job's time and
+  memory) ran on the cluster on 2026-09-28/29, and their fixes are on the
+  branch; the plan's pickup point, on the branch, lists the three checks
+  left for the next cluster session. Next are the brief, which needs only
+  the stacking's finishing limits from those checks, a review of the
+  branch, and the merge into `dev-next`. Needed before
+  relying on that workflow for further cluster campaigns, not before local
+  experiments; the final large-scale check and the new reference below are
+  the first such campaigns. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
-- [ ] **Independent codebase and MATLAB-port review.** Before freezing the
-  code for the final release benchmark, have several independent reviewers
-  examine the PyVBMC codebase for errors and latent bugs. Split coverage
-  between internal correctness and systematic comparison with the original
-  MATLAB VBMC implementation, with overlapping review of critical numerical
-  paths. Cover formulas and gradients, indexing and array shapes, defaults,
-  control flow, random draws, state and caching, and cross-module behavior.
-  Record the MATLAB revision used and distinguish intentional Python
-  differences from porting mistakes and defects shared by both versions.
-  The recently discovered long-standing acquisition-box sampling error
-  motivates checking established code as well as recent changes; passing
-  tests and stored oracles do not establish correctness of the original port.
-  Reconcile findings against source and reproducible examples, add regression
-  checks for confirmed fixes, and apply the existing numerical gates to any
-  behavior changes. Resolve findings or document their disposition before the
-  final benchmark so it measures the reviewed release candidate. This review
-  can start before the other release work is complete. Started 2026-09-19;
-  the [review plan](plans/port-correctness-review.md) records the PI's
-  decisions (gpyreg in scope, comparison against the latest MATLAB
-  `master`, Opus reviewers, no MATLAB run unless a finding's disposition
-  depends on one), the slice map, the reviewer brief and the worklog. Status
-  on 2026-09-20: waves 0 to 3 (the subsystems without a MATLAB counterpart,
-  the MATLAB changes since the port, the P2 comparison, P6, P1a, P1b, P5 and
-  P8) are reviewed, verified, ruled on and fixed, and merged into `dev-next`;
-  several of the fixes move default trajectories, so the golden references
-  and the production-reference pools describe the code from before them. P3,
-  P4, P7, P9, G1, G2, the internal track of P2 and the third readers remain;
-  the plan's pickup point says where to resume.
+- [ ] **The golden references after the port review.** Several fixes of
+  the [port correctness review](plans/port-correctness-review.md) move
+  default trajectories; its
+  [ledger](results/2026-09-23-port-correctness-review.md) lists them. The
+  golden reference `reference_990_20260913` and the production-budget
+  runs of 2026-09-18 and 09-19 (below, "Completed baseline and local
+  artifacts") describe the code from before them, so
+  `scripts/golden_replay.py` compares a run with trajectories the code no
+  longer follows. The reference that replaces them (PI, 2026-09-25; the
+  [Slurm plan](plans/slurm-benchmark-support.md), "What runs where") is
+  to run the `production` suite alone at 100 seeds per configuration on
+  Turso with the release code, beside a before arm of the same runs at
+  `f91fdf0` with gpyreg 1.2.1; exact replay is to come from one seed per
+  configuration generated on the developer's machine, with the six seeded
+  gate runs of the item below. The moving fixes of the wave-1 and wave-2
+  passes, W5-1 and W5-6 were not read for accuracy on the benchmark
+  targets (the ledger, "The fixes that move default trajectories"); the
+  comparison of the two arms is their measure. This item owns that
+  assessment, by the method of the
+  [population plan](plans/final-population-benchmark.md), and the
+  promotion of the new reference with its fingerprints, preserving the old
+  references (the working rule below). The campaigns run in the plan's
+  Phase 8, on the PI's instruction. The promotion is
+  `scripts/reference_promote.py` on `feat-slurm-campaigns` (2026-09-28), in
+  the manner of `golden/promotion_20260913/promote.py`, since
+  `scripts/reference_join.py` extends a reference and refuses any overlap
+  with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
+  after arm's envelopes, `prepare` checks the previous reference, the after
+  arm, the accepted assessment, the fingerprints and the gate runs and
+  writes the record, `replay` replays the new defaults, and `publish`
+  replaces the sidecars of `golden/baseline/` and changes
+  `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS` together
+  with `AGENTS.md` ("Trajectories"), the current reference's section and
+  the `golden_replay.py` entry of `dev/README.md`, and `golden/README.md`
+  (its `dev/README.md` entry on the branch gives the steps). Its test module
+  runs a whole promotion on small array-mode campaigns. It rewrites those
+  passages only as they stood when it was written (a SHA-256 guard), so an
+  edit to one before the promotion is carried into its template. The PI's
+  rulings of 2026-09-28 (the Slurm plan, "The populations" and Phase 9):
+  the 24 fingerprints are judged as a set, since a correct run lies
+  outside its envelope now and then (4.2 % of the runs of
+  `reference_990_20260913`), and more of them outside than the after arm's
+  own rate makes plausible refuses; the code the promotion compares with
+  the after arm's leaves out the package's tests and S-VBMC; and the
+  script moves into its record at the promotion.
 
-- [ ] **Final large-scale check before the release (the gate).** Once
-  1.5 is consolidated and the code review above is complete, regenerate the
-  VBMC run pools on the test targets with the release code on the cluster
-  (about 100 runs per condition as in the
-  [campaign](plans/svbmc-benchmark-campaign.md),
-  several hundred where `M = 32` is to be scored: the present pools of
-  100 noisy and 50 noiseless runs reuse each run 1.6 to 3.2 times at
-  `M = 16` and 3.2 to 6.4 times at `M = 32`, so ten disjoint subsets of
-  32 need 320 runs), then run S-VBMC at several `M` and check that the
+- [ ] **A seeded gate run with a prior.** The four seeded runs that gate
+  the port review's fix passes
+  (`experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`)
+  pass no prior with `prior=`, so what a run does with a prior object
+  rested on unit tests: the check of its support against the hard bounds,
+  and the support that `SciPy` and `Product` read from their distribution
+  at every call. The script holds two more runs, on a two-dimensional
+  Rosenbrock likelihood with the hard bounds -2.9 and 3.3: the FAQ's list
+  of `uniform` marginals built from the hard bounds, whose support ends
+  one rounding short of the upper bound and so passes the check within its
+  slack, and a `SplineTrapezoidal` on the same bounds. On 2026-09-25 each
+  reproduced bit for bit in two recordings, and their ELBOs came out 0.34
+  and 0.37 nats below the log evidence computed by quadrature, the gap the
+  unbounded Rosenbrock run of the same script shows without a prior object
+  (0.40). The script's six runs join the release gate's records (PI,
+  2026-09-21; the wave-5
+  [ledger](experiments/port_review_20260919/verification/wave5.md), "The
+  independent check of the pass") as part of the replay fingerprints of
+  the new reference (the item above): they are run again with the release
+  code, wrapped so that their record carries the commit, the gpyreg
+  source, the thread settings and the host, which the script does not
+  record (PI, 2026-09-25; the
+  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
+  `scripts/seeded_gate_runs.py` on `feat-slurm-campaigns` (2026-09-28): it
+  records the six runs twice, each in a fresh process with one BLAS thread
+  and `performance_calibration="off"`, compares them with the script's own
+  `compare`, and writes each recording's identity (the commit, the gpyreg
+  checkout, the thread settings, the host) beside them. On 2026-09-28 it
+  recorded them at the branch's `4efee154` with gpyreg `d96d0d9`, identical
+  in all 138 arrays; that run checked the wrapper and is no record. The
+  runs that enter the records wait for the release code.
+
+- [ ] **Final large-scale check before the release (the gate).** Once no
+  algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
+  test targets with the release code on the cluster, the latest
+  `dev-next` at the launch, after which only the documentation and the
+  headline selection change; 320 filtered runs per condition
+  (PI, 2026-09-25; the [Slurm plan](plans/slurm-benchmark-support.md)):
+  the present pools of 100 noisy and 50 noiseless runs reuse each run 1.6
+  to 3.2 times at `M = 16` and 3.2 to 6.4 times at `M = 32`, and ten
+  disjoint subsets of 32 need 320 runs. Then stack them on the cluster in
+  disjoint subsets at every `M`, with both arms of the
+  [campaign](plans/svbmc-benchmark-campaign.md) at `M` = 2, 4, 8 and 16
+  and the integrated arm alone at 3, 5 and 32, and check that the
   campaign's results hold: the acceptance criteria of the comparison,
   the added-bias ranges of the headline note, and the switch of the
   headline to the two-level shrinkage (the debiasing item above). The
@@ -125,45 +214,46 @@ records its execution.
   `dev/scripts/` through the cluster workflow of the HPC item above.
   PI, 2026-09-16.
 
-- [ ] **Release documentation and validation.** Finish the release-wide
-  API/tutorial and compatibility review; run examples, check links, build
-  Sphinx and inspect rendered pages against the settled release code. The
-  focused Torch/JAX workflow and teaching consistency review are recorded
-  in the [teaching-material plan](plans/teaching-material.md).
-  Check the [agent skill](../skills/pyvbmc/SKILL.md) against the release docs.
-  Run final integrated tests, the required CI matrix and package checks;
-  prepare the golden-trace release archive. Decide which locally held
-  artifacts attach to the release as archives rather than commits: the
-  golden reference traces, the run pools, the captured frozen states and
-  the raw campaign records that `dev/scripts/runs/LOCAL.md` lists on the
-  holding machine. The draft releases `svbmc-pool-20260914` and
-  `svbmc-analyses-20260915` already hold the pool and its analyses that
-  way, so the decision is which of the remaining artifacts a reader of the
-  release needs to revalidate its results. Search the whole repository's
-  documentation for references to the `dev-next` branch and remove those
-  that are not historical: `dev-next` merges into `main` for the release,
-  so nothing a user or contributor reads after it should point at
-  `dev-next`; dated devlogs and plan worklogs may keep it as history.
-  Before the release, sweep every tracked document and record for two
-  kinds of statement: an acknowledgment that a value or a defect in some
-  file is wrong while that file itself carries neither the correction
-  nor a flag, and a statement that was true when written and is stale
-  now (branch names, counts, work described as continuing or remaining).
-  The scope is the developer notes and plans, the results, the review
-  copies under `dev/experiments/`, `dev/README.md`, `AGENTS.md`, the
-  README, the Sphinx sources and the docstrings. The rule: an error in a
-  record, document or code is fixed in that file; where a record cannot
-  change, the flag goes into the record, or as close to it as its format
-  allows; a note somewhere else is not a fix. Read-only reviewers work by
-  area and the PI triages their findings. The rule was set on 2026-09-19
-  after three cases surfaced in one day: a gpyreg version label wrong in
-  252 run sidecars, upper medians quoted as medians in a report, and a
-  publication index missing four entries, each acknowledged only in a
-  note elsewhere.
-  Documentation can proceed
-  alongside implementation; final checks must cover settled release code.
-  See the [documentation checklist](plans/modernization-roadmap.md#pre-release-documentation-review)
-  and [reference record](golden/promotion_20260913/README.md).
+- [ ] **Release documentation and validation.** The final pass on the
+  settled release code; each step's procedure is in the roadmap's
+  [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
+  - re-execute the example notebooks at the release commit and commit their
+    outputs, Example 7's account of the headline following the headline
+    decision;
+  - the API and tutorial review, the Sphinx build, `linkcheck`, the rendered
+    pages and the agent skill, with a `linkcheck` again after the merge into
+    `main`;
+  - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
+    over the diff since `46200293`;
+  - the final tests, the CI matrix and the package checks;
+  - the artifacts that attach to the release as archives (PI, 2026-09-28;
+    the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
+    hand-back"): the release gate's after-arm population and its pools,
+    each built apart from its draft release from the numeric files and the
+    redacted copies by `scripts/hpc/campaign_public.sh` on
+    `feat-slurm-campaigns`, in the operator's account after the redaction
+    (the stacking's tracked copies hold every cell already);
+    the draft releases of the campaigns stay drafts, since their raw
+    archives hold the cluster's details and the operator's paths; the
+    replay fingerprints and the earlier references' traces are backed up
+    in a draft release of their own;
+  - the references to `dev-next` that change with the release merge.
+
+- [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
+  interactive three.js page that plays back a recorded two-dimensional run
+  as a rotating landscape of the log density: the GP surrogate, the
+  evaluations, the acquisition function while points are chosen, the
+  variational mixture and, at the end, the true target. A second page ends
+  with the final posterior as the V of the PyVBMC wordmark;
+  `scripts/record.mjs` records either page as MP4, GIF or PNG frames, and
+  `dev/scripts/export_animation_trace.py` writes the trace of a real run.
+  The work is ongoing on the branch `feat-3d-animation`, cut from `dev-next`
+  on 2026-09-20 and not merged back; its `README.md`, `NOTES.md` and
+  `TODO.md` under `docsrc/source/_static/vbmc3d/` hold the design and the
+  next actions. Bring it back into `dev-next` once it settles. Where the
+  visualization is shown is undecided (the documentation, the project page,
+  the README): on the branch it sits in the docs' static folder, which the
+  Sphinx build does not publish, and no page links to it.
 
 ## Outside 1.5 scope
 
@@ -172,7 +262,6 @@ records its execution.
   optional noise shaping. The [tail-acquisition report](results/2026-09-16-gp-tail-acquisition.md)
   records the VIQR/refit mechanism and precision checks at its onset;
   remedies and their effects on inference accuracy have not been compared.
-
 - **New acquisition-function design.** The acquisition-efficiency work used
   existing criteria only.
   The experimental VIQR losses and the EIG acquisition were removed from the
@@ -192,6 +281,17 @@ records its execution.
   evidence of degradation. These questions do not block the release. See the
   [assessment](golden/promotion_20260913/README.md) and
   [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
+- **The acceptance of a rotoscaling.** The undo check keeps a warp whose
+  refit ELBO exceeds the previous iteration's by `warp_tol_improvement`, as
+  MATLAB VBMC does, and a refit posterior that spreads where the refit GP
+  has no data can pass it on a gain of the surrogate: Example 2 keeps such
+  a warp, reports an ELBO of −0.82 where the true log evidence is −1.836,
+  and recovers two iterations later. One run in the 990 of the golden
+  reference does the same. A warp only reparameterizes the space, so a
+  guard could undo a warp whose refit posterior moves far from the one
+  before (a threshold on their sKL); untested, and it moves default
+  trajectories. See the
+  [report](results/2026-09-26-example-2-rotoscale-swing.md).
 - **The Goris neuronal-model benchmark.** It remains deferred; see the
   [target decisions](plans/benchmark-realistic-targets.md#decisions-pi-2026-09-11).
 - **Debiasing the VBMC ELBO itself on noisy targets.** A single run's
@@ -216,18 +316,35 @@ records its execution.
   `pyvbmc[torch]>=1.5` and forwards old `svbmc` imports to the integrated
   implementation. S-VBMC is already available through PyVBMC; this serves
   users of the old package. See the [integration plan](plans/svbmc-integration.md).
+- [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
+  [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
+  that bumps the version and the source hash. Where the feedstock's
+  `conda-forge.yml` sets `bot: {automerge: true, inspection:
+  update-grayskull}` (proposed in its PR 11 on 2026-09-25, as gpyreg's and
+  PyBADS's feedstocks do), that PR takes the requirements from the PyPI
+  metadata and merges itself once the feedstock's CI passes; otherwise the
+  recipe's requirements, still those of 1.0.4, are updated by hand. Check
+  the published package's requirements against `pyproject.toml`: 1.5 needs
+  gpyreg 1.3.3 or later, which is on conda-forge, and adds `filelock`,
+  `platformdirs` and `threadpoolctl`. conda-forge's `python_min`, 3.11 on
+  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 
 ## Dependencies and working rules
 
+- "In scope for 1.5" is empty when 1.5 is done: each of its items is either
+  done or decided not to be done, with the reason recorded where its work
+  is recorded. A finding is not parked in this file to wait; it is fixed or
+  ruled not to be fixed (PI, 2026-09-23).
 - Evaluate numerical proposals before choosing defaults or reported
   estimators. If an accepted change moves default trajectories, update the
-  affected golden references after assessment and preserve the old ones.
-- The Phase 2 estimator and the stacking comparison both consume the run
-  pools, the asset of the draft release `svbmc-pool-20260914`; nothing
-  that needs them runs on a machine before every artifact re-verifies
-  there (`svbmc_pool_run.py verify`).
+  affected references after assessment and preserve the old ones.
+- Whatever consumes a run pool (the Phase 2 estimator, a stacking
+  comparison) runs on a machine only after every artifact of that pool
+  re-verifies there (`svbmc_pool_run.py verify`): the September pool, the
+  asset of the draft release `svbmc-pool-20260914`, and the release pools
+  alike.
 - At most one heavy computation runs at a time. Read-only investigation
   and documentation may proceed alongside it.
 - Final release checks depend on included changes being settled.
@@ -244,17 +361,18 @@ records its execution.
   experiment run noisy targets at the package's production defaults, on
   the `production` suite of `benchmark_targets.py`: the golden suite with
   its noisy entries freed of the budget pin and given the `production`
-  label tag. The noiseless golden runs are production runs already, so a
-  production reference copies them and adds fresh runs only for the noisy
-  labels: the seven noisy configurations with reference runs, 250 runs at
-  their production budgets (`golden_trace.py run --suite production --only
-  <noisy production labels>`), plus `lumpy_D10_noise3_production` if that
-  configuration is to enter the reference (the current reference has no
-  runs for it). The golden references stay the regression baseline for
-  trajectory identity at the paper budget. The E5 report's F3 section
-  records how the difference was found.
+  label tag. The existing golden references remain the record of the
+  golden suite; the reference that replaces them after the port review is
+  to run the whole `production` suite (the golden references item above).
+  The E5 report's F3 section records how the difference was found.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.
+- Dependabot's PRs target `main`, whose `tests.yml` and `merge-tests.yml`
+  `dev-next` has replaced (its tests run through `test-matrix.yml`, which
+  Dependabot does not see from `main`). Until `dev-next` merges into
+  `main`, a bump is applied on `dev-next`, in every workflow that uses the
+  action, and its PR closed: merged into `main`, it makes those files
+  conflict in the release merge.
 
 ## Completed baseline and local artifacts
 
@@ -279,13 +397,14 @@ candidate pairs plus 120 unchanged real-data pairs. The
 [promotion record](golden/promotion_20260913/README.md) owns the
 assessment, independent review, hashes and passed gates;
 [the population plan](plans/final-population-benchmark.md) owns execution
-history. The production reference's noisy runs have begun: 80 runs of six
-noisy configurations at production budgets (logistic regression and
+history. 80 runs of six noisy configurations at production budgets, made
+with the code from before the port review's fixes (logistic regression and
 high-noise Rosenbrock at twenty seeds; low-noise Rosenbrock, Student-t,
-timing and multisensory at ten) exist locally under
+timing and multisensory at ten), exist locally under
 `golden/production_noisy_20260918/` (listed in `dev/scripts/runs/LOCAL.md`),
 run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
-and after its stop; the
+and after its stop; the new reference does not include them (the golden
+references item above). The
 [efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
 records their provenance.
 

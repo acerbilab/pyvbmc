@@ -23,9 +23,15 @@ on:
         default: ''
 
 env:
-  # gpyreg v1.2.1: GP.predict(return_cross_covariance=True) for VIQR reuse
-  # (1.2.0) and the heteroskedastic quadrature-variance fix (1.2.1).
-  GPYREG_PIN: 9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b
+  # gpyreg v1.3.3: the fixes of the port review's waves 6 and 7, of the
+  # rulings after its close and of their checks (acerbilab/gpyreg#50, #52,
+  # #53, #54). The pin is the tagged commit, so that setuptools_scm reads
+  # 1.3.3, the minimum in pyproject.toml. PyVBMC is installed first, with
+  # gpyreg from PyPI, and this checkout over it last: an untagged commit
+  # before the tag reads lower than the minimum, so that pip warns of the
+  # conflict and the jobs test a version the minimum excludes, and before
+  # the release is on PyPI the install of PyVBMC fails.
+  GPYREG_PIN: 98ab5a4adecf37eb188521360bd87835979f47e7
 
 jobs:
   tests:
@@ -38,12 +44,12 @@ jobs:
 
     steps:
       - name: Checkout PyVBMC
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: pyvbmc
 
       - name: Checkout GPyReg
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: acerbilab/gpyreg
           ref: ${{ inputs.gpyreg-ref || env.GPYREG_PIN }}
@@ -54,7 +60,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 

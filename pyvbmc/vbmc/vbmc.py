@@ -2,7 +2,6 @@ import copy
 import logging
 import math
 import os
-import sys
 from collections.abc import Iterable
 from importlib.metadata import PackageNotFoundError, version
 from numbers import Real
@@ -15,6 +14,7 @@ import gpyreg as gpr
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.calibration.profile import CalibrationProfile
 from pyvbmc.formatting import full_repr, summarize
 from pyvbmc.function_logger import FunctionLogger
@@ -26,13 +26,19 @@ from pyvbmc.parameter_transformer import ParameterTransformer
 from pyvbmc.priors import Prior, SciPy, convert_to_prior
 from pyvbmc.rng import get_rng
 from pyvbmc.stats import kl_div_mvn
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.timer import main_timer as timer
 from pyvbmc.variational_posterior import VariationalPosterior
 from pyvbmc.whitening import warp_gp_and_vp, warp_input
+from pyvbmc.whitening.whitening import (
+    _WARP_COV_REG_REFUSAL,
+    _is_finite_real_number,
+)
 
-from ._bounds import _normalize_bounds
+from ._bounds import _expand_scalar_bound, _normalize_bounds
 from ._runtime_tips import consider_runtime_tip
-from .active_sample import active_sample
+from .active_importance_sampling import _MCMC_SAMPLES_FORMS
+from .active_sample import _refresh_training_counts, active_sample
 from .gaussian_process_train import (
     _lean_gp,
     _restore_gp_posteriors,
@@ -40,7 +46,17 @@ from .gaussian_process_train import (
     train_gp,
 )
 from .iteration_history import IterationHistory
-from .options import Options
+from .options import (
+    _UNCERTAINTY_HANDLING_OPTIONS,
+    SHIPPED_OPTIONS_PATHS,
+    Options,
+    _noise_size_reading,
+    _stated_boolean,
+    _states_the_stored_uncertainty_handling,
+    _states_the_stored_value,
+    _uncertainty_handling_flag,
+    _uncertainty_handling_level,
+)
 from .variational_optimization import optimize_vp, update_K
 
 
@@ -58,6 +74,128 @@ _PRECOMPUTED_NOT_PROVIDED = _OmittedArgument("None")
 _INITIALIZATION_COST_NOT_PROVIDED = _OmittedArgument("0")
 _PRECOMPUTED_DUPLICATE_ULPS = 4
 
+# The options that are read while a ``VBMC`` object is built and never
+# again, so that a value given to ``VBMC.load`` would be stored and never
+# consulted: the run's own state already holds what construction made of
+# them. ``load`` takes back the value the run stores for one of them, in
+# any form that construction reads alike, and refuses any other value
+# rather than store it.
+#
+# An option belongs here when every read of it in ``pyvbmc/`` lies in
+# ``VBMC.__init__``, in the ``_init_optim_state`` and
+# ``_initialize_precomputed_evaluations`` it calls, in
+# ``Options.update_defaults``, or in a check that construction and ``load``
+# share: a value check, a ``VBMC._validate_*`` method, or
+# ``Options._warn_ignored_noise_size``. Some reads are not reads a run acts
+# on: ``load``'s rewrites of the ``integer_vars``, ``uncertainty_handling``
+# and ``specify_target_noise`` that release 1.0.4 stored, and
+# ``active_sample``'s read of ``active_search_bound`` into two locals that
+# nothing uses. A read of the ``optim_state`` entry that carries
+# the same name is a read of the state, not of the option. The test
+# ``test_construction_only_options_are_the_options_only_construction_reads``
+# (``pyvbmc/testing/vbmc/test_options.py``) holds the tuple to this rule. It
+# sees reads written as ``options[...]``, ``options.get(...)`` or
+# ``options.eval(...)`` with a quoted name, on a name that contains
+# ``options``, and calls of ``Options.uncertainty_handling_on`` and
+# ``Options.integer_vars_mask``; a read written otherwise escapes it. An
+# option that a later iteration reads, ``noise_shaping`` and
+# ``max_fun_evals`` among them, is not here; the comment above each group
+# of names below says which site reads them.
+_CONSTRUCTION_ONLY_OPTIONS = (
+    # Read by ``Options.update_defaults``, which settles the defaults for a
+    # noisy target, and by ``_init_optim_state``, which sets from the pair,
+    # through ``options._uncertainty_handling_level``, the uncertainty
+    # handling level the GP noise model and the function logger follow.
+    # ``specify_target_noise`` is also read by the warning that a
+    # ``noise_size`` given with it has no effect.
+    "uncertainty_handling",
+    "specify_target_noise",
+    # ``_init_optim_state``: the GP mean function, the starting values and
+    # the bound tolerance of the transformed box.
+    "gp_mean_fun",
+    "f_vals",
+    "tol_bound_x",
+    # ``_init_optim_state``, through ``Options.integer_vars_mask``.
+    "integer_vars",
+    # ``_init_optim_state`` and ``__init__``: the state the first iteration
+    # starts from.
+    "warmup",
+    "k_warmup",
+    "entropy_switch",
+    "det_entropy_min_d",
+    "det_entropy_alpha",
+    "tol_gp_var",
+    "fitness_shaping",
+    "out_warp_thresh_base",
+    # ``_init_optim_state``: the search bounds, which every iteration then
+    # widens from. (``active_sample`` reads the option too, into two locals
+    # that nothing uses.)
+    "active_search_bound",
+    # ``__init__``: the parameter transformer and the size of the function
+    # logger's arrays, both built once.
+    "bounded_transform",
+    "cache_size",
+)
+
+
+def _stop_sampling_at_start(ns_gp_max):
+    """The value of ``optim_state["stop_sampling"]`` that a run starts from.
+
+    0 lets the GP fits sample their hyperparameters, as a positive
+    ``ns_gp_max`` asks; infinity, for ``ns_gp_max`` 0, gives every fit the
+    number of samples of the stable regime (``stable_gp_samples``, none by
+    default, which fits them by optimization) from the start. A run whose
+    sampling stops in the stable regime later stores there the number of
+    training points at the stop.
+    """
+    return 0 if ns_gp_max > 0 else np.inf
+
+
+# The levels of the log file that ``log_file_level`` names by a string, the
+# names that ``display`` gives the levels of the screen.
+_LOG_FILE_LEVEL_NAMES = {
+    "off": logging.WARN,
+    "iter": logging.INFO,
+    "full": logging.DEBUG,
+}
+
+
+def _log_file_level(value):
+    """The level of the log file that the option ``log_file_level`` gives.
+
+    Parameters
+    ----------
+    value : object
+        The value of the option: ``"off"``, ``"iter"`` or ``"full"``, or a
+        level of the ``logging`` module, which takes any non-negative
+        integer (a Python or a NumPy integer, not a boolean).
+
+    Returns
+    -------
+    level : int
+        The level of the file handler.
+
+    Raises
+    ------
+    ValueError
+        When the value is none of these, ``None`` and booleans included.
+    """
+    if isinstance(value, str) and value in _LOG_FILE_LEVEL_NAMES:
+        return _LOG_FILE_LEVEL_NAMES[value]
+    if (
+        isinstance(value, (int, np.integer))
+        and not isinstance(value, bool)
+        and value >= 0
+    ):
+        return int(value)
+    raise ValueError(
+        'The option log_file_level must be "off", "iter" or "full", or a '
+        "level of the logging module, that is a non-negative integer such "
+        f"as logging.DEBUG; got {value!r}. A saved run that carries such a "
+        "value is continued with "
+        "VBMC.load(file, new_options={'log_file_level': 'iter'})."
+    )
+
 
 def _max_ignoring_nan(values):
     """The largest entry that is not NaN, as MATLAB's ``max`` returns it.
@@ -71,12 +209,79 @@ def _max_ignoring_nan(values):
     return np.amax(values)
 
 
+def _check_prior_covers_bounds(prior, lower_bounds, upper_bounds):
+    """Check that the hard bounds lie inside the support of the prior.
+
+    Where the box of the hard bounds reaches outside the support the prior
+    has no density, so the log-joint is ``-inf`` there and the run stops at
+    the first evaluation it makes in that part of the box, in the function
+    logger, with a message that names neither the prior nor the bounds.
+
+    A coordinate whose two hard bounds are both finite is compared with a
+    slack of ``1e-9`` times its range. A support computed as ``loc +
+    scale``, which is how a bounded ``scipy.stats`` distribution built from
+    a pair of bounds reports its edges, lands a few units in the last place
+    away from the bound it was built from. A run stays further than that
+    from every hard bound: the acquisition search keeps ``tol_bound_x``
+    (1e-5 by default) times the range away, and the starting points and
+    the plausible box, in which the initial design is drawn, are kept a
+    thousandth of the range inside (``_bounds._effective_bounds``), so a
+    gap of the slack's size is never evaluated. Where a hard
+    bound is infinite the comparison is exact, so an infinite hard bound
+    against a finite support bound is refused.
+
+    Parameters
+    ----------
+    prior : pyvbmc.priors.Prior
+        The prior. Its ``support()`` is the box that has to contain the
+        hard bounds; a prior that reports no finite support contains every
+        box. A support given as one value per coordinate, or as a single
+        value for all of them, is read as a box of the model's dimension.
+    lower_bounds, upper_bounds : np.ndarray
+        The hard bounds, of shape `(1, D)`.
+
+    Raises
+    ------
+    ValueError
+        If the hard bounds reach outside the support of the prior in any
+        coordinate.
+    """
+    lb = np.asarray(lower_bounds, dtype=float).ravel()
+    ub = np.asarray(upper_bounds, dtype=float).ravel()
+    support_lb, support_ub = prior.support()
+    support_lb = np.broadcast_to(
+        np.asarray(support_lb, dtype=float).ravel(), lb.shape
+    )
+    support_ub = np.broadcast_to(
+        np.asarray(support_ub, dtype=float).ravel(), ub.shape
+    )
+
+    slack = np.zeros_like(lb)
+    both_finite = np.isfinite(lb) & np.isfinite(ub)
+    slack[both_finite] = 1e-9 * (ub[both_finite] - lb[both_finite])
+
+    outside = np.flatnonzero(
+        (lb < support_lb - slack) | (ub > support_ub + slack)
+    )
+    if outside.size > 0:
+        details = "; ".join(
+            f"coordinate {i} has bounds [{lb[i]}, {ub[i]}] against the "
+            f"support [{support_lb[i]}, {support_ub[i]}]"
+            for i in outside
+        )
+        raise ValueError(
+            "The hard bounds should lie inside the support of `prior`, but "
+            f"they reach outside it: {details}. Give hard bounds inside the "
+            "support of the prior, or a prior whose support covers them."
+        )
+
+
 class VBMC:
     """
     Posterior and model inference via Variational Bayesian Monte Carlo (VBMC).
 
     VBMC computes a variational approximation of the full posterior and a lower
-    bound on the normalization constant (marginal likelhood or model evidence)
+    bound on the normalization constant (marginal likelihood or model evidence)
     for a provided unnormalized log posterior.
 
     Initialize a ``VBMC`` object to set up the inference problem, then run
@@ -90,11 +295,14 @@ class VBMC:
         function, starting point, bounds, setup evaluations, and setup cost;
         explicitly supplied constructor arguments override its starting
         point, plausible bounds, evaluations, and cost. Supplied hard bounds
-        must equal the target's model support. An additional ``prior`` or
-        ``log_prior`` cannot be combined with a ``PyMCTarget``. For an
-        ordinary callable, if ``log_prior`` is ``None``, ``log_density``
-        accepts input ``x`` and returns the value of the target log-joint,
-        that is, the unnormalized log-posterior density at ``x``. If
+        must equal ``target.lb`` and ``target.ub``, which are in the target's
+        flat coordinates: the support of a variable the adapter leaves
+        untransformed, and infinite for a variable that keeps its PyMC
+        transform. An additional ``prior`` or ``log_prior`` cannot be
+        combined with a ``PyMCTarget``. For an ordinary callable, if
+        ``log_prior`` is ``None``, ``log_density`` accepts input ``x`` and
+        returns the value of the target log-joint, that is, the unnormalized
+        log-posterior density at ``x``. If
         ``log_prior`` is not ``None``, ``log_density`` should return the
         unnormalized log-likelihood. In either case, if
         ``options["specify_target_noise"]`` is true, ``log_density`` should
@@ -104,9 +312,14 @@ class VBMC:
         NumPy array with shape ``(N, D)`` and returns values with shape
         ``(N,)`` or ``(N, 1)``. A noisy vectorized target returns a pair of
         arrays with one value and positive standard deviation per row.
-    x0 : np.ndarray, optional
+    x0 : array_like, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
-        proximity of the mode of the posterior. Default is ``None``.
+        proximity of the mode of the posterior. One starting point is a
+        row of `D` coordinates (a 1-D array or a list; for `D` = 1, also a
+        number), and several are the rows of an array of shape ``(n0, D)``
+        or a list of lists. Default is ``None``, in which case the number
+        of variables is read from the plausible bounds, one of which then
+        needs one entry per variable.
     lower_bounds, upper_bounds : np.ndarray, optional
         ``lower_bounds`` (`LB`) and ``upper_bounds`` (`UB`) define a set
         of strict lower and upper bounds for the coordinate vector, `x`, so
@@ -142,15 +355,20 @@ class VBMC:
     prior, optional
         An optional separate prior. It can be a ``pyvbmc.priors.Prior``
         subclass, an appropriate ``scipy.stats`` distribution, or a list of
-        one-dimensional PyVBMC ``Prior`` and/or one-dimenional continuous
+        one-dimensional PyVBMC ``Prior`` and/or one-dimensional continuous
         ``scipy.stats`` distributions. (see the documentation on priors for
         more details). If ``prior`` is not `None`, the argument ``log_density``
         is assumed to represent the log-likelihood (otherwise it is assumed to
-        represent the log-joint).
+        represent the log-joint). The hard bounds ``lower_bounds`` and
+        ``upper_bounds`` must lie inside the support of the prior. Within
+        them the prior is used as it is given: the model evidence reported is
+        that of the prior restricted to the hard bounds, not that of a prior
+        truncated to them and normalized again.
     log_prior : callable, optional
         An optional separate log-prior function, which should accept a single
         argument `x` and return the log-density of the prior at `x`. If
         ``log_prior`` is not ``None``, the argument ``log_density`` is assumed
+        to represent the log-likelihood (otherwise it is assumed to represent
         the log-joint).
     sample_prior : callable, optional
         An optional function which accepts a single argument `n` and returns an
@@ -176,7 +394,9 @@ class VBMC:
         when ``options["specify_target_noise"]`` is true. ``X`` has shape
         ``(N, D)`` in the target's original coordinates and the other arrays
         have shape ``(N,)``. If a separate prior is supplied, ``y`` contains
-        log-likelihood values; VBMC adds the prior once. Inputs are copied to
+        log-likelihood values; VBMC adds the prior once. (The values of
+        ``options["f_vals"]``, given at ``x0``, are log-joint values, with
+        the prior already added.) Inputs are copied to
         float64 storage. Exact duplicate points must agree within four
         float64 ULPs at their value scale and are retained once; noisy repeats
         remain independent observations and are pooled by the logger.
@@ -196,6 +416,11 @@ class VBMC:
         The target passed directly to this instance, or ``None`` when the
         instance was constructed from an ordinary callable. This attribute
         is read-only.
+    x0_orig : np.ndarray, shape (n0, D)
+        The starting points in the coordinates the caller gave them in.
+        ``x0`` holds the same points in the inference space the instance
+        was constructed with, which a later warp of that space leaves
+        behind.
 
     Raises
     ------
@@ -204,6 +429,19 @@ class VBMC:
         `plausible_upper_bounds`) are specified.
     ValueError
         When various checks for the bounds (LB, UB, PLB, PUB) of VBMC fail.
+    ValueError
+        When an option value, ``precomputed_evaluations`` or
+        ``initialization_cost`` is refused, when ``initialization_cost``
+        leaves too few evaluations of ``max_fun_evals`` for the initial
+        design, when the hard bounds reach outside the support of
+        ``prior``, or when at least ``fun_eval_start`` starting points are
+        given and the first ``fun_eval_start`` of them take one value in a
+        coordinate.
+    NotImplementedError
+        When the options select a feature of MATLAB VBMC that is not ported
+        (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
+        ``"slicesample"``, an acquisition function that asks for the MCMC
+        step of the importance sampler).
 
     References
     ----------
@@ -220,7 +458,7 @@ class VBMC:
     --------
     For `VBMC` usage examples, please look up the Jupyter notebook tutorials
     in the PyVBMC documentation:
-    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1.html
+    https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_1_basic_usage.html
 
     Previously computed target values can seed the logger without becoming
     starting points or changing the plausible box. Preparation performed for
@@ -259,9 +497,6 @@ class VBMC:
         precomputed_evaluations=_PRECOMPUTED_NOT_PROVIDED,
         initialization_cost=_INITIALIZATION_COST_NOT_PROVIDED,
     ):
-        # set up root logger (only changes stuff if not initialized yet)
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
-
         (
             log_density,
             x0,
@@ -288,10 +523,13 @@ class VBMC:
         if uses_pymc_target:
             self._uses_pymc_target = True
 
-        # Random generator used by this instance: shared with its VP, handed
-        # to the GP hyperparameter fit (`train_gp` -> `gpyreg.GP.fit`) and
-        # to the CMA-ES noise handler, so a run never touches NumPy's global
-        # random state.
+        # Random generator used by this instance: shared with its VP, from
+        # which active sampling draws (the initial design, the search
+        # candidates, the CMA-ES population through cma's `randn` option and
+        # the importance samples), as does the variational optimization, and
+        # handed to the GP hyperparameter fit (`train_gp` ->
+        # `gpyreg.GP.fit`), so a run never touches NumPy's global random
+        # state.
         self.rng = get_rng(seed)
 
         # Initialize variables and algorithm structures
@@ -304,11 +542,30 @@ class VBMC:
                     """vbmc:UnknownDims If no starting point is
                  provided, PLB and PUB need to be specified."""
                 )
-            else:
-                x0 = np.full((plausible_lower_bounds.shape), np.nan)
+            # Without a starting point the number of variables is read
+            # from the plausible bounds, which a scalar does not give.
+            shapes = [
+                np.shape(bound)
+                for bound in (plausible_lower_bounds, plausible_upper_bounds)
+                if np.ndim(bound) > 0
+            ]
+            if len(shapes) == 0:
+                raise ValueError(
+                    "Without a starting point x0 the number of variables "
+                    "is read from the plausible bounds, so they cannot both "
+                    "be scalars: give plausible_lower_bounds or "
+                    "plausible_upper_bounds one entry per variable, or give "
+                    "x0."
+                )
+            x0 = np.full(shapes[0], np.nan)
 
-        if x0.ndim == 1:
-            logging.warning("Reshaping x0 to row vector.")
+        # A number is one coordinate, a list of numbers one starting point
+        # and a list of lists several. The bounds check casts the values to
+        # floating point.
+        x0 = np.atleast_1d(np.asarray(x0))
+        # Reported once the logger follows the display level.
+        x0_reshaped = x0.ndim == 1
+        if x0_reshaped:
             x0 = x0.reshape((1, -1))
         self.D = x0.shape[1]
         # load basic and advanced options and validate the names
@@ -340,16 +597,7 @@ class VBMC:
         self.options.validate_option_names(
             [basic_options_path, advanced_options_path]
         )
-        self._validate_vectorized_target_option()
-        self._validate_show_tips_option()
-        self._validate_noise_shaping_option()
-        self._validate_gp_hyp_sampler_option()
-        self._validate_performance_calibration_option(
-            self.options.get("performance_calibration")
-        )
-        self._validate_final_boost_tolerance(
-            self.options.get("tol_elcbo_boost")
-        )
+        self._validate_option_values()
 
         if precomputed_evaluations is _PRECOMPUTED_NOT_PROVIDED:
             precomputed_evaluations = None
@@ -377,6 +625,8 @@ class VBMC:
 
         # Create an initial logger for initialization messages:
         self.logger = self._init_logger("_init")
+        if x0_reshaped:
+            self.logger.info("Reshaping x0 to row vector.")
 
         # variable to keep track of logging actions
         self.logging_action = []
@@ -477,6 +727,7 @@ class VBMC:
         self.precomputed_location_count = 0
         self._initialize_precomputed_evaluations(precomputed_evaluations)
         self._validate_initial_fresh_budget()
+        self._validate_initial_design_spread()
 
         # The starting points in the coordinates the caller gave them in.
         # The transformed copy belongs to the inference space of this
@@ -525,11 +776,16 @@ class VBMC:
 
     @staticmethod
     def _normalized_hard_bound(bound, dimension):
-        """Normalize a hard bound for comparison with adapter support."""
+        """Normalize a hard bound for comparison with adapter support.
+
+        A bound given as a single value holds for every variable, as
+        `_normalize_bounds` reads it.
+        """
         value = np.array(bound, copy=True)
         if np.any(np.invert(np.isreal(value))):
             raise ValueError("Hard bounds must be real valued.")
         value = value.astype(np.float64, copy=False)
+        value = _expand_scalar_bound(value, dimension)
         value = np.atleast_1d(value)
         try:
             return value.reshape((1, dimension))
@@ -587,7 +843,8 @@ class VBMC:
             target_bound = cls._normalized_hard_bound(expected, dimension)
             if not np.array_equal(normalized, target_bound):
                 raise ValueError(
-                    f"{name} must match the PyMCTarget model support."
+                    f"{name} must equal the PyMCTarget's hard bounds "
+                    "(target.lb and target.ub, in its flat coordinates)."
                 )
 
         if x0 is None:
@@ -843,6 +1100,41 @@ class VBMC:
                 f"{required} are required."
             )
 
+    def _validate_initial_design_spread(self):
+        """Refuse starting points that leave a coordinate of the initial
+        design without spread.
+
+        With at least ``fun_eval_start`` starting points, the initial design
+        is the first ``fun_eval_start`` of them (``active_sample``); with
+        fewer, the rest is drawn from the plausible box. A coordinate that
+        takes one value across a design made of starting points alone gives
+        the GP no width to scale its length scale by: its recommended bounds
+        are infinite, and the first fit fails after the design's evaluations
+        are spent.
+
+        Raises
+        ------
+        ValueError
+            If at least ``fun_eval_start`` starting points are given and a
+            coordinate takes one value across the first ``fun_eval_start``
+            of them.
+        """
+        sample_count = int(self.options.get("fun_eval_start"))
+        x_orig = self.optim_state["cache"]["x_orig"]
+        if x_orig.shape[0] < sample_count:
+            return
+        design = x_orig[:sample_count]
+        flat = np.flatnonzero(np.all(design == design[0], axis=0))
+        if flat.size:
+            raise ValueError(
+                f"The initial design is the first fun_eval_start = "
+                f"{sample_count} starting points, and they take one value "
+                f"in coordinate(s) {flat.tolist()}, which leaves the GP no "
+                "width to fit there. Give starting points that vary in every "
+                f"coordinate, or fewer than {sample_count} of them: the rest "
+                "of the initial design is then drawn from the plausible box."
+            )
+
     def _fresh_evaluations_for_batch(self, requested):
         """Cap one opted-in acquisition batch at the fresh-call allowance."""
         if not self._budget_active:
@@ -880,7 +1172,9 @@ class VBMC:
         """
         # Record starting points (original coordinates)
         y_orig = np.array(self.options.get("f_vals")).ravel()
-        if len(y_orig) > 0 and self.options.get("specify_target_noise"):
+        # A NaN entry asks for the point to be evaluated and supplies nothing.
+        supplies_values = len(y_orig) > 0 and not np.all(np.isnan(y_orig))
+        if supplies_values and self.options.get("specify_target_noise"):
             raise ValueError(
                 "options['f_vals'] supplies values without their noise, so "
                 "it cannot be used with options['specify_target_noise']. "
@@ -919,7 +1213,7 @@ class VBMC:
                 raise ValueError(
                     """Hard bounds of integer variables need to be
                  set at +/- 0.5 points from their boundary values (e.g., -0.5
-                 nd 10.5 for a variable that takes values from 0 to 10)"""
+                 and 10.5 for a variable that takes values from 0 to 10)"""
                 )
 
         # fprintf('Index of variable restricted to integer values: %s.\n'
@@ -971,30 +1265,26 @@ class VBMC:
         optim_state["warping_count"] = 0
 
         # When GP hyperparameter sampling is switched with optimization
-        if self.options.get("ns_gp_max") > 0:
-            optim_state["stop_sampling"] = 0
-        else:
-            optim_state["stop_sampling"] = np.inf
+        optim_state["stop_sampling"] = _stop_sampling_at_start(
+            self.options.get("ns_gp_max")
+        )
 
         # Fully recompute variational posterior
         optim_state["recompute_var_post"] = True
 
-        # Start with warm-up?
+        # Start with warm-up? `last_warmup` is the index of the last warm-up
+        # iteration. A run without warm-up ends it before its first
+        # iteration, the index -1 in this count from 0 (MATLAB's 0, in a
+        # count from 1).
         optim_state["warmup"] = self.options.get("warmup")
         if self.options.get("warmup"):
             optim_state["last_warmup"] = np.inf
         else:
-            optim_state["last_warmup"] = 0
+            optim_state["last_warmup"] = -1
 
         # Number of stable function evaluations during warmup
         # with small increment
         optim_state["warmup_stable_count"] = 0
-
-        # Proposal function for search
-        if self.options.get("proposal_fcn") is None:
-            optim_state["proposal_fcn"] = "@(x)proposal_vbmc"
-        else:
-            optim_state["proposal_fcn"] = self.options.get("proposal_fcn")
 
         # Quality of the variational posterior
         optim_state["R"] = np.inf
@@ -1044,16 +1334,11 @@ class VBMC:
 
         # Set uncertainty handling level
         # (0: none; 1: unknown noise level; 2: user-provided noise)
-        if not self.options.uncertainty_handling_on():
-            optim_state["uncertainty_handling_level"] = 0
-        elif self.options.get("specify_target_noise"):
-            optim_state["uncertainty_handling_level"] = 2
-        else:
-            optim_state["uncertainty_handling_level"] = 1
-
-        # Empty hedge struct for acquisition functions
-        if self.options.get("acq_hedge"):
-            optim_state["hedge"] = []
+        level = _uncertainty_handling_level(
+            self.options.get("uncertainty_handling"),
+            self.options.get("specify_target_noise"),
+        )
+        optim_state["uncertainty_handling_level"] = level
 
         # List of points at the end of each iteration
         optim_state["iter_list"] = {}
@@ -1107,18 +1392,8 @@ class VBMC:
         ):
             optim_state["gp_noise_fun"][1] = 1
 
+        # The value was checked by `_validate_gp_mean_fun_option`.
         optim_state["gp_mean_fun"] = self.options.get("gp_mean_fun")
-        # The mean functions the GP backend can build. MATLAB VBMC names
-        # nine more that gpyreg does not provide.
-        valid_gp_mean_funs = ["zero", "const", "negquad"]
-
-        if not optim_state["gp_mean_fun"] in valid_gp_mean_funs:
-            raise ValueError(
-                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
-                f"{optim_state['gp_mean_fun']!r}. Supported mean functions "
-                "are 'zero', 'const' and 'negquad'."
-            )
-        optim_state["int_mean_fun"] = self.options.get("gp_int_mean_fun")
         # more logic here in matlab
 
         # Starting threshold on y for output warping
@@ -1137,7 +1412,7 @@ class VBMC:
 
         VBMC computes a variational approximation of the full posterior and the
         ELBO (evidence lower bound), a lower bound on the log normalization
-        constant (log marginal likelhood or log model evidence) for the provided
+        constant (log marginal likelihood or log model evidence) for the provided
         unnormalized log posterior.
 
         Returns
@@ -1183,7 +1458,7 @@ class VBMC:
             )
 
         if self.is_finished:
-            self.logger.warning("Continuing optimization from previous state.")
+            self.logger.info("Continuing optimization from previous state.")
             self.is_finished = False
             # Copies, not the history's entries themselves: those describe
             # the last recorded iteration and must not follow the live
@@ -1204,6 +1479,9 @@ class VBMC:
                     "initialization_cost"
                 ] = self.initialization_cost
                 self.optim_state["budget_active"] = True
+            # So does it carry whether the GP fits sample, which follows the
+            # `ns_gp_max` of this call, one that `load` was given included.
+            self._follow_ns_gp_max()
         self.vp._calibration_display = self.options.get("display") != "off"
         calibration_profile = self.vp._resolve_calibration(
             display=self.vp._calibration_display
@@ -1266,10 +1544,7 @@ class VBMC:
                 WarpDelay = self.options["warp_every_iters"]
 
             doWarping = (
-                (
-                    self.options.get("warp_rotoscaling")
-                    or self.options.get("warp_nonlinear")
-                )
+                self.options.get("warp_rotoscaling")
                 and (self.iteration > 0)
                 and (not self.optim_state["warmup"])
                 and (
@@ -1407,6 +1682,15 @@ class VBMC:
                         ]
                         self.logging_action.append("undo " + warp_action)
 
+                # The optim_state that warp_input returns, and the one an
+                # undone warp restores, are copies, and so are the hyp_dict
+                # they hold. Active sampling, which links the two, is skipped
+                # after a kept warp (and after an undone one at the end of
+                # warm-up, with `skip_active_sampling_after_warmup`), so they
+                # are linked here, for the record of the iteration to hold
+                # the hyperparameters that the iteration fits.
+                self.optim_state["hyp_dict"] = self.hyp_dict
+
             ## Actively sample new points into the training set
             timer.start_timer("active_sampling")
             self.parameter_transformer = self.vp.parameter_transformer
@@ -1431,35 +1715,27 @@ class VBMC:
                 self.optim_state["skip_active_sampling"] = False
             else:
                 # Perform active sampling
-                if self.options.get("varactivesample"):
-                    # FIX TIMER HERE IF USING THIS
-                    # [optimState,vp,t_active,t_func] =
-                    # variationalactivesample_vbmc(optimState,new_funevals,
-                    # funwrapper,vp,vp_old,gp,options)
-                    sys.exit("Function currently not supported")
-                else:
-                    self.optim_state["hyp_dict"] = self.hyp_dict
-                    (
-                        self.function_logger,
-                        self.optim_state,
-                        self.vp,
-                        self.gp,
-                    ) = active_sample(
-                        self.gp,
-                        new_funevals,
-                        self.optim_state,
-                        self.function_logger,
-                        self.iteration_history,
-                        self.vp,
-                        self.options,
-                    )
-                    self.hyp_dict = self.optim_state["hyp_dict"]
+                self.optim_state["hyp_dict"] = self.hyp_dict
+                (
+                    self.function_logger,
+                    self.optim_state,
+                    self.vp,
+                    self.gp,
+                ) = active_sample(
+                    self.gp,
+                    new_funevals,
+                    self.optim_state,
+                    self.function_logger,
+                    self.iteration_history,
+                    self.vp,
+                    self.options,
+                )
+                self.hyp_dict = self.optim_state["hyp_dict"]
 
-            # Number of training inputs
-            self.optim_state["N"] = self.function_logger.Xn + 1
-            self.optim_state["n_eff"] = np.sum(
-                self.function_logger.n_evals[self.function_logger.X_flag]
-            )
+            # The counts of the training set, which active sampling refreshes
+            # after each evaluation; an iteration that acquires no point
+            # still needs them to follow the trimming of the warm-up.
+            _refresh_training_counts(self.optim_state, self.function_logger)
 
             timer.stop_timer("active_sampling")
 
@@ -1913,7 +2189,7 @@ class VBMC:
                 plot_data=True,
                 highlight_data=None,
                 plot_vp_centres=True,
-                title="VBMC final ({} iterations)".format(self.iteration),
+                title="VBMC final ({} iterations)".format(self.iteration + 1),
             )
             plt.show()
 
@@ -1923,9 +2199,9 @@ class VBMC:
         else:
             success_flag = False
 
-        # Print final message
-        self.logger.warning(termination_message)
-        self.logger.warning(
+        # Print final message. At display "off" only the caution shows.
+        self.logger.info(termination_message)
+        self.logger.info(
             "Estimated ELBO: {:.3f} +/-{:.3f}.".format(elbo, elbo_sd)
         )
         if not success_flag:
@@ -1981,9 +2257,9 @@ class VBMC:
         # Vector of maximum lower confidence bounds (LCB) of fcn values:
         # the sequence recomputed with the current Gaussian process where
         # there is one, the maxima each iteration recorded otherwise. A
-        # recomputed entry is NaN for an iteration none of whose points is
-        # still in the training set, and the maxima below pass over it as
-        # MATLAB's max does.
+        # recomputed entry is NaN for an iteration by whose end no logged
+        # point is still in the training set, and the maxima below pass
+        # over it as MATLAB's max does.
         recomputed = self.optim_state.get("lcb_max_vec")
         if recomputed is not None and np.size(recomputed) > 0:
             lcb_max_vec = np.asarray(recomputed)[: iteration + 1]
@@ -2092,7 +2368,9 @@ class VBMC:
         if np.sum(idx_keep) < n_keep_min:
             y_temp = np.copy(self.function_logger.y_orig)
             y_temp[~np.isfinite(y_temp)] = -np.inf
-            order = np.argsort(y_temp * -1, axis=0)
+            # Among equal values the earlier point comes first, as in
+            # MATLAB's stable descending sort.
+            order = np.argsort(-y_temp, axis=0, kind="stable")
             idx_keep[
                 order[: min(n_keep_min, self.function_logger.Xn + 1)]
             ] = True
@@ -2198,8 +2476,7 @@ class VBMC:
                 else:
                     # Allow termination only if distant from last warping
                     if (
-                        iteration
-                        - self.optim_state.get("last_successful_warping", 0)
+                        iteration - self.optim_state["last_successful_warping"]
                         >= tol_stable_iters / 3
                     ):
                         is_finished_flag = True
@@ -2287,6 +2564,22 @@ class VBMC:
             list(map(float, xx)), list(map(float, yy)), 1
         )[0]
         return np.mean(r_index_vec), ELCBO_improvement
+
+    def _follow_ns_gp_max(self):
+        """Set whether the GP fits sample their hyperparameters from the
+        option ``ns_gp_max``, as construction sets it.
+
+        A run whose sampling has stopped in the stable regime keeps its
+        state: ``stop_sampling`` then holds the number of training points at
+        the stop, and its fits read the option no more. For a run whose
+        state follows its options this changes nothing.
+        """
+        stop_sampling = self.optim_state.get("stop_sampling")
+        if stop_sampling is not None and 0 < stop_sampling < np.inf:
+            return
+        self.optim_state["stop_sampling"] = _stop_sampling_at_start(
+            self.options.get("ns_gp_max")
+        )
 
     def _check_gp_sampling_stop(self):
         """Apply the variance-based transition to stable GP sampling."""
@@ -2444,8 +2737,9 @@ class VBMC:
         lcb_max_vec : np.ndarray, shape (n_recorded_iterations,)
             The recomputed maximum for each recorded iteration. An entry
             is NaN where the iteration's count of logged points is not
-            recorded, or where no logged point of that iteration is still
-            in the training set.
+            recorded, or where none of the points logged up to that
+            iteration is still in the training set; the maximum being
+            cumulative, such entries can only open the sequence.
         """
         n_logged = self.function_logger.Xn + 1
         in_training_set = self.function_logger.X_flag
@@ -2482,8 +2776,8 @@ class VBMC:
         ----------
         vp : VariationalPosterior
             The VariationalPosterior that should be boosted.
-        gp : GaussianProcess
-            The corresponding GaussianProcess of the VariationalPosterior.
+        gp : gpyreg.GP
+            The Gaussian process the VariationalPosterior was fitted with.
 
         Returns
         -------
@@ -2495,18 +2789,49 @@ class VBMC:
             The ELBO_SD of the VariationalPosterior resulting from the
             final boost.
         changed_flag : bool
-           Indicates if the final boost has taken place or not.
+            Whether the returned VariationalPosterior is the boosted one:
+            False when no boost was needed and when the guard rejected the
+            boosted posterior.
+
+        Raises
+        ------
+        ValueError
+            If the option ``tol_elcbo_boost`` is neither None nor a finite
+            nonnegative number; or, with ``variable_means`` off, when ``gp``
+            has fewer training inputs than ``vp`` has components.
+        RuntimeError
+            If, with the guard on, neither ``vp`` nor the boosted posterior
+            has a finite ELBO and a finite nonnegative ELBO SD.
 
         Notes
         -----
-        The guard compares the optimizer's stored pre- and post-boost ELBO
-        and GP-based ELBO SD. It performs no diagnostic rescoring, and the SD
-        does not include Monte Carlo uncertainty from the entropy estimate.
+        A boost is needed when ``vp`` has fewer components than the boost
+        gives it (``min_final_components`` with ``variable_means`` on, the
+        number of training inputs of ``gp`` with it off), or when
+        ``ns_ent_boost`` or ``ns_ent_fine_boost`` changes the corresponding
+        entropy sample size.
 
-        The boost optimizes with warm-up over and the entropy annealing
-        switched off, on copies of the options and of the optimization
-        state; neither the instance's options nor its optimization state
-        is changed.
+        With the option ``tol_elcbo_boost`` set (0.1 by default), a guard
+        keeps the boosted posterior only if neither its ELBO nor its ELBO
+        minus five times its ELBO SD falls more than ``tol_elcbo_boost``
+        below that of ``vp``; otherwise it warns and returns ``vp``. A
+        boosted posterior whose ELBO or ELBO SD is not finite, or whose SD
+        is negative, is rejected in the same way, and one whose statistics
+        are valid is kept when those of ``vp`` are not. With
+        ``tol_elcbo_boost=None`` the boosted posterior is always returned.
+        The guard compares the optimizer's stored pre- and post-boost ELBO
+        and GP-based ELBO SD. It performs no diagnostic rescoring, and the
+        SD does not include Monte Carlo uncertainty from the entropy
+        estimate.
+
+        The boost optimizes with warm-up over, without pruning of
+        components, with the entropy sample sizes of the boost options
+        (``ns_ent_boost`` and its kin), with the stochastic optimization
+        allowed its ceiling of 10000 iterations whatever
+        ``max_iter_stochastic`` says and, under the guard, without the
+        weight penalty (``weight_penalty``). It runs on copies of the
+        options and of the optimization state; neither the instance's
+        options nor its optimization state is changed.
 
         With ``variable_means`` off the components of the boosted posterior
         sit at the training inputs of ``gp``, one each, and
@@ -2528,6 +2853,14 @@ class VBMC:
             # as many of them as the GP has training inputs, as in every
             # iteration of the main loop after warm-up.
             K_new = gp.X.shape[0]
+            if K_new < vp.K:
+                raise ValueError(
+                    "With variable_means off, the components of the "
+                    "posterior sit at the training inputs of the GP, so a "
+                    f"posterior of {vp.K} components cannot be boosted with "
+                    f"a GP of {K_new} training inputs. Pass the GP that the "
+                    "posterior was fitted with."
+                )
 
         # Current entropy samples during variational optimization
         n_sent = self.options.eval("ns_ent", {"K": K_new})
@@ -2713,27 +3046,36 @@ class VBMC:
     def determine_best_vp(
         self,
         max_idx: int = None,
-        safe_sd: float = 5,
-        frac_back: float = 0.25,
-        rank_criterion_flag: bool = False,
+        safe_sd: float = None,
+        frac_back: float = None,
+        rank_criterion_flag: bool = None,
     ):
         """
         Return the best VariationalPosterior found during the optimization of
         VBMC as well as its ELBO, ELBO_SD and the index of the iteration.
+
+        Called without the selection arguments, the method uses the run's
+        options, so that on a finished run it returns the iteration the run
+        selected.
 
         Parameters
         ----------
         max_idx : int, optional
             Check up to this iteration, by default None which means last iter.
         safe_sd : float, optional
-            Penalization for uncertainty, by default 5.
+            Penalization for uncertainty: the multiple of the ELBO_SD
+            subtracted from the ELBO to give the ELCBO. By default None,
+            which means the option ``best_safe_sd`` (5 unless set).
         frac_back : float, optional
             If no past stable iteration, go back up to this fraction of
-            iterations, by default 0.25.
+            iterations. Used only without the ranking criterion. By default
+            None, which means the option ``best_frac_back`` (0.25 unless
+            set).
         rank_criterion_flag : bool, optional
             If True use new ranking criterion method to pick best solution.
-            It finds a solution that combines ELCBO, stability, and recency,
-            by default False.
+            It finds a solution that combines ELCBO, stability, and recency.
+            By default None, which means the option ``rank_criterion``
+            (True unless set).
 
         Returns
         -------
@@ -2749,11 +3091,25 @@ class VBMC:
             The ELBO_SD of the iteration with the best VariationalPosterior.
         idx_best : int
             The index of the iteration with the best VariationalPosterior.
+
+        Notes
+        -----
+        A NaN ELCBO (``elbo - safe_sd * elbo_sd``) or reliability index
+        ranks last in the ranking criterion, and a NaN ELCBO is skipped
+        without it. If the ELCBO of every candidate iteration is NaN, the
+        last iteration considered is selected, which with the default
+        ``max_idx`` is the posterior the run ended on.
         """
 
         # Check up to this iteration (default, last)
         if max_idx is None:
             max_idx = self.iteration_history.get("iter")[-1]
+        if safe_sd is None:
+            safe_sd = self.options["best_safe_sd"]
+        if frac_back is None:
+            frac_back = self.options["best_frac_back"]
+        if rank_criterion_flag is None:
+            rank_criterion_flag = self.options["rank_criterion"]
 
         if self.iteration_history.get("stable")[max_idx]:
             # If the current iteration is stable, return it
@@ -2769,31 +3125,37 @@ class VBMC:
                 # Rank by position
                 rank[:, 0] = np.arange(1, max_idx + 2)[::-1]
 
-                # The history stores object-dtype arrays, so the scores
-                # and the flags are read through `asarray`: the flags have
-                # to be booleans to index with, and the scores have to be
-                # an array to sort.
+                # The history stores object-dtype arrays. The flags are
+                # read as booleans to index with, and the scores as floats:
+                # an object array sorts with Python's comparisons, to which
+                # NaN is incomparable, while a float sort places NaN last.
                 lnZ_iter = np.asarray(
-                    self.iteration_history.get("elbo")[: max_idx + 1]
+                    self.iteration_history.get("elbo")[: max_idx + 1],
+                    dtype=float,
                 )
                 lnZsd_iter = np.asarray(
-                    self.iteration_history.get("elbo_sd")[: max_idx + 1]
+                    self.iteration_history.get("elbo_sd")[: max_idx + 1],
+                    dtype=float,
                 )
                 r_index_iter = np.asarray(
-                    self.iteration_history.get("r_index")[: max_idx + 1]
+                    self.iteration_history.get("r_index")[: max_idx + 1],
+                    dtype=float,
                 )
                 stable_iter = np.asarray(
                     self.iteration_history.get("stable")[: max_idx + 1],
                     dtype=bool,
                 )
 
-                # Rank by ELCBO
+                # Rank by ELCBO. In this ranking and in the next, the
+                # earlier of two iterations with equal scores ranks first,
+                # as in MATLAB's stable sort, and a NaN score ranks last.
+                # (MATLAB's descending sort ranks a NaN ELCBO first.)
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                order = elcbo.argsort()[::-1]
+                order = np.argsort(-elcbo, kind="stable")
                 rank[order, 1] = np.arange(1, max_idx + 2)
 
                 # Rank by reliability index
-                order = r_index_iter.argsort()
+                order = np.argsort(r_index_iter, kind="stable")
                 rank[order, 2] = np.arange(1, max_idx + 2)
 
                 # Rank penalty to all non-stable iterations
@@ -2801,7 +3163,10 @@ class VBMC:
                 rank[:, 3] = max_idx + 1
                 rank[stable_iter, 3] = 1
 
-                idx_best = np.argmin(np.sum(rank, 1))
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = np.argmin(np.sum(rank, 1))
 
             else:
                 # Find recent solution with best ELCBO
@@ -2819,14 +3184,24 @@ class VBMC:
                 else:
                     idx_start = np.ravel(laststable)[-1]
 
-                lnZ_iter = self.iteration_history.get("elbo")[
-                    idx_start : max_idx + 1
-                ]
-                lnZsd_iter = self.iteration_history.get("elbo_sd")[
-                    idx_start : max_idx + 1
-                ]
+                lnZ_iter = np.asarray(
+                    self.iteration_history.get("elbo")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
+                lnZsd_iter = np.asarray(
+                    self.iteration_history.get("elbo_sd")[
+                        idx_start : max_idx + 1
+                    ],
+                    dtype=float,
+                )
                 elcbo = lnZ_iter - safe_sd * lnZsd_iter
-                idx_best = idx_start + np.argmax(elcbo)
+                # The best ELCBO skips NaN, as MATLAB's `max` does.
+                if np.all(np.isnan(elcbo)):
+                    idx_best = max_idx
+                else:
+                    idx_best = idx_start + np.nanargmax(elcbo)
 
         # Return best variational posterior, its ELBO and SD. The
         # stability flag goes on the copy: the iteration history describes
@@ -2890,18 +3265,19 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------
@@ -2938,28 +3314,61 @@ class VBMC:
 
         .. note::
 
-          A saved instance holds the target function, and the function that
-          PyVBMC builds from the target and a separate prior, as Python
-          bytecode whenever they cannot be pickled by name (a lambda, a
-          function defined in a script or inside another function). Bytecode
-          belongs to the minor version of Python that wrote the file. Under
-          another minor version the file can be loaded and inspected (the
-          variational posterior, the iteration history and the evaluated
-          points are data), but the run should not be continued or saved
-          again there: both reach that bytecode, which can end the
-          interpreter. To move a result between Python versions, save the
-          variational posterior on its own (``vp.save``); its file holds no
-          bytecode.
+          A saved instance holds Python bytecode: always that of the options
+          whose value is a function (``ns_ent``, ``k_fun_max`` and the like),
+          and that of the target function, and of the function that PyVBMC
+          builds from the target and a separate prior, whenever they cannot
+          be pickled by name (a lambda, a function defined in a script or
+          inside another function). Bytecode belongs to the minor version of
+          Python that wrote the file. Under another minor version the file
+          can be loaded and inspected (the variational posterior, the
+          iteration history and the evaluated points are data), but the run
+          should not be continued or saved again there: both reach that
+          bytecode, which can end the interpreter. To move a result between
+          Python versions, save the variational posterior on its own
+          (``vp.save``); its file holds no bytecode.
 
         Parameters
         ----------
         file : path-like
-            The file name or path to write to.
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
         new_options : dict or None
             A dictionary of options to change when loading the stored VBMC
             instance. Useful, for example, to continue a previous run with a
             larger budget of function evaluations and/or iterations. See the
-            documentation on PyVBMC's options for more details.
+            documentation on PyVBMC's options for more details. Each name is
+            checked against the options PyVBMC declares and each value
+            against the checks construction makes of it.
+            ``uncertainty_handling``, ``gp_mean_fun``, ``integer_vars``,
+            ``warmup`` and their kin are read only while PyVBMC builds a
+            ``VBMC`` object, and the stored state already holds what was
+            built from them. A value of such an option that differs from
+            the one the run stores, read as construction reads it, is
+            refused, since it would take no effect: running with it means
+            constructing a new ``VBMC`` object, and the refusal names the
+            options it applies to. The stored value itself, in any form
+            construction reads alike (``"norminv"`` for a
+            ``bounded_transform`` of ``"probit"``, ``2`` for a ``warmup``
+            of ``True``), is taken and changes nothing, so the options a
+            run was built with can be given back together with, for
+            example, a new budget. ``uncertainty_handling`` and
+            ``specify_target_noise`` are read together, as the uncertainty
+            handling they select, so ``uncertainty_handling=True`` is taken
+            for a run built with ``specify_target_noise=True`` and
+            ``uncertainty_handling`` left empty. A run saved by release
+            1.0.4 can store an ``integer_vars``, ``uncertainty_handling``
+            or ``specify_target_noise`` in a form that construction refuses
+            or reads otherwise, such as ``uncertainty_handling=[1]``; the
+            loaded run holds the form that states what the run was made
+            with (``True`` for ``[1]``), which is the one to give back. A
+            new ``ns_gp_max`` also decides, as at construction, whether the
+            GP fits sample their hyperparameters (0 turns the sampling
+            off), unless the sampling has already stopped in the stable
+            regime. An option that has no effect in PyVBMC, or a
+            ``noise_size`` for a target that returns its own noise
+            estimates, is taken with the warning that construction gives
+            for it.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -2984,8 +3393,21 @@ class VBMC:
         Raises
         ------
         ValueError
-            If the specified ``iteration`` is less than zero or larger than the
-            last stored iteration.
+            If the specified ``iteration`` is less than zero or larger than
+            the last stored iteration; if a value given in ``new_options``
+            is one that construction refuses; if the run stores a value that
+            the checks of the option values, which construction and
+            ``load`` share, refuse (a stored ``integer_vars``,
+            ``uncertainty_handling`` or ``specify_target_noise`` that
+            construction would refuse takes instead the form that states
+            what the run was made with, and a stored ``f_vals`` is not
+            checked); or if ``new_options`` gives an option that only
+            construction reads a value other than the stored one.
+        NotImplementedError
+            If the options select a feature of MATLAB VBMC that is not ported
+            (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than
+            ``"slicesample"``, an acquisition function that asks for the MCMC
+            step of the importance sampler).
         OSError
             If the file cannot be found, or cannot be opened for other reasons.
         """
@@ -3051,6 +3473,20 @@ class VBMC:
                     ]
             vbmc._ensure_gp_sampling_history()
 
+        # A run without warm-up ends it before its first iteration, at the
+        # index -1 of ``last_warmup``. Earlier releases stored 0 there,
+        # MATLAB's value in its count from 1, which no other run stores,
+        # since warm-up ends at iteration 1 at the earliest. A continued run
+        # reads the live state, and a finished one the last recorded state.
+        states = [vbmc.optim_state]
+        if hasattr(vbmc, "iteration_history"):
+            recorded_states = vbmc.iteration_history["optim_state"]
+            if recorded_states is not None and len(recorded_states) > 0:
+                states.append(recorded_states[-1])
+        for state in states:
+            if state is not None and state.get("last_warmup") == 0:
+                state["last_warmup"] = -1
+
         if "performance_calibration" not in vbmc.options:
             # A legacy run used the historical constants and must not adopt
             # settings from the machine on which it happens to be loaded.
@@ -3059,6 +3495,76 @@ class VBMC:
             )
         if "show_tips" not in vbmc.options:
             vbmc.options.__setitem__("show_tips", True, force=True)
+        if "tol_elcbo_boost" not in vbmc.options:
+            # A run saved before the final boost had its guard was made with
+            # the unguarded boost, which None selects.
+            vbmc.options.__setitem__("tol_elcbo_boost", None, force=True)
+        if (
+            vbmc.D == 1
+            and vbmc.options.get("search_optimizer") == "Nelder-Mead"
+        ):
+            # Release 1.0.4 wrote this value into the options of every
+            # one-dimensional run, whether or not the caller asked for it,
+            # and the value has no effect there: a problem of one dimension
+            # is searched by a bounded scalar method. The stored value
+            # stands for the default such a run was made with.
+            vbmc.options.__setitem__("search_optimizer", "cmaes", force=True)
+        # Release 1.0.4 read this option through ``integer_vars != 0``, so a
+        # run it saved can store a form that is refused when it is given,
+        # such as one zero or one per variable, which reads both as a mask
+        # and as a list of indices, or a form that is read otherwise, such as
+        # a list of indices, which 1.0.4 took for every variable. The run's
+        # state holds the mask the run was made with, and the option takes
+        # it wherever its reading differs; a run built by the current code
+        # stores a mask equal to the reading of its option.
+        mask = vbmc.optim_state.get("integer_vars")
+        try:
+            reading = vbmc.options.integer_vars_mask(vbmc.D)
+        except ValueError:
+            if mask is None:
+                raise
+            reading = None
+        if mask is not None and (
+            reading is None or not np.array_equal(reading, mask)
+        ):
+            vbmc.options.__setitem__(
+                "integer_vars", np.asarray(mask, dtype=bool), force=True
+            )
+        # Release 1.0.4 read ``specify_target_noise`` by its truth, and it
+        # turned the noise handling on for any ``uncertainty_handling`` of
+        # nonzero length, such as ``[1]``, which it did not read when
+        # ``specify_target_noise`` was on. A run it saved can store forms
+        # that are refused when they are given, or a pair that is, such as
+        # ``uncertainty_handling=False`` with ``specify_target_noise`` on.
+        # The run's state holds the uncertainty handling level the run was
+        # made with, and each of the two options takes the form that states
+        # it wherever its reading differs; a run built by the current code
+        # stores options that read as its level.
+        level = vbmc.optim_state.get("uncertainty_handling_level")
+        if level is not None:
+            noisy = bool(level > 0)
+            target_noise = bool(level == 2)
+            if (
+                _stated_boolean(vbmc.options.get("specify_target_noise"))
+                is not target_noise
+            ):
+                vbmc.options.__setitem__(
+                    "specify_target_noise", target_noise, force=True
+                )
+            try:
+                requested = _uncertainty_handling_flag(
+                    vbmc.options.get("uncertainty_handling")
+                )
+                # An empty value follows ``specify_target_noise``.
+                states_level = requested is noisy or (
+                    requested is None and noisy is target_noise
+                )
+            except ValueError:
+                states_level = False
+            if not states_level:
+                vbmc.options.__setitem__(
+                    "uncertainty_handling", noisy, force=True
+                )
 
         calibration_override = None
         has_calibration_override = (
@@ -3068,23 +3574,45 @@ class VBMC:
         if has_calibration_override:
             calibration_override = new_options["performance_calibration"]
 
+        # The values the run stores for the options that only construction
+        # reads, which a value given for one of them is weighed against.
+        stored_construction_values = {}
+        if new_options is not None:
+            stored_construction_values = {
+                name: vbmc.options[name]
+                for name in _CONSTRUCTION_ONLY_OPTIONS
+                if name in new_options and name in vbmc.options
+            }
+
         # Update with new options (e.g. higher number of max iterations)
         if new_options is not None:
             vbmc.options.validate_supplied_option_names(new_options)
             vbmc.options.is_initialized = False
             vbmc.options.update(new_options)
+            # The names join the options the user set, as they do when
+            # given to construction.
+            vbmc.options["useroptions"].update(new_options.keys())
             vbmc.options.is_initialized = True
 
         if "vectorized_target" not in vbmc.options:
             vbmc.options.__setitem__("vectorized_target", False, force=True)
-        vbmc._validate_vectorized_target_option()
-        vbmc._validate_show_tips_option()
-        vbmc._validate_performance_calibration_option(
-            vbmc.options.get("performance_calibration")
-        )
-        vbmc._validate_final_boost_tolerance(
-            vbmc.options.get("tol_elcbo_boost")
-        )
+        # The limits on iterations and evaluations are what a continued run
+        # is most often given, and they are checked as construction checks
+        # them. The value checks come before the names are weighed below,
+        # so that a value no run can use is reported as such whichever
+        # option carries it.
+        vbmc.options.validate_run_limits()
+        vbmc._validate_option_values()
+        if new_options is not None:
+            vbmc._refuse_construction_only_options(
+                new_options, stored_construction_values
+            )
+            # An option without effect among them is named as such, as
+            # construction names it.
+            vbmc.options._warn_inert_options(
+                SHIPPED_OPTIONS_PATHS, names=new_options.keys()
+            )
+            vbmc.options._warn_ignored_noise_size(names=new_options.keys())
         if not hasattr(vbmc, "initialization_cost"):
             vbmc.initialization_cost = 0
         if not hasattr(vbmc, "_budget_active"):
@@ -3097,9 +3625,17 @@ class VBMC:
             vbmc.precomputed_location_count = 0
         if not hasattr(vbmc, "x0_orig"):
             # Instances saved without the starting points in the caller's
-            # coordinates: the map of the restored iteration is the best
-            # available inverse of the transformed copy they do carry.
-            vbmc.x0_orig = vbmc.parameter_transformer.inverse(vbmc.x0)
+            # coordinates carry the transformed copy that construction made,
+            # with the map the run started with. The record of the first
+            # iteration holds that map, since the inference space is never
+            # warped before the second one; an instance without a history
+            # holds it itself.
+            first_map = vbmc.parameter_transformer
+            if hasattr(vbmc, "iteration_history"):
+                recorded_vps = vbmc.iteration_history["vp"]
+                if recorded_vps is not None and len(recorded_vps) > 0:
+                    first_map = recorded_vps[0].parameter_transformer
+            vbmc.x0_orig = first_map.inverse(vbmc.x0)
         vbmc._configured_max_fun_evals = vbmc.options.get("max_fun_evals")
         vbmc._effective_max_fun_evals = (
             vbmc._configured_max_fun_evals - vbmc.initialization_cost
@@ -3114,6 +3650,8 @@ class VBMC:
         # the schedules of the algorithm read it. It describes the budget of
         # the continued run, not the one the file was saved with.
         vbmc.optim_state["max_fun_evals"] = vbmc._effective_max_fun_evals
+        if new_options is not None and "ns_gp_max" in new_options:
+            vbmc._follow_ns_gp_max()
         if vbmc._budget_active:
             vbmc.optim_state[
                 "max_fun_evals_total"
@@ -3234,7 +3772,7 @@ class VBMC:
             self.rng.bit_generator.state = get_rng().bit_generator.state
             np.random.set_state(random_state)
             self.random_state = self._get_random_state()
-            logging.getLogger("VBMC").warning(
+            get_logger("VBMC").warning(
                 "This file was saved before VBMC had its own random "
                 "generator: only NumPy's global random state was stored. "
                 "Restored it and derived a fresh generator from it; the "
@@ -3298,7 +3836,7 @@ class VBMC:
         except PackageNotFoundError:
             # package is not installed
             __version__ = None
-            logger = logging.getLogger("VBMC")
+            logger = get_logger("VBMC")
             logger.warning("Cannot read version number from package metadata.")
 
         output["version"] = __version__
@@ -3400,7 +3938,7 @@ class VBMC:
             The main logging interface.
         """
         # set up VBMC logger
-        logger = logging.getLogger("VBMC" + substring)
+        logger = get_logger("VBMC" + substring)
         logger.setLevel(logging.INFO)
         if self.options.get("display") == "off":
             logger.setLevel(logging.WARN)
@@ -3408,7 +3946,9 @@ class VBMC:
             logger.setLevel(logging.INFO)
         elif self.options.get("display") == "full":
             logger.setLevel(logging.DEBUG)
-        # Add a special logger for sending messages only to the default stream:
+        # Add a special logger for sending messages only to the default stream
+        # (it writes through the output handler of its parent, "VBMC"):
+        get_logger("VBMC")
         logger.stream_only = logging.getLogger("VBMC.stream_only")
 
         # Options and special handling for writing to a file:
@@ -3435,28 +3975,16 @@ class VBMC:
                 ):
                     logger.removeHandler(handler)
 
-        if self.options.get("log_file_name") and self.options.get(
-            "log_file_level"
-        ):
-            file_handler = logging.FileHandler(
-                filename=self.options["log_file_name"], mode=log_file_mode
+        # The log file is written whenever it is named, at the level that
+        # log_file_level gives, logging.NOTSET included.
+        if log_file_name:
+            log_file_level = _log_file_level(
+                self.options.get("log_file_level", logging.INFO)
             )
-
-            # Set file logger level according to string or logging level:
-            log_file_level = self.options.get("log_file_level", logging.INFO)
-            if log_file_level == "off":
-                file_handler.setLevel(logging.WARN)
-            elif log_file_level == "iter":
-                file_handler.setLevel(logging.INFO)
-            elif log_file_level == "full":
-                file_handler.setLevel(logging.DEBUG)
-            elif log_file_level in [0, 10, 20, 30, 40, 50]:
-                file_handler.setLevel(log_file_level)
-            else:
-                raise ValueError(
-                    "Log file logging level is not a recognized "
-                    "string or logging level."
-                )
+            file_handler = logging.FileHandler(
+                filename=log_file_name, mode=log_file_mode
+            )
+            file_handler.setLevel(log_file_level)
 
             # Add a filter to ignore messages sent to logger.stream_only:
             def log_file_filter(record):
@@ -3481,6 +4009,9 @@ class VBMC:
                 raise ValueError(
                     f"Dimension of `prior` ({prior.D}) does not match dimension of model ({self.D})."
                 )
+            _check_prior_covers_bounds(
+                prior, self.lower_bounds, self.upper_bounds
+            )
         if prior is not None and prior.log_pdf is not None:
             # Combine log-prior and log-likelihood:
             log_prior = prior.log_pdf
@@ -3550,6 +4081,36 @@ class VBMC:
             log_joint = log_density
         return log_joint, log_likelihood, prior
 
+    def _validate_option_values(self):
+        """Check the options whose values are checked one by one.
+
+        Construction calls it once every source of options has been read,
+        and ``load`` once the options given to it are in place, so that a
+        value is refused where it is given on either route.
+        """
+        self._validate_vectorized_target_option()
+        self._validate_show_tips_option()
+        self._validate_log_file_level_option()
+        self._validate_noise_shaping_option()
+        self._validate_gp_mean_fun_option()
+        self._validate_integer_vars_option()
+        self._validate_gp_hyp_sampler_option()
+        self._validate_search_acq_fcn_option()
+        self._validate_search_optimizer_option()
+        self._validate_acq_hedge_option()
+        self._validate_search_fraction_options()
+        self._validate_warp_cov_reg_option()
+        self._validate_hpd_frac_option()
+        self._validate_noise_size_option()
+        self._validate_gp_sample_thin_option()
+        self._validate_mcmc_samples_option()
+        self._validate_performance_calibration_option(
+            self.options.get("performance_calibration")
+        )
+        self._validate_final_boost_tolerance(
+            self.options.get("tol_elcbo_boost")
+        )
+
     def _validate_vectorized_target_option(self):
         """Validate the opt-in target batching mode."""
         value = self.options.get("vectorized_target", False)
@@ -3567,6 +4128,11 @@ class VBMC:
         if not isinstance(value, (bool, np.bool_)):
             raise ValueError("The option 'show_tips' must be boolean.")
 
+    def _validate_log_file_level_option(self):
+        """Check the level of the log file, whether or not a log file is
+        named: ``_log_file_level`` says which values it takes."""
+        _log_file_level(self.options.get("log_file_level", logging.INFO))
+
     def _validate_noise_shaping_option(self):
         """Reject the half-configured noise-shaping mode."""
         if self.options.get("noise_shaping", False):
@@ -3577,8 +4143,94 @@ class VBMC:
                 "extremely low-density regions) is not ported, so turning "
                 "the option on would only replace the GP noise function "
                 "and disable the rank-one GP update, a configuration of "
-                "neither toolbox."
+                "neither toolbox. A saved run that carries the value is "
+                "continued with "
+                "VBMC.load(file, new_options={'noise_shaping': False})."
             )
+
+    def _refuse_construction_only_options(self, new_options, stored):
+        """Refuse a new value of an option that only construction reads.
+
+        Called by ``load`` with the options it was given, once they are in
+        place, and with the values the run stored before, by name. A value
+        that states what the stored one states, read as construction reads
+        the option, is taken, and the stored value is put back, so that the
+        options a run was built with can be given back without changing
+        anything. Construction reads ``uncertainty_handling`` and
+        ``specify_target_noise`` together, as the uncertainty handling level
+        they select, so a value given for either is also taken when the
+        pair it forms with the value given for the other, or with the
+        stored one, selects the level of the stored pair. Any other value
+        of such an option is refused.
+        """
+        given_pair = {
+            name: new_options[name]
+            for name in _UNCERTAINTY_HANDLING_OPTIONS
+            if name in new_options
+        }
+        same_level = False
+        if given_pair and all(name in stored for name in given_pair):
+            # The option of the pair that is not given holds its stored
+            # value in the options.
+            stored_pair = {
+                name: stored.get(name, self.options.get(name))
+                for name in _UNCERTAINTY_HANDLING_OPTIONS
+            }
+            same_level = _states_the_stored_uncertainty_handling(
+                given_pair, stored_pair
+            )
+        refused = []
+        for name in _CONSTRUCTION_ONLY_OPTIONS:
+            if name not in new_options:
+                continue
+            if name in stored and (
+                (name in given_pair and same_level)
+                or _states_the_stored_value(
+                    name, new_options[name], stored[name], self.D
+                )
+            ):
+                self.options.__setitem__(name, stored[name], force=True)
+            else:
+                refused.append(name)
+        if not refused:
+            return
+        listed = ", ".join(repr(name) for name in refused)
+        if len(refused) == 1:
+            subject = f"the option {listed}"
+        else:
+            subject = f"the options {listed}"
+        raise ValueError(
+            f"VBMC.load cannot change {subject}. PyVBMC reads such an "
+            "option only while it builds a VBMC object, and a saved run "
+            "carries the state that was built from it, which load "
+            "restores as it stands, so a value given here would be "
+            "stored and never take effect. To run with another value, "
+            "construct a new VBMC object and pass the option in its "
+            "options dictionary."
+        )
+
+    def _validate_gp_mean_fun_option(self):
+        """Check the GP mean function against the ones that can be built.
+
+        The GP backend provides three; MATLAB VBMC names nine more.
+        """
+        value = self.options.get("gp_mean_fun", "negquad")
+        if value not in ("zero", "const", "negquad"):
+            raise ValueError(
+                "vbmc:UnknownGPmean:Unknown/unsupported GP mean function "
+                f"{value!r}. Supported mean functions "
+                "are 'zero', 'const' and 'negquad'."
+            )
+
+    def _validate_integer_vars_option(self):
+        """Check the form of the option that names the integer variables.
+
+        Reading it as a mask is the check; the mask itself is built again
+        where it is needed. That the hard bounds of an integer variable sit
+        at half-integers is checked in ``_init_optim_state``, which has the
+        bounds.
+        """
+        self.options.integer_vars_mask(self.D)
 
     def _validate_gp_hyp_sampler_option(self):
         """Reject the GP hyperparameter samplers that are not ported."""
@@ -3591,6 +4243,223 @@ class VBMC:
                 "VBMC (npv, mala, slicelite, splitsample, covsample and "
                 "laplace) are not ported."
             )
+
+    def _validate_search_acq_fcn_option(self):
+        """Check the form of ``search_acq_fcn``, and reject an acquisition
+        that asks for the unported MCMC step of the importance sampler."""
+        search_acq_fcn = self.options.get("search_acq_fcn")
+        if (
+            not isinstance(search_acq_fcn, (list, tuple))
+            or len(search_acq_fcn) == 0
+            or not all(
+                isinstance(acq_fcn, str) or hasattr(acq_fcn, "acq_info")
+                for acq_fcn in search_acq_fcn
+            )
+        ):
+            raise ValueError(
+                "options['search_acq_fcn'] must be a list of acquisition "
+                "functions, each an object of one of the classes of "
+                "pyvbmc.acquisition_functions or a string that names one, "
+                f'such as "AcqFcnLog()"; it is {search_acq_fcn!r}.'
+            )
+        for acq_fcn in search_acq_fcn:
+            acq_info = getattr(acq_fcn, "acq_info", None)
+            if acq_info is None or not acq_info.get(
+                "mcmc_importance_sampling"
+            ):
+                continue
+            raise NotImplementedError(
+                f"The acquisition function {type(acq_fcn).__name__} of "
+                "options['search_acq_fcn'] sets "
+                "acq_info['mcmc_importance_sampling']. The refinement of "
+                "the importance samples by an ensemble sampler that the "
+                "flag asks for (MATLAB VBMC's "
+                "private/activeimportancesampling_vbmc.m, lines 57 to 92) "
+                "is not ported."
+            )
+
+    def _validate_search_optimizer_option(self):
+        """Check the local optimizer of the acquisition search."""
+        value = self.options.get("search_optimizer", "cmaes")
+        if value in ("cmaes", "none"):
+            return
+        message = (
+            "The option 'search_optimizer' must be 'cmaes' or 'none', not "
+            f"{value!r}."
+        )
+        if value == "Nelder-Mead":
+            message += (
+                " The Nelder-Mead search of the acquisition function is "
+                "not available; under 'cmaes' a problem of one variable is "
+                "searched by a bounded scalar method in place of CMA-ES. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'search_optimizer': "
+                "'cmaes'})."
+            )
+        raise ValueError(message)
+
+    def _validate_acq_hedge_option(self):
+        """Reject the portfolio of acquisition functions that is not
+        ported."""
+        if self.options.get("acq_hedge", False):
+            raise NotImplementedError(
+                "The option 'acq_hedge' must be False. The portfolio that "
+                "it names (MATLAB VBMC's private/acqhedge_vbmc.m, which "
+                "spreads the active sampling over several acquisition "
+                "functions and reweighs them by the improvement each "
+                "brings) is not ported, so turning the option on would "
+                "leave the acquisition of each step unchosen. An entry of "
+                "options['search_acq_fcn'] is picked at random instead. A "
+                "saved run that carries the value is continued with "
+                "VBMC.load(file, new_options={'acq_hedge': False})."
+            )
+
+    def _validate_search_fraction_options(self):
+        """Check the fractions that divide the candidates of the
+        acquisition search among their sources."""
+        # The starting cache gives a share of the whole search set, which
+        # stands beside the five fractions and outside their sum. A negative
+        # share would count the rows to take from the end of the cache.
+        cache_frac = self.options.get("cache_frac", 0.0)
+        if not isinstance(cache_frac, Real) or not 0 <= cache_frac <= 1:
+            raise ValueError(
+                "options['cache_frac'], the share of the candidates of the "
+                "acquisition search that the starting cache gives, must be "
+                f"a number in [0, 1], not {cache_frac!r}. A saved run that "
+                "carries the value is continued with "
+                "VBMC.load(file, new_options={'cache_frac': 0.5})."
+            )
+        fractions = {
+            name: self.options.get(name, 0.0)
+            for name in (
+                "search_cache_frac",
+                "heavy_tail_search_frac",
+                "mvn_search_frac",
+                "hpd_search_frac",
+                "box_search_frac",
+            )
+        }
+        listed = ", ".join(
+            f"{name} = {value!r}" for name, value in fractions.items()
+        )
+        from_a_saved_run = (
+            " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'search_cache_frac': 0.25}) or "
+            "the like."
+        )
+        if not all(isinstance(value, Real) for value in fractions.values()):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each be a "
+                f"number in [0, 1]: {listed}." + from_a_saved_run
+            )
+        total = sum(fractions.values())
+        if any(not 0 <= value <= 1 for value in fractions.values()) or (
+            total > 1
+        ):
+            raise ValueError(
+                "The options that divide the candidates of the "
+                "acquisition search among their sources must each lie in "
+                f"[0, 1] and must sum to at most 1: {listed}, summing to "
+                f"{total!r}. The share the fractions leave is drawn from "
+                "the variational posterior." + from_a_saved_run
+            )
+
+    def _validate_warp_cov_reg_option(self):
+        """Check the weight of the regularization of the covariance of the
+        warp towards its diagonal.
+
+        A number outside ``[0, 1]`` passes: the warp clamps the weight into
+        the interval. What a function returns is checked at the warp, where
+        the number of training points it is given is known.
+        """
+        value = self.options.get("warp_cov_reg", 0)
+        if callable(value) or _is_finite_real_number(value):
+            return
+        raise ValueError(
+            _WARP_COV_REG_REFUSAL.format(value)
+            + " A saved run that carries such a value is continued with "
+            "VBMC.load(file, new_options={'warp_cov_reg': 0})."
+        )
+
+    def _validate_hpd_frac_option(self):
+        """Check the fraction of the training inputs from which the bounds
+        of the GP hyperparameters are set.
+
+        The fit takes the points of highest density, `hpd_frac` of the
+        training inputs rounded as MATLAB rounds
+        (`misc/gethpd_vbmc.m:10`), and sets the bounds from their spread,
+        which a single point does not have: a value that leaves fewer than
+        two points of the initial design makes the first fit fail.
+        """
+        value = self.options.get("hpd_frac")
+        fun_eval_start = self.options.get("fun_eval_start")
+        if (
+            _is_finite_real_number(value)
+            and 0 < value <= 1
+            and round_half_away_from_zero(value * fun_eval_start) >= 2
+        ):
+            return
+        raise ValueError(
+            "The option 'hpd_frac' must be a fraction in (0, 1] that leaves "
+            "at least two of the fun_eval_start = "
+            f"{fun_eval_start} points of the initial design, from which the "
+            "bounds of the GP hyperparameters are set; it is "
+            f"{value!r}. A saved run that carries such a value is continued "
+            "with VBMC.load(file, new_options={'hpd_frac': 0.8})."
+        )
+
+    def _validate_noise_size_option(self):
+        """Check the base observation noise of the GP, whatever the
+        uncertainty level: ``_noise_size_reading`` says which values it
+        takes, and the GP fit reads the option through it."""
+        _noise_size_reading(self.options.get("noise_size"))
+
+    def _validate_gp_sample_thin_option(self):
+        """Check the thinning of the GP hyperparameter samples.
+
+        The GP fit keeps one sample in ``gp_sample_thin``: a whole number
+        greater than zero, given as a Python or NumPy integer or
+        floating-point number; a boolean and an array, a 0-d one included,
+        are refused. The check does not depend on ``ns_gp_max``: the fit
+        checks the value whether or not it samples, and ``load`` can give a
+        positive ``ns_gp_max`` to a run built without sampling.
+        """
+        value = self.options.get("gp_sample_thin")
+        if (
+            isinstance(value, Real)
+            and _is_finite_real_number(value)
+            and value >= 1
+            and value == math.floor(value)
+        ):
+            return
+        raise ValueError(
+            "The option gp_sample_thin must be a whole number greater than "
+            "zero, of an integer or a floating-point type (not a boolean); "
+            f"it is {value!r}. A saved run that carries such a value is "
+            "continued with VBMC.load(file, new_options="
+            "{'gp_sample_thin': 5})."
+        )
+
+    def _validate_mcmc_samples_option(self):
+        """Check the number of importance samples of the noisy acquisitions,
+        ``active_importance_sampling_mcmc_samples``.
+
+        A number has to be finite, as both branches of
+        ``active_importance_sampling`` require of the count they round up.
+        What a function returns is checked there, where the number of
+        components and of variables it is given are known.
+        """
+        value = self.options.get("active_importance_sampling_mcmc_samples")
+        if callable(value) or _is_finite_real_number(value):
+            return
+        raise ValueError(
+            "The option active_importance_sampling_mcmc_samples must be "
+            + _MCMC_SAMPLES_FORMS
+            + f"; it is {value!r}. A saved run that carries such a value is "
+            "continued with VBMC.load(file, new_options="
+            "{'active_importance_sampling_mcmc_samples': 100})."
+        )
 
     def _ensure_runtime_tip_state(self):
         """Migrate the first-start flag from VBMC saves without runtime tips."""
@@ -3695,10 +4564,9 @@ user options = {str(self.options)}""",
                 "plausible_lower_bounds",
                 "plausible_upper_bounds",
                 "log_joint",
-                "log_prior",
-                "sample_prior",
+                "prior",
                 "vp",
-                "K",
+                "vp.K",
                 "gp",
                 "parameter_transformer",
                 "logger",

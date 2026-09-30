@@ -227,7 +227,7 @@ def test_vbmc_uniform(return_results=False):
     mu_bar = 0.5 * np.ones((1, D))
     f = lambda x: 0
 
-    options = {"search_optimizer": "Nelder-Mead"}
+    options = {}
     err_1, err_2 = run_optim_block(
         f,
         x0,
@@ -527,7 +527,7 @@ def test_optimize_results(mocker):
 
 
 def _test_optimize_reproducibility():
-    # 1D case with Nelder-Mead optimizer
+    # 1D case, where the acquisition is searched by a bounded scalar method
     result = {"err_1": [], "err_2": []}
     for i in range(2):
         np.random.seed(42)

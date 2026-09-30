@@ -502,6 +502,46 @@ def test_get_gp_training_options_opts_N():
     assert res4["opts_N"] == 2
 
 
+@pytest.mark.parametrize(
+    "n_eff",
+    [np.int64(20), 20, np.int64(26), np.int64(15)],
+    ids=["at-the-start", "at-the-start-int", "past-it", "short-of-it"],
+)
+def test_a_schedule_without_span_gives_no_space_filling_points(n_eff):
+    """An evaluation budget equal to the initial design, as ``D = 10`` with
+    ``max_fun_evals = 20`` gives, leaves the schedule of the space-filling
+    points of the hyperparameter fit no span to run over. MATLAB divides by
+    zero there (``misc/get_GPTrainOptions.m:98-100``): the count of the
+    first fit equals ``fun_eval_start``, 0/0 is NaN, and ``max(round(NaN),
+    0)`` is 0, MATLAB's ``max`` ignoring NaN; a count past it gives an
+    infinite ``x`` at which the terms of the cubic cancel, NaN again. A
+    count short of it, which the trimming of the warm-up can leave, takes
+    no space-filling points either."""
+    D = 10
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        {"max_fun_evals": 20},
+    )
+    assert vbmc.options["fun_eval_start"] == vbmc.options["max_fun_evals"]
+    vbmc.optim_state["n_eff"] = n_eff
+    vbmc.optim_state["iter"] = 0
+
+    gp_train = _get_gp_training_options(
+        vbmc.optim_state,
+        vbmc.iteration_history,
+        vbmc.options,
+        {"run_cov": None},
+        8,
+    )
+
+    assert gp_train["init_N"] == 0
+
+
 def test_gp_hyp():
     D = 3
     f = lambda x: np.sum(x + 2, axis=1)

@@ -8,6 +8,39 @@ porting log and the commit messages for recorded decisions. Its check
 scripts ran in the session scratchpad and are not retained. The text below
 is its final message, unedited.
 
+Corrections by the orchestrator, from the independent check of the wave-1
+pass (2026-09-22; `wave1.md`, which also records the disposition of every
+finding below, since this ledger has no column for it):
+
+- The revision read is `cb2d513`: `pyvbmc/` is the same there as at
+  `6c151cb`, and every Python citation below resolves at it.
+- **P2 F8 = M F3.** The verdict and "fires on noisy targets" do not hold for
+  noisy targets, and the evidence's "MATLAB's rank-1 path and its full
+  re-update agree" rests on a path MATLAB never takes there:
+  `gplite/gplite_post.m:76-79` sets `update1 = false` whenever `s2` is
+  given, so on a noisy target MATLAB recomputes the whole posterior, as
+  PyVBMC's `and` did. The two differed only on a noiseless repeat. Item 3 of
+  "Not mentioned by either report" recommends the rank-one update for a
+  first noisy observation with its variance; `510a493` made that change,
+  which takes PyVBMC away from MATLAB, and the PI ruled in wave 4 that it
+  stays (`wave4.md`, row W4-11; `../matlab_side_defects.md`, entry 23).
+- **P2 F9 and "M Sheet notes".** The correction of M's cause for the
+  one-dimensional override does not hold. The message of `4949c82` includes
+  "fix: D=1 is not supported by cmaes.", and `cma` 4.4.4 warns at
+  construction that optimization in one dimension is not supported. With the
+  bounds that active sampling passes, `cma.fmin` raises `ValueError` at
+  `D = 1` once the step size outgrows a third of the bound range (10 of 50
+  seeded runs on a flat objective, 2 of 60 searches on stored
+  one-dimensional acquisition states); the reproduction below passed no
+  bounds.
+- **P2 F10.** "No effect at defaults" holds at the noiseless defaults only:
+  the noisy defaults turn on the GP refit inside the active-sampling loop,
+  which reads the count. P2's statement that `optimize_vp` reads `n_eff` is
+  wrong; in `variational_optimization.py` only `update_K` does.
+- **P2 minor observations.** The ledger lists eight, not seven.
+- **M Sheet notes.** `shared/msmoothboxrnd.m:57,63` and `:69` are `:59`,
+  `:66` and `:72`.
+
 ---
 
 ## Verdict table

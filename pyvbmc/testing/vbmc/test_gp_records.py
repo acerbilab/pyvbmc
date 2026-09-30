@@ -21,11 +21,13 @@ BASE_PATH = Path(__file__).parent
 FIXTURES = Path(__file__).parents[1] / "oracles" / "fixtures"
 
 # One state with several hyperparameter samples, one with a single sample,
-# and one with input-dependent noise (``s2``).
+# one with input-dependent noise (``s2``), and one whose ``s2`` is scaled by
+# a fitted multiplier (uncertainty level 1).
 SNAPSHOTS = [
     "normal_D2_warmup",
     "normal_D2_singlesample",
     "rosenbrock_D2_noise1_viqr",
+    "rosenbrock_D2_noise3_level1",
 ]
 
 POSTERIOR_ARRAYS = ("hyp", "alpha", "sW", "L")

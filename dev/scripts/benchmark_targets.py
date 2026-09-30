@@ -55,10 +55,11 @@ trapezoidal prior with pivots at the plausible bounds:
                 vectorized over rows, about 7 ms per 100 rows
 
 Their data are the plain archives under ``data/`` (layout and provenance in
-``data/README.md``), and their ground truths the files ``data/truths/``
-holds once ``make_benchmark_truths.py`` has run: until then ``ln_Z``, the
-moments and the sampler stay ``None`` and the metrics that need them are
-NaN. Both likelihoods are ports of the lab's benchflow implementations and
+``data/README.md``), and their ground truths the tracked files under
+``data/truths/``, which ``make_benchmark_truths.py`` writes. A target
+without its files (a new target before the generator has run) has no truth:
+``ln_Z``, the moments and the sampler stay ``None`` and the metrics that
+need them are NaN. Both likelihoods are ports of the lab's benchflow implementations and
 are pinned in ``--check`` to values computed by those implementations (for
 timing, by the original MATLAB code).
 
@@ -74,7 +75,11 @@ the papers' prior rule and therefore scale with the target's marginal SD,
 as the papers' do; they do not use the realized posterior otherwise.
 
 Any target can be made noisy with ``noise_sd``: the callable then returns
-``(y + sd * eps, sd)`` and ``options["specify_target_noise"] = True``.
+``(y + sd * eps, sd)`` and ``options["specify_target_noise"] = True``
+(uncertainty level 2). With ``provide_noise=False`` it returns
+``y + sd * eps`` alone and ``options["uncertainty_handling"] = True``
+instead, so that VBMC infers the noise (level 1); the label of such a
+config carries ``_level1`` after its noise level.
 
 Command line::
 
@@ -127,8 +132,9 @@ class Problem:
 
     ``log_density_vec`` maps an ``(n, D)`` array to ``(n,)`` log densities;
     ``fun`` is the scalar callable VBMC receives (a thin wrapper, adding
-    noise when ``noise_sd`` is set). ``sampler(n, rng)`` draws exact samples
-    when the generative process is known; ``reference_logpdf`` is an
+    noise when ``noise_sd`` is set and returning its SD beside the value
+    unless ``noise_provided`` is false). ``sampler(n, rng)`` draws exact
+    samples when the generative process is known; ``reference_logpdf`` is an
     independent implementation used by ``--check``. Truth entries are
     ``None`` when unknown. What VBMC receives: ``fun``, the bounds, a
     plausible box that follows the papers' prior rule (it scales with the
@@ -165,18 +171,22 @@ class Problem:
     sampler_n_eff: Optional[int] = None
     options: dict = dataclasses.field(default_factory=dict)
     noise_sd: Optional[float] = None
+    noise_provided: bool = True
     notes: str = ""
     _noise_rng: Optional[np.random.Generator] = dataclasses.field(
         default=None, repr=False
     )
 
     def fun(self, x):
-        """Scalar log density (or ``(y, sd)`` when noisy) at one point."""
+        """Scalar log density (or ``(y, sd)`` when noisy and the noise is
+        provided) at one point."""
         x = np.asarray(x, dtype=float).reshape(1, -1)
         y = float(self.log_density_vec(x)[0])
         if self.noise_sd is None:
             return y
         eps = float(self._noise_rng.standard_normal())
+        if not self.noise_provided:
+            return y + self.noise_sd * eps
         return y + self.noise_sd * eps, self.noise_sd
 
     def vbmc_args(self):
@@ -202,12 +212,21 @@ class Config:
     noise_sd: Optional[float] = None
     options: tuple = ()  # tuple of (key, value) pairs so the Config hashes
     tag: str = ""
+    provide_noise: bool = True
+
+    def __post_init__(self):
+        if not self.provide_noise and self.noise_sd is None:
+            raise ValueError(
+                f"{self.name}: provide_noise=False needs noise_sd"
+            )
 
     @property
     def label(self):
         s = f"{self.name}_D{self.D}"
         if self.noise_sd is not None:
             s += f"_noise{self.noise_sd:g}"
+        if not self.provide_noise:
+            s += "_level1"
         if self.tag:
             s += f"_{self.tag}"
         return s
@@ -222,6 +241,7 @@ class Config:
             noise_sd=self.noise_sd,
             seed=seed,
             options=self.options_dict(),
+            provide_noise=self.provide_noise,
         )
 
 
@@ -1634,21 +1654,32 @@ TARGET_NAMES = tuple(_REGISTRY)
 
 
 def make_problem(
-    name, D, noise_sd=None, seed=None, options=None, attach_truth=True
+    name,
+    D,
+    noise_sd=None,
+    seed=None,
+    options=None,
+    attach_truth=True,
+    provide_noise=True,
 ):
     """Build a benchmark ``Problem``.
 
     ``noise_sd`` makes the target noisy (homoskedastic Gaussian noise on the
     log density, returned as the second output; ``specify_target_noise`` is
-    set). ``seed`` seeds only that noise stream, through a spawned
-    ``SeedSequence`` so it is not the same stream as ``VBMC(seed=seed)``;
-    ``None`` means fresh entropy. ``options`` are merged into the problem's
-    VBMC options (caller wins). ``attach_truth=False`` leaves a real-data
-    target's stored truth file unread (the truth generator builds the
-    target it is about to write the truth for).
+    set). ``provide_noise=False`` keeps the noise and drops the second
+    output, setting ``uncertainty_handling`` instead, so that VBMC infers
+    the noise; it needs ``noise_sd``. ``seed`` seeds only that noise
+    stream, through a spawned ``SeedSequence`` so it is not the same stream
+    as ``VBMC(seed=seed)``; ``None`` means fresh entropy. ``options`` are
+    merged into the problem's VBMC options (caller wins).
+    ``attach_truth=False`` leaves a real-data target's stored truth file
+    unread (the truth generator builds the target it is about to write the
+    truth for).
     """
     if name not in _REGISTRY:
         raise ValueError(f"unknown target {name!r}; known: {TARGET_NAMES}")
+    if not provide_noise and noise_sd is None:
+        raise ValueError("provide_noise=False needs noise_sd")
     prob = _REGISTRY[name](int(D))
     if attach_truth and name in REAL_DATA_TARGETS:
         prob = _attach_truth(prob)
@@ -1662,7 +1693,11 @@ def make_problem(
             raise ValueError("noise_sd must be positive")
         prob.noise_sd = float(noise_sd)
         prob._noise_rng = np.random.default_rng(noise_ss)
-        prob.options["specify_target_noise"] = True
+        prob.noise_provided = bool(provide_noise)
+        if provide_noise:
+            prob.options["specify_target_noise"] = True
+        else:
+            prob.options["uncertainty_handling"] = True
     if options:
         prob.options.update(options)
     return prob
@@ -1783,9 +1818,9 @@ SUITES = {
 # The golden suite at PyVBMC's production defaults, the suite for release
 # checks and new experiments by the PI's decision of 2026-09-18 that
 # experiments test what ships. The noiseless entries are the golden ones
-# unchanged (they carry no override, so their golden runs already are
-# production runs and a production reference copies them; this includes
-# the deliberate exhaust regime entry). The noisy entries drop the paper
+# unchanged (they carry no override, so a golden run of one is also a
+# production run; this includes the deliberate exhaust regime entry). The
+# noisy entries drop the paper
 # budget, so the package's own adjustments for a specified-noise target
 # apply: 75 (D + 2) evaluations, a stability count of 90 evaluations, GP
 # and VP updates inside active sampling, VIQR. The golden labels keep the
@@ -1805,6 +1840,13 @@ _PRODUCTION_NOISY = [
 SUITES["production"] = [
     c for c in SUITES["golden"] if c.noise_sd is None
 ] + _PRODUCTION_NOISY
+
+# Configs that only the stage-level oracle fixtures read
+# (`make_oracle_fixtures.py`, which finds them by label): the noisy
+# Rosenbrock at uncertainty level 1, whose target returns the value alone.
+SUITES["oracle"] = [
+    Config("rosenbrock", 2, noise_sd=3.0, provide_noise=False),
+]
 
 
 def suite_configs(suite):
@@ -2246,10 +2288,13 @@ def run_smoke(configs, seed=0, only=None):
         )
         t0 = time.time()
         try:
-            if prob.noisy:
+            if prob.noisy and prob.noise_provided:
                 out = prob.fun(prob.x0)
                 assert isinstance(out, tuple) and len(out) == 2
                 assert np.isfinite(out[0]) and out[1] > 0
+            elif prob.noisy:
+                out = prob.fun(prob.x0)
+                assert isinstance(out, float) and np.isfinite(out)
             vbmc = VBMC(*args, options=options, seed=seed)
             vp, results = vbmc.optimize()
             ok = np.isfinite(results["elbo"])
@@ -2294,9 +2339,7 @@ def main(argv=None):
     ap.add_argument("--list", action="store_true", help="list suites")
     ap.add_argument("--check", action="store_true", help="verify targets")
     ap.add_argument("--smoke", action="store_true", help="2-iteration runs")
-    ap.add_argument(
-        "--suite", default=None, help="smoke|profile|golden|svbmc_pool|all"
-    )
+    ap.add_argument("--suite", default=None, help="|".join([*SUITES, "all"]))
     ap.add_argument(
         "--only",
         default=None,

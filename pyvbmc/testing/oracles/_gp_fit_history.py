@@ -236,7 +236,7 @@ def fit_outputs(result):
         "prediction_mean": mu,
         "prediction_variance": var,
     }
-    for key in ("hyp", "full", "logp", "run_cov"):
+    for key in ("hyp", "full", "run_cov"):
         if hyp_dict.get(key) is not None:
             out[f"hyp_dict_{key}"] = np.asarray(hyp_dict[key])
     return out

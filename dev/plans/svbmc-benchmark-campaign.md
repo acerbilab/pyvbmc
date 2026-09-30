@@ -1,6 +1,9 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **complete**. The design was approved by
+Created 2026-09-13. Status: **complete**. The release gate reruns the
+campaign on fresh pools (decisions 12 and 14); that work is open
+(`TODO.md`, "Final large-scale check before the release"). The design was
+approved by
 the PI on 2026-09-13
 and revised on 2026-09-14 (decisions 7–10); the harness was merged
 into `dev-next` on 2026-09-14 (`647698b`); the pools were generated on
@@ -408,8 +411,11 @@ tree, SHA-256 of every `svbmc/*.py`, Torch, Python, NumPy, SciPy, PyVBMC
 and gpyreg commits), and it is recoverable elsewhere by cloning the
 upstream repository (`acerbilab/S-VBMC`) at `13a78f6` and installing CPU
 Torch 2.14.0 into a `deps/` directory with `pip install --target`; the
-recorded hashes verify the recreation. The stacking harness re-verifies
-the environment before every campaign.
+recorded hashes of the committed content (`files_sha256_committed`) verify
+the recreation on any platform, where `files_sha256` holds those of the
+Windows working tree, whose line endings git converted. The stacking
+harness re-verifies the environment before every campaign that runs the
+original arm.
 
 ### Stacking comparison
 
@@ -1217,6 +1223,22 @@ draft had left open:
     The inputs remain fitted posteriors with their existing statistics;
     this estimator needs no GP or full VBMC object, and the objects
     returned by `VBMC.optimize()` remain unchanged.
+14. **The release gate's pools and stacking (2026-09-25)**: the release
+    pools hold 320 filtered runs per condition (seed caps 350, and 480 for
+    the ring; seeds from 1000, continuing this campaign's range), which
+    gives ten disjoint subsets at `M = 32`. Every `M` is stacked in
+    disjoint subsets: repetition `r` takes the `r`-th block of `M` runs of
+    a permutation drawn for the condition and `M`, with the repetition
+    counts of decision 6 and of the `M` = 3, 5 and 32 runs. Both arms run
+    again at `M` = 2, 4, 8 and 16, since the release pools make new cells,
+    and the integrated arm alone at 3, 5 and 32. Generation, stacking and
+    the analyses of the gate all run on the cluster, through the
+    [Slurm plan](slurm-benchmark-support.md). This supersedes decision 8
+    where it keeps everything that consumes a pool within an overnight
+    laptop run, and decision 12's allocation of about 100 runs per
+    condition. Rejected: stacking the release pools on the laptop, which
+    their size and the rerun of the original arm would stretch well past a
+    night.
 
 ## Risks and rollback
 

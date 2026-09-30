@@ -3,7 +3,7 @@
 ## Package integration
 
 The approved facility is implemented on `dev-machine-calibration` for PyVBMC
-1.5. `pyvbmc.calibrate()` runs a fresh campaign on every explicit call, prints
+1.5, merged into `dev-next` at `46c16b7`. `pyvbmc.calibrate()` runs a fresh campaign on every explicit call, prints
 progress and a summary, and saves a compatible machine/environment profile.
 Normal runs only load cached settings or historical defaults. Profiles remain
 fixed through early posterior use, optimization, whitening, final boost and

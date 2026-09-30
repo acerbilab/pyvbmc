@@ -25,7 +25,7 @@ def convert_to_prior(prior=None, log_prior=None, sample_prior=None, D=None):
         #. `None`, in which case `log_prior` (and optionally `sample_prior`)
            are used to build a user-defined `Prior`.
 
-    sample_prior : callable, optional
+    log_prior : callable, optional
         A function of a single argument `x` which returns the log-density of
         the prior at `x`. Optional, should agree with `prior.log_pdf` if both
         are provided.

@@ -31,7 +31,7 @@ Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but de
      cd ../pyvbmc
      pip install -e ".[dev]"
 
-4. Install Jupyter to view the examples You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
+4. Install Jupyter to view the examples. You can skip this step if you're working from a Conda environment which already has Jupyter, but be aware that if the wrong ``jupyter`` executable is found on your path then import errors may arise. ::
 
      conda install jupyter
 
@@ -44,7 +44,7 @@ Coding conventions
 
 We try to follow common conventions whenever possible. Some useful reading:
 
-- `PEP 8 -- Style Guide for Python Code <https://www.python.org/dev/peps/pep-0008/>`__
+- `PEP 8 -- Style Guide for Python Code <https://peps.python.org/pep-0008/>`__
 - `Code style in The Hitchhiker's Guide to Python <https://docs.python-guide.org/writing/style/>`__
 
 These basic rules should be followed to ensure coherence and to make it easy for third parties to contribute. In the following, we list more detailed conventions. Please read carefully if you are contributing to PyVBMC.
@@ -60,7 +60,7 @@ The code is formatted using `Black <https://pypi.org/project/black/>`__ with a l
 
 After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in ``.pre-commit-config.yaml``. The settings of the hooks are specified in ``pyproject.toml``. You need to restage the file if it gets modified by the hooks.
 
-If you want, you can also check with `ruff <https://beta.ruff.rs/docs/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
+If you want, you can also check with `ruff <https://docs.astral.sh/ruff/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
 
 Docstrings
 ----------
@@ -69,7 +69,7 @@ The docstrings are generated following the `NumPy format <https://numpydoc.readt
 There are add-ons to generate docstring blueprints using IDEs.
 
 - See an example for a correct docstring from NumPy `here <https://numpydoc.readthedocs.io/en/latest/example.html>`__.
-- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <variational_posterior/variational_posterior.py>`.
+- In PyVBMC, the ``VariationalPosterior`` class can be taken as an example of (mostly) correct docstring structure, see :mainbranch:`here <pyvbmc/variational_posterior/variational_posterior.py>`.
 - In particular, see how the single quotes and double quotes are used; the math notation is used; full stops are added at the end of each sentence, etc.
 
 Code documentation
@@ -81,7 +81,7 @@ GitHub workflows automatically build and update the documentation whenever a com
 
 1. From your working branch, render new documentation::
 
-     cd /docsrc  # navigate to documentation source folder
+     cd docsrc  # navigate to documentation source folder
      make github  # build the docs and copy them to ./docs
 
    (If you are using Windows, run ``.\make.bat github`` with ``cmd`` instead.)
@@ -96,36 +96,29 @@ GitHub workflows automatically build and update the documentation whenever a com
 
    (If you are using Windows, run ``.\make.bat clean`` with ``cmd`` instead.)
 
-If any changes have been made the the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
+If any changes have been made to the Jupyter Notebook examples, it is advisable to check that the :mainbranch:`examples <examples>` render correctly on GitHub (make sure to view them from your working branch).
 
 General structure
 .................
 
-For each new class, function, etc. a ``.rst`` file needs to be created in an appropriate folder. The folder names are arbitrary, for now we have ``functions``, ``classes``, etc.
-The ``.rst`` file contains the text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphynx where to compile the documentation, for example::
+Nothing generates the API pages: each new public class or function needs a hand-written ``.rst`` file under ``docsrc/source/api/``, in ``classes``, ``functions``, ``methods`` or ``options``.
+The ``.rst`` file contains text in `reStructuredText format <https://en.wikipedia.org/wiki/ReStructuredText>`__, a lightweight markup language with special commands that tell Sphinx where to compile the documentation: an autodoc directive, which renders the docstrings, and any usage notes, for example::
 
     .. autoclass:: pyvbmc.vbmc.VBMC
       :members:
 
-Refer to existing documentation for an overview of the file structure. So far the documentation includes the following:
-
-- Status of the port (what is missing?);
-- Reference to the respective file of the original :labrepos:`MATLAB <vbmc>` implementation;
-- Known issues (if something is currently suboptimal in PyVBMC);
-- The documentation of the Python code (generated from the docstrings).
-
-For each new file, a link needs to be added manually to the :mainbranch:`index page <docsrc/source/index.rst>`.
+Each new page also needs an entry in the toctree that owns it: ``documentation.rst`` for a headline page, ``api/classes/classes.rst`` or ``api/functions/functions.rst`` otherwise, and the page of its class for a method.
 Please keep the documentation up to date. (Sphinx logs possible issues when compiling the documentation.)
 
 Exceptions
 ----------
 
-Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/library/exceptions.html>`__.
+Please use standard Python exceptions whenever it is sensible. Here is a list of those `exceptions <https://docs.python.org/3/builtins/exceptions.html>`__.
 
 ``git`` commits
 ---------------
 
-Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet is can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
+Commits follow the `conventional commits <https://www.conventionalcommits.org/en/v1.0.0/>`__ style. This makes it easier to collaborate on the project. A cheat sheet can be found `here <https://cheatography.com/albelop/cheat-sheets/conventional-commits/>`__.
 
 Please do not submit pull requests with unfinished code or code which does not pass all tests. Work on feature branches whenever possible and sensible. All PRs must be approved by another developer before being merged to the main branch. `Read this <https://martinfowler.com/bliki/FeatureBranch.html>`__ ::
 

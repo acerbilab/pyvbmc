@@ -1,0 +1,290 @@
+{
+ "cand": {
+  "Xs": "@@npz:cand/Xs"
+ },
+ "gp": {
+  "Ns": 8,
+  "X": "@@npz:gp/X",
+  "cov_fun": 1,
+  "hyp": "@@npz:gp/hyp",
+  "mean_fun": "negquad",
+  "noise_fun": [
+   1,
+   2,
+   0
+  ],
+  "noise_parameters": [
+   1,
+   2,
+   0
+  ],
+  "s2": "@@npz:gp/s2",
+  "y": "@@npz:gp/y"
+ },
+ "logger": {
+  "D": 2,
+  "S": "@@npz:logger/S",
+  "X": "@@npz:logger/X",
+  "X_flag": "@@npz:logger/X_flag",
+  "X_orig": "@@npz:logger/X_orig",
+  "Xn": 103,
+  "cache_count": 0,
+  "cache_size": 500,
+  "fun_eval_time": "@@npz:logger/fun_eval_time",
+  "func_count": 105,
+  "n_evals": "@@npz:logger/n_evals",
+  "noise_flag": true,
+  "total_fun_eval_time": 0.007022857666015625,
+  "uncertainty_handling_level": 1,
+  "y": "@@npz:logger/y",
+  "y_max": 2.8576920510692028,
+  "y_orig": "@@npz:logger/y_orig"
+ },
+ "meta": {
+  "D": 2,
+  "K": 19,
+  "N": 100,
+  "Ns": 8,
+  "best_iter": 27,
+  "cand_train_rows": 100,
+  "config": "rosenbrock_D2_noise3_level1",
+  "generated": "2026-09-24 20:57:54",
+  "git": {
+   "dirty": false,
+   "sha": "7bf916e5"
+  },
+  "iteration": 20,
+  "n_iterations": 28,
+  "noise_sd": 3.0,
+  "note": "uncertainty level 1, the target returning its value alone: the GP noise is a constant plus the recorded noise of each point scaled by a fitted multiplier (noise function [1, 2, 0]); the first iteration whose GP holds a repeated observation, so that the recorded noise differs between points, and a noise SD of 3 keeps the multiplier away from 1, where levels 1 and 2 compute nearly the same numbers; the live training inputs lead the candidate set, as the candidates of a repeated observation",
+  "oracle_seed": 20260904,
+  "pick": "first_repeat",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "problem": "rosenbrock",
+  "problem_seed": 0,
+  "python": "3.12.6",
+  "r_index": 0.3665866854462279,
+  "recipe": "rosenbrock_D2_noise3_level1",
+  "recipe_options": {
+   "max_repeated_observations": 3
+  },
+  "versions": {
+   "gpyreg": "1.3.3",
+   "numpy": "2.5.2",
+   "pyvbmc": "1.0.5.dev1001+g7bf916e5c",
+   "scipy": "1.18.1"
+  }
+ },
+ "optim_state": {
+  "H": 2.249824672406071,
+  "N": 104,
+  "R": 0.3665866854462279,
+  "active_importance_sampling": null,
+  "cache": {
+   "x_orig": "@@npz:optim_state/cache/x_orig",
+   "y_orig": "@@npz:optim_state/cache/y_orig"
+  },
+  "cache_active": false,
+  "data_trim_list": [],
+  "entropy_alpha": 0,
+  "entropy_switch": false,
+  "gp_cov_fun": 1,
+  "gp_length_scale": "@@npz:optim_state/gp_length_scale",
+  "gp_mean_fun": "negquad",
+  "gp_noise_fun": [
+   1,
+   2,
+   0
+  ],
+  "hyp_dict": {
+   "full": "@@npz:optim_state/hyp_dict/full",
+   "hyp": "@@npz:optim_state/hyp_dict/hyp",
+   "run_cov": "@@npz:optim_state/hyp_dict/run_cov",
+   "warp": null
+  },
+  "integer_vars": "@@npz:optim_state/integer_vars",
+  "iter": 20,
+  "iter_list": {
+   "f_sd": [],
+   "f_val": [],
+   "fhyp": [],
+   "u": []
+  },
+  "last_run_avg": 104,
+  "last_successful_warping": 10,
+  "last_warmup": 4,
+  "last_warping": 16,
+  "lb_eps_orig": "@@npz:optim_state/lb_eps_orig",
+  "lb_orig": "@@npz:optim_state/lb_orig",
+  "lb_search": "@@npz:optim_state/lb_search",
+  "lb_tran": "@@npz:optim_state/lb_tran",
+  "lcb_max": -5.638616417653191,
+  "lcb_max_vec": "@@npz:optim_state/lcb_max_vec",
+  "max_fun_evals": 300,
+  "n_eff": 101,
+  "out_warp_delta": [],
+  "plb_orig": "@@npz:optim_state/plb_orig",
+  "plb_tran": "@@npz:optim_state/plb_tran",
+  "pruned": 0,
+  "pub_orig": "@@npz:optim_state/pub_orig",
+  "pub_tran": "@@npz:optim_state/pub_tran",
+  "recompute_var_post": false,
+  "redo_roto_scaling": false,
+  "repeated_observations_streak": 1,
+  "run_cov": "@@npz:optim_state/run_cov",
+  "run_mean": "@@npz:optim_state/run_mean",
+  "search_cache": [],
+  "skip_active_sampling": false,
+  "sn2_hpd": 10.09455594133166,
+  "stop_sampling": 0,
+  "tol_gp_var": 0.0001,
+  "ub_eps_orig": "@@npz:optim_state/ub_eps_orig",
+  "ub_orig": "@@npz:optim_state/ub_orig",
+  "ub_search": "@@npz:optim_state/ub_search",
+  "ub_tran": "@@npz:optim_state/ub_tran",
+  "uncertainty_handling_level": 1,
+  "variance_regularized_acq_fcn": true,
+  "vp_K": 19,
+  "vp_repo": [],
+  "warmup": false,
+  "warmup_stable_count": 0,
+  "warping_count": 3
+ },
+ "options": {
+  "display": "off",
+  "max_repeated_observations": 3,
+  "plot": false,
+  "print_iteration_header": false,
+  "uncertainty_handling": true
+ },
+ "pt": {
+  "D": 2,
+  "R_mat": "@@npz:pt/R_mat",
+  "delta": "@@npz:pt/delta",
+  "lb_orig": "@@npz:pt/lb_orig",
+  "mu": "@@npz:pt/mu",
+  "plb_orig": "@@npz:pt/plb_orig",
+  "pub_orig": "@@npz:pt/pub_orig",
+  "scale": "@@npz:pt/scale",
+  "transform_type": "probit",
+  "type": "@@npz:pt/type",
+  "ub_orig": "@@npz:pt/ub_orig"
+ },
+ "ref": {
+  "acq_AcqFcn": {
+   "acq": "@@npz:ref/acq_AcqFcn/acq"
+  },
+  "acq_AcqFcnIMIQR": {
+   "acq": "@@npz:ref/acq_AcqFcnIMIQR/acq"
+  },
+  "acq_AcqFcnLog": {
+   "acq": "@@npz:ref/acq_AcqFcnLog/acq"
+  },
+  "acq_AcqFcnNoisy": {
+   "acq": "@@npz:ref/acq_AcqFcnNoisy/acq"
+  },
+  "acq_AcqFcnVIQR": {
+   "acq": "@@npz:ref/acq_AcqFcnVIQR/acq"
+  },
+  "acq_AcqFcnVanilla": {
+   "acq": "@@npz:ref/acq_AcqFcnVanilla/acq"
+  },
+  "entlb": {
+   "H": "@@npz:ref/entlb/H",
+   "dH": "@@npz:ref/entlb/dH"
+  },
+  "entmc": {
+   "H": "@@npz:ref/entmc/H",
+   "dH": "@@npz:ref/entmc/dH"
+  },
+  "gp_fit": {
+   "gp_s_N": "@@npz:ref/gp_fit/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit/sn2_hpd"
+  },
+  "gp_fit_history": {
+   "gp_s_N": "@@npz:ref/gp_fit_history/gp_s_N",
+   "hyp": "@@npz:ref/gp_fit_history/hyp",
+   "sn2_hpd": "@@npz:ref/gp_fit_history/sn2_hpd",
+   "widths": "@@npz:ref/gp_fit_history/widths"
+  },
+  "gp_log_joint": {
+   "G": "@@npz:ref/gp_log_joint/G",
+   "G_samples": "@@npz:ref/gp_log_joint/G_samples",
+   "G_var_call": "@@npz:ref/gp_log_joint/G_var_call",
+   "I_sk": "@@npz:ref/gp_log_joint/I_sk",
+   "J_sjk": "@@npz:ref/gp_log_joint/J_sjk",
+   "dG": "@@npz:ref/gp_log_joint/dG",
+   "dG_samples": "@@npz:ref/gp_log_joint/dG_samples",
+   "varG": "@@npz:ref/gp_log_joint/varG",
+   "var_ss": "@@npz:ref/gp_log_joint/var_ss"
+  },
+  "gp_nlZ": {
+   "dlZ": "@@npz:ref/gp_nlZ/dlZ",
+   "dlp": "@@npz:ref/gp_nlZ/dlp",
+   "lZ": "@@npz:ref/gp_nlZ/lZ",
+   "lp": "@@npz:ref/gp_nlZ/lp"
+  },
+  "gp_predict": {
+   "fmu": "@@npz:ref/gp_predict/fmu",
+   "fmu_samples": "@@npz:ref/gp_predict/fmu_samples",
+   "fs2": "@@npz:ref/gp_predict/fs2",
+   "fs2_samples": "@@npz:ref/gp_predict/fs2_samples"
+  },
+  "neg_elcbo": {
+   "F": "@@npz:ref/neg_elcbo/F",
+   "F_detent": "@@npz:ref/neg_elcbo/F_detent",
+   "F_full": "@@npz:ref/neg_elcbo/F_full",
+   "G": "@@npz:ref/neg_elcbo/G",
+   "G_full": "@@npz:ref/neg_elcbo/G_full",
+   "H": "@@npz:ref/neg_elcbo/H",
+   "H_detent": "@@npz:ref/neg_elcbo/H_detent",
+   "H_full": "@@npz:ref/neg_elcbo/H_full",
+   "dF": "@@npz:ref/neg_elcbo/dF",
+   "dF_detent": "@@npz:ref/neg_elcbo/dF_detent",
+   "theta": "@@npz:ref/neg_elcbo/theta",
+   "varF": "@@npz:ref/neg_elcbo/varF",
+   "varG": "@@npz:ref/neg_elcbo/varG",
+   "varG_ss": "@@npz:ref/neg_elcbo/varG_ss",
+   "varH": "@@npz:ref/neg_elcbo/varH"
+  },
+  "transform": {
+   "U": "@@npz:ref/transform/U",
+   "X_back": "@@npz:ref/transform/X_back",
+   "log_abs_det_jacobian": "@@npz:ref/transform/log_abs_det_jacobian"
+  },
+  "vp_pdf": {
+   "dlogpdf": "@@npz:ref/vp_pdf/dlogpdf",
+   "dpdf": "@@npz:ref/vp_pdf/dpdf",
+   "logpdf": "@@npz:ref/vp_pdf/logpdf",
+   "pdf": "@@npz:ref/vp_pdf/pdf",
+   "pdf_orig": "@@npz:ref/vp_pdf/pdf_orig"
+  }
+ },
+ "vp": {
+  "D": 2,
+  "K": 19,
+  "bounds": null,
+  "eta": "@@npz:vp/eta",
+  "lambd": "@@npz:vp/lambd",
+  "mu": "@@npz:vp/mu",
+  "optimize_lambd": true,
+  "optimize_mu": true,
+  "optimize_sigma": true,
+  "optimize_weights": true,
+  "sigma": "@@npz:vp/sigma",
+  "stats": {
+   "I_sk": "@@npz:vp/stats/I_sk",
+   "J_sjk": "@@npz:vp/stats/J_sjk",
+   "e_log_joint": -4.42232990137835,
+   "e_log_joint_sd": 0.4114064538332661,
+   "elbo": -2.172505228972279,
+   "elbo_sd": 0.4114064538332661,
+   "entropy": 2.249824672406071,
+   "entropy_sd": 0.0,
+   "stable": false,
+   "uncertainty_handling_level": 1
+  },
+  "w": "@@npz:vp/w"
+ }
+}

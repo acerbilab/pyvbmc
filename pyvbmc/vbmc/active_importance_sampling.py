@@ -6,6 +6,59 @@ import gpyreg as gpr
 import numpy as np
 from scipy.linalg import solve_triangular
 
+from pyvbmc.whitening.whitening import _is_finite_real_number
+
+# How the active_importance_sampling_mcmc_samples option may be written,
+# named in the errors raised for any other value.
+_MCMC_SAMPLES_FORMS = (
+    "a finite number, or a function of the keywords K, n_vars and D that "
+    "returns one"
+)
+
+
+def _sample_count(options, K, D):
+    """
+    The number of importance samples that the option
+    ``active_importance_sampling_mcmc_samples`` gives, rounded up.
+
+    The option is a number or a function of the keywords ``K`` (the number
+    of components of the variational posterior), ``n_vars`` and ``D`` (both
+    the number of variables), as MATLAB VBMC evaluates a string expression
+    with ``K``, ``nvars`` and ``D`` in scope
+    (``private/activeimportancesampling_vbmc.m:40-45``). Both branches of
+    :func:`active_importance_sampling` read it through here.
+
+    Parameters
+    ----------
+    options : Options
+        The VBMC options.
+    K : int
+        The number of components of the variational posterior.
+    D : int
+        The number of variables.
+
+    Returns
+    -------
+    count : int
+        The number of samples, rounded up.
+
+    Raises
+    ------
+    ValueError
+        When the option is not, or does not return, a finite real number.
+    """
+    count = options.eval(
+        "active_importance_sampling_mcmc_samples",
+        {"K": K, "n_vars": D, "D": D},
+    )
+    if not _is_finite_real_number(count):
+        raise ValueError(
+            "The option active_importance_sampling_mcmc_samples must be "
+            + _MCMC_SAMPLES_FORMS
+            + f"; it gives {count!r} for K = {K} and D = {D}."
+        )
+    return ceil(count)
+
 
 def active_importance_sampling(vp, gp, acq_fcn, options):
     """
@@ -37,10 +90,37 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     active_is : dict
         A dictionary of importance sampling values and bookkeeping.
 
+    Raises
+    ------
+    NotImplementedError
+        If the acquisition function sets
+        ``acq_info["mcmc_importance_sampling"]``.
+    ValueError
+        If the option ``active_importance_sampling_mcmc_samples`` is not, or
+        does not return, a finite real number.
+    ValueError
+        If the acquisition function samples from the variational posterior
+        alone (``acq_info["variational_importance_sampling"]``) and the
+        option ``active_importance_sampling_mcmc_samples`` gives no positive
+        number of samples.
+    ValueError
+        If, in the MCMC step, no importance sample carries any weight under
+        one of the GP hyperparameter samples, so that the chain has no
+        starting point.
+
     Notes
     -----
     Every random draw, the MCMC step's included, comes from ``vp.rng``.
     """
+    if acq_fcn.acq_info.get("mcmc_importance_sampling"):
+        raise NotImplementedError(
+            "The acquisition function sets "
+            "acq_info['mcmc_importance_sampling']. The refinement of the "
+            "samples of step 1 by an ensemble sampler that the flag asks "
+            "for (MATLAB VBMC's private/activeimportancesampling_vbmc.m, "
+            "lines 57 to 92) is not ported."
+        )
+
     rng = vp.rng
     # Do we simply sample from the variational posterior?
     only_vp_flag = acq_fcn.acq_info.get(
@@ -65,59 +145,17 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
     if only_vp_flag:
         # Step 0: Simply sample from variational posterior.
 
-        Na = ceil(
-            options.eval(
-                "active_importance_sampling_mcmc_samples",
-                {"K": vp.K, "n_vars": D, "D": D},
-            )
-        )
+        Na = _sample_count(options, vp.K, D)
 
-        if not np.isfinite(Na) or not np.isscalar(Na) or Na <= 0:
+        if Na <= 0:
             raise ValueError(
-                "options['active_importance_sampling_mcmc_samples']"
+                "options['active_importance_sampling_mcmc_samples'] "
                 + "should evaluate to a positive integer."
             )
 
         Xa, __ = vp.sample(Na, orig_flag=False)
 
         f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
-
-        # Retained custom-acquisition hook; built-ins do not enable this path.
-        if acq_fcn.acq_info.get("mcmc_importance_sampling"):
-            # Compute fractional effective sample size (ESS)
-            fESS = fess(vp, f_mu, Xa)
-
-            if fESS < options["active_importance_sampling_fess_thresh"]:
-                log_p_fun = lambda x: acq_fcn.is_log_full(x, vp=vp, gp=gp)
-
-                # Get MCMC options
-                Nmcmc_samples = (
-                    Na * options["active_importance_sampling_mcmc_thin"]
-                )
-                thin = 1
-                burn_in = 0
-                sampler_opts, __, __ = get_mcmc_opts(Nmcmc_samples)
-                # W = Na  # walkers, not applicable for simple slice sampling.
-
-                # Perform a single MCMC step for all samples.
-                # Contrary to MATLAB, we are using simple slice sampling.
-                # Better (e.g. ensemble slice) sampling methods could
-                # later be implemented.
-                sampler = gpr.slice_sample.SliceSampler(
-                    log_p_fun,
-                    Xa,
-                    widths,
-                    lb_tran,
-                    ub_tran,
-                    sampler_opts,
-                    rng=rng,
-                )
-                results = sampler.sample(Nmcmc_samples, thin, burn_in)
-                Xa = results["samples"]
-                # Xa = eis_sample_lite(log_p_fun, Xa, Nmcmc_samples, W, widths,
-                # lb_tran, ub_tran, sample_opts)
-                Xa = Xa[-Na:, :]
-                f_mu, f_s2 = gp.predict(Xa, separate_samples=True)
 
         ln_y = acq_fcn.is_log_base(Xa, f_mu=f_mu, f_s2=f_s2)
 
@@ -202,9 +240,9 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
             ~np.isfinite(active_is["ln_weights"])
         ] = -np.inf
 
-        # Step 2 (optional): MCMC sample
+        # Step 2 (optional): MCMC sample, left out for a count of zero.
 
-        Nmcmc_samples = options["active_importance_sampling_mcmc_samples"]
+        Nmcmc_samples = _sample_count(options, vp.K, D)
 
         if Nmcmc_samples > 0:
             active_is_old = copy.deepcopy(active_is)
@@ -240,13 +278,19 @@ def active_importance_sampling(vp, gp, acq_fcn, options):
                 ln_weights = active_is_old["ln_weights"][s, :].reshape(
                     -1, 1
                 ) + acq_fcn.is_log_added(f_mu=f_mu, f_s2=f_s2)
-                ln_weights_max = np.amax(ln_weights, axis=1).reshape(-1, 1)
-                if np.any(ln_weights_max == -np.inf):
-                    raise ValueError("Invalid value.")
+                # The starting point is drawn among the samples in
+                # proportion to their weights, so the maximum is taken
+                # over them (activeimportancesampling_vbmc.m:206-208).
+                ln_weights_max = np.amax(ln_weights)
+                if ln_weights_max == -np.inf:
+                    raise ValueError(
+                        "No importance sample carries any weight under GP "
+                        f"hyperparameter sample {s}, so the chain has no "
+                        "starting point to be drawn."
+                    )
                 weights = np.exp(ln_weights - ln_weights_max).ravel()
                 weights = weights / np.sum(weights)
-                # x0 = np.zeros((Walkers, D))
-                # Select x0 without replacement by weight:
+                # One starting point, for the one chain, drawn by weight.
                 index = rng.choice(a=len(weights), p=weights, replace=False)
                 x0 = active_is_old["X"][index, :]
                 x0 = np.maximum(
@@ -349,8 +393,7 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
         box-uniform sampling.
     acq_fcn : AbstractAcqFcn
         The acquisition function callable.
-    vp : VariationalPosterior
-        The unsmoothed VP.
+
     Returns
     -------
     ln_weights : np.ndarray
@@ -373,11 +416,16 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
     else:
         temp_lpdf = np.zeros((Na, 1))
 
-    # Mixture of variational posteriors
+    # Mixture of variational posteriors. The logarithm of the density as
+    # the density is held, as in `activeimportancesampling_vbmc.m`: where
+    # it underflows to zero, the proposal has no mass and the point no
+    # weight (below). `pdf(log_flag=True)` takes the log-sum-exp there,
+    # which would give such a point a finite and very large weight.
     if w_vp > 0:
-        temp_lpdf[:, 0] = vp_is.pdf(
-            Xa, orig_flag=False, log_flag=True
-        ).T + np.log(w_vp)
+        with np.errstate(divide="ignore"):
+            temp_lpdf[:, 0] = np.log(
+                vp_is.pdf(Xa, orig_flag=False)
+            ).T + np.log(w_vp)
     else:
         temp_lpdf[:, 0] = -np.inf
 
@@ -393,13 +441,22 @@ def active_sample_proposal_pdf(Xa, gp, vp_is, w_vp, rect_delta, acq_fcn):
             temp_lpdf[mask, i + 1] = np.log((1 - w_vp) / VV / N)
             temp_lpdf[~mask, i + 1] = -np.inf
 
+        # A point at which every component of the mixture has density zero
+        # carries no importance weight, and its log-sum-exp is undefined.
+        # Its log weight is -inf, which the caller gives every non-finite
+        # weight.
         m_max = np.amax(temp_lpdf, axis=1)
-        if np.any(m_max == -np.inf):
-            raise ValueError("Invalid value.")
-        l_pdf = np.log(
-            np.sum(np.exp(temp_lpdf - m_max.reshape(-1, 1)), axis=1)
+        in_support = m_max > -np.inf
+        l_pdf = m_max[in_support] + np.log(
+            np.sum(
+                np.exp(
+                    temp_lpdf[in_support] - m_max[in_support].reshape(-1, 1)
+                ),
+                axis=1,
+            )
         )
-        ln_weights = ln_y - (l_pdf + m_max).reshape(-1, 1)
+        ln_weights = np.full(ln_y.shape, -np.inf)
+        ln_weights[in_support, :] = ln_y[in_support, :] - l_pdf.reshape(-1, 1)
     else:
         ln_weights = ln_y - temp_lpdf
 
@@ -469,7 +526,7 @@ def fess(vp, gp, X=100):
     # If a single number is passed, interpret it as the number of samples
     if np.isscalar(X):
         N = X
-        X = vp.sample(N, orig_flag=False)
+        X, __ = vp.sample(N, orig_flag=False)
     else:
         N = X.shape[0]
 

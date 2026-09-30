@@ -24,24 +24,29 @@ from pyvbmc.vbmc.variational_optimization import (
     update_K,
 )
 
+from .test_variational_optimization_grad_fd import _random_gp
+
 
 @pytest.fixture(autouse=True)
 def _restore_global_rng(request):
-    """``VariationalPosterior.__init__`` draws its seed from the global
-    ``np.random`` state, and the two ``*_g_mixture`` tests below fit their
-    GP and draw their samples from that same unseeded stream; leave the
-    stream as each test found it, so that adding a test to this module does
-    not shift what a later one sees (as the ``_gp_log_joint`` tests added
-    on 2026-09-04 did; the sibling ``_grad_fd`` module has the same
-    fixture).
+    """Leave NumPy's global random state as each test found it, so that
+    adding a test to this module does not shift what a later one sees (as
+    the ``_gp_log_joint`` tests added on 2026-09-04 did; the sibling
+    ``_grad_fd`` module restores the state as well). A
+    ``VariationalPosterior`` constructed without ``rng=`` draws its seed
+    from that state, and so do a GP fit without ``rng=`` and the
+    ``scipy.stats`` samplers. The two ``*_g_mixture`` tests seed the state
+    in their bodies, and the restore keeps their seeds from reaching the
+    tests that follow.
 
-    Restoring the state would make a rerun (``pytest --reruns``) replay the
-    failed attempt's draws exactly, which defeats the rerun (seen on CI on
-    2026-09-05: ``test_vp_optimize_2D_g_mixture`` landed in a bad local
-    optimum six times in a row on one platform). The stream is therefore
-    advanced by the attempt number first, so that each attempt sees a
-    different, still deterministic, stream (``execution_count`` is set by
-    pytest-rerunfailures, 1 on the first attempt)."""
+    Restoring the state alone would make a rerun (``pytest --reruns``) of
+    a test that draws from the unseeded stream replay the failed attempt's
+    draws exactly, which defeats the rerun. The stream is therefore
+    advanced by the attempt number first, so that each attempt of such a
+    test sees a different, still deterministic, stream
+    (``execution_count`` is set by pytest-rerunfailures, 1 on the first
+    attempt). A test that seeds the state in its body, as the
+    ``*_g_mixture`` tests do, replays the same draws on every attempt."""
     state = np.random.get_state()
     for _ in range(getattr(request.node, "execution_count", 1) - 1):
         np.random.random()
@@ -274,6 +279,47 @@ def test_gp_log_joint_separate_K_without_variance():
     assert dG.shape == (vp.D * vp.K + vp.K + vp.D + vp.K,)
 
 
+def test_gp_log_joint_variance_against_quadrature():
+    """The covariance of the expected log joint between components,
+    ``J_sjk``, and its variance ``varG`` at ``K = 3`` with separated
+    components of different widths, against a grid quadrature of gpyreg's
+    latent posterior covariance (``predict_full``) in one dimension. The
+    MATLAB reference of ``test_gp_log_joint`` holds two components at one
+    point with one width, so it pins no pair of separated components."""
+    D, K = 1, 3
+    gp = _random_gp(D, N=15, Ns=2, seed=43)
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = np.array([[-1.5, 0.2, 1.6]])
+    vp.sigma = np.array([[0.25, 0.9, 0.5]])
+    vp.lambd = np.array([[1.0]])
+    vp.w = np.array([[0.5, 0.3, 0.2]])
+    vp.eta = np.log(vp.w)
+
+    G_s, _, varG_s, _, _, _, J_sjk = _gp_log_joint(
+        vp, gp, False, False, True, True, True
+    )
+
+    mu = vp.mu.ravel()
+    scales = (vp.sigma * vp.lambd).ravel()
+    x = np.linspace(np.min(mu - 8 * scales), np.max(mu + 8 * scales), 401)
+    Q = norm.pdf(x[:, None], mu[None, :], scales[None, :]) * (x[1] - x[0])
+    _, C = gp.predict_full(x[:, None], add_noise=False)  # (M, M, Ns)
+    J_ref = np.einsum("mj,mns,nk->sjk", Q, C, Q)
+    assert np.allclose(
+        J_sjk, J_ref, rtol=1e-9, atol=1e-12 * np.max(np.abs(J_ref))
+    )
+    w = vp.w.ravel()
+    varG_ref = np.einsum("sjk,j,k->s", J_ref, w, w)
+    assert np.allclose(varG_s, varG_ref, rtol=1e-9, atol=0.0)
+
+    # Averaged over the hyperparameter samples: the mean of their variances
+    # plus the sample variance of their expected log joints.
+    _, _, varG, _, _ = _gp_log_joint(vp, gp, False, True, True, True)
+    assert np.isclose(
+        varG, np.mean(varG_ref) + np.var(G_s, ddof=1), rtol=1e-9, atol=0.0
+    )
+
+
 def test_gp_log_joint_variance_non_cholesky_branch():
     """gpyreg stores a posterior as ``L = -(K + sn2 I)^{-1}`` when the noise
     variance is below 1e-6 (``L_chol=False``), a regime a VBMC run never
@@ -338,6 +384,49 @@ def test_gp_log_joint_variance_non_cholesky_branch():
     assert np.isclose(var_ss0, var_ss1, rtol=1e-6)
 
 
+def _gauss_hermite_nodes(D, n):
+    """Nodes and weights of a tensor Gauss-Hermite rule for the standard
+    normal measure in ``D`` dimensions, ``n`` nodes per dimension."""
+    t, weights = np.polynomial.hermite_e.hermegauss(n)
+    weights = weights / np.sum(weights)
+    nodes = np.stack(np.meshgrid(*([t] * D), indexing="ij"), axis=-1)
+    node_weights = np.stack(
+        np.meshgrid(*([weights] * D), indexing="ij"), axis=-1
+    )
+    return nodes.reshape(-1, D), np.prod(node_weights.reshape(-1, D), axis=1)
+
+
+@pytest.mark.parametrize("D", [1, 2])
+@pytest.mark.parametrize("mean", ["zero", "const", "negquad"])
+def test_gp_log_joint_value_against_quadrature(mean, D):
+    """The expected log joint per hyperparameter sample and component,
+    ``I_sk``, against a Gauss-Hermite quadrature of gpyreg's posterior mean
+    under each component, for each mean function that ``VBMC`` offers
+    (``gp_mean_fun``); ``G`` is their weighted sum."""
+    K = 2
+    gp = _random_gp(D, N=18, Ns=3, seed=41 + D, mean=mean)
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = np.array([[-0.8, 0.9], [0.4, -0.3]])[:D]
+    vp.sigma = np.array([[0.3, 0.6]])
+    vp.lambd = np.array([[1.2], [0.8]])[:D]
+    vp.w = np.array([[0.4, 0.6]])
+    vp.eta = np.log(vp.w)
+
+    G, _, _, _, _, I_sk, _ = _gp_log_joint(
+        vp, gp, False, False, True, False, True
+    )
+
+    nodes, node_weights = _gauss_hermite_nodes(D, 60)
+    scales = vp.sigma * vp.lambd  # (D, K)
+    I_ref = np.zeros((len(gp.posteriors), K))
+    for k in range(K):
+        x = vp.mu[:, k] + nodes * scales[:, k]
+        f_mu, _ = gp.predict(x, separate_samples=True)
+        I_ref[:, k] = node_weights @ f_mu
+    assert np.allclose(I_sk, I_ref, rtol=1e-10, atol=1e-10)
+    assert np.allclose(G, I_sk @ vp.w.ravel(), rtol=1e-13, atol=1e-13)
+
+
 def test_gp_log_joint_variance_gradient_not_implemented():
     """The gradient of the variance and the diagonal variance approximation
     are unported; both requests raise instead of returning something."""
@@ -400,6 +489,45 @@ def test_neg_elcbo():
     )
 
     assert np.allclose(dF, matlab_dF)
+
+
+def test_neg_elcbo_default_variance_follows_beta():
+    """Left as ``None``, ``compute_var`` computes the variance if and only
+    if ``beta`` is nonzero, a ``beta`` that is not finite being taken as
+    zero; ``varF`` is 0.0 when the variance is not computed.
+    ``misc/negelcbo_vbmc.m`` also computes it when the caller takes
+    ``varF`` and passes ``compute_grad = 0`` (with its default
+    ``compute_grad`` such a call stops in ``misc/gplogjoint.m``); Python
+    cannot see which outputs a caller takes (wave 7 of the port review,
+    row W7-9)."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+
+    def evaluate(beta, compute_var=None):
+        return _neg_elcbo(
+            theta, gp, copy.deepcopy(vp), beta, 0, False, compute_var
+        )
+
+    F0, _, _, _, varF0 = evaluate(0.0)
+    assert isinstance(varF0, float) and varF0 == 0.0
+    F_inf, _, _, _, varF_inf = evaluate(np.inf)
+    assert F_inf == F0 and varF_inf == 0.0
+
+    _, _, _, _, varF_full = evaluate(0.0, compute_var=True)
+    assert varF_full > 0.0
+    F2, _, _, _, varF2 = evaluate(2.0)
+    assert varF2 == varF_full
+    assert np.isclose(F2, F0 + 2.0 * np.sqrt(varF_full))
+
+
+@pytest.mark.parametrize("compute_grad", [False, True])
+def test_neg_elcbo_refuses_the_diagonal_variance(compute_grad):
+    """``compute_var=2`` asks for the diagonal approximation of the
+    variance, which is not implemented."""
+    vp, gp = _gp_log_joint_fixture()
+    theta = vp.get_parameters()
+    with pytest.raises(NotImplementedError, match="Diagonal approximation"):
+        _neg_elcbo(theta, gp, vp, 0.0, 0, compute_grad, 2)
 
 
 def test_vp_bound_loss():
@@ -798,6 +926,149 @@ def test_optimize_vp_passes_over_a_nan_evaluation(mocker):
 
     assert np.all(np.isfinite(optimized.get_parameters()))
     assert np.isfinite(optimized.stats["elbo"])
+
+
+def _replace_full_elcbo(mocker, nelcbo=None):
+    """Make every full ELCBO evaluation store the negative ELBO and ELCBO
+    ``nelcbo[idx]`` in its slot ``idx`` (NaN for every slot if ``nelcbo``
+    is not given), after evaluating the rest as usual. Returns the list of
+    the slots evaluated and their parameters, in the order of evaluation."""
+    evaluated = []
+    evaluate = _eval_full_elcbo
+
+    def replaced(idx, theta, vp_arg, gp_arg, stats, beta, options_arg):
+        stats = evaluate(idx, theta, vp_arg, gp_arg, stats, beta, options_arg)
+        value = np.nan if nelcbo is None else nelcbo[idx]
+        stats["nelbo"][idx] = value
+        stats["nelcbo"][idx] = value
+        evaluated.append((idx, np.copy(theta)))
+        return stats
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization._eval_full_elcbo",
+        side_effect=replaced,
+    )
+    return evaluated
+
+
+@pytest.mark.parametrize("slow_opts_N", [1, 2])
+def test_optimize_vp_raises_if_every_deterministic_evaluation_is_nan(
+    mocker, slow_opts_N
+):
+    """A single component is optimized with the deterministic entropy,
+    which evaluates the endpoint of each optimization and no midpoint. If
+    every one of those evaluations is NaN, no parameters can be selected,
+    and the slots of the midpoints, which were never evaluated, are not
+    candidates."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 1, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker)
+
+    with pytest.raises(ValueError, match="returned NaN"):
+        optimize_vp(options, optim_state, vp, gp, 6, slow_opts_N)
+
+    assert [idx for idx, _ in evaluated] == list(range(1, 2 * slow_opts_N, 2))
+
+
+def test_optimize_vp_raises_if_every_evaluation_is_nan_without_midpoints(
+    mocker,
+):
+    """With ``elcbo_midpoint`` off, the stochastic optimization evaluates
+    only its endpoint; if that evaluation is NaN, the optimization raises
+    rather than select the slot of the midpoint, which was never
+    evaluated."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(
+        D, {"elcbo_midpoint": False, "max_iter_stochastic": 40}
+    )
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker)
+
+    with pytest.raises(ValueError, match="returned NaN"):
+        optimize_vp(options, optim_state, vp, gp, 6, 1)
+
+    assert [idx for idx, _ in evaluated] == [1]
+
+
+@pytest.mark.parametrize(
+    "K, user_options, nelcbo, expected",
+    [
+        # Stochastic optimizations, midpoints and endpoints evaluated.
+        (2, {"max_iter_stochastic": 40}, [np.nan, 3.0, 1.0, np.nan], 2),
+        # Deterministic optimizations, endpoints (odd slots) evaluated.
+        (1, {}, {1: 4.0, 3: np.nan}, 1),
+        # An infinite value is still an evaluation, and the empty slots of
+        # the midpoints are not candidates.
+        (1, {}, {1: np.nan, 3: np.inf}, 3),
+    ],
+)
+def test_optimize_vp_selects_the_best_evaluation_that_is_not_nan(
+    mocker, K, user_options, nelcbo, expected
+):
+    """Among evaluations of which some are NaN, the optimization selects
+    the evaluated one with the smallest negative ELCBO that is not NaN,
+    with its parameters and statistics."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D, user_options)
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, K, rng=np.random.default_rng(3))
+    evaluated = _replace_full_elcbo(mocker, nelcbo)
+
+    optimized, _, _ = optimize_vp(options, optim_state, vp, gp, 6, 2)
+
+    mu = {
+        idx: np.reshape(theta[: D * K], (D, K), order="F")
+        for idx, theta in evaluated
+    }
+    assert all(
+        not np.array_equal(mu[idx], mu[expected])
+        for idx in mu
+        if idx != expected
+    )
+    assert np.array_equal(optimized.mu, mu[expected])
+    assert optimized.stats["elbo"] == -nelcbo[expected]
+
+
+@pytest.mark.parametrize(
+    "f_val_lst, expected",
+    [([3.0, np.nan, 1.0, 2.0], 2), ([np.nan] * 4, 0)],
+)
+def test_optimize_vp_midpoint_skips_nan(mocker, f_val_lst, expected):
+    """The midpoint of a stochastic optimization is the iterate with the
+    smallest objective value that is not NaN, as MATLAB VBMC's ``min``
+    (``misc/vpoptimize_vbmc.m:133``) takes it, and the first iterate when
+    every value is NaN."""
+    D = 2
+    _, gp = _gp_log_joint_fixture()
+    options = setup_options(D)
+    assert options["elcbo_midpoint"]
+    optim_state = {"warmup": True, "entropy_switch": False}
+    vp = VariationalPosterior(D, 2, rng=np.random.default_rng(3))
+    iterates = []
+
+    def fake_adam(f, x0, **kwargs):
+        steps = 0.1 * np.arange(len(f_val_lst))
+        x_tab = np.reshape(x0, (-1, 1)) + steps
+        iterates.append(x_tab)
+        return x_tab[:, -1].copy(), 0.0, x_tab, np.array(f_val_lst), 4
+
+    mocker.patch(
+        "pyvbmc.vbmc.variational_optimization.minimize_adam",
+        side_effect=fake_adam,
+    )
+    evaluated = _replace_full_elcbo(mocker, [1.0, 2.0])
+
+    optimize_vp(options, optim_state, vp, gp, 6, 1)
+
+    assert len(iterates) == 1
+    assert evaluated[0][0] == 0
+    assert np.array_equal(evaluated[0][1], iterates[0][:, expected])
 
 
 def test_vb_init_candidates():

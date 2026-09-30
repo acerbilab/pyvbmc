@@ -3,6 +3,7 @@
 import numpy as np
 
 from pyvbmc import VBMC
+from pyvbmc.variational_posterior import VariationalPosterior
 
 
 def results_of_a_recorded_run(
@@ -79,3 +80,31 @@ def test_problem_type_reports_the_bounds_the_run_was_given():
         ]
         == "unconstrained"
     )
+
+
+def test_the_final_plot_is_titled_with_the_number_of_iterations(mocker):
+    """The title of the final plot counts the iterations as
+    ``results["iterations"]`` does."""
+    plot = mocker.patch.object(VariationalPosterior, "plot")
+    mocker.patch("matplotlib.pyplot.show")
+    D = 2
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={
+            "max_iter": 1,
+            "min_iter": 1,
+            "do_final_boost": False,
+            "plot": True,
+            "display": "off",
+        },
+        seed=1,
+    )
+    _, results = vbmc.optimize()
+
+    assert results["iterations"] == 1
+    assert plot.call_args.kwargs["title"] == "VBMC final (1 iterations)"

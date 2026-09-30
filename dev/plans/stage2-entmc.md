@@ -1,8 +1,8 @@
 # Stage 2 item 5: `entmc_vbmc` vectorized over components and samples
 
 Created: 2026-09-05 15:00. Status: **DONE 2026-09-05 18:00** (the
-20-seed population that also covers item 8's seam removal is still to
-run; tracker at the end). This file is the plan and the worklog. Roadmap pickup point 3b
+20-seed population that also covers item 8's seam removal ran on
+2026-09-06 and passed, roadmap pickup 3e; tracker at the end). This file is the plan and the worklog. Roadmap pickup point 3b
 (`plans/modernization-roadmap.md`); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2, §3, §10 (Stage 2, item 5:
 "Vectorize `entmc_vbmc` component loop"); the profile that made it the next
@@ -346,10 +346,10 @@ comparison. Record here, in the roadmap and as a dated addendum in devlog
 - [x] Read-only Opus code review of the diff and the plan (folded in,
       tracker); `/doublecheck` after the campaign's records
 - [x] Profile campaign (idle machine) and §Results
-- [ ] 20-seed population (roadmap 3c; when the laptop is free for about
-      6.5 h): `golden_trace.py run --suite golden --seeds 0-19
-      --workers 1 --out dev/scripts/runs/golden/item8_<date>`, then
-      `summary` and `compare dev/golden/baseline <out>`
+- [x] 20-seed population (roadmap 3c): `golden_trace.py run --suite
+      golden --seeds 0-19 --workers 1`, then `summary` and `compare
+      dev/golden/baseline <out>`; done 2026-09-06 (`item7_20260906`,
+      roadmap pickup 3e)
 
 ## Verification
 
@@ -692,5 +692,5 @@ attention. Times are wall clock on 2026-09-05.
   (4.4×, not "the same" 5×), the GEMM range (2.8–6.9×), the Adam-shape
   low end (6.7×), the §Findings caller split (16–26 %, not 22–25 %), and
   one sentence only a session witness could parse
-- [ ] 20-seed population (roadmap 3c): when the PI says the laptop is free
-  for about 6.5 h
+- [x] 20-seed population (roadmap 3c): done 2026-09-06 (`item7_20260906`,
+  roadmap pickup 3e)

@@ -348,7 +348,8 @@ dated addendum.
   (`dev/experiments/port_review_20260919/verification/cmaes_side_by_side/`)
   and found the acquired values equivalent within noise, the handler
   costing about 2.4 extra acquisition evaluations per generation, while
-  MATLAB VBMC's `cmaes_modded` has no noise handling; the handler and
+  MATLAB VBMC runs its `cmaes_modded` with noise handling off, the
+  default of `utils/cmaes_modded.m:215`; the handler and
   the `_BatchedNoiseHandler` subclass were removed
   (`plans/port-correctness-review.md`).
 - **The replay gate is soft by design**: ranking flips from one-ulp

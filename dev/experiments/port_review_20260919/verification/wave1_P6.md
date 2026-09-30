@@ -17,6 +17,18 @@ the agent read it did not: the warp-undo refit evaluated `ns_elbo` at
 `variable_means=False`. Commit `d7c7887` (2026-09-20) evaluates it at
 `Knew`. What the paragraph says about `final_boost` stands.
 
+Corrections by the orchestrator, from the independent check of the wave-1
+pass (2026-09-22; `wave1.md`, which also records the disposition of every
+finding below, since this ledger has no column for it):
+
+- Row int F4 cites `utils/fminadam.m:47,68`, and the evidence of the same
+  finding cites `:47`: the evaluation is at `:48` and the stored point at
+  `:63` (`:47` is blank and `:68` is `slope = p(1)`).
+- `misc/finalboost_vbmc.m:32` is `:33` (`:32` is a comment).
+- The history in section (a): `vbinit_vbmc.m:31-32` last changed in
+  `28dd1db` (2018-07-30), not `1eb4030`. The conclusion stands.
+- Section (b): `ns_ent_fine_K` is passed at `vbmc.py:494`, not `:493`.
+
 ---
 
 ## Ledger

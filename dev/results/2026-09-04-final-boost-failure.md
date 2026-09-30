@@ -3,8 +3,10 @@
 **Status:** finding recorded; decision deferred on 2026-09-04 (PI: an
 independent, small algorithmic tweak; to be thought about later), then
 ruled on 2026-09-06 (PI: a borderline bug rather than an algorithmic
-decision; option 1 below, the guard, is a 1.5 fix, roadmap pickup 9). No
-code changed. The behaviour is inherited from MATLAB VBMC, so this is not
+decision; option 1 below, the guard, is a 1.5 fix, roadmap pickup 9).
+Implemented on 2026-09-08 as the option `tol_elcbo_boost` (default 0.1, on
+the ELBO and the β = 5 ELCBO), with the boost's weight penalty removed
+([paired boost analysis](2026-09-08-boost-analysis.md)). The behaviour is inherited from MATLAB VBMC, so this is not
 a porting bug.
 
 ## What was seen

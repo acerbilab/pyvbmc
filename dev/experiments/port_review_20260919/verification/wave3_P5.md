@@ -10,6 +10,14 @@ under the names the report gives them with `wave3_` in front. The text
 below the rule is the agent's final message, unedited; `wave3.md` holds the
 consolidated ledger and the PI's dispositions.
 
+One statement of the report is wrong (found by the independent check of the
+pass, 2026-09-21). In its table of defects on the MATLAB side, row 2 says
+that commented-out lines at `misc/gptrain_vbmc.m:23-24` preserve the intent
+of a constant mean during that warm-up. At `396d649` lines 19 to 25 hold the
+`if`, two identical calls of `vbmc_gphyp` with `optimState.gpMeanfun`, the
+`else` and the `end`, and no commented-out line. The row's verdict stands;
+entry 18 of `../matlab_side_defects.md` states it without that clause.
+
 ---
 
 # Wave-3 verification, slice P5 (GP training policy, hyperpriors, training data, GP re-update)

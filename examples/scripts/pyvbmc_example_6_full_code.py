@@ -48,6 +48,7 @@ def log_joint(theta, data=np.ones(D)):
 x0 = np.zeros((1, D))  # Initial point
 
 
+np.random.seed(42)
 options = {"specify_target_noise": True}
 vbmc = VBMC(
     log_joint,
@@ -60,7 +61,6 @@ vbmc = VBMC(
 )
 
 
-np.random.seed(42)
 vp, results = vbmc.optimize()
 
 

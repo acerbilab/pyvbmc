@@ -7,6 +7,15 @@ default options, noiseless and noisy (the noisy ones through
 describes the trajectory; run on the starting commit and again after a
 batch of cherry-picks, the two files must agree bit for bit.
 
+The first four runs are those of the port review's gates. The last two,
+added for the gate of the release, pass a prior object with `prior=`: the
+FAQ's list of `scipy.stats.uniform` marginals built from the hard bounds,
+whose support falls short of the upper bound by rounding, so that the
+support check passes only within its slack; and a `SplineTrapezoidal` with
+its pivots at the plausible bounds. A record made before these two were
+added holds the first four only, and compares with a new one recorded with
+`--only` and their names.
+
 Usage:
     python -u wave2_fixpass_gate_runs.py --out before.npz
     python -u wave2_fixpass_gate_runs.py --compare before.npz after.npz
@@ -38,6 +47,33 @@ def two_blobs(x):
     a = -0.5 * np.sum((x - 2.0) ** 2) / 0.3**2
     b = -0.5 * np.sum((x + 2.0) ** 2) / 0.6**2
     return float(np.logaddexp(a, b))
+
+
+def rosenbrock_loglik(x):
+    """The Rosenbrock term of `rosenbrock` alone, for a run given a prior."""
+    x = np.atleast_2d(x)
+    return float(
+        -np.sum(
+            100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2 + (1 - x[:, :-1]) ** 2
+        )
+    )
+
+
+def faq_uniform_prior(LB, UB, PLB, PUB):
+    """The FAQ's independent uniform priors over the hard bounds."""
+    from scipy.stats import uniform
+
+    return [
+        uniform(loc=low, scale=high - low)
+        for low, high in zip(np.ravel(LB), np.ravel(UB))
+    ]
+
+
+def spline_trapezoidal_prior(LB, UB, PLB, PUB):
+    """A smoothed trapezoid over the hard bounds, flat on the plausible box."""
+    from pyvbmc.priors import SplineTrapezoidal
+
+    return SplineTrapezoidal(LB, PLB, PUB, UB)
 
 
 def make_noisy(fun, sd, seed):
@@ -104,14 +140,46 @@ def build_runs():
         {"specify_target_noise": True, "max_fun_evals": 90},
         6,
     )
+    # Runs given a prior object, whose target is the log likelihood alone.
+    # Uniform marginals from bounds -2.9 and 3.3 have the support
+    # [-2.9, 3.2999999999999994], inside the upper bound by one rounding.
+    runs["rosenbrock_D2_uniform_prior"] = (
+        lambda: rosenbrock_loglik,
+        2,
+        -2.9,
+        3.3,
+        -1.0,
+        2.0,
+        0.0,
+        {},
+        7,
+        faq_uniform_prior,
+    )
+    runs["rosenbrock_D2_spline_trapezoidal_prior"] = (
+        lambda: rosenbrock_loglik,
+        2,
+        -2.9,
+        3.3,
+        -1.0,
+        2.0,
+        0.0,
+        {},
+        8,
+        spline_trapezoidal_prior,
+    )
     return runs
 
 
 def record(name, spec):
     from pyvbmc import VBMC
 
-    factory, D, lb, ub, plb, pub, x0, options, seed = spec
+    factory, D, lb, ub, plb, pub, x0, options, seed, *prior_factory = spec
     full = lambda v: np.full((1, D), float(v))  # noqa: E731
+    prior = {}
+    if prior_factory:
+        prior["prior"] = prior_factory[0](
+            full(lb), full(ub), full(plb), full(pub)
+        )
     t0 = time.time()
     vbmc = VBMC(
         factory(),
@@ -122,7 +190,17 @@ def record(name, spec):
         full(pub),
         options=dict(display="off", **options),
         seed=seed,
+        **prior,
     )
+    if prior:
+        support_lb, support_ub = vbmc.prior.support()
+        inside_lb = np.max(np.ravel(support_lb) - lb)
+        inside_ub = np.max(ub - np.ravel(support_ub))
+        print(
+            f"{name}: the prior support lies inside the hard bounds by "
+            f"{inside_lb:.3g} below and {inside_ub:.3g} above",
+            flush=True,
+        )
     vp, results = vbmc.optimize()
     hist = vbmc.iteration_history
     fl = vbmc.function_logger

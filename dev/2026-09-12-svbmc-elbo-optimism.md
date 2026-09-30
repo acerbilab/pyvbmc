@@ -243,11 +243,12 @@ integration; this note stays the narrative.
    3; `_compute_reliability_index` in `vbmc.py`), so a noisy run ends
    well above the default. Two corpora say how far apart the two end up:
    the golden reference population `reference_870_20260907` (sidecars in
-   `dev/golden/baseline/`; 870 runs of 19 configurations including 160
-   noisy runs; final values from the `final.elbo_sd`, `noise_sd` and
-   `final.success_flag` fields, converged runs only, aggregated on
-   2026-09-12 with a few lines of Python, no script kept; the counts
-   describe that population and change when a new reference is
+   `dev/golden/baseline/` as of commit `b2ea8597`; that directory has held
+   `reference_990_20260913` since 2026-09-13; 870 runs of 19 configurations
+   including 160 noisy runs; final values from the `final.elbo_sd`,
+   `noise_sd` and `final.success_flag` fields, converged runs only,
+   aggregated on 2026-09-12 with a few lines of Python, no script kept; the
+   counts describe that population and change when a new reference is
    promoted), and the paper's own runs in the S-VBMC fixture corpus.
 
    | Corpus | Runs | `elbo_sd` | Runs above 0.1 | Runs above 0.05 |
@@ -284,7 +285,10 @@ integration; this note stays the narrative.
    and Example 7 (`examples/pyvbmc_example_7_stacking.ipynb`, regenerated
    script) state the same guidance and name the values. The existing VBMC
    tip `svbmc` links to the standalone package's GitHub README; once the
-   docs with Example 7 are published it should link there.
+   docs with Example 7 are published it should link there. *Done
+   2026-09-27* in the release sweep
+   ([ledger](results/2026-09-27-release-sweep.md), A-11): the tip links to
+   Example 7.
 6. **Tests, fixtures and gates.** `references.json` and `references.npz`
    under `pyvbmc/testing/svbmc/fixtures/` move by design, since the
    objective loses its per-step noise and the reported values change; they
@@ -354,6 +358,13 @@ plan).
 
 ## Phase 2: measuring instead of capping, with the runs' surrogates
 
+*Outcome (2026-09-15):* on the run pools the cross-run estimate is biased
+low on the typical noisy targets and on Student, and is not the headline
+([stage D report](results/2026-09-15-svbmc-pool-comparison.md)). The
+candidate is the empirical-Bayes shrinkage of the stored `I_sk` and
+`J_sjk`, which needs no GP, so the class's inputs are unchanged
+([headline note](2026-09-15-svbmc-headline-shrinkage.md)).
+
 The cap bounds the growth at a level chosen empirically, not derived. The
 alternative is to measure the expected log-joint of the final mixture with
 noise that is independent of the noise the weights were selected on, the
@@ -394,7 +405,12 @@ practical route; it needs no likelihood evaluations.
   already does. The VBMC object holds it as `vbmc.gp`; a
   `VariationalPosterior` has no GP (the `__str__` of `VBMC` looks for a
   `vp.gp` attribute defensively, but nothing sets one). Saved VBMC objects
-  keep their GP, so existing runs can be reused.
+  keep their GP, so existing runs can be reused. *Corrected 2026-09-14:*
+  the GP behind a returned posterior's `I_sk` and `J_sjk` is the best
+  iteration's, `vbmc.get_gp(results["best_iter"])`, which the final boost
+  refits against. `vbmc.gp` is the last iteration's GP. The pool artifacts
+  keep the former
+  ([plans/svbmc-benchmark-campaign.md](plans/svbmc-benchmark-campaign.md)).
 - Computing: GP predictions at every component's draws, once per run,
   after the optimization. With ten runs, 500 components, 100 draws and a
   few hundred training points this is seconds, well below the entropy

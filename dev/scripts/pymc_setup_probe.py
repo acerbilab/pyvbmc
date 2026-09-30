@@ -744,6 +744,10 @@ def reuse_case(
         if not len(selected):
             raise ValueError("No setup point strictly inside the box")
         initial = X[selected]
+        # `max(D, 10)` is the ordinary initial design of the code the
+        # experiment ran on (2026-09-16), before `fun_eval_start` took
+        # MATLAB's `10*ceil((D+1)/10)`; it is part of the design of the
+        # experiment, which sets the option explicitly.
         options.update(
             f_vals=y[selected], fun_eval_start=max(target.D, 10, len(selected))
         )
@@ -980,6 +984,8 @@ def coverage(args):
             if seed % 2:
                 arms = arms[::-1]
             for arm in arms:
+                # `max(D, 10)`: the ordinary initial design of the code
+                # the experiment ran on (see `reuse_case`).
                 uniform = (
                     max(D, 10) - 1
                     if arm == "filtered_full"

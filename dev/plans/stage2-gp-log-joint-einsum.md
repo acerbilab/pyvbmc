@@ -1,6 +1,6 @@
 # Stage 2 items 1 and 2: `_gp_log_joint` vectorized over hyperparameter samples and components, its variance from multi-RHS solves
 
-Created: 2026-09-04 22:35. Status: **DONE 2026-09-04 (evening; records committed 2026-09-05 00:20)** for items 1 and 2; the end-of-stage 20-seed population run was launched 2026-09-05 00:39 (tracker, last entry). Roadmap pickup point 3
+Created: 2026-09-04 22:35. Status: **DONE 2026-09-04 (evening; records committed 2026-09-05 00:20)** for items 1 and 2; the end-of-stage 20-seed population ran 2026-09-05 00:39–07:06 and passed, no config flagged over 56 KS tests (tracker, last entry). Roadmap pickup point 3
 (`plans/modernization-roadmap.md`; pickup point 2 named it "Next: Stage 2
 item 1"); rationale in
 `dev/2026-09-02-modernization-discussion.md` §2, §3, §9 and §10 (Stage 2,
@@ -418,7 +418,7 @@ dated addendum in devlog §2/§10.
       2026-09-04 numbers (§Results); untouched stages within trajectory
       noise except the exhaust run's active sampling (+20 %, discussed);
       probe start/end 1.03
-- [ ] CI smoke green on the push (pending at the time of writing)
+- [x] CI smoke green on the push (run 33920627536, 2026-09-05; tracker)
 
 ## Decisions
 

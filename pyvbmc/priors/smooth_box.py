@@ -4,6 +4,7 @@ import numpy as np
 
 from pyvbmc.formatting import full_repr
 from pyvbmc.priors import Prior, tile_inputs
+from pyvbmc.priors.prior import _check_finite
 from pyvbmc.rng import get_rng
 
 
@@ -20,11 +21,11 @@ class SmoothBox(Prior):
     D : int
         The dimension of the prior distribution.
     a : np.ndarray
-        The lower pivot(s), shape `(1, D)`.
+        The lower pivot(s), shape `(D,)`.
     b : np.ndarray
-        The upper pivot(s), shape `(1, D)`.
+        The upper pivot(s), shape `(D,)`.
     scale : np.ndarray
-        The standard deviation of the Gaussian tails, shape `(1, D)`.
+        The standard deviation of the Gaussian tails, shape `(D,)`.
     """
 
     def __init__(self, a, b, scale=1, D=None):
@@ -38,16 +39,22 @@ class SmoothBox(Prior):
         b : np.ndarray | float
             The upper pivot(s), shape `(D,)` where `D` is the dimension
             (parameters of type ``float`` will be tiled to this shape).
-        scale : np.ndarray
+        scale : np.ndarray | float, optional
             The standard deviation of the Gaussian tails, shape `(D,)` where
             `D` is the dimension (parameters of type ``float`` will be tiled to
-            this shape).
+            this shape). Default `1`.
+        D : int, optional
+            The distribution dimension. If given, will convert scalar `a`, `b`,
+            and `scale` to this dimension.
 
         Raises
         ------
         ValueError
-            If ``scale[i] <= 0`` or if ``a[i] >= b[i]``, for any `i`.
+            If any pivot or scale is not finite, if an array argument does not
+            agree in shape with the other arguments or with `D`, if
+            ``scale[i] <= 0``, or if ``a[i] >= b[i]``, for any `i`.
         """
+        _check_finite({"a": a, "b": b, "scale": scale})
         self.a, self.b, self.scale = tile_inputs(
             a, b, scale, size=D, squeeze=True
         )
@@ -156,11 +163,7 @@ class SmoothBox(Prior):
         )
 
     def _support(self):
-        """Returns the support of the distribution.
-
-        Used to test that the distribution integrates to one, so it is also
-        acceptable to return a box which bounds the support of the
-        distribution.
+        """The box of the support, as ``support()`` returns it.
 
         Returns
         -------

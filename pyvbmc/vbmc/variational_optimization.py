@@ -1,15 +1,16 @@
 """Variational optimization / training of variational posterior"""
 
 import copy
-import logging
 import math
 
 import gpyreg as gpr
 import numpy as np
 import scipy as sp
 
+from pyvbmc._logging import get_logger
 from pyvbmc.entropy import entlb_vbmc, entmc_vbmc
 from pyvbmc.stats import get_hpd
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.variational_posterior import VariationalPosterior
 
 from .iteration_history import IterationHistory
@@ -43,7 +44,9 @@ def update_K(
     K_max = math.ceil(options.eval("k_fun_max", {"N": optim_state["n_eff"]}))
 
     # Evaluate bonus for stable solution.
-    K_bonus = round(options.eval("adaptive_k", {"K": K_new}))
+    K_bonus = round_half_away_from_zero(
+        options.eval("adaptive_k", {"K": K_new})
+    )
 
     # If not warming up, check if number of components gets to be increased.
     if not optim_state["warmup"] and optim_state["iter"] > 0:
@@ -112,7 +115,9 @@ def optimize_vp(
         The Gaussian process surrogate of the log-posterior, against which to
         optimize the VP.
     fast_opts_N : int
-        Number of fast optimizations.
+        Number of fast optimizations. Zero starts the optimization from
+        the given VP alone, and then requires ``slow_opts_N = 1``, as in
+        MATLAB.
     slow_opts_N : int
         Number of slow optimizations.
     K : int, optional
@@ -127,9 +132,19 @@ def optimize_vp(
         Spread of the expected log joint across the GP hyperparameter
         samples: the sample variance of its value from sample to sample
         plus the sample standard deviation of its per-sample variances.
-        Zero with a single hyperparameter sample.
+        Zero with a single hyperparameter sample, and when the variance of
+        the expected log joint is not computed.
     pruned : int
         Number of pruned components.
+
+    Raises
+    ======
+    ValueError
+        If the full ELCBO evaluation of every optimized solution returns
+        NaN, so that no variational parameters can be selected, or if the
+        entropy is estimated by Monte Carlo, which the stochastic
+        optimization follows, and the option ``stochastic_optimizer`` is not
+        ``"adam"``.
 
     Notes
     =====
@@ -171,6 +186,10 @@ def optimize_vp(
     theta_N = np.size(vp0_vec[0].get_parameters())
     Ns = np.size(gp.posteriors)
     elbo_stats = _initialize_full_elcbo(slow_opts_N * 2, theta_N, K, Ns)
+    # The slots of elbo_stats that a full ELCBO evaluation filled: the
+    # midpoint slots stay empty in the deterministic optimization and when
+    # `elcbo_midpoint` is off.
+    evaluated = np.full((slow_opts_N * 2,), False)
 
     # For the moment no gradient available for variance
     gradient_available = compute_var == 0
@@ -237,7 +256,7 @@ def optimize_vp(
             if not res.success:
                 # Outcomes such as a loss of precision or the iteration
                 # limit still leave a usable iterate.
-                logging.getLogger("VariationalOptimization").warning(
+                get_logger("VariationalOptimization").warning(
                     "scipy.optimize.minimize did not converge while "
                     "optimizing the variational parameters: %s",
                     res.message,
@@ -290,8 +309,13 @@ def optimize_vp(
 
                 if options["elcbo_midpoint"]:
                     # Recompute ELCBO at best midpoint with full variance
-                    # and more precision.
-                    idx_mid = np.argmin(f_val_lst)
+                    # and more precision. The best midpoint skips NaN
+                    # values, as MATLAB's `min` does, and is the first
+                    # iterate when every value is NaN.
+                    if np.all(np.isnan(f_val_lst)):
+                        idx_mid = 0
+                    else:
+                        idx_mid = np.nanargmin(f_val_lst)
                     elbo_stats = _eval_full_elcbo(
                         i_mid,
                         theta_lst[:, idx_mid],
@@ -301,6 +325,7 @@ def optimize_vp(
                         elcbo_beta,
                         options,
                     )
+                    evaluated[i_mid] = True
             else:
                 raise ValueError("Unknown stochastic optimizer!")
 
@@ -308,18 +333,22 @@ def optimize_vp(
         elbo_stats = _eval_full_elcbo(
             i_end, theta_opt, vp0, gp, elbo_stats, elcbo_beta, options
         )
+        evaluated[i_end] = True
 
         vp0_fine[i_mid] = copy.deepcopy(vp0)
         vp0_fine[i_end] = copy.deepcopy(vp0)  # Parameters get assigned later
 
     ## Finalize optimization by taking variational parameters with best ELCBO
 
-    if np.all(np.isnan(elbo_stats["nelcbo"])):
+    # The candidates are the evaluated slots whose value is not NaN; of
+    # equal values, the first slot is taken.
+    candidates = np.flatnonzero(evaluated & ~np.isnan(elbo_stats["nelcbo"]))
+    if np.size(candidates) == 0:
         raise ValueError(
             "Every full ELCBO evaluation of the variational optimization "
             "returned NaN, so no variational parameters can be selected."
         )
-    idx = np.nanargmin(elbo_stats["nelcbo"])
+    idx = candidates[np.argmin(elbo_stats["nelcbo"][candidates])]
     elbo = -elbo_stats["nelbo"][idx]
     elbo_sd = np.sqrt(elbo_stats["varF"][idx])
     G = elbo_stats["G"][idx]
@@ -423,11 +452,11 @@ def _initialize_full_elcbo(max_idx: int, D: int, K: int, Ns: int):
     max_idx : int
         Maximum number of full ELCBO evaluations.
     D : int
-        The dimension.
+        The length of the vector of variational parameters ``theta``.
     K : int
         Number of mixture components.
     Ns : int
-        Number of samples for entropy approximation.
+        Number of GP hyperparameter samples.
 
     Returns
     =======
@@ -495,11 +524,6 @@ def _eval_full_elcbo(
     else:
         ns_ent_fine_K = math.ceil(options.eval("ns_ent_fine", {"K": K}) / K)
 
-    if "skip_elbo_variance" in options and options["skip_elbo_variance"]:
-        compute_var = False
-    else:
-        compute_var = True
-
     nelbo, _, G, H, varF, _, var_ss, varG, varH, I_sk, J_sjk = _neg_elcbo(
         theta,
         gp,
@@ -507,7 +531,7 @@ def _eval_full_elcbo(
         0,
         ns_ent_fine_K,
         False,
-        compute_var,
+        True,  # compute_var
         None,
         entropy_alpha,
         True,
@@ -562,9 +586,9 @@ def _vp_bound_loss(
 
     """
 
-    # Mixture weights are controlled by the separate small-weight penalty
-    # below. Keep their parameters in the optimization vector, but exclude
-    # eta from the generic soft-bound loss.
+    # Mixture weights are controlled by the small-weight penalty that
+    # _neg_elcbo adds. Keep their parameters in the optimization vector, but
+    # exclude eta from the generic soft-bound loss.
     if vp.optimize_weights:
         bound_lb = np.array(theta_bnd["lb"], dtype=float, copy=True)
         bound_ub = np.array(theta_bnd["ub"], dtype=float, copy=True)
@@ -725,7 +749,12 @@ def _sieve(
     gp : GP
         Current GP from optimization.
     init_N : int, optional
-        Number of initial starting points.
+        Number of initial starting points, by default ``ceil(ns_elbo(K))``.
+        With ``init_N = 0`` no candidates are generated or evaluated, and
+        the given VP is the only candidate, of type 1, whatever ``best_N``.
+        A single candidate supports a single slow optimization, so
+        ``fast_opts_N = 0`` in ``optimize_vp`` requires ``slow_opts_N = 1``,
+        as in MATLAB.
     best_N : int, defaults to 1
         Specifies the design pattern for new starting parameters. ``best_N==1``
         means use the old variational parameters as a starting point for new
@@ -742,9 +771,10 @@ def _sieve(
 
     Returns
     =======
-    vp0_vec : np.ndarray, shape (init_N,)
-        Vector of candidate variational posteriors.
-    vp0_type : np.ndarray, shape (init_N,)
+    vp0_vec : np.ndarray, shape (max(init_N, 1),)
+        Vector of candidate variational posteriors, sorted by their
+        quickly estimated negative ELCBO.
+    vp0_type : np.ndarray, shape (max(init_N, 1),)
         Vector of types of candidate variational posteriors.
     elcbo_beta : float
         Confidence weight.
@@ -1125,17 +1155,23 @@ def _neg_elcbo(
     vp : VariationalPosterior
         Variational posterior for which to evaluate NELCBO.
     beta : float, defaults to 0.0
-        Confidence weight.
+        Confidence weight. A value that is not finite is taken as 0.
     Ns : int, defaults to 0
-        Number of samples for entropy.
+        Number of samples per component for the Monte Carlo approximation
+        of the entropy; 0 takes the deterministic lower bound instead.
     compute_grad : bool, defaults to True
         Whether to compute gradient.
-    compute_var : bool, optional
-        Whether to compute variance. If not given this is
-        determined automatically.
+    compute_var : int or bool, optional
+        Whether to compute variance: 0 (or ``False``) skips it, 1 (or
+        ``True``) computes the full variance, and 2 asks for its diagonal
+        approximation, which ``_gp_log_joint`` does not implement and
+        refuses. If not given, the variance is computed if and only if
+        ``beta`` is nonzero. ``varF`` is 0.0 when the variance is not
+        computed. The variance has no gradient, so a variance together
+        with ``compute_grad`` raises (see Raises).
     theta_bnd : dict, optional
         Soft bounds for theta.
-    entropy_alpha : float, defaults to 0.0
+    _entropy_alpha : float, defaults to 0.0
         (currently unused) Parameter for lower/upper deterministic entropy
         interpolation.
     separate_K : bool, defaults to False
@@ -1145,21 +1181,25 @@ def _neg_elcbo(
     =======
     F : float
         Negative evidence lower confidence bound objective.
-    dF : np.ndarray
-        Gradient of NELCBO.
+    dF : np.ndarray or None
+        Gradient of NELCBO; ``None`` without ``compute_grad``.
     G : object
         The expected variational log joint probability.
     H : float
         Entropy term.
     varF : float
         Variance of NELCBO.
-    dH : np.ndarray
-        Gradient of entropy term.
+    dH : np.ndarray or None
+        Gradient of entropy term; ``None`` without ``compute_grad``. This
+        and the outputs below are returned only with ``separate_K``;
+        otherwise the function returns the first five, ``F, dF, G, H,
+        varF``.
     varG_ss : float
         Spread of the expected variational log joint across the GP
         hyperparameter samples: the sample variance of its value from
         sample to sample plus the sample standard deviation of its
-        per-sample variances. Zero with a single hyperparameter sample.
+        per-sample variances. Zero with a single hyperparameter sample,
+        and when ``compute_var`` is False.
     varG : float
         Variance of the expected variational log joint
         probability.
@@ -1171,6 +1211,17 @@ def _neg_elcbo(
     J_sjk : np.ndarray
         The contribution to ``varG`` per GP hyperparameter sample and per pair
         of VP components.
+
+    Raises
+    ======
+    NotImplementedError
+        With ``compute_grad`` and a nonzero ``beta`` (the gradient of the
+        confidence term, which needs the gradient of the variance), with
+        ``compute_grad`` and ``compute_var`` 1 (``_gp_log_joint`` has no
+        gradient of the full variance), and with ``compute_var`` 2 (the
+        diagonal approximation of the variance is not implemented).
+    ValueError
+        With ``compute_grad`` and ``separate_K`` together.
     """
     if not np.isfinite(beta):
         beta = 0
@@ -1389,8 +1440,10 @@ def _gp_log_joint(
         (the parameterization of ``vp.get_parameters``) rather than to
         ``(mu, sigma, lambd, w)``. The requested gradient blocks are
         present either way.
-    compute_var : bool, defaults to False
-        Whether to compute variance.
+    compute_var : int or bool, defaults to False
+        Whether to compute variance: 0 (or ``False``) skips it, 1 (or
+        ``True``) computes the full variance, and 2, its diagonal
+        approximation, is not implemented and raises.
     separate_K : bool, defaults to False
         Whether to return expected log joint per component.
 
@@ -1409,7 +1462,8 @@ def _gp_log_joint(
         Spread of ``G`` across the GP hyperparameter samples: the sample
         variance of its value from sample to sample plus the sample
         standard deviation of the per-sample variances. Zero with a single
-        hyperparameter sample.
+        hyperparameter sample, and when ``compute_var`` or ``avg_flag`` is
+        False.
     I_sk : np.ndarray
         The contribution to ``G`` per GP hyperparameter sample and per VP
         component.

@@ -6,7 +6,14 @@ VIQR's `var_reduction` and `sd_reduction` losses and the `AcqFcnEIG`
 acquisition discussed here are not part of the package: they were removed
 on 2026-09-14, and their implementation is retained on the branch
 `retain/experimental-acquisitions` at `fa6922f`. The decision is recorded
-in [TODO.md](TODO.md).
+in [TODO.md](TODO.md). The branch named below was merged into `dev-next`
+and no longer exists. `max_repeated_observations`, `ns_gp_max_active` and
+the `compute_var_log_joint` hook ship, each inactive by default.
+Suggestions 1 and 2 below were taken up in the
+[efficiency plan](plans/noisy-acquisition-efficiency.md): the two
+numerics-preserving savings of suggestion 2 (`sinh`, kernel reuse) are
+integrated, and the split search of suggestion 1 was tested and not
+adopted ([report](results/2026-09-16-noisy-acquisition-integration-search.md)).
 
 The question was whether VIQR, which makes noisy runs slow, could be
 replaced or joined by acquisition functions that work with noisy targets,

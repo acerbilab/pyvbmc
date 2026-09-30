@@ -36,6 +36,17 @@ def test_cached_values_are_refused_with_user_provided_noise():
     assert "precomputed_evaluations" in str(err.value)
 
 
+def test_no_cached_value_is_nothing_to_refuse():
+    """A NaN in ``f_vals`` marks a starting point that is still to be
+    evaluated, so an ``f_vals`` of NaN alone supplies no value, and there
+    is none whose noise is missing."""
+    vbmc = _vbmc(
+        noisy_target,
+        {"f_vals": [np.nan, np.nan], "specify_target_noise": True},
+    )
+    assert not vbmc.optim_state["cache_active"]
+
+
 def test_cached_values_are_accepted_without_user_provided_noise():
     """Without user-provided noise the option keeps working."""
     vbmc = _vbmc(noiseless_target, {"f_vals": [4.0, np.nan]})

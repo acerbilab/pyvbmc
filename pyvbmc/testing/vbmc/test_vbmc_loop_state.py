@@ -107,6 +107,49 @@ def test_the_recorded_hyperparameters_are_the_chain_before_thinning(
         np.testing.assert_array_equal(recorded[thin - 1 :: thin, :], kept)
 
 
+def test_a_warmup_iteration_stores_the_recomputed_lcb_maxima(two_iterations):
+    """From its second iteration on, a run in warm-up replaces the maxima
+    of the lower confidence bound that the warm-up criteria read with their
+    recomputation under the current GP when ``recompute_lcb_max`` is on, as
+    it is by default (MATLAB VBMC, ``vbmc.m:814-817``). The run ends in
+    warm-up, and nothing changes its GP or its training set after the
+    last iteration, so the stored sequence is the recomputation of the
+    final state."""
+    vbmc = two_iterations
+    assert vbmc.options["recompute_lcb_max"]
+    assert vbmc.iteration == 1
+    assert vbmc.optim_state["warmup"]
+
+    stored = vbmc.optim_state["lcb_max_vec"]
+
+    assert np.shape(stored) == (vbmc.iteration + 1,)
+    np.testing.assert_array_equal(stored, vbmc._recompute_lcb_max())
+
+
+def test_without_recompute_lcb_max_a_warmup_iteration_stores_nothing():
+    """With ``recompute_lcb_max`` off the run stores no recomputed maxima,
+    so the warm-up criteria read the maxima that each iteration recorded.
+    A new run holds none either."""
+    vbmc = build_short(
+        {
+            "max_iter": 2,
+            "min_iter": 2,
+            "max_fun_evals": 60,
+            "do_final_boost": False,
+            "recompute_lcb_max": False,
+        }
+    )
+    assert "lcb_max_vec" not in vbmc.optim_state
+
+    vbmc.optimize()
+
+    # The second iteration was one in warm-up, where the maxima are
+    # recomputed when the option is on.
+    assert vbmc.iteration == 1
+    assert vbmc.optim_state["warmup"]
+    assert "lcb_max_vec" not in vbmc.optim_state
+
+
 def test_a_closing_line_reports_a_posterior_from_an_earlier_iteration(caplog):
     """A run closes its display with a line for the posterior it returns
     whenever that posterior is not the one the last iteration ended on: it

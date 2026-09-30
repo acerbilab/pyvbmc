@@ -249,6 +249,29 @@ def test_record_duplicate_unknown_time_keeps_the_stored_average():
     assert f_logger.total_fun_eval_time == 4.0
 
 
+def test_record_duplicate_known_time_replaces_an_unknown_average():
+    """A point added without an evaluation time has none on record. The
+    time of a later repeat is then the only one known for the point and
+    becomes its average, where averaging it with the unknown one would
+    leave the point without a time for good."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        non_noisy_function, 3, False, 0, 500, ParameterTransformer(3)
+    )
+    f_logger.add(x, 9.0)
+    assert np.isnan(f_logger.fun_eval_time[0])
+
+    f_logger._record(x, x, 1, None, 2.0)
+
+    assert f_logger.n_evals[0] == 2
+    assert f_logger.fun_eval_time[0] == 2.0
+    assert f_logger.total_fun_eval_time == 2.0
+
+    # From there on the known times are averaged as before.
+    f_logger._record(x, x, 1, None, 5.0)
+    assert f_logger.fun_eval_time[0] == (2 * 2.0 + 5.0) / 3
+
+
 def test_record_duplicate_f_sd():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(
@@ -458,6 +481,45 @@ def test_call_non_scalar_return():
     assert np.all(f_logger.y_orig[1] == y)
 
 
+@pytest.mark.parametrize(
+    "sd", [np.array([0.5]), np.array([[0.5]]), np.array(0.5), [0.5]]
+)
+def test_call_one_element_sd(sd):
+    """A noisy target may return its SD as an array of one element, as it
+    may its value: a target written for a batch of points does so for a
+    single point. The element is recorded and pooled as a number would be."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(
+        lambda x: (np.array([np.sum(x)]), sd), 3, True, 2
+    )
+    f_val, f_sd, idx = f_logger(x)
+    assert f_val == np.sum(x)
+    assert np.isscalar(f_sd) and f_sd == 0.5
+    assert f_logger.S[0, 0] == 0.5
+    f_logger(x)
+    assert f_logger.S[0, 0] == 1 / np.sqrt(2 / 0.5**2)
+
+
+@pytest.mark.parametrize(
+    "sd",
+    [
+        np.array([0.5, 0.5]),
+        np.array([0.0]),
+        np.array([-1.0]),
+        np.array([np.inf]),
+        np.array([np.nan]),
+    ],
+)
+def test_call_invalid_array_sd_is_refused(sd):
+    """An SD of several elements, or one element that is not a finite
+    positive number, is refused before anything is recorded."""
+    x = np.array([3, 4, 5])
+    f_logger = FunctionLogger(lambda x: (np.sum(x), sd), 3, True, 2)
+    with pytest.raises(ValueError, match="InvalidNoiseValue"):
+        f_logger(x)
+    assert f_logger.Xn == -1
+
+
 def test_add_invalid_func_value():
     x = np.array([3, 4, 5])
     f_logger = FunctionLogger(non_noisy_function, 3, False, 0)
@@ -595,6 +657,31 @@ def test_batch_call_noisy_pair_and_unknown_noise():
     )
     _, sds, _ = unknown.batch_call(x)
     assert np.array_equal(sds, np.ones(2))
+
+
+def test_batch_call_refuses_a_cached_value_without_its_sd_at_level_2():
+    """At uncertainty handling level 2 the SD of an observation is the
+    caller's to provide, and ``f_vals`` has no place for one. The values
+    are refused before the target is called and before any row is
+    recorded; an all-NaN ``f_vals`` supplies nothing and is accepted."""
+    calls = []
+
+    def noisy_target(points):
+        calls.append(points)
+        return np.sum(points, axis=1), np.full(points.shape[0], 0.5)
+
+    x = np.array([[1.0, 2.0], [3.0, 4.0]])
+    f_logger = FunctionLogger(noisy_target, 2, True, 2, vectorized_target=True)
+    with pytest.raises(ValueError, match="without their SD"):
+        f_logger.batch_call(x, f_vals=np.array([np.nan, 1.0]))
+    assert calls == []
+    assert f_logger.Xn == -1
+    assert f_logger.func_count == 0
+    assert f_logger.cache_count == 0
+
+    values, sds, _ = f_logger.batch_call(x, f_vals=np.full(2, np.nan))
+    assert np.array_equal(values, [3.0, 7.0])
+    assert np.array_equal(sds, [0.5, 0.5])
 
 
 def test_batch_call_rejects_noisy_n_by_two_without_mutation():

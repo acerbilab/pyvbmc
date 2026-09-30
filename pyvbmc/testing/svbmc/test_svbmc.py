@@ -480,23 +480,3 @@ def test_stacked_ELBO_is_differentiable(d1_vps):
     assert w.grad.dtype is torch.float64
     assert torch.isfinite(w.grad).all()
     assert torch.any(w.grad != 0.0)
-
-
-def test_a_pickled_stack_holds_no_function(d2_vps):
-    """An ``SVBMC`` object can be saved under another Python version than
-    the ones that wrote the posteriors it stacks: its pickle carries no
-    function by value (dill marks one with ``_create_function``), and so no
-    bytecode of any Python version. The posteriors of this group are of a
-    bounded problem, whose parameter transformer has bounded transforms."""
-    import dill
-
-    stacked = SVBMC(d2_vps, seed=0)
-    stacked.optimize(max_steps=5, n_samples=5)
-
-    data = dill.dumps(stacked)
-    assert b"_create_function" not in data
-    assert b"_create_code" not in data
-
-    restored = dill.loads(data)
-    samples = restored.sample(200)
-    assert np.all(np.isfinite(np.asarray(samples)))

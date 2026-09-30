@@ -165,14 +165,14 @@ simulator's seed before the run. See the [reproducibility guide](https://acerbil
 
 ### Combine runs and use the posterior downstream
 
-Stacking Variational Bayesian Monte Carlo (S-VBMC; [Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004)) is a technique to combine the
+**Combine runs:** Stacking Variational Bayesian Monte Carlo (S-VBMC; [Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004)) is a technique to combine the
 posteriors of several completed PyVBMC runs on the same model and data into a stacked
 posterior. Stacking the posteriors almost always provides a better approximation
 of the true posterior (sometimes much better), and it works as a post-processing step that
 does not require further model evaluations. See [Example 7](examples/pyvbmc_example_7_stacking.ipynb) and the
 [`SVBMC` documentation](https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html).
 
-A fitted `VariationalPosterior` can also be exported as a Torch distribution
+**Export posteriors:** A fitted `VariationalPosterior` can also be exported as a Torch distribution
 with `vp.to_torch()`, or as samples in an ArviZ DataTree with `vp.to_arviz()`.
 See the [posterior export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream)
 and [PyVBMC Example 9: Torch and JAX models and posterior exports](examples/pyvbmc_example_9_torch_jax.ipynb)
@@ -220,7 +220,7 @@ If you have trouble doing something with PyVBMC, spot bugs or strange behavior, 
 
 Please cite all three references if you use PyVBMC in your work (the 2018 paper introduced the framework, and the 2020 paper includes a number of major improvements, including but not limited to support for noisy likelihoods). You can cite PyVBMC in your work with something along the lines of
 
-> We estimated approximate posterior distributions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (PyVBMC; Acerbi, 2018, 2020) via the PyVBMC software (Huggins et al., 2023). PyVBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
+> We estimated approximate posterior distributions and approximate lower bounds to the model evidence of our models using Variational Bayesian Monte Carlo (VBMC; Acerbi, 2018, 2020) via the PyVBMC software (Huggins et al., 2023). PyVBMC combines variational inference and active-sampling Bayesian quadrature to perform approximate Bayesian inference in a sample-efficient manner.
 
 If you use S-VBMC (see [Additional references](#additional-references)), please also add a sentence such as:
 

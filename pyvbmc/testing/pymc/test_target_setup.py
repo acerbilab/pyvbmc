@@ -11,6 +11,7 @@ pytest.importorskip("arviz_base")
 from pyvbmc import VBMC
 from pyvbmc.pymc import PyMCTarget, UnsupportedModel
 from pyvbmc.pymc import _target as target_module
+from pyvbmc.testing._logging import unconfigured_logging
 from pyvbmc.testing.pymc.models import (
     bounded_model,
     no_gradient_model,
@@ -172,6 +173,19 @@ def test_prior_route_warning_names_the_starting_point(caplog):
         "gradient is unavailable; using the supplied starting point" in message
         for message in supplied_messages
     )
+
+
+def test_setup_warnings_go_to_standard_output_without_logging_configuration(
+    capsys,
+):
+    """The adapter reports through PyVBMC's logging: where the program
+    configures no logging, its warnings are written to standard output, as
+    the rest of PyVBMC's messages are."""
+    with unconfigured_logging():
+        PyMCTarget(undefined_gradient_model(), seed=14)
+    captured = capsys.readouterr()
+    assert "gradient is unavailable" in captured.out
+    assert "gradient is unavailable" not in captured.err
 
 
 def test_absent_scalar_hessian_keeps_the_gradient_and_prior_widths():
@@ -380,6 +394,31 @@ def test_boundary_mode_is_moved_and_vbmc_accepts_bounds(caplog):
     assert not [
         record for record in caplog.records if record.name == "VBMC_init"
     ]
+
+
+def test_vbmc_takes_a_single_valued_hard_bound_that_matches_the_support():
+    """A hard bound given as a single value holds for every variable, with
+    a ``PyMCTarget`` as with any target, and is then compared with the
+    target's hard bounds: a matching one is taken, a contradicting one is
+    refused."""
+    spec = vector_model(np.random.default_rng(803))
+    target = PyMCTarget(spec["model"], seed=14)
+    assert target.D == 3
+    assert np.all(np.isneginf(target.lb))
+    assert np.all(np.isposinf(target.ub))
+
+    vbmc = VBMC(
+        target,
+        lower_bounds=-np.inf,
+        upper_bounds=np.inf,
+        options={"display": "off"},
+        seed=15,
+    )
+    np.testing.assert_array_equal(vbmc.lower_bounds, target.lb)
+    np.testing.assert_array_equal(vbmc.upper_bounds, target.ub)
+
+    with pytest.raises(ValueError, match="lower_bounds must equal"):
+        VBMC(target, lower_bounds=-10.0, options={"display": "off"})
 
 
 def test_prior_initial_strategy_is_seeded_without_global_rng_use():

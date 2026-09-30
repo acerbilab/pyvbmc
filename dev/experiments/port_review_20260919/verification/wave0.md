@@ -41,7 +41,7 @@ what its plan says; the question is whether the plan is what is wanted),
 | --- | --- | --- | --- |
 | rerun F1 support inferred from the transform kind | `n2r_f1_wald_support.py`, `n2r_f1_wald_abort.py`, PyMC | `pm.Wald(alpha=2)` reports support `(0, inf)`; `log_joint(log 1.9)` raises; a plausible box inside the claimed support is accepted and the run aborts with `Non-finite log density for model variables x=0.5895` | defect |
 | rerun F2 only two of PyTensor's no-gradient signals are caught | `n2r_f2_rice_gradient.py`, PyMC; `_target.py:836`, `:859` | `pm.Rice` fails construction with `MethodNotDefined` (not a `NotImplementedError`) | defect |
-| rerun F3 Torch density differs from `vp.pdf` near a hard bound | `n2r_f3_near_bound.py`, Torch, 60-digit reference | with bounds `(-2, 3)`, probit: NumPy `ParameterTransformer.__call__` error 1.6e-11 at a gap of 1e-6, 2.2e-5 at 1e-12, 3.0e-3 at 1e-14, 2.0e-2 within 2 ulp; the Torch inverse is exact to 1 ulp throughout | defect of the core transformer's precision near a nonzero bound; the Torch export is the accurate side |
+| rerun F3 Torch density differs from `vp.pdf` near a hard bound | `n2r_f3_near_bound.py`, Torch, 60-digit reference | with bounds `(-2, 3)`, probit: NumPy `ParameterTransformer.__call__` error 1.6e-11 at a gap of 1e-6, 2.2e-5 at 1e-12, 3.0e-3 at 1e-14, 2.0e-2 within 2 ulp; the Torch inverse is exact to 1 ulp throughout | defect of the core transformer's precision near a bound; the Torch export is the accurate side. Shared with MATLAB, and the loss is at an upper bound with `abs(b) < b - a`, a lower bound keeping full precision except under the Student-t(4) transform at a lower bound of zero (wave 7, `wave7.md`, W7-6; left as it is in both) |
 | rerun F4 and static F2 one absorbed draw rejects the whole export batch (found by both reviewers) | `n2r_f4_onesided_absorb.py`, PyMC | coordinate -50 with `lower = 1.0` raises; 0, 50 and 500 map correctly; 800 overflows and raises | as specified (the adapter plan requires values strictly inside the support), with a reachable boundary case the plan did not consider |
 | static F1 4000 prior draws on every default construction | `n2s_f1_prior_draws.py`, PyMC | one `_prior_draws` call of shape `(4000, D)` on all five accepted models, four of which need no curvature fallback; 0.08 to 0.11 s, 2.7 s of 3.7 s for the truncated-normal model | as specified: `plans/pymc-target-adapter.md` prescribes the location check for an automatically searched start and `check_location=False` for an explicit one |
 | static F3 `UnsupportedModel` relabelled as a mode-search failure | reading `_target.py:608-612`, `_compat.py:16` | `UnsupportedModel` subclasses `ValueError` and the wrapper catches `ValueError` | defect (diagnostics only) |
@@ -56,7 +56,7 @@ what its plan says; the question is whether the plan is what is wanted),
 | F2 `active_d4_k20` times 200 samples per component with gradients | reading `_campaign.py:204-211`, `variational_optimization.py:489-500`, `active_sample.py:786-791` | both call sites of `ns_ent_fine_active` pass `compute_grad=False` | defect (performance only) |
 | F3 the summary reports a rejected candidate's speed-up | reading `_campaign.py:1293-1310` | `heldout_speedup` is the median of `group_speedups` whatever `pass` says | defect (report metadata) |
 | F4 a `ValueError` from `make_record` or `write_record` discards a finished campaign | reading `_api.py:229-239` | `make_record` is outside any `try`; `write_record` is guarded for `OSError` only | defect, latent (no live trigger) |
-| F5 the held-out gate needs all four rounds | reading `_campaign.py:883` | `ceil(0.80 * 4) = 4` | as specified or not: the plan does not say; conservative |
+| F5 the held-out gate needs all four rounds | reading `_campaign.py:883` | `ceil(0.80 * 4) = 4` | as specified: `plans/machine-local-calibration.md` requires at least `ceil(0.8*R)` winning rounds and applies the same gates to its four held-out rounds; conservative |
 | F6 an incomplete campaign discards the groups that finished | reading `_campaign.py:1509-1532` | `settings = _defaults()` whenever the status is not complete; a test pins it | design choice |
 | F7 the docstring promises output the code does not print | reading `__init__.py:14-16`, `_api.py:79-99` | neither the selected budgets nor a held-out number is printed | documentation |
 | F8 `sieve_gradient` times a gradient the package takes one point at a time | reading `_campaign.py:171-178`; `grad_flag=True` occurs only in `get_mode` | confirmed | defect (performance only) |
@@ -64,3 +64,10 @@ what its plan says; the question is whether the plan is what is wanted),
 | F10 `_MAX_WORKLOAD_SLOWDOWN` and `_deduplicate_order` are unused | `grep` | one definition each, no use | cleanup |
 
 All 24 findings are confirmed as facts about the code. None was a misreading.
+
+N3 F2, F4, F5, F6, F8 and F9 had no ruling when the review closed. The PI
+ruled on them on 2026-09-23, after the close: the ledger
+`dev/results/2026-09-23-port-correctness-review.md`, "Findings ruled after
+the close", gives each ruling and fix. The class of F5 in the table
+above was corrected then: the review had recorded "as specified or not:
+the plan does not say", and the plan does say.

@@ -130,7 +130,7 @@ def _central_difference(fn, x, step=2e-6):
 
 @pytest.mark.parametrize("name", NAMES)
 def test_all_oracle_states_gp_entropy_and_objective(snapshots, name):
-    """All eight committed states gate every load-bearing core output."""
+    """Every committed state gates every load-bearing core output."""
     state = build_state(snapshots[name])
     vp, theta = _prepared_vp(state)
     tvp = TorchVPTemplate.from_vp(vp)

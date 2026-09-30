@@ -5,6 +5,11 @@ the current :func:`optimize_vp` and :meth:`VBMC.final_boost` code objects in an
 isolated globals dictionary.  Only their numerical objective, Adam optimizer,
 and SciPy entry point are replaced.  The production modules are never patched.
 Source hashes make copied orchestration fail closed when its assumptions drift.
+The expected hashes are those of the production functions at the time of the
+Stage 4 experiment; those functions have changed since, so the module refuses
+to run until the hashes are refreshed, which the port review's closing ledger
+(``dev/results/2026-09-23-port-correctness-review.md``) leaves to whoever
+takes the scaffolding up again.
 """
 
 from __future__ import annotations

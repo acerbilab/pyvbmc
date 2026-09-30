@@ -80,7 +80,21 @@ def test_saved_legacy_posterior():
 
 
 @pytest.mark.parametrize(
-    "count", [0, -1, 1.5, True, np.bool_(True), "2", None]
+    "count",
+    [
+        0,
+        -1,
+        1.5,
+        True,
+        np.bool_(True),
+        np.array(True),
+        "2",
+        None,
+        np.inf,
+        np.nan,
+        [3],
+        np.array([3]),
+    ],
 )
 def test_bad_sample_count_does_not_draw(count):
     vp = make_vp()
@@ -88,6 +102,20 @@ def test_bad_sample_count_does_not_draw(count):
     with pytest.raises(ValueError, match="positive integer"):
         vp.to_arviz(count)
     assert vp.rng.bit_generator.state == state
+
+
+@pytest.mark.parametrize(
+    "count", [7.0, 7e0, np.float64(7), np.int32(7), np.array(7), np.array(7.0)]
+)
+def test_a_whole_number_in_any_scalar_is_the_count(count):
+    """The export takes the counts that ``sample`` takes, a whole number
+    written as a float among them, and draws what the integer draws."""
+    vp, reference = make_vp(), make_vp()
+    expected, _ = reference.sample(7)
+    posterior = vp.to_arviz(count)["posterior"]
+    assert posterior.x_0.shape == (1, 7)
+    np.testing.assert_array_equal(posterior.x_0.values[0], expected[:, 0])
+    assert vp.rng.bit_generator.state == reference.rng.bit_generator.state
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,7 @@
 # Machine-local calibration integrated into PyVBMC
 
-Created/updated: 2026-09-09, roadmap pickup 12.
+Created 2026-09-09, roadmap pickup 12; recipe revision v2 on 2026-09-23
+(port review, N3 F2 and F8).
 Status: **DELIVERED — merged, pushed, full CI matrix passed**.
 Integrated into `dev-next` at `46c16b7`; `dev-machine-calibration` is deleted.
 Release scope: **include in PyVBMC 1.5**, confirmed by the PI.
@@ -263,14 +264,24 @@ Start with candidates `2**14, 2**15, 2**16, 2**17, 2**18` and these regimes:
 
 | Group | Synthetic workloads |
 | --- | --- |
-| PDF | Small 8-row calls; D4/K20/N8192 sieve, values and gradients; D15/K26/N100000 density |
-| Entropy with gradients | D4/K20/Ns37; D4/K50/Ns55 boost; D15/K50/Ns55; D4/K20/Ns200 active scoring |
-| Entropy values | D4/K20/Ns4096 and D15/K26/Ns4096 fine scoring |
+| PDF | Small 8-row calls; D4/K20/N8192 sieve values; D15/K26/N100000 density |
+| Entropy with gradients | D4/K20/Ns37; D4/K50/Ns55 boost; D15/K50/Ns55 |
+| Entropy values | D4/K20/Ns200 active scoring; D4/K20/Ns4096 and D15/K26/Ns4096 fine scoring |
+
+Recipe revision `machine-calibration-v2` (2026-09-23) moved the 200-sample
+active-sampling workload to the value group and dropped the 8192-row gradient
+workload, because the package makes neither call with gradients (port review,
+N3 F2 and F8). The one call of the density with its gradient, the objective
+of `VariationalPosterior.mode` in the transformed space, takes one point per
+evaluation, whose layout no budget changes; that settles the check of PDF
+gradients asked for below.
 
 Specify the small PDF shape as D4/K20. Entropy Ns is per component and keeps
 the current even-number rounding. These cases cover regimes, not measured
-solver call-frequency weights. Verify PDF gradients' performance before
-selecting a shared PDF setting; the prior timing experiment measured values.
+solver call-frequency weights. The performance of PDF gradients was to be
+verified before a shared PDF setting was selected, the prior timing
+experiment having measured values; the note on recipe revision v2 above
+settles it.
 
 Warm candidates; use balanced interleaved timing cycles including the default,
 rotate every candidate through each position, and reserve independent held-out

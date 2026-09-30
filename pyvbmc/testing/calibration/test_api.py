@@ -61,8 +61,9 @@ def result(status="complete"):
     }
 
 
-def complete_result():
+def complete_result(**settings):
     value = result()
+    value["settings"].update(settings)
     record = make_test_record(identity(), **value["settings"])
     value["report"] = record["report"]
     return value
@@ -102,7 +103,7 @@ def test_every_quiet_call_runs_fresh_campaign(monkeypatch, capsys):
 
     def fake_campaign(*, progress, deadline):
         calls.append((progress, deadline))
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -124,7 +125,7 @@ def test_watchdog_is_five_minutes_from_api_entry(monkeypatch):
 
     def fake_campaign(*, progress, deadline):
         seen["deadline"] = deadline
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -167,9 +168,16 @@ def test_busy_returns_fallback_without_campaign(monkeypatch, capsys):
     assert "262,144" not in output
 
 
-@pytest.mark.parametrize("status", ["incomplete", "invalid"])
+@pytest.mark.parametrize(
+    "status, message",
+    [
+        ("incomplete", "Calibration could not complete after"),
+        ("invalid", "and its results cannot be used: synthetic outcome."),
+    ],
+    ids=["incomplete", "invalid"],
+)
 def test_failed_rerun_preserves_previous_valid_settings(
-    monkeypatch, capsys, status
+    monkeypatch, capsys, status, message
 ):
     install_guard(monkeypatch, guard())
     previous = CalibrationProfile(
@@ -190,7 +198,7 @@ def test_failed_rerun_preserves_previous_valid_settings(
     assert profile.status == status
     assert profile.source == "cache"
     output = capsys.readouterr().out
-    assert "Calibration could not complete after" in output
+    assert message in output
     assert f"Calibration {status}" not in output
     assert "synthetic outcome" in output
     assert "Using the previous saved settings." in output
@@ -254,6 +262,165 @@ def test_persistence_failure_keeps_success_in_memory(monkeypatch, capsys):
     assert "Future runs will use these settings automatically." not in output
 
 
+def test_complete_campaign_with_invalid_report_falls_back(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = complete_result()
+    # A workload missing from one group's timings, as when the campaign's
+    # recipe and the validator's tables disagree.
+    value["report"]["groups"]["pdf"]["discovery"].pop()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.settings == {name: 2**16 for name in value["settings"]}
+    assert profile.source == "default"
+    assert "results failed validation" in profile.provenance["reason"]
+    assert "discovery" in profile.provenance["reason"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Calibration ended after" in output
+    assert "and its results cannot be used" in output
+    assert "could not complete" not in output
+    assert "results failed validation" in output
+    assert "Using the standard settings." in output
+
+
+def test_complete_campaign_with_invalid_settings_falls_back(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = complete_result()
+    # A budget outside the validator's candidates, as when the campaign's
+    # candidates and the validator's tables disagree.
+    value["settings"]["pdf_chunk_elements"] = 12345
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.settings == {name: 2**16 for name in value["settings"]}
+    assert profile.source == "default"
+    assert "results failed validation" in profile.provenance["reason"]
+    assert "pdf_chunk_elements" in profile.provenance["reason"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "and its results cannot be used" in output
+    assert "could not complete" not in output
+    assert "results failed validation" in output
+    assert "Using the standard settings." in output
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "campaign changed NumPy's global RNG state",
+        "baseline numerical validation failed",
+    ],
+    ids=["global_rng", "baseline"],
+)
+def test_campaign_its_own_checks_call_invalid_falls_back(
+    monkeypatch, tmp_path, capsys, reason
+):
+    """A campaign that its own checks call invalid falls back to the
+    standard settings: one that changed NumPy's global random state, and
+    one whose baseline numerics failed, which stops it part-way. The
+    message says that the calibration ended, which holds whether or not the
+    campaign finished its measurements, and that its results cannot be
+    used, with the reason."""
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    install_guard(monkeypatch, guard(persistent=True, reason=None))
+    value = result("invalid")
+    value["report"]["reason"] = reason
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "invalid"
+    assert profile.source == "default"
+    assert profile.provenance["reason"] == reason
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Calibration ended after" in output
+    assert f"and its results cannot be used: {reason}." in output
+    assert "finished" not in output
+    assert "could not complete" not in output
+    assert "Using the standard settings." in output
+
+
+def test_record_that_cannot_be_built_keeps_success_in_memory(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    # A second backend that reports no threads: the identity is fit for
+    # reuse, and the validation of cache records refuses it.
+    data = identity()
+    data["backends"].append(
+        dict(data["backends"][0], num_threads=0, internal_api="other")
+    )
+    assert _cache.identity_reuse_reason(data) is None
+    install_guard(
+        monkeypatch,
+        _cache.CampaignGuard(
+            acquired=True,
+            persistent=True,
+            reason=None,
+            identity=data,
+            fingerprint=_cache.fingerprint(data),
+            path=_cache.cache_path(_cache.fingerprint(data)),
+        ),
+    )
+    value = complete_result()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+    monkeypatch.setattr(
+        _api,
+        "write_record",
+        lambda record: pytest.fail("a record that was not built was written"),
+    )
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "complete"
+    assert profile.source == "memory"
+    assert profile.settings == value["settings"]
+    assert profile.cache_path is None
+    persistence = profile.provenance["persistence"]
+    assert persistence.startswith("cache record could not be built")
+    assert "thread count" in persistence
+    output = capsys.readouterr().out
+    assert "Results could not be saved. Attempted location:" in output
+    assert "cache record could not be built" in output
+    assert "write failed" not in output
+
+
+def test_record_refused_by_the_cache_keeps_success_in_memory(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setenv("PYVBMC_CACHE_DIR", str(tmp_path))
+    guard_value = guard(persistent=True, reason=None)
+    install_guard(monkeypatch, guard_value)
+    value = complete_result()
+    monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
+    monkeypatch.setattr(_cache, "MAX_CACHE_BYTES", 1024)
+
+    profile = pyvbmc.calibrate()
+
+    assert profile.status == "complete"
+    assert profile.source == "memory"
+    assert profile.settings == value["settings"]
+    assert profile.cache_path is None
+    assert "size limit" in profile.provenance["persistence"]
+    assert _cache._load_report(profile) == value["report"]
+    assert not list(tmp_path.rglob("*.json"))
+    output = capsys.readouterr().out
+    assert "Results could not be saved. Attempted location:" in output
+    assert "These settings are available in this process." in output
+
+
 def test_verbose_feedback_reports_progress_values_and_location(
     monkeypatch, capsys
 ):
@@ -269,7 +436,7 @@ def test_verbose_feedback_reports_progress_values_and_location(
                 "message": "synthetic inputs ready",
             }
         )
-        return result()
+        return complete_result()
 
     monkeypatch.setattr(_api, "_run_campaign", fake_campaign)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
@@ -290,8 +457,7 @@ def test_verbose_feedback_reports_progress_values_and_location(
 
 def test_verbose_default_completion_uses_plain_summary(monkeypatch, capsys):
     install_guard(monkeypatch, guard())
-    value = result()
-    value["settings"] = {name: 2**16 for name in value["settings"]}
+    value = complete_result(**{name: 2**16 for name in result()["settings"]})
     monkeypatch.setattr(_api, "_run_campaign", lambda **kwargs: value)
     monkeypatch.setattr(_api, "register_success", lambda profile, report: None)
 

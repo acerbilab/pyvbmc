@@ -196,6 +196,27 @@ by the ``seed`` argument; the input posteriors are never modified or advanced.
 As for ``VBMC``, ``seed=None`` derives the generator from NumPy's global
 state, so ``np.random.seed`` before construction still fixes a run.
 
+Saving and loading
+------------------
+
+``stacked.save("stacked.pkl")`` writes the whole object to a file: the
+retained posteriors, the weights, the ELBO report and the state of the
+generator. ``SVBMC.load("stacked.pkl")`` reads it back, and the loaded
+object draws what the saved one would have drawn next. As with
+``vp.save``, ``.pkl`` is added to a name without an extension, ``save``
+raises ``FileExistsError`` rather than replace an existing file unless
+``overwrite=True``, and the file holds no Python bytecode, so it can be
+loaded under another minor version of Python. Loading needs no torch: a
+loaded stack can be sampled and plotted without it, while ``optimize()``
+and the methods that estimate the stacked ELBO or its entropy need it.
+
+.. code-block:: python
+
+   stacked.save("stacked.pkl")
+
+   stacked = SVBMC.load("stacked.pkl")
+   samples = stacked.sample(10000)
+
 Helpers
 -------
 
@@ -214,8 +235,8 @@ Monte Carlo. *Transactions on Machine Learning Research*.
 `TMLR <https://openreview.net/forum?id=M2ilYAJdPe>`_. Please cite it
 together with the VBMC and PyVBMC papers when you use S-VBMC.
 
-The implementation is the S-VBMC package (``acerbilab/svbmc``) integrated
-into PyVBMC; its BSD 3-Clause license notice ships with the subpackage.
+The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
+version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
 
 .. autoclass:: pyvbmc.svbmc.SVBMC
    :members:

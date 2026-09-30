@@ -179,6 +179,17 @@ class _ReachedFirstIteration(Exception):
     """Raised to leave ``optimize()`` once it is about to iterate."""
 
 
+def test_load_gives_an_older_run_the_final_boost_it_was_made_with():
+    """A run saved before ``tol_elcbo_boost`` existed keeps the unguarded
+    final boost of its day, which the option states as ``None``."""
+    with open(base_path.joinpath("test_vbmc_save_static.pkl"), "rb") as f:
+        assert "tol_elcbo_boost" not in dill.load(f).options
+
+    loaded = VBMC.load(base_path.joinpath("test_vbmc_save_static.pkl"))
+    assert "tol_elcbo_boost" in loaded.options
+    assert loaded.options["tol_elcbo_boost"] is None
+
+
 def test_load_with_a_larger_budget_schedules_the_gp_fit_as_a_fresh_run():
     """The hyperparameter fit follows the budget the run was loaded with.
 
@@ -230,6 +241,245 @@ def test_resumed_run_schedules_the_gp_fit_as_a_fresh_run(monkeypatch):
         assert _gp_fit_starting_points(
             loaded, n_eff
         ) == _gp_fit_starting_points(fresh, n_eff)
+
+
+@pytest.mark.parametrize(
+    "new_options",
+    [
+        {"max_iter": 0},
+        {"max_iter": 7.5},
+        {"max_fun_evals": -5},
+        {"max_fun_evals": 120.5},
+    ],
+)
+def test_load_refuses_the_run_limits_that_construction_refuses(
+    tmp_path, new_options
+):
+    """A limit given to ``load`` is checked as one given at construction.
+
+    ``max_fun_evals`` and ``max_iter`` are the options a continued run is
+    most often given, and both have to be positive integers on either
+    route.
+    """
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros((1, 2)),
+            options={**new_options, "display": "off"},
+        )
+
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    with pytest.raises(ValueError, match="positive integer"):
+        VBMC.load(path, new_options=new_options)
+
+
+@pytest.mark.parametrize("min_iter", [-1, 2.5, np.inf])
+def test_load_refuses_the_min_iter_that_construction_refuses(
+    tmp_path, min_iter
+):
+    """``min_iter`` has to be a finite non-negative integer on either route."""
+    D = 2
+    new_options = {"min_iter": min_iter, "max_iter": 2}
+    with pytest.raises(
+        ValueError, match="min_iter needs to be a finite non-neg"
+    ):
+        VBMC(
+            lambda x: -0.5 * np.sum(x**2),
+            np.zeros((1, D)),
+            np.full((1, D), -np.inf),
+            np.full((1, D), np.inf),
+            np.full((1, D), -1.0),
+            np.full((1, D), 1.0),
+            options={**new_options, "display": "off"},
+        )
+
+    path = tmp_path / "fresh"
+    _fresh_vbmc(D, 100).save(path)
+    with pytest.raises(
+        ValueError, match="min_iter needs to be a finite non-neg"
+    ):
+        VBMC.load(path, new_options=new_options)
+
+
+@pytest.mark.parametrize("min_iter", [-1, 2.5, np.inf])
+def test_a_saved_min_iter_that_is_refused_loads_as_the_refusal_says(
+    tmp_path, min_iter
+):
+    """Release 1.0.4 took any ``min_iter``. A value that is not a finite
+    non-negative integer is refused when a saved run that carries it is
+    loaded, and the refusal names the argument of ``load`` that replaces
+    it."""
+    vbmc = _fresh_vbmc(2, 100)
+    vbmc.options.__setitem__("min_iter", min_iter, force=True)
+    path = tmp_path / "fresh"
+    vbmc.save(path)
+    remedy = "VBMC.load(file, new_options={'min_iter': 0})"
+
+    with pytest.raises(ValueError) as at_load:
+        VBMC.load(path)
+    assert remedy in at_load.value.args[0]
+    loaded = VBMC.load(path, new_options={"min_iter": 0})
+    assert loaded.options["min_iter"] == 0
+
+
+def test_min_iter_of_zero_and_the_default_are_accepted_on_either_route(
+    tmp_path,
+):
+    """0, which sets no minimum, and the default ``min_iter = D`` pass at
+    construction and through ``load``."""
+    D = 2
+    fresh = _fresh_vbmc(D, 100)
+    assert fresh.options["min_iter"] == D
+    built = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"min_iter": 0, "display": "off"},
+    )
+    assert built.options["min_iter"] == 0
+
+    path = tmp_path / "fresh"
+    fresh.save(path)
+    assert VBMC.load(path).options["min_iter"] == D
+    loaded = VBMC.load(path, new_options={"min_iter": 0})
+    assert loaded.options["min_iter"] == 0
+
+
+def test_load_raises_max_iter_to_min_iter_as_construction_does(tmp_path):
+    """A ``max_iter`` below ``min_iter`` is raised to it on either route."""
+    path = tmp_path / "fresh"
+    _fresh_vbmc(2, 100).save(path)
+    loaded = VBMC.load(path, new_options={"max_iter": 2, "min_iter": 7})
+    assert loaded.options["max_iter"] == 7
+
+    unchanged = VBMC.load(path, new_options={"max_iter": 9, "min_iter": 7})
+    assert unchanged.options["max_iter"] == 9
+
+
+def _vbmc_with_options(options, D=2):
+    """A seeded run on a Gaussian target with the given options."""
+    return VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        np.zeros((1, D)),
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.full((1, D), -1.0),
+        np.full((1, D), 1.0),
+        options={"display": "off", **options},
+        seed=5,
+    )
+
+
+@pytest.mark.parametrize(
+    "built, given",
+    [(0, 80), (80, 0), (0, 0), (80, 40)],
+    ids=["raised_from_zero", "lowered_to_zero", "zero_again", "positive"],
+)
+def test_load_starts_or_stops_gp_sampling_as_ns_gp_max_says(
+    tmp_path, built, given
+):
+    """``ns_gp_max`` sets the number of GP hyperparameter samples at every
+    fit, and construction also derives from it whether the fits sample at
+    all: ``optim_state["stop_sampling"]`` is 0, sampling, for a positive
+    value, and infinity, no sampling, for 0. A value given to ``load``
+    leaves the run in the state construction gives for it."""
+    path = tmp_path / "run"
+    _vbmc_with_options({"ns_gp_max": built}).save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": given})
+
+    expected = _vbmc_with_options({"ns_gp_max": given}).optim_state
+    assert loaded.optim_state["stop_sampling"] == expected["stop_sampling"]
+
+
+@pytest.mark.parametrize("given", [0, 80])
+def test_load_leaves_gp_sampling_stopped_in_the_stable_regime(tmp_path, given):
+    """A run whose sampling has stopped in the stable regime holds the
+    number of training points at the stop in ``stop_sampling``, and its
+    fits take ``stable_gp_samples`` whatever ``ns_gp_max`` says, so a value
+    given to ``load`` leaves that state alone."""
+    vbmc = _vbmc_with_options({"ns_gp_max": 80})
+    vbmc.optim_state["stop_sampling"] = 37
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": given})
+
+    assert loaded.optim_state["stop_sampling"] == 37
+
+
+def test_a_run_given_a_positive_ns_gp_max_on_load_samples(tmp_path):
+    """A run built with ``ns_gp_max=0`` fits the GP hyperparameters by
+    optimization alone. Loaded with a positive value and continued, it
+    samples them: its next fit draws several samples."""
+    options = {
+        "ns_gp_max": 0,
+        "max_iter": 1,
+        "min_iter": 0,
+        "max_fun_evals": 60,
+        "do_final_boost": False,
+    }
+    vbmc = _vbmc_with_options(options)
+    vbmc.optimize()
+    assert len(vbmc.gp.posteriors) == 1
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path, new_options={"ns_gp_max": 80, "max_iter": 2})
+    loaded.optimize()
+
+    assert loaded.iteration == 1
+    assert len(loaded.gp.posteriors) > 1
+
+
+@pytest.mark.parametrize("recorded", [False, True], ids=["live", "recorded"])
+def test_load_ends_the_warm_up_of_a_run_without_one_before_its_start(
+    tmp_path, recorded
+):
+    """``optim_state["last_warmup"]`` is the index of the last warm-up
+    iteration, -1 for a run without warm-up, which ends it before its first
+    iteration. Earlier releases stored 0, MATLAB's value in its count from
+    1, with which such a run, continued, takes the full update after each
+    new point (``active_sample_full_update_past_warmup``) for one iteration
+    more. A stored 0 comes only from such a run, since warm-up ends at
+    iteration 1 at the earliest, and ``load`` reads it as -1, in the live
+    state and in the recorded state that a finished run continues from."""
+    vbmc = _vbmc_with_options({"warmup": False})
+    assert vbmc.optim_state["last_warmup"] == -1
+    vbmc.optim_state["last_warmup"] = 0
+    if recorded:
+        vbmc.iteration_history.record("vp", vbmc.vp, 0)
+        vbmc.iteration_history.record("optim_state", vbmc.optim_state, 0)
+        vbmc.iteration = 0
+        vbmc.is_finished = True
+    path = tmp_path / "run"
+    vbmc.save(path)
+
+    loaded = VBMC.load(path)
+
+    assert loaded.optim_state["last_warmup"] == -1
+    if recorded:
+        record = loaded.iteration_history["optim_state"][-1]
+        assert record["last_warmup"] == -1
+
+
+def test_load_leaves_the_last_warm_up_iteration_of_a_run_with_one(tmp_path):
+    """A run with warm-up stores infinity until its warm-up ends, and then
+    the index of its last warm-up iteration, 1 or later."""
+    vbmc = _vbmc_with_options({})
+    assert vbmc.optim_state["last_warmup"] == np.inf
+    path = tmp_path / "warming"
+    vbmc.save(path)
+    assert VBMC.load(path).optim_state["last_warmup"] == np.inf
+
+    vbmc.optim_state["last_warmup"] = 1
+    path = tmp_path / "warmed"
+    vbmc.save(path)
+    assert VBMC.load(path).optim_state["last_warmup"] == 1
 
 
 def test_load_shares_the_parameter_transformer_of_the_chosen_iteration():
@@ -296,6 +546,50 @@ def test_load_prefers_the_iterations_map_over_the_saved_live_one(tmp_path):
     assert not np.array_equal(
         loaded.parameter_transformer(probe), later_map(probe)
     )
+
+
+def test_load_recovers_the_starting_point_of_a_file_saved_without_it(tmp_path):
+    """``x0_orig`` of an older file is the starting point the caller gave.
+
+    A file saved before ``x0_orig`` existed carries the starting point in
+    the inference space of construction alone. When the run has warped
+    that space since, the map of the restored iteration is another one, and
+    the starting point has to come back through the map the run started
+    with.
+    """
+    D = 2
+    x0 = np.array([[3.5, 0.0]])
+    vbmc = VBMC(
+        lambda x: -0.5 * np.sum(x**2),
+        x0,
+        np.full((1, D), -np.inf),
+        np.full((1, D), np.inf),
+        np.array([[2.0, -3.0]]),
+        np.array([[4.0, 5.0]]),
+        options={"max_iter": 2, "display": "off"},
+        seed=1,
+    )
+    vbmc.optimize()
+    assert vbmc.iteration == 1
+
+    # The state a warp at the second iteration leaves: its map on the
+    # record of that iteration and on the live objects, the first record
+    # untouched.
+    warped = copy.deepcopy(vbmc.parameter_transformer)
+    warped.mu = np.zeros(D)
+    warped.delta = np.ones(D)
+    assert not np.allclose(warped.inverse(vbmc.x0), x0)
+    vbmc.iteration_history["vp"][1].parameter_transformer = warped
+    vbmc.vp.parameter_transformer = warped
+    vbmc.parameter_transformer = warped
+    vbmc.function_logger.parameter_transformer = warped
+    del vbmc.x0_orig
+    older = tmp_path / "older"
+    vbmc.save(older)
+
+    for iteration in (None, 0, 1):
+        loaded = VBMC.load(older, iteration=iteration)
+        assert np.allclose(loaded.x0_orig, x0)
 
 
 def test_vbmc_save_load_error_handling():

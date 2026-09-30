@@ -30,8 +30,7 @@ baseline verifiable here and recoverable elsewhere; the stacking harness
 re-verifies it before every campaign. Each generated pool has its own
 subdirectory with a README that describes every key of its JSON files
 and the exact commands that generated it; this file indexes them and
-owns the description of the comparison's outputs once the campaign's
-stacking runs are in.
+describes the comparison's outputs.
 
 ## Pilot (2026-09-14)
 
@@ -96,7 +95,7 @@ report is
 ## Cluster pool (2026-09-14)
 
 `pool_20260914/` holds the tracked side of the eight-condition pool
-generated on the University of Helsinki `kale` cluster with the Slurm
+generated on the University of Helsinki's Turso cluster with the Slurm
 scripts under `dev/scripts/hpc/`: `manifest.json`, `selection.json` /
 `selection.md` (700 selected runs, every condition at its filtered
 target), `summary.json` / `summary.md` (1100 completed runs, 1035 passing

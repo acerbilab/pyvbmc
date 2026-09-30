@@ -1,4 +1,6 @@
+import ast
 import copy
+import functools
 import logging
 import re
 import tokenize
@@ -12,6 +14,7 @@ from pyvbmc import VBMC
 from pyvbmc.acquisition_functions import AcqFcnLog, AcqFcnVIQR
 from pyvbmc.vbmc import Options
 from pyvbmc.vbmc.options import INERT_OPTIONS
+from pyvbmc.vbmc.vbmc import _CONSTRUCTION_ONLY_OPTIONS
 
 options_path = Path(__file__).parent.parent.parent.joinpath(
     "vbmc", "option_configs"
@@ -60,6 +63,25 @@ def test_options_user_options():
     assert options.get("foo") == "iter2"
     assert options.get("fooD") == 4
     assert "foo" in options.get("useroptions")
+
+
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_options_built_from_another_options_leave_it_alone(as_dict):
+    """The options of one run can be given as the user options of another,
+    as an `Options` object or a dict copied from one. Each keeps a set of
+    user options of its own: building the second leaves the first's set as
+    it was, and the name `useroptions` is not an option the user set."""
+    default_options_path = options_path.joinpath("test_options.ini")
+    options_1 = Options(default_options_path, {"D": 2}, {"foo": "iter2"})
+    before = set(options_1["useroptions"])
+
+    source = dict(options_1) if as_dict else options_1
+    options_2 = Options(default_options_path, {"D": 2}, source)
+
+    assert options_1["useroptions"] == before
+    assert options_2["useroptions"] is not options_1["useroptions"]
+    assert "useroptions" not in options_2["useroptions"]
+    assert options_2.get("foo") == "iter2"
 
 
 def test_init_from_existing_options():
@@ -184,6 +206,56 @@ def test_a_run_limit_accepts_an_integer_value(key, value):
     assert options[key] == value
 
 
+@pytest.mark.parametrize(
+    "value", [-1, 2.5, np.inf, -np.inf, np.nan, None, "3"]
+)
+def test_min_iter_must_be_a_finite_non_negative_integer(value):
+    """``min_iter`` is a number of iterations, 0 when a run has no
+    minimum. Any other value is refused where it is given, before it can
+    reach ``max_iter``, which is raised to ``min_iter`` when it is lower.
+    An infinite minimum is refused as well: the minimum holds back every
+    termination, the one on the budget of evaluations included (MATLAB
+    VBMC, ``private/vbmc_termination.m:98-99``) unless the run accounts for
+    evaluations made before it (``precomputed_evaluations`` or an
+    ``initialization_cost``), so a run under it would never stop, or would
+    stop only at its budget."""
+    with pytest.raises(ValueError) as execinfo:
+        _shipped_options({"min_iter": value, "max_iter": 2})
+    assert "The option min_iter needs to be a finite non-negative integer" in (
+        execinfo.value.args[0]
+    )
+
+
+@pytest.mark.parametrize("value", [0, 3, 3.0, np.int64(3)])
+def test_min_iter_accepts_a_non_negative_integer_value(value):
+    """As for the other limits on a run, a floating value that lands on an
+    integer passes; 0 sets no minimum."""
+    options = _shipped_options({"min_iter": value})
+    assert options["min_iter"] == value
+
+
+def test_the_default_min_iter_is_accepted():
+    D = 3
+    options = _shipped_options({}, D=D)
+    assert options["min_iter"] == D  # `min_iter = D` in the shipped file
+
+
+def test_min_iter_takes_a_boolean_as_max_iter_does():
+    """The two limits on iterations agree on `True`: both accept it, or
+    both refuse it."""
+
+    def accepted(user_options):
+        try:
+            _shipped_options(user_options)
+        except ValueError:
+            return False
+        return True
+
+    assert accepted({"min_iter": True}) == accepted(
+        {"max_iter": True, "min_iter": 0}
+    )
+
+
 def test_max_iter_below_min_iter_is_raised_to_it(caplog):
     """``misc/setupoptions_vbmc.m:115-119`` raises MaxIter to MinIter and
     says so."""
@@ -292,17 +364,27 @@ def _code_without_comments(path):
     return "".join(pieces)
 
 
-def test_inert_options_are_the_declared_options_nothing_reads():
-    """``INERT_OPTIONS`` lists exactly the declared options that no module
-    of the package reads, so that a newly dead option, or a newly read
-    registered one, fails here.
+# The forms of a read of an option, matched in the code with its whitespace
+# removed: the name quoted and subscripted (other than as the target of an
+# assignment), or fetched with ``get`` or ``eval``, from a mapping whose
+# name ends in ``options`` (``options``, ``self.options``, ``new_options``)
+# or from ``self``; or the name tested for membership in such a mapping,
+# with ``in`` or ``not in``.
+_OPTION_READS = (
+    r"(?:options|self)"
+    r"(?:\[['\"](\w+)['\"]\](?!=(?!=))|\.(?:get|eval)\(['\"](\w+)['\"])",
+    r"['\"](\w+)['\"](?:not)?in[\w.]*options",
+)
 
-    An option is read where its name is subscripted or fetched from an
-    options mapping: ``options["name"]``, ``options.get("name")`` or
-    ``options.eval("name", ...)``, and the same through ``self`` inside
-    :class:`Options`. A key of another mapping that happens to carry an
-    option's name, such as an entry of ``optim_state``, is not a read of
-    the option, and neither is a mention in a comment."""
+# Names read through an options mapping that are not options: an
+# ``Options`` object keeps the names the user set under ``useroptions``.
+_NAMES_THAT_ARE_NOT_OPTIONS = {"useroptions"}
+
+
+def _names_read_as_options():
+    """The names that the package, outside its tests, reads as options, in
+    one of the forms of ``_OPTION_READS``. A mention in a comment is not a
+    read."""
     package_path = options_path.parent.parent
     sources = [
         path
@@ -312,18 +394,177 @@ def test_inert_options_are_the_declared_options_nothing_reads():
     text = re.sub(
         r"\s+", "", "\n".join(_code_without_comments(path) for path in sources)
     )
-    unread = {
-        name
-        for name in _declared_option_names()
-        if re.search(
-            r"(?:options|self)(?:\[|\.get\(|\.eval\()['\"]"
-            + re.escape(name)
-            + r"['\"]",
-            text,
-        )
-        is None
-    }
+    names = set()
+    for pattern in _OPTION_READS:
+        for match in re.finditer(pattern, text):
+            names.update(group for group in match.groups() if group)
+    return names
+
+
+def test_inert_options_are_the_declared_options_nothing_reads():
+    """``INERT_OPTIONS`` lists exactly the declared options that no module
+    of the package reads, so that a newly dead option, or a newly read
+    registered one, fails here.
+
+    A read is one of the forms of ``_OPTION_READS``; inside
+    :class:`Options` the mapping is ``self``. A key of another mapping that
+    happens to carry an option's name, such as an entry of ``optim_state``,
+    is not a read of the option, and neither is a mention in a comment."""
+    unread = _declared_option_names() - _names_read_as_options()
     assert unread == set(INERT_OPTIONS)
+
+
+def test_every_option_the_package_reads_is_declared():
+    """Every name that the package reads as an option is declared in the
+    shipped files. Option names are checked against those files wherever
+    they are given, so no run can set an undeclared one: a read of it
+    always finds it absent, and the code that it guards never runs."""
+    undeclared = (
+        _names_read_as_options()
+        - _declared_option_names()
+        - _NAMES_THAT_ARE_NOT_OPTIONS
+    )
+    assert not undeclared, (
+        "read as options, declared in neither shipped file: "
+        f"{sorted(undeclared)}"
+    )
+
+
+# The functions that run while a ``VBMC`` object is built, and the value
+# checks and warnings that construction and ``load`` share. An option whose
+# every read lies in them is read at construction alone.
+_CONSTRUCTION_SITES = {
+    "VBMC.__init__",
+    "VBMC._init_optim_state",
+    "VBMC._initialize_precomputed_evaluations",
+    "Options.update_defaults",
+    "Options._warn_ignored_noise_size",
+}
+# The two ``Options`` methods that read an option on their caller's behalf:
+# a call of one is a read of these options at the site of the call.
+_READS_BY_METHOD = {
+    "uncertainty_handling_on": (
+        "uncertainty_handling",
+        "specify_target_noise",
+    ),
+    "integer_vars_mask": ("integer_vars",),
+}
+# Reads that no run acts on, by option and site: ``active_sample`` reads
+# the option into two locals that nothing uses, and ``load`` reads the
+# stored ``integer_vars``, ``uncertainty_handling`` and
+# ``specify_target_noise`` to rewrite the forms that release 1.0.4 wrote.
+_READS_THAT_DO_NOT_COUNT = {
+    ("active_search_bound", "active_sample"),
+    ("integer_vars", "VBMC.load"),
+    ("uncertainty_handling", "VBMC.load"),
+    ("specify_target_noise", "VBMC.load"),
+}
+
+
+def _option_read_sites(names):
+    """Map each option name to the functions of the package that read it.
+
+    A read is ``options[name]``, ``options.get(name)`` or
+    ``options.eval(name, ...)`` with a quoted name, on a mapping whose name
+    contains ``options``, the same on ``self`` inside :class:`Options`, or
+    a call of one of the methods of ``_READS_BY_METHOD``. A read written
+    otherwise, through a variable key, an alias whose name lacks
+    ``options`` or ``__getitem__``, is not seen. The site is the function
+    that holds the read, as ``Class.method``, or the name of a module-level
+    function."""
+    package_path = options_path.parent.parent
+    sites = {name: set() for name in names}
+
+    def is_options(node, in_options_class):
+        if isinstance(node, ast.Name):
+            return "options" in node.id or (
+                in_options_class and node.id == "self"
+            )
+        if isinstance(node, ast.Attribute):
+            return "options" in node.attr
+        return False
+
+    for path in package_path.rglob("*.py"):
+        if "testing" in path.relative_to(package_path).parts:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        def visit(node, class_name, site):
+            if isinstance(node, ast.ClassDef):
+                for child in node.body:
+                    visit(child, node.name, None)
+                return
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and site is None
+            ):
+                site = f"{class_name}.{node.name}" if class_name else node.name
+                if class_name == "Options" and node.name in _READS_BY_METHOD:
+                    # The method's own reads are counted at its callers.
+                    return
+            in_options_class = class_name == "Options"
+            read = None
+            if isinstance(node, ast.Subscript) and is_options(
+                node.value, in_options_class
+            ):
+                read = node.slice
+            elif (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.args
+            ):
+                if node.func.attr in ("get", "eval") and is_options(
+                    node.func.value, in_options_class
+                ):
+                    read = node.args[0]
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr in _READS_BY_METHOD
+                and site is not None
+            ):
+                for name in _READS_BY_METHOD[node.func.attr]:
+                    sites[name].add(site)
+            if (
+                isinstance(read, ast.Constant)
+                and read.value in sites
+                and site is not None
+            ):
+                sites[read.value].add(site)
+            for child in ast.iter_child_nodes(node):
+                visit(child, class_name, site)
+
+        visit(tree, None, None)
+    return sites
+
+
+def test_construction_only_options_are_the_options_only_construction_reads():
+    """``_CONSTRUCTION_ONLY_OPTIONS``, the options of which ``VBMC.load``
+    takes only the value the run stores, lists exactly the declared options
+    whose every read is made while a ``VBMC`` object is built or by a value
+    check: an option that a later iteration starts to read, or a new option
+    read at construction alone, fails here."""
+    names = _declared_option_names() - set(INERT_OPTIONS)
+    sites = _option_read_sites(names)
+    construction_only = set()
+    for name, readers in sites.items():
+        readers = {
+            site
+            for site in readers
+            if (name, site) not in _READS_THAT_DO_NOT_COUNT
+        }
+        sites[name] = readers
+        if readers and all(
+            site in _CONSTRUCTION_SITES or site.startswith("VBMC._validate_")
+            for site in readers
+        ):
+            construction_only.add(name)
+    differing = construction_only ^ set(_CONSTRUCTION_ONLY_OPTIONS)
+    assert not differing, "; ".join(
+        f"{name}: {'in' if name in _CONSTRUCTION_ONLY_OPTIONS else 'not in'}"
+        f" the tuple, read at {sorted(sites.get(name, ()))}"
+        for name in sorted(differing)
+    )
 
 
 def test_inert_option_away_from_its_default_warns(caplog):
@@ -349,6 +590,25 @@ def test_separate_search_gp_is_inert(caplog):
     assert any(
         "separate_search_gp" in message and "no effect" in message
         for message in messages
+    )
+
+
+@pytest.mark.parametrize(
+    "name, value", [("gp_int_mean_fun", 1), ("proposal_fcn", print)]
+)
+def test_the_integrated_mean_and_the_proposal_function_are_inert(
+    caplog, name, value
+):
+    """The integrated mean function of MATLAB VBMC's GP is not ported, and
+    its proposal function for the search is an option that MATLAB VBMC
+    stores and never reads, so a value given for either has no effect and
+    is reported as having none."""
+    caplog.set_level(logging.WARNING)
+    options = _shipped_options({name: value})
+    assert options[name] is value
+    messages = [record.getMessage() for record in caplog.records]
+    assert any(
+        name in message and "no effect" in message for message in messages
     )
 
 
@@ -415,9 +675,9 @@ def test_description_keeps_the_whole_comment_line(tmp_path):
     [
         (
             "search_optimizer",
-            'Local optimizer of the acquisition search: "cmaes", '
-            '"Nelder-Mead" or "none" (no local search); with one variable '
-            "a bounded scalar search is used instead of either",
+            'Local optimizer of the acquisition search: "cmaes" (CMA-ES, '
+            "replaced by a bounded scalar search where the problem has one "
+            'variable) or "none" (no local search)',
         ),
         (
             "stable_gp_samples",
@@ -434,6 +694,63 @@ def test_shipped_descriptions_are_stored_in_full(name, description):
     """The descriptions users read come from the ini files as written."""
     options = _shipped_options({})
     assert options.descriptions[name] == description
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "heavy_tail_search_frac",
+        "mvn_search_frac",
+        "hpd_search_frac",
+        "box_search_frac",
+        "search_cache_frac",
+    ],
+)
+def test_the_search_fractions_are_described_with_their_range_and_sum(name):
+    """The comment above an option is its user documentation, and the
+    five fractions of the acquisition search are refused outside [0, 1]
+    or claiming more than the whole search set together."""
+    description = _shipped_options({}).descriptions[name]
+    assert "[0, 1]" in description
+    assert "at most 1" in description
+    assert "variational posterior" in description
+
+
+def test_integer_variables_are_described_with_the_prior_they_need():
+    """A prior given with ``prior=`` has to cover the hard bounds, which
+    for an integer variable sit half an integer outside its range."""
+    description = _shipped_options({}).descriptions["integer_vars"]
+    assert "prior=" in description
+    assert "UniformBox(-0.5, 10.5)" in description
+
+
+def test_an_option_the_user_set_keeps_its_description():
+    """The description belongs to the option, whoever set its value.
+
+    ``print(options)`` lists the options the user set, so those are the
+    descriptions a user reads, for the options of either shipped file.
+    """
+    defaults = _shipped_options({})
+    options = _shipped_options({"max_fun_evals": 120, "tol_skl": 0.02})
+    for name in ("max_fun_evals", "tol_skl"):
+        assert defaults.descriptions[name]
+        assert options.descriptions[name] == defaults.descriptions[name]
+        assert f"({defaults.descriptions[name]})" in str(options)
+    assert "(None)" not in str(options)
+
+
+def test_a_user_file_without_comments_keeps_the_shipped_descriptions(
+    tmp_path,
+):
+    """An options file of the user need not repeat the descriptions."""
+    path = tmp_path.joinpath("mine.ini")
+    path.write_text("[Mine]\ntol_skl = 0.02\n")
+    defaults = _shipped_options({})
+    options = Options(basic_options_path, {"D": 2})
+    options.load_options_file(advanced_options_path, {"D": 2})
+    options.load_options_file(path, {"D": 2}, as_user_options=True)
+    assert options["tol_skl"] == 0.02
+    assert options.descriptions["tol_skl"] == defaults.descriptions["tol_skl"]
 
 
 def test__str__and__repr__():
@@ -489,6 +806,75 @@ def test_eval_callable():
     assert (2, 3) == options.eval("foo", {"Y": 2, "K": 3})
     assert (3, 2) == options.eval("bar", {"T": 2, "S": 3})
     assert (5, 10) == options.eval("bar", {"S": 5, "T": 10})
+
+
+def _positional_only_k(K, /):
+    return 10 * K
+
+
+def test_eval_passes_a_single_parameter_by_position():
+    """A callable option evaluated with one parameter, and without a
+    parameter that takes it by its name, receives it by position, as
+    ``misc/evaloption_vbmc.m`` calls ``option(N)``, so the function's
+    parameter may have any name: ``lambda n: ...`` for ``ns_ent``, and
+    ``lambda unkn: ...`` for ``adaptive_k``, the name that release 1.0.4
+    passed. A parameter that takes no keyword, and a callable whose
+    signature cannot be read, take the value by position too."""
+    options = _shipped_options(
+        {
+            "ns_ent": lambda n: 100 * n,
+            "adaptive_k": lambda unkn: unkn + 1,
+            "k_fun_max": lambda n_eff: n_eff / 2,
+            "ns_elbo": _positional_only_k,
+            "ns_ent_fine": int,
+        }
+    )
+    assert options.eval("ns_ent", {"K": 3}) == 300
+    assert options.eval("adaptive_k", {"K": 4}) == 5
+    assert options.eval("k_fun_max", {"N": 10}) == 5
+    assert options.eval("ns_elbo", {"K": 4}) == 40
+    assert options.eval("ns_ent_fine", {"K": 4.0}) == 4
+
+
+def _two_parameters(a, K):
+    return (a, K)
+
+
+@pytest.mark.parametrize(
+    "function, value",
+    [
+        (lambda scale=100, K=1: scale * K, 400),
+        (functools.partial(_two_parameters, a=1), (1, 4)),
+        (lambda *, K: K + 1, 5),
+        (lambda **kwargs: kwargs["K"] + 2, 6),
+    ],
+    ids=["later-parameter", "partial", "keyword-only", "var-keyword"],
+)
+def test_eval_passes_a_single_parameter_by_the_name_it_is_taken_by(
+    function, value
+):
+    """A callable option that takes the parameter by its name, as a
+    parameter so named or through ``**kwargs``, receives it by keyword, as
+    release 1.0.4 passed it, so that it computes what it computed there,
+    also when the parameter is not its first."""
+    options = _shipped_options({"ns_ent": function})
+    assert options.eval("ns_ent", {"K": 4}) == value
+
+
+def test_eval_passes_several_parameters_by_keyword():
+    """With several parameters the names decide which value goes where,
+    whatever the order of the function's parameters."""
+    options = _shipped_options(
+        {
+            "active_importance_sampling_mcmc_samples": (
+                lambda D, K, n_vars: (D, K, n_vars)
+            )
+        }
+    )
+    assert options.eval(
+        "active_importance_sampling_mcmc_samples",
+        {"K": 1, "n_vars": 2, "D": 3},
+    ) == (3, 1, 2)
 
 
 def test_eval_constant():

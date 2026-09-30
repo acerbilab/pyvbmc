@@ -118,10 +118,13 @@ TIPS = (
             "Using S-VBMC, you can improve your posterior estimates by "
             "combining multiple independent PyVBMC runs on the same model and "
             "data. S-VBMC re-optimizes mixture weights to form a combined "
-            "posterior without new model evaluations. See the tutorial to "
-            "combine your runs and draw samples."
+            "posterior without new model evaluations. See Example 7 to "
+            "combine your runs with pyvbmc.SVBMC and draw samples."
         ),
         frequency="low_frequency",
-        urls=("https://github.com/acerbilab/svbmc#how-to-use-s-vbmc",),
+        urls=(
+            "https://acerbilab.github.io/pyvbmc/_examples/"
+            "pyvbmc_example_7_stacking.html",
+        ),
     ),
 )

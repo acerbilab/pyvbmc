@@ -158,7 +158,7 @@ def make_test_record(identity, **settings):
     }
     report = {
         "schema_version": 1,
-        "recipe_version": 1,
+        "recipe_version": _cache._RECIPE_VERSION,
         "status": "complete",
         "estimated_seconds": 30.0,
         "watchdog_seconds": 300.0,

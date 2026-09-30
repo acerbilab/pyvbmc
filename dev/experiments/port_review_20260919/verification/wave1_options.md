@@ -7,6 +7,26 @@ on `dev-port-review` at `0d24698` and MATLAB VBMC at `396d649`. Every
 statement below was reproduced by a test that fails on the code before the
 fix and passes after it; the commits named carry those tests.
 
+Corrections by the orchestrator, from the independent check of the wave-1
+pass (2026-09-22; `wave1.md`):
+
+- **O-1.** The scan counted as read three options that no module read
+  through the options at the time: `temperature` and `diagnostics`, which
+  the wave-2 pass registered as inert, and `entropy_force_switch`, whose
+  readers took a key of `optim_state` that nothing wrote until the wave-2
+  pass read the option (`wave2.md`, rows W2-10 and W2-22).
+  The declared options that nothing read were 28, not 25, and 25 after
+  `bd47856`, not 22. `output_fcn` is not output warping's callback: MATLAB's
+  `OutputFcn` is a generic output function, which MATLAB declares and never
+  calls. "Whose consumer takes its value as an argument" fits
+  `rank_criterion`, `best_safe_sd` and `best_frac_back`;
+  `active_sample_fess_thresh` is hard-coded at its reader, and
+  `search_cmaes_best` has no reader because cma returns its best-ever
+  point.
+- **O-2.** "`load` unaffected" no longer holds: since `9b5213d` `load` checks
+  the option values, so a saved run that holds `noise_shaping=True` is
+  refused.
+
 ## Ledger
 
 | id | statement | verdict (class) | fires at defaults? | how verified | fix |

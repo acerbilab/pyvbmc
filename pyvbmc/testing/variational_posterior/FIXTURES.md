@@ -1,9 +1,10 @@
 # Variational posterior fixtures
 
 Values produced by the MATLAB VBMC toolbox and stored as plain NumPy arrays
-(`np.load(path, allow_pickle=False)`). MATLAB is needed to make them again,
+(`np.load(path, allow_pickle=False)`) or as comma-delimited text
+(`np.loadtxt(path, delimiter=",")`). MATLAB is needed to make them again,
 and the scripts that produced them are not in the repository, so treat the
-numbers as fixed. The last section describes two pickled posteriors, which
+numbers as fixed. The last two sections describe pickled posteriors, which
 did not come from MATLAB.
 
 ## `vp-test.npz`
@@ -29,9 +30,12 @@ All four flags are 1 here.
 
 `get_matlab_vp()` in `test_variational_posterior.py` rebuilds a
 `VariationalPosterior` from these arrays with a default
-`ParameterTransformer`. Two tests use it, `test_mode_no_orig_flag` and
-`test_mode_orig_flag`; both compare `vp.mode()` against the mode MATLAB found
-for the same mixture, `[0.0540, -0.1818]`, at `atol=1e-4`. That pinned mode
+`ParameterTransformer`. Four tests use it. `test_mode_no_orig_flag` and
+`test_mode_orig_flag` compare `vp.mode()` against the mode MATLAB found for
+the same mixture, `[0.0540, -0.1818]`, at `atol=1e-4`;
+`test_mode_leaves_the_random_stream_alone` and
+`test_mode_screens_its_starting_points_without_the_gradient` (its
+`matlab_vp` case) use the mixture only as a test posterior. That pinned mode
 lives in the test, not in this file.
 
 ## `test_moments_no_orig_flag_2_MATLAB.npz`
@@ -48,6 +52,39 @@ moments are stored here. In the repository since 2022-11-23.
 `test_variational_posterior.py::test_moments_no_orig_flag_2` checks both at
 NumPy's default `allclose` tolerance; in the transformed space the moments are
 analytic, so the two implementations agree closely.
+
+## `X.txt`, `mu.txt`, `bnd_lb.txt`, `bnd_ub.txt`
+
+The bounds that MATLAB sets on the variational parameters of a `D = 2`,
+`K = 2` posterior, with the inputs they were computed from. In the
+repository since 2021-08-25 (`9267816c`, as `.dat` files; `.txt` since
+2022-06-28, in this directory since 2022-11-23).
+
+| file | shape | contents |
+| --- | --- | --- |
+| `X.txt` | (10, 2) | the training inputs the bounds are computed from (input) |
+| `mu.txt` | (2, 2) | component means, one component per column (input) |
+| `bnd_lb.txt` | (10,) | lower bounds of the ten variational parameters |
+| `bnd_ub.txt` | (10,) | upper bounds |
+
+`X.txt` and `mu.txt` are byte for byte the files of the same names under
+`../vbmc/`. `test_variational_posterior.py::test_soft_bounds_2` compares
+`vp.get_bounds(X, options)` with both bounds at NumPy's default `allclose`
+tolerance; the three scalar settings MATLAB returns with them are written in
+the test.
+
+## `test_vp_save_static.pkl`
+
+A fitted `VariationalPosterior` with `D = 2` and `K = 50`, unbounded,
+written by `VariationalPosterior.save` on 2023-03-08 (`ad96d503`).
+`test_vp_save_and_load.py::test_vp_load_static` pins its means, and the test
+of the save errors loads it to check that saving over an existing file
+raises; `test_vp_arviz.py` and `test_vp_torch.py` export it as a posterior
+saved by an older version. That version's `ParameterTransformer` pickled its
+bounded-transform functions, so the file holds them by value, as bytecode of
+the Python version that wrote it. The transformer drops them when it is
+restored and rebuilds its own, so the file loads under any Python version,
+and a posterior saved from it holds no function.
 
 ## `test_vp_save_bounded_py311.pkl`, `test_vp_save_bounded_py312.pkl`
 

@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import copy
-import logging
 from collections.abc import Mapping
 from numbers import Integral
 
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.rng import get_rng
 from pyvbmc.vbmc._bounds import _effective_bounds, _normalize_bounds
 
@@ -17,7 +17,7 @@ from . import _compat, _plausible
 _PRIOR_DRAWS = 4000
 _LOG_SUPPORT_PROBE_DECADES = (1, 2, 4, 8, 16)
 _TRANSFORM_KEYS = {"log", "logodds", "interval", "interval_base"}
-_LOGGER = logging.getLogger("pyvbmc.pymc")
+_LOGGER = get_logger("pyvbmc.pymc")
 
 
 def _compatibility_error(pm, capability, exc=None):
@@ -1352,7 +1352,9 @@ class PyMCTarget:
             checked. After loading a run, use
             ``loaded.target.to_arviz(loaded.vp)``.
         n_samples : int, optional
-            Positive number of independent draws, default 1000.
+            Positive number of independent draws, default 1000, as any
+            scalar that holds a whole number (see
+            ``VariationalPosterior.sample``); a boolean is refused.
 
         Returns
         -------
@@ -1368,12 +1370,11 @@ class PyMCTarget:
             If the sample count, posterior dimension, or stored layout is
             invalid. Validation errors leave ``vp.rng`` unchanged.
         """
-        if (
-            isinstance(n_samples, (bool, np.bool_))
-            or not isinstance(n_samples, Integral)
-            or n_samples < 1
-        ):
-            raise ValueError("n_samples must be a positive integer.")
+        from pyvbmc.variational_posterior.variational_posterior import (
+            _positive_draw_count,
+        )
+
+        n_samples = _positive_draw_count(n_samples)
         if not hasattr(vp, "D") or vp.D != self.D:
             raise ValueError(
                 f"vp.D must equal target.D ({self.D}) for PyMC export."

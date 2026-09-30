@@ -13,7 +13,7 @@ on:
     # run tests against gpyreg main instead of the pin: the drift detector
     # for a dependency installed from a moving branch.
     - cron:  '23 00 13,28 * *'
-  # Development branches (dev-next and whatever succeeds it): a reduced
+  # Development branches (those named dev*): a reduced
   # smoke run on every push that touches the package, so a long-lived branch
   # without a PR is not left to manual dispatch. PRs to main run the full
   # matrix through merge-tests.yml.

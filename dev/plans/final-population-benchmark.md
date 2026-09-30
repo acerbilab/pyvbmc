@@ -324,7 +324,13 @@ usable runs against 273 on matching reference seeds with no rejection in
 the 76-test KS screen or the 95-test paired family. The pooled assessment
 is under `dev/experiments/population_extension_20260911/`
 (`assessment.json`, `comparison.md`, both campaign manifests);
-`python dev/scripts/analyze_population_run.py` reproduces it.
+`python dev/scripts/analyze_population_run.py` reproduced it until the
+promotion of 2026-09-13. Since then `dev/golden/baseline` holds
+`reference_990_20260913`, whose sidecars fail the command's check against
+`dev/golden/noisy_extension_20260907/sha256_manifest.json`, so the command
+as written stops there. The assessment reproduces exactly against the
+sidecars of `reference_870_20260907`, the reference of that date (checked
+on 2026-09-26).
 
 Summed optimizer time was 123.0 minutes against 96.1 for the same reference
 seeds: the machine ran slower throughout this campaign, including its last

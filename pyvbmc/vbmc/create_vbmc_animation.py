@@ -28,17 +28,29 @@ def create_vbmc_animation(
         If `True`, saves the animation as individual frames. The filename will
         be appended with the frame number. Default `False`.
     suptitle: str, optional
-        What kind of supertitle to print. "full" (the default) means include
-        the logging action. "iteration" means print only the iteration. "none"
-        means do not supertitle the figures.
+        What kind of supertitle to give the frame of each iteration. "full"
+        (the default) gives the iteration and the actions of that iteration
+        that the iteration log lists, such as "end warm-up", or the iteration
+        alone where there are none. "iteration" gives the iteration alone.
+        "none" gives no supertitle. The last frame, which shows the final
+        variational posterior, is titled with the number of iterations
+        whatever the choice.
     **kwargs : dict, optional
         Keyword arguments, passed to ``vp.plot()``.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The figure of the last frame, which shows the final variational
+        posterior.
 
     Raises
     ------
     ValueError
         If the ``suptitle`` option is not one of the three supported values.
     """
+    if suptitle not in ("full", "iteration", "none"):
+        raise ValueError(f"Unsupported suptitle option {suptitle}.")
     path = Path(path)
     # plot last figure to figure out x_lim and y_lim later
     last_figure_axes = np.array(
@@ -48,7 +60,6 @@ def create_vbmc_animation(
     images = []
     gp = None
     for i in range(0, len(vbmc.iteration_history["iter"]) + 1):
-
         if i >= len(vbmc.iteration_history["iter"]):
             vp = vbmc.vp
         else:
@@ -73,24 +84,9 @@ def create_vbmc_animation(
             highlight_data=highlight_data, plot_data=True, gp=gp, **kwargs
         )
 
-        # set title of plot accordingly
-        if suptitle in ("iteration", "full"):
-            fig.suptitle("PyVBMC iteration {}".format(i))
-        elif (
-            suptitle == "full"
-            and i < len(vbmc.iteration_history["iter"])
-            and len(vbmc.iteration_history["logging_action"][i]) > 0
-        ):
-            fig.suptitle(
-                "PyVBMC iteration {} ({})".format(
-                    i, "".join(vbmc.iteration_history["logging_action"][i])
-                )
-            )
-        elif suptitle != "none":
-            raise ValueError(f"Unsupported suptitle option {suptitle}.")
-
-        if i == len(vbmc.iteration_history["iter"]):
-            fig.suptitle("PyVBMC final ({} iterations)".format(i - 1))
+        title = _frame_title(vbmc.iteration_history, i, suptitle)
+        if title is not None:
+            fig.suptitle(title)
 
         # make axis limits the same for all figures and subplots
         axes = np.array(fig.axes).reshape((vp.D, vp.D))
@@ -110,12 +106,50 @@ def create_vbmc_animation(
 
     if as_frames:
         stem = path.stem
-        for (i, img) in enumerate(images):
+        for i, img in enumerate(images):
             imageio.imsave(path.with_stem(f"{stem}-{i:03}"), img)
     else:
         imageio.mimsave(path, images, duration=0.5)
 
     return fig
+
+
+def _frame_title(iteration_history, i, suptitle):
+    """The supertitle of frame ``i`` of the animation, or ``None`` for none.
+
+    Frame ``i`` shows iteration ``i`` while ``i`` is below the number of
+    recorded iterations, and the final variational posterior at that number.
+
+    Parameters
+    ----------
+    iteration_history : IterationHistory
+        The iteration history of the run.
+    i : int
+        The index of the frame.
+    suptitle : str
+        ``"full"``, ``"iteration"`` or ``"none"``, as
+        ``create_vbmc_animation`` takes it.
+
+    Returns
+    -------
+    title : str or None
+        The supertitle of the frame.
+    """
+    n_recorded = len(iteration_history["iter"])
+    if i == n_recorded:
+        # `i` is the number of recorded iterations here, the count that
+        # `results["iterations"]` reports.
+        return "PyVBMC final ({} iterations)".format(i)
+    if suptitle == "full":
+        recorded_actions = iteration_history["logging_action"]
+        if recorded_actions is not None and i < len(recorded_actions):
+            actions = recorded_actions[i]
+            if actions:
+                # Joined as the iteration log joins them.
+                return "PyVBMC iteration {} ({})".format(i, ", ".join(actions))
+    if suptitle in ("iteration", "full"):
+        return "PyVBMC iteration {}".format(i)
+    return None
 
 
 def _fig_to_img(fig):
@@ -128,7 +162,7 @@ def _fig_to_img(fig):
     io_buf.seek(0)
     img_arr = np.reshape(
         np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-        newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1),
+        (int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1),
     )
     io_buf.close()
     return img_arr

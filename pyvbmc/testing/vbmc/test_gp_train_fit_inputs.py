@@ -9,15 +9,20 @@ and its local ``vbmc_gphyp``).
 
 import copy
 import math
+import warnings
 
 import gpyreg as gpr
 import numpy as np
+import pytest
 
 import pyvbmc.vbmc.gaussian_process_train as gp_train_module
 import pyvbmc.vbmc.vbmc as vbmc_module
 from pyvbmc import VBMC
 from pyvbmc.stats import get_hpd
+from pyvbmc.vbmc.active_sample import active_sample
 from pyvbmc.vbmc.gaussian_process_train import _gp_hyp, train_gp
+
+from .test_vbmc_loop_state import build_short
 
 
 def build_trained_state(
@@ -65,6 +70,29 @@ def build_trained_state(
             logger.n_evals[i] = 1
     vbmc.optim_state["N"] = sample_count
     vbmc.optim_state["n_eff"] = sample_count
+    return vbmc
+
+
+def build_shared_value_state(options: dict = None):
+    """A training set whose high-posterior-density subset shares one value
+    in its second coordinate.
+
+    Of its ten points, the eight of highest density, the subset that the
+    default ``hpd_frac`` of 0.8 selects, lie on the line ``x2 = 0.25``, and
+    the other two lie off it.
+    """
+    X = np.vstack(
+        (
+            np.column_stack((np.linspace(-0.9, 0.9, 8), np.full(8, 0.25))),
+            [[0.1, -0.8], [-0.3, 0.9]],
+        )
+    )
+    y = -0.5 * X[:, 0] ** 2 - 3.0 * (X[:, 1] - 0.25) ** 2
+    vbmc = build_trained_state(options, sample_count=X.shape[0])
+    logger = vbmc.function_logger
+    for i in range(X.shape[0]):
+        logger.X[i] = X[i]
+        logger.y[i] = y[i]
     return vbmc
 
 
@@ -172,26 +200,6 @@ def capture_starting_points(monkeypatch, init_N: int):
     return seen
 
 
-def build_short(options: dict, seed: int = 20260920, D: int = 2):
-    """A seeded spherical-Gaussian problem, ready to run."""
-    settings = {
-        "display": "off",
-        "plot": False,
-        "print_iteration_header": False,
-    }
-    settings.update(options)
-    return VBMC(
-        lambda x: -0.5 * np.sum(x**2),
-        np.zeros((1, D)),
-        np.full((1, D), -np.inf),
-        np.full((1, D), np.inf),
-        np.full((1, D), -1.0),
-        np.full((1, D), 1.0),
-        options=settings,
-        seed=seed,
-    )
-
-
 def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):
     """The end of warm-up discards the running covariance of the GP
     hyperparameters, so that the widths of the hyperparameter sampler in
@@ -239,7 +247,7 @@ def test_ending_warmup_clears_the_covariance_the_fit_reads(monkeypatch):
     assert during_warmup[-1]["run_cov"] is not None
     assert after_warmup[0]["run_cov"] is None
     # The summary statistics carry no key beyond the ones the fit manages.
-    assert set(vbmc.hyp_dict) <= {"hyp", "warp", "logp", "full", "run_cov"}
+    assert set(vbmc.hyp_dict) <= {"hyp", "warp", "full", "run_cov"}
 
 
 def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
@@ -268,7 +276,26 @@ def test_a_fit_without_sampling_holds_the_optimized_hyperparameters():
     # The covariance of a single vector is not defined, and the chain of
     # the earlier fit is not folded into it once more.
     assert hyp_dict["run_cov"] is None
-    assert hyp_dict["logp"] is None
+
+
+def test_the_fit_keeps_no_log_density_of_the_hyperparameter_samples():
+    """The summary statistics carry no log density of the hyperparameter
+    samples. MATLAB VBMC keeps one (``misc/gptrain_vbmc.m:66`` stores the
+    thinned log posterior of the chain), for a branch of ``gplite_train.m``
+    that is not ported and a reader that is commented out
+    (``gptrain_vbmc.m:32``); PyVBMC has no reader either, so the field is
+    not kept. A dictionary that arrives with the key, as one saved by an
+    earlier version does, is left as it is: the fit neither reads it nor
+    writes it."""
+    vbmc = build_trained_state()
+
+    _, gp_s_N, _, hyp_dict = fit_the_gp(vbmc, {})
+    assert gp_s_N > 1
+    assert "logp" not in hyp_dict
+
+    stale = dict(hyp_dict, logp=np.zeros(3))
+    _, _, _, carried = fit_the_gp(vbmc, stale)
+    np.testing.assert_array_equal(carried["logp"], np.zeros(3))
 
 
 def test_output_dependent_noise_is_bounded_by_the_training_values():
@@ -408,7 +435,10 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     says nothing about the smallest (MATLAB VBMC,
     ``misc/gptrain_vbmc.m:174-188``, which assigns into vectors of NaN);
     ``gplite/gplite_train.m:120-127`` then fills what is still unset with
-    the recommendation of the full training set."""
+    the recommendation of the full training set: the smallest training
+    value for the negative-quadratic mean, and half the range of the
+    values below it for the constant mean (``gplite/gplite_meanfun.m:182``,
+    ``:156``)."""
     vbmc = build_trained_state()
     X, y = training_data(vbmc)
     D = X.shape[1]
@@ -423,6 +453,7 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert bounds["mean_const"][1] == np.max(hpd_y) + delta_y
     recommended = gp.get_recommended_bounds()
     assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][0] == np.min(y)
     assert filled["mean_const"][1] == np.max(hpd_y) + delta_y
 
     # A constant mean, whose maximum is lowered to a different value.
@@ -437,7 +468,179 @@ def test_the_constant_of_the_mean_keeps_a_lower_bound():
     assert bounds["mean_const"][1] == np.min(hpd_y)
     recommended = gp.get_recommended_bounds()
     assert filled["mean_const"][0] == recommended["mean_const"][0]
+    assert filled["mean_const"][0] == np.min(y) - 0.5 * (np.max(y) - np.min(y))
     assert filled["mean_const"][1] == np.min(hpd_y)
+
+
+def test_a_coordinate_the_subset_shares_takes_its_scales_from_the_whole_set():
+    """``_gp_hyp`` takes gpyreg's recommendations on the
+    high-posterior-density subset. Where every point of the subset shares
+    one value in a coordinate, the recommendations built from the spread of
+    that coordinate are the logarithm of zero: the starting length scale,
+    its lower bound and the starting scale of the negative-quadratic mean.
+    Those three come from the whole training set, where MATLAB VBMC takes
+    the bounds of the length scales (``misc/gptrain_vbmc.m:174-180`` leaves
+    them unset and ``gplite/gplite_train.m:120`` fills them), and the other
+    coordinate keeps the subset's."""
+    vbmc = build_shared_value_state()
+    X, y = training_data(vbmc)
+    D = X.shape[1]
+    hpd_X, hpd_y, _, _ = get_hpd(X, y, vbmc.options["hpd_frac"])
+    assert np.all(hpd_X[:, 1] == 0.25) and np.ptp(hpd_X[:, 0]) > 0
+    assert np.ptp(X[:, 1]) > 0
+
+    gp, hyp0, bounds, _ = install_hyperparameters(vbmc, default_gp(vbmc))
+
+    whole_cov = gp.covariance.get_bounds_info(X, y)
+    whole_mean = gp.mean.get_bounds_info(X, y)
+    with np.errstate(divide="ignore"):
+        hpd_cov = gp.covariance.get_bounds_info(hpd_X, hpd_y)
+        hpd_mean = gp.mean.get_bounds_info(hpd_X, hpd_y)
+    cov_N = gp.covariance.hyperparameter_count(D)
+    noise_N = gp.noise.hyperparameter_count()
+    cov_x0 = hyp0[:cov_N]
+    mean_x0 = hyp0[cov_N + noise_N :]
+    lower = bounds["covariance_log_lengthscale"][0]
+    assert np.all(np.isfinite(hyp0))
+    assert np.all(np.isfinite(lower))
+
+    # The shared coordinate.
+    assert cov_x0[1] == whole_cov["x0"][1]
+    assert lower[1] == whole_cov["LB"][1]
+    assert mean_x0[1 + D + 1] == whole_mean["x0"][1 + D + 1]
+    # The other coordinate, the output scale and the rest of the mean.
+    assert cov_x0[0] == hpd_cov["x0"][0]
+    assert lower[0] == hpd_cov["LB"][0]
+    assert cov_x0[D] == hpd_cov["x0"][D]
+    assert mean_x0[1 + D] == hpd_mean["x0"][1 + D]
+    # The location of the mean is finite on the subset, and starts at the
+    # value the subset shares.
+    np.testing.assert_array_equal(mean_x0[: 1 + D], hpd_mean["x0"][: 1 + D])
+    assert mean_x0[1 + 1] == 0.25
+
+
+def test_a_coordinate_the_subset_shares_gives_no_warning():
+    """gpyreg's recommendations on a high-posterior-density subset that
+    shares one value in a coordinate take the logarithm of zero there, of
+    which NumPy warns. ``_gp_hyp`` replaces those values with the whole
+    training set's, and prints no warning for them."""
+    vbmc = build_shared_value_state()
+    X, y = training_data(vbmc)
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        _, hyp0, _ = _gp_hyp(
+            vbmc.optim_state,
+            vbmc.options,
+            vbmc.optim_state["plb_tran"],
+            vbmc.optim_state["pub_tran"],
+            default_gp(vbmc),
+            X,
+            y,
+        )
+
+    assert np.all(np.isfinite(hyp0))
+    assert [str(warning.message) for warning in caught] == []
+
+
+@pytest.mark.parametrize(
+    "options",
+    [{}, {"integer_vars": [1]}, {"ns_gp_max": 0}],
+    ids=["continuous", "integer", "without_sampling"],
+)
+def test_the_first_fit_completes_when_the_subset_shares_a_value(options):
+    """The first GP fit of a run starts from the vector ``_gp_hyp`` builds,
+    so a starting value of ``log(0)`` there stopped the slice sampler ("The
+    widths vector needs to be all positive real numbers") or, without
+    sampling, gave non-finite hyperparameters. Here the best eight of ten
+    provided starting points share their second coordinate, and iteration 0
+    runs as ``VBMC.optimize`` runs it: the initial design, then the fit."""
+
+    def target(x):
+        x = np.atleast_2d(x)
+        return float(-0.5 * x[0, 0] ** 2 - 3.0 * (x[0, 1] - 5.0) ** 2)
+
+    x0 = np.array(
+        [[x, 5.0] for x in np.linspace(-1.8, 1.8, 8)]
+        + [[0.0, 1.0], [0.3, 9.0]]
+    )
+    settings = {
+        "display": "off",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    settings.update(options)
+    vbmc = VBMC(
+        target,
+        x0,
+        np.array([[-np.inf, -0.5]]),
+        np.array([[np.inf, 10.5]]),
+        np.array([[-2.0, 0.5]]),
+        np.array([[2.0, 9.5]]),
+        options=settings,
+        seed=11,
+    )
+    assert x0.shape[0] == vbmc.options["fun_eval_start"]
+    vbmc.iteration = 0
+    vbmc.optim_state["iter"] = 0
+    vbmc.optim_state["hyp_dict"] = vbmc.hyp_dict
+    (
+        vbmc.function_logger,
+        vbmc.optim_state,
+        vbmc.vp,
+        vbmc.gp,
+    ) = active_sample(
+        vbmc.gp,
+        vbmc.options["fun_eval_start"],
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.vp,
+        vbmc.options,
+    )
+    X, y = training_data(vbmc)
+    hpd_X, _, _, _ = get_hpd(X, y, vbmc.options["hpd_frac"])
+    assert np.ptp(hpd_X[:, 1]) == 0 and np.ptp(X[:, 1]) > 0
+
+    gp, _, _, hyp_dict = train_gp(
+        vbmc.optim_state["hyp_dict"],
+        vbmc.optim_state,
+        vbmc.function_logger,
+        vbmc.iteration_history,
+        vbmc.options,
+        vbmc.optim_state["plb_tran"],
+        vbmc.optim_state["pub_tran"],
+        rng=vbmc.rng,
+    )
+
+    assert np.all(np.isfinite(gp.get_hyperparameters(as_array=True)))
+    assert np.all(np.isfinite(hyp_dict["full"]))
+    f_mu, f_s2 = gp.predict(np.vstack((X, [[0.5, 0.0]])))
+    assert np.all(np.isfinite(f_mu)) and np.all(np.isfinite(f_s2))
+
+
+def test_a_bound_the_gp_already_carries_survives():
+    """``_gp_hyp`` replaces the bounds VBMC has a value for and leaves the
+    other half of each pair as the GP carries it, as MATLAB VBMC assigns
+    single entries of its bound vectors (``misc/gptrain_vbmc.m:174-188``).
+    A GP handed over with a smallest mean constant, a largest output scale
+    and a largest observation noise of its own keeps them."""
+    vbmc = build_trained_state()
+    gp = default_gp(vbmc)
+    own = gp.get_bounds()
+    own["mean_const"] = (-123.0, own["mean_const"][1])
+    own["covariance_log_outputscale"] = (
+        own["covariance_log_outputscale"][0],
+        4.5,
+    )
+    own["noise_log_scale"] = (own["noise_log_scale"][0], 3.5)
+    gp.set_bounds(own)
+
+    _, _, bounds, _ = install_hyperparameters(vbmc, gp)
+
+    assert bounds["mean_const"][0] == -123.0
+    assert bounds["covariance_log_outputscale"][1] == 4.5
+    assert bounds["noise_log_scale"][1] == 3.5
 
 
 def test_the_scale_of_the_observation_noise_keeps_an_upper_bound():
@@ -561,3 +764,153 @@ def test_the_noise_multiplier_starts_where_matlab_starts_it(monkeypatch):
         assert kind == "student_t"
         assert mu == np.log(vbmc.options["tol_gp_noise"])
         assert sigma == np.log(10) and df == 3
+
+
+@pytest.mark.parametrize(
+    "weighted_hyp_cov", [True, False], ids=["weighted", "running"]
+)
+def test_a_level_one_run_saved_by_1_0_4_continues(
+    monkeypatch, weighted_hyp_cov
+):
+    """PyVBMC 1.0.4 fitted the GP of uncertainty level 1 with the constant
+    noise term alone, one noise hyperparameter where the model of this
+    level has two (``test_the_noise_model_follows_the_uncertainty_level``).
+    A run it saved at that level holds the statistics of the smaller model:
+    the summary samples and the running covariance in ``hyp_dict``, and the
+    hyperparameters of the recorded GPs. The fit drops each of them that
+    does not match the model, and starts the summary samples and the
+    running covariance afresh, as for a first fit, so that the run
+    continues, also in the iterations whose history holds GPs of both
+    models."""
+    vbmc = build_trained_state(
+        {"uncertainty_handling": True, "weighted_hyp_cov": weighted_hyp_cov}
+    )
+    old_N = np.size(default_gp(vbmc).hyper_priors["mu"])
+    history = vbmc.iteration_history
+    # The statistics of three iterations of 1.0.4, with the keys it wrote.
+    rng = np.random.default_rng(104)
+    samples = rng.normal(scale=0.1, size=(40, old_N))
+    hyp_dict = {
+        "hyp": samples[::5].copy(),
+        "warp": None,
+        "logp": rng.normal(size=40),
+        "full": samples,
+        "run_cov": np.cov(samples.T),
+    }
+    for i in range(3):
+        history.record("gp", RecordedGP(samples[i::8]), i)
+        history.record("gp_hyp_full", samples, i)
+        history.record("r_index", 2.0, i)
+        history.record("sKL", vbmc.options["tol_skl"], i)
+    vbmc.optim_state["iter"] = 3
+
+    seen = []
+    unwired = gpr.GP.fit
+
+    def note_the_starting_points(self, *args, hyp0=None, **kwargs):
+        seen.append(np.array(hyp0, copy=True))
+        return unwired(self, *args, hyp0=hyp0, **kwargs)
+
+    monkeypatch.setattr(gpr.GP, "fit", note_the_starting_points)
+    gp, _, _, hyp_dict = fit_the_gp(vbmc, hyp_dict)
+
+    hyp_N = np.size(gp.hyper_priors["mu"])
+    assert hyp_N == old_N + 1
+    # A first fit starts from the one vector `_gp_hyp` builds, and takes
+    # the covariance of its own samples as the running covariance.
+    assert seen[0].shape == (1, hyp_N)
+    assert hyp_dict["hyp"].shape[1] == hyp_N
+    np.testing.assert_array_equal(
+        hyp_dict["run_cov"], np.cov(hyp_dict["full"].T)
+    )
+
+    # The next iteration: the history holds the fit above beside the GPs
+    # of 1.0.4, and the statistics of the fit above are kept.
+    history.record("gp", gp, 3)
+    history.record("gp_hyp_full", hyp_dict["full"], 3)
+    history.record("r_index", 2.0, 3)
+    history.record("sKL", vbmc.options["tol_skl"], 3)
+    vbmc.optim_state["iter"] = 4
+    run_cov = hyp_dict["run_cov"].copy()
+    gp, _, _, hyp_dict = fit_the_gp(vbmc, hyp_dict, seed=2)
+
+    assert seen[1].shape[1] == hyp_N and seen[1].shape[0] > 1
+    assert np.all(np.isfinite(gp.get_hyperparameters(as_array=True)))
+    w = vbmc.options["hyp_run_weight"] ** vbmc.options["fun_evals_per_iter"]
+    np.testing.assert_array_equal(
+        hyp_dict["run_cov"],
+        (1 - w) * np.cov(hyp_dict["full"].T) + w * run_cov,
+    )
+
+
+def noise_starting_point_and_priors(options: dict):
+    """The noise hyperparameters ``_gp_hyp`` starts the fit from, with the
+    hyperpriors it sets on them, for a state built with ``options``."""
+    vbmc = build_trained_state(options)
+    flags = vbmc.optim_state["gp_noise_fun"]
+    gp = gpr.GP(
+        D=vbmc.D,
+        covariance=gpr.covariance_functions.SquaredExponential(),
+        mean=gpr.mean_functions.NegativeQuadratic(),
+        noise=gpr.noise_functions.GaussianNoise(
+            constant_add=flags[0] == 1,
+            user_provided_add=flags[1] > 0,
+            scale_user_provided=flags[1] == 2,
+        ),
+    )
+    gp, hyp0, _, _ = install_hyperparameters(vbmc, gp)
+    cov_N = gp.covariance.hyperparameter_count(gp.D)
+    noise_N = gp.noise.hyperparameter_count()
+    priors = gp.get_priors()
+    names = [name for name, _ in gp.noise.hyperparameter_info()]
+    return (
+        vbmc,
+        hyp0[cov_N : cov_N + noise_N],
+        {name: priors[name] for name in names},
+    )
+
+
+@pytest.mark.parametrize(
+    "empty", [None, [], np.array([])], ids=["None", "list", "array"]
+)
+@pytest.mark.parametrize(
+    "level_options",
+    [{}, {"uncertainty_handling": True}],
+    ids=["level_0", "level_1"],
+)
+def test_an_empty_noise_size_leaves_the_noise_defaults(empty, level_options):
+    """An empty ``noise_size`` states no noise size, as an empty
+    ``NoiseSize`` does in MATLAB VBMC, where ``max([], MinNoise)`` is empty
+    (``misc/gptrain_vbmc.m:146-165``): the fit starts the noise where it
+    starts it without the option, and centres the hyperpriors there."""
+    _, default_hyp0, default_priors = noise_starting_point_and_priors(
+        level_options
+    )
+    _, hyp0, priors = noise_starting_point_and_priors(
+        {**level_options, "noise_size": empty}
+    )
+    assert np.array_equal(hyp0, default_hyp0)
+    assert priors == default_priors
+
+
+@pytest.mark.parametrize(
+    "value",
+    [0.1, np.float64(0.1), np.array(0.1)],
+    ids=["float", "float64", "0-d-array"],
+)
+def test_a_noise_size_starts_the_noise_of_a_noiseless_target(value):
+    """Without uncertainty handling the constant noise term starts at
+    ``log(max(NoiseSize, TolGPNoise))``, with a Student-t hyperprior
+    centred there, of scale 0.5 and three degrees of freedom (MATLAB VBMC,
+    ``misc/gptrain_vbmc.m:147-150``, ``:164``, ``:210`` and
+    ``:213-214``)."""
+    _, hyp0, priors = noise_starting_point_and_priors({"noise_size": value})
+    assert hyp0[0] == np.log(0.1)
+    kind, (mu, sigma, df) = priors["noise_log_scale"]
+    assert kind == "student_t"
+    assert mu == np.log(0.1) and sigma == 0.5 and df == 3
+
+    vbmc, hyp0, priors = noise_starting_point_and_priors({"noise_size": 1e-12})
+    floor = np.log(vbmc.options["tol_gp_noise"])
+    assert hyp0[0] == floor
+    assert priors["noise_log_scale"][1][0] == floor

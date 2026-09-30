@@ -14,12 +14,15 @@ Parameterization note: the checks use the raw parameterization
 what ``_neg_elcbo`` uses in production; one check takes ``jacobian_flag=False``
 and differentiates with respect to ``(mu, sigma, lambd, w)`` directly (until
 2026-09-04 that path returned only the ``mu`` block of the gradient, devlog
-section 9). ``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
+section 9). When both scales are optimized,
+``VariationalPosterior.set_parameters`` renormalizes ``lambd`` to
 ``||lambd|| = sqrt(D)`` and rescales ``sigma`` to compensate; the objective is
 invariant along that ray, so finite differences in raw coordinates agree with
-the analytic gradient evaluated at the renormalized point.
+the analytic gradient evaluated at the renormalized point. A scale that is
+not optimized is kept as it is.
 """
 
+import copy
 from pathlib import Path
 
 import gpyreg as gpr
@@ -136,33 +139,87 @@ def test_gp_log_joint_grad_fd_single_sample():
     assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
 
 
-def _random_gp(D, N, Ns, seed):
+MEAN_FUNCTIONS = {
+    "zero": gpr.mean_functions.ZeroMean,
+    "const": gpr.mean_functions.ConstantMean,
+    "negquad": gpr.mean_functions.NegativeQuadratic,
+}
+
+
+def _random_gp(D, N, Ns, seed, mean="negquad"):
     """A small GP with ``Ns`` hyperparameter samples at any ``D``, from a
-    local Generator (the shared fixture is ``D = 2`` only)."""
+    local Generator (the shared fixture is ``D = 2`` only), with one of the
+    mean functions that ``VBMC`` offers (option ``gp_mean_fun``)."""
     rng = np.random.default_rng(seed)
     gp = gpr.GP(
         D=D,
         covariance=gpr.covariance_functions.SquaredExponential(),
-        mean=gpr.mean_functions.NegativeQuadratic(),
+        mean=MEAN_FUNCTIONS[mean](),
         noise=gpr.noise_functions.GaussianNoise(constant_add=True),
     )
     X = rng.uniform(-2.0, 2.0, size=(N, D))
     y = -0.5 * np.sum(X**2, axis=1) + 0.1 * rng.standard_normal(N)
     cov_N = gp.covariance.hyperparameter_count(D)
     noise_N = gp.noise.hyperparameter_count()
-    hyp = np.zeros((Ns, cov_N + noise_N + gp.mean.hyperparameter_count(D)))
+    mean_N = gp.mean.hyperparameter_count(D)
+    hyp = np.zeros((Ns, cov_N + noise_N + mean_N))
     hyp[:, :D] = rng.normal(0.0, 0.3, size=(Ns, D))  # ln ell
     hyp[:, D] = rng.normal(0.0, 0.3, size=Ns)  # ln sf
     hyp[:, cov_N : cov_N + noise_N] = -2.0  # ln sn
-    hyp[:, cov_N + noise_N] = rng.normal(0.0, 0.5, size=Ns)  # m0
-    hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + 1 + D] = rng.normal(
-        0.0, 0.3, size=(Ns, D)
-    )  # xm
-    hyp[:, cov_N + noise_N + 1 + D :] = rng.normal(
-        0.3, 0.3, size=(Ns, D)
-    )  # ln omega
+    if mean_N > 0:
+        hyp[:, cov_N + noise_N] = rng.normal(0.0, 0.5, size=Ns)  # m0
+    if mean_N > 1:
+        hyp[:, cov_N + noise_N + 1 : cov_N + noise_N + 1 + D] = rng.normal(
+            0.0, 0.3, size=(Ns, D)
+        )  # xm
+        hyp[:, cov_N + noise_N + 1 + D :] = rng.normal(
+            0.3, 0.3, size=(Ns, D)
+        )  # ln omega
     gp.update(X_new=X, y_new=y.reshape(-1, 1), hyp=hyp)
     return gp
+
+
+def _vp_from_raw(theta, D_vp, K_vp):
+    """A VP of any shape from raw theta, without the gauge renormalization
+    (as ``_vp_from_raw_theta`` for the shared fixture)."""
+    vp = VariationalPosterior(D_vp, K_vp, rng=0)
+    vp.mu = theta[: D_vp * K_vp].reshape((D_vp, K_vp), order="F")
+    start = D_vp * K_vp
+    vp.sigma = np.exp(theta[start : start + K_vp]).reshape(1, -1)
+    start += K_vp
+    vp.lambd = np.exp(theta[start : start + D_vp]).reshape(-1, 1)
+    eta = theta[-K_vp:] - np.max(theta[-K_vp:])
+    vp.eta = eta.reshape(1, -1)
+    vp.w = (np.exp(eta) / np.sum(np.exp(eta))).reshape(1, -1)
+    return vp
+
+
+@pytest.mark.parametrize("D_gp", [1, 3])
+@pytest.mark.parametrize("mean", ["zero", "const"])
+def test_gp_log_joint_grad_fd_zero_and_constant_mean(mean, D_gp):
+    """dG with the zero and the constant mean function, which ``VBMC``
+    offers besides the default negative quadratic (``gp_mean_fun``), with
+    three hyperparameter samples."""
+    K_vp = 2
+    gp = _random_gp(D_gp, N=18, Ns=3, seed=31 + D_gp, mean=mean)
+    rng = np.random.default_rng(32 + D_gp)
+    theta0 = np.concatenate(
+        [
+            rng.uniform(-1.0, 1.0, size=D_gp * K_vp),
+            np.log(0.4 + 0.5 * rng.random(K_vp)),
+            np.log(0.7 + 0.6 * rng.random(D_gp)),
+            0.5 * rng.standard_normal(K_vp),
+        ]
+    )
+
+    def f(theta):
+        return _gp_log_joint(_vp_from_raw(theta, D_gp, K_vp), gp, False)[0]
+
+    def grad(theta):
+        return _gp_log_joint(_vp_from_raw(theta, D_gp, K_vp), gp, True)[1]
+
+    assert grad(theta0).shape == theta0.shape
+    assert check_grad(f, grad, theta0, rtol=1e-5, atol=1e-8)
 
 
 def test_gp_log_joint_grad_fd_D_ne_K():
@@ -293,15 +350,76 @@ def test_neg_elcbo_grad_fd_deterministic_entropy():
         assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
 
 
-def test_neg_elcbo_grad_fd_mc_entropy():
+@pytest.mark.parametrize("D_vp, K_vp", [(2, 1), (1, 1), (1, 2), (2, 3)])
+def test_neg_elcbo_grad_fd_one_component_one_dimension_weight_penalty(
+    D_vp, K_vp
+):
+    """dF with the entropy lower bound at ``K = 1`` and at ``D = 1``, with
+    the soft bounds on a mean and a log scale active and, for ``K >= 2``,
+    one weight below the threshold of the weight penalty, so that the
+    penalty and its softmax Jacobian enter the gradient."""
+    gp = _random_gp(D_vp, N=18, Ns=2, seed=51 + D_vp)
+    rng = np.random.default_rng(52 + 10 * D_vp + K_vp)
+    theta_bnd = VariationalPosterior(D_vp, K_vp, rng=0).get_bounds(
+        gp.X, OPTIONS, K_vp
+    )
+    eta = 0.4 * rng.standard_normal(K_vp)
+    if K_vp > 1:
+        eta[0] = np.max(eta[1:]) - 3.5
+    theta = np.concatenate(
+        [
+            rng.uniform(-1.0, 1.0, size=D_vp * K_vp),
+            np.log(0.4 + 0.5 * rng.random(K_vp)),
+            np.log(0.7 + 0.6 * rng.random(D_vp)),
+            eta,
+        ]
+    )
+    theta[0] = theta_bnd["lb"][0] - 0.3  # a mean below its soft bound
+    theta[D_vp * K_vp] = 1.9  # ln sigma_1: a log scale above its bound
+
+    L, _ = _vp_bound_loss(
+        VariationalPosterior(D_vp, K_vp, rng=0),
+        theta,
+        theta_bnd,
+        theta_bnd["tol_con"],
+    )
+    assert L > 0.0, "soft-bound penalty should be active"
+    if K_vp > 1:
+        w = np.exp(eta - np.max(eta))
+        w /= np.sum(w)
+        assert w[0] < theta_bnd["weight_threshold"]
+
+    def f(th):
+        vp = VariationalPosterior(D_vp, K_vp, rng=0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, False, False, theta_bnd)[0]
+
+    def grad(th):
+        vp = VariationalPosterior(D_vp, K_vp, rng=0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[1]
+
+    assert grad(theta).shape == theta.shape
+    assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
+
+
+@pytest.mark.parametrize("inside_bounds", [False, True])
+def test_neg_elcbo_grad_fd_mc_entropy(inside_bounds):
     """dF with the Monte Carlo entropy (``Ns > 0``), using common random
     numbers so the objective is a deterministic function of theta.
 
-    The tolerance is loose on purpose: the reparameterization gradient in
+    The tolerances are loose on purpose: the reparameterization gradient in
     ``entmc_vbmc`` is an unbiased estimator of the true gradient, not the
     exact derivative of the sample-based value estimate, so the two agree
-    only up to Monte Carlo error (relative ~1e-3 at ``Ns = 1e4``). This
-    still catches wrong signs, wrong Jacobians, or a missing block.
+    only up to Monte Carlo error, at ``Ns = 1e4`` about 0.01 to 0.03 on
+    each entry of the entropy's gradient in ``mu``, ``ln sigma`` and
+    ``ln lambd`` (1 to 3 % of it); its ``eta`` block is exact.
+
+    With a mean and a log scale beyond their soft bounds, the bound loss
+    dominates the gradient (entries up to 1e4): the check constrains the
+    assembly of the objective with the Monte Carlo path and soft bounds,
+    and the entropy's own gradient lies far within the tolerance. At a
+    point inside the bounds with moderate widths, the check constrains the
+    entropy's own gradient: that gradient scaled by 1.1 fails it, and so
+    does its ``eta`` block alone scaled by 2.
     """
     gp, X = _fixture_gp()
     Ns = int(1e4)
@@ -340,10 +458,124 @@ def test_neg_elcbo_grad_fd_mc_entropy():
         return value
 
     theta0 = _raw_theta0(seed=2)
-    theta0[0] = theta_bnd["lb"][0] - 0.5
-    theta0[D * K] = 1.0
-    theta0[-K:] -= 20.0
-    assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
+    if inside_bounds:
+        theta0[D * K : D * K + K] = np.log([0.25, 0.35])
+        L = _vp_bound_loss(
+            VariationalPosterior(D, K),
+            theta0,
+            theta_bnd,
+            theta_bnd["tol_con"],
+            compute_grad=False,
+        )
+        assert L == 0.0
+        assert check_grad(f, grad, theta0, rtol=1e-2, atol=5e-2)
+    else:
+        theta0[0] = theta_bnd["lb"][0] - 0.5
+        theta0[D * K] = 1.0
+        theta0[-K:] -= 20.0
+        assert check_grad(f, grad, theta0, rtol=1e-2, atol=1e-2)
+
+
+def _fixed_scale_problem(fixed):
+    """A posterior with ``sigma`` or ``lambd`` not optimized, a raw
+    parameter vector for it and soft bounds that one of its log scales
+    ``ln sigma_k + ln lambd_d`` exceeds.
+
+    The fixed scale has a value that a rescaling to unit root mean square of
+    ``lambd`` would change: ``lambd`` is fixed away from unit root mean
+    square, and a fixed ``sigma`` goes with an optimized ``lambd`` of root
+    mean square 1.45 in ``theta``."""
+    vp = VariationalPosterior(D, K, rng=0)
+    vp.mu = _load("mu.txt")
+    vp.sigma = np.array([[0.6, 0.4]])
+    mu = vp.mu.ravel(order="F")
+    eta = np.array([0.3, 0.0])
+    if fixed == "sigma":
+        vp.optimize_sigma = False
+        theta = np.concatenate([mu, [0.5, 0.2], eta])
+    else:
+        vp.lambd = np.array([[1.8], [0.9]])
+        vp.optimize_lambd = False
+        theta = np.concatenate([mu, np.log([0.6, 0.4]), eta])
+    theta_bnd = vp.get_bounds(_load("X.txt"), OPTIONS, K)
+    return vp, theta, theta_bnd
+
+
+@pytest.mark.parametrize("fixed", ["sigma", "lambd"])
+def test_neg_elcbo_grad_fd_scale_not_optimized(fixed):
+    """dF with ``sigma`` or ``lambd`` not optimized and a soft bound on the
+    log scales active, each evaluation on a fresh copy of the posterior.
+    The soft-bound loss reads the fixed scale from the posterior, which
+    ``set_parameters`` rescaled by the root mean square of ``lambd`` until
+    2026-09-23 (wave 7 of the port review, row W7-8): with ``sigma``
+    fixed, the loss read a log scale off by the log of that factor, and its
+    gradient left out the factor's dependence on ``lambd``."""
+    gp, _ = _fixture_gp()
+    vp0, theta, theta_bnd = _fixed_scale_problem(fixed)
+
+    L, dL = _vp_bound_loss(
+        copy.deepcopy(vp0), theta, theta_bnd, theta_bnd["tol_con"]
+    )
+    assert L > 0.0, "soft-bound penalty should be active"
+    assert np.any(dL[D * K : D * K + D] != 0.0)
+
+    def f(th):
+        vp = copy.deepcopy(vp0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, False, False, theta_bnd)[0]
+
+    def grad(th):
+        vp = copy.deepcopy(vp0)
+        return _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[1]
+
+    assert grad(theta).shape == theta.shape
+    assert check_grad(f, grad, theta, rtol=1e-5, atol=1e-8)
+
+
+@pytest.mark.parametrize("fixed", ["sigma", "lambd"])
+def test_neg_elcbo_is_a_function_of_theta_with_a_scale_not_optimized(fixed):
+    """With ``sigma`` or ``lambd`` not optimized, the objective is a
+    function of ``theta`` alone, as ``misc/negelcbo_vbmc.m`` makes it by
+    assigning ``theta`` to a copy of the posterior: repeated calls on one
+    posterior, which ``optimize_vp`` reuses, give the value of the first,
+    the fixed scale stays as it was given, and the soft-bound loss is that
+    of the posterior's own fixed scale. A fixed ``sigma`` used to grow by
+    the root mean square of ``lambd`` on every call, and a fixed ``lambd``
+    lost its root mean square on the first (wave 7 of the port review, row
+    W7-8)."""
+    gp, _ = _fixture_gp()
+    vp0, theta, theta_bnd = _fixed_scale_problem(fixed)
+    other = theta.copy()
+    other[D * K : D * K + D] += np.array([0.4, -0.2])
+    fixed_value = copy.deepcopy(getattr(vp0, fixed))
+
+    vp = copy.deepcopy(vp0)
+    F_first, dF_first = _neg_elcbo(
+        theta, gp, vp, 0.0, 0, True, False, theta_bnd
+    )[:2]
+    for th in (theta, other, other, theta):
+        F, dF = _neg_elcbo(th, gp, vp, 0.0, 0, True, False, theta_bnd)[:2]
+    assert F == F_first
+    assert np.array_equal(dF, dF_first)
+    assert np.array_equal(getattr(vp, fixed), fixed_value)
+
+    # The soft-bound loss added to the objective is that of the posterior
+    # as given, with the weight penalty turned off.
+    no_weight_penalty = dict(theta_bnd, weight_penalty=0.0)
+    F_bounded = _neg_elcbo(
+        theta, gp, copy.deepcopy(vp0), 0.0, 0, False, False, no_weight_penalty
+    )[0]
+    F_free = _neg_elcbo(
+        theta, gp, copy.deepcopy(vp0), 0.0, 0, False, False, None
+    )[0]
+    L = _vp_bound_loss(
+        copy.deepcopy(vp0),
+        theta,
+        theta_bnd,
+        theta_bnd["tol_con"],
+        compute_grad=False,
+    )
+    assert L > 0.0
+    assert np.isclose(F_bounded - F_free, L, rtol=1e-12, atol=1e-12)
 
 
 def test_vp_bound_loss_grad_fd():
@@ -488,7 +720,10 @@ def test_vp_bound_loss_weight_flags():
 
 
 def test_neg_elcbo_retains_capped_small_weight_penalty():
-    """Removing eta bounds leaves the separate capped weight penalty."""
+    """Removing eta bounds leaves the separate capped weight penalty. Its
+    gradient with respect to eta is the softmax Jacobian
+    ``diag(w) - w w^T`` applied to the penalty's slope in ``w``, which is
+    the penalty weight below the threshold and zero above it."""
     gp, X = _fixture_gp()
     theta = _raw_theta0(seed=3)
     theta[-K:] = (-8.0, 0.0)
@@ -516,7 +751,14 @@ def test_neg_elcbo_retains_capped_small_weight_penalty():
     )
     assert np.isclose(F_penalty - F_base, expected)
     assert np.allclose(dF_penalty[:-K], dF_base[:-K])
-    assert not np.allclose(dF_penalty[-K:], dF_base[-K:])
+
+    w = vp_penalty.w.ravel()
+    slope = OPTIONS["weight_penalty"] * (w < theta_bnd["weight_threshold"])
+    assert slope[0] > 0.0 and slope[1] == 0.0
+    expected_grad = (np.diag(w) - np.outer(w, w)) @ slope
+    assert np.allclose(
+        dF_penalty[-K:] - dF_base[-K:], expected_grad, rtol=1e-8, atol=1e-12
+    )
 
 
 @pytest.mark.parametrize("Ns", [0, 64])

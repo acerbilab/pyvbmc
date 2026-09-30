@@ -35,11 +35,14 @@ after the ``acq_*`` oracles have confirmed the acquisition itself.
 and adds its references, leaving every existing array bit-identical (the
 recipes are not rerun, so the snapshots keep pinning what they pin).
 ``--check --exact`` compares bit for bit instead of at the tolerances. The
-committed references pin the numerics of the day they were made (several
-outputs have since moved within tolerance, Stage 2 items 1–3), so the gate
-for an identity-preserving refactor is ``--dump-outputs DIR`` on the code
-just before it and ``--check --exact --against DIR`` after. Plan and
-worklog: ``dev/plans/fixture-generator-and-oracles.md``.
+committed references equal the current numerics on the generating platform,
+so ``--check --exact`` against them is the gate for a change that must move
+nothing; ``--dump-outputs DIR`` before a change and ``--check --exact
+--against DIR`` after it serve a change made while the references are known
+to lag. Off the generating platform ``--check`` skips the platform-bound
+oracles, as the tests do (``PYVBMC_ORACLES_ALL=1`` forces them); a dump is
+compared in full. Plan and worklog:
+``dev/plans/fixture-generator-and-oracles.md``.
 
 The authentic GP-history capture mode runs only until it has observed an
 early sampled fit, a later fit whose stored sample counts differ, and a noisy
@@ -102,6 +105,7 @@ from pyvbmc.testing.oracles._oracles import (  # noqa: E402
 from pyvbmc.testing.oracles._state import (  # noqa: E402
     _files,
     build_state,
+    decode,
     encode,
     load_snapshot,
     save_snapshot,
@@ -110,6 +114,9 @@ from pyvbmc.testing.oracles._state import (  # noqa: E402
 )
 from pyvbmc.variational_posterior import VariationalPosterior  # noqa: E402
 from pyvbmc.vbmc.active_sample import _get_search_points  # noqa: E402
+from pyvbmc.vbmc.gaussian_process_train import (  # noqa: E402
+    _cov_identifier_to_covariance_function,
+)
 
 FIXTURES = REPO_ROOT / "pyvbmc" / "testing" / "oracles" / "fixtures"
 GP_HISTORY_FIXTURES = FIXTURES / "gp_fit_history"
@@ -124,13 +131,26 @@ SIEVE = 2**13
 
 
 class Recipe:
-    def __init__(self, name, config, options, pick, note, check=None):
+    def __init__(
+        self,
+        name,
+        config,
+        options,
+        pick,
+        note,
+        check=None,
+        train_candidates=False,
+    ):
         self.name = name
         self.config = config
         self.options = dict(options)
-        self.pick = pick  # int | "last" | "last_warped" | "final_vp" | "k1"
+        # int | "last" | "last_warped" | "first_repeat" | "final_vp" | "k1"
+        self.pick = pick
         self.note = note
-        self.check = check  # callable(snapshot_tree) -> None (asserts)
+        # callable(decoded snapshot tree) -> None (asserts)
+        self.check = check
+        # Whether the live training inputs lead the candidate set.
+        self.train_candidates = train_candidates
 
 
 def _check_singlesample(tree):
@@ -152,6 +172,21 @@ def _check_boosted(tree):
 
 def _check_k1(tree):
     assert tree["vp"]["K"] == 1
+
+
+def _check_level1(tree):
+    level = tree["logger"]["uncertainty_handling_level"]
+    assert level == 1, f"expected uncertainty level 1, got {level}"
+    p = tree["gp"]["noise_parameters"]
+    assert p == [1, 2, 0], f"expected noise parameters [1, 2, 0], got {p}"
+    s2 = np.ravel(tree["gp"]["s2"])
+    assert np.ptp(s2) > 0, "no repeated observation: s2 is constant"
+    # The noise block follows the covariance hyperparameters: the constant
+    # term, then the log multiplier of the recorded noise.
+    cov = _cov_identifier_to_covariance_function(tree["gp"]["cov_fun"])
+    cov_N = cov.hyperparameter_count(tree["pt"]["D"])
+    log_mult = float(np.mean(tree["gp"]["hyp"][:, cov_N + 1]))
+    assert abs(log_mult) > 1, f"log noise multiplier {log_mult:.3f} near 0"
 
 
 RECIPES = [
@@ -222,6 +257,22 @@ RECIPES = [
         "importance samples for the VIQR/IMIQR acquisitions",
         _check_noisy,
     ),
+    Recipe(
+        "rosenbrock_D2_noise3_level1",
+        "rosenbrock_D2_noise3_level1",
+        {"max_repeated_observations": 3},
+        "first_repeat",
+        "uncertainty level 1, the target returning its value alone: the "
+        "GP noise is a constant plus the recorded noise of each point "
+        "scaled by a fitted multiplier (noise function [1, 2, 0]); the "
+        "first iteration whose GP holds a repeated observation, so that "
+        "the recorded noise differs between points, and a noise SD of 3 "
+        "keeps the multiplier away from 1, where levels 1 and 2 compute "
+        "nearly the same numbers; the live training inputs lead the "
+        "candidate set, as the candidates of a repeated observation",
+        _check_level1,
+        train_candidates=True,
+    ),
 ]
 
 
@@ -268,6 +319,13 @@ def pick_iteration(vbmc, pick):
             if h["vp"][i].parameter_transformer.R_mat is not None:
                 return i
         raise RuntimeError("no warped iteration in this run")
+    if pick == "first_repeat":
+        # The first iteration whose GP holds a repeated observation.
+        for i in range(n):
+            fl = h["function_logger"][i]
+            if np.any(fl.n_evals[fl.X_flag] > 1):
+                return i
+        raise RuntimeError("no repeated observation in this run")
     if isinstance(pick, int):
         assert 0 <= pick < n, f"iteration {pick} not in 0..{n - 1}"
         return pick
@@ -313,6 +371,10 @@ def make_snapshot(recipe):
     assert np.array_equal(gp.X, fl.X[live]) and np.array_equal(
         np.ravel(gp.y), np.ravel(fl.y[live])
     ), f"{recipe.name}: GP data differ from the logger's live rows"
+    if fl.noise_flag:
+        assert np.array_equal(
+            np.ravel(gp.s2), np.ravel(fl.S[live] ** 2)
+        ), f"{recipe.name}: GP noise differs from the logger's live rows"
     if recipe.pick == "final_vp":
         vp = vp_final
     elif recipe.pick == "k1":
@@ -342,6 +404,9 @@ def make_snapshot(recipe):
         "note": recipe.note,
         "r_index": float(h["r_index"][i]),
         "best_iter": int(results["best_iter"]),
+        # The number of iterations of the run. A fixture written before
+        # commit 4822ae1 (2026-09-20) holds the index of the last iteration
+        # here, one less: it was what results["iterations"] reported.
         "n_iterations": int(results["iterations"]),
         "K": int(vp.K),
         "Ns": len(gp.posteriors),
@@ -360,16 +425,25 @@ def make_snapshot(recipe):
     arrays, tree = snapshot_from_objects(
         vp, gp, fl, os_, vbmc.options, meta=meta, iteration=i
     )
-    # Candidate set: a fixed subsample of the seeded sieve.
+    # Candidate set: a fixed subsample of the seeded sieve, after the live
+    # training inputs for a recipe that asks for them (with observation
+    # noise and `max_repeated_observations` above 0, active sampling offers
+    # them as candidates for a repeated observation).
     vp_c = copy.deepcopy(vp)
     vp_c.rng = np.random.default_rng(DEFAULT_SEED)
     Xs, _ = _get_search_points(
         SIEVE, copy.deepcopy(os_), copy.deepcopy(fl), vp_c, vbmc.options
     )
     Xs = np.array(Xs[:: SIEVE // N_CAND][:N_CAND])
+    n_train = 0
+    if recipe.train_candidates:
+        X_train = np.array(fl.X[fl.X_flag])
+        n_train = X_train.shape[0]
+        Xs = np.vstack([X_train, Xs])
     tree["cand"] = {"Xs": encode(Xs, "cand/Xs", arrays)}
+    tree["meta"]["cand_train_rows"] = n_train
     if recipe.check is not None:
-        recipe.check(tree)
+        recipe.check(decode(tree, arrays))
     return arrays, tree, prob
 
 
@@ -763,13 +837,32 @@ def check(names, verbose, exact=False, against=None):
     failures = {}
     for name in names:
         path = FIXTURES / name
-        fun = target_for(load_snapshot(path)["meta"])
+        snap = load_snapshot(path)
+        fun = target_for(snap["meta"])
         reference = None if against is None else load_dump(against, name)
+        # The committed references of the platform-bound oracles hold on the
+        # generating platform only, so elsewhere they are skipped, as the
+        # tests skip them. A dump is compared in full: it is made on the
+        # machine that checks against it.
+        skip = ()
+        if (
+            reference is None
+            and not same_platform(snap)
+            and not os.environ.get("PYVBMC_ORACLES_ALL")
+        ):
+            skip = tuple(sorted(PLATFORM_BOUND & set(snap["ref"])))
         bad = check_one(
-            path, fun, exact=exact, verbose=verbose, reference=reference
+            path,
+            fun,
+            exact=exact,
+            verbose=verbose,
+            reference=reference,
+            skip=skip,
         )
+        skipped = f" (platform-bound, skipped: {', '.join(skip)})"
         print(
-            f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}",
+            f"[check] {name:28s} {'ok' if not bad else 'FAIL ' + str(bad)}"
+            f"{skipped if skip else ''}",
             flush=True,
         )
         if bad:
@@ -1175,7 +1268,7 @@ def main(argv=None):
     if args.list:
         for r in RECIPES:
             print(
-                f"{r.name:28s} {r.config:24s} pick={r.pick!s:12s} {r.options or ''}"
+                f"{r.name:28s} {r.config:28s} pick={r.pick!s:12s} {r.options or ''}"
             )
             print(f"{'':28s} {r.note}")
         print("oracles:", ", ".join(ORACLES))

@@ -193,8 +193,9 @@ def snapshot_from_objects(
         "cov_fun": encode(optim_state["gp_cov_fun"], "gp/cov_fun", arrays),
         "mean_fun": optim_state["gp_mean_fun"],
         # The noise function's own switches (constant, user-provided or
-        # scaled user-provided, output-dependent), not the option triple
-        # they were derived from: the two can disagree.
+        # scaled user-provided, output-dependent), which are what the
+        # rebuilt GP has to reproduce. The option triple that `train_gp`
+        # derives them from is stored beside them.
         "noise_parameters": [int(v) for v in np.ravel(gp.noise.parameters)],
         "noise_fun": [int(v) for v in optim_state["gp_noise_fun"]],
     }
@@ -378,13 +379,15 @@ def build_logger(d, pt, fun=None):
 
 
 def build_options(user_options, D):
-    """Mirror ``VBMC.__init__``: basic, advanced, defaults, validation."""
+    """Mirror ``VBMC.__init__``: basic, advanced, run limits, defaults,
+    validation."""
     options = Options(
         BASIC_OPTIONS,
         evaluation_parameters={"D": D},
         user_options=_decode_user_options(user_options),
     )
     options.load_options_file(ADVANCED_OPTIONS, evaluation_parameters={"D": D})
+    options.validate_run_limits()
     options.update_defaults()
     options.validate_option_names([BASIC_OPTIONS, ADVANCED_OPTIONS])
     return options

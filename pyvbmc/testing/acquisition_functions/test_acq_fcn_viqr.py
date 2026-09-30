@@ -1,3 +1,5 @@
+from fractions import Fraction
+
 import gpyreg as gpr
 import numpy as np
 import pytest
@@ -37,6 +39,7 @@ def test_acq_info():
     assert not acqf.acq_info["importance_sampling_vp"]
     assert acqf.acq_info["variational_importance_sampling"]
     assert acqf.acq_info["log_flag"]
+    assert acqf.acq_info["compute_var_log_joint"] is False
     assert np.isclose(sps.norm.cdf(acqf.u), 0.75)
 
     # Test handling of string input for SearchAcqFcn:
@@ -49,6 +52,43 @@ def test_acq_info():
     acqf6 = string_to_acq("AcqFcnVIQR(0.666)")
     assert acqf4.u == acqf5.u == acqf6.u
     assert np.isclose(sps.norm.cdf(acqf4.u), 0.666)
+
+
+@pytest.mark.parametrize("quantile", [0, 0.25, 0.5, 1])
+def test_a_quantile_outside_its_range_is_refused(quantile):
+    """The interquantile range the acquisition integrates is defined for
+    an upper quantile strictly between 0.5 and 1 (Acerbi 2020)."""
+    with pytest.raises(ValueError, match="quantile"):
+        AcqFcnVIQR(quantile=quantile)
+    with pytest.raises(ValueError, match="quantile"):
+        string_to_acq(f"AcqFcnVIQR({quantile})")
+
+
+@pytest.mark.parametrize(
+    "quantile",
+    ["0.9", None, True, Fraction(9, 10), np.array([0.6, 0.9]), np.nan],
+)
+def test_a_quantile_that_is_not_a_number_is_refused(quantile):
+    with pytest.raises(ValueError, match="quantile"):
+        AcqFcnVIQR(quantile=quantile)
+
+
+@pytest.mark.parametrize(
+    "quantile",
+    [0.9, np.float64(0.9), np.float32(0.9), np.array(0.9), np.array([0.9])],
+)
+def test_a_quantile_is_taken_as_a_float(quantile):
+    """A real scalar of any type, or an array with one element."""
+    acqf = AcqFcnVIQR(quantile=quantile)
+    assert type(acqf.acq_info["quantile"]) is float
+    assert np.ndim(acqf.u) == 0
+    assert np.isclose(sps.norm.cdf(acqf.u), 0.9)
+
+
+def test_a_quantile_inside_its_range_is_accepted():
+    for acqf in (AcqFcnVIQR(quantile=0.9), string_to_acq("AcqFcnVIQR(0.9)")):
+        assert acqf.acq_info["quantile"] == 0.9
+        assert np.isclose(sps.norm.cdf(acqf.u), 0.9)
 
 
 def test_simple__call__():

@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from pyvbmc import VBMC
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.vbmc.gaussian_process_train import (
     _estimate_noise,
     _get_gp_training_options,
@@ -149,7 +150,9 @@ def _matlab_n_init(options, n_eff):
     x = (n_eff - options["fun_eval_start"]) / (
         min(options["max_fun_evals"], 1e3) - options["fun_eval_start"]
     )
-    return max(round(a * x**3 + b * x**2 + c * x + d), 0)
+    return max(
+        round_half_away_from_zero(a * x**3 + b * x**2 + c * x + d), 0
+    )
 
 
 def test_design_size_follows_the_schedule_past_its_horizon():

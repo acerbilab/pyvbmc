@@ -53,13 +53,19 @@ For the release overview, start with
   the normal-versus-uniform porting bug. Exact batch replays and 50-digit
   checks explain the remaining VIQR/refit behavior; algorithmic remedies
   are deferred beyond 1.5. Both reports link to the preserved evidence.
+- [The ELBO swing after a kept rotoscaling](results/2026-09-26-example-2-rotoscale-swing.md) —
+  Why Example 2's ELBO reads −0.82, then −104.79, around the rotoscaling it
+  keeps: the warp is exact, and the undo check, as in MATLAB VBMC, accepts
+  a gain that the refit posterior obtains by spreading where the refit GP
+  extrapolates optimistically. One golden run in 990 does the same; both
+  recover. The rule stays for 1.5.
 - [S-VBMC ELBO optimism](2026-09-12-svbmc-elbo-optimism.md) —
   What the stacking implementation reports today, why the ELBO optimism
   on noisy targets is a cross-run selection effect, the decision to leave
   the objective alone, and the two agreed phases: corrections, reporting
   and tips from the stored posteriors alone, then an exploration of a
-  cross-run honest estimate using the runs' GPs. Phase 1 is implemented,
-  verified and merged into `dev-next`; the execution record is
+  cross-run honest estimate using the runs' GPs. Phase 1 is implemented
+  and verified; the execution record is
   [plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).
 
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
@@ -113,10 +119,12 @@ plan and consolidated human summary.
   psychometric-model design, Torch/JAX targets, posterior-export workflow,
   consistency review and notebook/script/rendered-documentation verification.
 - [plans/noisy-acquisition-efficiency.md](plans/noisy-acquisition-efficiency.md)
-  — completed guarded-sum and kernel-reuse optimizations, and the completed
-  integration/search experiment: fixed-state comparisons, independent
-  judging, conditional adaptation and a ten-seed paired inference
-  comparison, with the E6 assessment and proposed follow-ups.
+  — completed guarded-sum and kernel-reuse optimizations, and the
+  integration/search experiment, closed on 2026-09-19 without a change of
+  default: fixed-state comparisons with independent judging, a ten-seed
+  paired inference comparison and its E6 assessment, the F3 trajectory
+  diagnosis, and the F2 node rule, run in two stages and not promoted; the
+  conditional adaptation (E4) was not entered, its gates unmet.
   Its [experiment report](results/2026-09-16-noisy-acquisition-integration-search.md)
   records sources, coverage, verification and measured results.
 - [plans/port-correctness-review.md](plans/port-correctness-review.md) —
@@ -124,15 +132,24 @@ plan and consolidated human summary.
   freeze: internal-correctness and MATLAB-comparison tracks per slice,
   third readers on the gradient and integral formulas, the reviewer
   brief and verification into a findings ledger, against the latest
-  MATLAB `master`; MATLAB itself is run only if a finding's disposition
-  depends on it.
+  MATLAB `master`; MATLAB itself was to be run only if a finding's
+  disposition depended on it, and none was. Complete (2026-09-19 to 09-23):
+  the [closing ledger](results/2026-09-23-port-correctness-review.md) holds
+  every finding with its disposition, and its fix commit where there is one
+  (those the close left without a ruling were ruled on the same day), and
+  the porting log `pyvbmc/vbmc/README.md` the catalogue of deliberate
+  differences from MATLAB.
 - [plans/machine-local-calibration.md](plans/machine-local-calibration.md) —
   implemented package integration for explicit PDF/entropy calibration with
   progress, a machine/environment cache and fixed per-run settings. Local
-  numerical, lifecycle, documentation and distribution validation is complete;
-  delivery status and remaining CI gates are tracked in the plan and `TODO.md`.
+  numerical, lifecycle, documentation and distribution validation is complete.
+  Merged into `dev-next` at `46c16b7` with the full CI matrix passed; the
+  recipe was revised (v2) on 2026-09-23 after the port review.
   The [first results](results/2026-09-09-machine-local-calibration.md) retain
   current defaults in both balanced sweeps and establish discovery costs.
+- [plans/runtime-tips.md](plans/runtime-tips.md) — the optional startup tips
+  (`show_tips`): policy, catalog, wording and acceptance checks; complete
+  (2026-09-10).
 - [plans/latent-bug-fixes.md](plans/latent-bug-fixes.md) — pickup 9
   implementation plan: verified candidate dispositions, numerical and
   compatibility contracts, PI-selected boost/eta fixes, and regression gates
@@ -141,13 +158,20 @@ plan and consolidated human summary.
   records acceptance and the active 990-run reference.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
+- [plans/final-population-benchmark.md](plans/final-population-benchmark.md) —
+  the staged population assessment of the integrated 1.5 code against the
+  870-run reference (2026-09-10 to 09-13): allocation, launcher, the
+  overnight stage, the noisy follow-up, the full allocation and its
+  acceptance; the resulting reference is in the
+  [promotion record](golden/promotion_20260913/README.md).
 - [plans/svbmc-integration.md](plans/svbmc-integration.md) — S-VBMC
   integration (complete): the settled decisions (Torch retained,
   independent sampling with a balanced option, `seed`, float64, snapshot
   fixtures plus a generated D=1, bounded and warped set), layout, the
-  parity gate against upstream, the test suite, verification and the
-  remaining follow-up (forwarding release after 1.5); the speedups have
-  their own plan below.
+  parity gate against upstream, the test suite, verification, the
+  `SVBMC.save` and `SVBMC.load` methods (2026-09-24) and the remaining
+  follow-up (forwarding release after 1.5); the speedups have their own
+  plan below.
 - [plans/svbmc-speedups.md](plans/svbmc-speedups.md) — S-VBMC
   preparation and entropy speedups: per-run transforms and Jacobians,
   broadcast component densities, vectorized per-component reduction;
@@ -172,6 +196,14 @@ plan and consolidated human summary.
   (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a
   Slurm array of `worker` calls, `select`, `summarize`), what to hand
   back and the branch-and-PR flow; carried out, and retained as written.
+- [plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md) —
+  the Slurm workflow of the release gate on the Turso cluster: what runs
+  where (the reference populations of the `production` suite with a
+  before arm, the S-VBMC pools and stacking on the cluster; exact replay
+  fingerprints on the developer's machine), the campaign contract every
+  harness meets, the generic driver grown from `scripts/hpc/`, the
+  harness changes, what it assumes of the cluster, costs and phases, with
+  the worklog of their execution.
 - [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md) —
   the real-data benchmark targets from benchflow (Bayesian timing,
   multisensory causal inference on two subjects): the decisions, the
@@ -248,13 +280,13 @@ plan and consolidated human summary.
   `active_sample_step` oracle's need for single-threaded BLAS on the
   machine that generated the fixtures.
 
-- `plans/stage3-pipeline-features.md` - approved Stage 3 plan and live
-  worklog: connect torch/JAX models through opt-in initial-design batching,
+- `plans/stage3-pipeline-features.md` - Stage 3 plan and worklog
+  (complete): connect torch/JAX models through opt-in initial-design batching,
   use fitted posteriors through torch and current ArviZ DataTree exports,
   optional dependencies, documentation, CI wiring and verification gates.
-  Implementation is complete on `dev-next-stage3` at code `4ee612d`
-  (records/docs `285cd74`); merged into `dev-next` at `4bff1a5`, with
-  branch/full-matrix/integrated CI and all local integration checks passed.
+  Implemented at code `4ee612d` (records/docs `285cd74`); merged into
+  `dev-next` at `4bff1a5`, with branch/full-matrix/integrated CI and all
+  local integration checks passed.
   Reference snapshot: `reference/stage3-20260906`.
 
 - [plans/pymc-target-adapter.md](plans/pymc-target-adapter.md) — the
@@ -300,7 +332,7 @@ plain module name, so run them as `python dev/scripts/<name>.py`. They need
 `psutil` (not a package dependency; `pip install psutil`). Keep to **one
 heavy process at a time** on a laptop (`golden_trace.py run --workers 1`,
 the default; eight concurrent VBMC processes hard-crashed the machine on
-2026-09-02) and export `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=1`
+2026-09-02) and export `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1`
 before profiling if wall times are to be compared with the golden baseline,
 which was made single-threaded. Long campaigns start only on explicit PI
 instruction. Light browser/email use is compatible with reference-quality
@@ -322,11 +354,11 @@ default for a specified-noise target; everything else is a package
 default. Since 2026-09-18 release checks and new experiments use the
 `production` suite instead: the same configurations with the noisy entries
 freed of that pin under `production`-tagged labels. Its noiseless entries
-are the golden ones, so a production reference copies the golden noiseless
-runs and adds fresh runs only for the noisy production labels
-(`golden_trace.py run --suite production --only <labels>`). The golden
-reference below remains the baseline for trajectory identity at the paper
-budget.
+are the golden ones. The golden reference below is the record of the
+golden suite; the reference that replaces it after the port review is to
+run the whole `production` suite on the cluster, with exact replay from
+one seed per configuration generated on the developer's machine
+([plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md)).
 
 The current golden reference is `reference_990_20260913`: **990 runs across
 23 configurations, including 250 noisy runs, with 92 population KS tests**.
@@ -342,8 +374,10 @@ remain preserved for historical comparisons.
 The [promotion record](golden/promotion_20260913/README.md) contains the
 assessment, provenance, hashes and verification. All 990 archives passed
 integrity checks and the 92-test even/odd check had no flags. The five
-default cases replay exactly under current code in every non-timer NPZ
-loop/final array, semantic final-result field and initial design. The four real-data seed-0 replays
+default cases replayed exactly under the code at promotion (2026-09-13) in
+every non-timer NPZ loop/final array, semantic final-result field and
+initial design; the port review's fixes have moved default trajectories
+since (`TODO.md`, "The golden references after the port review"). The four real-data seed-0 replays
 retain their earlier exact certification. The returned posterior's
 transformer is absent from the traces and remains uncertifiable.
 
@@ -374,9 +408,14 @@ reason.
   causal-inference model on two subjects, from the 2020 noisy-VBMC paper,
   with spline-trapezoidal priors; see
   [plans/benchmark-realistic-targets.md](plans/benchmark-realistic-targets.md)),
-  a generic noise wrapper, the `smoke` / `profile` / `golden` /
-  `svbmc_pool` suites (the last one the pool conditions of the S-VBMC
-  campaign, at PyVBMC's default budget and tagged `svbmc`), shared
+  a generic noise wrapper, whose target returns the noise SD beside the
+  value (uncertainty level 2) or, with `provide_noise=False`, the value
+  alone (level 1; the label then carries `_level1`), the `smoke` / `profile`
+  / `golden` / `svbmc_pool` / `production` / `oracle` suites
+  (`svbmc_pool` the pool conditions of the S-VBMC campaign, at PyVBMC's
+  default budget and tagged `svbmc`; `production` the golden suite with
+  its noisy entries at the package's defaults; `oracle` the configs that
+  only the oracle fixtures read), shared
   posterior-moment and metric helpers, and `--list` / `--check` / `--smoke`
   self-tests. Every other script takes its targets from here.
 - `scripts/export_benchflow_data.py` — exports the real-data targets' data
@@ -449,23 +488,23 @@ reason.
   configuration). `record-replay` adds a finished `golden_replay.py`
   report of the new configurations against the combined traces to that
   record. The README of the record is written by hand from its output.
-- `scripts/boost_comparison.py` (parked at `764a177` on `dev-final-boost`) — reads stored pre/final boost scores and
+- `scripts/boost_comparison.py` (kept at `764a177` on `retain/final-boost`) — reads stored pre/final boost scores and
   compares tolerances 0.1/0.2 without optimization. Optional
   `--metrics-tags selected` reconstructs paired accuracy diagnostics for
   rejected/near-threshold candidates and the new noisy configurations.
-- `scripts/boost_replay.py` (parked at `764a177` on `dev-final-boost`) — runs Phase 2's seven specified trajectories,
+- `scripts/boost_replay.py` (kept at `764a177` on `retain/final-boost`) — runs Phase 2's seven specified trajectories,
   with explicit `--out`, one worker and one BLAS thread. Each trajectory
   generates one unpenalized boost candidate; both tolerances are evaluated
   on it. Authentic restart state and raw candidates are retained under
   `captures/`. Results and limitations are in the
   [Phase 2 evidence note](results/2026-09-07-final-boost-comparison.md).
-- `scripts/boost_reconstruction.py` (parked at `764a177` on `dev-final-boost`) — rebuilds boost inputs from compact
+- `scripts/boost_reconstruction.py` (kept at `764a177` on `retain/final-boost`) — rebuilds boost inputs from compact
   traces and compares them with authentic restart captures. Optional
   `--population-numerics` checks all stored pre-boost SDs; `--replay TAG...`
   compares authentic/reconstructed boosts with a common RNG. These are
   reconstruction checks, not a penalty-on/off campaign. See the
   [reconstruction findings](results/2026-09-08-boost-reconstruction.md).
-- `scripts/boost_penalty_pilot.py` (parked at `764a177` on `dev-final-boost`) — times three fixed seed-0 pairs with
+- `scripts/boost_penalty_pilot.py` (kept at `764a177` on `retain/final-boost`) — times three fixed seed-0 pairs with
   weight penalty 0.1 versus zero, starting from identical reconstructed
   states and fresh RNGs. Requires `--out`; retains full paired captures and
   separate optimization/diagnostic/save timings. See the
@@ -511,7 +550,9 @@ reason.
   posteriors from short seeded VBMC runs (D=1; bounded D=2 with a different
   plausible box per run; correlated D=3 mixing warped and unwarped runs);
   `references` records the seeded three-step optimization of every group
-  and mode as the regression gate (needs Torch). Every written posterior
+  and mode as the regression gate (needs Torch); `saved-stack` writes one
+  stack with `SVBMC.save`, the file that every CI cell loads, and a sidecar
+  of its state and seeded draws (needs Torch). Every written posterior
   is rebuilt and compared with its source. `pyvbmc/testing/svbmc/FIXTURES.md`
   documents the files.
 - `scripts/svbmc_speedup_benchmark.py` — paired before/after timing of
@@ -593,7 +634,7 @@ reason.
   `svbmc_pool_finish.sh` collects the Slurm accounting, runs `verify`
   under `srun`, then `select`, `summarize` and the archive with its
   SHA-256; `svbmc_pool_env.sh` is the shared environment. Written for the
-  University of Helsinki `kale` cluster; every site-specific value is an
+  University of Helsinki's Turso cluster; every site-specific value is an
   environment variable.
 - `scripts/svbmc_pool_stack.py` — the stacking comparison of the same
   campaign: for every condition, every `M` on a grid and every repetition,
@@ -764,20 +805,22 @@ reason.
   [results/2026-09-14-pymc-feasibility.md](results/2026-09-14-pymc-feasibility.md).
 - `scripts/pymc_setup_probe.py` — preapproval setup and evaluation-reuse
   experiments for the [PyMC adapter plan](plans/pymc-target-adapter.md).
-  Subcommands `a`, `references`, `b`, `check` and `summarize` compare
-  capped gradient searches, generate and assess sequential NUTS references,
-  run the three reuse arms at matched total budgets, verify derivatives
-  and cached observations, and publish compact evidence. It uses the
-  feasibility environment in `scripts/runs/LOCAL.md` and imports the
-  historical prototype's coordinate mapping without editing it. Raw
-  paths and draws stay under `scripts/runs/`; summaries belong under
+  Subcommands `a`, `references`, `b`, `check`, `summarize`, `coverage` and
+  `coverage_summary` compare capped gradient searches, generate and assess
+  sequential NUTS references, run the three reuse arms at matched total
+  budgets, verify derivatives and cached observations, run the focused
+  coverage follow-up on the two hard models, and publish compact evidence.
+  It needs a PyMC environment, which `scripts/runs/LOCAL.md` lists, and
+  imports the historical prototype's coordinate mapping without editing it.
+  Raw paths and draws stay under `scripts/runs/`; summaries belong under
   `experiments/pymc_setup_probe/`. See the
   [setup report](results/2026-09-16-pymc-setup-probe.md).
 - `scripts/svbmc_parity_check.py` — historical: the moved
   `pyvbmc.svbmc.SVBMC` against the pinned upstream package on the thirty
   posteriors with matched draws (upstream's `testing=True` mode). Runs only
-  from the source-move commit `a8ae260`, the last where the moved class
-  carries that flag; its result (every difference exactly zero) is in
+  from `6103be8`, the commit that added it, whose package is that of the
+  source move `a8ae260` and the last where the moved class carries that
+  flag; its result (every difference exactly zero) is in
   `plans/svbmc-integration.md`.
 - `scripts/make_oracle_fixtures.py` — generates the stage-level oracle
   fixtures under `pyvbmc/testing/oracles/fixtures/`: short seeded runs on
@@ -794,19 +837,56 @@ reason.
   `meta["rebaselined"]` in the `.json` (oracle, date, git SHA, reason,
   per-output max change: the thing to look for when reviewing such a
   diff), refuses the platform-bound oracles (`active_sample_step`,
-  `gp_fit`) off the generating platform, and runs one process at a time.
+  `gp_fit`, `gp_fit_history`) off the generating platform, where `--check`
+  skips them as the tests do (`PYVBMC_ORACLES_ALL=1` forces them), and runs
+  one process at a time.
   Since 2026-09-05 (item 8): `--expect-moving A,B` names the other
   oracles a change moves so the post-write check does not fail on them
   (a random-stream change moves every oracle that draws); `--add-oracle
   NAME --reason "..."` adds a newly registered oracle's references to the
   existing fixtures from their stored state (audit entry under
   `meta["oracles_added"]`); `--check --exact` compares the working tree
-  with the committed references bit for bit, the gate for an
-  identity-preserving refactor since the references were re-baselined to
-  the current numerics at the end of Stage 2 (2026-09-06); `--dump-outputs
+  with the committed references bit for bit (they equal the current
+  numerics on the generating platform), the gate for a change that must
+  move nothing; `--dump-outputs
   DIR` writes the current code's outputs of every oracle on every snapshot
   and `--check --exact --against DIR` compares with such a dump, for a
-  change made while the references are known to lag.
+  change made while the references are known to lag. The authentic
+  captures of the hyperparameter fit under `fixtures/gp_fit_history/` have
+  their own modes: `--capture-gp-fit-history` writes them and refuses to
+  replace one, `--check-gp-fit-history` compares them, and
+  `--rebaseline-gp-fit-history NAME --reason "..."` replays one capture on
+  its stored inputs after a deliberate change of the fit and replaces the
+  outputs of the fit and the sampler widths alone, on the generating
+  platform only, with the captured inputs and the portable references
+  asserted bit-identical and an audit entry in the capture's `.json`.
+  The three captures still hold the arrays `capture/ref/fit/hyp_dict_logp`,
+  the fit's output under the `logp` key that the port review's W6-23
+  removed from its hyperparameter dictionary; no reference names them, each
+  capture's sidecar says so, and a capture written anew leaves them out.
+- `scripts/execute_notebooks.py` — executes the example notebooks and
+  stores their outputs, which the docs build renders without executing
+  them (`nb_execution_mode = "off"`). One process runs them in order in a
+  scratch directory under `--record-dir` (default
+  `scripts/runs/notebooks_<date>/`), where Example 6 finds the posterior
+  that Example 4 saves, through a temporary kernel of the interpreter that
+  `--python` names: BLAS single-threaded, this checkout first on
+  `PYTHONPATH`, Example 2's Plotly figure stored as HTML beside its JSON.
+  The script removes from that HTML the MathJax that Plotly loads, which
+  breaks the math of the docs page it is on; Example 2 executed any other
+  way stores it again.
+  Check cells assert what each notebook's text says about its results
+  (`CHECKS` in the script, to be kept in step with the text); they are
+  removed, with a cell recording the versions, before the notebook is
+  stored, and a notebook is written back to `examples/` only when it runs
+  without error and its checks pass. `--no-write` keeps every executed
+  notebook in the scratch directory; `--only` picks examples (6 needs 4).
+  Each run writes `record_<time>.json` (commit, versions, durations, check
+  results). Examples 7 to 9 need the `torch`, `arviz` and `pymc` extras and
+  JAX; the machine that runs it lists the environment in
+  `scripts/runs/LOCAL.md`. About seven minutes for all nine. The tips a run
+  prints come from an unseeded generator, so they differ between
+  executions. Regenerate `examples/scripts/` with its Makefile afterwards.
 - `scripts/export_animation_trace.py` — exports one two-dimensional PyVBMC
   run as the trace that a 3D animation page
   (`docsrc/source/_static/vbmc3d/index.html` or `wordmark.html`, three.js,

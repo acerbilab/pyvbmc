@@ -36,10 +36,63 @@
   },
   "hyp_n": 9,
   "iteration": 6,
+  "notes": [
+   "The `.npz` still holds `capture/ref/fit/hyp_dict_logp`, the fit's `logp` output that the port review's W6-23 removed; no reference names it, and a capture written anew leaves it out."
+  ],
   "platform": "Windows-11-10.0.26200-SP0",
   "problem": "normal",
   "problem_seed": 0,
   "python": "3.12.6",
+  "rebaselined": [
+   {
+    "date": "2026-09-22 07:32:19",
+    "git": {
+     "dirty": true,
+     "sha": "e657eba8"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 0.0,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 0.0,
+     "fit/hyp_dict_hyp": 0.0,
+     "fit/hyp_dict_run_cov": 0.0,
+     "fit/prediction_mean": 0.0,
+     "fit/prediction_variance": 0.0,
+     "fit/sn2_hpd": 0.0,
+     "sampler_widths/effective_widths": 0.0,
+     "sampler_widths/widths_default": 0.0
+    },
+    "reason": "W6-23: hyp_dict no longer carries the logp entry, an array of zeros that nothing read; the reference name was removed from the sidecar and the fit is replayed to record that no output moved",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
+   },
+   {
+    "date": "2026-09-22 20:49:20",
+    "git": {
+     "dirty": true,
+     "sha": "b2e858cd"
+    },
+    "max_abs_change": {
+     "fit/gp_hyp": 0.0,
+     "fit/gp_s_N": 0.0,
+     "fit/hyp_dict_full": 0.0,
+     "fit/hyp_dict_hyp": 0.0,
+     "fit/hyp_dict_run_cov": 0.0,
+     "fit/prediction_mean": 0.0,
+     "fit/prediction_variance": 0.0,
+     "fit/sn2_hpd": 0.0,
+     "sampler_widths/effective_widths": 0.0,
+     "sampler_widths/widths_default": 0.09747467241319652
+    },
+    "reason": "Port review, wave 6 (PI, 2026-09-22): gpyreg's bound recommendations per column (W6-1, gpyreg f76eca2) move the space-filling design of the fit that this capture replays, through the bounds of the mean's location and scale that the recommendation fills, and with it the default widths of the sampler; the fit's own outputs replay bit for bit, and the captured inputs and the portable references are bit-identical",
+    "references": [
+     "fit",
+     "sampler_widths"
+    ]
+   }
+  ],
   "role": "later_changing_ns",
   "seed": 0,
   "sources": {
@@ -293,7 +346,6 @@
    "gp_s_N": "@@npz:capture/ref/fit/gp_s_N",
    "hyp_dict_full": "@@npz:capture/ref/fit/hyp_dict_full",
    "hyp_dict_hyp": "@@npz:capture/ref/fit/hyp_dict_hyp",
-   "hyp_dict_logp": "@@npz:capture/ref/fit/hyp_dict_logp",
    "hyp_dict_run_cov": "@@npz:capture/ref/fit/hyp_dict_run_cov",
    "prediction_mean": "@@npz:capture/ref/fit/prediction_mean",
    "prediction_variance": "@@npz:capture/ref/fit/prediction_variance",

@@ -1,6 +1,6 @@
 """Write the S-VBMC test fixtures under ``pyvbmc/testing/svbmc/fixtures/``.
 
-Three modes, each rewriting only its own files:
+Four modes, each rewriting only its own files:
 
 ``convert``
     The thirty fitted posteriors shipped with S-VBMC 0.1.1 (three groups of
@@ -25,6 +25,14 @@ Three modes, each rewriting only its own files:
     component, learning rate) is recorded in the sidecar. Needs Torch (the
     compatibility campaign's overlay on ``PYTHONPATH`` works).
 
+``saved-stack``
+    The file of ``SVBMC.save``: the ``bounded_D2`` posteriors stacked and
+    optimized with a seeded three-step recipe, written to
+    ``fixtures/saved/bounded_D2.pkl``, with a JSON sidecar that holds the
+    weights, the ELBO report, seeded draws of the loaded stack, the recipe
+    and the versions it was written with. The file is loaded back and
+    checked before the script returns. Needs Torch.
+
 Every posterior written by ``convert`` and ``generate`` is rebuilt from its
 files and compared with the original before the script returns.
 
@@ -34,6 +42,7 @@ Run from the repository root, for example::
     python dev/scripts/make_svbmc_fixtures.py generate
     PYTHONPATH=dev/scripts/runs/svbmc_compat_20260908/deps \\
         python dev/scripts/make_svbmc_fixtures.py references
+    python dev/scripts/make_svbmc_fixtures.py saved-stack
 
 ``FIXTURES.md`` next to the fixtures documents the format and every file.
 """
@@ -45,7 +54,10 @@ import contextlib
 import glob
 import hashlib
 import io
+import json
+import logging
 import pickle
+import platform
 import subprocess
 import sys
 import time
@@ -60,6 +72,8 @@ from pyvbmc.testing.oracles._state import encode, save_snapshot  # noqa: E402
 from pyvbmc.testing.svbmc._fixtures import (  # noqa: E402
     FIXTURES_DIR,
     REFERENCES,
+    SAVED_DIR,
+    SAVED_GROUP,
     assert_roundtrip,
     fixture_names,
     group_names,
@@ -362,6 +376,101 @@ def references(args):
 
 
 # --------------------------------------------------------------------------
+# saved-stack
+# --------------------------------------------------------------------------
+
+
+def _report(stacked):
+    """The state of a stack that the sidecar records, as JSON values."""
+    return {
+        "D": int(stacked.D),
+        "M": int(stacked.M),
+        "K": [int(k) for k in stacked.K],
+        "w": [float(v) for v in np.ravel(stacked.w)],
+        "elbo": stacked.elbo,
+        "elbo_sd": stacked.elbo_sd,
+        "entropy": stacked.entropy,
+        "elbo_details": {
+            **stacked.elbo_details,
+            "noise_status_source": list(stacked.noise_status_source),
+        },
+    }
+
+
+def saved_stack(args):
+    import dill
+    import scipy
+    import torch
+
+    from pyvbmc.svbmc import SVBMC
+
+    torch.set_num_threads(1)
+    # Construction leaves a level that is already set as it is.
+    logging.getLogger("SVBMC").setLevel(logging.WARNING)
+    vps, _ = load_group(SAVED_GROUP, rng=0)
+    stacked = SVBMC(vps, seed=args.seed)
+    stacked.optimize(
+        n_samples=args.n_samples,
+        n_samples_final=args.n_samples_final,
+        max_steps=args.steps,
+    )
+    SAVED_DIR.mkdir(exist_ok=True)
+    path = SAVED_DIR / f"{SAVED_GROUP}.pkl"
+    stacked.save(path, overwrite=True)
+
+    data = path.read_bytes()
+    if b"_create_function" in data or b"_create_code" in data:
+        raise SystemExit(f"{path}: the file holds a function by value")
+    restored = SVBMC.load(path)
+    report = _report(stacked)
+    if _report(restored) != report:
+        raise SystemExit(f"{path}: the loaded stack differs from the saved")
+    # Every posterior of the group is retained, in file order.
+    names = sorted(n for n in fixture_names() if n.startswith(SAVED_GROUP))
+    if len(names) != restored.M:
+        raise SystemExit(f"{SAVED_GROUP}: not every posterior is retained")
+    for vp, name in zip(restored.vp_list, names):
+        assert_roundtrip(vp, name)
+    restored.rng = np.random.default_rng(args.draw_seed)
+    draws = restored.sample(args.n_draws)
+
+    tree = {
+        "meta": {
+            "pyvbmc_commit": _git_head(REPO),
+            "svbmc_source_sha256": {
+                p.relative_to(REPO)
+                .as_posix(): hashlib.sha256(p.read_bytes())
+                .hexdigest()
+                for p in sorted((REPO / "pyvbmc/svbmc").glob("*.py"))
+            },
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "numpy": np.__version__,
+            "scipy": scipy.__version__,
+            "dill": dill.__version__,
+            "torch": torch.__version__,
+            "file_sha256": hashlib.sha256(data).hexdigest(),
+            "generated": time.strftime("%Y-%m-%d"),
+            "description": (
+                f"SVBMC(vps, seed={args.seed}).optimize(n_samples="
+                f"{args.n_samples}, n_samples_final={args.n_samples_final}, "
+                f"max_steps={args.steps}) on load_group({SAVED_GROUP!r}, "
+                "rng=0), saved with save(); the draws are "
+                f"sample({args.n_draws}) of the loaded stack after its rng "
+                f"is set to default_rng({args.draw_seed})"
+            ),
+        },
+        "posteriors": names,
+        **report,
+        "draw_seed": args.draw_seed,
+        "draws": draws.tolist(),
+    }
+    sidecar = path.with_suffix(".json")
+    sidecar.write_text(json.dumps(tree, indent=1) + "\n", encoding="utf-8")
+    print(f"wrote {path} ({len(data)} bytes) and {sidecar}")
+
+
+# --------------------------------------------------------------------------
 
 
 def main(argv=None):
@@ -386,6 +495,15 @@ def main(argv=None):
     p.add_argument("--n-samples-final", type=int, default=100)
     p.add_argument("--lr", type=float, default=0.1)
     p.set_defaults(func=references)
+
+    p = sub.add_parser("saved-stack")
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--steps", type=int, default=3)
+    p.add_argument("--n-samples", type=int, default=5)
+    p.add_argument("--n-samples-final", type=int, default=5)
+    p.add_argument("--draw-seed", type=int, default=1)
+    p.add_argument("--n-draws", type=int, default=16)
+    p.set_defaults(func=saved_stack)
 
     args = parser.parse_args(argv)
     args.func(args)

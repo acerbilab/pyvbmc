@@ -6,8 +6,13 @@ The guarded-sinh numerical revision is `6734817`, from `83692ac`; the
 [kernel-reuse execution record](#kernel-reuse-implementation-plan) records
 its released gpyreg dependency and completed gates.
 
-Experimental extension drafted 2026-09-16: **E2, E3 AND E5 COMPLETE; E6 ASSESSMENT RECORDED; F3 EXECUTED; F2 EXECUTED IN TWO STAGES, NOT PROMOTED; F1, F4 AND THE FOUR-RUN BUDGET CONTINUATION PROPOSED, NOT APPROVED**. Branch:
-`dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`.
+Experimental extension drafted 2026-09-16 and closed on 2026-09-19 without
+a change of default: E2, E3 and E5 complete; E4 not entered, its gates
+unmet; E6 assessment recorded; F3 executed; F2 executed in two stages and
+not promoted (retained on `retain/viqr-rqmc-nodes`); F1, F4 and the
+four-run budget continuation proposed and not approved. The work ran on
+`dev-noisy-acquisition-efficiency`, created from `dev-next` at `9cc6882`,
+which `dev-next` fast-forwarded to.
 The [integration and search experiment](#integration-and-search-experiment)
 below specifies the investigation. E0-E4 execution was authorized within
 the recorded windows; the exploratory E5 pilot and its continuation are
@@ -74,7 +79,8 @@ central with intermittent stability spikes, under a 200-evaluation benchmark
 budget below the package's noisy default of 300). On that finding the user
 decided on 2026-09-18 that experiments test what ships: the `production`
 suite of `benchmark_targets.py` carries the noisy configurations at package
-defaults, and the TODO records how a production reference is assembled.
+defaults, and the reference that replaces the golden references after the
+port review is to run that suite ([Slurm plan](slurm-benchmark-support.md)).
 Among the [follow-ups](#follow-ups-proposed-2026-09-18) the user chose F2
 on 2026-09-18, matched-cost RQMC nodes for the VIQR estimate with the
 production search retained. The
@@ -115,9 +121,11 @@ into the reference's run directory,
 `dev/scripts/runs/golden/production_noisy_20260918` (listed in
 `dev/scripts/runs/LOCAL.md`), from the branch `dev-production-reference`,
 cut from `dev-next` once this work merged, and completed on 2026-09-19
-with no failure, so all 80 exist: the first noisy runs of the production
-reference that the TODO's working rules describe. No background work
-needs reattachment.
+with no failure, so all 80 exist. They were to be the first noisy runs of
+a production reference; they come from the code before the port review's
+fixes, and the reference that replaces the golden references runs the
+whole `production` suite anew ([Slurm plan](slurm-benchmark-support.md)).
+No background work needs reattachment.
 
 The 2026-09-17 continuation resumed from `4145832` in the existing checkout
 and environment. The user authorized a further 2–2.5-hour window starting

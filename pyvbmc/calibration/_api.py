@@ -11,6 +11,7 @@ from ._cache import (
     WORKLOAD_REVISION,
     _package_version,
     _resolve_cached_profile,
+    _validate_report,
     _validate_settings,
     campaign_guard,
     identity_reuse_reason,
@@ -113,6 +114,11 @@ def _print_fallback_summary(
 ) -> None:
     if outcome == "is busy":
         print(f"Calibration did not start: {reason}.")
+    elif outcome == "invalid":
+        print(
+            f"Calibration ended after {elapsed:.0f} seconds, and its "
+            f"results cannot be used: {reason}."
+        )
     else:
         print(
             "Calibration could not complete after "
@@ -198,8 +204,22 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
             raise ValueError("calibration campaign returned an unknown status")
         elapsed = time.monotonic() - api_entry
 
-        if status != "complete":
+        if status == "complete":
+            settings = result["settings"]
+            if not isinstance(settings, Mapping):
+                raise ValueError("calibration campaign settings are invalid")
+            # Settings or a report that fail the validation of cache records
+            # invalidate the campaign, as failed baseline numerics do.
+            try:
+                settings = _validate_settings(dict(settings))
+                _validate_report(dict(report), settings)
+            except ValueError as error:
+                status = "invalid"
+                reason = f"campaign results failed validation ({error})"
+        else:
             reason = str(report.get("reason", f"campaign status: {status}"))
+
+        if status != "complete":
             profile = _fallback_profile(
                 status=status,
                 reason=reason,
@@ -214,11 +234,6 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
                 )
             return profile
 
-        settings = result["settings"]
-        if not isinstance(settings, Mapping):
-            raise ValueError("calibration campaign settings are invalid")
-        settings = _validate_settings(dict(settings))
-
         reuse_reason = identity_reuse_reason(guard.identity)
         persistence_reason = guard.reason or reuse_reason
         persistence = "not written"
@@ -231,26 +246,34 @@ def calibrate(*, verbose: bool = True) -> CalibrationProfile:
         }
 
         if guard.persistent and reuse_reason is None:
-            record = make_record(
-                identity=guard.identity,
-                settings=settings,
-                report=report,
-                elapsed_seconds=elapsed,
-            )
+            # A record that cannot be built or written leaves the result
+            # in this process.
             try:
-                written_path = write_record(record)
-            except OSError as error:
-                persistence_reason = f"cache write failed ({error})"
-            else:
-                cache_path = str(written_path)
-                provenance = dict(record["provenance"])
-                provenance.update(
-                    {
-                        "kernel_revision": KERNEL_REVISION,
-                        "workload_revision": WORKLOAD_REVISION,
-                    }
+                record = make_record(
+                    identity=guard.identity,
+                    settings=settings,
+                    report=report,
+                    elapsed_seconds=elapsed,
                 )
-                persistence = "saved"
+            except (OSError, ValueError) as error:
+                persistence_reason = (
+                    f"cache record could not be built ({error})"
+                )
+            else:
+                try:
+                    written_path = write_record(record)
+                except (OSError, ValueError) as error:
+                    persistence_reason = f"cache write failed ({error})"
+                else:
+                    cache_path = str(written_path)
+                    provenance = dict(record["provenance"])
+                    provenance.update(
+                        {
+                            "kernel_revision": KERNEL_REVISION,
+                            "workload_revision": WORKLOAD_REVISION,
+                        }
+                    )
+                    persistence = "saved"
 
         if persistence != "saved":
             provenance["persistence"] = persistence_reason or "unavailable"

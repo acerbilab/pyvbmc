@@ -15,8 +15,7 @@ Sub-commands::
     python dev/scripts/golden_trace.py compare --split dev/scripts/runs/golden/baseline
 
 ``run`` executes one VBMC per task in a pool of *spawned processes* (the
-``pyvbmc.timer.main_timer`` singleton and the gpyreg/cma global random state
-make threads unsafe), BLAS pinned to one thread per worker, longest tasks
+``pyvbmc.timer.main_timer`` singleton makes threads unsafe), BLAS pinned to one thread per worker, longest tasks
 first, skipping (config, seed) pairs whose ``.npz`` already exists, so a
 sweep can be interrupted and resumed or extended with more seeds. A failing
 run writes ``<tag>.error.txt`` and the sweep continues.
@@ -48,6 +47,9 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
+# The package of this checkout, whichever checkout is installed: the traces
+# are labelled with this checkout's commit.
+sys.path.insert(0, str(REPO_ROOT))
 DEFAULT_RUNS = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 
 # Rough solo minutes per run, used only to order tasks longest-first when

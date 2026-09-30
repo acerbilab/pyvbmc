@@ -1,14 +1,20 @@
 """Focused scheduler and numerical tests for the calibration campaign."""
 
+import importlib
 import json
 import math
+from collections import Counter
 from statistics import median
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
+from pyvbmc.calibration import _cache
 from pyvbmc.calibration import _campaign as campaign
+from pyvbmc.calibration.profile import DEFAULT_CHUNK_ELEMENTS
+from pyvbmc.testing.calibration.test_api import identity
+from pyvbmc.vbmc import Options
 
 
 class _FakeClock:
@@ -416,14 +422,14 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
     """The analytical bound covers the retained allocator diagnostics."""
     workloads = {workload.name: workload for workload in campaign._workloads()}
     # Incremental tracemalloc peaks with each workload preallocated, recorded
-    # in dev/scripts/runs/calibration_integration_20260909/.
+    # in dev/scripts/runs/calibration_recipe_v2_20260923/peaks.json.
     measured = (
-        ("small_value", 2**16, 24_200),
-        ("sieve_gradient", 2**16, 2_568_064),
-        ("boost_d4_k50", 2**18, 7_512_096),
-        ("boost_d15_k50", 2**18, 6_861_480),
-        ("active_d4_k20", 2**16, 2_076_168),
-        ("fine_d15_k26", 2**18, 25_567_888),
+        ("small_value", 2**16, 24_216),
+        ("sieve_value", 2**16, 2_181_680),
+        ("boost_d4_k50", 2**18, 4_281_568),
+        ("boost_d15_k50", 2**18, 4_676_688),
+        ("active_d4_k20", 2**16, 1_384_376),
+        ("fine_d15_k26", 2**18, 25_568_528),
     )
     for name, budget, traced_peak in measured:
         estimate = campaign._workspace_estimate(workloads[name], budget)
@@ -434,6 +440,290 @@ def test_workspace_estimate_bounds_measured_incremental_peaks():
         campaign._workspace_estimate(workload, budget)["within_limit"]
         for workload in workloads.values()
         for budget in campaign.CANDIDATE_BUDGETS
+    )
+
+
+# The options that set the total number of samples of the Monte Carlo
+# entropy, by whether the calls that use them request gradients. The
+# package's one call of `entmc_vbmc` is in `_neg_elcbo`, which requests
+# gradients when its caller does:
+# - with gradients, the stochastic optimization of `optimize_vp` draws the
+#   count of `ns_ent`, which `VBMC.final_boost` replaces with `ns_ent_boost`
+#   and `active_sample` with `ns_ent_active`;
+# - value-only, `_eval_full_elcbo` draws the count of `ns_ent_fine`, which
+#   `active_sample` replaces with `ns_ent_fine_active`, and `active_sample`
+#   draws `ns_ent_fine_active` to compare the posteriors before and after
+#   its update.
+# The remaining count options (`ns_ent_fast` and its variants,
+# `ns_ent_fine_boost`) default to no samples, which selects the
+# deterministic entropy, or to one of the options above.
+_ENTROPY_COUNT_OPTIONS = {
+    True: ("ns_ent", "ns_ent_boost", "ns_ent_active"),
+    False: ("ns_ent_fine", "ns_ent_fine_active"),
+}
+
+
+def _shipped_options(D):
+    options = Options("option_configs/basic_vbmc_options.ini", {"D": D})
+    options.load_options_file(
+        "option_configs/advanced_vbmc_options.ini", {"D": D}
+    )
+    return options
+
+
+def test_entropy_workloads_time_calls_the_package_makes():
+    """Each entropy workload has the sample count and gradient use of a call.
+
+    The package draws ``ceil(total / K)`` samples per component, ``total``
+    being a count option evaluated at ``K``, and a call that requests any
+    gradient runs at the gradient budget, a value-only call at the value
+    budget.
+    """
+    entropy = [
+        workload
+        for workload in campaign._workloads()
+        if workload.group.startswith("entropy")
+    ]
+    assert entropy
+    for workload in entropy:
+        with_gradients = any(workload.grad_flags)
+        options = _shipped_options(workload.D)
+        counts = {
+            name: math.ceil(options.eval(name, {"K": workload.K}) / workload.K)
+            for name in _ENTROPY_COUNT_OPTIONS[with_gradients]
+        }
+        expected_group = "entropy_grad" if with_gradients else "entropy_value"
+        assert workload.group == expected_group, workload.name
+        assert workload.count in counts.values(), (
+            f"{workload.name} draws {workload.count} samples per component "
+            f"{'with' if with_gradients else 'without'} gradients; the "
+            f"package's counts for such calls at K={workload.K} are {counts}"
+        )
+
+
+def test_density_workloads_time_value_only_calls():
+    """The density workloads time calls without gradients.
+
+    The package requests the gradient of the density only in
+    ``VariationalPosterior.mode`` in the transformed space, which no step of
+    the algorithm calls. Its optimizer evaluates the density at one point at
+    a time, and one point has one block layout at every candidate budget,
+    so no setting changes how that call runs. Its screen of starting points
+    evaluates the density on a draw of 100,000 points and keeps only the
+    values.
+    """
+    density = [
+        workload
+        for workload in campaign._workloads()
+        if workload.group == "pdf"
+    ]
+    assert density
+    for workload in density:
+        assert workload.grad_flags is None, workload.name
+
+    for workload in density:
+        one_point = campaign._Workload(
+            "pdf",
+            f"{workload.name}_one_point_gradient",
+            workload.D,
+            workload.K,
+            1,
+            (True, True, True, True),
+        )
+        aliases = campaign._layout_aliases(one_point)
+        assert set(aliases) == set(campaign.CANDIDATE_BUDGETS)
+        assert set(aliases.values()) == {campaign.DEFAULT_BUDGET}
+
+
+class _WatchedNumPy:
+    """NumPy, noting the shape of every array given to ``exp`` and ``log``.
+
+    Installed as the ``np`` of a kernel's module, it shows the blocks the
+    kernel computes: the entropy kernel takes ``exp`` of the distances of
+    each computed block, ``(components, samples, K)``, and ``log`` of the
+    mixture density of each canonical block, ``(components, samples)``; the
+    density takes ``exp`` of the distances of each block of rows,
+    ``(rows, K)``.
+    """
+
+    def __init__(self):
+        self.exp_shapes = []
+        self.log_shapes = []
+
+    def __getattr__(self, name):
+        return getattr(np, name)
+
+    def exp(self, x, *args, **kwargs):
+        self.exp_shapes.append(np.shape(x))
+        return np.exp(x, *args, **kwargs)
+
+    def log(self, x, *args, **kwargs):
+        self.log_shapes.append(np.shape(x))
+        return np.log(x, *args, **kwargs)
+
+
+def _partition(total, size):
+    """The sizes of the blocks that split ``total`` into ``size``."""
+    return [size] * (total // size) + ([total % size] if total % size else [])
+
+
+def test_the_campaign_layout_matches_the_blocks_the_kernels_compute(
+    monkeypatch,
+):
+    """The campaign groups the budgets that give a workload the same blocks
+    (``_layout_signature``), from its copy of how the entropy kernel
+    (``_entmc_vbmc``, with ``_block_layout``) and the density
+    (``VariationalPosterior._pdf``) split their work. Both kernels are run
+    over a grid of shapes and budgets, and the blocks they compute are the
+    ones the copy describes. The entropy kernel's default budget, which
+    sets its canonical blocks, is lowered in the kernel and in the copy
+    alike, so that small shapes reach every branch of the layout: canonical
+    blocks that split the samples, and computed blocks that subdivide them
+    or join them. The copy of ``_block_layout``, ``_entropy_blocks``, is
+    also compared with it at the shipped default over a wider grid."""
+    entmc_module = importlib.import_module("pyvbmc.entropy.entmc_vbmc")
+    vp_module = importlib.import_module(
+        "pyvbmc.variational_posterior.variational_posterior"
+    )
+    assert entmc_module.DEFAULT_CHUNK_ELEMENTS == campaign.DEFAULT_BUDGET
+
+    budgets = [1, 7, 100, 500, 2600, 3 * 2**14, 100_000]
+    budgets += [2**power for power in range(10, 21)]
+    for D in (1, 2, 3, 4, 7, 15, 20):
+        for K in (1, 2, 3, 7, 20, 26, 50, 115):
+            for Ns in (1, 2, 5, 8, 37, 38, 55, 200, 1000, 4096):
+                for budget in budgets:
+                    assert campaign._entropy_blocks(
+                        Ns, D, K, budget
+                    ) == entmc_module._block_layout(Ns, D, K, budget), (
+                        Ns,
+                        D,
+                        K,
+                        budget,
+                    )
+
+    kernels = campaign._load_kernel_api()
+    canonical_budget = 600
+    monkeypatch.setattr(
+        entmc_module, "DEFAULT_CHUNK_ELEMENTS", canonical_budget
+    )
+    monkeypatch.setattr(campaign, "DEFAULT_BUDGET", canonical_budget)
+    budgets = [1, 7, 50, 300, 599, 600, 601, 1000, 2400, 100_000]
+    for D in (1, 2, 3):
+        for K in (1, 2, 3, 5, 8):
+            for Ns in (1, 2, 5, 8, 38, 101):
+                workload = campaign._Workload(
+                    "entropy_grad", "layout", D, K, Ns, (True,) * 4
+                )
+                (vp,) = campaign._make_problem(workload, kernels, 7)
+                Ns_even = campaign._effective_count(workload)
+                for budget in budgets:
+                    watched = _WatchedNumPy()
+                    monkeypatch.setattr(entmc_module, "np", watched)
+                    kernels.entropy(
+                        vp,
+                        Ns,
+                        grad_flags=workload.grad_flags,
+                        jacobian_flag=True,
+                        rng=np.random.default_rng(0),
+                        budget=budget,
+                    )
+                    monkeypatch.setattr(entmc_module, "np", np)
+                    (
+                        g_c,
+                        _,
+                        _,
+                        step_c,
+                        _,
+                        _,
+                        g_x,
+                        step_x,
+                    ) = campaign._layout_signature(workload, budget)
+                    case = (D, K, Ns, budget)
+                    canonical = Counter(
+                        shape
+                        for shape in watched.log_shapes
+                        if len(shape) == 2
+                    )
+                    assert canonical == Counter(
+                        (g, n)
+                        for g in _partition(K, g_c)
+                        for n in _partition(Ns_even, step_c)
+                    ), case
+                    computed = [
+                        shape[:2]
+                        for shape in watched.exp_shapes
+                        if len(shape) == 3
+                    ]
+                    assert computed[0] == (g_x, step_x), case
+                    assert all(
+                        g <= g_x and n <= step_x for g, n in computed
+                    ), case
+                    assert sum(g * n for g, n in computed) == K * Ns_even
+
+    budgets = [1, 2, 7, 12, 50, 100, 257, 1000, 2**16]
+    for D in (1, 2, 4):
+        for K in (1, 3, 7):
+            for N in (1, 2, 8, 11, 64):
+                workload = campaign._Workload("pdf", "layout", D, K, N)
+                vp, x = campaign._make_problem(workload, kernels, 7)
+                for budget in budgets:
+                    watched = _WatchedNumPy()
+                    monkeypatch.setattr(vp_module, "np", watched)
+                    kernels.pdf(
+                        vp,
+                        x,
+                        orig_flag=False,
+                        log_flag=False,
+                        grad_flag=False,
+                        budget=budget,
+                    )
+                    monkeypatch.setattr(vp_module, "np", np)
+                    step, _, _ = campaign._layout_signature(workload, budget)
+                    rows = [
+                        shape[0]
+                        for shape in watched.exp_shapes
+                        if len(shape) == 2
+                    ]
+                    assert rows == _partition(N, step), (D, K, N, budget)
+
+
+def test_record_validator_agrees_with_the_shipped_recipe():
+    """The recipe tables and constants of ``_cache`` match the campaign's."""
+    recipe = campaign._workloads()
+    groups = {}
+    for workload in recipe:
+        groups.setdefault(workload.group, []).append(workload.name)
+    assert {
+        group: tuple(names) for group, names in groups.items()
+    } == _cache._GROUP_WORKLOADS
+    assert _cache._WORKLOAD_SHAPES == {
+        workload.name: (
+            workload.D,
+            workload.K,
+            workload.count,
+            campaign._effective_count(workload),
+        )
+        for workload in recipe
+    }
+    assert _cache._GROUP_SETTINGS == campaign.SETTING_GROUPS
+    assert set(_cache._SETTING_NAMES) == set(campaign.SETTING_GROUPS.values())
+    assert _cache.CANDIDATE_BUDGETS == frozenset(campaign.CANDIDATE_BUDGETS)
+    assert DEFAULT_CHUNK_ELEMENTS == campaign.DEFAULT_BUDGET
+
+    # The validator writes the round counts, the default budget and the
+    # recipe version as literals: a complete campaign of the shipped recipe,
+    # timed on instant stand-in kernels, has to make a valid record.
+    clock = _FakeClock(0.001)
+    result = campaign.run_campaign(
+        deadline=300.0, _clock=clock, _kernel_api=_fake_kernels(clock)
+    )
+    assert result["status"] == "complete", result["report"].get("reason")
+    _cache.make_record(
+        identity=identity(),
+        settings=result["settings"],
+        report=result["report"],
+        elapsed_seconds=1.0,
     )
 
 

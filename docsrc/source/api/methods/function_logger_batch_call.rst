@@ -17,3 +17,7 @@ rows are interleaved.
 
 For user-provided target noise, the target returns ``(values, sds)`` as two
 arrays of shape ``(M,)`` or ``(M, 1)``. An ``(M, 2)`` array is not accepted.
+``f_vals`` then has to be all ``NaN``: a cached value comes without the noise
+standard deviation that such an observation needs, and
+:py:meth:`~pyvbmc.function_logger.FunctionLogger.add` takes the two
+together.

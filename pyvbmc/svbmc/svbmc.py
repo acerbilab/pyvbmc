@@ -4,8 +4,9 @@
 # All rights reserved. Distributed under the BSD 3-Clause License; the
 # full text is in LICENSE.txt next to this file.
 #
-# This module is the implementation of the standalone ``svbmc`` package
-# (acerbilab/svbmc, version 0.1.1, commit 13a78f6) moved into PyVBMC.
+# This module derives from the standalone ``svbmc`` package
+# (acerbilab/svbmc, version 0.1.1, commit 13a78f6); the S-VBMC entry of
+# CHANGELOG.md lists how it differs.
 """Stacking Variational Bayesian Monte Carlo (S-VBMC)."""
 
 from __future__ import annotations
@@ -14,15 +15,17 @@ __all__ = ["SVBMC"]
 
 import copy
 import logging
-import sys
 import warnings
+from pathlib import Path
 
+import dill
 import numpy as np
 
+from pyvbmc._logging import get_logger
 from pyvbmc.rng import get_rng
 
 from ._elbo_shrinkage import _two_level_shrinkage
-from ._entropy import component_log_densities
+from ._entropy import component_log_densities, log_density_chunks
 from ._jacobian import expected_log_jacobian
 from ._runtime_tips import consider_runtime_tip
 
@@ -52,6 +55,15 @@ def _import_torch():
             "S-VBMC requires torch; install pyvbmc[torch]."
         ) from exc
     return torch
+
+
+def _svbmc_logger():
+    """Return the ``"SVBMC"`` logger, showing progress by default."""
+    logger = get_logger("SVBMC")
+    if logger.level == logging.NOTSET:
+        # Progress is shown by default; a level set by the user stays.
+        logger.setLevel(logging.INFO)
+    return logger
 
 
 def _validate_posteriors(vp_list):
@@ -221,7 +233,8 @@ class SVBMC:
     directly.
 
     Requires the optional ``torch`` extra (``pip install pyvbmc[torch]``);
-    construction raises ``ImportError`` without it.
+    construction raises ``ImportError`` without it. An object saved with
+    :meth:`save` can be loaded, sampled and plotted without it.
 
     Parameters
     ----------
@@ -344,12 +357,7 @@ Generator, optional
         if noisy is not None and not isinstance(noisy, (bool, np.bool_)):
             raise TypeError("`noisy` should be a boolean or None.")
         self.show_tips = bool(show_tips)
-        # Root logger as in VBMC (a no-op if one is configured already).
-        logging.basicConfig(stream=sys.stdout, format="%(message)s")
-        self.logger = logging.getLogger("SVBMC")
-        if self.logger.level == logging.NOTSET:
-            # Progress is shown by default; a level set by the user stays.
-            self.logger.setLevel(logging.INFO)
+        self.logger = _svbmc_logger()
 
         self.rng = get_rng(seed)
 
@@ -509,8 +517,23 @@ Generator, optional
         H, corrections, _ = self._stacked_entropy(w, n_samples)
         return H, corrections
 
-    def _stacked_entropy(self, w, n_samples, *, compute_variance=False):
-        """Evaluate entropy and optionally its stratified sampling variance."""
+    def _stacked_entropy(
+        self, w, n_samples, *, compute_variance=False, chunk_rows=None
+    ):
+        """
+        Evaluate entropy and optionally its stratified sampling variance.
+
+        The log density of the stacked mixture at a draw is the weighted
+        log-sum-exp of one row of the ``(K_total * n_samples, K_total)``
+        matrix of component log densities. When the weights need a
+        gradient, the matrix is built whole and reduced in one Torch
+        operation. Otherwise it is reduced ``chunk_rows`` rows at a time
+        (by default as many as
+        :func:`~pyvbmc.svbmc._entropy.log_density_chunks` fits in its
+        memory bound) and never held whole; the draws and the values are
+        the same. Returns the entropy, a copy of the Jacobian corrections
+        and the variance, which is ``None`` unless ``compute_variance``.
+        """
         torch = _import_torch()
         n_samples = int(n_samples)
         if n_samples < 1:
@@ -525,14 +548,34 @@ Generator, optional
         log_w = torch.log(w + 1e-40)
 
         # Draws from every component and the log density of every component
-        # at every draw, in the original space; the weights play no part.
-        logq_matrix = component_log_densities(
-            self.vp_list, n_samples, self.rng
-        )
-
-        # The weights enter here, so switch to torch for the gradient.
-        logq_matrix = torch.as_tensor(logq_matrix, dtype=dtype, device=device)
-        logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
+        # at every draw, in the original space, then the log density of the
+        # mixture at every draw: the weights enter only there, in Torch.
+        if torch.is_grad_enabled() and w.requires_grad:
+            # The whole matrix in one reduction. Autograd sums the gradient
+            # of the weights over the rows; reducing by chunks would change
+            # the order of that sum and with it the optimization's
+            # trajectory.
+            logq_matrix = component_log_densities(
+                self.vp_list, n_samples, self.rng
+            )
+            logq_matrix = torch.as_tensor(
+                logq_matrix, dtype=dtype, device=device
+            )
+            logq_orig = torch.logsumexp(logq_matrix + log_w, dim=1)  # (S,)
+        else:
+            # The chunks' results are concatenated rather than written into
+            # a preallocated tensor: under ``torch.func.vmap`` the weights,
+            # and with them each chunk's result, carry a batch dimension,
+            # which an in-place write into a plain tensor cannot take.
+            logq_chunks = []
+            for _, _, logq_rows in log_density_chunks(
+                self.vp_list, n_samples, self.rng, chunk_rows=chunk_rows
+            ):
+                logq_rows = torch.as_tensor(
+                    logq_rows, dtype=dtype, device=device
+                )
+                logq_chunks.append(torch.logsumexp(logq_rows + log_w, dim=1))
+            logq_orig = torch.cat(logq_chunks)  # (S,)
 
         # E_{q_mk}[log q(x)] for every component: ``component_log_densities``
         # lays the rows out by component, ``n_samples`` consecutive rows
@@ -992,3 +1035,93 @@ Generator, optional
         else:
             fig.canvas.draw()
         return fig
+
+    def save(self, file, overwrite=False):
+        """Save the stacked posterior to a file.
+
+        The file holds the whole object: the retained posteriors, the
+        weights, the ELBO report and the state of the generator, so the
+        object that :meth:`load` returns draws what this one would draw
+        next. It holds no Python bytecode, so it can be loaded, used and
+        saved again under another minor version of Python than the one that
+        wrote it.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to write to. Default file extension `.pkl`
+            will be added if no extension is specified.
+        overwrite : bool
+            Whether to allow overwriting existing files. Default `False`.
+
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and ``overwrite`` is `False`.
+        OSError
+            If the file cannot be opened for other reasons (e.g., the directory
+            is not found, the disk is full, etc.).
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        if overwrite:
+            mode = "wb"
+        else:
+            mode = "xb"
+        with open(filepath, mode=mode) as f:
+            dill.dump(self, f, recurse=True)
+
+    @classmethod
+    def load(cls, file):
+        """Load a stacked posterior from a file written by :meth:`save`.
+
+        Loading needs no torch: :meth:`sample` and :meth:`plot` of the
+        loaded object work without it, while :meth:`optimize` and the
+        methods that estimate the stacked ELBO or its entropy raise
+        ``ImportError`` as construction does. The logging level is not
+        saved: progress goes to the ``"SVBMC"`` logger at ``INFO`` level
+        unless a level has been set on it, as for a newly constructed
+        object.
+
+        Parameters
+        ----------
+        file : path-like
+            The file name or path to read from. Default file extension `.pkl`
+            will be added if no extension is specified.
+
+        Returns
+        -------
+        stacked : SVBMC
+            The loaded object.
+
+        Raises
+        ------
+        TypeError
+            If the file holds another kind of object, such as a
+            ``VariationalPosterior``.
+        OSError
+            If the file cannot be found, or cannot be opened for other reasons.
+        """
+        filepath = Path(file)
+        if filepath.suffix == "":
+            filepath = filepath.with_suffix(".pkl")
+
+        with open(filepath, mode="rb") as f:
+            stacked = dill.load(f)
+
+        if not isinstance(stacked, cls):
+            found = type(stacked)
+            raise TypeError(
+                f"{filepath} holds an object of type "
+                f"{found.__module__}.{found.__qualname__}, not "
+                f"{cls.__module__}.{cls.__qualname__}."
+            )
+        # The retained posteriors do not pass through
+        # `VariationalPosterior.load`, so they are migrated here as
+        # `VBMC.load` migrates the posteriors of a run.
+        for vp in stacked.vp_list:
+            vp._ensure_calibration_state()
+        stacked.logger = _svbmc_logger()
+        return stacked

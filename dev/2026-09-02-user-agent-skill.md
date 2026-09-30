@@ -27,10 +27,11 @@ the web. Repository links are absolute so a copied folder can resolve them.
 There is no installer or wheel integration in this scope.
 
 The skill accompanies PyVBMC 1.5 and directs agents to check the installed
-version. Its source links use `dev-next` while the 1.5 documentation awaits
-publication. At the pre-release documentation review, update these links
-to the release documentation and verify them. Copied skills are updated by
-copying the folder from the relevant PyVBMC version again.
+version. Its source links point to the `main` branch, from which the
+published documentation is built; until the pre-release documentation
+review (2026-09-27) they pointed to `dev-next`, where the 1.5
+documentation was written. Copied skills are updated by copying the folder
+from the relevant PyVBMC version again.
 
 Expand the wrapper when use reveals a concrete gap in how agents find or
 apply the documentation. Add general scientific guidance to the maintained

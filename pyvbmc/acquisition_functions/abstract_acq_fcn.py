@@ -6,6 +6,7 @@ import numpy as np
 
 from pyvbmc.function_logger import FunctionLogger
 from pyvbmc.parameter_transformer import ParameterTransformer
+from pyvbmc.stats._rounding import round_half_away_from_zero
 from pyvbmc.variational_posterior import VariationalPosterior
 
 
@@ -258,6 +259,38 @@ class AbstractAcqFcn(ABC):
         """
 
     @staticmethod
+    def _check_quantile(quantile):
+        """
+        The upper quantile of an interquantile range, as a float.
+
+        Parameters
+        ----------
+        quantile : float
+            A real number strictly between 0.5 and 1: a Python or NumPy
+            scalar, or an array with one element.
+
+        Returns
+        -------
+        quantile : float
+            The quantile as a Python float.
+
+        Raises
+        ------
+        ValueError
+            If ``quantile`` is not one real number strictly between 0.5
+            and 1.
+        """
+        value = np.asarray(quantile)
+        if value.size == 1 and value.dtype.kind in "fiu":
+            value = float(value.reshape(-1)[0])
+            if 0.5 < value < 1:
+                return value
+        raise ValueError(
+            "The quantile must be a number strictly between 0.5 and "
+            f"1, not {quantile!r}."
+        )
+
+    @staticmethod
     def _real2int(
         X: np.ndarray,
         parameter_transformer: ParameterTransformer,
@@ -269,18 +302,32 @@ class AbstractAcqFcn(ABC):
         Parameters
         ----------
         X : np.ndarray
-            The points to be converted.
+            The points to be converted, either a single point of shape
+            ``(D,)`` or an array of points of shape ``(n, D)``. The
+            integer-valued coordinates are snapped in place.
         parameter_transformer : ParameterTransformer
             The appropriate ParameterTransformer to convert between the spaces.
         integer_vars : np.ndarray
             A mask to determine which dimensions are integer vars.
+
+        Returns
+        -------
+        X : np.ndarray
+            The converted points, in the shape they were given in.
         """
 
         if np.any(integer_vars):
-            X_temp = parameter_transformer.inverse(X)
-            X_temp[:, integer_vars] = np.around(X_temp[:, integer_vars])
+            # A single point is snapped through a two-dimensional view of
+            # it, so that the caller keeps the shape it passed and the
+            # coordinates are written back in either shape.
+            X_2d = X[None, :] if X.ndim == 1 else X
+            X_temp = parameter_transformer.inverse(X_2d)
+            # `misc/real2int_vbmc.m:7` rounds with MATLAB's `round`.
+            X_temp[:, integer_vars] = round_half_away_from_zero(
+                X_temp[:, integer_vars]
+            )
             X_temp = parameter_transformer(X_temp)
-            X[:, integer_vars] = X_temp[:, integer_vars]
+            X_2d[:, integer_vars] = X_temp[:, integer_vars]
 
         return X
 
@@ -288,7 +335,7 @@ class AbstractAcqFcn(ABC):
     def _sq_dist(a: np.array, b: np.array):
         """
         Compute matrix of all pairwise squared distances between two sets
-        of vectors, stored in the columns of the two matrices `a` and `b`.
+        of vectors, stored in the rows of the two matrices `a` and `b`.
 
         Parameters
         ----------
@@ -337,7 +384,8 @@ class AbstractAcqFcn(ABC):
             The estimated observation noise.
         """
 
-        # unravel_index as the indicies are 1D otherwise
+        # The nearest training input of each test point, in length-scale
+        # units.
         pos = np.argmin(
             self._sq_dist(
                 Xs / optim_state.get("gp_length_scale"),
