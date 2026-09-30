@@ -3,7 +3,7 @@
 Created 2026-09-30 on `dev-next`. Status: steps 1 to 6 **run** on
 2026-09-30 for the `exporter` configuration, reported in
 [results/2026-09-30-matched-mcmc-budget.md](../results/2026-09-30-matched-mcmc-budget.md);
-step 7 not done. Everything this plan
+step 7 **done** on 2026-09-30 on `feat-3d-animation` at `2a3ee77f`. Everything this plan
 references is on `dev-next` from the commit that adds it, apart from the
 video of step 7, which is on the branch `feat-3d-animation`.
 
@@ -413,3 +413,20 @@ step 2.
   The headline is emcee (`W=32`) on MMTV: 27,828 evaluations, 90%
   interval 23,098 to 31,764, 100 replicates against 100 PyVBMC runs whose
   median budget is 85 evaluations.
+
+- **Step 7**, on the developer's machine, on `feat-3d-animation` at
+  `2a3ee77f` and `71ad08d3`. The headline confirms the narration's "tens
+  of thousands" and "weeks": 27,828 evaluations at 3 minutes each take
+  8.3 weeks, against 5 h 15 min for the video's run of 105 evaluations.
+  Lines `m2`, `m3`, `f2` and `f3` stay as they were. The opening's chain is
+  now an emcee run with the headline's setting (`W = 32`, walkers drawn
+  uniformly in the plausible box) stopped at 27,828 evaluations
+  (`scripts/export_intro.py`). For emcee each evaluation yields one state,
+  so the readout and the payoff count the chain's states as its
+  evaluations. The MCMC count carries an asterisk in scene 2 and in the
+  payoff, with the footnote "\*Median of 100 runs: evaluations that emcee,
+  a black-box MCMC sampler, needs to match the accuracy of a typical PyVBMC
+  run on this posterior (mean marginal total variation). MCMC gives no
+  evidence estimate." `STORYBOARD.md` cites the report in its claims. The
+  score follows the new events, and the owner reviews the new draft
+  (`TODO.md` of the video folder).

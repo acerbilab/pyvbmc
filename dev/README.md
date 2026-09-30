@@ -214,8 +214,8 @@ plan and consolidated human summary.
   to match PyVBMC's posterior accuracy on a benchmark target: the
   definitions, the reference runs, the matched budget and its interval,
   and the use of the number in the video of `feat-3d-animation`. Run on
-  2026-09-30 for the banana of the video (steps 1 to 6); the video's
-  update (step 7) is not done yet.
+  2026-09-30 for the banana of the video (steps 1 to 6), and the video
+  updated with the number the same day (step 7).
 - [results/2026-09-30-matched-mcmc-budget.md](results/2026-09-30-matched-mcmc-budget.md) —
   the matched budget on the banana of the video: emcee, the fastest of the
   three samplers, needs a median of 27,828 evaluations (90% interval 23,098

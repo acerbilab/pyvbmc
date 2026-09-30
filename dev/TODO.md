@@ -269,7 +269,9 @@ records its execution.
   with the final posterior as the V of the PyVBMC wordmark;
   `scripts/record.mjs` records either page as MP4, GIF or PNG frames, and
   `dev/scripts/export_animation_trace.py` writes the trace of a real run
-  (the exporter is on `dev-next` too, for the matched-budget item below).
+  (the exporter is on `dev-next` too, for the
+  [matched MCMC budget](plans/matched-mcmc-budget.md), whose number the
+  video quotes).
   The work is ongoing on the branch `feat-3d-animation`, cut from `dev-next`
   on 2026-09-20 and not merged back; its `README.md`, `NOTES.md` and
   `TODO.md` under `docsrc/source/_static/vbmc3d/` hold the design and the
@@ -277,11 +279,6 @@ records its execution.
   visualization is shown is undecided (the documentation, the project page,
   the README): on the branch it sits in the docs' static folder, which the
   Sphinx build does not publish, and no page links to it.
-- [ ] **The evaluations that MCMC needs to match PyVBMC.** Measure, for a
-  benchmark target, how many evaluations a black-box MCMC sampler needs to
-  reach PyVBMC's posterior accuracy, first on the banana run that the
-  animation's video plays, whose narration quotes the number. It runs on a
-  cloud or cluster machine; see the [plan](plans/matched-mcmc-budget.md).
 
 ## Outside 1.5 scope
 
