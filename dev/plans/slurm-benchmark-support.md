@@ -3,13 +3,13 @@
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
 to 5, Phase 7's redaction and operator's guide, and the tools of Phase 9,
 the promotion and the public assets implemented on
-`feat-slurm-campaigns`, Phase 1b done and Phase 6 done but for its last
-checks on the cluster (2026-09-28/29)**; the branch has not merged into
-`dev-next`. What it assumes of the cluster rests on the surveys of
-2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of Phase 6
-and on the records of the September pool. The harness sections below
-describe each harness as `dev-next` holds it and what the branch gives
-it.
+`feat-slurm-campaigns`, doublechecked and merged into `dev-next` after the
+PI's review; Phase 1b done and Phase 6 done but for its last checks on
+the cluster (2026-09-28/29)**. What it assumes of the cluster rests on the
+surveys of 2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of
+Phase 6 and on the records of the September pool. The harness sections
+below describe each harness as it stood before this plan's work and what
+the work gave it.
 
 ## Live checklist
 
@@ -28,19 +28,17 @@ it.
   `dev-next`, and the brief. The guide, the redaction, two review rounds
   (2026-09-26), a doublecheck of Phase 6's commits (2026-09-29) and a
   doublecheck of the whole branch before the merge, with its fixes
-  (2026-09-30), are done. The branch merges after the PI's review, and
-  the brief, with the limits Phase 6 measured ("Resources and cost"),
-  follows before Phase 8 (PI, 2026-09-30).
+  (2026-09-30), are done, and the branch has merged into `dev-next` after
+  the PI's review. The brief, with the limits Phase 6 measured
+  ("Resources and cost"), remains, before Phase 8 (PI, 2026-09-30).
 - [ ] Phase 8: the campaigns, on the PI's instruction, once the brief
   exists and the source trees hold gpyreg `v1.4.0` with the environment
   check passed on it (the pickup point).
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
-**Pickup point.** The code is complete on `feat-slurm-campaigns`
-(pushed), and every test module of the harnesses passes on it on the
-developer's machine (the worklog, 2026-09-30). The branch merges into
-`dev-next` after the PI's review; the campaigns of Phase 8 run from the
-release commit. The cluster work, in the PI's account, is Phase 1b, then
+**Pickup point.** The code is complete on `dev-next`, and every test
+module of the harnesses passes on the developer's machine (the worklog,
+2026-09-30); the campaigns of Phase 8 run from the release commit. The cluster work, in the PI's account, is Phase 1b, then
 Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
 but for three checks of the next cluster session, whose places the
 operator's notes give:
@@ -49,8 +47,7 @@ operator's notes give:
   campaigns, the finish of the smoke stacking campaign, whose four tasks
   completed but which was neither verified nor assembled, for its
   `verify` and the `ASSEMBLE_TIME` and `ASSEMBLE_MEM` of the brief;
-- with the checkout at the branch's tip, or at `dev-next` once the branch
-  has merged, the smoke campaigns' public assets built again into a new
+- with the checkout at `dev-next`, the smoke campaigns' public assets built again into a new
   directory (`campaign_public.sh`) and checked (`--check`): the two
   assets built on 2026-09-29 predate the redaction's fix, and the check
   fails an asset that other code than its own built;
@@ -61,8 +58,8 @@ operator's notes give:
 The cluster's source trees hold gpyreg at `v1.3.3`, with which the
 environment check passed and the smoke campaigns ran. The finish of a
 smoke campaign refuses any other `PYVBMC_GPYREG_SOURCE`, so that tree
-stays. After those checks and the merge, with the harness checkout at
-`dev-next`, a cluster session clones gpyreg at `v1.4.0` (`682585f`), the
+stays. After those checks, with the harness checkout at `dev-next`, a
+cluster session clones gpyreg at `v1.4.0` (`682585f`), the
 release's minimum, beside it, as the operator's guide says ("The source
 trees"), and runs the environment check with the new tree, which passes
 as the guide's "The environment check" says. That, and the brief, come
@@ -87,11 +84,11 @@ before Phase 8.
    public asset (`campaign_public.sh`), whose shell wrapper runs there for
    the first time (done 2026-09-29, but for the checks above).
 
-Any change to the code that the smoke campaigns need is a commit on the
-branch, with the test modules it touches run again. The tools of Phase 9
+Any change to the code that the smoke campaigns need is a commit, with
+the test modules it touches run again. The tools of Phase 9
 and of the promotion that follows it, `seeded_gate_runs.py` and
 `reference_promote.py`, and the builder of the public assets,
-`campaign_public.py`, are on the branch and tested; the records they make
+`campaign_public.py`, are in place and tested; the records they make
 wait for the release code. The PI's rulings of 2026-09-28 on the
 promotion and on the release's assets are in "The populations", "Records
 and hand-back", Phase 9 and the worklog.
@@ -522,13 +519,13 @@ What is new:
 
 ### The pools: `svbmc_pool_run.py`, `svbmc_pool_io.py`
 
-On `dev-next` the harness has `cases`, a standalone `worker` and `verify`,
-but not the contract: its worker takes `--label L --seed S` and has no early exit (the
-September task script holds it); its compared identity lacks cma, the data
-directory (which the multisensory conditions read) and the clean state of
-the whole harness checkout; its host part lacks the CPU model, the node
-features, the BLAS library and the affinity; and `verify` has no in-flight
-state. It gains:
+Before this plan's work the harness had `cases`, a standalone `worker`
+and `verify`, but not the contract: its worker took `--label L --seed S`
+and had no early exit (the September task script held it); its compared
+identity lacked cma, the data directory (which the multisensory
+conditions read) and the clean state of the whole harness checkout; its
+host part lacked the CPU model, the node features, the BLAS library and
+the affinity; and `verify` had no in-flight state. It gained:
 
 - `--case`, the early exit, the claim, the identity and host fields, and
   the `verify` states and checks of the contract;
@@ -562,14 +559,13 @@ The allocation of the release pools is set with the existing flags:
 
 The scripts that read a pool (`svbmc_shrink_elbo.py`, `svbmc_cap_kappa.py`,
 `svbmc_single_run_bias.py`, `svbmc_shrink_optimize.py`, and
-`svbmc_honest_elbo.py`) take their gpyreg on `dev-next` in three ways:
-the first four default to the September gpyreg path, which
-`svbmc_single_run_bias.py` and `svbmc_shrink_optimize.py` check
+`svbmc_honest_elbo.py`) took their gpyreg before this plan's work in
+three ways: the first four defaulted to the September gpyreg path, which
+`svbmc_single_run_bias.py` and `svbmc_shrink_optimize.py` checked
 (`pinned_gpyreg_source`) and `svbmc_shrink_elbo.py` and
-`svbmc_cap_kappa.py` do not; `svbmc_honest_elbo.py` takes the path its
-pools' manifests record, or `--gpyreg-source`, and refuses a gpyreg that
-resolves elsewhere. On
-the branch the first four take the gpyreg source as
+`svbmc_cap_kappa.py` did not; `svbmc_honest_elbo.py` took the path its
+pools' manifests record, or `--gpyreg-source`, and refused a gpyreg that
+resolved elsewhere. Since this work the first four take the gpyreg source as
 a required argument, and `svbmc_honest_elbo.py` takes it or else the path
 its pools' manifests record; all five check it against every pool's
 manifest. `svbmc_headline_numbers.py` takes its directories as arguments
@@ -577,10 +573,10 @@ instead of the dated names it holds.
 
 ### The populations: `population_run.py`, `golden_trace.py`
 
-On `dev-next`, `population_run.py` runs a manifest's cases one fresh
-process at a time under one supervisor, which alone writes `launch.json`, `status.json` and
-`finished.json`; its worker needs `launch.json` and records no failure. It
-gains:
+Before this plan's work, `population_run.py` ran a manifest's cases one
+fresh process at a time under one supervisor, which alone wrote
+`launch.json`, `status.json` and `finished.json`; its worker needed
+`launch.json` and recorded no failure. It gained:
 
 - **Array mode.** `prepare` writes the manifest with the allocation (a
   suite, its labels and a seed range), the options and the expected
@@ -601,8 +597,8 @@ gains:
   the module, a gate among them, is redirected by the variable. The
   identity checks that `pyvbmc.__file__` resolves under that worktree,
   whose own checkout encloses it (a worktree nested inside another tree
-  does not pass for it), and records its commit. On `dev-next` the
-  identity requires the package inside the harness checkout, which would
+  does not pass for it), and records its commit. Before this plan's work
+  the identity required the package inside the harness checkout, which would
   make the before arm a branch of `f91fdf0` carrying the new harness with
   that commit's targets module. The harness, the targets module and its data
   come from the harness checkout and are the same files in both arms. The
@@ -697,9 +693,8 @@ previous promotion's script lives in its record (PI, 2026-09-28).
   environment versions. `rescore` without `PYVBMC_GPYREG_SOURCE`, and a
   worker whose package tree PyVBMC cannot be imported from, exit 78.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
-  for 100 pairs (on `dev-next` its exact enumeration refuses more than 62),
-  a
-  verification of the reference arm against that arm's own
+  for 100 pairs (before this plan's work its exact enumeration refused
+  more than 62), a verification of the reference arm against that arm's own
   `verification.json` in place of the 870-entry manifest of
   `golden/noisy_extension_20260907/` that it asserts, and a reader for
   array-mode campaigns, which write no `launch.json`, `finished.json` or
@@ -708,14 +703,15 @@ previous promotion's script lives in its record (PI, 2026-09-28).
 
 ### The stacking: `svbmc_pool_stack.py`
 
-On `dev-next` the comparison runs in one process. It verifies the original
-baseline at the paths its record holds, the Windows paths of the machine
-that ran the campaign, at every start, even for the integrated arm alone.
-It cannot resume: a new run truncates `cells.jsonl`, and `results.json` is
-written at the end. A run split by condition or `M` and merged with
-`--summarize-only --from-results` takes the single-run rows from its first
-file only and draws its bootstrap in another order than an unsplit run. Its
-repetitions draw independent subsets, which can overlap. It gains:
+Before this plan's work the comparison ran in one process. It verified
+the original baseline at the paths its record holds, the Windows paths of
+the machine that ran the campaign, at every start, even for the
+integrated arm alone. It could not resume: a new run truncated
+`cells.jsonl`, and `results.json` was written at the end. A run split by
+condition or `M` and merged with `--summarize-only --from-results` took
+the single-run rows from its first file only and drew its bootstrap in
+another order than an unsplit run. Its repetitions drew independent
+subsets, which could overlap. It gained:
 
 - `prepare`, whose manifest holds the pools with their selections, the `M`
   values and repetition counts, the seed, the arms, the baseline's record
