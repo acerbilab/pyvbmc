@@ -330,4 +330,55 @@ Defaults that the PI may change before the runs:
 
 ## Worklog
 
-Nothing has run yet.
+**2026-09-30, steps 1 to 6, `exporter` configuration.** One cloud
+container: Linux x86_64, 4 CPUs (Intel Xeon at 2.10 GHz), 15 GB; every
+process of steps 2 to 5 ran with BLAS single-threaded. Each output directory
+holds `invocations.jsonl` with the command line, commit, versions, platform
+and wall time of each invocation. The commit it records is the one checked
+out when the invocation ended. Steps 3 to 5 ran with the script of
+`159237c`, and the commit they record, `bad806e`, adds only the script's
+entry to `dev/README.md`.
+
+- **Step 1**, about 1 minute. A full clone of `dev-next` at `695385e`,
+  with its tags; `git describe` gives `v1.0.4-1239-g695385eb`. Python
+  3.12.3 in a venv, PyVBMC editable from the checkout (installed as
+  1.0.5.dev1239+g695385eb5), gpyreg 1.4.0 from PyPI, NumPy 2.5.3, SciPy
+  1.18.1, emcee 3.1.6, zeus-mcmc 2.5.4. zeus imports and passes its checks.
+- **Step 2.** `check --config exporter` passes all 70 checks at `159237c`,
+  in 105 s. The tool's PyVBMC runs of seeds 0 to 4 reproduce the
+  exporter's sweep on this machine: 95, 105, 75, 85 and 85 evaluations, and
+  the exporter's gsKL to the four digits printed. Beyond the plan's list,
+  `check` confirms that the tool's gsKL and MMTV equal `sample_metrics`
+  (bit for bit), that a run of half the length is a prefix of the full
+  one for every setting of the grid, and that the exporter's `x0`,
+  plausible box, bounds and options are the ones the samplers receive.
+  Two points of the plan could not be done as written:
+  - zeus's `ncall` leaves out the `W` evaluations of the initial walkers,
+    which the plan counts. The check compares the wrapper's count with
+    `ncall + W`, and the two agree for every `W` of the grid.
+  - `logreg` leaves `sampler_n_eff` unset, although its sampler resamples a
+    stored importance-sampling population, so the rule of "Targets" does
+    not exclude it. The script excludes it by name (`RESAMPLING`).
+
+  Choices the plan leaves open, made in the script: the slice sampler's
+  `n` is the fewest sweeps that reach `N_max` evaluations whatever the
+  sweeps cost (one evaluation per coordinate, three with stepping out on
+  an unbounded target), and the states past `N_max` are dropped; a tie
+  between pilot settings goes to the smaller mean log median error over
+  the budgets; budgets beyond `N_max` continue the grid's spacing; the
+  exact draws of replicate `r` come from
+  `np.random.SeedSequence(r).spawn(2)[1]`; an error of `+inf` is written
+  as `null`.
+- **Step 3**, 8.0 minutes on 4 processes. 100 runs, none raised. Medians:
+  85 evaluations (quartiles 80 and 90), gsKL 0.171, MMTV 0.0440, evidence
+  error 0.0454.
+- **Step 4**, 21.5 minutes (slice sampling 12.9, emcee 3.4, zeus 3.0,
+  random-walk Metropolis 2.3), no run raised. Pilot `N*` of the chosen
+  settings:
+
+  | Sampler | gsKL | MMTV |
+  |---|---|---|
+  | slice sampling | `c=1,step_out=0,adaptive=1`, 6,006 | `c=0.3,step_out=0,adaptive=1`, 33,306 |
+  | emcee | `W=16`, 639 | `W=32`, 33,640 |
+  | zeus | `W=16`, 1,368 | `W=32`, 42,242 |
+  | random-walk Metropolis | `c=0.4`, 996 | `c=0.2`, 26,140 |
