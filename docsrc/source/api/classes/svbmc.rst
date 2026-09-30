@@ -122,6 +122,9 @@ it does not remove every source of bias.
      - Per-retained-run provenance: ``"recorded"``, ``"inferred"`` or
        ``"override"``.
 
+Use the scalar ``stacked.elbo`` when the automatically selected headline is
+the desired result.
+
 ``stacked.elbo_sd`` combines the stratified entropy estimator's Monte Carlo
 variance with the GP quadrature uncertainty at the selected weights. It
 describes the uncapped ``raw`` value. It excludes selection bias and does not
@@ -145,25 +148,6 @@ The constructor defaults are ``s_max=np.sqrt(5)``, ``M_min=2/3``, ``seed=None``,
 ``show_tips=True`` and ``noisy=None``. Guidance tips appear only when
 ``show_tips`` is true and INFO logging is enabled. Setting ``show_tips=False``
 suppresses tips while leaving progress and applied-cap diagnostics available.
-
-Code written for the previous dictionary-valued ``elbo`` API can be migrated
-as follows:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 45 55
-
-   * - Previous expression
-     - Current expression
-   * - ``stacked.elbo["estimated"]``
-     - ``stacked.elbo_details["raw"]``
-   * - ``stacked.elbo["debiased_I_median"]``
-     - ``stacked.elbo_details["capped_I_median"]``
-   * - ``stacked.elbo["debiased_E_median"]``
-     - ``stacked.elbo_details["capped_E_median"]``
-
-Use the scalar ``stacked.elbo`` when the automatically selected headline is
-the desired result.
 
 A composite posterior
 ---------------------
@@ -226,6 +210,50 @@ compare the individual runs with the stacked posterior, and
 ``find_init_bounds`` returns the box to draw VBMC starting points from
 given the bounds and plausible bounds of a problem.
 
+Differences from the standalone ``svbmc`` package
+-------------------------------------------------
+
+The implementation derives from the standalone S-VBMC package
+(``acerbilab/svbmc``, version 0.1.1); its BSD 3-Clause license notice ships
+with the subpackage, ``pyvbmc.svbmc``. The method and the optimizer of the
+weights are the same, and on our benchmark the two reach the same weights.
+What differs:
+
+- It is faster. The work that the components of one run share, its parameter
+  transform above all, is done once per run rather than once per component.
+- The reported ELBO is more precise. The corrections that bring the expected
+  log-joint of each run to the original parameter space are computed once,
+  when the object is created, exactly or by numerical quadrature, where the
+  standalone package estimated them by Monte Carlo at every step. After the
+  optimization the ELBO is evaluated again with more draws
+  (``optimize(n_samples_final=...)``), and it comes with an uncertainty,
+  ``elbo_sd``.
+- ``elbo`` is a number, and the entries of the standalone package's ``elbo``
+  dictionary are in ``elbo_details``, under the names in the table below.
+- ``seed`` takes the place of ``testing``: every random draw comes from the
+  generator of the ``SVBMC`` object, and the input posteriors are neither
+  modified nor advanced.
+- ``sample(n)`` returns exactly ``n`` draws. The standalone package rounded
+  the share of each run separately and could return a few more or fewer.
+- Results are float64, problems with one variable work, and malformed inputs
+  raise errors.
+
+Code written for the standalone package's dictionary-valued ``elbo`` can be
+migrated as follows:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Standalone ``svbmc``
+     - ``pyvbmc.svbmc``
+   * - ``stacked.elbo["estimated"]``
+     - ``stacked.elbo_details["raw"]``
+   * - ``stacked.elbo["debiased_I_median"]``
+     - ``stacked.elbo_details["capped_I_median"]``
+   * - ``stacked.elbo["debiased_E_median"]``
+     - ``stacked.elbo_details["capped_E_median"]``
+
 Citation
 --------
 
@@ -234,9 +262,6 @@ Monte Carlo. *Transactions on Machine Learning Research*.
 `arXiv:2504.05004 <https://arxiv.org/abs/2504.05004>`_,
 `TMLR <https://openreview.net/forum?id=M2ilYAJdPe>`_. Please cite it
 together with the VBMC and PyVBMC papers when you use S-VBMC.
-
-The implementation derives from the S-VBMC package (``acerbilab/svbmc``,
-version 0.1.1); its BSD 3-Clause license notice ships with the subpackage.
 
 .. autoclass:: pyvbmc.svbmc.SVBMC
    :members:

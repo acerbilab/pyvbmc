@@ -330,13 +330,24 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
 - **Commits** follow conventional commits. A `Co-Authored-By:` line is fine;
   a `Claude-Session:` trailer is not, even where the session's own
   attribution instructions ask for one.
-- **Changelog.** A change that a user can notice is listed in `CHANGELOG.md`
-  under `Unreleased` with the work that makes it, in a sentence written for
-  users and relative to the last release (a fix to a feature that no release
-  has shipped belongs to that feature's entry). A change that can stop a
-  script written for the last release, or change what it returns, also has
-  one line in the "Upgrading from" list that opens the section, kept in step
-  with its entry.
+- **Changelog.** `CHANGELOG.md` lists under `Unreleased`, with the work that
+  makes it, each new feature or document and each change to results, to the
+  interface, to what a script sees or has to handle, or to the speed or
+  memory use of a run, written for users and relative to the last release (a
+  fix to a feature that no release has shipped belongs to that feature's
+  entry). The wording of a message, a speed-up inside one function, internal
+  state that no script reads, corrections to the documentation, and changes
+  to the tests or the developer tooling get no entry. An entry says in a
+  sentence or two what a user will notice (a new feature, or a list of
+  related facts, may take a few more), under Added, Changed, Fixed or
+  Removed and in the group of its theme where there is one. The how and the
+  why, and any comparison with MATLAB beyond a phrase, belong in the
+  documentation, the option's description, the catalogue of differences from
+  MATLAB or the record of the work, and the entry may point there. A change
+  that can stop a script written for the last release, or change what it
+  returns, is also covered by the "Upgrading from" list that opens the
+  section, one line for each kind of change, not for each option or method,
+  kept in step with the entries.
 - **Branches.** Work on feature branches; `feat-*` and `dev-*` branches are
   live work. An implementation that is rejected or parked after evaluation
   leaves the working line and is kept for the record on a branch named
