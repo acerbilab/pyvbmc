@@ -39,7 +39,14 @@ records its execution.
   ([plans/version-check.md](plans/version-check.md)) shares the tips' slot
   and switches, and the review covers it: it is described in the same places
   and in the FAQ's entry on newer versions, the `check_for_updates` API page
-  and the changelog's "Update reminders" entry.
+  and the changelog's "Update reminders" entry. The PI's first rulings
+  (2026-10-01): the `VBMC` tip on `elbo_sd` links the FAQ entry on `elbo`
+  and `elbo_sd`, and the two `SVBMC` tips on the number of runs and their
+  starting points link Example 7 and the `SVBMC` page's helpers; the
+  `VBMC` tip on multiple runs keeps its 3–4 runs beside the S-VBMC tip's
+  ten, and no tip is added. The S-VBMC tip on the noisy ELBO waits for the
+  headline decision (the item below). Open: the PI's reading of the
+  wording of every tip.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -74,7 +81,9 @@ records its execution.
   bias from bias added by stacking and explaining that residual bias can
   remain; the raw estimate is not an upper bound on the truth. Update the
   `SVBMC` docstring, API reporting section, FAQ and existing Example 7
-  explanation to match the decision, with no additional user step.
+  explanation to match the decision, with no additional user step, and the
+  S-VBMC runtime tip `noisy_elbo` (`pyvbmc/svbmc/_tip_catalog.py`), which
+  recommends the capped ELBO.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.

@@ -5,11 +5,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Tip:
-    """A guidance message and the condition under which it is relevant."""
+    """A guidance message, its links and when it is relevant."""
 
     id: str
     text: str
     noisy_only: bool = False
+    urls: tuple[str, ...] = ()
 
 
 TIPS = (
@@ -27,10 +28,18 @@ TIPS = (
         "run_count",
         "Stacking about ten well-converged VBMC runs often captures most "
         "of the improvement in posterior quality seen in the S-VBMC paper.",
+        urls=(
+            "https://acerbilab.github.io/pyvbmc/_examples/"
+            "pyvbmc_example_7_stacking.html",
+        ),
     ),
     Tip(
         "starting_points",
         "Start the individual VBMC runs from different points to help "
         "them explore different regions of the posterior.",
+        urls=(
+            "https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html"
+            "#helpers",
+        ),
     ),
 )

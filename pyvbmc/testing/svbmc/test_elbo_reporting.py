@@ -602,12 +602,26 @@ def test_invalid_optimization_does_not_consume_tip_or_rng(kwargs, capsys):
     assert "Tip:" not in capsys.readouterr().out
 
 
-def _recording_emitter(output):
-    def emit(message, *, display):
+def _recording_emitter(output, urls_seen=None):
+    def emit(message, *, display, urls=()):
         output.append((message, display))
+        if urls_seen is not None:
+            urls_seen.append(tuple(urls))
         return bool(display)
 
     return emit
+
+
+def test_tips_pass_their_links_to_the_emitter():
+    _runtime_tips._ORDER = [TIPS[1], TIPS[2], TIPS[0]]
+    output, urls_seen = [], []
+    emit = _recording_emitter(output, urls_seen)
+    for _ in range(4):
+        _runtime_tips.consider_runtime_tip(
+            enabled=True, display=True, noisy=False, emitter=emit
+        )
+    assert urls_seen == [TIPS[1].urls, TIPS[2].urls]
+    assert all(urls for urls in urls_seen)
 
 
 def test_tip_cadence_noisy_priority_and_once_only():
