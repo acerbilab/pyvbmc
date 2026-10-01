@@ -54,9 +54,10 @@ operator's notes give:
 - a search of the smoke campaigns' redacted copies and public assets for
   every site detail the operator's notes list, whole: the one made after
   the redaction's fix showed at most ten hits per directory;
-- with the checkout at `dev-next`, the arm comparison
-  (`analyze_population_run.py --arms`) on the smoke canaries, its only run
-  on real before-arm output (the worklog, 2026-09-30).
+- the arm comparison (`analyze_population_run.py --arms`) on the smoke
+  canaries, its only run on real before-arm output (the worklog,
+  2026-09-30, which names no checkout: the script compares the identities
+  that the arms recorded, not the checkout it runs from).
 
 The cluster's source trees hold gpyreg at `v1.3.3`, with which the
 environment check passed and the smoke campaigns ran. The finish of a
