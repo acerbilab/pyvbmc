@@ -130,6 +130,17 @@ def npz_problems(data, redaction=None):
     return problems
 
 
+def left_out_kind(name, tag):
+    """The kind of the artifact ``name`` of the case ``tag``, by which the
+    asset counts what it leaves out: what follows the case's name in the
+    file's (``.boost.pkl``), since a case's name may hold dots of its own
+    (``noise1.3``). A file named otherwise is counted by its suffixes."""
+    base, stem = Path(name).name, Path(tag).name
+    if base.startswith(stem) and base != stem:
+        return base[len(stem) :]
+    return "".join(Path(name).suffixes) or name
+
+
 def building_code():
     """What built an asset: the harness checkout's commit and the SHA-256
     of the two modules whose rules decide what it holds, which ``check``
@@ -294,7 +305,7 @@ def build(
                 texts[name] = new.decode("utf-8")
                 kinds["redacted"] += 1
             else:
-                left_out["".join(Path(name).suffixes) or name] += 1
+                left_out[left_out_kind(name, tag)] += 1
         # The case's completion record, redacted, where it is no tracked
         # copy: it ties the case's published files to their source hashes.
         name = contract.record_path(campaign, tag).relative_to(campaign)
