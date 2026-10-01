@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-09-30. These lists describe scope, not priority or execution
+Updated 2026-10-01. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -39,7 +39,9 @@ records its execution.
   ([plans/version-check.md](plans/version-check.md)) shares the tips' slot
   and switches, and the review covers it: it is described in the same places
   and in the FAQ's entry on newer versions, the `check_for_updates` API page
-  and the changelog's "Update reminders" entry.
+  and the changelog's "Update reminders" entry. The PI's rulings so far,
+  and what remains open (the reading of the wording of every tip), are in
+  the tips plan's last section, "Review before the 1.5 release".
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -73,8 +75,10 @@ records its execution.
   Finalize the headline's qualitative caveat, distinguishing inherited VBMC
   bias from bias added by stacking and explaining that residual bias can
   remain; the raw estimate is not an upper bound on the truth. Update the
-  `SVBMC` docstring, API reporting section, FAQ and existing Example 7
-  explanation to match the decision, with no additional user step.
+  `SVBMC` docstring, API reporting section, FAQ, existing Example 7
+  explanation and S-VBMC runtime tip `noisy_elbo`
+  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO) to
+  match the decision, with no additional user step.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
@@ -123,10 +127,14 @@ records its execution.
   before its merge (2026-09-30), by seven reviewers, found a privacy leak
   and some twenty issues; the PI ruled on those that needed it, the fixes
   are in, and every harness test module passes (the plan's worklog).
-  Next, before Phase 8, are the three checks of the next cluster session
+  Next, before Phase 8, are the four checks of the next cluster session
   and the clone of gpyreg `v1.4.0` with the environment check (the plan's
   pickup point), and the brief, which needs the stacking's finishing
-  limits from those checks. Needed before
+  limits from those checks. Before Phase 9, the plan's worklog
+  (2026-09-30) leaves smaller fixes ("Left for after the merge and before
+  Phase 9"), the review's optional findings await the PI's ruling, and
+  whether the released pools should be verifiable and stackable from
+  their public asset is for the PI. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See
@@ -364,7 +372,6 @@ records its execution.
   a release more than a year old that a newer version may exist, so a longer
   gap reminds users of the latest release (PI, 2026-09-30;
   [plans/version-check.md](plans/version-check.md), D1).
-
 - "In scope for 1.5" is empty when 1.5 is done: each of its items is either
   done or decided not to be done, with the reason recorded where its work
   is recorded. A finding is not parked in this file to wait; it is fixed or

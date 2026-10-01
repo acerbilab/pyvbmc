@@ -16,8 +16,9 @@ the ``torch``, ``arviz`` and ``pymc`` extras and JAX). The kernel runs with
 BLAS single-threaded, with this checkout first on ``PYTHONPATH``, with its
 own IPython profile directory, with ``PLOTLY_RENDERER`` set so that
 Example 2's figure is stored as HTML, which the docs render, beside its
-Plotly JSON, which they skip, and, on a machine without ``g++``, with
-``PYTENSOR_FLAGS`` stating that PyTensor has no C compiler.
+Plotly JSON, which they skip, with ``PYVBMC_NO_UPDATE_REMINDER`` set so that
+no old-release reminder enters the stored outputs, and, on a machine without
+``g++``, with ``PYTENSOR_FLAGS`` stating that PyTensor has no C compiler.
 
 After a notebook's cells, and after the cells that ``CHECKS`` names, the
 script runs check cells that assert what the notebook's text says about its
@@ -57,6 +58,8 @@ KERNEL_ENV = {
     "OPENBLAS_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",
     "PLOTLY_RENDERER": "plotly_mimetype+notebook_connected",
+    # The stored outputs ship with the release: no old-release reminder.
+    "PYVBMC_NO_UPDATE_REMINDER": "1",
 }
 STANDARD_KERNELSPEC = {
     "display_name": "Python 3 (ipykernel)",

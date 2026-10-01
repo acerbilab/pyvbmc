@@ -410,6 +410,13 @@ def test_fully_yanked_newest_release_is_not_offered(install, pypi, capsys):
             id="no-releases-and-no-final-info-version",
         ),
         pytest.param(
+            None,
+            None,
+            {"info": {"version": 150}},
+            "unreadable reply",
+            id="version-not-a-string",
+        ),
+        pytest.param(
             None, None, {"info": {}}, "unreadable reply", id="no-version"
         ),
         pytest.param(

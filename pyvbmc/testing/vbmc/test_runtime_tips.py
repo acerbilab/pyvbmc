@@ -3,6 +3,7 @@
 import copy
 import importlib
 import random
+import sys
 
 import numpy as np
 import pytest
@@ -93,6 +94,36 @@ def test_emitter_display_modes_and_urls(capsys):
     assert capsys.readouterr().out == (
         "message\nhttps://one/a?x=1\nhttps://two/b\n"
     )
+
+
+class _FailingStream:
+    """A stream whose writes fail from the given write on."""
+
+    def __init__(self, fail_from):
+        self.fail_from = fail_from
+        self.written = []
+
+    def write(self, text):
+        if len(self.written) >= self.fail_from:
+            raise BrokenPipeError(32, "Broken pipe")
+        self.written.append(text)
+
+    def flush(self):
+        pass
+
+
+def test_emitter_tolerates_a_failing_stream(monkeypatch):
+    # The message cannot be printed: nothing counts as printed.
+    stream = _FailingStream(fail_from=0)
+    monkeypatch.setattr(sys, "stdout", stream)
+    assert not emit_user_hint("message", display="iter", urls=("url",))
+
+    # The message printed and its URL failed: the hint counts as printed.
+    # print() writes a line as its text and its end, two writes.
+    stream = _FailingStream(fail_from=2)
+    monkeypatch.setattr(sys, "stdout", stream)
+    assert emit_user_hint("message", display="iter", urls=("url",))
+    assert "".join(stream.written) == "message\n"
 
 
 def test_first_fourth_seventh_starts_and_exhaustion_are_reproducible():

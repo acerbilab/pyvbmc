@@ -57,7 +57,7 @@ class UpdateCheck(NamedTuple):
         metadata cannot be found.
     latest : str or None
         The latest release of PyVBMC on PyPI, or ``None`` when PyPI could
-        not be reached or its reply could not be read.
+        not be reached, its reply could not be read or it named no release.
     update_available : bool or None
         Whether ``latest`` is newer than ``installed``. ``None`` when either
         is unknown, and for a development version, which is not compared
@@ -93,9 +93,9 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     with at least one file that is not yanked, so that pre-releases,
     development releases and yanked releases are ignored. PyPI documents the
     list of releases in this reply as deprecated; a reply without a mapping
-    of releases gives the version PyPI reports as its latest. An installed version of any
-    other form, such as a development install, is reported beside the
-    latest release without being compared with it.
+    of releases gives the version PyPI reports as its latest. An installed
+    version of any other form, such as a development install, is reported
+    beside the latest release without being compared with it.
 
     Parameters
     ----------
@@ -109,8 +109,9 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     UpdateCheck
         A named tuple of ``installed``, the installed version (``None`` when
         the package metadata cannot be found); ``latest``, the latest
-        release on PyPI (``None`` when PyPI could not be reached or its
-        reply could not be read); and ``update_available``, whether
+        release on PyPI (``None`` when PyPI could not be reached, its reply
+        could not be read or it named no release); and ``update_available``,
+        whether
         ``latest`` is newer than ``installed`` (``None`` when either is
         unknown or the installed version is a development version).
 

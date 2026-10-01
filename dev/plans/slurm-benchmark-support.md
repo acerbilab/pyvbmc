@@ -22,7 +22,7 @@ the work gave it.
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
 - [x] Phase 5: the stacking harness (2026-09-25).
 - [ ] Phase 6: smoke campaigns on Turso. The checks passed on 2026-09-29
-  (the worklog); three remain for the next cluster session (the pickup
+  (the worklog); four remain for the next cluster session (the pickup
   point).
 - [ ] Phase 7: the operator guide, an independent review, the merge into
   `dev-next`, and the brief. The guide, the redaction, two review rounds
@@ -40,7 +40,7 @@ the work gave it.
 module of the harnesses passes on the developer's machine (the worklog,
 2026-09-30); the campaigns of Phase 8 run from the release commit. The cluster work, in the PI's account, is Phase 1b, then
 Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
-but for three checks of the next cluster session, whose places the
+but for four checks of the next cluster session, whose places the
 operator's notes give:
 
 - with the harness checkout at `2356f12d`, the commit of the smoke
@@ -53,7 +53,10 @@ operator's notes give:
   fails an asset that other code than its own built;
 - a search of the smoke campaigns' redacted copies and public assets for
   every site detail the operator's notes list, whole: the one made after
-  the redaction's fix showed at most ten hits per directory.
+  the redaction's fix showed at most ten hits per directory;
+- with the checkout at `dev-next`, the arm comparison
+  (`analyze_population_run.py --arms`) on the smoke canaries, its only run
+  on real before-arm output (the worklog, 2026-09-30).
 
 The cluster's source trees hold gpyreg at `v1.3.3`, with which the
 environment check passed and the smoke campaigns ran. The finish of a

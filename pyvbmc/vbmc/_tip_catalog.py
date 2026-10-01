@@ -45,7 +45,10 @@ TIPS = (
             "the true evidence!"
         ),
         frequency="normal",
-        urls=("https://acerbilab.github.io/pyvbmc/quickstart.html",),
+        urls=(
+            "https://acerbilab.github.io/pyvbmc/faq.html"
+            "#faq-what-are-elbo-and-elbo-sd",
+        ),
     ),
     Tip(
         id="plausible_bounds",

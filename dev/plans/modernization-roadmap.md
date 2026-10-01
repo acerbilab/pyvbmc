@@ -1061,8 +1061,8 @@ The open work for 1.5 is the list "In scope for 1.5" of
     when the user calls it, the package's only network access. The
     [update-reminders plan](version-check.md) owns the prior art, the PI's
     rulings, the approved wording and the verification (the full suite, the
-    exact oracle check, the docs build, two rounds of independent review and
-    the nine-job matrix on each round). Merged into `dev-next` at `01bd00de`;
+    exact oracle check, the docs build, rounds of independent review, and
+    the nine-job matrix before the reviews and after each round of fixes). Merged into `dev-next` at `01bd00de`;
     the feature branch has been removed.
 
 ## S-VBMC ELBO corrections and reporting

@@ -35,7 +35,7 @@ def consider_runtime_tip(*, enabled, display, noisy, emitter=emit_user_hint):
         if opportunity % 3:
             return None
         tip = next((tip for tip in remaining if tip.noisy_only), remaining[0])
-        if not emitter(f"Tip: {tip.text}", display=display):
+        if not emitter(f"Tip: {tip.text}", display=display, urls=tip.urls):
             return None
         _SEEN.add(tip.id)
         return tip

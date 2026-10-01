@@ -201,6 +201,11 @@ and the methods that estimate the stacked ELBO or its entropy need it.
    stacked = SVBMC.load("stacked.pkl")
    samples = stacked.sample(10000)
 
+.. The S-VBMC runtime tip on starting points (pyvbmc/svbmc/_tip_catalog.py)
+   links this label.
+
+.. _svbmc-helpers:
+
 Helpers
 -------
 
