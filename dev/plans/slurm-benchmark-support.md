@@ -1589,6 +1589,8 @@ reproduces bit for bit.
   `dev-next` with the fix above and the brief. On the developer's
   machine the exact oracle check passes on it with gpyreg `v1.4.0`
   (`make_oracle_fixtures.py --check --exact`, one BLAS thread, 12 of
-  12). Its package and harness modules are those of `edd3f633`, on which
+  12), and CI's full matrix, dispatched at it, passes in its nine jobs
+  (Ubuntu, Windows and macOS under Python 3.10 to 3.12). Its package and
+  harness modules are those of `edd3f633`, on which
   the environment check passed on the cluster; the operator runs that
   check again at the release commit in their own account.
