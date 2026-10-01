@@ -48,12 +48,15 @@ and the PI has ruled on what the last cluster session left open (the
 worklog, 2026-10-01). Before Phase 8:
 
 - the PI's reading of the brief;
-- every edit to the package that 1.5 still needs, wording included
-  (the tips' review of `dev/TODO.md`, docstrings, option descriptions),
-  since none can land between the launch and the promotion
-  (decision 13);
-- the release commit named, and the operator given an account on the
-  cluster, write access to the repository and the site's values.
+- the operator given the release commit, `ff3ed014` (PI, 2026-10-01),
+  and the site's values;
+- the PI's instruction to launch.
+
+The package can still change for the release after the launch. An edit
+to its text (a tip's wording, a docstring, an option's description)
+changes no run; it lands before the launch or after the promotion of
+the new reference, whose check compares the package's files with the
+after arm's (decision 13).
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
@@ -1581,3 +1584,11 @@ reproduces bit for bit.
   the PI before opening the pull request. The arm comparison's
   confirmatory family is the default, so neither arm's `prepare` takes
   `--confirmatory`. "Records and hand-back" and the brief say so.
+
+  The PI named the release commit the same day: `ff3ed014`, the head of
+  `dev-next` with the fix above and the brief. On the developer's
+  machine the exact oracle check passes on it with gpyreg `v1.4.0`
+  (`make_oracle_fixtures.py --check --exact`, one BLAS thread, 12 of
+  12). Its package and harness modules are those of `edd3f633`, on which
+  the environment check passed on the cluster; the operator runs that
+  check again at the release commit in their own account.

@@ -105,10 +105,12 @@ records its execution.
   [brief](plans/release-gate-handoff.md) is written; the PI ruled the
   same day on what that session left open (the plan's worklog). Next,
   before Phase 8 (the plan's pickup point), are the PI's reading of the
-  brief, every edit that 1.5 still needs under `pyvbmc/` outside its
-  tests and S-VBMC, the tips' wording among them, since none can land
-  between the launch and the promotion of the new reference, and the
-  release commit named with the operator's access arranged. Before
+  brief, the release commit (`ff3ed014`; PI, 2026-10-01) and the site's
+  values given to the operator, and the PI's instruction to launch. An
+  edit to the package's text,
+  the tips' wording among them, lands before the launch or after the
+  promotion of the new reference, whose check compares the package's
+  files with the after arm's (the plan's decision 13). Before
   Phase 9, the plan's worklog (2026-09-30) leaves smaller fixes ("Left
   for after the merge and before Phase 9"), and the review's optional
   findings await the PI's ruling. Needed before
