@@ -66,11 +66,14 @@ is being iterated. The final voice is not chosen yet.
   `UNCERTAINTY wibbly-wobbly`. During the time-lapse, `timey-wimey` sits next
   to the cost readout. The video quotes the phrase and uses none of the
   BBC's imagery.
-- **The footnote.** The asterisk on the MCMC count, in scene 2 and in the
-  payoff, refers to a footnote in the bottom right: "\*Median of 100 runs:
+- **The footnotes.** Two asterisks refer to footnotes in the bottom right.
+  The one on the MCMC count, in scene 2 and in the payoff, reads "\*Median of 100 runs:
   evaluations that emcee, a black-box MCMC sampler, needs to match the
   accuracy of a typical PyVBMC run on this posterior (mean marginal total
   variation). MCMC gives no evidence estimate."
+  The one on line `w3` of scene 6 reads "\*Averaging the surrogate over
+  the mixture has a closed form, Bayesian quadrature (O'Hagan 1991;
+  Rasmussen & Ghahramani 2003, "Bayesian Monte Carlo")."
 
 ## Scenes
 
@@ -86,7 +89,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | p4 | Picture the posterior as a landscape. | The true landscape rises out of the floor as a dim grey wireframe. |
 | p5 | The higher the ground, the more plausible the setting. | Labels on the peak and on the flat between the arms, *MORE PLAUSIBLE* and *LESS PLAUSIBLE*. |
 
-### 2. Markov chain Monte Carlo (0:17–0:27)
+### 2. Markov chain Monte Carlo (0:17–0:26)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -94,11 +97,11 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | m2 | It needs tens of thousands of evaluations. | The ensemble speeds up until its dots cover the ridge. The count stops at *27,828\**. The footnote appears in the bottom right. |
 | m3 | At a few minutes each, you would wait weeks. | The cost readout reaches *8.3 weeks*. |
 
-### 3. Bayesian optimization (0:27–0:42)
+### 3. Bayesian optimization (0:26–0:42)
 
 | Line | Narration | Picture |
 |---|---|---|
-| o1 | Bayesian optimization finds the highest point of a landscape in far fewer evaluations. | The chain fades. The 67 points of a real PyBADS run appear one by one and close in on the peak. The readout says *BAYESIAN OPTIMIZATION*. |
+| o1 | Bayesian optimization finds the highest point of a landscape in far fewer evaluations. | The chain fades. The 67 points of a real PyBADS run appear one by one and close in on the peak. The readout says *BAYESIAN OPTIMIZATION (PYBADS)*. |
 | o2 | It learns the landscape from the points it has seen, then decides where to look next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
 | o3 | PyVBMC does the same for the whole posterior. | The true posterior glows magenta on the floor. The glow spreads from the best fit along the whole banana. |
 
@@ -109,7 +112,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | s1 | We start in the dark. | The grey landscape, the points and the glow fade out. The readout switches to *PYVBMC* at zero evaluations. |
 | s2 | Each evaluation reveals the height at a single point. | The ten evaluations of the initial design drop one by one. |
 
-### 5. The surrogate (0:48–1:04)
+### 5. The surrogate (0:48–1:03)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -119,15 +122,18 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | g4 | Everywhere else it wobbles. | The camera pulls back over the outskirts. Readout `UNCERTAINTY wibbly-wobbly`. |
 | g5 | The more it wobbles, the less it knows. | The colour key appears: amber unsure, cyan sure. |
 
-### 6. The mixture (1:04–1:13)
+### 6. The mixture (1:03–1:23)
 
 | Line | Narration | Picture |
 |---|---|---|
 | q1 | On the surrogate, PyVBMC fits a mixture of Gaussians. | The mixture's two components appear on the floor as ellipses. Its magenta sheet rises over them. Label *variational inference*. The component count appears in the readout. |
+| w1 | Why not use the surrogate itself? | Hold on the surrogate and the mixture. |
+| w2 | It gives a height at every point, but it's not directly usable. | The camera keeps orbiting. |
+| w3 | A mixture of Gaussians you can sample and compute with, exactly.\* | Eighty samples of the mixture fall onto the floor, one after another, and land inside its ellipses. The Bayesian quadrature footnote appears in the bottom right. |
 | q2 | This is its first guess at the posterior. | The magenta sheet beside the surrogate's ridge. |
-| q3 | For now it is a crude one. | Hold. The two components are visibly blunter than the ridge. |
+| q3 | For now it is a crude one. | Hold. The two components are visibly blunter than the ridge. The samples and the footnote fade with the scene. |
 
-### 7. Where to evaluate next (1:13–1:28)
+### 7. Where to evaluate next (1:23–1:38)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -135,7 +141,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | a2 | An optimizer would head for the peak. | PyBADS's points from scene 3 flicker at the peak, with the label *OPTIMIZER*. |
 | a3 | PyVBMC is after the whole posterior, so it looks for places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. |
 
-### 8. The loop (1:28–1:33)
+### 8. The loop (1:38–1:43)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -143,7 +149,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l2 | Update the surrogate. | It lights *SURROGATE* as the surrogate refits. |
 | l3 | Refit the mixture. | It lights *MIXTURE* as the mixture refits. |
 
-### 9. Time-lapse (1:33–1:51)
+### 9. Time-lapse (1:43–2:01)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -151,22 +157,22 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l4 | Round after round, the wobbling dies down. | The sheet turns from amber to cyan. The `wibbly-wobbly` readout fades. |
 | l5 | The mixture grows new components to follow the ridge. | The component count climbs from 2 to 21, then to 50 at the final boost. |
 
-### 10. The reveal (1:51–1:57)
+### 10. The reveal (2:01–2:07)
 
 | Line | Narration | Picture |
 |---|---|---|
 | r1 | PyVBMC never saw the true landscape. | The camera orbits. |
 | r2 | Here it is. | The grey landscape rises into place under the surrogate and the mixture. Where they coincide, the wires add up to white. |
 
-### 11. The evidence (1:57–2:07)
+### 11. The evidence (2:07–2:17)
 
 | Line | Narration | Picture |
 |---|---|---|
-| e1 | PyVBMC also estimated the model's evidence. | The view morphs to density. The readout adds *LOG EVIDENCE −0.019*. |
+| e1 | The same calculation gives an estimate of the model's evidence. | The view morphs to density. The readout adds *LOG EVIDENCE −0.019*. |
 | e2 | You need that number to compare two models. | Hold. |
 | e3 | The estimate lands close to the true value. | *TRUE +0.000* appears beside it. |
 
-### 12. The payoff (2:07–2:17)
+### 12. The payoff (2:17–2:28)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -174,20 +180,21 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | f2 | Markov chain Monte Carlo would have needed tens of thousands. | Beside it, *MCMC 27,828\* EVALUATIONS*, the budget of scene 2. The footnote returns. |
 | f3 | Weeks of waiting became an afternoon. | Under each count, its cost, *5 h 15 min* and *8.3 weeks*, then *AT 3 MIN PER EVALUATION · A 2-PARAMETER EXAMPLE*. |
 
-### 13. The wordmark (2:17–2:24)
+### 13. The wordmark (2:28–2:35)
 
 No narration. This is the page's finale. The camera pulls up until the
 posterior is the V of the wordmark. "Py" and "BMC" appear beside it. Then
 *1.5* appears after the word, smaller and in cyan.
 
-### 14. End card (2:24–2:32)
+### 14. End card (2:35–2:43)
 
 No narration. The wordmark dims behind **PyVBMC 1.5**, `pip install
-pyvbmc` and acerbilab.github.io/pyvbmc. Below them are the three references
+pyvbmc` and acerbilab.org/model-fitting, the lab's page of model-fitting
+tools, which links PyVBMC and PyBADS. Below them are the three references
 of the README (Huggins et al. 2023, JOSS; Acerbi 2018, NeurIPS; Acerbi 2020,
 NeurIPS), the Machine and Human Intelligence Group, University of Helsinki,
-and ELLIS Institute Finland. The last line credits Claude Code and the
-Kokoro voice.
+and ELLIS Institute Finland. The last line reads "Directed by Luigi Acerbi
+· Made with Claude Code · Voice: Kokoro".
 
 ## Sound
 
@@ -230,5 +237,14 @@ sets the loudness to -16 LUFS.
   needs more evaluations as the number of parameters grows, hence the label.
 - *The estimate lands close to the true value*. The ELBO is −0.019 and the
   log evidence of the target is 0.
+- *A mixture of Gaussians you can compute with, exactly*. The surrogate is
+  a Gaussian process with a squared-exponential kernel and a
+  negative-quadratic mean, so its average under a mixture of Gaussians, the
+  expected log joint, has a closed form (`_gp_log_joint` in
+  `pyvbmc/vbmc/variational_optimization.py`). The mixture's entropy, the
+  other term of the ELBO, has none, and PyVBMC estimates it (`entropy/`).
+- *The same calculation gives an estimate of the model's evidence*. The
+  ELBO, PyVBMC's estimate of the log evidence, is that expected log joint
+  plus the entropy.
 - *Holds still at the evaluated points*. The evaluations are exact, so the
   surrogate's uncertainty is zero there (README, "What the sheet is").

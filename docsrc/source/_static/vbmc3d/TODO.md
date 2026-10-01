@@ -7,10 +7,10 @@ is in `README.md`.
 
 ## Next actions
 
-In this order. The first two are decisions for the project owner.
+In this order. The first two are decisions for the PI.
 
-1. **Steer `wordmark.html`'s finale.** The owner has watched it, and the
-   recordings of item 3, with the run of seed 22; the page now plays the
+1. **Steer `wordmark.html`'s finale.** It has been watched, with the
+   recordings of item 3, on the run of seed 22; the page now plays the
    run of seed 42 (`NOTES.md`, "Seeds"), which only headless stills have
    shown, so the first thing to settle is whether its V is the one to keep.
    What is open after that is the camera's pull-back, how long the wordmark
@@ -43,7 +43,7 @@ If `index.html` stays, its trace needs a seed chosen again: `trace.js` is a
 run of the PyVBMC of `5e5fa188`, and the PyVBMC of `254dd6cc` gives seed 8 a
 worse run (`NOTES.md`, "Seeds"). Sweep the default target
 (`--sweep 0:60`) and choose as before; then, if the chosen run's first fit
-leaves samples out, settle whether the owner accepts `drawable_samples`
+leaves samples out, settle whether `drawable_samples` is acceptable
 there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 
 ### The video
@@ -51,10 +51,9 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
 the commands. In this order:
 
-1. **The owner watches and listens to the draft** (1280 x 720, Kokoro's
-   `af_heart`, the synthesized score) and steers the pictures, the pacing,
-   the script and the sound. Nobody has listened to the score yet. It was
-   checked only as levels and a spectrogram.
+1. **Review the draft** (1280 x 720, Kokoro's `af_heart`, the synthesized
+   score) for the pictures, the pacing, the script and the sound. Before the
+   drafts, the score was checked only as levels and a spectrogram.
 2. **Choose the final voice**, then voice and time the film again.
 3. **Render at 1920 x 1080**, with and without captions, and write the
    `.srt` of the final timeline.

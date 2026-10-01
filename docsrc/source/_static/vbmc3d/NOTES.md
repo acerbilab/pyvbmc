@@ -16,12 +16,11 @@ another run (Seeds, below).
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
-in the README, and exporting seed 42 again reproduces the trace. The
-owner has watched the page in a desktop browser on the development machine
-while it played the run of seed 22 that the trace held before (Seeds,
-below); their feedback so far (a flash of the target's sheet as the story
-starts, and the finale's caption) has been acted on, and the rest of the
-finale's look is still theirs to steer.
+in the README, and exporting seed 42 again reproduces the trace. The page
+has been watched in a desktop browser while it played the run of seed 22
+that the trace held before (Seeds, below). The feedback so far (a flash of
+the target's sheet as the story starts, and the finale's caption) has been
+acted on. The rest of the finale's look is open.
 
 How it has been verified:
 
@@ -47,12 +46,12 @@ How it has been verified:
 
 What nobody has verified:
 
-- **`index.html` in motion.** The project owner watched earlier versions on
-  a real device and steered the look, the speed of the tremble and the
-  anchoring. Their last visual feedback on this page was on the version
-  whose first fit looked pinched. The remedy for that (`drawable_samples`)
-  has been seen only as stills. (The rest of the page is shared with
-  `wordmark.html`, which the owner has watched.)
+- **`index.html` in motion.** Earlier versions were watched on a real
+  device. The look, the speed of the tremble and the anchoring were tuned
+  from that feedback. The last visual feedback on this page was on the
+  version whose first fit looked pinched. The remedy for that
+  (`drawable_samples`) has been seen only as stills. (The rest of the page
+  is shared with `wordmark.html`, which has been watched in motion.)
 - **`wordmark.html` playing the run of seed 42.** Seen only in headless
   stills; the recordings were made from the run of seed 22.
 - Frame rate on phones. Phones draw the full 64 x 64 mesh with half the
@@ -139,20 +138,20 @@ starting point, not a template: in it "Py" and "MC" are orange Times, the V
 is a one-dimensional GP with its band and observations, and the B is a
 two-dimensional posterior drawn as filled contours. The finale keeps one
 graphic letter, the V, made by the run; a B made of a posterior was judged
-weak by the owner. It keeps the warm letters against the cool graphic. What
+weak. It keeps the warm letters against the cool graphic. What
 was decided:
 
 - *A separate page.* `index.html` and its run stay as they are;
   `wordmark.html` started as a copy of it.
 - *The banana alone.* The lobe of `index.html`'s target sits between the
   arms, in the V's counter. The banana's round bottom was a concern (a U,
-  not a V); the owner judged that it reads as a V, and the stills agree.
+  not a V). In motion and in the stills it reads as a V.
   A target built to be a V (straight arms, even stroke) was sketched and not
   pursued.
 - *The run fills the arms.* Many runs spend their evaluations near the vertex
   and leave the arm tips bare, and the surrogate then only guesses at the ends
-  of the V. The owner asked for a run of 80 to 100 evaluations, or slightly
-  more, that fills the tails; `arm_coverage` measures that (Seeds, below).
+  of the V. The run should use 80 to 100 evaluations, or slightly more, and
+  fill the tails; `arm_coverage` measures that (Seeds, below).
 - *The letters lie on the floor and are made of the mesh.* Drawn on the
   floor, they go through the same bloom, grain and perspective as the V and
   can be seen from the tilted camera. Filled with the sheets' wire grid,
@@ -170,10 +169,11 @@ was decided:
 **A narrated video beside the page.** The page introduces every layer of
 the algorithm within fifteen seconds and captions each evaluation it
 acquires for a second or two. A viewer who does not know VBMC sees a lot
-happening without learning what any of it is. The owner decided to keep
-the page as an exhibit and to explain the algorithm in a separate video,
-which the same page draws in the same style. The video's audience is scientists who fit models,
-most of whom do not know Gaussian processes or variational inference. Its
+happening without learning what any of it is. So the page stays an
+exhibit, and a separate video explains the algorithm. The same page draws
+the video in the same style. The video's audience is scientists who fit
+models, most of whom do not know Gaussian processes or variational
+inference. Its
 angle is Bayesian optimization applied to the whole posterior. Its
 narration is voiced with Kokoro, an open model, while the script changes.
 `STORYBOARD.md` has the rest.
@@ -201,6 +201,14 @@ the README asks to keep in step. Other decisions:
   scale and leads to the payoff. The `timey-wimey` nod moved there.
 - *The number of mixture components and the evidence stay hidden* until the
   narration introduces them, because a number nobody has explained is noise.
+- *Why a mixture, said aloud.* Right after "PyVBMC fits a mixture of
+  Gaussians", a viewer who fits models asks why it does not use the
+  surrogate itself, so the mixture scene answers. The surrogate gives a
+  height at every point, and the mixture can be sampled and averaged over
+  exactly. The footnote credits Bayesian quadrature (O'Hagan 1991;
+  Rasmussen and Ghahramani's "Bayesian Monte Carlo", 2003), where the
+  method's name comes from, and the evidence scene ties back to the same
+  calculation.
 
 ## Seeds
 
@@ -274,7 +282,7 @@ numbers for the same seeds.
 | 11 | 15 | 80 | -0.293 | 0.001 | 0.399 | |
 | 12 | 22 | 115 | -0.053 | 0.003 | 0.061 | 0.000 |
 
-The owner asked for an ELBO above -0.1 and a low gsKL. Seed 12 has the
+The criteria were an ELBO above -0.1 and a low gsKL. Seed 12 has the
 lowest gsKL and a shorter run, and was the choice until its first fit
 rendered as a serrated comb, which is the needle problem above at its
 worst. Seed 8 replaced it before `drawable_samples` existed.
@@ -283,11 +291,3 @@ The PyVBMC of `254dd6cc` gives seed 8 another run: 27 iterations, 135
 evaluations, ELBO -0.234, gsKL 0.234. This table describes the code of
 `5e5fa188`; if `index.html` stays, its seed is chosen again from a sweep
 of the current code.
-
-## Previews
-
-The page can be published as a claude.ai artifact for viewing on another
-device: the artifact host supplies the document skeleton, so the published
-variant is `index.html` without its doctype, `html`, `head` and `body` tags
-and its two `meta` tags, with `trace.js` as a supporting file. Nothing in
-the repository depends on it.
