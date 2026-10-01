@@ -694,6 +694,9 @@ def test_failing_output_stops_neither_the_reminder_nor_the_tip(
             )
             is None
         )
+    # The tip reached the emitter, which failed: nothing is marked seen.
+    assert _runtime_tips._ELIGIBLE_STARTS == 1
+    assert _runtime_tips._SEEN_IDS == set()
     assert not reminder.state_path.exists()
     # Nothing was used up: the next start prints.
     assert _consider(reminder.state_path)

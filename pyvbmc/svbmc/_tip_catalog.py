@@ -39,7 +39,7 @@ TIPS = (
         "them explore different regions of the posterior.",
         urls=(
             "https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html"
-            "#helpers",
+            "#svbmc-helpers",
         ),
     ),
 )

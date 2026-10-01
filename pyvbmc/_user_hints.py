@@ -10,17 +10,21 @@ def emit_user_hint(
 ) -> bool:
     """Print a user hint and its URLs when display output is enabled.
 
-    Returns whether the hint printed. A failing output stream, such as a
-    closed pipe, prints nothing and returns ``False``, so that a hint cannot
-    stop a run.
+    Returns whether the hint's message printed. An output stream that fails
+    (a closed pipe, say) raises nothing, so that a hint cannot stop a run:
+    when the message cannot be printed the call returns ``False``, and a URL
+    that cannot be printed after it is left out.
     """
     if not display or display == "off":
         return False
 
     try:
         print(message)
-        for url in urls:
-            print(url)
     except Exception:
         return False
+    for url in urls:
+        try:
+            print(url)
+        except Exception:
+            break
     return True

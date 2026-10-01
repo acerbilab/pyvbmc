@@ -11,6 +11,27 @@ def _release_reminder_directory(tmp_path_factory):
     return tmp_path_factory.mktemp("release_reminder")
 
 
+def _make_inert(patch, directory):
+    patch.setattr(
+        _release_reminder,
+        "_default_state_path",
+        lambda: directory / _release_reminder.STATE_FILE_NAME,
+    )
+    patch.setattr(_release_reminder, "_SHOWN_THIS_SESSION", True)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _inert_release_reminder_for_the_session(_release_reminder_directory):
+    """Keep the reminder inert in fixtures shared by a module or session.
+
+    Such a fixture is set up outside every test, so the fixture below, which
+    acts per test, does not cover a run it starts.
+    """
+    with pytest.MonkeyPatch.context() as patch:
+        _make_inert(patch, _release_reminder_directory)
+        yield
+
+
 @pytest.fixture(autouse=True)
 def _inert_release_reminder(monkeypatch, _release_reminder_directory):
     """Keep the old-release reminder silent and out of the user's cache.
@@ -22,10 +43,4 @@ def _inert_release_reminder(monkeypatch, _release_reminder_directory):
     pytest's temporary directory. ``test_release_reminder.py`` resets the
     flag to test the reminder.
     """
-    monkeypatch.setattr(
-        _release_reminder,
-        "_default_state_path",
-        lambda: _release_reminder_directory
-        / _release_reminder.STATE_FILE_NAME,
-    )
-    monkeypatch.setattr(_release_reminder, "_SHOWN_THIS_SESSION", True)
+    _make_inert(monkeypatch, _release_reminder_directory)
