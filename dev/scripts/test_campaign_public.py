@@ -151,6 +151,17 @@ def test_the_asset_holds_the_copies_and_the_numeric_files(
         build(site, campaign, copies, out)
 
 
+def test_what_is_left_out_is_counted_by_its_kind():
+    """A dot in a case's name is no part of the kind of its artifacts."""
+    tag = "lumpy_D4_noise1.3/lumpy_D4_noise1.3_seed7"
+    boost = "boost/lumpy_D4_noise1.3/lumpy_D4_noise1.3_seed7.boost.pkl"
+    assert public.left_out_kind(boost, tag) == ".boost.pkl"
+    assert public.left_out_kind(f"{tag}.vbmc.pkl", tag) == ".vbmc.pkl"
+    # A file that is not named after its case: its suffixes, or its name.
+    assert public.left_out_kind("notes/readme.tar.gz", tag) == ".tar.gz"
+    assert public.left_out_kind("notes/LICENSE", tag) == "notes/LICENSE"
+
+
 def test_an_asset_in_parts_and_a_damaged_part(tmp_path, monkeypatch):
     site, campaign, copies = finished_campaign(tmp_path, monkeypatch)
     out = tmp_path / "public"
