@@ -21,53 +21,39 @@ the work gave it.
 - [x] Phase 3: the pool harness (2026-09-25).
 - [x] Phase 4: the population harness and the arm comparison (2026-09-25).
 - [x] Phase 5: the stacking harness (2026-09-25).
-- [ ] Phase 6: smoke campaigns on Turso. The checks passed on 2026-09-29
-  (the worklog); four remain for the next cluster session (the pickup
-  point).
+- [x] Phase 6: smoke campaigns on Turso (2026-09-29, and its last four
+  checks on 2026-10-01; the worklog).
 - [ ] Phase 7: the operator guide, an independent review, the merge into
   `dev-next`, and the brief. The guide, the redaction, two review rounds
   (2026-09-26), a doublecheck of Phase 6's commits (2026-09-29) and a
   doublecheck of the whole branch before the merge, with its fixes
   (2026-09-30), are done, and the branch has merged into `dev-next` after
-  the PI's review. The brief, with the limits Phase 6 measured
-  ("Resources and cost"), remains, before Phase 8 (PI, 2026-09-30).
-- [ ] Phase 8: the campaigns, on the PI's instruction, once the brief
-  exists and the source trees hold gpyreg `v1.4.0` with the environment
-  check passed on it (the pickup point).
+  the PI's review. The [brief](release-gate-handoff.md), with the limits
+  Phase 6 measured ("Resources and cost"), is written (2026-10-01) and
+  awaits the PI's reading, before Phase 8 (PI, 2026-09-30).
+- [ ] Phase 8: the campaigns, on the PI's instruction, once the PI has
+  read the brief and ruled on what the pickup point leaves open.
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
 **Pickup point.** The code is complete on `dev-next`, and every test
 module of the harnesses passes on the developer's machine (the worklog,
-2026-09-30); the campaigns of Phase 8 run from the release commit. The cluster work, in the PI's account, is Phase 1b, then
-Phase 6, in the four steps below, done (the worklog, 2026-09-28 and 29)
-but for four checks of the next cluster session, whose places the
-operator's notes give:
+2026-09-30); the campaigns of Phase 8 run from the release commit. The
+cluster work in the PI's account is done (the worklog, 2026-09-28,
+2026-09-29 and 2026-10-01): Phase 1b, then Phase 6, in the four steps
+below. The PI's source trees hold gpyreg at `v1.4.0` (`682585f`), the
+release's minimum, beside `v1.3.3`, with which the smoke campaigns ran
+and which their finish requires, and the environment check passed with
+`v1.4.0` at `edd3f633`. The [brief](release-gate-handoff.md) is written,
+and the PI has ruled on what the last cluster session left open (the
+worklog, 2026-10-01). Before Phase 8:
 
-- with the harness checkout at `2356f12d`, the commit of the smoke
-  campaigns, the finish of the smoke stacking campaign, whose four tasks
-  completed but which was neither verified nor assembled, for its
-  `verify` and the `ASSEMBLE_TIME` and `ASSEMBLE_MEM` of the brief;
-- with the checkout at `dev-next`, the smoke campaigns' public assets built again into a new
-  directory (`campaign_public.sh`) and checked (`--check`): the two
-  assets built on 2026-09-29 predate the redaction's fix, and the check
-  fails an asset that other code than its own built;
-- a search of the smoke campaigns' redacted copies and public assets for
-  every site detail the operator's notes list, whole: the one made after
-  the redaction's fix showed at most ten hits per directory;
-- the arm comparison (`analyze_population_run.py --arms`) on the smoke
-  canaries, its only run on real before-arm output (the worklog,
-  2026-09-30, which names no checkout: the script compares the identities
-  that the arms recorded, not the checkout it runs from).
-
-The cluster's source trees hold gpyreg at `v1.3.3`, with which the
-environment check passed and the smoke campaigns ran. The finish of a
-smoke campaign refuses any other `PYVBMC_GPYREG_SOURCE`, so that tree
-stays. After those checks, with the harness checkout at `dev-next`, a
-cluster session clones gpyreg at `v1.4.0` (`682585f`), the
-release's minimum, beside it, as the operator's guide says ("The source
-trees"), and runs the environment check with the new tree, which passes
-as the guide's "The environment check" says. That, and the brief, come
-before Phase 8.
+- the PI's reading of the brief;
+- every edit to the package that 1.5 still needs, wording included
+  (the tips' review of `dev/TODO.md`, docstrings, option descriptions),
+  since none can land between the launch and the promotion
+  (decision 13);
+- the release commit named, and the operator given an account on the
+  cluster, write access to the repository and the site's values.
 
 1. **Survey and environment** (done 2026-09-28), in one login session.
    Survey the installation the campaigns run on, with the checks of
@@ -86,7 +72,7 @@ before Phase 8.
    and `MEM` of every job (done 2026-09-29).
 4. **The failure paths of Phase 6,** then a finish, a redaction and a
    public asset (`campaign_public.sh`), whose shell wrapper runs there for
-   the first time (done 2026-09-29, but for the checks above).
+   the first time (done 2026-09-29, its last checks on 2026-10-01).
 
 Any change to the code that the smoke campaigns need is a commit, with
 the test modules it touches run again. The tools of Phase 9
@@ -253,7 +239,14 @@ comparison then stacks subsets of each pool.
     from the latest commit of `dev-next` at that time. After the launch
     only the documentation changes, and the S-VBMC headline selection
     that the gate itself decides; a change to the numerics after it would
-    need the campaigns it reaches to run again.
+    need the campaigns it reaches to run again. From the launch to the
+    promotion of the new reference no file of the package changes but
+    its tests and S-VBMC, a docstring or a tip's wording included: the
+    fingerprints, the gate runs and the promotion refuse a commit whose
+    package differs from the after arm's in any file
+    (`reference_promote.py`, `NUMERIC_PATHS`, which also lists the
+    harness files that build a run). Such an edit lands before the
+    launch or after the promotion.
 
 ## The cluster
 
@@ -768,12 +761,13 @@ brief gives their commands.
 ## Resources and cost
 
 Phase 6 measured each harness's tasks on the campaigns' node family
-(2026-09-29), from the smoke campaigns' accounting: one task per core,
+(2026-09-29, and the stacking's finish and the pools' analyses on
+2026-10-01), from the smoke campaigns' accounting: one task per core,
 which the accounting counts as one CPU; where an accounting counts both
-threads of a core, the accounted figures double. The population and pool
-tasks' figures are in the logs that `dev/scripts/runs/LOCAL.md` lists;
-those of the stacking tasks and of the step jobs were read from the
-accounting (`sacct -j <job>`), whose job ids the operator's notes list.
+threads of a core, the accounted figures double. The figures are in the
+logs that `dev/scripts/runs/LOCAL.md` lists, except those of the
+populations' and the pools' step jobs, which were read from the
+accounting (`sacct -j <job>`); the operator's notes list the job ids.
 
 | Campaign | Cases | CPU-hours |
 |---|---|---|
@@ -807,8 +801,16 @@ accounting (`sacct -j <job>`), whose job ids the operator's notes list.
 - Step jobs: a pool `verify` of 47 cases 10 s and 128 MB; a population
   `verify` of 24 cases 11 to 18 s and up to 450 MB; `rescore` of 48 cases
   42 s and 241 MB; `select` and `summarize` a few seconds. The stacking's
-  `assemble` has not run: the smoke stacking campaign was not finished.
-- The environment check: 19 minutes and 1.5 GB.
+  `verify` of 4 tasks 9 s and 231 MB, and its `assemble` of their 22
+  cells 31 s (7 s of CPU) and 417 MB; the release's stacking holds 200
+  tasks and 960 cells.
+- The pools' analyses, on the smoke pool and the 22 cells of the smoke
+  stacking, run twice: `svbmc_shrink_elbo.py` 16 and 17 s, 0.5 and
+  0.6 GB; `svbmc_single_run_bias.py`, which scores every selected run
+  (38 here, 2560 in the release's pools) at about 1 s a run, 45 and 54 s,
+  0.7 and 1.0 GB.
+- The environment check: 19 minutes and 1.5 GB at `2356f12d`, 25
+  minutes and 1.5 GB at `edd3f633`.
 
 The limits, with a margin for seeds slower than those measured and, for
 the finishing steps, for campaigns a hundred times the size of the smoke
@@ -818,10 +820,11 @@ ones: `POP_TIME` 1 hour, `CIGAR_TIME` 1.5 hours, `POP_MEM` 2 GB;
 1 hour and `M32_MEM` 6 GB; `POP_VERIFY_TIME` 2 hours and
 `POP_VERIFY_MEM` 4 GB (2400 cases at about 0.75 s), `RESCORE_TIME` 3
 hours and `RESCORE_MEM` 4 GB (4800 cases at about 0.9 s); the pools'
-`verify` fits the default limits (2930 cases at about 0.2 s);
-`CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. `ASSEMBLE_TIME` and
-`ASSEMBLE_MEM` wait for the smoke stacking campaign's finish (the pickup
-point).
+`verify` fits the default limits (2930 cases at about 0.2 s), and so
+does the stacking's; `ASSEMBLE_TIME` 1 hour and `ASSEMBLE_MEM` 4 GB;
+for the pools' analyses `SHRINK_TIME` 1 hour, `SINGLE_RUN_TIME` 3 hours
+and `ANALYSIS_MEM` 4 GB; `CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. The
+[brief](release-gate-handoff.md) tabulates them.
 
 ## Records and hand-back
 
@@ -861,8 +864,10 @@ point).
   account's username and home, and refuses, writing nothing, a file that
   still holds what the copies may not; the asset records the code that
   built it and the exemptions it applied, and its check applies the rules
-  that need no campaign and fails an asset that other code built. The
-  operator uploads the parts to
+  that need no campaign and fails an asset that other code built. An
+  asset is a record of its campaign and no campaign directory that
+  `verify` accepts or the stacking reads, which 1.5 keeps (PI,
+  2026-10-01). The operator uploads the parts to
   the draft release `release-gate-public-<date>`, from which the release
   attaches them. The before arm and the raw archives stay in their draft
   releases; the replay fingerprints and the traces of the earlier golden
@@ -904,6 +909,16 @@ point).
   bytes of `dev/experiments/release_gate_*/` as written. The operator
   writes the README of `release_gate_<date>/` and checks it with
   `campaign_redact.sh CAMPAIGN_DIR --check FILE`.
+- **The README goes to the PI before the pull request opens** (PI,
+  2026-10-01): the repository is public, so a pull request is public
+  from the moment it opens, and the README check does not know every
+  form a site detail can take in prose.
+- **The outputs of the pools' analyses** (`svbmc_shrink_elbo.py`,
+  `svbmc_single_run_bias.py`) are no campaign's tracked copies, and
+  their `sources.json`, `summary.json` and `added.json` hold the
+  operator's paths and the nodes' names. They go back whole as one more
+  asset of the stacking's draft release, and no file of them enters the
+  operator's pull request (PI, 2026-10-01).
 - A machine that holds a raw directory lists it in its
   `dev/scripts/runs/LOCAL.md`.
 - The tracked records of the September pool
@@ -1390,9 +1405,9 @@ reproduces bit for bit.
   operator's guide name gpyreg `v1.4.0` (`682585f`) for the after arm,
   the pools and the stacking. It reproduces 1.3.3 bit for bit on every
   oracle output, the GP-fit-history captures and the default golden
-  replays (`dev/TODO.md`, "The final gpyreg release"). The cluster's trees
-  hold `v1.3.3`; the pickup point gives the clone of `v1.4.0` and the
-  environment check with it.
+  replays (the [roadmap](modernization-roadmap.md), pickup 15). The
+  cluster's trees hold `v1.3.3`; the pickup point gives the clone of
+  `v1.4.0` and the environment check with it.
 - 2026-09-30: a doublecheck of the whole branch before the merge, at
   `86477269`, by seven fresh reviewers, read-only (the contract; the
   driver; the population harness; the redaction, with a search of every
@@ -1493,3 +1508,76 @@ reproduces bit for bit.
   asset's (9), analysis (55), pool (76) and driver (75) modules, none
   skipped, the checkout clean after them; so every harness test module
   passes on the fixes.
+- 2026-10-01: the last checks of Phase 6 and the release's gpyreg, in the
+  PI's account, with the harness checkout at `2356f12d` for the first and
+  at `dev-next` (`edd3f633`) for the others.
+  - The finish of the smoke stacking campaign verified its 4 tasks and
+    assembled their 22 cells; its accounting gives the stacking's
+    finishing limits ("Resources and cost").
+  - The redaction ran again, into a new directory, on the failure-paths
+    pool and both population arms, whose copies of 2026-09-29 predate
+    the rules of 2026-09-30, and for the first time on the stacking
+    campaign. All four passed: a host part holds the campaign's feature
+    alone and `Linux x86_64`, and the trees and the campaign's parent
+    carry their names. The public assets of the failure-paths pool and
+    of the after arm, built from the new copies, pass
+    `campaign_public.sh --check`, which fails the two assets of
+    2026-09-29 as built by other code.
+  - A search of the new copies (169 files) and of the unpacked assets
+    (172 files) for the site's details, with no truncation, found the
+    PI's surname in the citations that three targets' descriptions hold,
+    and one chance byte triple in a compressed array; the assets' 60
+    `.npz` files, decompressed, hold 1492 arrays of floats, integers and
+    booleans and none of the strings.
+  - The arm comparison ran on the canaries of the two smoke arms,
+    validated their 24 cases each against the arms' verifications and
+    wrote its assessment; with one seed per configuration its KS screen
+    holds no test, and its confirmatory family of 96 tests rejects
+    none.
+  - gpyreg `v1.4.0` (`682585f`) is cloned beside `v1.3.3`, and the
+    environment check with it passes at `edd3f633`: the contract (139),
+    driver (75), population (60), analysis (55), pool (76), honest-ELBO
+    (14) and stacking (54) modules, none failed or skipped, the
+    interpreter the environment's and the checkout clean after it; the
+    job took 25 minutes and peaked at 1.5 GB.
+  - The two analyses of the pools, `svbmc_shrink_elbo.py` and
+    `svbmc_single_run_bias.py`, ran on the cluster for the first time,
+    as batch jobs on the smoke pool (38 selected runs) and the smoke
+    stacking's 22 cells: once by hand and once by the block of the
+    [brief](release-gate-handoff.md) as written, with the smoke pool's
+    gpyreg and a directory of its own. The two passes give the same
+    cells, summaries and added biases, and their runs differ in the
+    recorded seconds alone.
+
+  Two findings. The analyses' outputs hold site details: their
+  `sources.json`, `summary.json` and `added.json` record the paths of
+  the pool, the cells, the script and the interpreter, the node's name
+  and its platform string, and one summary a login host's name. No
+  harness declares them as tracked copies, so the redaction does not
+  write them, and `campaign_redact.sh --check` refuses them (the
+  operator's home, username and paths); their `.md` and `.jsonl` files
+  hold none. How they are handed back was for the PI, whose ruling
+  follows. And `campaign_public.py` names what an asset leaves out by
+  `Path(name).suffixes`, which starts at the first dot of the file's
+  name: the boost pickles of a configuration whose name holds a dot
+  (`noise1.3`, `noise2.2`) are counted under keys such as
+  `.3_production_seed0.boost.pkl`, one for each seed, beside
+  `.boost.pkl`. The after arm's asset, with three such configurations
+  at 100 seeds (two of them at `noise1.3`, which share their keys),
+  would list 200 more keys in `public.json`'s `left_out` than the one
+  that is meant; the files left out are the right ones.
+
+  The brief is written, with the limits of "Resources and cost".
+
+  The PI's rulings of the day, on what the campaigns' frozen checkout
+  fixes at the launch. The analyses' outputs go back as an asset of the
+  stacking's draft release alone, and the scripts stay as they are. The
+  keys of `left_out` are fixed: `campaign_public.left_out_kind` names an
+  artifact by what follows its case's name in the file's, with a test,
+  and the public asset's module passes on the developer's machine (10).
+  The pools' public asset stays a record that `verify` does not accept
+  (the question the entry of 2026-09-30 left). The README check keeps
+  its blind spots at the launch, and the operator sends the README to
+  the PI before opening the pull request. The arm comparison's
+  confirmatory family is the default, so neither arm's `prepare` takes
+  `--confirmatory`. "Records and hand-back" and the brief say so.

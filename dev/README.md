@@ -209,6 +209,11 @@ plan and consolidated human summary.
   harness meets, the generic driver grown from `scripts/hpc/`, the
   harness changes, what it assumes of the cluster, costs and phases, with
   the worklog of their execution.
+- [plans/release-gate-handoff.md](plans/release-gate-handoff.md) — the
+  brief for the operator who runs the release gate's campaigns on the
+  cluster (2026-10-01): the two population arms, the pools, the stacking
+  and the two analyses of the pools in their order, the limits of every
+  job, and what is handed back.
 - [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) — how many
   evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs
   to match PyVBMC's posterior accuracy on a benchmark target: the

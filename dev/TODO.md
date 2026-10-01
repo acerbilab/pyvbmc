@@ -83,33 +83,6 @@ records its execution.
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
 
-- [ ] **The final gpyreg release.** The PyBADS work in gpyreg ends in a
-  release that PyVBMC 1.5 and PyBADS both require (PI, 2026-09-27): gpyreg
-  1.4.0 (2026-09-30, the annotated tag `v1.4.0` on `682585f`, on PyPI).
-  PyVBMC requires it: `pyproject.toml`'s minimum and CI's `GPYREG_PIN`
-  name it (`AGENTS.md`). On 2026-09-30, on Linux with one BLAS thread,
-  under Python 3.12 with SciPy 1.18.1 and under Python 3.10 with SciPy
-  1.15.3, PyVBMC's whole suite passed against it, and it reproduced bit
-  for bit what gpyreg 1.3.3 computes on the same machine: every oracle
-  output, the platform-bound ones included (a dump made with 1.3.3 by
-  `make_oracle_fixtures.py --dump-outputs`, checked with `--check --exact
-  --against`), the three GP-fit-history captures and the five default
-  golden replays. The checks of the nine example notebooks passed under
-  Python 3.12. gpyreg `d96d0d9`, on which the notebooks' stored outputs
-  were executed on 2026-09-26 and 27, gives the same oracle outputs. On
-  the machine that generated the committed oracle references
-  (`dev/scripts/runs/LOCAL.md`), the only one where their platform-bound
-  references reproduce, the exact oracle check against them
-  (`make_oracle_fixtures.py --check --exact`, one BLAS thread) passed
-  with 1.4.0 on 2026-09-30, 12 of 12. The
-  [Slurm plan](plans/slurm-benchmark-support.md) and its operator's guide
-  (`scripts/hpc/README.md`) name `v1.4.0` (`682585f`) for the after arm,
-  the pools and the stacking. One step remains, on the cluster: its source
-  trees hold gpyreg `v1.3.3`, with which the smoke campaigns of the plan's
-  Phase 6 ran, and before the campaigns of Phase 8 a cluster session clones
-  `v1.4.0` beside it and runs the environment check with it (the plan's
-  pickup point).
-
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
   design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
@@ -127,14 +100,18 @@ records its execution.
   before its merge (2026-09-30), by seven reviewers, found a privacy leak
   and some twenty issues; the PI ruled on those that needed it, the fixes
   are in, and every harness test module passes (the plan's worklog).
-  Next, before Phase 8, are the four checks of the next cluster session
-  and the clone of gpyreg `v1.4.0` with the environment check (the plan's
-  pickup point), and the brief, which needs the stacking's finishing
-  limits from those checks. Before Phase 9, the plan's worklog
-  (2026-09-30) leaves smaller fixes ("Left for after the merge and before
-  Phase 9"), the review's optional findings await the PI's ruling, and
-  whether the released pools should be verifiable and stackable from
-  their public asset is for the PI. Needed before
+  Phase 6's last four checks, and the clone of gpyreg `v1.4.0` with the
+  environment check, were made on 2026-10-01, and the
+  [brief](plans/release-gate-handoff.md) is written; the PI ruled the
+  same day on what that session left open (the plan's worklog). Next,
+  before Phase 8 (the plan's pickup point), are the PI's reading of the
+  brief, every edit that 1.5 still needs under `pyvbmc/` outside its
+  tests and S-VBMC, the tips' wording among them, since none can land
+  between the launch and the promotion of the new reference, and the
+  release commit named with the operator's access arranged. Before
+  Phase 9, the plan's worklog (2026-09-30) leaves smaller fixes ("Left
+  for after the merge and before Phase 9"), and the review's optional
+  findings await the PI's ruling. Needed before
   relying on that workflow for further cluster campaigns, not before local
   experiments; the final large-scale check and the new reference below are
   the first such campaigns. See

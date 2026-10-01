@@ -1065,6 +1065,32 @@ The open work for 1.5 is the list "In scope for 1.5" of
     the nine-job matrix before the reviews and after each round of fixes). Merged into `dev-next` at `01bd00de`;
     the feature branch has been removed.
 
+15. **The final gpyreg release — done** (2026-09-30). The PyBADS work in
+    gpyreg ends in a release that PyVBMC 1.5 and PyBADS both require (PI,
+    2026-09-27): gpyreg 1.4.0 (the annotated tag `v1.4.0` on `682585f`, on
+    PyPI). PyVBMC requires it: `pyproject.toml`'s minimum and CI's
+    `GPYREG_PIN` name it (`AGENTS.md`). On 2026-09-30, on Linux with one
+    BLAS thread, under Python 3.12 with SciPy 1.18.1 and under Python 3.10
+    with SciPy 1.15.3, PyVBMC's whole suite passed against it, and it
+    reproduced bit for bit what gpyreg 1.3.3 computes on the same machine:
+    every oracle output, the platform-bound ones included (a dump made with
+    1.3.3 by `make_oracle_fixtures.py --dump-outputs`, checked with
+    `--check --exact --against`), the three GP-fit-history captures and the
+    five default golden replays. The checks of the nine example notebooks
+    passed under Python 3.12. gpyreg `d96d0d9`, on which the notebooks'
+    stored outputs were executed on 2026-09-26 and 27, gives the same
+    oracle outputs. On the machine that generated the committed oracle
+    references (`dev/scripts/runs/LOCAL.md`), the only one where their
+    platform-bound references reproduce, the exact oracle check against
+    them (`make_oracle_fixtures.py --check --exact`, one BLAS thread)
+    passed with 1.4.0 on the same day, 12 of 12. The
+    [Slurm plan](slurm-benchmark-support.md) and its operator's guide
+    (`dev/scripts/hpc/README.md`) name `v1.4.0` for the after arm, the
+    pools and the stacking; on the cluster, the PI's source trees hold it
+    beside `v1.3.3`, with which the smoke campaigns of that plan's Phase 6
+    ran, and the environment check passed with it on 2026-10-01 (that
+    plan's worklog).
+
 ## S-VBMC ELBO corrections and reporting
 
 Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:
