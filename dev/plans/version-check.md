@@ -3,15 +3,16 @@
 Created: 2026-09-30. Status: **COMPLETE** — every decision ruled by the PI
 on 2026-09-30; merged into `dev-next` at `01bd00de` the same day.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
-of phase 4. `dev/TODO.md` ("Update reminders") links here.
+of phase 4. The roadmap's pickup 14 and `dev/TODO.md` ("Review of the
+tips") link here.
 
 ## Goal and settled scope
 
 Users who installed PyVBMC once and never updated should learn that a newer
 release may exist, without PyVBMC making a network request they did not ask
-for. PyVBMC makes no network request today, and it runs inside users'
-scripts, in CI and on cluster nodes without internet access. The PI chose
-(2026-09-30) two mechanisms, and no automatic network check:
+for. Before this work PyVBMC made no network request, and it runs inside
+users' scripts, in CI and on cluster nodes without internet access. The PI
+chose (2026-09-30) two mechanisms, and no automatic network check:
 
 1. **An old-release reminder, with no network access.** The package ships
    the date of its release. When a new run starts and the installed release
@@ -35,8 +36,7 @@ Whatever is shipped helps only from the release that contains it, so the
 work belongs in 1.5. The release gate regenerates its run pools with "the
 latest `dev-next` at the launch, after which only the documentation and the
 headline selection change" (`dev/TODO.md`), so this work merges before the
-launch of the Slurm plan's Phase 8, unless the PI rules it a presentation
-change that may follow (decision D6).
+launch of the Slurm plan's Phase 8 (decision D6).
 
 ## Prior art
 
@@ -203,13 +203,15 @@ others as recommended.
   cadence does not advance, as for a calibration reminder
   (`dev/plans/runtime-tips.md`, "Approved user experience"): the tip that
   start would have shown comes at the next start instead of being lost.
-  Resumed and continued runs consider neither, as now.
+  Resumed and continued runs consider neither, as they consider no tip.
 - `consider_runtime_tip` learns of the reminder through a second flag,
   `release_reminder_emitted`, beside `calibration_reminder_emitted`; the
   tips behave as before when no reminder prints. The shared emitter,
-  `pyvbmc._user_hints.emit_user_hint`, returns without printing when the
-  output stream fails (a closed pipe), so that neither this reminder, nor a
-  tip, nor the calibration reminder can stop a run.
+  `pyvbmc._user_hints.emit_user_hint`, raises nothing when the output
+  stream fails (a closed pipe), so that neither this reminder, nor a tip,
+  nor the calibration reminder can stop a run: a message that cannot be
+  printed returns `False`, and a URL that cannot be printed after its
+  message is left out, the hint counting as printed.
 
 ### `pyvbmc.check_for_updates()`
 
@@ -238,7 +240,8 @@ others as recommended.
   Index API (https://docs.pypi.org/api/json/, 2026-09-30); a reply without
   a mapping of releases gives `info.version`, PyPI's latest release, when
   that is a final `X.Y.Z` ("no release found" when it is another version,
-  "unreadable reply" when it is missing).
+  "unreadable reply" when it is missing or not a string, or when `info` is
+  not a mapping).
 - The message, one of (wording approved by the PI with D4):
   - a newer release: `PyVBMC {latest} is available; you have {installed}.
     Update with: {command}`, where the command is the installer's (below);
@@ -430,7 +433,16 @@ Work on a branch `feat-update-reminders` cut from `dev-next`.
   found nothing that must be fixed; their other findings are resolved (the
   timeout's bound, a bounded read, the fallback without `releases`, a
   failing output stream, the release-date test's strictness, comments and
-  documentation).
+  documentation). A fresh reviewer then read those fixes: the import test of
+  `_update_check` failed outside an editable install, and a broken output
+  stream could still stop a run through the tip that takes the slot; both
+  fixed, with the remaining findings (`dff13b5b`). A third review, of
+  `dff13b5b` with the tip links that followed (2026-10-01), found nothing
+  that must be fixed; a URL that fails after its message no longer makes a
+  hint count as unprinted, the test fixture also covers fixtures shared by
+  a module or session, the notebook runner sets `PYVBMC_NO_UPDATE_REMINDER`
+  so that no reminder enters the stored outputs, and a docstring line was
+  rewrapped.
 - [x] The CI test matrix on the feature branch, as the tips work ran it
   (`dev/plans/runtime-tips.md`, "Delivery checklist"): the dispatched runs
   of `tests.yml` on `feat-update-reminders` passed all nine cells at

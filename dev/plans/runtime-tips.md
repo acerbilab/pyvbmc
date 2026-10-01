@@ -3,7 +3,9 @@
 Created: 2026-09-10. Status: **COMPLETE — implemented and verified**.
 Astra owns design/integration; Sol implements and independently reviews.
 This plan owns the tip policy, wording, startup integration and acceptance
-checks for maintainers. Roadmap pickup 13 links here; no separate worklog.
+checks for maintainers. Roadmap pickup 13 and `dev/TODO.md` ("Review of the
+tips") link here; no separate worklog. The review before the 1.5 release is
+the last section.
 
 ## Goal and settled scope
 
@@ -406,3 +408,30 @@ or a requirement for three ordinary tips before a low-frequency one. Concrete
 commands and quantities/ranges are preferred to vague advice. The source
 locations and implementation/test steps above are sufficient to resume from a
 clean checkout; no ignored calibration artifacts or session jobs are needed.
+
+## Review before the 1.5 release
+
+The PI reviews the tips of `VBMC` (`pyvbmc/vbmc/_tip_catalog.py`) and of
+`SVBMC` (`pyvbmc/svbmc/_tip_catalog.py`, which came after this plan) before
+the release (`dev/TODO.md`, "Review of the tips"). The catalogs hold the
+current text and links; for some tips these differ from the lists above,
+which record what was approved on 2026-09-10.
+
+Rulings of 2026-10-01:
+
+- `evidence_uncertainty` links the FAQ entry on `elbo` and `elbo_sd`
+  (`faq.html#faq-what-are-elbo-and-elbo-sd`), which answers its subject,
+  in place of the top of the quickstart.
+- The S-VBMC tips carry links, as the VBMC tips do: `run_count` links
+  Example 7, and `starting_points` the helpers of the `SVBMC` page
+  (`svbmc.html#svbmc-helpers`, an explicit label in
+  `docsrc/source/api/classes/svbmc.rst`, so that a retitled section keeps
+  the link).
+- `multiple_runs` keeps its 3–4 runs, which validate a fit, beside the
+  S-VBMC tip `run_count`'s ten runs, which are stacked.
+- No tip is added.
+- The S-VBMC tip `noisy_elbo` recommends the capped ELBO; it follows the
+  decision on the S-VBMC headline (`dev/TODO.md`, "S-VBMC ELBO headline
+  selection").
+
+Open: the PI's reading of the wording of every tip.
