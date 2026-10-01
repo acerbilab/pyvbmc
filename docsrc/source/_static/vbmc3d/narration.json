@@ -53,7 +53,10 @@
       "id": "mixture",
       "lines": [
         { "id": "q1", "text": "On the surrogate, Pie V B M C fits a mixture of Gaussians.", "caption": "On the surrogate, PyVBMC fits a mixture of Gaussians." },
-        { "id": "q2", "text": "This is its first guess at the posterior." },
+        { "id": "w1", "text": "Why not use the surrogate itself?", "gap": 0.6 },
+        { "id": "w2", "text": "It gives a height at every point, but it's not directly usable." },
+        { "id": "w3", "text": "A mixture of Gaussians you can sample and compute with, exactly.", "caption": "A mixture of Gaussians you can sample and compute with, exactly.*", "gap": 0.45 },
+        { "id": "q2", "text": "This is its first guess at the posterior.", "gap": 0.6 },
         { "id": "q3", "text": "For now it is a crude one." }
       ]
     },
@@ -94,7 +97,7 @@
     {
       "id": "evidence",
       "lines": [
-        { "id": "e1", "text": "Pie V B M C also estimated the model's evidence.", "caption": "PyVBMC also estimated the model's evidence." },
+        { "id": "e1", "text": "The same calculation gives an estimate of the model's evidence." },
         { "id": "e2", "text": "You need that number to compare two models." },
         { "id": "e3", "text": "The estimate lands close to the true value.", "gap": 0.5 }
       ]

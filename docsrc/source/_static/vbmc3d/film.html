@@ -139,7 +139,7 @@
   #payoff .t { font-family: var(--serif); font-style: italic; font-size: clamp(22px, 1.5vw + 10px, 38px); opacity: 0; }
   #payoff .note { margin-top: 30px; font-size: clamp(10px, 0.3vw + 8px, 13px); letter-spacing: 0.18em; color: var(--ink-dim); opacity: 0; }
   #payoff, #payoff .n { text-shadow: 0 0 18px var(--ground); }
-  #fnote {
+  #fnote, #fnoteBQ {
     right: clamp(16px, 3vw, 36px); bottom: calc(clamp(12px, 2.5vh, 24px) + env(safe-area-inset-bottom, 0px));
     max-width: 44ch; margin: 0; text-align: right; opacity: 0;
     font-size: clamp(10px, 0.3vw + 7px, 13px); line-height: 1.5; letter-spacing: 0.02em; color: var(--ink-dim);
@@ -168,6 +168,7 @@
     <div id="key">SURROGATE<i style="background: var(--gp-hot); box-shadow: 0 0 8px var(--gp-hot)"></i>UNSURE<i style="background: var(--gp); box-shadow: 0 0 8px var(--gp)"></i>SURE</div>
   </div>
   <p id="sub"></p>
+  <p id="fnoteBQ" class="hud">*Averaging the surrogate over the mixture has a closed form, Bayesian quadrature (O’Hagan 1991; Rasmussen &amp; Ghahramani 2003, “Bayesian Monte Carlo”).</p>
   <p id="fnote" class="hud">*Median of 100 runs: evaluations that emcee, a black-box MCMC sampler, needs to match the accuracy of a typical PyVBMC run on this posterior (mean marginal total variation). MCMC gives no evidence estimate.</p>
 
   <div id="payoff"><div>
@@ -181,13 +182,13 @@
   <div id="card"><div>
     <h2>PyVBMC <span>1.5</span></h2>
     <code>pip install pyvbmc</code>
-    <div class="url">acerbilab.github.io/pyvbmc</div>
+    <div class="url">acerbilab.org/model-fitting</div>
     <ol>
       <li>Huggins, Li, Tobaben, Aarnos &amp; Acerbi (2023). <i>PyVBMC: Efficient Bayesian inference in Python.</i> JOSS.</li>
       <li>Acerbi (2018). <i>Variational Bayesian Monte Carlo.</i> NeurIPS.</li>
       <li>Acerbi (2020). <i>Variational Bayesian Monte Carlo with noisy likelihoods.</i> NeurIPS.</li>
     </ol>
-    <div class="credit">MACHINE AND HUMAN INTELLIGENCE GROUP &middot; UNIVERSITY OF HELSINKI &middot; ELLIS INSTITUTE FINLAND<br>MADE WITH CLAUDE CODE &middot; VOICE: KOKORO</div>
+    <div class="credit">MACHINE AND HUMAN INTELLIGENCE GROUP &middot; UNIVERSITY OF HELSINKI &middot; ELLIS INSTITUTE FINLAND<br>DIRECTED BY LUIGI ACERBI &middot; MADE WITH CLAUDE CODE &middot; VOICE: KOKORO</div>
   </div></div>
 
   <div id="foot" class="hud">
@@ -1070,7 +1071,7 @@ function updateHud(ts, landed) {
   setText("sub", l ? l.caption : "");
   let method = "", evals = 0;
   if (ts < SC.bayesopt.t0) { method = "MCMC (EMCEE)"; evals = chainCount(ts); }
-  else if (ts < SC.dark.t0) { method = "BAYESIAN OPTIMIZATION"; evals = badsCount(ts); }
+  else if (ts < SC.dark.t0) { method = "BAYESIAN OPTIMIZATION (PYBADS)"; evals = badsCount(ts); }
   else { method = "PYVBMC"; evals = landed; }
   const counters = win(ts, LN.m1.t0 - 0.2, T_WORD, 0.5, 0.8);
   // The asterisk and its footnote come with the chain's last evaluation, the matched budget they explain.
@@ -1100,6 +1101,7 @@ function updateHud(ts, landed) {
   setAlpha("payVt", ease((ts - LN.f3.t0) / 0.5)); setAlpha("payMt", ease((ts - LN.f3.t0 - 0.3) / 0.5));
   document.querySelector("#payoff .note").style.opacity = ease((ts - LN.f3.t0 - 0.8) / 0.6).toFixed(3);
   setAlpha("card", ease((ts - T_CARD - 0.3) / 1.0));
+  setAlpha("fnoteBQ", win(ts, LN.w3.t0 + 0.4, SC.mixture.t1, 0.4, 0.6));
   setAlpha("fnote", Math.max(win(ts, T_CHAIN[1], SC.bayesopt.t0, 0.4, 0.6), win(ts, LN.f2.t0, T_WORD + 0.3, 0.5, 0.8)));
 }
 
@@ -1145,6 +1147,30 @@ const P0 = surf(...INTRO.meta.x0), BEST = surf(...INTRO.bads_best);
 const probeStem = new THREE.Line(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(Float32Array.from([P0[0], 0, P0[2], P0[0], P0[1], P0[2]]), 3)),
   new THREE.LineBasicMaterial(Object.assign({ color: new THREE.Color(0.31, 0.85, 0.91) }, additive)));
 probeStem.frustumCulled = false; scene.add(probeStem);
+
+// Samples of the first mixture, which fall onto the floor while the narration says that it can be sampled.
+// A seeded generator (mulberry32) draws them, so that every recording shows the same ones.
+const SAMPLES = (() => {
+  let a = 0x9e3779b9;
+  const rnd = () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const comps = vpComp[ITS[0].vpIdx], W = comps.reduce((sum, c) => sum + c.w, 0), out = [];
+  while (out.length < 80) {
+    let u = rnd() * W, c = comps[comps.length - 1];
+    for (const k of comps) { u -= k.w; if (u <= 0) { c = k; break; } }
+    const r = Math.sqrt(-2 * Math.log(1 - rnd())), th = 2 * Math.PI * rnd();
+    const z1 = r * Math.cos(th), z2 = r * Math.sin(th);
+    const l11 = Math.sqrt(c.sxx), l21 = c.sxy / l11, l22 = Math.sqrt(Math.max(c.syy - l21 * l21, 0));
+    const x = c.x + l11 * z1, y = c.y + l21 * z1 + l22 * z2;
+    if (inWin(x, y)) out.push([toX(x), toZ(y)]);
+  }
+  return out;
+})();
+const sampGeo = new THREE.BufferGeometry();
+const sampPos = new Float32Array(3 * SAMPLES.length), sampSize = new Float32Array(SAMPLES.length), sampCol = new Float32Array(3 * SAMPLES.length);
+sampGeo.setAttribute("position", new THREE.BufferAttribute(sampPos, 3));
+sampGeo.setAttribute("aSize", new THREE.BufferAttribute(sampSize, 1));
+sampGeo.setAttribute("aCol", new THREE.BufferAttribute(sampCol, 3));
+const sampPts = new THREE.Points(sampGeo, nodes.material); sampPts.frustumCulled = false; scene.add(sampPts);
 
 // Labels that point at places in the scene: text, times on and off, and where (a function of time).
 const labels = [];
@@ -1284,6 +1310,19 @@ function update(tau, dt, clock) {
   stemGeo.attributes.position.needsUpdate = stemGeo.attributes.color.needsUpdate = true;
   rings.sort((a, b) => a[2] - b[2]);
   floorU.rings.value.forEach((r, i) => { if (i < rings.length) r.set(rings[i][0], rings[i][1], rings[i][2]); else r.z = -1; });
+
+  // The mixture's samples drop onto the floor one after another, and fade with the scene.
+  {
+    const t0 = LN.w3.t0 + 0.3, span = 2.4, fade = 1 - ease((ts - SC.mixture.t1 - 0.2) / 0.8);
+    SAMPLES.forEach(([x, z], i) => {
+      const d0 = t0 + (i * span) / SAMPLES.length, f = clamp01((ts - d0) / 0.5), on = ts >= d0 && fade > 0;
+      sampPos[3 * i] = x; sampPos[3 * i + 1] = 0.012 + 0.9 * (1 - f * f); sampPos[3 * i + 2] = z;
+      sampSize[i] = on ? 5.5 + 4 * (1 - f) : 0;
+      const c = on ? fade : 0;
+      sampCol[3 * i] = c; sampCol[3 * i + 1] = 0.31 * c; sampCol[3 * i + 2] = 0.64 * c;
+    });
+    sampGeo.attributes.position.needsUpdate = sampGeo.attributes.aSize.needsUpdate = sampGeo.attributes.aCol.needsUpdate = true;
+  }
 
   // Wordmark: the letters come in once the camera has started to pull back, and the version after them.
   wmU.alpha.value = ease((ts - T_WORD - 1.6) / 2.4);
