@@ -49,8 +49,8 @@ is being iterated. The final voice is not chosen yet.
 - **Labels.** The narration uses no technical terms beyond posterior,
   likelihood, evidence and mixture of Gaussians. It explains each of them.
   The technical names (Gaussian process, variational inference, acquisition
-  function) appear as small italic labels next to what they name, for
-  viewers who want to look them up. A label stays at least 2.5 s.
+  function, active learning) appear as small italic labels next to what they
+  name, for viewers who want to look them up. A label stays at least 2.5 s.
 - **Readouts.** The bottom left names the method on screen and counts its
   evaluations, with their cost at 3 min each. The same readout serves MCMC,
   Bayesian optimization and PyVBMC, so the costs compare at a glance. The
@@ -102,7 +102,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | Line | Narration | Picture |
 |---|---|---|
 | o1 | Bayesian optimization finds the highest point of a landscape in far fewer evaluations. | The chain fades. The 67 points of a real PyBADS run appear one by one and close in on the peak. The readout says *BAYESIAN OPTIMIZATION (PYBADS)*. |
-| o2 | It learns the landscape from the points it has seen, then decides where to look next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
+| o2 | It learns the landscape from the points it has seen, then decides where to explore next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
 | o3 | PyVBMC does the same for the whole posterior. | The true posterior glows magenta on the floor. The glow spreads from the best fit along the whole banana. |
 
 ### 4. In the dark (0:42–0:48)
@@ -139,9 +139,9 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 |---|---|---|
 | a1 | Where to evaluate next? | The camera rises. The acquisition heat fades in on the floor. Label *acquisition function*. |
 | a2 | An optimizer would head for the peak. | PyBADS's points from scene 3 flicker at the peak, with the label *OPTIMIZER*. |
-| a3 | PyVBMC is after the whole posterior, so it looks for places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. |
+| a3 | PyVBMC is after the whole posterior, so it explores places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. The label *active learning* appears on the beam over the first evaluation. |
 
-### 8. The loop (1:38–1:43)
+### 8. The loop (1:38–1:44)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -149,7 +149,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l2 | Update the surrogate. | It lights *SURROGATE* as the surrogate refits. |
 | l3 | Refit the mixture. | It lights *MIXTURE* as the mixture refits. |
 
-### 9. Time-lapse (1:43–2:01)
+### 9. Time-lapse (1:44–2:02)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -157,7 +157,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l4 | Round after round, the wobbling dies down. | The sheet turns from amber to cyan. The `wibbly-wobbly` readout fades. |
 | l5 | The mixture grows new components to follow the ridge. | The component count climbs from 2 to 21, then to 50 at the final boost. |
 
-### 10. The reveal (2:01–2:07)
+### 10. The reveal (2:02–2:07)
 
 | Line | Narration | Picture |
 |---|---|---|

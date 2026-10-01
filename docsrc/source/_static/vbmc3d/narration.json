@@ -27,7 +27,7 @@
       "id": "bayesopt",
       "lines": [
         { "id": "o1", "text": "Bayesian optimization finds the highest point of a landscape in far fewer evaluations." },
-        { "id": "o2", "text": "It learns the landscape from the points it has seen, then decides where to look next." },
+        { "id": "o2", "text": "It learns the landscape from the points it has seen, then decides where to explore next." },
         { "id": "o3", "text": "Pie V B M C does the same for the whole posterior.", "caption": "PyVBMC does the same for the whole posterior.", "gap": 0.6 }
       ]
     },
@@ -66,7 +66,7 @@
       "lines": [
         { "id": "a1", "text": "Where to evaluate next?" },
         { "id": "a2", "text": "An optimizer would head for the peak.", "gap": 0.5 },
-        { "id": "a3", "text": "Pie V B M C is after the whole posterior, so it looks for places that are plausible and still uncertain.", "caption": "PyVBMC is after the whole posterior, so it looks for places that are plausible and still uncertain." }
+        { "id": "a3", "text": "Pie V B M C is after the whole posterior, so it explores places that are plausible and still uncertain.", "caption": "PyVBMC is after the whole posterior, so it explores places that are plausible and still uncertain." }
       ]
     },
     {

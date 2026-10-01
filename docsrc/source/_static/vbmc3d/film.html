@@ -1192,6 +1192,7 @@ label("Gaussian process", "term", LN.g2.t0 + 0.2, LN.g3.t0 + 0.3, () => { const 
 label("EXACT HERE", "", LN.g3.t0 + 0.7, LN.g4.t0 - 0.1, () => nodeTop(FOCUS));
 label("variational inference", "term", LN.q1.t0 + 1.0, LN.q3.t1 + 0.3, () => [toX(vp0.x), LIFT + HGT * hLog(vpMax[ITS[0].vpIdx]) + 0.08, toZ(vp0.y)]);
 label("acquisition function", "term", LN.a1.t0 + 0.7, LN.a3.t0 + 1.6, () => [acqEv[0].x, 0.01, acqEv[0].z]);
+label("active learning", "term", LN.a3.t0 + 1.9, LN.a3.t1 + 0.4, () => [acqEv[0].x, 0.9, acqEv[0].z]);
 label("OPTIMIZER", "", LN.a2.t0 + 0.2, LN.a2.t1 + 0.4, () => BEST);
 
 // ---------------------------------------------------------------- update
