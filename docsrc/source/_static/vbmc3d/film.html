@@ -878,7 +878,7 @@ const WM_FS = `
     float wire = 1.0 - min(min(d.x, d.y), 1.0);   // the sheets' wires, continued across the floor
     gl_FragColor = vec4(col * alpha * (0.6 * g.g + g.r * (0.04 + 0.32 * wire)), 1.0);
   }`;
-function makeWord(text, side, x, u = wmU, scale = 1) {   // side "right": the ink's right edge at x; "left": its left edge
+function makeWord(text, side, x, u = wmU, scale = 1, top = false) {   // top: the ink's top on the cap line, not its baseline on the baseline   // side "right": the ink's right edge at x; "left": its left edge
   const cv = document.createElement("canvas"), g = cv.getContext("2d");
   const face = (px) => `400 ${px}px "STIX Two Text", Georgia, "Times New Roman", serif`;
   g.font = face(100);
@@ -894,7 +894,7 @@ function makeWord(text, side, x, u = wmU, scale = 1) {   // side "right": the in
   g.strokeStyle = "#0f0"; g.lineWidth = Math.max(2, 0.012 * px); g.strokeText(text, ox, oy);
   const s = (scale * WM_CAPH) / CAP_PX;   // scene units per canvas pixel
   const x0 = x - s * (side === "right" ? ox + m.actualBoundingBoxRight : ox - m.actualBoundingBoxLeft);
-  const z0 = WM_BASE_Z - s * oy;
+  const z0 = top ? WM_CAP_Z - s * pad : WM_BASE_Z - s * oy;
   const tex = new THREE.CanvasTexture(cv); tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const mat = new THREE.ShaderMaterial(Object.assign({
     uniforms: { glyph: { value: tex }, alpha: u.alpha, cell: u.cell, col: u.col }, extensions: { derivatives: true },
@@ -908,9 +908,10 @@ function makeWord(text, side, x, u = wmU, scale = 1) {   // side "right": the in
 }
 const WM_GAP = 0.05 * WM_CAPH;
 const wordPy = makeWord("Py", "right", -WM_VHALF - WM_GAP), wordBmc = makeWord("BMC", "left", WM_VHALF + WM_GAP);
-// The release, smaller and in the surrogate's cyan, after the word.
+// The release, smaller and in the surrogate's cyan, after the word and hanging from its cap line, as the
+// version hangs from the top of the repository's logo.svg.
 const v15U = { alpha: { value: 0 }, cell: wmU.cell, col: { value: new THREE.Color(0x4fd8e8) } };
-const word15 = makeWord("1.5", "left", wordBmc.right + 2.4 * WM_GAP, v15U, 0.5);
+const word15 = makeWord("1.5", "left", wordBmc.right + 2.4 * WM_GAP, v15U, 0.5, true);
 const WM = {
   cx: (wordPy.left + word15.right) / 2, width: word15.right - wordPy.left,
   cz: (WM_CAP_Z + Math.max(wordPy.depth, WM_BASE_Z)) / 2, height: Math.max(wordPy.depth, WM_BASE_Z) - WM_CAP_Z,
