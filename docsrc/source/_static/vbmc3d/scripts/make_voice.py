@@ -1,11 +1,11 @@
-"""Voice the video's narration with Kokoro and time the scenes from it.
+"""Voice the video's narration and time the scenes from it.
 
-    python scripts/make_voice.py OUT [--voice NAME] [--speed X] [--only ID,...]
+    python scripts/make_voice.py OUT [--only ID,...] [--all]
 
 Reads ../narration.json. Writes ../film_timeline.js, the timeline that
 film.html plays (``window.VBMC_FILM``: each scene's start and length, and
 each line's start, length and caption, in seconds), and into OUT, a folder
-outside the repository:
+outside the repository that holds one voice's clips:
 
     voice/<line id>.wav   one 48 kHz mono clip per line
     timeline.json         the same timeline
@@ -16,16 +16,26 @@ A scene lasts lead + the lines and the gaps between them + tail, or its "min"
 if that is longer: the pictures of some scenes need more time than their words.
 Re-voicing a line therefore re-times every scene after it. A line's "text" is
 what the voice says and its "caption", when given, is what the screen shows.
-A line is voiced when OUT has no clip of it, when --only names it or its
-scene, or with --all; the other clips in OUT are reused. Kokoro does not
-give the same take twice, so voicing a line again moves the timeline.
 
-Needs a Python with kokoro (0.9.4 or later), soundfile and scipy. Kokoro
-fetches its weights from the Hugging Face hub into HF_HOME on first use.
+The "engine" of narration.json picks the voice.
+- "elevenlabs" (the settings under "elevenlabs") voices each scene in one take
+  (scripts/eleven.py), so that the delivery flows from line to line, and cuts
+  the lines out of it at the pauses. Takes are kept in OUT/takes/<voice>/
+  and reused while a scene's text is unchanged; --only re-takes the scenes it
+  names, or the scenes of the lines it names, with a new seed, and --all
+  re-takes every scene. A take costs ElevenLabs characters.
+- "kokoro" (the "voice" and "speed" at the top) voices each line on its own,
+  locally. A line is voiced when OUT has no clip of it, when --only names it
+  or its scene, or with --all. Kokoro does not give the same take twice, so
+  voicing a line again moves the timeline.
+
+Needs numpy, scipy and soundfile, and kokoro (0.9.4 or later) for the Kokoro
+engine, which fetches its weights from the Hugging Face hub into HF_HOME.
 """
 
 import argparse
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -79,6 +89,132 @@ def synthesize(pipeline, text, voice, speed):
     return np.concatenate(chunks)
 
 
+def write_clip(path, clip):
+    sf.write(
+        path,
+        resample_poly(clip, SR_OUT // SR_TTS, 1).astype(np.float32),
+        SR_OUT,
+        subtype="PCM_16",
+    )
+
+
+def kokoro_lines(spec, voice_dir, only, everything):
+    """Voice with Kokoro the lines that need it; the voice's name and speed."""
+    voice, speed = spec["voice"], spec["speed"]
+    todo = [
+        (line, voice_dir / f"{line['id']}.wav")
+        for scene in spec["scenes"]
+        for line in scene["lines"]
+        if everything
+        or line["id"] in only
+        or scene["id"] in only
+        or not (voice_dir / f"{line['id']}.wav").exists()
+    ]
+    if todo:
+        from kokoro import KPipeline
+
+        pipeline = KPipeline(lang_code=voice[0], repo_id="hexgrad/Kokoro-82M")
+        for line, path in todo:
+            raw = synthesize(pipeline, line["text"], voice, speed)
+            write_clip(path, trim_and_level(raw, SR_TTS))
+            print(
+                f"  {line['id']:4s} {sf.info(path).duration:5.2f}s  {line['text']}",
+                flush=True,
+            )
+    return voice, speed
+
+
+def eleven_lines(spec, out, voice_dir, only, everything):
+    """Voice with ElevenLabs, one take per scene; the voice's name and speed."""
+    from eleven import scene_gain, scene_take, scene_text, split_scene
+
+    cfg = spec["elevenlabs"]
+    takes = out / "takes" / cfg["voice_name"].lower()
+    takes.mkdir(parents=True, exist_ok=True)
+    settings = {
+        "stability": cfg["stability"],
+        "similarity_boost": cfg["similarity"],
+        "style": cfg["style"],
+        "use_speaker_boost": True,
+        "speed": cfg["speed"],
+    }
+    scenes = [s for s in spec["scenes"] if s["lines"]]
+    prev = None
+    for k, scene in enumerate(scenes):
+        text, spans = scene_text([line["text"] for line in scene["lines"]])
+        meta_path = takes / f"{scene['id']}.json"
+        wav_path = takes / f"{scene['id']}.wav"
+        meta = (
+            json.loads(meta_path.read_text(encoding="utf-8"))
+            if meta_path.exists()
+            else None
+        )
+        named = (
+            everything
+            or scene["id"] in only
+            or any(line["id"] in only for line in scene["lines"])
+        )
+        if (
+            meta is None
+            or meta["text"] != text
+            or not wav_path.exists()
+            or named
+        ):
+            seed = (
+                cfg["seed"] + k
+                if meta is None
+                else meta["seed"] + 1000 * named
+            )
+            # The previous take's request id conditions this take on its audio,
+            # but only for two hours; otherwise its last line's text does.
+            fresh = (
+                prev is not None
+                and prev.get("request_id")
+                and time.time() - prev["created"] < 7000
+            )
+            nxt = (
+                scenes[k + 1]["lines"][0]["text"]
+                if k + 1 < len(scenes)
+                else None
+            )
+            pcm, alignment, rid = scene_take(
+                text,
+                cfg["voice_id"],
+                cfg["model"],
+                settings,
+                seed,
+                previous_request_ids=[prev["request_id"]] if fresh else None,
+                next_text=nxt,
+                previous_text=(
+                    None
+                    if fresh or k == 0
+                    else scenes[k - 1]["lines"][-1]["text"]
+                ),
+                sr=SR_TTS,
+            )
+            sf.write(wav_path, pcm, SR_TTS, subtype="PCM_16")
+            meta = {
+                "text": text,
+                "seed": seed,
+                "request_id": rid,
+                "created": time.time(),
+                "alignment": alignment,
+            }
+            meta_path.write_text(json.dumps(meta), encoding="utf-8")
+            print(
+                f"  take {scene['id']:10s} {pcm.size / SR_TTS:5.1f}s "
+                f"(seed {seed}, {len(text)} characters)",
+                flush=True,
+            )
+        pcm = sf.read(wav_path, dtype="float32")[0]
+        clips = split_scene(pcm, meta["alignment"], spans, SR_TTS)
+        gain = scene_gain(clips, SR_TTS, TARGET_RMS_DB, PEAK_DB)
+        for line, clip in zip(scene["lines"], clips):
+            write_clip(voice_dir / f"{line['id']}.wav", clip * gain)
+        prev = meta
+    return f"elevenlabs:{cfg['voice_name']}", cfg["speed"]
+
+
 def srt_time(t):
     ms = int(round(t * 1000))
     h, ms = divmod(ms, 3600_000)
@@ -90,49 +226,19 @@ def srt_time(t):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("out", type=Path)
-    ap.add_argument("--voice")
-    ap.add_argument("--speed", type=float)
     ap.add_argument("--only", default="")
     ap.add_argument("--all", action="store_true")
     args = ap.parse_args()
 
     spec = json.loads((HERE / "narration.json").read_text(encoding="utf-8"))
-    voice = args.voice or spec["voice"]
-    speed = args.speed or spec["speed"]
     dflt = spec["defaults"]
     only = {s for s in args.only.split(",") if s}
     voice_dir = args.out / "voice"
     voice_dir.mkdir(parents=True, exist_ok=True)
-
-    todo = []
-    for scene in spec["scenes"]:
-        for line in scene["lines"]:
-            path = voice_dir / f"{line['id']}.wav"
-            if (
-                not path.exists()
-                or args.all
-                or line["id"] in only
-                or scene["id"] in only
-            ):
-                todo.append((line, path))
-    if todo:
-        from kokoro import KPipeline
-
-        pipeline = KPipeline(lang_code=voice[0], repo_id="hexgrad/Kokoro-82M")
-        for line, path in todo:
-            clip = trim_and_level(
-                synthesize(pipeline, line["text"], voice, speed), SR_TTS
-            )
-            sf.write(
-                path,
-                resample_poly(clip, SR_OUT // SR_TTS, 1),
-                SR_OUT,
-                subtype="PCM_16",
-            )
-            print(
-                f"  {line['id']:4s} {sf.info(path).duration:5.2f}s  {line['text']}",
-                flush=True,
-            )
+    if spec.get("engine", "kokoro") == "elevenlabs":
+        voice, speed = eleven_lines(spec, args.out, voice_dir, only, args.all)
+    else:
+        voice, speed = kokoro_lines(spec, voice_dir, only, args.all)
 
     timeline = {"voice": voice, "speed": speed, "scenes": []}
     t0, placed, captions = 0.0, [], []

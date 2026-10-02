@@ -1,4 +1,6 @@
 {
+  "engine": "elevenlabs",
+  "elevenlabs": { "voice_name": "Travis", "voice_id": "brkaXeg2GVKseQkCHQra", "model": "eleven_multilingual_v2", "stability": 0.5, "similarity": 0.75, "style": 0.0, "speed": 0.95, "seed": 300 },
   "voice": "af_heart",
   "speed": 1.0,
   "defaults": { "lead": 0.5, "gap": 0.35, "tail": 0.6 },
