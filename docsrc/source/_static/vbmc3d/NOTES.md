@@ -175,7 +175,8 @@ the video in the same style. The video's audience is scientists who fit
 models, most of whom do not know Gaussian processes or variational
 inference. Its
 angle is Bayesian optimization applied to the whole posterior. Its
-narration is voiced with Kokoro, an open model, while the script changes.
+drafts were voiced with Kokoro, an open model, while the script changed;
+the final voice is Travis, from the ElevenLabs Voice Library.
 `STORYBOARD.md` has the rest.
 
 **The film page.** `film.html` is a copy of `wordmark.html` with its own
@@ -201,6 +202,13 @@ the README asks to keep in step. Other decisions:
   scale and leads to the payoff. The `timey-wimey` nod moved there.
 - *The number of mixture components and the evidence stay hidden* until the
   narration introduces them, because a number nobody has explained is noise.
+- *The voice.* The film wants a light American accent and the delivery of a
+  technical scientist, unlike the voice of the lab's earlier film. The
+  Voice Library's tags matched mostly performed reads (social media,
+  customer support, meditation), so the choice came from auditions of six
+  lines of this script. Travis was chosen over Sebastian and Tess, both
+  British. The library's most cloned voices, heard in many other videos,
+  were left out.
 - *Why a mixture, said aloud.* Right after "PyVBMC fits a mixture of
   Gaussians", a viewer who fits models asks why it does not use the
   surrogate itself, so the mixture scene answers. The surrogate gives a

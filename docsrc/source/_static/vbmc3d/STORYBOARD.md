@@ -35,8 +35,10 @@ film. Everything they produce apart from the two generated `.js` files
 (voice clips, sound, frames, videos) goes to a folder outside the
 repository.
 
-The voice is Kokoro (`af_heart`), an open model run locally, while the script
-is being iterated. The final voice is not chosen yet.
+The voice is Travis, a voice of the ElevenLabs Voice Library with a light
+American accent, voiced with `eleven_multilingual_v2` one take per scene.
+Kokoro (`af_heart`), an open model run locally, voiced the drafts while the
+script changed, and `narration.json` can switch back to it.
 
 ## Style
 
@@ -77,7 +79,7 @@ is being iterated. The final voice is not chosen yet.
 
 ## Scenes
 
-Times are those of the Kokoro draft and move whenever a line is re-voiced.
+Times are those of Travis's takes and move whenever a scene is re-voiced.
 
 ### 1. The cost of a posterior (0:00–0:17)
 
@@ -97,7 +99,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | m2 | It needs tens of thousands of evaluations. | The ensemble speeds up until its dots cover the ridge. The count stops at *27,828\**. The footnote appears in the bottom right. |
 | m3 | At a few minutes each, you would wait weeks. | The cost readout reaches *8.3 weeks*. |
 
-### 3. Bayesian optimization (0:26–0:42)
+### 3. Bayesian optimization (0:26–0:41)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -105,14 +107,14 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | o2 | It learns the landscape from the points it has seen, then decides where to explore next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
 | o3 | PyVBMC does the same for the whole posterior. | The true posterior glows magenta on the floor. The glow spreads from the best fit along the whole banana. |
 
-### 4. In the dark (0:42–0:48)
+### 4. In the dark (0:41–0:47)
 
 | Line | Narration | Picture |
 |---|---|---|
 | s1 | We start in the dark. | The grey landscape, the points and the glow fade out. The readout switches to *PYVBMC* at zero evaluations. |
 | s2 | Each evaluation reveals the height at a single point. | The ten evaluations of the initial design drop one by one. |
 
-### 5. The surrogate (0:48–1:03)
+### 5. The surrogate (0:47–1:04)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -122,7 +124,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | g4 | Everywhere else it wobbles. | The camera pulls back over the outskirts. Readout `UNCERTAINTY wibbly-wobbly`. |
 | g5 | The more it wobbles, the less it knows. | The colour key appears: amber unsure, cyan sure. |
 
-### 6. The mixture (1:03–1:23)
+### 6. The mixture (1:04–1:25)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -133,7 +135,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | q2 | This is its first guess at the posterior. | The magenta sheet beside the surrogate's ridge. |
 | q3 | For now it is a crude one. | Hold. The two components are visibly blunter than the ridge. The samples and the footnote fade with the scene. |
 
-### 7. Where to evaluate next (1:23–1:38)
+### 7. Where to evaluate next (1:25–1:40)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -141,7 +143,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | a2 | An optimizer would head for the peak. | PyBADS's points from scene 3 flicker at the peak, with the label *OPTIMIZER*. |
 | a3 | PyVBMC is after the whole posterior, so it explores places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. The label *active learning* appears on the beam over the first evaluation. |
 
-### 8. The loop (1:38–1:44)
+### 8. The loop (1:40–1:45)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -149,7 +151,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l2 | Update the surrogate. | It lights *SURROGATE* as the surrogate refits. |
 | l3 | Refit the mixture. | It lights *MIXTURE* as the mixture refits. |
 
-### 9. Time-lapse (1:44–2:02)
+### 9. Time-lapse (1:45–2:03)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -157,14 +159,14 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | l4 | Round after round, the wobbling dies down. | The sheet turns from amber to cyan. The `wibbly-wobbly` readout fades. |
 | l5 | The mixture grows new components to follow the ridge. | The component count climbs from 2 to 21, then to 50 at the final boost. |
 
-### 10. The reveal (2:02–2:07)
+### 10. The reveal (2:03–2:09)
 
 | Line | Narration | Picture |
 |---|---|---|
 | r1 | PyVBMC never saw the true landscape. | The camera orbits. |
 | r2 | Here it is. | The grey landscape rises into place under the surrogate and the mixture. Where they coincide, the wires add up to white. |
 
-### 11. The evidence (2:07–2:17)
+### 11. The evidence (2:09–2:18)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -172,7 +174,7 @@ Times are those of the Kokoro draft and move whenever a line is re-voiced.
 | e2 | You need that number to compare two models. | Hold. |
 | e3 | The estimate lands close to the true value. | *TRUE +0.000* appears beside it. |
 
-### 12. The payoff (2:17–2:28)
+### 12. The payoff (2:18–2:28)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -194,7 +196,7 @@ tools, which links PyVBMC and PyBADS. Below them are the three references
 of the README (Huggins et al. 2023, JOSS; Acerbi 2018, NeurIPS; Acerbi 2020,
 NeurIPS), the Machine and Human Intelligence Group, University of Helsinki,
 and ELLIS Institute Finland. The last line reads "Directed by Luigi Acerbi
-· Made with Claude Code · Voice: Kokoro".
+· Made with Claude Code · Voice: Travis (ElevenLabs)".
 
 ## Sound
 
@@ -212,7 +214,6 @@ sets the loudness to -16 LUFS.
 
 ## Not built yet
 
-- **The final voice.**
 - **A 1920 x 1080 render.** The drafts are 1280 x 720, which software
   rendering records in about 40 minutes.
 

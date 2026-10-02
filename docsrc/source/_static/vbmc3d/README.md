@@ -34,6 +34,7 @@ them in either page belongs in both.
 | `STORYBOARD.md` | The film, scene by scene, and the claims its narration makes. |
 | `narration.json` | The film's spoken lines and the rules that time its scenes. |
 | `scripts/make_voice.py` | Voices the narration and writes `film_timeline.js`. |
+| `scripts/eleven.py` | The ElevenLabs takes of `make_voice.py`: one take per scene, cut into lines at the pauses. |
 | `scripts/export_intro.py` | Writes `trace_intro.js`. |
 | `scripts/make_score.py` | Synthesizes the film's score from the page's events and mixes it under the narration. |
 | `scripts/mux.py` | Puts the mix under the recorded video at -16 LUFS. |
@@ -181,7 +182,9 @@ node scripts/record.mjs film.html V/film_silent.mp4 --size 1280x720 --denoise 2:
 python -u scripts/mux.py V/film_silent.mp4 V/mix.wav V/film.mp4
 ```
 
-`make_voice.py` needs Kokoro, `export_intro.py` emcee and PyBADS, and
+`make_voice.py` needs an ElevenLabs API key (in `ELEVENLABS_API_KEY` or
+`~/.config/elevenlabs/api_key`), or Kokoro with the Kokoro engine;
+`export_intro.py` needs emcee and PyBADS, and
 `make_score.py` NumPy, SciPy and soundfile (their docstrings say more).
 `record.mjs` needs an ffmpeg with the `hqdn3d` filter for `--denoise`, and
 `mux.py` one with `loudnorm`; the ffmpeg of `imageio-ffmpeg` has both.
