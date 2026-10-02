@@ -186,7 +186,8 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 
 No narration. This is the page's finale. The camera pulls up until the
 posterior is the V of the wordmark. "Py" and "BMC" appear beside it. Then
-*1.5* appears after the word, smaller and in cyan.
+*1.5* appears after the word, smaller and in cyan, its top on the letters'
+cap line, as the version hangs from the top of `logo.svg`.
 
 ### 14. End card (2:35–2:43)
 

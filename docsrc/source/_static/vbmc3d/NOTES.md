@@ -14,6 +14,12 @@ with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
 it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
 another run (Seeds, below).
 
+The film (`film.html`) is at its sixth draft: narrated by Travis
+(ElevenLabs), scored, recorded at 1280 x 720 and muxed at -16 LUFS, with
+every line passing `scripts/verify_voice.py`. The review of that draft and
+the render at 1920 x 1080 remain (`TODO.md`, "The video"). The drafts and
+the voice takes are local media (`README.md`, "The film").
+
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
 in the README, and exporting seed 42 again reproduces the trace. The page
@@ -209,6 +215,12 @@ the README asks to keep in step. Other decisions:
   lines of this script. Travis was chosen over Sebastian and Tess, both
   British. The library's most cloned voices, heard in many other videos,
   were left out.
+- *Both methods explore.* Lines `o2` and `a3` use the word that scientists
+  and the literature on active learning use. Bayesian optimization "decides
+  where to explore next" and PyVBMC "explores places that are plausible and
+  still uncertain", so the contrast with the optimizer is in what each
+  explores for, the peak or the whole posterior, not in whether it explores.
+  The label *active learning* names the idea for viewers who know it.
 - *Why a mixture, said aloud.* Right after "PyVBMC fits a mixture of
   Gaussians", a viewer who fits models asks why it does not use the
   surrogate itself, so the mixture scene answers. The surrogate gives a
