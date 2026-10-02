@@ -35,6 +35,7 @@ them in either page belongs in both.
 | `narration.json` | The film's spoken lines and the rules that time its scenes. |
 | `scripts/make_voice.py` | Voices the narration and writes `film_timeline.js`. |
 | `scripts/eleven.py` | The ElevenLabs takes of `make_voice.py`: one take per scene, cut into lines at the pauses. |
+| `scripts/verify_voice.py` | Transcribes the voiced lines with Whisper and lists those whose words differ from the script. |
 | `scripts/export_intro.py` | Writes `trace_intro.js`. |
 | `scripts/make_score.py` | Synthesizes the film's score from the page's events and mixes it under the narration. |
 | `scripts/mux.py` | Puts the mix under the recorded video at -16 LUFS. |
@@ -180,6 +181,7 @@ and no new take comes out the same as the old one.
 
 ```console
 python -u scripts/make_voice.py V                            # V/voice/, V/narration.wav, film_timeline.js
+python -u scripts/verify_voice.py V                          # every line as written? (Whisper)
 python -u scripts/export_intro.py                             # trace_intro.js (needs pybads)
 node scripts/record.mjs "film.html?events=1" V/events.json    # the times the score follows
 python -u scripts/make_score.py V                            # V/score.wav, V/mix.wav
@@ -189,6 +191,7 @@ python -u scripts/mux.py V/film_silent.mp4 V/mix.wav V/film.mp4
 
 `make_voice.py` needs an ElevenLabs API key (in `ELEVENLABS_API_KEY` or
 `~/.config/elevenlabs/api_key`), or Kokoro with the Kokoro engine;
+`verify_voice.py` needs faster-whisper;
 `export_intro.py` needs emcee and PyBADS, and
 `make_score.py` NumPy, SciPy and soundfile (their docstrings say more).
 `record.mjs` needs an ffmpeg with the `hqdn3d` filter for `--denoise`, and
