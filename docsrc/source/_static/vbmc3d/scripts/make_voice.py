@@ -4,8 +4,9 @@
 
 Reads ../narration.json. Writes ../film_timeline.js, the timeline that
 film.html plays (``window.VBMC_FILM``: each scene's start and length, and
-each line's start, length and caption, in seconds), and into OUT, a folder
-outside the repository that holds one voice's clips:
+each line's start, length and caption, in seconds), and into OUT, the
+folder of one voice (``dev/media/vbmc3d-film/voice-travis`` for the film's,
+gitignored):
 
     voice/<line id>.wav   one 48 kHz mono clip per line
     timeline.json         the same timeline

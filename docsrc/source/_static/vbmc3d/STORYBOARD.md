@@ -32,8 +32,8 @@ feeds that play muted, a clean version, and an `.srt`.
 
 README.md ("The film") gives the commands that voice, record and mux the
 film. Everything they produce apart from the two generated `.js` files
-(voice clips, sound, frames, videos) goes to a folder outside the
-repository.
+(voice takes and clips, sound, frames, videos) goes to the gitignored
+`dev/media/vbmc3d-film/`.
 
 The voice is Travis, a voice of the ElevenLabs Voice Library with a light
 American accent, voiced with `eleven_multilingual_v2` one take per scene.

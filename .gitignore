@@ -163,3 +163,6 @@ dev/scripts/runs/
 # intermediate chain files of dev/scripts/make_benchmark_truths.py (the
 # truths themselves, data/truths/*.npz and *.json, are tracked)
 dev/scripts/data/truths/chains/
+# media made from the tracked sources (voice takes, sound, renders of the 3D
+# animation's film), kept on the machine that made them
+dev/media/

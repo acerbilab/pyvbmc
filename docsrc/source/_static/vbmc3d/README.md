@@ -167,11 +167,16 @@ denoising that GIFs get by default); `--gif-width 480 --fps 12 --colors 64
 
 ### The film
 
-The film is made in these steps, from this folder, with `V` a folder
-outside the repository that holds one voice's clips and sound. Nothing but
-the scripts, `narration.json` and the two small generated files
-`film_timeline.js` and `trace_intro.js` is tracked. The voice clips, the
-sound and the videos stay outside.
+The film is made in these steps, from this folder, with `V` a folder that
+holds one voice's takes, clips and sound. Nothing but the scripts,
+`narration.json` and the two small generated files `film_timeline.js` and
+`trace_intro.js` is tracked. The voice takes, the sound and the videos go to
+the gitignored `dev/media/vbmc3d-film/` of the worktree that makes them: a
+folder per voice (`voice-travis/`, `voice-af_heart/`), `renders/`,
+`auditions/` of the voices tried, `stills/` and `logs/`. A worktree's ignored
+files go with it when it is removed (AGENTS.md), so move that folder before
+removing the worktree. Travis's takes cost ElevenLabs characters to remake,
+and no new take comes out the same as the old one.
 
 ```console
 python -u scripts/make_voice.py V                            # V/voice/, V/narration.wav, film_timeline.js
