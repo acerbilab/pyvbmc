@@ -1,0 +1,380 @@
+{
+  "attempted": true,
+  "accepted": true,
+  "tolerance": 0.1,
+  "boost_options": {
+    "acq_hedge": false,
+    "acq_hedge_decay": 0.9,
+    "acq_hedge_iter_window": 4,
+    "active_importance_sampling_box_samples": 100,
+    "active_importance_sampling_fess_thresh": 0.9,
+    "active_importance_sampling_mcmc_samples": 100,
+    "active_importance_sampling_mcmc_thin": 1,
+    "active_importance_sampling_vp_samples": 100,
+    "active_sample_fess_thresh": 1,
+    "active_sample_full_update_past_warmup": 2,
+    "active_sample_full_update_threshold": 3,
+    "active_sample_gp_update": false,
+    "active_sample_vp_update": false,
+    "active_search_bound": 2,
+    "active_variational_samples": 0,
+    "adaptive_entropy_alpha": false,
+    "adaptive_k": 2,
+    "always_refit_vp": false,
+    "annealed_gp_mean": "<function <lambda>>",
+    "best_frac_back": 0.25,
+    "best_safe_sd": 5,
+    "bounded_transform": "probit",
+    "box_search_frac": 0.25,
+    "cache_frac": 0.5,
+    "cache_size": 500,
+    "constrained_gp_mean": false,
+    "cov_sample_thresh": 10,
+    "det_entropy_alpha": 0,
+    "det_entropy_min_d": 5,
+    "det_entropy_tol_opt": 0.001,
+    "diagnostics": false,
+    "display": "off",
+    "do_final_boost": true,
+    "double_gp": false,
+    "elbo_starts": 2,
+    "elcbo_impro_weight": 3,
+    "elcbo_midpoint": true,
+    "empirical_gp_prior": false,
+    "entropy_force_switch": 0.8,
+    "entropy_switch": false,
+    "f_vals": [],
+    "fitness_shaping": false,
+    "fun_eval_start": 10,
+    "fun_evals_per_iter": 5,
+    "gp_hyp_sampler": "slicesample",
+    "gp_int_mean_fun": 0,
+    "gp_length_prior_mean": 0.9128709291752769,
+    "gp_length_prior_std": 3.4538776394910684,
+    "gp_mean_fun": "negquad",
+    "gp_quadratic_mean_bound": true,
+    "gp_retrain_threshold": 1,
+    "gp_sample_thin": 5,
+    "gp_sample_widths": 5,
+    "gp_stochastic_step_size": false,
+    "gp_tol_opt": 1e-05,
+    "gp_tol_opt_active": 0.0001,
+    "gp_tol_opt_mcmc": 0.01,
+    "gp_tol_opt_mcmc_active": 0.01,
+    "gp_train_init_method": "rand",
+    "gp_train_n_init": 1024,
+    "gp_train_n_init_final": 64,
+    "heavy_tail_search_frac": 0.25,
+    "hpd_frac": 0.8,
+    "hpd_search_frac": 0,
+    "hyp_run_weight": 0.9,
+    "incremental_warp_delay": true,
+    "init_design": "plausible",
+    "integer_vars": [],
+    "integrate_gp_mean": false,
+    "k_fun_max": "<function <lambda>>",
+    "k_warmup": 2,
+    "kl_gauss": true,
+    "log_file_level": "iter",
+    "log_file_mode": "a",
+    "log_file_name": null,
+    "max_fun_evals": 350,
+    "max_iter": 350,
+    "max_iter_stochastic": Infinity,
+    "max_repeated_observations": 0,
+    "min_final_components": 50,
+    "min_fun_evals": 25,
+    "min_iter": 5,
+    "moments_run_weight": 0.9,
+    "mvn_search_frac": 0.25,
+    "noise_shaping": false,
+    "noise_shaping_factor": 0.05,
+    "noise_shaping_threshold": 50,
+    "noise_size": [],
+    "nonlinear_scaling": true,
+    "ns_elbo": "<function <lambda>>",
+    "ns_elbo_incr": 0.1,
+    "ns_ent": 2714.417616594906,
+    "ns_ent_active": "<function <lambda>>",
+    "ns_ent_boost": "<function <lambda>>",
+    "ns_ent_fast": 0,
+    "ns_ent_fast_active": 0,
+    "ns_ent_fast_boost": [],
+    "ns_ent_fine": 204800,
+    "ns_ent_fine_active": "<function <lambda>>",
+    "ns_ent_fine_boost": [],
+    "ns_gp_max": 80,
+    "ns_gp_max_active": Infinity,
+    "ns_gp_max_main": Infinity,
+    "ns_gp_max_warmup": 8,
+    "ns_search": 8192,
+    "optimistic_variational_bound": 0,
+    "out_warp_thresh_base": 50,
+    "out_warp_thresh_mult": 1.25,
+    "out_warp_thresh_tol": 0.8,
+    "output_fcn": [],
+    "performance_calibration": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "proposal_fcn": null,
+    "pruning_threshold_multiplier": "<function <lambda>>",
+    "rank_criterion": true,
+    "recompute_lcb_max": true,
+    "record_full_history_details": false,
+    "sample_extra_vp_means": 0,
+    "scale_lower_bound": true,
+    "search_acq_fcn": [
+      "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object>"
+    ],
+    "search_cache_frac": 0,
+    "search_cmaes_best": false,
+    "search_cmaes_vp_init": true,
+    "search_max_fun_evals": 3500,
+    "search_optimizer": "cmaes",
+    "separate_search_gp": false,
+    "sgd_step_size": 0.005,
+    "show_tips": true,
+    "skip_active_sampling_after_warmup": false,
+    "specify_target_noise": false,
+    "stable_gp_samples": 0,
+    "stable_gp_sampling": 250,
+    "stable_gp_vp_k": Infinity,
+    "stochastic_optimizer": "adam",
+    "stop_warmup_reliability": 100,
+    "stop_warmup_thresh": 0.2,
+    "temperature": 1,
+    "tol_bound_x": 1e-05,
+    "tol_con_loss": 0.01,
+    "tol_cov_weight": 0,
+    "tol_elcbo_boost": 0.1,
+    "tol_fun_stochastic": 0.001,
+    "tol_gp_noise": 0.0031622776601683794,
+    "tol_gp_var": 0.0001,
+    "tol_gp_var_mcmc": 0.0001,
+    "tol_improvement": 0.01,
+    "tol_length": 1e-06,
+    "tol_sd": 0.1,
+    "tol_skl": 0.022360679774997897,
+    "tol_stable_count": 60,
+    "tol_stable_entropy_iters": 6,
+    "tol_stable_excpt_frac": 0.2,
+    "tol_stable_warmup": 15,
+    "tol_weight": 0,
+    "true_cov": [],
+    "true_mean": [],
+    "uncertainty_handling": [],
+    "update_random_alpha": false,
+    "upper_gp_length_factor": 0,
+    "useroptions": [
+      "display",
+      "performance_calibration",
+      "plot",
+      "print_iteration_header",
+      "tol_elcbo_boost",
+      "vectorized_target"
+    ],
+    "variable_means": true,
+    "variable_weights": true,
+    "variational_init_repo": false,
+    "variational_sampler": "malasample",
+    "vectorized_target": false,
+    "warmup": true,
+    "warmup_check_max": true,
+    "warmup_keep_threshold": 50,
+    "warmup_keep_threshold_false_alarm": 700,
+    "warmup_no_impro_threshold": 45,
+    "warmup_options": [],
+    "warp_cov_reg": 0,
+    "warp_every_iters": 5,
+    "warp_min_k": 5,
+    "warp_roto_corr_thresh": 0.05,
+    "warp_rotoscaling": true,
+    "warp_tol_improvement": 0.1,
+    "warp_tol_reliability": 3,
+    "warp_tol_sd_base": 1,
+    "warp_tol_sd_multiplier": 2,
+    "warp_undo_check": true,
+    "weight_penalty": 0,
+    "weighted_hyp_cov": true
+  },
+  "boost_call": {
+    "n_fast_opts": 250,
+    "n_slow_opts": 1,
+    "K_new": 50
+  },
+  "scores": {
+    "pre": {
+      "elbo": -0.014878277693807895,
+      "elbo_sd": 0.0005515240780472545
+    },
+    "candidate": {
+      "elbo": -0.010206947188005522,
+      "elbo_sd": 0.0005278887716897173
+    },
+    "returned": {
+      "elbo": -0.010206947188005522,
+      "elbo_sd": 0.0005278887716897173
+    }
+  },
+  "metrics": {
+    "pre": {
+      "elbo_err": 0.014878277693807895,
+      "gskl": 0.0051252933137764245,
+      "mmtv": 0.009923736605856404,
+      "rmse": 0.003931169869914876,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.5006848201599561,
+          -0.25511926353092695,
+          -0.005716486385921795,
+          0.24788589321896523,
+          0.5036670125303884
+        ]
+      ],
+      "post_cov": [
+        [
+          0.3962891402797315,
+          0.2724122124267987,
+          0.20007295679374196,
+          -0.06225285252796224,
+          0.17333049620288432
+        ],
+        [
+          0.27241221242679875,
+          0.5664977858041729,
+          0.25874488245687854,
+          -0.004623993681971079,
+          0.11730492454476268
+        ],
+        [
+          0.20007295679374196,
+          0.25874488245687854,
+          0.28535471024249676,
+          -0.10010144501000905,
+          -0.08440212941884741
+        ],
+        [
+          -0.062252852527962234,
+          -0.004623993681971058,
+          -0.10010144501000906,
+          0.4805624473252129,
+          0.1190843545242929
+        ],
+        [
+          0.17333049620288432,
+          0.11730492454476266,
+          -0.0844021294188474,
+          0.11908435452429296,
+          0.4536335740693474
+        ]
+      ]
+    },
+    "candidate": {
+      "elbo_err": 0.010206947188005522,
+      "gskl": 0.0017080861452052343,
+      "mmtv": 0.00842765786777461,
+      "rmse": 0.0025741151848317576,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.5035460367442383,
+          -0.2505166397584703,
+          1.2866168162304421e-05,
+          0.2468133909041917,
+          0.4968165414052299
+        ]
+      ],
+      "post_cov": [
+        [
+          0.40212828993361904,
+          0.2819974299183465,
+          0.20635379379770416,
+          -0.07022395863660849,
+          0.17281943732852253
+        ],
+        [
+          0.2819974299183465,
+          0.5776370958384619,
+          0.26862184510725545,
+          -0.0035463537423906922,
+          0.12144110251869156
+        ],
+        [
+          0.20635379379770416,
+          0.26862184510725545,
+          0.2908837637997217,
+          -0.10133316843855877,
+          -0.08175470031720748
+        ],
+        [
+          -0.07022395863660849,
+          -0.0035463537423907027,
+          -0.10133316843855877,
+          0.4656063238529768,
+          0.11740675732325648
+        ],
+        [
+          0.17281943732852262,
+          0.12144110251869157,
+          -0.08175470031720748,
+          0.1174067573232565,
+          0.44662056408933765
+        ]
+      ]
+    },
+    "returned": {
+      "elbo_err": 0.010206947188005522,
+      "gskl": 0.0017080861452052343,
+      "mmtv": 0.00842765786777461,
+      "rmse": 0.0025741151848317576,
+      "moment_method": "affine",
+      "post_mean": [
+        [
+          -0.5035460367442383,
+          -0.2505166397584703,
+          1.2866168162304421e-05,
+          0.2468133909041917,
+          0.4968165414052299
+        ]
+      ],
+      "post_cov": [
+        [
+          0.40212828993361904,
+          0.2819974299183465,
+          0.20635379379770416,
+          -0.07022395863660849,
+          0.17281943732852253
+        ],
+        [
+          0.2819974299183465,
+          0.5776370958384619,
+          0.26862184510725545,
+          -0.0035463537423906922,
+          0.12144110251869156
+        ],
+        [
+          0.20635379379770416,
+          0.26862184510725545,
+          0.2908837637997217,
+          -0.10133316843855877,
+          -0.08175470031720748
+        ],
+        [
+          -0.07022395863660849,
+          -0.0035463537423907027,
+          -0.10133316843855877,
+          0.4656063238529768,
+          0.11740675732325648
+        ],
+        [
+          0.17281943732852262,
+          0.12144110251869157,
+          -0.08175470031720748,
+          0.1174067573232565,
+          0.44662056408933765
+        ]
+      ]
+    }
+  }
+}
