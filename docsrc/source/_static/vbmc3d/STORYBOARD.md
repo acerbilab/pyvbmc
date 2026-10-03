@@ -213,11 +213,6 @@ steps play the chord's tones upwards, so the time-lapse turns them into an
 accelerating arpeggio. The score ducks under the voice. `scripts/mux.py`
 sets the loudness to -16 LUFS.
 
-## Not built yet
-
-- **A 1920 x 1080 render.** The drafts are 1280 x 720, which software
-  rendering records in about 40 minutes.
-
 ## Claims to check
 
 - *Tens of thousands of evaluations* for MCMC. The matched-budget

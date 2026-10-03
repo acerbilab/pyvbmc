@@ -151,15 +151,18 @@ node scripts/record.mjs "wordmark.html?hud=0" OUT/frames --from 80 --to 82  # PN
 
 The header of the script lists its options. The playback controls are left
 out; `hud=0` leaves out the captions and telemetry too, and at 640 x 360
-the captions overlap the wordmark. Only a recording that starts at 0 shows
+the captions overlap the wordmark. The text is sized in CSS pixels, so a
+larger `--size` shrinks it against the frame; `--scale` keeps the layout of
+`--size` and records it sharper (`--size 1280x720 --scale 1.5` gives
+1920 x 1080 frames composed as at 1280 x 720). Only a recording that starts at 0 shows
 the page as it plays: one that starts later begins with the camera where
 that segment wants it. A GIF of an excerpt cuts from its last frame to its
 first where it loops; a recording of the whole loop starts and ends on the
 wordmark.
 
-Under software rendering a frame takes about 0.18 s at 960 x 540 and
-0.45 s at 1280 x 720, so the whole loop at 30 fps (2744 frames) takes about
-20 minutes. The grain and scanlines of the post-processing change every
+Under software rendering a frame takes about 0.18 s at 960 x 540, 0.45 s at
+1280 x 720 and 0.76 s at 1920 x 1080 (`--size 1280x720 --scale 1.5`), so
+the whole loop at 30 fps (2744 frames) takes about 20 minutes at 1280 x 720. The grain and scanlines of the post-processing change every
 pixel of every frame and dominate the size: the loop at 1280 x 720 is about
 118 MB at the default CRF 18 and about 37 MB with `--denoise 2:2:5:5
 --crf 24`. The finale GIF above is about 9 MB (21 MB without the
@@ -185,9 +188,14 @@ python -u scripts/verify_voice.py V                          # every line as wri
 python -u scripts/export_intro.py                             # trace_intro.js (needs pybads)
 node scripts/record.mjs "film.html?events=1" V/events.json    # the times the score follows
 python -u scripts/make_score.py V                            # V/score.wav, V/mix.wav
-node scripts/record.mjs film.html V/film_silent.mp4 --size 1280x720 --denoise 2:2:5:5 --crf 23
+node scripts/record.mjs film.html V/film_silent.mp4 --size 1280x720 --scale 1.5 --denoise 2:2:5:5 --crf 21
 python -u scripts/mux.py V/film_silent.mp4 V/mix.wav V/film.mp4
 ```
+
+The film is mastered at 1920 x 1080 twice, with captions as above and
+without (`film.html?captions=0`), and the clean master goes out with
+`V/narration.srt`, the captions as subtitles. Without `--scale 1.5` (and at
+`--crf 23`) the recording is a 1280 x 720 draft, which takes half the time.
 
 `make_voice.py` needs an ElevenLabs API key (in `ELEVENLABS_API_KEY` or
 `~/.config/elevenlabs/api_key`), or Kokoro with the Kokoro engine;
@@ -196,7 +204,6 @@ python -u scripts/mux.py V/film_silent.mp4 V/mix.wav V/film.mp4
 `make_score.py` NumPy, SciPy and soundfile (their docstrings say more).
 `record.mjs` needs an ffmpeg with the `hqdn3d` filter for `--denoise`, and
 `mux.py` one with `loudnorm`; the ffmpeg of `imageio-ffmpeg` has both.
-`film.html?captions=0` leaves out the captions, for a clean version.
 Re-voicing a line moves every scene after it. The page places its events
 relative to the lines (the timeline section of `film.html`), so they move
 with them. The score follows the page's events. After a change to the

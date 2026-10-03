@@ -49,13 +49,13 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 ### The video
 
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
-the commands. In this order:
+the commands. The film is mastered (`NOTES.md`, Status); what is left is
+to publish it:
 
-1. **Review the draft** (1280 x 720, Travis's voice, the synthesized
-   score) for the pictures, the pacing, the script and the sound. Before the
-   drafts, the score was checked only as levels and a spectrogram.
-2. **Render at 1920 x 1080**, with and without captions, and write the
-   `.srt` of the final timeline.
+1. **Upload the clean master to YouTube** with its `.srt`.
+2. **Link the film** from the documentation and the README. Where it goes
+   is part of the second of the next actions above, which page the
+   documentation shows and how.
 
 ## Constraints
 

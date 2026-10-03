@@ -14,11 +14,13 @@ with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
 it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
 another run (Seeds, below).
 
-The film (`film.html`) is at its sixth draft: narrated by Travis
-(ElevenLabs), scored, recorded at 1280 x 720 and muxed at -16 LUFS, with
-every line passing `scripts/verify_voice.py`. The review of that draft and
-the render at 1920 x 1080 remain (`TODO.md`, "The video"). The drafts and
-the voice takes are local media (`README.md`, "The film").
+The film (`film.html`) is finished: its sixth draft, narrated by Travis
+(ElevenLabs) with every line passing `scripts/verify_voice.py`, was
+approved, and is mastered at 1920 x 1080 and -16 LUFS with captions and
+without, beside the `.srt` of its captions. The two masters match frame for
+frame outside the captions, and each `.srt` cue matches the timeline that
+the page plays. Publishing it remains (`TODO.md`, "The video"). The masters,
+drafts and voice takes are local media (`README.md`, "The film").
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
@@ -214,7 +216,12 @@ the README asks to keep in step. Other decisions:
   customer support, meditation), so the choice came from auditions of six
   lines of this script. Travis was chosen over Sebastian and Tess, both
   British. The library's most cloned voices, heard in many other videos,
-  were left out.
+  were left out. After the sixth draft, a second round on the same lines
+  tried Tamsin (British), two voices named Adam (ElevenLabs' own "Dominant,
+  Firm" and a British narrator) and two named Thaddeus (American), and
+  Travis was kept. His notice period is two years, the longest an owner
+  can set: if he is withdrawn from the library, he can still voice new
+  lines for that long, and the takes already made stay usable for good.
 - *Both methods explore.* Lines `o2` and `a3` use the word that scientists
   and the literature on active learning use. Bayesian optimization "decides
   where to explore next" and PyVBMC "explores places that are plausible and
