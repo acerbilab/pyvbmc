@@ -2,7 +2,7 @@
 // With OUT ending in .json, write instead the JSON that the page puts in its <pre id="events">
 // (film.html?events=1: the times that scripts/make_score.py follows).
 //
-//   node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--controls]
+//   node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--scale K] [--controls]
 //                                    [--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]
 //
 // PAGE is a page of the folder above this one, with any query parameters ("wordmark.html",
@@ -16,6 +16,11 @@
 // loop) with dt = 1 / fps. Only a recording that starts at 0 is the page as it plays: one that starts
 // later begins with the camera where that segment wants it, not where playback would have left it.
 // The playback controls are hidden unless --controls is given; the page's hud=0 hides the captions too.
+//
+// --size is the page's layout in CSS pixels, and --scale (default 1) its device pixel ratio, so that the
+// frames are size x scale pixels. The text and readouts are sized in CSS pixels, so a larger --size
+// shrinks them against the frame, while --scale keeps the layout of --size and draws it sharper:
+// --size 1280x720 --scale 1.5 gives frames of 1920 x 1080 that are composed as at 1280 x 720.
 import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -24,7 +29,7 @@ import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const USAGE = "usage: node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--controls] "
+const USAGE = "usage: node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--scale K] [--controls] "
   + "[--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]";
 const pos = [], opt = {};
 for (const argv = process.argv.slice(2); argv.length;) {
@@ -38,6 +43,7 @@ const [page, out] = pos;
 const kind = /\.mp4$/i.test(out) ? "mp4" : /\.gif$/i.test(out) ? "gif" : /\.json$/i.test(out) ? "json" : "frames";
 const FPS = Number(opt.fps || (kind === "gif" ? 15 : 30));
 const [W, H] = (opt.size || "1280x720").split("x").map(Number);
+const SCALE = Number(opt.scale || 1);
 const CHROME = process.env.CHROME || {
   win32: "C:/Program Files/Google/Chrome/Application/chrome.exe",
   darwin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -81,7 +87,7 @@ async function evaluate(expression) {
   return m.result?.result?.value;
 }
 
-await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 1, mobile: false });
+await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: SCALE, mobile: false });
 await send("Page.navigate", { url });
 let ready = false;
 for (let k = 0; k < 600 && !ready; k++) { ready = await evaluate("!!window.vbmcCapture").catch(() => false); if (!ready) await sleep(100); }
@@ -132,7 +138,8 @@ for (let k = 0; k < n; k++) {
   if (k % 150 === 0) console.log(`frame ${k} of ${n}, t = ${(T0 + k / FPS).toFixed(2)} s of a ${END.toFixed(2)} s loop (${((Date.now() - started) / 1000).toFixed(0)} s)`);
 }
 await sink.close();
-console.log(`wrote ${out}: ${n} frames at ${FPS} fps, ${W} x ${H}, in ${((Date.now() - started) / 1000).toFixed(0)} s`);
+console.log(`wrote ${out}: ${n} frames at ${FPS} fps, ${Math.round(W * SCALE)} x ${Math.round(H * SCALE)}, `
+  + `in ${((Date.now() - started) / 1000).toFixed(0)} s`);
 sock.close(); chrome.kill(); server.close();
 await sleep(500);
 try { rmSync(profile, { recursive: true, force: true }); } catch { /* Chrome may still hold it on Windows */ }
