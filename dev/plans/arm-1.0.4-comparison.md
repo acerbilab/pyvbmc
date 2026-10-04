@@ -52,6 +52,9 @@ at production defaults.
    changelog, the README and the release notes) wait for Arm 0; the
    promotion of the new reference, the S-VBMC headline and the
    documentation do not.
+7. **Arm 0's data stay internal**: its archive and tracked copies, as for
+   the before arm, and no public asset in the release.
+8. **The speed measurement** is the one under "Speed" below.
 
 ## Constraints
 
@@ -75,7 +78,14 @@ commit is cut from `dev-next` before any such change lands, or from the
 after arm's commit with the harness change merged onto it. `prepare
 --compare` refuses any other before a case runs. The commit enters
 `dev-next` by a merge, not a squash: the comparison compares the package
-code of the two commits in the history of the checkout it runs in.
+code of the two commits in the history of the checkout it runs in. The
+campaign's harness checkout stays at the commit from its first
+submission to its hand-back, so `dev-next` moves on once the commit is
+named: the merge of this work is named at once, and the tips' wording and
+the release date wait until then. The S-VBMC headline does not, since its
+code, docstring and tip lie under `pyvbmc/svbmc/`, which the check leaves
+out. A change to the release code's numerics, which would also have the
+after arm run again, is decided before Arm 0 launches.
 
 ## Design
 
@@ -201,17 +211,12 @@ checks them before the rest is submitted.
 
 ### Speed
 
-Proposed, for the PI: on the developer's machine, one process at a time
-with one BLAS thread, a legacy campaign and a campaign of the release code
-of the population harness on the same configurations and seeds (the
-`production` suite at a few seeds), compared on each run's wall time
-(`wall_s` of the sidecars) per configuration; the changelog's "Runs are
-faster" takes its figures from it.
-
-### Open for the PI
-
-- Whether the PyVBMC 1.5 release attaches a public asset of Arm 0, as it
-  does the after arm's, since its claims against 1.0.4 rest on it.
+On the developer's machine, one process at a time with one BLAS thread, a
+legacy campaign and a campaign of the release code of the population
+harness on the same configurations and seeds (the `production` suite at a
+few seeds), compared on each run's wall time (`wall_s` of the sidecars)
+per configuration (PI, 2026-10-04); the changelog's "Runs are faster"
+takes its figures from it.
 
 ## Live checklist
 
