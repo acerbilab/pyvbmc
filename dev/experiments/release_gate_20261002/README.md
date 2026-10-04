@@ -40,7 +40,7 @@ machine that holds them lists them in its gitignored
 - **The environment**, one conda environment built with
   `campaign_env.sh build` from the release commit's frozen
   `campaign_requirements.txt`: Python 3.12.14, numpy 2.5.2, scipy 1.18.1,
-  cma 4.4.4, torch 2.14.0+cpu and the other 30 pins, with zstd 1.5.7,
+  cma 4.4.4, torch 2.14.0+cpu and the other 31 pins, with zstd 1.5.7,
   gh 2.102.0 and git 2.56.0 from conda-forge; `check-env` passed at the
   build and at every submission and finish. PyVBMC and gpyreg were
   imported from the source trees.
@@ -49,7 +49,7 @@ machine that holds them lists them in its gitignored
   139, 75, 60, 55, 76, 14 and 54 tests, none skipped; the interpreter was
   the environment's and the checkout clean afterwards.
 - **The jobs.** Every job requested the node family's feature (`u8`,
-  AMD EPYC 7452 nodes of 64 cores) with `--hint=nomultithread` and one
+  AMD EPYC 7452 nodes) with `--hint=nomultithread` and one
   CPU, so that each task had a physical core to itself (`verify` checks
   the affinity of every record); no partition was named. From 14:32 on,
   two nodes of the family that had failed their prolog twice each were
@@ -112,8 +112,7 @@ requeued in a held state were released by hand. The pending tasks
 cancelled at 13:53 and 14:32 (406 of the before arm, 293 of the after
 arm) never ran and hold no record. The accounting of every job, the
 cancelled and requeued ones included, is `slurm/sacct.txt` in each
-archive, and the scheduler started at most 20 tasks a cycle, which
-capped every campaign's throughput below its throttle.
+archive.
 
 ## Reference population, before arm (`population_before/`)
 
@@ -185,8 +184,7 @@ unfinished, 2560 selected runs in all. From `summary.json` and
 | `multisensory_s1_D6_svbmc` | 350 | 341 (0.97) | 0.91 | 320 / 320 | 329 | 2.0 [1.7, 2.2] |
 
 The usable fraction is the share of filtered runs under the house
-thresholds for a single run, which is poor by construction on the
-multimodal targets, the regime stacking is for. Accounting: elapsed
+thresholds for a single run. Accounting: elapsed
 median 3.9 min, quartiles 2.5 and 6.2 min, maximum 11.8 min
 (`student_D8_noise3_svbmc`); about 220 CPU-hours; peak resident set
 349 MB, against 45 min and 2 GB; six nodes of the family. The finish's
@@ -286,9 +284,11 @@ campaign directory.
 | `release-gate-public-20261002` | `population_after.public.tar.gz.000` | 656433975 | `e7a7437d2813b608b976fbdc7cebfb2c917353793cc4bcd4baabab2aad544395` |
 | `release-gate-public-20261002` | `pools.public.tar.gz.000` | 259769576 | `d36e0be85510866a6dabd9840d1987cbed0bc45a7531a452a62fe33adb685e05` |
 
-The after arm's public asset holds 12007 files: the 4800 numeric files
-(traces and posterior arrays) of the 2400 verified cases and the 7206
-tracked copies, with the 2400 boost pickles left out; the pools' holds
-8797 files: the 2930 runs, their 2930 completion records redacted as the
-copies are, and the 6 tracked copies. Each asset's `public.json` records
-the code that built it.
+The after arm's public asset holds 12008 files: the 4800 numeric files
+(the trace and the posterior arrays of each of the 2400 verified cases),
+the 7206 tracked copies, their `redaction.json`, and `public.json`,
+which records the code that built the asset; the 2400 boost pickles are
+left out. The pools' holds 8798 files: the 5860 run files (each run's
+`.npz` and its `.json`, the latter redacted as the copies are), the 2930
+completion records, the 6 tracked copies, their `redaction.json` and
+`public.json`.
