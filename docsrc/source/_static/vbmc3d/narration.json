@@ -9,7 +9,7 @@
       "id": "cost",
       "lead": 1.0,
       "lines": [
-        { "id": "p1", "text": "Your model's likelihood takes minutes to compute." },
+        { "id": "p1", "text": "Your model's likelihood takes seconds, or minutes, to compute." },
         { "id": "p2", "text": "You want the posterior over its parameters.", "gap": 0.5 },
         { "id": "p3", "text": "The posterior tells you how plausible each setting is, given your data." },
         { "id": "p4", "text": "Picture the posterior as a landscape.", "gap": 0.7 },
@@ -111,7 +111,8 @@
       "lines": [
         { "id": "f1", "text": "All this from a hundred evaluations." },
         { "id": "f2", "text": "Markov chain Monte Carlo would have needed tens of thousands.", "gap": 0.5 },
-        { "id": "f3", "text": "Weeks of waiting became an afternoon.", "gap": 0.7 }
+        { "id": "f3", "text": "Weeks of waiting became an afternoon.", "gap": 0.7 },
+        { "id": "f4", "text": "At a second per evaluation, hours become minutes.", "gap": 0.6 }
       ]
     },
     { "id": "wordmark", "min": 7.0, "lines": [] },

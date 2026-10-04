@@ -1,6 +1,6 @@
 # The PyVBMC video: storyboard
 
-A narrated video of about two and a half minutes that explains what PyVBMC
+A narrated video of under three minutes that explains what PyVBMC
 does. `film.html` draws it in the wireframe style of `wordmark.html` and
 plays that page's run (the banana, seed 42). The page itself stays an
 unnarrated exhibit that a viewer can scrub and explore. The video walks
@@ -72,7 +72,8 @@ script changed, and `narration.json` can switch back to it.
   The one on the MCMC count, in scene 2 and in the payoff, reads "\*Median of 100 runs:
   evaluations that emcee, a black-box MCMC sampler, needs to match the
   accuracy of a typical PyVBMC run on this posterior (mean marginal total
-  variation). MCMC gives no evidence estimate."
+  variation). MCMC gives no evidence estimate. Times are total compute
+  cost."
   The one on line `w3` of scene 6 reads "\*Averaging the surrogate over
   the mixture has a closed form, Bayesian quadrature (O'Hagan 1991;
   Rasmussen & Ghahramani 2003, "Bayesian Monte Carlo")."
@@ -81,17 +82,17 @@ script changed, and `narration.json` can switch back to it.
 
 Times are those of Travis's takes and move whenever a scene is re-voiced.
 
-### 1. The cost of a posterior (0:00–0:17)
+### 1. The cost of a posterior (0:00–0:18)
 
 | Line | Narration | Picture |
 |---|---|---|
-| p1 | Your model's likelihood takes minutes to compute. | The frame fades in from black on the floor grid, seen from low. One evaluation drops and lands. A label beside it says *3 MIN*. |
+| p1 | Your model's likelihood takes seconds, or minutes, to compute. | The frame fades in from black on the floor grid, seen from low. One evaluation drops and lands just before "minutes". A label beside it says *3 MIN*. |
 | p2 | You want the posterior over its parameters. | Labels on the floor edges, *parameter 1* and *parameter 2*. The camera begins a slow orbit. |
 | p3 | The posterior tells you how plausible each setting is, given your data. | A crosshair crosses the floor with the label *HOW PLAUSIBLE?* |
 | p4 | Picture the posterior as a landscape. | The true landscape rises out of the floor as a dim grey wireframe. |
 | p5 | The higher the ground, the more plausible the setting. | Labels on the peak and on the flat between the arms, *MORE PLAUSIBLE* and *LESS PLAUSIBLE*. |
 
-### 2. Markov chain Monte Carlo (0:17–0:26)
+### 2. Markov chain Monte Carlo (0:18–0:27)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -99,7 +100,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | m2 | It needs tens of thousands of evaluations. | The ensemble speeds up until its dots cover the ridge. The count stops at *27,828\**. The footnote appears in the bottom right. |
 | m3 | At a few minutes each, you would wait weeks. | The cost readout reaches *8.3 weeks*. |
 
-### 3. Bayesian optimization (0:26–0:41)
+### 3. Bayesian optimization (0:27–0:42)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -107,14 +108,14 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | o2 | It learns the landscape from the points it has seen, then decides where to explore next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
 | o3 | PyVBMC does the same for the whole posterior. | The true posterior glows magenta on the floor. The glow spreads from the best fit along the whole banana. |
 
-### 4. In the dark (0:41–0:47)
+### 4. In the dark (0:42–0:48)
 
 | Line | Narration | Picture |
 |---|---|---|
 | s1 | We start in the dark. | The grey landscape, the points and the glow fade out. The readout switches to *PYVBMC* at zero evaluations. |
 | s2 | Each evaluation reveals the height at a single point. | The ten evaluations of the initial design drop one by one. |
 
-### 5. The surrogate (0:47–1:04)
+### 5. The surrogate (0:48–1:05)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -124,7 +125,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | g4 | Everywhere else it wobbles. | The camera pulls back over the outskirts. Readout `UNCERTAINTY wibbly-wobbly`. |
 | g5 | The more it wobbles, the less it knows. | The colour key appears: amber unsure, cyan sure. |
 
-### 6. The mixture (1:04–1:25)
+### 6. The mixture (1:05–1:26)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -135,7 +136,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | q2 | This is its first guess at the posterior. | The magenta sheet beside the surrogate's ridge. |
 | q3 | For now it is a crude one. | Hold. The two components are visibly blunter than the ridge. The samples and the footnote fade with the scene. |
 
-### 7. Where to evaluate next (1:25–1:40)
+### 7. Where to evaluate next (1:26–1:41)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -143,7 +144,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | a2 | An optimizer would head for the peak. | PyBADS's points from scene 3 flicker at the peak, with the label *OPTIMIZER*. |
 | a3 | PyVBMC is after the whole posterior, so it explores places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. The label *active learning* appears on the beam over the first evaluation. |
 
-### 8. The loop (1:40–1:45)
+### 8. The loop (1:41–1:46)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -151,7 +152,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | l2 | Update the surrogate. | It lights *SURROGATE* as the surrogate refits. |
 | l3 | Refit the mixture. | It lights *MIXTURE* as the mixture refits. |
 
-### 9. Time-lapse (1:45–2:03)
+### 9. Time-lapse (1:46–2:04)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -159,14 +160,14 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | l4 | Round after round, the wobbling dies down. | The sheet turns from amber to cyan. The `wibbly-wobbly` readout fades. |
 | l5 | The mixture grows new components to follow the ridge. | The component count climbs from 2 to 21, then to 50 at the final boost. |
 
-### 10. The reveal (2:03–2:09)
+### 10. The reveal (2:04–2:10)
 
 | Line | Narration | Picture |
 |---|---|---|
 | r1 | PyVBMC never saw the true landscape. | The camera orbits. |
 | r2 | Here it is. | The grey landscape rises into place under the surrogate and the mixture. Where they coincide, the wires add up to white. |
 
-### 11. The evidence (2:09–2:18)
+### 11. The evidence (2:10–2:19)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -174,22 +175,23 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | e2 | You need that number to compare two models. | Hold. |
 | e3 | The estimate lands close to the true value. | *TRUE +0.000* appears beside it. |
 
-### 12. The payoff (2:18–2:28)
+### 12. The payoff (2:19–2:33)
 
 | Line | Narration | Picture |
 |---|---|---|
 | f1 | All this from a hundred evaluations. | The scene dims. *PYVBMC 105 EVALUATIONS* appears in the centre. |
 | f2 | Markov chain Monte Carlo would have needed tens of thousands. | Beside it, *MCMC 27,828\* EVALUATIONS*, the budget of scene 2. The footnote returns. |
-| f3 | Weeks of waiting became an afternoon. | Under each count, its cost, *5 h 15 min* and *8.3 weeks*, then *AT 3 MIN PER EVALUATION · A 2-PARAMETER EXAMPLE*. |
+| f3 | Weeks of waiting became an afternoon. | Under each count, its cost, *5 h 15 min* and *8.3 weeks*, with *AT 3 MIN EACH* between them, then *A 2-PARAMETER EXAMPLE*. |
+| f4 | At a second per evaluation, hours become minutes. | A second row of costs, *2 min* and *7 h 44 min*, with *AT 1 S EACH* between them. |
 
-### 13. The wordmark (2:28–2:35)
+### 13. The wordmark (2:33–2:40)
 
 No narration. This is the page's finale. The camera pulls up until the
 posterior is the V of the wordmark. "Py" and "BMC" appear beside it. Then
 *1.5* appears after the word, smaller and in cyan, its top on the letters'
 cap line, as the version hangs from the top of `logo.svg`.
 
-### 14. End card (2:35–2:43)
+### 14. End card (2:40–2:48)
 
 No narration. The wordmark dims behind **PyVBMC 1.5** and the method's
 name, Variational Bayesian Monte Carlo, then `pip install pyvbmc` and
@@ -229,9 +231,18 @@ sets the loudness to -16 LUFS.
   uses 85, so the comparison does not flatter PyVBMC.
 - *Far fewer evaluations* for Bayesian optimization. The PyBADS run of
   scene 3 reaches the peak in 67 evaluations.
+- *Seconds, or minutes*. The README recommends PyVBMC from about half a
+  second per evaluation.
 - *Weeks* and *an afternoon* assume 3 min per evaluation, as the readout
   says. 27,828 evaluations take 8.3 weeks and 105 take 5 h 15 min.
-  PyVBMC's own computing, about a minute on this problem, is not counted.
+- *Hours become minutes* at 1 s per evaluation: 27,828 evaluations take
+  7 h 44 min, and PyVBMC's 105 take 2 min with its own computing.
+- The payoff's times are total compute cost, as the footnote says: the
+  evaluations at the row's cost each, and for PyVBMC its own computing
+  as well, 18.6 s on this run (the median of 10 runs of seed 42 with BLAS
+  single-threaded, 16.6 to 38.2 s, on the machine that made the trace;
+  `VBMC_OWN_S` in `film.html`). It changes neither rounded time. The
+  readout during the film counts the evaluations alone.
 - *A hundred evaluations* holds for this two-parameter example. PyVBMC
   needs more evaluations as the number of parameters grows, hence the label.
 - *The estimate lands close to the true value*. The ELBO is −0.019 and the

@@ -131,8 +131,10 @@
   #telemetry dd small.nod { margin-left: 10px; color: var(--gp-hot); letter-spacing: 0.06em; }
   #telemetry .method dd { color: var(--gp); letter-spacing: 0.08em; }
   #payoff, #card { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; opacity: 0; text-align: center; }
-  #payoff .cols { display: flex; gap: clamp(48px, 9vw, 180px); justify-content: center; }
+  #payoff .cols { display: flex; gap: clamp(24px, 3.5vw, 70px); justify-content: center; }
   #payoff .col { opacity: 0; }
+  #payoff #payL { opacity: 1; }
+  #payL span { font-family: var(--mono); font-style: normal; font-size: clamp(10px, 0.3vw + 8px, 13px); letter-spacing: 0.18em; color: var(--ink-dim); vertical-align: middle; }
   #payoff h3 { margin: 0 0 12px; font-weight: 500; font-size: clamp(11px, 0.4vw + 8px, 15px); letter-spacing: 0.3em; }
   #payoff .n { font-size: clamp(36px, 3.4vw + 10px, 80px); font-weight: 500; font-variant-numeric: tabular-nums; }
   #payoff .u { font-size: clamp(10px, 0.3vw + 8px, 13px); letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 20px; }
@@ -170,14 +172,15 @@
   </div>
   <p id="sub"></p>
   <p id="fnoteBQ" class="hud">*Averaging the surrogate over the mixture has a closed form, Bayesian quadrature (O’Hagan 1991; Rasmussen &amp; Ghahramani 2003, “Bayesian Monte Carlo”).</p>
-  <p id="fnote" class="hud">*Median of 100 runs: evaluations that emcee, a black-box MCMC sampler, needs to match the accuracy of a typical PyVBMC run on this posterior (mean marginal total variation). MCMC gives no evidence estimate.</p>
+  <p id="fnote" class="hud">*Median of 100 runs: evaluations that emcee, a black-box MCMC sampler, needs to match the accuracy of a typical PyVBMC run on this posterior (mean marginal total variation). MCMC gives no evidence estimate. Times are total compute cost.</p>
 
   <div id="payoff"><div>
     <div class="cols">
-      <div class="col" id="payV"><h3 style="color: var(--gp)">PYVBMC</h3><div class="n" id="payVn"></div><div class="u">EVALUATIONS</div><div class="t" id="payVt"></div></div>
-      <div class="col" id="payM"><h3 style="color: #aab4ff">MCMC</h3><div class="n" id="payMn"></div><div class="u">EVALUATIONS</div><div class="t" id="payMt"></div></div>
+      <div class="col" id="payV"><h3 style="color: var(--gp)">PYVBMC</h3><div class="n" id="payVn"></div><div class="u">EVALUATIONS</div><div class="t" id="payVt"></div><div class="t" id="payVs"></div></div>
+      <div class="col" id="payL" aria-hidden="true"><h3>&nbsp;</h3><div class="n">&nbsp;</div><div class="u">&nbsp;</div><div class="t" id="payLt"><span>AT 3 MIN EACH</span></div><div class="t" id="payLs"><span>AT 1 S EACH</span></div></div>
+      <div class="col" id="payM"><h3 style="color: #aab4ff">MCMC</h3><div class="n" id="payMn"></div><div class="u">EVALUATIONS</div><div class="t" id="payMt"></div><div class="t" id="payMs"></div></div>
     </div>
-    <div class="note">AT 3 MIN PER EVALUATION &middot; A 2-PARAMETER EXAMPLE</div>
+    <div class="note">A 2-PARAMETER EXAMPLE</div>
   </div></div>
 
   <div id="card"><div>
@@ -553,7 +556,8 @@ const T_TRUTH = LN.r2.t0 - 0.2, T_DEN = LN.e1.t0, T_WORD = SC.wordmark.t0, T_CAR
 const segWord = { t0: T_WORD };
 
 // The opening (trace_intro.js): one evaluation, the landscape, an MCMC chain and a PyBADS run on it.
-const T_PROBE = LN.p1.t0 + 0.5, T_LAND = T_PROBE + 1.0, T_DARK = LN.s1.t0;
+// The evaluation lands, and its label "3 MIN" appears, just before the narration's "minutes" (2.7 s into p1).
+const T_PROBE = LN.p1.t0 + 1.5, T_LAND = T_PROBE + 1.0, T_DARK = LN.s1.t0;
 const T_CHAIN = [LN.m1.t0, LN.m3.t0 + 0.6];   // the chain grows from one state to all of them over this span
 const T_BADS = [LN.o1.t0 + 0.8, LN.o2.t1];
 const T_SPREAD = LN.o3.t0 + 0.3;
@@ -1051,20 +1055,26 @@ window.addEventListener("keydown", (e) => {
 });
 FILM.scenes.forEach((s) => { const i = document.createElement("i"); i.className = "major"; i.style.left = (100 * s.t0 / END).toFixed(3) + "%"; $("ticks").appendChild(i); });
 
-// Every evaluation is counted at 3 minutes, the cost that the narration assumes.
+// Every evaluation is counted at 3 minutes, the film's worked example (the payoff adds 1 s).
 const MIN_PER_EVAL = 3;
 const pad = (n, w) => String(n).padStart(w, "0");
 const signed = (x, d) => (x < 0 ? "−" : "+") + Math.abs(x).toFixed(d);
 const fmtN = (n) => n.toLocaleString("en-US");
-function fmtTime(n) {
-  const m = MIN_PER_EVAL * n;
+// The payoff adds PyVBMC's own computing on this run to its evaluations: the median of 10 runs, BLAS
+// single-threaded, on the machine that made the trace (STORYBOARD.md, "Claims to check").
+const VBMC_OWN_S = 18.6;
+function fmtSeconds(s) {
+  const m = Math.round(s / 60);
   if (m < 60) return `${m} min`;
   if (m < 2880) return `${Math.floor(m / 60)} h ${pad(m % 60, 2)} min`;
   if (m < 20160) return `${(m / 1440).toFixed(1)} days`;
   return `${(m / 10080).toFixed(1)} weeks`;
 }
-$("payVn").textContent = fmtN(PTS.length); $("payVt").textContent = fmtTime(PTS.length);
-$("payMn").textContent = fmtN(CH.n) + "*"; $("payMt").textContent = fmtTime(CH.n);
+const fmtTime = (n) => fmtSeconds(60 * MIN_PER_EVAL * n);
+$("payVn").textContent = fmtN(PTS.length); $("payMn").textContent = fmtN(CH.n) + "*";
+// The payoff's two rows of costs: at the readout's 3 min per evaluation, and at 1 s.
+$("payVt").textContent = fmtSeconds(60 * MIN_PER_EVAL * PTS.length + VBMC_OWN_S); $("payMt").textContent = fmtTime(CH.n);
+$("payVs").textContent = fmtSeconds(PTS.length + VBMC_OWN_S); $("payMs").textContent = fmtSeconds(CH.n);
 
 const hud = {};
 function setText(id, value, html) { if (hud[id] !== value) { hud[id] = value; if (html) $(id).innerHTML = value; else $(id).textContent = value; } }
@@ -1101,7 +1111,8 @@ function updateHud(ts, landed) {
 
   setAlpha("payoff", win(ts, LN.f1.t0 - 0.2, T_WORD + 0.3, 0.4, 0.8));
   setAlpha("payV", ease((ts - LN.f1.t0) / 0.5)); setAlpha("payM", ease((ts - LN.f2.t0) / 0.5));
-  setAlpha("payVt", ease((ts - LN.f3.t0) / 0.5)); setAlpha("payMt", ease((ts - LN.f3.t0 - 0.3) / 0.5));
+  setAlpha("payVt", ease((ts - LN.f3.t0) / 0.5)); setAlpha("payLt", ease((ts - LN.f3.t0 - 0.15) / 0.5)); setAlpha("payMt", ease((ts - LN.f3.t0 - 0.3) / 0.5));
+  setAlpha("payVs", ease((ts - LN.f4.t0) / 0.5)); setAlpha("payLs", ease((ts - LN.f4.t0 - 0.15) / 0.5)); setAlpha("payMs", ease((ts - LN.f4.t0 - 0.3) / 0.5));
   document.querySelector("#payoff .note").style.opacity = ease((ts - LN.f3.t0 - 0.8) / 0.6).toFixed(3);
   setAlpha("card", ease((ts - T_CARD - 0.3) / 1.0));
   setAlpha("fnoteBQ", win(ts, LN.w3.t0 + 0.4, SC.mixture.t1, 0.4, 0.6));

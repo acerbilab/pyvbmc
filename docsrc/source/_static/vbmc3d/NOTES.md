@@ -14,13 +14,18 @@ with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
 it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
 another run (Seeds, below).
 
-The film (`film.html`) is finished: its sixth draft, narrated by Travis
-(ElevenLabs) with every line passing `scripts/verify_voice.py`, was
-approved, and is mastered at 1920 x 1080 and -16 LUFS with captions and
-without, beside the `.srt` of its captions. The two masters match frame for
-frame outside the captions, and each `.srt` cue matches the timeline that
-the page plays. Publishing it remains (`TODO.md`, "The video"). The masters,
-drafts and voice takes are local media (`README.md`, "The film").
+The film (`film.html`) is in its seventh draft. The sixth, narrated by
+Travis (ElevenLabs) with every line passing `scripts/verify_voice.py`, was
+approved and mastered at 1920 x 1080 and -16 LUFS, with captions and
+without, beside the `.srt` of its captions; the two masters matched frame
+for frame outside the captions, and each `.srt` cue matched the timeline
+that the page played. The director then changed the film's framing (*The
+framing*, below): scenes 1 and 12 were voiced again, every line passing
+`verify_voice.py`, and the seventh draft, at 1280 x 720, is to be reviewed
+before the masters are made again (`TODO.md`, "The video"). The masters,
+drafts and voice takes are local media (`README.md`, "The film"); the
+sixth draft's takes are kept beside the current ones
+(`voice-travis-draft6/`).
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
@@ -205,9 +210,28 @@ the README asks to keep in step. Other decisions:
   optimization is a real PyBADS run with the same plausible box, which ends
   at the true maximum.
 - *A cost readout, not a speed factor.* The storyboard first had the
-  time-lapse show its playback speed. Counting every evaluation at the
-  3 minutes of the narration's first line puts the three methods on one
-  scale and leads to the payoff. The `timey-wimey` nod moved there.
+  time-lapse show its playback speed. Counting every evaluation at
+  3 minutes, the *3 MIN* of the first evaluation, puts the three methods
+  on one scale and leads to the payoff. The `timey-wimey` nod moved there.
+- *The framing* (the director, 2026-10-04). Through the sixth draft the
+  film's first line was "Your model's likelihood takes minutes to
+  compute.", and with the 3-minute readout and the payoff's "Weeks of
+  waiting became an afternoon" it anchored PyVBMC on very expensive
+  likelihoods, while the README recommends it from about half a second
+  per evaluation. A viewer whose likelihood takes a second could conclude
+  that the tool is not for them. The first line now names the range
+  ("seconds, or minutes"), the 3 minutes stay as the worked example from
+  the first evaluation to the payoff, and the payoff adds a line and a
+  second row of costs at 1 s per evaluation, where the gap between hours
+  and minutes is as plain as that between weeks and an afternoon.
+  "Waiting" stays. At 3 minutes an evaluation can occupy a whole machine,
+  so evaluating in parallel, which shortens the wait of a sampler like
+  emcee, is not free, and it never reduces the compute. The MCMC footnote
+  therefore ends "Times are total compute cost.", which states what the
+  times are; a sentence about emcee's parallel evaluation was set aside as
+  defensive about a point many viewers would not raise. PyVBMC's own
+  computing (18.6 s here) is counted in the payoff's times but not shown,
+  since it changes neither rounded time.
 - *The number of mixture components and the evidence stay hidden* until the
   narration introduces them, because a number nobody has explained is noise.
 - *The voice.* The film wants a light American accent and the delivery of a
