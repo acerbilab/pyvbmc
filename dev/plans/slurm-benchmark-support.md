@@ -1,11 +1,12 @@
 # Slurm benchmark support for the release gate
 
 Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
-to 5, Phase 7's redaction and operator's guide, and the tools of Phase 9,
-the promotion and the public assets implemented on
+to 5, Phase 7's redaction, operator's guide and brief, and the tools of
+Phase 9, the promotion and the public assets implemented on
 `feat-slurm-campaigns`, doublechecked and merged into `dev-next` after the
-PI's review; Phase 1b done and Phase 6 done but for its last checks on
-the cluster (2026-09-28/29)**. What it assumes of the cluster rests on the
+PI's review; Phases 1 and 6 done on the cluster (2026-09-25 to 10-01);
+Phase 8's campaigns run on 2026-10-02 and handed back (PR #181, merged on
+2026-10-04); Phase 9 open**. What it assumes of the cluster rests on the
 surveys of 2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of
 Phase 6 and on the records of the September pool. The harness sections
 below describe each harness as it stood before this plan's work and what
@@ -23,68 +24,47 @@ the work gave it.
 - [x] Phase 5: the stacking harness (2026-09-25).
 - [x] Phase 6: smoke campaigns on Turso (2026-09-29, and its last four
   checks on 2026-10-01; the worklog).
-- [ ] Phase 7: the operator guide, an independent review, the merge into
+- [x] Phase 7: the operator guide, an independent review, the merge into
   `dev-next`, and the brief. The guide, the redaction, two review rounds
   (2026-09-26), a doublecheck of Phase 6's commits (2026-09-29) and a
   doublecheck of the whole branch before the merge, with its fixes
-  (2026-09-30), are done, and the branch has merged into `dev-next` after
-  the PI's review. The [brief](release-gate-handoff.md), with the limits
-  Phase 6 measured ("Resources and cost"), is written (2026-10-01) and
-  awaits the PI's reading, before Phase 8 (PI, 2026-09-30).
-- [ ] Phase 8: the campaigns, on the PI's instruction, once the PI has
-  read the brief and ruled on what the pickup point leaves open.
+  (2026-09-30); the branch merged into `dev-next` after the PI's review;
+  the [brief](release-gate-handoff.md), with the limits Phase 6 measured
+  ("Resources and cost"), written on 2026-10-01.
+- [x] Phase 8: the campaigns, run on 2026-10-02 from the release commit
+  `ff3ed014` and handed back on 2026-10-04 (the worklog).
 - [ ] Phase 9: the replay fingerprints on the developer's machine.
 
-**Pickup point.** The code is complete on `dev-next`, and every test
-module of the harnesses passes on the developer's machine (the worklog,
-2026-09-30); the campaigns of Phase 8 run from the release commit. The
-cluster work in the PI's account is done (the worklog, 2026-09-28,
-2026-09-29 and 2026-10-01): Phase 1b, then Phase 6, in the four steps
-below. The PI's source trees hold gpyreg at `v1.4.0` (`682585f`), the
-release's minimum, beside `v1.3.3`, with which the smoke campaigns ran
-and which their finish requires, and the environment check passed with
-`v1.4.0` at `edd3f633`. The [brief](release-gate-handoff.md) is written,
-and the PI has ruled on what the last cluster session left open (the
-worklog, 2026-10-01). Before Phase 8:
+**Pickup point.** The campaigns of Phase 8 ran on 2026-10-02 in the
+operator's account, from the release commit `ff3ed014`, and every case of
+the four verified; the operator handed them back on 2026-10-04 (PR #181).
+Their redacted tracked copies are under
+`dev/experiments/release_gate_20261002/`, whose README records the runs,
+the node failures and resubmissions, the accounting and the archives (the
+worklog, 2026-10-04). What remains of this plan:
 
-- the PI's reading of the brief;
-- the operator given the release commit, `ff3ed014` (PI, 2026-10-01),
-  and the site's values;
-- the PI's instruction to launch.
+- Phase 9, on the developer's machine, one process at a time: the six gate
+  runs (`seeded_gate_runs.py run`), then the fingerprints
+  (`reference_promote.py fingerprints --after
+  dev/experiments/release_gate_20261002/population_after`), each from a
+  checkout that stays clean and at one commit, whose code is the after
+  arm's, while it runs; `dev/scripts/runs/LOCAL.md` names their output.
+- The smaller fixes that the worklog of 2026-09-30 leaves for after the
+  merge ("Left for after the merge and before Phase 9"). None changes what
+  a fingerprint computes or what `prepare` checks of the fingerprints, so
+  they can land after Phase 9; they land before the promotion's `prepare`.
+- The review's optional findings, which await the PI's ruling.
 
-The package can still change for the release after the launch. An edit
-to its text (a tip's wording, a docstring, an option's description)
-changes no run; it lands before the launch or after the promotion of
-the new reference, whose check compares the package's files with the
-after arm's (decision 13).
+The arm comparison and the promotion belong to the TODO's item on the
+golden references, the reading of the pools and the stacking to its
+final large-scale check. The PI's rulings of 2026-09-28 on the promotion
+and on the release's assets are in "The populations", "Records and
+hand-back", Phase 9 and the worklog.
 
-1. **Survey and environment** (done 2026-09-28), in one login session.
-   Survey the installation the campaigns run on, with the checks of
-   Phase 1b and the real output of
-   `sacct -n -X -P -j <job>_<task> -o State`,
-   `squeue -h -r -j <job> -o "%i %T"` and `scontrol show node -o`. Clone the
-   source trees as the operator's guide (`dev/scripts/hpc/README.md`)
-   says, build the environment with `campaign_env.sh build`, freeze it into
-   `campaign_requirements.txt`, and commit and push the freeze to the
-   branch.
-2. **The environment check** (passed 2026-09-29), as a batch job. It is
-   also the first run of the harnesses in an environment that installs
-   neither PyVBMC nor gpyreg: the developer's machine could test that
-   only by hiding the packages' metadata.
-3. **A canary of each harness,** and the heaviest cases, for the `TIME`
-   and `MEM` of every job (done 2026-09-29).
-4. **The failure paths of Phase 6,** then a finish, a redaction and a
-   public asset (`campaign_public.sh`), whose shell wrapper runs there for
-   the first time (done 2026-09-29, its last checks on 2026-10-01).
-
-Any change to the code that the smoke campaigns need is a commit, with
-the test modules it touches run again. The tools of Phase 9
-and of the promotion that follows it, `seeded_gate_runs.py` and
-`reference_promote.py`, and the builder of the public assets,
-`campaign_public.py`, are in place and tested; the records they make
-wait for the release code. The PI's rulings of 2026-09-28 on the
-promotion and on the release's assets are in "The populations", "Records
-and hand-back", Phase 9 and the worklog.
+The package can still change for the release. An edit to its text (a
+tip's wording, a docstring, an option's description) changes no run; it
+lands after the promotion of the new reference, whose check compares the
+package's files with the after arm's (decision 13).
 
 ## Purpose and scope
 
@@ -1594,3 +1574,41 @@ reproduces bit for bit.
   harness modules are those of `edd3f633`, on which
   the environment check passed on the cluster; the operator runs that
   check again at the release commit in their own account.
+- 2026-10-02 to 10-04: Phase 8. The operator ran the four campaigns on
+  2026-10-02 from `ff3ed014`, in the brief's order, after the environment
+  check at that commit (139, 75, 60, 55, 76, 14 and 54 tests, none
+  skipped). Every case verified, none failed, went missing or was given
+  up: 2400 in each population arm, whose `rescore` reproduced the after
+  arm's in-run metrics exactly; 2930 in the pools, 320 selected in every
+  condition with no shortfall; 200 stacking tasks of 960 cells, with no
+  condition short of repetitions; and the two analyses covered 960 of 960
+  cells and 2560 of 2560 runs. The first bulk submissions, four at the
+  default `THROTTLE` of 200 (each arm's `cigar_D15_exhaust` subset and its
+  rest), made nodes of the family fail their Slurm prolog and drain, four
+  within six minutes and two more later. The operator held the arrays,
+  cancelled the pending tasks and submitted again at 75 a submission,
+  then without the two nodes that had failed twice; no node drained after
+  that. The eight tasks that had started stopped on the SIGTERM, removed
+  their claims and partial files, and left their cases to later tasks.
+  The operator's guide gains a sentence on `THROTTLE`. Cost: about 180
+  and 175 CPU-hours for the before and after arms, against the 155 and
+  165 of "Resources and cost", 220 for the pools and 17 for the stacking;
+  the longest population tasks, of `cigar_D15_exhaust`, took 34 and 31
+  minutes, against 21 and 22 in Phase 6, and no task reached a limit. The operator sent
+  the README of the hand-back to the PI before the pull request; its
+  corrections were a count of pins, the file counts of the public assets,
+  a reading of the pools' usable fractions, which went, and two figures
+  of the cluster's configuration, which went too.
+
+  On the developer's machine, before the merge (2026-10-04): every copy of
+  the four campaigns has the SHA-256 and size its `redaction.json` records
+  (14 421 files), and none lists a case not verified or an exemption; a
+  search of every file of the hand-back found the hostnames `u8` and
+  `login` alone, no absolute or home path, e-mail address, domain or Slurm
+  variable, and the PI's surname in the targets' citations; the seven
+  assets of the five draft releases, all drafts, have the sizes and
+  digests the README gives; and `analyze_population_run.py --arms`
+  validated the 2400 cases of each arm against their verifications and
+  rescored metrics. The pull request merged into `dev-next` (`5924120b`).
+  The arm comparison's record is
+  `dev/experiments/release_gate_20261002_assessment/`.

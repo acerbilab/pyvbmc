@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-01. These lists describe scope, not priority or execution
+Updated 2026-10-04. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -93,30 +93,22 @@ records its execution.
   to 5, the redaction and guide of Phase 7, and the tools of the plan's
   Phase 9 and of the promotion of the new reference (the two items below)
   are on `dev-next`, from the branch `feat-slurm-campaigns`, reviewed
-  twice and fixed. Phase 1b (the survey, the source trees, the frozen
-  environment and its check) and Phase 6 (the smoke campaigns, which
-  measured every job's time and memory) ran on the cluster on
-  2026-09-28/29, and their fixes are in. A doublecheck of the whole branch
-  before its merge (2026-09-30), by seven reviewers, found a privacy leak
-  and some twenty issues; the PI ruled on those that needed it, the fixes
-  are in, and every harness test module passes (the plan's worklog).
-  Phase 6's last four checks, and the clone of gpyreg `v1.4.0` with the
-  environment check, were made on 2026-10-01, and the
-  [brief](plans/release-gate-handoff.md) is written; the PI ruled the
-  same day on what that session left open (the plan's worklog). Next,
-  before Phase 8 (the plan's pickup point), are the PI's reading of the
-  brief, the release commit (`ff3ed014`; PI, 2026-10-01) and the site's
-  values given to the operator, and the PI's instruction to launch. An
-  edit to the package's text,
-  the tips' wording among them, lands before the launch or after the
-  promotion of the new reference, whose check compares the package's
-  files with the after arm's (the plan's decision 13). Before
-  Phase 9, the plan's worklog (2026-09-30) leaves smaller fixes ("Left
-  for after the merge and before Phase 9"), and the review's optional
-  findings await the PI's ruling. Needed before
-  relying on that workflow for further cluster campaigns, not before local
-  experiments; the final large-scale check and the new reference below are
-  the first such campaigns. See
+  twice and fixed. Phases 1b and 6 (the survey, the source trees, the
+  frozen environment and its check, and the smoke campaigns, which
+  measured every job's time and memory) ran on the cluster from
+  2026-09-28 to 10-01. Phase 8, the release gate's campaigns, ran on
+  2026-10-02 from the release commit `ff3ed014` (PI, 2026-10-01) and was
+  handed back on 2026-10-04 (PR #181): every case of the four campaigns
+  verified, and their redacted copies are under
+  `experiments/release_gate_20261002/`. What remains is Phase 9 on the
+  developer's machine (the replay fingerprints and the six gate runs of
+  the two items below); the smaller fixes that the plan's worklog of
+  2026-09-30 leaves for after the merge, which change nothing a
+  fingerprint computes and land before the promotion's `prepare`; and the
+  review's optional findings, which await the PI's ruling. An edit to the
+  package's text, the tips' wording among them, lands after the promotion
+  of the new reference, whose check compares the package's files with
+  the after arm's (the plan's decision 13). See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
@@ -140,8 +132,12 @@ records its execution.
   assessment, by the method of the
   [population plan](plans/final-population-benchmark.md), and the
   promotion of the new reference with its fingerprints, preserving the old
-  references (the working rule below). The campaigns run in the plan's
-  Phase 8, on the PI's instruction. The promotion is
+  references (the working rule below). The two arms ran on 2026-10-02
+  (the plan's Phase 8; `experiments/release_gate_20261002/`), and their
+  comparison (`analyze_population_run.py --arms`) is
+  `experiments/release_gate_20261002_assessment/`, for the PI's reading;
+  the promotion takes the assessment the PI accepts, by its SHA-256. The
+  promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
@@ -196,7 +192,8 @@ records its execution.
   recorded them at `4efee154` on `feat-slurm-campaigns` with gpyreg
   `d96d0d9`, identical
   in all 138 arrays; that run checked the wrapper and is no record. The
-  runs that enter the records wait for the release code.
+  runs that enter the records are Phase 9's, made with the after arm's
+  code.
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
@@ -218,7 +215,11 @@ records its execution.
   convergence status and its posterior and evidence metrics against
   the ground truth. Uses the pool generator and stacking harness under
   `dev/scripts/` through the cluster workflow of the HPC item above.
-  PI, 2026-09-16.
+  PI, 2026-09-16. The pools, the stacking and the two analyses ran on
+  2026-10-02 (`experiments/release_gate_20261002/pools/` and `stacking/`;
+  the analyses' outputs are an asset of the draft release
+  `release-gate-stacking-20261002`, since they hold the cluster's
+  details); their reading against the criteria is open.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
