@@ -49,13 +49,46 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 ### The video
 
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
-the commands. The film is mastered (`NOTES.md`, Status); what is left is
-to publish it:
+the commands. The film is mastered (`NOTES.md`, Status), with its final
+end card. What is left is to publish it, and first to settle one
+question about its framing:
 
-1. **Upload the clean master to YouTube** with its `.srt`.
-2. **Link the film** from the documentation and the README. Where it goes
+1. **Decide whether to fix the film's framing (open).** The film anchors
+   PyVBMC on very expensive likelihoods: the first line is "Your model's
+   likelihood takes minutes to compute", the cost readout counts 3 min per
+   evaluation, and the payoff says "Weeks of waiting became an afternoon"
+   (its card: "AT 3 MIN PER EVALUATION · A 2-PARAMETER EXAMPLE"). The
+   README says PyVBMC is effective from about half a second per
+   evaluation. On the film's own counts, 27,828 evaluations of emcee
+   against PyVBMC's 105 (plus about a minute of its own computing, an
+   estimate in `STORYBOARD.md`), one second per evaluation still turns
+   about 7.7 hours into about 3 minutes, which the film never shows; a
+   viewer whose likelihood takes a second may conclude the tool is not for
+   them. Each line is honest as an example; together they narrow the use.
+   - *Leave the film* and carry the range in the YouTube title and
+     description, the posts and the documentation.
+   - *Fix it*: re-voice `p1` (for instance "Each evaluation of your
+     model's likelihood takes time.") and perhaps `f3`, so that the opening
+     states the general case and the 3-minute readout becomes the worked
+     example. Each re-voiced scene is a new Travis take (ElevenLabs
+     characters; no take comes out the same) and re-times every scene
+     after it; then the events and the score again, and both 1080p masters
+     again (about 3 hours of recording).
+   A public YouTube upload cannot be replaced, only uploaded again under a
+   new address, so the upload stays unlisted until this is decided.
+2. **Upload the clean master to YouTube** with its `.srt`, as the English
+   subtitles. The title, the description, the chapters, the thumbnail and
+   the social posts are drafted with the lab's media notes
+   (`dev/scripts/runs/LOCAL.md` says where); the title avoids "minutes".
+3. **Post the film**: the captioned master natively on Bluesky and
+   LinkedIn (2:44 and 174 MB are inside both platforms' limits), and the
+   YouTube link on X, which caps free accounts at 2:20.
+4. **Link the film** from the documentation and the README. Where it goes
    is part of the second of the next actions above, which page the
    documentation shows and how.
+5. **Back up `dev/media/vbmc3d-film/`** (the Travis takes, the masters,
+   the thumbnail): it exists only in this worktree, and removing the
+   worktree deletes it.
 
 ## Constraints
 
