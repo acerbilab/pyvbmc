@@ -1,0 +1,156 @@
+{
+  "harness": "population_run",
+  "contract": 1,
+  "campaign": "population_after",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          32,
+          96
+        ],
+        "physical_cores": [
+          "1:0"
+        ],
+        "core_threads": {
+          "1:0": [
+            32,
+            96
+          ]
+        },
+        "job_cpuset": [
+          32,
+          96
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2301254",
+        "array_job_id": null,
+        "array_task_id": null,
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "method": "benchmark_targets.metrics of this process's package on the returned posterior rebuilt from its plain arrays (population_run.returned_posterior); the evidence error from the run's own ELBO; the random draws from the generators of fixed seeds that the in-run metrics use",
+  "finished": "2026-10-02T14:53:31+0000",
+  "rescored": {
+    "population_after": {
+      "file": "rescored/population_after.json",
+      "sha256": "7551db0be04ca46242fe747dcd04b1a645c23e3d5f23491ac80d1225ea2bd259",
+      "path": "$CAMPAIGN_PARENT/population_after",
+      "manifest_sha256": "2ef02adb21f41f65b48a4e028263aaf44edc902560ae9b1ad977417592f47010",
+      "verification_sha256": "e8c8180e15c77a88aab170ae7f1929c3df0306c7cac9501ab1d1bb756cf81014"
+    },
+    "population_before": {
+      "file": "rescored/population_before.json",
+      "sha256": "bccf744f6a3a77a99dc75f1427c9154289e17639cf37e792549c4215c851b140",
+      "path": "$CAMPAIGN_PARENT/population_before",
+      "manifest_sha256": "73dd7de07f38153d6963d5fdad7aae9d485c7dc08389c350d805bd1c808b12a3",
+      "verification_sha256": "8658480f0c89bd17265ba2ad09f236dc0e2b331802fece66a76e488d35127126"
+    }
+  }
+}

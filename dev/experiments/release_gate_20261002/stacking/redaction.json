@@ -1,0 +1,71 @@
+{
+  "contract": 1,
+  "campaign": "stacking",
+  "generated": "2026-10-02T18:48:40+0300",
+  "node_family": "u8",
+  "rules": [
+    "a host that ran a Slurm job of the campaign is named by the node family, NODE_FEATURE; any other host, 'login'",
+    "a host part's lists of node features hold the node family alone, and its platform the operating system and machine type alone; the CPU model stays",
+    "a path starts with the name of the longest named directory that holds it: a path setting ($CAMPAIGN_ENV, $PYVBMC_SOURCE, ...), a --path directory, a source tree ($<TREE>_TREE) or the directory that holds the campaign ($CAMPAIGN_PARENT), under the operator's home or not, and any other path under the home with ~",
+    "a field that holds a partition is $PARTITION",
+    "the manifest keeps no site block, and its pip freeze lines that name a path keep their package's name alone",
+    "each file's source_sha256 is that of the campaign's own file, which the records and reports hash",
+    "allowed holds each string the operator judged benign where the check found it (redact --allow), with the hits it cleared in the copies"
+  ],
+  "replaced": {
+    "$BASELINE_DIR": 211,
+    "$CAMPAIGN_ENV": 224,
+    "$CAMPAIGN_PARENT": 2564,
+    "$HARNESS_TREE": 8,
+    "$PARTITION": 1,
+    "$PYVBMC_GPYREG_SOURCE": 12,
+    "features": 2,
+    "hosts": 206,
+    "platform": 4
+  },
+  "allowed": {},
+  "pip_freeze_paths": 2,
+  "cases_not_verified": {
+    "failed": [],
+    "interrupted": [],
+    "missing": []
+  },
+  "archive": {
+    "sha256_file": "stacking.tar.zst.sha256",
+    "parts": {
+      "stacking.tar.zst.000": "968cdcf5a97e76e1c7c035cda82466fbff0f163626e61d3ecfdb9ada70784f54"
+    }
+  },
+  "files": {
+    "manifest.json": {
+      "source_sha256": "1236e8b04b9ed5bd32df4c4ad1a9d71baf1c86abf0ab5b06b2643be69c328e88",
+      "sha256": "8686950fcbfc1f80a42eaed268204cb4bf5e760713dd2d0d1956b6d841777d7c",
+      "bytes": 2914713
+    },
+    "results.json": {
+      "source_sha256": "1e0985111951e8b44caf241d83cfd18ca6ded1be3483e7cc176a797c644b7441",
+      "sha256": "1e0985111951e8b44caf241d83cfd18ca6ded1be3483e7cc176a797c644b7441",
+      "bytes": 26953029
+    },
+    "sources.json": {
+      "source_sha256": "91e510a0d0e3e1678f96204dc1cf5af0478bba91f54a40419de50c10b2a2e496",
+      "sha256": "003814cd25deffc98a2936dce77cfe6df196a0bb5ab1c58e630fed78b18a8714",
+      "bytes": 146954
+    },
+    "summary.json": {
+      "source_sha256": "aa5285fe4f2e016c27d52766aa01735379772e3fb49cc144f9d4b4d870c3b801",
+      "sha256": "aa5285fe4f2e016c27d52766aa01735379772e3fb49cc144f9d4b4d870c3b801",
+      "bytes": 496425
+    },
+    "summary.md": {
+      "source_sha256": "fdd1de61b5c63f42e3e97d0b527cd71618fd5a9de70904815c860f223bc48cbb",
+      "sha256": "fdd1de61b5c63f42e3e97d0b527cd71618fd5a9de70904815c860f223bc48cbb",
+      "bytes": 54331
+    },
+    "verification.json": {
+      "source_sha256": "7e0378f25e0988b14c047ca35ab9342a74973fb85971a1a06c5f42dbf16270a2",
+      "sha256": "7e0378f25e0988b14c047ca35ab9342a74973fb85971a1a06c5f42dbf16270a2",
+      "bytes": 42749
+    }
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "cigar_D4/cigar_D4_seed37",
+  "case": "cigar_D4/cigar_D4_seed37 cigar_D4 37",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "f91fdf00894653f63a0be6b06cceb59ee373c283",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$PYVBMC_SOURCE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          52,
+          116
+        ],
+        "physical_cores": [
+          "1:20"
+        ],
+        "core_threads": {
+          "1:20": [
+            52,
+            116
+          ]
+        },
+        "job_cpuset": [
+          52,
+          116
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2297723",
+        "array_job_id": "2296409",
+        "array_task_id": "738",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-02T11:54:56+0000",
+  "finished": "2026-10-02T11:56:39+0000",
+  "elapsed_seconds": 103.37406325340271,
+  "artifacts": {
+    "cigar_D4/cigar_D4_seed37.npz": {
+      "sha256": "66ce158f3226279f7dd07b3eac7d6ad024ca0b2f36c141f3429b0c7a6773569f",
+      "bytes": 53169
+    },
+    "cigar_D4/cigar_D4_seed37.json": {
+      "sha256": "03fd3b21cbf47f41af8cb06b37472a0bd7175c7c1d24e183cc24048698ad7a8b",
+      "bytes": 5341
+    },
+    "cigar_D4/cigar_D4_seed37.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/cigar_D4/cigar_D4_seed37.boost.pkl": {
+      "sha256": "955fb3e131e4d5f704a13f3c1cf8c707710b0b7b70a8966afe89529adb44f9ca",
+      "bytes": 342260
+    },
+    "boost/cigar_D4/cigar_D4_seed37.boost.json": {
+      "sha256": "b780f673500301b82356907cd5db030dd285fda220e2ad9304147bd9e2806e1e",
+      "bytes": 9420
+    }
+  },
+  "harness": "population_run",
+  "label": "cigar_D4",
+  "seed": 37,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

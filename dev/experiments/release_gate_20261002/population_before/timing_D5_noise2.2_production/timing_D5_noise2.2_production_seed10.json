@@ -1,0 +1,226 @@
+{
+ "label": "timing_D5_noise2.2_production",
+ "seed": 10,
+ "problem": "timing",
+ "D": 5,
+ "noise_sd": 2.2,
+ "requested_options": {
+  "specify_target_noise": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 525,
+  "max_iter": 350,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -3861.309346138519,
+ "true_mean": [
+  [
+   0.08565275230423046,
+   0.036751360710635686,
+   0.7054712941454643,
+   0.13051993287057279,
+   0.013115612081205154
+  ]
+ ],
+ "true_cov": [
+  [
+   5.6163372566912404e-05,
+   -6.220216070893932e-05,
+   -5.3718115106222666e-05,
+   8.498861659957358e-05,
+   -4.406032836318654e-07
+  ],
+  [
+   -6.220216070893932e-05,
+   8.325014391673757e-05,
+   7.281701037388462e-05,
+   -0.00010291536749010966,
+   3.1797158771390824e-07
+  ],
+  [
+   -5.3718115106222666e-05,
+   7.281701037388462e-05,
+   0.00017374277881326453,
+   -0.00012167100064186999,
+   3.9142687930797426e-07
+  ],
+  [
+   8.498861659957358e-05,
+   -0.00010291536749010966,
+   -0.00012167100064186999,
+   0.00015825395707212312,
+   -6.903121291535419e-07
+  ],
+  [
+   -4.406032836318654e-07,
+   3.1797158771390824e-07,
+   3.9142687930797426e-07,
+   -6.903121291535419e-07,
+   2.8482209311614973e-06
+  ]
+ ],
+ "plb": [
+  0.05,
+  0.05,
+  0.6,
+  0.07499999999999996,
+  0.02
+ ],
+ "pub": [
+  0.25,
+  0.25,
+  0.975,
+  0.375,
+  0.05
+ ],
+ "notes": "Bayesian time-interval reproduction (Acerbi, Wolpert & Vijayakumar 2012), 1512 trials of one subject over 6 intervals, responses binned at 0.02 s; the 2020 paper's problem and box, times a spline-trapezoidal prior with the pivots at the plausible bounds; likelihood ported from benchflow",
+ "final": {
+  "elbo": -3860.951973742705,
+  "elbo_sd": 0.29136758885463604,
+  "best_iter": 37,
+  "iterations": 38,
+  "func_count": 190,
+  "final_K": 50,
+  "final_N": 190,
+  "min_Ns_gp": 6,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 237.97341463994235,
+  "target_eval_s": 9.788680076599121,
+  "elbo_err": 0.3573723958138544,
+  "gskl": 0.13388403800291537,
+  "mmtv": 0.08547910919506332,
+  "rmse": 0.0009377705722231436,
+  "moment_method": "mc",
+  "peak_rss_mb": 194.16015625,
+  "max_rss_mb": 277.0234375
+ },
+ "meta": {
+  "git": {
+   "sha": "ff3ed014",
+   "dirty": false
+  },
+  "python": "3.12.14",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$PYVBMC_SOURCE/pyvbmc",
+   "git": {
+    "sha": "f91fdf00",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "9e70e6b",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-10-02 13:03:03",
+  "finished": "2026-10-02 13:07:02",
+  "pid": 879426
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "f91fdf00894653f63a0be6b06cceb59ee373c283",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "9e70e6ba53f7607d05c2d9cc2fa9f41cd12b8f3b",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$PYVBMC_SOURCE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$PYVBMC_SOURCE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
+ }
+}

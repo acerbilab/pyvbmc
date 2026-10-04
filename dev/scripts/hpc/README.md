@@ -78,7 +78,7 @@ finishing steps included, is a batch job.
 | `LOGIN_PROFILE` | the login profile the environment script reads when `module` is not defined; default `/etc/profile` | no |
 | `CASES_SUBSET` | a named subset of the cases, submitted as its own array | no |
 | `ARRAY` | the case indices to submit, as `1`, `17,233` or `2-1100`; default every case of the campaign or of the subset | no |
-| `THROTTLE` | the tasks of one submission that run at once; default 200 | no |
+| `THROTTLE` | the tasks of one submission that run at once; default 200. A node that receives many task launches at once may fail its Slurm prolog and be drained: the release-gate campaigns of 2026-10-02 lost four nodes within minutes at 200 a submission, four submissions together, and ran at 75 a submission, about 300 tasks at once in all, submitted a few minutes apart | no |
 | `TIME`, `MEM` | `--time` and `--mem` of each task; default `00:30:00` and `2G` | no |
 | `SBATCH_EXTRA` | further `sbatch` arguments of every job, split into words at spaces, tabs and newlines, with no quoting and no pathname expansion | no |
 | `VERIFY_TIME`, `VERIFY_MEM`, `FINISH_TIME`, `FINISH_MEM` | the limits of the verify job and of each finishing step; default `01:00:00` and `2G` | no |
