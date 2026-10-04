@@ -325,7 +325,10 @@ FAKE_IDENTITY = {
             name: {"commit": "0" * 40, "clean": True}
             for name in ("harness", "pyvbmc", "gpyreg")
         },
-        "files": {"dev/scripts/population_run.py": "1" * 64},
+        "files": {
+            "dev/scripts/population_run.py": "1" * 64,
+            **{rel: "5" * 64 for rel in runner.RUN_FILES},
+        },
         "versions": {"python": "3", "numpy": "2", "scipy": "1", "cma": "4"},
     },
     "imports": {"trees": {}, "modules": {}, "harness_modules": {}},
@@ -1335,6 +1338,7 @@ def test_two_arms_verified_rescored_and_compared(arms, tmp_path):
     assert sorted(record["rescored"]) == ["after", "before"]
     result = analysis.analyze_arms(before, after, None, tmp_path / "report")
     assert result["paired_cases"] == 3
+    assert "legacy_reference" not in result
     assert result["arms"]["reference"]["arm"] == "before"
     assert result["arms"]["candidate"]["rescored_equal_to_in_run"] == {
         k: 3 for k in runner.RESCORED_METRICS
@@ -1472,37 +1476,58 @@ def test_legacy_profiles_and_options():
 
 def test_prepare_a_legacy_campaign(tmp_path, monkeypatch):
     monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
     monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    compare = ["--compare", str(after)]
     legacy = prepare_other_arm(
-        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY
+        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY, extra=compare
     )
     manifest = contract.read_json(legacy / "manifest.json")
     profile = runner.LEGACY_PACKAGES[RELEASE_104]
     assert manifest["legacy"] == profile
+    assert manifest["compare"] == str(after.resolve())
     assert manifest["options"] == runner.campaign_options(profile, {})
     # It does not rescore itself; it holds the rescoring of rescore-arms.
     assert manifest["finishing_steps"] == [["summarize"]]
     assert manifest["tracked_copies"] == runner.tracked_copies(True)
-    # Options the package does not define, and a pair, are refused.
-    with pytest.raises(SystemExit, match="does not define the options"):
-        prepare_other_arm(
-            tmp_path,
-            monkeypatch,
-            "with_options",
-            LEGACY_IDENTITY,
-            extra=["--options", '{"tol_elcbo_boost": 0.1}'],
-        )
-    # The refused preparation left its package tree and identity in place.
-    monkeypatch.delenv("PYVBMC_SOURCE")
-    after = tmp_path / "after"
+
+    def refused(name, extra, message, identity=LEGACY_IDENTITY):
+        with pytest.raises(SystemExit, match=message):
+            prepare_other_arm(tmp_path, monkeypatch, name, identity, extra)
+        # A refused preparation leaves its package tree in place.
+        monkeypatch.delenv("PYVBMC_SOURCE")
+
+    # What the comparison would refuse after the runs is refused before.
+    refused("no_compare", [], "names, with --compare")
+    refused(
+        "with_options",
+        [*compare, "--options", '{"tol_elcbo_boost": 0.1}'],
+        "does not define the options",
+    )
+    refused("other_seeds", [*compare, "--seeds", "0-1"], "another allocation")
+    refused("with_pair", [*compare, "--pair", str(after)], "only a campaign")
+    dirty = copy.deepcopy(LEGACY_IDENTITY)
+    dirty["source"]["trees"]["pyvbmc"]["clean"] = False
+    refused("dirty", compare, "not clean", identity=dirty)
+    versions = copy.deepcopy(LEGACY_IDENTITY)
+    versions["source"]["versions"]["numpy"] = "3"
+    refused("versions", compare, "different environment versions", versions)
+    monkeypatch.setenv("NODE_FEATURE", "u8")
+    refused("family", compare, "node family")
+    monkeypatch.delenv("NODE_FEATURE")
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: True)
+    refused("other_code", compare, "holds other package code")
+    # Its own arm and the campaign it is compared with are no legacy arms.
+    same_scoring_code(monkeypatch)
+    refused("with_itself", ["--compare", str(legacy)], "is a legacy campaign")
     use_identity(monkeypatch, FAKE_IDENTITY)
-    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
-    monkeypatch.setenv("PYVBMC_SOURCE", str(tmp_path / "legacy_tree"))
-    use_identity(monkeypatch, LEGACY_IDENTITY)
-    with pytest.raises(SystemExit, match="only a campaign"):
+    with pytest.raises(SystemExit, match="is for a legacy campaign"):
         runner.main(
-            ["prepare", "--out", str(tmp_path / "paired"), *ARGUMENTS]
-            + ["--pair", str(after)]
+            ["prepare", "--out", str(tmp_path / "x"), *ARGUMENTS, *compare]
         )
 
 
@@ -1653,7 +1678,11 @@ def legacy_arms(tmp_path, monkeypatch):
         complete_case(after, seed, exact_metrics=True, boost_penalty=0)
     assert runner.main(["verify", "--out", str(after)]) == 0
     legacy = prepare_other_arm(
-        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY
+        tmp_path,
+        monkeypatch,
+        "legacy",
+        LEGACY_IDENTITY,
+        extra=["--compare", str(after)],
     )
     for seed in range(3):
         complete_case(
@@ -1695,16 +1724,13 @@ def test_rescore_arms_and_the_comparison_of_a_legacy_arm(
     import analyze_population_run as analysis
 
     legacy, after = legacy_arms
-    arguments = [
-        "rescore-arms",
-        "--out",
-        str(legacy),
-        "--campaign",
-        str(after),
-    ]
-    assert runner.main(arguments) == 0
+    # The campaign it is compared with is the one prepare --compare named.
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
     record = contract.read_json(legacy / runner.RESCORING)
     assert record["identity"] == LATER_IDENTITY
+    # The campaign of the process's code, whose reproduction tests the
+    # rescoring, is rescored first.
+    assert list(record["rescored"]) == ["after", "legacy"]
     assert record["campaign"] == legacy.name
     assert {
         name: entry["own_scoring_code"]
@@ -1713,7 +1739,8 @@ def test_rescore_arms_and_the_comparison_of_a_legacy_arm(
     for name in ("legacy", "after"):
         path = legacy / "rescored" / f"{name}.json"
         assert record["rescored"][name]["sha256"] == runner.sha256(path)
-    result = analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+    # A legacy reference holds the rescoring the comparison reads.
+    result = analysis.analyze_arms(legacy, after, None, tmp_path / "report")
     assert result["legacy_reference"] == runner.LEGACY_PACKAGES[RELEASE_104]
     assert result["paired_cases"] == 3
     assert result["arms"]["candidate"]["rescored_equal_to_in_run"] == {
@@ -1750,10 +1777,17 @@ def test_rescore_arms_refusals(legacy_arms, monkeypatch):
         runner.main(
             ["rescore-arms", "--out", str(after), "--campaign", str(legacy)]
         )
-    # It runs in the release code alone.
+    # It runs in the release code alone, from the legacy campaign's
+    # harness checkout at its commit.
     monkeypatch.setenv("PYVBMC_SOURCE", str(legacy.parent / "legacy_tree"))
     assert runner.main(arguments) == contract.EXIT_IDENTITY
     monkeypatch.delenv("PYVBMC_SOURCE")
+    moved = copy.deepcopy(LATER_IDENTITY)
+    for tree in ("harness", "pyvbmc"):
+        moved["source"]["trees"][tree]["commit"] = "c" * 40
+    use_identity(monkeypatch, moved)
+    assert runner.main(arguments) == contract.EXIT_IDENTITY
+    use_identity(monkeypatch, LATER_IDENTITY)
     # One campaign at least runs the process's scoring code, whose in-run
     # metrics the rescoring must reproduce.
     monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: True)
@@ -1785,6 +1819,102 @@ def test_the_comparison_of_a_legacy_arm_needs_one_node_family(
         analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
 
 
+def test_the_comparison_of_a_legacy_arm_refuses(
+    legacy_arms, tmp_path, monkeypatch
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
+    # A legacy arm is the reference.
+    with pytest.raises(AssertionError, match="the candidate is a legacy arm"):
+        analysis.analyze_arms(after, legacy, legacy, tmp_path / "a")
+    # The rescoring ran from the legacy arm's harness checkout.
+    record = contract.read_json(legacy / runner.RESCORING)
+    for tree in ("harness", "pyvbmc"):
+        record["identity"]["source"]["trees"][tree]["commit"] = "9" * 40
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        report = contract.read_json(path)
+        report["rescoring"]["identity"] = record["identity"]
+        contract.write_json(path, report)
+        record["rescored"][name]["sha256"] = runner.sha256(path)
+    contract.write_json(legacy / runner.RESCORING, record)
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: False)
+    with pytest.raises(AssertionError, match="reference's harness checkout"):
+        analysis.analyze_arms(legacy, after, None, tmp_path / "b")
+
+
+def test_the_comparison_of_a_legacy_arm_refuses_other_options(
+    tmp_path, monkeypatch
+):
+    """Options that differ beyond those the legacy package does not define
+    are refused by the comparison, as prepare --compare refuses them before
+    the runs."""
+    import analyze_population_run as analysis
+
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    after = tmp_path / "after"
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True, boost_penalty=0)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    monkeypatch.setattr(runner, "compare_problems", lambda *args: [])
+    legacy = prepare_other_arm(
+        tmp_path,
+        monkeypatch,
+        "legacy",
+        LEGACY_IDENTITY,
+        extra=["--compare", str(after), "--options", '{"display": "iter"}'],
+    )
+    for seed in range(3):
+        complete_case(
+            legacy, seed, identity=LEGACY_IDENTITY, boost_penalty=0.1
+        )
+    use_identity(monkeypatch, LEGACY_IDENTITY)
+    assert runner.main(["verify", "--out", str(legacy)]) == 0
+    use_identity(monkeypatch, LATER_IDENTITY)
+    assert runner.main(["rescore-arms", "--out", str(legacy)]) == 0
+    with pytest.raises(AssertionError, match="different options"):
+        analysis.analyze_arms(legacy, after, None, tmp_path / "report")
+
+
+def test_the_node_family_of_a_campaign_and_of_its_copies(
+    tmp_path, monkeypatch
+):
+    copies = tmp_path / "copies"
+    copies.mkdir()
+    contract.write_json(copies / "redaction.json", {"node_family": "u8"})
+    assert runner.node_family(copies) == "u8"
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    plain = tmp_path / "plain"
+    assert runner.main(["prepare", "--out", str(plain), *ARGUMENTS]) == 0
+    assert runner.node_family(plain) is None
+    monkeypatch.setenv("NODE_FEATURE", "u8")
+    sited_campaign = tmp_path / "sited"
+    arguments = ["prepare", "--out", str(sited_campaign), *ARGUMENTS]
+    assert runner.main(arguments) == 0
+    assert runner.node_family(sited_campaign) == "u8"
+
+
+def test_the_run_files_and_package_paths_are_the_promotions():
+    """What the comparison of a legacy arm requires to be equal is what
+    the promotion requires to stay unchanged from the launch."""
+    import reference_promote
+
+    files = {rel.rstrip("/") for rel in runner.RUN_FILES}
+    assert set(runner.PACKAGE_PATHS) | files == set(
+        reference_promote.NUMERIC_PATHS
+    )
+
+
 def test_scoring_and_legacy_pair_differences(monkeypatch):
     same_scoring_code(monkeypatch)
     assert runner.scoring_differences(LATER_IDENTITY, FAKE_IDENTITY) == []
@@ -1808,6 +1938,22 @@ def test_scoring_and_legacy_pair_differences(monkeypatch):
     assert "would compare the code with itself" in "".join(
         runner.legacy_pair_differences(LEGACY_IDENTITY, LEGACY_IDENTITY)
     )
+    # A file that builds or scores a run that one identity lacks differs.
+    lacking = copy.deepcopy(FAKE_IDENTITY)
+    del lacking["source"]["files"]["dev/scripts/data/"]
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, lacking) == [
+        "the arms have different dev/scripts/data/"
+    ]
+    assert runner.scoring_differences(LATER_IDENTITY, lacking) == [
+        "dev/scripts/data/"
+    ]
+    # One source identity scores alike, whatever its trees' state.
+    unclean = copy.deepcopy(FAKE_IDENTITY)
+    unclean["source"]["trees"]["pyvbmc"]["clean"] = False
+    assert runner.scoring_mismatches(unclean, copy.deepcopy(unclean)) == []
+    assert runner.scoring_mismatches(LATER_IDENTITY, unclean) == [
+        "a pyvbmc tree that is not clean"
+    ]
 
 
 # --------------------------------------------------------------------------
@@ -2330,12 +2476,22 @@ def real_legacy(real, tmp_path_factory):
     env["PYVBMC_SOURCE"] = str(Path(tree).resolve())
     legacy = tmp_path_factory.mktemp("legacy") / "legacy"
     arguments = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0"]
-    harness("prepare", "--out", legacy, *arguments, "--arm", "1.0.4", env=env)
+    ran, _ = real
+    harness(
+        "prepare",
+        "--out",
+        legacy,
+        *arguments,
+        "--arm",
+        "1.0.4",
+        "--compare",
+        ran,
+        env=env,
+    )
     harness("worker", "--out", legacy, "--case", line_of(0), env=env)
     harness("verify", "--out", legacy, env=env)
-    ran, _ = real
     release = harness_environment(gpyreg_checkout())
-    harness("rescore-arms", "--out", legacy, "--campaign", ran, env=release)
+    harness("rescore-arms", "--out", legacy, env=release)
     return legacy, ran
 
 
@@ -2366,6 +2522,6 @@ def test_a_real_legacy_case_is_run_rescored_and_compared(
     rescored = contract.read_json(legacy / "rescored" / f"{legacy.name}.json")
     case = rescored["cases"][f"{LABEL}_seed0"]
     assert all(case["finite"].values())
-    result = analysis.analyze_arms(legacy, ran, legacy, tmp_path / "report")
+    result = analysis.analyze_arms(legacy, ran, None, tmp_path / "report")
     assert result["paired_cases"] == 1
     assert result["legacy_reference"]["release"] == "1.0.4"

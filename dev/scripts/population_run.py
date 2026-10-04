@@ -153,34 +153,49 @@ one's finish, and this one is finished again after any later finish of
 the other.
 
 **Legacy campaigns.** A package tree at a commit of
-:data:`LEGACY_PACKAGES`, released code older than these campaigns (PyVBMC
-1.0.4), runs as a legacy campaign (``dev/plans/arm-1.0.4-comparison.md``).
-Its gpyreg is the release the profile names, exactly; its options are
+:data:`LEGACY_PACKAGES`, a release of PyVBMC that has no ``seed=``, draws
+every random number from NumPy's global state and refuses an option it does
+not define (1.0.4), runs as a legacy campaign
+(``dev/plans/arm-1.0.4-comparison.md``). The tree must be clean, and its
+gpyreg is the release the profile names, exactly. Its options are
 :data:`DEFAULT_OPTIONS` without those the package does not define, and
-``--options`` may not name one of those; it is paired with no campaign and
-does not rescore itself. The worker adapts each run to the package in its
-own process (:func:`legacy_shims`), and no harness module that builds a run
-changes: ``VBMC`` is constructed after NumPy's global state is seeded with
-the case's seed, which is how the package fixes a run, and without the
-options it does not define; the metrics run on the global state seeded as
-their own generators are, and restore it, since the package's posteriors
-draw from it and not from the generator the metrics give them; and the
-boost capture records the global state. The checks of a legacy case expect
-the package's own final boost: its weight penalty and no tolerance.
+``--options`` may name only options its option files define. It does not
+rescore itself, and ``--pair`` is refused, as for any campaign of other code
+than the harness checkout's. ``prepare --compare DIR`` names the campaign
+of the release code it will be compared with, which may be a campaign
+directory or its tracked copies, and is required: ``prepare`` checks there
+what the comparison checks after the runs (the allocation, the confirmatory
+family, the options but those the package does not define, the files that
+build and score a run, the environment's versions, the node family, and
+that the harness checkout holds the package code that campaign ran), so
+that a harness commit that cannot be compared with it is refused before any
+case runs. The worker adapts each run to the package in its own process
+(:func:`legacy_shims`), and no harness module that builds a run changes:
+``VBMC`` is constructed after NumPy's global state is seeded with the
+case's seed, which is how the package fixes a run, and without the options
+it does not define; the metrics run on the global state seeded with
+``benchmark_targets.DIAG_SEED``, and restore it, since the package's
+posteriors draw from it and not from the generators the metrics give them;
+and the boost capture records the global state. The checks of a legacy case
+expect the package's own final boost: its weight penalty and no tolerance.
 
-``rescore-arms --out LEGACY --campaign OTHER`` rescores a legacy campaign
-and the campaigns of the release code it is compared with, which another
-harness commit ran, with the release code. It runs in a process of the
-harness checkout's own package with ``PYVBMC_GPYREG_SOURCE``, and refuses
-any other; one of the campaigns at least must be of the process's scoring
-code (:func:`scoring_differences`: the package's scoring code, gpyreg, the
-files that build and score a run, the environment's versions), and every
-such campaign must reproduce its in-run metrics exactly, which shows that
-the rescoring scores as that code did. It writes
-``<out>/rescored/<name>.json`` for each campaign and ``<out>/rescoring.json``
-into the legacy campaign, whose tracked copies hold them, and which
-``analyze_population_run.py --arms LEGACY OTHER --rescoring LEGACY``
-reads.
+``rescore-arms --out LEGACY`` rescores a legacy campaign and the campaign
+of the release code it is compared with (``prepare --compare``, or
+``--campaign``), which another harness commit ran, with the release code.
+It runs in a process of the harness checkout's own package, from the
+legacy campaign's harness checkout at its commit, with
+``PYVBMC_GPYREG_SOURCE``, and refuses any other; one of the campaigns at
+least must be of the process's scoring code (:func:`scoring_mismatches`:
+one source identity, or else clean trees with the same package scoring
+code, gpyreg, files that build and score a run and environment versions),
+and every such campaign, which it rescores first, must reproduce its in-run
+metrics exactly, which shows that the rescoring scores as that code did. It
+writes ``<out>/rescored/<name>.json`` for each campaign and
+``<out>/rescoring.json`` into the legacy campaign, whose tracked copies
+hold them, and which ``analyze_population_run.py --arms LEGACY OTHER``
+reads. A later ``verify`` of either campaign rewrites the verification
+report that the rescoring names, so ``rescore-arms`` runs again after it,
+taking the cases it rescored already from its work files.
 
 **Workstation runs.** ``run`` works on a prepared directory: it writes
 ``cases.txt``, runs each case of the list (or of ``--subset``, the first
@@ -303,11 +318,11 @@ DEFAULT_OPTIONS = {
     "plot": False,
     "print_iteration_header": False,
 }
-#: Released code older than these campaigns, run as legacy campaigns
-#: (module docstring), by the commit of the package tree: the release, the
-#: gpyreg release it runs with, the options of :data:`DEFAULT_OPTIONS` it
-#: does not define, and the weight penalty of its final boost, which keeps
-#: every boost it makes.
+#: Releases of PyVBMC without ``seed=``, whose draws come from NumPy's
+#: global state, run as legacy campaigns (module docstring), by the commit
+#: of the package tree: the release, the gpyreg release it runs with, the
+#: options of :data:`DEFAULT_OPTIONS` it does not define, and the weight
+#: penalty of its final boost, which keeps every boost it makes.
 LEGACY_PACKAGES = {
     "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d": {
         "release": "1.0.4",
@@ -322,7 +337,8 @@ LEGACY_PACKAGES = {
 }
 #: The harness files that build and score a run, by their keys in a source
 #: identity's ``files``: two arms whose harness checkouts differ are
-#: compared only when these are equal.
+#: compared only when both identities hold these, equal. With
+#: :data:`PACKAGE_PATHS` they are ``reference_promote.NUMERIC_PATHS``.
 RUN_FILES = (
     "dev/scripts/golden_trace.py",
     "dev/scripts/profile_run.py",
@@ -343,8 +359,9 @@ PAIRED_METRICS = ("elbo_err", "gskl", "mmtv", "func_count")
 RESCORED_METRICS = ("elbo_err", "gskl", "mmtv", "rmse")
 #: The named subsets beside one per label.
 SUBSETS = ("canary", "noisy", "noiseless")
-#: The record ``rescore`` writes in the campaign it runs for: the rescoring
-#: process's identity and the SHA-256 of every file of rescored metrics.
+#: The record ``rescore`` writes in the campaign it runs for, and
+#: ``rescore-arms`` in a legacy campaign: the rescoring process's identity
+#: and the SHA-256 of every file of rescored metrics.
 RESCORING = "rescoring.json"
 #: What of a finished campaign enters the repository, beside its manifest
 #: and verification report (``campaign_contract.tracked_copies``): the
@@ -505,12 +522,31 @@ def legacy_profile(identity):
     return copy.deepcopy(LEGACY_PACKAGES.get(commit))
 
 
-def campaign_options(legacy, requested):
+def package_option_names(tree):
+    """The options that a package tree's option files define
+    (``pyvbmc/vbmc/option_configs/*.ini``, a ``name = value`` line each);
+    None when the tree holds none."""
+    import re
+
+    names = set()
+    for path in sorted(Path(tree).glob("pyvbmc/vbmc/option_configs/*.ini")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*=", line)
+            if match:
+                names.add(match.group(1))
+    return names or None
+
+
+def campaign_options(legacy, requested, defined=None):
     """A campaign's options: :data:`DEFAULT_OPTIONS`, without those a legacy
-    package does not define, and ``requested`` over them, which may not name
-    one of those."""
+    package does not define, and ``requested`` over them, which for a
+    legacy package may name neither one of those nor, where ``defined``
+    gives the options its option files define, any other it does not
+    define."""
     undefined = set(legacy["undefined_options"]) if legacy else set()
     named = sorted(undefined & set(requested))
+    if legacy and defined is not None:
+        named = sorted(set(named) | (set(requested) - set(defined)))
     if named:
         raise SystemExit(
             f"the package of a legacy campaign ({legacy['release']}) does not "
@@ -780,7 +816,8 @@ def confirmatory_family(spec, labels):
 
 
 def tracked_copies(rescores):
-    """The tracked copies of a campaign; ``rescores``: it runs ``rescore``."""
+    """The tracked copies of a campaign; ``rescores``: it holds a rescoring,
+    which ``rescore`` or, in a legacy campaign, ``rescore-arms`` writes."""
     spec = copy.deepcopy(TRACKED_COPIES)
     if rescores:
         spec["files"] += RESCORED_COPIES
@@ -1032,8 +1069,8 @@ def check_case_artifacts(tag, paths, options, legacy=None):
     legacy : dict, optional
         The legacy profile of the campaign's package
         (:data:`LEGACY_PACKAGES`), whose final boost keeps its weight
-        penalty and has no tolerance; the boost of the code of these
-        campaigns has no weight penalty.
+        penalty and has no tolerance; without it, the boost is the guarded
+        one of ``tol_elcbo_boost``, which disables the weight penalty.
 
     Returns
     -------
@@ -1088,7 +1125,8 @@ def check_case_artifacts(tag, paths, options, legacy=None):
         or type(report["accepted"]) is not bool
     ):
         raise RuntimeError(f"{tag}: invalid boost decision type")
-    if report["tolerance"] != options.get("tol_elcbo_boost"):
+    tolerance = None if legacy else options["tol_elcbo_boost"]
+    if report["tolerance"] != tolerance:
         raise RuntimeError(f"{tag}: incorrect boost tolerance")
     keys = (
         ("pre", "candidate", "returned")
@@ -1229,10 +1267,10 @@ def legacy_shims(legacy):
     when it runs, constructs the package's ``VBMC`` after seeding NumPy's
     global state with the ``seed`` it is given and without the options of
     ``legacy["undefined_options"]``; and ``benchmark_targets.metrics``, and
-    this module's, run on the global state seeded as the metrics' own
-    generators are (``benchmark_targets.DIAG_SEED``) and restore it after
-    them, so that two calls on equal posteriors give equal metrics. Without
-    ``legacy`` it changes nothing.
+    this module's, run on the global state seeded with
+    ``benchmark_targets.DIAG_SEED`` and restore it after them, so that two
+    calls on equal posteriors give equal metrics. Without ``legacy`` it
+    changes nothing.
     """
     if not legacy:
         yield
@@ -1397,25 +1435,35 @@ def pair_differences(identity, other):
     return found
 
 
+def _run_file_differences(a, b):
+    """The files of :data:`RUN_FILES` that two source identities do not
+    both hold, equal."""
+    files_a, files_b = a.get("files") or {}, b.get("files") or {}
+    return [
+        rel
+        for rel in RUN_FILES
+        if rel not in files_a
+        or rel not in files_b
+        or files_a[rel] != files_b[rel]
+    ]
+
+
 def legacy_pair_differences(identity, other):
     """Why a legacy arm and another arm cannot be compared.
 
     Their harness checkouts may differ, since the harness that runs a
-    legacy package is a later commit than one that ran the other arm; the
-    files that build and score a run (:data:`RUN_FILES`) and the imported
-    versions are the same, and their package trees are at different
-    commits. Returns the reasons, an empty list when the two can be
-    compared.
+    legacy package is a later commit than one that ran the other arm; both
+    identities hold the files that build and score a run
+    (:data:`RUN_FILES`), equal, and the same imported versions, and their
+    package trees are at different commits. Returns the reasons, an empty
+    list when the two can be compared.
     """
     a, b = identity["source"], other["source"]
     found = []
     if a.get("versions") != b.get("versions"):
         found.append("the arms have different environment versions")
-    files_a, files_b = a.get("files") or {}, b.get("files") or {}
     found += [
-        f"the arms have different {rel}"
-        for rel in RUN_FILES
-        if files_a.get(rel) != files_b.get(rel)
+        f"the arms have different {rel}" for rel in _run_file_differences(a, b)
     ]
     commit = [s["trees"].get("pyvbmc", {}).get("commit") for s in (a, b)]
     if commit[0] == commit[1]:
@@ -1440,21 +1488,21 @@ def package_numerics_differ(a, b):
 
 
 def scoring_differences(identity, other):
-    """Why two processes may not score a run alike.
+    """Why two processes of different source identities may not score a run
+    alike.
 
     They score alike when their package trees hold the same scoring code
     (:func:`package_numerics_differ`), clean, their gpyreg trees are at one
-    commit, clean, the files that build and score a run
-    (:data:`RUN_FILES`) are the same, and so are the imported versions.
-    Their harness checkouts may be at different commits. Returns the
-    reasons, an empty list when the two score alike.
+    commit, clean, both hold the files that build and score a run
+    (:data:`RUN_FILES`), equal, and they import the same versions. Their
+    harness checkouts may be at different commits. Returns the reasons, an
+    empty list when the two score alike.
     """
     a, b = identity["source"], other["source"]
     found = []
     if a.get("versions") != b.get("versions"):
         found.append("environment versions")
-    files_a, files_b = a.get("files") or {}, b.get("files") or {}
-    found += [rel for rel in RUN_FILES if files_a.get(rel) != files_b.get(rel)]
+    found += _run_file_differences(a, b)
     trees = [s.get("trees") or {} for s in (a, b)]
     for name in ("pyvbmc", "gpyreg"):
         if not all((tree.get(name) or {}).get("clean") for tree in trees):
@@ -1468,10 +1516,11 @@ def scoring_differences(identity, other):
     return found
 
 
-def scores_alike(identity, other):
+def scoring_mismatches(identity, other):
     """Why two processes may not score a run alike: none when their source
     identities are the same, whatever the state of their trees, and the
-    reasons of :func:`scoring_differences` otherwise."""
+    reasons of :func:`scoring_differences` otherwise; an empty list when
+    they score alike."""
     if not contract.source_differences(identity, other):
         return []
     return scoring_differences(identity, other)
@@ -1481,10 +1530,62 @@ def node_family(campaign):
     """The node family a campaign ran on: the one its redaction kept, for
     tracked copies, or its manifest's ``NODE_FEATURE``; None when neither
     names one."""
-    redaction = Path(campaign) / "redaction.json"
-    if redaction.is_file():
-        return contract.read_json(redaction).get("node_family")
+    redaction = contract.read_redaction(campaign)
+    if redaction is not None:
+        return redaction.get("node_family")
     return (read_manifest(campaign).get("site") or {}).get("NODE_FEATURE")
+
+
+def compare_problems(manifest, other):
+    """Why a legacy campaign prepared as ``manifest`` cannot be compared
+    with the campaign of the release code at ``other`` (a campaign
+    directory or its tracked copies), as ``analyze_population_run.py
+    --arms`` and ``rescore-arms`` would find after the runs.
+
+    The other campaign is no legacy campaign and ran its harness
+    checkout's own package; the two share the allocation and the
+    confirmatory family; the legacy campaign's options are the other's but
+    for those the legacy package does not define; the arms can be compared
+    (:func:`legacy_pair_differences`) and ran on one node family; and the
+    legacy campaign's harness checkout holds the package code the other
+    ran (:func:`package_numerics_differ`), which ``rescore-arms`` runs.
+    Returns the reasons, an empty list when the two can be compared.
+    """
+    theirs = read_manifest(other)
+    found = []
+    if theirs.get("legacy"):
+        found.append(f"{other} is a legacy campaign")
+    source = theirs["identity"]["source"]["trees"]
+    if source.get("pyvbmc") != source.get("harness"):
+        found.append(f"{other} ran other code than its harness checkout's")
+    for key in ("allocation", "confirmatory"):
+        if theirs.get(key) != manifest[key]:
+            found.append(f"{other} has another {key}")
+    undefined = set(manifest["legacy"]["undefined_options"])
+    expected = {
+        key: value
+        for key, value in theirs.get("options", {}).items()
+        if key not in undefined
+    }
+    if manifest["options"] != expected:
+        found.append(
+            f"{other} has other options than those the legacy package defines"
+        )
+    found += legacy_pair_differences(manifest["identity"], theirs["identity"])
+    family = (manifest.get("site") or {}).get("NODE_FEATURE")
+    if family != node_family(other):
+        found.append(
+            f"{other} ran on the node family {node_family(other)}, and this "
+            f"campaign's is {family}"
+        )
+    harness = manifest["identity"]["source"]["trees"]["harness"]["commit"]
+    if package_numerics_differ(harness, source["pyvbmc"]["commit"]):
+        found.append(
+            f"the harness checkout ({harness}) holds other package code than "
+            f"{other} ran ({source['pyvbmc']['commit']}), so rescore-arms "
+            "would not score as its code"
+        )
+    return found
 
 
 def cmd_prepare(args):
@@ -1507,8 +1608,29 @@ def cmd_prepare(args):
         raise SystemExit(problem)
     identity = this_identity()
     legacy = legacy_profile(identity)
-    options = campaign_options(legacy, requested)
+    defined = (
+        package_option_names(source_trees()["pyvbmc"]) if legacy else None
+    )
+    options = campaign_options(legacy, requested, defined)
     site = contract.site_block()
+    compare = None
+    if legacy:
+        if not identity["source"]["trees"]["pyvbmc"].get("clean"):
+            raise SystemExit(
+                f"a legacy campaign runs {legacy['release']} as released, and "
+                "its package tree is not clean"
+            )
+        if not args.compare:
+            raise SystemExit(
+                "a legacy campaign names, with --compare, the campaign of the "
+                "release code it will be compared with"
+            )
+        compare = args.compare.resolve()
+    elif args.compare:
+        raise SystemExit(
+            "--compare is for a legacy campaign; two arms of the code of this "
+            "harness pair with --pair"
+        )
     steps = [["summarize"]]
     pair = None
     if args.pair:
@@ -1573,6 +1695,13 @@ def cmd_prepare(args):
     }
     if legacy:
         manifest["legacy"] = legacy
+        manifest["compare"] = str(compare)
+        problems = compare_problems(manifest, compare)
+        if problems:
+            raise SystemExit(
+                f"this legacy campaign cannot be compared with {compare}: "
+                + "; ".join(problems)
+            )
     contract.finishing_steps(manifest)
     contract.tracked_copies(manifest)
     path = out / "manifest.json"
@@ -1592,6 +1721,7 @@ def cmd_prepare(args):
                 "finishing_steps",
                 "tracked_copies",
                 "legacy",
+                "compare",
             )
             if previous.get(key) != manifest.get(key)
         ]
@@ -1859,8 +1989,8 @@ RESCORING_METHOD = (
     "benchmark_targets.metrics of this process's package on the returned "
     "posterior rebuilt from its plain arrays "
     "(population_run.returned_posterior); the evidence error from the run's "
-    "own ELBO; the random draws from the generators of fixed seeds that the "
-    "in-run metrics use"
+    "own ELBO; the random draws from the generators of fixed seeds that "
+    "benchmark_targets.metrics gives the posterior"
 )
 
 
@@ -2125,14 +2255,18 @@ def cmd_rescore(args):
 
 
 def cmd_rescore_arms(args):
-    """Rescore a legacy campaign and the campaigns it is compared with.
+    """Rescore a legacy campaign and the campaign it is compared with.
 
-    For the comparison of a legacy arm, ``--out``, with campaigns of the
-    release code that another harness commit ran, ``--campaign`` (module
-    docstring). Writes ``rescored/<name>.json`` for each campaign into the
-    legacy campaign, whose tracked copies hold them, and then
-    :data:`RESCORING`, with this process's identity and the SHA-256 of each
-    of those files.
+    For the comparison of a legacy arm, ``--out``, with the campaign of the
+    release code that another harness commit ran: the one its ``prepare
+    --compare`` named, or each ``--campaign`` (module docstring). The
+    process runs from the legacy campaign's harness checkout, at its
+    commit, which the comparison requires of the rescoring. The campaigns
+    of this process's scoring code are rescored first, since their exact
+    reproduction of their in-run metrics is what shows the rescoring
+    sound. Writes ``rescored/<name>.json`` for each campaign into the legacy
+    campaign, whose tracked copies hold them, and then :data:`RESCORING`,
+    with this process's identity and the SHA-256 of each of those files.
     """
     out = args.out.resolve()
     try:
@@ -2153,17 +2287,37 @@ def cmd_rescore_arms(args):
     except Exception as error:
         print(f"rescore-arms refused: no identity ({error})", flush=True)
         return contract.EXIT_IDENTITY
-    if not read_manifest(out).get("legacy"):
+    manifest = read_manifest(out)
+    if not manifest.get("legacy"):
         raise SystemExit(
-            f"{out} is no legacy campaign; a campaign of the code of these "
-            "campaigns rescores itself, by its rescore step"
+            f"{out} is no legacy campaign; a campaign of the harness "
+            "checkout's own package rescores itself, and the arm it pairs "
+            "with, by its rescore step"
         )
-    campaigns = [out] + [Path(path).resolve() for path in args.campaign]
+    harness = manifest["identity"]["source"]["trees"]["harness"]
+    if identity["source"]["trees"]["harness"] != harness:
+        print(
+            "rescore-arms refused: it runs from the legacy campaign's harness "
+            f"checkout at its commit ({harness}), which the comparison "
+            "requires of the rescoring, and this process's is "
+            f"{identity['source']['trees']['harness']}",
+            flush=True,
+        )
+        return contract.EXIT_IDENTITY
+    others = args.campaign or (
+        [manifest["compare"]] if manifest.get("compare") else []
+    )
+    if not others:
+        raise SystemExit(
+            "name the campaign of the release code to rescore beside the "
+            "legacy campaign with --campaign"
+        )
+    campaigns = [out] + [Path(path).resolve() for path in others]
     names = [campaign.name for campaign in campaigns]
     if len(set(names)) != len(names):
         raise SystemExit(f"the campaigns' directory names repeat: {names}")
     own = {
-        campaign.name: not scores_alike(
+        campaign.name: not scoring_mismatches(
             identity, read_manifest(campaign)["identity"]
         )
         for campaign in campaigns
@@ -2174,6 +2328,9 @@ def cmd_rescore_arms(args):
             "no exact reproduction of in-run metrics would show that it "
             "scores as their code did; name a campaign of the release code"
         )
+    # Those of this process's code first: their exact reproduction is the
+    # test of the rescoring, and fails before the others are rescored.
+    campaigns.sort(key=lambda campaign: not own[campaign.name])
     rescored = {}
     for campaign in campaigns:
         rel = f"rescored/{campaign.name}.json"
@@ -2327,6 +2484,12 @@ def parse_args(argv=None):
         help="JSON overriding fields of the default confirmatory family",
     )
     prepare.add_argument(
+        "--compare",
+        type=Path,
+        help="for a legacy campaign: the campaign of the release code, or "
+        "its tracked copies, it will be compared with",
+    )
+    prepare.add_argument(
         "--pair",
         type=Path,
         help="the prepared campaign of the other arm, which this one's "
@@ -2349,7 +2512,11 @@ def parse_args(argv=None):
         "code it is compared with, with the release code",
     )
     rescore_arms.add_argument(
-        "--campaign", type=Path, action="append", required=True
+        "--campaign",
+        type=Path,
+        action="append",
+        help="the campaign of the release code to rescore beside the legacy "
+        "one (default: the one its prepare --compare named)",
     )
     run = sub.add_parser("run", help="run the cases one after another")
     run.add_argument("--subset")

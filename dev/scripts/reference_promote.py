@@ -748,6 +748,11 @@ def check_assessment(directory, accepted, campaign):
         f"endings is {digest})",
     )
     assessment = read_json(path)
+    check(
+        not assessment.get("legacy_reference"),
+        f"{path} compares the after arm with a legacy release; the "
+        "promotion's assessment compares it with the before arm",
+    )
     candidate = assessment["arms"]["candidate"]
     check(
         candidate["name"] == campaign["name"]

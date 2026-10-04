@@ -734,3 +734,17 @@ def test_publish_refuses_and_writes_nothing(gate, capsys):
     report["rows"][0]["identical"] = False
     path.write_text(json.dumps(report))
     refused("the replay is not identical")
+
+
+def test_an_assessment_of_a_legacy_reference_is_refused(tmp_path):
+    """The promotion's assessment compares the after arm with the before
+    arm; one that compares it with a legacy release is refused, whatever
+    SHA-256 was accepted."""
+    path = tmp_path / "assessment.json"
+    path.write_text(
+        json.dumps({"legacy_reference": {"release": "1.0.4"}, "arms": {}}),
+        encoding="utf-8",
+    )
+    accepted = promote.sha256(path, True)
+    with pytest.raises(promote.PromotionError, match="a legacy release"):
+        promote.check_assessment(tmp_path, accepted, {"name": "after"})

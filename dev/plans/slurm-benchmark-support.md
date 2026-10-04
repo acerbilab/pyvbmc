@@ -59,7 +59,9 @@ The arm comparison and the promotion belong to the TODO's item on the
 golden references, the reading of the pools and the stacking to its
 final large-scale check. The PI's rulings of 2026-09-28 on the promotion
 and on the release's assets are in "The populations", "Records and
-hand-back", Phase 9 and the worklog.
+hand-back", Phase 9 and the worklog. A further population, PyVBMC 1.0.4 on
+the same cases (Arm 0, [its plan](arm-1.0.4-comparison.md)), runs through
+this workflow from a harness commit that holds the after arm's run code.
 
 The package can still change for the release. An edit to its text (a
 tip's wording, a docstring, an option's description) changes no run; it
