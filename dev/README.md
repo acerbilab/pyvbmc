@@ -214,6 +214,11 @@ plan and consolidated human summary.
   cluster (2026-10-01): the two population arms, the pools, the stacking
   and the two analyses of the pools in their order, the limits of every
   job, and what is handed back.
+- [plans/arm-1.0.4-comparison.md](plans/arm-1.0.4-comparison.md) — Arm 0:
+  PyVBMC 1.0.4, the release users upgrade from, on the release gate's
+  population cases, compared seed by seed with the release code's arm: the
+  PI's decisions, the harness's legacy profile, the rescoring across
+  harness commits, and the campaign's state.
 - [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) — how many
   evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs
   to match PyVBMC's posterior accuracy on a benchmark target: the
@@ -519,12 +524,21 @@ reason.
   as a script, imports (no other script reads the variable; a tree that
   PyVBMC does not import from exits 78, having written nothing), and
   `PYVBMC_GPYREG_SOURCE` the gpyreg checkout; the harness, the targets
-  module and its data are this checkout's in every arm. `validate_case`
-  checks the records of the campaigns of September 2026, which ran before
-  array mode. `test_population_run.py` checks the capture, the contract's
-  states, `verify`, `rescore`, the comparison of two arms it verified and
-  rescored and the rebuilt posterior on hand-made cases, and runs one real
-  case through `run` and through `worker`.
+  module and its data are this checkout's in every arm. A package tree at
+  a commit of `LEGACY_PACKAGES` (PyVBMC 1.0.4) runs as a legacy campaign
+  (`plans/arm-1.0.4-comparison.md`): its own gpyreg release exactly, the
+  options it defines alone, each run fixed by NumPy's global state seeded
+  with the case's seed, and its own final boost, through shims the worker
+  installs in its process; `rescore-arms` rescores such a campaign and the
+  release code's arm it is compared with into the legacy campaign, with
+  the release code, which must reproduce that arm's in-run metrics exactly.
+  `validate_case` checks the records of the campaigns of September 2026,
+  which ran before array mode. `test_population_run.py` checks the
+  capture, the contract's states, `verify`, `rescore`, `rescore-arms`, the
+  comparison of two arms it verified and rescored, a legacy arm among them,
+  and the rebuilt posterior on hand-made cases, and runs one real case
+  through `run` and through `worker`, and one of 1.0.4 where
+  `PYVBMC_LEGACY_SOURCE` and `PYVBMC_LEGACY_GPYREG_SOURCE` name its trees.
 - `scripts/analyze_population_run.py` — assesses finished campaigns without
   inference. By default, campaigns of one treatment (those of September
   2026) against the 870-case golden reference of 2026-09-07: it revalidates
@@ -549,8 +563,12 @@ reason.
   candidate, whose `rescoring.json` binds them by SHA-256 to a process of
   the candidate's own identity), with the confirmatory family of their
   manifests at the size they fix: a test that cannot be computed enters it
-  at p = 1 and is flagged. Either arm may be a campaign directory or its
-  redacted tracked copies, which give the same report. In both, a boost
+  at p = 1 and is flagged. A legacy reference (PyVBMC 1.0.4) is read with
+  the rescoring of both arms that `population_run.py rescore-arms` wrote
+  into it, which must score as the candidate's code, its harness checkout
+  a later commit than the candidate's. Either arm may be a campaign
+  directory or its redacted tracked copies, which give the same report.
+  In both, a boost
   stage other than the returned posterior whose metrics are the error of
   a scoring that failed, which the harness keeps and `verify` accepts, is
   left out of the boost summary's usability counts, counted and listed.

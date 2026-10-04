@@ -18,7 +18,8 @@ records its execution.
   earlier, longer text was written and checked). Open before the release:
   the whole-run timings of "Runs are faster", measured on 2026-09-03 to
   09-05, before the corrections that change how long a run takes, and the
-  S-VBMC speed figure, both to be measured again on the release benchmark;
+  S-VBMC speed figure, both to be measured again on the release benchmark,
+  the first against 1.0.4 (the Arm 0 item below);
   and the S-VBMC entry's account of the reported `elbo`, which the S-VBMC
   ELBO headline selection (below) may change. The "What's new in PyVBMC
   1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize the
@@ -220,6 +221,18 @@ records its execution.
   the analyses' outputs are an asset of the draft release
   `release-gate-stacking-20261002`, since they hold the cluster's
   details); their reading against the criteria is open.
+
+- [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
+  release code with `f91fdf0`, which held the modernization already; a
+  user upgrades from 1.0.4, so the release's claims of accuracy and speed
+  are made against 1.0.4 (PI, 2026-10-04). Arm 0 runs 1.0.4 as released
+  (`v1.0.4`, with gpyreg `v1.0.4`, each version on its own defaults) on
+  the `production` suite at seeds 0–99 on the cluster, compared seed by
+  seed with the after arm, and speed is measured apart on the developer's
+  machine. The [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
+  the harness's legacy profile, the rescoring across harness commits and
+  the checklist. The changelog's, the README's and the release notes'
+  statements against 1.0.4 wait for it.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's

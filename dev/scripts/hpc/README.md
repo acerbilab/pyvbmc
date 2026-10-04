@@ -138,6 +138,11 @@ git -C "$TREES/pyvbmc" worktree add --detach "$TREES/pyvbmc-f91fdf0" f91fdf0
 # The original S-VBMC 0.1.1 at 13a78f6, the stacking's original arm.
 git clone https://github.com/acerbilab/S-VBMC "$TREES/S-VBMC"
 git -C "$TREES/S-VBMC" checkout --detach 13a78f6
+
+# PyVBMC 1.0.4 (0bb8b8f5) and gpyreg 1.0.4 (3b1300a), for Arm 0.
+git -C "$TREES/pyvbmc" worktree add --detach "$TREES/pyvbmc-v1.0.4" v1.0.4
+git clone https://github.com/acerbilab/gpyreg "$TREES/gpyreg-v1.0.4"
+git -C "$TREES/gpyreg-v1.0.4" checkout --detach v1.0.4
 ```
 
 Confirm each commit with `git -C <tree> rev-parse --short HEAD`. The
@@ -229,7 +234,9 @@ holds the same libraries.
 The test modules of the contract, the driver and the three harnesses run
 as one batch job on the campaigns' node family, from the harness checkout,
 with the release trees: `REPO` the harness checkout, `PYVBMC_GPYREG_SOURCE`
-the gpyreg v1.4.0 checkout, `BASELINE_DIR` the S-VBMC checkout, and
+the gpyreg v1.4.0 checkout, `BASELINE_DIR` the S-VBMC checkout,
+`PYVBMC_LEGACY_SOURCE` and `PYVBMC_LEGACY_GPYREG_SOURCE` the checkouts of
+PyVBMC 1.0.4 and gpyreg 1.0.4, which a real case of 1.0.4 runs from, and
 `PYVBMC_SOURCE` unset. The subshell keeps those settings, and the
 `CAMPAIGN_DIR` whose `tmp/` becomes the job's `TMPDIR`, out of the shell
 you work in:
@@ -237,7 +244,9 @@ you work in:
 ```bash
 (
     export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0 \
-        BASELINE_DIR=$TREES/S-VBMC CAMPAIGN_DIR=$RUNS/environment_check
+        BASELINE_DIR=$TREES/S-VBMC CAMPAIGN_DIR=$RUNS/environment_check \
+        PYVBMC_LEGACY_SOURCE=$TREES/pyvbmc-v1.0.4 \
+        PYVBMC_LEGACY_GPYREG_SOURCE=$TREES/gpyreg-v1.0.4
     unset PYVBMC_SOURCE
     mkdir -p "$CAMPAIGN_DIR"
     cd "$REPO"
@@ -270,7 +279,8 @@ EOF
 `SBATCH_EXTRA` is split as the driver splits it. The pool, honest-ELBO and
 stacking modules generate short pools (the stacking module also stacks the
 shipped S-VBMC fixtures), and `test_population_run.py` makes two short
-real VBMC runs; the contract, driver and analysis modules run on stub
+real VBMC runs of the release code and one of 1.0.4, which it rescores and
+compares with them; the contract, driver and analysis modules run on stub
 commands and hand-made records. The check passes
 when the job exits 0, the `python:` line names the environment's
 interpreter (`$CAMPAIGN_ENV/bin/python`), every module's summary line counts tests passed and
@@ -510,6 +520,102 @@ FINISH_TIME=$ASSEMBLE_TIME FINISH_MEM=$ASSEMBLE_MEM \
     dev/scripts/hpc/campaign_finish.sh "$RUNS/stacking"
 ```
 
+#### Arm 0: PyVBMC 1.0.4
+
+PyVBMC 1.0.4, the release that users upgrade from, on the same 2400 cases
+as the population arms, compared seed by seed with the after arm
+([dev/plans/arm-1.0.4-comparison.md](../../plans/arm-1.0.4-comparison.md)).
+It runs with `HARNESS=dev/scripts/population_run.py` from a harness
+checkout at the commit the PI names, which holds the harness's legacy
+profile and is later than the after arm's, in the environment built from
+that commit's `campaign_requirements.txt`, on the after arm's node family:
+
+| Campaign | `PYVBMC_SOURCE` | `PYVBMC_GPYREG_SOURCE` |
+|---|---|---|
+| `population_v104` | `$TREES/pyvbmc-v1.0.4` | `$TREES/gpyreg-v1.0.4` |
+
+`prepare` recognizes 1.0.4 by its commit and prepares a legacy campaign:
+gpyreg `v1.0.4` exactly; the options of the population arms without
+`vectorized_target`, `performance_calibration` and `tol_elcbo_boost`, which
+1.0.4 does not define (`--options` naming one is refused); no `--pair`,
+since the after arm it is compared with exists already. Each run is fixed
+by NumPy's global state, which the worker seeds with the case's seed, and
+1.0.4 keeps every final boost it makes, at its own weight penalty. The
+canary and the rest go as for a population arm, with Arm 0's limits
+([Limits](#limits)):
+
+```bash
+CASES_SUBSET=canary TIME=$ARM0_CIGAR_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104" \
+    --suite production --seeds 0-99 --arm 1.0.4
+dev/scripts/hpc/campaign_finish.sh "$RUNS/population_v104" --allow-missing --no-archive
+```
+
+It must report 24 cases verified and the rest missing, none failed; then:
+
+```bash
+CASES_SUBSET=cigar_D15_exhaust TIME=$ARM0_CIGAR_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104"
+rest=$(awk -F/ '$1 != "cigar_D15_exhaust" { print NR }' \
+    "$RUNS/population_v104/cases.txt" | paste -sd, -)
+ARRAY=$rest TIME=$ARM0_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104"
+```
+
+and, when the queue is empty, the finish, which runs `verify` and
+`summarize` and writes the archive:
+
+```bash
+VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
+    dev/scripts/hpc/campaign_finish.sh "$RUNS/population_v104"
+```
+
+**The rescoring.** A legacy campaign does not rescore itself.
+`population_run.py rescore-arms` rescores it and the after arm with the
+release code, in one batch job from the harness checkout, with
+`PYVBMC_SOURCE` unset and the after arm's gpyreg, and writes
+`rescored/population_v104.json`, `rescored/population_after.json` and
+`rescoring.json` into `population_v104`. It needs the after arm's
+campaign directory, unpacked from its archive where it is gone; the after
+arm's 2400 cases must reproduce their in-run metrics exactly, which shows
+that the rescoring scores as the after arm's code did:
+
+```bash
+(
+    export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0
+    unset PYVBMC_SOURCE BASELINE_DIR CAMPAIGN_DIR
+    cd "$REPO"
+    sbatch --parsable -J rescore_arms -C "$NODE_FEATURE" \
+        --hint=nomultithread ${PARTITION:+-p "$PARTITION"} \
+        --cpus-per-task=1 --no-requeue \
+        --time="$RESCORE_TIME" --mem="$RESCORE_MEM" \
+        --output="$RUNS/population_v104/slurm/rescore_arms_%j.out" \
+        --export=ALL \
+        --wrap 'cd "$REPO" && source dev/scripts/hpc/campaign_env.sh \
+            && python -u dev/scripts/population_run.py rescore-arms \
+            --out "$RUNS/population_v104" \
+            --campaign "$RUNS/population_after"'
+)
+```
+
+It exits 0 and prints a line for each campaign, the after arm's with
+`equal to their in-run metrics` at 2400 for every metric. The finish
+archived the campaign before the rescoring, so the rescoring goes into an
+archive part of its own, beside the campaign's, in the same draft
+release:
+
+```bash
+tar -C "$RUNS/population_v104" -cf - rescored rescoring.json \
+    | "$CAMPAIGN_ENV/bin/zstd" -q -c > "$RUNS/population_v104.rescoring.tar.zst"
+(cd "$RUNS" && sha256sum population_v104.rescoring.tar.zst) \
+    > "$RUNS/population_v104.rescoring.tar.zst.sha256"
+```
+
+The campaign's tracked copies hold the rescoring
+(`campaign_redact.sh`, after `rescore-arms`), and
+`analyze_population_run.py --arms population_v104 population_after
+--rescoring population_v104` reads them.
+
 ### Reading the finish's report, and resubmitting
 
 The finish goes in this order.
@@ -616,7 +722,10 @@ each subset that needs its own, and `VERIFY_TIME`, `VERIFY_MEM`,
 `FINISH_TIME` and `FINISH_MEM` settings of each finish. In the commands
 above they are: `POP_TIME`, `CIGAR_TIME` and `POP_MEM` for the population
 tasks, `POP_VERIFY_TIME` and `POP_VERIFY_MEM` for their `verify`, and
-`RESCORE_TIME` and `RESCORE_MEM` for the after arm's finishing steps;
+`RESCORE_TIME` and `RESCORE_MEM` for the after arm's finishing steps and
+for Arm 0's `rescore-arms`; `ARM0_TIME`, `ARM0_CIGAR_TIME` and `ARM0_MEM`
+for Arm 0's tasks, whose 1.0.4 runs take longer than the release code's,
+from the local runs of 1.0.4 that its plan records;
 `POOL_TIME` and `POOL_MEM` for the pool tasks, whose `verify` fits the
 defaults; `STACK_TIME`, `STACK_MEM`,
 `M16_TIME`, `M16_MEM`, `M32_TIME` and `M32_MEM` for the stacking tasks,
@@ -653,7 +762,8 @@ beside its manifest and verification report: for the pools the selection
 and the summary; for each population arm the summary and every verified
 case's completion record, sidecar and boost report, and for the after arm,
 which rescores, also `rescored/*.json` and `rescoring.json` (the before arm
-holds no `rescored/`); for the stacking `results.json`, the summaries and
+holds no `rescored/`), as for Arm 0, which holds those of `rescore-arms`;
+for the stacking `results.json`, the summaries and
 `sources.json`. `analyze_population_run.py --arms` reads the copies of the
 two arms as it reads the campaigns, the rescored metrics from the
 candidate's by default (`--rescoring`), and `golden_replay.py --sidecars`

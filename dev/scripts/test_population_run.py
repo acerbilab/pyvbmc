@@ -395,7 +395,14 @@ def files_of(out, seed):
     }
 
 
-def complete_case(out, seed, exact_metrics=False, identity=None, shift=0.0):
+def complete_case(
+    out,
+    seed,
+    exact_metrics=False,
+    identity=None,
+    shift=0.0,
+    boost_penalty=None,
+):
     """Write a verified-looking case by hand, with a real posterior.
 
     With ``exact_metrics`` the sidecar's metrics, and the boost report's of
@@ -405,7 +412,8 @@ def complete_case(out, seed, exact_metrics=False, identity=None, shift=0.0):
     arrays, reproduces them; otherwise they are 0.1. ``identity`` is the
     one its record and its sidecar's provenance hold,
     :data:`FAKE_IDENTITY` by default; ``shift`` moves the posterior's
-    means.
+    means. With ``boost_penalty`` the run made a final boost at that weight
+    penalty and kept it; without, it made none.
     """
     identity = FAKE_IDENTITY if identity is None else identity
     vp = make_vbmc().vp
@@ -466,15 +474,22 @@ def complete_case(out, seed, exact_metrics=False, identity=None, shift=0.0):
         },
     }
     files["sidecar"].write_text(json.dumps(side, indent=1))
+    boosted = boost_penalty is not None
     state = {
         "pre": vp,
-        "candidate": None,
+        "candidate": vp if boosted else None,
         "returned": vp,
-        "attempted": False,
-        "accepted": False,
-        "tolerance": options["tol_elcbo_boost"],
-        "boost_options": None,
-        "boost_call": None,
+        "attempted": boosted,
+        "accepted": boosted,
+        "tolerance": options.get("tol_elcbo_boost"),
+        "boost_options": (
+            {"weight_penalty": boost_penalty} if boosted else None
+        ),
+        "boost_call": (
+            {"n_fast_opts": 1, "n_slow_opts": 1, "K_new": vp.K}
+            if boosted
+            else None
+        ),
     }
     files["boost_state"].write_bytes(dill.dumps(state))
     report = {
@@ -491,6 +506,8 @@ def complete_case(out, seed, exact_metrics=False, identity=None, shift=0.0):
         k: runner.scores(state[k]) for k in ("pre", "candidate", "returned")
     }
     report["metrics"] = {"pre": metric, "returned": metric}
+    if boosted:
+        report["metrics"]["candidate"] = metric
     runner.write_json(files["boost_report"], report)
     tag = contract.case_tag(line_of(seed))
     contract.write_completion(
@@ -501,7 +518,7 @@ def complete_case(out, seed, exact_metrics=False, identity=None, shift=0.0):
         copy.deepcopy(identity),
         time.time(),
         1.0,
-        {"boost": {"attempted": False, "accepted": False}},
+        {"boost": {"attempted": boosted, "accepted": boosted}},
     )
     return tag, files
 
@@ -1404,6 +1421,396 @@ def test_the_comparison_refuses_arms_of_other_families(tmp_path, monkeypatch):
 
 
 # --------------------------------------------------------------------------
+# Legacy campaigns
+# --------------------------------------------------------------------------
+
+#: The commit of PyVBMC 1.0.4, the legacy package of the harness.
+RELEASE_104 = "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d"
+#: The identity of a legacy arm: 1.0.4 with its own gpyreg, run by a later
+#: harness commit than :data:`FAKE_IDENTITY`'s, whose harness module
+#: differs and whose files that build and score a run do not.
+LEGACY_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+LEGACY_IDENTITY["source"]["trees"]["harness"]["commit"] = "f" * 40
+LEGACY_IDENTITY["source"]["trees"]["pyvbmc"]["commit"] = RELEASE_104
+LEGACY_IDENTITY["source"]["trees"]["gpyreg"]["commit"] = "e" * 40
+LEGACY_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+#: The release code run from that later harness commit, as ``rescore-arms``
+#: is: its package is the harness checkout, with the after arm's gpyreg.
+LATER_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+for _tree in ("harness", "pyvbmc"):
+    LATER_IDENTITY["source"]["trees"][_tree]["commit"] = "f" * 40
+LATER_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+
+
+def same_scoring_code(monkeypatch):
+    """The package's scoring code is the same at the stand-in commits of
+    the release code (no git history holds them)."""
+    release = {"0" * 40, "f" * 40}
+    monkeypatch.setattr(
+        runner,
+        "package_numerics_differ",
+        lambda a, b: not ({a, b} <= release or a == b),
+    )
+
+
+def test_legacy_profiles_and_options():
+    profile = runner.legacy_profile(LEGACY_IDENTITY)
+    assert profile == runner.LEGACY_PACKAGES[RELEASE_104]
+    assert profile["release"] == "1.0.4" and profile["gpyreg"] == "1.0.4"
+    assert runner.legacy_profile(FAKE_IDENTITY) is None
+    assert runner.legacy_profile({}) is None
+    options = runner.campaign_options(profile, {"display": "iter"})
+    assert options == {
+        "display": "iter",
+        "plot": False,
+        "print_iteration_header": False,
+    }
+    with pytest.raises(SystemExit, match="does not define the options"):
+        runner.campaign_options(profile, {"tol_elcbo_boost": 0.2})
+    assert runner.campaign_options(None, {}) == runner.DEFAULT_OPTIONS
+
+
+def test_prepare_a_legacy_campaign(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    legacy = prepare_other_arm(
+        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY
+    )
+    manifest = contract.read_json(legacy / "manifest.json")
+    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    assert manifest["legacy"] == profile
+    assert manifest["options"] == runner.campaign_options(profile, {})
+    # It does not rescore itself; it holds the rescoring of rescore-arms.
+    assert manifest["finishing_steps"] == [["summarize"]]
+    assert manifest["tracked_copies"] == runner.tracked_copies(True)
+    # Options the package does not define, and a pair, are refused.
+    with pytest.raises(SystemExit, match="does not define the options"):
+        prepare_other_arm(
+            tmp_path,
+            monkeypatch,
+            "with_options",
+            LEGACY_IDENTITY,
+            extra=["--options", '{"tol_elcbo_boost": 0.1}'],
+        )
+    # The refused preparation left its package tree and identity in place.
+    monkeypatch.delenv("PYVBMC_SOURCE")
+    after = tmp_path / "after"
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    monkeypatch.setenv("PYVBMC_SOURCE", str(tmp_path / "legacy_tree"))
+    use_identity(monkeypatch, LEGACY_IDENTITY)
+    with pytest.raises(SystemExit, match="only a campaign"):
+        runner.main(
+            ["prepare", "--out", str(tmp_path / "paired"), *ARGUMENTS]
+            + ["--pair", str(after)]
+        )
+
+
+def test_the_gpyreg_tree_of_a_legacy_package_is_its_profiles(
+    tmp_path, monkeypatch
+):
+    """A legacy package runs the gpyreg release its profile names, exactly,
+    whatever minimum its ``pyproject.toml`` names."""
+    home = tmp_path / "home"
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    for key, value in {
+        "HOME": str(home),
+        "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.invalid",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.invalid",
+    }.items():
+        monkeypatch.setenv(key, value)
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "pyproject.toml").write_text(
+        '[project]\nname = "pyvbmc"\ndependencies = ["gpyreg >= 0.1.0"]\n',
+        encoding="utf-8",
+    )
+    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    monkeypatch.setattr(
+        runner,
+        "package_profile",
+        lambda tree: copy.deepcopy(profile) if tree == package else None,
+    )
+
+    def repository(path, *tags):
+        path.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=path, check=True)
+        for tag in tags:
+            subprocess.run(
+                ["git", "commit", "-q", "--allow-empty", "-m", str(tag)],
+                cwd=path,
+                check=True,
+            )
+            if tag:
+                subprocess.run(["git", "tag", tag], cwd=path, check=True)
+        return path
+
+    trees = {"pyvbmc": package, "gpyreg": repository(tmp_path / "g", "v1.0.4")}
+    assert runner.gpyreg_release_problem(trees, False) is None
+    trees["gpyreg"] = repository(tmp_path / "h", "v1.0.4", "v1.4.0")
+    problem = runner.gpyreg_release_problem(trees, False)
+    assert "needs gpyreg 1.0.4 exactly, the release 1.0.4 runs with" in (
+        problem
+    )
+    trees["gpyreg"] = repository(tmp_path / "i", "v1.0.4", None)
+    assert "exactly" in runner.gpyreg_release_problem(trees, False)
+
+
+class StandInPackageVBMC:
+    """What the legacy shims construct: the options it is given, and the
+    first draw of NumPy's global state when it is constructed."""
+
+    def __init__(self, *args, options=None):
+        self.args = args
+        self.options = options
+        self.first_draw = np.random.random()
+
+
+def test_the_legacy_shims_seed_the_run_and_the_metrics(monkeypatch):
+    import benchmark_targets
+
+    import pyvbmc
+
+    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    package_vbmc = pyvbmc.VBMC
+    harness_metrics = runner.metrics
+    monkeypatch.setattr(runner, "VBMC", StandInPackageVBMC)
+    monkeypatch.setattr(
+        benchmark_targets, "metrics", lambda *args: np.random.random()
+    )
+    expected = np.random.RandomState(benchmark_targets.DIAG_SEED).random()
+    np.random.seed(99)
+    after_one_draw = np.random.RandomState(99)
+    after_one_draw.random()
+    with runner.legacy_shims(profile):
+        vbmc = pyvbmc.VBMC(
+            "target",
+            options={"display": "off", "performance_calibration": "off"},
+            seed=7,
+        )
+        # The run's global state is seeded with the case's seed; the
+        # options the package does not define are left out.
+        assert vbmc.first_draw == np.random.RandomState(7).random()
+        assert vbmc.options == {"display": "off"} and vbmc.args == ("target",)
+        np.random.seed(99)
+        np.random.random()
+        # The metrics draw from the global state seeded as their own
+        # generators are, and leave it as they found it.
+        for metrics in (benchmark_targets.metrics, runner.metrics):
+            assert metrics(None, None, 0.0) == expected
+        assert np.random.random() == after_one_draw.random()
+        with pytest.raises(RuntimeError, match="none was given"):
+            pyvbmc.VBMC("target", options={})
+    assert pyvbmc.VBMC is package_vbmc
+    assert runner.metrics is harness_metrics
+    # Without a profile nothing changes.
+    with runner.legacy_shims(None):
+        assert pyvbmc.VBMC is package_vbmc
+
+
+def test_the_capture_of_a_legacy_boost_records_the_global_state():
+    def optimize(options, optim_state, vp, gp, *args):
+        np.random.random()
+        vp.stats = {"elbo": -9.0, "elbo_sd": 0.1, "stable": False}
+        return vp, None, None
+
+    vbmc = make_vbmc()
+    np.random.seed(3)
+    before = copy.deepcopy(np.random.get_state())
+    with patch.object(runner.VBMC_MODULE, "optimize_vp", optimize):
+        with runner.BoostCapture(legacy=True) as capture:
+            vbmc.final_boost(vbmc.vp, object())
+    state = capture.state
+    for a, b in zip(state["rng_before"], before):
+        np.testing.assert_equal(a, b)
+    # The boost's draw moved the global state's position.
+    assert state["rng_after"][2] != before[2]
+    # A posterior without a generator is copied without one.
+    vp = SimpleNamespace(mu=np.zeros((2, 1)))
+    clone = runner.clone_vp(vp)
+    assert clone is not vp and not hasattr(clone, "rng")
+
+
+@pytest.fixture
+def legacy_arms(tmp_path, monkeypatch):
+    """``(legacy, after)``: a verified legacy arm, 1.0.4 run by a later
+    harness commit, and a verified arm of the release code, on one
+    allocation; the package's scoring code is the same at the stand-in
+    commits of the release code."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    same_scoring_code(monkeypatch)
+    after = tmp_path / "after"
+    use_identity(monkeypatch, FAKE_IDENTITY)
+    assert runner.main(["prepare", "--out", str(after), *ARGUMENTS]) == 0
+    for seed in range(3):
+        complete_case(after, seed, exact_metrics=True, boost_penalty=0)
+    assert runner.main(["verify", "--out", str(after)]) == 0
+    legacy = prepare_other_arm(
+        tmp_path, monkeypatch, "legacy", LEGACY_IDENTITY
+    )
+    for seed in range(3):
+        complete_case(
+            legacy,
+            seed,
+            exact_metrics=True,
+            identity=LEGACY_IDENTITY,
+            shift=0.2 * (seed + 1),
+            boost_penalty=0.1,
+        )
+    use_identity(monkeypatch, LEGACY_IDENTITY)
+    assert runner.main(["verify", "--out", str(legacy)]) == 0
+    use_identity(monkeypatch, LATER_IDENTITY)
+    return legacy, after
+
+
+def test_a_legacy_case_keeps_its_packages_boost(legacy_arms):
+    legacy, after = legacy_arms
+    # The legacy arm's boosts keep 1.0.4's weight penalty, which a case of
+    # the release code may not.
+    assert verification(legacy)[0]["counts"]["verified"] == 3
+    report = contract.read_json(files_of(legacy, 0)["boost_report"])
+    assert report["tolerance"] is None and report["accepted"]
+    for out, penalty, profile in (
+        (legacy, 0, runner.LEGACY_PACKAGES[RELEASE_104]),
+        (after, 0.1, None),
+    ):
+        _, files = complete_case(out, 1, boost_penalty=penalty)
+        options = contract.read_json(out / "manifest.json")["options"]
+        with pytest.raises(RuntimeError, match="penalty"):
+            runner.check_case_artifacts(
+                f"{LABEL}_seed1", files, options, profile
+            )
+
+
+def test_rescore_arms_and_the_comparison_of_a_legacy_arm(
+    legacy_arms, tmp_path
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    arguments = [
+        "rescore-arms",
+        "--out",
+        str(legacy),
+        "--campaign",
+        str(after),
+    ]
+    assert runner.main(arguments) == 0
+    record = contract.read_json(legacy / runner.RESCORING)
+    assert record["identity"] == LATER_IDENTITY
+    assert record["campaign"] == legacy.name
+    assert {
+        name: entry["own_scoring_code"]
+        for name, entry in record["rescored"].items()
+    } == {"legacy": False, "after": True}
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        assert record["rescored"][name]["sha256"] == runner.sha256(path)
+    result = analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+    assert result["legacy_reference"] == runner.LEGACY_PACKAGES[RELEASE_104]
+    assert result["paired_cases"] == 3
+    assert result["arms"]["candidate"]["rescored_equal_to_in_run"] == {
+        k: 3 for k in runner.RESCORED_METRICS
+    }
+    # The legacy boosts, which have no guard, kept every boost.
+    summary = result["boost_summary"]["reference"]
+    assert summary["attempted"] == summary["accepted"] == 3
+    # A rescoring that does not score as the candidate's code is refused.
+    changed = copy.deepcopy(record)
+    changed["identity"]["source"]["trees"]["gpyreg"]["commit"] = "9" * 40
+    for name in ("legacy", "after"):
+        path = legacy / "rescored" / f"{name}.json"
+        report = contract.read_json(path)
+        report["rescoring"]["identity"] = changed["identity"]
+        contract.write_json(path, report)
+        changed["rescored"][name]["sha256"] = runner.sha256(path)
+    contract.write_json(legacy / runner.RESCORING, changed)
+    with pytest.raises(AssertionError, match="does not score as"):
+        analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+
+
+def test_rescore_arms_refusals(legacy_arms, monkeypatch):
+    legacy, after = legacy_arms
+    arguments = [
+        "rescore-arms",
+        "--out",
+        str(legacy),
+        "--campaign",
+        str(after),
+    ]
+    # Only a legacy campaign holds such a rescoring.
+    with pytest.raises(SystemExit, match="no legacy campaign"):
+        runner.main(
+            ["rescore-arms", "--out", str(after), "--campaign", str(legacy)]
+        )
+    # It runs in the release code alone.
+    monkeypatch.setenv("PYVBMC_SOURCE", str(legacy.parent / "legacy_tree"))
+    assert runner.main(arguments) == contract.EXIT_IDENTITY
+    monkeypatch.delenv("PYVBMC_SOURCE")
+    # One campaign at least runs the process's scoring code, whose in-run
+    # metrics the rescoring must reproduce.
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: True)
+    with pytest.raises(SystemExit, match="none of the campaigns"):
+        runner.main(arguments)
+    assert not (legacy / runner.RESCORING).exists()
+
+
+def test_the_comparison_of_a_legacy_arm_needs_one_node_family(
+    legacy_arms, tmp_path, monkeypatch
+):
+    import analyze_population_run as analysis
+
+    legacy, after = legacy_arms
+    arguments = [
+        "rescore-arms",
+        "--out",
+        str(legacy),
+        "--campaign",
+        str(after),
+    ]
+    assert runner.main(arguments) == 0
+    monkeypatch.setattr(
+        runner,
+        "node_family",
+        lambda campaign: "u8" if Path(campaign) == legacy else "u7",
+    )
+    with pytest.raises(AssertionError, match="node families"):
+        analysis.analyze_arms(legacy, after, legacy, tmp_path / "report")
+
+
+def test_scoring_and_legacy_pair_differences(monkeypatch):
+    same_scoring_code(monkeypatch)
+    assert runner.scoring_differences(LATER_IDENTITY, FAKE_IDENTITY) == []
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, FAKE_IDENTITY) == []
+    other = copy.deepcopy(FAKE_IDENTITY)
+    other["source"]["files"]["dev/scripts/benchmark_targets.py"] = "3" * 64
+    other["source"]["versions"]["numpy"] = "3"
+    other["source"]["trees"]["gpyreg"]["clean"] = False
+    assert runner.scoring_differences(LATER_IDENTITY, other) == [
+        "environment versions",
+        "dev/scripts/benchmark_targets.py",
+        "a gpyreg tree that is not clean",
+    ]
+    assert runner.legacy_pair_differences(LEGACY_IDENTITY, other) == [
+        "the arms have different environment versions",
+        "the arms have different dev/scripts/benchmark_targets.py",
+    ]
+    assert "the package's scoring code" in runner.scoring_differences(
+        LEGACY_IDENTITY, FAKE_IDENTITY
+    )
+    assert "would compare the code with itself" in "".join(
+        runner.legacy_pair_differences(LEGACY_IDENTITY, LEGACY_IDENTITY)
+    )
+
+
+# --------------------------------------------------------------------------
 # The returned posterior as plain arrays
 # --------------------------------------------------------------------------
 
@@ -1902,3 +2309,63 @@ def test_a_case_that_fails_its_checks_fails_in_the_worker(
     assert not files_of(campaign, 0)["sidecar"].exists()
     assert runner.main(["verify", "--out", str(campaign)]) == 0
     assert verification(campaign)[1][1]["status"] == "failed"
+
+
+@pytest.fixture(scope="module")
+def real_legacy(real, tmp_path_factory):
+    """``(legacy, ran)``: one case of PyVBMC 1.0.4 (``normal_D2`` at seed 0)
+    run by the worker as a legacy campaign and verified, and the rescoring
+    of it and of the release code's real case (:func:`real`) that
+    ``rescore-arms`` writes into it. ``PYVBMC_LEGACY_SOURCE`` names a
+    checkout of 1.0.4 and ``PYVBMC_LEGACY_GPYREG_SOURCE`` one of gpyreg
+    1.0.4; without them the tests skip."""
+    tree = os.environ.get("PYVBMC_LEGACY_SOURCE")
+    legacy_gpyreg = os.environ.get("PYVBMC_LEGACY_GPYREG_SOURCE")
+    if not tree or not legacy_gpyreg:
+        pytest.skip(
+            "PYVBMC_LEGACY_SOURCE and PYVBMC_LEGACY_GPYREG_SOURCE name no "
+            "checkouts of PyVBMC 1.0.4 and gpyreg 1.0.4"
+        )
+    env = harness_environment(Path(legacy_gpyreg).resolve())
+    env["PYVBMC_SOURCE"] = str(Path(tree).resolve())
+    legacy = tmp_path_factory.mktemp("legacy") / "legacy"
+    arguments = ["--suite", "smoke", "--labels", LABEL, "--seeds", "0"]
+    harness("prepare", "--out", legacy, *arguments, "--arm", "1.0.4", env=env)
+    harness("worker", "--out", legacy, "--case", line_of(0), env=env)
+    harness("verify", "--out", legacy, env=env)
+    ran, _ = real
+    release = harness_environment(gpyreg_checkout())
+    harness("rescore-arms", "--out", legacy, "--campaign", ran, env=release)
+    return legacy, ran
+
+
+def test_a_real_legacy_case_is_run_rescored_and_compared(
+    real_legacy, tmp_path
+):
+    import analyze_population_run as analysis
+
+    legacy, ran = real_legacy
+    report, _ = verification(legacy)
+    assert report["counts"]["verified"] == 1 and report["exit_code"] == 0
+    manifest = contract.read_json(legacy / "manifest.json")
+    assert manifest["legacy"]["release"] == "1.0.4"
+    rels = runner.case_files(LABEL, 0)
+    side = contract.read_json(legacy / rels["sidecar"])
+    # 1.0.4 ran, from its own tree: asked for no machine calibration, which
+    # it does not have, and with no guard on its final boost.
+    tree = Path(os.environ["PYVBMC_LEGACY_SOURCE"]).resolve()
+    assert Path(side["meta"]["pyvbmc_source"]["path"]).parent == tree
+    assert side["requested_options"]["performance_calibration"] == "off"
+    assert side["effective_options"]["performance_calibration"] is None
+    boost = contract.read_json(legacy / rels["boost_report"])
+    assert boost["tolerance"] is None
+    # The release code reproduced its own case exactly and rescored 1.0.4's.
+    record = contract.read_json(legacy / runner.RESCORING)
+    assert record["rescored"][ran.name]["own_scoring_code"]
+    assert not record["rescored"][legacy.name]["own_scoring_code"]
+    rescored = contract.read_json(legacy / "rescored" / f"{legacy.name}.json")
+    case = rescored["cases"][f"{LABEL}_seed0"]
+    assert all(case["finite"].values())
+    result = analysis.analyze_arms(legacy, ran, legacy, tmp_path / "report")
+    assert result["paired_cases"] == 1
+    assert result["legacy_reference"]["release"] == "1.0.4"
