@@ -117,16 +117,19 @@ posterior (``I_sk`` and ``J_sjk``) at face value, so where that uncertainty
 is miscalibrated it corrects too little or too much. Its run-level step
 counts the differences between the runs' own biases as real differences
 between the runs, so it removes only part of the optimism of favoring the
-runs that came out highest. Its within-run step, on the other hand, can
-also remove part of the bias that the runs inherit. On our benchmarks the
-optimism that the run-level step leaves and the inherited bias that the
-within-run step removes roughly balanced: the headline of a noisy stack was
-about as biased as the runs it was built from. The raw ELBO is not an upper bound on the
-stack's true ELBO: it can fall below it where the runs' own ELBOs are
-pessimistic, and the shrinkage estimate can lie on either side of it. On a
-noiseless stack, stacking adds little bias and shrinkage changes the value
-little, so the headline is the raw ELBO, and ``shrunk_two_level`` is
-reported beside it.
+runs that came out highest. Its within-run step, on the other hand, can also
+remove part of the bias that the runs inherit. On our benchmarks, which
+optimized every weight (the default ``version``), the optimism that the
+run-level step leaves and the inherited bias that the within-run step
+removes roughly balanced: the headline of a noisy stack was about as biased
+as the runs it was built from. With ``version="ns"`` no weights are selected
+and stacking adds no such optimism, but the within-run step still applies
+and can lower the headline below the raw value, which then carries the runs'
+own bias alone. The raw ELBO is not an upper bound on the stack's true ELBO:
+it can fall below it where the runs' own ELBOs are pessimistic, and the
+shrinkage estimate can lie on either side of it. On a noiseless stack,
+stacking adds little bias and shrinkage changes the value little, so the
+headline is the raw ELBO, and ``shrunk_two_level`` is reported beside it.
 
 ``stacked.elbo_details`` contains the complete report:
 

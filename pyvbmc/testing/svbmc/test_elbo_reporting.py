@@ -692,6 +692,7 @@ def test_tips_pass_their_links_to_the_emitter():
         )
     assert urls_seen == [TIPS[1].urls, TIPS[2].urls]
     assert all(urls for urls in urls_seen)
+    assert all(tip.urls for tip in TIPS)
 
 
 def test_tip_cadence_noisy_priority_and_once_only():

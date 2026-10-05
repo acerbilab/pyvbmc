@@ -89,8 +89,10 @@ The regression file predates the report's `shrunk_two_level` and
 `shrinkage_noise_share` keys. `test_svbmc_references.py` therefore requires
 the current report to contain exactly the stored keys plus these two, then
 compares every stored value against its fixed reference, except as the next
-paragraph describes. The two added values are covered by algebra, integration and
-historical-reference parity tests and do not require a fixture rebaseline.
+paragraph describes. The two added values are covered by algebra,
+integration and historical-reference parity tests, and in the noisy cells
+`shrunk_two_level` by the literals the next paragraph describes; they do not
+require a fixture rebaseline.
 
 The file also predates the shrinkage headline of noisy stacks. In the three
 `upstream_GMM_noisy` cells, the only noisy ones, the stored `elbo` is the
@@ -104,11 +106,17 @@ test pins the noisy cells' headline with literals of its own
 (`SHRUNK_TWO_LEVEL`), at the same tolerance and with a check that every
 noisy cell has one. They were computed on 2026-10-05 by the same recipe at
 `39bc986d` (Python 3.12.6 on Windows, NumPy 2.5.3, Torch 2.14.0 CPU, one
-thread); the same run reproduced the stored weights. To move them on
-purpose, replace the literals and record why here. The estimator itself is checked by
-`test_elbo_shrinkage.py` and by `dev/scripts/test_svbmc_shrinkage_parity.py`,
-which runs only when named and compares it with its historical reference on
-four of the fixture groups, `upstream_GMM_noisy` among them.
+thread); the same run reproduced the stored weights. No generator writes
+them: to move them on purpose, run the recipe above on each noisy cell, take
+`stacked.elbo_details["shrunk_two_level"]` with `repr`, replace the
+literals, and update this paragraph with the date, the commit, the
+environment and the reason. A regeneration of `references.npz` would store
+the shrinkage headline as `elbo` itself, and the test's mapping of the
+stored capped headline and its literals are then to be removed. The
+estimator itself is checked by `test_elbo_shrinkage.py` and by
+`dev/scripts/test_svbmc_shrinkage_parity.py`, which runs only when named and
+compares it with its historical reference on four of the fixture groups,
+`upstream_GMM_noisy` among them.
 
 The 2026-09-12 rebaseline is intentional and implements the PI-approved
 [ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian
@@ -149,7 +157,7 @@ of the classes as they are").
 | `test_svbmc_save_and_load.py` | `bounded_D2`, `corr_D3` via `load_group(group, rng=0)` | exact: every attribute of the loaded object, generator states included, its draws and a later optimization |
 | `test_svbmc_saved_stack.py` | `saved/bounded_D2.pkl` and its sidecar; the `bounded_D2` snapshots | state exact; draws at `rtol=1e-12`, `atol=1e-12`; runs without torch |
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
-| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
+| `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references`; its own `SHRUNK_TWO_LEVEL` for the noisy cells | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
 | `test_entropy.py` | `normal_D1`, `bounded_D2`, `corr_D3` and the first three `upstream_GMM` posteriors via `load_group(group, rng=0)` | the per-run entropy preparation and vectorized reduction against literal per-component transcriptions of the same estimator, at 1 and 3 draws per component: density matrix, entropy, weight gradient and stratified variance at `rtol=1e-12`, `atol=1e-12`; generator state and chunking exact. The reduction by chunks of rows against the whole matrix, at 1, 2 and 100 draws per component and chunks from one row to more than the matrix has: generator calls and state, rows, mixture log densities, entropy and variance exact. The checks of the density matrix and its chunks run without torch |
 | `test_elbo_reporting.py` | synthetic posteriors, `bounded_D2`, `corr_D3` and `upstream_GMM` via `load_group(group, rng=0)`, and `upstream_GMM_00`, `upstream_GMM_noisy_00` via `load_vp` | covariance and stratified variance algebra; noise inference, headline selection, final evaluation and tips contracts |
 | `test_jacobian.py` | synthetic posteriors | analytic affine/probit expectations, independent integration, seeded broad/warped Monte Carlo checks and explicit nonconvergence |

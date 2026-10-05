@@ -326,8 +326,9 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   its entropy code in particular. It holds no value of the two-level
   shrinkage estimate (`pyvbmc/svbmc/_elbo_shrinkage.py`), the headline of a
   noisy stack: `pyvbmc/testing/svbmc/test_svbmc_references.py` pins that
-  headline in the noisy cells with literals of its own (`FIXTURES.md` beside
-  it says how to move them), and `test_elbo_shrinkage.py` there and
+  headline in its noisy cells (the group `upstream_GMM_noisy`, every mode)
+  with literals of its own, which `FIXTURES.md` beside it says how to move,
+  and `pyvbmc/testing/svbmc/test_elbo_shrinkage.py` and
   `dev/scripts/test_svbmc_shrinkage_parity.py`, which runs only when named,
   check the estimator itself.
 
