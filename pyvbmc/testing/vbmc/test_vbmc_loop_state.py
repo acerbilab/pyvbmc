@@ -119,10 +119,10 @@ def test_the_recorded_hyperparameters_are_the_chain_before_thinning(
 def test_a_warmup_iteration_stores_the_recomputed_lcb_maxima(two_iterations):
     """From its second iteration on, a run in warm-up replaces the maxima
     of the lower confidence bound that the warm-up criteria read with their
-    recomputation under the current GP when ``recompute_lcb_max`` is on, as
-    it is in the shared run (MATLAB VBMC, ``vbmc.m:814-817``). The run ends in
-    warm-up, and nothing changes its GP or its training set after the
-    last iteration, so the stored sequence is the recomputation of the
+    recomputation under the current GP when ``recompute_lcb_max`` is on
+    (MATLAB VBMC, ``vbmc.m:814-817``), as it is in the shared run. The run
+    ends in warm-up, and nothing changes its GP or its training set after
+    the last iteration, so the stored sequence is the recomputation of the
     final state."""
     vbmc = two_iterations
     assert vbmc.options["recompute_lcb_max"]
@@ -136,18 +136,19 @@ def test_a_warmup_iteration_stores_the_recomputed_lcb_maxima(two_iterations):
 
 
 def test_without_recompute_lcb_max_a_warmup_iteration_stores_nothing():
-    """With ``recompute_lcb_max`` off the run stores no recomputed maxima,
-    so the warm-up criteria read the maxima that each iteration recorded.
-    A new run holds none either."""
+    """With ``recompute_lcb_max`` off, as it is by default in Arm 3
+    (``dev/plans/arm-3-warmup-comparison.md``), the run stores no
+    recomputed maxima, so the warm-up criteria read the maxima that each
+    iteration recorded. A new run holds none either."""
     vbmc = build_short(
         {
             "max_iter": 2,
             "min_iter": 2,
             "max_fun_evals": 60,
             "do_final_boost": False,
-            "recompute_lcb_max": False,
         }
     )
+    assert vbmc.options["recompute_lcb_max"] is False
     assert "lcb_max_vec" not in vbmc.optim_state
 
     vbmc.optimize()
