@@ -3175,7 +3175,8 @@ def tracked_files(campaign, manifest, verification, records):
         else:
             raise ContractError(
                 f"{campaign} holds no {pattern}, which its tracked copies "
-                "declare; the finish writes it"
+                "declare; the finish writes it, or a step that runs after it "
+                "(rescore-arms, for a legacy population campaign)"
             )
     for case in verification.get("cases", []):
         if case.get("status") != "verified":

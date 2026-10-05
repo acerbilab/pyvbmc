@@ -248,7 +248,13 @@ def sited(site, identity, node=None):
 
 
 def write_arm(
-    root, role, pyvbmc_commit, files=None, site=None, metric_errors=None
+    root,
+    role,
+    pyvbmc_commit,
+    files=None,
+    site=None,
+    metric_errors=None,
+    legacy=None,
 ):
     """One arm of array mode, its cases verified.
 
@@ -258,7 +264,10 @@ def write_arm(
     the directory the task logs, the accounting and a summary.
     ``metric_errors`` maps ``(label, seed)`` to the boost stages whose
     metrics are the error of a scoring that failed, as the harness keeps
-    it for a posterior the run did not return.
+    it for a posterior the run did not return. With ``legacy``, a legacy
+    profile of ``population_run.LEGACY_PACKAGES``, the arm is a legacy
+    campaign: no guard on its boost, which it kept every time, and the
+    options of the package alone; its tracked copies hold the rescoring.
     """
     path = root / role
     manifest = {
@@ -269,16 +278,20 @@ def write_arm(
             "labels": list(LABELS),
             "seeds": SEEDS,
         },
-        "options": {"tol_elcbo_boost": 0.1},
+        "options": {} if legacy else {"tol_elcbo_boost": 0.1},
         "confirmatory": runner.confirmatory_family(None, LABELS),
         "identity": {"source": source(pyvbmc_commit, files), "imports": {}},
     }
+    if legacy:
+        manifest["legacy"] = legacy
     if site is not None:
         manifest["identity"] = sited(site, manifest["identity"])
         manifest.update(
             site=site.site_block("dev/scripts/population_run.py"),
             pip_freeze=[f"gpyreg @ file://{site.gpyreg.as_posix()}"],
-            tracked_copies=runner.tracked_copies(role == "candidate"),
+            tracked_copies=runner.tracked_copies(
+                role == "candidate" or bool(legacy)
+            ),
         )
     runner.write_json(path / "manifest.json", manifest)
     cases, rescored = [], {}
@@ -314,7 +327,7 @@ def write_arm(
         report = {
             "attempted": True,
             "accepted": True,
-            "tolerance": 0.1,
+            "tolerance": None if legacy else 0.1,
             "scores": {
                 "pre": {"elbo": final["elbo"] - 0.05, "elbo_sd": 0.01},
                 "candidate": {"elbo": final["elbo"], "elbo_sd": 0.01},
@@ -573,6 +586,52 @@ def test_a_boost_report_whose_returned_metrics_failed_is_refused(tmp_path):
     )
     with pytest.raises(AssertionError, match="returned"):
         analysis.boost_record(report, "case", LABELS[0], {})
+
+
+def write_boost(path, accepted, tolerance, candidate_elbo=-3.0):
+    """A boost report of one attempted boost, whose candidate scores
+    ``candidate_elbo`` against the pre-boost posterior's -2.0; returns the
+    run's metrics, those of every stage."""
+    quality = {"elbo_err": 0.1, "gskl": 0.1, "mmtv": 0.05}
+    returned = candidate_elbo if accepted else -2.0
+    runner.write_json(
+        path,
+        {
+            "attempted": True,
+            "accepted": accepted,
+            "tolerance": tolerance,
+            "scores": {
+                "pre": {"elbo": -2.0, "elbo_sd": 0.01},
+                "candidate": {"elbo": candidate_elbo, "elbo_sd": 0.01},
+                "returned": {"elbo": returned, "elbo_sd": 0.01},
+            },
+            "metrics": {
+                stage: dict(quality)
+                for stage in ("pre", "candidate", "returned")
+            },
+        },
+    )
+    return quality
+
+
+def test_a_legacy_boost_keeps_every_boost(tmp_path):
+    """A legacy package, which has no guard, keeps a boost that the guard
+    would reject; it may reject none, and its report holds no tolerance."""
+    path = tmp_path / "boost.json"
+    quality = write_boost(path, True, None)
+    record = analysis.boost_record(path, "t", LABELS[0], quality, legacy=True)
+    assert record["accepted"] and record["worst_score_change"] < -0.1
+    write_boost(path, False, None)
+    with pytest.raises(AssertionError):
+        analysis.boost_record(path, "t", LABELS[0], quality, legacy=True)
+    write_boost(path, True, 0.1)
+    with pytest.raises(AssertionError):
+        analysis.boost_record(path, "t", LABELS[0], quality, legacy=True)
+    # The guard of the code of these harness modules rejects that boost.
+    with pytest.raises(AssertionError):
+        analysis.boost_record(path, "t", LABELS[0], quality)
+    write_boost(path, False, 0.1)
+    assert not analysis.boost_record(path, "t", LABELS[0], quality)["accepted"]
 
 
 def write_reference(directory, manifest_path, stems):
@@ -895,3 +954,59 @@ def test_the_redacted_copies_give_the_same_assessment(tmp_path):
             None,
             tmp_path / "again",
         )
+
+
+def test_a_legacy_reference_on_redacted_copies(tmp_path, monkeypatch):
+    """A legacy arm, 1.0.4, and the arm of the release code, run at a
+    stand-in site, with the rescoring of both written into the legacy arm
+    as rescore-arms writes it: the redacted copies hold none of the site's
+    details and give the report the campaigns give."""
+    release_104 = next(iter(runner.LEGACY_PACKAGES))
+    profile = runner.LEGACY_PACKAGES[release_104]
+    files = {rel: "5" * 64 for rel in runner.RUN_FILES}
+    site = stubs.FakeSite(tmp_path)
+    runs = site.home / "runs"
+    legacy, old = write_arm(
+        runs, "legacy", release_104, files=files, site=site, legacy=profile
+    )
+    candidate, after = write_arm(
+        runs, "candidate", HARNESS, files=files, site=site
+    )
+    # The release code's arm holds its own rescoring, as its rescore step
+    # writes it, and the legacy arm that of rescore-arms.
+    for holder, rescored in (
+        (candidate, {candidate: after}),
+        (legacy, {legacy: old, candidate: after}),
+    ):
+        write_rescoring(
+            holder,
+            rescored,
+            site=site,
+            rescoring_source=source(HARNESS, files),
+        )
+    raw = analysis.analyze_arms(legacy, candidate, None, tmp_path / "raw")
+    assert raw["legacy_reference"] == profile
+    assert raw["boost_summary"]["reference"]["accepted"] == len(old)
+    tracked = tmp_path / "handback" / "release_gate"
+    for arm, name in ((legacy, "population_v104"), (candidate, "after")):
+        contract.redact(
+            arm,
+            tracked / name,
+            operator=site.operator(),
+            environ={},
+            host="fakelogin9",
+            say=lambda message: None,
+        )
+    assert site.leaks(tracked) == []
+    copies = tracked / "population_v104"
+    assert (copies / "rescored" / "candidate.json").is_file()
+    assert (copies / runner.RESCORING).is_file()
+    assert runner.node_family(copies) == runner.node_family(legacy)
+    result = analysis.analyze_arms(
+        copies, tracked / "after", None, tmp_path / "copies"
+    )
+    assert result["paired_cases"] == 200
+    for name in ("assessment.json", "comparison.md"):
+        assert (tmp_path / "copies" / name).read_bytes() == (
+            tmp_path / "raw" / name
+        ).read_bytes(), name

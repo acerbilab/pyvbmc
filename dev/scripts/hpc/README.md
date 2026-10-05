@@ -138,6 +138,11 @@ git -C "$TREES/pyvbmc" worktree add --detach "$TREES/pyvbmc-f91fdf0" f91fdf0
 # The original S-VBMC 0.1.1 at 13a78f6, the stacking's original arm.
 git clone https://github.com/acerbilab/S-VBMC "$TREES/S-VBMC"
 git -C "$TREES/S-VBMC" checkout --detach 13a78f6
+
+# PyVBMC 1.0.4 (0bb8b8f5) and gpyreg 1.0.4 (3b1300a), for Arm 0.
+git -C "$TREES/pyvbmc" worktree add --detach "$TREES/pyvbmc-v1.0.4" v1.0.4
+git clone https://github.com/acerbilab/gpyreg "$TREES/gpyreg-v1.0.4"
+git -C "$TREES/gpyreg-v1.0.4" checkout --detach v1.0.4
 ```
 
 Confirm each commit with `git -C <tree> rev-parse --short HEAD`. The
@@ -229,7 +234,9 @@ holds the same libraries.
 The test modules of the contract, the driver and the three harnesses run
 as one batch job on the campaigns' node family, from the harness checkout,
 with the release trees: `REPO` the harness checkout, `PYVBMC_GPYREG_SOURCE`
-the gpyreg v1.4.0 checkout, `BASELINE_DIR` the S-VBMC checkout, and
+the gpyreg v1.4.0 checkout, `BASELINE_DIR` the S-VBMC checkout,
+`PYVBMC_LEGACY_SOURCE` and `PYVBMC_LEGACY_GPYREG_SOURCE` the checkouts of
+PyVBMC 1.0.4 and gpyreg 1.0.4, which a real case of 1.0.4 runs from, and
 `PYVBMC_SOURCE` unset. The subshell keeps those settings, and the
 `CAMPAIGN_DIR` whose `tmp/` becomes the job's `TMPDIR`, out of the shell
 you work in:
@@ -237,7 +244,9 @@ you work in:
 ```bash
 (
     export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0 \
-        BASELINE_DIR=$TREES/S-VBMC CAMPAIGN_DIR=$RUNS/environment_check
+        BASELINE_DIR=$TREES/S-VBMC CAMPAIGN_DIR=$RUNS/environment_check \
+        PYVBMC_LEGACY_SOURCE=$TREES/pyvbmc-v1.0.4 \
+        PYVBMC_LEGACY_GPYREG_SOURCE=$TREES/gpyreg-v1.0.4
     unset PYVBMC_SOURCE
     mkdir -p "$CAMPAIGN_DIR"
     cd "$REPO"
@@ -270,7 +279,8 @@ EOF
 `SBATCH_EXTRA` is split as the driver splits it. The pool, honest-ELBO and
 stacking modules generate short pools (the stacking module also stacks the
 shipped S-VBMC fixtures), and `test_population_run.py` makes two short
-real VBMC runs; the contract, driver and analysis modules run on stub
+real VBMC runs of the release code and one of 1.0.4, which it rescores and
+compares with one of them; the contract, driver and analysis modules run on stub
 commands and hand-made records. The check passes
 when the job exits 0, the `python:` line names the environment's
 interpreter (`$CAMPAIGN_ENV/bin/python`), every module's summary line counts tests passed and
@@ -510,6 +520,173 @@ FINISH_TIME=$ASSEMBLE_TIME FINISH_MEM=$ASSEMBLE_MEM \
     dev/scripts/hpc/campaign_finish.sh "$RUNS/stacking"
 ```
 
+#### Arm 0: PyVBMC 1.0.4
+
+PyVBMC 1.0.4, the release that users upgrade from, on the same 2400 cases
+as the population arms, compared seed by seed with the after arm
+([dev/plans/arm-1.0.4-comparison.md](../../plans/arm-1.0.4-comparison.md)).
+It runs with `HARNESS=dev/scripts/population_run.py`, in the environment
+built from the harness commit's `campaign_requirements.txt`, on the after
+arm's node family:
+
+| Campaign | `PYVBMC_SOURCE` | `PYVBMC_GPYREG_SOURCE` |
+|---|---|---|
+| `population_v104` | `$TREES/pyvbmc-v1.0.4` | `$TREES/gpyreg-v1.0.4` |
+
+**The harness commit.** The PI names it: a commit later than the after
+arm's, which holds the harness's legacy profile, and whose package code
+(all of `pyvbmc/` but its tests and S-VBMC), files that build and score a
+run (`golden_trace.py`, `profile_run.py`, `benchmark_targets.py`,
+`dev/scripts/data`) and `campaign_requirements.txt` are the after arm's,
+since `rescore-arms` rescores the after arm with that commit's package and
+must reproduce its metrics exactly. Move the harness checkout to it, with
+`LOGIN_SETUP` run first, and run [the environment
+check](#the-environment-check) again there before the canary:
+
+```bash
+git -C "$TREES/pyvbmc" fetch origin
+git -C "$TREES/pyvbmc" checkout --detach <Arm 0 commit>
+```
+
+**The after arm's directory.** `prepare --compare` and `rescore-arms` read
+the after arm's campaign directory at `$RUNS/population_after`. Where it is
+gone, restore it there from its archive, checking the SHA-256 that the
+hand-back's README records, so that its path is the one that the
+redaction names `$CAMPAIGN_PARENT/population_after`:
+
+```bash
+"$CAMPAIGN_ENV/bin/gh" release download release-gate-population-after-<date> \
+    --repo acerbilab/pyvbmc --dir "$RUNS"
+(cd "$RUNS" && sha256sum -c population_after.tar.zst.sha256)
+cat "$RUNS"/population_after.tar.zst.[0-9][0-9][0-9] \
+    | "$CAMPAIGN_ENV/bin/zstd" -d | tar -C "$RUNS" -x
+```
+
+The after arm is read and never finished again: its tracked copies, in the
+repository, name the verification report it holds.
+
+**The campaign.** `prepare` recognizes 1.0.4 by its commit and prepares a
+legacy campaign: a clean 1.0.4 tree; gpyreg `v1.0.4` exactly; the options of
+the population arms without `vectorized_target`, `performance_calibration`
+and `tol_elcbo_boost`, which 1.0.4 does not define (`--options` naming an
+option that 1.0.4's option files do not define is refused); and `--pair`
+refused, as for every campaign whose package is not the harness
+checkout's. `--compare` names the after arm, and `prepare` refuses, before
+any case runs, what the comparison would refuse after the runs: another
+allocation or confirmatory family, other options, other files that build
+and score a run, other environment versions, another node family, and a
+harness checkout whose package code is not the after arm's. Each run is
+fixed by NumPy's global state, which the worker seeds with the case's seed,
+and 1.0.4 keeps every final boost it makes, at its own weight penalty. The
+canary and the rest go as for a population arm, with Arm 0's limits
+([Limits](#limits)):
+
+```bash
+CASES_SUBSET=canary TIME=$ARM0_CIGAR_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104" \
+    --suite production --seeds 0-99 --arm 1.0.4 \
+    --compare "$RUNS/population_after"
+dev/scripts/hpc/campaign_finish.sh "$RUNS/population_v104" --allow-missing --no-archive
+```
+
+It must report 24 cases verified and the rest missing, none failed; then:
+
+```bash
+CASES_SUBSET=cigar_D15_exhaust TIME=$ARM0_CIGAR_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104"
+rest=$(awk -F/ '$1 != "cigar_D15_exhaust" { print NR }' \
+    "$RUNS/population_v104/cases.txt" | paste -sd, -)
+ARRAY=$rest TIME=$ARM0_TIME MEM=$ARM0_MEM \
+    dev/scripts/hpc/campaign_submit.sh "$RUNS/population_v104"
+```
+
+and, when the queue is empty, the finish, which runs `verify` and
+`summarize` and writes the archive:
+
+```bash
+VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
+    dev/scripts/hpc/campaign_finish.sh "$RUNS/population_v104"
+```
+
+**The rescoring.** A legacy campaign does not rescore itself.
+`population_run.py rescore-arms` rescores the after arm, first, and then
+Arm 0 with the release code, in one batch job from the harness checkout at
+Arm 0's commit, with `PYVBMC_SOURCE` unset and the after arm's gpyreg, and
+writes `rescored/population_after.json`, `rescored/population_v104.json`
+and `rescoring.json` into `population_v104`. The after arm's 2400 cases
+must reproduce their in-run metrics exactly, which shows that the
+rescoring scores as the after arm's code did; the campaign it rescores
+beside Arm 0 is the one `--compare` named. The subshell keeps the job's
+settings out of the shell you work in:
+
+```bash
+(
+    export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0 \
+        CAMPAIGN_DIR=$RUNS/population_v104
+    unset PYVBMC_SOURCE BASELINE_DIR
+    cd "$REPO"
+    read -r -d '' -a extra <<< "${SBATCH_EXTRA:-}" || true
+    sbatch -J rescore_arms -C "$NODE_FEATURE" --hint=nomultithread \
+        ${PARTITION:+-p "$PARTITION"} --cpus-per-task=1 --no-requeue \
+        --time="$RESCORE_TIME" --mem="$RESCORE_MEM" \
+        --output="$CAMPAIGN_DIR/slurm/rescore_arms_%j.out" --export=ALL \
+        ${extra[@]+"${extra[@]}"} <<'EOF'
+#!/bin/bash
+set -uo pipefail
+cd "$REPO"
+source dev/scripts/hpc/campaign_env.sh || exit 1
+python -u dev/scripts/population_run.py rescore-arms --out "$CAMPAIGN_DIR"
+EOF
+)
+```
+
+It exits 0 and prints a line for each campaign, the after arm's with
+`equal to their in-run metrics` at 2400 for every metric. `sacct -j <job>`
+gives its time and memory for the hand-back's README. A later finish of
+Arm 0 rewrites its verification report, which the rescoring names: run
+`rescore-arms` again after it, which takes the cases it rescored from its
+work files, before the redaction. The finish archived the campaign before
+the rescoring, so the rescoring and its log go into an archive part of
+their own, with the campaign's directory at its top, as in the finish's:
+
+```bash
+tar -C "$RUNS" -cf - population_v104/rescored population_v104/rescoring.json \
+    population_v104/slurm/rescore_arms_*.out \
+    | "$CAMPAIGN_ENV/bin/zstd" -q -c > "$RUNS/population_v104.rescoring.tar.zst"
+(cd "$RUNS" && sha256sum population_v104.rescoring.tar.zst) \
+    > "$RUNS/population_v104.rescoring.tar.zst.sha256"
+```
+
+**The hand-back** goes as for the release gate's campaigns ([The tracked
+copies, the archive and the hand-back](#the-tracked-copies-the-archive-and-the-hand-back)),
+after `rescore-arms`: the tracked copies, which hold the rescoring, into a
+hand-back clone on a branch `release-gate-arm0-<date>`, under
+`dev/experiments/release_gate_arm0_<date>/population_v104`; the finish's
+archive parts and the rescoring's part, with their SHA-256 files, to the
+draft release `release-gate-population-v104-<date>`; and the README of
+`release_gate_arm0_<date>/`, which lists every part (the redaction's
+record lists the finish's alone), searched with `campaign_redact.sh
+"$RUNS/population_v104" --check` and sent to the PI before the pull
+request:
+
+```bash
+"$CAMPAIGN_ENV/bin/gh" release create release-gate-population-v104-<date> \
+    --draft --repo acerbilab/pyvbmc \
+    --title "Release gate: population, PyVBMC 1.0.4" \
+    --notes "The raw campaign directory; see dev/experiments/release_gate_arm0_<date>/"
+"$CAMPAIGN_ENV/bin/gh" release upload release-gate-population-v104-<date> \
+    "$RUNS"/population_v104.tar.zst.* \
+    "$RUNS"/population_v104.rescoring.tar.zst \
+    "$RUNS"/population_v104.rescoring.tar.zst.sha256 \
+    --repo acerbilab/pyvbmc
+```
+
+The comparison is the PI's, from the tracked copies of both arms:
+`analyze_population_run.py --arms
+dev/experiments/release_gate_arm0_<date>/population_v104
+dev/experiments/release_gate_<date>/population_after --out DIR`, whose
+rescoring is the legacy arm's.
+
 ### Reading the finish's report, and resubmitting
 
 The finish goes in this order.
@@ -616,7 +793,9 @@ each subset that needs its own, and `VERIFY_TIME`, `VERIFY_MEM`,
 `FINISH_TIME` and `FINISH_MEM` settings of each finish. In the commands
 above they are: `POP_TIME`, `CIGAR_TIME` and `POP_MEM` for the population
 tasks, `POP_VERIFY_TIME` and `POP_VERIFY_MEM` for their `verify`, and
-`RESCORE_TIME` and `RESCORE_MEM` for the after arm's finishing steps;
+`RESCORE_TIME` and `RESCORE_MEM` for the after arm's finishing steps and
+for Arm 0's `rescore-arms`; `ARM0_TIME`, `ARM0_CIGAR_TIME` and `ARM0_MEM`
+for Arm 0's tasks;
 `POOL_TIME` and `POOL_MEM` for the pool tasks, whose `verify` fits the
 defaults; `STACK_TIME`, `STACK_MEM`,
 `M16_TIME`, `M16_MEM`, `M32_TIME` and `M32_MEM` for the stacking tasks,
@@ -624,7 +803,9 @@ and `ASSEMBLE_TIME` and `ASSEMBLE_MEM` for its finishing step; and
 `CHECK_TIME` and `CHECK_MEM` for the environment check. Their values come
 from the accounting of the smoke campaigns (the plan's Phase 6, `sacct`
 and `seff`), and the plan's "Resources and cost"
-(`dev/plans/slurm-benchmark-support.md`) gives them; `MEM` comes from the
+(`dev/plans/slurm-benchmark-support.md`) gives them, but for Arm 0's,
+which its plan (`dev/plans/arm-1.0.4-comparison.md`) gives from local runs
+of 1.0.4, whose runs take longer than the release code's; `MEM` comes from the
 `MaxRSS` of the accounting's step rows. The population sidecars hold each
 case's peak resident set as `max_rss_mb`, and as `peak_rss_mb`, on Linux,
 the resident set at the end of the run, which is not a peak. Phase 6
@@ -651,14 +832,16 @@ release publishes of a campaign is built apart from it.
 are the ones its harness declares in the manifest (`tracked_copies`),
 beside its manifest and verification report: for the pools the selection
 and the summary; for each population arm the summary and every verified
-case's completion record, sidecar and boost report, and for the after arm,
-which rescores, also `rescored/*.json` and `rescoring.json` (the before arm
-holds no `rescored/`); for the stacking `results.json`, the summaries and
+case's completion record, sidecar and boost report, and also
+`rescored/*.json` and `rescoring.json` for the after arm, whose `rescore`
+writes them, and for Arm 0, into which `rescore-arms` writes them (the
+before arm holds no `rescored/`); for the stacking `results.json`, the
+summaries and
 `sources.json`. `analyze_population_run.py --arms` reads the copies of the
-two arms as it reads the campaigns, the rescored metrics from the
-candidate's by default (`--rescoring`), and `golden_replay.py --sidecars`
-reads the per-configuration directories of the after arm or of its copies,
-counting its verified cases alone. `campaign_redact.sh` writes the copies,
+two arms as it reads the campaigns, the rescored metrics from a legacy
+reference's or else the candidate's by default (`--rescoring`), and
+`golden_replay.py --sidecars` reads the per-configuration directories of
+the after arm or of its copies, counting its verified cases alone. `campaign_redact.sh` writes the copies,
 redacted, into the hand-back clone:
 
 - every host that ran a Slurm job of the campaign is named by the node

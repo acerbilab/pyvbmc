@@ -38,11 +38,16 @@ Two kinds of assessment:
   process's identity and the SHA-256 of each file of rescored metrics, so
   that this process imports no package but its own. The rescoring's source
   identity must be the candidate's, and the candidate's rescored metrics
-  must equal its in-run metrics in every verified case. Either arm, and the
-  rescoring campaign, may be a campaign directory or its tracked copies in
-  the repository, redacted by ``campaign_contract.py redact``, which give
-  the same report. It reports a KS screen per configuration and metric
-  under one Holm family, the paired changes, the descriptive paired family
+  must equal its in-run metrics in every verified case. A legacy reference,
+  released code older than these campaigns (PyVBMC 1.0.4, run by a later
+  harness commit than the candidate's), is compared with the rescoring of
+  both arms that ``population_run.py rescore-arms`` wrote into it, which
+  must score as the candidate's code (:func:`analyze_arms`). Either arm,
+  and the rescoring campaign, may be a campaign directory or its tracked
+  copies in the repository, redacted by ``campaign_contract.py redact``,
+  which give the same report. It reports a KS screen per configuration and
+  metric under one Holm family, the paired changes, the descriptive paired
+  family
   (every configuration: signed-rank tests of the three accuracy metrics
   and the evaluation count, McNemar tests of usability, one Holm family),
   the confirmatory family fixed in both arms' manifests, at the size they
@@ -454,10 +459,12 @@ def paired_change(tag, label, new, old):
     }
 
 
-def boost_record(report, tag, label, new):
+def boost_record(report, tag, label, new, legacy=False):
     """Check one boost report's decision against the guard; summarize it.
 
-    ``report`` is the path of the ``.boost.json``, and ``new`` the run's
+    The report of a legacy package (``legacy``) has no tolerance, and its
+    boost, which no guard holds, keeps every boost it makes. ``report`` is
+    the path of the ``.boost.json``, and ``new`` the run's
     in-run finals, which the report's metrics of the returned posterior
     must equal. The metrics of a posterior the run did not return (the
     pre-boost one, or a candidate the boost rejected) may be an ``error``
@@ -481,10 +488,15 @@ def boost_record(report, tag, label, new):
         de = candidate["elbo"] - pre["elbo"]
         ds = candidate["elbo_sd"] - pre["elbo_sd"]
         worst_change = min(de, de - 5 * ds)
-        expected_accept = bool(
-            valid_candidate
-            and (not valid_pre or worst_change > -record["tolerance"])
-        )
+        if legacy:
+            # A legacy package has no guard: it keeps every boost it makes.
+            assert record["tolerance"] is None, tag
+            expected_accept = True
+        else:
+            expected_accept = bool(
+                valid_candidate
+                and (not valid_pre or worst_change > -record["tolerance"])
+            )
     assert expected_accept == record["accepted"], tag
     errors = {
         stage: str(value["error"])
@@ -1010,35 +1022,91 @@ def analyze_arms(reference, candidate, rescoring, out):
     or its tracked copies (None: the candidate). The candidate is the arm
     of the rescoring's own code: the rescoring's source identity must be
     the candidate manifest's, and every verified candidate case's rescored
-    metrics must equal its in-run metrics.
+    metrics must equal its in-run metrics. A legacy reference (its
+    manifest's ``legacy``) holds the rescoring of both arms that
+    ``population_run.py rescore-arms`` wrote, from a later harness commit
+    than the candidate's: there the rescoring must score as the candidate's
+    code (``population_run.scoring_mismatches``), the arms' options may
+    differ by the options the legacy package does not define alone, and the
+    arms must share the files that build and score a run, the imported
+    versions and the node family (``population_run.legacy_pair_differences``,
+    ``population_run.node_family``).
     """
     if not __debug__:
         raise RuntimeError(
             "Run without -O: artifact validation uses assertions."
         )
-    rescoring_dir = Path(rescoring) if rescoring else Path(candidate)
+    if rescoring:
+        rescoring_dir = Path(rescoring)
+    elif runner.read_manifest(reference).get("legacy"):
+        # A legacy reference holds the rescoring of rescore-arms.
+        rescoring_dir = Path(reference)
+    else:
+        rescoring_dir = Path(candidate)
     record = read_rescoring(rescoring_dir)
     ref = load_array_campaign(reference, rescoring_dir, record)
     new = load_array_campaign(candidate, rescoring_dir, record)
-    for key in ("allocation", "options", "confirmatory"):
+    legacy = ref["manifest"].get("legacy")
+    assert legacy == runner.legacy_profile(ref["identity"]), (
+        "the reference's manifest and its package's commit name different "
+        "legacy profiles"
+    )
+    assert not new["manifest"].get(
+        "legacy"
+    ), "the candidate is a legacy arm; a legacy arm is the reference"
+    for key in ("allocation", "confirmatory"):
         assert (
             ref["manifest"][key] == new["manifest"][key]
         ), f"the arms have different {key}"
-    differing = runner.pair_differences(new["identity"], ref["identity"])
+    undefined = set(legacy["undefined_options"]) if legacy else set()
+    assert ref["manifest"]["options"] == {
+        key: value
+        for key, value in new["manifest"]["options"].items()
+        if key not in undefined
+    }, "the arms have different options"
+    if legacy:
+        differing = runner.legacy_pair_differences(
+            new["identity"], ref["identity"]
+        )
+        families = [
+            runner.node_family(path) for path in (reference, candidate)
+        ]
+        if families[0] != families[1]:
+            differing.append(f"the arms ran on the node families {families}")
+    else:
+        differing = runner.pair_differences(new["identity"], ref["identity"])
     assert not differing, differing
     a, b = ref["identity"]["source"], new["identity"]["source"]
     source = record["identity"]["source"]
-    assert (
-        source == b
-    ), "the rescoring's source identity is not the candidate's: " + str(
-        runner.contract.source_differences(record["identity"], new["identity"])
-    )
+    if legacy:
+        # The rescoring ran from the legacy arm's harness checkout, a later
+        # commit than the candidate's: it scores as the candidate's code.
+        scoring = runner.scoring_mismatches(
+            record["identity"], new["identity"]
+        )
+        assert (
+            not scoring
+        ), "the rescoring does not score as the candidate's code: " + str(
+            scoring
+        )
+    else:
+        assert (
+            source == b
+        ), "the rescoring's source identity is not the candidate's: " + str(
+            runner.contract.source_differences(
+                record["identity"], new["identity"]
+            )
+        )
     assert ref["rescoring"] == new["rescoring"] == source
     assert (
         source["trees"]["pyvbmc"]
         == source["trees"]["harness"]
         == a["trees"]["harness"]
-    ), "not rescored by the release code of the arms' harness checkout"
+    ), (
+        "not rescored by the release code of the reference's harness checkout"
+        if legacy
+        else "not rescored by the release code of the arms' harness checkout"
+    )
     unequal = sorted(
         stem
         for stem, row in new["rows"].items()
@@ -1091,6 +1159,7 @@ def analyze_arms(reference, candidate, rescoring, out):
                 stem,
                 arm["rows"][stem]["label"],
                 {**arm["rows"][stem]["final"], **arm["rows"][stem]["in_run"]},
+                legacy=bool(arm["manifest"].get("legacy")),
             )
             for stem in sorted(arm["rows"])
         ]
@@ -1123,6 +1192,9 @@ def analyze_arms(reference, candidate, rescoring, out):
     result = {
         "kind": "two arms of array mode, paired by seed",
         "arms": {"reference": arm_summary(ref), "candidate": arm_summary(new)},
+        # A legacy reference only: the assessment of two arms of this
+        # harness's code holds no such key.
+        **({"legacy_reference": legacy} if legacy else {}),
         "rescoring_source": source,
         "allocation": new["manifest"]["allocation"],
         "options": new["manifest"]["options"],
@@ -1265,8 +1337,9 @@ def main(argv=None):
     parser.add_argument(
         "--rescoring",
         type=Path,
-        help="with --arms: the campaign whose rescore step rescored both"
-        " arms, or its tracked copies (default: the candidate)",
+        help="with --arms: the campaign whose rescore step, or whose"
+        " rescore-arms for a legacy reference, rescored both arms, or its"
+        " tracked copies (default: a legacy reference, else the candidate)",
     )
     parser.add_argument(
         "--out",
