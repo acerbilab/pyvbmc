@@ -560,7 +560,7 @@ hand-back's README records, so that its path is the one that the
 redaction names `$CAMPAIGN_PARENT/population_after`:
 
 ```bash
-"$CAMPAIGN_ENV/bin/gh" release download release-gate-population-after-<date> \
+"$CAMPAIGN_ENV/bin/gh" release download release-gate-population-after-20261002 \
     --repo acerbilab/pyvbmc --dir "$RUNS"
 (cd "$RUNS" && sha256sum -c population_after.tar.zst.sha256)
 cat "$RUNS"/population_after.tar.zst.[0-9][0-9][0-9] \
@@ -615,23 +615,25 @@ VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
 
 **The rescoring.** A legacy campaign does not rescore itself.
 `population_run.py rescore-arms` rescores the after arm, first, and then
-Arm 3 and Arm 0 with the release code, in one batch job from the harness
+Arm 0 and Arm 3 with the release code, in one batch job from the harness
 checkout at Arm 0's commit, with `PYVBMC_SOURCE` unset and the after arm's
 gpyreg, and writes `rescored/population_after.json`,
 `rescored/population_arm3.json`, `rescored/population_v104.json` and
 `rescoring.json` into `population_v104`. The after arm's 2400 cases must
 reproduce their in-run metrics exactly, which shows that the rescoring
 scores as the after arm's code did. The campaigns it rescores beside Arm 0
-are its `--campaign`s, the after arm first; Arm 3's rescoring there is for
-a comparison of Arm 0 with Arm 3, should the PI adopt Arm 3's end of
-warm-up ([dev/plans/arm-3-warmup-comparison.md](../../plans/arm-3-warmup-comparison.md)),
+are its `--campaign`s, the after arm first; Arm 3's rescoring there
+scores Arm 3 and Arm 0 with one process, for a comparison of the two should
+the PI adopt Arm 3's end of warm-up
+([dev/plans/arm-3-warmup-comparison.md](../../plans/arm-3-warmup-comparison.md)),
 so the job runs after Arm 3's finish. The subshell keeps the job's
-settings out of the shell you work in:
+settings out of the shell you work in, and exports what the job reads:
 
 ```bash
 (
     export REPO=$TREES/pyvbmc PYVBMC_GPYREG_SOURCE=$TREES/gpyreg-v1.4.0 \
-        CAMPAIGN_DIR=$RUNS/population_v104
+        CAMPAIGN_DIR=$RUNS/population_v104 \
+        AFTER_DIR=$RUNS/population_after ARM3_DIR=$RUNS/population_arm3
     unset PYVBMC_SOURCE BASELINE_DIR
     cd "$REPO"
     read -r -d '' -a extra <<< "${SBATCH_EXTRA:-}" || true
@@ -645,7 +647,7 @@ set -uo pipefail
 cd "$REPO"
 source dev/scripts/hpc/campaign_env.sh || exit 1
 python -u dev/scripts/population_run.py rescore-arms --out "$CAMPAIGN_DIR" \
-    --campaign "$RUNS/population_after" --campaign "$RUNS/population_arm3"
+    --campaign "$AFTER_DIR" --campaign "$ARM3_DIR"
 EOF
 )
 ```
@@ -713,12 +715,13 @@ later commit than the after arm's, and its package is the checkout's own.
 `prepare --pair` pairs two such arms when both checkouts are clean and
 hold the same files that build and score a run (`golden_trace.py`,
 `profile_run.py`, `benchmark_targets.py` and `dev/scripts/data/`, whose
-SHA-256 each manifest records), and refuses otherwise, as it refuses
-another allocation, options or confirmatory family, other environment
-versions, a package tree at the other arm's commit, or another
-`NODE_FEATURE` or `CAMPAIGN_ENV`. The SHA-256 of `dev/scripts/data/` takes
-every file in it, those git ignores among them, so neither checkout holds
-a file there that it was not cloned with. The pairing campaign's code
+SHA-256 each manifest records) and different package code, and refuses
+otherwise, as it refuses another allocation, options or confirmatory
+family, other environment versions, or another `NODE_FEATURE` or
+`CAMPAIGN_ENV`. It does not compare the arms' gpyreg checkouts: Arm 3's is
+the after arm's, v1.4.0. The SHA-256 of `dev/scripts/data/` takes every
+file in it, those git ignores among them, so neither checkout holds a file
+there that it was not cloned with. The pairing campaign's code
 rescores both arms in its finish: Arm 3's cases must reproduce their
 in-run metrics exactly, and the other arm's are rescored by Arm 3's code,
 whose line of `equal to their in-run metrics` counts the cases that it
@@ -790,13 +793,26 @@ CASES_SUBSET=canary TIME=$POP_TIME MEM=$POP_MEM \
     --seeds 100-199 --arm arm3 --pair "$RUNS/fresh_release"
 ```
 
-Look at the canaries with the finish, `fresh_release` first, each with 1
-case verified; then the rest of each, `TIME=$POP_TIME MEM=$POP_MEM
+Look at the canaries with the finish, `fresh_release` first, each in its
+own shell; each reports 1 case verified:
+
+```bash
+dev/scripts/hpc/campaign_finish.sh "$RUNS/fresh_release" --allow-missing --no-archive
+dev/scripts/hpc/campaign_finish.sh "$RUNS/fresh_arm3" --allow-missing --no-archive
+```
+
+Then the rest of each, `TIME=$POP_TIME MEM=$POP_MEM
 dev/scripts/hpc/campaign_submit.sh "$RUNS/fresh_<arm>"`, and, when the
 queue is empty, the finish of `fresh_release` and then of `fresh_arm3`,
-whose `rescore` reads `fresh_release`'s verification, with
-`VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM` and, for
-`fresh_arm3`, `FINISH_TIME=$RESCORE_TIME FINISH_MEM=$RESCORE_MEM`.
+whose `rescore` reads `fresh_release`'s verification:
+
+```bash
+VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
+    dev/scripts/hpc/campaign_finish.sh "$RUNS/fresh_release"
+VERIFY_TIME=$POP_VERIFY_TIME VERIFY_MEM=$POP_VERIFY_MEM \
+    FINISH_TIME=$RESCORE_TIME FINISH_MEM=$RESCORE_MEM \
+    dev/scripts/hpc/campaign_finish.sh "$RUNS/fresh_arm3"
+```
 
 The comparisons are the PI's, from the tracked copies:
 `analyze_population_run.py --arms
@@ -808,22 +824,17 @@ likewise `fresh_release` and `fresh_arm3`.
 
 Arm 0 and Arm 3 go back together, as the release gate's campaigns did
 ([The tracked copies, the archive and the
-hand-back](#the-tracked-copies-the-archive-and-the-hand-back)), after
-`rescore-arms`: the tracked copies of the six campaigns (`population_v104`,
-which holds the rescoring of `rescore-arms`, `population_arm3`,
-`pools_arm3`, `stacking_arm3`, `fresh_release` and `fresh_arm3`), each
-redacted from the harness checkout it ran from, into a hand-back clone on
-a branch `release-gate-<date>`, under
-`dev/experiments/release_gate_<date>/`, `<date>` being the batch's launch;
-each campaign's archive parts, with their SHA-256 files, to a draft
-release of their own, `release-gate-population-v104-<date>` with the
-rescoring's part, `release-gate-population-arm3-<date>`,
-`release-gate-pools-arm3-<date>`, `release-gate-stacking-arm3-<date>` with
-the analyses' outputs, and `release-gate-fresh-<date>` with both fresh
-campaigns; and the public assets of `population_arm3` and `pools_arm3`,
-built as the after arm's and the pools' were, to the draft release
-`release-gate-public-arm3-<date>`, which stays a draft until the PI's
-decision on the end of warm-up. For Arm 0:
+hand-back](#the-tracked-copies-the-archive-and-the-hand-back)), `<date>`
+being the batch's launch. Each name below that ends in `<date>` is the
+second batch's; the first batch's end in `20261002`.
+
+**The archives, as each finish passes**, since the cluster's storage has
+no backup: each campaign's archive parts, with their SHA-256 files, to a
+draft release of its own, `release-gate-population-v104-<date>`,
+`release-gate-population-arm3-<date>`, `release-gate-pools-arm3-<date>`,
+`release-gate-stacking-arm3-<date>`, and `release-gate-fresh-<date>`,
+which takes both fresh campaigns. After `rescore-arms`, Arm 0's draft
+release takes the rescoring's part too:
 
 ```bash
 "$CAMPAIGN_ENV/bin/gh" release create release-gate-population-v104-<date> \
@@ -831,19 +842,89 @@ decision on the end of warm-up. For Arm 0:
     --title "Release gate: population, PyVBMC 1.0.4" \
     --notes "The raw campaign directory; see dev/experiments/release_gate_<date>/"
 "$CAMPAIGN_ENV/bin/gh" release upload release-gate-population-v104-<date> \
-    "$RUNS"/population_v104.tar.zst.* \
+    "$RUNS"/population_v104.tar.zst.* --repo acerbilab/pyvbmc
+# after rescore-arms
+"$CAMPAIGN_ENV/bin/gh" release upload release-gate-population-v104-<date> \
     "$RUNS"/population_v104.rescoring.tar.zst \
     "$RUNS"/population_v104.rescoring.tar.zst.sha256 \
     --repo acerbilab/pyvbmc
 ```
 
-The README of `release_gate_<date>/` gives what the release gate's gave,
-with both harness commits, every archive part (the redaction's record of
-`population_v104` lists the finish's alone, not the rescoring's) and the
-counts of the `rescore` and `rescore-arms` lines of the other arms' cases
-that their rescoring scored as their own code did, and is searched once
-for each of the six campaigns with `campaign_redact.sh "$RUNS/<campaign>"
---check` and sent to the PI before the pull request.
+and likewise each of the others, with a title of its own. The analyses'
+outputs go as one more asset of `release-gate-stacking-arm3-<date>`; like
+the first batch's, they hold the cluster's details, and no file of them
+enters the pull request:
+
+```bash
+tar -C "$RUNS" -cf - analyses_arm3 | "$CAMPAIGN_ENV/bin/zstd" -q -c \
+    > "$RUNS/analyses_arm3.tar.zst"
+(cd "$RUNS" && sha256sum analyses_arm3.tar.zst) > "$RUNS/analyses_arm3.tar.zst.sha256"
+"$CAMPAIGN_ENV/bin/gh" release upload release-gate-stacking-arm3-<date> \
+    "$RUNS/analyses_arm3.tar.zst" "$RUNS/analyses_arm3.tar.zst.sha256" \
+    --repo acerbilab/pyvbmc
+```
+
+**The tracked copies, after `rescore-arms`**, once for each of the six
+campaigns, since `population_v104`'s declare the rescoring that
+`rescore-arms` writes and the redaction writes into an empty directory
+alone. A branch of the batch's own in the hand-back clone, and each
+campaign redacted from the harness checkout it ran from (`population_v104`
+and `fresh_release` from `$TREES/pyvbmc`, the other four from
+`$TREES/pyvbmc-arm3`):
+
+```bash
+git -C "$TREES/handback" fetch origin
+git -C "$TREES/handback" switch -c release-gate-<date> origin/dev-next
+COPIES=$TREES/handback/dev/experiments/release_gate_<date>
+# from $TREES/pyvbmc
+for campaign in population_v104 fresh_release; do
+    dev/scripts/hpc/campaign_redact.sh "$RUNS/$campaign" "$COPIES/$campaign"
+done
+# from $TREES/pyvbmc-arm3
+for campaign in population_arm3 pools_arm3 stacking_arm3 fresh_arm3; do
+    dev/scripts/hpc/campaign_redact.sh "$RUNS/$campaign" "$COPIES/$campaign"
+done
+```
+
+**The public assets** of `population_arm3` and `pools_arm3`, from the Arm 3
+checkout, into a directory of their own, since `--check` fails an asset
+that other code built and `$RUNS/public` holds the first batch's:
+
+```bash
+for campaign in population_arm3 pools_arm3; do
+    dev/scripts/hpc/campaign_public.sh "$RUNS/$campaign" "$COPIES/$campaign" \
+        "$RUNS/public_arm3"
+done
+dev/scripts/hpc/campaign_public.sh --check "$RUNS/public_arm3"
+"$CAMPAIGN_ENV/bin/gh" release create release-gate-public-arm3-<date> \
+    --draft --repo acerbilab/pyvbmc \
+    --title "Release gate: public assets of Arm 3" \
+    --notes "Published only as the PI's decision on the end of warm-up says; see dev/experiments/release_gate_<date>/"
+"$CAMPAIGN_ENV/bin/gh" release upload release-gate-public-arm3-<date> \
+    "$RUNS"/public_arm3/*.public.tar.gz.* --repo acerbilab/pyvbmc
+```
+
+The release stays a draft, as the first batch's: the PyVBMC release
+attaches what the PI's decision on the end of warm-up names.
+
+**The README** of `release_gate_<date>/` gives what the release gate's
+gave, with both harness commits, every archive part (the redaction's
+record of `population_v104` lists the finish's alone, not the
+rescoring's), and the counts of the `rescore` and `rescore-arms` lines of
+the other arms' cases that their rescoring scored as their own code did.
+It is searched once for each of the six campaigns, and sent to the PI
+before the pull request:
+
+```bash
+for campaign in population_v104 population_arm3 pools_arm3 stacking_arm3 \
+    fresh_release fresh_arm3; do
+    dev/scripts/hpc/campaign_redact.sh "$RUNS/$campaign" --check \
+        "$COPIES/README.md"
+done
+```
+
+Then commit the copies and the README, push the branch and open a pull
+request to `dev-next`.
 
 ### Reading the finish's report, and resubmitting
 
@@ -992,9 +1073,11 @@ are the ones its harness declares in the manifest (`tracked_copies`),
 beside its manifest and verification report: for the pools the selection
 and the summary; for each population arm the summary and every verified
 case's completion record, sidecar and boost report, and also
-`rescored/*.json` and `rescoring.json` for the after arm, whose `rescore`
-writes them, and for Arm 0, into which `rescore-arms` writes them (the
-before arm holds no `rescored/`); for the stacking `results.json`, the
+`rescored/*.json` and `rescoring.json` for every campaign of its harness
+checkout's own package, whose `rescore` writes them (the after arm,
+`population_arm3`, `fresh_release`, `fresh_arm3`), and for Arm 0, into
+which `rescore-arms` writes them (the before arm holds no `rescored/`);
+for the stacking `results.json`, the
 summaries and
 `sources.json`. `analyze_population_run.py --arms` reads the copies of the
 two arms as it reads the campaigns, the rescored metrics from a legacy

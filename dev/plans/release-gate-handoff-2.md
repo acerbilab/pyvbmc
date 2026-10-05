@@ -3,7 +3,9 @@
 Written 2026-10-05 for the developer (and their coding agents) who ran
 the release gate's first batch of campaigns on the Slurm cluster, in their
 own account, and runs the second the same way. Everything referenced is
-on `dev-next`. The procedure, with every command, is the operator's guide,
+on `dev-next` but Arm 3's code, which is on the branch
+`dev-arm3-port-warmup`. The procedure, with every command, is the
+operator's guide,
 [scripts/hpc/README.md](../scripts/hpc/README.md): its sections "Arm 0:
 PyVBMC 1.0.4", "Arm 3: the port's end of warm-up" and "The second batch's
 hand-back", and for the pools and the stacking the release gate's own.
@@ -47,7 +49,8 @@ others are the first batch's accounting
    detached worktree of the harness checkout, `$TREES/pyvbmc-arm3`. Both
    hold the same files that build and score a run as the after arm's
    commit and the same frozen requirements, and both stay where they are,
-   clean, until the batch's last finish. Arm 0's commit also runs
+   clean, until the hand-back, since the redaction, the public assets and
+   any later `rescore-arms` run from them. Arm 0's commit also runs
    `fresh_release` and Arm 0's `rescore-arms`; Arm 3's runs every other
    campaign of Arm 3.
 2. **The source trees** (the guide's "The source trees"): the first
@@ -81,14 +84,15 @@ others are the first batch's accounting
 Each campaign runs in a shell of its own, from its harness checkout, with
 its `HARNESS` and trees exported, and starts with a canary and a look at
 it with the finish. Submit at a `THROTTLE` of 75 a submission, the rate at
-which the first batch's nodes no longer failed their prolog.
+which the first batch's nodes no longer failed their prolog, and with no
+more than four submissions running at once, as in the first batch.
 
 1. **The canaries** of Arm 0 (24 cases), of Arm 3's population (24
    cases), of `fresh_release` and then of `fresh_arm3` (1 case each),
    each looked at with its finish as the guide gives it. Arm 3's look
    rescores the after arm's 2400 cases beside its 24, about 35 minutes,
    with the rescoring's limits.
-2. **The rest of the three populations and of the fresh seeds**: each
+2. **The rest of the two populations and of the fresh seeds**: each
    population's `cigar_D15_exhaust` as its own subset, Arm 0's with
    `ARM0_CIGAR_TIME` and the rest with `ARM0_TIME`, Arm 3's with
    `CIGAR_TIME` and `POP_TIME`. Then the finishes: `fresh_release`
@@ -171,27 +175,30 @@ that margin.
 
 ## What to hand back
 
-The guide's "The second batch's hand-back" gives the commands. For each
-campaign, as soon as its finish has passed: its archive, uploaded with its
-SHA-256 file to its draft release, and its tracked copies, redacted from
-the harness checkout it ran from into a hand-back clone under
-`dev/experiments/release_gate_<date>/`, `<date>` being the batch's launch.
-Then, once for the batch:
+The guide's "The second batch's hand-back" gives the commands, `<date>`
+being the batch's launch.
 
-1. **Arm 0's rescoring**, after `rescore-arms`: its archive part, to Arm
-   0's draft release, and the tracked copies of `population_v104` written
-   again, since they hold it.
-2. **The analyses' outputs**, `$RUNS/analyses_arm3` as one archive with
-   its SHA-256, as a further asset of `release-gate-stacking-arm3-<date>`;
-   like the first batch's, they hold the cluster's details, and no file of
-   them enters the pull request.
-3. **The public assets** of `population_arm3` and `pools_arm3`, built as
-   the first batch's were, to the draft release
-   `release-gate-public-arm3-<date>`, which stays a draft: the PyVBMC
-   release attaches them only if the PI adopts Arm 3's end of warm-up.
-4. **A pull request to `dev-next`** from the hand-back clone's branch
-   `release-gate-<date>`: the tracked copies of the six campaigns and
-   `dev/experiments/release_gate_<date>/README.md`, searched with
+1. **The archives, as each finish passes**, since the cluster's storage
+   has no backup: each campaign's archive parts, with their SHA-256 files,
+   to its draft release; after `rescore-arms`, its archive part to Arm 0's
+   draft release; and the analyses' outputs, `$RUNS/analyses_arm3`, as
+   one archive with its SHA-256, as a further asset of
+   `release-gate-stacking-arm3-<date>`. Like the first batch's, the
+   analyses' outputs hold the cluster's details, and no file of them
+   enters the pull request.
+2. **The tracked copies of the six campaigns, after `rescore-arms`**, once
+   each: `population_v104`'s declare the rescoring that `rescore-arms`
+   writes, and the redaction writes into an empty directory alone. Each is
+   redacted from the harness checkout it ran from, into a branch
+   `release-gate-<date>` of the hand-back clone, under
+   `dev/experiments/release_gate_<date>/`.
+3. **The public assets** of `population_arm3` and `pools_arm3`, built from
+   the Arm 3 checkout into `$RUNS/public_arm3` and uploaded to the draft
+   release `release-gate-public-arm3-<date>`, which stays a draft: the
+   PyVBMC release attaches what the PI's decision on the end of warm-up
+   names.
+4. **A pull request to `dev-next`** from that branch: the tracked copies
+   and `dev/experiments/release_gate_<date>/README.md`, searched with
    `campaign_redact.sh --check` once for each campaign and sent to the PI
    before the pull request opens. Every draft release stays a draft.
 
@@ -212,7 +219,8 @@ Then, once for the batch:
   limits, a failed `verify`, a `partial` or `stray`, a condition short of
   320 selected runs, a refused redaction); a `prepare --pair` or `prepare
   --compare` that refuses; a `rescore` or `rescore-arms` whose own arm
-  does not reproduce its in-run metrics (Arm 3's in Arm 3's finish, the
+  does not reproduce its in-run metrics (Arm 3's in the finishes of
+  `population_arm3` and `fresh_arm3`, `fresh_release`'s in its own, the
   after arm's in `rescore-arms`).
 - **Site details stay out of the repository**, as in the first batch.
 - Questions about the procedure go to the guide and to each script's

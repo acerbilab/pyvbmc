@@ -553,8 +553,9 @@ reason.
   with the case's seed, and its own final boost, through shims the worker
   installs in its process; `prepare --compare` names the release code's
   arm it will be compared with and refuses, before any case runs, what the
-  comparison would refuse after the runs; `rescore-arms` rescores that arm
-  and the legacy campaign into the legacy campaign, with the release code
+  comparison would refuse after the runs; `rescore-arms` rescores the
+  campaigns that `--campaign` names (that arm by default) and the legacy
+  campaign into the legacy campaign, with the release code
   of the legacy campaign's harness checkout, which must reproduce that
   arm's in-run metrics exactly.
   `validate_case` checks the records of the campaigns of September 2026,

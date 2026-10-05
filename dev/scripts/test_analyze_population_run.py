@@ -790,6 +790,17 @@ def test_arms_across_harness_commits(tmp_path):
         compare(changed, "other_run_files")
 
 
+def test_arms_refuse_arms_of_two_node_families(arms, tmp_path, monkeypatch):
+    reference, candidate = arms
+    monkeypatch.setattr(
+        runner,
+        "node_family",
+        lambda path: "a" if path == reference else "b",
+    )
+    with pytest.raises(AssertionError, match="node families"):
+        analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
 def test_arms_refuse_the_same_code(tmp_path):
     reference, before = write_arm(tmp_path, "reference", HARNESS)
     candidate, after = write_arm(tmp_path, "candidate", HARNESS)

@@ -1,7 +1,8 @@
 # Arm 3: the port's end of warm-up on the release gate's cases
 
 Created 2026-10-05. Status: **decided by the PI; the pairing across
-harness commits, the arm's branch and the brief open**.
+harness commits, Arm 3's branch, the guide and the brief written, checked
+locally and reviewed; the commits to be named and the batch to run**.
 
 ## Purpose
 
@@ -81,8 +82,8 @@ cluster's campaigns, by a rule fixed before the runs.
    of noisy stacks becomes the two-level shrinkage estimate
    (`two_level_full`) if, in Arm 3's single-run analysis
    (`single_run/added.md`), its added bias lies within −0.25 to +0.15 nats
-   at every noisy condition and `M`, the range of the stage D and release
-   pools, and lies closer to zero than the capped headline's on
+   at every noisy condition and `M` (the stage D and release pools gave
+   −0.23 to +0.15), and lies closer to zero than the capped headline's on
    `student_D8_noise3_svbmc` at every `M`; the headline of noiseless stacks
    becomes the raw ELBO if its added bias lies within ±0.1 nats at every
    noiseless condition and `M`. Each bound is read on the medians as the
@@ -92,6 +93,29 @@ cluster's campaigns, by a rule fixed before the runs.
    after arm's; otherwise they stay internal, as Arm 0's do.
 
 ## Design
+
+### Arm 3's code
+
+The branch `dev-arm3-port-warmup` holds two changes over the commit that runs
+Arm 0: the improvement window of `_check_warmup_end_conditions`
+(`pyvbmc/vbmc/vbmc.py`) as it was before W2-1, and `recompute_lcb_max` off in
+`advanced_vbmc_options.ini`, with the tests that pin either. At the default
+options warm-up then ends when it ended at `f91fdf0`, the before arm's code,
+and the noisy Rosenbrock experiment of the
+[note](../results/2026-10-05-noisy-rosenbrock-warmup.md) made these two changes
+alone. What happens once warm-up ends stays the release code's: the warping
+clocks that start at its end (W2-3, `fb8a12e`, which the port review's ledger
+lists among the fixes that move default trajectories), the reset of the running
+covariance of the GP hyperparameters (W3-9, `f954c63`, which no number of a run
+at the default options reads) and the order of ties in the trim (W3-16,
+`2ff2dfe`). So do two guards of the check that act only where `f91fdf0` would
+raise: maxima that pass over NaN (from `8e591ff`) and the empty window (W2-14,
+`54f0f19`). The branch's changelog, the catalogue of differences from MATLAB in
+`pyvbmc/vbmc/README.md` and the description of `recompute_lcb_max` still
+describe the release code, and are rewritten if the port's end of warm-up is
+adopted. If it is not, the branch leaves the working line as
+`retain/arm3-port-warmup`, cut at its last commit, which the records cite
+(`AGENTS.md`, "Branches").
 
 ### The pairing across harness commits
 
@@ -103,10 +127,13 @@ harness checkout, and the before arm ran other code from a tree that
 package is the checkout's own, at a later commit than the after arm's,
 and the after arm, finished and recorded, does not rescore again. So a
 pair may have harness checkouts at different commits, on the terms of the
-comparison of a legacy arm: both identities hold the files that build and
-score a run (`RUN_FILES`), equal, the same imported versions and
-different package commits, and the arms share the allocation, the
+comparison of a legacy arm: both checkouts are clean, both identities
+hold the files that build and score a run (`RUN_FILES`), equal, and the
+same imported versions, their package code differs
+(`package_numerics_differ`), and the arms share the allocation, the
 options, the confirmatory family, the node family and the environment.
+The pairing does not compare the arms' gpyreg checkouts, which are both
+`v1.4.0` here; the analysis records each.
 The candidate (Arm 3) rescores its own cases, which must reproduce their
 in-run metrics exactly, and the reference's; the after arm's rescored
 metrics, made by Arm 3's code, show whether the two codes score alike,
@@ -140,13 +167,45 @@ the commits and the limits.
 
 On the tracked copies, after the hand-back: `analyze_population_run.py
 --arms` with the after arm as the reference and `population_arm3` as the
-candidate, and likewise `fresh_release` and `fresh_arm3`. The rule's tests
-that the analysis does not report as such are computed from its paired
-data: the one-sided signed-rank test of the fresh seeds' MMTV, and the
-pools' family, which reads the verified runs of the two pools, paired by
-seed, from the campaigns' archives in their draft releases (the pools'
-tracked copies hold the selection and the summary, not each run's
-metrics), on the developer's machine, where nothing of them is committed.
+candidate, and likewise `fresh_release` and `fresh_arm3`. Each test's
+paired change is the candidate's value less the reference's: a test of an
+error metric that the Holm family rejects finds Arm 3 worse when its
+median paired change is positive and better when it is negative, and a
+McNemar test of usability finds it worse when the usability it loses
+outnumbers what it gains.
+
+The rule's tests that the analysis does not report as such:
+
+- **The fresh seeds' MMTV.** The one-sided p-value is half the exact
+  two-sided one that the analysis reports for the MMTV of
+  `rosenbrock_D2_noise3_production`, when the statistic (the sum of the
+  ranks of the positive changes) lies below its null mean, the null
+  distribution being symmetric; above it, the test does not reject.
+- **The pools' family**, from the metrics and the filter verdict that each
+  verified run's completion record holds (`svbmc_pool_run.py`: `metrics`,
+  `verdict.passes`), read from the two pools' archives in their draft
+  releases (`release-gate-pools-20261002` and Arm 3's), since the pools'
+  tracked copies hold the selection and the summary alone, on the
+  developer's machine, where nothing of them is committed. The metrics
+  are the in-run ones, not rescored: Arm 3's rescoring of the after arm
+  counts the cases that Arm 3's code scores as the release code did.
+- **The S-VBMC headline's bounds** (decision 6) read
+  `single_run/added.md` of Arm 3's analyses, an asset of the draft
+  release `release-gate-stacking-arm3-<date>`, which holds the cluster's
+  details and stays out of the repository.
+
+Arm 0's `rescore-arms` rescores Arm 3 with the release code, for a
+comparison of Arm 0 with Arm 3 should the port's end of warm-up be
+adopted. The analysis of a legacy reference refuses a rescoring whose
+package code is not the candidate's, so that comparison needs it to
+accept one whose only difference from the candidate is the package's
+scoring code when every candidate case's rescored metrics equal its
+in-run metrics, which the analysis already requires of the candidate.
+
+If the port's end is adopted for one kind of target alone, which public
+archives the release attaches, the after arm's, Arm 3's or each for its
+own configurations, is the PI's to name with the decision; both arms'
+public assets exist.
 
 ### Cost
 
@@ -158,22 +217,53 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
 ## Live checklist
 
 - [x] The PI's decisions (2026-10-05).
-- [ ] The pairing across harness commits: `prepare --pair`, the analysis,
-  their tests and documentation, on a feature branch merged into
-  `dev-next`.
-- [ ] Arm 3's branch: the end of warm-up and the package's tests that pin
-  it, cut from the commit that runs Arm 0.
-- [ ] A local pair across the two commits (a few seeds), through the
-  finish's `rescore` and the analysis.
-- [ ] The operator's guide and the brief for the batch (Arm 0 and Arm 3),
-  with the commits and the limits.
-- [ ] Review (fresh reviewers, read-only) and its fixes.
+- [x] The pairing across harness commits: `prepare --pair`, the analysis,
+  their tests and documentation, on the branch `feat-arm3-pairing`.
+- [x] Arm 3's branch, `dev-arm3-port-warmup`: the end of warm-up and the
+  package's tests that pin it.
+- [x] A local pair across the two commits, through the finish's `rescore`
+  and the analysis; the harness's test modules on Arm 3's code.
+- [x] The operator's guide and the brief for the batch.
+- [x] Review (two fresh reviewers, read-only) and its fixes.
+- [ ] `feat-arm3-pairing` merged into `dev-next`, its merge Arm 0's
+  commit; Arm 3's branch cut again from it; both pushed; the brief names
+  the two commits, which the PI confirms at the launch.
 - [ ] The batch on the cluster, the hand-back.
-- [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
-  the stacking; the rule applied; the PI's decision.
+- [ ] The script of the pools' family, and the comparisons: after
+  against Arm 3, the fresh seeds, the pools, the stacking; the rule
+  applied; the PI's decision.
+- [ ] If the port's end of warm-up is adopted: the analysis's extension
+  for comparing Arm 0 with Arm 3 ("The comparisons"), and the branch's
+  documentation; if it is not, the branch retained.
 
 ## Worklog
 
 - 2026-10-05: the PI's decisions above, after the noisy Rosenbrock
   investigation (the note) and the release pools' reading (`dev/TODO.md`,
   the S-VBMC ELBO headline selection).
+- 2026-10-05: the pairing across harness commits (`a4b2c0e6` on
+  `feat-arm3-pairing`), with tests of `pair_differences`, of `prepare
+  --pair` and of the analysis across two commits; the release gate's arm
+  comparison, run again on its tracked copies with that code, gives the
+  same `assessment.json` byte for byte. Arm 3's branch (`57a5826d`, cut
+  from `a4b2c0e6` in the worktree `../pyvbmc-arm3`): its warm-up test
+  modules and the oracles pass. A local pair across the two commits,
+  `rosenbrock_D2_noise3_production` at seeds 100 to 102 with the release
+  code and with Arm 3, each from a clean checkout of its own: `prepare
+  --pair` accepted it, both arms verified, Arm 3's `rescore` reproduced
+  its own cases and scored the release code's three as that code had, and
+  the analysis validated the pair; Arm 3's runs made 180 to 200
+  evaluations against the release code's 170 to 175. From the developer's
+  main checkout the pair was refused: its ignored
+  `dev/scripts/data/truths/chains/` enters the data directory's SHA-256,
+  which the guide now warns of. The cluster's environment-check modules
+  on Arm 3's code pass, but the stacking module's, which skip without the
+  original S-VBMC checkout. The guide and the brief (`ca935600`). Two
+  fresh reviewers, read-only: no fault in the campaigns or analyses that
+  the batch runs; fixed after them the hand-back's order (`population_v104`'s
+  copies hold the rescoring of `rescore-arms`, so every copy is written
+  after it), what the rescoring job exports, the public assets' own
+  directory, the commands the guide lacked, the pairing's refusal of the
+  same package code at two commits, the test of the node families, the
+  pin of Arm 3's default of `recompute_lcb_max`, and the reading of the
+  rule's tests ("The comparisons").

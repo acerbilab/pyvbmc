@@ -146,9 +146,10 @@ one (:func:`pair_differences`): another allocation, options or
 confirmatory family, other environment versions, another
 ``NODE_FEATURE`` or ``CAMPAIGN_ENV``, a package tree at the same commit,
 and, at one harness commit, other harness files or another state of the
-checkout, or at two, a checkout that is not clean or other files that
-build and score a run. Every ``prepare`` refuses a gpyreg checkout that is not the
-release the package tree requires (:func:`gpyreg_release_problem`).
+checkout, or at two, a checkout that is not clean, other files that
+build and score a run or the same package code. Every ``prepare`` refuses
+a gpyreg checkout that is not the release the package tree requires
+(:func:`gpyreg_release_problem`).
 Since ``rescore`` reads the other arm's
 ``verification.json``, the other arm is finished completely before this
 one's finish, and this one is finished again after any later finish of
@@ -1502,10 +1503,12 @@ def pair_differences(identity, other):
     commits, as when each arm's package is its own checkout's
     (``dev/plans/arm-3-warmup-comparison.md``), are paired on the terms of
     a legacy arm's comparison (:func:`legacy_pair_differences`): their
-    checkouts are clean, and they share the files that build and score a
-    run (:data:`RUN_FILES`), equal, while the rest of the harness, which
-    neither builds nor scores a run, may differ. Returns the reasons, an
-    empty list when the two can be paired.
+    checkouts are clean, they share the files that build and score a run
+    (:data:`RUN_FILES`), equal, and their package trees hold different
+    package code (:func:`package_numerics_differ`). The rest of the two
+    harnesses may differ, this module among it, whose worker wraps each
+    run; what lies between the two commits there is left to their review.
+    Returns the reasons, an empty list when the two can be paired.
     """
     a, b = identity["source"], other["source"]
     harness = [s["trees"].get("harness") or {} for s in (a, b)]
@@ -1515,7 +1518,15 @@ def pair_differences(identity, other):
             for tree in harness
             if not tree.get("clean")
         ][:1]
-        return found + legacy_pair_differences(identity, other)
+        found += legacy_pair_differences(identity, other)
+        commit = [s["trees"].get("pyvbmc", {}).get("commit") for s in (a, b)]
+        if commit[0] != commit[1] and not package_numerics_differ(*commit):
+            found.append(
+                f"the package trees at {commit[0]} and {commit[1]} hold the "
+                "same package code, so the comparison would compare the code "
+                "with itself"
+            )
+        return found
     found = [
         f"the arms have different {what}"
         for key, what in (
@@ -1549,10 +1560,12 @@ def _run_file_differences(a, b):
 
 
 def legacy_pair_differences(identity, other):
-    """Why a legacy arm and another arm cannot be compared.
+    """Why two arms whose harness checkouts may be at different commits
+    cannot be compared: a legacy arm and the arm it is compared with, or two
+    arms of the harness's own code at two commits (:func:`pair_differences`).
 
-    Their harness checkouts may differ, since the harness that runs a
-    legacy package is a later commit than one that ran the other arm; both
+    The harness that runs a legacy package is a later commit than the one
+    that ran the other arm; both
     identities hold the files that build and score a run
     (:data:`RUN_FILES`), equal, and the same imported versions, and their
     package trees are at different commits. Returns the reasons, an empty

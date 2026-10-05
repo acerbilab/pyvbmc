@@ -673,6 +673,21 @@ def test_pair_differences_across_harness_commits():
     )
 
 
+def test_pair_across_harness_commits_needs_different_package_code(
+    monkeypatch,
+):
+    """Arms of the harness's own code at two commits whose package code is
+    the same, a later commit having changed only the documentation, compare
+    the code with itself; the stand-in commits of the identities resolve to
+    nothing, which counts as code that differs."""
+    assert runner.package_numerics_differ("e" * 40, "0" * 40)
+    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: False)
+    assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == [
+        f"the package trees at {'0' * 40} and {'e' * 40} hold the same "
+        "package code, so the comparison would compare the code with itself"
+    ]
+
+
 def test_prepare_pairs_arms_across_harness_commits(tmp_path, monkeypatch):
     """Each arm's package is its own harness checkout's, and the candidate's
     checkout is at a later commit than the reference's."""

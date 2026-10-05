@@ -676,8 +676,9 @@ previous promotion's script lives in its record (PI, 2026-09-28).
   directory, so the before arm is finished completely before the after
   arm's finish, and the after arm is finished again after any later finish
   of the before arm. `prepare --pair` refuses two arms with the same
-  `pyvbmc` commit, or with different harness files or environment
-  versions; arms of two harness commits pair only on the terms of a legacy
+  `pyvbmc` commit or different environment versions, and, from one harness
+  commit, with different harness files; arms of two harness commits pair
+  only on the terms of a legacy
   arm's comparison, clean checkouts holding the same files that build and
   score a run (Arm 3, [its plan](arm-3-warmup-comparison.md)). `rescore`
   without `PYVBMC_GPYREG_SOURCE`, and a

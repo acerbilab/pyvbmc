@@ -173,7 +173,9 @@ report the rescoring names. In the second batch it also rescores Arm 3
 ([its plan](arm-3-warmup-comparison.md)), so that a comparison of Arm 0
 with Arm 3, should the PI adopt Arm 3's end of warm-up, has both arms
 scored by one process: `--campaign` names the after arm and then Arm 3,
-and the job runs after Arm 3's finish too.
+and the job runs after Arm 3's finish too. The comparison itself refuses
+that rescoring as it stands, since its code is not Arm 3's; Arm 3's plan
+lists the extension it needs.
 
 ### The comparison
 
