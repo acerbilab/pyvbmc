@@ -17,8 +17,8 @@ At noise 1 the runs shorten too (135 to 125 evaluations), with no loss of
 accuracy. The other noisy configurations keep their evaluation counts;
 `student_D8_noise3` and `logreg_D5_noise3` are better in the release
 (usable 49 to 57 and 78 to 87), `lumpy_D10_noise3` a little worse in gsKL,
-and the eight noisy configurations together are usable 583 times against
-579.
+and the eight noisy configurations together are usable 579 times against
+583.
 
 ## Where the evaluations go
 

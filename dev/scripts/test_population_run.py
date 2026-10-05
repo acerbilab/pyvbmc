@@ -651,7 +651,9 @@ for _name in ("harness", "pyvbmc"):
 EARLIER_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
 
 
-def test_pair_differences_across_harness_commits():
+def test_pair_differences_across_harness_commits(monkeypatch):
+    # The stand-in commits resolve to nothing; their package code differs.
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: True)
     assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == []
     other = copy.deepcopy(EARLIER_IDENTITY)
     other["source"]["files"]["dev/scripts/golden_trace.py"] = "6" * 64
@@ -671,6 +673,12 @@ def test_pair_differences_across_harness_commits():
     assert "would compare the code with itself" in "".join(
         runner.pair_differences(EARLIER_IDENTITY, EARLIER_IDENTITY)
     )
+    # An arm of other code than its harness checkout's does not pair so.
+    other_code = copy.deepcopy(EARLIER_IDENTITY)
+    other_code["source"]["trees"]["pyvbmc"]["commit"] = "f" * 40
+    assert runner.pair_differences(FAKE_IDENTITY, other_code) == [
+        "an arm ran other code than its harness checkout's"
+    ]
 
 
 def test_pair_across_harness_commits_needs_different_package_code(
@@ -678,14 +686,63 @@ def test_pair_across_harness_commits_needs_different_package_code(
 ):
     """Arms of the harness's own code at two commits whose package code is
     the same, a later commit having changed only the documentation, compare
-    the code with itself; the stand-in commits of the identities resolve to
-    nothing, which counts as code that differs."""
-    assert runner.package_numerics_differ("e" * 40, "0" * 40)
-    monkeypatch.setattr(runner, "package_numerics_differ", lambda a, b: False)
+    the code with itself; package code that the harness checkout cannot
+    compare, for a commit it does not hold, refuses the pair too."""
+    commits = f"{'0' * 40} and {'e' * 40}"
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: False)
     assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == [
-        f"the package trees at {'0' * 40} and {'e' * 40} hold the same "
-        "package code, so the comparison would compare the code with itself"
+        f"the package trees at {commits} hold the same package code, so the "
+        "comparison would compare the code with itself"
     ]
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: None)
+    (reason,) = runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY)
+    assert "cannot compare their package code" in reason
+
+
+def test_package_code_differs_reads_the_harness_checkouts_history(
+    tmp_path, monkeypatch
+):
+    """The package's scoring code leaves out its tests; a commit that the
+    checkout does not hold leaves the comparison undecided, which the
+    scoring checks read as code that differs."""
+
+    def git(*args):
+        return subprocess.run(
+            ["git", "-C", str(tmp_path), *args],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    git("init", "-q")
+    for key, value in (
+        ("user.email", "test@example.com"),
+        ("user.name", "test"),
+        ("commit.gpgsign", "false"),
+    ):
+        git("config", key, value)
+    code = tmp_path / "pyvbmc" / "vbmc" / "vbmc.py"
+    test = tmp_path / "pyvbmc" / "testing" / "test_vbmc.py"
+    for path in (code, test):
+        path.parent.mkdir(parents=True)
+        path.write_text("x = 1\n", encoding="utf-8")
+
+    def commit(message):
+        git("add", "-A")
+        git("commit", "-q", "-m", message)
+        return git("rev-parse", "HEAD")
+
+    first = commit("first")
+    test.write_text("x = 2\n", encoding="utf-8")
+    tests_only = commit("tests")
+    code.write_text("x = 2\n", encoding="utf-8")
+    code_too = commit("code")
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    assert runner.package_code_differs(first, tests_only) is False
+    assert runner.package_code_differs(first, code_too) is True
+    assert runner.package_code_differs(first, "f" * 40) is None
+    assert runner.package_numerics_differ(first, "f" * 40)
+    assert not runner.package_numerics_differ(first, tests_only)
 
 
 def test_prepare_pairs_arms_across_harness_commits(tmp_path, monkeypatch):
@@ -694,6 +751,8 @@ def test_prepare_pairs_arms_across_harness_commits(tmp_path, monkeypatch):
     monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
     monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
     monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+    # The stand-in commits resolve to nothing; their package code differs.
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: True)
 
     def own_arm(name, identity, *extra):
         use_identity(monkeypatch, identity)

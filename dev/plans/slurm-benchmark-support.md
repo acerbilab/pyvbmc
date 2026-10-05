@@ -668,8 +668,9 @@ previous promotion's script lives in its record (PI, 2026-09-28).
   metrics, since only each arm's package reads its boost captures, and the
   report labels them so; a stage other than the returned posterior whose
   metrics could not be computed leaves the boost summary and is counted.
-- **Binding.** `rescore` runs only with the after arm's source identity,
-  requires the after arm to reproduce its in-run metrics exactly, resumes
+- **Binding.** `rescore` runs only with the source identity of the arm
+  that rescores (the after arm, here), requires that arm to reproduce its
+  in-run metrics exactly, resumes
   from per-configuration work files, and records the SHA-256 of what it
   writes in `rescoring.json`, which the analysis checks. `summarize`,
   `rescore` and the analysis refuse a `verification.json` older than its
@@ -678,11 +679,11 @@ previous promotion's script lives in its record (PI, 2026-09-28).
   of the before arm. `prepare --pair` refuses two arms with the same
   `pyvbmc` commit or different environment versions, and, from one harness
   commit, with different harness files; arms of two harness commits pair
-  only on the terms of a legacy
-  arm's comparison, clean checkouts holding the same files that build and
-  score a run (Arm 3, [its plan](arm-3-warmup-comparison.md)). `rescore`
-  without `PYVBMC_GPYREG_SOURCE`, and a
-  worker whose package tree PyVBMC cannot be imported from, exit 78.
+  only as clean checkouts, each of its own package, that hold the same
+  files that build and score a run and different package code (Arm 3,
+  [its plan](arm-3-warmup-comparison.md)). `rescore` without
+  `PYVBMC_GPYREG_SOURCE`, and a worker whose package tree PyVBMC cannot be
+  imported from, exit 78.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
   for 100 pairs (before this plan's work its exact enumeration refused
   more than 62), a verification of the reference arm against that arm's own

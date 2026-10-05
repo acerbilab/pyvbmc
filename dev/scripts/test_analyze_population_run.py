@@ -749,10 +749,12 @@ def test_arms_refuse_other_harness_files(tmp_path):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
 
 
-def test_arms_across_harness_commits(tmp_path):
+def test_arms_across_harness_commits(tmp_path, monkeypatch):
     """The reference's package is its own checkout's at an earlier commit
     than the candidate's, whose code rescores both (Arm 3 and the after
     arm): the arms share the files that build and score a run alone."""
+    # The stand-in commits resolve to nothing; their package code differs.
+    monkeypatch.setattr(runner, "package_code_differs", lambda a, b: True)
     run_files = {rel: "5" * 64 for rel in runner.RUN_FILES}
     candidate_files = {**run_files, "dev/scripts/population_run.py": "1" * 64}
     earlier = "e" * 40

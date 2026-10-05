@@ -146,14 +146,14 @@ one (:func:`pair_differences`): another allocation, options or
 confirmatory family, other environment versions, another
 ``NODE_FEATURE`` or ``CAMPAIGN_ENV``, a package tree at the same commit,
 and, at one harness commit, other harness files or another state of the
-checkout, or at two, a checkout that is not clean, other files that
-build and score a run or the same package code. Every ``prepare`` refuses
-a gpyreg checkout that is not the release the package tree requires
-(:func:`gpyreg_release_problem`).
-Since ``rescore`` reads the other arm's
-``verification.json``, the other arm is finished completely before this
-one's finish, and this one is finished again after any later finish of
-the other.
+checkout, or at two, a checkout that is not clean, an arm of other code
+than its checkout's, other files that build and score a run, or package
+code that is the same or that the harness checkout cannot compare. Every
+``prepare`` refuses a gpyreg checkout that is not the release the package
+tree requires (:func:`gpyreg_release_problem`). Since ``rescore`` reads
+the other arm's ``verification.json``, the other arm is finished
+completely before this one's finish, and this one is finished again after
+any later finish of the other.
 
 **Legacy campaigns.** A package tree at a commit of
 :data:`LEGACY_PACKAGES`, a release of PyVBMC that has no ``seed=``, draws
@@ -1501,14 +1501,16 @@ def pair_differences(identity, other):
     clean state and the SHA-256 of the harness files (the targets module
     and its data among them). Arms whose harness checkouts are at different
     commits, as when each arm's package is its own checkout's
-    (``dev/plans/arm-3-warmup-comparison.md``), are paired on the terms of
-    a legacy arm's comparison (:func:`legacy_pair_differences`): their
-    checkouts are clean, they share the files that build and score a run
-    (:data:`RUN_FILES`), equal, and their package trees hold different
-    package code (:func:`package_numerics_differ`). The rest of the two
-    harnesses may differ, this module among it, whose worker wraps each
-    run; what lies between the two commits there is left to their review.
-    Returns the reasons, an empty list when the two can be paired.
+    (``dev/plans/arm-3-warmup-comparison.md``), share the files that build
+    and score a run (:data:`RUN_FILES`), equal, as a legacy arm and the arm
+    it is compared with do (:func:`legacy_pair_differences`); further, each
+    arm ran its own checkout's package, the checkouts are clean, and their
+    package code differs, which the harness checkout running this compares
+    (:func:`package_code_differs`) and which a commit it does not hold
+    leaves undecided, a refusal. The rest of the two harnesses may differ,
+    this module among it, whose worker wraps each run; what lies between
+    the two commits there is left to their review. Returns the reasons, an
+    empty list when the two can be paired.
     """
     a, b = identity["source"], other["source"]
     harness = [s["trees"].get("harness") or {} for s in (a, b)]
@@ -1518,14 +1520,31 @@ def pair_differences(identity, other):
             for tree in harness
             if not tree.get("clean")
         ][:1]
+        if any(
+            (s["trees"].get("pyvbmc") or {}).get("commit")
+            != tree.get("commit")
+            for s, tree in zip((a, b), harness)
+        ):
+            found.append("an arm ran other code than its harness checkout's")
         found += legacy_pair_differences(identity, other)
         commit = [s["trees"].get("pyvbmc", {}).get("commit") for s in (a, b)]
-        if commit[0] != commit[1] and not package_numerics_differ(*commit):
-            found.append(
-                f"the package trees at {commit[0]} and {commit[1]} hold the "
-                "same package code, so the comparison would compare the code "
-                "with itself"
-            )
+        if not all(commit):
+            found.append("an arm's identity names no package commit")
+        elif commit[0] != commit[1]:
+            differs = package_code_differs(*commit)
+            if differs is None:
+                found.append(
+                    f"the harness checkout at {ROOT} lacks {commit[0]} or "
+                    f"{commit[1]}, so it cannot compare their package code; "
+                    "fetch both commits, or compare from a checkout that "
+                    "holds them"
+                )
+            elif not differs:
+                found.append(
+                    f"the package trees at {commit[0]} and {commit[1]} hold "
+                    "the same package code, so the comparison would compare "
+                    "the code with itself"
+                )
         return found
     found = [
         f"the arms have different {what}"
@@ -1565,11 +1584,10 @@ def legacy_pair_differences(identity, other):
     arms of the harness's own code at two commits (:func:`pair_differences`).
 
     The harness that runs a legacy package is a later commit than the one
-    that ran the other arm; both
-    identities hold the files that build and score a run
-    (:data:`RUN_FILES`), equal, and the same imported versions, and their
-    package trees are at different commits. Returns the reasons, an empty
-    list when the two can be compared.
+    that ran the other arm; both identities hold the files that build and
+    score a run (:data:`RUN_FILES`), equal, and the same imported versions,
+    and their package trees are at different commits. Returns the reasons,
+    an empty list when the two can be compared.
     """
     a, b = identity["source"], other["source"]
     found = []
@@ -1587,17 +1605,29 @@ def legacy_pair_differences(identity, other):
     return found
 
 
-def package_numerics_differ(a, b):
+def package_code_differs(a, b):
     """Whether the package's scoring code (:data:`PACKAGE_PATHS`) differs
-    between commits ``a`` and ``b`` of the harness checkout's history; a
-    commit that git cannot resolve there differs."""
+    between commits ``a`` and ``b`` of the harness checkout's history: True
+    or False, or None when git cannot tell, as for a commit that the
+    checkout does not hold."""
     if a == b:
         return False
     try:
         contract.git(ROOT, "diff", "--quiet", a, b, "--", *PACKAGE_PATHS)
-    except (OSError, subprocess.CalledProcessError):
-        return True
+    except subprocess.CalledProcessError as error:
+        # ``git diff --quiet`` exits 1 for a difference, and otherwise on
+        # an error, such as a revision it cannot resolve.
+        return True if error.returncode == 1 else None
+    except OSError:
+        return None
     return False
+
+
+def package_numerics_differ(a, b):
+    """Whether the package's scoring code (:data:`PACKAGE_PATHS`) differs
+    between commits ``a`` and ``b`` of the harness checkout's history; a
+    commit that git cannot resolve there differs."""
+    return package_code_differs(a, b) is not False
 
 
 def scoring_differences(identity, other):

@@ -83,9 +83,11 @@ others are the first batch's accounting
 
 Each campaign runs in a shell of its own, from its harness checkout, with
 its `HARNESS` and trees exported, and starts with a canary and a look at
-it with the finish. Submit at a `THROTTLE` of 75 a submission, the rate at
-which the first batch's nodes no longer failed their prolog, and with no
-more than four submissions running at once, as in the first batch.
+it with the finish. Submit at a `THROTTLE` of 75 a submission and keep
+the tasks running at once near 300, the first batch's peak once its nodes
+no longer failed their prolog: a submission that would take the batch
+well past that waits for an earlier one to drain, and submissions go a
+few minutes apart.
 
 1. **The canaries** of Arm 0 (24 cases), of Arm 3's population (24
    cases), of `fresh_release` and then of `fresh_arm3` (1 case each),
@@ -114,11 +116,13 @@ more than four submissions running at once, as in the first batch.
        unset PYVBMC_SOURCE BASELINE_DIR CAMPAIGN_DIR
        mkdir -p "$OUT"
        cd "$REPO"
+       read -r -d '' -a extra <<< "${SBATCH_EXTRA:-}" || true
        shrink=$(sbatch --parsable -J shrink -C "$NODE_FEATURE" \
            --hint=nomultithread ${PARTITION:+-p "$PARTITION"} \
            --cpus-per-task=1 --no-requeue \
            --time="$SHRINK_TIME" --mem="$ANALYSIS_MEM" \
            --output="$OUT/shrink_%j.out" --export=ALL \
+           ${extra[@]+"${extra[@]}"} \
            --wrap 'cd "$REPO" && source dev/scripts/hpc/campaign_env.sh \
                && python -u dev/scripts/svbmc_shrink_elbo.py \
                --pool "$POOL" --cells "$CELLS" --out "$OUT/shrink" \
@@ -128,6 +132,7 @@ more than four submissions running at once, as in the first batch.
            --dependency="afterok:${shrink%%;*}" \
            --time="$SINGLE_RUN_TIME" --mem="$ANALYSIS_MEM" \
            --output="$OUT/single_run_%j.out" --export=ALL \
+           ${extra[@]+"${extra[@]}"} \
            --wrap 'cd "$REPO" && source dev/scripts/hpc/campaign_env.sh \
                && python -u dev/scripts/svbmc_single_run_bias.py \
                --pool "$POOL" --out "$OUT/single_run" \
@@ -186,12 +191,15 @@ being the batch's launch.
    `release-gate-stacking-arm3-<date>`. Like the first batch's, the
    analyses' outputs hold the cluster's details, and no file of them
    enters the pull request.
-2. **The tracked copies of the six campaigns, after `rescore-arms`**, once
-   each: `population_v104`'s declare the rescoring that `rescore-arms`
-   writes, and the redaction writes into an empty directory alone. Each is
-   redacted from the harness checkout it ran from, into a branch
-   `release-gate-<date>` of the hand-back clone, under
-   `dev/experiments/release_gate_<date>/`.
+   A finish run again rewrites its archive, whose parts go up again
+   (`--clobber`), and the rescorings that name its verification run again.
+2. **The tracked copies of the six campaigns**, once the batch's last
+   finish and `rescore-arms` have passed, once each: `population_v104`'s
+   declare the rescoring that `rescore-arms` writes, a later finish calls
+   for a rescoring again, and the redaction writes into an empty directory
+   alone. Each is redacted in its own shell, from the harness checkout it
+   ran from, into a branch `release-gate-<date>` of the hand-back clone,
+   under `dev/experiments/release_gate_<date>/`.
 3. **The public assets** of `population_arm3` and `pools_arm3`, built from
    the Arm 3 checkout into `$RUNS/public_arm3` and uploaded to the draft
    release `release-gate-public-arm3-<date>`, which stays a draft: the
@@ -214,14 +222,15 @@ being the batch's launch.
   same in both (the guide's "The pairing across harness commits"). The
   hash of `dev/scripts/data/` takes every file in it, those git ignores
   among them, so nothing is added to either checkout's `dev/scripts/data/`.
-- **What goes to the PI before you act on it:** what the first brief
-  lists (a failed case, a case missing after a resubmission with larger
-  limits, a failed `verify`, a `partial` or `stray`, a condition short of
-  320 selected runs, a refused redaction); a `prepare --pair` or `prepare
-  --compare` that refuses; a `rescore` or `rescore-arms` whose own arm
-  does not reproduce its in-run metrics (Arm 3's in the finishes of
-  `population_arm3` and `fresh_arm3`, `fresh_release`'s in its own, the
-  after arm's in `rescore-arms`).
+- **What goes to the PI before you act on it:** what the first brief lists (a
+  failed case, a case missing or interrupted after a resubmission with larger
+  limits, a failed `verify`, a `partial` or `stray`, a condition short of 320
+  selected runs, a line from the stacking's `prepare` about a pool that gives
+  fewer repetitions than the grid asks, a redaction that refuses a string it
+  names no rule for); a `prepare --pair` or `prepare --compare` that refuses; a
+  `rescore` or `rescore-arms` whose own arm does not reproduce its in-run
+  metrics (Arm 3's in the finishes of `population_arm3` and `fresh_arm3`,
+  `fresh_release`'s in its own, the after arm's in `rescore-arms`).
 - **Site details stay out of the repository**, as in the first batch.
 - Questions about the procedure go to the guide and to each script's
   header; questions about the design to the two arms' plans; questions
