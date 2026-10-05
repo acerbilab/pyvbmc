@@ -37,8 +37,17 @@ def run_short(options: dict, seed: int = 20260920, D: int = 2):
 
 @pytest.fixture(scope="module")
 def two_iterations():
-    """One short run, read by every test that needs recorded iterations."""
-    return run_short({"max_iter": 2, "min_iter": 2, "max_fun_evals": 60})
+    """One short run, read by every test that needs recorded iterations,
+    with ``recompute_lcb_max`` on, as the release code has it (Arm 3's
+    default is off; ``dev/plans/arm-3-warmup-comparison.md``)."""
+    return run_short(
+        {
+            "max_iter": 2,
+            "min_iter": 2,
+            "max_fun_evals": 60,
+            "recompute_lcb_max": True,
+        }
+    )
 
 
 def test_running_moments_are_an_exponentially_weighted_average(
@@ -111,7 +120,7 @@ def test_a_warmup_iteration_stores_the_recomputed_lcb_maxima(two_iterations):
     """From its second iteration on, a run in warm-up replaces the maxima
     of the lower confidence bound that the warm-up criteria read with their
     recomputation under the current GP when ``recompute_lcb_max`` is on, as
-    it is by default (MATLAB VBMC, ``vbmc.m:814-817``). The run ends in
+    it is in the shared run (MATLAB VBMC, ``vbmc.m:814-817``). The run ends in
     warm-up, and nothing changes its GP or its training set after the
     last iteration, so the stored sequence is the recomputation of the
     final state."""

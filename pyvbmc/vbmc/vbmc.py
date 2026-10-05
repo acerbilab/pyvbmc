@@ -2282,9 +2282,11 @@ class VBMC:
         # in recent iters (unless already performing BO-like warmup)
         if self.options.get("warmup_check_max"):
             idx_last = np.full(lcb_max_vec.shape, False)
-            # The recent iterations are the last `tol_stable_warmup_iters`
-            # of the history, the current one included.
-            recent_past = iteration + 1 - tol_stable_warmup_iters
+            # Arm 3 (dev/plans/arm-3-warmup-comparison.md): the port's window
+            # before W2-1, the last `tol_stable_warmup_iters + 2` iterations
+            # of the history, the current one included, against MATLAB's
+            # last `tol_stable_warmup_iters`.
+            recent_past = iteration - (tol_stable_warmup_iters + 1)
             idx_last[max(1, recent_past) :] = True
             improvement = _max_ignoring_nan(
                 lcb_max_vec[idx_last]
