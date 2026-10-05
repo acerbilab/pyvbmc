@@ -1601,7 +1601,9 @@ def test_the_legacy_shims_seed_the_run_and_the_metrics(monkeypatch):
 
     import pyvbmc
 
-    profile = runner.LEGACY_PACKAGES[RELEASE_104]
+    # The compatibility patches apply to 1.0.4's source alone, and this
+    # process imports the release code's (test_the_patches_of_1_0_4_...).
+    profile = dict(runner.LEGACY_PACKAGES[RELEASE_104], patches=[])
     package_vbmc = pyvbmc.VBMC
     harness_metrics = runner.metrics
     monkeypatch.setattr(runner, "VBMC", StandInPackageVBMC)
@@ -1636,6 +1638,28 @@ def test_the_legacy_shims_seed_the_run_and_the_metrics(monkeypatch):
     # Without a profile nothing changes.
     with runner.legacy_shims(None):
         assert pyvbmc.VBMC is package_vbmc
+
+
+def test_a_compatibility_patch_replaces_its_text_once(tmp_path, monkeypatch):
+    import importlib
+
+    (tmp_path / "standin_patched_module.py").write_text(
+        "SCALE = 2\n\n\ndef f(x):\n    y = x\n    return y\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    module = importlib.import_module("standin_patched_module")
+    spec = {
+        "module": "standin_patched_module",
+        "function": "f",
+        "old": "    y = x\n",
+        "new": "    y = SCALE * x\n",
+    }
+    original, patched = runner.legacy_patch(spec)
+    # The patched function lives in its module's namespace.
+    assert original is module.f and original(3) == 3 and patched(3) == 6
+    with pytest.raises(RuntimeError, match="does not find the text"):
+        runner.legacy_patch(dict(spec, old="    z = x\n"))
 
 
 def test_the_capture_of_a_legacy_boost_records_the_global_state():
@@ -2525,3 +2549,52 @@ def test_a_real_legacy_case_is_run_rescored_and_compared(
     result = analysis.analyze_arms(legacy, ran, None, tmp_path / "report")
     assert result["paired_cases"] == 1
     assert result["legacy_reference"]["release"] == "1.0.4"
+
+
+def test_the_patches_of_1_0_4_apply_to_its_source():
+    """In a process of PyVBMC 1.0.4, the shims replace the function of each
+    compatibility patch in every module that holds it, the one that imports
+    it by name among them, and restore it after."""
+    tree = os.environ.get("PYVBMC_LEGACY_SOURCE")
+    legacy_gpyreg = os.environ.get("PYVBMC_LEGACY_GPYREG_SOURCE")
+    if not tree or not legacy_gpyreg:
+        pytest.skip(
+            "PYVBMC_LEGACY_SOURCE and PYVBMC_LEGACY_GPYREG_SOURCE name no "
+            "checkouts of PyVBMC 1.0.4 and gpyreg 1.0.4"
+        )
+    script = """
+        import importlib
+        import sys
+        tree, gpyreg, here = sys.argv[1:4]
+        sys.path[:0] = [tree, gpyreg]
+        import pyvbmc
+        sys.path.insert(0, here)
+        import population_run as runner
+        assert runner.VBMC.__module__ == "pyvbmc.vbmc.vbmc"
+        profile = runner.LEGACY_PACKAGES[sys.argv[4]]
+        names = ("variational_optimization", "active_sample")
+        modules = [importlib.import_module(f"pyvbmc.vbmc.{n}") for n in names]
+        original = modules[0]._gp_log_joint
+        assert modules[1]._gp_log_joint is original
+        with runner.legacy_shims(profile):
+            patched = modules[0]._gp_log_joint
+            assert patched is not original
+            assert modules[1]._gp_log_joint is patched
+            assert patched.__globals__ is vars(modules[0])
+        assert all(m._gp_log_joint is original for m in modules)
+        print("ok")
+        """
+    env = {
+        key: value for key, value in os.environ.items() if key != "PYTHONPATH"
+    }
+    env.pop("PYVBMC_GPYREG_SOURCE", None)
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(script), tree, legacy_gpyreg]
+        + [str(runner.HERE), RELEASE_104],
+        cwd=runner.HERE,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip().endswith("ok")

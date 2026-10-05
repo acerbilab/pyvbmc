@@ -176,8 +176,11 @@ case's seed, which is how the package fixes a run, and without the options
 it does not define; the metrics run on the global state seeded with
 ``benchmark_targets.DIAG_SEED``, and restore it, since the package's
 posteriors draw from it and not from the generators the metrics give them;
-and the boost capture records the global state. The checks of a legacy case
-expect the package's own final boost: its weight penalty and no tolerance.
+the boost capture records the global state; and the compatibility patches
+of its profile (:data:`LEGACY_PATCHES`), which let the package run under the
+campaign environment's NumPy and change no value it computes, replace their
+functions. The checks of a legacy case expect the package's own final
+boost: its weight penalty and no tolerance.
 
 ``rescore-arms --out LEGACY`` rescores a legacy campaign and the campaign
 of the release code it is compared with (``prepare --compare``, or
@@ -321,8 +324,9 @@ DEFAULT_OPTIONS = {
 #: Releases of PyVBMC without ``seed=``, whose draws come from NumPy's
 #: global state, run as legacy campaigns (module docstring), by the commit
 #: of the package tree: the release, the gpyreg release it runs with, the
-#: options of :data:`DEFAULT_OPTIONS` it does not define, and the weight
-#: penalty of its final boost, which keeps every boost it makes.
+#: options of :data:`DEFAULT_OPTIONS` it does not define, the weight
+#: penalty of its final boost, which keeps every boost it makes, and the
+#: compatibility patches it runs with (:data:`LEGACY_PATCHES`).
 LEGACY_PACKAGES = {
     "0bb8b8f5b48c05eafaaa790bd1432a5ea681e25d": {
         "release": "1.0.4",
@@ -333,6 +337,40 @@ LEGACY_PACKAGES = {
             "tol_elcbo_boost",
         ],
         "boost_weight_penalty": 0.1,
+        "patches": ["single_sample_variance"],
+    },
+}
+#: The compatibility patches of :data:`LEGACY_PACKAGES`, by name, which
+#: :func:`legacy_shims` applies in the worker's process: the module and
+#: function whose source changes, the text replaced and its replacement.
+#: A patch lets the package run under the campaign environment's NumPy and
+#: changes no value it computes.
+LEGACY_PATCHES = {
+    # 1.0.4's _gp_log_joint keeps a sample axis on the ELBO's variance when
+    # the GP holds one hyperparameter sample, as it does once sampling stops
+    # (N >= 200 + 10 D), and _eval_full_elcbo then stores a length-1 array
+    # where a number goes: NumPy 1 took its element, NumPy 2 raises. The
+    # replacement is the package's own fix (6f3f0ba7), which takes that
+    # element where the array is made.
+    "single_sample_variance": {
+        "module": "pyvbmc.vbmc.variational_optimization",
+        "function": "_gp_log_joint",
+        "old": (
+            "    if Ns == 1:\n"
+            "        G = G[0]\n"
+            "        if np.any(grad_flags):\n"
+            "            dG = dG[:, 0]\n"
+        ),
+        "new": (
+            "    if Ns == 1:\n"
+            "        G = G[0]\n"
+            "        if np.any(grad_flags):\n"
+            "            dG = dG[:, 0]\n"
+            "        if compute_var:\n"
+            "            varG = varG[0]\n"
+            "        if compute_vargrad:\n"
+            "            dvarG = dvarG[:, 0]\n"
+        ),
     },
 }
 #: The harness files that build and score a run, by their keys in a source
@@ -1269,8 +1307,10 @@ def legacy_shims(legacy):
     ``legacy["undefined_options"]``; and ``benchmark_targets.metrics``, and
     this module's, run on the global state seeded with
     ``benchmark_targets.DIAG_SEED`` and restore it after them, so that two
-    calls on equal posteriors give equal metrics. Without ``legacy`` it
-    changes nothing.
+    calls on equal posteriors give equal metrics; and each patch of
+    ``legacy["patches"]`` (:func:`legacy_patch`) replaces its function
+    wherever a module of the package holds it. Without ``legacy`` it changes
+    nothing.
     """
     if not legacy:
         yield
@@ -1310,7 +1350,50 @@ def legacy_shims(legacy):
         stack.enter_context(patch.object(pyvbmc, "VBMC", construct))
         for owner in (benchmark_targets, module):
             stack.enter_context(patch.object(owner, "metrics", seeded_metrics))
+        for name in legacy.get("patches", ()):
+            spec = LEGACY_PATCHES[name]
+            original, patched = legacy_patch(spec)
+            # Every module of the package that holds the function, those
+            # that import it by name among them.
+            holders = [
+                held
+                for held_name, held in list(sys.modules.items())
+                if held_name.split(".")[0] == "pyvbmc"
+                and getattr(held, spec["function"], None) is original
+            ]
+            for held in holders:
+                stack.enter_context(
+                    patch.object(held, spec["function"], patched)
+                )
         yield
+
+
+def legacy_patch(spec):
+    """``(original, patched)``: the function of a compatibility patch
+    (:data:`LEGACY_PATCHES`) as the imported package defines it, and as
+    the patch's replacement of its source defines it, in the namespace of
+    its module. Raises when the source does not hold the replaced text
+    once, so that a patch never applies to code it was not written for.
+    """
+    import inspect
+    import textwrap
+
+    module = importlib.import_module(spec["module"])
+    original = getattr(module, spec["function"])
+    source = textwrap.dedent(inspect.getsource(original))
+    if source.count(spec["old"]) != 1:
+        raise RuntimeError(
+            f"the compatibility patch of {spec['module']}."
+            f"{spec['function']} does not find the text it replaces once"
+        )
+    namespace = {}
+    code = compile(
+        source.replace(spec["old"], spec["new"]),
+        f"<compatibility patch of {spec['module']}.{spec['function']}>",
+        "exec",
+    )
+    exec(code, module.__dict__, namespace)
+    return original, namespace[spec["function"]]
 
 
 def run_case(out, label, seed, options, identity):
