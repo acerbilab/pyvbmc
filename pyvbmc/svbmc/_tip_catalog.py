@@ -17,11 +17,14 @@ TIPS = (
     Tip(
         "noisy_elbo",
         "On noisy targets, the raw stacked ELBO can be optimistic, with "
-        "optimism growing as more runs are stacked. Use the capped elbo "
-        "for model comparison and report elbo_sd alongside it. The SD "
-        "describes uncertainty of the raw evaluation; it does not include "
-        "selection bias or uncertainty of the cap. The cap affects the "
-        "reported evidence estimate only; the stacked posterior is unchanged.",
+        "optimism growing as more runs are stacked. The headline elbo "
+        "applies two-level shrinkage, which targets the optimism that "
+        "stacking adds, not the bias of the runs' own ELBOs, and can leave "
+        "some bias. Use elbo for model comparison and report elbo_sd "
+        "alongside it. The SD describes uncertainty of the raw evaluation; "
+        "it does not include selection bias or uncertainty of the "
+        "shrinkage. The shrinkage affects the reported evidence estimate "
+        "only; the stacked posterior is unchanged.",
         noisy_only=True,
     ),
     Tip(

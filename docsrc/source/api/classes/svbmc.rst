@@ -67,11 +67,50 @@ keyword-only and must be an integer of at least 2.
 ELBO reporting
 --------------
 
-For a stack treated as noiseless, ``stacked.elbo`` is the raw ELBO from the
-fresh final evaluation. If any retained run is treated as noisy, the headline
-is ``capped_I_median``: its expected log-joint is capped at the median value
-of the retained components. This cap reduces one source of optimistic bias;
-it does not remove every source of bias.
+``stacked.elbo`` is the headline estimate of the stacked ELBO, chosen by the
+noise status of the stack:
+
+- For a stack treated as noiseless, it is ``raw``, the ELBO from the fresh
+  final evaluation at the selected weights.
+- If any retained run is treated as noisy, it is ``shrunk_two_level``, the
+  two-level shrinkage estimate at the same weights and with the same final
+  entropy. Where that calculation is numerically undefined, the headline is
+  ``capped_I_median`` instead, and ``optimize()`` warns.
+
+The choice affects the reported value alone: the weights, and so the stacked
+posterior and its samples, come from the same optimization whatever the
+headline.
+
+The weights maximize a sum of the components' expected log-joints, each
+estimated by its run's GP. On a noisy target these estimates are noisy, and
+maximizing over them favors the components whose estimates came out high,
+which biases the raw ELBO of a noisy stack upward, the more so the more runs
+are stacked. The bias of a reported value has two parts:
+
+- **Inherited from VBMC.** Each run's own ELBO carries the bias of its
+  variational optimization, which on a noisy target also selects components
+  on noisy GP estimates. A single run's ELBO is then often optimistic, and
+  it can also be pessimistic, for example on a heavy-tailed posterior.
+  S-VBMC inherits this bias and does not try to remove it.
+- **Added by stacking.** The optimization of the weights selects again,
+  across the components of all runs, on the same noisy estimates. The
+  two-level shrinkage targets this part. It treats each component's expected
+  log-joint as a noisy measurement and shrinks it toward the mean of its run,
+  by an amount set by the GP's covariance of the run's estimates, then
+  shrinks each run's level toward the mean over runs in the same way.
+
+Residual bias can remain. Shrinkage takes the GP uncertainty saved with each
+posterior (``I_sk`` and ``J_sjk``) at face value, so where that uncertainty
+is miscalibrated it corrects too little or too much. Its run-level step
+counts the differences between the runs' own biases as real differences
+between the runs, so it removes only part of the optimism of favoring the
+runs that came out highest. Its within-run step, on the other hand, can
+also remove part of the bias that the runs inherit. The raw ELBO is not an
+upper bound on the truth: where the runs' own ELBOs are pessimistic, it can
+fall below the stack's true ELBO, and the shrinkage estimate can lie on
+either side of the truth. On a noiseless stack, stacking adds little bias
+and shrinkage changes the value little, so the headline is the raw ELBO,
+and ``shrunk_two_level`` is reported beside it.
 
 ``stacked.elbo_details`` contains the complete report:
 
@@ -82,9 +121,11 @@ it does not remove every source of bias.
    * - Key
      - Meaning
    * - ``raw``
-     - Uncapped ELBO from the fresh evaluation at the selected weights.
+     - ELBO from the fresh evaluation at the selected weights; the headline
+       of a noiseless stack.
    * - ``capped_I_median``
-     - ELBO with the expected log-joint capped at the component median.
+     - ELBO with the expected log-joint capped at the component median; the
+       headline of a noisy stack whose shrinkage is unavailable.
    * - ``capped_E_median``
      - ELBO with the expected log-joint capped at the retained-run median.
    * - ``naive``
@@ -94,22 +135,25 @@ it does not remove every source of bias.
    * - ``shrunk_two_level``
      - Empirical-Bayes estimate that first shrinks component expected
        log-joints within each retained run using their full GP covariance,
-       then shifts each run by its shrunken run-level estimate. It uses the
-       selected stacking weights and the same final entropy as ``raw``.
-       ``None`` means finite input statistics led to a numerically undefined
-       calculation; :meth:`~pyvbmc.svbmc.SVBMC.optimize` emits a
-       ``RuntimeWarning`` and leaves every other report value available.
+       then shifts each run by its shrunken run-level estimate; the headline
+       of a noisy stack. It uses the selected stacking weights and the same
+       final entropy as ``raw``. ``None`` means finite input statistics led
+       to a numerically undefined calculation;
+       :meth:`~pyvbmc.svbmc.SVBMC.optimize` emits a ``RuntimeWarning`` and
+       leaves every other report value available.
    * - ``shrinkage_noise_share``
      - Diagnostic ratio of estimated noise to component spread, averaged over
        runs using their selected mixture masses. It can exceed one and is
        ``None`` when shrinkage is unavailable or no run with positive spread
        has positive selected mass.
    * - ``headline_method``
-     - ``"raw"`` for a noiseless stack or ``"capped_I_median"`` for a noisy
-       stack.
+     - The key of the headline: ``"raw"`` for a noiseless stack,
+       ``"shrunk_two_level"`` for a noisy stack, or ``"capped_I_median"``
+       for a noisy stack whose shrinkage is unavailable.
    * - ``cap_amount``
-     - Reduction applied to the headline. It is zero for a noiseless stack,
-       even when a diagnostic cap would bind.
+     - Reduction that the median cap applied to the headline, ``raw`` less
+       ``capped_I_median``. It is zero unless the headline is
+       ``capped_I_median``, even when a diagnostic cap would bind.
    * - ``entropy_sd``
      - Monte Carlo contribution to the uncertainty of ``raw``.
    * - ``gp_sd``
@@ -127,15 +171,9 @@ the desired result.
 
 ``stacked.elbo_sd`` combines the stratified entropy estimator's Monte Carlo
 variance with the GP quadrature uncertainty at the selected weights. It
-describes the uncapped ``raw`` value. It excludes selection bias and does not
-propagate the median cap, so it must not be interpreted as defining a
-calibrated confidence interval for a capped headline.
-
-``shrunk_two_level`` is an additional diagnostic estimate for both noisy and
-noiseless stacks. It relies on the GP uncertainty estimates saved in
-``I_sk`` and ``J_sjk``. Shrinkage can reduce selection bias, but it does not
-guarantee removal of bias. ``elbo_sd`` describes ``raw`` and is not an
-uncertainty interval for the shrunken estimate.
+describes the ``raw`` value. It excludes selection bias and does not
+propagate the shrinkage or the median cap, so it must not be interpreted as
+defining a calibrated confidence interval for the headline of a noisy stack.
 
 By default, the keyword-only constructor argument ``noisy=None`` reads the
 noise status recorded by each retained posterior. Older posteriors without
@@ -147,7 +185,8 @@ entire stack; the source for every retained run is then ``"override"``.
 The constructor defaults are ``s_max=np.sqrt(5)``, ``M_min=2/3``, ``seed=None``,
 ``show_tips=True`` and ``noisy=None``. Guidance tips appear only when
 ``show_tips`` is true and INFO logging is enabled. Setting ``show_tips=False``
-suppresses tips while leaving progress and applied-cap diagnostics available.
+suppresses tips while leaving the messages on progress and on the headline
+available.
 
 A composite posterior
 ---------------------
@@ -233,7 +272,9 @@ What differs:
   optimization the ELBO is evaluated again with more draws
   (``optimize(n_samples_final=...)``), and it comes with an uncertainty,
   ``elbo_sd``.
-- ``elbo`` is a number, and the entries of the standalone package's ``elbo``
+- ``elbo`` is a number, the headline described under "ELBO reporting",
+  which for a noisy stack is a shrinkage estimate that the standalone
+  package does not compute. The entries of the standalone package's ``elbo``
   dictionary are in ``elbo_details``, under the names in the table below.
 - ``seed`` takes the place of ``testing``: every random draw comes from the
   generator of the ``SVBMC`` object, and the input posteriors are neither

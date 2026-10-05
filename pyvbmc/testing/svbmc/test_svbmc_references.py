@@ -74,17 +74,31 @@ def test_matches_reference(group, mode):
     np.testing.assert_allclose(
         stacked.w, reference["w"], err_msg="weights", **TOLERANCE
     )
-    np.testing.assert_allclose(stacked.elbo, reference["elbo"], **TOLERANCE)
+    expected_details = dict(reference["elbo_details"])
+    np.testing.assert_allclose(
+        stacked.elbo_details[expected_details["headline_method"]],
+        reference["elbo"],
+        **TOLERANCE,
+    )
+    if expected_details["noisy"]:
+        # The references predate the shrinkage headline of noisy stacks:
+        # their stored headline is the capped estimate, compared above.
+        expected_details["headline_method"] = "shrunk_two_level"
+        expected_details["cap_amount"] = 0.0
+    assert (
+        stacked.elbo
+        == stacked.elbo_details[expected_details["headline_method"]]
+    )
     np.testing.assert_allclose(
         stacked.elbo_sd, reference["elbo_sd"], **TOLERANCE
     )
-    assert set(stacked.elbo_details) == set(reference["elbo_details"]) | {
+    assert set(stacked.elbo_details) == set(expected_details) | {
         "shrunk_two_level",
         "shrinkage_noise_share",
     }
     assert np.isfinite(stacked.elbo_details["shrunk_two_level"])
     assert np.isfinite(stacked.elbo_details["shrinkage_noise_share"])
-    for key, expected in reference["elbo_details"].items():
+    for key, expected in expected_details.items():
         actual = stacked.elbo_details[key]
         if key == "noise_status_source":
             assert list(actual) == expected

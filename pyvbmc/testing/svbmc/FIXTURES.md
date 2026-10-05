@@ -92,6 +92,19 @@ exactly the stored keys plus `shrunk_two_level` and
 reference. The two added values are covered by algebra, integration and
 historical-reference parity tests and do not require a fixture rebaseline.
 
+The file also predates the shrinkage headline of noisy stacks. In the three
+`upstream_GMM_noisy` cells, the only noisy ones, the stored `elbo` is the
+capped estimate, `headline_method` is `capped_I_median` and `cap_amount` is
+the reduction the cap made. The test compares the stored `elbo` with the
+current `capped_I_median` and requires `headline_method` to be
+`shrunk_two_level`, `cap_amount` to be zero and `elbo` to equal
+`shrunk_two_level`. In the other cells the stored headline is `raw` and is
+compared as stored. The file holds no value of `shrunk_two_level`, so it
+does not pin the value of the noisy cells' headline: the test requires it
+to be finite, and `dev/scripts/test_svbmc_shrinkage_parity.py`, which runs
+only when named, compares the estimator with its historical reference on
+the fixture groups, `upstream_GMM_noisy` among them.
+
 The 2026-09-12 rebaseline is intentional and implements the PI-approved
 [ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian
 expectations are deterministic, final estimates use fresh samples at the
@@ -133,7 +146,7 @@ of the classes as they are").
 | `test_svbmc_filters.py` | synthetic posteriors and `upstream_GMM` | exact |
 | `test_svbmc_references.py` | every group via `load_group(group, rng=0)` and `references` | `rtol=1e-8`, `atol=1e-10` on `w`, numerical ELBO diagnostics, SD and `entropy`; metadata exact |
 | `test_entropy.py` | `normal_D1`, `bounded_D2`, `corr_D3` and the first three `upstream_GMM` posteriors via `load_group(group, rng=0)` | the per-run entropy preparation and vectorized reduction against literal per-component transcriptions of the same estimator, at 1 and 3 draws per component: density matrix, entropy, weight gradient and stratified variance at `rtol=1e-12`, `atol=1e-12`; generator state and chunking exact. The reduction by chunks of rows against the whole matrix, at 1, 2 and 100 draws per component and chunks from one row to more than the matrix has: generator calls and state, rows, mixture log densities, entropy and variance exact. The checks of the density matrix and its chunks run without torch |
-| `test_elbo_reporting.py` | synthetic posteriors, `bounded_D2`, `corr_D3` and `upstream_GMM` via `load_group(group, rng=0)`, and `upstream_GMM_00`, `upstream_GMM_noisy_00` via `load_vp` | covariance and stratified variance algebra; noise inference, final evaluation and tips contracts |
+| `test_elbo_reporting.py` | synthetic posteriors, `bounded_D2`, `corr_D3` and `upstream_GMM` via `load_group(group, rng=0)`, and `upstream_GMM_00`, `upstream_GMM_noisy_00` via `load_vp` | covariance and stratified variance algebra; noise inference, headline selection, final evaluation and tips contracts |
 | `test_jacobian.py` | synthetic posteriors | analytic affine/probit expectations, independent integration, seeded broad/warped Monte Carlo checks and explicit nonconvergence |
 | `test_elbo_shrinkage.py`, `test_svbmc_imports.py`, `test_svbmc_utils.py` | none | run without torch |
 

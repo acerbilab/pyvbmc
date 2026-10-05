@@ -208,7 +208,7 @@ def test_final_report_uses_fresh_count_and_returned_weights(monkeypatch):
 
 @pytest.mark.parametrize("noisy", [False, True])
 @pytest.mark.parametrize("version", ["all-weights", "posterior-only", "ns"])
-def test_shrinkage_is_additive_for_every_mode_and_noise_status(
+def test_shrinkage_for_every_mode_and_noise_status(
     monkeypatch, noisy, version
 ):
     runs = [
@@ -243,9 +243,10 @@ def test_shrinkage_is_additive_for_every_mode_and_noise_status(
     assert details["raw"] == pytest.approx(
         np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.25
     )
-    assert details["headline_method"] == (
-        "capped_I_median" if noisy else "raw"
-    )
+    method = "shrunk_two_level" if noisy else "raw"
+    assert details["headline_method"] == method
+    assert stacked.elbo == details[method]
+    assert details["cap_amount"] == 0.0
     assert stacked.rng.bit_generator.state == state
     for vp, stats, input_state in zip(runs, input_stats, input_states):
         assert vp.stats.keys() == stats.keys()
@@ -360,6 +361,7 @@ def test_repeated_optimization_reports_at_the_newly_selected_weights(
     assert first != second
 
 
+@pytest.mark.parametrize("noisy", [False, True])
 @pytest.mark.parametrize(
     "I,J,warning",
     [
@@ -381,12 +383,12 @@ def test_repeated_optimization_reports_at_the_newly_selected_weights(
     ],
 )
 def test_undefined_shrinkage_preserves_existing_report(
-    monkeypatch, I, J, warning
+    monkeypatch, I, J, warning, noisy
 ):
     run = _run(weights=(0.5, 0.5), I=I, J=J, Ns=len(I), seed=1)
     original_I = run.stats["I_sk"].copy()
     original_J = run.stats["J_sjk"].copy()
-    stacked = SVBMC([run], M_min=1, noisy=False, seed=104)
+    stacked = SVBMC([run], M_min=1, noisy=noisy, seed=104)
     _fixed_final_evaluation(
         monkeypatch, stacked, selected=[0.5, 0.5], entropy=1.0
     )
@@ -399,7 +401,9 @@ def test_undefined_shrinkage_preserves_existing_report(
     assert stacked.elbo_details["raw"] == pytest.approx(
         np.dot(stacked.w.ravel(), stacked.I_corrected.ravel()) + 1.0
     )
-    assert stacked.elbo == stacked.elbo_details["raw"]
+    method = "capped_I_median" if noisy else "raw"
+    assert stacked.elbo_details["headline_method"] == method
+    assert stacked.elbo == stacked.elbo_details[method]
     assert np.isfinite(stacked.elbo_sd)
     np.testing.assert_array_equal(run.stats["I_sk"], original_I)
     np.testing.assert_array_equal(run.stats["J_sjk"], original_J)
@@ -435,18 +439,13 @@ def test_naive_mode_reuses_final_evaluation_and_original_weights(monkeypatch):
     assert stacked.elbo_details["raw"] == stacked.elbo_details["naive"]
 
 
-@pytest.mark.parametrize(
-    "noisy, method, expected_elbo, expected_cap",
-    [
-        (True, "capped_I_median", 6.0, 5.0),
-        (False, "raw", 11.0, 0.0),
-    ],
-)
-def test_cap_is_headline_only_for_noisy_stacks(
-    monkeypatch, caplog, noisy, method, expected_elbo, expected_cap
-):
+def _two_single_component_runs(monkeypatch, noisy, variance):
+    """Runs at 0 and 10, all weight on the second, entropy 1: raw is 11."""
     stacked = SVBMC(
-        [_run(I=[[0.0]], seed=1), _run(I=[[10.0]], seed=2)],
+        [
+            _run(I=[[0.0]], J=[[[variance]]], seed=1),
+            _run(I=[[10.0]], J=[[[variance]]], seed=2),
+        ],
         M_min=2,
         noisy=noisy,
         show_tips=False,
@@ -457,6 +456,21 @@ def test_cap_is_headline_only_for_noisy_stacks(
     _fixed_final_evaluation(
         monkeypatch, stacked, selected=[0.0, 1.0], entropy=1.0
     )
+    return stacked
+
+
+def _svbmc_messages(caplog):
+    return [r.getMessage() for r in caplog.records if r.name == "SVBMC"]
+
+
+@pytest.mark.parametrize(
+    "noisy, method, expected_elbo",
+    [(True, "shrunk_two_level", 10.6), (False, "raw", 11.0)],
+)
+def test_headline_is_shrinkage_for_noisy_stacks_and_raw_otherwise(
+    monkeypatch, caplog, noisy, method, expected_elbo
+):
+    stacked = _two_single_component_runs(monkeypatch, noisy, variance=4.0)
     caplog.set_level(logging.INFO, logger="SVBMC")
 
     stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
@@ -464,21 +478,62 @@ def test_cap_is_headline_only_for_noisy_stacks(
     details = stacked.elbo_details
     assert stacked.elbo == pytest.approx(expected_elbo)
     assert details["raw"] == pytest.approx(11.0)
+    # The run levels 0 and 10 have variance 4 and spread 50 about their
+    # mean of 5, so each moves toward it by 4 / 50 of its distance.
+    assert details["shrunk_two_level"] == pytest.approx(10.6)
     assert details["capped_I_median"] == pytest.approx(6.0)
     assert details["capped_E_median"] == pytest.approx(6.0)
     assert details["headline_method"] == method
-    assert details["cap_amount"] == pytest.approx(expected_cap)
+    assert details["cap_amount"] == 0.0
     assert details["noisy"] is noisy
-    assert details["gp_sd"] == pytest.approx(np.sqrt(np.spacing(1)))
+    assert details["gp_sd"] == pytest.approx(2.0)
     assert stacked.elbo_sd == pytest.approx(
         np.hypot(details["entropy_sd"], details["gp_sd"])
     )
-    cap_messages = [
-        record.getMessage()
+    messages = _svbmc_messages(caplog)
+    assert not any("capped by" in message for message in messages)
+    assert (
+        "Two-level shrinkage moved the ELBO by -0.4 nats." in messages
+    ) is noisy
+
+
+@pytest.mark.parametrize(
+    "noisy, method, expected_elbo, expected_cap",
+    [
+        (True, "capped_I_median", 6.0, 5.0),
+        (False, "raw", 11.0, 0.0),
+    ],
+)
+def test_noisy_headline_is_capped_when_shrinkage_is_unavailable(
+    monkeypatch, caplog, noisy, method, expected_elbo, expected_cap
+):
+    import pyvbmc.svbmc.svbmc as module
+
+    stacked = _two_single_component_runs(monkeypatch, noisy, variance=0.0)
+    monkeypatch.setattr(
+        module, "_two_level_shrinkage", lambda *args: (None, None)
+    )
+    caplog.set_level(logging.INFO, logger="SVBMC")
+
+    stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
+
+    details = stacked.elbo_details
+    assert stacked.elbo == pytest.approx(expected_elbo)
+    assert details["raw"] == pytest.approx(11.0)
+    assert details["shrunk_two_level"] is None
+    assert details["capped_I_median"] == pytest.approx(6.0)
+    assert details["headline_method"] == method
+    assert details["cap_amount"] == pytest.approx(expected_cap)
+    assert details["gp_sd"] == pytest.approx(np.sqrt(np.spacing(1)))
+    messages = _svbmc_messages(caplog)
+    assert ("Expected log-joint capped by 5 nats." in messages) is noisy
+    fallback = [
+        record
         for record in caplog.records
-        if record.name == "SVBMC" and "capped by" in record.getMessage()
+        if record.name == "SVBMC" and "is unavailable" in record.getMessage()
     ]
-    assert bool(cap_messages) is noisy
+    assert bool(fallback) is noisy
+    assert all(record.levelno == logging.WARNING for record in fallback)
 
 
 def test_noise_metadata_precedes_proxy_and_only_retained_runs_count():
