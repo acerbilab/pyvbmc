@@ -48,6 +48,9 @@ script changed, and `narration.json` can switch back to it.
   the mixture magenta, the acquisition yellow and the true landscape grey
   (`:root` of `film.html`). In the opening the MCMC walkers are lavender and the
   PyBADS run orange.
+- **Title.** The top left reads *PYVBMC* and *Variational Bayesian Monte
+  Carlo* from the first frame, fading in with the picture, until the
+  wordmark takes over.
 - **Labels.** The narration uses no technical terms beyond posterior,
   likelihood, evidence and mixture of Gaussians. It explains each of them.
   The technical names (Gaussian process, variational inference, acquisition

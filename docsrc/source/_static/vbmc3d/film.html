@@ -1102,7 +1102,7 @@ function updateHud(ts, landed) {
   setText("tTrue", signed(META.ln_z_true, 3));
   setAlpha("tmTrue", win(ts, LN.e3.t0 + 0.2, T_WORD, 0.5, 0.8));
 
-  setAlpha("mark", win(ts, SC.dark.t0, T_WORD, 1.0, 1.0));
+  setAlpha("mark", win(ts, 0, T_WORD, 1.2, 1.0));   // the film's title, from the first frame until the wordmark
   setAlpha("steps", win(ts, SC.cycle.t0 - 0.3, SC.timelapse.t1 + 0.3, 0.4, 0.8));
   const st = lastBefore(stepEv, ts, "t"), on = st ? st.step : -1;
   [...$("steps").children].forEach((el, k) => { const c = k === on ? "on" : ""; if (el.className !== c) el.className = c; });

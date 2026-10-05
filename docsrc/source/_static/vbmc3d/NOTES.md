@@ -21,8 +21,11 @@ without, beside the `.srt` of its captions; the two masters matched frame
 for frame outside the captions, and each `.srt` cue matched the timeline
 that the page played. The director then changed the film's framing (*The
 framing*, below): scenes 1 and 12 were voiced again, every line passing
-`verify_voice.py`, and the seventh draft, at 1280 x 720, is to be reviewed
-before the masters are made again (`TODO.md`, "The video"). The masters,
+`verify_voice.py`, and the seventh draft, at 1280 x 720, was approved by
+the director and a postdoc of the lab on 2026-10-05. The film's title then
+moved to the first frame (*The title from the first frame*, below), a
+change seen in stills of the opening, and the masters are to be made again
+(`TODO.md`, "The video"). The masters,
 drafts and voice takes are local media (`README.md`, "The film"); the
 sixth draft's takes are kept beside the current ones
 (`voice-travis-draft6/`).
@@ -232,6 +235,15 @@ the README asks to keep in step. Other decisions:
   defensive about a point many viewers would not raise. PyVBMC's own
   computing (18.6 s here) is counted in the payoff's times but not shown,
   since it changes neither rounded time.
+- *The title from the first frame* (the director, 2026-10-05). The
+  top-left mark first appeared with scene 4, after the opening on MCMC
+  and Bayesian optimization, so for the first 42 s nothing said whose film
+  it was: a gap that a feed, playing the film muted from wherever a viewer
+  meets it, makes costly. A student of the lab pointed it out after the
+  seventh draft was approved. The mark now fades in with the picture, as
+  in the PyBADS film; the bottom-left readout still names the method on
+  screen, so the mark reads as the film's title over the opening's other
+  methods.
 - *The number of mixture components and the evidence stay hidden* until the
   narration introduces them, because a number nobody has explained is noise.
 - *The voice.* The film wants a light American accent and the delivery of a
