@@ -349,9 +349,9 @@ LEGACY_PATCHES = {
     # 1.0.4's _gp_log_joint keeps a sample axis on the ELBO's variance when
     # the GP holds one hyperparameter sample, as it does once sampling stops
     # (N >= 200 + 10 D), and _eval_full_elcbo then stores a length-1 array
-    # where a number goes: NumPy 1 took its element, NumPy 2 raises. The
-    # replacement is the package's own fix (6f3f0ba7), which takes that
-    # element where the array is made.
+    # where a number goes: NumPy before 2.4 took its element, 2.4 and later
+    # raise. The replacement is the package's own fix (6f3f0ba7), which
+    # takes that element where the array is made.
     "single_sample_variance": {
         "module": "pyvbmc.vbmc.variational_optimization",
         "function": "_gp_log_joint",
