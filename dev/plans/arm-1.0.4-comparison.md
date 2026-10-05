@@ -263,12 +263,9 @@ takes its figures from it.
   worker, for compatibility and the limits; a compatibility patch for
   NumPy 2.4 and later (PI, 2026-10-05).
 - [x] Merge into `dev-next` (`9b84a1ae`).
-- [ ] The operator's brief, with Arm 0's commit and limits, for one batch
-  with Arm 3 ([its plan](arm-3-warmup-comparison.md)). Arm 0's commit is
-  the head of `dev-next` once the pairing across harness commits of Arm
-  3's plan has merged, its package still the after arm's, so no edit of
-  the package's text (a tip's wording, the release date) lands before it
-  is named.
+- [x] The operator's brief, with Arm 0's commit and limits, for one batch
+  with Arm 3 ([release-gate-handoff-2.md](release-gate-handoff-2.md)):
+  Arm 0 runs from `b196402b`, whose package is the after arm's.
 - [ ] The campaign on the cluster, the hand-back, the comparison.
 - [ ] Speed against 1.0.4 on the developer's machine.
 
