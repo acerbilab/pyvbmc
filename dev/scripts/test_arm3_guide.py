@@ -124,6 +124,16 @@ def test_the_fresh_seeds_test_is_one_sided_in_arm3s_favour():
     assert statistics[0] == statistics[1]
 
 
+def test_the_fresh_seeds_test_rejects_where_the_two_sided_does_not():
+    """A two-sided p-value between 0.05 and 0.10, in Arm 3's favour: the
+    one-sided test rejects."""
+    better = {m: changes(1, -0.0025) for m in guide.METRICS}
+    part = guide.fresh_part(assessment({guide.FRESH_LABEL: better}))
+    assert 0.05 < part["mmtv"]["pvalue"] <= 0.10
+    assert part["mmtv"]["one_sided_pvalue"] <= guide.ALPHA
+    assert part["mmtv_lower"] and part["passes"]
+
+
 def test_the_fresh_seeds_usability_can_refuse():
     better = {m: changes(2, -0.01) for m in guide.METRICS}
     part = guide.fresh_part(
@@ -146,7 +156,7 @@ def test_each_configuration_is_its_own_holm_family():
         if t["label"] == NOISY and t["metric"] == "mmtv"
     )
     assert 4 * p_mmtv <= guide.ALPHA < 96 * p_mmtv
-    part = guide.population_part(data)
+    part = guide.population_part(data, expected=[NOISY, NOISELESS])
     assert part["noisy_worse"] == [NOISY]
     assert part["noiseless_better"] == [NOISELESS]
     assert part["noiseless_worse"] == []
@@ -154,11 +164,46 @@ def test_each_configuration_is_its_own_holm_family():
     assert not part["configurations"][NOISELESS]["noisy"]
 
 
+def test_a_population_with_other_configurations_is_refused():
+    data = assessment({NOISY: {m: changes(5, 0.0) for m in guide.METRICS}})
+    with pytest.raises(ValueError, match="missing"):
+        guide.population_part(data)
+
+
+def test_a_test_the_analysis_did_not_compute_counts_at_p_one():
+    """The analysis's format: no counts, p = 1, and its label and metric in
+    ``confirmatory_not_computed``."""
+    data = assessment({NOISY: {m: changes(7, 0.0) for m in guide.METRICS}})
+    for test in data["confirmatory_tests"]:
+        if test["metric"] == "usable":
+            test.clear()
+            test.update(
+                label=NOISY,
+                metric="usable",
+                method="exact McNemar",
+                n_pairs=0,
+                pvalue=1.0,
+                computed=False,
+                reason="no seed is paired",
+            )
+    data["confirmatory_not_computed"] = [f"{NOISY} usable"]
+    part = guide.population_part(data, expected=[NOISY])
+    usable = next(
+        t
+        for t in part["configurations"][NOISY]["tests"]
+        if t["metric"] == "usable"
+    )
+    assert not usable["computed"] and usable["pvalue"] == 1.0
+    assert part["for_the_pi"] == [
+        f"a confirmatory test was not computed: {NOISY} usable"
+    ]
+
+
 def test_cases_and_tests_the_tests_cannot_see_go_to_the_pi():
     data = assessment({NOISY: {m: changes(5, 0.0) for m in guide.METRICS}})
     data["arms"]["candidate"]["verification_counts"]["failed"] = 2
     data["confirmatory_not_computed"] = [{"label": NOISY, "metric": "gskl"}]
-    items = guide.population_part(data)["for_the_pi"]
+    items = guide.population_part(data, expected=[NOISY])["for_the_pi"]
     assert len(items) == 2 and "failed" in items[0]
 
 
@@ -209,7 +254,7 @@ def test_the_pools_pair_verified_runs_by_seed(tmp_path):
             tmp_path, "candidate", candidate, {(noisy, 1000): "failed"}
         ),
     ]
-    part = guide.pools_part(*pools)
+    part = guide.pools_part(*pools, expected=[noisy, noiseless])
     assert part["noisy_worse"] == [noisy]
     assert part["noiseless_worse"] == []
     assert part["conditions"][noisy]["paired_seeds"] == 39
@@ -221,6 +266,31 @@ def test_the_pools_pair_verified_runs_by_seed(tmp_path):
     assert gskl["nonfinite_pairs"] == 1
     assert any("not finite" in i for i in part["for_the_pi"])
     assert any("failed" in i for i in part["for_the_pi"])
+
+
+def test_the_pools_filters_lost_make_a_condition_worse(tmp_path):
+    label = "gmm_D2_svbmc"
+    rng = np.random.default_rng(8)
+    reference, candidate = {}, {}
+    for seed in range(1000, 1030):
+        base = {m: float(rng.uniform(0.05, 0.2)) for m in guide.METRICS}
+        reference[(label, seed)] = (base, True)
+        candidate[(label, seed)] = (dict(base), seed >= 1008)
+    pools = [
+        write_pool(tmp_path, "reference", reference),
+        write_pool(tmp_path, "candidate", candidate),
+    ]
+    part = guide.pools_part(*pools, expected=[label])
+    (passes,) = [
+        t
+        for t in part["conditions"][label]["tests"]
+        if t["metric"] == "passes"
+    ]
+    assert (passes["gains"], passes["losses"]) == (0, 8)
+    assert passes["direction"] == "worse" and passes["holm_rejected"]
+    assert part["noiseless_worse"] == [label]
+    # The accuracy tests have no change to test, and are listed.
+    assert any("not computed" in i for i in part["for_the_pi"])
 
 
 def test_the_stacking_is_read_as_the_release_pools_stacking_was():
@@ -264,6 +334,88 @@ def test_the_headline_bounds_hold_the_stage_d_pools():
     assert part["two_level_outside"] == [] and part["raw_outside"] == []
 
 
+def test_an_input_missing_a_condition_or_an_m_is_refused():
+    summary = (
+        EXPERIMENTS / "release_gate_20261002" / "stacking" / "summary.md"
+    ).read_text(encoding="utf-8")
+    cut = summary[: summary.index("## gmm_D2_svbmc")]
+    with pytest.raises(ValueError, match="gmm_D2_svbmc"):
+        guide.stacking_part(cut)
+    added = (
+        EXPERIMENTS / "svbmc_pool" / "single_run_20260915" / "added.md"
+    ).read_text(encoding="utf-8")
+    without_32 = "\n".join(
+        line for line in added.splitlines() if not line.startswith("| 32 |")
+    )
+    with pytest.raises(ValueError, match="grid"):
+        guide.headline_part(without_32)
+
+
+def added_text(values):
+    """An ``added.md`` of every pool condition at every ``M`` of the grid:
+    ``values`` maps ``(label, M)`` to ``(two_level_full, capped, raw)``,
+    and every other cell holds ``(0.0, -0.10, 0.0)``."""
+    lines = []
+    for label in guide.POOL_LABELS:
+        lines += [
+            f"## {label}",
+            "",
+            "| M | n | raw added [CI] | capped_I_median added | "
+            "two_level_full added |",
+            "|---|---|---|---|---|",
+        ]
+        for m in guide.M_GRID:
+            two, capped, raw = values.get((label, m), (0.0, -0.10, 0.0))
+            lines.append(
+                f"| {m} | 20 | {raw:+.2f} [{raw - 0.1:+.2f}, {raw + 0.1:+.2f}] "
+                f"| {capped:+.2f} | {two:+.2f} |"
+            )
+        lines.append("")
+    return "\n".join(lines)
+
+
+def test_decision_6_bounds_are_included_and_its_clauses_can_fail():
+    noisy, noiseless = "gmm_D2_noise3_svbmc", "gmm_D2_svbmc"
+    edges = {
+        (noisy, 2): (-0.25, -0.30, 0.1),
+        (noisy, 32): (0.20, -0.30, 0.1),
+        (noiseless, 32): (0.0, 0.0, 0.15),
+        (noiseless, 2): (0.0, 0.0, -0.15),
+    }
+    part = guide.headline_part(added_text(edges))
+    assert part["noisy_switches"] and part["noiseless_keeps_raw"]
+    for values, key in (
+        ({(noisy, 4): (0.21, -0.30, 0.1)}, "noisy_switches"),
+        ({(noisy, 4): (-0.26, -0.30, 0.1)}, "noisy_switches"),
+        ({(guide.STUDENT, 8): (0.15, -0.10, 0.1)}, "noisy_switches"),
+        ({(noiseless, 16): (0.0, 0.0, 0.16)}, "noiseless_keeps_raw"),
+    ):
+        assert not guide.headline_part(added_text(values))[key], values
+
+
+def test_the_guide_reads_the_ports_end_only_when_every_clause_holds():
+    parts = {
+        "fresh": {"passes": True},
+        "population": {
+            "noisy_worse": [],
+            "noiseless_worse": [],
+            "noiseless_better": ["banana_D10"],
+        },
+        "pools": {"noisy_worse": [], "noiseless_worse": []},
+        "stacking": {"noisy_meets": True, "noiseless_meets": True},
+    }
+    said = guide.verdicts(parts)
+    assert said["warm_up_noisy"] == "the port's end of warm-up"
+    assert said["warm_up_noiseless"] == "the port's end of warm-up"
+    # Noiseless targets need a configuration that Arm 3 makes better.
+    parts["population"]["noiseless_better"] = []
+    assert guide.verdicts(parts)["warm_up_noiseless"] == (
+        "MATLAB's end of warm-up"
+    )
+    parts["fresh"]["passes"] = False
+    assert guide.verdicts(parts)["warm_up_noisy"] == "MATLAB's end of warm-up"
+
+
 def test_the_guide_stays_open_until_its_parts_are_read(tmp_path):
     said = guide.verdicts({})
     assert said["warm_up_noisy"].startswith("open")
@@ -286,6 +438,7 @@ def test_the_guide_stays_open_until_its_parts_are_read(tmp_path):
     )
     result = json.loads((out / "guide.json").read_text(encoding="utf-8"))
     assert set(result["parts"]) == {"stacking", "headline"}
+    assert set(result["inputs"]) == {"stacking", "added"}
     assert result["said"]["headline_noisy"].startswith("the two-level")
     assert "what the guide says" in (out / "guide.md").read_text(
         encoding="utf-8"

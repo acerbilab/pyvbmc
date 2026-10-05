@@ -56,6 +56,28 @@ NOISELESS_ADDED = (-0.15, 0.15)
 STUDENT = "student_D8_noise3_svbmc"
 #: Criterion 1 of the stacking, read as the release pools' stacking was.
 MAX_DW = 0.03
+#: What the batch runs, which every part reads in full: the population's
+#: configurations, the pools' and the stacking's conditions, and the
+#: stacking's grid of ``M``.
+POPULATION_LABELS = tuple(
+    c.label for c in benchmark_targets.suite_configs("production")
+)
+POOL_LABELS = tuple(
+    c.label for c in benchmark_targets.suite_configs("svbmc_pool")
+)
+M_GRID = (2, 3, 4, 5, 8, 16, 32)
+
+
+def require_labels(what, found, expected):
+    """Refuse an input that does not hold exactly the labels the batch
+    runs, so that no clause passes on a condition it never read."""
+    missing = sorted(set(expected) - set(found))
+    extra = sorted(set(found) - set(expected))
+    if missing or extra:
+        raise ValueError(
+            f"{what} holds other labels than the batch runs: missing "
+            f"{missing}, not expected {extra}"
+        )
 
 
 def noisy(label):
@@ -188,10 +210,26 @@ def for_the_pi(assessment):
     return items
 
 
-def population_part(assessment):
+def arms_of(assessment):
+    """The arms an assessment compares, by name and package commit."""
+    return {
+        role: {
+            "name": arm.get("name"),
+            "package": (
+                ((arm.get("source") or {}).get("trees") or {}).get("pyvbmc")
+                or {}
+            ).get("commit"),
+        }
+        for role, arm in assessment["arms"].items()
+    }
+
+
+def population_part(assessment, expected=POPULATION_LABELS):
     """Each configuration's tests of the confirmatory family, under Holm
-    within the configuration (decision 5)."""
+    within the configuration (decision 5), on every configuration of the
+    ``production`` suite."""
     labels = assessment["allocation"]["labels"]
+    require_labels("the population's assessment", labels, expected)
     configurations = {}
     for label in labels:
         tests = []
@@ -236,6 +274,7 @@ def population_part(assessment):
             for k, c in configurations.items()
             if not c["noisy"] and c["better"]
         ),
+        "arms": arms_of(assessment),
         "for_the_pi": for_the_pi(assessment),
     }
 
@@ -266,7 +305,11 @@ def fresh_part(assessment):
     usable = next(
         t for t in assessment["confirmatory_tests"] if t["metric"] == "usable"
     )
-    usability = mcnemar("usable", usable["gains"], usable["losses"])
+    # A test the analysis could not compute, for no seed verified in both
+    # arms, holds no counts; it is listed for the PI.
+    usability = mcnemar(
+        "usable", usable.get("gains", 0), usable.get("losses", 0)
+    )
     usability["pvalue"] = float(usable["pvalue"])
     usability_worse = bool(
         usability["direction"] == "worse" and usability["pvalue"] <= ALPHA
@@ -277,6 +320,7 @@ def fresh_part(assessment):
         "mmtv_lower": lower,
         "usability_worse": usability_worse,
         "passes": lower and not usability_worse,
+        "arms": arms_of(assessment),
         "for_the_pi": for_the_pi(assessment),
     }
 
@@ -304,13 +348,20 @@ def pool_runs(directory):
     return report, runs
 
 
-def pools_part(reference_dir, candidate_dir):
+def pools_part(reference_dir, candidate_dir, expected=POOL_LABELS):
     """Each condition's runs paired by seed over the seeds both pools ran
     and verified: the exact signed-rank tests of the accuracy metrics and
-    the McNemar test of the filters, under Holm within the condition."""
+    the McNemar test of the filters, under Holm within the condition, on
+    every condition of the ``svbmc_pool`` suite."""
     reports, pools = zip(
         *(pool_runs(d) for d in (reference_dir, candidate_dir))
     )
+    for name, runs in zip(("reference", "candidate"), pools):
+        require_labels(
+            f"the {name} pool's verified runs",
+            {label for label, _ in runs},
+            expected,
+        )
     items = []
     for name, report in zip(("reference", "candidate"), reports):
         if report.get("exit_code") != 0:
@@ -353,6 +404,12 @@ def pools_part(reference_dir, candidate_dir):
             "paired_seeds": len(seeds),
             **judged(tests),
         }
+        uncomputed = [t["metric"] for t in tests if not t["computed"]]
+        if uncomputed:
+            items.append(
+                f"{label}: tests not computed, at p = 1, on {len(seeds)} "
+                f"paired seeds: {uncomputed}"
+            )
         if any(t["nonfinite_pairs"] for t in tests if "nonfinite_pairs" in t):
             items.append(
                 f"{label}: pairs left out for a metric that is not finite, "
@@ -422,14 +479,16 @@ ALL_CELLS = re.compile(
 )
 
 
-def stacking_part(text):
+def stacking_part(text, expected=POOL_LABELS):
     """The campaign's criteria on each condition of Arm 3's stacking, read
     as the release pools' stacking was ("The comparisons"): criterion 1 by
     the median of each condition's largest weight difference, criterion 2
     by its flagged cells, criterion 3 by its gate at each ``M`` where both
     arms ran, criterion 4 by the runtime ratio and its interval."""
+    found_sections = sections(text)
+    require_labels("the stacking's summary", found_sections, expected)
     conditions = {}
-    for label, lines in sections(text).items():
+    for label, lines in found_sections.items():
         match = next(
             (ALL_CELLS.search(l) for l in lines if ALL_CELLS.search(l)), None
         )
@@ -462,8 +521,8 @@ def stacking_part(text):
             "criterion_3_gates": gates,
             "flagged": flagged,
             "criteria": criteria,
-            # Criterion 3 fails on Student D8 in every pool set so far,
-            # which the guide expects.
+            # The guide exempts Student D8 from criterion 3, which it failed
+            # on the stage D and the release pools.
             "meets": all(v for k, v in criteria.items() if k != "3")
             and (criteria["3"] or label == STUDENT),
         }
@@ -478,21 +537,37 @@ def stacking_part(text):
     }
 
 
-def headline_part(text):
-    """Decision 6 on each condition and ``M`` of ``single_run/added.md``."""
+def headline_part(text, expected=POOL_LABELS, grid=M_GRID):
+    """Decision 6 on each condition and ``M`` of ``single_run/added.md``,
+    which holds every condition of the ``svbmc_pool`` suite at every ``M``
+    of the stacking's grid."""
+    found_sections = sections(text)
+    require_labels("the single-run analysis", found_sections, expected)
+    columns = {
+        "two_level_full": "two_level_full added",
+        "capped": "capped_I_median added",
+        "raw": "raw added [CI]",
+    }
     rows = {}
-    for label, lines in sections(text).items():
+    for label, lines in found_sections.items():
         found = tables(lines)
         (table,) = [t for t in found if t and "two_level_full added" in t[0]]
-        rows[label] = [
-            {
-                "M": int(row["M"]),
-                "two_level_full": first_number(row["two_level_full added"]),
-                "capped": first_number(row["capped_I_median added"]),
-                "raw": first_number(row["raw added [CI]"]),
-            }
-            for row in table
-        ]
+        rows[label] = []
+        for row in table:
+            entry = {"M": int(row["M"])}
+            for key, column in columns.items():
+                entry[key] = first_number(row[column])
+                if entry[key] is None:
+                    raise ValueError(
+                        f"{label}, M = {entry['M']}: no value in the column "
+                        f"{column!r} ({row[column]!r})"
+                    )
+            rows[label].append(entry)
+        if sorted(r["M"] for r in rows[label]) != sorted(grid):
+            raise ValueError(
+                f"{label}: rows at M = {[r['M'] for r in rows[label]]}, not "
+                f"the stacking's grid {list(grid)}"
+            )
     low, high = NOISY_ADDED
     noisy_rows = {k: v for k, v in rows.items() if noisy(k)}
     noiseless_rows = {k: v for k, v in rows.items() if not noisy(k)}
@@ -605,7 +680,11 @@ def verdicts(parts):
     return said
 
 
-def report_md(parts, said):
+def pi_items(parts):
+    return [i for p in parts.values() for i in p.get("for_the_pi", [])]
+
+
+def report_md(parts, said, inputs):
     lines = [
         "# Arm 3: what the guide says",
         "",
@@ -623,6 +702,19 @@ def report_md(parts, said):
             "- Headline of noiseless stacks: "
             f"**{said['headline_noiseless']}**.",
         ]
+    lines += ["", "## For the PI before the guide is read", ""]
+    lines += [f"- {i}" for i in pi_items(parts)] or ["- nothing"]
+    lines += ["", "## What was read", ""]
+    lines += [f"- `--{name}`: `{path}`" for name, path in inputs.items()]
+    for part in ("population", "fresh"):
+        if part in parts:
+            arms = parts[part]["arms"]
+            lines.append(
+                f"- {part}: reference {arms['reference']['name']} (package "
+                f"`{arms['reference']['package']}`) against candidate "
+                f"{arms['candidate']['name']} (package "
+                f"`{arms['candidate']['package']}`)"
+            )
     for name, clauses in (
         ("noisy", said["noisy_clauses"]),
         ("noiseless", said["noiseless_clauses"]),
@@ -643,9 +735,12 @@ def report_md(parts, said):
             "|---|---|---|---|---|---|---|",
         ]
         for label, entry in parts[part][key].items():
+            name = label
+            if "paired_seeds" in entry:
+                name = f"{label} ({entry['paired_seeds']} paired seeds)"
             for test in entry["tests"]:
                 lines.append(
-                    f"| {label} | {'yes' if entry['noisy'] else 'no'} | "
+                    f"| {name} | {'yes' if entry['noisy'] else 'no'} | "
                     f"{test['metric']} | {test['direction']} | "
                     f"{test['pvalue']:.4g} | "
                     f"{test['holm_adjusted_pvalue']:.4g} | "
@@ -708,9 +803,6 @@ def report_md(parts, said):
             f"- Raw ELBO outside {list(NOISELESS_ADDED)} on noiseless "
             f"conditions: {h['raw_outside'] or 'none'}",
         ]
-    items = [i for p in parts.values() for i in p.get("for_the_pi", [])]
-    lines += ["", "## For the PI before the guide is read", ""]
-    lines += [f"- {i}" for i in items] or ["- nothing"]
     return "\n".join(lines) + "\n"
 
 
@@ -744,13 +836,26 @@ def main(argv=None):
             args.added.read_text(encoding="utf-8")
         )
     said = verdicts(parts)
+    inputs = {
+        name.replace("_", "-"): str(path)
+        for name, path in vars(args).items()
+        if name != "out" and path is not None
+    }
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "guide.json").write_text(
-        json.dumps({"parts": parts, "said": said}, indent=1, default=str),
+        json.dumps(
+            {"inputs": inputs, "parts": parts, "said": said},
+            indent=1,
+            default=str,
+        ),
         encoding="utf-8",
     )
     (args.out / "guide.md").write_text(
-        report_md(parts, said), encoding="utf-8"
+        report_md(parts, said, inputs), encoding="utf-8"
+    )
+    print(
+        f"For the PI before the guide is read: {len(pi_items(parts))} items",
+        flush=True,
     )
     print(f"Noisy targets: {said['warm_up_noisy']}", flush=True)
     print(f"Noiseless targets: {said['warm_up_noiseless']}", flush=True)

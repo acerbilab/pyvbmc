@@ -606,18 +606,18 @@ reason.
   check, and the comparison of two arms on campaign directories it writes
   and on their redacted copies.
 - `scripts/arm3_guide.py` — applies the tests of Arm 3's guide
-  (`plans/arm-3-warmup-comparison.md`, decisions 5 and 6 and "The
-  comparisons") to the second batch's outputs: each configuration's family
-  of the arm comparisons of the after arm with Arm 3 and of the fresh seeds
-  (from their `assessment.json`), the two pools paired by seed (from their
-  restored archives, whose completion records hold each run's metrics), the
-  stacking's criteria (its `summary.md`) and the S-VBMC headline's bounds
-  (the analyses' `single_run/added.md`), and writes `guide.json` and
-  `guide.md` with what the guide says for the PI, who is not bound by it.
-  Each part reads its own inputs and stays open without them.
-  `test_arm3_guide.py` checks the directions and tests on hand-made inputs
-  and the readers on the tracked summary of the first batch's stacking and
-  the stage D pools' `added.md`.
+  (`plans/arm-3-warmup-comparison.md`, decisions 5 and 6 and "The comparisons")
+  to the second batch's outputs: each configuration's family of the comparison
+  of the after arm with Arm 3 and the fresh seeds' one-sided test (from their
+  `assessment.json`), the two pools paired by seed (from their restored
+  archives, whose completion records hold each run's metrics), the stacking's
+  criteria (its `summary.md`) and the S-VBMC headline's bounds (the analyses'
+  `single_run/added.md`), and writes `guide.json` and `guide.md` with what the
+  guide says for the PI, who is not bound by it. Each part reads its own
+  inputs, refuses one that lacks a condition or an `M` that the batch runs, and
+  stays open without them. `test_arm3_guide.py` checks the directions and tests
+  on hand-made inputs and the readers on the tracked summary of the first
+  batch's stacking and the stage D pools' `added.md`.
 - `scripts/reference_join.py` — joins a finished `population_run.py`
   campaign to the golden reference as one command (`join`): it repeats the
   launcher's completion check on every case, verifies the previous

@@ -1,8 +1,9 @@
 # Arm 3: the port's end of warm-up on the release gate's cases
 
 Created 2026-10-05. Status: **decided by the PI; the pairing across
-harness commits, Arm 3's branch, the guide and the brief written, checked
-locally and reviewed; the commits to be named and the batch to run**.
+harness commits, Arm 3's branch, the guide, the brief and the script of
+the guide's tests written, reviewed and on `dev-next`; the commits named
+(Arm 0 `b196402b`, Arm 3 `ad63dd5a`); the batch to run**.
 
 ## Purpose
 
@@ -201,9 +202,9 @@ out, ties at their mean rank), so its direction is theirs and not the
 median's: a test of an error metric that its Holm family rejects finds
 Arm 3 worse when the positive changes' rank sum is the larger and better
 when it is the smaller, and a McNemar test of usability finds it worse
-when the usability it loses outnumbers what it gains. The p-values the
-rule reads are the analysis's unadjusted `pvalue` for a single test and
-its Holm decision for a family.
+when the usability it loses outnumbers what it gains. The rule reads the
+analysis's unadjusted `pvalue`s and applies Holm itself, within each
+configuration's or condition's family.
 
 The rule's tests that the analysis does not report as such:
 
@@ -237,10 +238,11 @@ The rule's tests that the analysis does not report as such:
   release `release-gate-stacking-arm3-<date>`, which holds the cluster's
   details and stays out of the repository.
 
-`dev/scripts/arm3_guide.py` applies these tests and decision 6, and was
-committed before the batch's results reached the developer's machine (PI,
-2026-10-05), as the aid to the PI's reading that the guide is, not as its
-verdict:
+`dev/scripts/arm3_guide.py` applies these tests and decision 6. It was
+committed on 2026-10-05, before the batch ran, as the PI asked, as the aid
+to the PI's reading that the guide is, not as its verdict. Each part reads
+its own inputs, refuses one that lacks a condition or an `M` that the
+batch runs, and lists for the PI what its tests cannot see:
 
 ```console
 python dev/scripts/arm3_guide.py --out DIR \
@@ -371,3 +373,11 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   meets the criteria on every condition, criterion 3 failing on Student D8
   alone; and the stage D and release pools hold within decision 6's
   bounds. The fresh seeds were read on the local pair of three seeds.
+- 2026-10-05: a fresh reviewer, read-only, of the script: it applies the guide
+  as written. Fixed after it: a part refuses an input that lacks a condition or
+  an `M` of the batch, where a clause would otherwise pass on what it never
+  read; the report records its inputs and the arms each assessment compares;
+  the pools list their tests not computed; and tests cover the one-sided test
+  where the two-sided one does not reject, the direction of the pools' filters,
+  decision 6's edges and failing clauses, the readings that take the port's
+  end, and a test in the analysis's not-computed format.
