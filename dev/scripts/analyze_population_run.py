@@ -23,44 +23,42 @@ Two kinds of assessment:
   its own, with a confirmatory test family fixed before it ran
   (``assessment`` in its launch manifest).
 - **Two arms of array mode** (``--arms REFERENCE CANDIDATE``): campaigns of
-  ``population_run.py`` on one allocation, run by different code, compared
-  seed by seed. Each arm is checked against its own ``verification.json``
-  (``population_run.checked_verification``: the report must still describe
-  the directory, and every file read here must be the one it checked,
-  under a completion record of the arm's identity). The two arms must share
-  the allocation, the options, the confirmatory family, the environment's
-  versions and the node family, and their package trees must be at
-  different commits. They ran from one harness checkout, and share its
-  harness files (the targets module and its data among them), or from
-  clean checkouts at two commits that hold the same files that build and
-  score a run (``population_run.pair_differences``), as an arm whose
-  package is its own checkout's at a later commit than the reference's
-  does. The comparison reads each arm's sidecars and boost
-  reports and the metrics that ``population_run.py rescore`` recomputed
-  with the release code, in the campaign given by ``--rescoring`` (by
-  default the candidate), whose ``rescoring.json`` names the rescoring
-  process's identity and the SHA-256 of each file of rescored metrics, so
-  that this process imports no package but its own. The rescoring's source
-  identity must be the candidate's, and the candidate's rescored metrics
-  must equal its in-run metrics in every verified case. A legacy reference,
-  released code older than these campaigns (PyVBMC 1.0.4, run by a later
-  harness commit than the candidate's), is compared with the rescoring of
-  both arms that ``population_run.py rescore-arms`` wrote into it, which
-  must score as the candidate's code (:func:`analyze_arms`). Either arm,
-  and the rescoring campaign, may be a campaign directory or its tracked
-  copies in the repository, redacted by ``campaign_contract.py redact``,
-  which give the same report. It reports a KS screen per configuration and
-  metric under one Holm family, the paired changes, the descriptive paired
-  family
-  (every configuration: signed-rank tests of the three accuracy metrics
-  and the evaluation count, McNemar tests of usability, one Holm family),
-  the confirmatory family fixed in both arms' manifests, at the size they
-  fix (:func:`confirmatory_tests`), and every boost decision of each arm
-  checked against the guard. A rescored metric that is not finite makes
-  its run unusable and leaves its pair out of that metric's signed-rank
-  tests, which count such pairs. The usability counts of the boost
-  summaries come from each arm's in-run metrics
-  (:data:`BOOST_USABILITY_BASIS`).
+  ``population_run.py`` on one allocation, run by different code, compared seed
+  by seed. Each arm is checked against its own ``verification.json``
+  (``population_run.checked_verification``: the report must still describe the
+  directory, and every file read here must be the one it checked, under a
+  completion record of the arm's identity). The two arms must share the
+  allocation, the options, the confirmatory family, the environment's versions
+  and the node family, and their package trees must be at different commits.
+  They ran from one harness checkout, and share its harness files (the targets
+  module and its data among them), or each from its own clean checkout, at two
+  commits that hold the same files that build and score a run and different
+  package code (``population_run.pair_differences``, which compares the package
+  code in the checkout this runs from), as an arm whose package is its own
+  checkout's at a later commit than the reference's does. The comparison reads
+  each arm's sidecars and boost reports and the metrics that
+  ``population_run.py rescore`` recomputed with the release code, in the
+  campaign given by ``--rescoring`` (by default the candidate), whose
+  ``rescoring.json`` names the rescoring process's identity and the SHA-256 of
+  each file of rescored metrics, so that this process imports no package but
+  its own. The rescoring's source identity must be the candidate's, and the
+  candidate's rescored metrics must equal its in-run metrics in every verified
+  case. A legacy reference, released code older than these campaigns (PyVBMC
+  1.0.4, run by a later harness commit than the candidate's), is compared with
+  the rescoring of both arms that ``population_run.py rescore-arms`` wrote into
+  it, which must score as the candidate's code (:func:`analyze_arms`). Either
+  arm, and the rescoring campaign, may be a campaign directory or its tracked
+  copies in the repository, redacted by ``campaign_contract.py redact``, which
+  give the same report. It reports a KS screen per configuration and metric
+  under one Holm family, the paired changes, the descriptive paired family
+  (every configuration: signed-rank tests of the three accuracy metrics and the
+  evaluation count, McNemar tests of usability, one Holm family), the
+  confirmatory family fixed in both arms' manifests, at the size they fix
+  (:func:`confirmatory_tests`), and every boost decision of each arm checked
+  against the guard. A rescored metric that is not finite makes its run
+  unusable and leaves its pair out of that metric's signed-rank tests, which
+  count such pairs. The usability counts of the boost summaries come from each
+  arm's in-run metrics (:data:`BOOST_USABILITY_BASIS`).
 
 In both, the metrics of a boost stage other than the returned posterior
 may be the error of a scoring that failed, which the harness keeps and its
@@ -1028,9 +1026,10 @@ def analyze_arms(reference, candidate, rescoring, out):
     the candidate manifest's, and every verified candidate case's rescored
     metrics must equal its in-run metrics. The arms pair as ``prepare
     --pair`` pairs them (``population_run.pair_differences``), from one
-    harness checkout or from clean checkouts at two commits that hold the
-    same files that build and score a run, and they ran on one node
-    family (``population_run.node_family``). A legacy reference (its
+    harness checkout or each from its own clean checkout, at two commits
+    that hold the same files that build and score a run and different
+    package code, and they ran on one node family
+    (``population_run.node_family``). A legacy reference (its
     manifest's ``legacy``) holds the rescoring of both arms that
     ``population_run.py rescore-arms`` wrote, from a later harness commit
     than the candidate's: there the rescoring must score as the candidate's
