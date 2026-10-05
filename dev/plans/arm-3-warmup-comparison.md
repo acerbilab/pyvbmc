@@ -264,10 +264,13 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
 - [x] A local pair across the two commits, through the finish's `rescore`
   and the analysis; the harness's test modules on Arm 3's code.
 - [x] The operator's guide and the brief for the batch.
-- [x] Review (two fresh reviewers, read-only) and its fixes.
-- [ ] `feat-arm3-pairing` merged into `dev-next`, its merge Arm 0's
-  commit; Arm 3's branch cut again from it; both pushed; the brief names
-  the two commits, which the PI confirms at the launch.
+- [x] Review: two fresh reviewers, then a doublecheck by three, all
+  read-only, and their fixes.
+- [ ] `dev-next` fast-forwarded to `feat-arm3-pairing`; Arm 0's commit
+  `b196402b` and Arm 3's `ad63dd5a` (the head of `dev-arm3-port-warmup`,
+  which merges `b196402b`), proposed; the brief names both, which the PI
+  confirms; the PI's answers on the points left open in decisions 5 and 6
+  and "The comparisons".
 - [ ] The batch on the cluster, the hand-back.
 - [ ] The script of the pools' family, and the comparisons: after
   against Arm 3, the fresh seeds, the pools, the stacking; the rule
@@ -308,3 +311,23 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   guide lacked, the pairing's refusal of the same package code at two commits,
   the test of the node families, the pin of Arm 3's default of
   `recompute_lcb_max`, and the reading of the rule's tests ("The comparisons").
+- 2026-10-05: a doublecheck of the whole change through `394bafdd` and Arm 3's
+  branch cut again on it, by three fresh reviewers, read-only (the code; the
+  operator's procedure; the rule and the records): no fault that breaks the
+  batch's campaigns or analyses. Fixed after it (`b196402b`, and `ad63dd5a` on
+  Arm 3's branch, which merges it): the pairing refuses package code that its
+  checkout cannot compare and an arm of other code than its checkout's, with a
+  test on a real git history; the archive of Arm 0's rescoring left out its
+  log, its glob expanded outside `$RUNS`; the hand-back runs each campaign in
+  its own shell and checkout and says what a later finish asks for; the brief
+  caps the tasks running at once; the rule reads the signed-rank test's
+  direction from the two rank sums, since the analysis's `statistic` is the
+  smaller of them and the median can point the other way, splits the stacking
+  clause by kind of target, and defines the noisy targets, the pools' family
+  and how failed cases count; the description of `recompute_lcb_max` on Arm 3's
+  branch. Left to the PI: the S-VBMC bounds, which the stage D pools exceed at
+  `M = 32`; the strength of the clauses of no harm, which pass under Holm over
+  the 96 tests a harm as large as the one that raised the question (p = 0.002
+  before the correction); the reading of the stacking's criterion 1; a script
+  of the rule before the results; and the mechanics that go beyond the outline
+  the PI accepted.
