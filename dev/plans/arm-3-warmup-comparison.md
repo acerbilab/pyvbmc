@@ -237,9 +237,21 @@ The rule's tests that the analysis does not report as such:
   release `release-gate-stacking-arm3-<date>`, which holds the cluster's
   details and stays out of the repository.
 
-A script that applies these tests is written and committed before the
-batch's results reach the developer's machine (PI, 2026-10-05), as the aid
-to the PI's reading that the guide is, not as its verdict.
+`dev/scripts/arm3_guide.py` applies these tests and decision 6, and was
+committed before the batch's results reached the developer's machine (PI,
+2026-10-05), as the aid to the PI's reading that the guide is, not as its
+verdict:
+
+```console
+python dev/scripts/arm3_guide.py --out DIR \
+    --population AFTER_VS_ARM3 --fresh FRESH \
+    --pools-reference POOLS_AFTER --pools-candidate POOLS_ARM3 \
+    --stacking STACKING_ARM3/summary.md --added ANALYSES_ARM3/single_run/added.md
+```
+
+`AFTER_VS_ARM3` and `FRESH` are the `--out` directories of
+`analyze_population_run.py --arms`; the pools are campaign directories
+restored from their archives.
 
 Arm 0's `rescore-arms` rescores Arm 3 with the release code, for a
 comparison of Arm 0 with Arm 3 should the port's end of warm-up be
@@ -282,8 +294,8 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
 - [x] `dev-next` fast-forwarded to `feat-arm3-pairing`; the brief names
   Arm 0's commit, `b196402b`, and Arm 3's, `ad63dd5a` (the head of
   `dev-arm3-port-warmup`, which merges `b196402b`).
-- [ ] The script of the guide's tests, committed before the results reach
-  the developer's machine.
+- [x] The script of the guide's tests, `dev/scripts/arm3_guide.py`,
+  committed before the results reach the developer's machine.
 - [ ] The batch on the cluster, the hand-back.
 - [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
   the stacking; the guide read; the PI's decision.
@@ -350,3 +362,12 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   before the results; and the mechanics accepted as provisional. The rule
   is a guide that the PI reads the results with, not a verdict, and the
   PI may judge its mechanics too literal (decision 5).
+- 2026-10-05: `dev/scripts/arm3_guide.py`, the guide's tests, with its
+  tests. A dry run on the first batch's records, its before and after
+  arms standing in for the after arm and Arm 3: within its configuration,
+  the noisy Rosenbrock target's loss of MMTV is refused (Holm p = 0.009,
+  which Holm over the 96 tests of the whole family passes); `banana_D10`
+  is better on its three accuracy metrics; the release pools' stacking
+  meets the criteria on every condition, criterion 3 failing on Student D8
+  alone; and the stage D and release pools hold within decision 6's
+  bounds. The fresh seeds were read on the local pair of three seeds.
