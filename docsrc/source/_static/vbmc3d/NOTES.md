@@ -14,21 +14,20 @@ with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
 it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
 another run (Seeds, below).
 
-The film (`film.html`) is in its seventh draft. The sixth, narrated by
-Travis (ElevenLabs) with every line passing `scripts/verify_voice.py`, was
-approved and mastered at 1920 x 1080 and -16 LUFS, with captions and
-without, beside the `.srt` of its captions; the two masters matched frame
-for frame outside the captions, and each `.srt` cue matched the timeline
-that the page played. The director then changed the film's framing (*The
-framing*, below): scenes 1 and 12 were voiced again, every line passing
-`verify_voice.py`, and the seventh draft, at 1280 x 720, was approved by
-the director and a postdoc of the lab on 2026-10-05. The film's title then
-moved to the first frame (*The title from the first frame*, below), a
-change seen in stills of the opening, and the masters are to be made again
-(`TODO.md`, "The video"). The masters,
-drafts and voice takes are local media (`README.md`, "The film"); the
-sixth draft's takes are kept beside the current ones
-(`voice-travis-draft6/`).
+The film (`film.html`) is finished: its seventh draft, narrated by Travis
+(ElevenLabs) with every line passing `scripts/verify_voice.py`, was
+approved by the director and a postdoc of the lab on 2026-10-05, and is
+mastered at 1920 x 1080 and -16 LUFS, with captions and without, beside
+the `.srt` of its captions. Outside the captions the two masters differ by
+no more than two encodings of the same frames do (at least 40.3 dB PSNR on
+every frame, where the sixth draft's pair reached 39.3 dB), and each `.srt`
+cue matches the timeline that the page plays. The title from the first
+frame (below) came after that approval and was checked in stills of the
+opening and in the masters. The sixth draft had been mastered before the
+director changed the film's framing (*The framing*, below); its masters and
+takes are kept (`renders/draft6/`, `voice-travis-draft6/`). Publishing it
+remains (`TODO.md`, "The video"). The masters, drafts and voice takes are
+local media (`README.md`, "The film").
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted

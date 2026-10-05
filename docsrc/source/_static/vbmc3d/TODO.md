@@ -49,28 +49,23 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 ### The video
 
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
-the commands. The seventh draft, which carries the film's new framing
-(`NOTES.md`, "The framing"), is approved, and the title now shows from the
-first frame; what is left is to master the film and publish it:
+the commands. The film is mastered from its seventh draft (`NOTES.md`,
+Status); what is left is to publish it:
 
-1. **Master it again**: both 1080p masters with `renders/render_1080.sh`
-   (about an hour each), which writes over the sixth draft's masters of the
-   same names unless they are moved first.
-2. **Upload the clean master to YouTube** with its `.srt`, as the English
+1. **Upload the clean master to YouTube** with its `.srt`, as the English
    subtitles. An upload of the sixth draft's master was begun on
    2026-10-04 and kept unlisted; it is deleted, since YouTube does not
    replace the video of an upload. The title, the description, the
    chapters, the thumbnail and the social posts are drafted with the lab's
    media notes (`dev/scripts/runs/LOCAL.md` says where); the chapters
    follow the scene times of `STORYBOARD.md`.
-3. **Post the film**: the captioned master natively on Bluesky and
-   LinkedIn, once its length (2:48) and size are checked against both
-   platforms' limits, and the YouTube link on X, which caps free accounts
-   at 2:20.
-4. **Link the film** from the documentation and the README. Where it goes
+2. **Post the film**: the captioned master natively on Bluesky and
+   LinkedIn (2:48 and 179 MB are inside both platforms' limits), and the
+   YouTube link on X, which caps free accounts at 2:20.
+3. **Link the film** from the documentation and the README. Where it goes
    is part of the second of the next actions above, which page the
    documentation shows and how.
-5. **Back up `dev/media/vbmc3d-film/`** (the Travis takes of both drafts,
+4. **Back up `dev/media/vbmc3d-film/`** (the Travis takes of both drafts,
    the masters, the thumbnail): it exists only in this worktree, and
    removing the worktree deletes it.
 
