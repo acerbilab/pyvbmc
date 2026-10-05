@@ -101,13 +101,13 @@ records its execution.
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
   commit covers. The switch is prepared on the branch
-  `feat-svbmc-shrinkage-headline` (at `39bc986d`) while the batch runs
+  `feat-svbmc-shrinkage-headline` (at `32a967c0`) while the batch runs
   (PI, 2026-10-05), and merges if decision 6's clauses hold on Arm 3's
   stacking: the code, the `SVBMC` docstring, the API page with the
   headline's caveat, the FAQ, the tip `noisy_elbo`, Example 7's explanation
   (the notebook is run again in the release pass), the changelog's entry
-  and `AGENTS.md`'s S-VBMC gate, which names the shrinkage estimate's own
-  tests. A noisy stack whose shrinkage is numerically undefined reports
+  and `AGENTS.md`'s S-VBMC gate, which says where the noisy headline is
+  pinned. A noisy stack whose shrinkage is numerically undefined reports
   the capped value, with a warning. The merge also brings the results
   report of the reading, this item, the decision of the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md), and the records
