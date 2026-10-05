@@ -28,10 +28,14 @@ Two kinds of assessment:
   (``population_run.checked_verification``: the report must still describe
   the directory, and every file read here must be the one it checked,
   under a completion record of the arm's identity). The two arms must share
-  the allocation, the options, the confirmatory family, the harness
-  checkout, the harness files (the targets module and its data among
-  them) and the environment's versions, and their package trees must be
-  at different commits. The comparison reads each arm's sidecars and boost
+  the allocation, the options, the confirmatory family, the environment's
+  versions and the node family, and their package trees must be at
+  different commits. They ran from one harness checkout, and share its
+  harness files (the targets module and its data among them), or from
+  clean checkouts at two commits that hold the same files that build and
+  score a run (``population_run.pair_differences``), as an arm whose
+  package is its own checkout's at a later commit than the reference's
+  does. The comparison reads each arm's sidecars and boost
   reports and the metrics that ``population_run.py rescore`` recomputed
   with the release code, in the campaign given by ``--rescoring`` (by
   default the candidate), whose ``rescoring.json`` names the rescoring
@@ -1022,7 +1026,11 @@ def analyze_arms(reference, candidate, rescoring, out):
     or its tracked copies (None: the candidate). The candidate is the arm
     of the rescoring's own code: the rescoring's source identity must be
     the candidate manifest's, and every verified candidate case's rescored
-    metrics must equal its in-run metrics. A legacy reference (its
+    metrics must equal its in-run metrics. The arms pair as ``prepare
+    --pair`` pairs them (``population_run.pair_differences``), from one
+    harness checkout or from clean checkouts at two commits that hold the
+    same files that build and score a run, and they ran on one node
+    family (``population_run.node_family``). A legacy reference (its
     manifest's ``legacy``) holds the rescoring of both arms that
     ``population_run.py rescore-arms`` wrote, from a later harness commit
     than the candidate's: there the rescoring must score as the candidate's
@@ -1068,13 +1076,11 @@ def analyze_arms(reference, candidate, rescoring, out):
         differing = runner.legacy_pair_differences(
             new["identity"], ref["identity"]
         )
-        families = [
-            runner.node_family(path) for path in (reference, candidate)
-        ]
-        if families[0] != families[1]:
-            differing.append(f"the arms ran on the node families {families}")
     else:
         differing = runner.pair_differences(new["identity"], ref["identity"])
+    families = [runner.node_family(path) for path in (reference, candidate)]
+    if families[0] != families[1]:
+        differing.append(f"the arms ran on the node families {families}")
     assert not differing, differing
     a, b = ref["identity"]["source"], new["identity"]["source"]
     source = record["identity"]["source"]
@@ -1098,14 +1104,18 @@ def analyze_arms(reference, candidate, rescoring, out):
             )
         )
     assert ref["rescoring"] == new["rescoring"] == source
+    # A legacy arm's rescoring ran from its harness checkout; any other ran
+    # from the candidate's, which may be at a later commit than the
+    # reference's.
     assert (
         source["trees"]["pyvbmc"]
         == source["trees"]["harness"]
-        == a["trees"]["harness"]
+        == (a if legacy else b)["trees"]["harness"]
     ), (
         "not rescored by the release code of the reference's harness checkout"
         if legacy
-        else "not rescored by the release code of the arms' harness checkout"
+        else "not rescored by the release code of the candidate's harness "
+        "checkout"
     )
     unequal = sorted(
         stem

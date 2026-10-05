@@ -611,16 +611,21 @@ def test_prepare_pairs_arms(campaign, tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match="the code with itself"):
         paired_with(campaign)
     # The arms differ in their code alone.
-    for name, change, message in (
-        ("harness", ("trees", "harness", "commit"), "harness checkouts"),
-        ("files", ("files", "dev/scripts/population_run.py"), "harness files"),
-        ("versions", ("versions", "numpy"), "environment versions"),
+    for name, change, value, message in (
+        ("harness", ("trees", "harness", "clean"), False, "harness checkouts"),
+        (
+            "files",
+            ("files", "dev/scripts/population_run.py"),
+            "d" * 64,
+            "harness files",
+        ),
+        ("versions", ("versions", "numpy"), "9", "environment versions"),
     ):
         identity = copy.deepcopy(OTHER_IDENTITY)
         part = identity["source"]
         for key in change[:-1]:
             part = part[key]
-        part[change[-1]] = "d" * 40
+        part[change[-1]] = value
         other = prepare_other_arm(tmp_path, monkeypatch, name, identity)
         with pytest.raises(SystemExit, match=message):
             paired_with(other)
@@ -635,6 +640,68 @@ def test_prepare_pairs_arms(campaign, tmp_path, monkeypatch):
     monkeypatch.setenv("PYVBMC_SOURCE", str(tmp_path / "before_tree"))
     with pytest.raises(SystemExit, match="only a campaign"):
         paired_with(before)
+
+
+#: The identity of an arm whose package is its own harness checkout's at an
+#: earlier commit than this process's, with other harness files but the
+#: same files that build and score a run (Arm 3's reference, the after arm).
+EARLIER_IDENTITY = copy.deepcopy(FAKE_IDENTITY)
+for _name in ("harness", "pyvbmc"):
+    EARLIER_IDENTITY["source"]["trees"][_name]["commit"] = "e" * 40
+EARLIER_IDENTITY["source"]["files"]["dev/scripts/population_run.py"] = "2" * 64
+
+
+def test_pair_differences_across_harness_commits():
+    assert runner.pair_differences(FAKE_IDENTITY, EARLIER_IDENTITY) == []
+    other = copy.deepcopy(EARLIER_IDENTITY)
+    other["source"]["files"]["dev/scripts/golden_trace.py"] = "6" * 64
+    other["source"]["trees"]["harness"]["clean"] = False
+    assert runner.pair_differences(FAKE_IDENTITY, other) == [
+        "a harness checkout is not clean",
+        "the arms have different dev/scripts/golden_trace.py",
+    ]
+    # At one commit, every harness file and the checkout's state count.
+    same = copy.deepcopy(EARLIER_IDENTITY)
+    same["source"]["trees"]["pyvbmc"]["commit"] = "f" * 40
+    assert runner.pair_differences(same, EARLIER_IDENTITY) == []
+    same["source"]["files"]["dev/scripts/population_run.py"] = "3" * 64
+    assert runner.pair_differences(same, EARLIER_IDENTITY) == [
+        "the arms have different harness files"
+    ]
+    assert "would compare the code with itself" in "".join(
+        runner.pair_differences(EARLIER_IDENTITY, EARLIER_IDENTITY)
+    )
+
+
+def test_prepare_pairs_arms_across_harness_commits(tmp_path, monkeypatch):
+    """Each arm's package is its own harness checkout's, and the candidate's
+    checkout is at a later commit than the reference's."""
+    monkeypatch.setenv("PYVBMC_GPYREG_SOURCE", str(tmp_path / "gpyreg"))
+    monkeypatch.delenv("PYVBMC_SOURCE", raising=False)
+    monkeypatch.setattr(contract, "pip_freeze", lambda: ["pyvbmc==0"])
+
+    def own_arm(name, identity, *extra):
+        use_identity(monkeypatch, identity)
+        out = tmp_path / name
+        arguments = [*ARGUMENTS, "--arm", name, *extra]
+        return out, runner.main(["prepare", "--out", str(out), *arguments])
+
+    after, code = own_arm("after", EARLIER_IDENTITY)
+    assert code == 0
+    arm3, code = own_arm("arm3", FAKE_IDENTITY, "--pair", str(after))
+    assert code == 0
+    steps = contract.read_json(arm3 / "manifest.json")["finishing_steps"]
+    assert steps == [
+        ["summarize"],
+        ["rescore", "--campaign", after.resolve().as_posix()],
+    ]
+    # A file that builds or scores a run differs: no pair.
+    identity = copy.deepcopy(EARLIER_IDENTITY)
+    identity["source"]["files"]["dev/scripts/benchmark_targets.py"] = "6" * 64
+    other, code = own_arm("other", identity)
+    assert code == 0
+    with pytest.raises(SystemExit, match="benchmark_targets.py"):
+        own_arm("with_other", FAKE_IDENTITY, "--pair", str(other))
 
 
 def test_the_gpyreg_tree_is_the_release_the_package_needs(

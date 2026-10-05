@@ -187,10 +187,10 @@ SEEDS = list(range(100))
 HARNESS = "a" * 40
 
 
-def source(pyvbmc_commit, files=None):
+def source(pyvbmc_commit, files=None, harness=HARNESS):
     return {
         "trees": {
-            "harness": {"commit": HARNESS, "clean": True},
+            "harness": {"commit": harness, "clean": True},
             "pyvbmc": {"commit": pyvbmc_commit, "clean": True},
             "gpyreg": {"commit": pyvbmc_commit[:1] * 40, "clean": True},
         },
@@ -255,8 +255,10 @@ def write_arm(
     site=None,
     metric_errors=None,
     legacy=None,
+    harness=HARNESS,
 ):
-    """One arm of array mode, its cases verified.
+    """One arm of array mode, its cases verified, from the harness checkout
+    at ``harness``.
 
     With ``site`` the arm was run there: its manifest holds the site block,
     the tracked copies and the login node's identity, each record the
@@ -280,7 +282,10 @@ def write_arm(
         },
         "options": {} if legacy else {"tol_elcbo_boost": 0.1},
         "confirmatory": runner.confirmatory_family(None, LABELS),
-        "identity": {"source": source(pyvbmc_commit, files), "imports": {}},
+        "identity": {
+            "source": source(pyvbmc_commit, files, harness),
+            "imports": {},
+        },
     }
     if legacy:
         manifest["legacy"] = legacy
@@ -742,6 +747,47 @@ def test_arms_refuse_other_harness_files(tmp_path):
     write_rescoring(candidate, {reference: before, candidate: after})
     with pytest.raises(AssertionError, match="harness files"):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+
+
+def test_arms_across_harness_commits(tmp_path):
+    """The reference's package is its own checkout's at an earlier commit
+    than the candidate's, whose code rescores both (Arm 3 and the after
+    arm): the arms share the files that build and score a run alone."""
+    run_files = {rel: "5" * 64 for rel in runner.RUN_FILES}
+    candidate_files = {**run_files, "dev/scripts/population_run.py": "1" * 64}
+    earlier = "e" * 40
+
+    def compare(reference_files, name):
+        root = tmp_path / name
+        reference, before = write_arm(
+            root,
+            "reference",
+            earlier,
+            files={
+                **reference_files,
+                "dev/scripts/population_run.py": "2" * 64,
+            },
+            harness=earlier,
+        )
+        candidate, after = write_arm(
+            root, "candidate", HARNESS, files=candidate_files
+        )
+        write_rescoring(
+            candidate,
+            {reference: before, candidate: after},
+            rescoring_source=source(HARNESS, candidate_files),
+        )
+        return analysis.analyze_arms(reference, candidate, None, root / "r")
+
+    result = compare(run_files, "same_run_files")
+    harnesses = {
+        role: arm["source"]["trees"]["harness"]["commit"]
+        for role, arm in result["arms"].items()
+    }
+    assert harnesses == {"reference": earlier, "candidate": HARNESS}
+    changed = {**run_files, "dev/scripts/golden_trace.py": "6" * 64}
+    with pytest.raises(AssertionError, match="golden_trace.py"):
+        compare(changed, "other_run_files")
 
 
 def test_arms_refuse_the_same_code(tmp_path):

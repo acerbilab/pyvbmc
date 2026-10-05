@@ -142,10 +142,12 @@ A campaign of the release code lists ``rescore`` among its finishing
 steps, with ``--campaign`` for the campaign given to ``prepare --pair``
 (the other arm); a campaign of other code lists only ``summarize``.
 ``prepare --pair`` refuses a campaign that is not the other arm of this
-one: another allocation, options or confirmatory family, another harness
-checkout, other harness files or environment versions, another
-``NODE_FEATURE`` or ``CAMPAIGN_ENV``, or a package tree at the same
-commit. Every ``prepare`` refuses a gpyreg checkout that is not the
+one (:func:`pair_differences`): another allocation, options or
+confirmatory family, other environment versions, another
+``NODE_FEATURE`` or ``CAMPAIGN_ENV``, a package tree at the same commit,
+and, at one harness commit, other harness files or another state of the
+checkout, or at two, a checkout that is not clean or other files that
+build and score a run. Every ``prepare`` refuses a gpyreg checkout that is not the
 release the package tree requires (:func:`gpyreg_release_problem`).
 Since ``rescore`` reads the other arm's
 ``verification.json``, the other arm is finished completely before this
@@ -1492,13 +1494,28 @@ def _run_case(out, label, seed, options, identity, legacy):
 def pair_differences(identity, other):
     """Why two identities cannot be the two arms of one comparison.
 
-    The arms differ in their code alone: they share the harness checkout's
-    commit and clean state, the SHA-256 of the harness files (the targets
-    module and its data among them) and the imported versions of Python,
-    NumPy, SciPy, cma and Torch, and their package trees are at different
-    commits. Returns the reasons, an empty list when the two can be paired.
+    The arms differ in their code alone: they share the imported versions
+    of Python, NumPy, SciPy, cma and Torch, and their package trees are at
+    different commits. Arms of one harness checkout share its commit and
+    clean state and the SHA-256 of the harness files (the targets module
+    and its data among them). Arms whose harness checkouts are at different
+    commits, as when each arm's package is its own checkout's
+    (``dev/plans/arm-3-warmup-comparison.md``), are paired on the terms of
+    a legacy arm's comparison (:func:`legacy_pair_differences`): their
+    checkouts are clean, and they share the files that build and score a
+    run (:data:`RUN_FILES`), equal, while the rest of the harness, which
+    neither builds nor scores a run, may differ. Returns the reasons, an
+    empty list when the two can be paired.
     """
     a, b = identity["source"], other["source"]
+    harness = [s["trees"].get("harness") or {} for s in (a, b)]
+    if harness[0].get("commit") != harness[1].get("commit"):
+        found = [
+            "a harness checkout is not clean"
+            for tree in harness
+            if not tree.get("clean")
+        ][:1]
+        return found + legacy_pair_differences(identity, other)
     found = [
         f"the arms have different {what}"
         for key, what in (
@@ -1507,7 +1524,7 @@ def pair_differences(identity, other):
         )
         if a.get(key) != b.get(key)
     ]
-    if a["trees"].get("harness") != b["trees"].get("harness"):
+    if harness[0] != harness[1]:
         found.insert(0, "the arms have different harness checkouts")
     commit = [s["trees"].get("pyvbmc", {}).get("commit") for s in (a, b)]
     if commit[0] == commit[1]:
