@@ -111,11 +111,11 @@ An error is raised for calls and values that 1.0.4 accepted:
   - It needs `pip install "pyvbmc[torch]"`. A stack saved with `stacked.save`
     loads with `SVBMC.load` under another Python version and without Torch.
   - When any of the runs it keeps had a noisy target, `stacked.elbo` is a
-    two-level shrinkage estimate, since weights chosen on noisy estimates
-    make the plain value optimistic, the more so the more runs are stacked;
-    `stacked.elbo_details` holds every estimate, the plain one and one capped
-    at the median over the components among them. The `SVBMC` page of the
-    documentation says what bias the headline keeps.
+    two-level shrinkage estimate, since choosing the weights on noisy
+    estimates adds optimism to the raw value, the more so the more runs are
+    stacked. `stacked.elbo_details` holds every estimate, among them the raw
+    value and one capped at the median over the components. The `SVBMC` page
+    of the documentation says what bias `stacked.elbo` can keep.
   - It replaces the standalone `svbmc` package (0.1.1), with the same method
     and optimizer of the weights: on our benchmark the two reach the same
     weights, and the optimization ran 1.9 to 4 times faster (a provisional

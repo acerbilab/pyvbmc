@@ -81,23 +81,30 @@ The choice affects the reported value alone: the weights, and so the stacked
 posterior and its samples, come from the same optimization whatever the
 headline.
 
-The weights maximize a sum of the components' expected log-joints, each
-estimated by its run's GP. On a noisy target these estimates are noisy, and
-maximizing over them favors the components whose estimates came out high,
-which biases the raw ELBO of a noisy stack upward, the more so the more runs
-are stacked. The bias of a reported value has two parts:
+The weights maximize the stacked ELBO: the weighted sum of the components'
+expected log-joints, each estimated by its run's GP, plus the entropy of the
+mixture. On a noisy target these estimates are noisy, and maximizing over
+them favors the components whose estimates came out high, which adds an
+upward bias to the raw ELBO of a noisy stack, the more so the more runs are
+stacked. Bias here is the difference from the stack's true ELBO: its ELBO
+computed with the exact log-joint in place of the GP estimates, itself a
+lower bound on the log evidence. The bias of a reported value has two
+parts:
 
 - **Inherited from VBMC.** Each run's own ELBO carries the bias of its
   variational optimization, which on a noisy target also selects components
   on noisy GP estimates. A single run's ELBO is then often optimistic, and
   it can also be pessimistic, for example on a heavy-tailed posterior.
-  S-VBMC inherits this bias and does not try to remove it.
+  S-VBMC is not designed to remove this bias, though the within-run step of
+  the shrinkage below can remove part of it.
 - **Added by stacking.** The optimization of the weights selects again,
   across the components of all runs, on the same noisy estimates. The
   two-level shrinkage targets this part. It treats each component's expected
-  log-joint as a noisy measurement and shrinks it toward the mean of its run,
-  by an amount set by the GP's covariance of the run's estimates, then
-  shrinks each run's level toward the mean over runs in the same way.
+  log-joint as a noisy measurement and shrinks it toward the mean of its
+  run's components, the more strongly the larger the GP's uncertainty about
+  the estimates is compared with their spread. It then shrinks each run's
+  level, its expected log-joint under its own VBMC weights, toward the mean
+  over runs in the same way.
 
 Residual bias can remain. Shrinkage takes the GP uncertainty saved with each
 posterior (``I_sk`` and ``J_sjk``) at face value, so where that uncertainty
@@ -106,9 +113,9 @@ counts the differences between the runs' own biases as real differences
 between the runs, so it removes only part of the optimism of favoring the
 runs that came out highest. Its within-run step, on the other hand, can
 also remove part of the bias that the runs inherit. The raw ELBO is not an
-upper bound on the truth: where the runs' own ELBOs are pessimistic, it can
-fall below the stack's true ELBO, and the shrinkage estimate can lie on
-either side of the truth. On a noiseless stack, stacking adds little bias
+upper bound on the stack's true ELBO: it can fall below it where the runs'
+own ELBOs are pessimistic, and the shrinkage estimate can lie on either
+side of it. On a noiseless stack, stacking adds little bias
 and shrinkage changes the value little, so the headline is the raw ELBO,
 and ``shrunk_two_level`` is reported beside it.
 
@@ -135,8 +142,8 @@ and ``shrunk_two_level`` is reported beside it.
    * - ``shrunk_two_level``
      - Empirical-Bayes estimate that first shrinks component expected
        log-joints within each retained run using their full GP covariance,
-       then shifts each run by its shrunken run-level estimate; the headline
-       of a noisy stack. It uses the selected stacking weights and the same
+       then shifts each run's components by the change that shrinkage makes
+       to the run's level; the headline of a noisy stack. It uses the selected stacking weights and the same
        final entropy as ``raw``. ``None`` means finite input statistics led
        to a numerically undefined calculation;
        :meth:`~pyvbmc.svbmc.SVBMC.optimize` emits a ``RuntimeWarning`` and

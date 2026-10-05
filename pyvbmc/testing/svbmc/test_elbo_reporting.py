@@ -383,7 +383,7 @@ def test_repeated_optimization_reports_at_the_newly_selected_weights(
     ],
 )
 def test_undefined_shrinkage_preserves_existing_report(
-    monkeypatch, I, J, warning, noisy
+    monkeypatch, caplog, I, J, warning, noisy
 ):
     run = _run(weights=(0.5, 0.5), I=I, J=J, Ns=len(I), seed=1)
     original_I = run.stats["I_sk"].copy()
@@ -392,6 +392,7 @@ def test_undefined_shrinkage_preserves_existing_report(
     _fixed_final_evaluation(
         monkeypatch, stacked, selected=[0.5, 0.5], entropy=1.0
     )
+    caplog.set_level(logging.INFO, logger="SVBMC")
 
     with pytest.warns(RuntimeWarning, match=warning):
         stacked.optimize(n_samples=2, max_steps=1, n_samples_final=3)
@@ -404,6 +405,15 @@ def test_undefined_shrinkage_preserves_existing_report(
     method = "capped_I_median" if noisy else "raw"
     assert stacked.elbo_details["headline_method"] == method
     assert stacked.elbo == stacked.elbo_details[method]
+    # The component median equals the selected mean, so the cap does not bind.
+    assert stacked.elbo_details["cap_amount"] == 0.0
+    warnings_logged = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "SVBMC" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings_logged) == int(noisy)
+    assert all("is unavailable" in message for message in warnings_logged)
     assert np.isfinite(stacked.elbo_sd)
     np.testing.assert_array_equal(run.stats["I_sk"], original_I)
     np.testing.assert_array_equal(run.stats["J_sjk"], original_J)
@@ -495,6 +505,11 @@ def test_headline_is_shrinkage_for_noisy_stacks_and_raw_otherwise(
     assert (
         "Two-level shrinkage moved the ELBO by -0.4 nats." in messages
     ) is noisy
+    assert all(
+        record.levelno == logging.INFO
+        for record in caplog.records
+        if record.name == "SVBMC"
+    )
 
 
 @pytest.mark.parametrize(

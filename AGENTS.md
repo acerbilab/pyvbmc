@@ -323,7 +323,11 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   ones preserved (`dev/README.md`).
 - **S-VBMC.** `pyvbmc/testing/svbmc/fixtures/references.npz` pins a seeded
   short optimization: the gate for changes to the numerics of `pyvbmc/svbmc/`,
-  its entropy code in particular.
+  its entropy code in particular. It holds no value of the two-level
+  shrinkage estimate (`pyvbmc/svbmc/_elbo_shrinkage.py`), the headline of a
+  noisy stack: that estimate's gate is
+  `pyvbmc/testing/svbmc/test_elbo_shrinkage.py` and
+  `dev/scripts/test_svbmc_shrinkage_parity.py`, which runs only when named.
 
 ## Conventions
 

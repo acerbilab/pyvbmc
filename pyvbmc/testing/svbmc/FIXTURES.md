@@ -85,11 +85,11 @@ integrated class (the Monte Carlo draws come from the object's generator,
 so they cannot be compared with the upstream package draw for draw) and
 are the gate for later performance changes to the entropy computation.
 
-The regression file predates the additive two-level shrinkage report.
-`test_svbmc_references.py` therefore requires the current report to contain
-exactly the stored keys plus `shrunk_two_level` and
-`shrinkage_noise_share`, then compares every stored value against its fixed
-reference. The two added values are covered by algebra, integration and
+The regression file predates the report's `shrunk_two_level` and
+`shrinkage_noise_share` keys. `test_svbmc_references.py` therefore requires
+the current report to contain exactly the stored keys plus these two, then
+compares every stored value against its fixed reference, except as the next
+paragraph describes. The two added values are covered by algebra, integration and
 historical-reference parity tests and do not require a fixture rebaseline.
 
 The file also predates the shrinkage headline of noisy stacks. In the three
@@ -103,7 +103,7 @@ compared as stored. The file holds no value of `shrunk_two_level`, so it
 does not pin the value of the noisy cells' headline: the test requires it
 to be finite, and `dev/scripts/test_svbmc_shrinkage_parity.py`, which runs
 only when named, compares the estimator with its historical reference on
-the fixture groups, `upstream_GMM_noisy` among them.
+four of the fixture groups, `upstream_GMM_noisy` among them.
 
 The 2026-09-12 rebaseline is intentional and implements the PI-approved
 [ELBO reporting plan](../../../dev/plans/svbmc-elbo-reporting.md): Jacobian

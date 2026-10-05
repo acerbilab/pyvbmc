@@ -292,11 +292,11 @@ Generator, optional
         stack it is the raw ELBO; for a noisy stack, the two-level
         shrinkage estimate ``elbo_details["shrunk_two_level"]``, or the
         component-median capped ELBO where the shrinkage is numerically
-        undefined. Weights chosen on noisy estimates bias the raw ELBO of a
-        noisy stack upward, and shrinkage targets that bias. It is not
-        designed to remove the bias that each run's ELBO carries from VBMC,
-        though it can remove part of it, and residual bias can remain. The
-        raw ELBO is not an upper bound on the truth.
+        undefined. Choosing the weights on noisy estimates adds an upward
+        bias to the raw ELBO of a noisy stack, which the shrinkage targets.
+        The shrinkage can also remove part of the bias that each run's ELBO
+        carries from VBMC, and residual bias can remain. The raw ELBO is not
+        an upper bound on the stack's true ELBO.
     elbo_sd : float or None
         Estimated uncertainty of the raw evaluation at the returned
         weights: entropy Monte Carlo error and GP quadrature uncertainty,
@@ -796,9 +796,10 @@ Generator, optional
         Runs :meth:`maximize_ELBO`, stores the optimized weights in
         :attr:`w` (NumPy float64), the entropy estimate in :attr:`entropy`
         and a fresh final evaluation in :attr:`elbo`, :attr:`elbo_sd` and
-        :attr:`elbo_details`. The report includes the headline of a noisy
-        stack, a deterministic two-level shrinkage estimate at those weights
-        computed with the same final entropy; it consumes no random draws.
+        :attr:`elbo_details`. The report includes a deterministic two-level
+        shrinkage estimate at those weights, computed with the same final
+        entropy and without random draws; where it is defined, it is the
+        headline of a noisy stack.
         Returns ``None``.
 
         Parameters
@@ -855,8 +856,9 @@ Generator, optional
                     + naive_H.item()
                 )
 
-        # Cap the expected log-joint at the median component / run value to
-        # counter the optimistic bias of maximizing a noisy estimate.
+        # The expected log-joint capped at the median component / run value:
+        # diagnostics, and the headline of a noisy stack whose shrinkage is
+        # undefined.
         I_median = float(np.median(self.I_corrected))
         E_median = float(np.median(self.E_corrected))
         varG = self._expected_log_joint_variance(self.w.ravel())
