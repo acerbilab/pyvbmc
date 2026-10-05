@@ -79,5 +79,6 @@ evidence above, which is one configuration's. The PI chose (2026-10-05) to
 decide on the cluster's evidence instead: Arm 3, the release code with the
 port's end of warm-up, runs the release gate's population cases, pools and
 stacking, and fresh seeds of this configuration, in one batch with Arm 0,
-and a rule fixed before the runs makes the choice for the noisy and the
-noiseless targets apart ([Arm 3's plan](../plans/arm-3-warmup-comparison.md)).
+and the PI makes the choice for the noisy and the noiseless targets
+apart, reading the results with a guide fixed before the runs
+([Arm 3's plan](../plans/arm-3-warmup-comparison.md)).

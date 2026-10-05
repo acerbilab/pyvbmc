@@ -95,11 +95,12 @@ records its execution.
   cluster's details and stays in the draft release). The analyst's
   recommendation (2026-10-04): the two-level form as the headline of noisy
   stacks, the raw value for noiseless ones. The PI's first reading: it
-  looks good; the decision waits for Arm 3's pools and stacking, by the
-  criterion that the PI fixed before the runs (2026-10-05; decision 6 of
-  [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the switch then
-  lands with a results report of the reading. It changes `pyvbmc/svbmc/`,
-  which neither the promotion's check nor Arm 0's harness commit covers.
+  looks good; the decision waits for Arm 3's pools and stacking, read
+  with the criterion fixed before the runs as a guide (2026-10-05;
+  decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
+  switch then lands with a results report of the reading. It changes
+  `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
+  commit covers.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -266,11 +267,11 @@ records its execution.
   end of warm-up of `f91fdf0`, which W2-1 and W2-2 moved to MATLAB's, on
   the release gate's population cases, pools and stacking and on fresh
   seeds of the noisy Rosenbrock target, in one batch with Arm 0 (PI,
-  2026-10-05). A rule fixed before the runs chooses MATLAB's end of
-  warm-up or the port's for the noisy and the noiseless targets apart,
-  and Arm 3's stacking settles the S-VBMC ELBO headline. The
-  [plan](plans/arm-3-warmup-comparison.md) holds the decisions, the
-  pairing of arms across harness commits that Arm 3 needs, the campaigns
+  2026-10-05). The PI chooses MATLAB's end of warm-up or the port's for
+  the noisy and the noiseless targets apart, and the S-VBMC ELBO headline
+  from Arm 3's stacking, reading the results with a guide fixed before the
+  runs. The [plan](plans/arm-3-warmup-comparison.md) holds the decisions,
+  the pairing of arms across harness commits that Arm 3 needs, the campaigns
   and the checklist; the
   [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
   raised the question.

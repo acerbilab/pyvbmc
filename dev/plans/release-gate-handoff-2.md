@@ -28,13 +28,13 @@ seed with the first batch's after arm, which is read and not run again.
 | `stacking_arm3` | 200 tasks, 960 cells, on Arm 3's pools | about 17 CPU-hours |
 | `fresh_release`, `fresh_arm3` | `rosenbrock_D2_noise3_production` at seeds 100 to 199, with the release code and with Arm 3's | under 10 CPU-hours |
 
-Arm 0 measures PyVBMC 1.5 against 1.0.4, the release its users upgrade
-from. Arm 3 is the release code with the end of warm-up that the port had
-before two fixes of the port review moved it to MATLAB's: by a rule that
-the PI fixed before the runs, its campaigns decide which end of warm-up
-the release keeps, and its stacking which estimate of the stacked ELBO
-S-VBMC reports. Reading the results is the PI's work: the operator's job
-ends with campaigns that verify and are handed back.
+Arm 0 measures PyVBMC 1.5 against 1.0.4, the release its users upgrade from.
+Arm 3 is the release code with the end of warm-up that the port had before two
+fixes of the port review moved it to MATLAB's: the PI reads its campaigns, with
+a guide fixed before the runs, to choose which end of warm-up the release
+keeps, and its stacking to choose which estimate of the stacked ELBO S-VBMC
+reports. Reading the results is the PI's work: the operator's job ends with
+campaigns that verify and are handed back.
 
 Arm 0's cost scales the after arm's runs by 1.0.4's time on the
 developer's machine (Arm 0's plan, "Limits from the local runs"); the
@@ -43,10 +43,11 @@ others are the first batch's accounting
 
 ## Before the launch
 
-1. **The two commits**, which the PI names at the launch: Arm 0's, on
-   `dev-next`, to which the harness checkout `$TREES/pyvbmc` moves, and
-   Arm 3's, on the branch `dev-arm3-port-warmup`, whose checkout is a
-   detached worktree of the harness checkout, `$TREES/pyvbmc-arm3`. Both
+1. **The two commits**: Arm 0's, `b196402b` on `dev-next`, to which the
+   harness checkout `$TREES/pyvbmc` moves, and Arm 3's, `ad63dd5a`, the
+   head of the branch `dev-arm3-port-warmup`, whose checkout is a detached
+   worktree of the harness checkout, `$TREES/pyvbmc-arm3`. They stand for
+   `<Arm 0 commit>` and `<Arm 3 commit>` in the guide. Both
    hold the same files that build and score a run as the after arm's
    commit and the same frozen requirements, and both stay where they are,
    clean, until the hand-back, since the redaction, the public assets and

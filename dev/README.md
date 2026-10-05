@@ -233,9 +233,9 @@ plan and consolidated human summary.
   Arm 3: the release code with the port's end of warm-up, `f91fdf0`'s, on
   the release gate's population cases, pools and stacking and on fresh
   seeds of the noisy Rosenbrock target, in one batch with Arm 0: the PI's
-  decisions, among them the rule fixed before the runs that chooses
-  between MATLAB's end of warm-up and the port's and the criterion of the
-  S-VBMC ELBO headline, the pairing of arms across harness commits, the
+  decisions, among them the guide fixed before the runs for the choice
+  between MATLAB's end of warm-up and the port's and for the S-VBMC ELBO
+  headline, the pairing of arms across harness commits, the
   campaigns and the checklist.
 - [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) — how many
   evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs

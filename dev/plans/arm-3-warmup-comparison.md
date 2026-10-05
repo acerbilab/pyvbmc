@@ -17,7 +17,7 @@ the release code with the port's end of warm-up, `f91fdf0`'s, run on the
 release gate's population cases, pools and stacking in one batch with
 Arm 0 ([its plan](arm-1.0.4-comparison.md)), so that the choice between
 MATLAB's end of warm-up and the port's rests on every configuration of the
-cluster's campaigns, by a rule fixed before the runs.
+cluster's campaigns, read with a guide fixed before the runs.
 
 ## Decisions (PI, 2026-10-05)
 
@@ -42,7 +42,12 @@ cluster's campaigns, by a rule fixed before the runs.
    with the release code and with Arm 3, for the rule's main test: the
    after arm's seeds 0–99 are the runs that raised the question.
 5. **The rule**, applied to the noisy and the noiseless configurations
-   apart. The end of warm-up acts in every run, so Arm 3 changes both; a
+   apart. It is a guide that the PI reads the results with, not a verdict
+   that binds the decision; its mechanics below (the pools' test of the
+   filters, the bounds read at two decimals, Student D8 at every `M`, how
+   failed cases count) are the analyst's working of the PI's outline, which
+   the PI may judge too literal once the results are in (PI, 2026-10-05).
+   The end of warm-up acts in every run, so Arm 3 changes both; a
    version that took the port's end for noisy targets alone would run as
    the after arm on the noiseless configurations and as Arm 3 on the noisy
    ones, and the two arms judge it with no further arm. A configuration or
@@ -55,21 +60,26 @@ cluster's campaigns, by a rule fixed before the runs.
      test on the paired seeds, α = 0.05) and its usability not worse (exact
      McNemar test, two-sided, α = 0.05, not rejecting with Arm 3 the
      worse); no noisy configuration of the population is worse in Arm 3 on
-     the release gate's confirmatory tests (the default family of
-     `population_run.confirmatory_family`, under Holm); no noisy pool
-     condition is worse (below); and Arm 3's stacking meets the campaign's
-     criteria on the noisy stacking conditions (below).
+     its tests of the release gate's confirmatory family (the four that
+     `population_run.confirmatory_family` gives each configuration, under
+     Holm within the configuration at α = 0.05); no noisy pool condition
+     is worse (below); and Arm 3's stacking meets the campaign's criteria
+     on the noisy stacking conditions (below). The test of each
+     configuration apart is the PI's choice (2026-10-05): under Holm over
+     the 96 tests of the whole family, a loss as large as the one that
+     raised the question (p = 0.002 before the correction) passes as no
+     harm, and among the eight noisy configurations a chance refusal is
+     about one in five, which keeps MATLAB's end.
    - **Noiseless targets** keep MATLAB's end of warm-up unless Arm 3 is
      better on some noiseless configuration of the population on those
-     confirmatory tests and worse on none, nor on a noiseless pool
-     condition, and its stacking meets the criteria on the noiseless
-     stacking conditions.
+     tests and worse on none, nor on a noiseless pool condition, and its
+     stacking meets the criteria on the noiseless stacking conditions.
    - **The pools**: for each condition, the runs paired by seed over the
      seeds that both pools ran and verified, the exact two-sided
      signed-rank test on evidence error, gsKL and MMTV, and the exact
-     McNemar test on passing the pool's filters, in one Holm family over
-     the conditions and tests at α = 0.05; a condition is worse when the
-     family rejects one of its tests with Arm 3 the worse.
+     McNemar test on passing the pool's filters, under Holm within the
+     condition at α = 0.05; a condition is worse when Holm rejects one of
+     its tests with Arm 3 the worse.
    - **The stacking**: on the conditions of the kind of target judged,
      Arm 3's stacking meets criteria 1, 2 and 4 of the
      [campaign plan](svbmc-benchmark-campaign.md), read as "The
@@ -91,18 +101,18 @@ cluster's campaigns, by a rule fixed before the runs.
    of noisy stacks becomes the two-level shrinkage estimate
    (`two_level_full`) if, in Arm 3's single-run analysis
    (`single_run/added.md`), its added bias (the column `two_level_full
-   added`) lies within −0.25 to +0.15 nats, bounds included, at every noisy
+   added`) lies within −0.25 to +0.20 nats, bounds included, at every noisy
    condition and `M`, and its absolute value is smaller than the capped
    headline's (`capped_I_median added`) on `student_D8_noise3_svbmc` at
    every `M`; the headline of noiseless stacks stays the raw ELBO, which it
-   is, if its added bias (the median of `raw added [CI]`) lies within ±0.1
+   is, if its added bias (the median of `raw added [CI]`) lies within ±0.15
    nats, bounds included, at every noiseless condition and `M`. Each value
    is the median as the analysis prints it, to two decimals. If a clause
    fails, that headline stays as it is and the reading goes to the PI. The
-   release pools gave −0.23 to +0.15 for the two-level estimate and −0.01
-   to +0.05 for the raw noiseless ELBO at `M` = 2 to 32; the stage D pools
-   gave the same ranges through `M = 16`, and at `M = 32` up to +0.19 and
-   +0.11, which these bounds refuse (open with the PI).
+   bounds hold, with a margin, what the stage D and release pools gave at
+   `M` = 2 to 32: −0.23 to +0.19 for the two-level estimate and −0.01 to
+   +0.11 for the raw noiseless ELBO (PI, 2026-10-05). They are a guide in
+   the sense of decision 5.
 7. **Arm 3's data.** If the port's end of warm-up is adopted, Arm 3's
    population and pools are the release's public archives in place of the
    after arm's; otherwise they stay internal, as Arm 0's do.
@@ -208,10 +218,10 @@ The rule's tests that the analysis does not report as such:
   `verdict.passes`), read from the two pools' archives in their draft
   releases (`release-gate-pools-20261002` and Arm 3's) on the developer's
   machine, since the pools' tracked copies hold the selection and the
-  summary alone; nothing of the archives is committed. The family holds 32
-  tests, four for each of the eight conditions, fixed in size: a test with
-  no finite pair enters it at p = 1, and the pairs with a metric that is
-  not finite in either arm are left out of that metric's test and counted.
+  summary alone; nothing of the archives is committed. Each condition's
+  family holds its four tests, fixed in size: a test with no finite pair
+  enters it at p = 1, and the pairs with a metric that is not finite in
+  either arm are left out of that metric's test and counted.
   The metrics are the in-run ones, not rescored: Arm 3's rescoring of the
   after arm counts the cases that Arm 3's code scores as the release code
   did.
@@ -220,15 +230,16 @@ The rule's tests that the analysis does not report as such:
   check): criterion 2 by its column of flagged cells, criterion 4 by the
   runtime ratio, criterion 3 by its gate column at the `M` where both
   arms ran, and criterion 1, which the summary prints no verdict for, by
-  each condition's median of the largest weight difference against the
-  release pools' (open with the PI).
+  each condition's median of the largest weight difference, at most 0.03,
+  the release pools' largest (0.027) rounded up (PI, 2026-10-05).
 - **The S-VBMC headline's bounds** (decision 6) read
   `single_run/added.md` of Arm 3's analyses, an asset of the draft
   release `release-gate-stacking-arm3-<date>`, which holds the cluster's
   details and stays out of the repository.
 
-The script that applies these tests is written and committed before the
-batch's results reach the developer's machine (open with the PI).
+A script that applies these tests is written and committed before the
+batch's results reach the developer's machine (PI, 2026-10-05), as the aid
+to the PI's reading that the guide is, not as its verdict.
 
 Arm 0's `rescore-arms` rescores Arm 3 with the release code, for a
 comparison of Arm 0 with Arm 3 should the port's end of warm-up be
@@ -266,15 +277,16 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
 - [x] The operator's guide and the brief for the batch.
 - [x] Review: two fresh reviewers, then a doublecheck by three, all
   read-only, and their fixes.
-- [ ] `dev-next` fast-forwarded to `feat-arm3-pairing`; Arm 0's commit
-  `b196402b` and Arm 3's `ad63dd5a` (the head of `dev-arm3-port-warmup`,
-  which merges `b196402b`), proposed; the brief names both, which the PI
-  confirms; the PI's answers on the points left open in decisions 5 and 6
-  and "The comparisons".
+- [x] The PI's answers on the points the doublecheck left open
+  (2026-10-05; decisions 5 and 6, "The comparisons").
+- [x] `dev-next` fast-forwarded to `feat-arm3-pairing`; the brief names
+  Arm 0's commit, `b196402b`, and Arm 3's, `ad63dd5a` (the head of
+  `dev-arm3-port-warmup`, which merges `b196402b`).
+- [ ] The script of the guide's tests, committed before the results reach
+  the developer's machine.
 - [ ] The batch on the cluster, the hand-back.
-- [ ] The script of the pools' family, and the comparisons: after
-  against Arm 3, the fresh seeds, the pools, the stacking; the rule
-  applied; the PI's decision.
+- [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
+  the stacking; the guide read; the PI's decision.
 - [ ] If the port's end of warm-up is adopted: the analysis's extension
   for comparing Arm 0 with Arm 3, the promotion's for an adopted arm ("The
   comparisons"), and the branch's documentation; if it is not, the branch
@@ -331,3 +343,10 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   before the correction); the reading of the stacking's criterion 1; a script
   of the rule before the results; and the mechanics that go beyond the outline
   the PI accepted.
+- 2026-10-05: the PI's answers on the points left open: the S-VBMC
+  bounds widened to hold the stage D pools at `M = 32` (−0.25 to +0.20 and
+  ±0.15); the tests of no harm made per configuration and per pool
+  condition; criterion 1 read as at most 0.03; a script of the tests
+  before the results; and the mechanics accepted as provisional. The rule
+  is a guide that the PI reads the results with, not a verdict, and the
+  PI may judge its mechanics too literal (decision 5).
