@@ -209,6 +209,21 @@ times, per configuration, scales the release gate's cluster limits
 that each limit covers and the margin those limits already hold; the canary
 checks them before the rest is submitted.
 
+From the local runs of 2026-10-04/05 (the worklog): 1.0.4 took 1.5 to 5.2
+times the release code's time per configuration, and the slowest cluster
+run of each configuration in the after arm, so scaled, gives at most 33
+minutes outside `cigar_D15_exhaust` (the noisy `logreg_D5`) and 141 minutes
+for it. The limits, with a margin of about two for one seed's ratio:
+
+| Setting | Value | Covers |
+|---|---|---|
+| `ARM0_TIME` | 2 h | every configuration but `cigar_D15_exhaust` |
+| `ARM0_CIGAR_TIME` | 5 h | `cigar_D15_exhaust`, and the canary |
+| `ARM0_MEM` | 3 GB | every task (1.0.4's peak, 685 MB, on `cigar_D15_exhaust`) |
+
+The after arm's runs, so scaled, add up to about 500 CPU-hours, a third of
+them `cigar_D15_exhaust`'s, against the after arm's 153.
+
 ### Speed
 
 On the developer's machine, one process at a time with one BLAS thread, a
@@ -232,9 +247,9 @@ takes its figures from it.
   check, the after arm's directory, the campaign, `rescore-arms` and its
   archive part, the hand-back, the limits' names.
 - [x] Review (doublecheck, three reviewers) and its fixes.
-- [ ] Local runs: one case of each configuration with 1.0.4 through the
-  worker, for compatibility and the limits, when the developer's machine
-  is free of other heavy runs.
+- [x] Local runs: one case of each configuration with 1.0.4 through the
+  worker, for compatibility and the limits; a compatibility patch for
+  NumPy 2.4 and later (PI, 2026-10-05).
 - [ ] Merge into `dev-next`.
 - [ ] The operator's brief, with Arm 0's commit and limits.
 - [ ] The campaign on the cluster, the hand-back, the comparison.
@@ -290,3 +305,30 @@ takes its figures from it.
   check and of the node family. With the fixes the population module
   passes (75, the real case of 1.0.4 among them), the analysis module
   (57), the promotion's (11) and the contract's (139).
+- 2026-10-04/05: the local runs of 1.0.4, seed 0 of every `production`
+  configuration through the worker (the legacy campaign prepared on the
+  release gate's allocation and compared with a campaign of the release
+  code prepared here and never run, since the cluster's after arm ran in
+  another environment and on a node family). 20 configurations ran and
+  verified. The other four (`cigar_D15_exhaust` and the noisy `logreg_D5`,
+  `student_D8` and `lumpy_D10`) failed in `_eval_full_elcbo` with
+  `ValueError: setting an array element with a sequence`: once GP
+  hyperparameter sampling stops (N >= 200 + 10 D), 1.0.4's `_gp_log_joint`
+  keeps a sample axis on the ELBO's variance, which NumPy before 2.4 stored
+  as its element and NumPy 2.4 and later, the campaign environment's 2.5.2
+  among them, refuse (`CHANGELOG.md` records the fix among the crashes of
+  1.0.4). The PI chose (2026-10-05) to measure 1.0.4's algorithm there,
+  under decision 1: the legacy profile names a compatibility patch, the
+  package's own fix (`6f3f0ba7`), which the shims apply to every module
+  that holds the function (`7c344fa3`); a test applies it in a process of
+  1.0.4. With it the four ran and verified, `cigar_D15_exhaust` to its 750
+  evaluations (evidence error 0.006, MMTV 0.006). 1.0.4 took 1.5 to 5.2
+  times the release code's time per configuration on the developer's
+  machine (the release code's from the fingerprints of the Slurm plan's
+  Phase 9, at the same seed): 3.1 to 5.2 on the noiseless targets but
+  `lumpy_D10` (2.5) and `student_D4` (2.3), 1.5 to 4.1 on the noisy ones,
+  5.1 on `cigar_D15_exhaust` (46 minutes against 9); its peak resident set
+  685 MB, on `cigar_D15_exhaust`. "Limits from the local runs" sets the
+  cluster limits from them. Two runs of the session were stopped by the
+  workstation's memory pressure (Claude Code's reaper, not the runs), and
+  the worker's claims let them continue where they stopped.
