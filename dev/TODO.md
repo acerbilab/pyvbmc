@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-04. These lists describe scope, not priority or execution
+Updated 2026-10-05. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -83,6 +83,21 @@ records its execution.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
+  The release pools (the final large-scale check, below) give the added
+  bias over the conditions and `M` = 2 to 32, on the noisy targets and
+  then the noiseless ones: raw +0.01 to +0.86 and −0.01 to +0.05, the
+  capped headline −1.41 to −0.04 and −0.07 to +0.05, the implemented
+  two-level form (`two_level_full`) −0.23 to +0.15, as on the stage D
+  pools, and −0.01 to +0.08, and the anchored variant
+  (`two_level_anchored`) +0.00 to +0.36 and −0.01 to +0.07 (the medians
+  over cells of the analyses' `single_run/added.md`, which holds the
+  cluster's details and stays in the draft release). The analyst's
+  recommendation (2026-10-04): the two-level form as the headline of noisy
+  stacks, the raw value for noiseless ones. The PI's first reading: it
+  looks good, and the noisy Rosenbrock investigation of the golden
+  references item comes first; the switch then lands with a results report
+  of the reading. It changes `pyvbmc/svbmc/`,
+  which neither the promotion's check nor Arm 0's harness commit covers.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -101,12 +116,13 @@ records its execution.
   2026-10-02 from the release commit `ff3ed014` (PI, 2026-10-01) and was
   handed back on 2026-10-04 (PR #181): every case of the four campaigns
   verified, and their redacted copies are under
-  `experiments/release_gate_20261002/`. What remains is Phase 9 on the
-  developer's machine (the replay fingerprints and the six gate runs of
-  the two items below); the smaller fixes that the plan's worklog of
-  2026-09-30 leaves for after the merge, which change nothing a
-  fingerprint computes and land before the promotion's `prepare`; and the
-  review's optional findings, which await the PI's ruling. An edit to the
+  `experiments/release_gate_20261002/`. Phase 9, the replay fingerprints
+  and the six gate runs of the two items below, ran on the developer's
+  machine on 2026-10-04 and met its acceptance (the plan's worklog). What
+  remains is the smaller fixes that the plan's worklog of 2026-09-30
+  leaves for after the merge, which change nothing a fingerprint computes
+  and land before the promotion's `prepare`, and the review's optional
+  findings, which await the PI's ruling. An edit to the
   package's text, the tips' wording among them, lands after the promotion
   of the new reference, whose check compares the package's files with
   the after arm's (the plan's decision 13). See
@@ -137,8 +153,22 @@ records its execution.
   (the plan's Phase 8; `experiments/release_gate_20261002/`), and their
   comparison (`analyze_population_run.py --arms`) is
   `experiments/release_gate_20261002_assessment/`, for the PI's reading;
-  the promotion takes the assessment the PI accepts, by its SHA-256. The
-  promotion is
+  the promotion takes the assessment the PI accepts, by its SHA-256
+  (`assessment.json`'s, with LF line endings:
+  `2625fc50cb035ccabe7e5ec50bc6ebc7743c515eec08240c15b361a14420898d`).
+  It rejects none of the 96 confirmatory tests; its KS screen flags the
+  evaluation counts of `cigar_D4` and `rosenbrock_D2_noise3_production`.
+  The noisy Rosenbrock target is worse in the release code on every
+  measure (usable 72 times against 87): two of the port review's fixes
+  end its warm-up about three iterations earlier, as MATLAB does
+  ([the note](results/2026-10-05-noisy-rosenbrock-warmup.md), with a
+  paired experiment at 50 seeds).
+  **Open, the PI's decision:** keep MATLAB's end of warm-up and record the
+  cost (A, the analyst's recommendation), or keep the port's longer
+  warm-up as a deliberate difference from MATLAB, which needs the
+  benchmark, the after arm again on the cluster and Phase 9 again (B).
+  The PI's acceptance of the assessment and Arm 0's harness commit wait
+  for it. The promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
@@ -160,7 +190,10 @@ records its execution.
   `reference_990_20260913`), and more of them outside than the after arm's
   own rate makes plausible refuses; the code the promotion compares with
   the after arm's leaves out the package's tests and S-VBMC; and the
-  script moves into its record at the promotion.
+  script moves into its record at the promotion. Phase 9 ran on
+  2026-10-04 (the Slurm plan's worklog): one fingerprint of 24,
+  `corr_D5`'s, lies outside its envelope, within the after arm's own
+  rate, and the gate runs of the item below reproduced.
 
 - [ ] **A seeded gate run with a prior.** The four seeded runs that gate
   the port review's fix passes
@@ -194,7 +227,8 @@ records its execution.
   `d96d0d9`, identical
   in all 138 arrays; that run checked the wrapper and is no record. The
   runs that enter the records are Phase 9's, made with the after arm's
-  code.
+  code; they ran on 2026-10-04 at `dce4e18c`, whose package is the
+  release commit's, and reproduced in all 138 arrays.
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the
@@ -220,7 +254,15 @@ records its execution.
   2026-10-02 (`experiments/release_gate_20261002/pools/` and `stacking/`;
   the analyses' outputs are an asset of the draft release
   `release-gate-stacking-20261002`, since they hold the cluster's
-  details); their reading against the criteria is open.
+  details). Read against the campaign's criteria on 2026-10-04 (the
+  stacking's `summary.md`): the median over each condition's cells of the
+  largest weight difference between the two arms is 0.007 to 0.027
+  (criterion 1), no cell is flagged (criterion 2), and stacking takes 0.19 to 0.53 of
+  the original's time (criterion 4); criterion 3 fails on `student_D8`
+  alone, at every `M`, where the capped headline's median bias is −0.71 to
+  −1.64 nats against the original's −0.01 to +0.28, as on the stage D
+  pools. The added bias of each estimate, and the headline it argues for,
+  are in the S-VBMC ELBO headline selection item above.
 
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a

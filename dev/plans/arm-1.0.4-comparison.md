@@ -252,7 +252,13 @@ takes its figures from it.
   worker, for compatibility and the limits; a compatibility patch for
   NumPy 2.4 and later (PI, 2026-10-05).
 - [x] Merge into `dev-next` (`9b84a1ae`).
-- [ ] The operator's brief, with Arm 0's commit and limits.
+- [!] The operator's brief, with Arm 0's commit and limits. The commit
+  waits for the PI's decision on the end of warm-up
+  ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)): with A,
+  it is `24745c01` or a later commit of `dev-next` whose package files are
+  still the after arm's, so no edit of the package's text (a tip's
+  wording, the release date) lands before it is named; with B, the release
+  code changes and the after arm runs again first.
 - [ ] The campaign on the cluster, the hand-back, the comparison.
 - [ ] Speed against 1.0.4 on the developer's machine.
 

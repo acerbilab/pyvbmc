@@ -214,6 +214,12 @@ plan and consolidated human summary.
   cluster (2026-10-01): the two population arms, the pools, the stacking
   and the two analyses of the pools in their order, the limits of every
   job, and what is handed back.
+- [results/2026-10-05-noisy-rosenbrock-warmup.md](results/2026-10-05-noisy-rosenbrock-warmup.md) —
+  why the release code's runs of the noisy two-dimensional Rosenbrock
+  target of the release gate are shorter and less accurate than the before
+  arm's: two of the port review's fixes end warm-up about three iterations
+  earlier, as MATLAB does. The cluster's traces, a paired experiment at 50
+  seeds, and the decision it leaves to the PI.
 - [plans/arm-1.0.4-comparison.md](plans/arm-1.0.4-comparison.md) — Arm 0:
   PyVBMC 1.0.4, the release users upgrade from, on the release gate's
   population cases, compared seed by seed with the release code's arm: the

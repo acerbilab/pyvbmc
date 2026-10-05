@@ -6,11 +6,11 @@ Phase 9, the promotion and the public assets implemented on
 `feat-slurm-campaigns`, doublechecked and merged into `dev-next` after the
 PI's review; Phases 1 and 6 done on the cluster (2026-09-25 to 10-01);
 Phase 8's campaigns run on 2026-10-02 and handed back (PR #181, merged on
-2026-10-04); Phase 9 open**. What it assumes of the cluster rests on the
-surveys of 2026-09-25 and 2026-09-28 (Phase 1), on the smoke campaigns of
-Phase 6 and on the records of the September pool. The harness sections
-below describe each harness as it stood before this plan's work and what
-the work gave it.
+2026-10-04); Phase 9 run on the developer's machine on 2026-10-04**.
+What it assumes of the cluster rests on the surveys of 2026-09-25 and
+2026-09-28 (Phase 1), on the smoke campaigns of Phase 6 and on the records
+of the September pool. The harness sections below describe each harness as
+it stood before this plan's work and what the work gave it.
 
 ## Live checklist
 
@@ -33,7 +33,8 @@ the work gave it.
   ("Resources and cost"), written on 2026-10-01.
 - [x] Phase 8: the campaigns, run on 2026-10-02 from the release commit
   `ff3ed014` and handed back on 2026-10-04 (the worklog).
-- [ ] Phase 9: the replay fingerprints on the developer's machine.
+- [x] Phase 9: the replay fingerprints and the gate runs on the
+  developer's machine (2026-10-04; the worklog).
 
 **Pickup point.** The campaigns of Phase 8 ran on 2026-10-02 in the
 operator's account, from the release commit `ff3ed014`, and every case of
@@ -41,25 +42,26 @@ the four verified; the operator handed them back on 2026-10-04 (PR #181).
 Their redacted tracked copies are under
 `dev/experiments/release_gate_20261002/`, whose README records the runs,
 the node failures and resubmissions, the accounting and the archives (the
-worklog, 2026-10-04). What remains of this plan:
+worklog, 2026-10-04). Phase 9 ran on the developer's machine on
+2026-10-04 and met its acceptance (the worklog). What remains of this
+plan:
 
-- Phase 9, on the developer's machine, one process at a time: the six gate
-  runs (`seeded_gate_runs.py run`), then the fingerprints
-  (`reference_promote.py fingerprints --after
-  dev/experiments/release_gate_20261002/population_after`), each from a
-  checkout that stays clean and at one commit, whose code is the after
-  arm's, while it runs; `dev/scripts/runs/LOCAL.md` names their output.
 - The smaller fixes that the worklog of 2026-09-30 leaves for after the
   merge ("Left for after the merge and before Phase 9"). None changes what
-  a fingerprint computes or what `prepare` checks of the fingerprints, so
-  they can land after Phase 9; they land before the promotion's `prepare`.
+  a fingerprint computes or what `prepare` checks of the fingerprints;
+  they land before the promotion's `prepare`.
 - The review's optional findings, which await the PI's ruling.
 
 The arm comparison and the promotion belong to the TODO's item on the
 golden references, the reading of the pools and the stacking to its
-final large-scale check. The PI's rulings of 2026-09-28 on the promotion
-and on the release's assets are in "The populations", "Records and
-hand-back", Phase 9 and the worklog. A further population, PyVBMC 1.0.4 on
+final large-scale check. The promotion waits first for the PI's decision
+on the end of warm-up that the arm comparison's noisy Rosenbrock target
+raises ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)),
+then for the PI's acceptance of the assessment: a decision to keep the
+port's longer warm-up changes the release code, and the after arm and
+Phase 9 run again. The PI's rulings of 2026-09-28 on the promotion and on
+the release's assets are in "The populations", "Records and hand-back",
+Phase 9 and the worklog. A further population, PyVBMC 1.0.4 on
 the same cases (Arm 0, [its plan](arm-1.0.4-comparison.md)), runs through
 this workflow from a harness commit that holds the after arm's run code.
 
@@ -1614,3 +1616,20 @@ reproduces bit for bit.
   rescored metrics. The pull request merged into `dev-next` (`5924120b`).
   The arm comparison's record is
   `dev/experiments/release_gate_20261002_assessment/`.
+- 2026-10-04: Phase 9, on the developer's machine, from a clean checkout
+  at `dce4e18c`, whose package and run code are the release commit's
+  (none of the paths the promotion compares differs from `ff3ed014`'s),
+  with gpyreg `v1.4.0` and one BLAS thread. The six gate runs
+  (`seeded_gate_runs.py run`, 16:22 to 16:30) reproduced bit for bit in
+  their two recordings, 138 arrays of 138. The 24 fingerprints
+  (`reference_promote.py fingerprints --after
+  dev/experiments/release_gate_20261002/population_after`, 16:30 to
+  17:13, 43 minutes against the 1.5 hours estimated) completed with
+  finite metrics. One lies outside its envelope: `corr_D5`, on its
+  evidence error, gsKL and MMTV (0.048, 0.012 and 0.018, against the
+  population's fences of 0.033, 0.005 and 0.013), with 105 evaluations,
+  inside the population's range. One of 24 is within what the after arm's
+  own rate makes plausible (up to four pass), so the set meets the
+  acceptance. The outputs are the machine's, which
+  `dev/scripts/runs/LOCAL.md` lists ("The release gate's hand-back and
+  Phase 9"); the promotion's `prepare` reads them.
