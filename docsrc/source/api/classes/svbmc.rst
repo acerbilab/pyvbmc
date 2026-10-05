@@ -64,6 +64,11 @@ It then performs a fresh evaluation at the selected weights with
 ``n_samples_final=100`` draws per component. ``n_samples_final`` is
 keyword-only and must be an integer of at least 2.
 
+.. The S-VBMC runtime tip noisy_elbo (pyvbmc/svbmc/_tip_catalog.py) links
+   this label.
+
+.. _svbmc-elbo-reporting:
+
 ELBO reporting
 --------------
 
@@ -74,8 +79,9 @@ noise status of the stack:
   final evaluation at the selected weights.
 - If any retained run is treated as noisy, it is ``shrunk_two_level``, the
   two-level shrinkage estimate at the same weights and with the same final
-  entropy. Where that calculation is numerically undefined, the headline is
-  ``capped_I_median`` instead, and ``optimize()`` warns.
+  entropy, whatever the ``version`` of the optimization. Where that
+  calculation is numerically undefined, the headline is ``capped_I_median``
+  instead, and ``optimize()`` warns.
 
 The choice affects the reported value alone: the weights, and so the stacked
 posterior and its samples, come from the same optimization whatever the
@@ -112,12 +118,15 @@ is miscalibrated it corrects too little or too much. Its run-level step
 counts the differences between the runs' own biases as real differences
 between the runs, so it removes only part of the optimism of favoring the
 runs that came out highest. Its within-run step, on the other hand, can
-also remove part of the bias that the runs inherit. The raw ELBO is not an
-upper bound on the stack's true ELBO: it can fall below it where the runs'
-own ELBOs are pessimistic, and the shrinkage estimate can lie on either
-side of it. On a noiseless stack, stacking adds little bias
-and shrinkage changes the value little, so the headline is the raw ELBO,
-and ``shrunk_two_level`` is reported beside it.
+also remove part of the bias that the runs inherit. On our benchmarks the
+optimism that the run-level step leaves and the inherited bias that the
+within-run step removes roughly balanced: the headline of a noisy stack was
+about as biased as the runs it was built from. The raw ELBO is not an upper bound on the
+stack's true ELBO: it can fall below it where the runs' own ELBOs are
+pessimistic, and the shrinkage estimate can lie on either side of it. On a
+noiseless stack, stacking adds little bias and shrinkage changes the value
+little, so the headline is the raw ELBO, and ``shrunk_two_level`` is
+reported beside it.
 
 ``stacked.elbo_details`` contains the complete report:
 

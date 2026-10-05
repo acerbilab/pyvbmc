@@ -99,10 +99,15 @@ the reduction the cap made. The test compares the stored `elbo` with the
 current `capped_I_median` and requires `headline_method` to be
 `shrunk_two_level`, `cap_amount` to be zero and `elbo` to equal
 `shrunk_two_level`. In the other cells the stored headline is `raw` and is
-compared as stored. The file holds no value of `shrunk_two_level`, so it
-does not pin the value of the noisy cells' headline: the test requires it
-to be finite, and `dev/scripts/test_svbmc_shrinkage_parity.py`, which runs
-only when named, compares the estimator with its historical reference on
+compared as stored. The file holds no value of `shrunk_two_level`, so the
+test pins the noisy cells' headline with literals of its own
+(`SHRUNK_TWO_LEVEL`), at the same tolerance and with a check that every
+noisy cell has one. They were computed on 2026-10-05 by the same recipe at
+`39bc986d` (Python 3.12.6 on Windows, NumPy 2.5.3, Torch 2.14.0 CPU, one
+thread); the same run reproduced the stored weights. To move them on
+purpose, replace the literals and record why here. The estimator itself is checked by
+`test_elbo_shrinkage.py` and by `dev/scripts/test_svbmc_shrinkage_parity.py`,
+which runs only when named and compares it with its historical reference on
 four of the fixture groups, `upstream_GMM_noisy` among them.
 
 The 2026-09-12 rebaseline is intentional and implements the PI-approved

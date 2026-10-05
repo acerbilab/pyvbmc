@@ -27,6 +27,10 @@ TIPS = (
         "reported evidence estimate only; the stacked posterior is "
         "unchanged.",
         noisy_only=True,
+        urls=(
+            "https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html"
+            "#svbmc-elbo-reporting",
+        ),
     ),
     Tip(
         "run_count",
