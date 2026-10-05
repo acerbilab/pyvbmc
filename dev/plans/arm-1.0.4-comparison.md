@@ -1,7 +1,8 @@
 # Arm 0: PyVBMC 1.5 against 1.0.4 on the release gate's populations
 
-Created 2026-10-04. Status: **implemented on `feat-arm0-v104` and
-reviewed; the local runs of 1.0.4, the merge and the campaign open**.
+Created 2026-10-04. Status: **implemented, reviewed and merged into
+`dev-next` (`9b84a1ae`); the local runs of 1.0.4 done; the brief and the
+campaign open**.
 
 ## Purpose
 
@@ -250,7 +251,7 @@ takes its figures from it.
 - [x] Local runs: one case of each configuration with 1.0.4 through the
   worker, for compatibility and the limits; a compatibility patch for
   NumPy 2.4 and later (PI, 2026-10-05).
-- [ ] Merge into `dev-next`.
+- [x] Merge into `dev-next` (`9b84a1ae`).
 - [ ] The operator's brief, with Arm 0's commit and limits.
 - [ ] The campaign on the cluster, the hand-back, the comparison.
 - [ ] Speed against 1.0.4 on the developer's machine.
