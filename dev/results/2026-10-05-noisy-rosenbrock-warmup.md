@@ -69,15 +69,15 @@ of accuracy, at a significance that stays borderline at 50 seeds. The
 cluster's gap at seeds 0–49 is 40 against 38 usable runs; the rest of the
 87 against 72 lies in seeds 50–99.
 
-## The decision (PI, open)
+## The decision
 
-- **A. Keep MATLAB's end of warm-up** (the analyst's recommendation). The
-  fixes are faithful to MATLAB, the cost falls on one hard noisy target,
-  and the population, the fingerprints and Arm 0 stand. The cost is
-  written into the promotion record, and an item outside 1.5 tests a longer
-  warm-up for noisy targets of few dimensions on the benchmark.
-- **B. Keep the longer warm-up as a deliberate difference from MATLAB.**
-  It needs the benchmark first, to show that nothing else gets worse, then
-  the release code's population again on the cluster (about 165
-  CPU-hours), Phase 9 again, and Arm 0 waits for it (its harness commit
-  holds the release code's package).
+Two outcomes were open: keep MATLAB's end of warm-up, which the fixes
+follow, and record its cost on this target; or keep the port's longer
+warm-up as a deliberate difference from MATLAB, which needs evidence that
+nothing else gets worse. The analyst recommended the first on the
+evidence above, which is one configuration's. The PI chose (2026-10-05) to
+decide on the cluster's evidence instead: Arm 3, the release code with the
+port's end of warm-up, runs the release gate's population cases, pools and
+stacking, and fresh seeds of this configuration, in one batch with Arm 0,
+and a rule fixed before the runs makes the choice for the noisy and the
+noiseless targets apart ([Arm 3's plan](../plans/arm-3-warmup-comparison.md)).

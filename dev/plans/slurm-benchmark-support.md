@@ -54,16 +54,19 @@ plan:
 
 The arm comparison and the promotion belong to the TODO's item on the
 golden references, the reading of the pools and the stacking to its
-final large-scale check. The promotion waits first for the PI's decision
-on the end of warm-up that the arm comparison's noisy Rosenbrock target
-raises ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)),
-then for the PI's acceptance of the assessment: a decision to keep the
-port's longer warm-up changes the release code, and the after arm and
-Phase 9 run again. The PI's rulings of 2026-09-28 on the promotion and on
+final large-scale check. The promotion waits for Arm 3
+([its plan](arm-3-warmup-comparison.md)), on whose campaigns the PI
+chooses between MATLAB's end of warm-up and the port's, which the arm
+comparison's noisy Rosenbrock target put in question
+([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)), and then
+for the PI's acceptance of the assessment; if the port's end is adopted,
+Phase 9 runs again from the new code. The PI's rulings of 2026-09-28 on the promotion and on
 the release's assets are in "The populations", "Records and hand-back",
-Phase 9 and the worklog. A further population, PyVBMC 1.0.4 on
-the same cases (Arm 0, [its plan](arm-1.0.4-comparison.md)), runs through
-this workflow from a harness commit that holds the after arm's run code.
+Phase 9 and the worklog. Two further arms run through this workflow in
+one batch: PyVBMC 1.0.4 on the population cases (Arm 0,
+[its plan](arm-1.0.4-comparison.md)), from a harness commit that holds
+the after arm's run code, and the release code with the port's end of
+warm-up on the population cases, pools and stacking (Arm 3).
 
 The package can still change for the release. An edit to its text (a
 tip's wording, a docstring, an option's description) changes no run; it

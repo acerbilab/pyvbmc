@@ -94,9 +94,10 @@ records its execution.
   cluster's details and stays in the draft release). The analyst's
   recommendation (2026-10-04): the two-level form as the headline of noisy
   stacks, the raw value for noiseless ones. The PI's first reading: it
-  looks good, and the noisy Rosenbrock investigation of the golden
-  references item comes first; the switch then lands with a results report
-  of the reading. It changes `pyvbmc/svbmc/`,
+  looks good; the decision waits for Arm 3's pools and stacking, by the
+  criterion that the PI fixed before the runs (2026-10-05; decision 6 of
+  [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the switch then
+  lands with a results report of the reading. It changes `pyvbmc/svbmc/`,
   which neither the promotion's check nor Arm 0's harness commit covers.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
@@ -163,12 +164,9 @@ records its execution.
   end its warm-up about three iterations earlier, as MATLAB does
   ([the note](results/2026-10-05-noisy-rosenbrock-warmup.md), with a
   paired experiment at 50 seeds).
-  **Open, the PI's decision:** keep MATLAB's end of warm-up and record the
-  cost (A, the analyst's recommendation), or keep the port's longer
-  warm-up as a deliberate difference from MATLAB, which needs the
-  benchmark, the after arm again on the cluster and Phase 9 again (B).
-  The PI's acceptance of the assessment and Arm 0's harness commit wait
-  for it. The promotion is
+  The choice between MATLAB's end of warm-up and the port's waits for
+  Arm 3 (PI, 2026-10-05; the item below), and the PI's acceptance of the
+  assessment and the promotion wait for it. The promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
@@ -264,6 +262,19 @@ records its execution.
   pools. The added bias of each estimate, and the headline it argues for,
   are in the S-VBMC ELBO headline selection item above.
 
+- [ ] **Arm 3: the port's end of warm-up.** The release code with the
+  end of warm-up of `f91fdf0`, which W2-1 and W2-2 moved to MATLAB's, on
+  the release gate's population cases, pools and stacking and on fresh
+  seeds of the noisy Rosenbrock target, in one batch with Arm 0 (PI,
+  2026-10-05). A rule fixed before the runs chooses MATLAB's end of
+  warm-up or the port's for the noisy and the noiseless targets apart,
+  and Arm 3's stacking settles the S-VBMC ELBO headline. The
+  [plan](plans/arm-3-warmup-comparison.md) holds the decisions, the
+  pairing of arms across harness commits that Arm 3 needs, the campaigns
+  and the checklist; the
+  [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
+  raised the question.
+
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a
   user upgrades from 1.0.4, so the release's claims of accuracy and speed
@@ -273,8 +284,10 @@ records its execution.
   seed with the after arm, and speed is measured apart on the developer's
   machine. The [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
   the harness's legacy profile, the rescoring across harness commits and
-  the checklist. The changelog's, the README's and the release notes'
-  statements against 1.0.4 wait for it.
+  the checklist. It runs in one batch with Arm 3 (the item above), and
+  does not wait for the decision that Arm 3 informs (PI, 2026-10-05). The
+  changelog's, the README's and the release notes' statements against
+  1.0.4 wait for it.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's

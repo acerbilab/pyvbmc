@@ -82,11 +82,14 @@ after arm's commit with the harness change merged onto it. `prepare
 code of the two commits in the history of the checkout it runs in. The
 campaign's harness checkout stays at the commit from its first
 submission to its hand-back, so `dev-next` moves on once the commit is
-named: the merge of this work is named at once, and the tips' wording and
-the release date wait until then. The S-VBMC headline does not, since its
-code, docstring and tip lie under `pyvbmc/svbmc/`, which the check leaves
-out. A change to the release code's numerics, which would also have the
-after arm run again, is decided before Arm 0 launches.
+named: the head of `dev-next` once the pairing that Arm 3 needs has
+merged (the checklist), and the tips' wording and the release date wait
+until then. The S-VBMC headline does not, since its code, docstring and
+tip lie under `pyvbmc/svbmc/`, which the check leaves out. The one change
+to the release code's numerics still open, the end of warm-up, is decided
+on Arm 3, which runs in the same batch; Arm 0's runs stand whatever the
+decision, and only their comparison changes if the release code does (PI,
+2026-10-05; [Arm 3's plan](arm-3-warmup-comparison.md)).
 
 ## Design
 
@@ -252,13 +255,12 @@ takes its figures from it.
   worker, for compatibility and the limits; a compatibility patch for
   NumPy 2.4 and later (PI, 2026-10-05).
 - [x] Merge into `dev-next` (`9b84a1ae`).
-- [!] The operator's brief, with Arm 0's commit and limits. The commit
-  waits for the PI's decision on the end of warm-up
-  ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)): with A,
-  it is `24745c01` or a later commit of `dev-next` whose package files are
-  still the after arm's, so no edit of the package's text (a tip's
-  wording, the release date) lands before it is named; with B, the release
-  code changes and the after arm runs again first.
+- [ ] The operator's brief, with Arm 0's commit and limits, for one batch
+  with Arm 3 ([its plan](arm-3-warmup-comparison.md)). Arm 0's commit is
+  the head of `dev-next` once the pairing across harness commits of Arm
+  3's plan has merged, its package still the after arm's, so no edit of
+  the package's text (a tip's wording, the release date) lands before it
+  is named.
 - [ ] The campaign on the cluster, the hand-back, the comparison.
 - [ ] Speed against 1.0.4 on the developer's machine.
 
