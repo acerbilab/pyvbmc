@@ -306,6 +306,10 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   for comparing Arm 0 with Arm 3, the promotion's for an adopted arm ("The
   comparisons"), and the branch's documentation; if it is not, the branch
   retained.
+- [ ] The S-VBMC headline (decision 6): if the PI adopts the two-level
+  shrinkage estimate, the branch `feat-svbmc-shrinkage-headline` merged
+  with its results report and what `dev/TODO.md` ("S-VBMC ELBO headline
+  selection") lists for the merge; otherwise that branch retained.
 
 ## Worklog
 

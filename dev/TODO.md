@@ -42,7 +42,9 @@ records its execution.
   and in the FAQ's entry on newer versions, the `check_for_updates` API page
   and the changelog's "Update reminders" entry. The PI's rulings so far,
   and what remains open (the reading of the wording of every tip), are in
-  the tips plan's last section, "Review before the 1.5 release".
+  the tips plan's last section, "Review before the 1.5 release". The
+  wording of `noisy_elbo` to read is that of the branch of the S-VBMC ELBO
+  headline selection (below), which rewrites it.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -73,13 +75,14 @@ records its execution.
   single-run optimism that regression across runs cannot see (PI,
   2026-09-19); the release pools are to confirm that.
   The stacking objective and selected posterior remain unchanged.
-  Finalize the headline's qualitative caveat, distinguishing inherited VBMC
-  bias from bias added by stacking and explaining that residual bias can
-  remain; the raw estimate is not an upper bound on the truth. Update the
-  `SVBMC` docstring, API reporting section, FAQ, existing Example 7
-  explanation and S-VBMC runtime tip `noisy_elbo`
-  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO) to
-  match the decision, with no additional user step.
+  The headline's caveat is qualitative: it distinguishes inherited VBMC
+  bias from bias added by stacking, says that residual bias can remain,
+  and that the raw estimate is not an upper bound on the truth. On
+  `dev-next` the `SVBMC` docstring, the API reporting section, the FAQ,
+  Example 7's explanation and the S-VBMC runtime tip `noisy_elbo`
+  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO)
+  describe the capped headline; the branch below updates them, with no
+  additional user step.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
@@ -101,27 +104,34 @@ records its execution.
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
   commit covers. The switch is prepared on the branch
-  `feat-svbmc-shrinkage-headline` (at `32a967c0`) while the batch runs
-  (PI, 2026-10-05), and merges if decision 6's clauses hold on Arm 3's
-  stacking: the code, the `SVBMC` docstring, the API page with the
-  headline's caveat, the FAQ, the tip `noisy_elbo`, Example 7's explanation
-  (the notebook is run again in the release pass), the changelog's entry
-  and `AGENTS.md`'s S-VBMC gate, which says where the noisy headline is
-  pinned. A noisy stack whose shrinkage is numerically undefined reports
-  the capped value, with a warning. The merge also brings the results
-  report of the reading, this item, the decision of the
+  `feat-svbmc-shrinkage-headline` (head `3a49d873` on 2026-10-05) while
+  Arm 3's batch runs (PI, 2026-10-05). The branch holds the code, the
+  `SVBMC` docstring, the API page with the headline's caveat, the FAQ, the
+  tip `noisy_elbo` and its link to that page, Example 7's explanation (the
+  notebook is run again in the release pass), the changelog's entry, the
+  tests, which pin the noisy cells' headline in
+  `test_svbmc_references.py`, and `AGENTS.md`'s S-VBMC gate, which says
+  where it is pinned. A noisy stack whose shrinkage is numerically
+  undefined reports the capped value, with a warning. The branch merges if
+  decision 6's clauses hold on Arm 3's stacking. The merge also brings
+  that report, this item, the decision of the
   [headline note](2026-09-15-svbmc-headline-shrinkage.md), and the records
   and scripts that take the capped value for the noisy headline:
-  `scripts/svbmc_pool_stack.py`, whose summary and criterion 3's
-  docstrings call the integrated headline the capped value (a cell
-  recorded after the switch holds the shrinkage estimate there, so the
-  cells are to record `headline_method`), `scripts/svbmc_single_run_bias.py`
-  (`headline = capped if stacked.noisy else raw`), `README.md` (the
-  shrinkage plan's entry), the [campaign plan](plans/svbmc-benchmark-campaign.md)
-  (the integrated class's report) and the [tips plan](plans/runtime-tips.md)
-  (the tip `noisy_elbo`). If the PI keeps the current headline, the branch
-  leaves the working line as `retain/svbmc-shrinkage-headline` (`AGENTS.md`,
-  "Branches").
+  `scripts/svbmc_pool_stack.py`, whose summary text and
+  `headline_bias_growth`'s docstring call the integrated headline the
+  capped value, while a cell recorded after the switch holds the shrinkage
+  estimate under `headline` and a `cap_amount` that is zero unless the cap
+  is the headline (the cells are to record `headline_method`);
+  `scripts/svbmc_single_run_bias.py`
+  (`headline = capped if stacked.noisy else raw`); `dev/README.md` (the
+  shrinkage plan's entry); the
+  [modernization roadmap](plans/modernization-roadmap.md), which holds the
+  headline's selection open; the
+  [campaign plan](plans/svbmc-benchmark-campaign.md) (the integrated
+  class's report); and the [tips plan](plans/runtime-tips.md) (the advice
+  of the tip `noisy_elbo`, and which tips carry links). If a clause fails
+  and the PI keeps the current headline, the branch leaves the working
+  line as `retain/svbmc-shrinkage-headline` (`AGENTS.md`, "Branches").
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
