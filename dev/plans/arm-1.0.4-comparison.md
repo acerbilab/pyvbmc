@@ -169,7 +169,11 @@ after arm's 2400 cases test that the rescoring scores as the release code
 did, and one such campaign is required. It runs on the cluster, where both
 raw campaigns are, as a batch job on the campaigns' node family, after Arm
 0's finish, and again after any later finish of Arm 0, whose verification
-report the rescoring names.
+report the rescoring names. In the second batch it also rescores Arm 3
+([its plan](arm-3-warmup-comparison.md)), so that a comparison of Arm 0
+with Arm 3, should the PI adopt Arm 3's end of warm-up, has both arms
+scored by one process: `--campaign` names the after arm and then Arm 3,
+and the job runs after Arm 3's finish too.
 
 ### The comparison
 
@@ -198,7 +202,9 @@ harness checkout, gpyreg `v1.0.4`), the harness checkout moved to Arm 0's
 commit, the environment check there, the after arm's directory restored
 from its archive where it is gone, the campaign as one arm with
 `--compare` and `cigar_D15_exhaust` as its own subset, its finish,
-`rescore-arms` and its archive part, and the hand-back. A brief in the
+`rescore-arms` and its archive part, and the hand-back, which is the second
+batch's with Arm 3's campaigns ([the brief](release-gate-handoff-2.md)). A
+brief in the
 manner of `release-gate-handoff.md` gives the order, the commit and the
 limits.
 

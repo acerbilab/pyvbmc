@@ -125,10 +125,28 @@ calls.
 | `fresh_arm3` | Arm 3's commit | `--pair fresh_release` | Arm 3 |
 
 The after arm's directory is restored from its archive where it is gone,
-as for Arm 0. The pools and the stacking take the release gate's
-allocation and grid, written out in the operator's guide. The two
-checkouts are separate worktrees, each at its commit from its campaigns'
-first submission to their hand-back.
+as for Arm 0, and is never finished again. The pools and the stacking take
+the release gate's allocation and grid, and the two analyses of the pools
+follow the stacking, from the Arm 3 checkout. The two checkouts are a
+clone and a detached worktree of it, each at its commit from its
+campaigns' first submission to their hand-back. Arm 0's `rescore-arms`
+rescores Arm 3 beside the after arm and Arm 0 (Arm 0's plan, "Rescoring
+across harness commits"). The operator's guide (`dev/scripts/hpc/README.md`,
+"Arm 3: the port's end of warm-up" and "The second batch's hand-back")
+gives the commands, and the [brief](release-gate-handoff-2.md) the order,
+the commits and the limits.
+
+### The comparisons
+
+On the tracked copies, after the hand-back: `analyze_population_run.py
+--arms` with the after arm as the reference and `population_arm3` as the
+candidate, and likewise `fresh_release` and `fresh_arm3`. The rule's tests
+that the analysis does not report as such are computed from its paired
+data: the one-sided signed-rank test of the fresh seeds' MMTV, and the
+pools' family, which reads the verified runs of the two pools, paired by
+seed, from the campaigns' archives in their draft releases (the pools'
+tracked copies hold the selection and the summary, not each run's
+metrics), on the developer's machine, where nothing of them is committed.
 
 ### Cost
 

@@ -214,6 +214,10 @@ plan and consolidated human summary.
   cluster (2026-10-01): the two population arms, the pools, the stacking
   and the two analyses of the pools in their order, the limits of every
   job, and what is handed back.
+- [plans/release-gate-handoff-2.md](plans/release-gate-handoff-2.md) — the
+  brief for the release gate's second batch (2026-10-05): Arm 0 and Arm 3,
+  their two commits and checkouts, the campaigns in their order, the
+  limits, and what is handed back.
 - [results/2026-10-05-noisy-rosenbrock-warmup.md](results/2026-10-05-noisy-rosenbrock-warmup.md) —
   why the release code's runs of the noisy two-dimensional Rosenbrock
   target of the release gate are shorter and less accurate than the before
@@ -527,7 +531,10 @@ reason.
   rescores, which is finished again after any later finish of the other;
   `prepare --pair` takes as the other arm only a campaign that differs
   from this one in its code and in nothing else, its node family and
-  environment included; `prepare` refuses a gpyreg checkout that is not
+  environment included, from the same harness checkout or from a clean
+  checkout at another commit that holds the same files that build and
+  score a run (`plans/arm-3-warmup-comparison.md`); `prepare` refuses a gpyreg
+  checkout that is not
   the release its package tree's `pyproject.toml` names as the minimum,
   exactly for an arm of other code and that release or a later commit for
   the release code; its tracked copies (`tracked_copies`) are the summary,
@@ -579,8 +586,9 @@ reason.
   `verification.json` and compared seed by seed on the metrics that
   `rescore` recomputed (in the campaign `--rescoring` names, by default the
   candidate, whose `rescoring.json` binds them by SHA-256 to a process of
-  the candidate's own identity), with the confirmatory family of their
-  manifests at the size they fix: a test that cannot be computed enters it
+  the candidate's own identity), which `prepare --pair` paired, with the
+  confirmatory family of their manifests at the size they fix: a test that
+  cannot be computed enters it
   at p = 1 and is flagged. A legacy reference (PyVBMC 1.0.4) is read with
   the rescoring of both arms that `population_run.py rescore-arms` wrote
   into it, by default, which must come from the legacy arm's harness

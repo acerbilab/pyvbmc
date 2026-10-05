@@ -60,9 +60,9 @@ chooses between MATLAB's end of warm-up and the port's, which the arm
 comparison's noisy Rosenbrock target put in question
 ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)), and then
 for the PI's acceptance of the assessment; if the port's end is adopted,
-Phase 9 runs again from the new code. The PI's rulings of 2026-09-28 on the promotion and on
-the release's assets are in "The populations", "Records and hand-back",
-Phase 9 and the worklog. Two further arms run through this workflow in
+Phase 9 runs again from the new code. The PI's rulings of 2026-09-28 on the
+promotion and on the release's assets are in "The populations", "Records
+and hand-back", Phase 9 and the worklog. Two further arms run through this workflow in
 one batch: PyVBMC 1.0.4 on the population cases (Arm 0,
 [its plan](arm-1.0.4-comparison.md)), from a harness commit that holds
 the after arm's run code, and the release code with the port's end of
@@ -676,8 +676,11 @@ previous promotion's script lives in its record (PI, 2026-09-28).
   directory, so the before arm is finished completely before the after
   arm's finish, and the after arm is finished again after any later finish
   of the before arm. `prepare --pair` refuses two arms with the same
-  `pyvbmc` commit, or with different harness commits, harness files or
-  environment versions. `rescore` without `PYVBMC_GPYREG_SOURCE`, and a
+  `pyvbmc` commit, or with different harness files or environment
+  versions; arms of two harness commits pair only on the terms of a legacy
+  arm's comparison, clean checkouts holding the same files that build and
+  score a run (Arm 3, [its plan](arm-3-warmup-comparison.md)). `rescore`
+  without `PYVBMC_GPYREG_SOURCE`, and a
   worker whose package tree PyVBMC cannot be imported from, exit 78.
 - **The tool.** `analyze_population_run.py` needs a signed-rank test valid
   for 100 pairs (before this plan's work its exact enumeration refused
