@@ -298,7 +298,8 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   `dev-arm3-port-warmup`, which merges `b196402b`).
 - [x] The script of the guide's tests, `dev/scripts/arm3_guide.py`,
   committed before the results reach the developer's machine.
-- [ ] The batch on the cluster, the hand-back.
+- [~] The batch on the cluster, the hand-back: the brief went to the
+  operator on 2026-10-05.
 - [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
   the stacking; the guide read; the PI's decision.
 - [ ] If the port's end of warm-up is adopted: the analysis's extension

@@ -49,7 +49,8 @@ plan:
 - The smaller fixes that the worklog of 2026-09-30 leaves for after the
   merge ("Left for after the merge and before Phase 9"). None changes what
   a fingerprint computes or what `prepare` checks of the fingerprints;
-  they land before the promotion's `prepare`.
+  they land before the promotion's `prepare`, done with the promotion's
+  work once the warm-up decision is taken (PI, 2026-10-05).
 - The review's optional findings, which await the PI's ruling.
 
 The arm comparison and the promotion belong to the TODO's item on the

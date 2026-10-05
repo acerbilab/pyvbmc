@@ -100,7 +100,11 @@ records its execution.
   decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
-  commit covers.
+  commit covers. The switch is prepared on a branch of its own while the
+  batch runs (PI, 2026-10-05), and merges if decision 6's clauses hold on
+  Arm 3's stacking: the code, the `SVBMC` docstring, the API page, the
+  FAQ, the tip `noisy_elbo`, Example 7's explanation (the notebook is run
+  again in the release pass) and the changelog's entry.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -125,10 +129,13 @@ records its execution.
   remains is the smaller fixes that the plan's worklog of 2026-09-30
   leaves for after the merge, which change nothing a fingerprint computes
   and land before the promotion's `prepare`, and the review's optional
-  findings, which await the PI's ruling. An edit to the
-  package's text, the tips' wording among them, lands after the promotion
-  of the new reference, whose check compares the package's files with
-  the after arm's (the plan's decision 13). See
+  findings, which await the PI's ruling. The smaller fixes are done with
+  the promotion's work, once the warm-up decision says which arm the
+  promotion takes (PI, 2026-10-05): they reach no batch that runs from
+  its named commits, and the promotion may change with that decision. An
+  edit to the package's text, the tips' wording among them, lands after
+  the promotion of the new reference, whose check compares the package's
+  files with the after arm's (the plan's decision 13). See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
@@ -274,7 +281,10 @@ records its execution.
   the pairing of arms across harness commits that Arm 3 needs, the campaigns
   and the checklist; the
   [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
-  raised the question.
+  raised the question. The brief went to the operator on 2026-10-05; the
+  batch runs in the operator's account and comes back as a pull request
+  to `dev-next` with its draft releases, after which
+  `scripts/arm3_guide.py` reads it.
 
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a

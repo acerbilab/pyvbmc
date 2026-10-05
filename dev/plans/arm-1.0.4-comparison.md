@@ -266,8 +266,10 @@ takes its figures from it.
 - [x] The operator's brief, with Arm 0's commit and limits, for one batch
   with Arm 3 ([release-gate-handoff-2.md](release-gate-handoff-2.md)):
   Arm 0 runs from `b196402b`, whose package is the after arm's.
-- [ ] The campaign on the cluster, the hand-back, the comparison.
-- [ ] Speed against 1.0.4 on the developer's machine.
+- [~] The campaign on the cluster, the hand-back, the comparison: the
+  brief went to the operator on 2026-10-05.
+- [ ] Speed against 1.0.4 on the developer's machine, run when the PI
+  leaves the machine free for some hours (PI, 2026-10-05).
 
 ## Worklog
 
