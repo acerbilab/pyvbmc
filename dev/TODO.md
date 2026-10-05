@@ -100,11 +100,28 @@ records its execution.
   decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
-  commit covers. The switch is prepared on a branch of its own while the
-  batch runs (PI, 2026-10-05), and merges if decision 6's clauses hold on
-  Arm 3's stacking: the code, the `SVBMC` docstring, the API page, the
-  FAQ, the tip `noisy_elbo`, Example 7's explanation (the notebook is run
-  again in the release pass) and the changelog's entry.
+  commit covers. The switch is prepared on the branch
+  `feat-svbmc-shrinkage-headline` (at `39bc986d`) while the batch runs
+  (PI, 2026-10-05), and merges if decision 6's clauses hold on Arm 3's
+  stacking: the code, the `SVBMC` docstring, the API page with the
+  headline's caveat, the FAQ, the tip `noisy_elbo`, Example 7's explanation
+  (the notebook is run again in the release pass), the changelog's entry
+  and `AGENTS.md`'s S-VBMC gate, which names the shrinkage estimate's own
+  tests. A noisy stack whose shrinkage is numerically undefined reports
+  the capped value, with a warning. The merge also brings the results
+  report of the reading, this item, the decision of the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md), and the records
+  and scripts that take the capped value for the noisy headline:
+  `scripts/svbmc_pool_stack.py`, whose summary and criterion 3's
+  docstrings call the integrated headline the capped value (a cell
+  recorded after the switch holds the shrinkage estimate there, so the
+  cells are to record `headline_method`), `scripts/svbmc_single_run_bias.py`
+  (`headline = capped if stacked.noisy else raw`), `README.md` (the
+  shrinkage plan's entry), the [campaign plan](plans/svbmc-benchmark-campaign.md)
+  (the integrated class's report) and the [tips plan](plans/runtime-tips.md)
+  (the tip `noisy_elbo`). If the PI keeps the current headline, the branch
+  leaves the working line as `retain/svbmc-shrinkage-headline` (`AGENTS.md`,
+  "Branches").
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
