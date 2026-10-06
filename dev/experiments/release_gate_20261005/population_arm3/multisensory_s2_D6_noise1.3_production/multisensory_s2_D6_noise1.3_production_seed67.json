@@ -1,0 +1,242 @@
+{
+ "label": "multisensory_s2_D6_noise1.3_production",
+ "seed": 67,
+ "problem": "multisensory_s2",
+ "D": 6,
+ "noise_sd": 1.3,
+ "requested_options": {
+  "specify_target_noise": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "effective_options": {
+  "max_fun_evals": 600,
+  "max_iter": 400,
+  "tol_stable_count": 90,
+  "tol_stable_excpt_frac": 0.2,
+  "specify_target_noise": true,
+  "search_acq_fcn": [
+   "<pyvbmc.acquisition_functions.acq_fcn_viqr.AcqFcnVIQR object>"
+  ],
+  "active_sample_gp_update": true,
+  "active_sample_vp_update": true,
+  "min_final_components": 50,
+  "do_final_boost": true,
+  "display": "off",
+  "plot": false,
+  "print_iteration_header": false,
+  "performance_calibration": "off",
+  "vectorized_target": false,
+  "tol_elcbo_boost": 0.1
+ },
+ "timer_keys": [
+  "active_sampling",
+  "finalize",
+  "fun_time",
+  "gp_train",
+  "variational_fit",
+  "warping"
+ ],
+ "ln_Z": -444.4889349363395,
+ "true_mean": [
+  [
+   5.373255832012488,
+   4.968563625526197,
+   14.216682662019752,
+   23.406992808093534,
+   21.036873110873394,
+   0.1187867640190076
+  ]
+ ],
+ "true_cov": [
+  [
+   7.528731629644079,
+   -2.553627739760594,
+   -0.8997377540076649,
+   0.49652770672694335,
+   1.6390825453955982,
+   -0.06524568684423349
+  ],
+  [
+   -2.553627739760594,
+   7.0830222273548,
+   2.8805193200742307,
+   2.6336184891382315,
+   1.359914970226413,
+   -0.05366880679983255
+  ],
+  [
+   -0.8997377540076649,
+   2.8805193200742307,
+   4.578922762527257,
+   1.909044744805113,
+   1.1686515825633503,
+   -0.043582118688482455
+  ],
+  [
+   0.49652770672694335,
+   2.6336184891382315,
+   1.909044744805113,
+   9.009210183636771,
+   1.9808467502568767,
+   -0.050048150012349746
+  ],
+  [
+   1.6390825453955982,
+   1.359914970226413,
+   1.1686515825633503,
+   1.9808467502568767,
+   1.8156815316370456,
+   -0.03987795716057009
+  ],
+  [
+   -0.06524568684423349,
+   -0.05366880679983255,
+   -0.043582118688482455,
+   -0.050048150012349746,
+   -0.03987795716057009,
+   0.0027144513172009184
+  ]
+ ],
+ "plb": [
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  1.0,
+  0.01
+ ],
+ "pub": [
+  40.0,
+  40.0,
+  40.0,
+  40.0,
+  45.0,
+  0.2
+ ],
+ "notes": "visuo-vestibular causal inference (Acerbi, Dokka, Angelaki & Ma 2018), subject 2 of the 2020 paper, 857 unity judgments over three visual coherence levels; the 'Fixed' rule with a lapse, parameters sigma_vest, sigma_vis_low, sigma_vis_med, sigma_vis_high, kappa, lambda, times a spline-trapezoidal prior with the pivots at the plausible bounds; likelihood ported from benchflow",
+ "final": {
+  "elbo": -445.1231137225706,
+  "elbo_sd": 0.19070049716432896,
+  "best_iter": 39,
+  "iterations": 40,
+  "func_count": 200,
+  "final_K": 50,
+  "final_N": 200,
+  "min_Ns_gp": 6,
+  "n_warps": 2,
+  "success_flag": true,
+  "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
+  "wall_s": 283.5831977839116,
+  "target_eval_s": 0.20192837715148926,
+  "elbo_err": 0.6341787862311321,
+  "gskl": 0.5241337398607804,
+  "mmtv": 0.15169753187543852,
+  "rmse": 0.5644377953293622,
+  "moment_method": "mc",
+  "peak_rss_mb": 204.28515625,
+  "max_rss_mb": 282.6171875
+ },
+ "meta": {
+  "git": {
+   "sha": "ad63dd5a",
+   "dirty": false
+  },
+  "python": "3.12.14",
+  "numpy": "2.5.2",
+  "scipy": "1.18.1",
+  "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$HARNESS_TREE/pyvbmc",
+   "git": {
+    "sha": "ad63dd5a",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "682585f",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "started": "2026-10-05 19:21:31",
+  "finished": "2026-10-05 19:26:16",
+  "pid": 1609451
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$HARNESS_TREE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
+ }
+}

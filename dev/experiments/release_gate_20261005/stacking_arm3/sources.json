@@ -1,0 +1,4837 @@
+{
+  "campaign": "svbmc_pool",
+  "generated": "2026-10-05 22:23:27",
+  "harness": {
+    "path": "dev/scripts/svbmc_pool_stack.py",
+    "sha256": "0ec1c3621156d473258a0b58343adeb3ceed32686d7266c5fc35fd88a0d6d5f7"
+  },
+  "settings": {
+    "seed": 0,
+    "M": [
+      2,
+      3,
+      4,
+      5,
+      8,
+      16,
+      32
+    ],
+    "repetitions": [
+      20,
+      20,
+      20,
+      20,
+      20,
+      10,
+      10
+    ],
+    "arms_by_M": [
+      "both",
+      "integrated",
+      "both",
+      "integrated",
+      "both",
+      "both",
+      "integrated"
+    ],
+    "subsets": "disjoint",
+    "max_steps": 500,
+    "n_samples": 20,
+    "lr": 0.1,
+    "version": "all-weights",
+    "n_samples_final": 100,
+    "n_draws": 100000,
+    "n_log_joint": 10000,
+    "n_entropy_ref": 200,
+    "n_entropy_batches": 8,
+    "growth_bound": 0.5,
+    "bootstrap_resamples": 10000,
+    "alpha": 0.05,
+    "kind": "run",
+    "arms": [
+      "integrated",
+      "original"
+    ]
+  },
+  "manifest_sha256": "e7b7ebc0e6459ac7ffeeeda2340cf49006aca6d2e1bac14ec8cebd724c366967",
+  "verification": {
+    "verified": 200,
+    "verify_failed": 0,
+    "failed": 0,
+    "in_flight": 0,
+    "interrupted": 0,
+    "partial": 0,
+    "missing": 0,
+    "stray": 0
+  },
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/svbmc_pool_stack.py": "0ec1c3621156d473258a0b58343adeb3ceed32686d7266c5fc35fd88a0d6d5f7",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/svbmc_pool_run.py": "b4f266b943a9746855835567439b979a92ddbc5ea588a5c31a4eaac7168e771b",
+        "dev/scripts/svbmc_pool_io.py": "4a3e44f50da1fc8418942f0b8e2e9d19a92a3f3f8c286519e65e3535706013e2",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608",
+        "dev/experiments/svbmc_pool/baseline_environment.json": "8b781c681db4b9e501af61b9f287b3729459381e7205d2d9c507395171b5912b"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": "2.14.0+cpu"
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "openmp",
+          "internal_api": "openmp",
+          "prefix": "libgomp",
+          "version": null,
+          "num_threads": 1,
+          "threading_layer": null,
+          "architecture": null,
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/lib/libgomp.so.1"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          51,
+          115
+        ],
+        "physical_cores": [
+          "1:19"
+        ],
+        "core_threads": {
+          "1:19": [
+            51,
+            115
+          ]
+        },
+        "job_cpuset": [
+          51,
+          115
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2367727",
+        "array_job_id": null,
+        "array_task_id": null,
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "baseline": {
+    "record": "dev/experiments/svbmc_pool/baseline_environment.json",
+    "commit": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
+    "version": "0.1.1",
+    "files_sha256_committed": {
+      "__init__.py": "09a7f47828ae6614d667d33fde6219e654c4776ebb7589c3c3cff6943975bcad",
+      "svbmc.py": "347fdb2b6f00bd54da00d40249e6749c936f823091bae4ee89161dcb68f86fd3",
+      "targets.py": "b7a18a801682787f7661253cfd2ac8b13cd9b1b2df28726917f7d6e3b1dea51d",
+      "utils.py": "2863dad06ddb13ab9b924b740a98fb7ce3fbd6f18fe1428eff35ff05185b8fb4"
+    },
+    "torch_version": "2.14.0+cpu",
+    "verification": {
+      "record": "dev/experiments/svbmc_pool/baseline_environment.json",
+      "checkout": "$BASELINE_DIR",
+      "commit": "13a78f6c4a3ffe9c4557fee4f4b8f67c98b29e01",
+      "clean": true,
+      "files_sha256_committed": {
+        "__init__.py": "09a7f47828ae6614d667d33fde6219e654c4776ebb7589c3c3cff6943975bcad",
+        "svbmc.py": "347fdb2b6f00bd54da00d40249e6749c936f823091bae4ee89161dcb68f86fd3",
+        "targets.py": "b7a18a801682787f7661253cfd2ac8b13cd9b1b2df28726917f7d6e3b1dea51d",
+        "utils.py": "2863dad06ddb13ab9b924b740a98fb7ce3fbd6f18fe1428eff35ff05185b8fb4"
+      },
+      "torch_version": "2.14.0+cpu",
+      "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+      "verified": "2026-10-06T00:46:04+0300"
+    }
+  },
+  "gpyreg_source": "$PYVBMC_GPYREG_SOURCE",
+  "pools": [
+    {
+      "directory": "$CAMPAIGN_PARENT/pools_arm3",
+      "manifest_sha256": "9e434a74986bde699b677a1e5703a0bf546338f0526268e6d42bcde48e5453e5",
+      "identity": {
+        "contract": 1,
+        "source": {
+          "trees": {
+            "harness": {
+              "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+              "clean": true
+            },
+            "gpyreg": {
+              "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+              "clean": true
+            }
+          },
+          "files": {
+            "dev/scripts/svbmc_pool_run.py": "b4f266b943a9746855835567439b979a92ddbc5ea588a5c31a4eaac7168e771b",
+            "dev/scripts/svbmc_pool_io.py": "4a3e44f50da1fc8418942f0b8e2e9d19a92a3f3f8c286519e65e3535706013e2",
+            "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+            "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+            "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+            "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+          },
+          "versions": {
+            "python": "3.12.14",
+            "numpy": "2.5.2",
+            "scipy": "1.18.1",
+            "cma": "4.4.4",
+            "torch": null
+          }
+        },
+        "imports": {
+          "trees": {
+            "harness": {
+              "path": "$HARNESS_TREE",
+              "dirty": []
+            },
+            "gpyreg": {
+              "path": "$PYVBMC_GPYREG_SOURCE",
+              "dirty": []
+            }
+          },
+          "modules": {
+            "pyvbmc": "$HARNESS_TREE/pyvbmc",
+            "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+          },
+          "installed_metadata_versions": {
+            "pyvbmc": null,
+            "gpyreg": null
+          }
+        },
+        "host": {
+          "hostname": "login",
+          "platform": "Linux x86_64",
+          "executable": "$CAMPAIGN_ENV/bin/python",
+          "cpu_model": "AMD EPYC 7452 32-Core Processor",
+          "node_features": null,
+          "blas": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "prefix": "libscipy_openblas",
+              "version": "0.3.34.0.0",
+              "num_threads": 1,
+              "threading_layer": "pthreads",
+              "architecture": "Haswell",
+              "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "prefix": "libscipy_openblas",
+              "version": "0.3.31.dev",
+              "num_threads": 1,
+              "threading_layer": "pthreads",
+              "architecture": "Haswell",
+              "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+            }
+          ],
+          "cpu_affinity": {
+            "cpus": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "physical_cores": [
+              "0:0",
+              "0:1",
+              "0:2",
+              "0:3"
+            ],
+            "core_threads": {
+              "0:0": [
+                0
+              ],
+              "0:1": [
+                1
+              ],
+              "0:2": [
+                2
+              ],
+              "0:3": [
+                3
+              ]
+            },
+            "job_cpuset": null
+          },
+          "threads": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1"
+          },
+          "slurm": {
+            "job_id": null,
+            "array_job_id": null,
+            "array_task_id": null,
+            "restart_count": null,
+            "node": null,
+            "partition": null,
+            "cpus_per_task": null
+          }
+        }
+      },
+      "gpyreg_source": "$PYVBMC_GPYREG_SOURCE",
+      "gpyreg_commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+      "options": {
+        "display": "off",
+        "plot": false,
+        "print_iteration_header": false,
+        "performance_calibration": "off"
+      },
+      "selection": {
+        "path": "$CAMPAIGN_PARENT/pools_arm3/selection.json",
+        "generated": "2026-10-05 21:40:58",
+        "conditions": {
+          "multisensory_s1_D6_noise3_svbmc": "selection.json",
+          "multisensory_s1_D6_noise1.3_svbmc": "selection.json",
+          "rosenbrock_D2_noise3_svbmc": "selection.json",
+          "gmm_D2_noise3_svbmc": "selection.json",
+          "ring_D2_noise3_svbmc": "selection.json",
+          "student_D8_noise3_svbmc": "selection.json",
+          "gmm_D2_svbmc": "selection.json",
+          "multisensory_s1_D6_svbmc": "selection.json"
+        }
+      },
+      "selection_sha256": "0444b19c35e5a31194b84e0da995dbaddba63d63dc617eeafab126b1c9db29c2",
+      "verification": {
+        "verification_sha256": "902ebc01d0116bd2cfcdc351ecf08cdca2c8e04cf1957ab7f26c930f3e9ff473",
+        "verification_generated": "2026-10-05T21:40:23+0000",
+        "verification_counts": {
+          "verified": 2930,
+          "verify_failed": 0,
+          "failed": 0,
+          "in_flight": 0,
+          "interrupted": 0,
+          "partial": 0,
+          "missing": 0,
+          "stray": 0
+        },
+        "target_override": null
+      }
+    }
+  ],
+  "fixtures": [],
+  "tasks": {
+    "multisensory_s1_D6_noise3_svbmc/M2": {
+      "elapsed_seconds": 160.39868426322937,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367217",
+        "array_task": "1"
+      },
+      "warm_up_seconds": {
+        "integrated": 8.967893118970096,
+        "original": 4.014723466942087
+      },
+      "peak_rss_bytes": {
+        "harness": 815063040,
+        "original_arm": 788312064
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 788312064
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M3": {
+      "elapsed_seconds": 84.71378660202026,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "2"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.104388834908605
+      },
+      "peak_rss_bytes": {
+        "harness": 826150912,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M4": {
+      "elapsed_seconds": 428.61986923217773,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "3"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.431411855854094,
+        "original": 4.364794207038358
+      },
+      "peak_rss_bytes": {
+        "harness": 837001216,
+        "original_arm": 814518272
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814518272
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M5": {
+      "elapsed_seconds": 166.5890724658966,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "4"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7792719050776213
+      },
+      "peak_rss_bytes": {
+        "harness": 826048512,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M8": {
+      "elapsed_seconds": 1503.310447216034,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "5"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.3688001988921314,
+        "original": 4.166149792028591
+      },
+      "peak_rss_bytes": {
+        "harness": 853204992,
+        "original_arm": 867418112
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 867418112
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r0": {
+      "elapsed_seconds": 278.6464374065399,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "6"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.279313819017261,
+        "original": 4.37728858506307
+      },
+      "peak_rss_bytes": {
+        "harness": 1033728000,
+        "original_arm": 812965888
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812965888
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r1": {
+      "elapsed_seconds": 363.4818797111511,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "7"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.0247667310759425,
+        "original": 4.147032669046894
+      },
+      "peak_rss_bytes": {
+        "harness": 1036316672,
+        "original_arm": 812834816
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812834816
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r2": {
+      "elapsed_seconds": 395.37152218818665,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "8"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.8504169969819486,
+        "original": 3.9923477328848094
+      },
+      "peak_rss_bytes": {
+        "harness": 1052037120,
+        "original_arm": 813006848
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813006848
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r3": {
+      "elapsed_seconds": 369.6080596446991,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "9"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.533914037980139,
+        "original": 4.837123906938359
+      },
+      "peak_rss_bytes": {
+        "harness": 1031708672,
+        "original_arm": 812556288
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812556288
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r4": {
+      "elapsed_seconds": 320.12782621383667,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "10"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.507909575011581,
+        "original": 4.2871533669531345
+      },
+      "peak_rss_bytes": {
+        "harness": 1033089024,
+        "original_arm": 813318144
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813318144
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r5": {
+      "elapsed_seconds": 491.9407217502594,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "11"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.956632083980367,
+        "original": 4.759642268065363
+      },
+      "peak_rss_bytes": {
+        "harness": 812634112,
+        "original_arm": 813006848
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813006848
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r6": {
+      "elapsed_seconds": 306.3530035018921,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "12"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.991237110923976,
+        "original": 4.840906728059053
+      },
+      "peak_rss_bytes": {
+        "harness": 1034027008,
+        "original_arm": 811642880
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 811642880
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r7": {
+      "elapsed_seconds": 397.4844057559967,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "13"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.972569759935141,
+        "original": 4.856823724927381
+      },
+      "peak_rss_bytes": {
+        "harness": 1056464896,
+        "original_arm": 812732416
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812732416
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r8": {
+      "elapsed_seconds": 392.75958609580994,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "14"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.2520177769474685,
+        "original": 4.86232604412362
+      },
+      "peak_rss_bytes": {
+        "harness": 1032495104,
+        "original_arm": 812072960
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812072960
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M16_r9": {
+      "elapsed_seconds": 485.9151077270508,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "15"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.2886933400295675,
+        "original": 4.845997504191473
+      },
+      "peak_rss_bytes": {
+        "harness": 1054691328,
+        "original_arm": 812711936
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812711936
+      }
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r0": {
+      "elapsed_seconds": 305.9124445915222,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367223",
+        "array_task": "16"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7493821780662984
+      },
+      "peak_rss_bytes": {
+        "harness": 2819063808,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r1": {
+      "elapsed_seconds": 382.7467575073242,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "17"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.716719724005088
+      },
+      "peak_rss_bytes": {
+        "harness": 2818469888,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r2": {
+      "elapsed_seconds": 420.2332806587219,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "18"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7051598760299385
+      },
+      "peak_rss_bytes": {
+        "harness": 2807668736,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r3": {
+      "elapsed_seconds": 408.32122135162354,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "19"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.6581355731468648
+      },
+      "peak_rss_bytes": {
+        "harness": 2790965248,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r4": {
+      "elapsed_seconds": 457.14498233795166,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "20"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.4710832089185715
+      },
+      "peak_rss_bytes": {
+        "harness": 2818560000,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r5": {
+      "elapsed_seconds": 341.41477847099304,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "21"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.277320038992912
+      },
+      "peak_rss_bytes": {
+        "harness": 2795433984,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r6": {
+      "elapsed_seconds": 303.48256278038025,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "22"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.583262003958225
+      },
+      "peak_rss_bytes": {
+        "harness": 2848460800,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r7": {
+      "elapsed_seconds": 428.8160116672516,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "23"
+      },
+      "warm_up_seconds": {
+        "integrated": 7.041760987136513
+      },
+      "peak_rss_bytes": {
+        "harness": 2043961344,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r8": {
+      "elapsed_seconds": 471.9151327610016,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "24"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.0754308379255235
+      },
+      "peak_rss_bytes": {
+        "harness": 2831728640,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise3_svbmc/M32_r9": {
+      "elapsed_seconds": 501.0909471511841,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "25"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.0592068859841675
+      },
+      "peak_rss_bytes": {
+        "harness": 2163707904,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M2": {
+      "elapsed_seconds": 155.40769910812378,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "26"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.9873926017899066,
+        "original": 3.711353302001953
+      },
+      "peak_rss_bytes": {
+        "harness": 798547968,
+        "original_arm": 797814784
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 797814784
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M3": {
+      "elapsed_seconds": 80.03444719314575,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "27"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.202605409780517
+      },
+      "peak_rss_bytes": {
+        "harness": 819212288,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M4": {
+      "elapsed_seconds": 411.10879850387573,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "28"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.267155782086775,
+        "original": 4.466908856993541
+      },
+      "peak_rss_bytes": {
+        "harness": 838897664,
+        "original_arm": 798683136
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 798683136
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M5": {
+      "elapsed_seconds": 142.45734333992004,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "29"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.803957588970661
+      },
+      "peak_rss_bytes": {
+        "harness": 848859136,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M8": {
+      "elapsed_seconds": 1450.2111432552338,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "30"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.008124039974064,
+        "original": 3.9445926879998296
+      },
+      "peak_rss_bytes": {
+        "harness": 855961600,
+        "original_arm": 846966784
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 846966784
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r0": {
+      "elapsed_seconds": 506.74090695381165,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "31"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.389736796030775,
+        "original": 12.014133685035631
+      },
+      "peak_rss_bytes": {
+        "harness": 821870592,
+        "original_arm": 813670400
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813670400
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r1": {
+      "elapsed_seconds": 366.88585805892944,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "32"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.366984860040247,
+        "original": 5.06928545399569
+      },
+      "peak_rss_bytes": {
+        "harness": 1057574912,
+        "original_arm": 813752320
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813752320
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r2": {
+      "elapsed_seconds": 492.66922998428345,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "33"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.243455103831366,
+        "original": 5.037015991052613
+      },
+      "peak_rss_bytes": {
+        "harness": 1032421376,
+        "original_arm": 812609536
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 812609536
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r3": {
+      "elapsed_seconds": 386.07480025291443,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "34"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.331588867818937,
+        "original": 4.968976946081966
+      },
+      "peak_rss_bytes": {
+        "harness": 1037242368,
+        "original_arm": 814268416
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814268416
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r4": {
+      "elapsed_seconds": 436.2885136604309,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "35"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.369247966911644,
+        "original": 5.047927913023159
+      },
+      "peak_rss_bytes": {
+        "harness": 1034141696,
+        "original_arm": 814100480
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814100480
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r5": {
+      "elapsed_seconds": 518.6704878807068,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "36"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.220483713084832,
+        "original": 4.2795634001959115
+      },
+      "peak_rss_bytes": {
+        "harness": 808996864,
+        "original_arm": 814002176
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814002176
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r6": {
+      "elapsed_seconds": 467.337119102478,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "37"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.333168331068009,
+        "original": 4.364400026155636
+      },
+      "peak_rss_bytes": {
+        "harness": 1034887168,
+        "original_arm": 814317568
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814317568
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r7": {
+      "elapsed_seconds": 498.1067326068878,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "38"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.418655538000166,
+        "original": 4.391360583016649
+      },
+      "peak_rss_bytes": {
+        "harness": 1033732096,
+        "original_arm": 813400064
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813400064
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r8": {
+      "elapsed_seconds": 412.1431396007538,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "39"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.242620966164395,
+        "original": 4.275382453110069
+      },
+      "peak_rss_bytes": {
+        "harness": 1034051584,
+        "original_arm": 813293568
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813293568
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M16_r9": {
+      "elapsed_seconds": 401.255491733551,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "40"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7828377159312367,
+        "original": 3.914970568846911
+      },
+      "peak_rss_bytes": {
+        "harness": 1038696448,
+        "original_arm": 814026752
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814026752
+      }
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r0": {
+      "elapsed_seconds": 506.58528757095337,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "41"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.082392567070201
+      },
+      "peak_rss_bytes": {
+        "harness": 2044837888,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r1": {
+      "elapsed_seconds": 563.3433253765106,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "42"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.091005092021078
+      },
+      "peak_rss_bytes": {
+        "harness": 2820579328,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r2": {
+      "elapsed_seconds": 549.1320106983185,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "43"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.201766045996919
+      },
+      "peak_rss_bytes": {
+        "harness": 2796818432,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r3": {
+      "elapsed_seconds": 476.67918825149536,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "44"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.200819021090865
+      },
+      "peak_rss_bytes": {
+        "harness": 2850213888,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r4": {
+      "elapsed_seconds": 540.3294382095337,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "45"
+      },
+      "warm_up_seconds": {
+        "integrated": 6.210846408037469
+      },
+      "peak_rss_bytes": {
+        "harness": 2797445120,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r5": {
+      "elapsed_seconds": 464.27972984313965,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "46"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.031772385817021
+      },
+      "peak_rss_bytes": {
+        "harness": 2810765312,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r6": {
+      "elapsed_seconds": 462.02680253982544,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "47"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.013368387008086
+      },
+      "peak_rss_bytes": {
+        "harness": 2820886528,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r7": {
+      "elapsed_seconds": 438.6429936885834,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "48"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.897903164848685
+      },
+      "peak_rss_bytes": {
+        "harness": 2073604096,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r8": {
+      "elapsed_seconds": 450.3514971733093,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "49"
+      },
+      "warm_up_seconds": {
+        "integrated": 5.039366580080241
+      },
+      "peak_rss_bytes": {
+        "harness": 2804850688,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_noise1.3_svbmc/M32_r9": {
+      "elapsed_seconds": 481.11334562301636,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "50"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.657652709865943
+      },
+      "peak_rss_bytes": {
+        "harness": 2821140480,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M2": {
+      "elapsed_seconds": 58.15794920921326,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "51"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0241353469900787,
+        "original": 1.748775945045054
+      },
+      "peak_rss_bytes": {
+        "harness": 424640512,
+        "original_arm": 395071488
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 395071488
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M3": {
+      "elapsed_seconds": 32.00443649291992,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "52"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8606180709321052
+      },
+      "peak_rss_bytes": {
+        "harness": 476397568,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M4": {
+      "elapsed_seconds": 164.20276713371277,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "53"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.661897405050695,
+        "original": 1.6816071229986846
+      },
+      "peak_rss_bytes": {
+        "harness": 495960064,
+        "original_arm": 450420736
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 450420736
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M5": {
+      "elapsed_seconds": 84.74855828285217,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "54"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7411904470063746
+      },
+      "peak_rss_bytes": {
+        "harness": 580841472,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M8": {
+      "elapsed_seconds": 701.0813581943512,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "55"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6088638149667531,
+        "original": 1.802615154068917
+      },
+      "peak_rss_bytes": {
+        "harness": 713961472,
+        "original_arm": 653004800
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 653004800
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r0": {
+      "elapsed_seconds": 179.1838150024414,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "56"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.739498462062329,
+        "original": 1.70950165996328
+      },
+      "peak_rss_bytes": {
+        "harness": 976134144,
+        "original_arm": 805216256
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805216256
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r1": {
+      "elapsed_seconds": 245.47520184516907,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "57"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7402780121192336,
+        "original": 1.7007186191622168
+      },
+      "peak_rss_bytes": {
+        "harness": 790618112,
+        "original_arm": 806252544
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 806252544
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r2": {
+      "elapsed_seconds": 149.41014885902405,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "58"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7260275140870363,
+        "original": 1.7665868769399822
+      },
+      "peak_rss_bytes": {
+        "harness": 997326848,
+        "original_arm": 804872192
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804872192
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r3": {
+      "elapsed_seconds": 177.60717034339905,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "59"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6925213211216033,
+        "original": 1.6906358019914478
+      },
+      "peak_rss_bytes": {
+        "harness": 976691200,
+        "original_arm": 805830656
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805830656
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r4": {
+      "elapsed_seconds": 184.83525490760803,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "60"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7642190831247717,
+        "original": 1.724424225045368
+      },
+      "peak_rss_bytes": {
+        "harness": 954396672,
+        "original_arm": 806428672
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 806428672
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r5": {
+      "elapsed_seconds": 153.3358132839203,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "61"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7472725030966103,
+        "original": 1.7106982609257102
+      },
+      "peak_rss_bytes": {
+        "harness": 978300928,
+        "original_arm": 805765120
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805765120
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r6": {
+      "elapsed_seconds": 150.63962697982788,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "62"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.149437766056508,
+        "original": 2.0476631878409535
+      },
+      "peak_rss_bytes": {
+        "harness": 764719104,
+        "original_arm": 770060288
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 770060288
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r7": {
+      "elapsed_seconds": 220.781188249588,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "63"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9995223230216652,
+        "original": 1.9334130021743476
+      },
+      "peak_rss_bytes": {
+        "harness": 955371520,
+        "original_arm": 805818368
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805818368
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r8": {
+      "elapsed_seconds": 232.62466859817505,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "64"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.967949930112809,
+        "original": 1.9064586360473186
+      },
+      "peak_rss_bytes": {
+        "harness": 976945152,
+        "original_arm": 806326272
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 806326272
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M16_r9": {
+      "elapsed_seconds": 161.57140040397644,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "65"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9686377209145576,
+        "original": 1.909216633066535
+      },
+      "peak_rss_bytes": {
+        "harness": 776409088,
+        "original_arm": 787357696
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 787357696
+      }
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r0": {
+      "elapsed_seconds": 306.9752194881439,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "66"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8285176190547645
+      },
+      "peak_rss_bytes": {
+        "harness": 2630647808,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r1": {
+      "elapsed_seconds": 459.6250202655792,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "67"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.760509266052395
+      },
+      "peak_rss_bytes": {
+        "harness": 2638999552,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r2": {
+      "elapsed_seconds": 337.29823327064514,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "68"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6746204949449748
+      },
+      "peak_rss_bytes": {
+        "harness": 1950302208,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r3": {
+      "elapsed_seconds": 351.2355647087097,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "69"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.635786188999191
+      },
+      "peak_rss_bytes": {
+        "harness": 2571382784,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r4": {
+      "elapsed_seconds": 360.866943359375,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "70"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.632620596094057
+      },
+      "peak_rss_bytes": {
+        "harness": 2026311680,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r5": {
+      "elapsed_seconds": 391.3394184112549,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "71"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.1056598690338433
+      },
+      "peak_rss_bytes": {
+        "harness": 1987584000,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r6": {
+      "elapsed_seconds": 369.3532762527466,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "72"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.1416951671708375
+      },
+      "peak_rss_bytes": {
+        "harness": 2636578816,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r7": {
+      "elapsed_seconds": 349.7058231830597,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "73"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9715829289052635
+      },
+      "peak_rss_bytes": {
+        "harness": 1974845440,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r8": {
+      "elapsed_seconds": 369.89616537094116,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "74"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9700144289527088
+      },
+      "peak_rss_bytes": {
+        "harness": 2628755456,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "rosenbrock_D2_noise3_svbmc/M32_r9": {
+      "elapsed_seconds": 401.78375720977783,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "75"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9811403339263052
+      },
+      "peak_rss_bytes": {
+        "harness": 2637152256,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M2": {
+      "elapsed_seconds": 47.14034128189087,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "76"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0424284560140222,
+        "original": 1.7632463457994163
+      },
+      "peak_rss_bytes": {
+        "harness": 426287104,
+        "original_arm": 388988928
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 388988928
+      }
+    },
+    "gmm_D2_noise3_svbmc/M3": {
+      "elapsed_seconds": 26.892203092575073,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "77"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.728436425095424
+      },
+      "peak_rss_bytes": {
+        "harness": 477757440,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M4": {
+      "elapsed_seconds": 123.47950959205627,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "78"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7281275151763111,
+        "original": 1.648697517812252
+      },
+      "peak_rss_bytes": {
+        "harness": 504123392,
+        "original_arm": 435503104
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 435503104
+      }
+    },
+    "gmm_D2_noise3_svbmc/M5": {
+      "elapsed_seconds": 70.45777893066406,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "79"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7536916020326316
+      },
+      "peak_rss_bytes": {
+        "harness": 581390336,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M8": {
+      "elapsed_seconds": 569.5206189155579,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "80"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.836142972111702,
+        "original": 1.7234271988272667
+      },
+      "peak_rss_bytes": {
+        "harness": 639893504,
+        "original_arm": 634138624
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 634138624
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r0": {
+      "elapsed_seconds": 149.370778799057,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "81"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.955339612904936,
+        "original": 1.905766034964472
+      },
+      "peak_rss_bytes": {
+        "harness": 977833984,
+        "original_arm": 804106240
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804106240
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r1": {
+      "elapsed_seconds": 144.67403960227966,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "82"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.9465620678383857,
+        "original": 1.906997102079913
+      },
+      "peak_rss_bytes": {
+        "harness": 977997824,
+        "original_arm": 804487168
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804487168
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r2": {
+      "elapsed_seconds": 144.1401560306549,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "83"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.9586375919170678,
+        "original": 1.8951629500370473
+      },
+      "peak_rss_bytes": {
+        "harness": 976285696,
+        "original_arm": 803500032
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 803500032
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r3": {
+      "elapsed_seconds": 155.25013661384583,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "84"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.948217859957367,
+        "original": 1.9057659751269966
+      },
+      "peak_rss_bytes": {
+        "harness": 976629760,
+        "original_arm": 804605952
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804605952
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r4": {
+      "elapsed_seconds": 168.53958868980408,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "85"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.9629054591059685,
+        "original": 1.8897802650462836
+      },
+      "peak_rss_bytes": {
+        "harness": 996835328,
+        "original_arm": 803655680
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 803655680
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r5": {
+      "elapsed_seconds": 133.68187308311462,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "86"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.955696841934696,
+        "original": 1.897609252948314
+      },
+      "peak_rss_bytes": {
+        "harness": 996753408,
+        "original_arm": 803336192
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 803336192
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r6": {
+      "elapsed_seconds": 140.87821674346924,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "87"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.953748692991212,
+        "original": 1.9003243600018322
+      },
+      "peak_rss_bytes": {
+        "harness": 975712256,
+        "original_arm": 805154816
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805154816
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r7": {
+      "elapsed_seconds": 149.72264528274536,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "88"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.962351992027834,
+        "original": 1.907722390955314
+      },
+      "peak_rss_bytes": {
+        "harness": 952430592,
+        "original_arm": 804278272
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804278272
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r8": {
+      "elapsed_seconds": 160.1973044872284,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "89"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6981094379443675,
+        "original": 1.6331110699102283
+      },
+      "peak_rss_bytes": {
+        "harness": 999407616,
+        "original_arm": 804839424
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804839424
+      }
+    },
+    "gmm_D2_noise3_svbmc/M16_r9": {
+      "elapsed_seconds": 135.49935626983643,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "90"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.956390941981226,
+        "original": 1.9217447920236737
+      },
+      "peak_rss_bytes": {
+        "harness": 976986112,
+        "original_arm": 804691968
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804691968
+      }
+    },
+    "gmm_D2_noise3_svbmc/M32_r0": {
+      "elapsed_seconds": 354.87100744247437,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "91"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9970871568657458
+      },
+      "peak_rss_bytes": {
+        "harness": 2614968320,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r1": {
+      "elapsed_seconds": 279.5838816165924,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "92"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9497027539182454
+      },
+      "peak_rss_bytes": {
+        "harness": 2639298560,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r2": {
+      "elapsed_seconds": 334.7239944934845,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "93"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7629049068782479
+      },
+      "peak_rss_bytes": {
+        "harness": 2637082624,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r3": {
+      "elapsed_seconds": 335.70503306388855,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "94"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7626880297902972
+      },
+      "peak_rss_bytes": {
+        "harness": 2637287424,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r4": {
+      "elapsed_seconds": 307.87223410606384,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "95"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9809817259665579
+      },
+      "peak_rss_bytes": {
+        "harness": 2640609280,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r5": {
+      "elapsed_seconds": 317.83310770988464,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "96"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9011829919181764
+      },
+      "peak_rss_bytes": {
+        "harness": 2652729344,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r6": {
+      "elapsed_seconds": 303.6613438129425,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "97"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9018542908597738
+      },
+      "peak_rss_bytes": {
+        "harness": 2638991360,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r7": {
+      "elapsed_seconds": 269.8987638950348,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "98"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.909939567092806
+      },
+      "peak_rss_bytes": {
+        "harness": 2637848576,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r8": {
+      "elapsed_seconds": 301.51435375213623,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "99"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9264851820189506
+      },
+      "peak_rss_bytes": {
+        "harness": 2636771328,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_noise3_svbmc/M32_r9": {
+      "elapsed_seconds": 267.39483642578125,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "100"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8902940009720623
+      },
+      "peak_rss_bytes": {
+        "harness": 2637369344,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M2": {
+      "elapsed_seconds": 49.32486033439636,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "101"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0271202211733907,
+        "original": 1.7233582218177617
+      },
+      "peak_rss_bytes": {
+        "harness": 425766912,
+        "original_arm": 391208960
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 391208960
+      }
+    },
+    "ring_D2_noise3_svbmc/M3": {
+      "elapsed_seconds": 30.671903371810913,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "102"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.742002208949998
+      },
+      "peak_rss_bytes": {
+        "harness": 484155392,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M4": {
+      "elapsed_seconds": 140.6203899383545,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "103"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6584122439380735,
+        "original": 1.606723580043763
+      },
+      "peak_rss_bytes": {
+        "harness": 509251584,
+        "original_arm": 430985216
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 430985216
+      }
+    },
+    "ring_D2_noise3_svbmc/M5": {
+      "elapsed_seconds": 82.69026923179626,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "104"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.762657301966101
+      },
+      "peak_rss_bytes": {
+        "harness": 539467776,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M8": {
+      "elapsed_seconds": 639.6209199428558,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "105"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0071251180488616,
+        "original": 1.948509471025318
+      },
+      "peak_rss_bytes": {
+        "harness": 653574144,
+        "original_arm": 633577472
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 633577472
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r0": {
+      "elapsed_seconds": 183.12995624542236,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "106"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9221715878229588,
+        "original": 1.9148095049895346
+      },
+      "peak_rss_bytes": {
+        "harness": 976400384,
+        "original_arm": 804945920
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804945920
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r1": {
+      "elapsed_seconds": 174.35455989837646,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "107"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.038496319903061,
+        "original": 1.8176576499827206
+      },
+      "peak_rss_bytes": {
+        "harness": 733134848,
+        "original_arm": 745336832
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 745336832
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r2": {
+      "elapsed_seconds": 188.20581030845642,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "108"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8867113990709186,
+        "original": 1.828925051027909
+      },
+      "peak_rss_bytes": {
+        "harness": 976310272,
+        "original_arm": 805093376
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805093376
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r3": {
+      "elapsed_seconds": 188.06517791748047,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "109"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8602814171463251,
+        "original": 1.7692680079489946
+      },
+      "peak_rss_bytes": {
+        "harness": 974721024,
+        "original_arm": 802844672
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 802844672
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r4": {
+      "elapsed_seconds": 147.44104051589966,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "110"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8068973540794104,
+        "original": 1.7436969841364771
+      },
+      "peak_rss_bytes": {
+        "harness": 928923648,
+        "original_arm": 778678272
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 778678272
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r5": {
+      "elapsed_seconds": 173.74404072761536,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "111"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.4405264290980995,
+        "original": 2.2285137770231813
+      },
+      "peak_rss_bytes": {
+        "harness": 819441664,
+        "original_arm": 785170432
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 785170432
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r6": {
+      "elapsed_seconds": 185.23755025863647,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "112"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.95932108303532,
+        "original": 1.9615140999667346
+      },
+      "peak_rss_bytes": {
+        "harness": 998465536,
+        "original_arm": 804626432
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804626432
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r7": {
+      "elapsed_seconds": 198.06399011611938,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "113"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.3013862029183656,
+        "original": 2.2151785851456225
+      },
+      "peak_rss_bytes": {
+        "harness": 777752576,
+        "original_arm": 781209600
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 781209600
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r8": {
+      "elapsed_seconds": 177.96167588233948,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "114"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.786102328915149,
+        "original": 2.653746207943186
+      },
+      "peak_rss_bytes": {
+        "harness": 972746752,
+        "original_arm": 778240000
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 778240000
+      }
+    },
+    "ring_D2_noise3_svbmc/M16_r9": {
+      "elapsed_seconds": 161.89167189598083,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "115"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.078236815985292,
+        "original": 1.8692777848336846
+      },
+      "peak_rss_bytes": {
+        "harness": 750583808,
+        "original_arm": 763637760
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 763637760
+      }
+    },
+    "ring_D2_noise3_svbmc/M32_r0": {
+      "elapsed_seconds": 270.74532532691956,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "116"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.879606967093423
+      },
+      "peak_rss_bytes": {
+        "harness": 2615820288,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r1": {
+      "elapsed_seconds": 359.3090286254883,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "117"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8563494409900159
+      },
+      "peak_rss_bytes": {
+        "harness": 2636599296,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r2": {
+      "elapsed_seconds": 304.7609210014343,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "118"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8553643240593374
+      },
+      "peak_rss_bytes": {
+        "harness": 1839828992,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r3": {
+      "elapsed_seconds": 307.0718960762024,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "119"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6681154819671065
+      },
+      "peak_rss_bytes": {
+        "harness": 2590068736,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r4": {
+      "elapsed_seconds": 321.11019372940063,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "120"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6675232509151101
+      },
+      "peak_rss_bytes": {
+        "harness": 1803436032,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r5": {
+      "elapsed_seconds": 278.8921182155609,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "121"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0511928719934076
+      },
+      "peak_rss_bytes": {
+        "harness": 2610290688,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r6": {
+      "elapsed_seconds": 209.2810595035553,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "122"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.1501601091586053
+      },
+      "peak_rss_bytes": {
+        "harness": 1945341952,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r7": {
+      "elapsed_seconds": 229.250736951828,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "123"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.991274009924382
+      },
+      "peak_rss_bytes": {
+        "harness": 1983700992,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r8": {
+      "elapsed_seconds": 292.0173370838165,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "124"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.175380788045004
+      },
+      "peak_rss_bytes": {
+        "harness": 2614591488,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "ring_D2_noise3_svbmc/M32_r9": {
+      "elapsed_seconds": 299.8896551132202,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "125"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.1647476989310235
+      },
+      "peak_rss_bytes": {
+        "harness": 1976266752,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M2": {
+      "elapsed_seconds": 83.58112668991089,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "126"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.759175651939586,
+        "original": 2.431010568048805
+      },
+      "peak_rss_bytes": {
+        "harness": 470892544,
+        "original_arm": 430219264
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 430219264
+      }
+    },
+    "student_D8_noise3_svbmc/M3": {
+      "elapsed_seconds": 46.29541015625,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "127"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.549613314913586
+      },
+      "peak_rss_bytes": {
+        "harness": 525996032,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M4": {
+      "elapsed_seconds": 215.5244436264038,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "128"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.589872576063499,
+        "original": 2.5995240630581975
+      },
+      "peak_rss_bytes": {
+        "harness": 559693824,
+        "original_arm": 456409088
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 456409088
+      }
+    },
+    "student_D8_noise3_svbmc/M5": {
+      "elapsed_seconds": 116.51063108444214,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "129"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.631168609019369
+      },
+      "peak_rss_bytes": {
+        "harness": 619335680,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M8": {
+      "elapsed_seconds": 784.5000054836273,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "130"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.67272483301349,
+        "original": 2.4649942060932517
+      },
+      "peak_rss_bytes": {
+        "harness": 710516736,
+        "original_arm": 677584896
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 677584896
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r0": {
+      "elapsed_seconds": 244.19355654716492,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "131"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.8575843959115446,
+        "original": 2.7053974010050297
+      },
+      "peak_rss_bytes": {
+        "harness": 868028416,
+        "original_arm": 829562880
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829562880
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r1": {
+      "elapsed_seconds": 231.9348418712616,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "132"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.898003245005384,
+        "original": 2.717942228075117
+      },
+      "peak_rss_bytes": {
+        "harness": 1098166272,
+        "original_arm": 829964288
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829964288
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r2": {
+      "elapsed_seconds": 276.84414052963257,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "133"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.839180149137974,
+        "original": 2.692812016000971
+      },
+      "peak_rss_bytes": {
+        "harness": 1097723904,
+        "original_arm": 828973056
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 828973056
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r3": {
+      "elapsed_seconds": 191.99618816375732,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "134"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.9485953401308507,
+        "original": 2.961578810820356
+      },
+      "peak_rss_bytes": {
+        "harness": 1096347648,
+        "original_arm": 828731392
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 828731392
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r4": {
+      "elapsed_seconds": 250.16757011413574,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "135"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.8472393779084086,
+        "original": 2.763037163997069
+      },
+      "peak_rss_bytes": {
+        "harness": 1076678656,
+        "original_arm": 828760064
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 828760064
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r5": {
+      "elapsed_seconds": 726.5359673500061,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "136"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.8499869850929826,
+        "original": 2.7882748271804303
+      },
+      "peak_rss_bytes": {
+        "harness": 865427456,
+        "original_arm": 829906944
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829906944
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r6": {
+      "elapsed_seconds": 203.39599132537842,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "137"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.8347748308442533,
+        "original": 2.770895334891975
+      },
+      "peak_rss_bytes": {
+        "harness": 1082175488,
+        "original_arm": 829689856
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829689856
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r7": {
+      "elapsed_seconds": 216.0745074748993,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "138"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.971219978062436,
+        "original": 2.8657028949819505
+      },
+      "peak_rss_bytes": {
+        "harness": 1074753536,
+        "original_arm": 829980672
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829980672
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r8": {
+      "elapsed_seconds": 218.6954505443573,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "139"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.0086653060279787,
+        "original": 2.931535037001595
+      },
+      "peak_rss_bytes": {
+        "harness": 1116868608,
+        "original_arm": 830005248
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 830005248
+      }
+    },
+    "student_D8_noise3_svbmc/M16_r9": {
+      "elapsed_seconds": 158.451007604599,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "140"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.641765163047239,
+        "original": 2.5652286370750517
+      },
+      "peak_rss_bytes": {
+        "harness": 1117982720,
+        "original_arm": 829255680
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 829255680
+      }
+    },
+    "student_D8_noise3_svbmc/M32_r0": {
+      "elapsed_seconds": 364.7034692764282,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "141"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.7237228869926184
+      },
+      "peak_rss_bytes": {
+        "harness": 2932191232,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r1": {
+      "elapsed_seconds": 422.2329194545746,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "142"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.7234436231665313
+      },
+      "peak_rss_bytes": {
+        "harness": 2946793472,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r2": {
+      "elapsed_seconds": 338.9734363555908,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "143"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.7095263567753136
+      },
+      "peak_rss_bytes": {
+        "harness": 2900832256,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r3": {
+      "elapsed_seconds": 420.7272152900696,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "144"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.060546624008566
+      },
+      "peak_rss_bytes": {
+        "harness": 2942992384,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r4": {
+      "elapsed_seconds": 367.3862159252167,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "145"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.074853528058156
+      },
+      "peak_rss_bytes": {
+        "harness": 2094448640,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r5": {
+      "elapsed_seconds": 473.13549995422363,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "146"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.059149463893846
+      },
+      "peak_rss_bytes": {
+        "harness": 2945867776,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r6": {
+      "elapsed_seconds": 393.8795177936554,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "147"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.056908902013674
+      },
+      "peak_rss_bytes": {
+        "harness": 2101743616,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r7": {
+      "elapsed_seconds": 504.9440886974335,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "148"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.05868490296416
+      },
+      "peak_rss_bytes": {
+        "harness": 2922389504,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r8": {
+      "elapsed_seconds": 411.08242177963257,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "149"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.063845391152427
+      },
+      "peak_rss_bytes": {
+        "harness": 2095112192,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "student_D8_noise3_svbmc/M32_r9": {
+      "elapsed_seconds": 416.7958402633667,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "150"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.066668045939878
+      },
+      "peak_rss_bytes": {
+        "harness": 2936815616,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M2": {
+      "elapsed_seconds": 45.08555030822754,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "151"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0744215389713645,
+        "original": 1.7611704498995095
+      },
+      "peak_rss_bytes": {
+        "harness": 427933696,
+        "original_arm": 392101888
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 392101888
+      }
+    },
+    "gmm_D2_svbmc/M3": {
+      "elapsed_seconds": 25.880945682525635,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "152"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6484484111424536
+      },
+      "peak_rss_bytes": {
+        "harness": 481427456,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M4": {
+      "elapsed_seconds": 115.00080299377441,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "153"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7420784221030772,
+        "original": 1.7370947969611734
+      },
+      "peak_rss_bytes": {
+        "harness": 518647808,
+        "original_arm": 448110592
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 448110592
+      }
+    },
+    "gmm_D2_svbmc/M5": {
+      "elapsed_seconds": 60.73764657974243,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "154"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.7687707669101655
+      },
+      "peak_rss_bytes": {
+        "harness": 579039232,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M8": {
+      "elapsed_seconds": 418.1169214248657,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "155"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8393391699064523,
+        "original": 1.7670647748745978
+      },
+      "peak_rss_bytes": {
+        "harness": 663392256,
+        "original_arm": 682455040
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 682455040
+      }
+    },
+    "gmm_D2_svbmc/M16_r0": {
+      "elapsed_seconds": 76.51373386383057,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "156"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8038995149545372,
+        "original": 1.7673196669202298
+      },
+      "peak_rss_bytes": {
+        "harness": 955338752,
+        "original_arm": 805249024
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805249024
+      }
+    },
+    "gmm_D2_svbmc/M16_r1": {
+      "elapsed_seconds": 75.94608783721924,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "157"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.834120630985126,
+        "original": 1.7673345350194722
+      },
+      "peak_rss_bytes": {
+        "harness": 953507840,
+        "original_arm": 805466112
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805466112
+      }
+    },
+    "gmm_D2_svbmc/M16_r2": {
+      "elapsed_seconds": 62.41043019294739,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "158"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8802360869012773,
+        "original": 1.8253675170708448
+      },
+      "peak_rss_bytes": {
+        "harness": 953958400,
+        "original_arm": 805117952
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805117952
+      }
+    },
+    "gmm_D2_svbmc/M16_r3": {
+      "elapsed_seconds": 74.44707298278809,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "159"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.087277595885098,
+        "original": 1.9991291149053723
+      },
+      "peak_rss_bytes": {
+        "harness": 798470144,
+        "original_arm": 805728256
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805728256
+      }
+    },
+    "gmm_D2_svbmc/M16_r4": {
+      "elapsed_seconds": 136.43350672721863,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "160"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.2014513581525534,
+        "original": 2.1965567299630493
+      },
+      "peak_rss_bytes": {
+        "harness": 976097280,
+        "original_arm": 805990400
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805990400
+      }
+    },
+    "gmm_D2_svbmc/M16_r5": {
+      "elapsed_seconds": 66.99003767967224,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "161"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.878908202983439,
+        "original": 1.8647341758478433
+      },
+      "peak_rss_bytes": {
+        "harness": 975323136,
+        "original_arm": 803315712
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 803315712
+      }
+    },
+    "gmm_D2_svbmc/M16_r6": {
+      "elapsed_seconds": 92.05913186073303,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "162"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.9534698110073805,
+        "original": 1.8095607890281826
+      },
+      "peak_rss_bytes": {
+        "harness": 976486400,
+        "original_arm": 804880384
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 804880384
+      }
+    },
+    "gmm_D2_svbmc/M16_r7": {
+      "elapsed_seconds": 76.85662031173706,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "163"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6893989681266248,
+        "original": 1.7429914069361985
+      },
+      "peak_rss_bytes": {
+        "harness": 976650240,
+        "original_arm": 805429248
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805429248
+      }
+    },
+    "gmm_D2_svbmc/M16_r8": {
+      "elapsed_seconds": 78.47586989402771,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "164"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.695465014083311,
+        "original": 1.7594588198699057
+      },
+      "peak_rss_bytes": {
+        "harness": 955375616,
+        "original_arm": 805027840
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 805027840
+      }
+    },
+    "gmm_D2_svbmc/M16_r9": {
+      "elapsed_seconds": 71.11796021461487,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "165"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.6913186749443412,
+        "original": 1.757932340959087
+      },
+      "peak_rss_bytes": {
+        "harness": 977047552,
+        "original_arm": 803405824
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 803405824
+      }
+    },
+    "gmm_D2_svbmc/M32_r0": {
+      "elapsed_seconds": 107.37226247787476,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "166"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.994709804886952
+      },
+      "peak_rss_bytes": {
+        "harness": 2639687680,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r1": {
+      "elapsed_seconds": 134.99136877059937,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "167"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.172290679998696
+      },
+      "peak_rss_bytes": {
+        "harness": 1953214464,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r2": {
+      "elapsed_seconds": 143.47237396240234,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "168"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.08019264601171
+      },
+      "peak_rss_bytes": {
+        "harness": 1946402816,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r3": {
+      "elapsed_seconds": 107.39534115791321,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "169"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.0950523579958826
+      },
+      "peak_rss_bytes": {
+        "harness": 2653954048,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r4": {
+      "elapsed_seconds": 120.47580027580261,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "170"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.295212102122605
+      },
+      "peak_rss_bytes": {
+        "harness": 2638688256,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r5": {
+      "elapsed_seconds": 103.41786527633667,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "171"
+      },
+      "warm_up_seconds": {
+        "integrated": 2.2691222289577127
+      },
+      "peak_rss_bytes": {
+        "harness": 2614575104,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r6": {
+      "elapsed_seconds": 162.3215184211731,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "172"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8672416110057384
+      },
+      "peak_rss_bytes": {
+        "harness": 2615115776,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r7": {
+      "elapsed_seconds": 129.5323657989502,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "173"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8389171219896525
+      },
+      "peak_rss_bytes": {
+        "harness": 2639822848,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r8": {
+      "elapsed_seconds": 125.79662823677063,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "174"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.8433394508901983
+      },
+      "peak_rss_bytes": {
+        "harness": 2654687232,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "gmm_D2_svbmc/M32_r9": {
+      "elapsed_seconds": 126.16129660606384,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "175"
+      },
+      "warm_up_seconds": {
+        "integrated": 1.83272121893242
+      },
+      "peak_rss_bytes": {
+        "harness": 2616684544,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M2": {
+      "elapsed_seconds": 137.8216598033905,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367274",
+        "array_task": "176"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.013734357897192,
+        "original": 3.7055665999650955
+      },
+      "peak_rss_bytes": {
+        "harness": 799035392,
+        "original_arm": 799973376
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 799973376
+      }
+    },
+    "multisensory_s1_D6_svbmc/M3": {
+      "elapsed_seconds": 73.58988451957703,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367286",
+        "array_task": "177"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7091613381635398
+      },
+      "peak_rss_bytes": {
+        "harness": 821764096,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M4": {
+      "elapsed_seconds": 320.2407736778259,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367295",
+        "array_task": "178"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.56418169895187,
+        "original": 3.6615518550388515
+      },
+      "peak_rss_bytes": {
+        "harness": 836304896,
+        "original_arm": 798990336
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 798990336
+      }
+    },
+    "multisensory_s1_D6_svbmc/M5": {
+      "elapsed_seconds": 124.80668759346008,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367307",
+        "array_task": "179"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.7162326520774513
+      },
+      "peak_rss_bytes": {
+        "harness": 868319232,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M8": {
+      "elapsed_seconds": 978.121285200119,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367316",
+        "array_task": "180"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.100068283965811,
+        "original": 4.048711160896346
+      },
+      "peak_rss_bytes": {
+        "harness": 875470848,
+        "original_arm": 822046720
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 822046720
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r0": {
+      "elapsed_seconds": 431.0364809036255,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "181"
+      },
+      "warm_up_seconds": {
+        "integrated": 3.820065508130938,
+        "original": 4.506602907087654
+      },
+      "peak_rss_bytes": {
+        "harness": 809275392,
+        "original_arm": 814063616
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 814063616
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r1": {
+      "elapsed_seconds": 343.5798251628876,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "182"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.818277728045359,
+        "original": 4.7566127649042755
+      },
+      "peak_rss_bytes": {
+        "harness": 1096134656,
+        "original_arm": 788639744
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 788639744
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r2": {
+      "elapsed_seconds": 349.8424072265625,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "183"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.815926834009588,
+        "original": 4.703992386814207
+      },
+      "peak_rss_bytes": {
+        "harness": 1031811072,
+        "original_arm": 787865600
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 787865600
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r3": {
+      "elapsed_seconds": 326.0480854511261,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "184"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.801052144961432,
+        "original": 4.770675732055679
+      },
+      "peak_rss_bytes": {
+        "harness": 1030561792,
+        "original_arm": 786083840
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 786083840
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r4": {
+      "elapsed_seconds": 163.80154538154602,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "185"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.8575358300004154,
+        "original": 4.791579317068681
+      },
+      "peak_rss_bytes": {
+        "harness": 1008312320,
+        "original_arm": 788561920
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 788561920
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r5": {
+      "elapsed_seconds": 202.4395191669464,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "186"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.240759402979165,
+        "original": 4.3592686471529305
+      },
+      "peak_rss_bytes": {
+        "harness": 1008300032,
+        "original_arm": 787456000
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 787456000
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r6": {
+      "elapsed_seconds": 253.68970274925232,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "187"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.263568900991231,
+        "original": 4.485212225001305
+      },
+      "peak_rss_bytes": {
+        "harness": 787996672,
+        "original_arm": 787853312
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 787853312
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r7": {
+      "elapsed_seconds": 352.27586221694946,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "188"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.1907850408460945,
+        "original": 4.261079285060987
+      },
+      "peak_rss_bytes": {
+        "harness": 817340416,
+        "original_arm": 787656704
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 787656704
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r8": {
+      "elapsed_seconds": 337.9517958164215,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "189"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.224317594897002,
+        "original": 4.203364837914705
+      },
+      "peak_rss_bytes": {
+        "harness": 808415232,
+        "original_arm": 788246528
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 788246528
+      }
+    },
+    "multisensory_s1_D6_svbmc/M16_r9": {
+      "elapsed_seconds": 228.6277358531952,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367324",
+        "array_task": "190"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.174212056910619,
+        "original": 4.273694768780842
+      },
+      "peak_rss_bytes": {
+        "harness": 1035141120,
+        "original_arm": 813879296
+      },
+      "original_arm": {
+        "svbmc_version": "0.1.1",
+        "svbmc_import": "$BASELINE_DIR/src/svbmc/__init__.py",
+        "torch_version": "2.14.0+cpu",
+        "torch_import": "$CAMPAIGN_ENV/lib/python3.12/site-packages/torch/__init__.py",
+        "torch_threads": 1,
+        "executable": "$CAMPAIGN_ENV/bin/python",
+        "pythonpath": "$BASELINE_DIR/src",
+        "peak_rss_bytes": 813879296
+      }
+    },
+    "multisensory_s1_D6_svbmc/M32_r0": {
+      "elapsed_seconds": 258.97628259658813,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "191"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.765773858875036
+      },
+      "peak_rss_bytes": {
+        "harness": 2797862912,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r1": {
+      "elapsed_seconds": 217.3780505657196,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "192"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.816861074184999
+      },
+      "peak_rss_bytes": {
+        "harness": 2508742656,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r2": {
+      "elapsed_seconds": 229.71396446228027,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "193"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.818060704041272
+      },
+      "peak_rss_bytes": {
+        "harness": 2820673536,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r3": {
+      "elapsed_seconds": 306.5363461971283,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "194"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.735645969863981
+      },
+      "peak_rss_bytes": {
+        "harness": 2722410496,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r4": {
+      "elapsed_seconds": 256.93968987464905,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "195"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.76130313007161
+      },
+      "peak_rss_bytes": {
+        "harness": 2820169728,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r5": {
+      "elapsed_seconds": 408.4767954349518,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "196"
+      },
+      "warm_up_seconds": {
+        "integrated": 8.01159442984499
+      },
+      "peak_rss_bytes": {
+        "harness": 2699087872,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r6": {
+      "elapsed_seconds": 158.2343258857727,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "197"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.287031204905361
+      },
+      "peak_rss_bytes": {
+        "harness": 1916051456,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r7": {
+      "elapsed_seconds": 265.67371821403503,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "198"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.374294717097655
+      },
+      "peak_rss_bytes": {
+        "harness": 2530033664,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r8": {
+      "elapsed_seconds": 186.35588908195496,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "199"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.0958661451004446
+      },
+      "peak_rss_bytes": {
+        "harness": 2014744576,
+        "original_arm": null
+      },
+      "original_arm": null
+    },
+    "multisensory_s1_D6_svbmc/M32_r9": {
+      "elapsed_seconds": 245.75327134132385,
+      "host": {
+        "hostname": "u8",
+        "cpu_model": "AMD EPYC 7452 32-Core Processor",
+        "job": "2367369",
+        "array_task": "200"
+      },
+      "warm_up_seconds": {
+        "integrated": 4.204247966175899
+      },
+      "peak_rss_bytes": {
+        "harness": 1958690816,
+        "original_arm": null
+      },
+      "original_arm": null
+    }
+  }
+}
