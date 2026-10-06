@@ -1,0 +1,802 @@
+{
+  "campaign": "svbmc_pool",
+  "directory": "pools_arm3",
+  "generated": "2026-10-05 21:44:29",
+  "pilot_seeds": null,
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/svbmc_pool_run.py": "b4f266b943a9746855835567439b979a92ddbc5ea588a5c31a4eaac7168e771b",
+        "dev/scripts/svbmc_pool_io.py": "4a3e44f50da1fc8418942f0b8e2e9d19a92a3f3f8c286519e65e3535706013e2",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      }
+    },
+    "host": {
+      "hostname": "login",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": null,
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "physical_cores": [
+          "0:0",
+          "0:1",
+          "0:2",
+          "0:3"
+        ],
+        "core_threads": {
+          "0:0": [
+            0
+          ],
+          "0:1": [
+            1
+          ],
+          "0:2": [
+            2
+          ],
+          "0:3": [
+            3
+          ]
+        },
+        "job_cpuset": null
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": null,
+        "array_job_id": null,
+        "array_task_id": null,
+        "restart_count": null,
+        "node": null,
+        "partition": null,
+        "cpus_per_task": null
+      }
+    }
+  },
+  "options": {
+    "display": "off",
+    "plot": false,
+    "print_iteration_header": false,
+    "performance_calibration": "off"
+  },
+  "conditions": [
+    {
+      "label": "multisensory_s1_D6_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 348,
+      "pass_rate": 0.9942857142857143,
+      "unstable": 0,
+      "above_s_max": 2,
+      "usable_fraction": 0.022988505747126436,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 56.0,
+        "q1": 52.0,
+        "q3": 60.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.38027646374066304,
+        "q1": 0.28912935689581165,
+        "q3": 0.49830468441533254
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 7.06815444554862,
+        "q1": 6.650554466912096,
+        "q3": 7.456214590873182
+      },
+      "func_count": {
+        "n": 350,
+        "median": 280.0,
+        "q1": 256.25,
+        "q3": 300.0
+      },
+      "K": {
+        "n": 348,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.9080623384312432,
+        "q1": 0.6894345139251143,
+        "q3": 1.2821039884761198
+      },
+      "elbo_err": {
+        "n": 348,
+        "median": 0.4232058719449583,
+        "q1": 0.20953328439711072,
+        "q3": 0.6694340765153726
+      },
+      "gskl": {
+        "n": 348,
+        "median": 3.917595044512673,
+        "q1": 2.663954597455162,
+        "q3": 5.395614226249186
+      },
+      "mmtv": {
+        "n": 348,
+        "median": 0.26810216005519305,
+        "q1": 0.23983922217175377,
+        "q3": 0.29961059963105907
+      },
+      "rmse": {
+        "n": 348,
+        "median": 0.9614117033473693,
+        "q1": 0.7630286769764749,
+        "q3": 1.161763616879701
+      }
+    },
+    {
+      "label": "multisensory_s1_D6_noise1.3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 349,
+      "pass_rate": 0.9971428571428571,
+      "unstable": 0,
+      "above_s_max": 1,
+      "usable_fraction": 0.10888252148997135,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 41.0,
+        "q1": 39.0,
+        "q3": 44.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.3396593872602323,
+        "q1": 0.28915796827164364,
+        "q3": 0.41790417982179195
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 4.995584577093056,
+        "q1": 4.614935493996987,
+        "q3": 5.455176796126761
+      },
+      "func_count": {
+        "n": 350,
+        "median": 205.0,
+        "q1": 195.0,
+        "q3": 220.0
+      },
+      "K": {
+        "n": 349,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.48461104939451616,
+        "q1": 0.3734744490006676,
+        "q3": 0.6444026577845143
+      },
+      "elbo_err": {
+        "n": 349,
+        "median": 0.4222397132774063,
+        "q1": 0.2829784890198539,
+        "q3": 0.5558039421043759
+      },
+      "gskl": {
+        "n": 349,
+        "median": 2.60642144866355,
+        "q1": 1.8254580949850079,
+        "q3": 3.4824531096815994
+      },
+      "mmtv": {
+        "n": 349,
+        "median": 0.2212592170389863,
+        "q1": 0.19884296792687653,
+        "q3": 0.24542431373639786
+      },
+      "rmse": {
+        "n": 349,
+        "median": 0.8622827927903246,
+        "q1": 0.7159411259019679,
+        "q3": 0.9772150141317438
+      }
+    },
+    {
+      "label": "rosenbrock_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 349,
+      "pass_rate": 0.9971428571428571,
+      "unstable": 1,
+      "above_s_max": 0,
+      "usable_fraction": 0.7679083094555874,
+      "success_flag": 349,
+      "convergence_status": {
+        "probable": 349,
+        "no": 1
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 348,
+        "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.": 2
+      },
+      "iterations": {
+        "n": 350,
+        "median": 36.0,
+        "q1": 33.0,
+        "q3": 40.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.30059211257660845,
+        "q1": 0.2352157150504709,
+        "q3": 0.4122741103017683
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 3.3703444366013473,
+        "q1": 2.95472238274524,
+        "q3": 3.8950130713317774
+      },
+      "func_count": {
+        "n": 350,
+        "median": 180.0,
+        "q1": 165.0,
+        "q3": 200.0
+      },
+      "K": {
+        "n": 349,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.41259765625,
+        "q1": 0.28192138671875,
+        "q3": 0.7927446948888246
+      },
+      "elbo_err": {
+        "n": 349,
+        "median": 0.20685790460491615,
+        "q1": 0.09454634045471222,
+        "q3": 0.33147548342544164
+      },
+      "gskl": {
+        "n": 349,
+        "median": 0.12534124079032255,
+        "q1": 0.03622232292279903,
+        "q3": 0.5130161790991475
+      },
+      "mmtv": {
+        "n": 349,
+        "median": 0.09556882407731859,
+        "q1": 0.05133227509664229,
+        "q3": 0.17276723904477362
+      },
+      "rmse": {
+        "n": 349,
+        "median": 0.2365820681187007,
+        "q1": 0.13434180050322958,
+        "q3": 0.39553639697352827
+      }
+    },
+    {
+      "label": "gmm_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 343,
+      "pass_rate": 0.98,
+      "unstable": 0,
+      "above_s_max": 7,
+      "usable_fraction": 0.0058309037900874635,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 31.0,
+        "q1": 29.0,
+        "q3": 34.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.3320013024279932,
+        "q1": 0.2738028413155713,
+        "q3": 0.4313594257388606
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 2.770507894923988,
+        "q1": 2.445177566555988,
+        "q3": 3.0896020933937205
+      },
+      "func_count": {
+        "n": 350,
+        "median": 160.0,
+        "q1": 150.0,
+        "q3": 175.0
+      },
+      "K": {
+        "n": 343,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.7904292067614378,
+        "q1": 0.5844394633986827,
+        "q3": 1.2011358441963296
+      },
+      "elbo_err": {
+        "n": 343,
+        "median": 1.0702451836118363,
+        "q1": 0.683043301438669,
+        "q3": 1.3473360062387334
+      },
+      "gskl": {
+        "n": 343,
+        "median": 20.434261203364134,
+        "q1": 13.22294862786983,
+        "q3": 37.53996113216706
+      },
+      "mmtv": {
+        "n": 343,
+        "median": 0.4679842584851194,
+        "q1": 0.3947187494993525,
+        "q3": 0.5768827675538365
+      },
+      "rmse": {
+        "n": 343,
+        "median": 5.068397936087775,
+        "q1": 4.397391074834186,
+        "q3": 6.252531521547762
+      }
+    },
+    {
+      "label": "ring_D2_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 480,
+      "target_filtered": 320,
+      "seeds_run": 480,
+      "completed": 480,
+      "failed": 0,
+      "failures": [],
+      "filtered": 368,
+      "pass_rate": 0.7666666666666667,
+      "unstable": 103,
+      "above_s_max": 9,
+      "usable_fraction": 0.0,
+      "success_flag": 377,
+      "convergence_status": {
+        "probable": 377,
+        "no": 103
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 377,
+        "Inference terminated: reached maximum number of function evaluations options.max_fun_evals.": 103
+      },
+      "iterations": {
+        "n": 480,
+        "median": 47.0,
+        "q1": 39.0,
+        "q3": 58.0
+      },
+      "r_index": {
+        "n": 480,
+        "median": 0.23808251715500647,
+        "q1": 0.18905491842763147,
+        "q3": 0.3033515613041716
+      },
+      "wall_minutes": {
+        "n": 480,
+        "median": 4.8429684778830655,
+        "q1": 3.762560617780158,
+        "q3": 5.56576304041082
+      },
+      "func_count": {
+        "n": 480,
+        "median": 240.0,
+        "q1": 195.0,
+        "q3": 295.0
+      },
+      "K": {
+        "n": 368,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 480,
+        "median": 0.9422923824749887,
+        "q1": 0.626731632190058,
+        "q3": 1.381151390315388
+      },
+      "elbo_err": {
+        "n": 368,
+        "median": 1.2984728928860578,
+        "q1": 0.9265516924892895,
+        "q3": 1.7195288347546251
+      },
+      "gskl": {
+        "n": 368,
+        "median": 41.31532180374033,
+        "q1": 7.510902006031877,
+        "q3": 350.7175127939381
+      },
+      "mmtv": {
+        "n": 368,
+        "median": 0.598181697568812,
+        "q1": 0.5040907739933197,
+        "q3": 0.7081497573542057
+      },
+      "rmse": {
+        "n": 368,
+        "median": 5.1072069389033805,
+        "q1": 4.415613828953331,
+        "q3": 5.456941262025218
+      }
+    },
+    {
+      "label": "student_D8_noise3_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 350,
+      "pass_rate": 1.0,
+      "unstable": 0,
+      "above_s_max": 0,
+      "usable_fraction": 0.6028571428571429,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 67.0,
+        "q1": 64.0,
+        "q3": 70.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.2759521922351522,
+        "q1": 0.24180927684257966,
+        "q3": 0.33035554278747115
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 9.613164882082492,
+        "q1": 9.219146204029677,
+        "q3": 10.128706553407634
+      },
+      "func_count": {
+        "n": 350,
+        "median": 335.0,
+        "q1": 315.0,
+        "q3": 350.0
+      },
+      "K": {
+        "n": 350,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.4164431157853734,
+        "q1": 0.3171608126129264,
+        "q3": 0.550902691865335
+      },
+      "elbo_err": {
+        "n": 350,
+        "median": 0.8579048345629232,
+        "q1": 0.5863917463055568,
+        "q3": 1.2367868171687846
+      },
+      "gskl": {
+        "n": 350,
+        "median": 0.5786799236921578,
+        "q1": 0.4360279896908505,
+        "q3": 0.7390716956321038
+      },
+      "mmtv": {
+        "n": 350,
+        "median": 0.13685446666836193,
+        "q1": 0.12303139746053286,
+        "q3": 0.14942479542280682
+      },
+      "rmse": {
+        "n": 350,
+        "median": 0.22231550315765633,
+        "q1": 0.18772011860560117,
+        "q3": 0.26326476816041977
+      }
+    },
+    {
+      "label": "gmm_D2_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 344,
+      "pass_rate": 0.9828571428571429,
+      "unstable": 0,
+      "above_s_max": 6,
+      "usable_fraction": 0.125,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 16.0,
+        "q1": 14.0,
+        "q3": 18.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.04432074248739776,
+        "q1": 0.029731453757394277,
+        "q3": 0.06478041600698609
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 0.5330468018325822,
+        "q1": 0.45079960661629837,
+        "q3": 0.7082220558232317
+      },
+      "func_count": {
+        "n": 350,
+        "median": 85.0,
+        "q1": 75.0,
+        "q3": 95.0
+      },
+      "K": {
+        "n": 344,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.037085340910742115,
+        "q1": 0.005997245471931256,
+        "q3": 0.2664217781545468
+      },
+      "elbo_err": {
+        "n": 344,
+        "median": 0.7036061282688726,
+        "q1": 0.6934381076543208,
+        "q3": 1.383759049214372
+      },
+      "gskl": {
+        "n": 344,
+        "median": 15.004244787351492,
+        "q1": 5.443267634887508,
+        "q3": 28.088744171129864
+      },
+      "mmtv": {
+        "n": 344,
+        "median": 0.38939177824612237,
+        "q1": 0.26424599217662237,
+        "q3": 0.5502589787033259
+      },
+      "rmse": {
+        "n": 344,
+        "median": 4.6959569607776,
+        "q1": 2.56231503726423,
+        "q3": 5.711540587295701
+      }
+    },
+    {
+      "label": "multisensory_s1_D6_svbmc",
+      "seed_start": 1000,
+      "seed_cap": 350,
+      "target_filtered": 320,
+      "seeds_run": 350,
+      "completed": 350,
+      "failed": 0,
+      "failures": [],
+      "filtered": 344,
+      "pass_rate": 0.9828571428571429,
+      "unstable": 0,
+      "above_s_max": 6,
+      "usable_fraction": 0.9186046511627907,
+      "success_flag": 350,
+      "convergence_status": {
+        "probable": 350
+      },
+      "messages": {
+        "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.": 350
+      },
+      "iterations": {
+        "n": 350,
+        "median": 34.0,
+        "q1": 31.0,
+        "q3": 36.0
+      },
+      "r_index": {
+        "n": 350,
+        "median": 0.21996189206536856,
+        "q1": 0.16573411869181837,
+        "q3": 0.27372169805543056
+      },
+      "wall_minutes": {
+        "n": 350,
+        "median": 2.062571669193373,
+        "q1": 1.8128767369315029,
+        "q3": 2.331361439569931
+      },
+      "func_count": {
+        "n": 350,
+        "median": 170.0,
+        "q1": 156.25,
+        "q3": 180.0
+      },
+      "K": {
+        "n": 344,
+        "median": 50.0,
+        "q1": 50.0,
+        "q3": 50.0
+      },
+      "max_J_sjk": {
+        "n": 350,
+        "median": 0.3303225213347787,
+        "q1": 0.13837219675204437,
+        "q3": 0.7459167465756593
+      },
+      "elbo_err": {
+        "n": 344,
+        "median": 0.3830706112768212,
+        "q1": 0.3337285997598798,
+        "q3": 0.462371935259128
+      },
+      "gskl": {
+        "n": 344,
+        "median": 0.514683696544887,
+        "q1": 0.3099007801258952,
+        "q3": 0.7240365178032723
+      },
+      "mmtv": {
+        "n": 344,
+        "median": 0.11426239668991914,
+        "q1": 0.09909079578615657,
+        "q3": 0.12951617435049817
+      },
+      "rmse": {
+        "n": 344,
+        "median": 0.3940366071618311,
+        "q1": 0.259810238872596,
+        "q3": 0.5185127062457765
+      }
+    }
+  ],
+  "totals": {
+    "seeds_run": 2930,
+    "filtered": 2795,
+    "failed": 0,
+    "success_flag": 2826
+  }
+}

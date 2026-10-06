@@ -1,8 +1,10 @@
 # Arm 0: PyVBMC 1.5 against 1.0.4 on the release gate's populations
 
 Created 2026-10-04. Status: **implemented, reviewed and merged into
-`dev-next` (`9b84a1ae`); the local runs of 1.0.4 done; the brief and the
-campaign open**.
+`dev-next` (`9b84a1ae`); the local runs of 1.0.4 and the speed measurement
+done; the campaign run on the cluster (2026-10-05/06), two of its cases
+failed in 1.0.4 and ruled on (decision 9); the hand-back and the comparison
+open**.
 
 ## Purpose
 
@@ -56,6 +58,19 @@ at production defaults.
 7. **Arm 0's data stay internal**: its archive and tracked copies, as for
    the before arm, and no public asset in the release.
 8. **The speed measurement** is the one under "Speed" below.
+9. **Failed cases** (2026-10-06). A case that raises in the package's own
+   computation stays failed, as that package's outcome on its seed: it is
+   not run again, given up or patched (a failure that the campaign
+   environment causes is decision 1's). The comparison counts every failed
+   case of either arm, one given up or whose artifacts failed the
+   harness's checks among them, as a run that gave no usable posterior:
+   where the other arm's case is verified or failed, an unusable run in its
+   configuration's McNemar test of usability and among the usability gains
+   or losses, and a seed left out of the signed-rank tests of the metrics,
+   which have no value of it to rank; each arm's summaries count its failed
+   cases apart (`failed`, beside the verified runs' `n` and `usable`).
+   Every failed case goes to the PI before the comparison is read, as the
+   brief has it.
 
 ## Constraints
 
@@ -191,8 +206,11 @@ one of the candidate's whole identity. It still requires the after arm's
 rescored metrics to equal its in-run metrics, the same allocation and
 confirmatory family, one node family, and a legacy profile in the
 reference's manifest that its package commit names. Its boost reports
-have no tolerance and are expected to keep every boost they made. The
-report records the legacy profile (`legacy_reference`), a key that the
+have no tolerance and are expected to keep every boost they made. A failed
+case of either arm is a run that gave no usable posterior (decision 9): its
+seed joins its configuration's McNemar test of usability, beside the seeds
+verified in both arms, and stays out of the signed-rank tests, which count
+it. The report records the legacy profile (`legacy_reference`), a key that the
 assessment of two arms of the harness's own code does not hold;
 `reference_promote.py` refuses an assessment of a legacy reference.
 
@@ -245,6 +263,15 @@ few seeds), compared on each run's wall time (`wall_s` of the sidecars)
 per configuration (PI, 2026-10-04); the changelog's "Runs are faster"
 takes its figures from it.
 
+As run (2026-10-05/06): three campaigns at seeds 0–2, the release code and
+1.0.4 from one harness checkout at `b196402b`, and Arm 3 from `ad63dd5a` on
+the noisy configurations; a configuration's arms back to back at each seed,
+in an order rotating from one configuration and seed to the next; seed 0 on
+every configuration, seeds 1 and 2 on all but `cigar_D15_exhaust`, until a
+deadline of 6.9 hours, which left out six noisy groups of seed 2; a fixed
+NumPy probe before each group as the machine's speed control. The procedure, the figures and their limits are in
+[results/2026-10-06-speed-against-1.0.4.md](../results/2026-10-06-speed-against-1.0.4.md).
+
 ## Live checklist
 
 - [x] Decisions (PI, 2026-10-04).
@@ -266,10 +293,22 @@ takes its figures from it.
 - [x] The operator's brief, with Arm 0's commit and limits, for one batch
   with Arm 3 ([release-gate-handoff-2.md](release-gate-handoff-2.md)):
   Arm 0 runs from `b196402b`, whose package is the after arm's.
-- [~] The campaign on the cluster, the hand-back, the comparison: the
-  brief went to the operator on 2026-10-05.
-- [ ] Speed against 1.0.4 on the developer's machine, run when the PI
-  leaves the machine free for some hours (PI, 2026-10-05).
+- [x] The campaign on the cluster, 2026-10-05/06, in one batch with Arm
+  3's campaigns (the worklog).
+- [x] The PI's ruling on the two failed cases (decision 9), and the
+  comparison's counting of failed cases (`analyze_population_run.py`,
+  `9bfd8f50` and `4b6d47ac`).
+- [~] The hand-back: its README went to the PI on 2026-10-06; the pull
+  request to `dev-next` with the tracked copies to come.
+- [ ] The comparison with the after arm.
+- [x] Speed against 1.0.4 on the developer's machine, run when the PI
+  leaves the machine free for some hours (PI, 2026-10-05): the night of
+  2026-10-05/06
+  ([results](../results/2026-10-06-speed-against-1.0.4.md)).
+- [x] The changelog's "Runs are faster", in the PI's wording (2026-10-06),
+  and the same figures in the "What's new" blocks of `README.md` and
+  `docsrc/source/index.rst`; their noisy figure becomes 2.1 if the port's
+  end of warm-up is adopted for noisy targets.
 
 ## Worklog
 
@@ -348,3 +387,73 @@ takes its figures from it.
   cluster limits from them. Two runs of the session were stopped by the
   workstation's memory pressure (Claude Code's reaper, not the runs), and
   the worker's claims let them continue where they stopped.
+- 2026-10-05/06: the speed measurement ("Speed"), overnight on the
+  developer's machine: 146 runs in 6.7 hours, every one verified, no
+  failure; the probe steady (0.78 to 0.98 seconds). Against 1.0.4 the
+  release code's runs take 3.7 times less time on the noiseless
+  configurations (16 configurations, 46 pairs) and 2.2 times less on the
+  noisy ones (8 configurations, 18 pairs), 2.1 to 2.5 times less per
+  evaluation on every noisy configuration; six noisy groups of seed 2 did
+  not fit before the deadline. Arm 3's noisy runs took 4 % longer than the
+  release code's, with as many iterations and evaluations, a difference
+  within the spread of the seeds. The [results](../results/2026-10-06-speed-against-1.0.4.md) give
+  the procedure, the tables and a wording for the changelog.
+- 2026-10-05/06: the campaign on the cluster, in one batch with Arm 3's
+  ([the brief](release-gate-handoff-2.md)): 2398 cases verified and 2
+  failed, `cigar_D15_exhaust` at seeds 5 and 96, each after 1 h 8 min
+  (the configuration's other runs of 1.0.4 took up to 3 h), with
+  `ValueError: repeats may not contain negative values` in 1.0.4's
+  `VariationalPosterior.sample`, under `moments` and `kl_div`, in the
+  symmetrized KL divergence between an iteration's posterior and the
+  previous one, which 1.0.4's `optimize()` computes right after the
+  iteration's variational optimization (line 1205 of its `vbmc.py`).
+  `sample` counts the samples of each component as
+  `np.floor(w * N).astype(int)`, negative only for a weight that is not
+  finite (the weights are never negative): the variational optimization
+  returned a posterior whose weights were not finite, and 1.0.4 went on
+  with it. The release's variational optimization passes over candidates
+  whose ELBO is NaN and raises if every one is (`CHANGELOG.md`). The
+  compatibility patch acts in that optimization once the GP holds a
+  single hyperparameter sample, and changes no value there: it takes the
+  single element of the ELBO's variance, which NumPy before
+  2.4 stored in its place, and the gradient of the variance that it also
+  reshapes is never computed there, since 1.0.4 optimizes with gradients
+  only where it computes no variance. `rescore-arms` reproduced the after
+  arm's 2400 cases exactly, and Arm 3's 2400 likewise. Arm 0's rescored
+  metrics equal its in-run ones in `elbo_err` for every case and in no
+  `mmtv`: the release draws its samples from the posterior's generator and
+  1.0.4 from NumPy's global state, so `mmtv` differs everywhere, and `gskl`
+  and `rmse` on the 700 cases of the seven configurations with bounded
+  parameters, whose moments are Monte Carlo estimates. Of the 1698 cases
+  with exact moments, `rmse` is equal in every one and `gskl` in all but
+  one, `rosenbrock_D2_noise3_production` at seed 37, whose in-run and
+  rescored values differ in the last digit (1.3160310748574509 and
+  1.3160310748574506): `kl_div_mvn` takes the log-determinant as
+  `np.log(det2 / det1)` in 1.0.4 and as a difference of `slogdet`s in the
+  release.
+- 2026-10-06: the PI's ruling on the two failed cases (decision 9). The
+  comparison counted a failed case only in the counts of its
+  configuration and left its seed out of every test; it now counts it as
+  an unusable run in the McNemar tests of usability and among the
+  usability gains and losses, and apart in each arm's summaries
+  (`analyze_population_run.py`, `failure_rows`; `9bfd8f50`), with tests of
+  a whole configuration failed, of failures scattered over both arms and
+  of a failed case beside a missing one. Where no case failed, the report
+  is unchanged: the release gate's first comparison, run again on its
+  tracked copies, gives the `assessment.json` and `comparison.md` committed
+  with it, line for line. A doublecheck by two fresh reviewers, read-only,
+  found the statistics sound, the consumers of the report (`arm3_guide.py`,
+  `reference_promote.py`, a legacy reference with failed cases) working,
+  and the new tests failing on the old code and on four mutations. Fixed
+  after it (`4b6d47ac`): the report's keys for failed cases appeared only
+  where a failed case was paired, so that one beside a missing case went
+  unreported; the descriptive family held empty signed-rank tests of a
+  configuration with failed seeds and no verified pair; and this plan
+  stated the scope of decision 9, the release's guards and the one `gskl`
+  more strongly than the evidence.
+- 2026-10-06: the operator read the two error files: the frame in
+  `optimize()` is the iteration's symmetrized KL divergence (line 1205),
+  where the first record of the campaign above placed it in the one after
+  the final boost (line 1510); the entry above states the frame, the cause
+  and the compatibility patch's part as the error files and 1.0.4's code
+  give them, and names the one `gskl` that the rescoring left unequal.

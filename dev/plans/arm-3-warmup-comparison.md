@@ -3,7 +3,9 @@
 Created 2026-10-05. Status: **decided by the PI; the pairing across
 harness commits, Arm 3's branch, the guide, the brief and the script of
 the guide's tests written, reviewed and on `dev-next`; the commits named
-(Arm 0 `b196402b`, Arm 3 `ad63dd5a`); the batch to run**.
+(Arm 0 `b196402b`, Arm 3 `ad63dd5a`); the batch run on the cluster
+(2026-10-05/06), every campaign verified; the hand-back, the comparisons
+and the PI's decision open**.
 
 ## Purpose
 
@@ -46,8 +48,9 @@ cluster's campaigns, read with a guide fixed before the runs.
    apart. It is a guide that the PI reads the results with, not a verdict
    that binds the decision; its mechanics below (the pools' test of the
    filters, the bounds read at two decimals, Student D8 at every `M`, how
-   failed cases count) are the analyst's working of the PI's outline, which
-   the PI may judge too literal once the results are in (PI, 2026-10-05).
+   failed cases count, on which the PI has since ruled) are the analyst's
+   working of the PI's outline, which the PI may judge too literal once the
+   results are in (PI, 2026-10-05).
    The end of warm-up acts in every run, so Arm 3 changes both; a
    version that took the port's end for noisy targets alone would run as
    the after arm on the noiseless configurations and as Arm 3 on the noisy
@@ -87,9 +90,13 @@ cluster's campaigns, read with a guide fixed before the runs.
      comparisons" says, and fails criterion 3 on no condition but
      `student_D8_noise3_svbmc`.
    - **What the tests cannot see**: a case that failed or was given up in
-     either arm leaves its seed's pair out, and a test that cannot be
-     computed enters its family at p = 1; both are listed with the reading
-     and go to the PI before the rule is applied.
+     either arm is an unusable run in the McNemar test of usability and
+     leaves its seed's pair out of the signed-rank tests (the comparison's
+     rule since the PI's ruling of 2026-10-06 on Arm 0's failed cases, made
+     after the runs; no case of this batch's comparisons failed), and a
+     test that cannot be computed enters its family at p = 1; both are
+     listed with the reading and go to the PI before the rule is
+     applied.
    - If the port's end is adopted for a kind of target, it enters the
      package as a deliberate difference from MATLAB (its entry in the
      catalogue of `pyvbmc/vbmc/README.md`, the changelog), Phase 9 of the
@@ -298,14 +305,20 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   `dev-arm3-port-warmup`, which merges `b196402b`).
 - [x] The script of the guide's tests, `dev/scripts/arm3_guide.py`,
   committed before the results reach the developer's machine.
-- [~] The batch on the cluster, the hand-back: the brief went to the
-  operator on 2026-10-05.
+- [x] The batch on the cluster, 2026-10-05/06: every campaign verified,
+  and no case of Arm 3's failed.
+- [~] The hand-back: its README went to the PI on 2026-10-06; the pull
+  request to `dev-next` with the tracked copies to come.
 - [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
   the stacking; the guide read; the PI's decision.
 - [ ] If the port's end of warm-up is adopted: the analysis's extension
   for comparing Arm 0 with Arm 3, the promotion's for an adopted arm ("The
   comparisons"), and the branch's documentation; if it is not, the branch
   retained.
+- [ ] The S-VBMC headline (decision 6): if the PI adopts the two-level
+  shrinkage estimate, the branch `feat-svbmc-shrinkage-headline` merged
+  with its results report and what `dev/TODO.md` ("S-VBMC ELBO headline
+  selection") lists for the merge; otherwise that branch retained.
 
 ## Worklog
 
@@ -382,3 +395,17 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   where the two-sided one does not reject, the direction of the pools' filters,
   decision 6's edges and failing clauses, the readings that take the port's
   end, and a test in the analysis's not-computed format.
+- 2026-10-05/06: the batch on the cluster. Every case of Arm 3's
+  population, its pools (320 selected runs in every condition), its
+  stacking (960 cells) and the two fresh campaigns verified, and all of Arm
+  0's but two, which failed in 1.0.4 (Arm 0's plan). Arm 3's `rescore`
+  reproduced its own cases exactly and scored the after arm's 2400 as the
+  release code had, and `fresh_arm3`'s likewise `fresh_release`'s 100;
+  both analyses of the pools gave every cell and run.
+- 2026-10-06: the PI ruled that a failed case counts as a failure in the
+  comparison's statistics (Arm 0's plan, decision 9), and
+  `analyze_population_run.py` now counts it as an unusable run in the
+  McNemar tests of usability, where it had left the seed's pair out of
+  every test. No case failed in the after arm, Arm 3 or the fresh seeds,
+  nor in either pool, whose tests pair the seeds verified in both pools,
+  so no test of the guide changes.

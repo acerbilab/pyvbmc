@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "logreg_D5_noise3_production/logreg_D5_noise3_production_seed83",
+  "case": "logreg_D5_noise3_production/logreg_D5_noise3_production_seed83 logreg_D5_noise3_production 83",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          17,
+          81
+        ],
+        "physical_cores": [
+          "0:17"
+        ],
+        "core_threads": {
+          "0:17": [
+            17,
+            81
+          ]
+        },
+        "job_cpuset": [
+          17,
+          81
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2361070",
+        "array_job_id": "2358191",
+        "array_task_id": "1884",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-05T18:30:21+0000",
+  "finished": "2026-10-05T18:37:37+0000",
+  "elapsed_seconds": 435.85550570487976,
+  "artifacts": {
+    "logreg_D5_noise3_production/logreg_D5_noise3_production_seed83.npz": {
+      "sha256": "8ab6bc9eb390c44ec321b622da2ea963e1200b008b8462765471d57f0e126510",
+      "bytes": 305445
+    },
+    "logreg_D5_noise3_production/logreg_D5_noise3_production_seed83.json": {
+      "sha256": "50054a0314594c4dec0b429332be90b61667961e3d9a8af9e46b538a653a9af9",
+      "bytes": 5215
+    },
+    "logreg_D5_noise3_production/logreg_D5_noise3_production_seed83.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/logreg_D5_noise3_production/logreg_D5_noise3_production_seed83.boost.pkl": {
+      "sha256": "d32c67ba815db2ff085da1b7e2dfd8d7c1da4d646836fe4eafa5ed3bb3a060c6",
+      "bytes": 76168
+    },
+    "boost/logreg_D5_noise3_production/logreg_D5_noise3_production_seed83.boost.json": {
+      "sha256": "a3c8d0d35d4f563e05d7bbffe3bc6f95aa8c3ffb2b897ddb3e38070a909c99d6",
+      "bytes": 10381
+    }
+  },
+  "harness": "population_run",
+  "label": "logreg_D5_noise3_production",
+  "seed": 83,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}

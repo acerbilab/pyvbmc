@@ -21,7 +21,7 @@ Extensive benchmarks on both artificial test problems and a large number of real
 
 PyVBMC 1.5 is faster and more efficient, integrates better with the modern scientific computing ecosystem and our other tools, and provides more guidance for using it effectively. Highlights include:
 
-- **Faster inference and lower memory use**, with numerical improvements and more compact run histories. Optional [performance calibration](#optional-performance-calibration) tunes PyVBMC for your machine.
+- **Faster inference and lower memory use**, with numerical improvements and more compact run histories: on our benchmark suite a run takes on average 3.7 times less time than with PyVBMC 1.0.4 on noiseless targets and 2.2 times less on noisy ones. Optional [performance calibration](#optional-performance-calibration) tunes PyVBMC for your machine.
 - **Corrections and safeguards**, with corrections to the algorithm, most of them from a systematic comparison with the original MATLAB VBMC; a check that keeps the final boost from replacing a good posterior with a much worse one; and clear errors for option values that earlier versions ignored or misread.
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC to combine posteriors from independent runs ([Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004); [usage below](#combine-runs-and-use-the-posterior-downstream)).
 - **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs).

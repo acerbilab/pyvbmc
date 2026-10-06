@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-05. These lists describe scope, not priority or execution
+Updated 2026-10-06. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -15,16 +15,17 @@ records its execution.
   ("Changelog") sets (condensed to it on 2026-09-30 and read by the PI the
   same day; the worklog of the
   [port review plan](plans/port-correctness-review.md) records how the
-  earlier, longer text was written and checked). Open before the release:
-  the whole-run timings of "Runs are faster", measured on 2026-09-03 to
-  09-05, before the corrections that change how long a run takes, and the
-  S-VBMC speed figure, both to be measured again on the release benchmark,
-  the first against 1.0.4 (the Arm 0 item below);
-  and the S-VBMC entry's account of the reported `elbo`, which the S-VBMC
-  ELBO headline selection (below) may change. The "What's new in PyVBMC
-  1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize the
-  changelog and move with it, its timings included; the docs' link to the
-  changelog resolves once the file is on `main`.
+  earlier, longer text was written and checked). "Runs are faster" gives
+  the speed against 1.0.4 measured on 2026-10-05/06 (the Arm 0 item below;
+  the PI's wording, 2026-10-06), as do the "What's new" blocks below; their
+  noisy figure becomes 2.1 if the port's end of warm-up is adopted for noisy
+  targets ([results](results/2026-10-06-speed-against-1.0.4.md)). Open
+  before the release: the S-VBMC speed figure, to be measured again on the
+  release benchmark, and the S-VBMC entry's account of the reported `elbo`,
+  which the S-VBMC ELBO headline selection (below) may change. The "What's
+  new in PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst`
+  summarize the changelog and move with it, its timings included; the docs'
+  link to the changelog resolves once the file is on `main`.
 
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
   run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
@@ -42,7 +43,9 @@ records its execution.
   and in the FAQ's entry on newer versions, the `check_for_updates` API page
   and the changelog's "Update reminders" entry. The PI's rulings so far,
   and what remains open (the reading of the wording of every tip), are in
-  the tips plan's last section, "Review before the 1.5 release".
+  the tips plan's last section, "Review before the 1.5 release". The
+  wording of `noisy_elbo` to read is that of the branch of the S-VBMC ELBO
+  headline selection (below), which rewrites it.
 
 - [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
   is implemented as `elbo_details["shrunk_two_level"]` and integrated into
@@ -73,13 +76,14 @@ records its execution.
   single-run optimism that regression across runs cannot see (PI,
   2026-09-19); the release pools are to confirm that.
   The stacking objective and selected posterior remain unchanged.
-  Finalize the headline's qualitative caveat, distinguishing inherited VBMC
-  bias from bias added by stacking and explaining that residual bias can
-  remain; the raw estimate is not an upper bound on the truth. Update the
-  `SVBMC` docstring, API reporting section, FAQ, existing Example 7
-  explanation and S-VBMC runtime tip `noisy_elbo`
-  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO) to
-  match the decision, with no additional user step.
+  The headline's caveat is qualitative: it distinguishes inherited VBMC
+  bias from bias added by stacking, says that residual bias can remain,
+  and that the raw estimate is not an upper bound on the truth. On
+  `dev-next` the `SVBMC` docstring, the API reporting section, the FAQ,
+  Example 7's explanation and the S-VBMC runtime tip `noisy_elbo`
+  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO)
+  describe the capped headline; the branch below updates them, with no
+  additional user step.
   The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
   evidence, rejected alternatives and open scientific questions; the
   [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
@@ -100,11 +104,35 @@ records its execution.
   decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
-  commit covers. The switch is prepared on a branch of its own while the
-  batch runs (PI, 2026-10-05), and merges if decision 6's clauses hold on
-  Arm 3's stacking: the code, the `SVBMC` docstring, the API page, the
-  FAQ, the tip `noisy_elbo`, Example 7's explanation (the notebook is run
-  again in the release pass) and the changelog's entry.
+  commit covers. The switch was prepared on the branch
+  `feat-svbmc-shrinkage-headline` (head `3a49d873` on 2026-10-05) while
+  Arm 3's batch ran (PI, 2026-10-05). The branch holds the code, the
+  `SVBMC` docstring, the API page with the headline's caveat, the FAQ, the
+  tip `noisy_elbo` and its link to that page, Example 7's explanation (the
+  notebook is run again in the release pass), the changelog's entry, the
+  tests, which pin the noisy cells' headline in
+  `test_svbmc_references.py`, and `AGENTS.md`'s S-VBMC gate, which says
+  where it is pinned. A noisy stack whose shrinkage is numerically
+  undefined reports the capped value, with a warning. The branch merges if
+  decision 6's clauses hold on Arm 3's stacking. The merge also brings
+  that report, this item, the decision of the
+  [headline note](2026-09-15-svbmc-headline-shrinkage.md), and the records
+  and scripts that take the capped value for the noisy headline:
+  `scripts/svbmc_pool_stack.py`, whose summary text and
+  `headline_bias_growth`'s docstring call the integrated headline the
+  capped value, while a cell recorded after the switch holds the shrinkage
+  estimate under `headline` and a `cap_amount` that is zero unless the cap
+  is the headline (the cells are to record `headline_method`);
+  `scripts/svbmc_single_run_bias.py`
+  (`headline = capped if stacked.noisy else raw`); `dev/README.md` (the
+  shrinkage plan's entry); the
+  [modernization roadmap](plans/modernization-roadmap.md), which holds the
+  headline's selection open; the
+  [campaign plan](plans/svbmc-benchmark-campaign.md) (the integrated
+  class's report); and the [tips plan](plans/runtime-tips.md) (the advice
+  of the tip `noisy_elbo`, and which tips carry links). If a clause fails
+  and the PI keeps the current headline, the branch leaves the working
+  line as `retain/svbmc-shrinkage-headline` (`AGENTS.md`, "Branches").
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -281,8 +309,8 @@ records its execution.
   the pairing of arms across harness commits that Arm 3 needs, the campaigns
   and the checklist; the
   [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
-  raised the question. The brief went to the operator on 2026-10-05; the
-  batch runs in the operator's account and comes back as a pull request
+  raised the question. The batch ran in the operator's account on
+  2026-10-05/06, every campaign verified; it comes back as a pull request
   to `dev-next` with its draft releases, after which
   `scripts/arm3_guide.py` reads it.
 
@@ -292,13 +320,49 @@ records its execution.
   are made against 1.0.4 (PI, 2026-10-04). Arm 0 runs 1.0.4 as released
   (`v1.0.4`, with gpyreg `v1.0.4`, each version on its own defaults) on
   the `production` suite at seeds 0–99 on the cluster, compared seed by
-  seed with the after arm, and speed is measured apart on the developer's
-  machine. The [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
-  the harness's legacy profile, the rescoring across harness commits and
-  the checklist. It runs in one batch with Arm 3 (the item above), and
-  does not wait for the decision that Arm 3 informs (PI, 2026-10-05). The
-  changelog's, the README's and the release notes' statements against
-  1.0.4 wait for it.
+  seed with the after arm. Speed was measured apart on the developer's
+  machine on 2026-10-05/06
+  ([results](results/2026-10-06-speed-against-1.0.4.md)): the release
+  code's runs take 3.7 times less time than 1.0.4's on the noiseless
+  configurations and 2.2 times less on the noisy ones. The
+  [plan](plans/arm-1.0.4-comparison.md) holds the decisions, the harness's
+  legacy profile, the rescoring across harness commits and the checklist.
+  It runs in one batch with Arm 3 (the item above), and does not wait for
+  the decision that Arm 3 informs (PI, 2026-10-05). The campaign ran on
+  2026-10-05/06: 2398 cases verified and 2 failed in 1.0.4, which the
+  comparison counts as runs that gave no usable posterior (the plan's
+  decision 9). The changelog's, the README's and the release notes'
+  statements of accuracy against 1.0.4 wait for the comparison; the
+  changelog's statement of speed is in (2026-10-06).
+
+- [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
+  its published texts link the lab (PI, 2026-10-06; the convention "Links
+  to the lab" in PyBADS's `AGENTS.md`, applied in PyBADS's commit
+  "docs: links to the lab's tools for fitting models to data, and to its
+  group page"), and PyVBMC takes the same pass (PI, 2026-10-06):
+  - a link that names Luigi Acerbi goes to his personal page,
+    https://lacerbi.github.io/, and one that names the lab or its members
+    to the group's page,
+    https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence,
+    not to its `/people` page, which `README.md`, `docsrc/source/index.rst`
+    and `docsrc/source/about_us.rst` link now (`about_us.rst` for each
+    developer as well);
+  - the lab's page of its model-fitting tools,
+    https://acerbilab.org/model-fitting/ (link text "tools for fitting
+    models to data"), is linked under the title of `README.md` and
+    `index.rst`, in the docs' footer (`extra_footer` of sphinx-book-theme),
+    in a `[project.urls]` table of `pyproject.toml`, which has none, and in
+    each paragraph that sends the reader to another of the lab's methods
+    (PyBADS, PyIBS, MATLAB VBMC): the FAQ, the skill, the examples;
+  - a tip that sends the reader to another method links the page too:
+    the `pybads` tip links PyBADS's documentation alone.
+
+  PyBADS's README opens with "PyBADS is one of the open-source tools for
+  fitting models to data from Luigi Acerbi's group at the University of
+  Helsinki. Check out our other tools, such as PyVBMC for the posterior
+  and the model evidence and PyIBS for models that can only be simulated."
+  A change to a tip reaches the review of the tips (above) and the stored
+  outputs of the examples that show tips.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
@@ -410,16 +474,23 @@ records its execution.
   users of the old package. See the [integration plan](plans/svbmc-integration.md).
 - [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
   [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
-  that bumps the version and the source hash. Where the feedstock's
-  `conda-forge.yml` sets `bot: {automerge: true, inspection:
-  update-grayskull}` (proposed in its PR 11 on 2026-09-25, as gpyreg's and
-  PyBADS's feedstocks do), that PR takes the requirements from the PyPI
-  metadata and merges itself once the feedstock's CI passes; otherwise the
-  recipe's requirements, still those of 1.0.4, are updated by hand. Check
-  the published package's requirements against `pyproject.toml`: 1.5 needs
-  gpyreg 1.4.0 or later, which conda-forge did not serve on 2026-09-30
-  (gpyreg's feedstock publishes it through its bot's version update), and
-  adds `filelock`, `platformdirs` and `threadpoolctl`. conda-forge's
+  that bumps the version and the source hash. Its PR 11 (open on
+  2026-10-06) proposes `bot: {automerge: true, inspection:
+  update-grayskull}` in the feedstock's `conda-forge.yml`, as gpyreg's and
+  PyBADS's feedstocks have, so that the bot's PR takes the requirements
+  from the PyPI metadata and merges itself once the feedstock's CI passes.
+  Under those settings the bot's PR for gpyreg 1.4.0
+  (`conda-forge/gpyreg-feedstock` #13) changed the version and the hash
+  alone, though its analysis listed the run requirements that 1.4.0 had
+  dropped, and merged itself; a second PR, under build number 1, removed
+  them (#14). So the recipe's requirements, still those of 1.0.4, are
+  updated by hand, in a PR opened before the bot's or pushed to it before
+  it merges (removing `[bot-automerge]` from the bot's title keeps it from
+  merging itself), as PyBADS 1.5.0 did
+  (`conda-forge/pybads-feedstock` #12, merged 2026-10-06). Check the published package's requirements
+  against `pyproject.toml`: 1.5 needs gpyreg 1.4.0 or later, on
+  conda-forge since 2026-09-30, and adds `filelock`, `platformdirs` and
+  `threadpoolctl`. conda-forge's
   `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
   where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
