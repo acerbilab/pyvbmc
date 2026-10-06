@@ -473,6 +473,13 @@ def test_analyze_arms_on_100_paired_seeds(arms, tmp_path):
         for t in confirmatory.values()
     )
     assert result["confirmatory_not_computed"] == []
+    # Where no case failed, the report has no keys for failed cases.
+    assert "failed_cases" not in result
+    assert "failed" not in result["aggregate"]["reference"]
+    assert not any(
+        "failed_pairs" in t
+        for t in result["confirmatory_tests"] + result["paired_tests"]
+    )
     halved = confirmatory[(LABELS[0], "gskl")]
     assert halved["n_pairs"] == 100 and halved["improved"] == 100
     assert halved["nonfinite_pairs"] == 0
@@ -877,25 +884,46 @@ def test_arms_refuse_a_candidate_whose_rescored_metrics_differ(arms, tmp_path):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
 
 
+def unverify(arm, candidate, which, status="failed", cases=None):
+    """Put the cases ``which`` (``(label, seed)`` pairs) of ``arm`` in
+    ``status`` as ``verify`` reports it: ``failed``, a case that raised, or
+    ``missing``. Return the arm's rescored cases, those the candidate holds
+    or ``cases``, with these cases in that status."""
+    path = arm / "verification.json"
+    report = json.loads(path.read_text())
+    cases = rescored_cases(candidate, arm) if cases is None else cases
+    for case in report["cases"]:
+        _, label, seed = runner.parse_case(case["case"])
+        if (label, seed) in which:
+            case["status"] = status
+            if status == "failed":
+                case["reason"] = "x: ValueError: the run broke"
+            del case["record_sha256"]
+            contract.record_path(arm, case["tag"]).unlink()
+            cases[f"{label}_seed{seed}"] = {"status": status}
+    report["counts"]["verified"] -= len(which)
+    report["counts"][status] += len(which)
+    runner.write_json(path, report)
+    return cases
+
+
+def rescored_usable(role, label, seed):
+    """Whether the fixtures' run of ``role`` at ``label`` and ``seed`` is
+    usable by its rescored metrics."""
+    return analysis.usable(arm_metrics(role, label, seed)[1])
+
+
 def test_the_confirmatory_family_keeps_the_size_fixed_before_the_runs(
     arms, tmp_path
 ):
     # Every case of the second configuration failed in the reference arm:
-    # its four tests cannot be computed and enter the family at p = 1.
+    # its three signed-rank tests cannot be computed and enter the family at
+    # p = 1, and its McNemar test pairs the failed runs, unusable, with the
+    # candidate's.
     reference, candidate = arms
-    path = reference / "verification.json"
-    report = json.loads(path.read_text())
-    cases = rescored_cases(candidate, reference)
-    for case in report["cases"]:
-        _, label, seed = runner.parse_case(case["case"])
-        if label == LABELS[1]:
-            case["status"] = "failed"
-            case["reason"] = "x: RuntimeError: the run broke"
-            del case["record_sha256"]
-            contract.record_path(reference, case["tag"]).unlink()
-            cases[f"{label}_seed{seed}"] = {"status": "failed"}
-    report["counts"].update(verified=100, failed=100)
-    runner.write_json(path, report)
+    cases = unverify(
+        reference, candidate, {(LABELS[1], seed) for seed in SEEDS}
+    )
     write_rescoring(
         candidate,
         {reference: cases, candidate: rescored_cases(candidate, candidate)},
@@ -906,17 +934,149 @@ def test_the_confirmatory_family_keeps_the_size_fixed_before_the_runs(
         (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
     }
     assert len(tests) == 8
-    for metric in ("elbo_err", "gskl", "mmtv", "usable"):
+    for metric in ("elbo_err", "gskl", "mmtv"):
         test = tests[(LABELS[1], metric)]
         assert not test["computed"] and "no seed" in test["reason"]
         assert test["pvalue"] == 1.0 and not test["holm_rejected"]
         assert (test["n_pairs"], test["planned_pairs"]) == (0, 100)
-    assert len(result["confirmatory_not_computed"]) == 4
-    # Holm runs over the eight tests fixed before the runs, not the four
+        assert test["failed_pairs"] == 100
+    assert len(result["confirmatory_not_computed"]) == 3
+    usability = tests[(LABELS[1], "usable")]
+    gains = sum(rescored_usable("candidate", LABELS[1], s) for s in SEEDS)
+    assert usability["computed"] and usability["failed_pairs"] == 100
+    assert (usability["n_pairs"], usability["gains"]) == (100, gains)
+    assert usability["losses"] == 0 and usability["holm_rejected"]
+    assert usability["pvalue"] == stats.binomtest(gains, gains).pvalue
+    # Holm runs over the eight tests fixed before the runs, not the five
     # that could be computed.
     halved = tests[(LABELS[0], "gskl")]
     assert halved["holm_adjusted_pvalue"] == 8 * 2 / 2**100
     assert result["arms"]["reference"]["verification_counts"]["failed"] == 100
+    assert result["configurations"][LABELS[1]]["reference"] == {
+        "n": 0,
+        "failed": 100,
+    }
+    # The descriptive family has no signed-rank test of a configuration
+    # without a seed verified in both arms, only its McNemar test.
+    described = [t for t in result["paired_tests"] if t["label"] == LABELS[1]]
+    assert [t["metric"] for t in described] == ["usable"]
+    assert described[0]["gains"] == gains
+    assert len(result["paired_tests"]) == 5 + 1
+
+
+def test_a_failed_case_is_an_unusable_run_of_its_arm(arms, tmp_path):
+    # Three cases failed in the reference arm and two in the candidate, one
+    # seed in both.
+    reference, candidate = arms
+    failed = {
+        "reference": {(LABELS[0], 0), (LABELS[0], 1), (LABELS[1], 2)},
+        "candidate": {(LABELS[0], 1), (LABELS[1], 3)},
+    }
+    write_rescoring(
+        candidate,
+        {
+            reference: unverify(reference, candidate, failed["reference"]),
+            candidate: unverify(candidate, candidate, failed["candidate"]),
+        },
+    )
+    result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    assert result["paired_cases"] == 196
+    assert result["failed_cases"] == {
+        role: sorted(f"{label}_seed{seed}" for label, seed in cases)
+        for role, cases in failed.items()
+    }
+
+    def usable_run(role, label, seed):
+        return (label, seed) not in failed[role] and rescored_usable(
+            role, label, seed
+        )
+
+    for label in LABELS:
+        old = [usable_run("reference", label, s) for s in SEEDS]
+        new = [usable_run("candidate", label, s) for s in SEEDS]
+        gains = sum(not a and b for a, b in zip(old, new))
+        losses = sum(a and not b for a, b in zip(old, new))
+        for family in ("confirmatory_tests", "paired_tests"):
+            tests = {
+                t["metric"]: t for t in result[family] if t["label"] == label
+            }
+            usability = tests["usable"]
+            assert (usability["gains"], usability["losses"]) == (gains, losses)
+            assert usability["n_pairs"] == 100
+            assert usability["failed_pairs"] == 2
+            for metric in ("elbo_err", "gskl", "mmtv"):
+                assert tests[metric]["n_pairs"] == 98
+                assert tests[metric]["failed_pairs"] == 2
+        for role in ("reference", "candidate"):
+            described = result["configurations"][label][role]
+            n_failed = sum(lab == label for lab, _ in failed[role])
+            assert described["failed"] == n_failed
+            assert described["n"] == 100 - n_failed
+    assert result["aggregate"]["reference"]["failed"] == 3
+    assert result["aggregate"]["candidate"]["failed"] == 2
+    # A seed that failed in one arm gains or loses usability as the other
+    # arm's run is usable or not.
+    tags = set(result["usability_gains"]) | set(result["usability_losses"])
+    assert (f"{LABELS[0]}_seed0" in result["usability_gains"]) == (
+        rescored_usable("candidate", LABELS[0], 0)
+    )
+    assert (f"{LABELS[1]}_seed3" in result["usability_losses"]) == (
+        rescored_usable("reference", LABELS[1], 3)
+    )
+    assert f"{LABELS[0]}_seed1" not in tags
+    assert result["usability_gains"] == sorted(result["usability_gains"])
+    assert result["usability_losses"] == sorted(result["usability_losses"])
+    # The paired changes are of the seeds verified in both arms alone.
+    assert len(result["paired_changes"]) == 196
+
+
+def test_a_case_in_another_state_leaves_its_pair_out_of_every_test(
+    arms, tmp_path
+):
+    # Every case of the second configuration is missing in the reference
+    # arm, and seed 5 of the first failed there and is missing in the
+    # candidate: no test pairs either, and the failed case is still counted.
+    reference, candidate = arms
+    cases = unverify(
+        reference, candidate, {(LABELS[1], seed) for seed in SEEDS}, "missing"
+    )
+    cases = unverify(reference, candidate, {(LABELS[0], 5)}, cases=cases)
+    write_rescoring(
+        candidate,
+        {
+            reference: cases,
+            candidate: unverify(
+                candidate, candidate, {(LABELS[0], 5)}, "missing"
+            ),
+        },
+    )
+    result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    assert result["paired_cases"] == 99
+    assert result["failed_cases"] == {
+        "reference": [f"{LABELS[0]}_seed5"],
+        "candidate": [],
+    }
+    assert result["configurations"][LABELS[0]]["reference"]["failed"] == 1
+    assert result["configurations"][LABELS[0]]["reference"]["n"] == 99
+    assert result["configurations"][LABELS[1]]["reference"] == {
+        "n": 0,
+        "failed": 0,
+    }
+    tests = {
+        (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
+    }
+    assert len(tests) == 8
+    for metric in ("elbo_err", "gskl", "mmtv", "usable"):
+        first, second = tests[(LABELS[0], metric)], tests[(LABELS[1], metric)]
+        assert first["computed"] and first["n_pairs"] == 99
+        assert first["failed_pairs"] == second["failed_pairs"] == 0
+        assert not second["computed"] and "no seed" in second["reason"]
+        assert second["n_pairs"] == 0 and second["pvalue"] == 1.0
+    assert len(result["confirmatory_not_computed"]) == 4
+    assert f"{LABELS[0]}_seed5" not in (
+        result["usability_gains"] + result["usability_losses"]
+    )
+    assert {t["label"] for t in result["paired_tests"]} == {LABELS[0]}
 
 
 def test_rescored_metrics_that_are_not_finite_are_left_out(arms, tmp_path):
