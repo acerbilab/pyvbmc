@@ -104,10 +104,10 @@ the PI's wording (2026-10-06):
 > less on noisy ones, each version with its default options (one machine
 > with one BLAS thread).
 
-The noisy figure is that of the release code's end of warm-up, MATLAB's; if
-the port's end is adopted for noisy targets (Arm 3), it becomes 2.1. The
-"What's new" blocks of `README.md` and `docsrc/source/index.rst` quote no
-timings.
+The "What's new" blocks of `README.md` and `docsrc/source/index.rst` give
+the same two figures. The noisy figure is that of the release code's end of
+warm-up, MATLAB's; if the port's end is adopted for noisy targets (Arm 3),
+it becomes 2.1 in all three places.
 
 ## Limits
 

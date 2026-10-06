@@ -281,9 +281,10 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   leaves the machine free for some hours (PI, 2026-10-05): the night of
   2026-10-05/06
   ([results](../results/2026-10-06-speed-against-1.0.4.md)).
-- [x] The changelog's "Runs are faster", in the PI's wording (2026-10-06);
-  its noisy figure becomes 2.1 if the port's end of warm-up is adopted for
-  noisy targets.
+- [x] The changelog's "Runs are faster", in the PI's wording (2026-10-06),
+  and the same figures in the "What's new" blocks of `README.md` and
+  `docsrc/source/index.rst`; their noisy figure becomes 2.1 if the port's
+  end of warm-up is adopted for noisy targets.
 
 ## Worklog
 

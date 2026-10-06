@@ -27,7 +27,9 @@ scientific computing ecosystem and our other tools, and provides more guidance
 for using it effectively. Highlights include:
 
 - **Faster inference and lower memory use**, with numerical improvements and more
-  compact run histories. Optional :doc:`performance calibration <api/functions/calibrate>`
+  compact run histories: on our benchmark suite a run takes on average 3.7
+  times less time than with PyVBMC 1.0.4 on noiseless targets and 2.2 times
+  less on noisy ones. Optional :doc:`performance calibration <api/functions/calibrate>`
   tunes PyVBMC for your machine.
 - **Corrections and safeguards**, with corrections to the algorithm, most of
   them from a systematic comparison with the original MATLAB VBMC; a check

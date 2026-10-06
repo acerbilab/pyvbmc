@@ -17,15 +17,15 @@ records its execution.
   [port review plan](plans/port-correctness-review.md) records how the
   earlier, longer text was written and checked). "Runs are faster" gives
   the speed against 1.0.4 measured on 2026-10-05/06 (the Arm 0 item below;
-  the PI's wording, 2026-10-06); its noisy figure becomes 2.1 if the port's
-  end of warm-up is adopted for noisy targets
-  ([results](results/2026-10-06-speed-against-1.0.4.md)). Open before the
-  release: the S-VBMC speed figure, to be measured again on the release
-  benchmark, and the S-VBMC entry's account of the reported `elbo`, which
-  the S-VBMC ELBO headline selection (below) may change. The "What's new in
-  PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize
-  the changelog and move with it (they quote no timings); the docs' link to
-  the changelog resolves once the file is on `main`.
+  the PI's wording, 2026-10-06), as do the "What's new" blocks below; their
+  noisy figure becomes 2.1 if the port's end of warm-up is adopted for noisy
+  targets ([results](results/2026-10-06-speed-against-1.0.4.md)). Open
+  before the release: the S-VBMC speed figure, to be measured again on the
+  release benchmark, and the S-VBMC entry's account of the reported `elbo`,
+  which the S-VBMC ELBO headline selection (below) may change. The "What's
+  new in PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst`
+  summarize the changelog and move with it, its timings included; the docs'
+  link to the changelog resolves once the file is on `main`.
 
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
   run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
