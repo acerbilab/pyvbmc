@@ -57,12 +57,15 @@ Two kinds of assessment:
   (:func:`confirmatory_tests`), and every boost decision of each arm checked
   against the guard. A rescored metric that is not finite makes its run
   unusable and leaves its pair out of that metric's signed-rank tests, which
-  count such pairs. A case that failed in an arm (it raised, or the operator
-  gave it up) is a run of that arm that gave no usable posterior: its seed
-  joins the McNemar tests of usability, its pair is left out of the
-  signed-rank tests, which count such pairs (``failed_pairs``), and the
-  summaries of each arm count its failed cases (``failed``); these keys and
-  ``failed_cases`` appear only where a case failed (:func:`failure_rows`).
+  count such pairs. A case that failed in an arm (it raised, its artifacts
+  failed the harness's checks, or the operator gave it up) is a run of that
+  arm that gave no usable posterior: where the other arm's case is verified
+  or failed, its seed joins the McNemar tests of usability and the lists of
+  usability gains and losses, and its pair is left out of the signed-rank
+  tests, which count such pairs (``failed_pairs``); the summaries of each
+  arm count its failed cases (``failed``). These keys and ``failed_cases``
+  appear only when a case of either arm failed, and then in every test and
+  summary (:func:`failure_rows`).
   The usability counts of the boost summaries come from each arm's in-run
   metrics (:data:`BOOST_USABILITY_BASIS`).
 
@@ -227,7 +230,8 @@ def paired_tests(
     (left out when `usability` is false). `nonfinite` goes to
     :func:`signed_rank_test`. ``failures`` (:func:`failure_rows`), when
     given, join the McNemar tests, and every test counts its configuration's
-    as ``failed_pairs``.
+    as ``failed_pairs``; a configuration with failed seeds and no seed
+    verified in both arms has its McNemar test alone.
     """
     labels = {row["label"] for row in changes}
     labels |= {row["label"] for row in failures or ()}
@@ -237,7 +241,7 @@ def paired_tests(
         failed = [row for row in failures or () if row["label"] == label]
         group = [
             signed_rank_test(label, metric, rows, nonfinite)
-            for metric in metrics
+            for metric in (metrics if rows else ())
         ]
         if usability:
             group.append(mcnemar_test(label, rows + failed))
@@ -490,8 +494,9 @@ def paired_change(tag, label, new, old):
 def failure_rows(reference, candidate):
     """The seeds whose case failed in either arm, as rows of usability.
 
-    A failed case, one that raised or that the operator gave up, is a run
-    of its arm that gave no usable posterior (PI, 2026-10-06), and its seed
+    A failed case, one that raised, whose artifacts failed the harness's
+    checks or that the operator gave up, is a run of its arm that gave no
+    usable posterior (PI, 2026-10-06), and its seed
     is paired on usability alone: the row's ``old_usable`` and
     ``new_usable`` are false for a failed case and say whether a verified
     one is usable, from the metrics that :func:`paired_change` reads. The
@@ -523,6 +528,16 @@ def failure_rows(reference, candidate):
             }
         )
     return rows
+
+
+def failed_cases(campaign):
+    """The cases of ``campaign`` (:func:`load_array_campaign`'s) that
+    failed, by stem."""
+    return sorted(
+        stem
+        for stem, (_, _, status) in campaign["cases"].items()
+        if status == "failed"
+    )
 
 
 def boost_record(report, tag, label, new, legacy=False):
@@ -1222,9 +1237,10 @@ def analyze_arms(reference, candidate, rescoring, out):
         )
         for stem in paired
     ]
-    # Absent where no case failed, so that the report of two arms without a
-    # failed case keeps its form.
-    failures = failure_rows(ref, new) or None
+    # None where no case of either arm failed, so that the report of two
+    # arms without a failed case keeps its form.
+    failed = {"reference": failed_cases(ref), "candidate": failed_cases(new)}
+    failures = failure_rows(ref, new) if any(failed.values()) else None
     confirmatory = confirmatory_tests(
         changes, family, len(new["manifest"]["allocation"]["seeds"]), failures
     )
@@ -1254,13 +1270,6 @@ def analyze_arms(reference, candidate, rescoring, out):
             )
             result = (result or {"n": 0}) | {"failed": failed}
         return result
-
-    def failed_cases(arm):
-        return sorted(
-            stem
-            for stem, (_, _, status) in arm["cases"].items()
-            if status == "failed"
-        )
 
     usability_rows = sorted(changes + (failures or []), key=lambda c: c["tag"])
 
@@ -1298,16 +1307,7 @@ def analyze_arms(reference, candidate, rescoring, out):
         "options": new["manifest"]["options"],
         "confirmatory_family": family,
         "paired_cases": len(paired),
-        **(
-            {
-                "failed_cases": {
-                    "reference": failed_cases(ref),
-                    "candidate": failed_cases(new),
-                }
-            }
-            if failures
-            else {}
-        ),
+        **({"failed_cases": failed} if failures is not None else {}),
         "flagged_configurations": sorted(flagged),
         "ks_tests": ks,
         "aggregate": {
@@ -1380,10 +1380,10 @@ def analyze_arms(reference, candidate, rescoring, out):
         ),
         flush=True,
     )
-    if failures:
+    if failures is not None:
         print(
-            "Failed cases, unusable runs in the McNemar tests and left out "
-            "of the signed-rank tests:",
+            "Failed cases (unusable runs in the McNemar tests where the "
+            "other arm's case is verified or failed):",
             result["failed_cases"],
             flush=True,
         )

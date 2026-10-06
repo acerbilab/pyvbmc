@@ -884,23 +884,25 @@ def test_arms_refuse_a_candidate_whose_rescored_metrics_differ(arms, tmp_path):
         analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
 
 
-def fail_cases(arm, candidate, failed):
-    """Make the cases ``failed`` (``(label, seed)`` pairs) of ``arm`` cases
-    that raised, as ``verify`` reports them; return the arm's rescored cases,
-    which the candidate holds, with those cases failed."""
+def unverify(arm, candidate, which, status="failed", cases=None):
+    """Put the cases ``which`` (``(label, seed)`` pairs) of ``arm`` in
+    ``status`` as ``verify`` reports it: ``failed``, a case that raised, or
+    ``missing``. Return the arm's rescored cases, those the candidate holds
+    or ``cases``, with these cases in that status."""
     path = arm / "verification.json"
     report = json.loads(path.read_text())
-    cases = rescored_cases(candidate, arm)
+    cases = rescored_cases(candidate, arm) if cases is None else cases
     for case in report["cases"]:
         _, label, seed = runner.parse_case(case["case"])
-        if (label, seed) in failed:
-            case["status"] = "failed"
-            case["reason"] = "x: ValueError: the run broke"
+        if (label, seed) in which:
+            case["status"] = status
+            if status == "failed":
+                case["reason"] = "x: ValueError: the run broke"
             del case["record_sha256"]
             contract.record_path(arm, case["tag"]).unlink()
-            cases[f"{label}_seed{seed}"] = {"status": "failed"}
-    report["counts"]["verified"] -= len(failed)
-    report["counts"]["failed"] += len(failed)
+            cases[f"{label}_seed{seed}"] = {"status": status}
+    report["counts"]["verified"] -= len(which)
+    report["counts"][status] += len(which)
     runner.write_json(path, report)
     return cases
 
@@ -919,7 +921,7 @@ def test_the_confirmatory_family_keeps_the_size_fixed_before_the_runs(
     # p = 1, and its McNemar test pairs the failed runs, unusable, with the
     # candidate's.
     reference, candidate = arms
-    cases = fail_cases(
+    cases = unverify(
         reference, candidate, {(LABELS[1], seed) for seed in SEEDS}
     )
     write_rescoring(
@@ -954,6 +956,12 @@ def test_the_confirmatory_family_keeps_the_size_fixed_before_the_runs(
         "n": 0,
         "failed": 100,
     }
+    # The descriptive family has no signed-rank test of a configuration
+    # without a seed verified in both arms, only its McNemar test.
+    described = [t for t in result["paired_tests"] if t["label"] == LABELS[1]]
+    assert [t["metric"] for t in described] == ["usable"]
+    assert described[0]["gains"] == gains
+    assert len(result["paired_tests"]) == 5 + 1
 
 
 def test_a_failed_case_is_an_unusable_run_of_its_arm(arms, tmp_path):
@@ -967,8 +975,8 @@ def test_a_failed_case_is_an_unusable_run_of_its_arm(arms, tmp_path):
     write_rescoring(
         candidate,
         {
-            reference: fail_cases(reference, candidate, failed["reference"]),
-            candidate: fail_cases(candidate, candidate, failed["candidate"]),
+            reference: unverify(reference, candidate, failed["reference"]),
+            candidate: unverify(candidate, candidate, failed["candidate"]),
         },
     )
     result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
@@ -1020,6 +1028,55 @@ def test_a_failed_case_is_an_unusable_run_of_its_arm(arms, tmp_path):
     assert result["usability_losses"] == sorted(result["usability_losses"])
     # The paired changes are of the seeds verified in both arms alone.
     assert len(result["paired_changes"]) == 196
+
+
+def test_a_case_in_another_state_leaves_its_pair_out_of_every_test(
+    arms, tmp_path
+):
+    # Every case of the second configuration is missing in the reference
+    # arm, and seed 5 of the first failed there and is missing in the
+    # candidate: no test pairs either, and the failed case is still counted.
+    reference, candidate = arms
+    cases = unverify(
+        reference, candidate, {(LABELS[1], seed) for seed in SEEDS}, "missing"
+    )
+    cases = unverify(reference, candidate, {(LABELS[0], 5)}, cases=cases)
+    write_rescoring(
+        candidate,
+        {
+            reference: cases,
+            candidate: unverify(
+                candidate, candidate, {(LABELS[0], 5)}, "missing"
+            ),
+        },
+    )
+    result = analysis.analyze_arms(reference, candidate, None, tmp_path / "r")
+    assert result["paired_cases"] == 99
+    assert result["failed_cases"] == {
+        "reference": [f"{LABELS[0]}_seed5"],
+        "candidate": [],
+    }
+    assert result["configurations"][LABELS[0]]["reference"]["failed"] == 1
+    assert result["configurations"][LABELS[0]]["reference"]["n"] == 99
+    assert result["configurations"][LABELS[1]]["reference"] == {
+        "n": 0,
+        "failed": 0,
+    }
+    tests = {
+        (t["label"], t["metric"]): t for t in result["confirmatory_tests"]
+    }
+    assert len(tests) == 8
+    for metric in ("elbo_err", "gskl", "mmtv", "usable"):
+        first, second = tests[(LABELS[0], metric)], tests[(LABELS[1], metric)]
+        assert first["computed"] and first["n_pairs"] == 99
+        assert first["failed_pairs"] == second["failed_pairs"] == 0
+        assert not second["computed"] and "no seed" in second["reason"]
+        assert second["n_pairs"] == 0 and second["pvalue"] == 1.0
+    assert len(result["confirmatory_not_computed"]) == 4
+    assert f"{LABELS[0]}_seed5" not in (
+        result["usability_gains"] + result["usability_losses"]
+    )
+    assert {t["label"] for t in result["paired_tests"]} == {LABELS[0]}
 
 
 def test_rescored_metrics_that_are_not_finite_are_left_out(arms, tmp_path):
