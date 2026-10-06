@@ -400,29 +400,37 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   the procedure, the tables and a wording for the changelog.
 - 2026-10-05/06: the campaign on the cluster, in one batch with Arm 3's
   ([the brief](release-gate-handoff-2.md)): 2398 cases verified and 2
-  failed, `cigar_D15_exhaust` at seeds 5 and 96, each after 1 h 8 min, with
+  failed, `cigar_D15_exhaust` at seeds 5 and 96, each after 1 h 8 min
+  (the configuration's other runs of 1.0.4 took up to 3 h), with
   `ValueError: repeats may not contain negative values` in 1.0.4's
-  `VariationalPosterior.sample`, under the `kl_div` that 1.0.4's
-  `optimize()` computes when its final boost has changed the posterior.
+  `VariationalPosterior.sample`, under `moments` and `kl_div`, in the
+  symmetrized KL divergence between an iteration's posterior and the
+  previous one, which 1.0.4's `optimize()` computes right after the
+  iteration's variational optimization (line 1205 of its `vbmc.py`).
   `sample` counts the samples of each component as
   `np.floor(w * N).astype(int)`, negative only for a weight that is not
-  finite: the final boost returned a posterior whose weights were not
-  finite, which 1.0.4 accepts without a check. The release's variational
-  optimization passes over candidates whose ELBO is NaN, raising if every
-  one is, and its guard on the final boost rejects a boost whose ELBO is
-  not finite. The compatibility patch cannot have made such weights: it
-  only takes the single element of a length-1 array. `rescore-arms`
-  reproduced the after arm's 2400 cases exactly, and Arm 3's 2400
-  likewise. Arm 0's rescored metrics equal its in-run ones
-  in `elbo_err` for every case and in no `mmtv`: the release draws its
-  samples from the posterior's generator and 1.0.4 from NumPy's global
-  state, so `mmtv` differs everywhere, and `gskl` and `rmse` on the 700
-  cases of the seven configurations with bounded parameters, whose moments
-  are Monte Carlo estimates. Of the 1698 cases with exact moments, `rmse`
-  is equal in every one and `gskl` in all but one, which the hand-back's
-  tracked copies will name; the likely cause is `kl_div_mvn`, whose
-  log-determinant 1.0.4 takes as `np.log(det2 / det1)` and the release as a
-  difference of `slogdet`s.
+  finite (the weights are never negative): the variational optimization
+  returned a posterior whose weights were not finite, and 1.0.4 went on
+  with it. The release's variational optimization passes over candidates
+  whose ELBO is NaN and raises if every one is (`CHANGELOG.md`). The
+  compatibility patch acts in that optimization once the GP holds a
+  single hyperparameter sample, and changes no value there: it takes the
+  single element of the ELBO's variance, which NumPy before
+  2.4 stored in its place, and the gradient of the variance that it also
+  reshapes is never computed there, since 1.0.4 optimizes with gradients
+  only where it computes no variance. `rescore-arms` reproduced the after
+  arm's 2400 cases exactly, and Arm 3's 2400 likewise. Arm 0's rescored
+  metrics equal its in-run ones in `elbo_err` for every case and in no
+  `mmtv`: the release draws its samples from the posterior's generator and
+  1.0.4 from NumPy's global state, so `mmtv` differs everywhere, and `gskl`
+  and `rmse` on the 700 cases of the seven configurations with bounded
+  parameters, whose moments are Monte Carlo estimates. Of the 1698 cases
+  with exact moments, `rmse` is equal in every one and `gskl` in all but
+  one, `rosenbrock_D2_noise3_production` at seed 37, whose in-run and
+  rescored values differ in the last digit (1.3160310748574509 and
+  1.3160310748574506): `kl_div_mvn` takes the log-determinant as
+  `np.log(det2 / det1)` in 1.0.4 and as a difference of `slogdet`s in the
+  release.
 - 2026-10-06: the PI's ruling on the two failed cases (decision 9). The
   comparison counted a failed case only in the counts of its
   configuration and left its seed out of every test; it now counts it as
@@ -443,3 +451,9 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   configuration with failed seeds and no verified pair; and this plan
   stated the scope of decision 9, the release's guards and the one `gskl`
   more strongly than the evidence.
+- 2026-10-06: the operator read the two error files: the frame in
+  `optimize()` is the iteration's symmetrized KL divergence (line 1205),
+  where the first record of the campaign above placed it in the one after
+  the final boost (line 1510); the entry above states the frame, the cause
+  and the compatibility patch's part as the error files and 1.0.4's code
+  give them, and names the one `gskl` that the rescoring left unequal.
