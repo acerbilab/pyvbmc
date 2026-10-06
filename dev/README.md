@@ -227,7 +227,8 @@ plan and consolidated human summary.
 - [results/2026-10-06-speed-against-1.0.4.md](results/2026-10-06-speed-against-1.0.4.md) —
   the wall time of a run of the release code against PyVBMC 1.0.4 (Arm 0's
   speed measurement), each on its own defaults, on the `production` suite
-  on the developer's machine, with Arm 3 on the noisy configurations; the
+  on the developer's machine, with Arm 3 on the noisy configurations: 3.7
+  times less time on the noiseless targets, 2.2 on the noisy ones; the
   evidence in [experiments/speed_v104_20261006/](experiments/speed_v104_20261006/README.md).
 - [plans/arm-1.0.4-comparison.md](plans/arm-1.0.4-comparison.md) — Arm 0:
   PyVBMC 1.0.4, the release users upgrade from, on the release gate's

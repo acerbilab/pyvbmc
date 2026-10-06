@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-05. These lists describe scope, not priority or execution
+Updated 2026-10-06. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -17,15 +17,15 @@ records its execution.
   [port review plan](plans/port-correctness-review.md) records how the
   earlier, longer text was written and checked). Open before the release:
   the whole-run timings of "Runs are faster", measured on 2026-09-03 to
-  09-05, before the corrections that change how long a run takes, and the
-  S-VBMC speed figure, both to be measured again on the release benchmark,
-  the first against 1.0.4 (the Arm 0 item below), which was measured on
-  2026-10-05/06 and whose wording waits for the PI (the
-  [results](results/2026-10-06-speed-against-1.0.4.md) propose one);
-  and the S-VBMC entry's account of the reported `elbo`, which the S-VBMC
-  ELBO headline selection (below) may change. The "What's new in PyVBMC
-  1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize the
-  changelog and move with it, its timings included; the docs' link to the
+  09-05, before the corrections that change how long a run takes, measured
+  again against 1.0.4 on 2026-10-05/06 (the Arm 0 item below), whose
+  wording waits for the PI (the
+  [results](results/2026-10-06-speed-against-1.0.4.md) propose one); the
+  S-VBMC speed figure, to be measured again on the release benchmark; and
+  the S-VBMC entry's account of the reported `elbo`, which the S-VBMC ELBO
+  headline selection (below) may change. The "What's new in PyVBMC 1.5"
+  blocks of `README.md` and `docsrc/source/index.rst` summarize the
+  changelog and move with it (they quote no timings); the docs' link to the
   changelog resolves once the file is on `main`.
 
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
@@ -321,17 +321,18 @@ records its execution.
   are made against 1.0.4 (PI, 2026-10-04). Arm 0 runs 1.0.4 as released
   (`v1.0.4`, with gpyreg `v1.0.4`, each version on its own defaults) on
   the `production` suite at seeds 0–99 on the cluster, compared seed by
-  seed with the after arm, and speed is measured apart on the developer's
-  machine, which was done on 2026-10-05/06
-  ([results](results/2026-10-06-speed-against-1.0.4.md): the release code's
-  runs take 3.7 times less time on the noiseless configurations and 2.2
-  times less on the noisy ones). The
-  [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
-  the harness's legacy profile, the rescoring across harness commits and
-  the checklist. It runs in one batch with Arm 3 (the item above), and
-  does not wait for the decision that Arm 3 informs (PI, 2026-10-05). The
-  changelog's, the README's and the release notes' statements against
-  1.0.4 wait for it.
+  seed with the after arm. Speed was measured apart on the developer's
+  machine on 2026-10-05/06
+  ([results](results/2026-10-06-speed-against-1.0.4.md)): the release
+  code's runs take 3.7 times less time than 1.0.4's on the noiseless
+  configurations and 2.2 times less on the noisy ones. The
+  [plan](plans/arm-1.0.4-comparison.md) holds the decisions, the harness's
+  legacy profile, the rescoring across harness commits and the checklist.
+  It runs in one batch with Arm 3 (the item above), and does not wait for
+  the decision that Arm 3 informs (PI, 2026-10-05). The changelog's, the
+  README's and the release notes' statements of accuracy against 1.0.4
+  wait for the campaign; the changelog's statement of speed waits for the
+  PI's wording.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's

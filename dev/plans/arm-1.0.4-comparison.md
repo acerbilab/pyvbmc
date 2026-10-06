@@ -250,8 +250,8 @@ As run (2026-10-05/06): three campaigns at seeds 0–2, the release code and
 the noisy configurations; a configuration's arms back to back at each seed,
 in an order rotating from one configuration and seed to the next; seed 0 on
 every configuration, seeds 1 and 2 on all but `cigar_D15_exhaust`, until a
-deadline; a fixed NumPy probe before each group as the machine's speed
-control. The procedure, the figures and their limits are in
+deadline of 6.9 hours, which left out six noisy groups of seed 2; a fixed
+NumPy probe before each group as the machine's speed control. The procedure, the figures and their limits are in
 [results/2026-10-06-speed-against-1.0.4.md](../results/2026-10-06-speed-against-1.0.4.md).
 
 ## Live checklist
@@ -281,8 +281,8 @@ control. The procedure, the figures and their limits are in
   leaves the machine free for some hours (PI, 2026-10-05): the night of
   2026-10-05/06
   ([results](../results/2026-10-06-speed-against-1.0.4.md)).
-- [ ] The changelog's "Runs are faster" and the "What's new" blocks from
-  it, once the PI settles the wording (the results note proposes one).
+- [ ] The changelog's "Runs are faster", once the PI settles the wording
+  (the results note proposes one).
 
 ## Worklog
 
@@ -365,8 +365,10 @@ control. The procedure, the figures and their limits are in
   developer's machine: 146 runs in 6.7 hours, every one verified, no
   failure; the probe steady (0.78 to 0.98 seconds). Against 1.0.4 the
   release code's runs take 3.7 times less time on the noiseless
-  configurations (16, 46 pairs) and 2.2 times less on the noisy ones (8, 18
-  pairs), 2.1 to 2.5 times less per evaluation on every noisy
-  configuration; Arm 3's noisy runs take 4 % longer than the release
-  code's. The [results](../results/2026-10-06-speed-against-1.0.4.md) give
+  configurations (16 configurations, 46 pairs) and 2.2 times less on the
+  noisy ones (8 configurations, 18 pairs), 2.1 to 2.5 times less per
+  evaluation on every noisy configuration; six noisy groups of seed 2 did
+  not fit before the deadline. Arm 3's noisy runs took 4 % longer than the
+  release code's, with as many iterations and evaluations, a difference
+  within the spread of the seeds. The [results](../results/2026-10-06-speed-against-1.0.4.md) give
   the procedure, the tables and a wording for the changelog.
