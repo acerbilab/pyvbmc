@@ -224,6 +224,11 @@ plan and consolidated human summary.
   arm's: two of the port review's fixes end warm-up about three iterations
   earlier, as MATLAB does. The cluster's traces, a paired experiment at 50
   seeds, and the decision it leaves to the PI.
+- [results/2026-10-06-speed-against-1.0.4.md](results/2026-10-06-speed-against-1.0.4.md) —
+  the wall time of a run of the release code against PyVBMC 1.0.4 (Arm 0's
+  speed measurement), each on its own defaults, on the `production` suite
+  on the developer's machine, with Arm 3 on the noisy configurations; the
+  evidence in [experiments/speed_v104_20261006/](experiments/speed_v104_20261006/README.md).
 - [plans/arm-1.0.4-comparison.md](plans/arm-1.0.4-comparison.md) — Arm 0:
   PyVBMC 1.0.4, the release users upgrade from, on the release gate's
   population cases, compared seed by seed with the release code's arm: the

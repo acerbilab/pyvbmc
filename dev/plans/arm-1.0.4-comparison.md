@@ -1,8 +1,8 @@
 # Arm 0: PyVBMC 1.5 against 1.0.4 on the release gate's populations
 
 Created 2026-10-04. Status: **implemented, reviewed and merged into
-`dev-next` (`9b84a1ae`); the local runs of 1.0.4 done; the brief and the
-campaign open**.
+`dev-next` (`9b84a1ae`); the local runs of 1.0.4 and the speed measurement
+done; the brief and the campaign open**.
 
 ## Purpose
 
@@ -245,6 +245,15 @@ few seeds), compared on each run's wall time (`wall_s` of the sidecars)
 per configuration (PI, 2026-10-04); the changelog's "Runs are faster"
 takes its figures from it.
 
+As run (2026-10-05/06): three campaigns at seeds 0–2, the release code and
+1.0.4 from one harness checkout at `b196402b`, and Arm 3 from `ad63dd5a` on
+the noisy configurations; a configuration's arms back to back at each seed,
+in an order rotating from one configuration and seed to the next; seed 0 on
+every configuration, seeds 1 and 2 on all but `cigar_D15_exhaust`, until a
+deadline; a fixed NumPy probe before each group as the machine's speed
+control. The procedure, the figures and their limits are in
+[results/2026-10-06-speed-against-1.0.4.md](../results/2026-10-06-speed-against-1.0.4.md).
+
 ## Live checklist
 
 - [x] Decisions (PI, 2026-10-04).
@@ -268,8 +277,12 @@ takes its figures from it.
   Arm 0 runs from `b196402b`, whose package is the after arm's.
 - [~] The campaign on the cluster, the hand-back, the comparison: the
   brief went to the operator on 2026-10-05.
-- [ ] Speed against 1.0.4 on the developer's machine, run when the PI
-  leaves the machine free for some hours (PI, 2026-10-05).
+- [x] Speed against 1.0.4 on the developer's machine, run when the PI
+  leaves the machine free for some hours (PI, 2026-10-05): the night of
+  2026-10-05/06
+  ([results](../results/2026-10-06-speed-against-1.0.4.md)).
+- [ ] The changelog's "Runs are faster" and the "What's new" blocks from
+  it, once the PI settles the wording (the results note proposes one).
 
 ## Worklog
 
@@ -348,3 +361,12 @@ takes its figures from it.
   cluster limits from them. Two runs of the session were stopped by the
   workstation's memory pressure (Claude Code's reaper, not the runs), and
   the worker's claims let them continue where they stopped.
+- 2026-10-05/06: the speed measurement ("Speed"), overnight on the
+  developer's machine: 146 runs in 6.7 hours, every one verified, no
+  failure; the probe steady (0.78 to 0.98 seconds). Against 1.0.4 the
+  release code's runs take 3.7 times less time on the noiseless
+  configurations (16, 46 pairs) and 2.2 times less on the noisy ones (8, 18
+  pairs), 2.1 to 2.5 times less per evaluation on every noisy
+  configuration; Arm 3's noisy runs take 4 % longer than the release
+  code's. The [results](../results/2026-10-06-speed-against-1.0.4.md) give
+  the procedure, the tables and a wording for the changelog.

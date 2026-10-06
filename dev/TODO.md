@@ -19,7 +19,9 @@ records its execution.
   the whole-run timings of "Runs are faster", measured on 2026-09-03 to
   09-05, before the corrections that change how long a run takes, and the
   S-VBMC speed figure, both to be measured again on the release benchmark,
-  the first against 1.0.4 (the Arm 0 item below);
+  the first against 1.0.4 (the Arm 0 item below), which was measured on
+  2026-10-05/06 and whose wording waits for the PI (the
+  [results](results/2026-10-06-speed-against-1.0.4.md) propose one);
   and the S-VBMC entry's account of the reported `elbo`, which the S-VBMC
   ELBO headline selection (below) may change. The "What's new in PyVBMC
   1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize the
@@ -320,7 +322,11 @@ records its execution.
   (`v1.0.4`, with gpyreg `v1.0.4`, each version on its own defaults) on
   the `production` suite at seeds 0–99 on the cluster, compared seed by
   seed with the after arm, and speed is measured apart on the developer's
-  machine. The [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
+  machine, which was done on 2026-10-05/06
+  ([results](results/2026-10-06-speed-against-1.0.4.md): the release code's
+  runs take 3.7 times less time on the noiseless configurations and 2.2
+  times less on the noisy ones). The
+  [plan](plans/arm-1.0.4-comparison.md) holds the decisions,
   the harness's legacy profile, the rescoring across harness commits and
   the checklist. It runs in one batch with Arm 3 (the item above), and
   does not wait for the decision that Arm 3 informs (PI, 2026-10-05). The
