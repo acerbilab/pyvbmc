@@ -84,15 +84,18 @@ For the release overview, start with
 - [S-VBMC headline shrinkage](2026-09-15-svbmc-headline-shrinkage.md) —
   Two questions about the S-VBMC port, answered from the run-pool
   benchmark: it matches the standalone package (same weights and
-  posterior quality, 1.9 to 4 times faster), and the candidate for the
-  number it should report on a noisy stack is a two-level
+  posterior quality, 1.9 to 4 times faster), and the number it should
+  report on a noisy stack is a two-level
   empirical-Bayes shrinkage of the components' expected log joints by
   the estimation covariance saved with each posterior (`J_sjk`; the
   class's inputs do not change), in place of the component-median
   cap, which over-corrects on a heavy-tailed target; the candidates
   side by side, the decision and what
   implementing it entails. The evidence is the
-  [stage D report](results/2026-09-15-svbmc-pool-comparison.md).
+  [stage D report](results/2026-09-15-svbmc-pool-comparison.md); the
+  release gate confirmed the choice, and the shrinkage is the headline of
+  a noisy stack since 2026-10-06
+  ([the reading](results/2026-10-06-arm-3-reading.md)).
 - [S-VBMC shrinkage explained](2026-09-15-svbmc-shrinkage-explained.md) —
   Tutorial companion to the headline note, for a reader who knows what
   a GP and an ELBO are: what the stacked ELBO is built from, why it is
@@ -194,8 +197,8 @@ plan and consolidated human summary.
 - [plans/svbmc-shrinkage-estimator.md](plans/svbmc-shrinkage-estimator.md) —
   integration of full-covariance two-level shrinkage as an additional
   S-VBMC ELBO estimate, using existing posterior statistics; numerical
-  boundary cases, campaign recording and parity checks. Headline selection
-  remains a decision after the final release campaign.
+  boundary cases, campaign recording and parity checks. The estimate became
+  the headline of a noisy stack after the release gate (2026-10-06).
 - [plans/svbmc-pool-handoff.md](plans/svbmc-pool-handoff.md) — the brief
   under which the S-VBMC run pools were generated on the cluster
   (2026-09-14): what the pools are for, the steps (`prepare`, `cases`, a
@@ -223,13 +226,19 @@ plan and consolidated human summary.
   target of the release gate are shorter and less accurate than the before
   arm's: two of the port review's fixes end warm-up about three iterations
   earlier, as MATLAB does. The cluster's traces, a paired experiment at 50
-  seeds, and the decision it leaves to the PI.
+  seeds, and the decision it left to the PI, taken on Arm 3's results.
 - [results/2026-10-06-speed-against-1.0.4.md](results/2026-10-06-speed-against-1.0.4.md) —
   the wall time of a run of the release code against PyVBMC 1.0.4 (Arm 0's
   speed measurement), each on its own defaults, on the `production` suite
   on the developer's machine, with Arm 3 on the noisy configurations: 3.7
   times less time on the noiseless targets, 2.2 on the noisy ones; the
   evidence in [experiments/speed_v104_20261006/](experiments/speed_v104_20261006/README.md).
+- [results/2026-10-06-arm-3-reading.md](results/2026-10-06-arm-3-reading.md) —
+  the reading of Arm 3's results with the guide fixed before the runs, and
+  the PI's two decisions on it: MATLAB's end of warm-up stays for noisy and
+  noiseless targets, and the headline ELBO of a noisy S-VBMC stack is the
+  two-level shrinkage estimate; the tests of every part, the added bias of
+  each estimate on the release gate's pools and Arm 3's, and what follows.
 - [plans/arm-1.0.4-comparison.md](plans/arm-1.0.4-comparison.md) — Arm 0:
   PyVBMC 1.0.4, the release users upgrade from, on the release gate's
   population cases, compared seed by seed with the release code's arm: the
@@ -242,7 +251,8 @@ plan and consolidated human summary.
   decisions, among them the guide fixed before the runs for the choice
   between MATLAB's end of warm-up and the port's and for the S-VBMC ELBO
   headline, the pairing of arms across harness commits, the
-  campaigns and the checklist.
+  campaigns and the checklist; complete (2026-10-06), MATLAB's end of
+  warm-up kept, the code of Arm 3 retained as `retain/arm3-port-warmup`.
 - [plans/matched-mcmc-budget.md](plans/matched-mcmc-budget.md) — how many
   evaluations a black-box MCMC sampler (slice sampling, emcee, zeus) needs
   to match PyVBMC's posterior accuracy on a benchmark target: the

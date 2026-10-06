@@ -2,6 +2,11 @@
 
 Created: 2026-09-16. Status: **implemented, verified and integrated into
 `dev-next` at `a51cad5`**. Full matrix verification at `9cc6882` also passes.
+The release gate's campaigns confirmed the estimate, and it is the headline
+`elbo` of a noisy stack since 2026-10-06
+([the reading](../results/2026-10-06-arm-3-reading.md)); the paragraphs
+below that keep the headline unchanged describe this plan's additive
+integration.
 
 ## Live checklist
 

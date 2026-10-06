@@ -50,18 +50,20 @@ plan:
   merge ("Left for after the merge and before Phase 9"). None changes what
   a fingerprint computes or what `prepare` checks of the fingerprints;
   they land before the promotion's `prepare`, done with the promotion's
-  work once the warm-up decision is taken (PI, 2026-10-05).
+  work (PI, 2026-10-05), which takes the after arm, since MATLAB's end of
+  warm-up stays (PI, 2026-10-06).
 - The review's optional findings, which await the PI's ruling.
 
 The arm comparison and the promotion belong to the TODO's item on the
 golden references, the reading of the pools and the stacking to its
-final large-scale check. The promotion waits for Arm 3
-([its plan](arm-3-warmup-comparison.md)), on whose campaigns the PI
-chooses between MATLAB's end of warm-up and the port's, which the arm
-comparison's noisy Rosenbrock target put in question
-([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)), and then
-for the PI's acceptance of the assessment; if the port's end is adopted,
-Phase 9 runs again from the new code. The PI's rulings of 2026-09-28 on the
+final large-scale check. The arm comparison's noisy Rosenbrock target put
+the end of warm-up in question
+([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)); on the
+campaigns of Arm 3 ([its plan](arm-3-warmup-comparison.md)) the PI kept
+MATLAB's end (2026-10-06;
+[the reading](../results/2026-10-06-arm-3-reading.md)), so the promotion
+takes the after arm, Phase 9's runs stand, and the promotion waits for the
+PI's acceptance of the assessment. The PI's rulings of 2026-09-28 on the
 promotion and on the release's assets are in "The populations", "Records
 and hand-back", Phase 9 and the worklog. Two further arms run through this workflow in
 one batch: PyVBMC 1.0.4 on the population cases (Arm 0,

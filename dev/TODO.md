@@ -17,15 +17,13 @@ records its execution.
   [port review plan](plans/port-correctness-review.md) records how the
   earlier, longer text was written and checked). "Runs are faster" gives
   the speed against 1.0.4 measured on 2026-10-05/06 (the Arm 0 item below;
-  the PI's wording, 2026-10-06), as do the "What's new" blocks below; their
-  noisy figure becomes 2.1 if the port's end of warm-up is adopted for noisy
-  targets ([results](results/2026-10-06-speed-against-1.0.4.md)). Open
-  before the release: the S-VBMC speed figure, to be measured again on the
-  release benchmark, and the S-VBMC entry's account of the reported `elbo`,
-  which the S-VBMC ELBO headline selection (below) may change. The "What's
-  new in PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst`
-  summarize the changelog and move with it, its timings included; the docs'
-  link to the changelog resolves once the file is on `main`.
+  the PI's wording, 2026-10-06;
+  [results](results/2026-10-06-speed-against-1.0.4.md)), as do the "What's
+  new" blocks below. Open before the release: the S-VBMC speed figure, to be
+  measured again on the release benchmark. The "What's new in PyVBMC 1.5"
+  blocks of `README.md` and `docsrc/source/index.rst` summarize the
+  changelog and move with it, its timings included; the docs' link to the
+  changelog resolves once the file is on `main`.
 
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
   run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
@@ -44,95 +42,8 @@ records its execution.
   and the changelog's "Update reminders" entry. The PI's rulings so far,
   and what remains open (the reading of the wording of every tip), are in
   the tips plan's last section, "Review before the 1.5 release". The
-  wording of `noisy_elbo` to read is that of the branch of the S-VBMC ELBO
-  headline selection (below), which rewrites it.
-
-- [ ] **S-VBMC ELBO headline selection.** The two-level shrinkage estimate
-  is implemented as `elbo_details["shrunk_two_level"]` and integrated into
-  `dev-next`; see the [integration plan](plans/svbmc-shrinkage-estimator.md).
-  Validate it against the existing estimates on fresh release-campaign
-  pools, judging the optimism added by stacking relative to its input runs.
-  Promote it only if the campaign confirms it is the best estimator; decide
-  separately whether noiseless stacks use shrinkage or retain the raw value.
-  The campaign scores two compositions of its stages with its added-bias
-  measure. The implemented one adds the between-run change of a run's raw
-  level to the within-shrunk components, so the run's final own-weighted
-  level is the shrunk level plus whatever the within-run stage did to it;
-  the alternative pins each run's level to its shrunk value, and is the
-  variant `two_level_anchored` of `scripts/svbmc_shrink_elbo.py`, which
-  computes both. They differ in each run by how much the within-run stage
-  moves the run's own-weighted level: 0.16 and 0.30 nats for the two runs
-  of the constructed case of the
-  [port review's verification](experiments/port_review_20260919/verification/wave0.md).
-  Uniform own weights make that change zero only when the run's components
-  also carry equal, uncorrelated estimation noise, which real runs do not
-  have. On the existing
-  pools the implemented form adds −0.23 to +0.15 nats, partly by removing
-  some of the runs' own optimism through its within-run term, and the
-  alternative adds −0.02 to +0.21 at `M` = 3 to 5 and +0.02 to +0.42 at
-  `M = 16` (the [stage D report](results/2026-09-15-svbmc-pool-comparison.md),
-  "The inputs' own bias, and what stacking adds"). The implemented form
-  keeps the within-run correction of the level, which addresses the
-  single-run optimism that regression across runs cannot see (PI,
-  2026-09-19); the release pools are to confirm that.
-  The stacking objective and selected posterior remain unchanged.
-  The headline's caveat is qualitative: it distinguishes inherited VBMC
-  bias from bias added by stacking, says that residual bias can remain,
-  and that the raw estimate is not an upper bound on the truth. On
-  `dev-next` the `SVBMC` docstring, the API reporting section, the FAQ,
-  Example 7's explanation and the S-VBMC runtime tip `noisy_elbo`
-  (`pyvbmc/svbmc/_tip_catalog.py`, which recommends the capped ELBO)
-  describe the capped headline; the branch below updates them, with no
-  additional user step.
-  The [headline note](2026-09-15-svbmc-headline-shrinkage.md) retains the
-  evidence, rejected alternatives and open scientific questions; the
-  [campaign plan](plans/svbmc-benchmark-campaign.md) owns the release gate.
-  The release pools (the final large-scale check, below) give the added
-  bias over the conditions and `M` = 2 to 32, on the noisy targets and
-  then the noiseless ones: raw +0.01 to +0.86 and −0.01 to +0.05, the
-  capped headline −1.41 to −0.04 and −0.07 to +0.05, the implemented
-  two-level form (`two_level_full`) −0.23 to +0.15, as on the stage D
-  pools through `M = 16` (they reach +0.19 at `M = 32`), and −0.01 to
-  +0.08, and the anchored variant
-  (`two_level_anchored`) +0.00 to +0.36 and −0.01 to +0.07 (the medians
-  over cells of the analyses' `single_run/added.md`, which holds the
-  cluster's details and stays in the draft release). The analyst's
-  recommendation (2026-10-04): the two-level form as the headline of noisy
-  stacks, the raw value for noiseless ones. The PI's first reading: it
-  looks good; the decision waits for Arm 3's pools and stacking, read
-  with the criterion fixed before the runs as a guide (2026-10-05;
-  decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
-  switch then lands with a results report of the reading. It changes
-  `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
-  commit covers. The switch was prepared on the branch
-  `feat-svbmc-shrinkage-headline` (head `3a49d873` on 2026-10-05) while
-  Arm 3's batch ran (PI, 2026-10-05). The branch holds the code, the
-  `SVBMC` docstring, the API page with the headline's caveat, the FAQ, the
-  tip `noisy_elbo` and its link to that page, Example 7's explanation (the
-  notebook is run again in the release pass), the changelog's entry, the
-  tests, which pin the noisy cells' headline in
-  `test_svbmc_references.py`, and `AGENTS.md`'s S-VBMC gate, which says
-  where it is pinned. A noisy stack whose shrinkage is numerically
-  undefined reports the capped value, with a warning. The branch merges if
-  decision 6's clauses hold on Arm 3's stacking. The merge also brings
-  that report, this item, the decision of the
-  [headline note](2026-09-15-svbmc-headline-shrinkage.md), and the records
-  and scripts that take the capped value for the noisy headline:
-  `scripts/svbmc_pool_stack.py`, whose summary text and
-  `headline_bias_growth`'s docstring call the integrated headline the
-  capped value, while a cell recorded after the switch holds the shrinkage
-  estimate under `headline` and a `cap_amount` that is zero unless the cap
-  is the headline (the cells are to record `headline_method`);
-  `scripts/svbmc_single_run_bias.py`
-  (`headline = capped if stacked.noisy else raw`); `dev/README.md` (the
-  shrinkage plan's entry); the
-  [modernization roadmap](plans/modernization-roadmap.md), which holds the
-  headline's selection open; the
-  [campaign plan](plans/svbmc-benchmark-campaign.md) (the integrated
-  class's report); and the [tips plan](plans/runtime-tips.md) (the advice
-  of the tip `noisy_elbo`, and which tips carry links). If a clause fails
-  and the PI keeps the current headline, the branch leaves the working
-  line as `retain/svbmc-shrinkage-headline` (`AGENTS.md`, "Branches").
+  switch of the S-VBMC headline (2026-10-06) rewrote `noisy_elbo` and gave
+  it a link to the `SVBMC` page's account of the headline.
 
 - [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
   settings, resumption and result collection on the Turso cluster. The
@@ -158,9 +69,9 @@ records its execution.
   leaves for after the merge, which change nothing a fingerprint computes
   and land before the promotion's `prepare`, and the review's optional
   findings, which await the PI's ruling. The smaller fixes are done with
-  the promotion's work, once the warm-up decision says which arm the
-  promotion takes (PI, 2026-10-05): they reach no batch that runs from
-  its named commits, and the promotion may change with that decision. An
+  the promotion's work (PI, 2026-10-05), which takes the after arm, since
+  MATLAB's end of warm-up stays (PI, 2026-10-06): they reach no batch that
+  runs from its named commits. An
   edit to the package's text, the tips' wording among them, lands after
   the promotion of the new reference, whose check compares the package's
   files with the after arm's (the plan's decision 13). See
@@ -201,9 +112,12 @@ records its execution.
   end its warm-up about three iterations earlier, as MATLAB does
   ([the note](results/2026-10-05-noisy-rosenbrock-warmup.md), with a
   paired experiment at 50 seeds).
-  The choice between MATLAB's end of warm-up and the port's waits for
-  Arm 3 (PI, 2026-10-05; the item below), and the PI's acceptance of the
-  assessment and the promotion wait for it. The promotion is
+  MATLAB's end of warm-up stays (PI, 2026-10-06), read on the results of
+  Arm 3, the release code with the port's end of warm-up
+  ([the reading](results/2026-10-06-arm-3-reading.md)): the promotion
+  takes the after arm, and its record states the cost on the noisy
+  Rosenbrock target. The PI's acceptance of the assessment remains. The
+  promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
@@ -263,9 +177,7 @@ records its execution.
   in all 138 arrays; that run checked the wrapper and is no record. The
   runs that enter the records are Phase 9's, made with the after arm's
   code; they ran on 2026-10-04 at `dce4e18c`, whose package is the
-  release commit's, and reproduced in all 138 arrays. If Arm 3's end of
-  warm-up is adopted (the item on Arm 3), Phase 9 runs again from the new
-  code.
+  release commit's, and reproduced in all 138 arrays.
 
 - [ ] **Final large-scale check before the release (the gate).** Once no
   algorithmic work on 1.5 remains, regenerate the VBMC run pools on the test
@@ -279,8 +191,8 @@ records its execution.
   [campaign](plans/svbmc-benchmark-campaign.md) at `M` = 2, 4, 8 and 16 and the
   integrated arm alone at 3, 5 and 32, and check that the campaign's results
   hold: the acceptance criteria of the comparison, the added-bias ranges of the
-  headline note, and the switch of the headline to the two-level shrinkage (the
-  debiasing item above). The gate tests PyVBMC 1.5 end to end, not S-VBMC
+  headline note, and the switch of the headline to the two-level shrinkage. The
+  gate tests PyVBMC 1.5 end to end, not S-VBMC
   alone: the pools are VBMC runs of the release code, and each run's record
   carries its convergence status and its posterior and evidence metrics against
   the ground truth. Uses the pool generator and stacking harness under
@@ -295,24 +207,11 @@ records its execution.
   0.53 of the original's time (criterion 4); criterion 3 fails on `student_D8`
   alone, at every `M` where both arms ran (2, 4, 8 and 16), where the capped
   headline's median bias is −0.71 to −1.39 nats against the original's −0.01 to
-  +0.28, as on the stage D pools. The added bias of each estimate, and the
-  headline it argues for, are in the S-VBMC ELBO headline selection item above.
-
-- [ ] **Arm 3: the port's end of warm-up.** The release code with the
-  end of warm-up of `f91fdf0`, which W2-1 and W2-2 moved to MATLAB's, on
-  the release gate's population cases, pools and stacking and on fresh
-  seeds of the noisy Rosenbrock target, in one batch with Arm 0 (PI,
-  2026-10-05). The PI chooses MATLAB's end of warm-up or the port's for
-  the noisy and the noiseless targets apart, and the S-VBMC ELBO headline
-  from Arm 3's stacking, reading the results with a guide fixed before the
-  runs. The [plan](plans/arm-3-warmup-comparison.md) holds the decisions,
-  the pairing of arms across harness commits that Arm 3 needs, the campaigns
-  and the checklist; the
-  [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
-  raised the question. The batch ran in the operator's account on
-  2026-10-05/06, every campaign verified; it comes back as a pull request
-  to `dev-next` with its draft releases, after which
-  `scripts/arm3_guide.py` reads it.
+  +0.28, as on the stage D pools. The added bias of each estimate, on these
+  pools and on those of Arm 3 (the release code with the port's end of
+  warm-up), and the switch of the noisy headline to the two-level shrinkage
+  that the PI made on them (2026-10-06), are in
+  [the reading](results/2026-10-06-arm-3-reading.md).
 
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a
@@ -327,8 +226,10 @@ records its execution.
   configurations and 2.2 times less on the noisy ones. The
   [plan](plans/arm-1.0.4-comparison.md) holds the decisions, the harness's
   legacy profile, the rescoring across harness commits and the checklist.
-  It runs in one batch with Arm 3 (the item above), and does not wait for
-  the decision that Arm 3 informs (PI, 2026-10-05). The campaign ran on
+  It ran in one batch with Arm 3, the release code with the port's end of
+  warm-up ([its plan](plans/arm-3-warmup-comparison.md)). MATLAB's end of
+  warm-up stays (PI, 2026-10-06), so the after arm remains the release code
+  that Arm 0 is compared with. The campaign ran on
   2026-10-05/06: 2398 cases verified and 2 failed in 1.0.4, which the
   comparison counts as runs that gave no usable posterior (the plan's
   decision 9). The changelog's, the README's and the release notes'
@@ -368,8 +269,8 @@ records its execution.
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
   - re-execute the example notebooks at the release commit and commit their
-    outputs, Example 7's account of the headline following the headline
-    decision;
+    outputs, Example 7 with its account of the headline as the switch of
+    2026-10-06 rewrote it;
   - the API and tutorial review, the Sphinx build, `linkcheck`, the rendered
     pages and the agent skill, with a `linkcheck` again after the merge into
     `main`;
@@ -463,8 +364,21 @@ records its execution.
   from S-VBMC, whose requirement is not to add bias to its inputs; not
   part of 1.5. No user-facing text states this optimism today (the FAQ
   and the noisy-target documentation are silent); a sentence there
-  belongs to this item, and the S-VBMC caveat of the debiasing item
-  above will point at it.
+  belongs to this item, and the caveat of the S-VBMC headline on the
+  `SVBMC` page will point at it.
+- **A longer warm-up for noisy targets of few dimensions.** The release
+  code ends warm-up as MATLAB does, which on the noisy two-dimensional
+  Rosenbrock target is about three iterations earlier than the port did
+  before the port review, and its runs there are usable 72 times in 100
+  against the before arm's 87
+  ([the note](results/2026-10-05-noisy-rosenbrock-warmup.md)).
+  The port's end of warm-up, run as Arm 3 on every configuration of the
+  release gate, did not establish the gain on fresh seeds and made the
+  noisy Student target worse, so MATLAB's stays (PI, 2026-10-06;
+  [the reading](results/2026-10-06-arm-3-reading.md)). A rule that
+  lengthens warm-up only for noisy targets of few dimensions is untested
+  and would move default trajectories; Arm 3's plan (decision 5) names this
+  item. Arm 3's code is on the branch `retain/arm3-port-warmup`.
 
 ## After PyVBMC 1.5 is published
 
@@ -554,7 +468,9 @@ implementation is complete (2026-09-16): eight pool conditions at
 `M` = 2, 4, 8 and 16 with both implementations and at `M` = 3, 5 and 32
 with the port alone; criteria 1, 2, 4 and 5 hold on every condition,
 criterion 3's gate fails on Student D8 because the capped headline
-over-corrects on heavy tails, which the debiasing item owns. The
+over-corrects on heavy tails; since 2026-10-06 the headline of a noisy
+stack is the two-level shrinkage estimate
+([the reading](results/2026-10-06-arm-3-reading.md)). The
 [stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
 the numbers, the [campaign plan](plans/svbmc-benchmark-campaign.md)
 owns the design, worklog and the PI's decisions, the

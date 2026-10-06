@@ -42,6 +42,13 @@ the numbers of contributing, unavailable and older unrecorded cells. Its
 bootstrap uses an independent deterministic stream, so adding it does not
 move historical intervals or paired checks.
 
+The integrated arm's ``headline`` is the class's ``elbo``, and the cell
+records which estimate that is as ``headline_method``: on a noisy stack the
+two-level shrinkage estimate, or the capped value where the shrinkage is
+undefined, and on a noiseless one the raw value. A cell without
+``headline_method`` was recorded by code whose noisy headline was the capped
+value, as in the campaigns up to the release gate's of October 2026.
+
 The comparison runs in one of two ways, which give the same cells and the
 same summaries but for the seconds they measure. On one machine, the flags
 below without a subcommand run every cell in one process. On a Slurm
@@ -1074,6 +1081,7 @@ def fit_integrated(entries, seeds, cell_seed, max_steps, problem, reference):
         {
             "arm": "integrated",
             "headline": "headline",
+            "headline_method": details["headline_method"],
             "M_used": int(stacked.M),
             "K": [int(k) for k in stacked.K],
             "w": np.ravel(stacked.w).tolist(),
@@ -2150,9 +2158,11 @@ def headline_bias_growth(entries):
     How much the median bias of the integrated headline grows from the
     smallest ``M`` of the condition to the largest, which the criterion
     bounds by ``GROWTH_BOUND`` nats; ``growth_within_bound`` is whether it
-    stays under it. The headline is the capped value on a
-    noisy stack, which is the case the bound was written for, and the raw
-    value where no cap applies, as on the noiseless control. A comparison
+    stays under it. The headline is the class's ``elbo``: on a noisy stack
+    the two-level shrinkage estimate, or the capped value where the
+    shrinkage is undefined and in cells without ``headline_method`` (the
+    case the bound was written for), and the raw value on a noiseless one.
+    A comparison
     run at a single ``M`` reports a growth of zero, which meets the bound
     by construction.
     """
@@ -2393,10 +2403,13 @@ def summary_markdown(summary):
         "-resample bootstrap 95 % "
         "interval; `d` columns are the paired difference integrated minus "
         "original, so a negative value favours the integrated class. The "
-        "headline ELBO is the capped value for the integrated class on "
-        "noisy stacks and the raw estimate for the original, which is what "
-        "each implementation reports. gsKL is the house convention (no "
-        "`1/D` factor).",
+        "headline ELBO is what each implementation reports: the raw "
+        "estimate for the original, and for the integrated class its "
+        "`elbo`: on a noisy stack the two-level shrinkage estimate, or the "
+        "capped value where the shrinkage is undefined, as the cell's "
+        "`headline_method` names it, and the capped value in a cell "
+        "without `headline_method`; on a noiseless stack the raw value. "
+        "gsKL is the house convention (no `1/D` factor).",
         "",
         "Every reported ELBO is scored by its bias against `elbo_mc = "
         "e_log_joint_mc + entropy_ref`, the Monte Carlo ELBO of the "
@@ -2508,8 +2521,8 @@ def summary_markdown(summary):
             f"{number(growth['bias_at_M_max'])}), below the "
             f"{growth['bound']}-nat bound: "
             f"{flag(growth['growth_within_bound'])}. The headline is the "
-            "capped value on a noisy stack and the raw value where no cap "
-            "applies.",
+            "integrated class's `elbo`, as the opening paragraph describes "
+            "it.",
             "",
             "The reference and the arms' own entropies. `H ref` is the "
             "arm-independent estimate at that arm's weights, `H` what the "

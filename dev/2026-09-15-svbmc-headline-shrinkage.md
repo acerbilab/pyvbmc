@@ -259,8 +259,8 @@ alongside `shrinkage_noise_share`, before the campaign. Evaluate it at the
 existing selected weights with the same final entropy estimate. The
 campaign can then compare the packaged estimate directly; promote it to
 the headline afterwards only if it is confirmed to be the best estimator.
-The current headline, optimization and raw-estimate uncertainty remain
-unchanged. `VBMC.optimize()` returns the same posterior and results objects,
+Adding it leaves the headline, the optimization and the raw-estimate
+uncertainty unchanged. `VBMC.optimize()` returns the same posterior and results objects,
 and `SVBMC(vp_list)` keeps its input requirements: the existing `I_sk`,
 `J_sjk`, component weights and transformers suffice. No GP, full VBMC
 object, new posterior statistic or save-format change is needed.
@@ -268,6 +268,19 @@ object, new posterior statistic or save-format change is needed.
 The [integration plan](plans/svbmc-shrinkage-estimator.md) owns the package
 implementation, reporting, campaign recording and verification.
 `dev/scripts/svbmc_shrink_elbo.py` remains the scientific reference.
+
+The release gate confirmed the switch, and the PI made it on 2026-10-06:
+a noisy stack reports the two-level shrinkage estimate as `stacked.elbo`
+(the capped value, with a warning, where the shrinkage is numerically
+undefined), and a noiseless stack keeps the raw value. On the release
+code's pools of 320 filtered runs per condition, and again on the pools of
+Arm 3, the release code with the port's end of warm-up, the two-level
+estimate adds −0.23 to +0.15 and −0.23 to +0.14 nats to the bias of its
+inputs at every noisy condition and `M` from 2 to 32; on the heavy-tailed
+Student target of Arm 3's pools it adds −0.23 to +0.08 nats where the cap
+adds −1.48 to −0.71; and the raw value of a noiseless stack adds −0.01 to
++0.08. The [reading](results/2026-10-06-arm-3-reading.md) gives the
+numbers and the bounds the PI fixed before the runs.
 
 ## Open
 

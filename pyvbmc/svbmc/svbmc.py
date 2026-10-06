@@ -262,14 +262,14 @@ Generator, optional
         construction still fixes a run. Default ``None``.
     show_tips : bool, optional
         Show occasional guidance when INFO logging is enabled. Set to
-        ``False`` to suppress tips while keeping progress and cap messages.
-        Default ``True``.
+        ``False`` to suppress tips while keeping the messages on progress
+        and on the headline ELBO. Default ``True``.
     noisy : bool or None, optional
         Override the noise status of the whole stack. With ``None`` (the
         default), read each retained run's ``uncertainty_handling_level``
         statistic; when absent, infer noise from ``elbo_sd > 0.1``. This
         inference can misclassify old posteriors. Any noisy retained run
-        selects the capped headline ELBO.
+        makes the headline :attr:`elbo` the two-level shrinkage estimate.
 
     Attributes
     ----------
@@ -287,30 +287,38 @@ Generator, optional
         Weights of all components, concatenated in run order and
         normalized. :meth:`optimize` replaces them with the optimized ones.
     elbo : float or None
-        After :meth:`optimize`: the component-median capped ELBO for noisy
-        runs, or the raw ELBO for noiseless runs, evaluated with fresh draws
-        at the returned weights. Capping is a heuristic correction for
-        optimistic expected log-joint estimates.
+        After :meth:`optimize`: the headline estimate of the stacked ELBO at
+        the returned weights, evaluated with fresh draws. For a noiseless
+        stack it is the raw ELBO; for a noisy stack, the two-level
+        shrinkage estimate ``elbo_details["shrunk_two_level"]``, or the
+        component-median capped ELBO where the shrinkage is numerically
+        undefined. Choosing the weights on noisy estimates adds an upward
+        bias to the raw ELBO of a noisy stack, which the shrinkage targets.
+        The shrinkage can also remove part of the bias that each run's ELBO
+        carries from VBMC, and residual bias can remain. The raw ELBO is not
+        an upper bound on the stack's true ELBO.
     elbo_sd : float or None
-        Estimated uncertainty of the uncapped evaluation at the returned
+        Estimated uncertainty of the raw evaluation at the returned
         weights: entropy Monte Carlo error and GP quadrature uncertainty,
-        treating runs as independent. It excludes selection bias and
-        uncertainty of the cap; it does not define a calibrated confidence
-        interval for the capped headline.
+        treating runs as independent. It excludes selection bias and the
+        uncertainty of the shrinkage or of the cap; it does not define a
+        calibrated confidence interval for the headline of a noisy stack.
     elbo_details : dict or None
         After :meth:`optimize`: ``raw``, ``capped_I_median``,
         ``capped_E_median``, ``naive`` and ``shrunk_two_level`` ELBO
-        estimates; ``shrinkage_noise_share``; ``headline_method`` (``raw``
-        or ``capped_I_median``); ``cap_amount`` (the reduction applied to the
-        headline); ``entropy_sd``, ``gp_sd`` and ``raw_sd`` (equal to
-        :attr:`elbo_sd`); ``noisy`` and ``noise_status_source``. Shrinkage
-        adjusts component estimates within each run and then shifts run
-        levels, at the selected weights and with the same final entropy as
-        ``raw``. ``shrunk_two_level`` is ``None`` when its numerical
-        calculation is undefined, in which case optimization still succeeds
-        with a ``RuntimeWarning``. ``shrinkage_noise_share`` is the estimated
-        noise-to-spread ratio averaged over runs using their selected masses;
-        it can exceed one and can be ``None`` independently.
+        estimates; ``shrinkage_noise_share``; ``headline_method`` (``raw``,
+        ``shrunk_two_level`` or ``capped_I_median``); ``cap_amount`` (the
+        reduction the median cap applied to the headline, zero unless the
+        headline is ``capped_I_median``); ``entropy_sd``, ``gp_sd`` and
+        ``raw_sd`` (equal to :attr:`elbo_sd`); ``noisy`` and
+        ``noise_status_source``. Shrinkage adjusts component estimates
+        within each run and then shifts run levels, at the selected weights
+        and with the same final entropy as ``raw``. ``shrunk_two_level`` is
+        ``None`` when its numerical calculation is undefined, in which case
+        optimization still succeeds with a ``RuntimeWarning``.
+        ``shrinkage_noise_share`` is the estimated noise-to-spread ratio
+        averaged over runs using their selected masses; it can exceed one
+        and can be ``None`` independently.
         Naive stacking equally weights retained runs with their original
         internal weights. Its estimate inherits the runs' errors and is
         a diagnostic baseline, not a bound on the optimized ELBO.
@@ -789,8 +797,9 @@ Generator, optional
         :attr:`w` (NumPy float64), the entropy estimate in :attr:`entropy`
         and a fresh final evaluation in :attr:`elbo`, :attr:`elbo_sd` and
         :attr:`elbo_details`. The report includes a deterministic two-level
-        shrinkage estimate at those weights, using the same final entropy;
-        it consumes no random draws.
+        shrinkage estimate at those weights, computed with the same final
+        entropy and without random draws; where it is defined, it is the
+        headline of a noisy stack.
         Returns ``None``.
 
         Parameters
@@ -847,11 +856,11 @@ Generator, optional
                     + naive_H.item()
                 )
 
-        # Cap the expected log-joint at the median component / run value to
-        # counter the optimistic bias of maximizing a noisy estimate.
+        # The expected log-joint capped at the median component / run value:
+        # diagnostics, and the headline of a noisy stack whose shrinkage is
+        # undefined.
         I_median = float(np.median(self.I_corrected))
         E_median = float(np.median(self.E_corrected))
-        method = "capped_I_median" if self.noisy else "raw"
         varG = self._expected_log_joint_variance(self.w.ravel())
         self.elbo_sd = float(np.sqrt(varG + varH))
         capped_I = min(G, I_median) + self.entropy
@@ -871,7 +880,19 @@ Generator, optional
             self.w.ravel(),
             self.entropy,
         )
-        self.elbo = float(capped_I if self.noisy else raw)
+        # A noisy stack reports the shrinkage estimate, or the cap where the
+        # shrinkage is numerically undefined; a noiseless one the raw value.
+        if not self.noisy:
+            method, self.elbo = "raw", float(raw)
+        elif shrunk is not None:
+            method, self.elbo = "shrunk_two_level", float(shrunk)
+        else:
+            method, self.elbo = "capped_I_median", float(capped_I)
+        cap_amount = (
+            float(max(0.0, raw - capped_I))
+            if method == "capped_I_median"
+            else 0.0
+        )
         self.elbo_details = {
             "raw": raw,
             "capped_I_median": capped_I,
@@ -880,18 +901,28 @@ Generator, optional
             "shrunk_two_level": shrunk,
             "shrinkage_noise_share": shrinkage_noise_share,
             "headline_method": method,
-            "cap_amount": float(max(0.0, raw - self.elbo)),
+            "cap_amount": cap_amount,
             "entropy_sd": float(np.sqrt(varH)),
             "gp_sd": float(np.sqrt(varG)),
             "raw_sd": self.elbo_sd,
             "noisy": self.noisy,
             "noise_status_source": self.noise_status_source,
         }
-        if self.elbo_details["cap_amount"] > 0:
+        if method == "shrunk_two_level":
             self.logger.info(
-                "Expected log-joint capped by %.3g nats.",
-                self.elbo_details["cap_amount"],
+                "Two-level shrinkage moved the ELBO by %+.3g nats.",
+                self.elbo - raw,
             )
+        elif method == "capped_I_median":
+            self.logger.warning(
+                "Two-level shrinkage is unavailable, so the headline ELBO "
+                "is capped_I_median, with the expected log-joint capped at "
+                "the component median."
+            )
+            if cap_amount > 0:
+                self.logger.info(
+                    "Expected log-joint capped by %.3g nats.", cap_amount
+                )
 
     def _expected_log_joint_variance(self, w):
         """GP uncertainty at fixed weights, summed over independent runs."""

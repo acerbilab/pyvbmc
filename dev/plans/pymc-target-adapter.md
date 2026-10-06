@@ -147,8 +147,8 @@ tracked output locations are specified below in Before approval.
 The GP investigation is complete and preserved in the
 [tail-acquisition report](../results/2026-09-16-gp-tail-acquisition.md)
 and its linked box-sampler study; algorithmic remedies are outside 1.5.
-The S-VBMC campaign is closed. Its headline switch remains tied to the
-release gate, which follows the remaining 1.5 work in `dev/TODO.md`.
+The S-VBMC campaign is closed. Its headline switch followed the release
+gate, on 2026-10-06 (`dev/results/2026-10-06-arm-3-reading.md`).
 
 ## Summary
 

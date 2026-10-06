@@ -33,6 +33,13 @@ CELLS = [
     for mode in sorted(REFERENCES["groups"][group])
 ]
 TOLERANCE = dict(rtol=1e-8, atol=1e-10)
+# The headline of the noisy cells, the two-level shrinkage estimate, which
+# the references predate: computed by the same recipe (FIXTURES.md).
+SHRUNK_TWO_LEVEL = {
+    ("upstream_GMM_noisy", "all-weights"): 2.646491683440882,
+    ("upstream_GMM_noisy", "ns"): 2.5131358997421858,
+    ("upstream_GMM_noisy", "posterior-only"): 2.595557066470728,
+}
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -51,6 +58,15 @@ def test_every_group_has_references():
         "posterior-only",
         "ns",
     }
+
+
+def test_every_noisy_cell_has_a_shrinkage_reference():
+    noisy = {
+        (group, mode)
+        for group, mode in CELLS
+        if REFERENCES["groups"][group][mode]["elbo_details"]["noisy"]
+    }
+    assert noisy == set(SHRUNK_TWO_LEVEL)
 
 
 @pytest.mark.parametrize("group,mode", CELLS)
@@ -74,17 +90,34 @@ def test_matches_reference(group, mode):
     np.testing.assert_allclose(
         stacked.w, reference["w"], err_msg="weights", **TOLERANCE
     )
-    np.testing.assert_allclose(stacked.elbo, reference["elbo"], **TOLERANCE)
+    expected_details = dict(reference["elbo_details"])
+    np.testing.assert_allclose(
+        stacked.elbo_details[expected_details["headline_method"]],
+        reference["elbo"],
+        **TOLERANCE,
+    )
+    if expected_details["noisy"]:
+        # The references predate the shrinkage headline of noisy stacks:
+        # their stored headline is the capped estimate, compared above.
+        expected_details["headline_method"] = "shrunk_two_level"
+        expected_details["cap_amount"] = 0.0
+        np.testing.assert_allclose(
+            stacked.elbo, SHRUNK_TWO_LEVEL[group, mode], **TOLERANCE
+        )
+    assert (
+        stacked.elbo
+        == stacked.elbo_details[expected_details["headline_method"]]
+    )
     np.testing.assert_allclose(
         stacked.elbo_sd, reference["elbo_sd"], **TOLERANCE
     )
-    assert set(stacked.elbo_details) == set(reference["elbo_details"]) | {
+    assert set(stacked.elbo_details) == set(expected_details) | {
         "shrunk_two_level",
         "shrinkage_noise_share",
     }
     assert np.isfinite(stacked.elbo_details["shrunk_two_level"])
     assert np.isfinite(stacked.elbo_details["shrinkage_noise_share"])
-    for key, expected in reference["elbo_details"].items():
+    for key, expected in expected_details.items():
         actual = stacked.elbo_details[key]
         if key == "noise_status_source":
             assert list(actual) == expected

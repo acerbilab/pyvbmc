@@ -20,8 +20,9 @@ S-VBMC two-level shrinkage estimate are integrated on `dev-next`. The full
 passes at `9cc6882`: all nine Ubuntu/Windows/macOS × Python 3.10/3.11/3.12
 jobs succeed. Ubuntu/Python 3.12 includes the optional Torch, ArviZ, PyMC
 and S-VBMC coverage; the other cells check the core installation. The
-current S-VBMC headline is unchanged. This verifies the integrated code;
-the final release population benchmark and headline decision remain pending.
+integration left the S-VBMC headline unchanged. This verifies the
+integrated code; the headline decision followed the release gate
+(pickup 17).
 The focused teaching-material work is integrated into `dev-next` at `1be3111`:
 Example 9 fits a psychometric curve with a Torch target, checks its JAX
 counterpart and demonstrates Torch/ArviZ posterior exports. Its outputs,
@@ -38,8 +39,8 @@ records execution. Future candidate checks may use smaller allocations;
 reference size does not prescribe their run count.
 
 The noisy-acquisition efficiency work closed on 2026-09-19 without a change
-of default ([noisy-acquisition-efficiency.md](noisy-acquisition-efficiency.md));
-the selection of the S-VBMC headline estimate remains (`TODO.md`).
+of default ([noisy-acquisition-efficiency.md](noisy-acquisition-efficiency.md)).
+The S-VBMC headline estimate was selected on 2026-10-06 (pickup 17).
 The S-VBMC preparation/entropy speedups that preserve the
 method are implemented, measured and merged into `dev-next` (2026-09-13,
 [svbmc-speedups.md](svbmc-speedups.md)).
@@ -1091,6 +1092,41 @@ The open work for 1.5 is the list "In scope for 1.5" of
     ran, and the environment check passed with it on 2026-10-01 (that
     plan's worklog).
 
+16. **The end of warm-up — MATLAB's stays** (2026-10-06). Two fixes of the
+    port review, W2-1 and W2-2, end warm-up as MATLAB does, about three
+    iterations earlier than the port did, and the release gate's
+    comparison found the noisy two-dimensional Rosenbrock target worse for
+    it ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)).
+    Arm 3, the release code with the port's end of warm-up, ran the release
+    gate's population cases, pools and stacking and fresh seeds of that
+    target on the cluster on 2026-10-05/06
+    ([its plan](arm-3-warmup-comparison.md)), read with a guide fixed before
+    the runs. The port's end did not establish its gain on the fresh seeds
+    and made the noisy Student target's evidence error worse, and moved
+    nothing on the noiseless targets; the PI kept MATLAB's end for both
+    kinds of target ([the reading](../results/2026-10-06-arm-3-reading.md)).
+    The release code is unchanged, and Arm 3's branch is retained as
+    `retain/arm3-port-warmup`; a longer warm-up for noisy targets of few
+    dimensions is an item outside 1.5 (`TODO.md`).
+
+17. **The S-VBMC headline — the two-level shrinkage on noisy stacks**
+    (2026-10-06). The two-level shrinkage estimate, integrated on
+    2026-09-16 as `elbo_details["shrunk_two_level"]`
+    ([its plan](svbmc-shrinkage-estimator.md)), is the headline
+    `stacked.elbo` of a noisy stack, or the capped value with a warning
+    where it is numerically undefined; a noiseless stack keeps the raw ELBO.
+    On the release gate's pools and on Arm 3's it adds −0.23 to +0.15 nats
+    to the bias of its inputs at every noisy condition and `M` from 2 to
+    32, where the capped headline it replaces adds −1.48 to −0.56 on the
+    heavy-tailed Student target; the
+    [reading](../results/2026-10-06-arm-3-reading.md) gives the numbers and
+    the [headline note](../2026-09-15-svbmc-headline-shrinkage.md) the
+    derivation. The branch `feat-svbmc-shrinkage-headline` merged into
+    `dev-next` with the `SVBMC` docstring, the API page's account of the
+    headline and its caveat, the FAQ, Example 7's explanation, the tip
+    `noisy_elbo`, the changelog's entry and the tests that pin the noisy
+    headline; the stacking harness's cells record `headline_method`.
+
 ## S-VBMC ELBO corrections and reporting
 
 Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:
@@ -1119,7 +1155,9 @@ condition, and the evidence-accuracy gate failed on the heavy-tailed
 condition because of the capped headline, for which the
 [headline note](../2026-09-15-svbmc-headline-shrinkage.md) records
 the candidate replacement; the `M = 32` extension of the integrated
-arm (2026-09-15/16) is in the same report.
+arm (2026-09-15/16) is in the same report. The release gate's pools and
+those of Arm 3 confirmed it, and it is the headline of a noisy stack since
+2026-10-06 (pickup 17).
 
 ## Golden population acceptance
 
@@ -1273,8 +1311,8 @@ must cover the settled release code, API and behavior before publication.
   their text's claims pass. Reinstall `pyvbmc` in the notebooks'
   environment at the release commit first: Example 3 prints
   `results["version"]`, which an editable install reads from its metadata as
-  of its installation. Update Example 7's account of the headline estimate
-  to the headline decision, read each notebook's text against its new
+  of its installation. Example 7's account of the headline estimate follows
+  the headline decision (pickup 17); read each notebook's text against its new
   outputs, and regenerate `examples/scripts/` with its Makefile. Example 7's
   text needs at least one of its four runs to miss a mode, which its check
   asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single

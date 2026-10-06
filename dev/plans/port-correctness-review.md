@@ -553,7 +553,8 @@ of the MATLAB source, as material for the MATLAB VBMC repository.
   rounds onto a support bound kept; 107 tests). Rulings without a code
   change: the two-level shrinkage stays as devised, with a comparison
   of the two compositions added to the headline-selection item of
-  `TODO.md`; the prior draws at construction stay; saving an `SVBMC`
+  `TODO.md` (read in `dev/results/2026-10-06-arm-3-reading.md`); the prior
+  draws at construction stay; saving an `SVBMC`
   object works through `dill` and gets `save`/`load` methods as a
   `TODO.md` item; the core transformer's loss of precision near a
   nonzero bound waits for slices P8 and O3 to say whether MATLAB shares

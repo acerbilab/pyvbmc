@@ -3,8 +3,8 @@
 Created 2026-10-04. Status: **implemented, reviewed and merged into
 `dev-next` (`9b84a1ae`); the local runs of 1.0.4 and the speed measurement
 done; the campaign run on the cluster (2026-10-05/06), two of its cases
-failed in 1.0.4 and ruled on (decision 9); the hand-back and the comparison
-open**.
+failed in 1.0.4 and ruled on (decision 9); the hand-back merged into
+`dev-next` (#184); the comparison open**.
 
 ## Purpose
 
@@ -101,10 +101,12 @@ named: the head of `dev-next` once the pairing that Arm 3 needs has
 merged (the checklist), and the tips' wording and the release date wait
 until then. The S-VBMC headline does not, since its code, docstring and
 tip lie under `pyvbmc/svbmc/`, which the check leaves out. The one change
-to the release code's numerics still open, the end of warm-up, is decided
-on Arm 3, which runs in the same batch; Arm 0's runs stand whatever the
-decision, and only their comparison changes if the release code does (PI,
-2026-10-05; [Arm 3's plan](arm-3-warmup-comparison.md)).
+to the release code's numerics that was open, the end of warm-up, was
+decided on Arm 3, which ran in the same batch; Arm 0's runs stand whatever
+the decision, and only their comparison would have changed with the
+release code (PI, 2026-10-05; [Arm 3's plan](arm-3-warmup-comparison.md)).
+MATLAB's end of warm-up stays (PI, 2026-10-06), so the after arm remains
+the release code.
 
 ## Design
 
@@ -298,8 +300,8 @@ NumPy probe before each group as the machine's speed control. The procedure, the
 - [x] The PI's ruling on the two failed cases (decision 9), and the
   comparison's counting of failed cases (`analyze_population_run.py`,
   `9bfd8f50` and `4b6d47ac`).
-- [~] The hand-back: its README went to the PI on 2026-10-06; the pull
-  request to `dev-next` with the tracked copies to come.
+- [x] The hand-back: its README and the tracked copies, merged into
+  `dev-next` (#184, `cd842264`).
 - [ ] The comparison with the after arm.
 - [x] Speed against 1.0.4 on the developer's machine, run when the PI
   leaves the machine free for some hours (PI, 2026-10-05): the night of
@@ -307,8 +309,8 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   ([results](../results/2026-10-06-speed-against-1.0.4.md)).
 - [x] The changelog's "Runs are faster", in the PI's wording (2026-10-06),
   and the same figures in the "What's new" blocks of `README.md` and
-  `docsrc/source/index.rst`; their noisy figure becomes 2.1 if the port's
-  end of warm-up is adopted for noisy targets.
+  `docsrc/source/index.rst`; their noisy figure, that of MATLAB's end of
+  warm-up, stands, since that end stays (PI, 2026-10-06).
 
 ## Worklog
 

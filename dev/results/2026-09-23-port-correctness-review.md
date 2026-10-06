@@ -167,7 +167,8 @@ object (done on 2026-09-24: `dev/plans/svbmc-integration.md`, "Execution
 record") and the comparison of the two compositions of the S-VBMC shrinkage
 (found on 2026-09-25 to exist on the existing pools as the variant
 `two_level_anchored`, in `dev/results/2026-09-15-svbmc-pool-comparison.md`;
-the release pools repeat it: the headline-selection item of `dev/TODO.md`).
+the release pools repeat it, read with the headline's selection in
+`dev/results/2026-10-06-arm-3-reading.md`).
 
 ## The fixes that move default trajectories
 
@@ -512,7 +513,7 @@ counterpart map (124 rows) before any comparison reviewer ran
 |---|---|---|---|---|---|---|---|---|
 | N1 F1 | N1 | `svbmc/svbmc.py:57` `_validate_posteriors` (effect `_entropy.py:91`); no counterpart | cross-module | Runs whose original-space boxes differ are accepted. Draws outside a narrower run's box give NaN, so the ELBO, entropy and weights are silently NaN. | defect; not dated | wave0.md; `n1_f1_f2_f3_svbmc.py` part 1 | fixed: construction compares every run's original-space hard bounds and raises | `a7cc1f91` (git) |
 | N1 F2 | N1 | `svbmc.py:605` reads `self.w`, `:747` overwrites it; no counterpart | state/caching | A second `optimize()` starts its logits from the first solution rather than the runs' own weights, so repeated calls drift (the `"all-weights"` and `"posterior-only"` modes). | defect; not dated | same script, part 2 | fixed: every `optimize()` starts from the runs' own weights; first call bit-identical | `b742a9bb` (git) |
-| N1 F3 | N1 | `svbmc/_elbo_shrinkage.py:159`; no counterpart | formula/gradient | The two shrinkage stages do not compose to the shrunk run level: the between-run shift is added to the within-shrunk components. | as specified (step 5 of `plans/svbmc-shrinkage-estimator.md`); not dated | same script, part 3 | PI: stays as devised; a comparison of the two compositions added to the headline-selection item of `TODO.md` | — (TODO text in `7ddf79b0` (git)) |
+| N1 F3 | N1 | `svbmc/_elbo_shrinkage.py:159`; no counterpart | formula/gradient | The two shrinkage stages do not compose to the shrunk run level: the between-run shift is added to the within-shrunk components. | as specified (step 5 of `plans/svbmc-shrinkage-estimator.md`); not dated | same script, part 3 | PI: stays as devised; a comparison of the two compositions added to the headline-selection item of `TODO.md`, read in `results/2026-10-06-arm-3-reading.md` | — (TODO text in `7ddf79b0` (git)) |
 | N1 F4 | N1 | `svbmc.py:846` (docstring), `:889`; no counterpart | control flow | `sample(balance_flag=True)` does not keep every component count within one draw. The within-run split delegates to `VariationalPosterior.sample`, which places its remainder at random. | documentation; not dated | `n1_f4_balance.py` | the docstring, the API page and Example 7 state the bound that holds; code unchanged | `b8ca3d6a`, `a601b761` (git) |
 | N1 F5 | N1 | `svbmc.py:467` (with `:428`, `:552-558`); no counterpart | cross-module | The docstring of `stacked_entropy` says `stacked_ELBO` subtracts the Jacobian corrections. The subtraction happens once, in `__init__`. | documentation; not dated | reading | docstring corrected | `7395a36d` (git) |
 | N2r F1 | N2 | `pymc/_target.py:349` (effect `:1133`); no counterpart | formula/gradient (support derivation) + control flow | The support is inferred from the transform kind: a log transform is read as (0, inf). `pm.Wald(alpha=2)` then reports a wrong support, and a run aborts on a non-finite density. | defect; not dated | `n2r_f1_wald_support.py`, `n2r_f1_wald_abort.py` | fixed: a kept log transform is checked by a probe ladder on the variable's own prior density; a shifted support is rejected at construction | `3a9da43e` (git) |
