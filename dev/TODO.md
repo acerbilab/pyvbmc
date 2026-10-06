@@ -333,6 +333,35 @@ records its execution.
   wait for the campaign; the changelog's statement of speed is in
   (2026-10-06).
 
+- [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
+  its published texts link the lab (PI, 2026-10-06; the convention "Links
+  to the lab" in PyBADS's `AGENTS.md`, applied in PyBADS's commit
+  "docs: links to the lab's tools for fitting models to data, and to its
+  group page"), and PyVBMC takes the same pass (PI, 2026-10-06):
+  - a link that names Luigi Acerbi goes to his personal page,
+    https://lacerbi.github.io/, and one that names the lab or its members
+    to the group's page,
+    https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence,
+    not to its `/people` page, which `README.md`, `docsrc/source/index.rst`
+    and `docsrc/source/about_us.rst` link now (`about_us.rst` for each
+    developer as well);
+  - the lab's page of its model-fitting tools,
+    https://acerbilab.org/model-fitting/ (link text "tools for fitting
+    models to data"), is linked under the title of `README.md` and
+    `index.rst`, in the docs' footer (`extra_footer` of sphinx-book-theme),
+    in a `[project.urls]` table of `pyproject.toml`, which has none, and in
+    each paragraph that sends the reader to another of the lab's methods
+    (PyBADS, PyIBS, MATLAB VBMC): the FAQ, the skill, the examples;
+  - a tip that sends the reader to another method links the page too:
+    the `pybads` tip links PyBADS's documentation alone.
+
+  PyBADS's README opens with "PyBADS is one of the open-source tools for
+  fitting models to data from Luigi Acerbi's group at the University of
+  Helsinki. Check out our other tools, such as PyVBMC for the posterior
+  and the model evidence and PyIBS for models that can only be simulated."
+  A change to a tip reaches the review of the tips (above) and the stored
+  outputs of the examples that show tips.
+
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
@@ -443,16 +472,23 @@ records its execution.
   users of the old package. See the [integration plan](plans/svbmc-integration.md).
 - [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
   [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
-  that bumps the version and the source hash. Where the feedstock's
-  `conda-forge.yml` sets `bot: {automerge: true, inspection:
-  update-grayskull}` (proposed in its PR 11 on 2026-09-25, as gpyreg's and
-  PyBADS's feedstocks do), that PR takes the requirements from the PyPI
-  metadata and merges itself once the feedstock's CI passes; otherwise the
-  recipe's requirements, still those of 1.0.4, are updated by hand. Check
-  the published package's requirements against `pyproject.toml`: 1.5 needs
-  gpyreg 1.4.0 or later, which conda-forge did not serve on 2026-09-30
-  (gpyreg's feedstock publishes it through its bot's version update), and
-  adds `filelock`, `platformdirs` and `threadpoolctl`. conda-forge's
+  that bumps the version and the source hash. Its PR 11 (open on
+  2026-10-06) proposes `bot: {automerge: true, inspection:
+  update-grayskull}` in the feedstock's `conda-forge.yml`, as gpyreg's and
+  PyBADS's feedstocks have, so that the bot's PR takes the requirements
+  from the PyPI metadata and merges itself once the feedstock's CI passes.
+  Under those settings the bot's PR for gpyreg 1.4.0
+  (`conda-forge/gpyreg-feedstock` #13) changed the version and the hash
+  alone, though its analysis listed the run requirements that 1.4.0 had
+  dropped, and merged itself; a second PR, under build number 1, removed
+  them (#14). So the recipe's requirements, still those of 1.0.4, are
+  updated by hand, in a PR opened before the bot's or pushed to it before
+  it merges (removing `[bot-automerge]` from the bot's title keeps it from
+  merging itself); PyBADS 1.5.0 does the same (its `dev/TODO.md`,
+  "conda-forge recipe"). Check the published package's requirements
+  against `pyproject.toml`: 1.5 needs gpyreg 1.4.0 or later, on
+  conda-forge since 2026-09-30, and adds `filelock`, `platformdirs` and
+  `threadpoolctl`. conda-forge's
   `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
   where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
