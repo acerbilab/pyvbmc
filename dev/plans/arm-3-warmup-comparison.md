@@ -1,11 +1,13 @@
 # Arm 3: the port's end of warm-up on the release gate's cases
 
-Created 2026-10-05. Status: **decided by the PI; the pairing across
-harness commits, Arm 3's branch, the guide, the brief and the script of
-the guide's tests written, reviewed and on `dev-next`; the commits named
-(Arm 0 `b196402b`, Arm 3 `ad63dd5a`); the batch run on the cluster
-(2026-10-05/06), every campaign verified; the hand-back, the comparisons
-and the PI's decision open**.
+Created 2026-10-05. Status: **complete**. The batch ran on the cluster on
+2026-10-05/06 (Arm 0 `b196402b`, Arm 3 `ad63dd5a`), every campaign
+verified, and was handed back; the guide read all five parts on
+2026-10-06, and the PI decided the same day: **MATLAB's end of warm-up
+stays, for noisy and noiseless targets**, and **the headline of a noisy
+S-VBMC stack becomes the two-level shrinkage estimate**
+([the reading](../results/2026-10-06-arm-3-reading.md)). Arm 3's branch is
+retained as `retain/arm3-port-warmup`.
 
 ## Purpose
 
@@ -307,18 +309,16 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   committed before the results reach the developer's machine.
 - [x] The batch on the cluster, 2026-10-05/06: every campaign verified,
   and no case of Arm 3's failed.
-- [~] The hand-back: its README went to the PI on 2026-10-06; the pull
-  request to `dev-next` with the tracked copies to come.
-- [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
-  the stacking; the guide read; the PI's decision.
-- [ ] If the port's end of warm-up is adopted: the analysis's extension
-  for comparing Arm 0 with Arm 3, the promotion's for an adopted arm ("The
-  comparisons"), and the branch's documentation; if it is not, the branch
-  retained.
-- [ ] The S-VBMC headline (decision 6): if the PI adopts the two-level
-  shrinkage estimate, the branch `feat-svbmc-shrinkage-headline` merged
-  with its results report and what `dev/TODO.md` ("S-VBMC ELBO headline
-  selection") lists for the merge; otherwise that branch retained.
+- [x] The hand-back: its README and the tracked copies, merged into
+  `dev-next` (#184, `cd842264`).
+- [x] The comparisons: after against Arm 3, the fresh seeds, the pools,
+  the stacking; the guide read; the PI's decision (2026-10-06).
+- [x] The port's end of warm-up not adopted: the branch retained as
+  `retain/arm3-port-warmup`.
+- [x] The S-VBMC headline (decision 6): the PI adopted the two-level
+  shrinkage estimate; the branch `feat-svbmc-shrinkage-headline` merged
+  with the [reading](../results/2026-10-06-arm-3-reading.md) and the
+  records and scripts that took the capped value for the noisy headline.
 
 ## Worklog
 
@@ -409,3 +409,18 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   every test. No case failed in the after arm, Arm 3 or the fresh seeds,
   nor in either pool, whose tests pair the seeds verified in both pools,
   so no test of the guide changes.
+- 2026-10-06: the hand-back merged into `dev-next` (#184). The guide read
+  every part on the developer's machine at `cd842264`, the two pools and
+  Arm 3's analyses restored from their draft releases, each archive
+  matching its hand-back's SHA-256; nothing went to the PI before the
+  reading. It reads MATLAB's end of warm-up for both kinds of target: on
+  noisy targets the fresh seeds' MMTV is lower in Arm 3 but not
+  significantly (one-sided p = 0.127; usable 84 against 73, p = 0.052),
+  and `student_D8_noise3_production`'s evidence error is worse (Holm within
+  the configuration p = 0.030); on noiseless targets no test rejects. The
+  pools reject nothing in any condition, the stacking meets the criteria,
+  and decision 6's three clauses hold. The PI decided as the guide reads,
+  for both questions; the [reading](../results/2026-10-06-arm-3-reading.md)
+  records the numbers and what follows. The S-VBMC headline branch merged
+  with it, and Arm 3's branch was retained as `retain/arm3-port-warmup` at
+  `ad63dd5a`.

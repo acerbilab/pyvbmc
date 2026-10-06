@@ -82,3 +82,7 @@ stacking, and fresh seeds of this configuration, in one batch with Arm 0,
 and the PI makes the choice for the noisy and the noiseless targets
 apart, reading the results with a guide fixed before the runs
 ([Arm 3's plan](../plans/arm-3-warmup-comparison.md)).
+
+The PI decided on 2026-10-06, on Arm 3's results: MATLAB's end of warm-up
+stays for noisy and noiseless targets
+([the reading](2026-10-06-arm-3-reading.md)).

@@ -430,8 +430,15 @@ Rulings of 2026-10-01:
 - `multiple_runs` keeps its 3–4 runs, which validate a fit, beside the
   S-VBMC tip `run_count`'s ten runs, which are stacked.
 - No tip is added.
-- The S-VBMC tip `noisy_elbo` recommends the capped ELBO; it follows the
-  decision on the S-VBMC headline (`dev/TODO.md`, "S-VBMC ELBO headline
-  selection").
+- The S-VBMC tip `noisy_elbo` follows the decision on the S-VBMC headline.
+
+With that decision (PI, 2026-10-06;
+[the reading](../results/2026-10-06-arm-3-reading.md)), `noisy_elbo` says
+that the headline `elbo` of a noisy stack is the two-level shrinkage
+estimate where it is defined, which targets the optimism that stacking adds
+and can remove part of the runs' own bias, and recommends `elbo` with
+`elbo_sd` for model comparison; it links the `SVBMC` page's account of the
+headline (`svbmc.html#svbmc-elbo-reporting`, an explicit label in
+`docsrc/source/api/classes/svbmc.rst`). Every S-VBMC tip carries a link.
 
 Open: the PI's reading of the wording of every tip.

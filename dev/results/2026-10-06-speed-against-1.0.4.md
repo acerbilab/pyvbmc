@@ -109,6 +109,10 @@ the same two figures. The noisy figure is that of the release code's end of
 warm-up, MATLAB's; if the port's end is adopted for noisy targets (Arm 3),
 it becomes 2.1 in all three places.
 
+MATLAB's end of warm-up stays for noisy and noiseless targets (PI,
+2026-10-06; [the reading](2026-10-06-arm-3-reading.md)), so both figures
+stand.
+
 ## Limits
 
 - Two or three seeds per configuration (one for `cigar_D15_exhaust`): a

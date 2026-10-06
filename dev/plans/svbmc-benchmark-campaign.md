@@ -1,8 +1,12 @@
 # S-VBMC run-pool benchmark campaign
 
-Created 2026-09-13. Status: **complete**. The release gate reruns the
-campaign on fresh pools (decisions 12 and 14); that work is open
-(`TODO.md`, "Final large-scale check before the release"). The design was
+Created 2026-09-13. Status: **complete**. The release gate reran the
+campaign on fresh pools (decisions 12 and 14) on 2026-10-02 (`TODO.md`,
+"Final large-scale check before the release"), and again on the pools of
+Arm 3, the release code with the port's end of warm-up, on 2026-10-05/06;
+the PI made the two-level shrinkage the headline of a noisy stack on
+2026-10-06 (decision 12;
+[the reading](../results/2026-10-06-arm-3-reading.md)). The design was
 approved by
 the PI on 2026-09-13
 and revised on 2026-09-14 (decisions 7–10); the harness was merged
@@ -385,8 +389,10 @@ it reports `elbo["estimated"]` (raw), `elbo["debiased_I_median"]` and
 `elbo["debiased_E_median"]` from the optimization's own 20-draw estimate
 (no final re-evaluation), and `sample(n)` returns approximately `n` rows
 by deep-copying each input posterior and drawing `round(n · ω_m)` from it.
-The integrated class reports the capped headline for noisy stacks with
-`elbo_details["raw"]`, `raw_sd`, `cap_amount` and `noise_status_source`,
+The integrated class reports a headline with `elbo_details["raw"]`,
+`raw_sd`, `cap_amount` and `noise_status_source` (its noisy headline was the
+capped value in this campaign, and is the two-level shrinkage estimate since
+2026-10-06, decision 12),
 re-evaluates with `n_samples_final=100`, and `sample(n)` returns exactly
 `n` rows.
 
@@ -1937,6 +1943,17 @@ draft had left open:
   on fresh pools rather than on this campaign; the run reuse of the
   present pools at `M` = 16 and 32 is quantified in the report's
   Limitations and the gate is a TODO item of its own.
+- 2026-10-06: decision 12's confirmation. The release gate's pools (320
+  filtered runs per condition, 2026-10-02) and those of Arm 3 (the release
+  code with the port's end of warm-up, 2026-10-05/06) were stacked on the
+  cluster at `M` = 2 to 32; on both, criteria 1, 2 and 4 hold on every
+  condition and criterion 3 fails on Student D8 alone, as on the stage D
+  pools, and the two-level shrinkage adds −0.23 to
+  +0.15 nats to the inputs' bias at every noisy condition and `M`, the raw
+  value of a noiseless stack −0.01 to +0.08. The PI made the two-level
+  shrinkage the headline of a noisy stack, the raw value staying that of a
+  noiseless one ([the reading](../results/2026-10-06-arm-3-reading.md));
+  the cells of `svbmc_pool_stack.py` record `headline_method` from then on.
 
 ## Execution tracking
 
