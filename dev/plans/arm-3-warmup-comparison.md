@@ -87,9 +87,11 @@ cluster's campaigns, read with a guide fixed before the runs.
      comparisons" says, and fails criterion 3 on no condition but
      `student_D8_noise3_svbmc`.
    - **What the tests cannot see**: a case that failed or was given up in
-     either arm leaves its seed's pair out, and a test that cannot be
-     computed enters its family at p = 1; both are listed with the reading
-     and go to the PI before the rule is applied.
+     either arm is an unusable run in the McNemar test of usability and
+     leaves its seed's pair out of the signed-rank tests (PI, 2026-10-06,
+     on the failed cases of Arm 0), and a test that cannot be computed
+     enters its family at p = 1; both are listed with the reading and go
+     to the PI before the rule is applied.
    - If the port's end is adopted for a kind of target, it enters the
      package as a deliberate difference from MATLAB (its entry in the
      catalogue of `pyvbmc/vbmc/README.md`, the changelog), Phase 9 of the
@@ -298,8 +300,10 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   `dev-arm3-port-warmup`, which merges `b196402b`).
 - [x] The script of the guide's tests, `dev/scripts/arm3_guide.py`,
   committed before the results reach the developer's machine.
-- [~] The batch on the cluster, the hand-back: the brief went to the
-  operator on 2026-10-05.
+- [x] The batch on the cluster, 2026-10-05/06: every campaign verified,
+  and no case of Arm 3's failed.
+- [~] The hand-back: its README went to the PI on 2026-10-06; the pull
+  request to `dev-next` with the tracked copies.
 - [ ] The comparisons: after against Arm 3, the fresh seeds, the pools,
   the stacking; the guide read; the PI's decision.
 - [ ] If the port's end of warm-up is adopted: the analysis's extension
@@ -386,3 +390,16 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
   where the two-sided one does not reject, the direction of the pools' filters,
   decision 6's edges and failing clauses, the readings that take the port's
   end, and a test in the analysis's not-computed format.
+- 2026-10-05/06: the batch on the cluster. Every case of every campaign
+  verified but two of Arm 0's, which failed in 1.0.4 (Arm 0's plan): Arm
+  3's population, its pools (320 selected runs in every condition), its
+  stacking (960 cells) and the two fresh campaigns. Arm 3's `rescore`
+  reproduced its own cases exactly and scored the after arm's 2400 as the
+  release code had, and `fresh_arm3`'s likewise `fresh_release`'s 100;
+  both analyses of the pools gave every cell and run.
+- 2026-10-06: the PI ruled that a failed case counts as a failure in the
+  comparison's statistics (Arm 0's plan, decision 9), and
+  `analyze_population_run.py` now counts it as an unusable run in the
+  McNemar tests of usability, where it had left the seed's pair out of
+  every test. No case failed in the after arm, Arm 3 or the fresh seeds,
+  so no test of the guide changes.

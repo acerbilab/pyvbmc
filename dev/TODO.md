@@ -309,8 +309,8 @@ records its execution.
   the pairing of arms across harness commits that Arm 3 needs, the campaigns
   and the checklist; the
   [note](results/2026-10-05-noisy-rosenbrock-warmup.md) the evidence that
-  raised the question. The brief went to the operator on 2026-10-05; the
-  batch runs in the operator's account and comes back as a pull request
+  raised the question. The batch ran in the operator's account on
+  2026-10-05/06, every campaign verified; it comes back as a pull request
   to `dev-next` with its draft releases, after which
   `scripts/arm3_guide.py` reads it.
 
@@ -328,10 +328,12 @@ records its execution.
   [plan](plans/arm-1.0.4-comparison.md) holds the decisions, the harness's
   legacy profile, the rescoring across harness commits and the checklist.
   It runs in one batch with Arm 3 (the item above), and does not wait for
-  the decision that Arm 3 informs (PI, 2026-10-05). The changelog's, the
-  README's and the release notes' statements of accuracy against 1.0.4
-  wait for the campaign; the changelog's statement of speed is in
-  (2026-10-06).
+  the decision that Arm 3 informs (PI, 2026-10-05). The campaign ran on
+  2026-10-05/06: 2398 cases verified and 2 failed in 1.0.4, which the
+  comparison counts as runs that gave no usable posterior (the plan's
+  decision 9). The changelog's, the README's and the release notes'
+  statements of accuracy against 1.0.4 wait for the comparison; the
+  changelog's statement of speed is in (2026-10-06).
 
 - [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
   its published texts link the lab (PI, 2026-10-06; the convention "Links
