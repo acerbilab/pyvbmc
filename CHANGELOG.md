@@ -358,11 +358,11 @@ An error is raised for calls and values that 1.0.4 accepted:
   and its ELBO are in `results["message"]` and `results["elbo"]`. The
   iteration display ends with a `finalize` line whenever the returned
   posterior is not that of the last iteration.
-- **Runs are faster.** On our noiseless benchmark problems with 4 to 15
-  variables a run took two to three times less time (283 → about 100 seconds
-  with 10 variables), and about 20 per cent less on noisy targets. These
-  timings come from one machine and were taken before the corrections above,
-  which change how long a run takes.
+- **Runs are faster.** On the 24 problems of our benchmark suite, with 2 to
+  15 variables, a run took on average 3.7 times less time than with the
+  previous version of PyVBMC (v1.0.4) on noiseless targets and 2.2 times less
+  on noisy ones, each version with its default options (one machine with one
+  BLAS thread).
 
 ### Fixed
 

@@ -94,19 +94,20 @@ The table of every configuration is
 
 ## For the changelog
 
-The changelog's "Runs are faster" gives timings measured on 2026-09-03 to
-09-05, before the port review's corrections (`dev/TODO.md`, "Changelog for
-1.5"). Against 1.0.4, from these runs, the entry could read:
+The changelog's "Runs are faster" gave timings measured on 2026-09-03 to
+09-05, before the port review's corrections. From these runs it reads, in
+the PI's wording (2026-10-06):
 
-> **Runs are faster.** On our benchmark problems a run took about a quarter
-> of the time of PyVBMC 1.0.4 on noiseless targets (42 seconds against 172
-> on a problem with 10 variables) and about half on noisy targets, each
-> version with its default options, on one machine with one BLAS thread.
+> **Runs are faster.** On the 24 problems of our benchmark suite, with 2 to
+> 15 variables, a run took on average 3.7 times less time than with the
+> previous version of PyVBMC (v1.0.4) on noiseless targets and 2.2 times
+> less on noisy ones, each version with its default options (one machine
+> with one BLAS thread).
 
-"About half" holds whichever end of warm-up the noisy targets take (2.2 or
-2.1 times less time). The wording is the PI's to settle; the "What's new"
-blocks of `README.md` and `docsrc/source/index.rst` quote no timings and
-need no change unless a figure is wanted there.
+The noisy figure is that of the release code's end of warm-up, MATLAB's; if
+the port's end is adopted for noisy targets (Arm 3), it becomes 2.1. The
+"What's new" blocks of `README.md` and `docsrc/source/index.rst` quote no
+timings.
 
 ## Limits
 

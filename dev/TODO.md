@@ -15,18 +15,17 @@ records its execution.
   ("Changelog") sets (condensed to it on 2026-09-30 and read by the PI the
   same day; the worklog of the
   [port review plan](plans/port-correctness-review.md) records how the
-  earlier, longer text was written and checked). Open before the release:
-  the whole-run timings of "Runs are faster", measured on 2026-09-03 to
-  09-05, before the corrections that change how long a run takes, measured
-  again against 1.0.4 on 2026-10-05/06 (the Arm 0 item below), whose
-  wording waits for the PI (the
-  [results](results/2026-10-06-speed-against-1.0.4.md) propose one); the
-  S-VBMC speed figure, to be measured again on the release benchmark; and
-  the S-VBMC entry's account of the reported `elbo`, which the S-VBMC ELBO
-  headline selection (below) may change. The "What's new in PyVBMC 1.5"
-  blocks of `README.md` and `docsrc/source/index.rst` summarize the
-  changelog and move with it (they quote no timings); the docs' link to the
-  changelog resolves once the file is on `main`.
+  earlier, longer text was written and checked). "Runs are faster" gives
+  the speed against 1.0.4 measured on 2026-10-05/06 (the Arm 0 item below;
+  the PI's wording, 2026-10-06); its noisy figure becomes 2.1 if the port's
+  end of warm-up is adopted for noisy targets
+  ([results](results/2026-10-06-speed-against-1.0.4.md)). Open before the
+  release: the S-VBMC speed figure, to be measured again on the release
+  benchmark, and the S-VBMC entry's account of the reported `elbo`, which
+  the S-VBMC ELBO headline selection (below) may change. The "What's new in
+  PyVBMC 1.5" blocks of `README.md` and `docsrc/source/index.rst` summarize
+  the changelog and move with it (they quote no timings); the docs' link to
+  the changelog resolves once the file is on `main`.
 
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
   run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
@@ -331,8 +330,8 @@ records its execution.
   It runs in one batch with Arm 3 (the item above), and does not wait for
   the decision that Arm 3 informs (PI, 2026-10-05). The changelog's, the
   README's and the release notes' statements of accuracy against 1.0.4
-  wait for the campaign; the changelog's statement of speed waits for the
-  PI's wording.
+  wait for the campaign; the changelog's statement of speed is in
+  (2026-10-06).
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
