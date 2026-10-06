@@ -486,8 +486,8 @@ records its execution.
   them (#14). So the recipe's requirements, still those of 1.0.4, are
   updated by hand, in a PR opened before the bot's or pushed to it before
   it merges (removing `[bot-automerge]` from the bot's title keeps it from
-  merging itself); PyBADS 1.5.0 does the same (its `dev/TODO.md`,
-  "conda-forge recipe"). Check the published package's requirements
+  merging itself), as PyBADS 1.5.0 did
+  (`conda-forge/pybads-feedstock` #12, merged 2026-10-06). Check the published package's requirements
   against `pyproject.toml`: 1.5 needs gpyreg 1.4.0 or later, on
   conda-forge since 2026-09-30, and adds `filelock`, `platformdirs` and
   `threadpoolctl`. conda-forge's
