@@ -1,0 +1,170 @@
+{
+  "contract": 1,
+  "tag": "multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26",
+  "case": "multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26 multisensory_s2_D6_noise1.3_production 26",
+  "identity": {
+    "contract": 1,
+    "source": {
+      "trees": {
+        "harness": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "pyvbmc": {
+          "commit": "ad63dd5a21afb21343cf25b278b86f184eb42a17",
+          "clean": true
+        },
+        "gpyreg": {
+          "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+          "clean": true
+        }
+      },
+      "files": {
+        "dev/scripts/population_run.py": "4f2282908b4312bf9f3d19e8b18868f950b354b58a4d42f8b9226ea0d51ef4f6",
+        "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+        "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+        "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+        "dev/scripts/campaign_contract.py": "a1cc190ab1954f3ca0bf7ee569fd0faa54b045aeb0b944c55effd5ae77d439e6",
+        "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+      },
+      "versions": {
+        "python": "3.12.14",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "cma": "4.4.4",
+        "torch": null
+      }
+    },
+    "imports": {
+      "trees": {
+        "harness": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "pyvbmc": {
+          "path": "$HARNESS_TREE",
+          "dirty": []
+        },
+        "gpyreg": {
+          "path": "$PYVBMC_GPYREG_SOURCE",
+          "dirty": []
+        }
+      },
+      "modules": {
+        "pyvbmc": "$HARNESS_TREE/pyvbmc",
+        "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+      },
+      "installed_metadata_versions": {
+        "pyvbmc": null,
+        "gpyreg": null
+      },
+      "harness_modules": {
+        "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+        "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+        "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+      }
+    },
+    "host": {
+      "hostname": "u8",
+      "platform": "Linux x86_64",
+      "executable": "$CAMPAIGN_ENV/bin/python",
+      "cpu_model": "AMD EPYC 7452 32-Core Processor",
+      "node_features": {
+        "node": "u8",
+        "available": [
+          "u8"
+        ],
+        "active": [
+          "u8"
+        ]
+      },
+      "blas": [
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.34.0.0",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/numpy.libs/libscipy_openblas64_-61654e39.so"
+        },
+        {
+          "user_api": "blas",
+          "internal_api": "openblas",
+          "prefix": "libscipy_openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 1,
+          "threading_layer": "pthreads",
+          "architecture": "Haswell",
+          "filepath": "$CAMPAIGN_ENV/lib/python3.12/site-packages/scipy.libs/libscipy_openblas-5f890258.so"
+        }
+      ],
+      "cpu_affinity": {
+        "cpus": [
+          25,
+          89
+        ],
+        "physical_cores": [
+          "0:25"
+        ],
+        "core_threads": {
+          "0:25": [
+            25,
+            89
+          ]
+        },
+        "job_cpuset": [
+          25,
+          89
+        ]
+      },
+      "threads": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "slurm": {
+        "job_id": "2362216",
+        "array_job_id": "2358191",
+        "array_task_id": "2327",
+        "restart_count": null,
+        "node": "u8",
+        "partition": "$PARTITION",
+        "cpus_per_task": "1"
+      }
+    }
+  },
+  "started": "2026-10-05T19:19:01+0000",
+  "finished": "2026-10-05T19:23:02+0000",
+  "elapsed_seconds": 241.90316605567932,
+  "artifacts": {
+    "multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26.npz": {
+      "sha256": "0f61c2a03f98ae657e1a6d5a48a7480d1fc21755d5aba438fb85aeaeafdddd9d",
+      "bytes": 260262
+    },
+    "multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26.json": {
+      "sha256": "3c1902bd4973962dcf036e1d73efdf334888ead24ba11dbe41fac3ff8f7c23c3",
+      "bytes": 6019
+    },
+    "multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26.vp.npz": {
+      "sha256": "6406719921f5658e459d8b8923e3569d6fb2153bd27ae80e463f6dab64294fcd",
+      "bytes": 812
+    },
+    "boost/multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26.boost.pkl": {
+      "sha256": "992bf17b9467680c61b2201f8efb0be06d965dbfc1f1d6bef1d7f8aac34d32bd",
+      "bytes": 306687
+    },
+    "boost/multisensory_s2_D6_noise1.3_production/multisensory_s2_D6_noise1.3_production_seed26.boost.json": {
+      "sha256": "0899e368b468796bb5e7ec8f1c43a1b3810726f679e2a0a32442ab987f2894c7",
+      "bytes": 11497
+    }
+  },
+  "harness": "population_run",
+  "label": "multisensory_s2_D6_noise1.3_production",
+  "seed": 26,
+  "boost": {
+    "attempted": true,
+    "accepted": true
+  }
+}
