@@ -14,7 +14,13 @@ itself reports (``vp.stats["elbo"]``, with VBMC's own entropy estimate),
 and ``elbo_raw``, the integrated class's value for the run alone at its
 own weights, without optimization (``G + H`` with the class's entropy
 at ``N_SAMPLES_FINAL`` draws per component); the component-median cap
-at those weights is scored too.
+at those weights is scored too. The run's metrics also score the class's
+headline for the run alone: the raw value on a noiseless run, and on a
+noisy one the two-level shrinkage estimate, whose between-run stage leaves
+a single run at its own level, or the cap where the shrinkage is undefined.
+A runs file written before the script scored that headline (the analyses of
+the release gate's pools of October 2026 among them) scores the cap as the
+headline of a noisy run, and ``--reuse`` keeps its metrics.
 
 With ``--cells`` (the comparison's ``results.json``, repeatable) the
 script also joins the runs' biases to every cell that holds an
@@ -109,6 +115,7 @@ def score_run(entry, problem, reference):
     import torch
 
     from pyvbmc.svbmc import SVBMC
+    from pyvbmc.svbmc._elbo_shrinkage import _two_level_shrinkage
 
     started = time.perf_counter()
     seed = int(entry["seed"])
@@ -126,7 +133,21 @@ def score_run(entry, problem, reference):
     raw = G + H
     capped = float(min(G, np.median(I))) + H
     elbo_vbmc = float(vp.stats["elbo"])
-    headline = capped if stacked.noisy else raw
+    headline = raw
+    if stacked.noisy:
+        # The class's headline of a noisy stack: the two-level shrinkage,
+        # whose between-run stage leaves a stack of one at its own level,
+        # or the cap where the shrinkage is undefined.
+        own = np.ravel(vp.w).astype(float)
+        shrunk, _ = _two_level_shrinkage(
+            [vp.stats["I_sk"]],
+            [vp.stats["J_sjk"]],
+            [I],
+            [own / own.sum()],
+            w,
+            H,
+        )
+        headline = capped if shrunk is None else shrunk
     samples = stacked.sample(N_DRAWS)
     outcome = stacked_outcome(
         problem,
