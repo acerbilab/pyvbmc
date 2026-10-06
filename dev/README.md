@@ -595,8 +595,10 @@ reason.
   candidate, whose `rescoring.json` binds them by SHA-256 to a process of
   the candidate's own identity), which `prepare --pair` paired, with the
   confirmatory family of their manifests at the size they fix: a test that
-  cannot be computed enters it
-  at p = 1 and is flagged. A legacy reference (PyVBMC 1.0.4) is read with
+  cannot be computed enters it at p = 1 and is flagged. A case that failed
+  in an arm is a run that gave no usable posterior: its seed joins the
+  McNemar tests of usability and stays out of the signed-rank tests, which
+  count it. A legacy reference (PyVBMC 1.0.4) is read with
   the rescoring of both arms that `population_run.py rescore-arms` wrote
   into it, by default, which must come from the legacy arm's harness
   checkout and score as the candidate's code, whose harness checkout may be

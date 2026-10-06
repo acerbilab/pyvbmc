@@ -104,9 +104,9 @@ records its execution.
   decision 6 of [Arm 3's plan](plans/arm-3-warmup-comparison.md)), and the
   switch then lands with a results report of the reading. It changes
   `pyvbmc/svbmc/`, which neither the promotion's check nor Arm 0's harness
-  commit covers. The switch is prepared on the branch
+  commit covers. The switch was prepared on the branch
   `feat-svbmc-shrinkage-headline` (head `3a49d873` on 2026-10-05) while
-  Arm 3's batch runs (PI, 2026-10-05). The branch holds the code, the
+  Arm 3's batch ran (PI, 2026-10-05). The branch holds the code, the
   `SVBMC` docstring, the API page with the headline's caveat, the FAQ, the
   tip `noisy_elbo` and its link to that page, Example 7's explanation (the
   notebook is run again in the release pass), the changelog's entry, the

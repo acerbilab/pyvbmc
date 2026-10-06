@@ -58,12 +58,19 @@ at production defaults.
 7. **Arm 0's data stay internal**: its archive and tracked copies, as for
    the before arm, and no public asset in the release.
 8. **The speed measurement** is the one under "Speed" below.
-9. **Failed cases** (2026-10-06). A case that raises in the package stays
-   failed, as that package's outcome on its seed: it is not run again,
-   given up or patched. The comparison counts it as a run that gave no
-   usable posterior: an unusable run in its configuration's McNemar test
-   of usability and in its arm's counts, and a seed left out of the
-   signed-rank tests of the metrics, which have no value of it to rank.
+9. **Failed cases** (2026-10-06). A case that raises in the package's own
+   computation stays failed, as that package's outcome on its seed: it is
+   not run again, given up or patched (a failure that the campaign
+   environment causes is decision 1's). The comparison counts every failed
+   case of either arm, one given up or whose artifacts failed the
+   harness's checks among them, as a run that gave no usable posterior:
+   where the other arm's case is verified or failed, an unusable run in its
+   configuration's McNemar test of usability and among the usability gains
+   or losses, and a seed left out of the signed-rank tests of the metrics,
+   which have no value of it to rank; each arm's summaries count its failed
+   cases apart (`failed`, beside the verified runs' `n` and `usable`).
+   Every failed case goes to the PI before the comparison is read, as the
+   brief has it.
 
 ## Constraints
 
@@ -198,13 +205,12 @@ candidate's code, made from the legacy arm's harness checkout, rather than
 one of the candidate's whole identity. It still requires the after arm's
 rescored metrics to equal its in-run metrics, the same allocation and
 confirmatory family, one node family, and a legacy profile in the
-reference's manifest that its package commit names. A failed case of
-either arm is a run that gave no usable posterior (decision 9): its seed
-joins its configuration's McNemar test of usability, beside the seeds
+reference's manifest that its package commit names. Its boost reports
+have no tolerance and are expected to keep every boost they made. A failed
+case of either arm is a run that gave no usable posterior (decision 9): its
+seed joins its configuration's McNemar test of usability, beside the seeds
 verified in both arms, and stays out of the signed-rank tests, which count
-it. Its boost reports
-have no tolerance and are expected to keep every boost they made. The
-report records the legacy profile (`legacy_reference`), a key that the
+it. The report records the legacy profile (`legacy_reference`), a key that the
 assessment of two arms of the harness's own code does not hold;
 `reference_promote.py` refuses an assessment of a legacy reference.
 
@@ -287,12 +293,13 @@ NumPy probe before each group as the machine's speed control. The procedure, the
 - [x] The operator's brief, with Arm 0's commit and limits, for one batch
   with Arm 3 ([release-gate-handoff-2.md](release-gate-handoff-2.md)):
   Arm 0 runs from `b196402b`, whose package is the after arm's.
-- [x] The campaign on the cluster, 2026-10-05/06, with Arm 3's
-  (the worklog).
+- [x] The campaign on the cluster, 2026-10-05/06, in one batch with Arm
+  3's campaigns (the worklog).
 - [x] The PI's ruling on the two failed cases (decision 9), and the
-  comparison's counting of failed cases (`analyze_population_run.py`).
+  comparison's counting of failed cases (`analyze_population_run.py`,
+  `9bfd8f50` and `4b6d47ac`).
 - [~] The hand-back: its README went to the PI on 2026-10-06; the pull
-  request to `dev-next` with the tracked copies.
+  request to `dev-next` with the tracked copies to come.
 - [ ] The comparison with the after arm.
 - [x] Speed against 1.0.4 on the developer's machine, run when the PI
   leaves the machine free for some hours (PI, 2026-10-05): the night of
@@ -396,29 +403,43 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   failed, `cigar_D15_exhaust` at seeds 5 and 96, each after 1 h 8 min, with
   `ValueError: repeats may not contain negative values` in 1.0.4's
   `VariationalPosterior.sample`, under the `kl_div` that 1.0.4's
-  `optimize()` computes once its final boost has changed the posterior.
+  `optimize()` computes when its final boost has changed the posterior.
   `sample` counts the samples of each component as
   `np.floor(w * N).astype(int)`, negative only for a weight that is not
   finite: the final boost returned a posterior whose weights were not
-  finite, which 1.0.4 accepts without a check, and which the release's
-  guard on the final boost and its passing over candidates whose ELBO is
-  NaN prevent. The compatibility patch, which takes the single element of
-  a length-1 array, computes no value. `rescore-arms` reproduced the after
-  arm's 2400 cases exactly. Arm 0's rescored metrics equal its in-run ones
+  finite, which 1.0.4 accepts without a check. The release's variational
+  optimization passes over candidates whose ELBO is NaN, raising if every
+  one is, and its guard on the final boost rejects a boost whose ELBO is
+  not finite. The compatibility patch cannot have made such weights: it
+  only takes the single element of a length-1 array. `rescore-arms`
+  reproduced the after arm's 2400 cases exactly, and Arm 3's 2400
+  likewise. Arm 0's rescored metrics equal its in-run ones
   in `elbo_err` for every case and in no `mmtv`: the release draws its
   samples from the posterior's generator and 1.0.4 from NumPy's global
   state, so `mmtv` differs everywhere, and `gskl` and `rmse` on the 700
   cases of the seven configurations with bounded parameters, whose moments
   are Monte Carlo estimates. Of the 1698 cases with exact moments, `rmse`
-  is equal in every one and `gskl` in all but one, which the tracked
-  copies identify (the two versions' `kl_div_mvn` take the log-determinant
-  of the covariances differently).
+  is equal in every one and `gskl` in all but one, which the hand-back's
+  tracked copies will name; the likely cause is `kl_div_mvn`, whose
+  log-determinant 1.0.4 takes as `np.log(det2 / det1)` and the release as a
+  difference of `slogdet`s.
 - 2026-10-06: the PI's ruling on the two failed cases (decision 9). The
   comparison counted a failed case only in the counts of its
   configuration and left its seed out of every test; it now counts it as
-  an unusable run in the McNemar tests and the usability counts
-  (`analyze_population_run.py`, `failure_rows`), with tests of a whole
-  configuration failed and of failures scattered over both arms. Where no
-  case failed, the report is unchanged: the release gate's first
-  comparison, run again on its tracked copies, gives the `assessment.json`
-  and `comparison.md` committed with it, line for line.
+  an unusable run in the McNemar tests of usability and among the
+  usability gains and losses, and apart in each arm's summaries
+  (`analyze_population_run.py`, `failure_rows`; `9bfd8f50`), with tests of
+  a whole configuration failed, of failures scattered over both arms and
+  of a failed case beside a missing one. Where no case failed, the report
+  is unchanged: the release gate's first comparison, run again on its
+  tracked copies, gives the `assessment.json` and `comparison.md` committed
+  with it, line for line. A doublecheck by two fresh reviewers, read-only,
+  found the statistics sound, the consumers of the report (`arm3_guide.py`,
+  `reference_promote.py`, a legacy reference with failed cases) working,
+  and the new tests failing on the old code and on four mutations. Fixed
+  after it (`4b6d47ac`): the report's keys for failed cases appeared only
+  where a failed case was paired, so that one beside a missing case went
+  unreported; the descriptive family held empty signed-rank tests of a
+  configuration with failed seeds and no verified pair; and this plan
+  stated the scope of decision 9, the release's guards and the one `gskl`
+  more strongly than the evidence.
