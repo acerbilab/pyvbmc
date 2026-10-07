@@ -17,7 +17,7 @@ from pyvbmc.rng import get_rng
 
 
 class Product(Prior):
-    """A prior which is an product of independent univariate priors.
+    """A product of independent univariate priors.
 
     Attributes
     ----------

@@ -22,9 +22,7 @@ PyVBMC simultaneously computes:
 What's new in PyVBMC 1.5
 ------------------------
 
-PyVBMC 1.5 is faster and more efficient, integrates better with the modern
-scientific computing ecosystem and our other tools, and provides more guidance
-for using it effectively. Highlights include:
+The main additions and changes in PyVBMC 1.5 are:
 
 - **Faster inference and lower memory use**, with numerical improvements and more
   compact run histories: on our benchmark suite a run takes on average 3.7
@@ -45,8 +43,8 @@ for using it effectively. Highlights include:
 - **Torch and JAX model integration** through small user-written wrappers,
   with optional batch evaluation of the initial points; see
   :ref:`Bring a torch or JAX model into PyVBMC`.
-- **Direct PyMC model support**, including model-aware coordinates, automatic
-  setup and structured posterior export; see
+- **Direct PyMC model support**, with automatic setup and posterior samples
+  exported under the model's variable names; see
   :ref:`Bring a PyMC model into PyVBMC`.
 - **Posterior exports to Torch and ArviZ** for further analysis;
   see :ref:`Use a fitted posterior downstream`.
@@ -146,7 +144,7 @@ You can cite PyVBMC in your work with something along the lines of
 
 If you use S-VBMC, please also add a sentence such as:
 
-    Posteriors from multiple PyVBMC runs on the same model and dataset were combined using S-VBMC (Silvestrin et al., 2025), which often improves the approximation to the true posterior by leveraging information from independent runs.
+    We combined posteriors from independent PyVBMC runs on the same model and dataset using S-VBMC (Silvestrin et al., 2025).
 
 BibTeX
 ------

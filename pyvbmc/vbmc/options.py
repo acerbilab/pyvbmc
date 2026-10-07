@@ -552,8 +552,7 @@ def _takes_keyword(function, name):
 
 
 class Options(MutableMapping, dict):
-    """
-    This class is responsible for Options.
+    """Store and validate VBMC options.
 
     Parameters
     ----------
@@ -568,9 +567,8 @@ class Options(MutableMapping, dict):
     Attributes
     ----------
     useroptions : set
-        This set contains all options that have set by the user,
-        if there are none it is empty. These ``useroptions`` are immutable to
-        changes using :py:meth:`load_options_file`.
+        Options that have been set by the user. Values named here are not
+        overwritten by :py:meth:`load_options_file`.
     """
 
     def __init__(

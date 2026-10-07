@@ -173,7 +173,7 @@ class VariationalPosterior:
     for :math:`1 \le d \le D`.
 
     Note that :math:`q({\theta})` is defined in an unconstrained space.
-    Constrained variables in the posterior are mapped to a trasformed,
+    Constrained variables in the posterior are mapped to a transformed,
     unconstrained space via a nonlinear mapping (represented by a
     ``ParameterTransformer`` object). The transformation is handled
     automatically.
@@ -1173,10 +1173,10 @@ class VariationalPosterior:
         by its root mean square and ``sigma`` multiplied by it, and the
         weights are divided by their sum when they are being optimized.
         The two scales enter the density through their product alone, so
-        that rescaling leaves the distribution as it was; normalizing the
-        weights changes it where they did not already sum to one. A mode
-        stored by a previous call of ``mode()`` is discarded, as
-        ``misc/rescale_params.m:39-40`` discards it.
+        rescaling does not change the distribution. Normalizing the weights
+        changes it only if they did not already sum to one. A mode cached by
+        a previous call to ``mode()`` is discarded because the parameters may
+        have changed.
 
         Parameters
         ----------
@@ -1188,7 +1188,7 @@ class VariationalPosterior:
         Returns
         -------
         theta : np.ndarray
-            The variational posterior parameters flattenend as a 1D array.
+            The variational posterior parameters flattened as a 1D array.
         """
 
         nl = np.sqrt(np.sum(self.lambd**2) / self.D)

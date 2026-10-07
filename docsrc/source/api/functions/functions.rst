@@ -8,6 +8,7 @@ Functions
    :caption: Functions:
 
    active_sample
+   algorithm_helpers
    calibrate
    check_for_updates
    create_vbmc_animation

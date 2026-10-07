@@ -64,8 +64,8 @@ class Timer:
 
         Returns
         -------
-        duration : float
-            The duration of the timer or None when the timer is not existing.
+        duration : float or None
+            The duration of the timer, or ``None`` if it does not exist.
         """
         time_ = self._durations.get(name)
         if time_ is None:
@@ -76,7 +76,7 @@ class Timer:
 
     def reset(self):
         """
-        Reset the timer be emptying the durations and start times.
+        Reset the timer by emptying the durations and start times.
         """
         self._durations = {}
         self._start_times = {}

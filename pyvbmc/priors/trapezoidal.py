@@ -14,7 +14,7 @@ class Trapezoidal(Prior):
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
     has a trapezoidal density which is uniform between ``u[i]`` and ``v[i]``
-    and falls of linearly to zero at ``a[i]`` and ``b[i]``::
+    and falls off linearly to zero at ``a[i]`` and ``b[i]``::
 
                  ______________________
                 |       ________       |

@@ -254,14 +254,12 @@ class PyMCTarget:
 
     Notes
     -----
-    PyMC registers its log transform for whole families of positive
-    distributions, so a variable that keeps one is reported with the support
-    ``(0, inf)`` only after that claim is checked. A distribution whose
-    density vanishes below a positive shift, such as a Wald distribution
-    with a nonzero ``alpha``, is rejected at construction. The check
-    evaluates the variable's own density at fractions of its initial value
-    down to sixteen decades below it, so a shift smaller than that escapes
-    it.
+    A retained log transform represents support on ``(0, inf)``. A
+    distribution whose density begins above a positive shift, such as a Wald
+    distribution with a nonzero ``alpha``, is unsupported; reparameterize the
+    variable as its distance above the shift.
+    The setup checks may miss such a restriction; they do not guarantee that
+    the log density is finite throughout the transformed space.
     """
 
     def __init__(

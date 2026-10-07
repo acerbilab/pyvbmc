@@ -31,7 +31,7 @@ class UserFunction(Prior):
             evaluated at that point as one value: a float, or an array of
             one element.
         sample_prior : callable, optional
-            An optional user-provided function for sampling form the prior.
+            An optional user-provided function for sampling from the prior.
             Should take an integer `n` as a single argument, and return `n`
             samples from the prior distribution as an `(n, D)` array.
         D : int, optional

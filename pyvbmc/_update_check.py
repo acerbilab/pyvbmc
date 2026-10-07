@@ -72,13 +72,10 @@ class UpdateCheck(NamedTuple):
 def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     """Ask PyPI for the latest release of PyVBMC and say how to update.
 
-    Sends one HTTPS GET request to ``https://pypi.org/pypi/pyvbmc/json``,
-    with the ``User-Agent`` header ``pyvbmc/<installed version>
-    (check_for_updates)``; the request carries nothing else about the
-    installation or the user. This is the only network access in PyVBMC,
-    and it happens only when this function is called. The proxy environment
-    variables (``HTTPS_PROXY`` and its kin) are honored. Nothing is written
-    to disk.
+    This is the only network access in PyVBMC, and it happens only when this
+    function is called. The request tells PyPI the installed PyVBMC version
+    and nothing else about the installation or the user. Proxy environment
+    variables are honored, and nothing is written to disk.
 
     Prints one message: that a newer release is available, with the command
     that installs it; that the installed version is the latest release; that
@@ -89,13 +86,9 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
     pip's, conda's (the conda-forge package can follow PyPI by a few days),
     or both when the installer is another or unknown.
 
-    The latest release is the highest version of the form ``X.Y.Z`` on PyPI
-    with at least one file that is not yanked, so that pre-releases,
-    development releases and yanked releases are ignored. PyPI documents the
-    list of releases in this reply as deprecated; a reply without a mapping
-    of releases gives the version PyPI reports as its latest. An installed
-    version of any other form, such as a development install, is reported
-    beside the latest release without being compared with it.
+    Pre-releases, development releases and yanked releases on PyPI are
+    ignored. An installed development version is reported beside the latest
+    release without being compared with it.
 
     Parameters
     ----------
@@ -111,9 +104,8 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
         the package metadata cannot be found); ``latest``, the latest
         release on PyPI (``None`` when PyPI could not be reached, its reply
         could not be read or it named no release); and ``update_available``,
-        whether
-        ``latest`` is newer than ``installed`` (``None`` when either is
-        unknown or the installed version is a development version).
+        whether ``latest`` is newer than ``installed`` (``None`` when either
+        is unknown or the installed version is a development version).
 
     Raises
     ------

@@ -3,15 +3,21 @@ Priors
 ======
 
 .. note::
-  By default, PyVBMC assumes that the first argument to ``VBMC`` is a function which returns the log-joint (i.e., the sum of log-likelihood and log-prior). However, you may instead pass a function which returns the log-likelihood as a first argument, and supply the prior separately. Using the keyword ``log_prior``, you may pass a function (of a single argument) which returns the log-density of the prior given a point::
+  By default, PyVBMC expects the first argument to ``VBMC`` to return the log
+  joint: the sum of the log likelihood and log prior. To pass a log-likelihood
+  function instead, supply the prior separately. The ``log_prior`` argument
+  accepts a function of one point that returns its prior log density::
 
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, log_prior=log_prior_function)
 
-  Alternatively, using the keyword ``prior``, you may pass one of the following:
+  Alternatively, ``prior`` accepts:
 
-  #. a PyVBMC prior imported from ``pyvbmc.priors`` that matches the dimension of the model,
-  #. an appropriate continuous ``scipy.stats`` distribution that matches the dimension of the model, or
-  #. a list of univariate (i.e., one-dimensional) PyVBMC priors and/or continuous ``scipy.stats`` distributions, which are treated as independent priors for each parameter $\theta_{i}$. In this case the length of the list should equal the dimension of the model.
+  #. a PyVBMC prior from ``pyvbmc.priors`` with the model dimension;
+  #. a compatible continuous ``scipy.stats`` distribution with the model
+     dimension; or
+  #. a list of one-dimensional PyVBMC priors or continuous ``scipy.stats``
+     distributions, one per parameter. The list entries are treated as
+     independent.
 
   ::
 
@@ -19,9 +25,15 @@ Priors
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=scipy.stats.multivariate_normal(mu, cov))
     vbmc = VBMC(log_likelihood, x0, lb, ub, plb, pub, prior=[UniformBox(0, 1), scipy.stats.norm()])
 
-  The support of the prior must cover the hard bounds ``lb`` and ``ub``, which may coincide with its ends (a ``UniformBox(0, 1, D=2)`` goes with hard bounds on or inside the unit square); ``VBMC`` refuses a prior whose support does not cover them. Within the hard bounds the prior is used as given, without being normalized again over them.
+  The prior support must cover the hard bounds ``lb`` and ``ub``; the bounds
+  may coincide with the ends of the support. For example,
+  ``UniformBox(0, 1, D=2)`` permits hard bounds on or inside the unit square.
+  Within the hard bounds, VBMC uses the prior as given and does not renormalize
+  it.
 
-  For more details on (1), see the documentation below as well as :ref:`PyVBMC Example 5: Prior distributions`. For more details on (2), (3), and using a function as a ``log_prior``, see the documentation on :ref:`\`\`SciPy\`\` priors`, :ref:`\`\`Product\`\` priors`, and :ref:`\`\`UserFunction\`\` priors` below. (keyword arguments of these types will be converted to instances of these classes).
+  See :ref:`PyVBMC Example 5: Prior distributions` and the ``SciPy``,
+  ``Product`` and ``UserFunction`` sections below for details. PyVBMC wraps
+  these inputs in the corresponding prior classes.
 
 ``Prior`` base class
 ====================
@@ -74,7 +86,9 @@ Other priors and functions
 ``Product`` priors
 ------------------
 
-When a user passes a list of ``Prior`` instances or ``scipy.stats`` distributions, they are converted to a ``Product`` prior with a corresponding marginal distributions for each item in the list.
+When a user passes a list of ``Prior`` instances or ``scipy.stats``
+distributions, PyVBMC converts it to a ``Product`` prior with one marginal
+distribution per item.
 
 .. autoclass:: pyvbmc.priors.Product
   :special-members: __init__
@@ -84,7 +98,8 @@ When a user passes a list of ``Prior`` instances or ``scipy.stats`` distribution
 ``SciPy`` priors
 ----------------
 
-To standardize the interface, when a user provides a ``scipy.stats`` distribution as a prior, it is wrapped in a ``SciPy`` prior distribution
+When a user provides a ``scipy.stats`` distribution as a prior, PyVBMC wraps
+it in a ``SciPy`` prior.
 
 .. autoclass:: pyvbmc.priors.SciPy
   :special-members: __init__
