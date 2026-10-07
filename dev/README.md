@@ -656,7 +656,9 @@ reason.
   step at a time, and each step that runs code first checks that `HEAD` and
   the working tree equal the after arm's code (the package, but for its
   tests and S-VBMC, and the harness files that build a run) and that the
-  imported gpyreg is the after arm's. `fingerprints` runs `golden_replay.py`
+  imported gpyreg is the after arm's; `fingerprints` and `replay` also
+  refuse, before their runs, a checkout with any tracked change, which
+  their runs would record as dirty. `fingerprints` runs `golden_replay.py`
   on every configuration of the after arm at seed 0, each judged against
   the population's envelopes alone (the Slurm plan's Phase 9), and exits
   0 once every run is made, whatever the replay flags, since `prepare`
@@ -985,7 +987,9 @@ reason.
   freeze` paths and the Slurm accounting left in the archive, and every
   copy searched for what must not remain (the paths, the home and the
   settings as plain substrings, the username and the hostnames as whole
-  names, the other node features in the quotes a list of them holds)
+  names, also where a name the copies write begins or ends one, a host
+  list that names a hostname, the domain of a hostname, the other node
+  features in the quotes a list of them holds)
   and for any absolute path outside the system's directories that
   no name covers, a hit of an `--allow` string exempted, and a username or
   hostname that is a name the copies write refused, with `redaction.json`
@@ -993,7 +997,7 @@ reason.
   `source_sha256` gives the readers that check the records' hashes, the
   cases not verified and the allowed strings with their hits;
   `check_files` searches other files, such as a hand-written README, the
-  same way. Run as a script, it offers the checks the driver's shell
+  same way, a node feature also unquoted. Run as a script, it offers the checks the driver's shell
   scripts call (`check-env`, `check-site`, `check-cases`,
   `finishing-steps`, `finish-check`, `queue-check`, `archive-check`,
   `wait-job`), `give-up` and `redact` (`--out`, or `--check`).
