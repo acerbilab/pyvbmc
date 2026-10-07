@@ -3,9 +3,8 @@
 The docs build renders the outputs stored in ``examples/*.ipynb`` without
 executing the notebooks (``nb_execution_mode = "off"`` in
 ``docsrc/source/conf.py``), so the stored outputs come from this script. It
-runs the notebooks one at a time, in order, in one scratch directory, where
-Example 6 finds the posterior that Example 4 saves, through a kernel of the
-Python environment given by ``--python``::
+runs the notebooks one at a time, in order, in a scratch directory, through
+a kernel of the Python environment given by ``--python``::
 
     python dev/scripts/execute_notebooks.py --python PATH/TO/python.exe
     python dev/scripts/execute_notebooks.py --python ... --only 4 6 --no-write
@@ -451,9 +450,6 @@ def main():
     )
     args = parser.parse_args()
     numbers = sorted(set(args.only))
-    if 6 in numbers and 4 not in numbers:
-        parser.error("Example 6 loads the posterior that Example 4 saves.")
-
     stamp = f"{time.time():.0f}"
     args.record_dir.mkdir(parents=True, exist_ok=True)
     workdir = Path(
