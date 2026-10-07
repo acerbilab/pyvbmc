@@ -312,7 +312,10 @@ class VBMC:
         If ``options["vectorized_target"]`` is true, it instead receives a
         NumPy array with shape ``(N, D)`` and returns values with shape
         ``(N,)`` or ``(N, 1)``. A noisy vectorized target returns a pair of
-        arrays with one value and positive standard deviation per row.
+        arrays with one value and positive standard deviation per row. The
+        initial design is evaluated in one batch; subsequent calls contain
+        one point, with shape ``(1, D)``. A separately supplied prior is
+        still evaluated one point at a time.
     x0 : array_like, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
         proximity of the mode of the posterior. One starting point is a
@@ -388,7 +391,8 @@ class VBMC:
         construction NumPy's global random state is neither read nor
         written. Draws from ``vbmc.rng`` before ``optimize``
         (e.g. ``vbmc.vp.sample``) change the run like any other change of
-        the generator's state.
+        the generator's state. This seed does not control random draws made
+        by ``log_density``; seed a stochastic target separately.
     precomputed_evaluations : tuple, optional
         Evaluations available before the run, independently of ``x0``. Pass
         ``(X, y)`` for exact or unknown-noise targets, or ``(X, y, y_sd)``
@@ -1421,11 +1425,61 @@ class VBMC:
         vp : VariationalPosterior
             The ``VariationalPosterior`` computed by VBMC.
         results : dict
-            A dictionary with additional information about the VBMC run.
-            Its ``"iterations"`` entry is the number of iterations the run
-            performed, and its ``"best_iter"`` entry the index, 0-based as
-            the iteration history is, of the iteration whose variational
-            posterior is returned.
+            A dictionary with the following information about the run:
+
+            - ``"function"`` (``str``): string representation of the
+              function logged by VBMC.
+            - ``"problem_type"`` (``str``): ``"bounded"`` if any hard
+              bound is finite, otherwise ``"unconstrained"``.
+            - ``"iterations"`` (``int``): number of iterations performed.
+            - ``"func_count"`` (``int``): number of fresh target
+              evaluations, counting each row of a vectorized call.
+            - ``"best_iter"`` (``int``): zero-based index of the iteration
+              whose posterior was selected for return, before any final
+              boost.
+            - ``"train_set_size"`` (``int``): number of observations
+              represented in that iteration's training set; pooled repeated
+              observations are counted separately.
+            - ``"components"`` (``int``): number of mixture components in
+              the returned posterior.
+            - ``"r_index"`` (``float``): reliability index at
+              ``best_iter``.
+            - ``"convergence_status"`` (``str``): ``"probable"`` if the
+              selected iteration was stable, otherwise ``"no"``.
+            - ``"overhead"`` (``float``): reserved field, currently
+              ``np.nan``.
+            - ``"rng_state"`` (``dict``): state of ``vbmc.rng`` after the
+              run.
+            - ``"algorithm"`` (``str``): algorithm name.
+            - ``"performance_calibration"`` (``dict``): serialized
+              calibration profile used by the run.
+            - ``"version"`` (``str`` or ``None``): installed PyVBMC
+              version, or ``None`` if package metadata is unavailable.
+            - ``"message"`` (``str``): reason the optimization stopped.
+            - ``"elbo"`` (``float``): estimated evidence lower bound for
+              the returned posterior.
+            - ``"elbo_sd"`` (``float``): estimated standard deviation of
+              the ELBO.
+            - ``"success_flag"`` (``bool``): whether the returned posterior
+              was marked stable.
+
+            When at least one precomputed observation was supplied, the
+            dictionary also contains ``"precomputed_observations"``
+            (``int``), the number supplied, and ``"precomputed_locations"``
+            (``int``), the number of distinct input points among them.
+
+            When ``initialization_cost`` is positive, it also contains
+            ``"evaluation_budget"`` (``dict``), with these entries:
+
+            - ``"unit"`` (``str``):
+              ``"function_equivalent_evaluations"``.
+            - ``"limit"`` (``int`` or ``float``): the total
+              ``max_fun_evals`` allowance, possibly ``np.inf``.
+            - ``"initialization"`` (``int``): the initialization charge.
+            - ``"new_calls"`` (``int``): fresh target evaluations, equal
+              to ``func_count``.
+            - ``"used"`` (``int``): initialization charge plus fresh target
+              evaluations.
 
         Notes
         -----

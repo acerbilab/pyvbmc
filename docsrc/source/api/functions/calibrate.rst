@@ -17,9 +17,18 @@ your machine:
 The campaign uses synthetic inputs and its own random generators. It does
 not evaluate your model or consume the inference random stream. It prints
 progress, the outcome and the cache location. The returned profile contains
-the settings; the saved report contains detailed measurements.
-Use ``verbose=False`` to suppress routine output. Keeping the
-existing settings is a successful outcome when no reliable gain is found.
+the settings and records how they were obtained; the saved report contains
+detailed measurements. Use ``verbose=False`` to suppress routine output.
+Keeping the standard settings is a successful completed outcome when no
+reliable gain is found.
+
+Each call requests a fresh campaign. If another calibration is already
+active, or the measurements cannot be completed or validated, ``calibrate``
+returns the best compatible saved or in-process profile, or the standard
+profile when none is available. In these cases, ``profile.status`` is
+``"busy"``, ``"incomplete"`` or ``"invalid"``, and ``profile.source`` says
+where the returned settings came from. This metadata is useful when routine
+output is disabled. A failed campaign does not replace a valid saved record.
 
 On completion, the message states where the results were saved, using the
 actual full path for your machine. For example (with the path abbreviated):
@@ -42,9 +51,8 @@ is an estimate, not a time limit: the campaign completes its measurements
 and validation, and a watchdog stops only a campaign that runs longer than
 five minutes. Run it when the machine is otherwise quiet for useful timings.
 
-Every call starts a fresh campaign. To recalibrate, call
-``pyvbmc.calibrate()`` again. Calibration never starts automatically during
-import, posterior evaluation, optimization or save/load.
+To recalibrate, call ``pyvbmc.calibrate()`` again. Calibration never starts
+automatically during import, posterior evaluation, optimization or save/load.
 
 Using the result
 ----------------

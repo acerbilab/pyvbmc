@@ -100,10 +100,14 @@ class CalibrationProfile:
     entropy_value_chunk_elements : int, optional
         Element budget for value-only Monte Carlo entropy calls.
     source : str, optional
-        How the settings were obtained, such as ``"default"``, ``"cache"``
-        or ``"explicit"`` (the default for a directly constructed profile).
+        Provenance label for the settings. Profiles returned by
+        :func:`~pyvbmc.calibrate` use ``"calibrated"``, ``"memory"``,
+        ``"cache"`` or ``"default"``. The default for a directly constructed
+        profile is ``"explicit"``.
     status : str, optional
-        Completion or fallback status associated with the settings.
+        Status associated with the settings. Profiles returned by
+        :func:`~pyvbmc.calibrate` use ``"complete"``, ``"busy"``,
+        ``"incomplete"`` or ``"invalid"``. The default is ``"complete"``.
     fingerprint : str or None, optional
         Compatible machine/configuration fingerprint, when available.
     provenance : mapping, optional
