@@ -62,8 +62,8 @@ the end of warm-up in question
 campaigns of Arm 3 ([its plan](arm-3-warmup-comparison.md)) the PI kept
 MATLAB's end (2026-10-06;
 [the reading](../results/2026-10-06-arm-3-reading.md)), so the promotion
-takes the after arm, Phase 9's runs stand, and the promotion waits for the
-PI's acceptance of the assessment. The PI's rulings of 2026-09-28 on the
+takes the after arm and Phase 9's runs stand. The PI accepted the
+assessment on 2026-10-07 (the worklog). The PI's rulings of 2026-09-28 on the
 promotion and on the release's assets are in "The populations", "Records
 and hand-back", Phase 9 and the worklog. Two further arms run through this workflow in
 one batch: PyVBMC 1.0.4 on the population cases (Arm 0,
@@ -1645,3 +1645,13 @@ reproduces bit for bit.
   acceptance. The outputs are the machine's, which
   `dev/scripts/runs/LOCAL.md` lists ("The release gate's hand-back and
   Phase 9"); the promotion's `prepare` reads them.
+- 2026-10-07: the PI accepted the assessment of the two arms,
+  `dev/experiments/release_gate_20261002_assessment/`, whose
+  `assessment.json` has the SHA-256, with LF line endings,
+  `2625fc50cb035ccabe7e5ec50bc6ebc7743c515eec08240c15b361a14420898d`
+  that the promotion's `--accepted-assessment` takes. None of its 96
+  confirmatory tests rejects; its KS screen flags the evaluation counts of
+  `cigar_D4` and `rosenbrock_D2_noise3_production`. The noisy Rosenbrock
+  target's runs are usable 72 times in 100 against the before arm's 87,
+  the cost of MATLAB's end of warm-up, which stays (2026-10-06), and which
+  the promotion's record states.

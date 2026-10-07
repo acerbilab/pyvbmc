@@ -102,8 +102,8 @@ records its execution.
   references (the working rule below). The two arms ran on 2026-10-02
   (the plan's Phase 8; `experiments/release_gate_20261002/`), and their
   comparison (`analyze_population_run.py --arms`) is
-  `experiments/release_gate_20261002_assessment/`, for the PI's reading;
-  the promotion takes the assessment the PI accepts, by its SHA-256
+  `experiments/release_gate_20261002_assessment/`, which the PI accepted
+  on 2026-10-07; the promotion takes it by its SHA-256
   (`assessment.json`'s, with LF line endings:
   `2625fc50cb035ccabe7e5ec50bc6ebc7743c515eec08240c15b361a14420898d`).
   It rejects none of the 96 confirmatory tests; its KS screen flags the
@@ -117,8 +117,7 @@ records its execution.
   Arm 3, the release code with the port's end of warm-up
   ([the reading](results/2026-10-06-arm-3-reading.md)): the promotion
   takes the after arm, and its record states the cost on the noisy
-  Rosenbrock target. The PI's acceptance of the assessment remains. The
-  promotion is
+  Rosenbrock target. The promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap
