@@ -1256,16 +1256,15 @@ its design is in [slurm-benchmark-support.md](slurm-benchmark-support.md).
   ([record](../golden/realdata_extension_20260912/README.md)). PI decision
   2026-09-13: these targets and datasets remain in the developer benchmark
   suite; no additional packaged regression tests are needed for 1.5.
-- [ ] Improve support for running benchmarks on Slurm HPC systems, including
+- [x] Improve support for running benchmarks on Slurm HPC systems, including
   submission, resource configuration, resumption and collection of results
   with reproducible run provenance. The design, reviewed by the PI on
   2026-09-25, is in [slurm-benchmark-support.md](slurm-benchmark-support.md);
-  its status is in that plan and `TODO.md`.
-  The S-VBMC run-pool campaign
-  ([svbmc-benchmark-campaign.md](svbmc-benchmark-campaign.md)) is the
-  first cluster job: its per-case worker, `cases` enumeration and
-  hash-verified completion records are cluster-ready, and its sbatch
-  scripts under `dev/scripts/hpc/` are the seed of this item.
+  it records the implementation, cluster validation and completed release
+  campaigns. The deferred fixes and their review fixes were merged on
+  2026-10-07 (`948bac0d`, then `2b81ecad`), and the PI closed the 1.5
+  Slurm item that day. The plan retains the execution and validation
+  record.
 - [x] Make the distinction between reference generation and candidate
   checking explicit in benchmark workflows and documentation. A golden
   reference may contain many traces and require a long campaign to generate.
@@ -1294,6 +1293,31 @@ must cover the settled release code, API and behavior before publication.
   Independent review, standalone RST parsing, syntax checks for nine Python
   snippets and local link checks passed. Full Sphinx rendering and runtime
   example checks are the last item of this list.
+- [x] Complete the 1.5 changelog and its speed figures (2026-10-07).
+  The PI read the condensed changelog on 2026-09-30; the VBMC speed and
+  accuracy entries use the PI's wording of 2026-10-06/07 (pickup 20).
+  The S-VBMC entry uses the release gate's 560 paired fits: optimization
+  was 1.9 to 5.2 times as fast as standalone `svbmc` 0.1.1 across
+  eight conditions (median paired ratios, CPU with one thread). The
+  [speed check](../results/2026-10-07-svbmc-release-speed.md) gives the
+  timing boundary, exact recomputation, provenance and limits, and why
+  the subsequent headline switch needs no new timing campaign. The
+  README and docs' "What's new" blocks summarize the changelog and are
+  kept in step with it. Dating the release remains in the final pass.
+- [x] Apply PyBADS's convention for links to the lab (2026-10-07), recorded
+  in `AGENTS.md`, "Links to the lab". The README and docs' index introduce
+  the lab's tools for fitting models to data; the docs' footer, package
+  metadata, FAQ, agent skill, Example 6 and complementary-method tip link
+  the same page. Links naming Luigi Acerbi use his personal page, and lab
+  and membership links use the group's page. The `pybads` tip retains its
+  PyBADS documentation link alongside the tools page; the
+  [tips plan](runtime-tips.md#review-before-the-15-release) records it.
+  The Sphinx HTML build passed with warnings treated as errors, and the
+  tip/reminder tests passed (100 tests). The five checked destinations
+  (tools page, personal page, group page, PyIBS and PyBADS documentation)
+  responded successfully. Rendered-page checks and independent review
+  passed. All nine notebooks retain their code and stored outputs; none
+  shows the changed tip.
 - [x] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation:
@@ -1366,9 +1390,11 @@ must cover the settled release code, API and behavior before publication.
   and a publication index missing four entries, each acknowledged only in a
   note elsewhere.
 - [ ] A delta pass of the sweep, under the same rule, over what changes
-  after it: the diff since `46200293`, which includes the Slurm branch's
-  documents once they merge and the text that the open items of `TODO.md`
-  rewrite.
+  after it: the diff since `46200293`, including the merged Slurm
+  documents and the text that the open items of `TODO.md` rewrite.
+  The documentation and record findings of 2026-10-07 are corrected in
+  their source files and recorded in the ledger's dated delta section.
+  The final pass covers the settled release commit.
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages on the settled release code, and check the
   [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On

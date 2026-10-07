@@ -160,12 +160,14 @@ What the review changed:
   `pyvbmc/vbmc/README.md`; the list of MATLAB-side defects holds 63 entries,
   as material for the MATLAB repository.
 
-What it leaves, all in `dev/TODO.md`: the regeneration of the golden
+The review's follow-ups are complete: the regeneration of the golden
 references (done on 2026-10-07: `dev/golden/promotion_20261007/README.md`);
 an oracle state at uncertainty level 1 (done on 2026-09-24:
-`dev/plans/fixture-generator-and-oracles.md`, "Phase 5"); a seeded gate run
-with a prior (done on 2026-10-04 with the replay fingerprints, the same
-record); and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
+`dev/plans/fixture-generator-and-oracles.md`, "Phase 5"); six seeded gate
+runs, two with prior objects, recorded twice on 2026-10-04 and reproduced
+across all 138 arrays
+([the promotion record](../golden/promotion_20261007/README.md)); and,
+from the rulings of wave 0, `save` and `load` for an `SVBMC`
 object (done on 2026-09-24: `dev/plans/svbmc-integration.md`, "Execution
 record") and the comparison of the two compositions of the S-VBMC shrinkage
 (found on 2026-09-25 to exist on the existing pools as the variant

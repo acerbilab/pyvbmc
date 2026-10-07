@@ -21,6 +21,13 @@ dependencies = [
 ]
 requires-python = ">=3.10"
 
+[project.urls]
+Documentation = "https://acerbilab.github.io/pyvbmc/"
+Source = "https://github.com/acerbilab/pyvbmc"
+Changelog = "https://github.com/acerbilab/pyvbmc/blob/main/CHANGELOG.md"
+Issues = "https://github.com/acerbilab/pyvbmc/issues"
+"Model-fitting tools" = "https://acerbilab.org/model-fitting/"
+
 [tool.setuptools]
 include-package-data = true
 # Include examples in binary/wheel distribution:

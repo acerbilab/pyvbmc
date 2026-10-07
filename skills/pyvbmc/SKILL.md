@@ -40,6 +40,11 @@ this skill folder has been copied elsewhere.
 
 The FAQ is [docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).
 
+For point estimates or a starting point for PyVBMC, see
+[PyBADS](https://acerbilab.github.io/pybads/); for likelihood estimates from
+simulations, see [PyIBS](https://github.com/acerbilab/pyibs). Both are among
+the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/).
+
 Before executing model evaluations or additional fits, establish the user's
 evaluation budget and account for any diagnostic calls within it. When
 working on an existing analysis, inspect its setup and saved results before

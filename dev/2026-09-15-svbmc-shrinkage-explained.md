@@ -28,6 +28,14 @@ python dev/scripts/svbmc_headline_numbers.py \
     --shrink-opt $E/shrink_opt_20260915
 ```
 
+PyVBMC 1.5 uses the full-covariance two-level estimate derived here as
+the headline of a noisy stack, following the PI's decision on 2026-10-06
+([the release-gate reading](results/2026-10-06-arm-3-reading.md)). A
+noiseless stack reports the raw value; a noisy stack falls back to the
+component-median cap with a warning if shrinkage is numerically undefined.
+The September experiments below explain the choice by comparing the
+estimators, including the cap used by the earlier development version.
+
 ## 1. What is being estimated
 
 A VBMC run on a target $p(x, D)$ returns a variational posterior, a
@@ -103,9 +111,9 @@ own ELBO computed by Monte Carlo from the exact log density, so these
 numbers measure estimation error, not the gap between the posterior
 and the target.)
 
-## 3. The current headline and where it breaks
+## 3. The component-median cap and where it breaks
 
-The class today reports, for a noisy stack,
+Before the switch to shrinkage, the class reported, for a noisy stack,
 
 $$
 \min\bigl(G, \; \operatorname{median}_k I_k\bigr) + H ,
@@ -281,7 +289,7 @@ formula of section 4 (runs are independent, so their level errors are
 uncorrelated and the noise term is the mean $V_m$), and every
 component of run $m$ is shifted by the change of its level. The
 two-level estimate is the within-run shrinkage plus this shift, and
-its value at the stacking's weights is the candidate headline.
+its value at the stacking's weights is the noisy stack's headline.
 
 With $M$ of 2 to 5, $\hat\tau^2$ for the runs is estimated from that
 many values and is crude: it hits zero, which collapses all the levels
@@ -352,7 +360,7 @@ nats for every estimate.
 | estimate | worst, $M$ = 2 / 3 / 4 / 5 / 8 / 16 | mean, $M$ = 2 / 3 / 4 / 5 / 8 / 16 |
 |---|---|---|
 | raw | 0.77 / 0.84 / 1.07 / 1.04 / 1.16 / 1.31 | 0.37 / 0.39 / 0.45 / 0.50 / 0.58 / 0.74 |
-| cap (the headline today) | 0.95 / 0.97 / 1.17 / 1.26 / 1.39 / 1.78 | 0.30 / 0.29 / 0.35 / 0.37 / 0.37 / 0.45 |
+| component-median cap | 0.95 / 0.97 / 1.17 / 1.26 / 1.39 / 1.78 | 0.30 / 0.29 / 0.35 / 0.37 / 0.37 / 0.45 |
 | within-run, full covariance | 0.57 / 0.60 / 0.83 / 0.75 / 0.79 / 0.94 | 0.26 / 0.25 / 0.30 / 0.31 / 0.32 / 0.40 |
 | two-level, full covariance | 0.52 / 0.58 / 0.72 / 0.67 / 0.67 / 0.77 | 0.24 / 0.24 / 0.25 / 0.26 / 0.24 / 0.28 |
 
@@ -446,14 +454,14 @@ Across runs:
 6. $\tilde I_k \leftarrow \tilde I_k + \delta_m$ for every component $k$
    of run $m$.
 
-Then, at the weights $w$ the stacking selected, the headline is
+Then, at the weights $w$ the stacking selected, the noisy stack's headline is
 
 $$
 \sum_k w_k \tilde I_k + H .
 $$
 
-Only the reported value changes; the weights and the posterior are
-those of the raw optimization, as with the cap today.
+The weights and the posterior come from the raw optimization; shrinkage
+corrects the reported value at those weights.
 Running the optimization on the shrunken values instead was
 tried on the benchmark at $M$ = 3 to 5 and is worse: the optimizer
 selects on the shrinkage's own errors (a below-average component

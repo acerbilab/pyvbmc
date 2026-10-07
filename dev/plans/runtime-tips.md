@@ -441,4 +441,10 @@ and can remove part of the runs' own bias, and recommends `elbo` with
 headline (`svbmc.html#svbmc-elbo-reporting`, an explicit label in
 `docsrc/source/api/classes/svbmc.rst`). Every S-VBMC tip carries a link.
 
+The lab-link pass (2026-10-07) adds
+`https://acerbilab.org/model-fitting/` to the `pybads` tip, alongside its
+PyBADS documentation link. The tip's wording and scheduling are unchanged.
+None of the example notebooks' stored outputs contains this tip; their
+release execution will use the updated catalog.
+
 Open: the PI's reading of the wording of every tip.

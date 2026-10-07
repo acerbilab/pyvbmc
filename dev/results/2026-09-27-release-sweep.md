@@ -1095,3 +1095,33 @@ its commits. B-28 was found while fixing B-9.
   arguments writes into a record.
 - **Options:** require `--out`; or default it under `scripts/runs/`.
 - **Ruling:** require `--out`, on `feat-slurm-campaigns` (PI); `7ad370b5` on that branch.
+
+## Delta review, 2026-10-07
+
+Two read-only reviews covered user documentation and developer records
+changed since `46200293`, against `276ebca2` and the lab-link edits in
+the working tree. The PI requested the corrections below on 2026-10-07.
+They are applied in the files that held the claims; dated benchmark
+results retain their original measurements. The final delta pass remains
+part of validation at the settled release commit.
+
+| Finding | Correction and disposition |
+|---|---|
+| The headline note and shrinkage tutorial described the median cap as the current noisy S-VBMC headline. | Both state the two-level headline, the warned cap fallback and the noiseless raw headline up front. The September cap comparisons are identified as evidence from the earlier development version; the tutorial's current-tense cap labels are corrected. The headline note records Example 7's completed wording update. |
+| The release overview had an old refresh date, incomplete reminder guidance and completed GPyReg/animation decisions in its pending list. | The overview is refreshed through 2026-10-07, describes the reminder priority and controls, records the 1.4.0 dependency/pin, and lists the film's upload and agreed publication steps. |
+| The S-VBMC integration plan called its deleted development branch live. | Its header records completion and the 2026-09-11 merge, with the standalone forwarding release identified as the remaining post-release step. |
+| The port-review report said its completed follow-ups remained in the TODO. | The report identifies the listed follow-ups as complete. |
+| The noisy-Rosenbrock note and VBMC speed report described the warm-up choice as pending. | Both state the PI's 2026-10-06 decision to retain MATLAB's end of warm-up; the speed report removes obsolete conditional changelog wording. |
+| The lab-link edits missed two referral paragraphs and joined the README introduction to the badges. | The README and FAQ referrals carry the tools-page link, and the introduction is separated. The focused lab-link review also corrected the Twitter link label to follow the lab's naming convention. The roadmap records the completed pass and its checks. |
+| The Slurm tracker retained an unidentified optional-findings placeholder. | Closed by the PI on 2026-10-07. The Slurm plan records the completed fixes and reviews and the closure; the item is removed from the TODO. |
+| The S-VBMC changelog speed range was still provisional although the release gate held paired timings. | The [speed check](2026-10-07-svbmc-release-speed.md) reproduces the eight condition medians from 560 pairs and supports the 1.9-to-5.2 range. The changelog gives the workload and CPU/thread scope; the completed item is removed from the TODO and recorded in the roadmap. |
+| The stacking summary generator said every cell ran both implementations and labeled paired statistics with the total cell count. | The generator limits that statement to paired cells and prints their count. Corrections beside the stacking sections of the October 2 and October 5 campaign READMEs identify the 70 paired cells per condition; the hash-pinned campaign copies keep their original bytes. |
+
+Verification: independent reviews of the corrected records and the speed
+evidence found no remaining issue after their corrections. Both campaigns'
+eight runtime medians reproduce exactly from their 560 paired fits, and
+their numeric and Markdown summary hashes still match the redaction
+records. Rendering both saved JSON summaries through the corrected
+generator gives 120 total and 70 paired cells for every condition. Local
+link paths, Markdown structure and the speed report's reproduction snippet
+were checked. No inference runs or new timing campaign were needed.

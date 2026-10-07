@@ -1,8 +1,10 @@
 # S-VBMC integration
 
 Execution plan and worklog for bringing the S-VBMC implementation into
-PyVBMC. Opened 2026-09-11 on `dev-next` at `e29c5e7`; code work runs on
-`dev-svbmc-integration`. The design is the
+PyVBMC. Implementation is complete: work on `dev-svbmc-integration`, opened
+from `dev-next` at `e29c5e7`, was merged into `dev-next` on 2026-09-11.
+The forwarding release of the standalone `svbmc` package follows PyVBMC
+1.5 publication. The design is the
 [integration proposal](../2026-09-08-ecosystem-integration.md), whose open
 questions the PI settled on 2026-09-11 as recorded below. Evidence the plan
 relies on: the [compatibility report](../results/2026-09-08-svbmc-compatibility.md)
@@ -76,39 +78,6 @@ adding Torch to the repository venv.
 
 ## Benchmark campaign required for 1.5
 
-PI decision, 2026-09-13: after the S-VBMC changes included in 1.5 are
-settled, run a benchmark campaign comparing their combined effect against
-the original standalone S-VBMC. This validation is required for the
-debiasing and preparation/entropy work, regardless of the implementation
-chosen. The original implementation is pinned above at `13a78f6` (0.1.1);
-preserve its source revision, environment and campaign outputs as the
-comparison baseline.
-
-The existing fixtures and short integration parity checks establish
-numerical regression coverage. A population benchmark reference comparable
-to VBMC's golden campaign remains to be established for S-VBMC. Compare
-posterior quality, reported evidence accuracy and runtime using matched
-input-run groups, including noisy targets and different numbers of stacked
-runs. Record input provenance, seeds, settings and evaluation ground truths
-so the comparison can be reproduced. Document intended reporting/correction
-differences when assessing results against the original implementation.
-
-Reuse suitable VBMC numerical fixtures and retained benchmark runs as inputs
-to S-VBMC validation. Hard targets such as noisy multisensory and Rosenbrock
-are priority candidates (PI, 2026-09-13). Inventory the retained posteriors
-and corresponding GP state needed by the debiasing methods; trace summaries
-alone cannot reconstruct stacking inputs. Reuse compatible artifacts and
-generate any missing state as part of the campaign preparation. Applying
-original S-VBMC to these inputs establishes the S-VBMC comparison results;
-the existing VBMC results supply target coverage and input provenance.
-
-Target and seed allocation, metrics and acceptance criteria remain to be
-designed before execution. Baseline preparation can proceed independently;
-the final comparison must cover the settled S-VBMC release candidate and be
-assessed before the 1.5 release. The
-[campaign plan](svbmc-benchmark-campaign.md) owns the design, the
-harness, the allocation, the acceptance criteria and the execution
-worklog; the [remaining-work checklist](../TODO.md) tracks its status.
 The campaign ran on 2026-09-14/15 on eight conditions at `M` = 2 to 16
 and is assessed in the
 [stage D report](../results/2026-09-15-svbmc-pool-comparison.md):
@@ -120,6 +89,36 @@ the candidate replacement, the headline of a noisy stack since 2026-10-06
 ([the reading](../results/2026-10-06-arm-3-reading.md)); the
 `M = 32` extension of the integrated arm (2026-09-15/16) is in the same
 report.
+
+The release gate repeated the comparison on fresh release-code pools in
+October. Its evidence supported selecting two-level shrinkage as the noisy
+headline; the [release timing check](../results/2026-10-07-svbmc-release-speed.md)
+records the 560 paired fits behind the changelog's speed figure. The
+[campaign plan](svbmc-benchmark-campaign.md) owns the design, harness,
+allocation, acceptance criteria and execution worklog.
+
+### Original requirement (PI, 2026-09-13)
+
+The PI required a population benchmark comparing the combined debiasing
+and preparation/entropy changes against standalone S-VBMC at `13a78f6`
+(0.1.1), with the baseline's source, environment and outputs preserved.
+At approval, the fixtures and short parity checks provided numerical
+regression coverage, but a population benchmark comparable to VBMC's
+golden campaign had yet to be established for S-VBMC.
+
+The campaign was to compare posterior quality, evidence accuracy and
+runtime on matched input-run groups, including noisy targets and different
+stack sizes, and record provenance, seeds, settings and ground truths.
+Intended reporting differences were to be distinguished from defects in
+the comparison. The PI prioritized noisy multisensory and Rosenbrock
+targets and reuse of suitable retained posteriors and GP state, with
+missing state generated during preparation; trace summaries alone cannot
+reconstruct stacking inputs.
+
+The allocation, metrics and acceptance criteria were to be fixed before
+execution. Baseline preparation could proceed independently, and the final
+comparison had to cover the included S-VBMC changes and be assessed before
+the 1.5 release.
 
 ## Layout
 

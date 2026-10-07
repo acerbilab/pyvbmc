@@ -234,6 +234,11 @@ plan and consolidated human summary.
   on the developer's machine, with Arm 3 on the noisy configurations: 3.7
   times less time on the noiseless targets, 2.2 on the noisy ones; the
   evidence in [experiments/speed_v104_20261006/](experiments/speed_v104_20261006/README.md).
+- [results/2026-10-07-svbmc-release-speed.md](results/2026-10-07-svbmc-release-speed.md) —
+  the release gate's S-VBMC timing comparison with standalone `svbmc`
+  0.1.1: 560 paired fits, a 1.9- to 5.2-fold optimization speedup across
+  eight conditions; the statistic, timing boundary, provenance and limits
+  behind the changelog figure.
 - [results/2026-10-06-arm-3-reading.md](results/2026-10-06-arm-3-reading.md) —
   the reading of Arm 3's results with the guide fixed before the runs, and
   the PI's two decisions on it: MATLAB's end of warm-up stays for noisy and

@@ -3,8 +3,10 @@
 Written 2026-10-05. The release gate's comparison of the release code with
 `f91fdf0` ([its record](../experiments/release_gate_20261002_assessment/comparison.md)) rejects no
 confirmatory test, but one configuration, `rosenbrock_D2_noise3_production`,
-moves the same way on every measure. This note records why, and the
-decision it leaves to the PI.
+moves the same way on every measure. This note records why and the
+follow-up comparison. On 2026-10-06, after reading Arm 3's results, the PI
+kept MATLAB's end of warm-up for both noisy and noiseless targets
+([the decision](2026-10-06-arm-3-reading.md)).
 
 ## What the comparison shows
 
