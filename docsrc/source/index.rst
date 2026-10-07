@@ -80,12 +80,11 @@ Should I use PyVBMC?
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or :ref:`noisy <faq-noisy-target-function>`;
 - the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
-- the target posterior density is continuous and reasonably smooth;
-- optionally, log-likelihood evaluations may be noisy (see the :ref:`FAQ <faq-noisy-target-function>`).
+- the target posterior density is continuous and reasonably smooth.
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
+For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out :labrepos:`Bayesian Adaptive Direct Search in Python (PyBADS) <pybads>`, our companion method for fast Bayesian optimization.
 

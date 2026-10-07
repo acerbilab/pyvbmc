@@ -46,12 +46,11 @@ copy the folder again from the PyVBMC version you use.
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function) (e.g., estimated [via simulation](https://github.com/acerbilab/ibs));
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
-- the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general));
-- optionally, log-likelihood evaluations may be noisy (e.g., estimated [via simulation](https://github.com/acerbilab/ibs)).
+- the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general)).
 
-Conversely, if your model can be written analytically and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
+For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
 

@@ -84,13 +84,12 @@ NumPy arrays for the starting point and bounds.
 
 I would recommend VBMC for problems in which:
 
-- you can calculate an estimate of the target (log) likelihood function, which can be deterministic or noisy (see [below](#faq-noisy-target-function));
-- the target likelihood function is at least moderately expensive to compute (say, half a second or more per evaluation);
+- target log-likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](#faq-noisy-target-function);
 - the gradient may be unavailable;
 - the number of input parameters is up to about `D = 10` (*maybe* up to `20`, but not more);
 - the target posterior is continuous and reasonably smooth, such that it can be approximated by a Gaussian process (GP) with a smooth kernel. This is generally difficult to know *a priori*, but you can look for [telltale signs](#faq-vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do) that the VBMC approximation is failing.
 
-If your likelihood function is fully analytical — or, more generally, fast to evaluate —, VBMC is most likely not the best tool for your problem (see [below](#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)).
+If your likelihood function is fast to evaluate and noiseless, VBMC is most likely not the best tool for your problem (see [below](#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)).
 
 (faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)=
 ### What do I do if VBMC is not suited for my problem?
