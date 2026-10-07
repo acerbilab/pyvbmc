@@ -7,9 +7,12 @@ the scripts there against the stub ``sbatch``, ``squeue``, ``sacct``,
 the PATH, with a stand-in for the campaign's conda environment whose
 ``python`` is this interpreter and a requirements file that pins what this
 interpreter has installed. The stub ``sbatch`` records every submission
-and runs the batch jobs submitted with ``--wait``; the tests run the array
-tasks themselves, with the variables Slurm would set. They run under bash,
-Git Bash on Windows, and never skip.
+and runs the steps of the finish; the tests run the array tasks
+themselves, with the variables Slurm would set and in the checkout, the
+directory ``campaign_submit.sh`` submits from. Both run a copy of the
+batch script in a spool directory, as Slurm does, so that a script that
+finds anything by its own location fails here as on the cluster. They run
+under bash, Git Bash on Windows, and never skip.
 
 Outside default pytest discovery; run it by path::
 
@@ -276,22 +279,35 @@ class World:
     def script(self, name):
         return posix(self.repo / "dev" / "scripts" / "hpc" / name)
 
+    def spool(self, script, job):
+        """A copy of the batch script in a spool directory of the job's
+        own, which Slurm runs in place of the script itself."""
+        copy = self.root / "spool" / f"job{job}" / "slurm_script"
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(self.script(script), copy)
+        return posix(copy)
+
     def run(self, script, *args, env=None):
+        return self.execute(self.script(script), *args, env=env)
+
+    def execute(self, path, *args, env=None, cwd=None):
         return subprocess.run(
-            [self.bash, self.script(script), *(str(a) for a in args)],
+            [self.bash, path, *(str(a) for a in args)],
             env=self.environment(env),
+            cwd=cwd,
             capture_output=True,
             text=True,
             stdin=subprocess.DEVNULL,
             timeout=900,
         )
 
-    def start(self, command, env, log):
+    def start(self, command, env, log, cwd=None):
         """A process left running, its output in the file ``log``."""
         stream = open(log, "w", encoding="utf-8")
         process = subprocess.Popen(
             command,
             env=self.environment(env),
+            cwd=cwd,
             stdout=stream,
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
@@ -326,10 +342,13 @@ class World:
         return variables
 
     def task(self, name, array_task, offset=0, job=1001, restart=None, **env):
+        """One array task, as Slurm starts it: the spooled copy of the
+        batch script, in the directory of the submission, the checkout."""
         variables = self.task_variables(
             name, array_task, offset, job, restart, env
         )
-        return self.run("campaign_task.sbatch", env=variables)
+        script = self.spool("campaign_task.sbatch", variables["SLURM_JOB_ID"])
+        return self.execute(script, env=variables, cwd=self.repo)
 
     def calls(self):
         """Every sbatch call: its job id, arguments and exported variables."""
@@ -973,6 +992,14 @@ def test_finish_verifies_runs_the_steps_and_archives(world):
     verify, summarize = world.calls()[1:]
     for call, step in ((verify, "verify"), (summarize, "summarize")):
         assert call["env"]["CAMPAIGN_STEP"] == step
+        # The stub spooled a copy of the batch script, which it runs.
+        spooled = world.state / "spool" / f"job{call['job']}" / "slurm_script"
+        assert (
+            spooled.read_bytes()
+            == (
+                world.repo / "dev" / "scripts" / "hpc" / "campaign_task.sbatch"
+            ).read_bytes()
+        )
         assert "--parsable" in call["args"] and "--wait" not in call["args"]
         assert "--no-requeue" in call["args"]
         assert value(call["args"], "-C") == "stubfeat"
@@ -1133,8 +1160,9 @@ def test_a_task_stopped_by_sigterm_leaves_a_missing_case(world):
         variables = world.task_variables(
             "c1", 2, 0, 1001, None, {"STUB_HOLD": 1}
         )
+        script = world.spool("campaign_task.sbatch", variables["SLURM_JOB_ID"])
         process = world.start(
-            [world.bash, world.script("campaign_task.sbatch")], variables, log
+            [world.bash, script], variables, log, cwd=world.repo
         )
         wait_for(out / "g0" / "c002.out", process, log)
         # The task script execs the worker, so that the signal reaches it

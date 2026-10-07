@@ -64,14 +64,10 @@ records its execution.
   verified, and their redacted copies are under
   `experiments/release_gate_20261002/`. Phase 9, the replay fingerprints
   and the six gate runs of the two items below, ran on the developer's
-  machine on 2026-10-04 and met its acceptance (the plan's worklog). What
-  remains is the smaller fixes that the plan's worklog of 2026-09-30
-  leaves for after the merge, which change nothing a fingerprint computes
-  and land before the promotion's `prepare`, and the review's optional
-  findings, which await the PI's ruling. The smaller fixes are done with
-  the promotion's work (PI, 2026-10-05), which takes the after arm, since
-  MATLAB's end of warm-up stays (PI, 2026-10-06): they reach no batch that
-  runs from its named commits. An
+  machine on 2026-10-04 and met its acceptance (the plan's worklog). The
+  smaller fixes that the plan's worklog of 2026-09-30 left for after the
+  merge were made on 2026-10-07 (the plan's worklog). What remains is the
+  review's optional findings, which await the PI's ruling. An
   edit to the package's text, the tips' wording among them, lands after
   the promotion of the new reference, whose check compares the package's
   files with the after arm's (the plan's decision 13), but for
@@ -117,7 +113,8 @@ records its execution.
   Arm 3, the release code with the port's end of warm-up
   ([the reading](results/2026-10-06-arm-3-reading.md)): the promotion
   takes the after arm, and its record states the cost on the noisy
-  Rosenbrock target. The promotion is
+  Rosenbrock target. What remains is the promotion itself: `prepare`,
+  `replay`, the record's README and `publish`. The promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap

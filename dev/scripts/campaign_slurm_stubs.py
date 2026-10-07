@@ -10,7 +10,9 @@ the state directory named by ``STUB_STATE``:
   driver passes in ``sbatch/<job>/env``, and prints the job id. It leaves
   an array job to the test, which runs its tasks. A job that is not an
   array (a step of the finish) it runs at once in the foreground, as Slurm
-  would with ``SLURM_JOB_ID`` and ``SLURMD_NODENAME`` set, and records how
+  would with ``SLURM_JOB_ID`` and ``SLURMD_NODENAME`` set and from a copy
+  of the batch script in a spool directory of the job's own
+  (``spool/job<job>/slurm_script``), and records how
   it ended for ``sacct`` (``sacct/<job>`` and ``sacct/<job>.exitcode``),
   exiting with the script's code under ``--wait`` and 0 otherwise; with a
   file ``step_hold``, it runs none and leaves the job pending in the queue
@@ -100,9 +102,14 @@ if [ -f "$state/step_hold" ]; then
     exit 0
 fi
 output=${output//%j/$n}
+# Slurm runs a copy of the batch script from its spool directory, so a
+# script that finds anything by its own location fails here too.
+mkdir -p "$state/spool/job$n"
+cp "$script" "$state/spool/job$n/slurm_script"
 rc=0
 SLURM_JOB_ID=$n SLURMD_NODENAME=${STUB_NODE:-stubnode} \
-    bash "$script" > "${output:-/dev/null}" 2>&1 < /dev/null || rc=$?
+    bash "$state/spool/job$n/slurm_script" > "${output:-/dev/null}" 2>&1 \
+    < /dev/null || rc=$?
 echo "$rc:0" > "$state/sacct/$n.exitcode"
 if [ "$rc" = 0 ]; then
     echo COMPLETED > "$state/sacct/$n"

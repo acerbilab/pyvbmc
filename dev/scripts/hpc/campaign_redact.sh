@@ -50,9 +50,10 @@
 # or a command, a named directory or the home directory (as a plain
 # substring), the username or a hostname of the campaign (as a whole name,
 # which no letter, digit, _ or - flanks, nor a dot that continues the name;
-# a hostname in any letter case), a node feature of the campaign's hosts
-# other than NODE_FEATURE (in the quotes a list of them holds), or an
-# absolute path outside the system's
+# a hostname in any letter case), a Slurm host list that names one
+# (node[01-03]), the domain of a hostname that is a domain name, a node
+# feature of the campaign's hosts other than NODE_FEATURE (in the quotes a
+# list of them holds), or an absolute path outside the system's
 # directories (/usr, /etc, /tmp and the like) that no name covers, naming
 # the file and the string. It also refuses a username or a hostname that is
 # itself a name the copies write (login, the node family), which the check
@@ -61,7 +62,8 @@
 # redaction.json records each allowed string with the hits it cleared.
 #
 # With --check, it searches the FILEs, which it did not write (the README
-# beside the tracked copies, say), for the same strings, and refuses when
+# beside the tracked copies, say), for the same strings, a node feature
+# also unquoted (as a whole word, in any letter case), and refuses when
 # any holds one.
 set -euo pipefail
 

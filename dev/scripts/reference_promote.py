@@ -41,7 +41,9 @@ arm's code (:func:`check_code`): ``HEAD`` equals the after arm's commit in
 :data:`NUMERIC_PATHS` (the package, but for its tests and S-VBMC, which no
 VBMC run imports, and the harness files that build a run), the working tree
 equals ``HEAD`` there, and the imported gpyreg is the after arm's commit,
-clean.
+clean. ``fingerprints`` and ``replay`` also refuse, before their runs, a
+checkout with any tracked change (:func:`check_runs_clean`): a run records
+such a checkout as dirty, which ``prepare`` and ``publish`` refuse.
 
 ``fingerprints`` runs ``golden_replay.py`` on every configuration of the
 after arm at seed 0, with the after arm as ``--sidecars`` and no baseline
@@ -213,7 +215,7 @@ PASSAGES = {
         "dev/README.md",
         "- `scripts/golden_replay.py` —",
         "- `scripts/regenerate_baseline.sh` —",
-        "ebcfd9c777bfd65371ff9a78760192f29fe4bf04340ac665fb76df7a2dd118ef",
+        "995b5358db31a0cbf3262025c488d42b3b737ce47847d6e5ed9e720ac384f28d",
     ),
     "golden_readme": (
         "dev/golden/README.md",
@@ -363,6 +365,13 @@ def working_changes():
     return git("status", "--porcelain", "--", *NUMERIC_PATHS).splitlines()
 
 
+def tracked_changes():
+    """The tracked files of the whole checkout that differ from ``HEAD``,
+    by which a run records its checkout as dirty
+    (``profile_run.git_info``)."""
+    return git("status", "--porcelain", "--untracked-files=no").splitlines()
+
+
 def is_tracked(path):
     """Whether git tracks the file ``path`` in this checkout."""
     try:
@@ -418,6 +427,19 @@ def check_code(source, what):
         )
         check(not gpyreg.get("dirty"), f"{what}: the gpyreg checkout is dirty")
     return head
+
+
+def check_runs_clean(what, judge):
+    """Before ``what`` makes its runs: the checkout has no tracked change,
+    anywhere, since each run records a dirty checkout, which ``judge``
+    refuses once the runs are made."""
+    if clean_required():
+        changes = tracked_changes()
+        check(
+            not changes,
+            f"{what}: tracked files differ from HEAD, so its runs would "
+            f"record a dirty checkout, which {judge} refuses: {changes}",
+        )
 
 
 # --------------------------------------------------------------------------
@@ -1066,6 +1088,7 @@ def cmd_fingerprints(args, root):
     )
     manifest = read_manifest(after)
     check_code(manifest["identity"]["source"], "fingerprints")
+    check_runs_clean("fingerprints", "prepare")
     labels = manifest["allocation"]["labels"]
     code = golden_replay.main(
         [
@@ -1283,6 +1306,7 @@ def prepared(root, record):
 def cmd_replay(args, root):
     record, validation = prepared(root, args.record)
     check_code(validation["after"]["source"], "replay")
+    check_runs_clean("replay", "publish")
     return golden_replay.main(
         [
             "--configs",
@@ -1460,10 +1484,17 @@ def facts(root, validation, report, head, public_traces):
         "envelope_sentence": (
             "none lies outside its configuration's accuracy envelope"
             if not outside
-            else f"{outside} of them lie outside their configuration's "
-            "accuracy envelope, which the population's own rate of runs "
-            f"outside theirs ({fingerprints['population_outlier_rate']:.3f}) "
-            "makes plausible"
+            else (
+                "1 of them lies outside its configuration's accuracy "
+                "envelope, which the population's own rate of runs outside "
+                "theirs"
+                if outside == 1
+                else f"{outside} of them lie outside their configuration's "
+                "accuracy envelope, which the population's own rate of runs "
+                "outside theirs"
+            )
+            + f" ({fingerprints['population_outlier_rate']:.3f}) makes "
+            "plausible"
         ),
         "seed0_identical": fingerprints[
             "semantic_finals_identical_to_cluster_seed0"
@@ -1477,6 +1508,12 @@ def facts(root, validation, report, head, public_traces):
         "previous_commit": head[:8],
         "defaults": number(len(DEFAULT_CONFIGS)),
         "default_configs": ", ".join(f"`{c}`" for c in DEFAULT_CONFIGS),
+        "all_configs": ",".join(labels),
+        "alpha": FINGERPRINT_ALPHA,
+        "numeric_paths": " ".join(
+            f"'{path}'" if path.startswith(":") else path
+            for path in NUMERIC_PATHS
+        ),
     }
 
 
@@ -1704,10 +1741,12 @@ only), `--baseline` (the traces directory; the default
 `scripts/runs/golden/{traces}/`, the replay fingerprints of the current
 reference, one run at seed 0 of each configuration, exists only on the
 machine that made them, which `scripts/runs/LOCAL.md` lists), `--sidecars`
-(the envelope population: a flat directory of sidecars, by default
-`golden/baseline/`, the current reference's, or a population of
-`population_run.py`'s array mode, a campaign directory or its tracked
-copies, of which only the verified cases count; a replayed configuration
+(the envelope population, whose sidecar of a replayed seed is also the
+reference for the run's semantic finals where `--baseline` holds no trace
+of it: a flat directory of sidecars, by default `golden/baseline/`, the
+current reference's, or a population of `population_run.py`'s array mode,
+a campaign directory or its tracked copies, whose `verification.json`
+limits the envelopes to the verified cases; a replayed configuration
 without a sidecar there is an error), `--out`, `--threads` (1, as the
 baseline), `--calibration-budget` (pin all three chunk budgets to this
 integer for a nondefault-profile check; omitted means historical defaults,
@@ -1885,14 +1924,34 @@ population's accuracy ranges. Elsewhere, replay at the parent commit first
 and pass that replay's `--out` directory as `--baseline`. Both commands
 return nonzero when their checks flag a problem.
 
-A machine gets replay fingerprints of its own by making them at the commit
-the promotion record names, as they were made for the reference:
-`golden_replay.py` on every configuration of the `production` suite at seed
-0, with `--sidecars dev/golden/baseline` and a `--baseline` that holds no
-traces, so that each run is judged against the population's envelopes, and
-the gate runs with `seeded_gate_runs.py run`. That machine's
-`dev/scripts/runs/LOCAL.md` then lists them, and its replays pass them as
-`--baseline`.
+A machine gets replay fingerprints of its own as the reference's were
+made, with the reference's code and gpyreg: a clean checkout at a commit
+that holds this reference and whose code is that of PyVBMC `{commit}`,
+which the first command below confirms by printing nothing (the commit
+that published the reference is one, the last to change
+`dev/golden/baseline/summary.md` while this reference is current), with
+gpyreg `{gpyreg}` installed from a checkout of its own. From the
+repository root, one at a time:
+
+```console
+git diff --stat {commit} HEAD -- {numeric_paths}
+python -u dev/scripts/golden_replay.py --seeds 0 \\
+    --sidecars {after_rel} \\
+    --baseline dev/scripts/runs/no-traces \\
+    --out dev/scripts/runs/<fingerprints> \\
+    --configs {all_configs}
+python -u dev/scripts/seeded_gate_runs.py run --out dev/scripts/runs/<gate_runs>
+```
+
+The `--baseline` names a directory that does not exist, so that each run
+is judged against the population's accuracy envelopes alone. The replay
+exits 1 when a run lies outside its envelope, as some correct runs do, so
+the fingerprints are judged as a set, as the reference's were: no more of
+them may lie outside than the population's own rate of runs outside
+theirs makes plausible, a binomial tail of at least {alpha} (the
+promotion record's `validation.json` gives that rate). That
+machine's `dev/scripts/runs/LOCAL.md` then lists them, and its replays pass
+the fingerprints' directory as `--baseline`.
 
 ## Code and reproducibility
 

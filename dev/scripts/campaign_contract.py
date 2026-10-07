@@ -134,6 +134,7 @@ and its check of files it did not write::
 """
 
 import argparse
+import bisect
 import fnmatch
 import getpass
 import hashlib
@@ -3537,6 +3538,63 @@ def expand_hostlist(text):
     return hosts
 
 
+#: A Slurm host list in a text: a name that one or more bracketed lists of
+#: numbers and ranges continue (``node[01-03,7]``, ``r[1-2]n[1-4]``); a
+#: dot is part of it only where a name's character follows, so that the
+#: dot that ends a sentence is not.
+_HOSTLIST_NAME = rf"(?:[{_HOST_WORD}]|\.(?=[{_HOST_WORD}]))"
+_HOSTLIST = re.compile(
+    rf"(?<![.{_HOST_WORD}]){_HOSTLIST_NAME}+"
+    rf"(?:\[[0-9][0-9,-]*\]{_HOSTLIST_NAME}*)+"
+)
+#: The most hosts, bracketed lists and digits of a number that a host list
+#: in a text may hold to be expanded.
+HOSTLIST_LIMIT = 10_000
+HOSTLIST_GROUPS = 4
+HOSTLIST_DIGITS = 9
+
+
+def _hostlist_hosts(expression):
+    """The hosts of a host list that a text holds; none when it is no host
+    list or exceeds the limits above."""
+    groups = re.findall(r"\[([^\]]*)\]", expression)
+    if len(groups) > HOSTLIST_GROUPS:
+        return []
+    count = 1
+    for group in groups:
+        size = 0
+        for part in group.split(","):
+            first, _, last = part.partition("-")
+            if (
+                not first.isdigit()
+                or (last and not last.isdigit())
+                or max(len(first), len(last)) > HOSTLIST_DIGITS
+            ):
+                return []
+            size += max(int(last or first) - int(first) + 1, 0)
+        count *= size
+    if count > HOSTLIST_LIMIT:
+        return []
+    try:
+        return expand_hostlist(expression)
+    except ContractError:
+        return []
+
+
+def _domains(hosts):
+    """The domains of the domain names among ``hosts``: what follows a
+    name's first label, where that is two labels or more (``cs.example.org``
+    of ``n1.cs.example.org``), lower case; an IP address has none."""
+    found = set()
+    for host in hosts:
+        labels = host.lower().split(".")
+        if re.fullmatch(r"[0-9.]+", host):
+            continue
+        if len(labels) >= 3 and all(labels):
+            found.add(".".join(labels[1:]))
+    return found
+
+
 def _dicts(value):
     """Every mapping in a JSON value, its own included."""
     if isinstance(value, dict):
@@ -3730,14 +3788,26 @@ class Redaction:
     username where nothing of :data:`_USER_WORD` flanks it, a hostname
     where nothing of :data:`_HOST_WORD` does. Before the search, the names
     the replacements write are blanked where they stand as whole words, so
-    that a forbidden string inside one of them (a host named ``login``) is
-    not taken for a leak, and an occurrence inside a run of
-    :data:`DIGEST_LENGTH` hex digits or more is a digest's and not one. It
-    also refuses every absolute path that no name covers and that lies
-    outside ``system_prefixes``. A forbidden string that is itself one of
-    those names (a username ``login``, or the node family's) could hide
-    behind the blanking, and is refused at once. A hit of a string of
-    ``allow`` is exempted and counted in :attr:`allowed`.
+    that a forbidden string inside one of them is not taken for a leak.
+    The usernames and the hostnames are searched in the blanked text, where
+    a dot may join one to such a name (``login.jdoe``), and in the text
+    itself, where an occurrence that such a name covers whole is passed
+    over, so that a name the copies write does not hide the start or the
+    end of a longer one (the node ``u8-12`` of the family ``u8``). An
+    occurrence inside a run of :data:`DIGEST_LENGTH` hex digits or more is
+    a digest's and not one. It also refuses a Slurm host list that names a
+    hostname (``node[01-03]``, within :data:`HOSTLIST_LIMIT` hosts), the
+    domain of a hostname that is a domain name (``cs.example.org`` of
+    ``n1.cs.example.org``) wherever it stands as a name of its own and not
+    within a hostname or a host list found, and every absolute path that no
+    name covers and that lies outside ``system_prefixes``; in a text that a
+    person wrote, a node feature unquoted, as a whole word in any letter
+    case (``leaks(prose=True)``), which an allowed string of the feature,
+    quoted or not, exempts in any letter case. A forbidden string that is
+    itself one of the names the copies write (a username ``login``, or the
+    node family's) could not be told apart from that name, and is refused
+    at once. A hit of a string of ``allow`` is exempted and counted in
+    :attr:`allowed`.
 
     Parameters
     ----------
@@ -3804,6 +3874,24 @@ class Redaction:
         }
         self._hosts_check = _bounded(
             self._host_what, _HOST_WORD, re.IGNORECASE
+        )
+        # A domain stands where no character of a short name flanks it: a
+        # dot before it starts it, and one after it continues it only
+        # where a name's character follows.
+        body = _trie(_domains(self._host_what))
+        self._domains = (
+            re.compile(
+                rf"(?<![{_HOST_WORD}])(?:{body})"
+                rf"(?![{_HOST_WORD}]|\.[{_HOST_WORD}])",
+                re.IGNORECASE,
+            )
+            if body
+            else None
+        )
+        self._feature_words = _bounded(
+            {s[1:-1] for s, _ in self.forbidden.get("features", [])} - {""},
+            _HOST_WORD,
+            re.IGNORECASE,
         )
 
     def _check_collisions(self, tokens, origins):
@@ -3912,25 +4000,40 @@ class Redaction:
     def _allowance(self, string, kind):
         """The allowed string that exempts a hit of ``string``, or None."""
         for allowed in self.allowed:
-            if allowed == string or (
-                kind == "hosts" and allowed.lower() == string.lower()
+            if (
+                allowed == string
+                or (kind == "hosts" and allowed.lower() == string.lower())
+                or (
+                    kind == "feature words"
+                    and allowed.strip("\"'").lower() == string.lower()
+                )
             ):
                 return allowed
         return None
 
-    def leaks(self, text, count=True):
+    def leaks(self, text, count=True, prose=False):
         """Where what may remain in no copy occurs in one file's text.
 
         Returns ``(line, string, what it is)`` for each occurrence, at most
         :data:`MAX_LEAKS`, in the order of the text; an occurrence of an
         allowed string is left out, and counted in :attr:`allowed` when
-        ``count`` is true.
+        ``count`` is true. ``prose`` is for a text that a person wrote, in
+        which a node feature stands unquoted: it is then refused as a
+        whole word too, in any letter case.
         """
-        masked = text
+        masked, spans = text, []
         if self._tokens is not None:
+            spans = [match.span() for match in self._tokens.finditer(text)]
             masked = self._tokens.sub(
                 lambda match: "\0" * len(match.group(0)), text
             )
+        starts = [start for start, _ in spans]
+
+        def blanked(start, end):
+            """Whether a name the copies write covers ``text[start:end]``."""
+            index = bisect.bisect_right(starts, start) - 1
+            return index >= 0 and spans[index][1] >= end
+
         found = set()
 
         def hit(offset, string, what, kind):
@@ -3951,15 +4054,68 @@ class Redaction:
                     if not _inside_digest(masked, index, len(string)):
                         hit(index, string, what, kind)
                     index = masked.find(string, index + 1)
+        # The names are searched in the blanked text, where a dot may join
+        # one to a name the copies write (login.jdoe), and in the text
+        # itself, where such a name may begin or end one (the node u8-12 of
+        # the family u8); there, an occurrence that such a name covers whole
+        # is that name.
+        hosts = []
         for kind, pattern, names in (
             ("users", self._users, self._user_what),
             ("hosts", self._hosts_check, self._host_what),
         ):
-            for match in pattern.finditer(masked) if pattern else ():
-                string = match.group(0)
+            occurrences = set()
+            for source in (masked, text) if pattern else ():
+                occurrences |= {
+                    match.span()
+                    for match in pattern.finditer(source)
+                    if source is masked or not blanked(*match.span())
+                }
+            for start, end in sorted(occurrences):
+                string = text[start:end]
                 string = string.lower() if kind == "hosts" else string
-                if not _inside_digest(masked, match.start(), len(string)):
-                    hit(match.start(), string, names[string], kind)
+                if _inside_digest(text, start, end - start):
+                    continue
+                hit(start, string, names[string], kind)
+                if kind == "hosts":
+                    hosts.append((start, end))
+        for match in _HOSTLIST.finditer(text) if self._host_what else ():
+            expression = match.group(0)
+            head = expression[: expression.index("[")].lower()
+            if any(host.startswith(head) for host in self._host_what) and any(
+                host.lower() in self._host_what
+                for host in _hostlist_hosts(expression)
+            ):
+                hit(
+                    match.start(),
+                    expression,
+                    "a host list that names a hostname",
+                    "hosts",
+                )
+                hosts.append(match.span())
+        # A domain within a hostname or a host list found is theirs.
+        for match in self._domains.finditer(text) if self._domains else ():
+            if not any(
+                s <= match.start() and match.end() <= e for s, e in hosts
+            ):
+                hit(
+                    match.start(),
+                    match.group(0).lower(),
+                    "the domain of a hostname",
+                    "hosts",
+                )
+        for match in (
+            self._feature_words.finditer(text)
+            if prose and self._feature_words
+            else ()
+        ):
+            if not blanked(*match.span()):
+                hit(
+                    match.start(),
+                    match.group(0),
+                    "a node feature",
+                    "feature words",
+                )
         for offset, path in absolute_paths(text):
             if not _system_path(path, self.system_prefixes):
                 hit(offset, path, "an absolute path that no name covers", "")
@@ -4310,9 +4466,10 @@ def redact(
     Then every copy, :data:`REDACTION` included, is searched for each value
     of the site block that is a path or a command, every named directory
     and the operator's home directory, as plain substrings, for the
-    operator's username and every hostname, as whole names, for every node
-    feature of the campaign's host parts but the family, in the quotes a
-    list of them holds, and for any absolute path outside
+    operator's username and every hostname, as whole names, for a host
+    list that names a hostname and the domain of a hostname, for every
+    node feature of the campaign's host parts but the family, in the
+    quotes a list of them holds, and for any absolute path outside
     ``system_prefixes`` (:meth:`Redaction.leaks`);
     any of them raises :class:`ContractError` naming the file and the
     string, and nothing is written. A hit of a string of ``allow``, which
@@ -4543,7 +4700,8 @@ def check_files(
     The same search as :func:`redact`'s (:meth:`Redaction.leaks`), with the
     campaign's forbidden strings and names (:func:`redaction_rules`), in
     files such as the hand-written README of the directory that holds the
-    tracked copies. Returns ``(file, line, string, what it is)`` for each
+    tracked copies, read as prose: a node feature is refused unquoted too.
+    Returns ``(file, line, string, what it is)`` for each
     occurrence; none for files that hold nothing forbidden. The hits of the
     strings of ``allow`` are left out, and counted into the mapping
     ``allowed`` when one is given.
@@ -4570,7 +4728,7 @@ def check_files(
             raise ContractError(f"{path} cannot be read as text: {error}")
         found += [
             (str(path), line, string, what)
-            for line, string, what in redaction.leaks(text)
+            for line, string, what in redaction.leaks(text, prose=True)
         ]
     if allowed is not None:
         allowed.update(redaction.allowed)
@@ -4869,7 +5027,8 @@ def parse_args(argv=None):
         nargs="+",
         metavar="FILE",
         help="files that redact did not write, such as the README beside "
-        "the tracked copies, to search as it searches the copies",
+        "the tracked copies, to search as it searches the copies, a node "
+        "feature also unquoted",
     )
     redaction.add_argument(
         "--path",
