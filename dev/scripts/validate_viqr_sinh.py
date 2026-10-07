@@ -9,6 +9,12 @@ No target is evaluated by the timing command.
 Use ``--equivalent-viqr`` to time an output-equivalent VIQR revision against
 existing captures. Both source hashes are recorded, and every captured
 public acquisition output must still match exactly.
+
+This is the record of a completed check. ``replay`` replays labels of the
+``golden`` suite through ``golden_replay.py``'s default traces and sidecars,
+which were those of ``reference_990_20260913`` until the promotion of
+``reference_2400_20261007`` on 2026-10-07 made them the ``production``
+suite's; it reproduces from a checkout of ``948bac0d`` or earlier.
 """
 
 import argparse

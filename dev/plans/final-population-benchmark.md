@@ -493,3 +493,9 @@ The returned posterior's transformer is absent from the traces and remains
 uncertifiable. The [promotion record](../golden/promotion_20260913/README.md)
 links the durable assessment, diagnostic evidence, hashes, replay reports
 and assembly script. No solver numerics changed during promotion.
+
+On 2026-10-07 `reference_2400_20261007`, the release gate's after arm on
+the `production` suite, replaced this reference, whose trajectories predate
+the fixes of the port correctness review; its
+[promotion record](../golden/promotion_20261007/README.md) applies this
+plan's method of assessment to the release code.

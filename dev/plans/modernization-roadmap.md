@@ -38,6 +38,11 @@ independent review and the validated `reference_990_20260913`, which retains
 records execution. Future candidate checks may use smaller allocations;
 reference size does not prescribe their run count.
 
+**Golden reference after the port review, 2026-10-07:**
+`reference_2400_20261007`, the release gate's after arm, replaces
+`reference_990_20260913` (pickup 19; the
+[promotion record](../golden/promotion_20261007/README.md)).
+
 The noisy-acquisition efficiency work closed on 2026-09-19 without a change
 of default ([noisy-acquisition-efficiency.md](noisy-acquisition-efficiency.md)).
 The S-VBMC headline estimate was selected on 2026-10-06 (pickup 17).
@@ -693,8 +698,8 @@ The open work for 1.5 is the list "In scope for 1.5" of
    (decided with the PI 2026-09-06: Stages 0–3 ship together as 1.5).
    With the 1.5 release that follows it, attach as release assets the
    traces of the population the released code was validated against, the
-   release gate's after arm (the `TODO.md` item "The golden references
-   after the port review"), and the gate's S-VBMC pools, whose stacking
+   release gate's after arm (the golden reference `reference_2400_20261007`,
+   pickup 19), and the gate's S-VBMC pools, whose stacking
    results are in git (PI decisions 2026-09-06 and 2026-09-28): each an
    archive of the
    campaign's numeric files and redacted copies, built apart from its draft
@@ -1143,6 +1148,24 @@ The open work for 1.5 is the list "In scope for 1.5" of
     two-level shrinkage (the campaign plan). The added bias of each
     estimate and the switch of the noisy headline are pickup 17.
 
+19. **The golden reference after the port review — promoted**
+    (2026-10-07). The release gate's after arm, 2400 runs of the
+    `production` suite at seeds 0–99 made by the release code on the
+    cluster on 2026-10-02, is the golden reference
+    `reference_2400_20261007`, in place of `reference_990_20260913`, whose
+    trajectories predate the port review's fixes. The PI accepted on
+    2026-10-07 its assessment against the code at the start of the port
+    review (`f91fdf0`): none of 96 confirmatory tests rejects, and the noisy
+    Rosenbrock target is usable 72 times in 100 against 87, the cost of
+    MATLAB's end of warm-up (pickup 16). Its replay fingerprints, one run at
+    seed 0 of each configuration on the developer's machine, and the port
+    review's six seeded gate runs, two of them with a prior object, ran on
+    2026-10-04 and reproduced as the Slurm plan's Phase 9 requires. The
+    [promotion record](../golden/promotion_20261007/README.md) owns the
+    evidence, hashes and procedure; `golden_replay.py` replays the new
+    defaults against the fingerprints, and the previous references are
+    preserved.
+
 ## S-VBMC ELBO corrections and reporting
 
 Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:
@@ -1190,6 +1213,12 @@ five exact current-code default replays passed. The
 [promotion record](../golden/promotion_20260913/README.md) owns the evidence
 and provenance; the [population plan](final-population-benchmark.md) records
 the staged execution. Previous references are preserved.
+
+`reference_2400_20261007` replaced it on 2026-10-07, after the port
+correctness review's fixes moved default trajectories: the release gate's
+after arm, whose assessment against the code at the start of the review the
+PI accepted that day (pickup 19; the
+[promotion record](../golden/promotion_20261007/README.md)).
 
 ## Benchmark coverage and HPC support
 
@@ -1343,7 +1372,7 @@ must cover the settled release code, API and behavior before publication.
   `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
 - [ ] Run the final integrated tests, the required CI matrix and the
   package checks, and prepare the golden-trace release archive (the
-  [reference record](../golden/promotion_20260913/README.md)). The package
+  [reference record](../golden/promotion_20261007/README.md)). The package
   checks include what the sdist ships: setuptools_scm puts every tracked
   file in it, and of `MANIFEST.in` only the `prune` lines have an effect
   (`docsrc`, `dev`, `papers`), its `include` lines naming files that the

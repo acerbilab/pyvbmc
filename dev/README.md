@@ -412,37 +412,34 @@ historical checkout `c4c692c`, which contains the checks and retains the
 `03650a2` numerical source pinned by `scripts/eta_bound_variants.py`. Its
 source-digest guard is expected to reject later production changes.
 
-The golden suite's noisy configurations pin the 2020 paper's budget of
-50 (D + 2) evaluations, which suppresses the package's own 75 (D + 2)
-default for a specified-noise target; everything else is a package
-default. Since 2026-09-18 release checks and new experiments use the
-`production` suite instead: the same configurations with the noisy entries
-freed of that pin under `production`-tagged labels. Its noiseless entries
-are the golden ones. The golden reference below is the record of the
-golden suite; the reference that replaces it after the port review is to
-run the whole `production` suite on the cluster, with exact replay from
-one seed per configuration generated on the developer's machine
-([plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md)).
+The current golden reference is `reference_2400_20261007`: **2400 runs of the
+24 configurations of the `production` suite at seeds 0–99, 800 of them noisy,
+with 96 population KS tests**. Release checks and new experiments use the
+`production` suite: the golden suite with its noisy entries freed of the 2020
+paper's budget of 50 (D + 2) evaluations and given `production`-tagged labels,
+so that they run at the package's defaults for a specified-noise target (75
+(D + 2) evaluations); its noiseless entries are the golden ones. The runs were
+made on a Slurm cluster by `population_run.py`'s array mode from PyVBMC
+`ff3ed014` with gpyreg `682585f7`
+([plans/slurm-benchmark-support.md](plans/slurm-benchmark-support.md)). Their
+JSON sidecars and `summary.md` live under `golden/baseline/`, so `python
+dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>` works from a
+fresh checkout; the campaign's redacted records are under
+`experiments/release_gate_20261002/population_after`. The traces that
+`golden_replay.py` compares with exactly are the reference's replay
+fingerprints, one run at seed 0 of each configuration made with the same code
+on the machine that `scripts/runs/LOCAL.md` lists, gitignored under
+`scripts/runs/golden/reference_2400_20261007_fingerprints/` with the record of
+the port review's six seeded gate runs, two of them with a prior object,
+recorded twice there (`scripts/seeded_gate_runs.py`). The previous references,
+`reference_990_20260913` of the golden suite and those before it, remain
+preserved for historical comparisons.
 
-The current golden reference is `reference_990_20260913`: **990 runs across
-23 configurations, including 250 noisy runs, with 92 population KS tests**.
-Its JSON sidecars and `summary.md` live under `golden/baseline/`, so
-`python dev/scripts/golden_trace.py compare dev/golden/baseline <new_dir>`
-works from a fresh checkout. Full `.npz` traces stay gitignored under
-`scripts/runs/golden/reference_990_20260913/` until release-asset publication.
-The 870 synthetic-target pairs use frozen treatment `68a43db`; the 120
-real-data pairs retain `fc50ee1` and are byte-identical to their previous
-reference. Both use gpyreg `a2f8ddc`. The previous 990- and 870-run references
-remain preserved for historical comparisons.
-
-The [promotion record](golden/promotion_20260913/README.md) contains the
-assessment, provenance, hashes and verification. All 990 archives passed
-integrity checks and the 92-test even/odd check had no flags. The five
-default cases replayed exactly under the code at promotion (2026-09-13) in
-every non-timer NPZ loop/final array, semantic final-result field and
-initial design; the port review's fixes have moved default trajectories
-since (`TODO.md`, "The golden references after the port review"). The four real-data seed-0 replays
-retain their earlier exact certification. The returned posterior's
+The [promotion record](golden/promotion_20261007/README.md) contains the
+assessment, which the PI accepted, the provenance, hashes and verification. The
+96-test even/odd check had no flags. The five default cases replayed exactly
+under the code at promotion (2026-10-07) in every non-timer NPZ loop/final
+array, semantic final-result field and initial design. The returned posterior's
 transformer is absent from the traces and remains uncertifiable.
 
 [`golden/README.md`](golden/README.md) is the human-facing description of the
@@ -451,9 +448,9 @@ it about the current snapshot; batch chronology, launch details and release
 stage history belong in the separate execution records.
 
 `scripts/regenerate_baseline.sh` is the legacy whole-campaign helper. Its
-seed allocation differs from the extended reference and it masks comparison
-failures, so it must not be used to republish this reference. Follow the
-extension record's commands and fail-fast checks instead. The benchmark follows
+seed allocation differs from the reference's and it masks comparison
+failures, so it must not be used to republish this reference, which the
+release gate's campaigns made. The benchmark follows
 the VBMC papers' procedure: each run's start point is drawn uniformly inside
 the plausible box from a stream spawned off the run seed, and the plausible
 box is the papers' prior box (family mean ± 3 marginal SD); see the audit
@@ -593,7 +590,7 @@ reason.
   McNemar tests of usability), checks every boost decision against the
   guard, and reports each extension on its own with the confirmatory family
   fixed in its manifest. The default `--reference`, `golden/baseline/`,
-  holds `reference_990_20260913`, so the default command stops at that
+  holds `reference_2400_20261007`, so the default command stops at that
   check; the 870 sidecars are `golden/baseline/` at commit `b2ea8597`
   (`git worktree add --detach DIR b2ea8597`, then `--reference
   DIR/dev/golden/baseline`) and the traces directory
@@ -648,50 +645,6 @@ reason.
   configuration). `record-replay` adds a finished `golden_replay.py`
   report of the new configurations against the combined traces to that
   record. The README of the record is written by hand from its output.
-- `scripts/reference_promote.py` — promotes the after arm of the release
-  gate's population campaigns (`plans/slurm-benchmark-support.md`) to the
-  golden reference, in the manner of `golden/promotion_20260913/promote.py`;
-  `reference_join.py` cannot, since it extends a reference and refuses any
-  overlap with it. It runs on the machine of the replay fingerprints, one
-  step at a time, and each step that runs code first checks that `HEAD` and
-  the working tree equal the after arm's code (the package, but for its
-  tests and S-VBMC, and the harness files that build a run) and that the
-  imported gpyreg is the after arm's; `fingerprints` and `replay` also
-  refuse, before their runs, a checkout with any tracked change, which
-  their runs would record as dirty. `fingerprints` runs `golden_replay.py`
-  on every configuration of the after arm at seed 0, each judged against
-  the population's envelopes alone (the Slurm plan's Phase 9), and exits
-  0 once every run is made, whatever the replay flags, since `prepare`
-  judges the runs as a set. `prepare`
-  checks that `golden/baseline/` still holds `reference_990_20260913`; the
-  after arm, which must be its redacted tracked copies, against its
-  verification report and rescored metrics (a case it does not place as
-  verified needs a ruling in `--rulings`); the assessment against the
-  SHA-256 the PI accepted; the fingerprints (one BLAS thread, historical
-  calibration budgets, the after arm's options, code and gpyreg, and no
-  more of them outside their envelopes than the population's own rate of
-  runs outside theirs makes plausible); and the gate runs
-  (`seeded_gate_runs.py`'s check, the after arm's code, this host). It then
-  copies the fingerprints and the gate runs into
-  `scripts/runs/golden/<name>_fingerprints/` and writes the record under
-  `golden/promotion_<date>/` (`golden/README.md` as it stands, the
-  fingerprints' replay report, the gate runs' record, the even/odd null
-  check, a SHA-256 manifest and `validation.json`). `replay` replays the new
-  defaults against the prepared fingerprints. `publish`, once the record's
-  README is written and that replay is identical, replaces the sidecars and
-  the summary in `golden/baseline/` with the reference's and rewrites
-  together `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS`,
-  the "Trajectories" entry of `AGENTS.md`, the current reference's section
-  and the `golden_replay.py` entry of this file, `golden/README.md`, and the
-  lines of this file, `golden_replay.py` and `analyze_population_run.py`
-  that name the previous reference or its population, all computed before
-  the first write; it copies itself into the record as `promote.py` and
-  removes this entry, and the promotion commit removes the script and its
-  test. It rewrites a passage only if it is the text the script was written
-  against (`PASSAGES`, by SHA-256), so an edit to one of those passages
-  before the promotion is carried into the script's template as well:
-  `test_reference_promote.py` fails until it is. The test module also runs
-  a whole promotion on a small release gate under a temporary root.
 - `scripts/seeded_gate_runs.py` — the six seeded gate runs of
   `experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`
   with the provenance that script does not record: `run --out DIR` records
@@ -731,42 +684,43 @@ reason.
   separate optimization/diagnostic/save timings. See the
   [pilot results](results/2026-09-08-boost-penalty-pilot.md).
 - `scripts/golden_replay.py` — the per-change trajectory gate of Stage 2:
-  replays a few golden configurations in-process with the current code
-  (this checkout's package), about 7 minutes for the default set, and
-  compares each run with its stored trace: exact shapes and values of every non-timer NPZ array and
-  all semantic final-result fields, the ELBO/live-point agreement horizons,
-  the initial design (see below), and final accuracy against the baseline
-  population's `Q3 + 3 IQR` envelope. It reports "same loop, changed final"
-  separately and applies the accuracy fences to that case. Old traces omit
-  the returned posterior's transformer; that state is explicitly reported
-  as not certifiable. Sidecar counts must agree with their NPZ arrays.
-  An arithmetic-preserving change is expected to part once a CMA-ES
-  ranking flips (a change to the ELBO arithmetic parts at iteration 0);
-  a parted run's finals must stay inside the envelope (an identical run
-  is exempt: its own seed may be the outlier). The initial design is
-  certified from the traces: exactly where both store it (`X_init`,
-  written by `golden_trace.py` since commit `9d92c7f`), against the 2026-09-03
-  baseline by finding a generator-drawn design point of the new run among
-  the reference's live rows (the start point `x0` comes from the run seed
-  and is identical by construction, so it does not count), and "not
-  certifiable" without a flag where warm-up trimming removed the whole
-  design (cigar). Needs the baseline `.npz` traces for
-  the horizons (finals only without them); `--report-only` re-renders a
-  finished run. Flags: `--configs`, `--seeds`
-  (default seed 0 only), `--baseline` (the traces directory; the default
-  `scripts/runs/golden/reference_990_20260913/`, the current reference
-  population, exists only on the machine that made it), `--sidecars`
-  (the envelope population, whose sidecar of a replayed seed is also the
-  reference for the run's semantic finals where `--baseline` holds no
-  trace of it: a flat directory of sidecars, by default `golden/baseline/`,
-  or a population of `population_run.py`'s array mode, a campaign
-  directory or its tracked copies, whose `verification.json` limits the
-  envelopes to the verified cases; a replayed configuration without a
-  sidecar there is an error), `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
-  all three chunk budgets to this integer for a nondefault-profile check;
-  omitted means historical defaults, independent of the local cache).
-  Replay reports retain this setting, including on `--report-only`.
-  Exit code 1 if anything is
+  replays configurations of the golden reference in-process with the current
+  code (this checkout's package), about 4 minutes for the default set, and
+  compares each run with its stored trace: exact shapes and values of every
+  non-timer NPZ array and all semantic final-result fields, the ELBO/live-point
+  agreement horizons, the initial design (see below), and final accuracy
+  against the reference population's `Q3 + 3 IQR` envelope. It reports "same
+  loop, changed final" separately and applies the accuracy fences to that case.
+  The traces omit the returned posterior's transformer; that state is
+  explicitly reported as not certifiable. Sidecar counts must agree with their
+  NPZ arrays. An arithmetic-preserving change is expected to part once a CMA-ES
+  ranking flips (a change to the ELBO arithmetic parts at iteration 0); a
+  parted run's finals must stay inside the envelope (an identical run is
+  exempt: its own seed may be the outlier). The initial design is certified
+  from the traces: exactly where both store it (`X_init`, written by
+  `golden_trace.py` since commit `9d92c7f`), against the 2026-09-03 baseline by
+  finding a generator-drawn design point of the new run among the reference's
+  live rows (the start point `x0` comes from the run seed and is identical by
+  construction, so it does not count), and "not certifiable" without a flag
+  where warm-up trimming removed the whole design (cigar). Needs the baseline
+  `.npz` traces for the horizons (finals only without them); `--report-only`
+  re-renders a finished run. Flags: `--configs` (by default `normal_D5`,
+  `banana_D2`, `halfnormal_D2`, `cigar_D4`, `rosenbrock_D2_noise1_production`),
+  `--seeds` (default seed 0 only), `--baseline` (the traces directory; the
+  default `scripts/runs/golden/reference_2400_20261007_fingerprints/`, the
+  replay fingerprints of the current reference, one run at seed 0 of each
+  configuration, exists only on the machine that made them, which
+  `scripts/runs/LOCAL.md` lists), `--sidecars` (the envelope population, whose
+  sidecar of a replayed seed is also the reference for the run's semantic
+  finals where `--baseline` holds no trace of it: a flat directory of sidecars,
+  by default `golden/baseline/`, the current reference's, or a population of
+  `population_run.py`'s array mode, a campaign directory or its tracked copies,
+  whose `verification.json` limits the envelopes to the verified cases; a
+  replayed configuration without a sidecar there is an error), `--out`,
+  `--threads` (1, as the baseline), `--calibration-budget` (pin all three chunk
+  budgets to this integer for a nondefault-profile check; omitted means
+  historical defaults, independent of the local cache). Replay reports retain
+  this setting, including on `--report-only`. Exit code 1 if anything is
   flagged or nothing was compared.
 - `scripts/regenerate_baseline.sh` — the whole benchmark regeneration as
   one sequential process (see above).

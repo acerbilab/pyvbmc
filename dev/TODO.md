@@ -53,9 +53,8 @@ records its execution.
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5, the redaction and guide of Phase 7, and the tools of the plan's
-  Phase 9 and of the promotion of the new reference (the two items below)
-  are on `dev-next`, from the branch `feat-slurm-campaigns`, reviewed
-  twice and fixed. Phases 1b and 6 (the survey, the source trees, the
+  Phase 9 are on `dev-next` (the promotion's script is in its record),
+  from the branch `feat-slurm-campaigns`, reviewed twice and fixed. Phases 1b and 6 (the survey, the source trees, the
   frozen environment and its check, and the smoke campaigns, which
   measured every job's time and memory) ran on the cluster from
   2026-09-28 to 10-01. Phase 8, the release gate's campaigns, ran on
@@ -63,118 +62,14 @@ records its execution.
   handed back on 2026-10-04 (PR #181): every case of the four campaigns
   verified, and their redacted copies are under
   `experiments/release_gate_20261002/`. Phase 9, the replay fingerprints
-  and the six gate runs of the two items below, ran on the developer's
-  machine on 2026-10-04 and met its acceptance (the plan's worklog). The
+  and the port review's six seeded gate runs, ran on the developer's
+  machine on 2026-10-04 and met its acceptance (the plan's worklog); the
+  after arm became the golden reference `reference_2400_20261007` on
+  2026-10-07 (the roadmap's pickup 19). The
   smaller fixes that the plan's worklog of 2026-09-30 left for after the
   merge were made on 2026-10-07 (the plan's worklog). What remains is the
-  review's optional findings, which await the PI's ruling. An
-  edit to the package's text, the tips' wording among them, lands after
-  the promotion of the new reference, whose check compares the package's
-  files with the after arm's (the plan's decision 13), but for
-  `pyvbmc/svbmc/` and the tests, which the check leaves out. See
+  review's optional findings, which await the PI's ruling. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-
-- [ ] **The golden references after the port review.** Several fixes of
-  the [port correctness review](plans/port-correctness-review.md) move
-  default trajectories; its
-  [ledger](results/2026-09-23-port-correctness-review.md) lists them. The
-  golden reference `reference_990_20260913` and the production-budget
-  runs of 2026-09-18 and 09-19 (below, "Completed baseline and local
-  artifacts") describe the code from before them, so
-  `scripts/golden_replay.py` compares a run with trajectories the code no
-  longer follows. The reference that replaces them (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), "What runs where") is
-  to run the `production` suite alone at 100 seeds per configuration on
-  Turso with the release code, beside a before arm of the same runs at
-  `f91fdf0` with gpyreg 1.2.1; exact replay is to come from one seed per
-  configuration generated on the developer's machine, with the six seeded
-  gate runs of the item below. The moving fixes of the wave-1 and wave-2
-  passes, W5-1 and W5-6 were not read for accuracy on the benchmark
-  targets (the ledger, "The fixes that move default trajectories"); the
-  comparison of the two arms is their measure. This item owns that
-  assessment, by the method of the
-  [population plan](plans/final-population-benchmark.md), and the
-  promotion of the new reference with its fingerprints, preserving the old
-  references (the working rule below). The two arms ran on 2026-10-02
-  (the plan's Phase 8; `experiments/release_gate_20261002/`), and their
-  comparison (`analyze_population_run.py --arms`) is
-  `experiments/release_gate_20261002_assessment/`, which the PI accepted
-  on 2026-10-07; the promotion takes it by its SHA-256
-  (`assessment.json`'s, with LF line endings:
-  `2625fc50cb035ccabe7e5ec50bc6ebc7743c515eec08240c15b361a14420898d`).
-  It rejects none of the 96 confirmatory tests; its KS screen flags the
-  evaluation counts of `cigar_D4` and `rosenbrock_D2_noise3_production`.
-  The noisy Rosenbrock target is worse in the release code on every
-  measure (usable 72 times against 87): two of the port review's fixes
-  end its warm-up about three iterations earlier, as MATLAB does
-  ([the note](results/2026-10-05-noisy-rosenbrock-warmup.md), with a
-  paired experiment at 50 seeds).
-  MATLAB's end of warm-up stays (PI, 2026-10-06), read on the results of
-  Arm 3, the release code with the port's end of warm-up
-  ([the reading](results/2026-10-06-arm-3-reading.md)): the promotion
-  takes the after arm, and its record states the cost on the noisy
-  Rosenbrock target. What remains is the promotion itself: `prepare`,
-  `replay`, the record's README and `publish`. The promotion is
-  `scripts/reference_promote.py` (2026-09-28), in
-  the manner of `golden/promotion_20260913/promote.py`, since
-  `scripts/reference_join.py` extends a reference and refuses any overlap
-  with it: `fingerprints` makes the Phase 9 runs of seed 0 against the
-  after arm's envelopes, `prepare` checks the previous reference, the after
-  arm, the accepted assessment, the fingerprints and the gate runs and
-  writes the record, `replay` replays the new defaults, and `publish`
-  replaces the sidecars of `golden/baseline/` and changes
-  `golden_replay.py`'s `DEFAULT_BASELINE` and `DEFAULT_CONFIGS` together
-  with `AGENTS.md` ("Trajectories"), the current reference's section and
-  the `golden_replay.py` entry of `dev/README.md`, and `golden/README.md`
-  (its `dev/README.md` entry gives the steps). Its test module
-  runs a whole promotion on small array-mode campaigns. It rewrites those
-  passages only as they stood when it was written (a SHA-256 guard), so an
-  edit to one before the promotion is carried into its template. The PI's
-  rulings of 2026-09-28 (the Slurm plan, "The populations" and Phase 9):
-  the 24 fingerprints are judged as a set, since a correct run lies
-  outside its envelope now and then (4.2 % of the runs of
-  `reference_990_20260913`), and more of them outside than the after arm's
-  own rate makes plausible refuses; the code the promotion compares with
-  the after arm's leaves out the package's tests and S-VBMC; and the
-  script moves into its record at the promotion. Phase 9 ran on
-  2026-10-04 (the Slurm plan's worklog): one fingerprint of 24,
-  `corr_D5`'s, lies outside its envelope, within the after arm's own
-  rate, and the gate runs of the item below reproduced.
-
-- [ ] **A seeded gate run with a prior.** The four seeded runs that gate
-  the port review's fix passes
-  (`experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py`)
-  pass no prior with `prior=`, so what a run does with a prior object
-  rested on unit tests: the check of its support against the hard bounds,
-  and the support that `SciPy` and `Product` read from their distribution
-  at every call. The script holds two more runs, on a two-dimensional
-  Rosenbrock likelihood with the hard bounds -2.9 and 3.3: the FAQ's list
-  of `uniform` marginals built from the hard bounds, whose support ends
-  one rounding short of the upper bound and so passes the check within its
-  slack, and a `SplineTrapezoidal` on the same bounds. On 2026-09-25 each
-  reproduced bit for bit in two recordings, and their ELBOs came out 0.34
-  and 0.37 nats below the log evidence computed by quadrature, the gap the
-  unbounded Rosenbrock run of the same script shows without a prior object
-  (0.40). The script's six runs join the release gate's records (PI,
-  2026-09-21; the wave-5
-  [ledger](experiments/port_review_20260919/verification/wave5.md), "The
-  independent check of the pass") as part of the replay fingerprints of
-  the new reference (the item above): they are run again with the release
-  code, wrapped so that their record carries the commit, the gpyreg
-  source, the thread settings and the host, which the script does not
-  record (PI, 2026-09-25; the
-  [Slurm plan](plans/slurm-benchmark-support.md), Phase 9). The wrapper is
-  `scripts/seeded_gate_runs.py` (2026-09-28): it
-  records the six runs twice, each in a fresh process with one BLAS thread
-  and `performance_calibration="off"`, compares them with the script's own
-  `compare`, and writes each recording's identity (the commit, the gpyreg
-  checkout, the thread settings, the host) beside them. On 2026-09-28 it
-  recorded them at `4efee154` on `feat-slurm-campaigns` with gpyreg
-  `d96d0d9`, identical
-  in all 138 arrays; that run checked the wrapper and is no record. The
-  runs that enter the records are Phase 9's, made with the after arm's
-  code; they ran on 2026-10-04 at `dce4e18c`, whose package is the
-  release commit's, and reproduced in all 138 arrays.
 
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a
@@ -407,9 +302,9 @@ records its execution.
   experiment run noisy targets at the package's production defaults, on
   the `production` suite of `benchmark_targets.py`: the golden suite with
   its noisy entries freed of the budget pin and given the `production`
-  label tag. The existing golden references remain the record of the
-  golden suite; the reference that replaces them after the port review is
-  to run the whole `production` suite (the golden references item above).
+  label tag. The earlier golden references remain the record of the
+  golden suite; the reference that replaced them after the port review,
+  `reference_2400_20261007`, runs the whole `production` suite.
   The E5 report's F3 section records how the difference was found.
 - Use feature branches for implementation. Planning, proposal, handoff and
   status edits belong on `dev-next`. Leave unrelated work intact.
@@ -442,19 +337,21 @@ owns the design, worklog and the PI's decisions, the
 [experiments README](experiments/svbmc_pool/README.md) indexes the
 tracked outputs, and the per-cell outputs are the three assets of the
 draft release `svbmc-analyses-20260915` (the pool itself the asset of
-`svbmc-pool-20260914`). The active reference is **`reference_990_20260913`**: 870
-candidate pairs plus 120 unchanged real-data pairs. The
-[promotion record](golden/promotion_20260913/README.md) owns the
-assessment, independent review, hashes and passed gates;
-[the population plan](plans/final-population-benchmark.md) owns execution
-history. 80 runs of six noisy configurations at production budgets, made
+`svbmc-pool-20260914`). The active reference is
+**`reference_2400_20261007`**: the release gate's after arm, 2400 runs of
+the `production` suite at seeds 0–99, made by the release code. Its
+[promotion record](golden/promotion_20261007/README.md) owns the
+assessment, hashes and passed gates, and the
+[Slurm plan](plans/slurm-benchmark-support.md) the campaigns' execution.
+The previous reference, `reference_990_20260913` of the `golden` suite, is
+preserved with its [promotion record](golden/promotion_20260913/README.md).
+80 runs of six noisy configurations at production budgets, made
 with the code from before the port review's fixes (logistic regression and
 high-noise Rosenbrock at twenty seeds; low-noise Rosenbrock, Student-t,
 timing and multisensory at ten), exist locally under
 `golden/production_noisy_20260918/` (listed in `dev/scripts/runs/LOCAL.md`),
 run on 2026-09-18 and 2026-09-19 as the baseline arm of the F2 comparison
-and after its stop; the new reference does not include them (the golden
-references item above). The
+and after its stop; the active reference does not include them. The
 [efficiency plan](plans/noisy-acquisition-efficiency.md#f2-stage-2-outcome-and-decision-2026-09-19)
 records their provenance.
 

@@ -45,7 +45,7 @@ of the same (config, seed) under ``--baseline``:
   MMTV lie inside the baseline population's envelope for that config
   (Tukey far-out fence, ``Q3 + 3 IQR`` over the seeds' sidecars under
   ``--sidecars``, in git; the plain maximum is vacuous where a seed is a
-  known failure, e.g. ``student_D4`` seed 19).
+  known failure).
 
 ``--sidecars`` is a flat directory of sidecars, as ``dev/golden/baseline/``
 is, or a population of ``population_run.py``'s array mode (a campaign
@@ -89,21 +89,21 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 DEFAULT_BASELINE = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
-DEFAULT_BASELINE = DEFAULT_BASELINE / "reference_990_20260913"
+DEFAULT_BASELINE = DEFAULT_BASELINE / "reference_2400_20261007_fingerprints"
 DEFAULT_SIDECARS = REPO_ROOT / "dev" / "golden" / "baseline"
 DEFAULT_OUT_ROOT = REPO_ROOT / "dev" / "scripts" / "runs" / "golden"
 THREAD_KEYS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 
-# Cheap configurations covering the regimes the Stage 2 items touch: a
-# Gaussian at D = 5, the D = 2 banana, the bounded (probit) half-normal,
-# the warped large-K cigar and the noisy VIQR path. About 7 minutes at
-# seed 0 on the reference laptop.
+# Cheap configurations covering the regimes the Stage 2 items touch: a Gaussian
+# at D = 5, the D = 2 banana, the bounded (probit) half-normal, the warped
+# large-K cigar and the noisy VIQR path at the production budget. About 4
+# minutes at seed 0 on the machine of the reference's replay fingerprints.
 DEFAULT_CONFIGS = (
     "normal_D5",
     "banana_D2",
     "halfnormal_D2",
     "cigar_D4",
-    "rosenbrock_D2_noise1",
+    "rosenbrock_D2_noise1_production",
 )
 ACCURACY = ("elbo_err", "gskl", "mmtv")
 DISPLAY_FINAL_KEYS = ACCURACY + (
@@ -623,8 +623,8 @@ def compare_run(label, seed, out_dir, baseline, sidecars, pop):
             int(np.nanmax(pop[label]["func_count"])),
         ]
         # An identical replay cannot be an outlier of its own population
-        # (the reference seed may itself be the population's far outlier,
-        # e.g. student_D4 seed 19), so the envelope applies only to runs
+        # (the reference seed may itself be the population's far outlier),
+        # so the envelope applies only to runs
         # that parted. A non-finite final is always a flag.
         for m in ACCURACY:
             v = fin_new.get(m)

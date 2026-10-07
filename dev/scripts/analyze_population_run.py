@@ -14,7 +14,7 @@ Two kinds of assessment:
   tracked SHA-256 manifest lists
   (``dev/golden/noisy_extension_20260907/sha256_manifest.json``). The
   default ``--reference``, ``dev/golden/baseline/``, holds
-  ``reference_990_20260913``, so the default command line stops at that
+  ``reference_2400_20261007``, so the default command line stops at that
   check. The 870 sidecars are ``dev/golden/baseline/`` at commit
   ``b2ea8597`` (for one, ``git worktree add --detach DIR b2ea8597`` and
   then ``--reference DIR/dev/golden/baseline``) and the traces directory
@@ -385,7 +385,7 @@ REFERENCE_MANIFEST = (
 #: Where the campaigns of one treatment find the reference's sidecars by
 #: default. It held exactly the 870-case reference from ``b2ea8597`` until
 #: the real-data pairs joined it (``535590dd``), and holds
-#: ``reference_990_20260913`` now, which :func:`verify_reference` refuses.
+#: ``reference_2400_20261007`` now, which :func:`verify_reference` refuses.
 DEFAULT_REFERENCE = runner.ROOT / "dev/golden/baseline"
 #: Where the 870-case reference's sidecars are kept, for the refusal of
 #: another directory.

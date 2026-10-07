@@ -105,12 +105,14 @@ What other documents own, and what this plan hands them:
   acceptance criteria of the S-VBMC comparison; its decision 14 records the
   release pools and stacking decided here. This plan hands it the verified
   release pools and the assembled stacking results.
-- The golden references item of `dev/TODO.md` owns the assessment of the
+- The golden references item of `dev/TODO.md` owned the assessment of the
   new reference and its promotion, by the method of the
   [population plan](final-population-benchmark.md), with a promotion record
-  under `dev/golden/` as for `reference_990_20260913`. This plan hands it
+  under `dev/golden/` as for `reference_990_20260913`. This plan handed it
   the verified before and after populations, their rescored metrics and
-  the replay fingerprints.
+  the replay fingerprints; the promotion of `reference_2400_20261007` on
+  2026-10-07 closed it ([its record](../golden/promotion_20261007/README.md);
+  the roadmap's pickup 19).
 - The [headline note](../2026-09-15-svbmc-headline-shrinkage.md) owns the
   choice of the S-VBMC headline estimator.
 
@@ -1725,3 +1727,15 @@ reproduces bit for bit.
   analysis (61), pool (76), stacking (55), honest-ELBO (14), promotion
   (18) and gate runs' (11) modules, and the replay's (67). The code that
   the promotion compares with the after arm's is unchanged.
+- 2026-10-07: the promotion of the after arm to the golden reference
+  `reference_2400_20261007` (the roadmap's pickup 19): `prepare` passed
+  every check, with `corr_D5`'s fingerprint the one of 24 outside its
+  envelope (a probability of 0.60 at the population's rate of 0.0375); the
+  replay of the five defaults at `948bac0d` was identical; `publish`
+  rewrote `dev/golden/baseline/` and the documents that name the current
+  reference. The script and its test module left `dev/scripts/` with the
+  promotion's commit, the script into the record as
+  [`promote.py`](../golden/promotion_20261007/promote.py), which is what
+  this plan's `reference_promote.py` names from then on. The record's
+  [README](../golden/promotion_20261007/README.md) gives the evidence and
+  the commands.

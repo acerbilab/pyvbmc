@@ -19,7 +19,7 @@
   "tol_stable_excpt_frac": 0.2,
   "specify_target_noise": false,
   "search_acq_fcn": [
-   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object at 0x00000285EA3940E0>"
+   "<pyvbmc.acquisition_functions.acq_fcn_log.AcqFcnLog object>"
   ],
   "active_sample_gp_update": false,
   "active_sample_vp_update": false,
@@ -103,44 +103,123 @@
  ],
  "notes": "independent Gaussian, SDs 1..D; legacy box -+2D",
  "final": {
-  "elbo": -0.0032511689413854405,
-  "elbo_sd": 0.0006426901831615052,
-  "best_iter": 14,
-  "iterations": 15,
-  "func_count": 80,
+  "elbo": -0.004480373915000335,
+  "elbo_sd": 0.0009915662862511963,
+  "best_iter": 13,
+  "iterations": 14,
+  "func_count": 75,
   "final_K": 50,
-  "final_N": 80,
+  "final_N": 75,
   "min_Ns_gp": 8,
   "n_warps": 1,
   "success_flag": true,
   "message": "Inference terminated: variational solution stable for options.tol_stable_count fcn evaluations.",
-  "wall_s": 25.151490200019907,
-  "target_eval_s": 0.0,
-  "elbo_err": 0.0032511689413854405,
-  "gskl": 8.197526346709338e-05,
-  "mmtv": 0.007555457442831462,
-  "rmse": 0.00080924860522283,
+  "wall_s": 35.58756340504624,
+  "target_eval_s": 0.0014064311981201172,
+  "elbo_err": 0.004480373915000335,
+  "gskl": 0.0001992196487166087,
+  "mmtv": 0.0071168039453788495,
+  "rmse": 0.0008415127804231811,
   "moment_method": "affine",
-  "peak_rss_mb": 175.5625
+  "peak_rss_mb": 169.40234375,
+  "max_rss_mb": 180.85546875
  },
  "meta": {
   "git": {
-   "sha": "68a43db",
+   "sha": "ff3ed014",
    "dirty": false
   },
-  "python": "3.12.6",
+  "python": "3.12.14",
   "numpy": "2.5.2",
   "scipy": "1.18.1",
-  "pyvbmc": "1.0.5.dev159+g4bff1a5b9",
-  "gpyreg": "1.1.0",
   "cma": "4.4.4",
+  "pyvbmc_source": {
+   "path": "$HARNESS_TREE/pyvbmc",
+   "git": {
+    "sha": "ff3ed014",
+    "dirty": false
+   }
+  },
+  "gpyreg_source": {
+   "path": "$PYVBMC_GPYREG_SOURCE/gpyreg",
+   "git": {
+    "sha": "682585f",
+    "dirty": false
+   }
+  },
+  "installed_metadata_versions": {
+   "pyvbmc": null,
+   "gpyreg": null
+  },
   "threads": {
    "OMP_NUM_THREADS": "1",
    "OPENBLAS_NUM_THREADS": "1",
    "MKL_NUM_THREADS": "1"
   },
-  "started": "2026-09-13 03:28:27",
-  "finished": "2026-09-13 03:28:52",
-  "pid": 31340
+  "started": "2026-10-02 09:56:25",
+  "finished": "2026-10-02 09:57:02",
+  "pid": 543318
+ },
+ "provenance": {
+  "source": {
+   "trees": {
+    "harness": {
+     "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+     "clean": true
+    },
+    "pyvbmc": {
+     "commit": "ff3ed01463b3c2a031dd2225c9f487dc369d2397",
+     "clean": true
+    },
+    "gpyreg": {
+     "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+     "clean": true
+    }
+   },
+   "files": {
+    "dev/scripts/population_run.py": "262743748fe7d8da8d587974b9a683feb9a5da7a7ee9980d842dfe26ae8f9604",
+    "dev/scripts/golden_trace.py": "183aa102f9d6593d34acda52404a9ec610aced25569ac75de49e7d3a95dcdd60",
+    "dev/scripts/profile_run.py": "07bee9ff8534a8274fc88feecd09ced0ad2b5a280934f6d06e8ad67869277352",
+    "dev/scripts/benchmark_targets.py": "bfdb099e1adae60ae0974010f45ec50f8e8fdb27935ffe99b5e0656ba879f265",
+    "dev/scripts/campaign_contract.py": "7c43e7384a47a2ce57f15c72427c781ef45b42b5574cd46e2dc1a52f913dc482",
+    "dev/scripts/data/": "5b655c8bb36fe5708926239b14e9277565df025a4eada32d5463959fdea5e608"
+   },
+   "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "cma": "4.4.4",
+    "torch": null
+   }
+  },
+  "imports": {
+   "trees": {
+    "harness": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "pyvbmc": {
+     "path": "$HARNESS_TREE",
+     "dirty": []
+    },
+    "gpyreg": {
+     "path": "$PYVBMC_GPYREG_SOURCE",
+     "dirty": []
+    }
+   },
+   "modules": {
+    "pyvbmc": "$HARNESS_TREE/pyvbmc",
+    "gpyreg": "$PYVBMC_GPYREG_SOURCE/gpyreg"
+   },
+   "installed_metadata_versions": {
+    "pyvbmc": null,
+    "gpyreg": null
+   },
+   "harness_modules": {
+    "golden_trace": "$HARNESS_TREE/dev/scripts/golden_trace.py",
+    "profile_run": "$HARNESS_TREE/dev/scripts/profile_run.py",
+    "benchmark_targets": "$HARNESS_TREE/dev/scripts/benchmark_targets.py"
+   }
+  }
  }
 }

@@ -1,0 +1,394 @@
+{
+  "tool": "seeded_gate_runs",
+  "script": {
+    "path": "dev/experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py",
+    "sha256": "a50f66f690d1d96d07b2521aace25d817bcc468b08c0fcd9f2e37f7f30c83ff1"
+  },
+  "options_added": {
+    "performance_calibration": "off"
+  },
+  "allow_dirty": false,
+  "started": "2026-10-04T16:22:38+0300",
+  "finished": "2026-10-04T16:30:12+0300",
+  "exit_codes": {
+    "first": 0,
+    "second": 0
+  },
+  "recordings": {
+    "first": {
+      "files": {
+        "npz": {
+          "file": "first.npz",
+          "sha256": "b63f26947e976dba7ff372ce07b3710f57d17ed34c1e3276b47084e51247405a",
+          "bytes": 95344
+        },
+        "json": {
+          "file": "first.json",
+          "sha256": "c81f6822ca4ab36a12949134ad6e312942e113c98ef086a385ee4bdded5e7959",
+          "bytes": 5300
+        },
+        "log": {
+          "file": "first.log",
+          "sha256": "e3c51e8f1208c3b8f4c5670e78da3333606de47c8bbcbabd54d1741544187ed3",
+          "bytes": 3201
+        }
+      },
+      "record": {
+        "recording": "first",
+        "script": {
+          "path": "dev/experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py",
+          "sha256": "a50f66f690d1d96d07b2521aace25d817bcc468b08c0fcd9f2e37f7f30c83ff1"
+        },
+        "options_added": {
+          "performance_calibration": "off"
+        },
+        "identity": {
+          "contract": 1,
+          "source": {
+            "trees": {
+              "harness": {
+                "commit": "dce4e18cde6bc65a9ae6012885dc78bdf4a695ca",
+                "clean": true
+              },
+              "gpyreg": {
+                "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+                "clean": true
+              }
+            },
+            "files": {
+              "dev/scripts/seeded_gate_runs.py": "59110349560ddef46248d4ea7e92e3b530fb5811ca50c538414610ff1f67a276"
+            },
+            "versions": {
+              "python": "3.12.6",
+              "numpy": "2.5.2",
+              "scipy": "1.18.1",
+              "cma": "4.4.4",
+              "torch": null
+            }
+          },
+          "imports": {
+            "trees": {
+              "harness": {
+                "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+                "dirty": []
+              },
+              "gpyreg": {
+                "path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg",
+                "dirty": []
+              }
+            },
+            "modules": {
+              "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+              "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg"
+            },
+            "installed_metadata_versions": {
+              "pyvbmc": "1.0.5.dev1001+g7bf916e5c",
+              "gpyreg": "1.4.0"
+            }
+          },
+          "host": {
+            "hostname": "ASUS-LUIGI",
+            "platform": "Windows-11-10.0.26200-SP0",
+            "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+            "cpu_model": "Intel(R) Core(TM) Ultra 7 155H",
+            "node_features": null,
+            "blas": [
+              {
+                "user_api": "blas",
+                "internal_api": "openblas",
+                "prefix": "libscipy_openblas",
+                "version": "0.3.34.0.0",
+                "num_threads": 1,
+                "threading_layer": "pthreads",
+                "architecture": "Haswell",
+                "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-327b2e0bcffce2882e0dc04cdeb4eaa6.dll"
+              },
+              {
+                "user_api": "blas",
+                "internal_api": "openblas",
+                "prefix": "libscipy_openblas",
+                "version": "0.3.31.dev",
+                "num_threads": 1,
+                "threading_layer": "pthreads",
+                "architecture": "Haswell",
+                "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-197ee2fc9b4d071f7e048078cac74115.dll"
+              }
+            ],
+            "cpu_affinity": null,
+            "threads": {
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1"
+            },
+            "slurm": {
+              "job_id": null,
+              "array_job_id": null,
+              "array_task_id": null,
+              "restart_count": null,
+              "node": null,
+              "partition": null,
+              "cpus_per_task": null
+            }
+          }
+        },
+        "runs": {
+          "rosenbrock_D2_unbounded": {
+            "sha256": "2d205f581ce30bf8638f0c6938987993259482429c77f3dac0edf018c61ce88f",
+            "iterations": 25,
+            "func_count": 125,
+            "elbo": -1.7959281603866373,
+            "elbo_sd": 0.0005966951922264196,
+            "best_iter": 24,
+            "n_warps": 2,
+            "seconds": 43.296462500002235
+          },
+          "two_blobs_D3_bounded": {
+            "sha256": "31b880630d867cd0ef7ee413926bacb2a8718245488184778a8f3aa76b4077aa",
+            "iterations": 17,
+            "func_count": 90,
+            "elbo": 1.227153711657794,
+            "elbo_sd": 0.0008598767342371944,
+            "best_iter": 16,
+            "n_warps": 1,
+            "seconds": 27.531320499954745
+          },
+          "rosenbrock_D2_noisy": {
+            "sha256": "06f4ced29b227a862218d7a512dc599090cc065b8d82de8bea42375f2f0eb2bc",
+            "iterations": 31,
+            "func_count": 155,
+            "elbo": -1.6693235585144628,
+            "elbo_sd": 0.1045002880740992,
+            "best_iter": 30,
+            "n_warps": 2,
+            "seconds": 110.63077030004933
+          },
+          "two_blobs_D3_noisy_user_budget": {
+            "sha256": "f913be130d2eb7a6448ba8be214fb3e29f6945f3572d5a5267c59927cb1b19a1",
+            "iterations": 17,
+            "func_count": 90,
+            "elbo": 1.2492023696576782,
+            "elbo_sd": 0.0819909940433,
+            "best_iter": 16,
+            "n_warps": 1,
+            "seconds": 42.10648219997529
+          },
+          "rosenbrock_D2_uniform_prior": {
+            "sha256": "98869307be954de61c0bf3ee6fa96b29ff5d085a9e991a36f1653e21570b77fe",
+            "iterations": 21,
+            "func_count": 110,
+            "elbo": -5.283454832304674,
+            "elbo_sd": 0.0004140704463917002,
+            "best_iter": 20,
+            "n_warps": 1,
+            "seconds": 17.375543499947526
+          },
+          "rosenbrock_D2_spline_trapezoidal_prior": {
+            "sha256": "2219d3d84b9e95acd23cefbdad92dd7817e1760e8a68742b67f88f5c3d78aae6",
+            "iterations": 20,
+            "func_count": 100,
+            "elbo": -4.788574903493071,
+            "elbo_sd": 0.0005383983984406916,
+            "best_iter": 19,
+            "n_warps": 2,
+            "seconds": 16.88217410002835
+          }
+        },
+        "started": "2026-10-04T16:22:39+0300",
+        "finished": "2026-10-04T16:26:57+0300",
+        "elapsed_seconds": 257.82276280003134
+      }
+    },
+    "second": {
+      "files": {
+        "npz": {
+          "file": "second.npz",
+          "sha256": "b63f26947e976dba7ff372ce07b3710f57d17ed34c1e3276b47084e51247405a",
+          "bytes": 95344
+        },
+        "json": {
+          "file": "second.json",
+          "sha256": "c0205967a8df8f9ef911f591da0613691031acb85cd2da9acae8cccb8300c9e5",
+          "bytes": 5299
+        },
+        "log": {
+          "file": "second.log",
+          "sha256": "af9cb8dea2577aa88c6900d630cfd9a9b5b737ef55d1c0521172493d7a11deda",
+          "bytes": 3201
+        }
+      },
+      "record": {
+        "recording": "second",
+        "script": {
+          "path": "dev/experiments/port_review_20260919/verification/scripts/wave2_fixpass_gate_runs.py",
+          "sha256": "a50f66f690d1d96d07b2521aace25d817bcc468b08c0fcd9f2e37f7f30c83ff1"
+        },
+        "options_added": {
+          "performance_calibration": "off"
+        },
+        "identity": {
+          "contract": 1,
+          "source": {
+            "trees": {
+              "harness": {
+                "commit": "dce4e18cde6bc65a9ae6012885dc78bdf4a695ca",
+                "clean": true
+              },
+              "gpyreg": {
+                "commit": "682585f72d893824aa1c22951f49d2c52cc6942e",
+                "clean": true
+              }
+            },
+            "files": {
+              "dev/scripts/seeded_gate_runs.py": "59110349560ddef46248d4ea7e92e3b530fb5811ca50c538414610ff1f67a276"
+            },
+            "versions": {
+              "python": "3.12.6",
+              "numpy": "2.5.2",
+              "scipy": "1.18.1",
+              "cma": "4.4.4",
+              "torch": null
+            }
+          },
+          "imports": {
+            "trees": {
+              "harness": {
+                "path": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc",
+                "dirty": []
+              },
+              "gpyreg": {
+                "path": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg",
+                "dirty": []
+              }
+            },
+            "modules": {
+              "pyvbmc": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\pyvbmc",
+              "gpyreg": "C:\\Users\\luigi\\Documents\\GitHub\\gpyreg\\gpyreg"
+            },
+            "installed_metadata_versions": {
+              "pyvbmc": "1.0.5.dev1001+g7bf916e5c",
+              "gpyreg": "1.4.0"
+            }
+          },
+          "host": {
+            "hostname": "ASUS-LUIGI",
+            "platform": "Windows-11-10.0.26200-SP0",
+            "executable": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Scripts\\python.exe",
+            "cpu_model": "Intel(R) Core(TM) Ultra 7 155H",
+            "node_features": null,
+            "blas": [
+              {
+                "user_api": "blas",
+                "internal_api": "openblas",
+                "prefix": "libscipy_openblas",
+                "version": "0.3.34.0.0",
+                "num_threads": 1,
+                "threading_layer": "pthreads",
+                "architecture": "Haswell",
+                "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-327b2e0bcffce2882e0dc04cdeb4eaa6.dll"
+              },
+              {
+                "user_api": "blas",
+                "internal_api": "openblas",
+                "prefix": "libscipy_openblas",
+                "version": "0.3.31.dev",
+                "num_threads": 1,
+                "threading_layer": "pthreads",
+                "architecture": "Haswell",
+                "filepath": "C:\\Users\\luigi\\Documents\\GitHub\\pyvbmc\\.venv\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-197ee2fc9b4d071f7e048078cac74115.dll"
+              }
+            ],
+            "cpu_affinity": null,
+            "threads": {
+              "OMP_NUM_THREADS": "1",
+              "OPENBLAS_NUM_THREADS": "1",
+              "MKL_NUM_THREADS": "1"
+            },
+            "slurm": {
+              "job_id": null,
+              "array_job_id": null,
+              "array_task_id": null,
+              "restart_count": null,
+              "node": null,
+              "partition": null,
+              "cpus_per_task": null
+            }
+          }
+        },
+        "runs": {
+          "rosenbrock_D2_unbounded": {
+            "sha256": "2d205f581ce30bf8638f0c6938987993259482429c77f3dac0edf018c61ce88f",
+            "iterations": 25,
+            "func_count": 125,
+            "elbo": -1.7959281603866373,
+            "elbo_sd": 0.0005966951922264196,
+            "best_iter": 24,
+            "n_warps": 2,
+            "seconds": 25.981063000042923
+          },
+          "two_blobs_D3_bounded": {
+            "sha256": "31b880630d867cd0ef7ee413926bacb2a8718245488184778a8f3aa76b4077aa",
+            "iterations": 17,
+            "func_count": 90,
+            "elbo": 1.227153711657794,
+            "elbo_sd": 0.0008598767342371944,
+            "best_iter": 16,
+            "n_warps": 1,
+            "seconds": 15.308785900007933
+          },
+          "rosenbrock_D2_noisy": {
+            "sha256": "06f4ced29b227a862218d7a512dc599090cc065b8d82de8bea42375f2f0eb2bc",
+            "iterations": 31,
+            "func_count": 155,
+            "elbo": -1.6693235585144628,
+            "elbo_sd": 0.1045002880740992,
+            "best_iter": 30,
+            "n_warps": 2,
+            "seconds": 74.8519176999107
+          },
+          "two_blobs_D3_noisy_user_budget": {
+            "sha256": "f913be130d2eb7a6448ba8be214fb3e29f6945f3572d5a5267c59927cb1b19a1",
+            "iterations": 17,
+            "func_count": 90,
+            "elbo": 1.2492023696576782,
+            "elbo_sd": 0.0819909940433,
+            "best_iter": 16,
+            "n_warps": 1,
+            "seconds": 42.77626690000761
+          },
+          "rosenbrock_D2_uniform_prior": {
+            "sha256": "98869307be954de61c0bf3ee6fa96b29ff5d085a9e991a36f1653e21570b77fe",
+            "iterations": 21,
+            "func_count": 110,
+            "elbo": -5.283454832304674,
+            "elbo_sd": 0.0004140704463917002,
+            "best_iter": 20,
+            "n_warps": 1,
+            "seconds": 17.620951800025068
+          },
+          "rosenbrock_D2_spline_trapezoidal_prior": {
+            "sha256": "2219d3d84b9e95acd23cefbdad92dd7817e1760e8a68742b67f88f5c3d78aae6",
+            "iterations": 20,
+            "func_count": 100,
+            "elbo": -4.788574903493071,
+            "elbo_sd": 0.0005383983984406916,
+            "best_iter": 19,
+            "n_warps": 2,
+            "seconds": 16.97963549999986
+          }
+        },
+        "started": "2026-10-04T16:26:59+0300",
+        "finished": "2026-10-04T16:30:12+0300",
+        "elapsed_seconds": 193.51864120003302
+      }
+    }
+  },
+  "comparison": {
+    "exit_code": 0,
+    "identical": true,
+    "output": "138 arrays compared, 0 differ\n"
+  },
+  "same_source_identity": true,
+  "identical": true,
+  "exit_code": 0,
+  "reasons": []
+}

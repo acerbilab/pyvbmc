@@ -2071,13 +2071,22 @@ def test_the_node_family_of_a_campaign_and_of_its_copies(
 
 def test_the_run_files_and_package_paths_are_the_promotions():
     """What the comparison of a legacy arm requires to be equal is what
-    the promotion requires to stay unchanged from the launch."""
-    import reference_promote
+    the promotion of ``reference_2400_20261007`` compared with the after
+    arm: ``NUMERIC_PATHS`` of its record's ``promote.py``, read without
+    importing the script."""
+    import ast
 
+    record = runner.ROOT / "dev/golden/promotion_20261007/promote.py"
+    [paths] = [
+        ast.literal_eval(node.value)
+        for node in ast.parse(record.read_text(encoding="utf-8")).body
+        if isinstance(node, ast.Assign)
+        and any(
+            getattr(t, "id", None) == "NUMERIC_PATHS" for t in node.targets
+        )
+    ]
     files = {rel.rstrip("/") for rel in runner.RUN_FILES}
-    assert set(runner.PACKAGE_PATHS) | files == set(
-        reference_promote.NUMERIC_PATHS
-    )
+    assert set(runner.PACKAGE_PATHS) | files == set(paths)
 
 
 def test_scoring_and_legacy_pair_differences(monkeypatch):

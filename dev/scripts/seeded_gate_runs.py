@@ -9,7 +9,8 @@ that describes their trajectories in one ``.npz`` and compares two such
 files bit for bit (``--compare``), but records nothing of the code, the
 machine or the settings it ran with. This wrapper runs them for the replay
 fingerprints of the release gate (``dev/plans/slurm-benchmark-support.md``,
-Phase 9), and ``reference_promote.py`` reads what it writes::
+Phase 9), whose promotion read what it writes
+(``dev/golden/promotion_20261007/promote.py``)::
 
     python -u dev/scripts/seeded_gate_runs.py run --out DIR
     python dev/scripts/seeded_gate_runs.py check DIR

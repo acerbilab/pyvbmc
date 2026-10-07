@@ -11,6 +11,11 @@ resumable only after an atomic, hash-validated terminal record is present.
 Continuation batches have explicit wall-time and fit-count limits, reuse
 validated success terminals and never rerun a failed fit.  The combined
 summary reports all ten paired seeds per target from both campaigns.
+
+This is the record of a completed campaign.  Its source inventory hashes
+``golden_replay.py``, which the promotion of ``reference_2400_20261007`` on
+2026-10-07 changed, and its default reference is ``reference_990_20260913``;
+it reproduces from a checkout of ``948bac0d`` or earlier.
 """
 
 import argparse

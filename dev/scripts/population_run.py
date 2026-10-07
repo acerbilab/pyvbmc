@@ -379,7 +379,9 @@ LEGACY_PATCHES = {
 #: The harness files that build and score a run, by their keys in a source
 #: identity's ``files``: two arms whose harness checkouts differ are
 #: compared only when both identities hold these, equal. With
-#: :data:`PACKAGE_PATHS` they are ``reference_promote.NUMERIC_PATHS``.
+#: :data:`PACKAGE_PATHS` they are the code that the promotion of
+#: ``reference_2400_20261007`` compared with the after arm (``NUMERIC_PATHS``
+#: of ``dev/golden/promotion_20261007/promote.py``).
 RUN_FILES = (
     "dev/scripts/golden_trace.py",
     "dev/scripts/profile_run.py",
@@ -387,8 +389,8 @@ RUN_FILES = (
     "dev/scripts/data/",
 )
 #: The package's code that scores a run, as git pathspecs: the package but
-#: for its tests and S-VBMC, which no run imports
-#: (``reference_promote.NUMERIC_PATHS``).
+#: for its tests and S-VBMC, which no run imports (with :data:`RUN_FILES`,
+#: the promotion's ``NUMERIC_PATHS``).
 PACKAGE_PATHS = (
     "pyvbmc",
     ":(exclude)pyvbmc/testing",
