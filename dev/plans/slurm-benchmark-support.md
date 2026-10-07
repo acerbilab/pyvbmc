@@ -35,8 +35,9 @@ it stood before this plan's work and what the work gave it.
   `ff3ed014` and handed back on 2026-10-04 (the worklog).
 - [x] Phase 9: the replay fingerprints and the gate runs on the
   developer's machine (2026-10-04; the worklog).
-- [~] The smaller fixes left for after the merge (the worklog of
-  2026-09-30), on the branch `feat-slurm-small-fixes`:
+- [x] The smaller fixes left for after the merge (the worklog of
+  2026-09-30), on the branch `feat-slurm-small-fixes` (2026-10-07; the
+  worklog):
   - [x] the stubs run the batch script as Slurm's spooled copy;
   - [x] the generated `golden/README.md`'s recipe for other machines;
   - [x] the promotion refuses a dirty checkout before the fingerprints'
@@ -47,7 +48,7 @@ it stood before this plan's work and what the work gave it.
   - [x] tests of the promotion's refusals and of the release grid;
   - [x] the note on `--sidecars` in the `golden_replay.py` entry of
     `dev/README.md`, with the promotion's template and guard;
-  - [~] the test modules, a doublecheck, the merge into `dev-next`.
+  - [x] a doublecheck, its fixes, and every harness test module run.
 
 **Pickup point.** The campaigns of Phase 8 ran on 2026-10-02 in the
 operator's account, from the release commit `ff3ed014`, and every case of
@@ -56,16 +57,12 @@ Their redacted tracked copies are under
 `dev/experiments/release_gate_20261002/`, whose README records the runs,
 the node failures and resubmissions, the accounting and the archives (the
 worklog, 2026-10-04). Phase 9 ran on the developer's machine on
-2026-10-04 and met its acceptance (the worklog). What remains of this
-plan:
-
-- The smaller fixes that the worklog of 2026-09-30 leaves for after the
-  merge ("Left for after the merge and before Phase 9"). None changes what
-  a fingerprint computes or what `prepare` checks of the fingerprints;
-  they land before the promotion's `prepare`, done with the promotion's
-  work (PI, 2026-10-05), which takes the after arm, since MATLAB's end of
-  warm-up stays (PI, 2026-10-06).
-- The review's optional findings, which await the PI's ruling.
+2026-10-04 and met its acceptance (the worklog). The smaller fixes that
+the worklog of 2026-09-30 left for after the merge were made on
+2026-10-07 (the worklog), before the promotion's `prepare`, which takes
+the after arm, since MATLAB's end of warm-up stays (PI, 2026-10-06). What
+remains of this plan is the review's optional findings, which await the
+PI's ruling.
 
 The arm comparison and the promotion belong to the TODO's item on the
 golden references, the reading of the pools and the stacking to the
@@ -1671,3 +1668,60 @@ reproduces bit for bit.
   target's runs are usable 72 times in 100 against the before arm's 87,
   the cost of MATLAB's end of warm-up, which stays (2026-10-06); the
   promotion's record is to state that cost.
+- 2026-10-07: the smaller fixes of 2026-09-30, on the branch
+  `feat-slurm-small-fixes`:
+  - the stub `sbatch` runs a step of the finish from a copy of the batch
+    script in a spool directory of the job's own, and the driver's tests
+    run each array task from such a copy, in the campaign checkout that
+    `campaign_submit.sh` submits from, as Slurm does; with the task
+    script made to find `campaign_env.sh` by its own location, the
+    finish's test fails;
+  - `reference_promote.py`'s `fingerprints` and `replay` refuse a
+    checkout with any tracked change before their runs, which would
+    record it as dirty and which `prepare` and `publish` refuse;
+  - the generated `golden/README.md` gives another machine the commands
+    for fingerprints of its own: the check of its code against the
+    reference's, `golden_replay.py` with the after arm's tracked copies as
+    `--sidecars` (at the commits the promotion record names,
+    `golden/baseline/` still holds the previous reference), the gate runs,
+    and the rule by which the set is judged; its count of the fingerprints
+    outside their envelopes agrees in number for one;
+  - tests of the promotion's refusals that had none (the after arm's
+    allocation, harness, options, package, trees and rescored metrics, the
+    assessment's count of verified cases, the fingerprints' threads,
+    budgets, configurations, failures, compared traces, sidecars, error
+    files, packages, dirty checkouts and code, the record a replay needs,
+    the gate runs' script, check, code and gpyreg, and `publish`'s checks
+    of the prepared files, the documents' sources and the final replay),
+    of the early refusal, and of the module's constants against the
+    tracked after arm (the whole `production` suite at seeds 0-99);
+  - the note on `--sidecars` of `golden_replay.py`'s entry in
+    `dev/README.md`, with its template and guard and the script's
+    docstring: the population's sidecar of a replayed seed is also the
+    reference for the run's semantic finals where `--baseline` holds no
+    trace of it, as for the fingerprints, and only a `verification.json`
+    limits the envelopes to the verified cases;
+  - the redaction's check refuses a hostname that a name the copies write
+    begins or ends (the node `u8-12` of the family `u8`), which the
+    blanking of those names had cut short, a Slurm host list that names a
+    hostname, and the domain of a hostname that is a domain name, in the
+    copies and in a README; in a README (`--check`), a node feature
+    unquoted too, which its quoted `--allow` exempts in any letter case.
+
+  A doublecheck by three fresh reviewers, read-only, found that searching
+  the unblanked text alone lost a username that a dot joins to a name the
+  copies write (`login.jdoe`), which the check again finds by searching
+  both texts, and smaller points, all fixed: the expansion of a host list
+  in arbitrary text (bounded, and only where its head can begin a
+  hostname), a domain inside a host list, the allowance of a feature in a
+  README, the working directory of the tests' array tasks, the count's
+  agreement, the tests' phrases and the documents. At the branch's last
+  commit every harness test module and `pyvbmc/testing/test_golden_replay.py`
+  passed on the developer's machine, one at a time with one BLAS thread
+  and none skipped (the pool, stacking and honest-ELBO modules with
+  `PYVBMC_GPYREG_SOURCE` at gpyreg `v1.4.0` and the stacking's
+  `BASELINE_DIR`, the population module with the 1.0.4 trees): the
+  contract (141), driver (75), public asset (10), population (81),
+  analysis (61), pool (76), stacking (55), honest-ELBO (14), promotion
+  (18) and gate runs' (11) modules, and the replay's (67). The code that
+  the promotion compares with the after arm's is unchanged.
