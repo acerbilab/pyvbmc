@@ -311,6 +311,7 @@ def test_cell_schema(comparison):
                     arm["shrinkage_noise_share"]
                 )
                 # The class's headline, named: shrinkage is available here.
+                assert arm["noisy"] == (cell["condition"] == GROUPS[0])
                 method = "shrunk_two_level" if arm["noisy"] else "raw"
                 assert arm["headline_method"] == method
                 assert elbos["headline"] == elbos[method]
@@ -2276,6 +2277,8 @@ def test_a_pool_reader_reads_the_contract_layout(
         assert sorted(run["name"] for run in runs) == sorted(
             run["tag"] for run in selection["conditions"][0]["runs"]
         )
+        # The pool is noiseless, so each run scores the raw headline.
+        assert all(run["headline_method"] == "raw" for run in runs)
     assert (out / "summary.json").exists() and (out / "sources.json").exists()
 
 
@@ -2288,6 +2291,7 @@ def test_a_noisy_run_alone_scores_the_class_headline():
     from pyvbmc.svbmc import SVBMC
 
     entries = harness.fixture_conditions([GROUPS[0]])[GROUPS[0]][:2]
+    assert len(entries) == 2
     for seed, entry in enumerate(entries):
         vp = harness.load_entry(entry, rng=seed)
         stacked = SVBMC([vp], seed=seed, show_tips=False)

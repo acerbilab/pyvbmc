@@ -237,8 +237,8 @@ The rule's tests that the analysis does not report as such:
   after arm counts the cases that Arm 3's code scores as the release code
   did.
 - **The stacking's criteria**, from Arm 3's stacking `summary.md`, read as
-  the release pools' stacking was (`dev/TODO.md`, the final large-scale
-  check): criterion 2 by its column of flagged cells, criterion 4 by the
+  the release pools' stacking was (the final large-scale check, pickup 18
+  of the [roadmap](modernization-roadmap.md)): criterion 2 by its column of flagged cells, criterion 4 by the
   runtime ratio, criterion 3 by its gate column at the `M` where both
   arms ran, and criterion 1, which the summary prints no verdict for, by
   each condition's median of the largest weight difference, at most 0.03,

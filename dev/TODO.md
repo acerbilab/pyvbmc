@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-06. These lists describe scope, not priority or execution
+Updated 2026-10-07. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -438,7 +438,7 @@ criterion 3's gate fails on Student D8 because the capped headline
 over-corrects on heavy tails; since 2026-10-06 the headline of a noisy
 stack is the two-level shrinkage estimate
 ([the reading](results/2026-10-06-arm-3-reading.md)), chosen on the bias
-that stacking adds to its inputs, under which the gate still fails on
+that stacking adds to its inputs; under it, the gate still fails on
 Student D8 at small `M` (the campaign plan says where). The
 [stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
 the numbers, the [campaign plan](plans/svbmc-benchmark-campaign.md)

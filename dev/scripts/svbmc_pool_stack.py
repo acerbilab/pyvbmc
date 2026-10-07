@@ -50,7 +50,7 @@ undefined, and on a noiseless one the raw value. A cell without
 value, as in the campaigns up to the release gate's of October 2026. The
 recorded ``cap_amount`` is the class's: the reduction that the median cap
 made to the headline, so a cell with ``headline_method`` holds zero unless
-the headline is ``capped_I_median``, where an older cell holds the cap's
+the headline is ``capped_I_median``, whereas an older cell holds the cap's
 reduction on every noisy stack.
 
 The comparison runs in one of two ways, which give the same cells and the

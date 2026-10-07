@@ -41,9 +41,8 @@ Outputs under ``--out``: ``runs.jsonl`` (one record per run: the
 condition, name and seed, ``K``, the three ELBOs, the method of the
 class's headline (``headline_method``, absent from older files),
 ``e_log_joint_mc``, ``entropy_ref``, ``elbo_mc`` with their standard
-errors, the biases, the
-KL gap where ``ln Z`` is known, the run's ``elbo_sd`` and the single-run
-metrics), ``summary.json`` / ``summary.md`` (per condition, the median
+errors, the biases, the KL gap where ``ln Z`` is known, the run's
+``elbo_sd`` and the single-run metrics), ``summary.json`` / ``summary.md`` (per condition, the median
 with a bootstrap interval, the mean and the quartiles of every bias and
 of the KL gap), ``sources.json``, and with ``--cells`` also
 ``cells.jsonl`` (per cell: the input biases and every estimate's bias and

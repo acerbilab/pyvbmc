@@ -124,13 +124,13 @@ run-level step leaves and the inherited bias that the within-run step
 removes roughly balanced: the headline of a noisy stack was about as biased
 as the runs it was built from. With ``version="ns"`` no weights are
 selected, so stacking adds no such optimism and the raw value carries the
-runs' own bias alone; the shrinkage still applies, its within-run step in
-particular, and can lower the headline below the raw value. The raw ELBO is
-not an upper bound on the stack's true ELBO: it can fall below it where the
-runs' own ELBOs are pessimistic, and the shrinkage estimate can lie on
-either side of the true ELBO. On a noiseless stack, stacking adds little
-bias and shrinkage changes the value little, so the headline is the raw
-ELBO, and ``shrunk_two_level`` is reported beside it.
+runs' own bias alone; the shrinkage still applies and can lower the headline
+below the raw value. The raw ELBO is not an upper bound on the stack's true
+ELBO: it can fall below it where the runs' own ELBOs are pessimistic, and
+the shrinkage estimate can lie on either side of the true ELBO. On a
+noiseless stack, stacking adds little bias and shrinkage changes the value
+little, so the headline is the raw ELBO, and ``shrunk_two_level`` is
+reported beside it.
 
 ``stacked.elbo_details`` contains the complete report:
 

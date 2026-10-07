@@ -55,8 +55,8 @@ plan:
 - The review's optional findings, which await the PI's ruling.
 
 The arm comparison and the promotion belong to the TODO's item on the
-golden references, the reading of the pools and the stacking to its
-final large-scale check. The arm comparison's noisy Rosenbrock target put
+golden references, the reading of the pools and the stacking to the
+final large-scale check, pickup 18 of the [roadmap](modernization-roadmap.md). The arm comparison's noisy Rosenbrock target put
 the end of warm-up in question
 ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)); on the
 campaigns of Arm 3 ([its plan](arm-3-warmup-comparison.md)) the PI kept

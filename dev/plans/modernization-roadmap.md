@@ -1133,8 +1133,9 @@ The open work for 1.5 is the list "In scope for 1.5" of
     both arms of the [campaign](svbmc-benchmark-campaign.md) at `M` = 2, 4,
     8 and 16 and by the integrated arm alone at 3, 5 and 32, on 2026-10-02
     ([the Slurm plan](slurm-benchmark-support.md); the tracked copies in
-    `experiments/release_gate_20261002/`), and again on Arm 3's pools on
-    2026-10-05/06 (pickup 16). Against the campaign's criteria (2026-10-04):
+    `dev/experiments/release_gate_20261002/`), and again on Arm 3's pools on
+    2026-10-05/06 (pickup 16). On the first batch's pools, against the
+    campaign's criteria (2026-10-04):
     the median largest weight difference between the arms is 0.007 to 0.027
     (criterion 1), no cell is flagged (criterion 2), stacking takes 0.19 to
     0.53 of the original's time (criterion 4), and criterion 3 fails on
