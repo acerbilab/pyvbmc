@@ -130,9 +130,10 @@ records its execution.
   - re-execute the example notebooks at the release commit and commit their
     outputs, Example 7 with its account of the headline as the switch of
     2026-10-06 rewrote it;
-  - the API and tutorial review, the Sphinx build, `linkcheck`, the rendered
-    pages and the agent skill, with a `linkcheck` again after the merge into
-    `main`;
+  - the Sphinx build, `linkcheck`, the rendered pages and the agent skill on
+    the settled code, with a `linkcheck` again after the merge into `main`
+    (the API and tutorial review was done on 2026-10-07 in PR #186; the
+    roadmap's checklist records it and that day's build);
   - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
     over the diff since `46200293`;
   - the final tests, the CI matrix and the package checks;

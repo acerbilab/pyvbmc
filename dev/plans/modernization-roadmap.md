@@ -1279,12 +1279,21 @@ must cover the settled release code, API and behavior before publication.
   Independent review, standalone RST parsing, syntax checks for nine Python
   snippets and local link checks passed. Full Sphinx rendering and runtime
   example checks are the last item of this list.
-- [ ] Review the main documentation sources under `docsrc/`, tutorials and
+- [x] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation:
   the release-wide API, tutorial and compatibility review. The focused
   Torch/JAX workflow and teaching consistency review is recorded in the
-  [teaching-material plan](teaching-material.md).
+  [teaching-material plan](teaching-material.md). Done on 2026-10-07 in
+  PR #186 (`675b69c7`): the FAQ and the quickstart shortened, the reference
+  pages completed with their scientific caveats kept, the low-level
+  algorithm helpers moved off the `VBMC` page, Example 3 showing the
+  diagnostics its text discusses and Example 6 computing its own noise-free
+  comparison, so that it runs alone; two independent reviews, of the API's
+  accuracy and of the reader's experience, with their findings resolved.
+  Its changes to the package are docstrings and option descriptions
+  alone (compared by syntax tree). Edits to the documentation after it fall
+  to the delta pass of the release sweep (below).
 - [x] Review references to the MATLAB VBMC wiki and assess which guidance
   should be ported into the PyVBMC repository. Adapt retained material to
   Python APIs, examples, defaults and terminology; update links to the
@@ -1350,9 +1359,14 @@ must cover the settled release code, API and behavior before publication.
   [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
   2026-09-27 the Sphinx build of `dev-next` gave no warning, `linkcheck` and
   an inspection of the rendered pages found nothing broken, and the skill
-  matched the docs. The links to `main` in the skill and the docs resolve
-  only once the release merge puts the 1.5 files there, so a `linkcheck`
-  follows that merge.
+  matched the docs. On 2026-10-07, with PR #186, the build gave 94 pages
+  with warnings treated as errors and no broken local or same-site link,
+  the launch and edit buttons of all nine notebooks pointed at their
+  sources in `examples/`, Examples 3, 4 and 6 ran with their checks, the
+  startup tips' links resolved, anchors included, and the FAQ held every
+  section the skill names. The links to `main` in the skill and the docs
+  resolve only once the release merge puts the 1.5 files there, so a
+  `linkcheck` follows that merge.
 - [ ] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
