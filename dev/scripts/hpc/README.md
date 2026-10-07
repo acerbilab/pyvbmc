@@ -1130,7 +1130,10 @@ value of the site block that is a path or a command, every named
 directory and your home directory; as whole names, which no letter,
 digit, `_` or `-` flanks, for your username and every hostname that the
 campaign's records, manifest, claims, logs and accounting hold, a
-hostname in any letter case; in the quotes a list of them holds
+hostname in any letter case, also where a name the copies write begins
+or ends it (`<family>-12`); for a Slurm host list that names one of those
+hostnames (`node[01-03]`), and for the domain of a hostname that is a
+domain name, in any letter case; in the quotes a list of them holds
 (`"<feature>"`, `'<feature>'`), for every node feature other than the
 family that a host part of the campaign lists; and for any absolute path
 outside the system's directories (`/bin`, `/dev`, `/etc`, `/lib`, `/lib64`,
@@ -1224,7 +1227,8 @@ resubmissions and every case that failed or went missing, the time and
 memory the accounting shows, and each archive part with its size and
 SHA-256. Keep hostnames, the username, paths, the site's names and its
 node features other than the family out of it, and search it as the
-copies are searched, once for each campaign,
+copies are searched, a node feature also unquoted, as a whole word in any
+letter case, once for each campaign,
 since each has its own hosts and settings:
 
 ```bash

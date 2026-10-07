@@ -754,11 +754,13 @@ reason.
   (default seed 0 only), `--baseline` (the traces directory; the default
   `scripts/runs/golden/reference_990_20260913/`, the current reference
   population, exists only on the machine that made it), `--sidecars`
-  (the envelope population: a flat directory of sidecars, by default
-  `golden/baseline/`, or a population of `population_run.py`'s array mode,
-  a campaign directory or its tracked copies, of which only the verified
-  cases count; a replayed configuration without a sidecar there is an
-  error), `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
+  (the envelope population, whose sidecar of a replayed seed is also the
+  reference for the run's semantic finals where `--baseline` holds no
+  trace of it: a flat directory of sidecars, by default `golden/baseline/`,
+  or a population of `population_run.py`'s array mode, a campaign
+  directory or its tracked copies, whose `verification.json` limits the
+  envelopes to the verified cases; a replayed configuration without a
+  sidecar there is an error), `--out`, `--threads` (1, as the baseline), `--calibration-budget` (pin
   all three chunk budgets to this integer for a nondefault-profile check;
   omitted means historical defaults, independent of the local cache).
   Replay reports retain this setting, including on `--report-only`.

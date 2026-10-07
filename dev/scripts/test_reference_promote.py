@@ -65,6 +65,25 @@ def test_the_passages_are_those_the_promotion_rewrites():
     promote.span(promote.read_text(promote.REPO / file)[0], start, end)
 
 
+def test_the_release_grid_is_the_after_arms():
+    """The promotion's constants describe the release gate's after arm as
+    the repository tracks it: the whole ``production`` suite at seeds 0-99,
+    run with the population harness's options, the defaults of the replay
+    among its configurations."""
+    after = (
+        promote.REPO / "dev/experiments/release_gate_20261002/population_after"
+    )
+    manifest = promote.read_manifest(after)
+    allocation = promote.expected_allocation()
+    assert manifest["allocation"] == allocation
+    assert allocation["labels"] == [
+        config.label for config in runner.suite_configs("production")
+    ]
+    assert allocation["seeds"] == list(range(100))
+    assert manifest["options"] == runner.DEFAULT_OPTIONS
+    assert set(promote.DEFAULT_CONFIGS) <= set(allocation["labels"])
+
+
 def test_reflow_wraps_without_opening_a_markdown_block():
     text = promote.reflow(
         "- **Item.** "
@@ -369,6 +388,24 @@ def flat(text):
     return " ".join(text.split())
 
 
+def refuses(root, capsys, run, *phrases):
+    """``run()`` returns 1, prints each of ``phrases`` and leaves ``root``
+    as it was."""
+    before = snapshot(root)
+    assert run() == 1
+    out = capsys.readouterr().out
+    for phrase in phrases:
+        assert phrase in out, (phrase, out)
+    assert snapshot(root) == before
+
+
+def rewrite_json(path, change):
+    """Apply ``change`` to the JSON document at ``path`` and write it."""
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    change(value)
+    Path(path).write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+
+
 # --------------------------------------------------------------------------
 # The promotion
 # --------------------------------------------------------------------------
@@ -561,6 +598,10 @@ def test_prepare_replay_and_publish(gate):
                 "0 of the 1 equal the cluster's run of seed 0",
                 "the same runs of the code of `bbbbbbbb`",
                 "A machine gets replay fingerprints of its own",
+                "-- pyvbmc ':(exclude)pyvbmc/testing'",
+                f"--sidecars {GATE}/population_after \\",
+                f"--configs {LABEL}",
+                "python -u dev/scripts/seeded_gate_runs.py run --out",
             ],
         ),
     ):
@@ -663,6 +704,249 @@ def test_prepare_refuses_and_writes_nothing(gate, monkeypatch, capsys):
     refused("does not hold the sidecars")
 
 
+def test_prepare_refuses_an_after_arm_that_is_not_the_release_codes(
+    gate, monkeypatch, capsys
+):
+    root = gate["root"]
+
+    def refused(*phrases):
+        refuses(root, capsys, lambda: prepare(gate), *phrases)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(promote, "SEEDS", "0-1")
+        refused("does not allocate the smoke suite at seeds 0-1")
+    path = gate["after"] / "manifest.json"
+    saved = path.read_bytes()
+
+    def harness(manifest):
+        manifest["harness"] = "svbmc_pool_run"
+
+    def options(manifest):
+        manifest["options"]["max_fun_evals"] = 10
+
+    def package(manifest):
+        manifest["identity"]["source"]["trees"]["pyvbmc"]["commit"] = "e" * 40
+
+    for change, phrase in (
+        (harness, "is not a campaign of population_run.py"),
+        (options, "ran with other options than population_run's defaults"),
+        (package, "did not run its harness checkout's own package"),
+    ):
+        rewrite_json(path, change)
+        refused(phrase)
+        path.write_bytes(saved)
+
+    def dirty(manifest):
+        for tree in ("harness", "pyvbmc"):
+            manifest["identity"]["source"]["trees"][tree]["clean"] = False
+
+    rewrite_json(path, dirty)
+    with monkeypatch.context() as patch:
+        patch.setattr(promote, "clean_required", lambda: True)
+        refused("ran from the dirty trees ['harness', 'pyvbmc']")
+    path.write_bytes(saved)
+    load = promote.analysis.load_array_campaign
+
+    def unequal(*args):
+        campaign = load(*args)
+        row = campaign["rows"][f"{LABEL}_seed1"]
+        row["equal_to_in_run"] = dict(row["equal_to_in_run"], gskl=False)
+        return campaign
+
+    with monkeypatch.context() as patch:
+        patch.setattr(promote.analysis, "load_array_campaign", unequal)
+        refused(f"rescored metrics differ from the runs' in ['{LABEL}_seed1']")
+    # An assessment of the after arm with another count of verified cases.
+    assessment = gate["assessment"] / "assessment.json"
+
+    def count(value):
+        value["arms"]["candidate"]["verified"] += 1
+
+    rewrite_json(assessment, count)
+    refuses(
+        root,
+        capsys,
+        lambda: prepare(gate, accepted=promote.sha256(assessment, True)),
+        "assesses another count of verified cases",
+    )
+
+
+def test_prepare_refuses_fingerprints_that_are_not_the_after_arms_runs(
+    gate, monkeypatch, capsys
+):
+    root = gate["root"]
+    tag = f"{LABEL}_seed0"
+    report = gate["fingerprints"] / "replay.json"
+    side = gate["fingerprints"] / f"{tag}.json"
+
+    def refused(path, change, phrase):
+        saved = path.read_bytes()
+        rewrite_json(path, change)
+        refuses(root, capsys, lambda: prepare(gate), phrase)
+        path.write_bytes(saved)
+
+    def row(**changes):
+        return lambda value: value["rows"][0].update(changes)
+
+    refused(
+        report,
+        lambda value: value.update(threads=4),
+        "the fingerprints ran with other threads",
+    )
+    refused(
+        report,
+        lambda value: value.update(calibration_budget=10),
+        "the fingerprints ran with pinned calibration budgets",
+    )
+    refused(
+        report,
+        lambda value: value.update(rows=[]),
+        "the fingerprints are not every configuration at seed 0",
+    )
+    refused(
+        report,
+        row(ok=False, verdict="crashed"),
+        f"{tag}: the fingerprint failed: crashed",
+    )
+    refused(
+        report,
+        row(elbo_exact_iter=3),
+        f"{tag}: the fingerprint's replay compared a trace",
+    )
+    refused(
+        side,
+        lambda value: value["final"].update(func_count=-1),
+        f"{tag}: the sidecar is not the run the replay judged",
+    )
+    refused(
+        side,
+        lambda value: value["meta"]["threads"].update(OMP_NUM_THREADS="2"),
+        f"{tag}: the fingerprint ran with other threads",
+    )
+    refused(
+        side,
+        lambda value: value["meta"]["pyvbmc_source"]["git"].update(
+            sha="f" * 7
+        ),
+        f"{tag}: the fingerprint's package is not its checkout's",
+    )
+    error = gate["fingerprints"] / f"{tag}.error.txt"
+    error.write_text("the run failed\n", encoding="utf-8")
+    refuses(
+        root,
+        capsys,
+        lambda: prepare(gate),
+        f"{tag}: the fingerprint has an error file",
+    )
+    error.unlink()
+
+    def dirty(value):
+        value["meta"]["git"]["dirty"] = True
+
+    with monkeypatch.context() as patch:
+        # This process's own checks pass; the fingerprint's checkout was
+        # dirty.
+        patch.setattr(promote, "clean_required", lambda: True)
+        patch.setattr(promote, "check_code", lambda source, what: "HEAD")
+        refused(
+            side, dirty, f"{tag}: the fingerprint ran from a dirty checkout"
+        )
+
+    def elsewhere(value):
+        value["meta"]["git"]["sha"] = "1234567"
+        value["meta"]["pyvbmc_source"]["git"]["sha"] = "1234567"
+
+    with monkeypatch.context() as patch:
+        # The fingerprint ran at a commit whose code is not the after arm's.
+        patch.setattr(
+            promote,
+            "numerics_differ",
+            lambda a, b: ["pyvbmc/x.py"] if a == "1234567" else [],
+        )
+        refused(
+            side,
+            elsewhere,
+            "the fingerprints' code differs from the after arm's in "
+            "['pyvbmc/x.py']",
+        )
+
+
+def test_runs_are_refused_before_they_are_made_in_a_dirty_checkout(
+    gate, monkeypatch, capsys
+):
+    """``fingerprints`` and ``replay`` refuse a tracked change anywhere in
+    the checkout before any run: the runs would record a dirty checkout,
+    which ``prepare`` and ``publish`` refuse."""
+    assert prepare(gate) == 0
+    made = []
+    monkeypatch.setattr(
+        promote.golden_replay, "main", lambda argv: made.append(argv) or 0
+    )
+    monkeypatch.setattr(promote, "clean_required", lambda: True)
+    monkeypatch.setattr(promote, "check_code", lambda source, what: "HEAD")
+    monkeypatch.setattr(promote, "tracked_changes", lambda: [" M AGENTS.md"])
+    out = gate["fingerprints"].parent / "again"
+    fingerprints = ["fingerprints", "--after", str(gate["after"])]
+    fingerprints += ["--out", str(out)]
+    refuses(
+        gate["root"],
+        capsys,
+        lambda: promote.main(fingerprints, root=gate["root"]),
+        "fingerprints: tracked files differ from HEAD",
+        "which prepare refuses",
+    )
+    refuses(
+        gate["root"],
+        capsys,
+        lambda: replay(gate),
+        "replay: tracked files differ from HEAD",
+        "which publish refuses",
+    )
+    assert made == [] and not out.exists()
+    monkeypatch.setattr(promote, "tracked_changes", lambda: [])
+    assert replay(gate) == 0 and len(made) == 1
+
+
+def test_replay_requires_a_prepared_record(gate, capsys):
+    root = gate["root"]
+    assert prepare(gate) == 0
+    path = gate["record"] / promote.VALIDATION
+    saved = path.read_bytes()
+
+    def flagged(value):
+        value["population"]["even_odd_flagged"] = [LABEL]
+
+    for change, phrase in (
+        (lambda value: value.update(status="promoted"), "not prepared"),
+        (flagged, "the even/odd check flagged configurations"),
+    ):
+        rewrite_json(path, change)
+        refuses(root, capsys, lambda: replay(gate), phrase)
+        path.write_bytes(saved)
+
+
+def test_the_gate_runs_must_be_the_after_arms_code(gate, monkeypatch):
+    campaign, _, _ = promote.read_after(gate["after"], {})
+    with monkeypatch.context() as patch:
+        patch.setattr(gates, "GATE_SCRIPT", "elsewhere/gate.py")
+        with pytest.raises(promote.PromotionError, match="the gate runs ran"):
+            promote.check_gate_runs(gate["gates"], campaign)
+    with monkeypatch.context() as patch:
+        patch.setattr(
+            gates, "check_record", lambda directory: ({}, ["a problem"])
+        )
+        with pytest.raises(promote.PromotionError, match="fail their check"):
+            promote.check_gate_runs(gate["gates"], campaign)
+    with monkeypatch.context() as patch:
+        patch.setattr(promote, "numerics_differ", lambda a, b: ["pyvbmc/x.py"])
+        with pytest.raises(promote.PromotionError, match="code differs"):
+            promote.check_gate_runs(gate["gates"], campaign)
+    other = copy.deepcopy(campaign)
+    other["identity"]["source"]["trees"]["gpyreg"]["commit"] = "c" * 40
+    with pytest.raises(promote.PromotionError, match="gpyreg is not"):
+        promote.check_gate_runs(gate["gates"], other)
+
+
 def test_the_gate_runs_must_come_from_clean_checkouts(gate, monkeypatch):
     campaign, _, _ = promote.read_after(gate["after"], {})
     monkeypatch.setattr(promote, "clean_required", lambda: True)
@@ -728,6 +1012,71 @@ def test_publish_refuses_and_writes_nothing(gate, capsys):
     side_path.write_bytes(saved.replace(b'"seed": 1', b'"seed":  1'))
     refused("is not the prepared sidecar")
     side_path.write_bytes(saved)
+    # The prepared copies of a fingerprint and of a gate run's file.
+    traces = root / promote.GOLDEN_RUNS / f"{NAME}_fingerprints"
+    for path, phrase in (
+        (traces / f"{LABEL}_seed0.json", "is not the prepared fingerprint"),
+        (traces / "gate_runs" / gates.RECORD, "is not the prepared file"),
+    ):
+        saved = path.read_bytes()
+        path.write_bytes(saved + b"\n")
+        refused(phrase)
+        path.write_bytes(saved)
+    # The documents' sources, changed or missing since prepare.
+    readme = root / "dev/golden/README.md"
+    saved = readme.read_bytes()
+    readme.write_bytes(saved + b"\nA line.\n")
+    refused("dev/golden/README.md has changed since prepare copied it")
+    readme.write_bytes(saved)
+    readme = gate["record"] / "README.md"
+    saved = readme.read_bytes()
+    readme.write_text("# A promotion\n", encoding="utf-8")
+    refused("which the documents link to, does not name")
+    readme.write_bytes(saved)
+    readme = root / GATE / "README.md"
+    saved = readme.read_bytes()
+    readme.unlink()
+    refused("which names the campaign's archive, does not exist")
+    readme.write_bytes(saved)
+    # A replay that is not of the defaults as the promotion makes it.
+    path = gate["replay"] / "replay.json"
+    saved = path.read_bytes()
+
+    def rows(**changes):
+        return lambda value: value["rows"][0].update(changes)
+
+    for change, phrase in (
+        (lambda value: value.update(threads=2), "other threads"),
+        (lambda value: value.update(calibration_budget=10), "pinned budgets"),
+        (lambda value: value["git"].update(sha="0" * 7), "the replay ran at"),
+        (rows(label="banana_D2"), "not of the default configurations"),
+    ):
+        rewrite_json(path, change)
+        refused(phrase)
+        path.write_bytes(saved)
+    header = gate["replay"] / "replay.md"
+    saved_header = header.read_bytes()
+    header.write_bytes(saved_header.replace(b"_fingerprints", b"_elsewhere"))
+    refused("the replay's baseline is not")
+    header.write_bytes(saved_header)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(promote, "clean_required", lambda: True)
+        patch.setattr(
+            promote, "check_code", lambda source, what: promote.head_commit()
+        )
+        rewrite_json(path, lambda value: value["git"].update(dirty=True))
+        refused("the replay ran from a dirty checkout")
+        path.write_bytes(saved)
+    side = gate["replay"] / f"{LABEL}_seed0.json"
+    saved_side = side.read_bytes()
+    rewrite_json(
+        side,
+        lambda value: value["meta"]["gpyreg_source"]["git"].update(
+            sha="d" * 7
+        ),
+    )
+    refused("the replay's gpyreg is not the after arm's")
+    side.write_bytes(saved_side)
     # A replay that is not identical.
     path = gate["replay"] / "replay.json"
     report = json.loads(path.read_text())

@@ -54,7 +54,9 @@ sidecars in ``<label>/``: a configuration's sidecars are read from
 ``<label>/`` where that directory exists, and from the top otherwise. Where
 the directory holds a ``verification.json``, only the cases it places as
 verified count. A replayed configuration without a sidecar there is an
-error, not a replay without an envelope.
+error, not a replay without an envelope. Where ``--baseline`` holds no
+trace of a replayed run, the population's sidecar of the same seed, where
+there is one, is the reference for its semantic final fields.
 
 The exact verdict excludes only the NPZ ``timer`` array and timing, memory,
 and provenance fields in the sidecar.  The toleranced horizons and population

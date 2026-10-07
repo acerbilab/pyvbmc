@@ -3589,6 +3589,78 @@ def test_the_check_of_files_redact_did_not_write(site, tmp_path):
     assert all(name == str(readme) for name, *_ in leaks)
 
 
+def test_the_check_finds_names_that_written_names_begin_lists_and_domains():
+    """A hostname that a name the copies write begins or ends, a host list
+    that names a hostname, the domain of a hostname, and, in prose, a node
+    feature unquoted."""
+    hosts = ["u8-12", "u8-13", "login-2", "n1.cs.example.org", "n1"]
+    redaction = contract.Redaction(
+        {},
+        {h: "login" if h.startswith("login") else "u8" for h in hosts},
+        {
+            "hosts": [(host, "a hostname") for host in hosts],
+            "features": [('"avx512"', "a node feature")],
+        },
+        family="u8",
+    )
+    text = (
+        "Ran on u8-12 and LOGIN-2, not on u8 or login.\n"
+        "Nodes u8-[13-14] and n1.cs.example.org; see x.CS.example.org.\n"
+        "The avx512 nodes, not avx512_vnni, nor cs.example.org.uk.\n"
+        "Seeds [0-99] of rosenbrock_D2, at u8[01-03].\n"
+    )
+    found = redaction.leaks(text)
+    assert sorted((line, string) for line, string, _ in found) == [
+        (1, "login-2"),
+        (1, "u8-12"),
+        (2, "cs.example.org"),
+        (2, "n1.cs.example.org"),
+        (2, "u8-[13-14]"),
+    ]
+    prose = redaction.leaks(text, prose=True)
+    assert sorted(set(prose) - set(found)) == [(3, "avx512", "a node feature")]
+
+
+def test_the_check_of_files_reads_them_as_prose(site, tmp_path):
+    """The README check refuses the accounting's host list, the nodes'
+    domain and another node feature, unquoted."""
+    out = finished_campaign(site)
+    readme = tmp_path / "handback" / "README.md"
+    readme.parent.mkdir()
+    arguments = dict(
+        operator=site.operator(),
+        environ={},
+        host="fakelogin9",
+        system_prefixes=NO_TMP,
+    )
+    readme.write_text(
+        f"# The pools\n\nRun on {site.family} nodes.\n"
+        f"The accounting names {site.accounting}.\n"
+        "The nodes are in cluster.invalid, with FakeFeature.\n",
+        "utf-8",
+    )
+    leaks = contract.check_files(out, [readme], **arguments)
+    assert sorted((line, string, what) for _, line, string, what in leaks) == [
+        (4, site.accounting, "a host list that names a hostname"),
+        (5, "FakeFeature", "a node feature"),
+        (5, "cluster.invalid", "the domain of a hostname"),
+    ]
+    allowed = {}
+    assert (
+        contract.check_files(
+            out,
+            [readme],
+            allow=[site.accounting, "cluster.invalid", "FakeFeature"],
+            allowed=allowed,
+            **arguments,
+        )
+        == []
+    )
+    assert allowed == dict.fromkeys(
+        [site.accounting, "cluster.invalid", "FakeFeature"], 1
+    )
+
+
 def test_redact_from_the_command_line(site, tmp_path, monkeypatch, capsys):
     out = finished_campaign(site)
     for name in contract.SETTINGS:

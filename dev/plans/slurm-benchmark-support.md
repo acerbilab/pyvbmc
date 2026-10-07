@@ -35,6 +35,18 @@ it stood before this plan's work and what the work gave it.
   `ff3ed014` and handed back on 2026-10-04 (the worklog).
 - [x] Phase 9: the replay fingerprints and the gate runs on the
   developer's machine (2026-10-04; the worklog).
+- [~] The smaller fixes left for after the merge (the worklog of
+  2026-09-30), on the branch `feat-slurm-small-fixes`:
+  - [x] the stubs run the batch script as Slurm's spooled copy;
+  - [x] the generated `golden/README.md`'s recipe for other machines;
+  - [x] the promotion refuses a dirty checkout before the fingerprints'
+    runs;
+  - [x] the README check's blind spots (hostnames that begin a name the
+    copies write, host lists, the site's domain, features in prose);
+  - [x] tests of the promotion's refusals and of the release grid;
+  - [x] the note on `--sidecars` in the `golden_replay.py` entry of
+    `dev/README.md`, with the promotion's template and guard;
+  - [~] the test modules, a doublecheck, the merge into `dev-next`.
 
 **Pickup point.** The campaigns of Phase 8 ran on 2026-10-02 in the
 operator's account, from the release commit `ff3ed014`, and every case of
@@ -898,7 +910,10 @@ and `ANALYSIS_MEM` 4 GB; `CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. The
   operator's username, the home, a hostname or another node feature
   remains anywhere in its output (paths, the home and the settings as
   substrings, the username and hostnames as whole names, hostnames in any
-  case, a feature in the quotes a list of them holds), when an absolute
+  case, also where a name the copies write begins or ends one, a host list
+  that names a hostname, the domain of a hostname, a feature in the quotes
+  a list of them holds, and unquoted in a README that `--check`
+  searches), when an absolute
   path outside the system prefixes remains unnamed, when a username or
   hostname equals a name the copies write, and when a case is in flight.
   `--allow STRING` exempts a benign hit, which `redaction.json` records
