@@ -117,7 +117,8 @@ records its execution.
   Arm 3, the release code with the port's end of warm-up
   ([the reading](results/2026-10-06-arm-3-reading.md)): the promotion
   takes the after arm, and its record states the cost on the noisy
-  Rosenbrock target. The promotion is
+  Rosenbrock target. What remains is the promotion itself: `prepare`,
+  `replay`, the record's README and `publish`. The promotion is
   `scripts/reference_promote.py` (2026-09-28), in
   the manner of `golden/promotion_20260913/promote.py`, since
   `scripts/reference_join.py` extends a reference and refuses any overlap

@@ -53,7 +53,8 @@ Each script's header documents it in full.
 - `campaign_redact.sh CAMPAIGN_DIR OUT_DIR [--path NAME=PATH ...]
   [--allow STRING ...]`: the tracked copies of a finished campaign,
   redacted for the repository; with `--check FILE ...` in place of
-  `OUT_DIR`, the same search in files it did not write.
+  `OUT_DIR`, the same search in files it did not write, a node feature
+  also unquoted.
 
 The submission and the finish run on the login node, from the harness
 checkout (the clone of this repository whose code the campaign runs), and
@@ -1143,7 +1144,9 @@ the string. A hit that is benign, such as a short username that is also a
 word of a copy, is exempted with `--allow STRING`, repeatable and taken by
 `--check` too, and `redaction.json` records each allowed string under
 `allowed` with the hits it cleared. A node feature is exempted in its
-quoted form, as the refusal names it (`--allow '"<feature>"'`). A
+quoted form, as the refusal names it (`--allow '"<feature>"'`), which in a
+file that `--check` searches also exempts the feature unquoted, in any
+letter case. A
 username, or a hostname that the copies name otherwise, that is itself a
 name the copies write (`login`,
 the node family) is refused, since the search could not tell the two
@@ -1332,7 +1335,9 @@ worker runs, one of:
   before any search, a username or hostname that is a name the copies
   write. A directory that holds nothing to hide once named can be given a
   name with `--path NAME=PATH`, and a hit where the string stands for no
-  site detail is exempted with `--allow STRING`; anything else goes to the
+  site detail is exempted with `--allow STRING`, which publishes the
+  string (a host list or a domain has no replacement, so a hit of one in
+  a copy is either such a string or a leak); anything else goes to the
   PI, since it is a site detail the redaction does not know.
 
 ## The September pool scripts

@@ -1484,10 +1484,17 @@ def facts(root, validation, report, head, public_traces):
         "envelope_sentence": (
             "none lies outside its configuration's accuracy envelope"
             if not outside
-            else f"{outside} of them lie outside their configuration's "
-            "accuracy envelope, which the population's own rate of runs "
-            f"outside theirs ({fingerprints['population_outlier_rate']:.3f}) "
-            "makes plausible"
+            else (
+                "1 of them lies outside its configuration's accuracy "
+                "envelope, which the population's own rate of runs outside "
+                "theirs"
+                if outside == 1
+                else f"{outside} of them lie outside their configuration's "
+                "accuracy envelope, which the population's own rate of runs "
+                "outside theirs"
+            )
+            + f" ({fingerprints['population_outlier_rate']:.3f}) makes "
+            "plausible"
         ),
         "seed0_identical": fingerprints[
             "semantic_finals_identical_to_cluster_seed0"
@@ -1502,6 +1509,7 @@ def facts(root, validation, report, head, public_traces):
         "defaults": number(len(DEFAULT_CONFIGS)),
         "default_configs": ", ".join(f"`{c}`" for c in DEFAULT_CONFIGS),
         "all_configs": ",".join(labels),
+        "alpha": FINGERPRINT_ALPHA,
         "numeric_paths": " ".join(
             f"'{path}'" if path.startswith(":") else path
             for path in NUMERIC_PATHS
@@ -1920,8 +1928,10 @@ A machine gets replay fingerprints of its own as the reference's were
 made, with the reference's code and gpyreg: a clean checkout at a commit
 that holds this reference and whose code is that of PyVBMC `{commit}`,
 which the first command below confirms by printing nothing (the commit
-that published the reference is one), with gpyreg `{gpyreg}` installed
-from a checkout of its own. From the repository root, one at a time:
+that published the reference is one, the last to change
+`dev/golden/baseline/summary.md` while this reference is current), with
+gpyreg `{gpyreg}` installed from a checkout of its own. From the
+repository root, one at a time:
 
 ```console
 git diff --stat {commit} HEAD -- {numeric_paths}
@@ -1936,7 +1946,10 @@ python -u dev/scripts/seeded_gate_runs.py run --out dev/scripts/runs/<gate_runs>
 The `--baseline` names a directory that does not exist, so that each run
 is judged against the population's accuracy envelopes alone. The replay
 exits 1 when a run lies outside its envelope, as some correct runs do, so
-the fingerprints are judged as a set, as the reference's were. That
+the fingerprints are judged as a set, as the reference's were: no more of
+them may lie outside than the population's own rate of runs outside
+theirs makes plausible, a binomial tail of at least {alpha} (the
+promotion record's `validation.json` gives that rate). That
 machine's `dev/scripts/runs/LOCAL.md` then lists them, and its replays pass
 the fingerprints' directory as `--baseline`.
 

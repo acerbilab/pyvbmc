@@ -24,6 +24,7 @@ its SHA-256 in ``PASSAGES`` follow it.
 
 import copy
 import json
+import re
 import shutil
 import socket
 from pathlib import Path
@@ -63,6 +64,14 @@ def test_the_passages_are_those_the_promotion_rewrites():
         assert text.count(old) == 1, (file, old)
     file, start, end = promote.OWN_ENTRY
     promote.span(promote.read_text(promote.REPO / file)[0], start, end)
+
+
+def test_tracked_changes_are_what_a_run_records_as_dirty():
+    """The early refusal of the runs and the runs' own record of their
+    checkout read the checkout alike, clean or not."""
+    from profile_run import git_info
+
+    assert bool(promote.tracked_changes()) == git_info(promote.REPO)["dirty"]
 
 
 def test_the_release_grid_is_the_after_arms():
@@ -927,9 +936,10 @@ def test_replay_requires_a_prepared_record(gate, capsys):
 
 def test_the_gate_runs_must_be_the_after_arms_code(gate, monkeypatch):
     campaign, _, _ = promote.read_after(gate["after"], {})
+    ran = re.escape(f"the gate runs ran {gates.GATE_SCRIPT}")
     with monkeypatch.context() as patch:
         patch.setattr(gates, "GATE_SCRIPT", "elsewhere/gate.py")
-        with pytest.raises(promote.PromotionError, match="the gate runs ran"):
+        with pytest.raises(promote.PromotionError, match=ran):
             promote.check_gate_runs(gate["gates"], campaign)
     with monkeypatch.context() as patch:
         patch.setattr(
@@ -1046,7 +1056,10 @@ def test_publish_refuses_and_writes_nothing(gate, capsys):
         return lambda value: value["rows"][0].update(changes)
 
     for change, phrase in (
-        (lambda value: value.update(threads=2), "other threads"),
+        (
+            lambda value: value.update(threads=2),
+            "the replay ran with other threads",
+        ),
         (lambda value: value.update(calibration_budget=10), "pinned budgets"),
         (lambda value: value["git"].update(sha="0" * 7), "the replay ran at"),
         (rows(label="banana_D2"), "not of the default configurations"),

@@ -3590,35 +3590,64 @@ def test_the_check_of_files_redact_did_not_write(site, tmp_path):
 
 
 def test_the_check_finds_names_that_written_names_begin_lists_and_domains():
-    """A hostname that a name the copies write begins or ends, a host list
-    that names a hostname, the domain of a hostname, and, in prose, a node
-    feature unquoted."""
+    """A hostname that a name the copies write begins or ends, a username
+    that a dot joins to one, a host list that names a hostname, the domain
+    of a hostname, and, in prose, a node feature unquoted."""
     hosts = ["u8-12", "u8-13", "login-2", "n1.cs.example.org", "n1"]
-    redaction = contract.Redaction(
-        {},
-        {h: "login" if h.startswith("login") else "u8" for h in hosts},
-        {
-            "hosts": [(host, "a hostname") for host in hosts],
-            "features": [('"avx512"', "a node feature")],
-        },
-        family="u8",
-    )
+
+    def redaction(allow=()):
+        return contract.Redaction(
+            {},
+            {h: "login" if h.startswith("login") else "u8" for h in hosts},
+            {
+                "users": [("jdoe", "the username")],
+                "hosts": [(host, "a hostname") for host in hosts],
+                "features": [('"avx512"', "a node feature")],
+            },
+            allow=allow,
+            family="u8",
+        )
+
     text = (
-        "Ran on u8-12 and LOGIN-2, not on u8 or login.\n"
+        "Ran on u8-12 and login-2, not on u8 or login.\n"
         "Nodes u8-[13-14] and n1.cs.example.org; see x.CS.example.org.\n"
         "The avx512 nodes, not avx512_vnni, nor cs.example.org.uk.\n"
-        "Seeds [0-99] of rosenbrock_D2, at u8[01-03].\n"
+        "At u8[01-03] and n[1-2].cs.example.org, seeds [0-99].\n"
+        "Mail login.jdoe, u8.jdoe or jdoe.u8, not jdoe2.\n"
     )
-    found = redaction.leaks(text)
+    found = redaction().leaks(text)
     assert sorted((line, string) for line, string, _ in found) == [
         (1, "login-2"),
         (1, "u8-12"),
         (2, "cs.example.org"),
         (2, "n1.cs.example.org"),
         (2, "u8-[13-14]"),
+        (4, "n[1-2].cs.example.org"),
+        (5, "jdoe"),
     ]
-    prose = redaction.leaks(text, prose=True)
+    prose = redaction().leaks(text, prose=True)
     assert sorted(set(prose) - set(found)) == [(3, "avx512", "a node feature")]
+    # An allowed hostname or host list holds its domain; the quoted form of
+    # a feature exempts it unquoted, in any letter case.
+    allowed = redaction(
+        ["n1.cs.example.org", "n[1-2].cs.example.org", '"AVX512"']
+    )
+    rest = allowed.leaks(text, prose=True)
+    assert [(line, s) for line, s, _ in rest if line in (2, 3, 4)] == [
+        (2, "cs.example.org"),
+        (2, "u8-[13-14]"),
+    ]
+    assert allowed.allowed == {
+        "n1.cs.example.org": 1,
+        "n[1-2].cs.example.org": 1,
+        '"AVX512"': 1,
+    }
+    # The three usernames joined to written names, each reported.
+    assert sum(1 for line, *_ in redaction().leaks(text) if line == 5) == 1
+    for name in ("login.jdoe", "u8.jdoe", "jdoe.u8"):
+        assert [s for _, s, _ in redaction().leaks(name)] == ["jdoe"], name
+    # A host list past the limits is not expanded, and does not fail.
+    assert redaction().leaks("u8-[1]" * 20000) == []
 
 
 def test_the_check_of_files_reads_them_as_prose(site, tmp_path):
@@ -3645,20 +3674,17 @@ def test_the_check_of_files_reads_them_as_prose(site, tmp_path):
         (5, "FakeFeature", "a node feature"),
         (5, "cluster.invalid", "the domain of a hostname"),
     ]
+    # The feature is exempted in its quoted form, as a copy's refusal names
+    # it.
+    allow = [site.accounting, "cluster.invalid", '"fakefeature"']
     allowed = {}
     assert (
         contract.check_files(
-            out,
-            [readme],
-            allow=[site.accounting, "cluster.invalid", "FakeFeature"],
-            allowed=allowed,
-            **arguments,
+            out, [readme], allow=allow, allowed=allowed, **arguments
         )
         == []
     )
-    assert allowed == dict.fromkeys(
-        [site.accounting, "cluster.invalid", "FakeFeature"], 1
-    )
+    assert allowed == dict.fromkeys(allow, 1)
 
 
 def test_redact_from_the_command_line(site, tmp_path, monkeypatch, capsys):

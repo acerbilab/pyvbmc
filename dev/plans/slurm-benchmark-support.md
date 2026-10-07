@@ -41,8 +41,9 @@ it stood before this plan's work and what the work gave it.
   - [x] the generated `golden/README.md`'s recipe for other machines;
   - [x] the promotion refuses a dirty checkout before the fingerprints'
     runs;
-  - [x] the README check's blind spots (hostnames that begin a name the
-    copies write, host lists, the site's domain, features in prose);
+  - [x] the README check's blind spots (a hostname that a name the copies
+    write begins or ends, host lists, the site's domain, features in
+    prose);
   - [x] tests of the promotion's refusals and of the release grid;
   - [x] the note on `--sidecars` in the `golden_replay.py` entry of
     `dev/README.md`, with the promotion's template and guard;
@@ -1668,5 +1669,5 @@ reproduces bit for bit.
   confirmatory tests rejects; its KS screen flags the evaluation counts of
   `cigar_D4` and `rosenbrock_D2_noise3_production`. The noisy Rosenbrock
   target's runs are usable 72 times in 100 against the before arm's 87,
-  the cost of MATLAB's end of warm-up, which stays (2026-10-06), and which
-  the promotion's record states.
+  the cost of MATLAB's end of warm-up, which stays (2026-10-06); the
+  promotion's record is to state that cost.
