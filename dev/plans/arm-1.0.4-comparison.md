@@ -4,7 +4,8 @@ Created 2026-10-04. Status: **implemented, reviewed and merged into
 `dev-next` (`9b84a1ae`); the local runs of 1.0.4 and the speed measurement
 done; the campaign run on the cluster (2026-10-05/06), two of its cases
 failed in 1.0.4 and ruled on (decision 9); the hand-back merged into
-`dev-next` (#184); the comparison open**.
+`dev-next` (#184); the comparison made (2026-10-07), for the PI's
+reading**.
 
 ## Purpose
 
@@ -304,7 +305,10 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   `9bfd8f50` and `4b6d47ac`).
 - [x] The hand-back: its README and the tracked copies, merged into
   `dev-next` (#184, `cd842264`).
-- [ ] The comparison with the after arm.
+- [x] The comparison with the after arm (2026-10-07;
+  [its record](../experiments/release_gate_20261005_assessment_v104/comparison.md)).
+- [ ] The PI's reading, and the statements of accuracy against 1.0.4 in
+  the changelog, the README and the release notes.
 - [x] Speed against 1.0.4 on the developer's machine, run when the PI
   leaves the machine free for some hours (PI, 2026-10-05): the night of
   2026-10-05/06
@@ -461,3 +465,31 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   the final boost (line 1510); the entry above states the frame, the cause
   and the compatibility patch's part as the error files and 1.0.4's code
   give them, and names the one `gskl` that the rescoring left unequal.
+- 2026-10-07: the comparison, `analyze_population_run.py --arms` with
+  1.0.4's tracked copies (`release_gate_20261005/population_v104`) as the
+  reference and the after arm's (`release_gate_20261002/population_after`)
+  as the candidate, scored by the rescoring of both that 1.0.4's copies
+  hold, from `4c102a78`, whose package code is the after arm's but for
+  docstrings and option descriptions;
+  [its record](../experiments/release_gate_20261005_assessment_v104/comparison.md).
+  It validated 2398 cases of 1.0.4 and 2400 of the release code against
+  their verifications. Of the 96 confirmatory tests, eight reject under
+  Holm: six favour the release, the evidence error, gsKL and MMTV of
+  `banana_D2` and of `rosenbrock_D2`, and two favour 1.0.4, the gsKL of
+  `halfnormal_D2` (a median change of 0.0001 on medians of 0.0001 and
+  0.0002) and of `lumpy_D10_noise3_production` (0.056, medians 0.47 and
+  0.54). Usable runs: 2157 of 2400 in the release, 2147 in 1.0.4, whose
+  two failed cases count as unusable; 126 seeds gain usability and 116
+  lose it. Over all runs the median evidence error is 0.065 against 0.073,
+  gsKL 0.122 against 0.138 and MMTV 0.037 against 0.041, with 453 010
+  evaluations against 459 150. The noisy configurations move both ways:
+  `student_D8_noise3_production` is usable 57 times against 38 and
+  `logreg_D5_noise3_production` 87 against 81, `rosenbrock_D2_noise3_production`
+  72 against 84, the cost of MATLAB's end of warm-up
+  ([the reading](../results/2026-10-06-arm-3-reading.md)), and
+  `lumpy_D10_noise3_production` 87 against 91. The KS screen flags the
+  same three metrics of `banana_D2` and `rosenbrock_D2` and the evaluation
+  counts of `cigar_D4` and `cigar_D8` (ten fewer) and of
+  `lumpy_D10_noise3_production` (ten more). The optimizer's summed hours
+  (153 against 378) come from the cluster's packed nodes and are no speed
+  comparison (decision 5).

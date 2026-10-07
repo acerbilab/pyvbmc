@@ -91,9 +91,12 @@ records its execution.
   that Arm 0 is compared with. The campaign ran on
   2026-10-05/06: 2398 cases verified and 2 failed in 1.0.4, which the
   comparison counts as runs that gave no usable posterior (the plan's
-  decision 9). The changelog's, the README's and the release notes'
-  statements of accuracy against 1.0.4 wait for the comparison; the
-  changelog's statement of speed is in (2026-10-06).
+  decision 9). The comparison ran on 2026-10-07
+  (`experiments/release_gate_20261005_assessment_v104/`; the plan's
+  worklog): 8 of its 96 confirmatory tests reject, six favouring the
+  release and two 1.0.4. The changelog's, the README's and the release
+  notes' statements of accuracy against 1.0.4 wait for the PI's reading of
+  it; the changelog's statement of speed is in (2026-10-06).
 
 - [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
   its published texts link the lab (PI, 2026-10-06; the convention "Links
