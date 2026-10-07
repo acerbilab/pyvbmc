@@ -39,7 +39,7 @@ Its traces are in its archive, a draft release that only the repository's
 collaborators see, which the [README of the release gate's
 records](../experiments/release_gate_20261002/README.md) names. 2299 of the
 2400 runs converged and 101 reached their budgets (the 100 runs of
-`cigar_D15_exhaust`, by design, and 1 others: 1 of
+`cigar_D15_exhaust`, by design, and one of
 `rosenbrock_D2_noise1_production`); 2157 meet the usability thresholds below.
 
 The [promotion record](promotion_20261007/README.md) gives the assessment,
@@ -53,9 +53,10 @@ Exact replay depends on the machine and its BLAS, so the traces that
 reference's replay fingerprints, one run at seed 0 of each of the 24
 configurations, made with the same code on the machine that
 `dev/scripts/runs/LOCAL.md` lists and judged against the population's accuracy
-envelopes: 1 of them lies outside its configuration's accuracy envelope, which
-the population's own rate of runs outside theirs (0.037) makes plausible. 0 of
-the 24 equal the cluster's run of seed 0 in every semantic final field. The
+envelopes: one of them lies outside its configuration's accuracy envelope,
+which the population's own rate of runs outside theirs (0.0375) makes
+plausible. None of the 24 equals the cluster's run of seed 0 in every semantic
+final field, as expected across machines. The
 port review's six seeded gate runs, two of them with a prior object
 (`dev/scripts/seeded_gate_runs.py`), were recorded twice on that machine and
 reproduced bit for bit. The five default cases replayed with identical

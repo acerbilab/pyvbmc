@@ -1158,9 +1158,11 @@ The open work for 1.5 is the list "In scope for 1.5" of
     review (`f91fdf0`): none of 96 confirmatory tests rejects, and the noisy
     Rosenbrock target is usable 72 times in 100 against 87, the cost of
     MATLAB's end of warm-up (pickup 16). Its replay fingerprints, one run at
-    seed 0 of each configuration on the developer's machine, and the port
-    review's six seeded gate runs, two of them with a prior object, ran on
-    2026-10-04 and reproduced as the Slurm plan's Phase 9 requires. The
+    seed 0 of each configuration on the developer's machine, ran on
+    2026-10-04 and met the acceptance of the Slurm plan's Phase 9 (one of
+    24 outside its envelope, within the population's own rate), and the
+    port review's six seeded gate runs, two of them with a prior object,
+    reproduced bit for bit there. The
     [promotion record](../golden/promotion_20261007/README.md) owns the
     evidence, hashes and procedure; `golden_replay.py` replays the new
     defaults against the fingerprints, and the previous references are

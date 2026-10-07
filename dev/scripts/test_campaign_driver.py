@@ -1206,7 +1206,8 @@ def test_a_killed_task_is_interrupted_and_its_resubmission_completes(world):
         "--case",
         "g0/c002 2",
     ]
-    process = world.start(command, variables, log)
+    # In the checkout, where the task script starts it.
+    process = world.start(command, variables, log, cwd=world.repo)
     wait_for(out / "g0" / "c002.out", process, log)
     process.kill()
     process.wait(timeout=60)

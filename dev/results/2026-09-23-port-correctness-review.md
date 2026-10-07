@@ -153,16 +153,19 @@ What the review changed:
   default trajectories" change what a run at the shipped options computes, so
   the golden references and the production-reference runs describe the code
   from before them (`dev/TODO.md`, "The golden references after the port
-  review").
+  review", closed on 2026-10-07 by the promotion of `reference_2400_20261007`:
+  `dev/golden/promotion_20261007/README.md`).
 - **The catalogue of deliberate differences.** The known-differences sheet
   grew from 67 entries to 134 and was consolidated into the porting log
   `pyvbmc/vbmc/README.md`; the list of MATLAB-side defects holds 63 entries,
   as material for the MATLAB repository.
 
 What it leaves, all in `dev/TODO.md`: the regeneration of the golden
-references; an oracle state at uncertainty level 1 (done on 2026-09-24:
+references (done on 2026-10-07: `dev/golden/promotion_20261007/README.md`);
+an oracle state at uncertainty level 1 (done on 2026-09-24:
 `dev/plans/fixture-generator-and-oracles.md`, "Phase 5"); a seeded gate run
-with a prior; and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
+with a prior (done on 2026-10-04 with the replay fingerprints, the same
+record); and, from the rulings of wave 0, `save` and `load` for an `SVBMC`
 object (done on 2026-09-24: `dev/plans/svbmc-integration.md`, "Execution
 record") and the comparison of the two compositions of the S-VBMC shrinkage
 (found on 2026-09-25 to exist on the existing pools as the variant

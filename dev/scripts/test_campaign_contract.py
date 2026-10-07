@@ -3646,8 +3646,18 @@ def test_the_check_finds_names_that_written_names_begin_lists_and_domains():
     assert sum(1 for line, *_ in redaction().leaks(text) if line == 5) == 1
     for name in ("login.jdoe", "u8.jdoe", "jdoe.u8"):
         assert [s for _, s, _ in redaction().leaks(name)] == ["jdoe"], name
-    # A host list past the limits is not expanded, and does not fail.
+    # A host list past the limits is not expanded, and does not fail; nor is
+    # one with a list that names no host, however large the others.
     assert redaction().leaks("u8-[1]" * 20000) == []
+    assert contract._hostlist_hosts("n[1-999999999]y[2-1]") == []
+    # A host list holds a hostname as the hostname search finds one: before
+    # a domain or a suffix, after a dotted prefix.
+    for listed in ("n[1-3].example.net", "x.n[1-3]", "u8-[12-13].ib"):
+        assert [s for _, s, _ in redaction().leaks(listed)] == [listed]
+    # A feature in its quotes, in prose, is one hit.
+    quoted = redaction(['"avx512"'])
+    assert quoted.leaks('The "avx512" nodes.', prose=True) == []
+    assert quoted.allowed == {'"avx512"': 1}
 
 
 def test_the_check_of_files_reads_them_as_prose(site, tmp_path):

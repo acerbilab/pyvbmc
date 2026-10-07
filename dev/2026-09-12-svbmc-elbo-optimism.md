@@ -243,8 +243,9 @@ integration; this note stays the narrative.
    3; `_compute_reliability_index` in `vbmc.py`), so a noisy run ends
    well above the default. Two corpora say how far apart the two end up:
    the golden reference population `reference_870_20260907` (sidecars in
-   `dev/golden/baseline/` as of commit `b2ea8597`; that directory has held
-   `reference_990_20260913` since 2026-09-13; 870 runs of 19 configurations
+   `dev/golden/baseline/` as of commit `b2ea8597`; that directory held
+   `reference_990_20260913` from 2026-09-13 and `reference_2400_20261007`
+   since 2026-10-07; 870 runs of 19 configurations
    including 160 noisy runs; final values from the `final.elbo_sd`,
    `noise_sd` and `final.success_flag` fields, converged runs only,
    aggregated on 2026-09-12 with a few lines of Python, no script kept; the

@@ -48,9 +48,11 @@
 # runs in the account that ran the campaign. It refuses, and writes
 # nothing, when a copy still holds a value of the site block that is a path
 # or a command, a named directory or the home directory (as a plain
-# substring), the username or a hostname of the campaign (as a whole name,
-# which no letter, digit, _ or - flanks, nor a dot that continues the name;
-# a hostname in any letter case), a Slurm host list that names one
+# substring), the username (as a whole name, which no letter, digit, _ or
+# - flanks, nor a dot that continues the name as in first.last) or a
+# hostname of the campaign (as a whole name, which no letter, digit, _ or
+# - flanks, in any letter case), also where a name the copies write begins
+# or ends one or a dot joins one to it, a Slurm host list that names one
 # (node[01-03]), the domain of a hostname that is a domain name, a node
 # feature of the campaign's hosts other than NODE_FEATURE (in the quotes a
 # list of them holds), or an absolute path outside the system's

@@ -33,7 +33,7 @@ code at the start of the port correctness review (`f91fdf0`, with gpyreg
 `9e70e6b`), the before arm of the same campaigns, both rescored with the
 release code.
 
-| Matched assessment | Before | Reference |
+| Matched assessment | Before arm | After arm, the reference |
 |---|---:|---:|
 | Complete cases | 2400 | 2400 |
 | Converged | 2299 | 2299 |
@@ -49,12 +49,13 @@ under one Holm correction at 0.05. None rejects. The KS screen flags the
 evaluation counts of `cigar_D4` and `rosenbrock_D2_noise3_production`,
 whose runs stop earlier (median ratios 0.93 and 0.92).
 
-The noisy Rosenbrock target is worse in the reference on every measure:
-its runs are usable 72 times in 100 against the before arm's 87. Two fixes
-of the port review, W2-1 and W2-2, end its warm-up about three iterations
+The noisy Rosenbrock target is worse in the reference on every measure of
+accuracy, with fewer evaluations (a median of 170 against 185): its runs
+are usable 72 times in 100 against the before arm's 87. Two fixes of the
+port review, W2-1 and W2-2, end its warm-up about three iterations
 earlier, as MATLAB VBMC does
 ([the note](../../results/2026-10-05-noisy-rosenbrock-warmup.md)). Arm 3,
-the release code with the port's earlier end of warm-up, run on every
+the release code with the port's former, later end of warm-up, run on every
 configuration of the release gate, did not establish the gain on fresh
 seeds and made the noisy Student target worse, so MATLAB's end of warm-up
 stays (PI, 2026-10-06; [the reading](../../results/2026-10-06-arm-3-reading.md)).
@@ -104,9 +105,15 @@ reports that field as uncertifiable. The [validation record](validation.json)
 holds the provenance and the results of every gate.
 
 The procedure is [promote.py](promote.py), `dev/scripts/reference_promote.py`
-as it ran, from the repository root of the machine of the fingerprints:
+as it ran, from the repository root of the machine of the fingerprints,
+after the two commands of Phase 9 that made the gate runs and the
+fingerprints:
 
 ```console
+python -u dev/scripts/seeded_gate_runs.py run --out <gate runs>
+python -u dev/scripts/reference_promote.py fingerprints \
+    --after dev/experiments/release_gate_20261002/population_after \
+    --out <fingerprints>
 python -u dev/scripts/reference_promote.py prepare \
     --after dev/experiments/release_gate_20261002/population_after \
     --assessment dev/experiments/release_gate_20261002_assessment \

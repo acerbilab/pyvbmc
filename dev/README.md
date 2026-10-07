@@ -163,7 +163,8 @@ plan and consolidated human summary.
   compatibility contracts, PI-selected boost/eta fixes, and regression gates
   against the historical 870-run reference. Integrated population validation
   is complete; the [promotion record](golden/promotion_20260913/README.md)
-  records acceptance and the active 990-run reference.
+  records acceptance and the 990-run reference, active from 2026-09-13 to
+  2026-10-07.
   Phase 0 records the reduced 60-run noisy extension; the original 150-run
   preparation remains as historical evidence.
 - [plans/final-population-benchmark.md](plans/final-population-benchmark.md) —

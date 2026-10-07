@@ -38,7 +38,7 @@ Reference: [reference_870_20260907](../golden/noisy_extension_20260907/README.md
 Historical sidecars and complete local traces are preserved in
 `dev/scripts/runs/golden/reference_870_20260907/`; their tracked hashes are
 in the linked record. The assessment compares against these 870 pairs.
-The active `dev/golden/baseline/` contains the promoted
+From 2026-09-13 to 2026-10-07 `dev/golden/baseline/` held the promoted
 [reference_990_20260913](../golden/promotion_20260913/README.md): the 870
 candidates plus 120 unchanged real-data pairs.
 
@@ -325,8 +325,9 @@ the 76-test KS screen or the 95-test paired family. The pooled assessment
 is under `dev/experiments/population_extension_20260911/`
 (`assessment.json`, `comparison.md`, both campaign manifests);
 `python dev/scripts/analyze_population_run.py` reproduced it until the
-promotion of 2026-09-13. Since then `dev/golden/baseline` holds
-`reference_990_20260913`, whose sidecars fail the command's check against
+promotion of 2026-09-13. Since then `dev/golden/baseline` has held a later
+reference (`reference_990_20260913`, then `reference_2400_20261007`), whose
+sidecars fail the command's check against
 `dev/golden/noisy_extension_20260907/sha256_manifest.json`, so the command
 as written stops there. The assessment reproduces exactly against the
 sidecars of `reference_870_20260907`, the reference of that date (checked

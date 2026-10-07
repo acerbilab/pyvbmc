@@ -12,10 +12,13 @@ Continuation batches have explicit wall-time and fit-count limits, reuse
 validated success terminals and never rerun a failed fit.  The combined
 summary reports all ten paired seeds per target from both campaigns.
 
-This is the record of a completed campaign.  Its source inventory hashes
-``golden_replay.py``, which the promotion of ``reference_2400_20261007`` on
-2026-10-07 changed, and its default reference is ``reference_990_20260913``;
-it reproduces from a checkout of ``948bac0d`` or earlier.
+This is the record of a completed campaign.  Its manifests hash the
+sources it ran, ``golden_replay.py`` among them, which later commits
+changed, so a continuation is refused from any later checkout.  Its default
+reference, ``reference_990_20260913``, stays under
+``dev/scripts/runs/golden/`` on the machine that
+``dev/scripts/runs/LOCAL.md`` lists; the golden reference since 2026-10-07
+is ``reference_2400_20261007``.
 """
 
 import argparse

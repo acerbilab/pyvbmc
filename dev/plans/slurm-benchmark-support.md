@@ -59,14 +59,17 @@ the node failures and resubmissions, the accounting and the archives (the
 worklog, 2026-10-04). Phase 9 ran on the developer's machine on
 2026-10-04 and met its acceptance (the worklog). The smaller fixes that
 the worklog of 2026-09-30 left for after the merge were made on
-2026-10-07 (the worklog), before the promotion's `prepare`, which takes
-the after arm, since MATLAB's end of warm-up stays (PI, 2026-10-06). What
-remains of this plan is the review's optional findings, which await the
-PI's ruling.
+2026-10-07 (the worklog), before the promotion, which took the after arm,
+since MATLAB's end of warm-up stays (PI, 2026-10-06): the after arm is the
+golden reference `reference_2400_20261007` since 2026-10-07 (the
+[promotion record](../golden/promotion_20261007/README.md); the roadmap's
+pickup 19). What remains of this plan is the review's optional findings,
+which await the PI's ruling.
 
-The arm comparison and the promotion belong to the TODO's item on the
-golden references, the reading of the pools and the stacking to the
-final large-scale check, pickup 18 of the [roadmap](modernization-roadmap.md). The arm comparison's noisy Rosenbrock target put
+The arm comparison and the promotion are recorded by the roadmap's pickup
+19, the reading of the pools and the stacking by the final large-scale
+check, pickup 18 of the [roadmap](modernization-roadmap.md). The arm
+comparison's noisy Rosenbrock target put
 the end of warm-up in question
 ([the note](../results/2026-10-05-noisy-rosenbrock-warmup.md)); on the
 campaigns of Arm 3 ([its plan](arm-3-warmup-comparison.md)) the PI kept
@@ -81,19 +84,14 @@ one batch: PyVBMC 1.0.4 on the population cases (Arm 0,
 the after arm's run code, and the release code with the port's end of
 warm-up on the population cases, pools and stacking (Arm 3).
 
-The package can still change for the release. An edit to its text (a
-tip's wording, a docstring, an option's description) changes no run; it
-lands after the promotion of the new reference, whose check compares the
-package's files with the after arm's (decision 13).
-
 ## Purpose and scope
 
 The release gate of PyVBMC 1.5 is a set of campaigns too large for one
 machine: the S-VBMC run pools and their stacking comparison (the final
 large-scale check, pickup 18 of the
-[roadmap](modernization-roadmap.md)) and the reference populations that replace the
-golden references after the port review (the TODO's "The golden references
-after the port review"). This plan owns how they run on a Slurm cluster:
+[roadmap](modernization-roadmap.md)) and the reference populations that
+replaced the golden references after the port review (the roadmap's pickup
+19). This plan owns how they run on a Slurm cluster:
 submission, resources, resumption, verification, collection, the
 provenance of every run and what of it enters the repository. It also owns
 the small set of exact replay traces that stays on the developer's
@@ -1099,7 +1097,7 @@ their configuration's envelope), so the set is judged, not each run (PI,
 the thread settings and the host, with `performance_calibration="off"` so
 that no calibration cache enters them, and compared with the gate script's
 own `compare`; they have no population, so no envelope applies. The set
-goes to the golden references item's promotion
+goes to the promotion of the new reference
 (`reference_promote.py prepare`), with the populations.
 **Acceptance:** every fingerprint completes with finite metrics; no more of
 them lie outside their envelopes than the after arm's own rate of runs
@@ -1674,7 +1672,7 @@ reproduces bit for bit.
   `feat-slurm-small-fixes`:
   - the stub `sbatch` runs a step of the finish from a copy of the batch
     script in a spool directory of the job's own, and the driver's tests
-    run each array task from such a copy, in the campaign checkout that
+    run each array task from such a copy, in the harness checkout that
     `campaign_submit.sh` submits from, as Slurm does; with the task
     script made to find `campaign_env.sh` by its own location, the
     finish's test fails;
@@ -1686,8 +1684,8 @@ reproduces bit for bit.
     reference's, `golden_replay.py` with the after arm's tracked copies as
     `--sidecars` (at the commits the promotion record names,
     `golden/baseline/` still holds the previous reference), the gate runs,
-    and the rule by which the set is judged; its count of the fingerprints
-    outside their envelopes agrees in number for one;
+    and the rule by which the set is judged; its sentence on the
+    fingerprints outside their envelopes takes the singular for one;
   - tests of the promotion's refusals that had none (the after arm's
     allocation, harness, options, package, trees and rescored metrics, the
     assessment's count of verified cases, the fingerprints' threads,
@@ -1715,9 +1713,11 @@ reproduces bit for bit.
   copies write (`login.jdoe`), which the check again finds by searching
   both texts, and smaller points, all fixed: the expansion of a host list
   in arbitrary text (bounded, and only where its head can begin a
-  hostname), a domain inside a host list, the allowance of a feature in a
-  README, the working directory of the tests' array tasks, the count's
-  agreement, the tests' phrases and the documents. At the branch's last
+  hostname; the bound missed a list with a bracket that names no host,
+  which the second doublecheck below found), a domain inside a host list,
+  the allowance of a feature in a README, the working directory of the
+  tests' array tasks, the number of the generated sentence above, the
+  tests' phrases and the documents. At the branch's last
   commit every harness test module and `pyvbmc/testing/test_golden_replay.py`
   passed on the developer's machine, one at a time with one BLAS thread
   and none skipped (the pool, stacking and honest-ELBO modules with
@@ -1739,3 +1739,27 @@ reproduces bit for bit.
   this plan's `reference_promote.py` names from then on. The record's
   [README](../golden/promotion_20261007/README.md) gives the evidence and
   the commands.
+- 2026-10-07: a second doublecheck, by three fresh reviewers, read-only,
+  of the promotion (its record and data, the documents and code it
+  touched) and of the first doublecheck's fixes. The data held: every
+  sidecar of `dev/golden/baseline/`, the summary, the local fingerprints
+  and gate runs and the record's reports match the manifest and
+  `validation.json`, and the sidecars are the after arm's tracked copies
+  byte for byte; and over 70 000 generated texts the check's search of
+  usernames and hostnames found what the searches before and after its
+  first change found together, with no hit counted twice. Fixed: a host
+  list with a bracket that names no host (`n[1-999999999]y[2-1]`) passed
+  the bound, while its expansion walked the other brackets, up to most of
+  an hour for one such list; a host list whose hosts hold a forbidden
+  hostname before a domain or a suffix or after a dotted prefix
+  (`n[1-3].example.net`, `x.n[1-3]`) escaped where only the short
+  hostname is forbidden, and is now refused as the hostname search finds
+  a hostname in its hosts; a quoted feature in a README counted as two
+  hits; the whole-name rule in the header of `campaign_redact.sh`; the
+  record's README (Arm 3's end of warm-up, the measures on which the noisy
+  Rosenbrock target is worse, the table's columns, Phase 9's commands);
+  the generated `golden/README.md`'s count of the runs that reached their
+  budgets, its sentence on the fingerprints and the cluster's seed 0, and
+  the population's rate; the flags of the two record-only scripts; and
+  the documents that still named `reference_990_20260913` as the active
+  reference or the TODO's closed items as open.

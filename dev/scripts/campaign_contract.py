@@ -3572,9 +3572,13 @@ def _hostlist_hosts(expression):
             ):
                 return []
             size += max(int(last or first) - int(first) + 1, 0)
+        # A list that names no host names none, however large its other
+        # lists, which its expansion would still walk.
+        if size == 0:
+            return []
         count *= size
-    if count > HOSTLIST_LIMIT:
-        return []
+        if count > HOSTLIST_LIMIT:
+            return []
     try:
         return expand_hostlist(expression)
     except ContractError:
@@ -3795,8 +3799,10 @@ class Redaction:
     over, so that a name the copies write does not hide the start or the
     end of a longer one (the node ``u8-12`` of the family ``u8``). An
     occurrence inside a run of :data:`DIGEST_LENGTH` hex digits or more is
-    a digest's and not one. It also refuses a Slurm host list that names a
-    hostname (``node[01-03]``, within :data:`HOSTLIST_LIMIT` hosts), the
+    a digest's and not one. It also refuses a Slurm host list one of whose
+    hosts holds a hostname as this search finds one (``node[01-03]``,
+    ``n[1-3].cs.example.org``), within the bounds :data:`HOSTLIST_LIMIT`,
+    :data:`HOSTLIST_GROUPS` and :data:`HOSTLIST_DIGITS`, the
     domain of a hostname that is a domain name (``cs.example.org`` of
     ``n1.cs.example.org``) wherever it stands as a name of its own and not
     within a hostname or a host list found, and every absolute path that no
@@ -3888,8 +3894,11 @@ class Redaction:
             if body
             else None
         )
+        self._quoted_features = {
+            s for s, _ in self.forbidden.get("features", [])
+        }
         self._feature_words = _bounded(
-            {s[1:-1] for s, _ in self.forbidden.get("features", [])} - {""},
+            {s[1:-1] for s in self._quoted_features} - {""},
             _HOST_WORD,
             re.IGNORECASE,
         )
@@ -4079,11 +4088,15 @@ class Redaction:
                 hit(start, string, names[string], kind)
                 if kind == "hosts":
                     hosts.append((start, end))
+        # A host list names a hostname where one of its hosts holds it as the
+        # hostname search finds one in a text (n[1-3].cs.example.org holds
+        # n1); it is expanded only where the last label of its head can
+        # begin a hostname.
         for match in _HOSTLIST.finditer(text) if self._host_what else ():
             expression = match.group(0)
-            head = expression[: expression.index("[")].lower()
-            if any(host.startswith(head) for host in self._host_what) and any(
-                host.lower() in self._host_what
+            label = expression[: expression.index("[")].rsplit(".", 1)[-1]
+            if any(label.lower() in host for host in self._host_what) and any(
+                self._hosts_check.search(host)
                 for host in _hostlist_hosts(expression)
             ):
                 hit(
@@ -4109,13 +4122,12 @@ class Redaction:
             if prose and self._feature_words
             else ()
         ):
-            if not blanked(*match.span()):
-                hit(
-                    match.start(),
-                    match.group(0),
-                    "a node feature",
-                    "feature words",
-                )
+            start, end = match.span()
+            # A feature in its quotes is the quoted search's hit already.
+            if not blanked(start, end) and (
+                text[max(start - 1, 0) : end + 1] not in self._quoted_features
+            ):
+                hit(start, match.group(0), "a node feature", "feature words")
         for offset, path in absolute_paths(text):
             if not _system_path(path, self.system_prefixes):
                 hit(offset, path, "an absolute path that no name covers", "")

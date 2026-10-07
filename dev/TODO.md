@@ -53,9 +53,9 @@ records its execution.
   stacking harnesses meet, and generic scripts beside the pool campaign's
   under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
   to 5, the redaction and guide of Phase 7, and the tools of the plan's
-  Phase 9 are on `dev-next` (the promotion's script is in its record),
-  from the branch `feat-slurm-campaigns`, reviewed twice and fixed. Phases 1b and 6 (the survey, the source trees, the
-  frozen environment and its check, and the smoke campaigns, which
+  Phase 9 are on `dev-next`, from the branch `feat-slurm-campaigns`,
+  reviewed twice and fixed. Phases 1b and 6 (the survey, the source
+  trees, the frozen environment and its check, and the smoke campaigns, which
   measured every job's time and memory) ran on the cluster from
   2026-09-28 to 10-01. Phase 8, the release gate's campaigns, ran on
   2026-10-02 from the release commit `ff3ed014` (PI, 2026-10-01) and was
@@ -65,7 +65,8 @@ records its execution.
   and the port review's six seeded gate runs, ran on the developer's
   machine on 2026-10-04 and met its acceptance (the plan's worklog); the
   after arm became the golden reference `reference_2400_20261007` on
-  2026-10-07 (the roadmap's pickup 19). The
+  2026-10-07 (the roadmap's pickup 19), and the promotion's script is in
+  its record. The
   smaller fixes that the plan's worklog of 2026-09-30 left for after the
   merge were made on 2026-10-07 (the plan's worklog). What remains is the
   review's optional findings, which await the PI's ruling. See
@@ -192,18 +193,18 @@ records its execution.
   Torch and ArviZ exports remain available. See the
   [backend decision](plans/stage4-torch-feasibility.md).
 - **Fixing existing occasional inference failures or redesigning convergence
-  rules as a research project.** The accepted assessment found no convincing
-  evidence of degradation. These questions do not block the release. See the
-  [assessment](golden/promotion_20260913/README.md) and
+  rules as a research project.** The assessment accepted on 2026-09-13
+  found no convincing evidence of degradation. These questions do not
+  block the release. See the [assessment](golden/promotion_20260913/README.md) and
   [deferred research](plans/modernization-roadmap.md#deferred-devlog-12).
 - **The acceptance of a rotoscaling.** The undo check keeps a warp whose
   refit ELBO exceeds the previous iteration's by `warp_tol_improvement`, as
   MATLAB VBMC does, and a refit posterior that spreads where the refit GP
   has no data can pass it on a gain of the surrogate: Example 2 keeps such
   a warp, reports an ELBO of −0.82 where the true log evidence is −1.836,
-  and recovers two iterations later. One run in the 990 of the golden
-  reference does the same. A warp only reparameterizes the space, so a
-  guard could undo a warp whose refit posterior moves far from the one
+  and recovers two iterations later. One run in the 990 of
+  `reference_990_20260913` does the same. A warp only reparameterizes the
+  space, so a guard could undo a warp whose refit posterior moves far from the one
   before (a threshold on their sKL); untested, and it moves default
   trajectories. See the
   [report](results/2026-09-26-example-2-rotoscale-swing.md).

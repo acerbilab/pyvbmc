@@ -76,7 +76,9 @@ at production defaults.
 
 **Nothing that builds a run changes.** From the launch of the release gate
 to the promotion of the new reference, no file of `NUMERIC_PATHS`
-(`dev/scripts/reference_promote.py`: the package but for its tests and
+(`dev/scripts/reference_promote.py`, since the promotion of 2026-10-07
+`dev/golden/promotion_20261007/promote.py`; with `population_run.py`'s
+`RUN_FILES` and `PACKAGE_PATHS`: the package but for its tests and
 S-VBMC, `golden_trace.py`, `benchmark_targets.py`, `profile_run.py`,
 `dev/scripts/data`) changes (the Slurm plan's decision 13). Every adaptation
 to 1.0.4 is therefore in `population_run.py`, which installs it in the
@@ -214,7 +216,7 @@ seed joins its configuration's McNemar test of usability, beside the seeds
 verified in both arms, and stays out of the signed-rank tests, which count
 it. The report records the legacy profile (`legacy_reference`), a key that the
 assessment of two arms of the harness's own code does not hold;
-`reference_promote.py` refuses an assessment of a legacy reference.
+`reference_promote.py` refused an assessment of a legacy reference.
 
 ### What the operator runs
 
