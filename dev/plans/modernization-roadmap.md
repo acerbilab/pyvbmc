@@ -1168,6 +1168,21 @@ The open work for 1.5 is the list "In scope for 1.5" of
     defaults against the fingerprints, and the previous references are
     preserved.
 
+20. **1.5 against 1.0.4 — done** (2026-10-07). A user upgrades from 1.0.4,
+    so the release's claims of speed and accuracy are made against it
+    (PI, 2026-10-04; [Arm 0's plan](arm-1.0.4-comparison.md)). 1.0.4 as
+    released ran the release gate's 2400 population cases on the cluster on
+    2026-10-05/06, compared seed by seed with the after arm, and its speed
+    was measured apart on the developer's machine
+    ([results](../results/2026-10-06-speed-against-1.0.4.md)). The release
+    code's runs take 3.7 times less time on noiseless targets and 2.2 times
+    less on noisy ones, and the typical error of its estimates of the
+    evidence and of the posterior is about 10% smaller; 8 of the
+    comparison's 96 confirmatory tests reject, six favouring the release
+    ([the comparison](../experiments/release_gate_20261005_assessment_v104/comparison.md)).
+    The changelog's "Runs are faster" and "Results are slightly more
+    accurate" and the "What's new" blocks state both, in the PI's wording.
+
 ## S-VBMC ELBO corrections and reporting
 
 Phase 1 completed and merged into `dev-next` at `954677a` on 2026-09-12:

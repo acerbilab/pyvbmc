@@ -4,8 +4,8 @@ Created 2026-10-04. Status: **implemented, reviewed and merged into
 `dev-next` (`9b84a1ae`); the local runs of 1.0.4 and the speed measurement
 done; the campaign run on the cluster (2026-10-05/06), two of its cases
 failed in 1.0.4 and ruled on (decision 9); the hand-back merged into
-`dev-next` (#184); the comparison made (2026-10-07), for the PI's
-reading**.
+`dev-next` (#184); the comparison made and read (2026-10-07), and the
+release's statement of accuracy against 1.0.4 written**.
 
 ## Purpose
 
@@ -307,8 +307,13 @@ NumPy probe before each group as the machine's speed control. The procedure, the
   `dev-next` (#184, `cd842264`).
 - [x] The comparison with the after arm (2026-10-07;
   [its record](../experiments/release_gate_20261005_assessment_v104/comparison.md)).
-- [ ] The PI's reading, and the statements of accuracy against 1.0.4 in
-  the changelog, the README and the release notes.
+- [x] The PI's reading, and the statement of accuracy against 1.0.4 in
+  the changelog's "Results are slightly more accurate" and the "What's
+  new" blocks of `README.md` and `docsrc/source/index.rst`, in the PI's
+  wording (2026-10-07): the typical error of the estimates of the evidence
+  and of the posterior about 10% smaller, from the medians over all runs
+  (evidence error 0.073 against 0.065, gsKL 0.138 against 0.122, MMTV
+  0.041 against 0.037).
 - [x] Speed against 1.0.4 on the developer's machine, run when the PI
   leaves the machine free for some hours (PI, 2026-10-05): the night of
   2026-10-05/06

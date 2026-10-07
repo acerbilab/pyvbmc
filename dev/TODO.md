@@ -16,10 +16,12 @@ records its execution.
   same day; the worklog of the
   [port review plan](plans/port-correctness-review.md) records how the
   earlier, longer text was written and checked). "Runs are faster" gives
-  the speed against 1.0.4 measured on 2026-10-05/06 (the Arm 0 item below;
-  the PI's wording, 2026-10-06;
-  [results](results/2026-10-06-speed-against-1.0.4.md)), as do the "What's
-  new" blocks below. Open before the release: the S-VBMC speed figure, to be
+  the speed against 1.0.4 measured on 2026-10-05/06 (the PI's wording,
+  2026-10-06; [results](results/2026-10-06-speed-against-1.0.4.md)), and
+  "Results are slightly more accurate" the accuracy of Arm 0's comparison
+  (the PI's wording, 2026-10-07;
+  [the comparison](experiments/release_gate_20261005_assessment_v104/comparison.md);
+  the roadmap's pickup 20), as do the "What's new" blocks below. Open before the release: the S-VBMC speed figure, to be
   measured again on the release benchmark. The "What's new in PyVBMC 1.5"
   blocks of `README.md` and `docsrc/source/index.rst` summarize the
   changelog and move with it, its timings included; the docs' link to the
@@ -71,32 +73,6 @@ records its execution.
   merge were made on 2026-10-07 (the plan's worklog). What remains is the
   review's optional findings, which await the PI's ruling. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-
-- [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
-  release code with `f91fdf0`, which held the modernization already; a
-  user upgrades from 1.0.4, so the release's claims of accuracy and speed
-  are made against 1.0.4 (PI, 2026-10-04). Arm 0 runs 1.0.4 as released
-  (`v1.0.4`, with gpyreg `v1.0.4`, each version on its own defaults) on
-  the `production` suite at seeds 0–99 on the cluster, compared seed by
-  seed with the after arm. Speed was measured apart on the developer's
-  machine on 2026-10-05/06
-  ([results](results/2026-10-06-speed-against-1.0.4.md)): the release
-  code's runs take 3.7 times less time than 1.0.4's on the noiseless
-  configurations and 2.2 times less on the noisy ones. The
-  [plan](plans/arm-1.0.4-comparison.md) holds the decisions, the harness's
-  legacy profile, the rescoring across harness commits and the checklist.
-  It ran in one batch with Arm 3, the release code with the port's end of
-  warm-up ([its plan](plans/arm-3-warmup-comparison.md)). MATLAB's end of
-  warm-up stays (PI, 2026-10-06), so the after arm remains the release code
-  that Arm 0 is compared with. The campaign ran on
-  2026-10-05/06: 2398 cases verified and 2 failed in 1.0.4, which the
-  comparison counts as runs that gave no usable posterior (the plan's
-  decision 9). The comparison ran on 2026-10-07
-  (`experiments/release_gate_20261005_assessment_v104/`; the plan's
-  worklog): 8 of its 96 confirmatory tests reject, six favouring the
-  release and two 1.0.4. The changelog's, the README's and the release
-  notes' statements of accuracy against 1.0.4 wait for the PI's reading of
-  it; the changelog's statement of speed is in (2026-10-06).
 
 - [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
   its published texts link the lab (PI, 2026-10-06; the convention "Links

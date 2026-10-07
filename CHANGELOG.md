@@ -365,6 +365,11 @@ An error is raised for calls and values that 1.0.4 accepted:
   previous version of PyVBMC (v1.0.4) on noiseless targets and 2.2 times less
   on noisy ones, each version with its default options (one machine with one
   BLAS thread).
+- **Results are slightly more accurate.** On the 24 problems of our benchmark
+  suite (synthetic targets and two models of real data, with 2 to 15
+  variables, with and without noise), the typical error of the estimates of
+  the model evidence and of the posterior was about 10% smaller than with
+  PyVBMC 1.0.4.
 
 ### Fixed
 
