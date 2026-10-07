@@ -312,7 +312,10 @@ class VBMC:
         If ``options["vectorized_target"]`` is true, it instead receives a
         NumPy array with shape ``(N, D)`` and returns values with shape
         ``(N,)`` or ``(N, 1)``. A noisy vectorized target returns a pair of
-        arrays with one value and positive standard deviation per row.
+        arrays with one value and positive standard deviation per row. The
+        initial design is evaluated in one batch; subsequent calls contain
+        one point, with shape ``(1, D)``. A separately supplied prior is
+        still evaluated one point at a time.
     x0 : array_like, optional
         Starting point for the inference. Ideally ``x0`` is a point in the
         proximity of the mode of the posterior. One starting point is a
@@ -388,7 +391,8 @@ class VBMC:
         construction NumPy's global random state is neither read nor
         written. Draws from ``vbmc.rng`` before ``optimize``
         (e.g. ``vbmc.vp.sample``) change the run like any other change of
-        the generator's state.
+        the generator's state. This seed does not control random draws made
+        by ``log_density``; seed a stochastic target separately.
     precomputed_evaluations : tuple, optional
         Evaluations available before the run, independently of ``x0``. Pass
         ``(X, y)`` for exact or unknown-noise targets, or ``(X, y, y_sd)``
@@ -1421,11 +1425,61 @@ class VBMC:
         vp : VariationalPosterior
             The ``VariationalPosterior`` computed by VBMC.
         results : dict
-            A dictionary with additional information about the VBMC run.
-            Its ``"iterations"`` entry is the number of iterations the run
-            performed, and its ``"best_iter"`` entry the index, 0-based as
-            the iteration history is, of the iteration whose variational
-            posterior is returned.
+            A dictionary with the following information about the run:
+
+            - ``"success_flag"`` (``bool``): whether the returned posterior
+              was marked stable.
+            - ``"message"`` (``str``): reason the optimization stopped.
+            - ``"elbo"`` (``float``): estimated evidence lower bound for
+              the returned posterior.
+            - ``"elbo_sd"`` (``float``): estimated standard deviation of
+              the ELBO.
+            - ``"iterations"`` (``int``): number of iterations performed.
+            - ``"func_count"`` (``int``): number of fresh target
+              evaluations, counting each row of a vectorized call.
+            - ``"best_iter"`` (``int``): zero-based index of the iteration
+              whose posterior was selected for return, before any final
+              boost.
+            - ``"train_set_size"`` (``int``): number of observations
+              represented in that iteration's training set; pooled repeated
+              observations are counted separately.
+            - ``"components"`` (``int``): number of mixture components in
+              the returned posterior.
+            - ``"r_index"`` (``float``): reliability index at
+              ``best_iter``.
+            - ``"convergence_status"`` (``str``): ``"probable"`` if the
+              selected iteration was stable, otherwise ``"no"``.
+            - ``"problem_type"`` (``str``): ``"bounded"`` if any hard
+              bound is finite, otherwise ``"unconstrained"``.
+            - ``"function"`` (``str``): string representation of the
+              function logged by VBMC.
+            - ``"algorithm"`` (``str``): algorithm name.
+            - ``"performance_calibration"`` (``dict``): serialized
+              calibration profile used by the run.
+            - ``"version"`` (``str`` or ``None``): installed PyVBMC
+              version, or ``None`` if package metadata is unavailable.
+            - ``"rng_state"`` (``dict``): state of ``vbmc.rng`` after the
+              run.
+            - ``"overhead"`` (``float``): reserved field, currently
+              ``np.nan``.
+
+            When at least one precomputed observation was supplied, the
+            dictionary also contains ``"precomputed_observations"``
+            (``int``), the number supplied, and ``"precomputed_locations"``
+            (``int``), the number of distinct input points among them.
+
+            When ``initialization_cost`` is positive, it also contains
+            ``"evaluation_budget"`` (``dict``), with these entries:
+
+            - ``"unit"`` (``str``):
+              ``"function_equivalent_evaluations"``.
+            - ``"limit"`` (``int`` or ``float``): the total
+              ``max_fun_evals`` allowance, possibly ``np.inf``.
+            - ``"initialization"`` (``int``): the initialization charge.
+            - ``"new_calls"`` (``int``): fresh target evaluations, equal
+              to ``func_count``.
+            - ``"used"`` (``int``): initialization charge plus fresh target
+              evaluations.
 
         Notes
         -----
@@ -3344,41 +3398,18 @@ class VBMC:
             The file name or path to read from. Default file extension `.pkl`
             will be added if no extension is specified.
         new_options : dict or None
-            A dictionary of options to change when loading the stored VBMC
-            instance. Useful, for example, to continue a previous run with a
-            larger budget of function evaluations and/or iterations. See the
-            documentation on PyVBMC's options for more details. Each name is
-            checked against the options PyVBMC declares and each value
-            against the checks construction makes of it.
-            ``uncertainty_handling``, ``gp_mean_fun``, ``integer_vars``,
-            ``warmup`` and their kin are read only while PyVBMC builds a
-            ``VBMC`` object, and the stored state already holds what was
-            built from them. A value of such an option that differs from
-            the one the run stores, read as construction reads it, is
-            refused, since it would take no effect: running with it means
-            constructing a new ``VBMC`` object, and the refusal names the
-            options it applies to. The stored value itself, in any form
-            construction reads alike (``"norminv"`` for a
-            ``bounded_transform`` of ``"probit"``, ``2`` for a ``warmup``
-            of ``True``), is taken and changes nothing, so the options a
-            run was built with can be given back together with, for
-            example, a new budget. ``uncertainty_handling`` and
-            ``specify_target_noise`` are read together, as the uncertainty
-            handling they select, so ``uncertainty_handling=True`` is taken
-            for a run built with ``specify_target_noise=True`` and
-            ``uncertainty_handling`` left empty. A run saved by release
-            1.0.4 can store an ``integer_vars``, ``uncertainty_handling``
-            or ``specify_target_noise`` in a form that construction refuses
-            or reads otherwise, such as ``uncertainty_handling=[1]``; the
-            loaded run holds the form that states what the run was made
-            with (``True`` for ``[1]``), which is the one to give back. A
-            new ``ns_gp_max`` also decides, as at construction, whether the
-            GP fits sample their hyperparameters (0 turns the sampling
-            off), unless the sampling has already stopped in the stable
-            regime. An option that has no effect in PyVBMC, or a
-            ``noise_size`` for a target that returns its own noise
-            estimates, is taken with the warning that construction gives
-            for it.
+            Options to apply to the loaded run. This is useful for increasing
+            ``max_fun_evals`` or ``max_iter`` before continuing. Names and
+            values are checked as they are during construction. Options used
+            only to construct a run, such as ``integer_vars``,
+            ``gp_mean_fun`` and ``warmup``, cannot be changed on load; start a
+            new run to change them. Supplying their stored value is allowed.
+            Changing ``ns_gp_max`` updates GP hyperparameter sampling unless
+            sampling has already stopped in the stable regime. Options with
+            no effect, and ``noise_size`` when the target supplies its own
+            noise estimate, produce the same warnings as at construction.
+            See the :mainbranch:`changelog <CHANGELOG.md>` for compatibility
+            details about files saved by earlier releases.
         iteration : int or None
             The iteration at which to initialize the stored VBMC instance.
             Default is `None`, meaning initialize to the last recorded iteration.
@@ -3404,15 +3435,9 @@ class VBMC:
         ------
         ValueError
             If the specified ``iteration`` is less than zero or larger than
-            the last stored iteration; if a value given in ``new_options``
-            is one that construction refuses; if the run stores a value that
-            the checks of the option values, which construction and
-            ``load`` share, refuse (a stored ``integer_vars``,
-            ``uncertainty_handling`` or ``specify_target_noise`` that
-            construction would refuse takes instead the form that states
-            what the run was made with, and a stored ``f_vals`` is not
-            checked); or if ``new_options`` gives an option that only
-            construction reads a value other than the stored one.
+            the last stored iteration; if an option name or value is invalid;
+            or if ``new_options`` tries to change an option that is fixed at
+            construction.
         NotImplementedError
             If the options select a feature of MATLAB VBMC that is not ported
             (``noise_shaping``, ``acq_hedge``, a ``gp_hyp_sampler`` other than

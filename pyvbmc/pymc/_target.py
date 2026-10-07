@@ -254,14 +254,12 @@ class PyMCTarget:
 
     Notes
     -----
-    PyMC registers its log transform for whole families of positive
-    distributions, so a variable that keeps one is reported with the support
-    ``(0, inf)`` only after that claim is checked. A distribution whose
-    density vanishes below a positive shift, such as a Wald distribution
-    with a nonzero ``alpha``, is rejected at construction. The check
-    evaluates the variable's own density at fractions of its initial value
-    down to sixteen decades below it, so a shift smaller than that escapes
-    it.
+    A retained log transform represents support on ``(0, inf)``. A
+    distribution whose density begins above a positive shift, such as a Wald
+    distribution with a nonzero ``alpha``, is unsupported; reparameterize the
+    variable as its distance above the shift.
+    The setup checks may miss such a restriction; they do not guarantee that
+    the log density is finite throughout the transformed space.
     """
 
     def __init__(
@@ -1174,7 +1172,26 @@ class PyMCTarget:
         return np.concatenate(blocks).astype(np.float64, copy=False)
 
     def unflatten(self, x):
-        """Convert one flat PyVBMC point to a value-variable mapping."""
+        """Convert one flat PyVBMC point to a value-variable mapping.
+
+        Parameters
+        ----------
+        x : array-like
+            One point with shape ``(D,)`` or ``(1, D)`` in the adapter's
+            flat PyVBMC coordinates.
+
+        Returns
+        -------
+        values : dict
+            PyMC value-variable names mapped to float64 arrays with the
+            variables' declared shapes. Retained PyMC transforms are not
+            inverted.
+
+        Raises
+        ------
+        ValueError
+            If `x` does not have shape ``(D,)`` or ``(1, D)``.
+        """
         vector = self._point_vector(x)
         return {
             name: vector[self._offsets[i] : self._offsets[i + 1]].reshape(
@@ -1249,7 +1266,28 @@ class PyMCTarget:
         return result
 
     def from_model_variables(self, point):
-        """Map one model-variable point to a flat PyVBMC vector."""
+        """Map one model-variable point to a flat PyVBMC vector.
+
+        Parameters
+        ----------
+        point : mapping
+            Every model-variable name mapped to one finite value in model
+            coordinates. Values may be broadcast to the variable's declared
+            shape and must lie strictly inside its support.
+
+        Returns
+        -------
+        x : numpy.ndarray
+            Float64 vector of shape ``(D,)`` in the adapter's flat PyVBMC
+            coordinates. Retained PyMC transforms are applied.
+
+        Raises
+        ------
+        ValueError
+            If `point` is not a mapping over exactly the model-variable
+            names, a value cannot be broadcast to its declared shape, or a
+            value is non-finite or outside its support.
+        """
         values = self._validate_model_point(point, "point")
         return self._from_validated_model_variables(values)
 
@@ -1292,7 +1330,29 @@ class PyMCTarget:
         return self._evaluate_density(x, self._logp, "compiled log density")
 
     def log_joint_no_jacobian(self, x):
-        """Evaluate the model-coordinate log density without Jacobians."""
+        """Evaluate the model-coordinate log density without Jacobians.
+
+        The input remains in the adapter's flat PyVBMC coordinates. This
+        value omits the Jacobian terms of any retained PyMC transforms.
+
+        Parameters
+        ----------
+        x : array-like
+            One point with shape ``(D,)`` or ``(1, D)`` in flat PyVBMC
+            coordinates.
+
+        Returns
+        -------
+        float
+            The model-coordinate log density. A point on or outside a hard
+            bound returns ``-inf``.
+
+        Raises
+        ------
+        ValueError
+            If `x` has the wrong shape, or if the compiled density is
+            non-finite strictly inside the hard bounds.
+        """
         return self._evaluate_density(
             x, self._logp_plain, "compiled log density without Jacobian"
         )

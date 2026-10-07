@@ -13,10 +13,11 @@ class SplineTrapezoidal(Prior):
 
     A prior distribution represented by a density with external bounds ``a``
     and ``b`` and internal points ``u`` and ``v``. Each marginal distribution
-    has a spline-trapezoidalal density which is uniform between ``u[i]`` and
-    ``v[i]`` and falls of as a cubic spline to zero ``a[i]`` and ``b[i]``, such
-    that the pdf is continuous and its derivatives at ``a[i]``, ``u[i]``,
-    ``v[i]``, and ``b[i]`` are zero (so the derivatives are also continuous)::
+    has a spline-trapezoidal density which is uniform between ``u[i]`` and
+    ``v[i]`` and falls off as a cubic spline to zero at ``a[i]`` and
+    ``b[i]``, such that the pdf is continuous and its derivatives at
+    ``a[i]``, ``u[i]``, ``v[i]``, and ``b[i]`` are zero (so the derivatives
+    are also continuous)::
 
                  ______________________
                 |      __________      |

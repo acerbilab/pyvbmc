@@ -84,13 +84,12 @@ NumPy arrays for the starting point and bounds.
 
 I would recommend VBMC for problems in which:
 
-- you can calculate an estimate of the target (log) likelihood function, which can be deterministic or noisy (see [below](#faq-noisy-target-function));
-- the target likelihood function is at least moderately expensive to compute (at least ~0.1 s or more per function evaluation);
+- target log-likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](#faq-noisy-target-function);
 - the gradient may be unavailable;
 - the number of input parameters is up to about `D = 10` (*maybe* up to `20`, but not more);
 - the target posterior is continuous and reasonably smooth, such that it can be approximated by a Gaussian process (GP) with a smooth kernel. This is generally difficult to know *a priori*, but you can look for [telltale signs](#faq-vbmc-warned-me-that-the-returned-variational-solution-may-have-not-converged-what-should-i-do) that the VBMC approximation is failing.
 
-If your likelihood function is fully analytical — or, more generally, fast to evaluate —, VBMC is most likely not the best tool for your problem (see [below](#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)).
+If your likelihood function is fast to evaluate and noiseless, VBMC is most likely not the best tool for your problem (see [below](#faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)).
 
 (faq-what-do-i-do-if-vbmc-is-not-suited-for-my-problem)=
 ### What do I do if VBMC is not suited for my problem?
@@ -143,34 +142,15 @@ adapter require Python 3.12 or newer.
 (faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists)=
 ### How do I know whether a newer version of PyVBMC exists?
 
-Run `pyvbmc.check_for_updates()`. It asks PyPI for the latest release and
-prints whether it is newer than yours, with the command that updates your
-installation: `python -m pip install --upgrade pyvbmc`, or
-`conda update --channel=conda-forge pyvbmc` for an installation from
-conda-forge. See the [`check_for_updates` API](api/functions/check_for_updates.rst)
-for its messages and return value.
+Run `pyvbmc.check_for_updates()`. It checks PyPI for a newer release and
+prints the command to update your installation if one is available.
 
-PyVBMC contacts PyPI only when you call that function. Otherwise it knows only
-the date of its own release, shipped with the package: when a new run starts
-in an interactive session (output to a terminal or a Jupyter notebook, not to
-a file) and the installed release is more than a year old, a reminder prints
-before the iteration display:
+PyVBMC also occasionally reminds you when your installed release is more
+than a year old. The reminder makes no network request. To disable it and
+the startup tips, pass `options={"show_tips": False}` to `VBMC`.
 
-```text
-Note: PyVBMC 1.5.0 was released more than a year ago. Run pyvbmc.check_for_updates() to see whether a newer version is available.
-https://pypi.org/project/pyvbmc/
-```
-
-The reminder appears at most once per Python session and three times for each
-installed version, at least 90 days apart; the third adds that it is the last.
-It records the dates of its showings in `update_reminder.json` in PyVBMC's
-cache directory: `%LOCALAPPDATA%\pyvbmc` on Windows, `~/Library/Caches/pyvbmc`
-on macOS, `~/.cache/pyvbmc` on Linux (or under `$XDG_CACHE_HOME`), or the
-directory that `PYVBMC_CACHE_DIR` names. To turn it off, pass
-`options={"show_tips": False}` to `VBMC`, which also turns off the tips, or
-`options={"display": "off"}`, or set the environment variable
-`PYVBMC_NO_UPDATE_REMINDER`; `NO_UPDATE_NOTIFIER` and `CI` turn it off as well.
-A variable set to an empty value, `0` or `false` counts as unset.
+See the [`check_for_updates` reference](api/functions/check_for_updates.rst)
+for details.
 
 (faq-i-am-having-trouble-installing-vbmc-can-you-help)=
 ### I am having trouble installing PyVBMC. Can you help?
@@ -219,15 +199,14 @@ vp, results = vbmc.optimize()
 posterior_data = target.to_arviz(vp)
 ```
 
-The adapter maps supported continuous float64 variables to a flat VBMC box,
-chooses a start and plausible bounds, and reuses its finite setup observations.
-Setup work is charged once through `target.setup_cost`; importing the cached
-observations incurs no second charge and leaves the ordinary initial design in
-place. The numerical target uses a fixed snapshot of the model's data and
-dimensions, while `target.model` remains available for PyMC deterministics and
-posterior prediction. Construct a new target to refit changed data. See the
-[PyMC quickstart](quickstart.rst) and [`PyMCTarget` API](api/classes/pymc_target.rst)
-for supported transforms, model-scope limits and setup overrides.
+The adapter supports a range of continuous PyMC models and chooses a
+starting point and plausible bounds automatically. Its setup evaluations
+count toward `max_fun_evals`; the example allows 100 more for inference.
+Construct a new target if you change the model's data.
+
+See the {ref}`PyMC quickstart <Bring a PyMC model into PyVBMC>` for a
+worked example and the [`PyMCTarget` reference](api/classes/pymc_target.rst)
+for supported models and setup options.
 
 (faq-i-do-not-have-a-likelihood-function-but-another-loss-function-can-i-still-use-vbmc)=
 ### I do not have a likelihood function, but another loss function. Can I still use VBMC?
@@ -299,9 +278,7 @@ prior = [
 vbmc = VBMC(log_likelihood, x0, LB, UB, PLB, PUB, prior=prior)
 ```
 
-The list holds one distribution per variable: `np.ravel` reads the bounds
-one coordinate at a time, whether they are given as a row of shape `(1, D)`
-or as a flat array.
+The list holds one distribution per variable.
 
 In this case PyVBMC adds the log prior to the log likelihood, so do not
 include the prior in `log_likelihood` as well. Supported priors include
@@ -476,17 +453,14 @@ changes the inference problem.
 (faq-does-vbmc-support-inference-with-integer-parameters)=
 ### Does VBMC support inference with integer parameters?
 
-Only as an experimental feature. `options['integer_vars']` names the variables that are forced to take integer values, either as a boolean array with one entry per variable or as an array of their 0-based indices.
-The hard bounds of such a variable must sit half an integer outside its range: `LB = -0.5` and `UB = 10.5` for a variable that takes the values 0 to 10.
-A prior passed with `prior=` has to cover those bounds, so a uniform prior over the values 0 to 10 is `UniformBox(-0.5, 10.5)`, whose density is 1/11.
+Only as an experimental feature, through `options['integer_vars']`.
+VBMC still approximates the target with a Gaussian process over continuous
+inputs, interpolating between values on the integer grid. The target should
+therefore vary reasonably smoothly across neighboring integer values.
 
-What the option does, and what it does not do:
-
-- The points of the active-sampling search are snapped to the integer grid, so every new point evaluated after the initial design has integer values of those variables.
-- The initial design is *not* snapped, as in MATLAB VBMC, and neither is an `x0` provided for it. The first `options['fun_eval_start']` evaluations are therefore made off the grid unless you provide starting points for the whole design, all of them on it.
-- On a grid the search often returns a point that has been evaluated already. On a noisy target the repeat sharpens the estimate there; on a noiseless one it spends an evaluation of the budget and adds nothing. With `options['max_repeated_observations']` above zero, a noisy target can also be evaluated again at a point of the initial design, which is repeated where it is, off the grid.
-
-Be aware that VBMC models the target with a Gaussian process over continuous inputs, so the approximation still rests on the target function (the log posterior) being continuous and reasonably smooth in all its variables, the integer ones included: the Gaussian process interpolates between the values on the grid.
+This feature requires special hard bounds, and the initial evaluations can
+be off-grid. Read the {ref}`integer-variable guidance <integer-valued variables>`
+before using it.
 
 (faq-output-arguments)=
 ## Output arguments
@@ -529,9 +503,7 @@ samples, component_indices = vp.sample(10000)
 vp.plot()
 ```
 
-These methods use original parameter coordinates by default. To check the
-object's type, use `isinstance(vp, VariationalPosterior)` after importing
-`VariationalPosterior` from `pyvbmc`.
+These methods use original parameter coordinates by default.
 
 You can see several usage examples in the [tutorials](examples.rst), and
 the complete interface in the
@@ -717,9 +689,10 @@ vbmc = VBMC(fun, x0, LB, UB, PLB, PUB, seed=42)
 ```
 
 Use the same seed, inputs, options and numerical environment to reproduce
-a run. `seed=` also accepts a NumPy `Generator`; reusing a generator
-continues its stream. The posterior shares the run's generator, so drawing
-samples before continuing inference advances that stream.
+a run. If you omit `seed`, calling `np.random.seed(...)` before constructing
+`VBMC` also fixes the run. See the
+{ref}`reproducibility guide <Reproducible runs>` for using NumPy
+generators and controlling simulation noise.
 
 If your target function itself is stochastic, manage its random generator
 separately: `VBMC(seed=...)` does not seed the target. Keep drawing fresh
@@ -746,27 +719,18 @@ vp, results = continued.optimize()
 
 Here `1000` is the *total* budget, including evaluations already made. If
 the run reached its iteration limit, increase `max_iter` as well.
-`new_options` changes the options a running iteration reads. An option that
-PyVBMC reads only while it builds a `VBMC` object — `uncertainty_handling`,
-`gp_mean_fun`, `integer_vars` and `warmup` among them — keeps the value the
-run was built with. Giving that value again, in any form PyVBMC reads alike,
-is fine, so you can pass the run's original options together with the new
-budget; another value is refused, since the saved state already holds what
-was built from the original one, and running with another value means
-building a new `VBMC` object. A run saved by PyVBMC 1.0.4 with
-`uncertainty_handling=[1]`, a form that PyVBMC refuses, holds `True` once
-loaded, and `True` is the value to give. Continue with the same model, data,
-prior and bounds, and under the same minor version of Python (3.12, say)
-that saved the file: a saved run holds Python bytecode, so under another
-minor version it can be loaded and inspected but should not be continued or
-saved again, which can end the interpreter. See
-[`VBMC.save` and `VBMC.load`](api/classes/vbmc.rst).
+
+Continue with the same model, data, prior and bounds, using the same Python
+minor version (3.12, say) that saved the file. Some options, such as noise
+handling, cannot be changed when resuming; create a new `VBMC` instance to
+change them. See {meth}`pyvbmc.VBMC.load` for the
+supported options.
 
 If you only need to use the fitted posterior later, save it with
 `vp.save("posterior.pkl")` and load it with
-`VariationalPosterior.load("posterior.pkl")`. A saved posterior holds no
-bytecode and moves between Python versions, but it does not contain the
-full state needed to resume a run.
+`VariationalPosterior.load("posterior.pkl")`. A saved posterior can be used
+across Python versions, but does not contain the full state needed to resume
+a run.
 
 (faq-can-i-combine-the-posteriors-of-several-runs)=
 ### Can I combine the posteriors of several runs?
@@ -788,17 +752,14 @@ stacked.optimize()
 samples = stacked.sample(10000)
 ```
 
-The headline estimate is `stacked.elbo`; `stacked.elbo_details` contains
-the detailed estimates. On noisy targets the headline is a shrinkage
-estimate, which targets the optimism that choosing the weights on noisy
-estimates adds; some bias can remain, and the raw estimate is no upper
-bound on the stack's true ELBO. `stacked.elbo_sd` describes uncertainty in
-the raw estimate, not a confidence interval for that headline. Keep the
-stacked posterior with `stacked.save("stacked.pkl")` and load it with
-`SVBMC.load("stacked.pkl")`. See the
-[S-VBMC documentation](api/classes/svbmc.rst) and
+The stacked ELBO estimate is `stacked.elbo`. For noisy runs it is designed
+to reduce bias introduced by stacking; some bias can remain.
+`stacked.elbo_sd` describes uncertainty in the raw estimate, not a confidence
+interval for `stacked.elbo`. See the
+[S-VBMC documentation](api/classes/svbmc.rst) for interpreting the estimates,
+saving the stacked posterior, and sampling from it, and
 [Example 7](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_7_stacking.html)
-for the filtering of input runs, reporting and examples.
+for a complete example.
 
 (faq-miscellanea)=
 ## Miscellanea

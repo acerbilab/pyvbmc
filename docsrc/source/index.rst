@@ -22,9 +22,7 @@ PyVBMC simultaneously computes:
 What's new in PyVBMC 1.5
 ------------------------
 
-PyVBMC 1.5 is faster and more efficient, integrates better with the modern
-scientific computing ecosystem and our other tools, and provides more guidance
-for using it effectively. Highlights include:
+The main additions and changes in PyVBMC 1.5 are:
 
 - **Faster inference and lower memory use**, with numerical improvements and more
   compact run histories: on our benchmark suite a run takes on average 3.7
@@ -45,8 +43,8 @@ for using it effectively. Highlights include:
 - **Torch and JAX model integration** through small user-written wrappers,
   with optional batch evaluation of the initial points; see
   :ref:`Bring a torch or JAX model into PyVBMC`.
-- **Direct PyMC model support**, including model-aware coordinates, automatic
-  setup and structured posterior export; see
+- **Direct PyMC model support**, with automatic setup and posterior samples
+  exported under the model's variable names; see
   :ref:`Bring a PyMC model into PyVBMC`.
 - **Posterior exports to Torch and ArviZ** for further analysis;
   see :ref:`Use a fitted posterior downstream`.
@@ -82,12 +80,11 @@ Should I use PyVBMC?
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- the likelihood is at least moderately expensive to compute (say, half a second or more per evaluation);
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or :ref:`noisy <faq-noisy-target-function>`;
 - the model has up to ``D = 10`` continuous parameters (maybe a few more, but no more than ``D = 20``);
-- the target posterior density is continuous and reasonably smooth;
-- optionally, log-likelihood evaluations may be noisy (see the :ref:`FAQ <faq-noisy-target-function>`).
+- the target posterior density is continuous and reasonably smooth.
 
-Conversely, if your model can be written in closed form and is fast to evaluate, you should exploit the powerful machinery of probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
+For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
 
 Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out :labrepos:`Bayesian Adaptive Direct Search in Python (PyBADS) <pybads>`, our companion method for fast Bayesian optimization.
 
@@ -146,7 +143,7 @@ You can cite PyVBMC in your work with something along the lines of
 
 If you use S-VBMC, please also add a sentence such as:
 
-    Posteriors from multiple PyVBMC runs on the same model and dataset were combined using S-VBMC (Silvestrin et al., 2025), which often improves the approximation to the true posterior by leveraging information from independent runs.
+    We combined posteriors from independent PyVBMC runs on the same model and dataset using S-VBMC (Silvestrin et al., 2025).
 
 BibTeX
 ------

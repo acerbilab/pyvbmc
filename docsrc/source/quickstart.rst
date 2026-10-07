@@ -60,18 +60,10 @@ For noisy likelihoods, see :ref:`PyVBMC Example 6: Noisy log-likelihood evaluati
 the :ref:`FAQ <faq-noisy-target-function>` for the target interface and
 noise options.
 
-PyVBMC occasionally prints a tip when a new run starts. Tips appear at most
-once each within a Python session; restarting Python resets their history.
-A start prints at most one message of this kind, in this order of priority:
-a performance-calibration reminder; in an interactive session with a release
-more than a year old, a reminder to run
-:doc:`pyvbmc.check_for_updates() <api/functions/check_for_updates>` (see the
-:ref:`FAQ <faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists>`);
-a tip. A tip displaced by a reminder comes at the next start. Pass
-``options={"show_tips": False}`` to ``VBMC`` to disable tips and the
-old-release reminder. This leaves the performance-calibration reminder
-enabled; ``options={"display": "off"}`` suppresses all of them along with
-ordinary optimization output.
+PyVBMC occasionally prints a tip or a reminder when a new run starts. Pass
+``options={"show_tips": False}`` to disable tips and reminders about old
+releases. To suppress the calibration reminder and ordinary optimization
+output as well, use ``options={"display": "off"}``.
 
 Reproducible runs
 =================
@@ -84,7 +76,9 @@ integer seed repeats PyVBMC's random stream. For independent runs, leave
 (see :ref:`PyVBMC Example 4: Multiple runs as validation`).
 
 The seed can also be a NumPy ``Generator``. PyVBMC advances that generator,
-so reusing it continues its random stream.
+so reusing it continues its random stream. The posterior shares the run's
+generator: drawing samples from it before resuming inference changes the
+subsequent draws of the run.
 
 If your likelihood function uses random simulations, ``VBMC(seed=...)``
 does not control the randomness inside that function. To reproduce the
@@ -306,44 +300,22 @@ coordinates, hard and plausible bounds, and its start. Here ``beta`` becomes
 log transform, so its VBMC coordinate is ``sigma_log__`` and the target
 includes the corresponding Jacobian.
 
-.. code-block:: text
+The adapter chooses a starting point and plausible bounds automatically.
+Its setup work counts toward ``max_fun_evals`` through ``target.setup_cost``;
+the example allows 60 more evaluations for inference. Use a larger budget
+and validate repeated runs for your own model. Pass ``setup_budget=`` to
+limit the setup work, or ``start=`` and ``plausible_bounds=`` to supply your
+own choices in model coordinates.
 
-  variable | shape | VBMC coordinates | kept transform | hard bounds | plausible bounds | start
-  beta | (2,) | beta[intercept], beta[slope] | - | [[-inf -inf], [inf inf]] | [[-0.09967958  0.24424391], [0.5182185 1.2769416]] | [0.20926946 0.76059275]
-  sigma | () | sigma_log__ | LogTransform | [[-inf], [inf]] | [[-0.96092139], [-0.18161372]] | [-0.57126755]
+The adapter supports continuous float64 variables with recognized support
+and standard PyMC transforms. It does not support discrete variables. See
+:doc:`api/classes/pymc_target` for the supported models and setup options.
 
-The adapter computes a mode and a Laplace plausible box by default. Unusable
-curvature falls back to prior widths; a mode outside the prior's location
-interval produces a diagnostic and is not moved. Finite values obtained during
-setup are saved in ``target.setup_evaluations`` and reused by ``VBMC(target)``.
-They supplement the ordinary initial design without becoming extra starting
-points or changing the plausible box. ``target.setup_cost`` charges the work
-once against the
-total ``max_fun_evals`` budget, while importing the cached values adds no
-second charge. ``results["func_count"]`` remains the number of fresh calls
-made by VBMC. Pass ``setup_budget=`` to cap preparation before it runs, or
-supply ``start=`` and ``plausible_bounds=`` mappings in model coordinates to
-override the automatic choices. The extra 60 calls above keep the example
-short; use an adequate budget and validate repeated runs for real inference.
-
-Supported free variables are continuous and float64, with recognized real-line
-support or PyMC's standard log, log-odds or interval transform. Unknown support,
-suppressed or custom transforms, discrete variables, support bounds that
-depend on another random variable, and a log-transformed variable whose
-density does not reach down to zero are rejected. Custom likelihood operations
-remain usable when their PyTensor graph provides the density; without
-gradients, setup uses the initial point and prior quantiles.
-
-Construction freezes the data and dimensions used for inference. Later
-``pm.set_data`` calls on ``model`` therefore do not alter the fitted target;
-build a new ``PyMCTarget`` to refit changed data. The original model remains
-available as ``target.model`` for the structured export, deterministics and
-posterior prediction shown above. Export the posterior fitted with this same
-target and inference snapshot. ``PyMCTarget(seed=)`` controls setup draws;
-``VBMC(seed=)`` independently controls the run. Saving a run also saves its
-adapter and models; load it only with compatible PyMC and PyTensor versions.
-See :doc:`api/classes/pymc_target` and
-:ref:`PyVBMC Example 8: Fitting a PyMC model` for the full workflow.
+``PyMCTarget`` keeps the model data used at construction. Build a new target
+to refit changed data, and export each posterior with the target used to fit
+it. ``PyMCTarget(seed=)`` controls setup draws; ``VBMC(seed=)`` controls the
+inference run. :ref:`PyVBMC Example 8: Fitting a PyMC model` shows the full
+workflow.
 
 Use a fitted posterior downstream
 =================================
@@ -354,8 +326,8 @@ Stacking several runs
 :doc:`Stacking Variational Bayesian Monte Carlo (S-VBMC) <api/classes/svbmc>`
 (`Silvestrin et al., 2025 <https://arxiv.org/abs/2504.05004>`__) combines the posteriors of several completed
 VBMC runs on the same model and data into a stacked posterior, without
-further model evaluations. This often improves the approximation to the true posterior
-by leveraging information from independent runs. See
+further model evaluations. Combining runs often improves the approximation
+to the true posterior. See
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
 for a worked example. S-VBMC requires the optional ``torch`` extra; the
 :doc:`installation guide <installation>` also covers dependencies for
@@ -364,8 +336,8 @@ the posterior exports below.
 Torch distribution
 ------------------
 
-:meth:`~pyvbmc.VariationalPosterior.to_torch` returns an independent torch
-distribution snapshot::
+:meth:`~pyvbmc.VariationalPosterior.to_torch` exports the fitted posterior as
+a torch distribution::
 
   import torch
 
@@ -380,14 +352,11 @@ The default export uses original parameter coordinates, CPU tensors, and
 ``torch.float64``, regardless of torch's global defaults. Pass
 ``orig_flag=False`` for PyVBMC's unbounded internal coordinates, or specify
 ``dtype=torch.float32`` and ``device=...`` explicitly when needed. The export
-copies all parameters: later changes to either object do not affect the other.
-Conversion makes no random draws and does not alter NumPy's or torch's random
-state; sampling the returned distribution uses torch's random generator.
+is an independent copy; sampling it uses torch's random generator.
 
 For bounded parameters, ``log_prob`` accepts finite values strictly inside
 the hard bounds. Support validation rejects exact-bound and outside values.
-Samples remain strictly inside representable bounds. The distribution has
-event shape ``(D,)`` and accepts arbitrary leading sample dimensions.
+See the method reference for supported shapes and boundary behavior.
 
 The complete workflow in
 :ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` uses this

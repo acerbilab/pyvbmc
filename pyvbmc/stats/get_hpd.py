@@ -8,7 +8,7 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
     Get high-posterior density dataset.
 
     Parameters
-    ==========
+    ----------
     X : ndarray, shape (N, D)
         The training points.
     y : ndarray, shape (N, 1)
@@ -17,7 +17,7 @@ def get_hpd(X: np.ndarray, y: np.ndarray, hpd_frac: float = 0.8):
         The portion of the training set to consider, by default 0.8.
 
     Returns
-    =======
+    -------
     hpd_X : ndarray
         High-posterior density training points.
     hpd_y : ndarray

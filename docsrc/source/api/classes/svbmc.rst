@@ -47,23 +47,6 @@ and stack them:
 :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
 walks through this on a bimodal target.
 
-Construction filters the input runs: a run is discarded when VBMC did not
-mark it as converged (``vp.stats["stable"]``) or when the standard deviation
-of the expected log-joint of one of its components reaches ``s_max``. An
-error is raised when fewer runs survive than ``M_min`` requires (a count
-when greater than 1, a proportion of the input runs otherwise). ``optimize()`` works
-in place and returns ``None``: the optimized weights are in ``stacked.w``,
-the entropy estimate in ``stacked.entropy``, the headline ELBO in the scalar
-``stacked.elbo`` and its reported uncertainty in ``stacked.elbo_sd``. The
-``version`` argument selects optimizing every component weight
-(``"all-weights"``, the default), one weight per run
-(``"posterior-only"``), or no optimization at all (``"ns"``, naive
-stacking). ``optimize()`` uses 20 entropy draws per component during
-optimization, an Adam learning rate of 0.1 and at most 500 steps by default.
-It then performs a fresh evaluation at the selected weights with
-``n_samples_final=100`` draws per component. ``n_samples_final`` is
-keyword-only and must be an integer of at least 2.
-
 .. The S-VBMC runtime tip noisy_elbo (pyvbmc/svbmc/_tip_catalog.py) links
    this label.
 
@@ -87,50 +70,27 @@ The choice affects the reported value alone: the weights, and so the stacked
 posterior and its samples, come from the same optimization whatever the
 headline.
 
-The weights maximize the stacked ELBO: the weighted sum of the components'
-expected log-joints, each estimated by its run's GP, plus the entropy of the
-mixture. On a noisy target these estimates are noisy, and maximizing over
-them favors the components whose estimates came out high, which adds an
-upward bias to the raw ELBO of a noisy stack, the more so the more runs are
-stacked. Bias here is the difference from the stack's true ELBO: its ELBO
-computed with the exact log-joint in place of the GP estimates, itself a
-lower bound on the log evidence. The bias of a reported value has two
-parts:
+The weights maximize the weighted sum of the components' expected log-joints,
+each estimated by its run's GP, plus the entropy of the mixture. On a noisy target,
+this optimization favors components whose estimates came out high and adds
+an upward bias to the raw ELBO. Here bias is measured against the stack's
+ELBO computed with the exact log joint, which is itself a lower bound on the
+log evidence.
 
-- **Inherited from VBMC.** Each run's own ELBO carries the bias of its
-  variational optimization, which on a noisy target also selects components
-  on noisy GP estimates. A single run's ELBO is then often optimistic, and
-  it can also be pessimistic, for example on a heavy-tailed posterior.
-  S-VBMC is not designed to remove this bias, though the within-run step of
-  the shrinkage below can remove part of it.
-- **Added by stacking.** The optimization of the weights selects again,
-  across the components of all runs, on the same noisy estimates. The
-  two-level shrinkage targets this part. It treats each component's expected
-  log-joint as a noisy measurement and shrinks it toward the mean of its
-  run's components, the more strongly the larger the GP's uncertainty about
-  the estimates is compared with their spread. It then shrinks each run's
-  level, its expected log-joint under its own VBMC weights, toward the mean
-  over runs in the same way.
+The two-level shrinkage estimate targets this selection bias. It first
+shrinks component expected log-joints toward the mean within each run, using
+their GP uncertainty, and then shrinks the runs' levels toward their common
+mean. It can also remove some bias inherited from the input VBMC runs, but it
+does not make the headline unbiased: miscalibrated GP uncertainty and
+different run-level biases can leave an error in either direction. The raw
+ELBO can likewise fall below the stack's exact ELBO when the input runs are
+pessimistic.
 
-Residual bias can remain. Shrinkage takes the GP uncertainty saved with each
-posterior (``I_sk`` and ``J_sjk``) at face value, so where that uncertainty
-is miscalibrated it corrects too little or too much. Its run-level step
-counts the differences between the runs' own biases as real differences
-between the runs, so it removes only part of the optimism of favoring the
-runs that came out highest. Its within-run step, on the other hand, can also
-remove part of the bias that the runs inherit. On our benchmarks, which
-optimized every weight (the default ``version``), the optimism that the
-run-level step leaves and the inherited bias that the within-run step
-removes roughly balanced: the headline of a noisy stack was about as biased
-as the runs it was built from. With ``version="ns"`` no weights are
-selected, so stacking adds no such optimism and the raw value carries the
-runs' own bias alone; the shrinkage still applies and can lower the headline
-below the raw value. The raw ELBO is not an upper bound on the stack's true
-ELBO: it can fall below it where the runs' own ELBOs are pessimistic, and
-the shrinkage estimate can lie on either side of the true ELBO. On a
-noiseless stack, stacking adds little bias and shrinkage changes the value
-little, so the headline is the raw ELBO, and ``shrunk_two_level`` is
-reported beside it.
+On our benchmarks with every component weight optimized, the remaining
+stacking optimism and the inherited bias removed by shrinkage roughly
+balanced, so noisy-stack headlines were about as biased as the input runs.
+With ``version="ns"``, stacking adds no weight-selection bias; shrinkage
+still applies and can move the headline below the raw value.
 
 ``stacked.elbo_details`` contains the complete report:
 
@@ -187,27 +147,11 @@ reported beside it.
      - Per-retained-run provenance: ``"recorded"``, ``"inferred"`` or
        ``"override"``.
 
-Use the scalar ``stacked.elbo`` when the automatically selected headline is
-the desired result.
-
 ``stacked.elbo_sd`` combines the stratified entropy estimator's Monte Carlo
 variance with the GP quadrature uncertainty at the selected weights. It
 describes the ``raw`` value. It excludes selection bias and does not
 propagate the shrinkage or the median cap, so it must not be interpreted as
 defining a calibrated confidence interval for the headline of a noisy stack.
-
-By default, the keyword-only constructor argument ``noisy=None`` reads the
-noise status recorded by each retained posterior. Older posteriors without
-that metadata are classified as noisy when ``vp.stats["elbo_sd"] > 0.1``;
-``noise_status_source`` then records ``"inferred"`` because this fallback can
-misclassify a run. Pass ``noisy=True`` or ``noisy=False`` to override the
-entire stack; the source for every retained run is then ``"override"``.
-
-The constructor defaults are ``s_max=np.sqrt(5)``, ``M_min=2/3``, ``seed=None``,
-``show_tips=True`` and ``noisy=None``. Guidance tips appear only when
-``show_tips`` is true and INFO logging is enabled. Setting ``show_tips=False``
-suppresses tips while leaving the messages on progress and on the headline
-available.
 
 A composite posterior
 ---------------------
@@ -220,46 +164,6 @@ posterior keeps the input posteriors as they are and draws from each through
 its own transform. Do not combine the component means and covariances of
 different runs directly, and do not read them as a single mixture: use
 ``sample()`` for every estimate and plot.
-
-Sampling
---------
-
-``sample(n)`` returns ``n`` independent draws from the stacked posterior in
-the original space: the number of draws from each run is multinomial in the
-runs' total weights, the component within a run is chosen at random by
-weight, and the rows are shuffled, so any subset of rows is itself a valid
-sample. ``sample(n, balance_flag=True)`` instead stratifies the draws: the
-number taken from each run is within one draw of that run's exact share of
-the weights, and within a run they are spread over its components by the
-balanced allocation of ``VariationalPosterior.sample``, which follows the
-component weights up to the random placement of its remainder. A stratified
-sample has lower variance for expectations, but is not an independent one.
-
-All numerical draws of an ``SVBMC`` object come from its own generator, set
-by the ``seed`` argument; the input posteriors are never modified or advanced.
-As for ``VBMC``, ``seed=None`` derives the generator from NumPy's global
-state, so ``np.random.seed`` before construction still fixes a run.
-
-Saving and loading
-------------------
-
-``stacked.save("stacked.pkl")`` writes the whole object to a file: the
-retained posteriors, the weights, the ELBO report and the state of the
-generator. ``SVBMC.load("stacked.pkl")`` reads it back, and the loaded
-object draws what the saved one would have drawn next. As with
-``vp.save``, ``.pkl`` is added to a name without an extension, ``save``
-raises ``FileExistsError`` rather than replace an existing file unless
-``overwrite=True``, and the file holds no Python bytecode, so it can be
-loaded under another minor version of Python. Loading needs no torch: a
-loaded stack can be sampled and plotted without it, while ``optimize()``
-and the methods that estimate the stacked ELBO or its entropy need it.
-
-.. code-block:: python
-
-   stacked.save("stacked.pkl")
-
-   stacked = SVBMC.load("stacked.pkl")
-   samples = stacked.sample(10000)
 
 .. The S-VBMC runtime tip on starting points (pyvbmc/svbmc/_tip_catalog.py)
    links this label.

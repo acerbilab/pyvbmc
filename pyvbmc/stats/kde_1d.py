@@ -168,7 +168,7 @@ def kde_1d(
         where range=max(samples)-min(samples), by default None.
     upper_bound : float, optional
         The upper bound of the interval in which the density is being computed,
-        if not given the default value is upper_bound=max(data)+Range/10,
+        if not given the default value is upper_bound=max(samples)+range/10,
         where range=max(samples)-min(samples), by default None.
 
     Returns

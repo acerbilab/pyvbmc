@@ -1236,10 +1236,9 @@ reason.
   stores their outputs, which the docs build renders without executing
   them (`nb_execution_mode = "off"`). One process runs them in order in a
   scratch directory under `--record-dir` (default
-  `scripts/runs/notebooks_<date>/`), where Example 6 finds the posterior
-  that Example 4 saves, through a temporary kernel of the interpreter that
-  `--python` names: BLAS single-threaded, this checkout first on
-  `PYTHONPATH`, Example 2's Plotly figure stored as HTML beside its JSON.
+  `scripts/runs/notebooks_<date>/`), through a temporary kernel of the
+  interpreter that `--python` names: BLAS single-threaded, this checkout
+  first on `PYTHONPATH`, Example 2's Plotly figure stored as HTML beside its JSON.
   The script removes from that HTML the MathJax that Plotly loads, which
   breaks the math of the docs page it is on; Example 2 executed any other
   way stores it again.

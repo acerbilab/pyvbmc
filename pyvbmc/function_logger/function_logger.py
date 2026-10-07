@@ -378,10 +378,12 @@ class FunctionLogger:
             A nonempty array with shape ``(N, D)`` in transformed
             coordinates.
         f_vals : array-like, optional
-            Already evaluated original-space values. It must have length
-            ``N``; NaN rows are evaluated by the target. At uncertainty
-            handling level 2 every row has to be NaN: a supplied value
-            comes without the SD that an observation needs at that level.
+            Values of the logged function at the corresponding rows of
+            ``x``, before any parameter-transform Jacobian is added. It must
+            have length ``N``; NaN rows are evaluated by the target. At
+            uncertainty handling level 2 every row has to be NaN: a supplied
+            value comes without the SD that an observation needs at that
+            level.
 
         Returns
         -------

@@ -93,11 +93,10 @@ class Prior(ABC):
     def support(self):
         r"""Returns the box that bounds the support of the distribution.
 
-        ``VBMC`` checks that the hard bounds lie inside this box, and the
-        tests of the priors integrate the density over it, so it is the
-        smallest box that contains the support: a larger box lets the hard
-        bounds reach where the density is zero. A prior that defines no
-        ``_support`` reports the whole space.
+        For priors that define ``_support``, this is the smallest
+        axis-aligned box containing the support. Otherwise, the method
+        reports the whole space. ``VBMC`` checks that the hard bounds lie
+        inside the reported box.
 
         Returns
         -------

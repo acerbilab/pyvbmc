@@ -137,7 +137,7 @@ class IterationHistory(MutableMapping, dict):
         Parameters
         ----------
         key_value : dict
-            The keys and values that should be recorded. They keys must have
+            The keys and values that should be recorded. The keys must have
             been specified on initialization of the object.
         iteration : int
             The iteration for which the value should be stored, must be >= 0.

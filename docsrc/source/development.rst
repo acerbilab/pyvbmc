@@ -35,7 +35,9 @@ Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but de
 
      conda install jupyter
 
-We are using the dependencies listed in ``pyproject.toml``. Please list all used dependencies there. Dependencies are separated into basic dependencies, and optional development dependencies included under ``dev``.
+The dependencies installed with PyVBMC are declared in ``pyproject.toml``.
+Runtime dependencies belong in ``project.dependencies``; optional integrations
+and extras have separate groups under ``project.optional-dependencies``.
 
 The necessary packages can be installed with `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/install/>`__ or `pip <https://pypi.org/project/pip/>`__.
 
@@ -52,15 +54,16 @@ These basic rules should be followed to ensure coherence and to make it easy for
 Code formatting
 ---------------
 
-The code is formatted using `Black <https://pypi.org/project/black/>`__ with a line length of 79, with the help of pre-commit hooks. To install and use::
+Formatting is enforced by the pre-commit hooks in ``.pre-commit-config.yaml``.
+They include `Black <https://pypi.org/project/black/>`__ with a line length of
+79. To install and use them::
 
     pip install pre-commit
     pre-commit install
     pre-commit run -a  # run for all files, optional
 
-After installation, when you try to commit the staged files, git will automatically check the files and modify them for meeting the requirements of the hooks in ``.pre-commit-config.yaml``. The settings of the hooks are specified in ``pyproject.toml``. You need to restage the file if it gets modified by the hooks.
-
-If you want, you can also check with `ruff <https://docs.astral.sh/ruff/>`__ or `Pylint <https://www.pylint.org/>`__ for more detailed errors, warnings, and suggestions.
+After installation, Git runs the hooks on staged files before each commit. Restage
+any file that a hook modifies.
 
 Docstrings
 ----------
@@ -154,4 +157,5 @@ A few comments about testing:
 - Please try to keep the total runtime of the tests minimal for the task at hand.
 - A nice way of proceeding is "test first": write a test first, make it fail, write the code until the test is passed.
 - Many methods are tested against test cases produced with the original :labrepos:`MATLAB implementation <vbmc>`.
-- The ``pytest-mock`` library is very useful for testing. It allows you to replace parts of your system under test with mock objects and make assertions about how they have been used. (Perhaps we should switch to ``unittest.mock`` in the future, which is part of the Python standard library.)
+- The ``pytest-mock`` library lets tests replace parts of the system under test
+  with mock objects and make assertions about how they were used.
