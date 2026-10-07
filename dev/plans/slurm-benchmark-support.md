@@ -79,8 +79,9 @@ package's files with the after arm's (decision 13).
 ## Purpose and scope
 
 The release gate of PyVBMC 1.5 is a set of campaigns too large for one
-machine: the S-VBMC run pools and their stacking comparison (the TODO's
-"Final large-scale check") and the reference populations that replace the
+machine: the S-VBMC run pools and their stacking comparison (the final
+large-scale check, pickup 18 of the
+[roadmap](modernization-roadmap.md)) and the reference populations that replace the
 golden references after the port review (the TODO's "The golden references
 after the port review"). This plan owns how they run on a Slurm cluster:
 submission, resources, resumption, verification, collection, the

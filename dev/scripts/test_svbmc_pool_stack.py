@@ -310,6 +310,10 @@ def test_cell_schema(comparison):
                 assert arm["shrinkage_noise_share"] is None or np.isfinite(
                     arm["shrinkage_noise_share"]
                 )
+                # The class's headline, named: shrinkage is available here.
+                method = "shrunk_two_level" if arm["noisy"] else "raw"
+                assert arm["headline_method"] == method
+                assert elbos["headline"] == elbos[method]
             else:
                 assert {"estimated", "debiased_I_median"} <= set(elbos)
 
@@ -2273,3 +2277,33 @@ def test_a_pool_reader_reads_the_contract_layout(
             run["tag"] for run in selection["conditions"][0]["runs"]
         )
     assert (out / "summary.json").exists() and (out / "sources.json").exists()
+
+
+def test_a_noisy_run_alone_scores_the_class_headline():
+    """``svbmc_single_run_bias.py`` scores a noisy run's headline as the
+    integrated class reports it for that run alone: the two-level shrinkage
+    at the run's own weights, its entropy aside."""
+    import svbmc_single_run_bias as single_run
+
+    from pyvbmc.svbmc import SVBMC
+
+    entries = harness.fixture_conditions([GROUPS[0]])[GROUPS[0]][:2]
+    for seed, entry in enumerate(entries):
+        vp = harness.load_entry(entry, rng=seed)
+        stacked = SVBMC([vp], seed=seed, show_tips=False)
+        assert stacked.noisy
+        w = np.ravel(stacked.w).astype(float)
+        I = np.ravel(stacked.I_corrected).astype(float)
+        G = float(np.dot(w, I))
+        headline, method = single_run.class_headline(
+            stacked, vp, w, I, 0.0, G, G
+        )
+        stacked.optimize(version="ns", n_samples=2, n_samples_final=2)
+        details = stacked.elbo_details
+        assert method == details["headline_method"] == "shrunk_two_level"
+        np.testing.assert_allclose(
+            headline,
+            details["shrunk_two_level"] - stacked.entropy,
+            rtol=0,
+            atol=1e-10,
+        )

@@ -38,8 +38,10 @@ variants of the same cells are joined too. Needs Torch on
         [--cells RESULTS.json ...] [--shrink CELLS.jsonl ...]
 
 Outputs under ``--out``: ``runs.jsonl`` (one record per run: the
-condition, name and seed, ``K``, the three ELBOs, ``e_log_joint_mc``,
-``entropy_ref``, ``elbo_mc`` with their standard errors, the biases, the
+condition, name and seed, ``K``, the three ELBOs, the method of the
+class's headline (``headline_method``, absent from older files),
+``e_log_joint_mc``, ``entropy_ref``, ``elbo_mc`` with their standard
+errors, the biases, the
 KL gap where ``ln Z`` is known, the run's ``elbo_sd`` and the single-run
 metrics), ``summary.json`` / ``summary.md`` (per condition, the median
 with a bootstrap interval, the mean and the quartiles of every bias and
@@ -109,13 +111,39 @@ INTERVAL_ESTIMATES = (
 )
 
 
+def class_headline(stacked, vp, w, I, H, raw, capped):
+    """The integrated class's headline for a run alone, and its method.
+
+    The raw value on a noiseless run; on a noisy one the two-level
+    shrinkage, whose between-run stage leaves a stack of one at its own
+    level, or the cap where the shrinkage is undefined. ``w`` are the
+    stack's weights, ``I`` the corrected component expected log joints and
+    ``H`` the entropy at those weights.
+    """
+    from pyvbmc.svbmc._elbo_shrinkage import _two_level_shrinkage
+
+    if not stacked.noisy:
+        return raw, "raw"
+    own = np.ravel(vp.w).astype(float)
+    shrunk, _ = _two_level_shrinkage(
+        [vp.stats["I_sk"]],
+        [vp.stats["J_sjk"]],
+        [I],
+        [own / own.sum()],
+        w,
+        H,
+    )
+    if shrunk is None:
+        return capped, "capped_I_median"
+    return shrunk, "shrunk_two_level"
+
+
 def score_run(entry, problem, reference):
     """One filtered run as a stack of one, scored as the comparison scores
     a cell's integrated arm."""
     import torch
 
     from pyvbmc.svbmc import SVBMC
-    from pyvbmc.svbmc._elbo_shrinkage import _two_level_shrinkage
 
     started = time.perf_counter()
     seed = int(entry["seed"])
@@ -133,21 +161,9 @@ def score_run(entry, problem, reference):
     raw = G + H
     capped = float(min(G, np.median(I))) + H
     elbo_vbmc = float(vp.stats["elbo"])
-    headline = raw
-    if stacked.noisy:
-        # The class's headline of a noisy stack: the two-level shrinkage,
-        # whose between-run stage leaves a stack of one at its own level,
-        # or the cap where the shrinkage is undefined.
-        own = np.ravel(vp.w).astype(float)
-        shrunk, _ = _two_level_shrinkage(
-            [vp.stats["I_sk"]],
-            [vp.stats["J_sjk"]],
-            [I],
-            [own / own.sum()],
-            w,
-            H,
-        )
-        headline = capped if shrunk is None else shrunk
+    headline, headline_method = class_headline(
+        stacked, vp, w, I, H, raw, capped
+    )
     samples = stacked.sample(N_DRAWS)
     outcome = stacked_outcome(
         problem,
@@ -172,6 +188,7 @@ def score_run(entry, problem, reference):
         "seed": seed,
         "K": int(stacked.K[0]),
         "noisy": bool(stacked.noisy),
+        "headline_method": headline_method,
         "elbo_vbmc": elbo_vbmc,
         "elbo_raw": raw,
         "elbo_cap": capped,

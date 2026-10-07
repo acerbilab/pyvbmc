@@ -131,8 +131,9 @@ cluster's campaigns, read with a guide fixed before the runs.
 
 ### Arm 3's code
 
-The branch `dev-arm3-port-warmup` holds two changes over the commit that runs
-Arm 0: the improvement window of `_check_warmup_end_conditions`
+Arm 3's branch, `dev-arm3-port-warmup`, kept as `retain/arm3-port-warmup`
+since the decision, holds two changes over the commit that runs Arm 0: the
+improvement window of `_check_warmup_end_conditions`
 (`pyvbmc/vbmc/vbmc.py`) as it was before W2-1, and `recompute_lcb_max` off in
 `advanced_vbmc_options.ini`, with the tests that pin either. At the default
 options warm-up then ends when it ended at `f91fdf0`, the before arm's code,
@@ -316,9 +317,9 @@ two-dimensional noisy target, under 10. With Arm 0's 500, about 925.
 - [x] The port's end of warm-up not adopted: the branch retained as
   `retain/arm3-port-warmup`.
 - [x] The S-VBMC headline (decision 6): the PI adopted the two-level
-  shrinkage estimate; the branch `feat-svbmc-shrinkage-headline` merged
-  with the [reading](../results/2026-10-06-arm-3-reading.md) and the
-  records and scripts that took the capped value for the noisy headline.
+  shrinkage estimate; the switch merged (PR #185, `edda2ae0`) with the
+  [reading](../results/2026-10-06-arm-3-reading.md) and the records and
+  scripts that took the capped value for the noisy headline.
 
 ## Worklog
 

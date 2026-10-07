@@ -122,14 +122,15 @@ remove part of the bias that the runs inherit. On our benchmarks, which
 optimized every weight (the default ``version``), the optimism that the
 run-level step leaves and the inherited bias that the within-run step
 removes roughly balanced: the headline of a noisy stack was about as biased
-as the runs it was built from. With ``version="ns"`` no weights are selected
-and stacking adds no such optimism, but the within-run step still applies
-and can lower the headline below the raw value, which then carries the runs'
-own bias alone. The raw ELBO is not an upper bound on the stack's true ELBO:
-it can fall below it where the runs' own ELBOs are pessimistic, and the
-shrinkage estimate can lie on either side of it. On a noiseless stack,
-stacking adds little bias and shrinkage changes the value little, so the
-headline is the raw ELBO, and ``shrunk_two_level`` is reported beside it.
+as the runs it was built from. With ``version="ns"`` no weights are
+selected, so stacking adds no such optimism and the raw value carries the
+runs' own bias alone; the shrinkage still applies, its within-run step in
+particular, and can lower the headline below the raw value. The raw ELBO is
+not an upper bound on the stack's true ELBO: it can fall below it where the
+runs' own ELBOs are pessimistic, and the shrinkage estimate can lie on
+either side of the true ELBO. On a noiseless stack, stacking adds little
+bias and shrinkage changes the value little, so the headline is the raw
+ELBO, and ``shrunk_two_level`` is reported beside it.
 
 ``stacked.elbo_details`` contains the complete report:
 
@@ -155,8 +156,9 @@ headline is the raw ELBO, and ``shrunk_two_level`` is reported beside it.
      - Empirical-Bayes estimate that first shrinks component expected
        log-joints within each retained run using their full GP covariance,
        then shifts each run's components by the change that shrinkage makes
-       to the run's level; the headline of a noisy stack. It uses the selected stacking weights and the same
-       final entropy as ``raw``. ``None`` means finite input statistics led
+       to the run's level; the headline of a noisy stack. It uses the
+       selected stacking weights and the same final entropy as ``raw``.
+       ``None`` means finite input statistics led
        to a numerically undefined calculation;
        :meth:`~pyvbmc.svbmc.SVBMC.optimize` emits a ``RuntimeWarning`` and
        leaves every other report value available.
@@ -291,10 +293,11 @@ What differs:
   optimization the ELBO is evaluated again with more draws
   (``optimize(n_samples_final=...)``), and it comes with an uncertainty,
   ``elbo_sd``.
-- ``elbo`` is a number, the headline described under "ELBO reporting",
-  which for a noisy stack is a shrinkage estimate that the standalone
-  package does not compute. The entries of the standalone package's ``elbo``
-  dictionary are in ``elbo_details``, under the names in the table below.
+- ``elbo`` is a number, the headline described under
+  :ref:`svbmc-elbo-reporting`, which for a noisy stack is a shrinkage
+  estimate that the standalone package does not compute. The entries of the
+  standalone package's ``elbo`` dictionary are in ``elbo_details``, under the
+  names in the table below.
 - ``seed`` takes the place of ``testing``: every random draw comes from the
   generator of the ``SVBMC`` object, and the input posteriors are neither
   modified nor advanced.

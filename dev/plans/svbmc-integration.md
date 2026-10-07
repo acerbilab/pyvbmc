@@ -116,7 +116,8 @@ posterior quality, agreement, runtime and reproducibility hold on every
 condition, and the evidence-accuracy gate failed on the heavy-tailed
 condition because of the capped headline, for which the
 [headline note](../2026-09-15-svbmc-headline-shrinkage.md) records
-the candidate replacement; the
+the candidate replacement, the headline of a noisy stack since 2026-10-06
+([the reading](../results/2026-10-06-arm-3-reading.md)); the
 `M = 32` extension of the integrated arm (2026-09-15/16) is in the same
 report.
 

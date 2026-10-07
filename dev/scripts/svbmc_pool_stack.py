@@ -35,8 +35,8 @@ posterior itself is from the target, in evidence units. The error against
 column: it adds the estimator's bias to that gap and so cannot rank
 estimators.
 
-Integrated-arm cells record the additive ``shrunk_two_level`` estimate when
-its numerical calculation is available, plus ``shrinkage_available`` and the
+Integrated-arm cells record the ``shrunk_two_level`` estimate when its
+numerical calculation is available, plus ``shrinkage_available`` and the
 nullable ``shrinkage_noise_share`` diagnostic. Summaries report its bias and
 the numbers of contributing, unavailable and older unrecorded cells. Its
 bootstrap uses an independent deterministic stream, so adding it does not
@@ -47,7 +47,11 @@ records which estimate that is as ``headline_method``: on a noisy stack the
 two-level shrinkage estimate, or the capped value where the shrinkage is
 undefined, and on a noiseless one the raw value. A cell without
 ``headline_method`` was recorded by code whose noisy headline was the capped
-value, as in the campaigns up to the release gate's of October 2026.
+value, as in the campaigns up to the release gate's of October 2026. The
+recorded ``cap_amount`` is the class's: the reduction that the median cap
+made to the headline, so a cell with ``headline_method`` holds zero unless
+the headline is ``capped_I_median``, where an older cell holds the cap's
+reduction on every noisy stack.
 
 The comparison runs in one of two ways, which give the same cells and the
 same summaries but for the seconds they measure. On one machine, the flags
@@ -2162,9 +2166,8 @@ def headline_bias_growth(entries):
     the two-level shrinkage estimate, or the capped value where the
     shrinkage is undefined and in cells without ``headline_method`` (the
     case the bound was written for), and the raw value on a noiseless one.
-    A comparison
-    run at a single ``M`` reports a growth of zero, which meets the bound
-    by construction.
+    A comparison run at a single ``M`` reports a growth of zero, which meets
+    the bound by construction.
     """
     by_M = sorted(entries, key=lambda entry: entry["M"])
     first, last = (

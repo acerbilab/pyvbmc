@@ -1,8 +1,8 @@
 # S-VBMC run-pool benchmark campaign
 
 Created 2026-09-13. Status: **complete**. The release gate reran the
-campaign on fresh pools (decisions 12 and 14) on 2026-10-02 (`TODO.md`,
-"Final large-scale check before the release"), and again on the pools of
+campaign on fresh pools (decisions 12 and 14) on 2026-10-02 (pickup 18 of
+the [roadmap](modernization-roadmap.md)), and again on the pools of
 Arm 3, the release code with the port's end of warm-up, on 2026-10-05/06;
 the PI made the two-level shrinkage the headline of a noisy stack on
 2026-10-06 (decision 12;
@@ -19,7 +19,13 @@ Criteria 1, 2, 4 and 5 hold on every condition;
 criterion 3's gate fails on Student D8, where the capped headline
 over-corrects (the
 [stage D report](../results/2026-09-15-svbmc-pool-comparison.md) and
-the worklog). The Phase 2 scoring and the estimates scored afterwards
+the worklog). With the two-level shrinkage as the headline of a noisy
+stack (since 2026-10-06), the gate still fails on Student D8 at small `M`
+(2, 4 and 8 on the release gate's pools, 2 and 4 on Arm 3's; the column
+`bias shrink int` of their `summary.md`) and holds on every other noisy
+condition: the headline was chosen on the bias that stacking adds to its
+inputs (decision 11; decision 6 of
+[Arm 3's plan](arm-3-warmup-comparison.md)), not on this gate. The Phase 2 scoring and the estimates scored afterwards
 on the same cells are in the report and summarized in the
 [headline note](../2026-09-15-svbmc-headline-shrinkage.md). The
 `M = 32` run of the integrated arm (80 cells, 4 hours) closed the
@@ -392,7 +398,8 @@ by deep-copying each input posterior and drawing `round(n · ω_m)` from it.
 The integrated class reports a headline with `elbo_details["raw"]`,
 `raw_sd`, `cap_amount` and `noise_status_source` (its noisy headline was the
 capped value in this campaign, and is the two-level shrinkage estimate since
-2026-10-06, decision 12),
+2026-10-06, decision 12, from when `cap_amount` is zero unless the cap is
+the headline),
 re-evaluates with `n_samples_final=100`, and `sample(n)` returns exactly
 `n` rows.
 

@@ -1117,15 +1117,30 @@ The open work for 1.5 is the list "In scope for 1.5" of
     where it is numerically undefined; a noiseless stack keeps the raw ELBO.
     On the release gate's pools and on Arm 3's it adds −0.23 to +0.15 nats
     to the bias of its inputs at every noisy condition and `M` from 2 to
-    32, where the capped headline it replaces adds −1.48 to −0.56 on the
-    heavy-tailed Student target; the
+    32, where the capped headline it replaces adds −1.48 to −0.71 on the
+    heavy-tailed Student target in Arm 3's pools; the
     [reading](../results/2026-10-06-arm-3-reading.md) gives the numbers and
     the [headline note](../2026-09-15-svbmc-headline-shrinkage.md) the
-    derivation. The branch `feat-svbmc-shrinkage-headline` merged into
-    `dev-next` with the `SVBMC` docstring, the API page's account of the
+    derivation. The switch merged into `dev-next` (PR #185, `edda2ae0`)
+    with the `SVBMC` docstring, the API page's account of the
     headline and its caveat, the FAQ, Example 7's explanation, the tip
     `noisy_elbo`, the changelog's entry and the tests that pin the noisy
     headline; the stacking harness's cells record `headline_method`.
+
+18. **The release gate's pools and stacking — done** (2026-10-02 to
+    10-06). The final large-scale check: VBMC run pools of the test targets
+    made by the release code on the cluster, stacked in disjoint subsets by
+    both arms of the [campaign](svbmc-benchmark-campaign.md) at `M` = 2, 4,
+    8 and 16 and by the integrated arm alone at 3, 5 and 32, on 2026-10-02
+    ([the Slurm plan](slurm-benchmark-support.md); the tracked copies in
+    `experiments/release_gate_20261002/`), and again on Arm 3's pools on
+    2026-10-05/06 (pickup 16). Against the campaign's criteria (2026-10-04):
+    the median largest weight difference between the arms is 0.007 to 0.027
+    (criterion 1), no cell is flagged (criterion 2), stacking takes 0.19 to
+    0.53 of the original's time (criterion 4), and criterion 3 fails on
+    Student D8 alone, with the capped headline and, at small `M`, with the
+    two-level shrinkage (the campaign plan). The added bias of each
+    estimate and the switch of the noisy headline are pickup 17.
 
 ## S-VBMC ELBO corrections and reporting
 
@@ -1157,7 +1172,9 @@ condition because of the capped headline, for which the
 the candidate replacement; the `M = 32` extension of the integrated
 arm (2026-09-15/16) is in the same report. The release gate's pools and
 those of Arm 3 confirmed it, and it is the headline of a noisy stack since
-2026-10-06 (pickup 17).
+2026-10-06 (pickup 17), chosen on the bias that stacking adds to its
+inputs; under it the gate still fails on Student D8 at small `M` (the
+[campaign plan](svbmc-benchmark-campaign.md) says where).
 
 ## Golden population acceptance
 

@@ -790,11 +790,11 @@ samples = stacked.sample(10000)
 
 The headline estimate is `stacked.elbo`; `stacked.elbo_details` contains
 the detailed estimates. On noisy targets the headline is a shrinkage
-estimate. It targets the optimism that choosing the weights on noisy
-estimates adds; it can also remove part of the bias that each run's ELBO
-carries from VBMC, and some bias can remain. `stacked.elbo_sd` describes
-uncertainty in the raw estimate, not a confidence interval for that
-headline. Keep the stacked posterior with `stacked.save("stacked.pkl")` and load it with
+estimate, which targets the optimism that choosing the weights on noisy
+estimates adds; some bias can remain, and the raw estimate is no upper
+bound on the stack's true ELBO. `stacked.elbo_sd` describes uncertainty in
+the raw estimate, not a confidence interval for that headline. Keep the
+stacked posterior with `stacked.save("stacked.pkl")` and load it with
 `SVBMC.load("stacked.pkl")`. See the
 [S-VBMC documentation](api/classes/svbmc.rst) and
 [Example 7](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_7_stacking.html)

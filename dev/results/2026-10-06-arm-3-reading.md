@@ -182,14 +182,16 @@ own bias, and what stacking adds"). On the noisy conditions it adds +0.00 to
 +0.36 nats in the first batch's pools and +0.01 to +0.36 in Arm 3's, more at
 larger `M` on every condition but the ring, against the implemented
 estimate's −0.23 to +0.15 and −0.23 to +0.14. The anchored variant leaves
-part of what stacking adds, and the implemented composition stays.
+part of what stacking adds, so the release pools confirm the implemented
+composition that the PI kept on 2026-09-19.
 
 **The PI's decision (2026-10-06):** a noisy stack reports the two-level
-shrinkage estimate as `stacked.elbo`, and a noiseless one the raw ELBO, as
-before. The change of the noisy headline is the branch
-`feat-svbmc-shrinkage-headline`, merged into `dev-next` with this report:
-where the shrinkage is numerically
-undefined, a noisy stack reports the capped value with a warning, and
+shrinkage estimate in its implemented composition
+(`elbo_details["shrunk_two_level"]`, the analyses' `two_level_full`) as
+`stacked.elbo`, and a noiseless one the raw ELBO, as before. The change of
+the noisy headline was merged into `dev-next` with this report (PR #185,
+`edda2ae0`): where the shrinkage is numerically undefined, a noisy stack
+reports the capped value with a warning, and
 `elbo_details` keeps the raw and capped values and names the selected one
 (`headline_method`). The estimate targets the optimism that choosing the
 weights on noisy estimates adds; it can also remove part of the bias that

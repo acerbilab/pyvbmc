@@ -269,7 +269,8 @@ Generator, optional
         default), read each retained run's ``uncertainty_handling_level``
         statistic; when absent, infer noise from ``elbo_sd > 0.1``. This
         inference can misclassify old posteriors. Any noisy retained run
-        makes the headline :attr:`elbo` the two-level shrinkage estimate.
+        makes the headline :attr:`elbo` the two-level shrinkage estimate,
+        where it is defined.
 
     Attributes
     ----------

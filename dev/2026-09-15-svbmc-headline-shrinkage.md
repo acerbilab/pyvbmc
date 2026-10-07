@@ -164,7 +164,7 @@ for the cap, and the mean weights the targets equally.
 | headline | worst, M = 3 / 5 / 16 | mean, M = 3 / 5 / 16 |
 |---|---|---|
 | raw | 0.84 / 1.04 / 1.31 | 0.39 / 0.50 / 0.74 |
-| capped median (the headline today) | 0.97 / 1.26 / 1.78 | 0.29 / 0.37 / 0.45 |
+| capped median (the headline then) | 0.97 / 1.26 / 1.78 | 0.29 / 0.37 / 0.45 |
 | within-run shrinkage (full covariance) | 0.60 / 0.75 / 0.94 | 0.25 / 0.31 / 0.40 |
 | two-level shrinkage | 0.58 / 0.67 / 0.77 | 0.24 / 0.26 / 0.28 |
 | cap if noise share ≥ 0.2, else within-run shrinkage | 0.42 / 0.43 / 0.44 | 0.19 / 0.22 / 0.15 |
@@ -201,7 +201,7 @@ to 100 % of the typical noisy cells; report, section "The integrated
 arm at M = 32").
 
 The shrinkage applies to the reported value at the weights the raw
-optimization chose, as the cap does today. Re-optimizing the weights
+optimization chose, as the cap did then. Re-optimizing the weights
 on the shrunken values was tested at M = 3 to 5 and rejected: the
 optimizer then selects on the shrinkage's own errors, the headline
 comes out 0.05 to 0.40 nats more optimistic than the value-only

@@ -74,7 +74,8 @@ records its execution.
   runs from its named commits. An
   edit to the package's text, the tips' wording among them, lands after
   the promotion of the new reference, whose check compares the package's
-  files with the after arm's (the plan's decision 13). See
+  files with the after arm's (the plan's decision 13), but for
+  `pyvbmc/svbmc/` and the tests, which the check leaves out. See
   [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
 
 - [ ] **The golden references after the port review.** Several fixes of
@@ -178,40 +179,6 @@ records its execution.
   runs that enter the records are Phase 9's, made with the after arm's
   code; they ran on 2026-10-04 at `dce4e18c`, whose package is the
   release commit's, and reproduced in all 138 arrays.
-
-- [ ] **Final large-scale check before the release (the gate).** Once no
-  algorithmic work on 1.5 remains, regenerate the VBMC run pools on the test
-  targets with the release code on the cluster, the latest `dev-next` at the
-  launch, after which only the documentation and the headline selection change;
-  320 filtered runs per condition (PI, 2026-09-25; the [Slurm
-  plan](plans/slurm-benchmark-support.md)): the present pools of 100 noisy and
-  50 noiseless runs reuse each run 1.6 to 3.2 times at `M = 16` and 3.2 to 6.4
-  times at `M = 32`, and ten disjoint subsets of 32 need 320 runs. Then stack
-  them on the cluster in disjoint subsets at every `M`, with both arms of the
-  [campaign](plans/svbmc-benchmark-campaign.md) at `M` = 2, 4, 8 and 16 and the
-  integrated arm alone at 3, 5 and 32, and check that the campaign's results
-  hold: the acceptance criteria of the comparison, the added-bias ranges of the
-  headline note, and the switch of the headline to the two-level shrinkage. The
-  gate tests PyVBMC 1.5 end to end, not S-VBMC
-  alone: the pools are VBMC runs of the release code, and each run's record
-  carries its convergence status and its posterior and evidence metrics against
-  the ground truth. Uses the pool generator and stacking harness under
-  `dev/scripts/` through the cluster workflow of the HPC item above. PI,
-  2026-09-16. The pools, the stacking and the two analyses ran on 2026-10-02
-  (`experiments/release_gate_20261002/pools/` and `stacking/`; the analyses'
-  outputs are an asset of the draft release `release-gate-stacking-20261002`,
-  since they hold the cluster's details). Read against the campaign's criteria
-  on 2026-10-04 (the stacking's `summary.md`): the median over each condition's
-  cells of the largest weight difference between the two arms is 0.007 to 0.027
-  (criterion 1), no cell is flagged (criterion 2), and stacking takes 0.19 to
-  0.53 of the original's time (criterion 4); criterion 3 fails on `student_D8`
-  alone, at every `M` where both arms ran (2, 4, 8 and 16), where the capped
-  headline's median bias is −0.71 to −1.39 nats against the original's −0.01 to
-  +0.28, as on the stage D pools. The added bias of each estimate, on these
-  pools and on those of Arm 3 (the release code with the port's end of
-  warm-up), and the switch of the noisy headline to the two-level shrinkage
-  that the PI made on them (2026-10-06), are in
-  [the reading](results/2026-10-06-arm-3-reading.md).
 
 - [ ] **1.5 against 1.0.4 (Arm 0).** The reference populations compare the
   release code with `f91fdf0`, which held the modernization already; a
@@ -470,7 +437,9 @@ with the port alone; criteria 1, 2, 4 and 5 hold on every condition,
 criterion 3's gate fails on Student D8 because the capped headline
 over-corrects on heavy tails; since 2026-10-06 the headline of a noisy
 stack is the two-level shrinkage estimate
-([the reading](results/2026-10-06-arm-3-reading.md)). The
+([the reading](results/2026-10-06-arm-3-reading.md)), chosen on the bias
+that stacking adds to its inputs, under which the gate still fails on
+Student D8 at small `M` (the campaign plan says where). The
 [stage D report](results/2026-09-15-svbmc-pool-comparison.md) reads
 the numbers, the [campaign plan](plans/svbmc-benchmark-campaign.md)
 owns the design, worklog and the PI's decisions, the
