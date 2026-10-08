@@ -118,7 +118,8 @@ accounting for shared preparation separately across several fits. Reusing a
 target does not consume its observations: each fit charges its setup cost by
 default. The individual fields remain available for manually constructing
 ``VBMC(target.log_joint, ...)``; that form requires explicit observation and
-cost arguments and leaves ``vbmc.target`` as ``None``.
+cost arguments and leaves ``vbmc.target`` as ``None``, and its runs go without
+the checks for a changed target described under persistence below.
 
 Structured return to the PyMC model
 -----------------------------------
@@ -193,9 +194,11 @@ remains available for posterior prediction.
 
 An array that the body of a ``pytensor.scan`` loop or of an ``OpFromGraph``
 reads as a constant is the exception: PyTensor keeps it inside that operation,
-where the target does not copy it. Pass such an array to a loop in
-``sequences`` or as ``pm.Data``, and to an ``OpFromGraph`` as one of its inputs;
-otherwise leave it unchanged while the target is in use. A change to such an
+where the target does not copy it, and shares the operation between models
+whose arrays there are equal, so the array a target reads can be another
+model's. Pass such an array to a loop in ``sequences`` or as ``pm.Data``, and to
+an ``OpFromGraph`` as one of its inputs; otherwise leave it unchanged while the
+target is in use. For a run made with ``VBMC(target)``, a change to such an
 array is detected: :meth:`~pyvbmc.VBMC.optimize` refuses to run, and saving the
 run warns.
 
@@ -203,11 +206,11 @@ Saving a :class:`~pyvbmc.VBMC` instance retains the adapter, its fixed
 inference snapshot, original prediction model, setup observations and budget
 charge. Loading recompiles PyTensor functions and can take several seconds.
 Load the file only with compatible PyMC and PyTensor versions, then use
-``loaded.target`` for export and prediction. Loading also evaluates the target's
-log density once, at the starting point, and compares it with the value the run
-recorded. If the target has changed since the run was set up, loading warns:
-the run's results remain valid, but ``optimize`` refuses to continue it; build a
-new target to refit.
+``loaded.target`` for export and prediction. Loading a run made with
+``VBMC(target)`` also evaluates the target's log density once, at the starting
+point, and compares it with the value recorded during setup. If the target has
+changed since the run was set up, loading warns: the run's results remain valid,
+but ``optimize`` refuses to continue it; build a new target to refit.
 
 .. autoclass:: pyvbmc.pymc.PyMCTarget
    :members:

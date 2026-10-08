@@ -3403,16 +3403,22 @@ class VBMC:
         if filepath.suffix == "":
             filepath = filepath.with_suffix(".pkl")
 
-        change = self._pymc_target_change()
+        flagged = getattr(self, "_pymc_target_changed", None)
+        change = flagged or self._pymc_target_change()
         if change is not None:
-            get_logger("VBMC").warning(
+            message = (
                 "The PyMC target of this run has changed since the run was "
                 f"set up: {change}. The file records the changed target, "
                 "whose log density may differ from the one the run was "
                 "fitted to; loading it will warn and refuse to continue the "
-                "run. Restore the original values before saving to keep the "
-                "run reproducible."
+                "run."
             )
+            if flagged is None:
+                message += (
+                    " Restoring the original values before saving keeps the "
+                    "run reproducible."
+                )
+            get_logger("VBMC").warning(message)
 
         if overwrite:
             mode = "wb"

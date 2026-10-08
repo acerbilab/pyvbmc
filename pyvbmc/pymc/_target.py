@@ -972,7 +972,7 @@ class PyMCTarget:
 
     def _compiled_functions(self):
         """Return the compiled PyTensor functions that the target keeps."""
-        functions = [self._logp.f, self._logp_plain.f]
+        functions = [self._logp, self._logp_plain]
         for maps in self._maps.values():
             functions.extend((maps["forward"], maps["backward"]))
         return functions
@@ -1001,13 +1001,22 @@ class PyMCTarget:
         """
         changes = []
         recorded_digest = getattr(self, "_inner_digest", None)
-        if recorded_digest is not None and recorded_digest != (
-            _compat.inner_array_digest(self._compiled_functions())
-        ):
-            changes.append(
-                "an array that the model reads inside the body of a "
-                "pytensor.scan loop or of an OpFromGraph has changed"
-            )
+        if recorded_digest is not None:
+            # A check that fails is reported, so that loading a run never
+            # fails because of it.
+            try:
+                digest = _compat.inner_array_digest(self._compiled_functions())
+            except Exception as exc:
+                changes.append(
+                    "the arrays that the target reads could not be checked "
+                    f"({type(exc).__name__}: {exc})"
+                )
+            else:
+                if digest != recorded_digest:
+                    changes.append(
+                        "an array that the target reads inside the body of a "
+                        "pytensor.scan loop or of an OpFromGraph has changed"
+                    )
         if evaluate:
             X_setup, y_setup = self.setup_evaluations
             rows = np.flatnonzero(np.all(X_setup == self.x0, axis=1))
@@ -1015,18 +1024,22 @@ class PyMCTarget:
                 recorded = float(y_setup[rows[-1]])
                 try:
                     current = self.log_joint(self.x0)
-                except ValueError:
-                    current = np.nan
-                # Rounding differences between machines and builds stay
-                # far below this relative tolerance.
-                if not abs(current - recorded) <= 1e-8 * max(
-                    1.0, abs(recorded)
-                ):
+                except Exception as exc:
                     changes.append(
-                        "its log density at the starting point is "
-                        f"{current:.10g}, where the run recorded "
-                        f"{recorded:.10g}"
+                        "evaluating the target's log density at the starting "
+                        f"point raised {type(exc).__name__}: {exc}"
                     )
+                else:
+                    # Absolute below 1, relative above: rounding differences
+                    # between machines and builds stay far below it.
+                    if not abs(current - recorded) <= 1e-8 * max(
+                        1.0, abs(recorded)
+                    ):
+                        changes.append(
+                            "the target's log density at the starting point "
+                            f"is {current:.10g}, where its setup recorded "
+                            f"{recorded:.10g}"
+                        )
         return "; ".join(changes) or None
 
     def _compile_gradient(self, pm):

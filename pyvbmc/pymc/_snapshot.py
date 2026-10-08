@@ -150,7 +150,7 @@ def copy_array_constants(outputs, owned=()):
 def _array_digest(data):
     digest = hashlib.blake2b(digest_size=16)
     digest.update(f"{data.dtype.str}{data.shape}".encode())
-    digest.update(np.ascontiguousarray(data).tobytes())
+    digest.update(np.ascontiguousarray(data))
     return digest.digest()
 
 
@@ -173,9 +173,11 @@ def inner_array_digest(functions):
         raise _version_error(pm, "inner-graph traversal", exc)
 
     try:
-        pending = [
-            list(function.maker.fgraph.outputs) for function in functions
-        ]
+        pending = []
+        for function in functions:
+            # PyMC's point functions wrap the compiled function.
+            maker = getattr(function, "maker", None) or function.f.maker
+            pending.append(list(maker.fgraph.outputs))
     except AttributeError as exc:
         raise _version_error(pm, "compiled function graphs", exc)
     seen_nodes = set()
@@ -187,9 +189,14 @@ def inner_array_digest(functions):
             if node is None or node in seen_nodes:
                 continue
             seen_nodes.add(node)
-            if not isinstance(node.op, HasInnerGraph):
+            # A Blockwise operation, as vectorizing builds, holds its inner
+            # graph in the operation it applies.
+            op = node.op
+            while not isinstance(op, HasInnerGraph) and hasattr(op, "core_op"):
+                op = op.core_op
+            if not isinstance(op, HasInnerGraph):
                 continue
-            inner_outputs = list(node.op.inner_outputs)
+            inner_outputs = list(op.inner_outputs)
             pending.append(inner_outputs)
             for value in graph_inputs(inner_outputs):
                 if value in seen_constants or not _is_numeric_array_constant(

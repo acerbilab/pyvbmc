@@ -1988,16 +1988,21 @@ and this plan (the design decisions and the execution record).
   of a `pytensor.scan` loop or of an `OpFromGraph` reads as a constant
   (execution record, 2026-10-08), and documentation alone would be
   missed. At construction the target takes a digest of the arrays inside
-  the inner graphs of the compiled functions it keeps. `VBMC.save`
-  compares it and warns. `VBMC.load` compares it and evaluates the log
-  density once, at the starting point, against the value the run
-  recorded, which also catches causes that leave the arrays alone (a
-  PyMC or PyTensor version that computes differently, a custom
-  operation's own state); on a change it warns that the run's results
-  remain valid and marks the run. `optimize()` refuses a marked run, or
-  one whose digest has changed, with a `RuntimeError`. One evaluation at
-  load is the whole cost in target calls, since a PyMC density need not
-  be cheap. Rejected: refusing such models at construction (it would
+  the inner graphs of the compiled functions it keeps, including the
+  operation that a `Blockwise` applies. `VBMC.save` compares it and
+  warns. `VBMC.load` compares it and evaluates the log density once, at
+  the starting point, against the value recorded during setup, which
+  also catches causes that leave the arrays alone (a PyMC or PyTensor
+  version that computes differently, a custom operation's own state); on
+  a change it warns that the run's results remain valid and marks the
+  run. A check that fails, such as an evaluation that raises, counts as
+  a change, so that loading never fails because of it. `optimize()`
+  refuses a marked run, or one whose digest has changed, with a
+  `RuntimeError`. One evaluation at load is the whole cost in target
+  calls, since a PyMC density need not be cheap; the tolerance is 1e-8,
+  absolute below 1 and relative above. The checks need the association
+  that `VBMC(target)` makes; a run built from `VBMC(target.log_joint,
+  ...)` goes without them, as the `PyMCTarget` page says. Rejected: refusing such models at construction (it would
   turn away models that never change their arrays) and lifting the
   arrays into outer inputs of their operations (each operation rebuilt
   through its own constructor, and it would not reach the loops that
@@ -2047,8 +2052,8 @@ and this plan (the design decisions and the execution record).
   interns back to the caller's array, so under `FAST_COMPILE` a change to
   it moved the density live and restored (-4.19 to -13.76), and in the
   default mode it did not, with either linker. The
-  `PyMCTarget` page names the exception and how to pass such arrays.
-  Interning also joins models: a loop whose arrays equal those of a loop
+  `PyMCTarget` page names the exception, how to pass such arrays, and
+  the sharing between models. Interning also joins models: a loop whose arrays equal those of a loop
   that another model built earlier in the process reads that model's
   array, so the array a target reads need not be the caller's own. The
   detection that the PI chose (Decisions) covers whichever array the
@@ -2063,12 +2068,15 @@ and this plan (the design decisions and the execution record).
   function, against its setup observations, and with the array in a
   transform's bounds function, against the maps. Each fails without its
   part of the fix. `test_changed_inputs.py` checks the detection: no
-  warning for an unchanged run; for a changed loop array, a refused
-  `optimize()`, a warning on saving and on loading, and a refused
-  `optimize()` after loading; and a loaded run whose recorded density
-  differs. The 120 tests of `pyvbmc/testing/pymc` pass under the default
-  Numba linker and under the Python linker (PyMC 6.3.2, PyTensor 3.3.2,
-  Python 3.13).
+  warning for an unchanged run or for a target without a digest; for a
+  changed loop array, a refused `optimize()`, a warning on saving and on
+  loading, and a refused `optimize()` after loading; a changed array in
+  an `OpFromGraph` applied by a `Blockwise`; a loaded run whose recorded
+  density differs; a load whose evaluation raises, which warns rather
+  than fails; and the cost, no evaluation on saving or refusing and one
+  on loading. The 124 tests of `pyvbmc/testing/pymc` pass under the
+  default Numba linker and under the Python linker (PyMC 6.3.2, PyTensor
+  3.3.2, Python 3.13).
 
 - 2026-09-16: integrated CI
   [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)
