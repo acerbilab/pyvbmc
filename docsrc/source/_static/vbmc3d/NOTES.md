@@ -23,7 +23,19 @@ no more than two encodings of the same frames do (at least 40.3 dB PSNR on
 every frame, where the sixth draft's pair reached 39.3 dB), and each `.srt`
 cue matches the timeline that the page plays. The title from the first
 frame (below) came after that approval and was checked in stills of the
-opening and in the masters. The sixth draft had been mastered before the
+opening and in the masters. The end card's install line is `pip install
+--upgrade pyvbmc`, as PyVBMC's README installs it: it also upgrades an
+older PyVBMC that a viewer has installed, which `pip install pyvbmc`
+leaves in place. It was changed after mastering (2026-10-08): each
+master's last 10 s, from its last keyframe before the card (158.17 s with
+captions, 158.33 s without), was recorded again with `record.mjs
+--replay` and spliced in by stream copy (`README.md`, "The film"). The
+frames before the splice are the masters' own, and the sound is unchanged.
+Before the card the new frames match the old at 45 dB PSNR or better, and
+on the card everything but the install line at 46.8 dB or better; the two
+masters still differ by no more than two encodings do (at least 42.6 dB
+over the new stretch). The masters with the old line are kept in
+`renders/draft7-pip-install/`. The sixth draft had been mastered before the
 director changed the film's framing (*The framing*, below); its masters and
 takes are kept (`renders/draft6/`, `voice-travis-draft6/`). Publishing it
 remains (`TODO.md`, "The video"). The masters, drafts and voice takes are

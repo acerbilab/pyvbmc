@@ -197,9 +197,9 @@ cap line, as the version hangs from the top of `logo.svg`.
 ### 14. End card (2:40–2:48)
 
 No narration. The wordmark dims behind **PyVBMC 1.5** and the method's
-name, Variational Bayesian Monte Carlo, then `pip install pyvbmc` and
-acerbilab.org/model-fitting, the lab's page of model-fitting tools, which
-links PyVBMC and PyBADS. Below them are the three references of the
+name, Variational Bayesian Monte Carlo, then `pip install --upgrade
+pyvbmc` and acerbilab.org/model-fitting, the lab's page of model-fitting
+tools, which links PyVBMC and PyBADS. Below them are the three references of the
 README (Huggins et al. 2023, JOSS; Acerbi 2018, NeurIPS; Acerbi 2020,
 NeurIPS), then three credit lines: "Machine and Human Intelligence Group ·
 University of Helsinki", "Research Council of Finland · ELLIS Institute
