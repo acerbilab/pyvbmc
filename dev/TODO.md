@@ -13,11 +13,11 @@ records its execution.
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
-  - the Sphinx build, `linkcheck`, the rendered pages and the agent skill on
-    the settled code, with a `linkcheck` again after the merge into `main`
-    (the API and tutorial review was done on 2026-10-07 in PR #186; the
-    roadmap's checklist records it and that day's build);
-  - the final tests, the CI matrix and the package checks;
+  - `linkcheck` after the merge into `main` publishes the 1.5 files and
+    docs, including the external links blocked during the 2026-10-08 pass;
+    the post-PR #191 Sphinx build, rendered-page and skill review, local
+    tests, expanded CI matrix and package checks are recorded in the
+    roadmap;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
     hand-back"): the release gate's after-arm population and its pools,

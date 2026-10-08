@@ -2,7 +2,7 @@
 ``VariationalPosterior.to_arviz``
 =================================
 
-.. automethod:: pyvbmc.VariationalPosterior.to_arviz
+.. automethod:: pyvbmc.variational_posterior.VariationalPosterior.to_arviz
 
 See :ref:`ArviZ DataTree` for a short example and installation details in
 :ref:`optional integrations`. The worked
