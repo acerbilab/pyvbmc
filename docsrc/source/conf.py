@@ -86,12 +86,10 @@ html_css_files = ["wrap.css"]
 html_show_sourcelink = False
 html_theme_options = {
     "extra_footer": (
-        "<p>PyVBMC is one of the open-source "
-        '<a href="https://acerbilab.org/model-fitting/">tools for fitting '
-        "models to data</a> from "
+        '<p>More <a href="https://acerbilab.org/model-fitting/">model-fitting '
+        "tools</a> from "
         '<a href="https://www.helsinki.fi/en/researchgroups/'
-        "machine-and-human-intelligence\">Luigi Acerbi's group</a> at the "
-        "University of Helsinki.</p>"
+        "machine-and-human-intelligence\">Luigi Acerbi's group</a>.</p>"
     ),
     "repository_url": "https://github.com/acerbilab/pyvbmc",
     "repository_branch": "main",

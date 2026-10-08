@@ -1306,11 +1306,13 @@ must cover the settled release code, API and behavior before publication.
   kept in step with it. Dating the release remains in the final pass.
 - [x] Apply PyBADS's convention for links to the lab (2026-10-07), recorded
   in `AGENTS.md`, "Links to the lab". The README and docs' index introduce
-  the lab's tools for fitting models to data; the docs' footer, package
-  metadata, FAQ, agent skill, Example 6 and complementary-method tip link
-  the same page. Links naming Luigi Acerbi use his personal page, and lab
+  the lab's model-fitting software; the docs' footer, package metadata,
+  agent skill and complementary-method tip link the same overview.
+  Detailed guidance in the FAQ and examples links directly to each method.
+  Links naming Luigi Acerbi use his personal page, and lab
   links use the group's page. Individual developers link to personal
-  profiles or the People page. The `pybads` tip retains its
+  profiles or the People page; links labeled "members" go to the People
+  page. The `pybads` tip retains its
   PyBADS documentation link alongside the tools page; the
   [tips plan](runtime-tips.md#review-before-the-15-release) records it.
   The Sphinx HTML build passed with warnings treated as errors, and the
@@ -1319,6 +1321,9 @@ must cover the settled release code, API and behavior before publication.
   responded successfully. Rendered-page checks and independent review
   passed. All nine notebooks retain their code and stored outputs; none
   shows the changed tip.
+  The wording pass of 2026-10-08 removed repeated overview boilerplate
+  from method referrals and shortened the footer. The convention allows
+  concise link labels suited to their context.
 - [x] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation:

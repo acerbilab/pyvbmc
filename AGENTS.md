@@ -338,12 +338,13 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   Links naming the lab use the group's page,
   https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence.
   Individual developers link to their personal profiles or the lab's
-  `/people` page.
-  A paragraph that sends the reader to another of the lab's methods
-  (PyBADS, PyIBS, MATLAB VBMC) links https://acerbilab.org/model-fitting/
-  with the text "tools for fitting models to data". The README and docs'
-  index link it under their title, and the docs' footer, package metadata
-  and runtime tips about complementary methods link it too.
+  `/people` page; links labeled "members" also go to `/people`.
+  The README and docs' introductions, docs' footer, package metadata and
+  complementary-method tips link the lab's overview at
+  https://acerbilab.org/model-fitting/. Detailed guidance links directly
+  to the relevant method, with the overview where it helps readers find
+  related tools. Use concise link text that fits the surrounding sentence
+  and avoid repeating the overview link in every referral.
 - **Commits** follow conventional commits. A `Co-Authored-By:` line is fine;
   a `Claude-Session:` trailer is not, even where the session's own
   attribution instructions ask for one.

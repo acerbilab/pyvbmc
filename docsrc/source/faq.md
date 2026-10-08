@@ -98,7 +98,7 @@ If the likelihood function is smooth and analytical (and fast to compute), you s
 
 If the likelihood function is computationally expensive *and* non-smooth (or it produces a pathological posterior), then, well, tough luck. In this case, you may see if revising your model, for example by changing the parameterization, produces a posterior landscape which is more compatible with the approximations used by VBMC.
 
-Alternatively, you may give up on full (approximate) Bayesian inference, and resort instead to maximum-likelihood (or maximum-a-posteriori) estimation, using an efficient optimization algorithm such as [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/), one of the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/).
+Alternatively, you may give up on full (approximate) Bayesian inference, and resort instead to maximum-likelihood (or maximum-a-posteriori) estimation, using an efficient optimization algorithm such as [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/).
 
 (faq-installation)=
 ## Installing PyVBMC
@@ -353,7 +353,7 @@ You can find such points by running a few iterations of an optimizer first.
 
 Note that a starting point should not be *on* or too close to the bounds `LB` or `UB`. PyVBMC moves such points slightly inside and warns. You can avoid this issue by constraining the preliminary optimization to be inside the plausible box, that is within `PLB` and `PUB` (see also [below](#faq-how-do-i-choose-plb-and-pub)).
 
-For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) (one of the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/)) to perform the preliminary optimization inside the plausible box, as follows:
+For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) to perform the preliminary optimization inside the plausible box, as follows:
 
 ```python
 import numpy as np
@@ -369,8 +369,7 @@ x0 = bads.optimize()["x"]
 ```
 
 This example assumes a deterministic `fun` returning the log joint.
-PyBADS, one of the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/),
-is installed separately; its [documentation](https://acerbilab.github.io/pybads/)
+Install PyBADS separately; its [documentation](https://acerbilab.github.io/pybads/)
 also covers noisy optimization.
 
 (faq-how-do-i-choose-lb-and-ub)=
@@ -594,12 +593,12 @@ Only when asked to. With `options={"uncertainty_handling": True}` and without `s
 (faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood)=
 ### Can I use *any* technique to estimate a noisy log-likelihood?
 
-Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes; its Python implementation, [PyIBS](https://github.com/acerbilab/pyibs), is among the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/). The *synthetic likelihood* (SL) method could also work.
+Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs), available in Python as [PyIBS](https://github.com/acerbilab/pyibs), is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
 
 (faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood)=
 ### How do I estimate the standard deviation of the noisy log-likelihood?
 
-If you use [*inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs), one of the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/), the algorithm returns the variability of the estimate as second output. Just ensure that the variability is returned as *standard deviation* (SD) and not as the variance (depending on the implementation, you may have to take the square root of the reported variance).
+If you use [*inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs), the algorithm returns the variability of the estimate as second output. Just ensure that the variability is returned as *standard deviation* (SD) and not as the variance (depending on the implementation, you may have to take the square root of the reported variance).
 
 Otherwise, you can also estimate the SD via bootstrap or similar approaches.
 
@@ -794,9 +793,9 @@ Also, the log model evidence (as approximated by its lower bound, the ELBO) is a
 
 Fair enough — just be aware that you may be missing important features of your model and data, and your estimates and predictions might be way overconfident.
 
-If you only care about finding point estimates, you might want to have a look at our method for efficient Bayesian optimization, [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/), one of the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/).
+Our [model-fitting toolkit](https://acerbilab.org/model-fitting/) includes [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) for efficient optimization when you only need point estimates.
 
 (faq-are-you-planning-to-port-vbmc-to-other-languages)=
 ### Are you planning to port VBMC to other languages?
 
-VBMC is available in MATLAB [here](https://github.com/acerbilab/vbmc) and in Python as the [PyVBMC package](https://github.com/acerbilab/pyvbmc). Both are among the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/). Currently, there is no plan to port the algorithm to other languages, since there are ways to run the Python version from several other languages (for example, our users have been able to run PyVBMC from [Julia](https://cjdoris.github.io/PythonCall.jl/stable/)).
+VBMC is available in MATLAB [here](https://github.com/acerbilab/vbmc) and in Python as the [PyVBMC package](https://github.com/acerbilab/pyvbmc). Currently, there is no plan to port the algorithm to other languages, since there are ways to run the Python version from several other languages (for example, our users have been able to run PyVBMC from [Julia](https://cjdoris.github.io/PythonCall.jl/stable/)).
