@@ -683,20 +683,22 @@ def _recording_emitter(output, urls_seen=None):
 
 
 def test_tips_pass_their_links_to_the_emitter():
-    _runtime_tips._ORDER = [TIPS[1], TIPS[2], TIPS[0]]
+    _runtime_tips._ORDER = list(TIPS)
     output, urls_seen = [], []
     emit = _recording_emitter(output, urls_seen)
-    for _ in range(4):
+    for _ in range(3 * len(TIPS)):
         _runtime_tips.consider_runtime_tip(
-            enabled=True, display=True, noisy=False, emitter=emit
+            enabled=True, display=True, noisy=True, emitter=emit
         )
-    assert urls_seen == [TIPS[1].urls, TIPS[2].urls]
+    # Noisy-only tips come first; the others keep the catalog's order.
+    expected = sorted(TIPS, key=lambda tip: not tip.noisy_only)
+    assert urls_seen == [tip.urls for tip in expected]
     assert all(urls for urls in urls_seen)
     assert all(tip.urls for tip in TIPS)
 
 
 def test_tip_cadence_noisy_priority_and_once_only():
-    _runtime_tips._ORDER = [TIPS[1], TIPS[2], TIPS[0]]
+    _runtime_tips._ORDER = list(reversed(TIPS))
     output = []
     results = [
         _runtime_tips.consider_runtime_tip(
@@ -705,14 +707,16 @@ def test_tip_cadence_noisy_priority_and_once_only():
             noisy=True,
             emitter=_recording_emitter(output),
         )
-        for _ in range(7)
+        for _ in range(3 * len(TIPS))
     ]
     emitted = [(index, tip) for index, tip in enumerate(results, 1) if tip]
 
-    assert [index for index, _ in emitted] == [1, 4, 7]
+    assert [index for index, _ in emitted] == [
+        1 + 3 * k for k in range(len(TIPS))
+    ]
     assert emitted[0][1].id == "noisy_elbo"
-    assert len({tip.id for _, tip in emitted}) == 3
-    assert len(output) == 3
+    assert len({tip.id for _, tip in emitted}) == len(TIPS)
+    assert len(output) == len(TIPS)
     assert all(message.startswith("Tip: ") for message, _ in output)
     assert (
         _runtime_tips.consider_runtime_tip(
@@ -748,7 +752,7 @@ def test_disabled_or_non_info_tips_do_not_consume_cadence():
 
 
 def test_noisy_only_tip_is_ineligible_for_noiseless_stack():
-    _runtime_tips._ORDER = [TIPS[0], TIPS[1], TIPS[2]]
+    _runtime_tips._ORDER = list(TIPS)
     emitted = _runtime_tips.consider_runtime_tip(
         enabled=True,
         display=True,

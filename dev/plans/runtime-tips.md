@@ -447,4 +447,35 @@ PyBADS documentation link. The tip's wording and scheduling are unchanged.
 None of the example notebooks' stored outputs contains this tip; their
 release execution will use the updated catalog.
 
-Open: the PI's reading of the wording of every tip.
+Rulings of 2026-10-08, from the PI's reading of every tip and of the
+old-release reminder, each shown in the output of a run:
+
+- `evidence_uncertainty` presents `elbo_sd` as a diagnostic: for a
+  noiseless target, a value much larger than 0.1, the FAQ's threshold,
+  signals an unreliable estimate, to be discussed and reported. The tip no
+  longer asks for `elbo_sd` to be reported beside every `elbo`.
+- `pybads` links the lab's overview alone, which says which tool suits
+  which job and leads to PyBADS, and calls PyBADS one of the lab's
+  model-fitting tools. Where two links would crowd a tip, one is enough;
+  `AGENTS.md` ("Links to the lab") treats the overview link beside a
+  method's own as a default.
+- A tip's link tells the reader more than the tip: `noisy_target` and
+  `save_resume` link their FAQ entries, `posterior_plot` the `plot` method
+  of its API page, and `multiple_runs` and `svbmc` keep their examples, which
+  the FAQ entries on their subjects only point to. Every link goes to
+  acerbilab.org, where the acerbilab.github.io addresses redirect; the
+  notebooks keep their published path, `_examples/`.
+- `plausible_bounds` says that the plausible bounds guide the search
+  "without affecting or restricting the posterior".
+- `noisy_elbo` is cut to three sentences: the raw elbo values printed while
+  the weights are optimized are optimistic, `stacked.elbo` corrects much of
+  this bias with two-level shrinkage, and the last line of the output gives
+  the correction.
+- `run_count` recommends stacking 3–5 well-converged runs, more on hard
+  problems; the S-VBMC paper's ten came from benchmarks built to be hard for
+  VBMC. `multiple_runs` keeps its 3–4 runs, which check a fit.
+- `starting_points` is removed: it prints once the runs are done, and
+  `multiple_runs` gives its advice while they are made.
+- The other tips and the old-release reminder stand as they were.
+
+The review is complete.

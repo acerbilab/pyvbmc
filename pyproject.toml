@@ -22,7 +22,7 @@ dependencies = [
 requires-python = ">=3.10"
 
 [project.urls]
-Documentation = "https://acerbilab.github.io/pyvbmc/"
+Documentation = "https://acerbilab.org/pyvbmc/"
 Source = "https://github.com/acerbilab/pyvbmc"
 Changelog = "https://github.com/acerbilab/pyvbmc/blob/main/CHANGELOG.md"
 Issues = "https://github.com/acerbilab/pyvbmc/issues"

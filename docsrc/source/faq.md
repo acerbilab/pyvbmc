@@ -103,7 +103,7 @@ If the likelihood function is smooth and analytical (and fast to compute), you s
 
 If the likelihood function is computationally expensive *and* non-smooth (or it produces a pathological posterior), then, well, tough luck. In this case, you may see if revising your model, for example by changing the parameterization, produces a posterior landscape which is more compatible with the approximations used by VBMC.
 
-Alternatively, you may resort to maximum-likelihood (or maximum-a-posteriori) estimation. Among the lab's [model-fitting methods](https://acerbilab.org/model-fitting/), [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) is designed for efficient optimization.
+Alternatively, you may resort to maximum-likelihood (or maximum-a-posteriori) estimation. Among the lab's [model-fitting methods](https://acerbilab.org/model-fitting/), [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.org/pybads/) is designed for efficient optimization.
 
 (faq-installation)=
 ## Installing PyVBMC
@@ -384,7 +384,7 @@ You can find such points by running a few iterations of an optimizer first.
 
 Note that a starting point should not be *on* or too close to the bounds `LB` or `UB`. PyVBMC moves such points slightly inside and warns. You can avoid this issue by constraining the preliminary optimization to be inside the plausible box, that is within `PLB` and `PUB` (see also [below](#faq-how-do-i-choose-plb-and-pub)).
 
-For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/), one of our [model-fitting tools](https://acerbilab.org/model-fitting/), to perform the preliminary optimization inside the plausible box:
+For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.org/pybads/), one of our [model-fitting tools](https://acerbilab.org/model-fitting/), to perform the preliminary optimization inside the plausible box:
 
 ```python
 import numpy as np
@@ -400,7 +400,7 @@ x0 = bads.optimize()["x"]
 ```
 
 This example assumes a deterministic `fun` returning the log joint.
-Install PyBADS separately; its [documentation](https://acerbilab.github.io/pybads/)
+Install PyBADS separately; its [documentation](https://acerbilab.org/pybads/)
 also covers noisy optimization.
 
 (faq-how-do-i-choose-lb-and-ub)=
@@ -608,7 +608,7 @@ PyVBMC supports noisy target functions as input, as explained below.
 
 No. You tell VBMC that the target function is noisy when constructing `VBMC`, in one of two ways:
 
-- If the target can estimate the noise of each evaluation, which is the recommended setup, set `options={"specify_target_noise": True}` and pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
+- If the target can estimate the noise of each evaluation, which is the recommended setup, set `options={"specify_target_noise": True}` and pass to VBMC a function `fun` that returns a pair `(log_density, noise_sd)`, where `noise_sd` is a finite, positive estimate of the standard deviation (SD) of the log-density evaluation at `x`. See [below](#faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood) and [Example 6](https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_6_noisy_likelihoods.html) for further information.
 - Otherwise, set `options={"uncertainty_handling": True}` and leave `specify_target_noise` unset: `fun` returns `log_density` alone, and VBMC infers the noise level from the evaluations.
 
 With a separate `prior=` or `log_prior=`, `log_density` is the noisy log
@@ -678,7 +678,7 @@ We list here the major failure modes, diagnostics, and possible solutions:
 - In the simplest case, the VBMC algorithm fails to converge within the allotted budget of target function evaluations.
   - This is easy to detect (look at `results["success_flag"]` and `results["message"]`). There may be several distinct reasons for failure of convergence (see below).
 - VBMC converges, but the variational optimization has only found a *local* optimum.
-  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_4_validation.html)).
+  - You cannot detect this issue by looking at a *single* VBMC run. For this reason, I recommend to run several VBMC runs from different starting points (at least 3-4) and compare the solutions, for example via visual inspection of the posteriors and comparing their ELBOs and posterior distances (see also [Example 4](https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_4_validation.html)).
 - Multiple runs of VBMC converge to pretty much the same variational solution, which fails to capture important aspects of the true posterior.
   - This problem has no obvious solution, in that it is intrinsic to the fact that we are using an approximation that it may deviate from the true posterior. For example, variational posteriors, for how the variational objective is defined, tend to underestimate the true uncertainty of the posterior. You can use [*posterior predictive checks*](https://stats.stackexchange.com/questions/115157/what-are-posterior-predictive-checks-and-what-makes-them-useful) to gain confidence that the found solution makes sensible predictions, also in terms of calibration.
 
@@ -789,7 +789,7 @@ to reduce bias introduced by stacking; some bias can remain.
 interval for `stacked.elbo`. See the
 [S-VBMC documentation](api/classes/svbmc.rst) for interpreting the estimates,
 saving the stacked posterior, and sampling from it, and
-[Example 7](https://acerbilab.github.io/pyvbmc/_examples/pyvbmc_example_7_stacking.html)
+[Example 7](https://acerbilab.org/pyvbmc/_examples/pyvbmc_example_7_stacking.html)
 for a complete example.
 
 (faq-miscellanea)=
@@ -824,7 +824,7 @@ Also, the log model evidence (as approximated by its lower bound, the ELBO) is a
 
 Fair enough — just be aware that you may be missing important features of your model and data, and your estimates and predictions might be way overconfident.
 
-Our [model-fitting toolkit](https://acerbilab.org/model-fitting/) includes [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) for efficient optimization when you only need point estimates.
+Our [model-fitting toolkit](https://acerbilab.org/model-fitting/) includes [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.org/pybads/) for efficient optimization when you only need point estimates.
 
 (faq-are-you-planning-to-port-vbmc-to-other-languages)=
 ### Are you planning to port VBMC to other languages?

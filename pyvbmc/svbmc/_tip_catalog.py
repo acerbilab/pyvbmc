@@ -16,38 +16,25 @@ class Tip:
 TIPS = (
     Tip(
         "noisy_elbo",
-        "On noisy targets, the raw stacked ELBO can be optimistic, with "
-        "optimism growing as more runs are stacked. Where it is defined, "
-        "the headline elbo is a two-level shrinkage estimate, which targets "
-        "the optimism that stacking adds and can also remove part of the "
-        "runs' own bias; some bias can remain. Use elbo for model "
-        "comparison and report elbo_sd alongside it. The SD describes "
-        "uncertainty of the raw evaluation; it does not include selection "
-        "bias or uncertainty of the shrinkage. The correction affects the "
-        "reported evidence estimate only; the stacked posterior is "
-        "unchanged.",
+        "With noisy targets, the raw elbo values printed below during "
+        "optimization are optimistic, more so the more runs are stacked. "
+        "stacked.elbo corrects much of this bias with two-level shrinkage, "
+        "a statistical debiasing technique. The last line of the output "
+        "reports the amount of the correction.",
         noisy_only=True,
         urls=(
-            "https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html"
+            "https://acerbilab.org/pyvbmc/api/classes/svbmc.html"
             "#svbmc-elbo-reporting",
         ),
     ),
     Tip(
         "run_count",
-        "Stacking about ten well-converged VBMC runs often captures most "
-        "of the improvement in posterior quality seen in the S-VBMC paper.",
+        "Stacking 3–5 well-converged VBMC runs is usually enough. On hard "
+        "problems, such as multimodal posteriors, stacking more runs can "
+        "still improve the posterior.",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/_examples/"
+            "https://acerbilab.org/pyvbmc/_examples/"
             "pyvbmc_example_7_stacking.html",
-        ),
-    ),
-    Tip(
-        "starting_points",
-        "Start the individual VBMC runs from different points to help "
-        "them explore different regions of the posterior.",
-        urls=(
-            "https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html"
-            "#svbmc-helpers",
         ),
     ),
 )

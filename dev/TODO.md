@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-07. These lists describe scope, not priority or execution
+Updated 2026-10-08. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -9,26 +9,6 @@ the locally held artifacts that the last section describes: the
 records its execution.
 
 ## In scope for 1.5
-
-- [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
-  run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
-  `pyvbmc/svbmc/_tip_catalog.py`) are to be reviewed before the release (PI,
-  2026-09-30). The [tips plan](plans/runtime-tips.md) records their policy,
-  catalog, wording and acceptance checks. The tips are described in the
-  section "Startup tips" of the `VBMC` API page, a paragraph of the
-  quickstart, the `SVBMC` page and the description of `show_tips` in
-  `basic_vbmc_options.ini`; a change to what the feature does also reaches
-  the changelog's "Tips" entry and the "What's new" blocks. The stored
-  outputs of Examples 4, 5 and 7 show tips, and are executed again at the
-  release. The old-release reminder
-  ([plans/version-check.md](plans/version-check.md)) shares the tips' slot
-  and switches, and the review covers it: it is described in the same places
-  and in the FAQ's entry on newer versions, the `check_for_updates` API page
-  and the changelog's "Update reminders" entry. The PI's rulings so far,
-  and what remains open (the reading of the wording of every tip), are in
-  the tips plan's last section, "Review before the 1.5 release". The
-  switch of the S-VBMC headline (2026-10-06) rewrote `noisy_elbo` and gave
-  it a link to the `SVBMC` page's account of the headline.
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's

@@ -165,9 +165,6 @@ its own transform. Do not combine the component means and covariances of
 different runs directly, and do not read them as a single mixture: use
 ``sample()`` for every estimate and plot.
 
-.. The S-VBMC runtime tip on starting points (pyvbmc/svbmc/_tip_catalog.py)
-   links this label.
-
 .. _svbmc-helpers:
 
 Helpers

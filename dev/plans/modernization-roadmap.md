@@ -1326,6 +1326,14 @@ must cover the settled release code, API and behavior before publication.
   shows the changed tip.
   The wording pass of 2026-10-08 varied the overview referrals, added a
   prominent link in the FAQ introduction and shortened the footer.
+- [x] Review the tips and the old-release reminder with the PI (2026-10-08),
+  each shown in the output of a run. The
+  [tips plan](runtime-tips.md#review-before-the-15-release) records the
+  rulings: five tips are reworded, five relinked, and `starting_points`,
+  an S-VBMC tip, is removed. The links to the documentation of PyVBMC and
+  PyBADS in the shipped files move to acerbilab.org, where the
+  acerbilab.github.io addresses redirect; the stored outputs of Examples 4
+  and 5 keep the old addresses until the notebooks are executed again.
 - [x] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation:

@@ -13,7 +13,7 @@ Check the installed PyVBMC version before using version-specific features.
 This skill accompanies PyVBMC 1.5. Prefer documentation from the user's
 checkout when available. The source links below point to the
 [`main` branch](https://github.com/acerbilab/pyvbmc/tree/main), from which
-the published [documentation](https://acerbilab.github.io/pyvbmc/) is built.
+the published [documentation](https://acerbilab.org/pyvbmc/) is built.
 For another version, use the corresponding Git tag or branch and check API
 signatures and docstrings in that version.
 
@@ -36,12 +36,12 @@ this skill folder has been copied elsewhere.
 | Handle noisy likelihoods | The FAQ's “Noisy target function” section and [Example 6](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_6_noisy_likelihoods.ipynb). |
 | Interpret results, compare runs, or troubleshoot | The FAQ's “Output arguments”, “Display” and “Troubleshooting” sections; [Example 4](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_validation.ipynb) for validation. |
 | Save or resume; combine posteriors | The FAQ's “How do I save and continue a run?” and “Can I combine the posteriors of several runs?”; [Example 7](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_7_stacking.ipynb) for S-VBMC. |
-| Look up exact arguments, options or posterior methods | The [API reference](https://acerbilab.github.io/pyvbmc/documentation.html), with sources under `docsrc/source/api/` and implementation docstrings under `pyvbmc/`. The quickstart also covers vectorized targets and optional exports; the FAQ's “Troubleshooting” section covers reproducibility. |
+| Look up exact arguments, options or posterior methods | The [API reference](https://acerbilab.org/pyvbmc/documentation.html), with sources under `docsrc/source/api/` and implementation docstrings under `pyvbmc/`. The quickstart also covers vectorized targets and optional exports; the FAQ's “Troubleshooting” section covers reproducibility. |
 
 The FAQ is [docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).
 
 The lab's [model-fitting software](https://acerbilab.org/model-fitting/)
-also includes [PyBADS](https://acerbilab.github.io/pybads/) for point
+also includes [PyBADS](https://acerbilab.org/pybads/) for point
 estimates or a starting point for PyVBMC, and
 [PyIBS](https://github.com/acerbilab/pyibs) for likelihood estimates from
 simulations.
