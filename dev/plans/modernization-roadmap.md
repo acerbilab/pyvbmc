@@ -72,8 +72,8 @@ over default VIQR.
 S-VBMC preparation and entropy optimizations are a separate performance
 task validated against the regression references;
 [svbmc-speedups.md](svbmc-speedups.md) records the implementation and
-measurement. The standalone `svbmc` compatibility release follows PyVBMC
-1.5 on PyPI.
+measurement. The release that deprecates the standalone `svbmc` package,
+in favor of `pyvbmc.SVBMC`, follows PyVBMC 1.5 on PyPI.
 
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
@@ -903,8 +903,9 @@ The open work for 1.5 is the list "In scope for 1.5" of
     option; a `seed` argument replaces `testing`; explicit float64; the toy
     targets stay in the standalone package; fixtures as plain-array
     snapshots plus a generated D=1, bounded and warped set. Execution and
-    worklog: [svbmc-integration.md](svbmc-integration.md). The forwarding
-    `svbmc` release waits for the 1.5 publication.
+    worklog: [svbmc-integration.md](svbmc-integration.md). The release that
+    deprecates the standalone `svbmc` package waits for the 1.5
+    publication.
     **Delivered (2026-09-11, merged into `dev-next` at `0b5af29`):**
     `pyvbmc.svbmc` with `SVBMC` and the `utils` helpers (the toy targets
     stay in the standalone package), `pyvbmc.SVBMC` resolved lazily so
@@ -918,8 +919,8 @@ The open work for 1.5 is the list "In scope for 1.5" of
     installation note and Example 7. Two further upstream defects fixed on
     the way: `find_init_bounds` rejected `(1, D)` bounds, and
     `stacked_ELBO` left tensor weights unnormalized. Branch smoke: run
-    34632149372. Remaining: the forwarding `svbmc` release after the 1.5
-    publication. The preparation/entropy speedups followed in
+    34632149372. Remaining: the release that deprecates the standalone
+    `svbmc` package, after the 1.5 publication. The preparation/entropy speedups followed in
     [svbmc-speedups.md](svbmc-speedups.md).
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`
@@ -1315,9 +1316,10 @@ must cover the settled release code, API and behavior before publication.
   Links naming Luigi Acerbi use his personal page, and lab
   links use the group's page. Individual developers link to personal
   profiles or the People page; links labeled "members" go to the People
-  page. The `pybads` tip retains its
-  PyBADS documentation link alongside the tools page; the
-  [tips plan](runtime-tips.md#review-before-the-15-release) records it.
+  page. The `pybads` tip kept its PyBADS documentation link beside the
+  tools page until the review of the tips on 2026-10-08, which left it the
+  tools page alone; the
+  [tips plan](runtime-tips.md#review-before-the-15-release) records both.
   The Sphinx HTML build passed with warnings treated as errors, and the
   tip/reminder tests passed (100 tests). The five checked destinations
   (tools page, personal page, group page, PyIBS and PyBADS documentation)
@@ -1405,12 +1407,17 @@ must cover the settled release code, API and behavior before publication.
   wrong in 252 run sidecars, upper medians quoted as medians in a report,
   and a publication index missing four entries, each acknowledged only in a
   note elsewhere.
-- [ ] A delta pass of the sweep, under the same rule, over what changes
+- [x] A delta pass of the sweep, under the same rule, over what changes
   after it: the diff since `46200293`, including the merged Slurm
   documents and the text that the open items of `TODO.md` rewrite.
   The documentation and record findings of 2026-10-07 are corrected in
   their source files and recorded in the ledger's dated delta section.
-  The final pass covers the settled release commit.
+  The final pass covered the settled release commit, `4d9f5942`, on
+  2026-10-08: three read-only reviewers, 25 findings, each ruled by the PI
+  and corrected in its file, two of them in code (the tips of naive
+  stacking and the conda command of `check_for_updates`) and one in the
+  changelog; the ledger's section "Final delta review, 2026-10-08"
+  records them.
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages on the settled release code, and check the
   [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
@@ -1424,20 +1431,30 @@ must cover the settled release code, API and behavior before publication.
   section the skill names. The links to `main` in the skill and the docs
   resolve only once the release merge puts the 1.5 files there, so a
   `linkcheck` follows that merge.
-- [ ] Re-execute every example notebook with the release code and commit
+- [x] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
   (`dev/README.md`) runs all nine and writes back only those whose checks of
   their text's claims pass. Reinstall `pyvbmc` in the notebooks'
-  environment at the release commit first: Example 3 prints
-  `results["version"]`, which an editable install reads from its metadata as
-  of its installation. Example 7's account of the headline estimate follows
+  environment at the release commit first: the run's record takes PyVBMC's
+  version from the installed metadata, which an editable install fixes when
+  it is installed. Example 7's account of the headline estimate follows
   the headline decision (pickup 17); read each notebook's text against its new
   outputs, and regenerate `examples/scripts/` with its Makefile. Example 7's
   text needs at least one of its four runs to miss a mode, which its check
   asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single
   runs on its target missed one; `dev/scripts/runs/LOCAL.md`, "Example
   notebooks").
+  Done on 2026-10-08 at `4d9f5942` (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-08)"): all nine ran and passed their checks, the
+  outputs of Examples 2, 4, 5, 6, 7 and 8 changed, and each notebook's text
+  agrees with its new outputs, which show the tips and documentation
+  addresses of the review of 2026-10-08. Examples 4 and 6 are seeded, and
+  their new runs differ from the outputs committed on 2026-10-07
+  (`02f8fe29`), of which no execution record exists; a second execution of
+  both by the script gave the new outputs again, identical but for the
+  startup tip. The notebooks' code is unchanged, and so are the scripts in
+  `examples/scripts/`.
 - [ ] In the release pull request, set `RELEASE_DATE` in
   `pyvbmc/_release.py` to the date of the changelog heading
   `## [X.Y.Z] - YYYY-MM-DD` that the release gives its section: the
@@ -1472,7 +1489,10 @@ must cover the settled release code, API and behavior before publication.
   `dev-next` as the working branch is true until the release merge and
   changes with it: the working rules at the end of `TODO.md`, the header of
   this roadmap, the [Slurm plan](slurm-benchmark-support.md)'s account of
-  the harnesses on `dev-next`, and the open items of `TODO.md`.
+  the harnesses on `dev-next`, and the open items of `TODO.md`. The release
+  merge also deletes `origin/dev-port-review`, which is merged into
+  `dev-next` and kept until the release (the
+  [release sweep](../results/2026-09-27-release-sweep.md)'s ruling C-3).
 
 ## Post-release follow-up
 

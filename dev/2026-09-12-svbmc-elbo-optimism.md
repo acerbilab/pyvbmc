@@ -3,7 +3,12 @@
 *Written 12 September 2026 from a discussion with the PI. The implementation
 survey describes the code before Phase 1. All five Phase 1 defaults were
 accepted later that day; the execution record is
-[plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).*
+[plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md). Phase 2's
+cross-run estimate was not adopted (its outcome below); since 2026-10-06 a
+noisy stack reports the two-level shrinkage estimate of the
+[headline note](2026-09-15-svbmc-headline-shrinkage.md), and falls back,
+with a warning, to the component-median cap of Phase 1 where the shrinkage
+is numerically undefined.*
 
 Stacking (Silvestrin, Li and Acerbi, 2025;
 [`papers/silvestrin2025stacking_main.md`](../papers/silvestrin2025stacking_main.md)

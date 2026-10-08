@@ -3,9 +3,9 @@
 Created: 2026-09-10. Status: **COMPLETE — implemented and verified**.
 Astra owns design/integration; Sol implements and independently reviews.
 This plan owns the tip policy, wording, startup integration and acceptance
-checks for maintainers. Roadmap pickup 13 and `dev/TODO.md` ("Review of the
-tips") link here; no separate worklog. The review before the 1.5 release is
-the last section.
+checks for maintainers. Roadmap pickup 13 and the roadmap's pre-release
+checklist link here; no separate worklog. The review before the 1.5
+release, complete on 2026-10-08, is the last section.
 
 ## Goal and settled scope
 
@@ -411,11 +411,11 @@ clean checkout; no ignored calibration artifacts or session jobs are needed.
 
 ## Review before the 1.5 release
 
-The PI reviews the tips of `VBMC` (`pyvbmc/vbmc/_tip_catalog.py`) and of
+The PI reviewed the tips of `VBMC` (`pyvbmc/vbmc/_tip_catalog.py`) and of
 `SVBMC` (`pyvbmc/svbmc/_tip_catalog.py`, which came after this plan) before
-the release (`dev/TODO.md`, "Review of the tips"). The catalogs hold the
-current text and links; for some tips these differ from the lists above,
-which record what was approved on 2026-09-10.
+the release; the roadmap's pre-release checklist records the review. The
+catalogs hold the current text and links; for some tips these differ from
+the lists above, which record what was approved on 2026-09-10.
 
 Rulings of 2026-10-01:
 

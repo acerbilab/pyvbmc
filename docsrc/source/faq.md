@@ -150,8 +150,9 @@ or newer.
 
 Run `pyvbmc.check_for_updates()`. It checks PyPI for a newer release and,
 if one is available, prints the command that updates your installation:
-`python -m pip install --upgrade pyvbmc`, or
-`conda update --channel=conda-forge pyvbmc` for conda.
+`python -m pip install --upgrade pyvbmc`, or, for conda,
+`conda install --channel=conda-forge "pyvbmc>=X.Y.Z"`, where `X.Y.Z` is the
+latest release.
 
 PyVBMC also occasionally reminds you when your installed release is more
 than a year old. The reminder makes no network request. To disable it and

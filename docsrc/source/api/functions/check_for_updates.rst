@@ -22,11 +22,11 @@ it and gives the command that installs it, for example:
 
 The command follows the installer recorded with your installation:
 ``python -m pip install --upgrade pyvbmc`` for pip,
-``conda update --channel=conda-forge pyvbmc`` for conda (the conda-forge
-package can follow PyPI by a few days), and both when the installer is
-another or unknown. The other messages are listed below, with the returned
-named tuple, which gives a script the same answer. A network failure raises
-no error.
+``conda install --channel=conda-forge "pyvbmc>=1.6.0"`` for conda, naming
+the latest release (the conda-forge package can follow PyPI by a few days),
+and both when the installer is another or unknown. The other messages are
+listed below, with the returned named tuple, which gives a script the same
+answer. A network failure raises no error.
 
 Network access
 --------------

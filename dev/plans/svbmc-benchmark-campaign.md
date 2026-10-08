@@ -1043,7 +1043,8 @@ run against the acceptance criteria, and the results recorded.
 - [x] Criteria 1–5 assessed with the numbers in the report; any failure
       is stated as such (criterion 3 fails on Student D8; the report
       and the worklog of 2026-09-15). The `M = 32` cells, an
-      extension of the grid for the integrated arm, are pending.
+      extension of the grid for the integrated arm, ran on 2026-09-15/16
+      (the worklog).
 - [x] Phase 2 hand-off paragraph in the worklog names the pool directory,
       the filtered counts and the comparison cells (the Phase 2
       scoring itself ran on the cells; worklog of 2026-09-15).

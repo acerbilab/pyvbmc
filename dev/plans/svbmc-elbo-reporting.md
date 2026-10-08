@@ -1,7 +1,12 @@
 # S-VBMC ELBO corrections and reporting
 
 Created 2026-09-12. Status: implemented, verified and merged into `dev-next`
-at `954677a` (implementation commit `483a8da`).
+at `954677a` (implementation commit `483a8da`). Decision 4's headline for a
+noisy stack was replaced on 2026-10-06 by the two-level shrinkage estimate,
+with the component-median cap as its fallback where the shrinkage is
+numerically undefined ([shrinkage plan](svbmc-shrinkage-estimator.md);
+[the reading](../results/2026-10-06-arm-3-reading.md)); `cap_amount` is
+zero unless the cap is the headline.
 
 This is the execution record for Phase 1 of the
 [ELBO optimism note](../2026-09-12-svbmc-elbo-optimism.md). It owns the

@@ -60,13 +60,16 @@ For the release overview, start with
   extrapolates optimistically. One golden run in 990 does the same; both
   recover. The rule stays for 1.5.
 - [S-VBMC ELBO optimism](2026-09-12-svbmc-elbo-optimism.md) —
-  What the stacking implementation reports today, why the ELBO optimism
+  What the stacking implementation reported on 2026-09-12, before Phase 1,
+  why the ELBO optimism
   on noisy targets is a cross-run selection effect, the decision to leave
   the objective alone, and the two agreed phases: corrections, reporting
   and tips from the stored posteriors alone, then an exploration of a
   cross-run honest estimate using the runs' GPs. Phase 1 is implemented
   and verified; the execution record is
-  [plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md).
+  [plans/svbmc-elbo-reporting.md](plans/svbmc-elbo-reporting.md). The
+  headline of a noisy stack is the two-level shrinkage estimate since
+  2026-10-06 (the headline note).
 
 - [Scoped PyMC integration](2026-09-13-pymc-integration.md) —
   PR #73 compared with 1.5, the proposed split between model/export adapters
@@ -152,7 +155,8 @@ plan and consolidated human summary.
   current defaults in both balanced sweeps and establish discovery costs.
 - [plans/runtime-tips.md](plans/runtime-tips.md) — the optional startup tips
   (`show_tips`): policy, catalog, wording and acceptance checks; complete
-  (2026-09-10).
+  (2026-09-10). The PI's review of the tips before 1.5 (2026-10-01 to
+  2026-10-08) is its last section.
 - [plans/version-check.md](plans/version-check.md) — the reminder that the
   installed release is more than a year old, which makes no network request,
   and `pyvbmc.check_for_updates()`, which asks PyPI on request: design, the
@@ -217,11 +221,11 @@ plan and consolidated human summary.
   brief for the operator who runs the release gate's campaigns on the
   cluster (2026-10-01): the two population arms, the pools, the stacking
   and the two analyses of the pools in their order, the limits of every
-  job, and what is handed back.
+  job, and what is handed back; carried out, and retained as written.
 - [plans/release-gate-handoff-2.md](plans/release-gate-handoff-2.md) — the
   brief for the release gate's second batch (2026-10-05): Arm 0 and Arm 3,
   their two commits and checkouts, the campaigns in their order, the
-  limits, and what is handed back.
+  limits, and what is handed back; carried out, and retained as written.
 - [results/2026-10-05-noisy-rosenbrock-warmup.md](results/2026-10-05-noisy-rosenbrock-warmup.md) —
   why the release code's runs of the noisy two-dimensional Rosenbrock
   target of the release gate are shorter and less accurate than the before
@@ -1243,7 +1247,8 @@ reason.
   scratch directory under `--record-dir` (default
   `scripts/runs/notebooks_<date>/`), through a temporary kernel of the
   interpreter that `--python` names: BLAS single-threaded, this checkout
-  first on `PYTHONPATH`, Example 2's Plotly figure stored as HTML beside its JSON.
+  first on `PYTHONPATH`, no old-release reminder (`PYVBMC_NO_UPDATE_REMINDER`),
+  Example 2's Plotly figure stored as HTML beside its JSON.
   The script removes from that HTML the MathJax that Plotly loads, which
   breaks the math of the docs page it is on; Example 2 executed any other
   way stores it again.
@@ -1252,7 +1257,7 @@ reason.
   removed, with a cell recording the versions, before the notebook is
   stored, and a notebook is written back to `examples/` only when it runs
   without error and its checks pass. `--no-write` keeps every executed
-  notebook in the scratch directory; `--only` picks examples (6 needs 4).
+  notebook in the scratch directory; `--only` picks examples.
   Each run writes `record_<time>.json` (commit, versions, durations, check
   results). Examples 7 to 9 need the `torch`, `arviz` and `pymc` extras and
   JAX; the machine that runs it lists the environment in

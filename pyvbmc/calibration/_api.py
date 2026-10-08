@@ -135,34 +135,10 @@ def _print_fallback_summary(
 
 
 def calibrate(*, verbose: bool = True) -> CalibrationProfile:
-    """Measure and return performance settings for this machine.
-
-    Each call requests a fresh campaign. If another campaign is active, or
-    the measurements are incomplete or invalid, return the best compatible
-    saved or in-process profile, or the standard profile when none is
-    available. The returned profile's ``status`` records that outcome and
-    its ``source`` records where the settings came from. A failed campaign
-    does not replace a valid saved record.
+    """Implement :func:`pyvbmc.calibrate`, whose docstring documents it.
 
     Normal constructors and numerical methods only read compatible cached
     settings and never invoke this work.
-
-    Parameters
-    ----------
-    verbose : bool, optional
-        Print the expected duration, campaign progress, whether faster
-        settings were selected, and where the results were saved. The
-        default is ``True``.
-
-    Returns
-    -------
-    CalibrationProfile
-        Immutable settings together with compact outcome and cache metadata.
-        A completed campaign has status ``"complete"``. A fallback has
-        status ``"busy"``, ``"incomplete"`` or ``"invalid"`` and uses the
-        best compatible saved, in-process or standard settings. The held-out
-        measurements behind completed, persisted settings are in the JSON
-        report named by ``cache_path``.
     """
     if not isinstance(verbose, bool):
         raise TypeError("verbose must be a bool")

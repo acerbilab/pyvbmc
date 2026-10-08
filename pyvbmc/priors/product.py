@@ -70,7 +70,7 @@ class Product(Prior):
             self.marginals.append(marginal)
 
     def _log_pdf(self, x):
-        """Compute the log-pdf of the multivariate uniform-box prior.
+        """Compute the log-pdf of the product prior.
 
         Parameters
         ----------
@@ -107,7 +107,7 @@ class Product(Prior):
         return log_pdf
 
     def sample(self, n, rng=None):
-        """Sample random variables from the uniform-box distribution.
+        """Sample random variables from the product distribution.
 
         Parameters
         ----------

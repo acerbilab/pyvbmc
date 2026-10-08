@@ -13,17 +13,10 @@ records its execution.
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
-  - re-execute the example notebooks at the release commit and commit their
-    outputs, Example 7 with its account of the headline as the switch of
-    2026-10-06 rewrote it;
   - the Sphinx build, `linkcheck`, the rendered pages and the agent skill on
     the settled code, with a `linkcheck` again after the merge into `main`
     (the API and tutorial review was done on 2026-10-07 in PR #186; the
     roadmap's checklist records it and that day's build);
-  - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
-    over the diff since `46200293` at the settled release commit; the
-    documentation findings of 2026-10-07 are corrected in their source
-    files and recorded in the sweep's ledger;
   - the final tests, the CI matrix and the package checks;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
@@ -36,7 +29,8 @@ records its execution.
     archives hold the cluster's details and the operator's paths; the
     replay fingerprints and the earlier references' traces are backed up
     in a draft release of their own;
-  - the references to `dev-next` that change with the release merge;
+  - the references to `dev-next` that change with the release merge, and
+    the deletion of `origin/dev-port-review` at that merge;
   - `RELEASE_DATE` in `pyvbmc/_release.py` set to the date of the
     changelog's release heading, in the release pull request (`AGENTS.md`,
     "Release date").
@@ -127,10 +121,15 @@ records its execution.
 
 ## After PyVBMC 1.5 is published
 
-- [ ] **Standalone `svbmc` compatibility release.** It depends on
-  `pyvbmc[torch]>=1.5` and forwards old `svbmc` imports to the integrated
-  implementation. S-VBMC is already available through PyVBMC; this serves
-  users of the old package. See the [integration plan](plans/svbmc-integration.md).
+- [ ] **Deprecate the standalone `svbmc` package.** S-VBMC is part of
+  PyVBMC from 1.5, and users are directed to `pyvbmc.SVBMC` (PI,
+  2026-10-08). The last release of `svbmc` depends on `pyvbmc[torch]>=1.5`,
+  forwards the old imports to the integrated implementation, so that
+  existing scripts keep running, and warns on import that the package is
+  deprecated, naming `pyvbmc.SVBMC` and the migration table of the `SVBMC`
+  page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
+  paper, and its README opens with a note that S-VBMC is integrated in
+  PyVBMC. See the [integration plan](plans/svbmc-integration.md).
 - [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
   [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
   that bumps the version and the source hash. Its PR 11 (open on

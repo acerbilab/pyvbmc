@@ -4,7 +4,11 @@ Written 2026-10-05 for the developer (and their coding agents) who ran
 the release gate's first batch of campaigns on the Slurm cluster, in their
 own account, and runs the second the same way. Everything referenced is
 on `dev-next` but Arm 3's code, which is on the branch
-`dev-arm3-port-warmup`. The procedure, with every command, is the
+`dev-arm3-port-warmup`, kept since 2026-10-06 as `retain/arm3-port-warmup`.
+Carried out: the batch ran on 2026-10-05 and was handed back in PR #184
+(2026-10-06); the roadmap's pickups 16 and 20 record the outcome, and the
+items of `dev/TODO.md` that this brief names are closed. The brief is kept
+as written. The procedure, with every command, is the
 operator's guide,
 [scripts/hpc/README.md](../scripts/hpc/README.md): its sections "Arm 0:
 PyVBMC 1.0.4", "Arm 3: the port's end of warm-up" and "The second batch's
