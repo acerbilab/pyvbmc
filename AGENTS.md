@@ -260,6 +260,12 @@ around three numerical stages, repeated until termination:
   garbage collection, or when the interpreter exits), and a continued run
   calls the option functions in every iteration. A test that needs a saved
   run with history makes a short run of its own.
+- PyTensor interns the inner graphs of operations (a `pytensor.scan` body,
+  an `OpFromGraph`) across the process by the values of the arrays they
+  hold, so two tests whose loop bodies read equal arrays share one array:
+  an in-place change in one test reaches the other, depending on the order
+  in which they run. Give each such test values of its own, as
+  `pyvbmc/testing/pymc/test_changed_inputs.py` does.
 - A new test directory needs an `__init__.py`: without one, two test files
   with the same basename collide.
 
