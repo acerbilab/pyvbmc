@@ -10,23 +10,6 @@ records its execution.
 
 ## In scope for 1.5
 
-- [ ] **Changelog for 1.5.** `CHANGELOG.md` (root, Keep a Changelog layout)
-  covers the changes since `v1.0.4`, written to the bar that `AGENTS.md`
-  ("Changelog") sets (condensed to it on 2026-09-30 and read by the PI the
-  same day; the worklog of the
-  [port review plan](plans/port-correctness-review.md) records how the
-  earlier, longer text was written and checked). "Runs are faster" gives
-  the speed against 1.0.4 measured on 2026-10-05/06 (the PI's wording,
-  2026-10-06; [results](results/2026-10-06-speed-against-1.0.4.md)), and
-  "Results are slightly more accurate" the accuracy of Arm 0's comparison
-  (the PI's wording, 2026-10-07;
-  [the comparison](experiments/release_gate_20261005_assessment_v104/comparison.md);
-  the roadmap's pickup 20), as do the "What's new" blocks below. Open before the release: the S-VBMC speed figure, to be
-  measured again on the release benchmark. The "What's new in PyVBMC 1.5"
-  blocks of `README.md` and `docsrc/source/index.rst` summarize the
-  changelog and move with it, its timings included; the docs' link to the
-  changelog resolves once the file is on `main`.
-
 - [ ] **Review of the tips.** The tips that `VBMC` and `SVBMC` print when a
   run starts (`show_tips`; catalogs in `pyvbmc/vbmc/_tip_catalog.py` and
   `pyvbmc/svbmc/_tip_catalog.py`) are to be reviewed before the release (PI,
@@ -47,62 +30,6 @@ records its execution.
   switch of the S-VBMC headline (2026-10-06) rewrote `noisy_elbo` and gave
   it a link to the `SVBMC` page's account of the headline.
 
-- [ ] **Slurm/HPC benchmark support.** Reproducible submission, resource
-  settings, resumption and result collection on the Turso cluster. The
-  design is the [Slurm plan](plans/slurm-benchmark-support.md), with the
-  PI's decisions of 2026-09-25: one campaign contract (`prepare`, `cases`,
-  a `worker` that claims its case, `verify`) that the pool, population and
-  stacking harnesses meet, and generic scripts beside the pool campaign's
-  under `scripts/hpc/`. The PI reviewed the plan on 2026-09-25. Phases 2
-  to 5, the redaction and guide of Phase 7, and the tools of the plan's
-  Phase 9 are on `dev-next`, from the branch `feat-slurm-campaigns`,
-  reviewed twice and fixed. Phases 1b and 6 (the survey, the source
-  trees, the frozen environment and its check, and the smoke campaigns, which
-  measured every job's time and memory) ran on the cluster from
-  2026-09-28 to 10-01. Phase 8, the release gate's campaigns, ran on
-  2026-10-02 from the release commit `ff3ed014` (PI, 2026-10-01) and was
-  handed back on 2026-10-04 (PR #181): every case of the four campaigns
-  verified, and their redacted copies are under
-  `experiments/release_gate_20261002/`. Phase 9, the replay fingerprints
-  and the port review's six seeded gate runs, ran on the developer's
-  machine on 2026-10-04 and met its acceptance (the plan's worklog); the
-  after arm became the golden reference `reference_2400_20261007` on
-  2026-10-07 (the roadmap's pickup 19), and the promotion's script is in
-  its record. The
-  smaller fixes that the plan's worklog of 2026-09-30 left for after the
-  merge were made on 2026-10-07 (the plan's worklog). What remains is the
-  review's optional findings, which await the PI's ruling. See
-  [HPC support](plans/modernization-roadmap.md#benchmark-coverage-and-hpc-support).
-
-- [ ] **Links to the lab.** PyBADS settled before its 1.5.0 release where
-  its published texts link the lab (PI, 2026-10-06; the convention "Links
-  to the lab" in PyBADS's `AGENTS.md`, applied in PyBADS's commit
-  "docs: links to the lab's tools for fitting models to data, and to its
-  group page"), and PyVBMC takes the same pass (PI, 2026-10-06):
-  - a link that names Luigi Acerbi goes to his personal page,
-    https://lacerbi.github.io/, and one that names the lab or its members
-    to the group's page,
-    https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence,
-    not to its `/people` page, which `README.md`, `docsrc/source/index.rst`
-    and `docsrc/source/about_us.rst` link now (`about_us.rst` for each
-    developer as well);
-  - the lab's page of its model-fitting tools,
-    https://acerbilab.org/model-fitting/ (link text "tools for fitting
-    models to data"), is linked under the title of `README.md` and
-    `index.rst`, in the docs' footer (`extra_footer` of sphinx-book-theme),
-    in a `[project.urls]` table of `pyproject.toml`, which has none, and in
-    each paragraph that sends the reader to another of the lab's methods
-    (PyBADS, PyIBS, MATLAB VBMC): the FAQ, the skill, the examples;
-  - a tip that sends the reader to another method links the page too:
-    the `pybads` tip links PyBADS's documentation alone.
-
-  PyBADS's README opens with "PyBADS is one of the open-source tools for
-  fitting models to data from Luigi Acerbi's group at the University of
-  Helsinki. Check out our other tools, such as PyVBMC for the posterior
-  and the model evidence and PyIBS for models that can only be simulated."
-  A change to a tip reaches the review of the tips (above) and the stored
-  outputs of the examples that show tips.
-
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
@@ -114,7 +41,9 @@ records its execution.
     (the API and tutorial review was done on 2026-10-07 in PR #186; the
     roadmap's checklist records it and that day's build);
   - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
-    over the diff since `46200293`;
+    over the diff since `46200293` at the settled release commit; the
+    documentation findings of 2026-10-07 are corrected in their source
+    files and recorded in the sweep's ledger;
   - the final tests, the CI matrix and the package checks;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
@@ -132,24 +61,21 @@ records its execution.
     changelog's release heading, in the release pull request (`AGENTS.md`,
     "Release date").
 
-- [ ] **The 3D animation of a PyVBMC run (`feat-3d-animation`).** An
-  interactive three.js page that plays back a recorded two-dimensional run
-  as a rotating landscape of the log density: the GP surrogate, the
-  evaluations, the acquisition function while points are chosen, the
-  variational mixture and, at the end, the true target. A second page ends
-  with the final posterior as the V of the PyVBMC wordmark;
-  `scripts/record.mjs` records either page as MP4, GIF or PNG frames, and
-  `dev/scripts/export_animation_trace.py` writes the trace of a real run
-  (the exporter is on `dev-next` too, for the
-  [matched MCMC budget](plans/matched-mcmc-budget.md), whose number the
-  video quotes).
-  The work is ongoing on the branch `feat-3d-animation`, cut from `dev-next`
-  on 2026-09-20 and not merged back; its `README.md`, `NOTES.md` and
-  `TODO.md` under `docsrc/source/_static/vbmc3d/` hold the design and the
-  next actions. Bring it back into `dev-next` once it settles. Where the
-  visualization is shown is undecided (the documentation, the project page,
-  the README): on the branch it sits in the docs' static folder, which the
-  Sphinx build does not publish, and no page links to it.
+- [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
+  its seventh draft was approved and mastered on 2026-10-05, and it has
+  not yet been uploaded to YouTube (PI, 2026-10-07). Upload it first,
+  then follow PyBADS's treatment of its film: add the final YouTube
+  link to `README.md` and `docsrc/source/index.rst`, in the introduction
+  and alongside the explanation of the method (`How does it work?` in
+  the README, `Example run` on the docs' index). Then add the video to
+  the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/)
+  page.
+
+  The film's source is on `feat-3d-animation`, under
+  `docsrc/source/_static/vbmc3d/`; its `README.md`, `NOTES.md` and
+  `TODO.md` hold the design, production record and publishing steps.
+  `dev/scripts/runs/LOCAL.md` lists the masters and the publishing kit.
+  The film quotes the [matched MCMC budget](plans/matched-mcmc-budget.md).
 
 ## Outside 1.5 scope
 

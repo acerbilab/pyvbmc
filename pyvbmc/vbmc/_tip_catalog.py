@@ -73,7 +73,10 @@ TIPS = (
             "to find one, then pass it as x0."
         ),
         frequency="low_frequency",
-        urls=("https://acerbilab.github.io/pybads/",),
+        urls=(
+            "https://acerbilab.github.io/pybads/",
+            "https://acerbilab.org/model-fitting/",
+        ),
     ),
     Tip(
         id="posterior_plot",

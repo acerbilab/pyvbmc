@@ -80,14 +80,14 @@ seeds; above 1 the release code is faster.
   evaluations in all (835 against 834 iterations and 4180 against 4160
   evaluations over the 18 runs): a difference within the spread of two or
   three seeds. Against 1.0.4, Arm 3's noisy runs take 2.1 times less time.
-  Arm 3 ran the noisy configurations alone, so the noiseless figure holds
-  if MATLAB's end of warm-up stays for noiseless targets, which Arm 3's
-  decision 5 leaves open.
+  This timing campaign ran Arm 3 on the noisy configurations alone.
+  The PI kept MATLAB's end of warm-up for both target kinds on
+  2026-10-06, so the release figures above apply to both.
 
-The figures differ from those of the changelog's current entry (two to
+The figures replace those of the earlier changelog entry (two to
 three times less time on noiseless targets, about 20 per cent less on
 noisy ones), which were measured against another baseline and before the
-port review's corrections; this note does not reconcile the two.
+port review's corrections.
 
 The table of every configuration is
 [analysis.md](../experiments/speed_v104_20261006/analysis.md).
@@ -105,13 +105,9 @@ the PI's wording (2026-10-06):
 > with one BLAS thread).
 
 The "What's new" blocks of `README.md` and `docsrc/source/index.rst` give
-the same two figures. The noisy figure is that of the release code's end of
-warm-up, MATLAB's; if the port's end is adopted for noisy targets (Arm 3),
-it becomes 2.1 in all three places.
-
-MATLAB's end of warm-up stays for noisy and noiseless targets (PI,
-2026-10-06; [the reading](2026-10-06-arm-3-reading.md)), so both figures
-stand.
+the same two figures. They use MATLAB's end of warm-up, retained for noisy
+and noiseless targets by the PI on 2026-10-06
+([the reading](2026-10-06-arm-3-reading.md)).
 
 ## Limits
 

@@ -333,6 +333,18 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
 
 ## Conventions
 
+- **Links to the lab.** In what ships or is published, a link that names
+  Luigi Acerbi goes to his personal page, https://lacerbi.github.io/.
+  Links naming the lab use the group's page,
+  https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence.
+  Individual developers link to their personal profiles or the lab's
+  `/people` page; links labeled "members" also go to `/people`.
+  The README, docs' index and FAQ introductions, docs' footer, package
+  metadata and complementary-method tips link the lab's overview at
+  https://acerbilab.org/model-fitting/. Complementary-method referrals keep
+  the overview link alongside the direct link to the named method, helping
+  readers discover related tools. Vary the link text and sentence to suit
+  the context, and omit only redundant nearby repeats.
 - **Commits** follow conventional commits. A `Co-Authored-By:` line is fine;
   a `Claude-Session:` trailer is not, even where the session's own
   attribution instructions ask for one.

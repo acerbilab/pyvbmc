@@ -1,12 +1,15 @@
 # Slurm benchmark support for the release gate
 
-Created: 2026-09-25. Status: **reviewed by the PI on 2026-09-25; Phases 2
+Created: 2026-09-25. Status: **complete (2026-10-07)**.
+
+Reviewed by the PI on 2026-09-25; Phases 2
 to 5, Phase 7's redaction, operator's guide and brief, and the tools of
 Phase 9, the promotion and the public assets implemented on
 `feat-slurm-campaigns`, doublechecked and merged into `dev-next` after the
 PI's review; Phases 1 and 6 done on the cluster (2026-09-25 to 10-01);
 Phase 8's campaigns run on 2026-10-02 and handed back (PR #181, merged on
-2026-10-04); Phase 9 run on the developer's machine on 2026-10-04**.
+2026-10-04); Phase 9 run on the developer's machine on 2026-10-04;
+the deferred fixes and their two review rounds completed on 2026-10-07.
 What it assumes of the cluster rests on the surveys of 2026-09-25 and
 2026-09-28 (Phase 1), on the smoke campaigns of Phase 6 and on the records
 of the September pool. The harness sections below describe each harness as
@@ -50,7 +53,7 @@ it stood before this plan's work and what the work gave it.
     `dev/README.md`, with the promotion's template and guard;
   - [x] a doublecheck, its fixes, and every harness test module run.
 
-**Pickup point.** The campaigns of Phase 8 ran on 2026-10-02 in the
+**Completion.** The campaigns of Phase 8 ran on 2026-10-02 in the
 operator's account, from the release commit `ff3ed014`, and every case of
 the four verified; the operator handed them back on 2026-10-04 (PR #181).
 Their redacted tracked copies are under
@@ -63,8 +66,8 @@ the worklog of 2026-09-30 left for after the merge were made on
 since MATLAB's end of warm-up stays (PI, 2026-10-06): the after arm is the
 golden reference `reference_2400_20261007` since 2026-10-07 (the
 [promotion record](../golden/promotion_20261007/README.md); the roadmap's
-pickup 19). What remains of this plan is the review's optional findings,
-which await the PI's ruling.
+pickup 19). The PI closed the Slurm item for 1.5 on 2026-10-07; the
+worklog records the completed fixes and validation.
 
 The arm comparison and the promotion are recorded by the roadmap's pickup
 19, the reading of the pools and the stacking by the final large-scale
@@ -1490,7 +1493,9 @@ reproduces bit for bit.
   on), which the exit-code table now explains; the clean-tree checks
   keep the operator's global excludes file, whose removal could newly
   flag files that it hides in the S-VBMC tree the smoke finish needs.
-  The review's optional findings not listed here await the PI's ruling.
+  Unspecified optional findings were left for the PI's ruling at this
+  review. The PI closed the Slurm release item on 2026-10-07 (the final
+  worklog entry).
 
   A fresh reviewer then read the fixes. The rules that each
   `redaction.json` records, the usage of `campaign_redact.sh` and the
@@ -1763,3 +1768,10 @@ reproduces bit for bit.
   the population's rate; the flags of the two record-only scripts; and
   the documents that still named `reference_990_20260913` as the active
   reference or the TODO's closed items as open.
+- 2026-10-07: the PI closed the Slurm/HPC item for 1.5 after the deferred
+  fixes (`1278757b`), their review fixes (`701531be`), their merge
+  (`948bac0d`) and the second review's fixes (`2b81ecad`). The earlier
+  placeholder for unspecified optional findings is closed with this item.
+  The completed work is retained here and in the roadmap; the release's
+  archive preparation remains in `dev/TODO.md` under "Release
+  documentation and validation".

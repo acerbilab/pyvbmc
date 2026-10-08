@@ -9,6 +9,9 @@
 [![tests](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/tests.yml?branch=main&label=tests)](https://github.com/acerbilab/pyvbmc/actions/workflows/tests.yml)
 [![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
 [![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
+
+PyVBMC is one of the open-source [tools for fitting models to data](https://acerbilab.org/model-fitting/) from [Luigi Acerbi's group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki. Check out our other tools, such as [PyBADS](https://github.com/acerbilab/pybads) for point estimates and [PyIBS](https://github.com/acerbilab/pyibs) for models that can only be simulated.
+
 ### What is it?
 
 PyVBMC is a Python implementation of the Variational Bayesian Monte Carlo (VBMC) algorithm for posterior and model inference, previously implemented [in MATLAB](https://github.com/acerbilab/vbmc). VBMC is an approximate inference method designed to fit and evaluate Bayesian models with a limited budget of potentially noisy likelihood evaluations (e.g., for computationally expensive models). Specifically, VBMC simultaneously computes:
@@ -46,13 +49,15 @@ copy the folder again from the PyVBMC version you use.
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function) (e.g., estimated [via simulation](https://github.com/acerbilab/ibs));
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function);
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
 - the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general)).
 
+For likelihood estimates from model simulations, see [PyIBS](https://github.com/acerbilab/pyibs) and the lab's [related software](https://acerbilab.org/model-fitting/).
+
 For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
 
-Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
+Note: Our [model-fitting tools](https://acerbilab.org/model-fitting/) include [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for finding point estimates or better starting points for PyVBMC.
 
 ## Installation
 
@@ -230,10 +235,10 @@ Besides formal citations, you can demonstrate your appreciation for PyVBMC in th
 
 - *Star :star:* the VBMC repository on GitHub;
 - [Subscribe](http://eepurl.com/idcvc9) to the lab's newsletter for news and updates (new features, bug fixes, new releases, etc.);
-- [Follow Luigi Acerbi on Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
+- Follow Luigi Acerbi on [Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) in the lab's [Discussions forum](https://github.com/orgs/acerbilab/discussions).
 
-You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
+You may also want to explore our [other model-fitting methods](https://acerbilab.org/model-fitting/), including [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for fast Bayesian optimization.
 
 ### Additional references
 
@@ -299,5 +304,5 @@ PyVBMC is released under the terms of the [BSD 3-Clause License](LICENSE).
 
 ### Acknowledgments
 
-PyVBMC is developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/) at the University of Helsinki and [ELLIS Institute Finland](https://www.ellisinstitute.fi/). Development of PyVBMC 1.5 was assisted by coding agents, including Anthropic's [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) and OpenAI's [GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra).
+PyVBMC is developed by [members](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/people) (past and current) of the [Machine and Human Intelligence Lab](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki and [ELLIS Institute Finland](https://www.ellisinstitute.fi/). Development of PyVBMC 1.5 was assisted by coding agents, including Anthropic's [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) and OpenAI's [GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra).
 Work on the PyVBMC package is supported by the Research Council of Finland (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme: [Finnish Center for Artificial Intelligence FCAI](https://fcai.fi/).

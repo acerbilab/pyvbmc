@@ -4,6 +4,10 @@ This FAQ is curated by [Luigi Acerbi](https://lacerbi.github.io/), and in consta
 It is adapted from the [MATLAB VBMC FAQ](https://github.com/acerbilab/vbmc/wiki)
 for PyVBMC 1.5.
 
+For related methods, including optimization with PyBADS and likelihood
+estimation with PyIBS, see the lab's
+[model-fitting overview](https://acerbilab.org/model-fitting/).
+
 For a tutorial with detailed examples, see the [Jupyter notebook examples](examples.rst).
 
 If you have questions not covered here, please feel free to ask in the lab
@@ -98,7 +102,7 @@ If the likelihood function is smooth and analytical (and fast to compute), you s
 
 If the likelihood function is computationally expensive *and* non-smooth (or it produces a pathological posterior), then, well, tough luck. In this case, you may see if revising your model, for example by changing the parameterization, produces a posterior landscape which is more compatible with the approximations used by VBMC.
 
-Alternatively, you may give up on full (approximate) Bayesian inference, and resort instead to maximum-likelihood (or maximum-a-posteriori) estimation, using an efficient optimization algorithm such as [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/).
+Alternatively, you may resort to maximum-likelihood (or maximum-a-posteriori) estimation. Among the lab's [model-fitting methods](https://acerbilab.org/model-fitting/), [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) is designed for efficient optimization.
 
 (faq-installation)=
 ## Installing PyVBMC
@@ -353,7 +357,7 @@ You can find such points by running a few iterations of an optimizer first.
 
 Note that a starting point should not be *on* or too close to the bounds `LB` or `UB`. PyVBMC moves such points slightly inside and warns. You can avoid this issue by constraining the preliminary optimization to be inside the plausible box, that is within `PLB` and `PUB` (see also [below](#faq-how-do-i-choose-plb-and-pub)).
 
-For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) to perform the preliminary optimization inside the plausible box, as follows:
+For example, you can use [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/), one of our [model-fitting tools](https://acerbilab.org/model-fitting/), to perform the preliminary optimization inside the plausible box:
 
 ```python
 import numpy as np
@@ -368,8 +372,8 @@ bads = BADS(lambda x: -fun(x), x0, PLB, PUB, options=opt_options)
 x0 = bads.optimize()["x"]
 ```
 
-This example assumes a deterministic `fun` returning the log joint. Install
-PyBADS separately; its [documentation](https://acerbilab.github.io/pybads/)
+This example assumes a deterministic `fun` returning the log joint.
+Install PyBADS separately; its [documentation](https://acerbilab.github.io/pybads/)
 also covers noisy optimization.
 
 (faq-how-do-i-choose-lb-and-ub)=
@@ -593,7 +597,7 @@ Only when asked to. With `options={"uncertainty_handling": True}` and without `s
 (faq-can-i-use-any-technique-to-estimate-a-noisy-log-likelihood)=
 ### Can I use *any* technique to estimate a noisy log-likelihood?
 
-Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs) is a technique that checks all these boxes. The *synthetic likelihood* (SL) method could also work.
+Kind of. Whatever estimation technique you use, VBMC expects the estimates of the log-likelihood (or log-joint) to be approximately unbiased and normally-distributed, and works best with an estimate of their standard deviation (see [above](#faq-does-vbmc-automatically-detect-that-the-target-function-is-noisy)). [*Inverse binomial sampling* (IBS)](https://github.com/acerbilab/ibs), one of our [model-fitting methods](https://acerbilab.org/model-fitting/), checks all these boxes. Its Python implementation is [PyIBS](https://github.com/acerbilab/pyibs). The *synthetic likelihood* (SL) method could also work.
 
 (faq-how-do-i-estimate-the-standard-deviation-of-the-noisy-log-likelihood)=
 ### How do I estimate the standard deviation of the noisy log-likelihood?
@@ -793,7 +797,7 @@ Also, the log model evidence (as approximated by its lower bound, the ELBO) is a
 
 Fair enough — just be aware that you may be missing important features of your model and data, and your estimates and predictions might be way overconfident.
 
-If you only care about finding point estimates, you might want to have a look at our method for efficient Bayesian optimization, [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/).
+Our [model-fitting toolkit](https://acerbilab.org/model-fitting/) includes [Bayesian Adaptive Direct Search in Python (PyBADS)](https://acerbilab.github.io/pybads/) for efficient optimization when you only need point estimates.
 
 (faq-are-you-planning-to-port-vbmc-to-other-languages)=
 ### Are you planning to port VBMC to other languages?

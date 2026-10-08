@@ -251,7 +251,18 @@ condition short of repetitions. `verification.json`: 200 verified, 0
 failed, 0 missing, 0 partial, 0 stray; `assemble` merged 960 cells of
 200 tasks into `results.json`, `summary.json`, `summary.md` and
 `sources.json`, the tracked copies with the manifest and the
-verification report. Per subset, from the accounting:
+verification report.
+
+Correction to the preserved `stacking_arm3/summary.md` (2026-10-07): its
+opening says every cell ran both implementations, and its aggregate
+runtime line says "All 120 cells" of each condition. The runtime ratio
+and weight comparison use **70 paired cells per condition, 560 in total**,
+as their `n` fields in `summary.json` record. The other 50 cells per
+condition ran the integrated arm alone. The hash-pinned campaign copies
+retain their original text; the summary generator reports the paired
+count explicitly.
+
+Per subset, from the accounting:
 
 | Subset | Tasks | Limits | Longest task | Peak resident set |
 |---|---|---|---|---|

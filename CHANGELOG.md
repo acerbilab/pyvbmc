@@ -117,9 +117,10 @@ An error is raised for calls and values that 1.0.4 accepted:
     value and one capped at the median over the components. The `SVBMC` page
     of the documentation says what bias `stacked.elbo` can keep.
   - It replaces the standalone `svbmc` package (0.1.1), with the same method
-    and optimizer of the weights: on our benchmark the two reach the same
-    weights, and the optimization ran 1.9 to 4 times faster (a provisional
-    figure from one machine). `elbo` is a number. The `SVBMC` page of the
+    and optimizer of the weights. On eight benchmark conditions, the
+    optimization for stacks of 2 to 16 runs was 1.9 to 5.2 times as fast
+    (from median paired runtime ratios, CPU with one thread). `elbo` is a
+    number. The `SVBMC` page of the
     documentation lists the differences; Example 7 shows a complete use.
 - **PyMC models as targets.** `PyMCTarget` wraps a PyMC model so that PyVBMC
   can fit it: it provides the log joint and the bounds, and finds a starting

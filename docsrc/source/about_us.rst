@@ -4,7 +4,7 @@ About us
 
 PyVBMC is an open-source Python software for resource-efficient statistical inference.
 
-PyVBMC is developed by members (past and current) of the `Machine and Human Intelligence Lab <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence/>`_ at the University of Helsinki and `ELLIS Institute Finland <https://www.ellisinstitute.fi/>`_. Work on the PyVBMC package is supported by the `Research Council of Finland <https://www.aka.fi/en/>`_ (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme, the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
+PyVBMC is developed by members (past and current) of the `Machine and Human Intelligence Lab <https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence>`_ at the University of Helsinki and `ELLIS Institute Finland <https://www.ellisinstitute.fi/>`_. Work on the PyVBMC package is supported by the `Research Council of Finland <https://www.aka.fi/en/>`_ (grants 356498 and 358980 to Luigi Acerbi) and its Flagship programme, the `Finnish Center for Artificial Intelligence FCAI <https://fcai.fi/>`_.
 
 
 Development team

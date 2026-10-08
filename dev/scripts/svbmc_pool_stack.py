@@ -2388,8 +2388,8 @@ def summary_markdown(summary):
     lines = [
         "# S-VBMC stacking comparison: integrated against original 0.1.1",
         "",
-        f"Generated {summary['generated']}. Every cell stacks the same "
-        f"subset of filtered pool runs with both implementations, "
+        f"Generated {summary['generated']}. Each paired cell stacks the "
+        f"same subset of filtered pool runs with both implementations, "
         f"`n_samples={setting(settings, 'n_samples')}`, "
         f"`lr={setting(settings, 'lr')}`, "
         f"`max_steps={settings['max_steps']}`, "
@@ -2463,7 +2463,8 @@ def summary_markdown(summary):
             f"MMTV {cell(single['mmtv'])}, gsKL {cell(single['gskl'], 2)}, "
             f"evidence error {cell(single['elbo_err'], 2)}.",
             "",
-            f"All {aggregate['cells']} cells of this condition: runtime "
+            f"{aggregate['cells']} cells of this condition; "
+            f"{aggregate['runtime_ratio']['n']} paired cells: runtime "
             f"ratio {cell(aggregate['runtime_ratio'])}, "
             f"max\\|dw\\| {cell(aggregate['max_abs_dw'], 4)}.",
             "",
