@@ -10,6 +10,24 @@ records its execution.
 
 ## In scope for 1.5
 
+- [ ] **Rule on PyMC arrays inside inner graphs.** `PyMCTarget` copies
+  the NumPy arrays of the model and of its log density, so that changing
+  one after construction changes neither the target nor a run restored by
+  `VBMC.load`. An array that the body of a `pytensor.scan` loop or of an
+  `OpFromGraph` reads as a constant is not copied: PyTensor interns the
+  nodes of inner graphs process-wide by the values of their constants, so
+  the target's copy of the model resolves to the original nodes and their
+  arrays. After an in-place change to such an array, a restored
+  run, and under PyTensor's Python linker the live target, computes the
+  changed density while the run's setup observations hold the original
+  one. The `PyMCTarget` page documents the exception and directs such
+  arrays to `pm.Data`. The options are to keep that documented exception,
+  to refuse such models at construction, or to lift the arrays into outer
+  inputs of their operations, which the snapshot copies (each operation
+  rebuilt through its own constructor). The
+  [PyMC plan](plans/pymc-target-adapter.md)'s execution record
+  (2026-10-08) has the measurements.
+
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):

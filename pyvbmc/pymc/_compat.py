@@ -274,16 +274,32 @@ def snapshot_model(model):
     return make_snapshot(model)
 
 
+def copy_array_constants(outputs, owned=()):
+    """Return graphs computing ``outputs`` from copies of their arrays."""
+    from pyvbmc.pymc._snapshot import copy_array_constants as copy_constants
+
+    return copy_constants(outputs, owned)
+
+
+def numeric_array_constants(model):
+    """Return the numeric array constants of a model's graph."""
+    from pyvbmc.pymc._snapshot import _numeric_array_constants
+
+    return _numeric_array_constants(model)
+
+
 __all__ = [
     "TESTED_RANGE",
     "UnsupportedModel",
     "check_model",
     "clone_model",
     "closed_form",
+    "copy_array_constants",
     "default_transform",
     "import_pymc",
     "is_known_real_line",
     "missing_derivative_errors",
+    "numeric_array_constants",
     "real_line_support_types",
     "remove_value_transforms",
     "snapshot_model",

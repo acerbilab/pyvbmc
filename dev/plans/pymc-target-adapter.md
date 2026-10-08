@@ -748,8 +748,10 @@ that graph; copying only the outer model object while sharing mutable
 data storage is insufficient. Mutating the original input arrays or
 calling `pm.set_data` on the original model must leave the target's
 density, maps, bounds, setup observations and export layout unchanged.
-An array that a `pytensor.scan` body reads as a constant is the exception
-(execution record, 2026-10-08); the documentation directs it to `pm.Data`.
+An array that the inner graph of an operation reads as a constant (the
+body of a `pytensor.scan` loop or of an `OpFromGraph`) is an exception
+whose treatment awaits the PI's ruling (`dev/TODO.md`; execution record,
+2026-10-08); the documentation directs such arrays to `pm.Data`.
 Do not hash or compare datasets on every target call.
 
 Construct a new target to fit changed data. The original `model`, also
@@ -1985,32 +1987,55 @@ and this plan (the design decisions and the execution record).
 
 ## Execution record
 
-- 2026-10-08: the snapshot copies the NumPy arrays of the model's graph.
-  PyTensor wraps an array written into a graph (covariates in `X @ beta`,
-  weights in a `pm.Potential`) as a constant without copying it, and
-  cloning a graph keeps its constants, so the snapshot held the caller's
-  arrays. After an in-place change to one, a run restored by `VBMC.load`
-  recompiled the changed density while its setup observations held the
-  original one: the example of the `dev/TODO.md` entry (commit `3c8e4710`)
+- 2026-10-08: the target copies the NumPy arrays of the model and of its
+  log density. PyTensor wraps an array written into a graph (covariates
+  in `X @ beta`, weights in a `pm.Potential`, a design matrix in a
+  `CustomDist` log-density function) as a constant without copying it,
+  and cloning a graph keeps its constants, so the snapshot and the
+  compiled densities held the caller's arrays. After an in-place change
+  to one, a run restored by `VBMC.load` recompiled the changed density
+  while its setup observations held the original one: the covariate
+  model of `test_vbmc_save_load_keeps_density_after_caller_array_changes`
   read -8.605987 live and -188.605987 restored. The live target hid the
   defect under the default Numba linker, which compiles constant arrays
   into its functions, but not under the Python linker. `snapshot_model`
-  now replaces every numeric array constant of the graph with a copy, as
-  it replaced numeric shared variables, and reports a PyMC incompatibility
-  if the snapshot still holds a constant of the source model. An array
-  that a `pytensor.scan` body reads as a constant, captured or passed in
-  `non_sequences`, stays shared: PyTensor 3.3 interns the nodes of an
-  op's inner graph process-wide (`FrozenApply`), keyed by the values of
-  their constants, so a copy of the inner graph, even one restored from a
-  pickle, resolves to the original nodes and their arrays. Such an array
-  still reaches a restored run (a three-element array captured by a loop
-  in a `pm.Potential` read -3.92 live and -36.77 restored after a change);
-  `pm.Data` and `sequences` reach the loop as outer inputs, which
-  the snapshot freezes, and the `PyMCTarget` page directs such arrays to
-  `pm.Data`. `test_model_snapshot.py` checks the copies and the
-  snapshot's density under `FAST_COMPILE`, and `test_save_load.py` a run
-  saved after the change against its setup observations; both fail
-  without the fix.
+  replaces every numeric array constant of the model's graph with a copy,
+  as it already replaces numeric shared variables, and reports a PyMC
+  incompatibility if the snapshot still holds a constant of the source
+  model. PyMC calls a `CustomDist` log-density function only when it
+  builds the density, so `_compile_density` also copies the arrays of the
+  two density graphs that are not the snapshot's own before compiling
+  them; only those two functions outlive construction.
+
+  An array that the inner graph of an operation reads as a constant (the
+  body of a `pytensor.scan` loop, whether the loop's function captures it
+  or it is passed in `non_sequences`, or the body of an `OpFromGraph`)
+  stays shared. PyTensor 3.3 interns the nodes of inner graphs
+  process-wide (`FrozenApply`), keyed by the values of their constants,
+  so a copy of an inner graph, even one restored from a pickle in the
+  same process, resolves to the original nodes and their arrays, and the
+  target shares the operation with the caller's model. A loop that a
+  `pm.Potential` builds over a captured three-element array read -3.92
+  live and -36.77 restored after a change; `pm.Data`, and arrays passed
+  in `sequences`, reach the loop as outer inputs and stay fixed. PyMC's
+  own loops took no caller array into the density with `AR`,
+  `GaussianRandomWalk`, `EulerMaruyama` (whose drift function captured
+  an array) or `Truncated`; `GARCH11` passes `omega` into its loop, which
+  showed the change under the Python linker and not under Numba. The
+  `PyMCTarget` page names the exception and directs such arrays to
+  `pm.Data`; whether it stays a documented exception awaits the PI's
+  ruling (`dev/TODO.md`). Python code inside a custom operation is
+  outside the contract, as the contract above states.
+
+  `test_model_snapshot.py` checks that the snapshot holds no caller
+  array, that its density compiled under `FAST_COMPILE` stays fixed, and
+  that the check for retained constants fires;
+  `test_save_load.py` saves and loads a run after the change, with the
+  arrays in the model's graph and in a `CustomDist` log-density
+  function, against its setup observations. Each fails without its part
+  of the fix. The 116 tests of `pyvbmc/testing/pymc` pass under the
+  default Numba linker and under the Python linker (PyMC 6.3.2, PyTensor
+  3.3.2, Python 3.13).
 
 - 2026-09-16: integrated CI
   [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)

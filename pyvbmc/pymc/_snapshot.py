@@ -91,7 +91,11 @@ def _numeric_shared_inputs(model):
 
 
 def _numeric_array_constants(model):
-    """Return the array constants reachable from a model."""
+    """Return the numeric array constants of a model's graph.
+
+    The traversal does not enter the inner graphs of operations, such as
+    the body of a scan loop.
+    """
     pm, _, _ = import_pymc()
     try:
         from pytensor.graph.basic import Constant
@@ -103,6 +107,35 @@ def _numeric_array_constants(model):
         value
         for value in graph_inputs(_model_roots(model))
         if _is_numeric_array_constant(value, Constant)
+    )
+
+
+def copy_array_constants(outputs, owned=()):
+    """Return graphs computing `outputs` from copies of their arrays.
+
+    Every numeric array constant of the graphs, other than those in
+    `owned`, is replaced with a copy of itself. PyMC builds a log density
+    when it is requested, so the arrays that a ``CustomDist`` log-density
+    function writes into it never pass through the snapshot.
+    """
+    pm, _, _ = import_pymc()
+    try:
+        from pytensor.graph.basic import Constant
+        from pytensor.graph.replace import clone_replace
+        from pytensor.graph.traversal import graph_inputs
+    except (AttributeError, ImportError) as exc:
+        raise _version_error(pm, "log-density graph traversal", exc)
+
+    owned = set(owned)
+    replacements = {
+        value: _copied_constant(value)
+        for value in graph_inputs(outputs)
+        if _is_numeric_array_constant(value, Constant) and value not in owned
+    }
+    if not replacements:
+        return list(outputs)
+    return clone_replace(
+        list(outputs), replace=replacements, rebuild_strict=False
     )
 
 
@@ -226,7 +259,10 @@ def snapshot_model(model):
         if value in source_constants
     ]
     if retained:
-        names = ", ".join(value.name or "<unnamed>" for value in retained)
+        names = ", ".join(
+            value.name or f"array of shape {value.data.shape}"
+            for value in retained
+        )
         raise _version_error(
             pm,
             f"copying numeric model constants ({names})",
@@ -234,4 +270,4 @@ def snapshot_model(model):
     return snapshot, original_names
 
 
-__all__ = ["snapshot_model"]
+__all__ = ["copy_array_constants", "snapshot_model"]

@@ -941,8 +941,22 @@ class PyMCTarget:
             raise _compat.UnsupportedModel(
                 "Compiled PyMC log densities must have float64 outputs."
             )
-        self._logp = self._partial.compile_logp(jacobian=True)
-        self._logp_plain = self._partial.compile_logp(jacobian=False)
+        # The compiled densities are kept, and recompiled when a saved run is
+        # loaded, so they hold copies of every array that reaches them.
+        logp_graph, plain_graph = _compat.copy_array_constants(
+            [logp_graph, plain_graph],
+            owned=_compat.numeric_array_constants(self._partial),
+        )
+        self._logp = self._partial.compile_fn(
+            logp_graph,
+            inputs=self._partial.value_vars,
+            on_unused_input="ignore",
+        )
+        self._logp_plain = self._partial.compile_fn(
+            plain_graph,
+            inputs=self._partial.value_vars,
+            on_unused_input="ignore",
+        )
 
     def _compile_gradient(self, pm):
         """Compile the ordered joint value/gradient, or return None."""

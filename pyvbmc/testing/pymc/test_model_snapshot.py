@@ -5,6 +5,7 @@ pm = pytest.importorskip("pymc")
 pytest.importorskip("arviz_base")
 import pytensor
 
+from pyvbmc.pymc import _snapshot
 from pyvbmc.pymc._compat import remove_value_transforms, snapshot_model
 from pyvbmc.pymc._snapshot import (
     _numeric_array_constants,
@@ -96,3 +97,14 @@ def test_snapshot_copies_arrays_written_into_the_graph():
     # The caller's model keeps its arrays and so sees the change.
     source = model.compile_logp(mode="FAST_COMPILE")
     assert float(source(point)) != before
+
+
+def test_snapshot_refuses_to_keep_the_callers_arrays(monkeypatch):
+    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
+    with pm.Model() as model:
+        x = pm.Normal("x", 0.0, 2.0, shape=2)
+        pm.Normal("y", covariates @ x, 1.0, observed=np.zeros(3))
+
+    monkeypatch.setattr(_snapshot, "_copied_constant", lambda value: value)
+    with pytest.raises(ImportError, match="copying numeric model constants"):
+        snapshot_model(model)

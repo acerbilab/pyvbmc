@@ -8,6 +8,7 @@ import pytest
 
 pm = pytest.importorskip("pymc")
 pytest.importorskip("arviz_base")
+import pytensor.tensor as pt
 
 from pyvbmc import VBMC, VariationalPosterior
 from pyvbmc.pymc import PyMCTarget
@@ -170,13 +171,34 @@ def test_vbmc_target_save_load_preserves_density_budget_and_public_workflow(
     assert predictive.y.shape == (1, 12, 3)
 
 
-def test_vbmc_save_load_keeps_density_after_caller_array_changes(tmp_path):
-    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
+def _covariate_model(covariates):
     with pm.Model() as model:
         beta = pm.Normal("beta", 0.0, 2.0, shape=2)
         pm.Normal("y", covariates @ beta, 1.0, observed=np.zeros(3))
+    return model
+
+
+def _custom_logp_model(covariates):
+    # PyMC calls the log-density function only when it builds the density.
+    def logp(value, beta):
+        mean = pt.dot(pt.as_tensor_variable(covariates), beta)
+        return -0.5 * (value - mean) ** 2
+
+    with pm.Model() as model:
+        beta = pm.Normal("beta", 0.0, 2.0, shape=2)
+        pm.CustomDist("y", beta, logp=logp, observed=np.zeros(3))
+    return model
+
+
+@pytest.mark.parametrize(
+    "build", [_covariate_model, _custom_logp_model], ids=["graph", "logp"]
+)
+def test_vbmc_save_load_keeps_density_after_caller_array_changes(
+    build, tmp_path
+):
+    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
     target = PyMCTarget(
-        model,
+        build(covariates),
         start={"beta": np.array([0.0, 1.0])},
         plausible_bounds={"beta": (np.full(2, -2.0), np.full(2, 2.0))},
         seed=919,
