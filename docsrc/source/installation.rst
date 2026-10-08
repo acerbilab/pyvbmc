@@ -31,7 +31,7 @@ Optional integrations
 Torch
 -----
 
-The :meth:`~pyvbmc.VariationalPosterior.to_torch` export and the
+The :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_torch` export and the
 :doc:`SVBMC <api/classes/svbmc>` class (stacking the posteriors of several
 VBMC runs) require torch 2.7 or newer. For a CPU-only installation, install
 torch from its official CPU wheel index first, then install the PyVBMC
@@ -52,7 +52,7 @@ With Conda, install the named packages directly::
 ArviZ
 -----
 
-The :meth:`~pyvbmc.VariationalPosterior.to_arviz` export uses the current
+The :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_arviz` export uses the current
 ArviZ DataTree format and requires Python 3.12 or newer. Install it with::
 
   python -m pip install --upgrade "pyvbmc[arviz]"

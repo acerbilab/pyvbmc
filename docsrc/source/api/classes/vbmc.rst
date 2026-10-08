@@ -118,12 +118,7 @@ the ``options`` dictionary when constructing ``VBMC``. The
 describes the old-release reminder.
 
 .. autoclass:: pyvbmc.VBMC
-   :exclude-members: optimize, save, load
    :members:
-
-   .. autofunction:: pyvbmc.VBMC.optimize
-   .. autofunction:: pyvbmc.VBMC.save
-   .. autofunction:: pyvbmc.VBMC.load
 
 The lower-level functions used by the algorithm are listed under
 :doc:`../functions/algorithm_helpers`.

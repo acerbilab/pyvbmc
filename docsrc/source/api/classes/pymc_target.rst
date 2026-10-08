@@ -200,9 +200,10 @@ does not copy it, and shares the operation between models whose arrays there
 are equal, so the array a target reads can be another model's. Pass such an
 array to a loop in ``sequences`` or as ``pm.Data``, and to an ``OpFromGraph`` as
 one of its inputs; otherwise leave it unchanged while the target is in use. For
-a run made with ``VBMC(target)``, a change to such an array is detected:
-:meth:`~pyvbmc.VBMC.optimize` refuses to run until the array is restored, and
-saving the run warns.
+a run made with ``VBMC(target)``, a change to such an array makes
+:meth:`~pyvbmc.VBMC.optimize` refuse to run, and saving the run warns. Restoring
+the array allows the live run to continue unless loading has already marked
+the run as changed.
 
 Saving a :class:`~pyvbmc.VBMC` instance retains the adapter, its fixed
 inference snapshot, original prediction model, setup observations and budget

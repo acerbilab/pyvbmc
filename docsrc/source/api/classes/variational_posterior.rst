@@ -12,9 +12,9 @@
   -  ``pdf``: evaluate the variational posterior density at a point;
   - ``plot``: plot the variational posterior as a corner plot (1D and 2D marginals);
   - ``sample``: draw random samples from the variational posterior.
-  - :meth:`~pyvbmc.VariationalPosterior.to_torch`: export an independent
+  - :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_torch`: export an independent
     torch distribution;
-  - :meth:`~pyvbmc.VariationalPosterior.to_arviz`: export independent draws
+  - :meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_arviz`: export independent draws
     in the current ArviZ DataTree format.
 
   There are also methods to compare variational posteriors:
@@ -39,18 +39,8 @@ never initiates a campaign. See :doc:`../functions/calibrate` for measuring
 settings and the reproducibility contract.
 
 .. autoclass:: pyvbmc.variational_posterior.VariationalPosterior
-   :exclude-members: kl_div, log_pdf, load, moments, mtv, pdf, plot, sample, save, to_arviz, to_torch
+   :exclude-members: to_arviz, to_torch
    :members:
-
-   .. autofunction:: pyvbmc.VariationalPosterior.kl_div
-   .. autofunction:: pyvbmc.VariationalPosterior.log_pdf
-   .. autofunction:: pyvbmc.VariationalPosterior.load
-   .. autofunction:: pyvbmc.VariationalPosterior.moments
-   .. autofunction:: pyvbmc.VariationalPosterior.mtv
-   .. autofunction:: pyvbmc.VariationalPosterior.pdf
-   .. autofunction:: pyvbmc.VariationalPosterior.plot
-   .. autofunction:: pyvbmc.VariationalPosterior.sample
-   .. autofunction:: pyvbmc.VariationalPosterior.save
 
 Export methods
 --------------

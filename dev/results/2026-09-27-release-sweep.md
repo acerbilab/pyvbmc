@@ -1180,3 +1180,29 @@ developer pages show the corrections. The notebooks executed at `4d9f5942`
 on 2026-10-08 are unaffected: the two changes of code are to naive stacking
 and the update check, which no notebook runs, and the others change text
 alone.
+
+## PR #191 delta review, 2026-10-08
+
+At the PI's request, a further read-only review covered the prose added by
+PR #191, merged at `1f774c95`: the `PyMCTarget` page, the `VBMC.save`,
+`load` and `optimize` docstrings, the PyMC implementation's comments and
+docstrings, `AGENTS.md` and the adapter plan. This extends the scope of the
+earlier final delta review, whose endpoint was `4d9f5942`.
+
+| Finding | Correction and disposition |
+|---|---|
+| The `PyMCTarget` page said that restoring an array permits a run to continue, without distinguishing a live run from one already marked as changed during loading. | The persistence section states that restoration permits continuation only if loading has not marked the run. The adapter plan also distinguishes that stored flag from a fresh digest comparison: marked runs bypass hashing on save and at the start of `optimize`. The reviewer checked the corrections against the code. |
+| Rendering the `VBMC` page gave `optimize`, `save` and `load` anchors with `VBMC` repeated, leaving the new method cross-reference unresolved. Nine ordinary `VariationalPosterior` methods had the same problem. | The classes' `autoclass` directives include those methods; the nested `autofunction` directives are removed. The quickstart's `sample` reference uses the class page's qualified name. |
+| The source-view links back to `VariationalPosterior.to_arviz` and `to_torch` named anchors absent from their API pages. | Their `automethod` directives and the references in the installation, quickstart and class pages use the class's subpackage-qualified name, matching the class page and source-view anchors. |
+
+Example 8 was checked by reading its notebook and generated script, not by
+re-execution. It uses ordinary outer-graph arrays for its design matrix and
+observations, never mutates them, and contains no `scan`, `OpFromGraph`,
+save or load. Copying those arrays preserves their values; the digest check
+before `optimize` draws no randomness, evaluates no density and prints
+nothing for an unchanged target. Its stored numerical outputs therefore
+need no refresh for PR #191. The notebook is unchanged by that PR.
+
+The roadmap's pre-release checklist records the build, link, test and
+package validation of this pass. Raw evidence is indexed in
+`dev/scripts/runs/LOCAL.md`, under "Release validation after PR #191".

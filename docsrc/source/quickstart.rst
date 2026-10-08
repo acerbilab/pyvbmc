@@ -337,7 +337,7 @@ the posterior exports below.
 Torch distribution
 ------------------
 
-:meth:`~pyvbmc.VariationalPosterior.to_torch` exports the fitted posterior as
+:meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_torch` exports the fitted posterior as
 a torch distribution::
 
   import torch
@@ -366,7 +366,7 @@ distribution for psychometric probability predictions and density gradients.
 ArviZ DataTree
 --------------
 
-:meth:`~pyvbmc.VariationalPosterior.to_arviz` draws independent samples into
+:meth:`~pyvbmc.variational_posterior.VariationalPosterior.to_arviz` draws independent samples into
 the current ArviZ DataTree format::
 
   import arviz as az
@@ -398,7 +398,7 @@ dimensions ``(chain, draw)``. Variables consume consecutive posterior columns
 in mapping order.
 
 This method advances ``vp.rng`` in the same way as
-:meth:`~pyvbmc.VariationalPosterior.sample`. The draws are independent samples
+:meth:`~pyvbmc.variational_posterior.VariationalPosterior.sample`. The draws are independent samples
 from a variational approximation, so MCMC convergence diagnostics computed on
 them do not measure the quality of that approximation. Use posterior summaries
 and plots, and assess PyVBMC convergence from its own results and repeated

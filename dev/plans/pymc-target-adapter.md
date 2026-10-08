@@ -1995,7 +1995,8 @@ and this plan (the design decisions and the execution record).
   including each use of a constant and the boundaries of inner graphs.
   Array hashes are cached within the call, but each occurrence contributes
   to the digest: arrays exchanging contents must remain detectable.
-  `VBMC.save` compares it and warns. `VBMC.load` compares it
+  `VBMC.save` compares it and warns, or warns from the stored flag if
+  loading already marked the run as changed. `VBMC.load` compares it
   and evaluates the log density once, at the starting point, against
   the value recorded during setup, which also catches causes that leave
   the arrays alone (a PyMC or PyTensor version that computes
@@ -2003,14 +2004,14 @@ and this plan (the design decisions and the execution record).
   that the run's results remain valid and marks the run. A check that
   fails, such as an evaluation that raises, counts as a change, so that
   loading never fails because of it. `optimize()` refuses a marked run,
-  or one whose digest has changed, with a `RuntimeError`; a live run
-  continues once the arrays are restored. Nothing overrides the refusal:
+  or one whose digest has changed, with a `RuntimeError`; an unmarked live
+  run continues once the arrays are restored. Nothing overrides the refusal:
   the PI (2026-10-08) defers an override until users report refusals
   they need to pass. One evaluation at load is the whole cost in target
   calls, since a PyMC density need not be cheap; the digest hashes the
-  target's data at construction, at each save and at each start of
-  `optimize()` (about 0.1 s for 50 MB). The tolerance is 1e-8, absolute
-  below 1 and relative above. The checks need the association that
+  target's data at construction and, for an unmarked run, at each save and
+  at each start of `optimize()` (about 0.1 s for 50 MB). The tolerance is
+  1e-8, absolute below 1 and relative above. The checks need the association that
   `VBMC(target)` makes; a run built from `VBMC(target.log_joint, ...)`
   goes without them, as the `PyMCTarget` page says. Rejected: refusing
   such models at construction (it would turn away models that never
