@@ -1416,10 +1416,15 @@ function frame(now) {
 // With ?capture=1 nothing moves by itself: a driver calls vbmcCapture.frame(t, dt) for successive t.
 // No frame reads the wall clock, but the camera, the morph and truth levels and the caption typing carry
 // over from frame to frame, so a sequence is reproducible when stepped in order from the start with the
-// same dt, not when it seeks.
+// same dt, not when it seeks. Drawing carries nothing over, so step(t, dt), which advances that state
+// without drawing, lets a driver replay the frames before a stretch and record the stretch as it plays.
 if (Q.get("capture") === "1") {
   cam.idle = 10;
-  window.vbmcCapture = { end: END, frame(t, dt) { tau = t % END; update(tau, dt, t); renderFrame(); } };
+  window.vbmcCapture = {
+    end: END,
+    frame(t, dt) { tau = t % END; update(tau, dt, t); renderFrame(); },
+    step(t, dt) { tau = t % END; update(tau, dt, t); },
+  };
   window.vbmcCapture.frame(tau, 0);
 } else { update(tau, 0, last / 1000); requestAnimationFrame(frame); }   // dt = 0: start where the segment wants the camera
 })();

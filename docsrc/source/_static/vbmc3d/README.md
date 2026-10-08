@@ -197,6 +197,17 @@ without (`film.html?captions=0`), and the clean master goes out with
 `V/narration.srt`, the captions as subtitles. Without `--scale 1.5` (and at
 `--crf 23`) the recording is a 1280 x 720 draft, which takes half the time.
 
+A change to the end of the film need not record a master again from the
+start. `record.mjs --replay` steps the page through every frame before
+`--from` without drawing them (about a second for the whole film), so that
+a stretch recorded from `--from` is the page as it plays. Record the
+stretch from a keyframe of the silent master (x264 places one every 250
+frames at most) to the end, with the master's settings; keep the
+master's frames before that keyframe by stream copy (`ffmpeg -i
+film_silent.mp4 -frames:v K -c copy head.mp4`, K the keyframe's frame
+number); join the two with ffmpeg's concat demuxer (`-f concat -c copy`);
+and mux the sound again with `mux.py`.
+
 `make_voice.py` needs an ElevenLabs API key (in `ELEVENLABS_API_KEY` or
 `~/.config/elevenlabs/api_key`), or Kokoro with the Kokoro engine;
 `verify_voice.py` needs faster-whisper;

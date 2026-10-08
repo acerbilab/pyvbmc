@@ -2,7 +2,7 @@
 // With OUT ending in .json, write instead the JSON that the page puts in its <pre id="events">
 // (film.html?events=1: the times that scripts/make_score.py follows).
 //
-//   node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--scale K] [--controls]
+//   node scripts/record.mjs PAGE OUT [--from S] [--replay] [--to S] [--fps N] [--size WxH] [--scale K] [--controls]
 //                                    [--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]
 //
 // PAGE is a page of the folder above this one, with any query parameters ("wordmark.html",
@@ -15,6 +15,9 @@
 // (default 0, the title card) to --to (default the end of the loop; a later time wraps into the next
 // loop) with dt = 1 / fps. Only a recording that starts at 0 is the page as it plays: one that starts
 // later begins with the camera where that segment wants it, not where playback would have left it.
+// --replay (film.html, whose vbmcCapture.step advances its state without drawing) first steps the page
+// through every frame before --from, rounded to a frame, as a recording from 0 would have drawn them:
+// the stretch it then records is the page as it plays, and can be spliced into a recording from 0.
 // The playback controls are hidden unless --controls is given; the page's hud=0 hides the captions too.
 //
 // --size is the page's layout in CSS pixels, and --scale (default 1) its device pixel ratio, so that the
@@ -29,12 +32,12 @@ import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const USAGE = "usage: node scripts/record.mjs PAGE OUT [--from S] [--to S] [--fps N] [--size WxH] [--scale K] [--controls] "
-  + "[--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]";
+const USAGE = "usage: node scripts/record.mjs PAGE OUT [--from S] [--replay] [--to S] [--fps N] [--size WxH] [--scale K] "
+  + "[--controls] [--crf N] [--denoise L:C:LT:CT] [--gif-width N] [--colors N] [--bayer N]";
 const pos = [], opt = {};
 for (const argv = process.argv.slice(2); argv.length;) {
   const a = argv.shift();
-  if (a === "--controls") opt.controls = true;
+  if (a === "--controls" || a === "--replay") opt[a.slice(2)] = true;
   else if (a.startsWith("--")) opt[a.slice(2)] = argv.shift();
   else pos.push(a);
 }
@@ -104,8 +107,20 @@ if (kind === "json") {
   process.exit(0);
 }
 const END = await evaluate("vbmcCapture.end");
-const T0 = Number(opt.from || 0), T1 = opt.to !== undefined ? Number(opt.to) : END;
+// With --replay, frame k of the recording is frame K0 + k of a recording from 0, at the same time and dt.
+const K0 = opt.replay ? Math.round(Number(opt.from || 0) * FPS) : 0;
+const T0 = opt.replay ? K0 / FPS : Number(opt.from || 0), T1 = opt.to !== undefined ? Number(opt.to) : END;
 const n = Math.max(1, Math.round((T1 - T0) * FPS));
+const at = (k) => (opt.replay ? (K0 + k) / FPS : T0 + k / FPS);
+const dtAt = (k) => (K0 + k ? 1 / FPS : 0);
+if (opt.replay && K0) {
+  if (!(await evaluate("typeof vbmcCapture.step === 'function'"))) throw new Error(`${page} cannot replay (no vbmcCapture.step)`);
+  const t = Date.now();
+  for (let k = 0; k < K0; k += 300) {
+    await evaluate(`for (let k = ${k}; k < ${Math.min(k + 300, K0)}; k++) vbmcCapture.step(k / ${FPS}, k ? 1 / ${FPS} : 0); true`);
+  }
+  console.log(`replayed frames 0 to ${K0 - 1} in ${((Date.now() - t) / 1000).toFixed(0)} s`);
+}
 
 let sink;
 if (kind === "frames") {
@@ -132,10 +147,10 @@ if (kind === "frames") {
 
 const started = Date.now();
 for (let k = 0; k < n; k++) {
-  await evaluate(k ? `vbmcCapture.frame(${T0 + k / FPS}, ${1 / FPS})` : `vbmcCapture.frame(${T0}, 0)`);
+  await evaluate(`vbmcCapture.frame(${at(k)}, ${dtAt(k)})`);
   const shot = await send("Page.captureScreenshot", { format: "png" });
   await sink.write(Buffer.from(shot.result.data, "base64"));
-  if (k % 150 === 0) console.log(`frame ${k} of ${n}, t = ${(T0 + k / FPS).toFixed(2)} s of a ${END.toFixed(2)} s loop (${((Date.now() - started) / 1000).toFixed(0)} s)`);
+  if (k % 150 === 0) console.log(`frame ${k} of ${n}, t = ${at(k).toFixed(2)} s of a ${END.toFixed(2)} s loop (${((Date.now() - started) / 1000).toFixed(0)} s)`);
 }
 await sink.close();
 console.log(`wrote ${out}: ${n} frames at ${FPS} fps, ${Math.round(W * SCALE)} x ${Math.round(H * SCALE)}, `
