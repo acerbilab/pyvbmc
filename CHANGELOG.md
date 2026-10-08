@@ -187,7 +187,11 @@ An error is raised for calls and values that 1.0.4 accepted:
 ### Changed
 
 - **Requirements.** PyVBMC needs Python 3.10 or later (1.0.4 accepted 3.9),
-  SciPy 1.15 or later and gpyreg 1.4.0 or later. From 1.3.0 on, gpyreg takes
+  SciPy 1.15 or later and gpyreg 1.4.0 or later. The conda-forge package also
+  needs Python 3.11, NumPy 2.0, matplotlib 3.9 and cma 3.4 or later, which its
+  1.0.4 package did not; in an environment that holds an older version of one
+  of them, conda can install 1.0.4 instead, without a warning (see the FAQ,
+  "Conda installs an older version of PyVBMC"). From 1.3.0 on, gpyreg takes
   the bounds of the GP mean function and the starting length scales per input
   dimension, which moves the results of every run; see its release notes.
   `filelock`, `platformdirs` and `threadpoolctl` are new dependencies.

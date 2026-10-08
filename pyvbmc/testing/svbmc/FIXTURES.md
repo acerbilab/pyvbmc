@@ -162,5 +162,3 @@ of the classes as they are").
 | `test_elbo_reporting.py` | synthetic posteriors, `bounded_D2`, `corr_D3` and `upstream_GMM` via `load_group(group, rng=0)`, and `upstream_GMM_00`, `upstream_GMM_noisy_00` via `load_vp` | covariance and stratified variance algebra; noise inference, headline selection, final evaluation and tips contracts |
 | `test_jacobian.py` | synthetic posteriors | analytic affine/probit expectations, independent integration, seeded broad/warped Monte Carlo checks and explicit nonconvergence |
 | `test_elbo_shrinkage.py`, `test_svbmc_imports.py`, `test_svbmc_utils.py` | none | run without torch |
-
-New fixture files or directories must be added to `MANIFEST.in`.

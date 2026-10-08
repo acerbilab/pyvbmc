@@ -17,10 +17,6 @@ records its execution.
     the settled code, with a `linkcheck` again after the merge into `main`
     (the API and tutorial review was done on 2026-10-07 in PR #186; the
     roadmap's checklist records it and that day's build);
-  - a delta pass of the [release sweep](results/2026-09-27-release-sweep.md)
-    over the diff since `46200293` at the settled release commit; the
-    documentation findings of 2026-10-07 are corrected in their source
-    files and recorded in the sweep's ledger;
   - the final tests, the CI matrix and the package checks;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
@@ -33,7 +29,8 @@ records its execution.
     archives hold the cluster's details and the operator's paths; the
     replay fingerprints and the earlier references' traces are backed up
     in a draft release of their own;
-  - the references to `dev-next` that change with the release merge;
+  - the references to `dev-next` that change with the release merge, and
+    the deletion of `origin/dev-port-review` at that merge;
   - `RELEASE_DATE` in `pyvbmc/_release.py` set to the date of the
     changelog's release heading, in the release pull request (`AGENTS.md`,
     "Release date").

@@ -692,7 +692,8 @@ on the population cases, compared seed by seed with the after arm; on the
 pools and the stacking, as the release gate ran them; and with the release
 code on fresh seeds of one configuration. Its campaigns run from the Arm 3
 checkout, `$TREES/pyvbmc-arm3`, a detached worktree of the harness
-checkout at Arm 3's commit (the branch `dev-arm3-port-warmup`), whose own
+checkout at Arm 3's commit (the branch `dev-arm3-port-warmup`, kept since
+2026-10-06 as `retain/arm3-port-warmup`), whose own
 package they run (`PYVBMC_SOURCE` unset), with the gpyreg v1.4.0 checkout,
 in the after arm's environment and node family. `CAMPAIGN_ENV` is the
 path the after arm ran in, since the pairing compares the two. Make the

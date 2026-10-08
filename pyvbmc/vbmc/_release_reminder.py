@@ -31,7 +31,8 @@ from pathlib import Path
 from pyvbmc import _release
 from pyvbmc._user_hints import emit_user_hint
 
-# The FAQ (docsrc/source/faq.md) quotes this wording; change both together.
+# pyvbmc/testing/vbmc/test_release_reminder.py pins this wording; change
+# both together.
 REMINDER_TEMPLATE = (
     "Note: PyVBMC {version} was released {age}. Run "
     "pyvbmc.check_for_updates() to see whether a newer version is available."

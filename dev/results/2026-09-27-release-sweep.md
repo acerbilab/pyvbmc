@@ -1126,3 +1126,57 @@ records. Rendering both saved JSON summaries through the corrected
 generator gives 120 total and 70 paired cells for every condition. Local
 link paths, Markdown structure and the speed report's reproduction snippet
 were checked. No inference runs or new timing campaign were needed.
+
+## Final delta review, 2026-10-08
+
+Three read-only reviewers covered everything changed since `46200293` at
+`4d9f5942`, the settled release commit, in the areas of the first sweep: A,
+what users read; B, the docstrings, comments and option descriptions of
+`pyvbmc/`; C, D and E, what contributors and agents read, the dated devlogs,
+and a search of the added text for acknowledged errors. The PI ruled on
+2026-10-08: every finding is corrected in the file that holds it, and the
+three that change what a user sees (A-d2, A-d3, A-d6) as recommended.
+Findings that two reviewers made are listed once, with both IDs.
+
+| Finding | Correction and disposition |
+|---|---|
+| A-d1 = B-d5: a comment in `pyvbmc/vbmc/_release_reminder.py` said that the FAQ quotes the reminder's wording, which the FAQ only paraphrases since PR #186. | The comment names `test_release_reminder.py`, which pins the wording. |
+| A-d2 = B-d4: with `optimize(version="ns")` on a noisy stack, the `noisy_elbo` tip spoke of raw ELBO values printed during the optimization and of their optimism; naive stacking prints none and selects no weights. | Code: `SVBMC.optimize` treats a naive stack as noiseless for the tips, so it gets no noisy-only tip; `test_naive_stacking_gets_no_noisy_only_tip` checks the three modes. The tip's text is unchanged. |
+| A-d3: `check_for_updates()` printed `conda update --channel=conda-forge pyvbmc`, which the next FAQ entry says can leave an installed release in place without a warning. | Code: the conda command is `conda install --channel=conda-forge "pyvbmc>=X.Y.Z"`, naming the latest release, as `AGENTS.md` ("Install commands") asks of a Conda command; its test, the `check_for_updates` page, the FAQ and the [version-check plan](../plans/version-check.md) follow. |
+| A-d4 = C-d10: `development.rst` said the documentation is hosted on github.io, against the address that its opening gives. | It names https://acerbilab.org/pyvbmc/ and the `gh-pages` branch that holds the built pages. |
+| A-d5: the Conda commands of `development.rst`'s first setup step rendered as one line of prose with `--` as a dash, and created an environment without Python. | The block is a literal block, and the environment is created with `python=3.12`. |
+| A-d6: the changelog did not say that the conda-forge package of 1.5 needs Python 3.11, NumPy 2.0, matplotlib 3.9 and cma 3.4 or later, which its 1.0.4 package did not, and which the README, the installation page and the FAQ warn of. | One sentence in the "Requirements" entry, pointing to the FAQ. The "Upgrading" list is unchanged, since a pip installation sees no change. |
+| B-d1: the public `pyvbmc.calibrate`, which the docs render, said that every call runs a campaign; the busy and fallback outcomes were documented only on the private implementation. | The public docstring carries the outcomes, `status` and `source`, and a Raises section; the private one points to it. |
+| B-d2: the description of `active_importance_sampling_mcmc_samples` called it the MCMC steps per GP sample for IMIQR. | It is the samples kept per GP hyperparameter sample, one in every `active_importance_sampling_mcmc_thin` steps after a burn-in of half as many steps. |
+| B-d3: `Prior.support` claimed the smallest box for every prior that defines `_support`; a `Product` reads each coordinate from its marginal, and a `UserFunction` marginal spans the whole line. | The docstring states the exception. |
+| B-d6: the module docstring of `_update_check.py` said that `import pyvbmc` imports none of the networking modules; it imports `json` elsewhere. | The docstring says that loading the module imports none of the modules that make the request. |
+| B-d7: `Product._log_pdf` and `Product.sample`, and the same methods of `SciPy`, described a uniform box. | Each names its own distribution. |
+| C-d1: the roadmap's notebook step said that Example 3 prints `results["version"]`, which it has not done since PR #186. | The reason for the reinstall is the run's record, which reads the installed version. |
+| C-d2: the entry of `execute_notebooks.py` in `dev/README.md` said that Example 6 needs Example 4, which it has not since 2026-10-07. | Removed, and the entry lists the reminder's opt-out among the kernel's settings. |
+| C-d3: the roadmap's lab-link item said that the `pybads` tip keeps its link to PyBADS's documentation. | It records the change of the tips review: the tools page alone. |
+| C-d4: the tips plan and the version-check plan pointed at the TODO item "Review of the tips", which the review closed. | They name the roadmap's checklist and the TODO's working rule; the `dev/README.md` entry of the tips plan names its last section. |
+| C-d5: the [ELBO-reporting plan](../plans/svbmc-elbo-reporting.md) gave the median cap as the headline of a noisy stack, without a flag. | Its status line records the switch of 2026-10-06 to the two-level shrinkage, with the cap as the fallback. |
+| C-d6: the [S-VBMC campaign plan](../plans/svbmc-benchmark-campaign.md)'s acceptance list called the `M = 32` cells pending. | They ran on 2026-09-15/16. |
+| C-d7: the operator's guide, the README of `release_gate_20261005` and the second hand-off brief named `dev-arm3-port-warmup` as the branch of Arm 3. | Each adds that the branch is kept as `retain/arm3-port-warmup` since 2026-10-06. |
+| C-d8: the two hand-off briefs of the release gate, and their `dev/README.md` entries, did not say that they were carried out. | Each brief says when its campaigns ran and in which PR they came back, and the entries say "carried out, and retained as written". |
+| C-d9: the [final-population plan](../plans/final-population-benchmark.md) said that the analysis command stops at its manifest check; it stops first for want of the required `--out`. | Corrected, with the `--reference` that reproduces the assessment. |
+| D-d1: the [release overview](../2026-09-06-pyvbmc-1.5-overview.md) listed the PI's reading of the tips as remaining. | Its list of what remains is current as of 2026-10-08. |
+| D-d2: the [ELBO-optimism note](../2026-09-12-svbmc-elbo-optimism.md) and its `dev/README.md` entry did not say that the shrinkage estimate became the noisy headline. | The note's header and the entry say so. |
+| E-d1: the `summary.md` of three stacking analyses of 2026-09-15/16 said that every cell ran both implementations, and the merged one labelled its paired figures "All 120 cells", where 70 cells per condition were paired. | A correction beside them in the [pool README](../experiments/svbmc_pool/README.md); the summaries keep their bytes. |
+| E-d2: the `FIXTURES.md` of the S-VBMC tests asked for new fixtures to be added to `MANIFEST.in`, which has no effect on the sdist. | The line is removed. |
+| X-d1: that `origin/dev-port-review` is deleted at the release (ruling C-3) was recorded only here. | The roadmap's release-merge item and the TODO's release item name it. |
+
+The reviewers also found five branches merged into `dev-next` still on
+origin: `feat-failed-runs-unusable`, `feat-matched-mcmc-budget`,
+`feat-pip-upgrade-docs`, `codex/pyvbmc-release-docs` and
+`codex/release-1.5-final-pass`. The PI ruled to delete them.
+
+Verification: 800 tests passed, none skipped (the S-VBMC suite,
+`test_update_check.py`, the reminder, tip, option, prior, calibration and
+active importance sampling tests), with Torch 2.7.0 and gpyreg 1.4.0 from
+the sibling checkout. The Sphinx build passed with warnings treated as
+errors, and the rendered `calibrate`, `check_for_updates`, FAQ, options and
+developer pages show the corrections. The notebooks executed at `4d9f5942`
+on 2026-10-08 are unaffected: the two changes of code are to naive stacking
+and the update check, which no notebook runs, and the others change text
+alone.

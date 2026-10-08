@@ -35,7 +35,8 @@ times below are the cluster's (EEST).
 - **The two harness commits.** Arm 0's, `b196402b` on `dev-next`, to which
   the harness checkout moved from the first batch's `ff3ed014`; it ran
   `population_v104`, `fresh_release` and `rescore-arms`. Arm 3's,
-  `ad63dd5a`, the head of `dev-arm3-port-warmup`, as a detached worktree of
+  `ad63dd5a`, the head of `dev-arm3-port-warmup` (kept since 2026-10-06 as
+  `retain/arm3-port-warmup`), as a detached worktree of
   the harness checkout; it ran `population_arm3`, `pools_arm3`,
   `stacking_arm3`, `fresh_arm3` and the analyses, with its own package.
   The two commits differ in four files of `pyvbmc/` (the end of warm-up,

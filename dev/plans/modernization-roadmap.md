@@ -1315,9 +1315,10 @@ must cover the settled release code, API and behavior before publication.
   Links naming Luigi Acerbi use his personal page, and lab
   links use the group's page. Individual developers link to personal
   profiles or the People page; links labeled "members" go to the People
-  page. The `pybads` tip retains its
-  PyBADS documentation link alongside the tools page; the
-  [tips plan](runtime-tips.md#review-before-the-15-release) records it.
+  page. The `pybads` tip kept its PyBADS documentation link beside the
+  tools page until the review of the tips on 2026-10-08, which left it the
+  tools page alone; the
+  [tips plan](runtime-tips.md#review-before-the-15-release) records both.
   The Sphinx HTML build passed with warnings treated as errors, and the
   tip/reminder tests passed (100 tests). The five checked destinations
   (tools page, personal page, group page, PyIBS and PyBADS documentation)
@@ -1405,12 +1406,17 @@ must cover the settled release code, API and behavior before publication.
   wrong in 252 run sidecars, upper medians quoted as medians in a report,
   and a publication index missing four entries, each acknowledged only in a
   note elsewhere.
-- [ ] A delta pass of the sweep, under the same rule, over what changes
+- [x] A delta pass of the sweep, under the same rule, over what changes
   after it: the diff since `46200293`, including the merged Slurm
   documents and the text that the open items of `TODO.md` rewrite.
   The documentation and record findings of 2026-10-07 are corrected in
   their source files and recorded in the ledger's dated delta section.
-  The final pass covers the settled release commit.
+  The final pass covered the settled release commit, `4d9f5942`, on
+  2026-10-08: three read-only reviewers, 25 findings, each ruled by the PI
+  and corrected in its file, two of them in code (the tips of naive
+  stacking and the conda command of `check_for_updates`) and one in the
+  changelog; the ledger's section "Final delta review, 2026-10-08"
+  records them.
 - [ ] Verify revised examples and links, build the documentation and check
   the rendered pages on the settled release code, and check the
   [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
@@ -1429,9 +1435,9 @@ must cover the settled release code, API and behavior before publication.
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
   (`dev/README.md`) runs all nine and writes back only those whose checks of
   their text's claims pass. Reinstall `pyvbmc` in the notebooks'
-  environment at the release commit first: Example 3 prints
-  `results["version"]`, which an editable install reads from its metadata as
-  of its installation. Example 7's account of the headline estimate follows
+  environment at the release commit first: the run's record takes PyVBMC's
+  version from the installed metadata, which an editable install fixes when
+  it is installed. Example 7's account of the headline estimate follows
   the headline decision (pickup 17); read each notebook's text against its new
   outputs, and regenerate `examples/scripts/` with its Makefile. Example 7's
   text needs at least one of its four runs to miss a mode, which its check
@@ -1482,7 +1488,10 @@ must cover the settled release code, API and behavior before publication.
   `dev-next` as the working branch is true until the release merge and
   changes with it: the working rules at the end of `TODO.md`, the header of
   this roadmap, the [Slurm plan](slurm-benchmark-support.md)'s account of
-  the harnesses on `dev-next`, and the open items of `TODO.md`.
+  the harnesses on `dev-next`, and the open items of `TODO.md`. The release
+  merge also deletes `origin/dev-port-review`, which is merged into
+  `dev-next` and kept until the release (the
+  [release sweep](../results/2026-09-27-release-sweep.md)'s ruling C-3).
 
 ## Post-release follow-up
 

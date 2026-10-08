@@ -13,9 +13,9 @@ Installation instructions for developers
 
 Release versions of PyVBMC are available via ``pip`` and ``conda-forge``, but developers will need to work with the latest source code. They should follow these steps to install:
 
-1. (Optional, but recommended for development): Create a new environment in Conda and activate it.
+1. (Optional, but recommended for development): Create a new environment in Conda and activate it::
 
-     conda create --name pyvbmc-env
+     conda create --name pyvbmc-env python=3.12
      conda activate pyvbmc-env
 
 2. Clone the PyVBMC and GPyReg GitHub repos locally::
@@ -78,7 +78,7 @@ There are add-ons to generate docstring blueprints using IDEs.
 Code documentation
 ------------------
 
-The documentation is currently hosted on :doc:`github.io <index>`. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>` and the build version is in the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch.
+The documentation is published at https://acerbilab.org/pyvbmc/ from the :labrepos:`gh-pages <pyvbmc/tree/gh-pages>` branch, which holds the built pages. We build the PyVBMC documentation using `Sphinx <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`__. The source code of the documentation is in the :mainbranch:`docsrc folder <docsrc>`.
 
 GitHub workflows automatically build and update the documentation whenever a commit is merged into the ``main`` branch, but it is sometimes useful to first do this locally in order to confirm that everything builds and renders correctly. This is especially advisable if you have made significant changes to the docs. To do so:
 

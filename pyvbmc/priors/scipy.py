@@ -116,7 +116,7 @@ class SciPy(Prior):
         self.distribution = distribution
 
     def _log_pdf(self, x):
-        """Compute the log-pdf of the multivariate uniform-box prior.
+        """Compute the log-pdf of the wrapped SciPy distribution.
 
         Parameters
         ----------
@@ -135,7 +135,7 @@ class SciPy(Prior):
         return log_pdf
 
     def sample(self, n, rng=None):
-        """Sample random variables from the uniform-box distribution.
+        """Sample random variables from the wrapped SciPy distribution.
 
         Parameters
         ----------

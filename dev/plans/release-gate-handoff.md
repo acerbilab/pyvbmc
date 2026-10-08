@@ -7,6 +7,10 @@ with every command, is the operator's guide,
 [scripts/hpc/README.md](../scripts/hpc/README.md); this brief says what
 runs, in what order and with which limits, and what comes back. The
 design and its reasons are in the [Slurm plan](slurm-benchmark-support.md).
+Carried out: the campaigns ran on 2026-10-02 and were handed back in PR #181
+(2026-10-04); the roadmap's pickups 18 and 19 record the outcome, and the
+items of `dev/TODO.md` that this brief names are closed. The brief is kept
+as written.
 
 ## What this is and why
 

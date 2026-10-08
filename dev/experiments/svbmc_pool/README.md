@@ -227,6 +227,16 @@ headline-bias growth across every `M`. The per-cell files of this run
 (`results.json`, `cells.jsonl`) are the second asset of the analyses
 release described below.
 
+Correction to the `summary.md` of `stack_M35_20260915/`,
+`stack_M32_20260915/` and `stack_merged_20260915/`: their opening says that
+every cell stacks the same runs with both implementations, which no cell of
+the first two did, and which 70 of the 120 cells of each condition of the
+merged summary did. The merged summary also labels each condition's runtime
+ratio and `max|dw|` "All 120 cells"; those figures are over the 70 cells
+that ran both arms, the `n` that its `summary.json` records. The summary
+generator has stated the paired count since 2026-10-07; these summaries
+keep the bytes it wrote on 2026-09-15/16.
+
 ## The integrated arm at `M = 32` (2026-09-15)
 
 `stack_M32_20260915/` holds the tracked side of `svbmc_pool_stack.py

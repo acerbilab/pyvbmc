@@ -94,9 +94,11 @@ class Prior(ABC):
         r"""Returns the box that bounds the support of the distribution.
 
         For priors that define ``_support``, this is the smallest
-        axis-aligned box containing the support. Otherwise, the method
-        reports the whole space. ``VBMC`` checks that the hard bounds lie
-        inside the reported box.
+        axis-aligned box containing the support, except that a ``Product``
+        reads each coordinate from its marginal, so a marginal that defines
+        no ``_support`` (a ``UserFunction``) spans the whole line. Otherwise,
+        the method reports the whole space. ``VBMC`` checks that the hard
+        bounds lie inside the reported box.
 
         Returns
         -------
