@@ -6,7 +6,10 @@ pytest.importorskip("arviz_base")
 import pytensor
 
 from pyvbmc.pymc._compat import remove_value_transforms, snapshot_model
-from pyvbmc.pymc._snapshot import _numeric_shared_inputs
+from pyvbmc.pymc._snapshot import (
+    _numeric_array_constants,
+    _numeric_shared_inputs,
+)
 
 
 def _partially_untransform(model):
@@ -62,3 +65,34 @@ def test_snapshot_freezes_registered_and_unregistered_shared_inputs():
     fresh_logp = fresh_partial.compile_logp(mode="FAST_COMPILE")
     assert fresh_names == names
     assert float(fresh_logp(fresh_partial.initial_point())) != before
+
+
+def test_snapshot_copies_arrays_written_into_the_graph():
+    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
+    weights = np.array([1.0, 2.0])
+    with pm.Model() as model:
+        x = pm.Normal("x", 0.0, 2.0, shape=2)
+        pm.Potential("penalty", -(weights * x**2).sum())
+        pm.Normal("y", covariates @ x, 1.0, observed=np.zeros(3))
+
+    snapshot, _ = snapshot_model(model)
+    assert not any(
+        np.shares_memory(constant.data, array)
+        for constant in _numeric_array_constants(snapshot)
+        for array in (covariates, weights)
+    )
+    point = {"x": np.array([0.3, 0.7])}
+    logp = snapshot.compile_logp(mode="FAST_COMPILE")
+    before = float(logp(point))
+    source_before = float(model.compile_logp(mode="FAST_COMPILE")(point))
+    assert source_before == before
+
+    covariates[:, 1] += 10.0
+    weights[:] = 5.0
+
+    assert float(logp(point)) == before
+    rebuilt = snapshot.compile_logp(mode="FAST_COMPILE")
+    assert float(rebuilt(point)) == before
+    # The caller's model keeps its arrays and so sees the change.
+    source = model.compile_logp(mode="FAST_COMPILE")
+    assert float(source(point)) != before

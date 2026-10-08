@@ -748,6 +748,8 @@ that graph; copying only the outer model object while sharing mutable
 data storage is insufficient. Mutating the original input arrays or
 calling `pm.set_data` on the original model must leave the target's
 density, maps, bounds, setup observations and export layout unchanged.
+An array that a `pytensor.scan` body reads as a constant is the exception
+(execution record, 2026-10-08); the documentation directs it to `pm.Data`.
 Do not hash or compare datasets on every target call.
 
 Construct a new target to fit changed data. The original `model`, also
@@ -1982,6 +1984,33 @@ and this plan (the design decisions and the execution record).
   notebook that is never executed in CI or the docs build.
 
 ## Execution record
+
+- 2026-10-08: the snapshot copies the NumPy arrays of the model's graph.
+  PyTensor wraps an array written into a graph (covariates in `X @ beta`,
+  weights in a `pm.Potential`) as a constant without copying it, and
+  cloning a graph keeps its constants, so the snapshot held the caller's
+  arrays. After an in-place change to one, a run restored by `VBMC.load`
+  recompiled the changed density while its setup observations held the
+  original one: the example of the `dev/TODO.md` entry (commit `3c8e4710`)
+  read -8.605987 live and -188.605987 restored. The live target hid the
+  defect under the default Numba linker, which compiles constant arrays
+  into its functions, but not under the Python linker. `snapshot_model`
+  now replaces every numeric array constant of the graph with a copy, as
+  it replaced numeric shared variables, and reports a PyMC incompatibility
+  if the snapshot still holds a constant of the source model. An array
+  that a `pytensor.scan` body reads as a constant, captured or passed in
+  `non_sequences`, stays shared: PyTensor 3.3 interns the nodes of an
+  op's inner graph process-wide (`FrozenApply`), keyed by the values of
+  their constants, so a copy of the inner graph, even one restored from a
+  pickle, resolves to the original nodes and their arrays. Such an array
+  still reaches a restored run (a three-element array captured by a loop
+  in a `pm.Potential` read -3.92 live and -36.77 restored after a change);
+  `pm.Data` and `sequences` reach the loop as outer inputs, which
+  the snapshot freezes, and the `PyMCTarget` page directs such arrays to
+  `pm.Data`. `test_model_snapshot.py` checks the copies and the
+  snapshot's density under `FAST_COMPILE`, and `test_save_load.py` a run
+  saved after the change against its setup observations; both fail
+  without the fix.
 
 - 2026-09-16: integrated CI
   [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)

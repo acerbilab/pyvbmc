@@ -170,6 +170,34 @@ def test_vbmc_target_save_load_preserves_density_budget_and_public_workflow(
     assert predictive.y.shape == (1, 12, 3)
 
 
+def test_vbmc_save_load_keeps_density_after_caller_array_changes(tmp_path):
+    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
+    with pm.Model() as model:
+        beta = pm.Normal("beta", 0.0, 2.0, shape=2)
+        pm.Normal("y", covariates @ beta, 1.0, observed=np.zeros(3))
+    target = PyMCTarget(
+        model,
+        start={"beta": np.array([0.0, 1.0])},
+        plausible_bounds={"beta": (np.full(2, -2.0), np.full(2, 2.0))},
+        seed=919,
+    )
+    vbmc = VBMC(target, options={"display": "off"}, seed=920)
+    X_setup, y_setup = (array.copy() for array in target.setup_evaluations)
+
+    covariates[:, 1] += 10.0
+    path = tmp_path / "pymc_array_constants"
+    vbmc.save(path)
+    loaded = VBMC.load(path)
+
+    for actual, expected in zip(
+        loaded.precomputed_evaluations, (X_setup, y_setup)
+    ):
+        np.testing.assert_array_equal(actual, expected)
+    for candidate in (target, loaded.target):
+        actual = np.array([candidate.log_joint(x) for x in X_setup])
+        np.testing.assert_allclose(actual, y_setup, rtol=0, atol=1e-10)
+
+
 def test_target_deepcopy_and_dill_round_trip(lifecycle_target):
     target = lifecycle_target["target"]
     copied = copy.deepcopy(target)

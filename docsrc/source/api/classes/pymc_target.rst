@@ -184,10 +184,15 @@ the log density is finite throughout the transformed space.
 Persistence of adapted PyMC runs
 --------------------------------
 
-Target construction freezes the model data, shared numeric graph inputs,
-dimensions and coordinate metadata used for inference. Later changes to the
-original model do not change target values or setup observations; construct a
-new target to refit changed data. The original model remains available for
+Target construction freezes the model data, the shared variables and NumPy
+arrays of the model's graph, and the dimensions and coordinate metadata used for
+inference. Later changes to the original model, or to the arrays it was built
+from, do not change target values or setup observations; construct a new
+target to refit changed data. The exception is an array that the body of a
+``pytensor.scan`` loop reads as a constant, captured by the loop's function or
+passed in ``non_sequences``: PyTensor keeps it inside the loop, where the target
+cannot copy it, so a later change to it can change the target's values. Wrap
+such an array in ``pm.Data``. The original model remains available for
 posterior prediction.
 
 Saving a :class:`~pyvbmc.VBMC` instance retains the adapter, its fixed

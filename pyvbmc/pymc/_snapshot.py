@@ -27,6 +27,10 @@ def _without_initial_values(model, operation):
     }
 
 
+def _is_numeric_dtype(dtype) -> bool:
+    return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
+
+
 def _is_numeric_shared(value, SharedVariable) -> bool:
     if not isinstance(value, SharedVariable):
         return False
@@ -34,7 +38,25 @@ def _is_numeric_shared(value, SharedVariable) -> bool:
         dtype = np.dtype(value.dtype)
     except (AttributeError, TypeError):
         return False
-    return np.issubdtype(dtype, np.number) or np.issubdtype(dtype, np.bool_)
+    return _is_numeric_dtype(dtype)
+
+
+def _is_numeric_array_constant(value, Constant) -> bool:
+    """Return whether a graph constant holds a numeric NumPy array.
+
+    PyTensor wraps an array written into a model graph without copying it,
+    and cloning a graph keeps its constants, so such a constant's data stays
+    the caller's array.
+    """
+    return (
+        isinstance(value, Constant)
+        and isinstance(value.data, np.ndarray)
+        and _is_numeric_dtype(value.data.dtype)
+    )
+
+
+def _copied_constant(value):
+    return type(value)(value.type, copy.deepcopy(value.data), name=value.name)
 
 
 def _model_roots(model):
@@ -68,10 +90,37 @@ def _numeric_shared_inputs(model):
     )
 
 
+def _numeric_array_constants(model):
+    """Return the array constants reachable from a model."""
+    pm, _, _ = import_pymc()
+    try:
+        from pytensor.graph.basic import Constant
+        from pytensor.graph.traversal import graph_inputs
+    except (AttributeError, ImportError) as exc:
+        raise _version_error(pm, "snapshot graph traversal", exc)
+
+    return tuple(
+        value
+        for value in graph_inputs(_model_roots(model))
+        if _is_numeric_array_constant(value, Constant)
+    )
+
+
 def snapshot_model(model):
-    """Freeze registered and unregistered numeric inputs of a PyMC model."""
+    """Freeze registered and unregistered numeric inputs of a PyMC model.
+
+    Numeric shared variables become constants holding copies of their
+    values, and array constants are replaced with copies of themselves, so
+    that a later change to the caller's arrays or shared variables reaches
+    neither the snapshot, nor its compiled functions, nor a copy of it
+    restored from a pickle. The constants inside an op's inner graph, such
+    as the body of a scan loop, stay shared: PyTensor interns the nodes of
+    inner graphs by the values of their constants, so a copy resolves to
+    the original nodes.
+    """
     check_model(model)
     pm, _, _ = import_pymc()
+    source_constants = set(_numeric_array_constants(model))
     original_names = tuple(rv.name for rv in model.free_RVs)
     if any(name is None for name in original_names) or len(
         set(original_names)
@@ -88,6 +137,7 @@ def snapshot_model(model):
         from pymc.pytensorf import find_rng_nodes
         from pytensor.compile import SharedVariable
         from pytensor.graph import FunctionGraph
+        from pytensor.graph.basic import Constant
         from pytensor.graph.replace import clone_replace
         from pytensor.graph.traversal import graph_inputs
     except (AttributeError, ImportError) as exc:
@@ -108,15 +158,18 @@ def snapshot_model(model):
         )
         roots = [*fgraph.outputs, *fgraph._dim_lengths.values()]
         rngs = set(find_rng_nodes(roots))
-        replacements = {
-            value: value.type.constant_type(
-                type=value.type,
-                data=copy.deepcopy(value.get_value()),
-                name=value.name,
-            )
-            for value in graph_inputs(roots)
-            if value not in rngs and _is_numeric_shared(value, SharedVariable)
-        }
+        replacements = {}
+        for value in graph_inputs(roots):
+            if value in rngs:
+                continue
+            if _is_numeric_shared(value, SharedVariable):
+                replacements[value] = value.type.constant_type(
+                    type=value.type,
+                    data=copy.deepcopy(value.get_value()),
+                    name=value.name,
+                )
+            elif _is_numeric_array_constant(value, Constant):
+                replacements[value] = _copied_constant(value)
 
         outputs = clone_replace(
             fgraph.outputs,
@@ -166,6 +219,17 @@ def snapshot_model(model):
         raise _version_error(
             pm,
             f"freezing numeric shared model inputs ({names})",
+        )
+    retained = [
+        value
+        for value in _numeric_array_constants(snapshot)
+        if value in source_constants
+    ]
+    if retained:
+        names = ", ".join(value.name or "<unnamed>" for value in retained)
+        raise _version_error(
+            pm,
+            f"copying numeric model constants ({names})",
         )
     return snapshot, original_names
 
