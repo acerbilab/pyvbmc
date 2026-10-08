@@ -1424,7 +1424,7 @@ must cover the settled release code, API and behavior before publication.
   section the skill names. The links to `main` in the skill and the docs
   resolve only once the release merge puts the 1.5 files there, so a
   `linkcheck` follows that merge.
-- [ ] Re-execute every example notebook with the release code and commit
+- [x] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
   (`dev/README.md`) runs all nine and writes back only those whose checks of
@@ -1438,6 +1438,16 @@ must cover the settled release code, API and behavior before publication.
   asserts; if none does, choose other seeds (on 2026-09-26, 9 of 24 single
   runs on its target missed one; `dev/scripts/runs/LOCAL.md`, "Example
   notebooks").
+  Done on 2026-10-08 at `4d9f5942` (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-08)"): all nine ran and passed their checks, the
+  outputs of Examples 2, 4, 5, 6, 7 and 8 changed, and each notebook's text
+  agrees with its new outputs, which show the tips and documentation
+  addresses of the review of 2026-10-08. Examples 4 and 6 are seeded, and
+  their new runs differ from the outputs committed on 2026-10-07
+  (`02f8fe29`), of which no execution record exists; a second execution of
+  both by the script gave the new outputs again, identical but for the
+  startup tip. The notebooks' code is unchanged, and so are the scripts in
+  `examples/scripts/`.
 - [ ] In the release pull request, set `RELEASE_DATE` in
   `pyvbmc/_release.py` to the date of the changelog heading
   `## [X.Y.Z] - YYYY-MM-DD` that the release gives its section: the

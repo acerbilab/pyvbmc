@@ -13,9 +13,6 @@ records its execution.
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
-  - re-execute the example notebooks at the release commit and commit their
-    outputs, Example 7 with its account of the headline as the switch of
-    2026-10-06 rewrote it;
   - the Sphinx build, `linkcheck`, the rendered pages and the agent skill on
     the settled code, with a `linkcheck` again after the merge into `main`
     (the API and tutorial review was done on 2026-10-07 in PR #186; the
