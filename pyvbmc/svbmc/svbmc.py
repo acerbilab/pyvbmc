@@ -828,10 +828,12 @@ Generator, optional
             raise ValueError("`n_samples_final` should be an integer >= 2.")
         _validate_optimization(n_samples, max_steps, version)
         torch = _import_torch()
+        # Naive stacking selects no weights and prints no ELBO values, so the
+        # noisy-only tips, which are about those values, do not apply to it.
         consider_runtime_tip(
             enabled=self.show_tips,
             display=self.logger.isEnabledFor(logging.INFO),
-            noisy=self.noisy,
+            noisy=self.noisy and version != "ns",
         )
         w, _, _ = self.maximize_ELBO(
             n_samples=n_samples, lr=lr, max_steps=max_steps, version=version

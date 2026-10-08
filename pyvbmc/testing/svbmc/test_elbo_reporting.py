@@ -796,6 +796,27 @@ def test_optimize_maps_show_tips_and_info_logging_to_scheduler(
     assert (calls[0]["enabled"], calls[0]["display"]) == expected
 
 
+@pytest.mark.parametrize(
+    "version, expected",
+    [("all-weights", True), ("posterior-only", True), ("ns", False)],
+)
+def test_naive_stacking_gets_no_noisy_only_tip(monkeypatch, version, expected):
+    module = importlib.import_module("pyvbmc.svbmc.svbmc")
+    calls = []
+    monkeypatch.setattr(
+        module, "consider_runtime_tip", lambda **kwargs: calls.append(kwargs)
+    )
+    stacked = SVBMC([_run(seed=1)], M_min=1, noisy=True, seed=13)
+    _fixed_final_evaluation(monkeypatch, stacked, selected=[1.0])
+
+    stacked.optimize(
+        n_samples=2, max_steps=1, version=version, n_samples_final=2
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["noisy"] is expected
+
+
 def test_tip_scheduler_does_not_touch_numerical_or_module_rngs():
     inference_rng = np.random.default_rng(91)
     inference_state = copy.deepcopy(inference_rng.bit_generator.state)
