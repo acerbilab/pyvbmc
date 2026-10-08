@@ -63,15 +63,17 @@ Note: Our [model-fitting tools](https://acerbilab.org/model-fitting/) include [B
 
 PyVBMC is available via `pip` and `conda-forge`.
 
-1. Install with:
+1. Install or upgrade with pip:
     ```console
-    python -m pip install pyvbmc
+    python -m pip install --upgrade pyvbmc
     ```
-    or:
+    Or install with Conda:
     ```console
     conda install --channel=conda-forge pyvbmc
     ```
     PyVBMC requires Python version 3.10 or newer.
+
+    PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer, and its conda-forge package requires Python 3.11 or newer. In an environment that holds an older version of one of them, `conda` can install PyVBMC 1.0.4 instead, without a warning: ask it for `"pyvbmc>=1.5"`, or see the [FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-conda-installs-an-older-version-of-pyvbmc-why).
 
 2. (Optional): Install [Jupyter Notebook](https://jupyter.org/install) to run the examples. You can skip this step if your environment already has Jupyter Notebook, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
    ```console
@@ -92,20 +94,20 @@ export ([see below](#combine-runs-and-use-the-posterior-downstream)) use the
 install the official CPU wheel first, followed by the PyVBMC extra:
 ```console
 python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-python -m pip install "pyvbmc[torch]"
+python -m pip install --upgrade "pyvbmc[torch]"
 ```
 The torch integration requires torch 2.7 or newer. The current ArviZ export
 requires Python 3.12 or newer and is installed with:
 ```console
-python -m pip install "pyvbmc[arviz]"
+python -m pip install --upgrade "pyvbmc[arviz]"
 ```
 The PyMC adapter also requires Python 3.12 or newer and is installed with:
 ```console
-python -m pip install "pyvbmc[pymc]"
+python -m pip install --upgrade "pyvbmc[pymc]"
 ```
-Conda users can install the corresponding `pytorch`, `arviz`, `arviz-base`,
-and `pymc` packages from `conda-forge`; PyVBMC's `torch`, `arviz`, and `pymc`
-extras are pip dependency groups.
+Conda users can install `"pyvbmc>=1.5"` with the corresponding `pytorch`,
+`arviz`, `arviz-base`, and `pymc` packages from `conda-forge`; PyVBMC's
+`torch`, `arviz`, and `pymc` extras are pip dependency groups.
 
 If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
 

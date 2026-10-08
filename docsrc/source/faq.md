@@ -34,6 +34,7 @@ NumPy arrays for the starting point and bounds.
   - [Which external packages does PyVBMC require?](#faq-which-external-packages-does-pyvbmc-require)
   - [Which version of Python do I need?](#faq-which-version-of-python-do-i-need)
   - [How do I know whether a newer version of PyVBMC exists?](#faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists)
+  - [Conda installs an older version of PyVBMC. Why?](#faq-conda-installs-an-older-version-of-pyvbmc-why)
   - [I am having trouble installing PyVBMC. Can you help?](#faq-i-am-having-trouble-installing-vbmc-can-you-help)
 - [Input arguments (target function: `fun`)](#faq-input-arguments-target-function-fun)
   - [What is the target function?](#faq-what-is-the-target-function)
@@ -110,13 +111,13 @@ Alternatively, you may resort to maximum-likelihood (or maximum-a-posteriori) es
 (faq-where-can-i-download-vbmc)=
 ### Where can I download PyVBMC?
 
-Install PyVBMC with:
+Install or upgrade PyVBMC with pip:
 
 ```console
-python -m pip install pyvbmc
+python -m pip install --upgrade pyvbmc
 ```
 
-or with Conda:
+Or install it with Conda:
 
 ```console
 conda install --channel=conda-forge pyvbmc
@@ -140,14 +141,17 @@ instructions.
 (faq-which-version-of-python-do-i-need)=
 ### Which version of Python do I need?
 
-PyVBMC requires Python 3.10 or newer. The optional ArviZ export and PyMC
-adapter require Python 3.12 or newer.
+PyVBMC requires Python 3.10 or newer, and its package on conda-forge Python
+3.11 or newer. The optional ArviZ export and PyMC adapter require Python 3.12
+or newer.
 
 (faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists)=
 ### How do I know whether a newer version of PyVBMC exists?
 
-Run `pyvbmc.check_for_updates()`. It checks PyPI for a newer release and
-prints the command to update your installation if one is available.
+Run `pyvbmc.check_for_updates()`. It checks PyPI for a newer release and,
+if one is available, prints the command that updates your installation:
+`python -m pip install --upgrade pyvbmc`, or
+`conda update --channel=conda-forge pyvbmc` for conda.
 
 PyVBMC also occasionally reminds you when your installed release is more
 than a year old. The reminder makes no network request. To disable it and
@@ -155,6 +159,29 @@ the startup tips, pass `options={"show_tips": False}` to `VBMC`.
 
 See the [`check_for_updates` reference](api/functions/check_for_updates.rst)
 for details.
+
+(faq-conda-installs-an-older-version-of-pyvbmc-why)=
+### Conda installs an older version of PyVBMC. Why?
+
+PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer,
+among other packages, and its package on conda-forge requires Python 3.11
+or newer. When the environment holds an older version of one of them, or a
+package that requires one, `conda install --channel=conda-forge pyvbmc`
+can keep that version and install the newest PyVBMC that fits it, 1.0.4,
+without a warning. Ask conda for the latest release:
+
+```console
+conda install --channel=conda-forge "pyvbmc>=1.5"
+```
+
+Conda then upgrades what holds PyVBMC back, or says which package does.
+The same command upgrades a PyVBMC that is installed already, which
+`conda install` and `conda update` can leave at 1.0.4 without a warning. A
+new environment avoids the conflict:
+
+```console
+conda create --name pyvbmc --channel=conda-forge python=3.12 pyvbmc
+```
 
 (faq-i-am-having-trouble-installing-vbmc-can-you-help)=
 ### I am having trouble installing PyVBMC. Can you help?

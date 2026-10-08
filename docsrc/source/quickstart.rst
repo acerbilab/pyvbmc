@@ -254,9 +254,10 @@ Bring a PyMC model into PyVBMC
 ==============================
 
 Install the optional integration on Python 3.12 or newer with
-``python -m pip install "pyvbmc[pymc]"``. A :class:`~pyvbmc.pymc.PyMCTarget`
-provides the flat target and setup that PyVBMC needs. This model has a named
-coefficient vector and a positive observation scale:
+``python -m pip install --upgrade "pyvbmc[pymc]"``. A
+:class:`~pyvbmc.pymc.PyMCTarget` provides the flat target and setup that
+PyVBMC needs. This model has a named coefficient vector and a positive
+observation scale:
 
 .. code-block:: python
 

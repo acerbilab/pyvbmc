@@ -82,7 +82,7 @@ xx = np.vstack(
 yy = vp.pdf(xx)  # Compute PDF values on specified points
 
 
-# Plotly is not a PyVBMC dependency: pip install "pyvbmc[examples]"
+# Plotly is not a PyVBMC dependency: pip install --upgrade "pyvbmc[examples]"
 # Plot approximate posterior pdf (this interactive plot does not work in higher D)
 import plotly.graph_objects as go
 

@@ -9,9 +9,9 @@
   ``PyMCTarget`` adapts a supported PyMC model to PyVBMC, including the
   model's log joint, variable transforms, bounds, starting point and plausible
   box. Install the optional integration with
-  ``python -m pip install "pyvbmc[pymc]"`` on Python 3.12 or newer; see
-  :doc:`../../installation`. Importing ``pyvbmc`` or ``pyvbmc.pymc`` does not
-  import PyMC or PyTensor.
+  ``python -m pip install --upgrade "pyvbmc[pymc]"`` on Python 3.12 or
+  newer; see :doc:`../../installation`. Importing ``pyvbmc`` or
+  ``pyvbmc.pymc`` does not import PyMC or PyTensor.
 
 PyMC adapter at a glance
 ------------------------

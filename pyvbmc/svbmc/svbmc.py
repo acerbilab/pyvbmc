@@ -232,9 +232,10 @@ class SVBMC:
     combine the component means and covariances of different runs
     directly.
 
-    Requires the optional ``torch`` extra (``pip install pyvbmc[torch]``);
-    construction raises ``ImportError`` without it. An object saved with
-    :meth:`save` can be loaded, sampled and plotted without it.
+    Requires the optional ``torch`` extra
+    (``pip install --upgrade "pyvbmc[torch]"``); construction raises
+    ``ImportError`` without it. An object saved with :meth:`save` can be
+    loaded, sampled and plotted without it.
 
     Parameters
     ----------
