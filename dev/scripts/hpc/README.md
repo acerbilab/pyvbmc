@@ -120,8 +120,8 @@ Each tree is a clone of its repository at a named commit, with nothing
 changed in it. Clone them on the login node, with `LOGIN_SETUP` run first:
 
 ```bash
-# The harness checkout, at the release commit: the latest commit of
-# dev-next when the campaigns launch (the plan's decision 13).
+# The harness checkout, at the campaign's pinned release commit
+# (ff3ed014 for the October 2 campaigns; the plan's decision 13).
 git clone https://github.com/acerbilab/pyvbmc "$TREES/pyvbmc"
 git -C "$TREES/pyvbmc" checkout --detach <release commit>
 
@@ -884,7 +884,7 @@ in the hand-back clone:
 
 ```bash
 git -C "$TREES/handback" fetch origin
-git -C "$TREES/handback" switch -c release-gate-<date> origin/dev-next
+git -C "$TREES/handback" switch -c release-gate-<date> origin/main
 ```
 
 Then each campaign in its own shell, with its settings exported, from the
@@ -940,7 +940,7 @@ dev/scripts/hpc/campaign_redact.sh "$RUNS/$CAMPAIGN" --check "$COPIES/README.md"
 ```
 
 Then commit the copies and the README, push the branch and open a pull
-request to `dev-next`.
+request to `main`.
 
 ### Reading the finish's report, and resubmitting
 
@@ -1168,7 +1168,7 @@ run first for the clone, `gh` and the push:
 # once: a clone for the hand-back, apart from the harness checkout,
 # which stays clean while later campaigns use it
 git clone https://github.com/acerbilab/pyvbmc "$TREES/handback"
-git -C "$TREES/handback" switch -c release-gate-<date> origin/dev-next
+git -C "$TREES/handback" switch -c release-gate-<date> origin/main
 
 # the tracked copies, from the harness checkout
 dev/scripts/hpc/campaign_redact.sh "$RUNS/population_after" \
@@ -1243,7 +1243,7 @@ done
 ```
 
 Commit the copies and the README, push the branch and open a pull request
-to `dev-next`. List the raw campaign directories and the archives in
+to `main`. List the raw campaign directories and the archives in
 `dev/scripts/runs/LOCAL.md` of the harness checkout, which git ignores.
 
 ### When something goes wrong

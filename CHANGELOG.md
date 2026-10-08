@@ -5,7 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Changes since PyVBMC 1.0.4, to be released as PyVBMC 1.5.
+## [1.5.0] - 2026-10-13
+
+Changes since PyVBMC 1.0.4.
 
 Many of the changes and fixes come from a systematic comparison of PyVBMC with
 VBMC, the original MATLAB implementation. The
@@ -477,4 +479,5 @@ An error is raised for calls and values that 1.0.4 accepted:
   bounded one-dimensional search. `VBMC.load` refuses a saved run of more
   variables that set it and says how to continue it.
 
-[Unreleased]: https://github.com/acerbilab/pyvbmc/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/acerbilab/pyvbmc/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/acerbilab/pyvbmc/compare/v1.0.4...v1.5.0

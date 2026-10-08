@@ -8,6 +8,10 @@ the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
+The planned release date is 2026-10-13: circulate the soft release within
+the lab and complete the checks before the public announcement, later
+that day or on 2026-10-14 (PI, 2026-10-08).
+
 ## In scope for 1.5
 
 - [ ] **Release documentation and validation.** The final pass on the
@@ -29,11 +33,12 @@ records its execution.
     archives hold the cluster's details and the operator's paths; the
     replay fingerprints and the earlier references' traces are backed up
     in a draft release of their own;
-  - the references to `dev-next` that change with the release merge, and
-    the deletion of `origin/dev-port-review` at that merge;
-  - `RELEASE_DATE` in `pyvbmc/_release.py` set to the date of the
-    changelog's release heading, in the release pull request (`AGENTS.md`,
-    "Release date").
+  - the release pull request into `main`, its CI checks, and the deletion
+    of `origin/dev-port-review` when it merges;
+  - confirm the planned 2026-10-13 release date before tagging and
+    publishing: `RELEASE_DATE` in `pyvbmc/_release.py` and the changelog's
+    1.5.0 heading are prepared with that date and must stay in agreement
+    if the schedule changes (`AGENTS.md`, "Release date").
 
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
   its seventh draft was approved and mastered on 2026-10-05, and it has
@@ -204,14 +209,8 @@ records its execution.
   golden suite; the reference that replaced them after the port review,
   `reference_2400_20261007`, runs the whole `production` suite.
   The E5 report's F3 section records how the difference was found.
-- Use feature branches for implementation. Planning, proposal, handoff and
-  status edits belong on `dev-next`. Leave unrelated work intact.
-- Dependabot's PRs target `main`, whose `tests.yml` and `merge-tests.yml`
-  `dev-next` has replaced (its tests run through `test-matrix.yml`, which
-  Dependabot does not see from `main`). Until `dev-next` merges into
-  `main`, a bump is applied on `dev-next`, in every workflow that uses the
-  action, and its PR closed: merged into `main`, it makes those files
-  conflict in the release merge.
+- Use feature branches from `main` for implementation and planning
+  changes, with pull requests into `main`. Leave unrelated work intact.
 
 ## Completed baseline and local artifacts
 

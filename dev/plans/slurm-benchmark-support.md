@@ -241,9 +241,10 @@ comparison then stacks subsets of each pool.
     differ too, 0–99 against 1000 upward, and a pool needs 320 passing
     runs, so one harness for both would save few runs; the duplicated
     ones are of targets that take minutes.
-13. **The release code is the latest `dev-next` at the launch.** The
+13. **The release code is pinned at launch.** The
     campaigns of Phase 8 launch once no algorithmic work on 1.5 remains,
-    from the latest commit of `dev-next` at that time. After the launch
+    from the latest approved release commit at that time. The campaigns
+    of 2026-10-02 used `ff3ed014`. After the launch
     only the documentation changes, and the S-VBMC headline selection
     that the gate itself decides; a change to the numerics after it would
     need the campaigns it reaches to run again. From the launch to the
@@ -888,7 +889,7 @@ and `ANALYSIS_MEM` 4 GB; `CHECK_TIME` 1 hour, `CHECK_MEM` 4 GB. The
 - **The tracked copies are redacted.** They go under
   `dev/experiments/release_gate_<date>/` (`pools/`, `population_after/`,
   `population_before/`, `stacking/`, with a README) in a pull request to
-  `dev-next`, as in September: the manifests, the verification reports, the
+  `main`: the manifests, the verification reports, the
   summaries and, for the populations, every verified case's record,
   sidecar and boost report and the after arm's rescored metrics (about 30
   to 45 MB per arm), so that the assessment can be redone from a fresh

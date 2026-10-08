@@ -4,4 +4,4 @@
 # "## [X.Y.Z] - YYYY-MM-DD", and a test checks that the two agree. The
 # old-release reminder (pyvbmc/vbmc/_release_reminder.py) reads it; with None
 # it stays silent.
-RELEASE_DATE: str | None = None
+RELEASE_DATE: str | None = "2026-10-13"

@@ -2,7 +2,7 @@
 
 Started 2026-09-02. Roadmap: `plans/modernization-roadmap.md`, Stage 1 of
 `dev/2026-09-02-modernization-discussion.md` §10, bundled with the §9
-one-liners there. Branch `dev-next`.
+one-liners there. Implementation branch on 2026-09-02: `dev-next`.
 
 Replace the ~55 global `np.random.*` call sites in PyVBMC with a `Generator`
 owned by the `VBMC` instance, exposed through a `seed=` constructor argument.
@@ -53,8 +53,8 @@ Generator threading
   11:29 wall
 - [x] Committed on `dev-next` (three commits: CI/test extra, the feature,
   the `dev/` restructure)
-- [ ] PR `dev-next` → `main` (deferred: one PR at the end of the `dev-next`
-  work, see the roadmap)
+- [ ] Release integration into `main`, tracked by the roadmap's
+  [pre-release checklist](modernization-roadmap.md#pre-release-checklist).
 
 ## 2. API
 
