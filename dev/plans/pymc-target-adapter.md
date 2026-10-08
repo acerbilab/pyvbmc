@@ -748,6 +748,9 @@ that graph; copying only the outer model object while sharing mutable
 data storage is insufficient. Mutating the original input arrays or
 calling `pm.set_data` on the original model must leave the target's
 density, maps, bounds, setup observations and export layout unchanged.
+An array that the inner graph of an operation reads as a constant (the
+body of a `pytensor.scan` loop or of an `OpFromGraph`) is an exception,
+documented and detected (Decisions; execution record, 2026-10-08).
 Do not hash or compare datasets on every target call.
 
 Construct a new target to fit changed data. The original `model`, also
@@ -1980,8 +1983,137 @@ and this plan (the design decisions and the execution record).
 - **Example 8 compares with NUTS** — a PyMC user's first question is
   whether the answers agree; the cost is a short `pm.sample` in a
   notebook that is never executed in CI or the docs build.
+- **Arrays inside inner graphs: documented and detected** — the PI's
+  decision of 2026-10-08. The target cannot copy an array that the body
+  of a `pytensor.scan` loop or of an `OpFromGraph` reads as a constant
+  (execution record, 2026-10-08), and documentation alone would be
+  missed. At construction the target takes a digest of the numeric
+  arrays that its compiled functions read, in their own graphs and in
+  every inner graph they reach (including the operation that a
+  `Blockwise` applies), since compiling can move such an array out of
+  its loop. Each function contributes its arrays in graph walk order,
+  including each use of a constant and the boundaries of inner graphs.
+  Array hashes are cached within the call, but each occurrence contributes
+  to the digest: arrays exchanging contents must remain detectable.
+  `VBMC.save` compares it and warns. `VBMC.load` compares it
+  and evaluates the log density once, at the starting point, against
+  the value recorded during setup, which also catches causes that leave
+  the arrays alone (a PyMC or PyTensor version that computes
+  differently, a custom operation's own state); on a change it warns
+  that the run's results remain valid and marks the run. A check that
+  fails, such as an evaluation that raises, counts as a change, so that
+  loading never fails because of it. `optimize()` refuses a marked run,
+  or one whose digest has changed, with a `RuntimeError`; a live run
+  continues once the arrays are restored. Nothing overrides the refusal:
+  the PI (2026-10-08) defers an override until users report refusals
+  they need to pass. One evaluation at load is the whole cost in target
+  calls, since a PyMC density need not be cheap; the digest hashes the
+  target's data at construction, at each save and at each start of
+  `optimize()` (about 0.1 s for 50 MB). The tolerance is 1e-8, absolute
+  below 1 and relative above. The checks need the association that
+  `VBMC(target)` makes; a run built from `VBMC(target.log_joint, ...)`
+  goes without them, as the `PyMCTarget` page says. Rejected: refusing
+  such models at construction (it would turn away models that never
+  change their arrays) and lifting the arrays into outer inputs of their
+  operations (each operation rebuilt through its own constructor, and it
+  would not reach the loops that PyMC builds with the density).
 
 ## Execution record
+
+- 2026-10-08: the array digest preserves graph roles. Collecting array
+  hashes into a set missed two captured arrays exchanging contents: an
+  `OpFromGraph` model retained its starting-point density while its density
+  at another point changed from -4.240157 to -7.307399 after save/load,
+  without a warning or refusal. The digest uses an ordered topological walk
+  per compiled function, records each constant input occurrence and enters
+  inner graphs at the operation that uses them. Each constant's bytes are
+  hashed once per call; object identities are not included in the digest.
+  The swapped-array regression in `test_changed_inputs.py` fails with the
+  set digest and checks the live refusal, save/load warnings and loaded
+  refusal while the starting-point value stays unchanged.
+  `test_digest_persistence.py` checks unchanged scan-loop, GARCH11,
+  `OpFromGraph` and automatic-start models. Each makes one seeded VBMC
+  iteration, then loads both the saved state and iteration 0 and re-saves
+  them through two fresh-process cycles with different Python hash seeds,
+  checking the digest, density and absence of refusal flags or warnings.
+  The full PyMC suite passes with both the default linker and `linker=py`:
+  130 tests in each configuration (Python 3.12.6, PyMC 6.3.2, PyTensor
+  3.3.2). An independent static review found no further issues.
+
+- 2026-10-08: the target copies the NumPy arrays of the model and of its
+  log density. PyTensor wraps an array written into a graph (covariates
+  in `X @ beta`, weights in a `pm.Potential`, a design matrix in a
+  `CustomDist` log-density function) as a constant without copying it,
+  and cloning a graph keeps its constants, so the snapshot and the
+  compiled densities held the caller's arrays. After an in-place change
+  to one, a run restored by `VBMC.load` recompiled the changed density
+  while its setup observations held the original one: the covariate
+  model of `test_vbmc_save_load_keeps_density_after_caller_array_changes`
+  read -8.605987 live and -188.605987 restored. The live target hid the
+  defect under the default Numba linker, which compiles constant arrays
+  into its functions, but not under the Python linker. `snapshot_model`
+  replaces every numeric array constant of the model's graph with a copy,
+  as it already replaces numeric shared variables, and reports a PyMC
+  incompatibility if the snapshot still holds a constant of the source
+  model. PyMC calls a `CustomDist` log-density function only when it
+  builds the density, and a transform's bounds function only when it
+  builds a map, so the target also copies the arrays that are not the
+  snapshot's own in the graphs of the compiled functions it keeps: the
+  two densities (`_compile_density`) and each variable's forward and
+  backward map. The gradient, the Hessian and the support probe are used
+  during construction only.
+
+  An array that the inner graph of an operation reads as a constant (the
+  body of a `pytensor.scan` loop, whether the loop's function captures it
+  or it is passed in `non_sequences`, or the body of an `OpFromGraph`)
+  stays shared. PyTensor 3.3 interns the nodes of inner graphs
+  process-wide (`FrozenApply`), keyed by the values of their constants,
+  so a copy of an inner graph, even one restored from a pickle in the
+  same process, resolves to the original nodes and their arrays, and the
+  target shares the operation with the caller's model. A loop that a
+  `pm.Potential` builds over a captured three-element array read -3.92
+  live and -36.77 restored after a change; `pm.Data`, and arrays passed
+  in `sequences`, reach the loop as outer inputs and stay fixed. PyMC's
+  own loops took no caller array into the density with `AR`,
+  `GaussianRandomWalk`, `EulerMaruyama` (whose drift function captured
+  an array) or `Truncated`. `GARCH11` passes `omega` into its loop in
+  `non_sequences`; the snapshot copies `omega` where it is an input of
+  the distribution, but the loop that PyMC builds for the density
+  interns back to the caller's array, so under `FAST_COMPILE` a change to
+  it moved the density live and restored (-4.19 to -13.76), and in the
+  default mode it did not, with either linker. Compiling also moves a
+  term of a loop body that does not change between iterations, with the
+  array it reads, out of the loop into the function's own graph, where
+  the copies, made before compiling, never reach it. Interning joins
+  models as well: a loop whose arrays equal those of a loop that another
+  model built earlier in the process reads that model's array, so the
+  array a target reads need not be the caller's own. The `PyMCTarget`
+  page names the exception, how to pass such arrays and the sharing
+  between models; the detection that the PI chose (Decisions) covers
+  whichever array the target reads, in the compiled graphs and in their
+  inner graphs. Python code inside a custom operation is outside the
+  contract, as the contract above states.
+
+  `test_model_snapshot.py` checks that the snapshot holds no caller
+  array, that its density compiled under `FAST_COMPILE` stays fixed, and
+  that the check for retained constants fires; `test_save_load.py`
+  saves and loads a run after the change, with the arrays in the
+  model's graph and in a `CustomDist` log-density function, against its
+  setup observations, and with the array in a transform's bounds
+  function, against the maps. Each fails without its part of the fix.
+  `test_changed_inputs.py` checks the detection: no warning for an
+  unchanged run; for a changed loop array, a refused `optimize()`, a
+  warning on saving and on loading, a refused `optimize()` after
+  loading, and a live run cleared by restoring the array; a changed
+  array in an `OpFromGraph` applied by a `Blockwise`; a changed array
+  that compiling moved out of its loop, at a starting point whose
+  density it leaves unchanged, which only the digest shows; a loaded run
+  whose recorded density differs, also for a target pickled before the
+  digest existed; a load whose evaluation raises, which warns rather
+  than fails; and the cost, no evaluation on saving or refusing and one
+  on loading. The 125 tests of `pyvbmc/testing/pymc` pass under the
+  default Numba linker and under the Python linker (PyMC 6.3.2, PyTensor
+  3.3.2, Python 3.13).
 
 - 2026-09-16: integrated CI
   [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)

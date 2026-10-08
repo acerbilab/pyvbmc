@@ -8,6 +8,7 @@ import pytest
 
 pm = pytest.importorskip("pymc")
 pytest.importorskip("arviz_base")
+import pytensor.tensor as pt
 
 from pyvbmc import VBMC, VariationalPosterior
 from pyvbmc.pymc import PyMCTarget
@@ -168,6 +169,91 @@ def test_vbmc_target_save_load_preserves_density_budget_and_public_workflow(
         predictive.mu.values, expected_mu, rtol=0, atol=1e-12
     )
     assert predictive.y.shape == (1, 12, 3)
+
+
+def _covariate_model(covariates):
+    with pm.Model() as model:
+        beta = pm.Normal("beta", 0.0, 2.0, shape=2)
+        pm.Normal("y", covariates @ beta, 1.0, observed=np.zeros(3))
+    return model
+
+
+def _custom_logp_model(covariates):
+    # PyMC calls the log-density function only when it builds the density.
+    def logp(value, beta):
+        mean = pt.dot(pt.as_tensor_variable(covariates), beta)
+        return -0.5 * (value - mean) ** 2
+
+    with pm.Model() as model:
+        beta = pm.Normal("beta", 0.0, 2.0, shape=2)
+        pm.CustomDist("y", beta, logp=logp, observed=np.zeros(3))
+    return model
+
+
+@pytest.mark.parametrize(
+    "build", [_covariate_model, _custom_logp_model], ids=["graph", "logp"]
+)
+def test_vbmc_save_load_keeps_density_after_caller_array_changes(
+    build, tmp_path
+):
+    covariates = np.array([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]])
+    target = PyMCTarget(
+        build(covariates),
+        start={"beta": np.array([0.0, 1.0])},
+        plausible_bounds={"beta": (np.full(2, -2.0), np.full(2, 2.0))},
+        seed=919,
+    )
+    vbmc = VBMC(target, options={"display": "off"}, seed=920)
+    X_setup, y_setup = (array.copy() for array in target.setup_evaluations)
+
+    covariates[:, 1] += 10.0
+    path = tmp_path / "pymc_array_constants"
+    vbmc.save(path)
+    loaded = VBMC.load(path)
+
+    for actual, expected in zip(
+        loaded.precomputed_evaluations, (X_setup, y_setup)
+    ):
+        np.testing.assert_array_equal(actual, expected)
+    for candidate in (target, loaded.target):
+        actual = np.array([candidate.log_joint(x) for x in X_setup])
+        np.testing.assert_allclose(actual, y_setup, rtol=0, atol=1e-10)
+
+
+def test_vbmc_save_load_keeps_maps_after_caller_array_changes(tmp_path):
+    from pymc.distributions.transforms import Interval
+
+    lower = np.array([0.0, 1.0])
+    with pm.Model() as model:
+        # PyMC calls the bounds function only when it builds a map.
+        pm.Normal(
+            "x",
+            2.0,
+            2.0,
+            shape=2,
+            transform=Interval(bounds_fn=lambda *args: (lower, None)),
+        )
+    target = PyMCTarget(
+        model,
+        start={"x": np.array([1.0, 2.0])},
+        plausible_bounds={"x": (np.array([0.5, 1.5]), np.array([3.0, 4.0]))},
+        seed=921,
+    )
+    vbmc = VBMC(target, options={"display": "off"}, seed=922)
+    points = np.vstack((target.x0, target.plb, target.pub))
+    mapped = target.to_model_variables(points)["x"].copy()
+
+    lower += 0.25
+    path = tmp_path / "pymc_map_constants"
+    vbmc.save(path)
+    loaded = VBMC.load(path)
+
+    for candidate in (target, loaded.target):
+        np.testing.assert_array_equal(
+            candidate.to_model_variables(points)["x"], mapped
+        )
+        recovered = candidate.from_model_variables({"x": mapped[0]})
+        np.testing.assert_allclose(recovered, points[0], rtol=0, atol=1e-12)
 
 
 def test_target_deepcopy_and_dill_round_trip(lifecycle_target):

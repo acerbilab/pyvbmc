@@ -33,6 +33,9 @@ class _FakeTarget:
         self.calls += 1
         return -float(np.sum(np.asarray(x, dtype=np.float64) ** 2))
 
+    def _changed_inputs(self, evaluate=False):
+        return None
+
 
 @pytest.fixture
 def target(monkeypatch):

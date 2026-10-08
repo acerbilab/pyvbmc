@@ -476,6 +476,9 @@ class PyMCTarget:
 
         self.kept = {}
         self._maps = {}
+        # The compiled maps are kept, as the densities are, so they hold
+        # copies of the arrays that a transform writes into them.
+        owned = set(_compat.numeric_array_constants(self._partial))
         for name, rv, value_name, shape in zip(
             self.names, self._ordered_rvs, self.value_names, self.shapes
         ):
@@ -511,7 +514,10 @@ class PyMCTarget:
                 raise _compat.UnsupportedModel(
                     f"{name}: transform maps must evaluate in float64."
                 )
-            backward = pytensor.function([input_var], backward_expr)
+            backward = pytensor.function(
+                [input_var],
+                _compat.copy_array_constants([backward_expr], owned)[0],
+            )
             try:
                 forward_graph = transform.forward(input_var, *rv.owner.inputs)
             except TypeError as exc:
@@ -523,7 +529,10 @@ class PyMCTarget:
                 raise _compatibility_error(
                     pm, "transform forward/backward methods", exc
                 ) from exc
-            forward = pytensor.function([input_var], forward_graph)
+            forward = pytensor.function(
+                [input_var],
+                _compat.copy_array_constants([forward_graph], owned)[0],
+            )
             probe = _as_float64(
                 point[value_name], f"initial value for {value_name}"
             ).reshape((1, *shape))
@@ -564,6 +573,9 @@ class PyMCTarget:
 
         self._capture_export_metadata()
         self._compile_density(pm)
+        self._constants_digest = _compat.constants_digest(
+            self._compiled_functions()
+        )
 
         start_values = None
         if start is not None:
@@ -941,8 +953,97 @@ class PyMCTarget:
             raise _compat.UnsupportedModel(
                 "Compiled PyMC log densities must have float64 outputs."
             )
-        self._logp = self._partial.compile_logp(jacobian=True)
-        self._logp_plain = self._partial.compile_logp(jacobian=False)
+        # The compiled densities are kept, and recompiled when a saved run is
+        # loaded, so they hold copies of the arrays that reach them from
+        # outside the snapshot.
+        logp_graph, plain_graph = _compat.copy_array_constants(
+            [logp_graph, plain_graph],
+            owned=_compat.numeric_array_constants(self._partial),
+        )
+        self._logp = self._partial.compile_fn(
+            logp_graph,
+            inputs=self._partial.value_vars,
+            on_unused_input="ignore",
+        )
+        self._logp_plain = self._partial.compile_fn(
+            plain_graph,
+            inputs=self._partial.value_vars,
+            on_unused_input="ignore",
+        )
+
+    def _compiled_functions(self):
+        """Return the compiled PyTensor functions that the target keeps."""
+        functions = [self._logp, self._logp_plain]
+        for maps in self._maps.values():
+            functions.extend((maps["forward"], maps["backward"]))
+        return functions
+
+    def _changed_inputs(self, evaluate=False):
+        """Describe how the target has changed since it was built.
+
+        The target copies the arrays of its graphs, apart from those that
+        the inner graph of an operation reads (the body of a
+        ``pytensor.scan`` loop or of an ``OpFromGraph``), which stay shared,
+        and which compiling can move out of the loop; a change to one of
+        those shows in the digest of the compiled functions' arrays taken at
+        construction. With ``evaluate``, one evaluation compares the log
+        density at the starting point with the value recorded during setup,
+        which also detects other causes, such as another version of PyMC or
+        PyTensor computing the density differently.
+
+        Parameters
+        ----------
+        evaluate : bool, optional
+            Whether to evaluate the log density once. Default `False`.
+
+        Returns
+        -------
+        str or None
+            The changes found, or `None` if there are none.
+        """
+        changes = []
+        recorded_digest = getattr(self, "_constants_digest", None)
+        if recorded_digest is not None:
+            # A check that fails is reported, so that loading a run never
+            # fails because of it.
+            try:
+                digest = _compat.constants_digest(self._compiled_functions())
+            except Exception as exc:
+                changes.append(
+                    "the arrays that the target reads could not be checked "
+                    f"({type(exc).__name__}: {exc})"
+                )
+            else:
+                if digest != recorded_digest:
+                    changes.append(
+                        "an array that the target reads from the body of a "
+                        "pytensor.scan loop or of an OpFromGraph has changed "
+                        "since the target was built"
+                    )
+        if evaluate:
+            X_setup, y_setup = self.setup_evaluations
+            rows = np.flatnonzero(np.all(X_setup == self.x0, axis=1))
+            if rows.size:
+                recorded = float(y_setup[rows[-1]])
+                try:
+                    current = self.log_joint(self.x0)
+                except Exception as exc:
+                    changes.append(
+                        "evaluating the target's log density at the starting "
+                        f"point raised {type(exc).__name__}: {exc}"
+                    )
+                else:
+                    # Absolute below 1, relative above: rounding differences
+                    # between machines and builds stay far below it.
+                    if not abs(current - recorded) <= 1e-8 * max(
+                        1.0, abs(recorded)
+                    ):
+                        changes.append(
+                            "the target's log density at the starting point "
+                            f"is {current:.10g}, where its setup recorded "
+                            f"{recorded:.10g}"
+                        )
+        return "; ".join(changes) or None
 
     def _compile_gradient(self, pm):
         """Compile the ordered joint value/gradient, or return None."""
