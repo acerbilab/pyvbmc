@@ -281,6 +281,13 @@ def copy_array_constants(outputs, owned=()):
     return copy_constants(outputs, owned)
 
 
+def inner_array_digest(functions):
+    """Return a digest of the arrays in the inner graphs of ``functions``."""
+    from pyvbmc.pymc._snapshot import inner_array_digest as digest
+
+    return digest(functions)
+
+
 def numeric_array_constants(model):
     """Return the numeric array constants of a model's graph."""
     from pyvbmc.pymc._snapshot import _numeric_array_constants
@@ -297,6 +304,7 @@ __all__ = [
     "copy_array_constants",
     "default_transform",
     "import_pymc",
+    "inner_array_digest",
     "is_known_real_line",
     "missing_derivative_errors",
     "numeric_array_constants",

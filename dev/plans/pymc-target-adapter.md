@@ -749,9 +749,8 @@ data storage is insufficient. Mutating the original input arrays or
 calling `pm.set_data` on the original model must leave the target's
 density, maps, bounds, setup observations and export layout unchanged.
 An array that the inner graph of an operation reads as a constant (the
-body of a `pytensor.scan` loop or of an `OpFromGraph`) is an exception
-whose treatment awaits the PI's ruling (`dev/TODO.md`; execution record,
-2026-10-08); the documentation directs such arrays to `pm.Data`.
+body of a `pytensor.scan` loop or of an `OpFromGraph`) is an exception,
+documented and detected (Decisions; execution record, 2026-10-08).
 Do not hash or compare datasets on every target call.
 
 Construct a new target to fit changed data. The original `model`, also
@@ -1984,6 +1983,25 @@ and this plan (the design decisions and the execution record).
 - **Example 8 compares with NUTS** — a PyMC user's first question is
   whether the answers agree; the cost is a short `pm.sample` in a
   notebook that is never executed in CI or the docs build.
+- **Arrays inside inner graphs: documented and detected** — the PI's
+  decision of 2026-10-08. The target cannot copy an array that the body
+  of a `pytensor.scan` loop or of an `OpFromGraph` reads as a constant
+  (execution record, 2026-10-08), and documentation alone would be
+  missed. At construction the target takes a digest of the arrays inside
+  the inner graphs of the compiled functions it keeps. `VBMC.save`
+  compares it and warns. `VBMC.load` compares it and evaluates the log
+  density once, at the starting point, against the value the run
+  recorded, which also catches causes that leave the arrays alone (a
+  PyMC or PyTensor version that computes differently, a custom
+  operation's own state); on a change it warns that the run's results
+  remain valid and marks the run. `optimize()` refuses a marked run, or
+  one whose digest has changed, with a `RuntimeError`. One evaluation at
+  load is the whole cost in target calls, since a PyMC density need not
+  be cheap. Rejected: refusing such models at construction (it would
+  turn away models that never change their arrays) and lifting the
+  arrays into outer inputs of their operations (each operation rebuilt
+  through its own constructor, and it would not reach the loops that
+  PyMC builds with the density).
 
 ## Execution record
 
@@ -2029,10 +2047,13 @@ and this plan (the design decisions and the execution record).
   interns back to the caller's array, so under `FAST_COMPILE` a change to
   it moved the density live and restored (-4.19 to -13.76), and in the
   default mode it did not, with either linker. The
-  `PyMCTarget` page names the exception and directs such arrays to
-  `pm.Data`; whether it stays a documented exception awaits the PI's
-  ruling (`dev/TODO.md`). Python code inside a custom operation is
-  outside the contract, as the contract above states.
+  `PyMCTarget` page names the exception and how to pass such arrays.
+  Interning also joins models: a loop whose arrays equal those of a loop
+  that another model built earlier in the process reads that model's
+  array, so the array a target reads need not be the caller's own. The
+  detection that the PI chose (Decisions) covers whichever array the
+  target reads. Python code inside a custom operation is outside the
+  contract, as the contract above states.
 
   `test_model_snapshot.py` checks that the snapshot holds no caller
   array, that its density compiled under `FAST_COMPILE` stays fixed, and
@@ -2041,9 +2062,13 @@ and this plan (the design decisions and the execution record).
   arrays in the model's graph and in a `CustomDist` log-density
   function, against its setup observations, and with the array in a
   transform's bounds function, against the maps. Each fails without its
-  part of the fix. The 117 tests of `pyvbmc/testing/pymc` pass under the
-  default Numba linker and under the Python linker (PyMC 6.3.2, PyTensor
-  3.3.2, Python 3.13).
+  part of the fix. `test_changed_inputs.py` checks the detection: no
+  warning for an unchanged run; for a changed loop array, a refused
+  `optimize()`, a warning on saving and on loading, and a refused
+  `optimize()` after loading; and a loaded run whose recorded density
+  differs. The 120 tests of `pyvbmc/testing/pymc` pass under the default
+  Numba linker and under the Python linker (PyMC 6.3.2, PyTensor 3.3.2,
+  Python 3.13).
 
 - 2026-09-16: integrated CI
   [35126357018](https://github.com/acerbilab/pyvbmc/actions/runs/35126357018)

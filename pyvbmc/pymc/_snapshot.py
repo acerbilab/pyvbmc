@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 
 import numpy as np
 
@@ -146,6 +147,63 @@ def copy_array_constants(outputs, owned=()):
         )
 
 
+def _array_digest(data):
+    digest = hashlib.blake2b(digest_size=16)
+    digest.update(f"{data.dtype.str}{data.shape}".encode())
+    digest.update(np.ascontiguousarray(data).tobytes())
+    return digest.digest()
+
+
+def inner_array_digest(functions):
+    """Return a digest of the arrays in the inner graphs of compiled functions.
+
+    The copies that `snapshot_model` and `copy_array_constants` make do not
+    enter the inner graph of an operation, such as the body of a scan loop
+    or of an ``OpFromGraph``, so an array that such a graph reads stays the
+    caller's. The digest covers the numeric arrays of every inner graph
+    that the functions reach, in no particular order: two digests differ
+    when one of those arrays has changed between them.
+    """
+    pm, _, _ = import_pymc()
+    try:
+        from pytensor.graph.basic import Constant
+        from pytensor.graph.op import HasInnerGraph
+        from pytensor.graph.traversal import ancestors, graph_inputs
+    except (AttributeError, ImportError) as exc:
+        raise _version_error(pm, "inner-graph traversal", exc)
+
+    try:
+        pending = [
+            list(function.maker.fgraph.outputs) for function in functions
+        ]
+    except AttributeError as exc:
+        raise _version_error(pm, "compiled function graphs", exc)
+    seen_nodes = set()
+    seen_constants = set()
+    digests = []
+    while pending:
+        for variable in ancestors(pending.pop()):
+            node = variable.owner
+            if node is None or node in seen_nodes:
+                continue
+            seen_nodes.add(node)
+            if not isinstance(node.op, HasInnerGraph):
+                continue
+            inner_outputs = list(node.op.inner_outputs)
+            pending.append(inner_outputs)
+            for value in graph_inputs(inner_outputs):
+                if value in seen_constants or not _is_numeric_array_constant(
+                    value, Constant
+                ):
+                    continue
+                seen_constants.add(value)
+                digests.append(_array_digest(value.data))
+    combined = hashlib.blake2b(digest_size=16)
+    for digest in sorted(digests):
+        combined.update(digest)
+    return combined.hexdigest()
+
+
 def snapshot_model(model):
     """Freeze registered and unregistered numeric inputs of a PyMC model.
 
@@ -277,4 +335,4 @@ def snapshot_model(model):
     return snapshot, original_names
 
 
-__all__ = ["copy_array_constants", "snapshot_model"]
+__all__ = ["copy_array_constants", "inner_array_digest", "snapshot_model"]

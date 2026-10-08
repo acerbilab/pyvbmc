@@ -573,6 +573,9 @@ class PyMCTarget:
 
         self._capture_export_metadata()
         self._compile_density(pm)
+        self._inner_digest = _compat.inner_array_digest(
+            self._compiled_functions()
+        )
 
         start_values = None
         if start is not None:
@@ -966,6 +969,65 @@ class PyMCTarget:
             inputs=self._partial.value_vars,
             on_unused_input="ignore",
         )
+
+    def _compiled_functions(self):
+        """Return the compiled PyTensor functions that the target keeps."""
+        functions = [self._logp.f, self._logp_plain.f]
+        for maps in self._maps.values():
+            functions.extend((maps["forward"], maps["backward"]))
+        return functions
+
+    def _changed_inputs(self, evaluate=False):
+        """Describe how the target has changed since it was built.
+
+        The target copies the arrays of its graphs, apart from those that
+        the inner graph of an operation reads (the body of a
+        ``pytensor.scan`` loop or of an ``OpFromGraph``), which stay the
+        caller's; a change to one of those shows in the digest taken at
+        construction. With ``evaluate``, one evaluation compares the log
+        density at the starting point with the value recorded during setup,
+        which also detects other causes, such as another version of PyMC or
+        PyTensor computing the density differently.
+
+        Parameters
+        ----------
+        evaluate : bool, optional
+            Whether to evaluate the log density once. Default `False`.
+
+        Returns
+        -------
+        str or None
+            The changes found, or `None` if there are none.
+        """
+        changes = []
+        recorded_digest = getattr(self, "_inner_digest", None)
+        if recorded_digest is not None and recorded_digest != (
+            _compat.inner_array_digest(self._compiled_functions())
+        ):
+            changes.append(
+                "an array that the model reads inside the body of a "
+                "pytensor.scan loop or of an OpFromGraph has changed"
+            )
+        if evaluate:
+            X_setup, y_setup = self.setup_evaluations
+            rows = np.flatnonzero(np.all(X_setup == self.x0, axis=1))
+            if rows.size:
+                recorded = float(y_setup[rows[-1]])
+                try:
+                    current = self.log_joint(self.x0)
+                except ValueError:
+                    current = np.nan
+                # Rounding differences between machines and builds stay
+                # far below this relative tolerance.
+                if not abs(current - recorded) <= 1e-8 * max(
+                    1.0, abs(recorded)
+                ):
+                    changes.append(
+                        "its log density at the starting point is "
+                        f"{current:.10g}, where the run recorded "
+                        f"{recorded:.10g}"
+                    )
+        return "; ".join(changes) or None
 
     def _compile_gradient(self, pm):
         """Compile the ordered joint value/gradient, or return None."""
