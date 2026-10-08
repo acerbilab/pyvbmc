@@ -10,6 +10,31 @@ records its execution.
 
 ## In scope for 1.5
 
+- [ ] **Fix PyMC snapshot constants before release.**
+  `pyvbmc/pymc/_snapshot.py` copies numeric shared inputs, but leaves
+  `TensorConstant` arrays sharing storage with caller-owned NumPy arrays.
+  Mutating an array used in the model after constructing `PyMCTarget` can
+  therefore change the density after `VBMC.save` / `VBMC.load`, when
+  PyTensor recompiles the graph, while saved setup observations and run
+  state still describe the original density. This breaks the fixed-snapshot
+  contract of the [PyMC adapter](plans/pymc-target-adapter.md).
+
+  Confirmed on 2026-10-08 with PyMC 6.3.2 and PyTensor 3.3.2: use
+  `X = np.array([[1., 0.], [1., 1.], [1., 2.]])`,
+  `beta = pm.Normal("beta", 0, 2, shape=2)` and
+  `pm.Normal("y", X @ beta, 1, observed=np.zeros(3))`. Construct the target
+  with `start={"beta": np.array([0., 1.])}` and plausible bounds
+  `{"beta": (np.array([-2., -2.]), np.array([2., 2.]))}`, then
+  `VBMC(target)`. After `X[:, 1] += 10`, the live target still returns
+  -8.605987 at `beta=[0, 1]`, but saving and loading the run returns
+  -188.605987 there; its saved setup value remains -8.605987. Without the
+  mutation, save/load preserves the density.
+
+  Copy numeric constant data into independent graph constants when building
+  the inference snapshot. Add a regression through `VBMC.save` / `load`
+  that mutates the original covariates and checks that target values and
+  saved setup observations remain consistent with the original density.
+
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
