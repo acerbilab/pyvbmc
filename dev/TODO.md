@@ -19,8 +19,9 @@ records its execution.
     tests, expanded CI matrix and package checks are recorded in the
     roadmap;
   - merge the Python 3.10–3.14 CI expansion and tested PyTensor range in
-    [PR #192](https://github.com/acerbilab/pyvbmc/pull/192), whose full
-    15-cell matrix passed on 2026-10-08;
+    [PR #192](https://github.com/acerbilab/pyvbmc/pull/192): the full
+    15-cell matrix passed at `157714ae` on 2026-10-08; `b4bf94c5` then
+    updated only the tested-version text and its record;
   - the artifacts that attach to the release as archives (PI, 2026-09-28;
     the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
     hand-back"): the release gate's after-arm population and its pools,
