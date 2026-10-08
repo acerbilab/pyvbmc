@@ -177,8 +177,13 @@ records its execution.
   run requirements for the extras. The README, the installation page and
   the FAQ, which say that conda can install 1.0.4 into an environment that
   holds an older NumPy, SciPy, matplotlib or Python, are true only once the
-  recipe requires these versions. conda-forge's `python_min`, 3.11 on
-  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
+  recipe requires these versions. The repodata patch
+  `conda-forge/conda-forge-repodata-patches-feedstock` #1274 (open on
+  2026-10-08) bounds every earlier release, 0.9.0 to 1.0.4, at
+  `gpyreg <1.3` and `numpy <2.4`, with which they fail; until it merges,
+  conda pairs 1.0.4 with gpyreg 1.4.0 and the newest NumPy. conda-forge's
+  `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
+  where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 
