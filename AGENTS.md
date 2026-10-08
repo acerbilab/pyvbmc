@@ -107,7 +107,10 @@ that owns it (`documentation.rst` for a headline page,
 `api/classes/classes.rst` or `api/functions/functions.rst` otherwise).
 `skills/pyvbmc/SKILL.md`, the skill that the agents of PyVBMC's users load,
 links to documentation pages, FAQ section titles and example notebooks by
-name, so renaming one of those means updating it.
+name, and the tip catalogs (`pyvbmc/vbmc/_tip_catalog.py`,
+`pyvbmc/svbmc/_tip_catalog.py`) link FAQ entries, API sections and example
+notebooks by their labels and file names, so renaming one of those means
+updating them.
 
 The notebooks in `examples/` are never executed in CI or in the docs build,
 so a change that breaks one goes unnoticed until someone runs it.
@@ -341,10 +344,15 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   `/people` page; links labeled "members" also go to `/people`.
   The README, docs' index and FAQ introductions, docs' footer, package
   metadata and complementary-method tips link the lab's overview at
-  https://acerbilab.org/model-fitting/. Complementary-method referrals keep
-  the overview link alongside the direct link to the named method, helping
-  readers discover related tools. Vary the link text and sentence to suit
-  the context, and omit only redundant nearby repeats.
+  https://acerbilab.org/model-fitting/. A referral to another of the lab's
+  methods usually gives the overview link beside the method's own, to help
+  readers discover related tools; where two links would crowd it, as in a
+  runtime tip, one is enough, and the overview, which leads to the method,
+  often serves best. The overview links are a default, not a rule: vary
+  them, their text and the sentence to suit the context, and leave out one
+  that would repeat a link nearby. The documentation of PyVBMC and PyBADS
+  is at https://acerbilab.org/pyvbmc/ and https://acerbilab.org/pybads/; the
+  older acerbilab.github.io addresses redirect there.
 - **Install commands.** In what ships or is published, a pip command that
   installs PyVBMC for a user carries `--upgrade`, extras included
   (`pip install --upgrade "pyvbmc[torch]"`), and names no other package:

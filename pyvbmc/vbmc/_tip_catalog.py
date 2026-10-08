@@ -31,22 +31,22 @@ TIPS = (
         ),
         frequency="normal",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/_examples/"
+            "https://acerbilab.org/pyvbmc/_examples/"
             "pyvbmc_example_4_validation.html",
         ),
     ),
     Tip(
         id="evidence_uncertainty",
         text=(
-            "When comparing models, report results['elbo'] together with "
-            "results['elbo_sd']. The ELBO is a lower bound on the true log "
-            "model evidence; its SD measures uncertainty in estimating that "
-            "bound. A small SD does not guarantee that the bound is close to "
-            "the true evidence!"
+            "Use results['elbo_sd'] as a diagnostic of results['elbo']. For a "
+            "noiseless target, an elbo_sd much larger than 0.1 signals an "
+            "unreliable estimate: discuss it and report it. Noisy targets "
+            "often give larger values. A small elbo_sd does not mean that the "
+            "ELBO is close to the true log evidence."
         ),
         frequency="normal",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/faq.html"
+            "https://acerbilab.org/pyvbmc/faq.html"
             "#faq-what-are-elbo-and-elbo-sd",
         ),
     ),
@@ -57,11 +57,11 @@ TIPS = (
             "parameter values. If you have no better information, use each "
             "prior's 16th and 84th percentiles: roughly mean minus and plus "
             "one SD for a Gaussian prior. These guide the search without "
-            "restricting the posterior."
+            "affecting or restricting the posterior."
         ),
         frequency="normal",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/faq.html"
+            "https://acerbilab.org/pyvbmc/faq.html"
             "#faq-how-do-i-choose-plb-and-pub",
         ),
     ),
@@ -69,14 +69,11 @@ TIPS = (
         id="pybads",
         text=(
             "A maximum-likelihood (MLE) or maximum a posteriori (MAP) estimate "
-            "can provide a good starting point for PyVBMC. You can use PyBADS "
-            "to find one, then pass it as x0."
+            "can provide a good starting point for PyVBMC. You can use PyBADS, "
+            "one of our model-fitting tools, to find one, then pass it as x0."
         ),
         frequency="low_frequency",
-        urls=(
-            "https://acerbilab.github.io/pybads/",
-            "https://acerbilab.org/model-fitting/",
-        ),
+        urls=("https://acerbilab.org/model-fitting/",),
     ),
     Tip(
         id="posterior_plot",
@@ -87,8 +84,9 @@ TIPS = (
         ),
         frequency="normal",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/api/classes/"
-            "variational_posterior.html",
+            "https://acerbilab.org/pyvbmc/api/classes/"
+            "variational_posterior.html"
+            "#pyvbmc.VariationalPosterior.VariationalPosterior.plot",
         ),
     ),
     Tip(
@@ -101,7 +99,10 @@ TIPS = (
             "evaluation budget."
         ),
         frequency="normal",
-        urls=("https://acerbilab.github.io/pyvbmc/api/classes/vbmc.html",),
+        urls=(
+            "https://acerbilab.org/pyvbmc/faq.html"
+            "#faq-how-do-i-save-and-continue-a-run",
+        ),
     ),
     Tip(
         id="noisy_target",
@@ -114,8 +115,7 @@ TIPS = (
         ),
         frequency="normal",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/_examples/"
-            "pyvbmc_example_6_noisy_likelihoods.html",
+            "https://acerbilab.org/pyvbmc/faq.html#faq-noisy-target-function",
         ),
     ),
     Tip(
@@ -129,7 +129,7 @@ TIPS = (
         ),
         frequency="low_frequency",
         urls=(
-            "https://acerbilab.github.io/pyvbmc/_examples/"
+            "https://acerbilab.org/pyvbmc/_examples/"
             "pyvbmc_example_7_stacking.html",
         ),
     ),
