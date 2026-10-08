@@ -1508,7 +1508,8 @@ must cover the settled release code, API and behavior before publication.
   at `157714ae`: 2559 tests in each core cell; 3020 in Ubuntu 3.14 with
   PyMC 6.3.2, PyTensor 3.3.3, ArviZ 1.3.0 and Torch 2.14.1+cpu. The
   subsequent commit `b4bf94c5` updates only the tested-version text and
-  its record. The matrix change still needs that PR's merge.
+  its record; `2dadfc7c` corrects the roadmap's smoke-test Python version.
+  PR #192 merged into `dev-next` at `b5edc3e2` on 2026-10-08.
   `python -m build` built an 8,589,003-byte sdist (441 files) and a
   3,027,550-byte wheel (122 files), building the wheel from the sdist.
   All 291 tracked test/fixture files ship in the sdist; none ship in the
