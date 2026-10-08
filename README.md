@@ -27,17 +27,17 @@ The main additions and changes in PyVBMC 1.5 are:
 - **Faster, slightly more accurate inference and lower memory use**, with numerical improvements and more compact run histories: on our benchmark suite a run takes on average 3.7 times less time than with PyVBMC 1.0.4 on noiseless targets and 2.2 times less on noisy ones, and the typical error of the estimates of the model evidence and of the posterior is about 10% smaller. Optional [performance calibration](#optional-performance-calibration) tunes PyVBMC for your machine.
 - **Corrections and safeguards**, with corrections to the algorithm, most of them from a systematic comparison with the original MATLAB VBMC; a check that keeps the final boost from replacing a good posterior with a much worse one; and clear errors for option values that earlier versions ignored or misread.
 - **Stacking Variational Bayesian Monte Carlo (S-VBMC)** is included in PyVBMC to combine posteriors from independent runs ([Silvestrin et al., 2025](https://arxiv.org/abs/2504.05004); [usage below](#combine-runs-and-use-the-posterior-downstream)).
-- **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs).
-- **Torch and JAX model integration** through small user-written wrappers, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
-- **Direct PyMC model support**, with automatic setup and posterior samples exported under the model's variable names; see the [PyMC integration guide](https://acerbilab.github.io/pyvbmc/quickstart.html#bring-a-pymc-model-into-pyvbmc).
-- **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
-- **More practical guidance**, with tips when a run starts, a [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
+- **Explicit random seed control** for reproducing individual runs; see the [reproducibility guide](https://acerbilab.org/pyvbmc/quickstart.html#reproducible-runs).
+- **Torch and JAX model integration** through small user-written wrappers, with optional batch evaluation of the initial points; see the [model integration guide](https://acerbilab.org/pyvbmc/quickstart.html#bring-a-torch-or-jax-model-into-pyvbmc).
+- **Direct PyMC model support**, with automatic setup and posterior samples exported under the model's variable names; see the [PyMC integration guide](https://acerbilab.org/pyvbmc/quickstart.html#bring-a-pymc-model-into-pyvbmc).
+- **Posterior exports to Torch and ArviZ** for further analysis; see the [export guide](https://acerbilab.org/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream).
+- **More practical guidance**, with tips when a run starts, a [PyVBMC FAQ](https://acerbilab.org/pyvbmc/faq.html), and a [coding-agent skill](skills/pyvbmc/SKILL.md) that points agents to the relevant documentation.
 
 The [changelog](CHANGELOG.md) lists what changed since PyVBMC 1.0.4, including the corrections that make results differ from earlier versions and what to check in an existing script.
 
 ### Documentation
 
-The full documentation is available at: https://acerbilab.github.io/pyvbmc/
+The full documentation is available at: https://acerbilab.org/pyvbmc/
 
 For coding agents, the [PyVBMC skill](skills/pyvbmc/SKILL.md) points to the
 documentation relevant to each task. Give your agent that file, or copy the
@@ -49,13 +49,13 @@ copy the folder again from the PyVBMC version you use.
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function);
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.org/pyvbmc/faq.html#faq-noisy-target-function);
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
-- the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general)).
+- the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.org/pyvbmc/faq.html#faq-general)).
 
 For likelihood estimates from model simulations, see [PyIBS](https://github.com/acerbilab/pyibs) and the lab's [related software](https://acerbilab.org/model-fitting/).
 
-For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
+For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.org/pyvbmc/api/classes/pymc_target.html).
 
 Note: Our [model-fitting tools](https://acerbilab.org/model-fitting/) include [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for finding point estimates or better starting points for PyVBMC.
 
@@ -73,7 +73,7 @@ PyVBMC is available via `pip` and `conda-forge`.
     ```
     PyVBMC requires Python version 3.10 or newer.
 
-    PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer, and its conda-forge package requires Python 3.11 or newer. In an environment that holds an older version of one of them, `conda` can install PyVBMC 1.0.4 instead, without a warning: ask it for `"pyvbmc>=1.5"`, or see the [FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-conda-installs-an-older-version-of-pyvbmc-why).
+    PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer, and its conda-forge package requires Python 3.11 or newer. In an environment that holds an older version of one of them, `conda` can install PyVBMC 1.0.4 instead, without a warning: ask it for `"pyvbmc>=1.5"`, or see the [FAQ](https://acerbilab.org/pyvbmc/faq.html#faq-conda-installs-an-older-version-of-pyvbmc-why).
 
 2. (Optional): Install [Jupyter Notebook](https://jupyter.org/install) to run the examples. You can skip this step if your environment already has Jupyter Notebook, but be aware that if the wrong `jupyter` executable is found on your path then import errors may arise.
    ```console
@@ -109,7 +109,7 @@ Conda users can install `"pyvbmc>=1.5"` with the corresponding `pytorch`,
 `arviz`, `arviz-base`, and `pymc` packages from `conda-forge`; PyVBMC's
 `torch`, `arviz`, and `pymc` extras are pip dependency groups.
 
-If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.github.io/pyvbmc/development.html#installation-instructions-for-developers).
+If you wish to install directly from latest source code, please see the [instructions for developers and contributors](https://acerbilab.org/pyvbmc/development.html#installation-instructions-for-developers).
 
 ### Optional performance calibration
 
@@ -124,7 +124,7 @@ calibrate()
 Run this when your machine is otherwise idle. It takes tens of seconds and
 can make PyVBMC run faster. The settings are saved and reused automatically
 by future runs with a compatible numerical environment. See the
-[calibration guide](https://acerbilab.github.io/pyvbmc/api/functions/calibrate.html)
+[calibration guide](https://acerbilab.org/pyvbmc/api/functions/calibrate.html)
 for details.
 
 ## Quick start
@@ -143,13 +143,13 @@ vbmc = VBMC(target, x0, LB, UB, PLB, PUB)
 vp, results = vbmc.optimize()
 ```
 with input arguments:
-- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must be a *finite* real value, i.e. neither `NaN` nor `+/-inf`. See the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
+- `target`: the target (unnormalized) log density — often an unnormalized log posterior. `target` is a callable that should take as input a parameter vector and return the log density at the point. The returned log density must be a *finite* real value, i.e. neither `NaN` nor `+/-inf`. See the [PyVBMC FAQ](https://acerbilab.org/pyvbmc/faq.html#faq-how-do-i-prevent-vbmc-from-evaluating-certain-inputs-or-regions-of-input-space) for more details;
 - `x0`: an array representing the starting point of the inference in parameter space;
 - `LB` and `UB`: arrays of hard lower (resp. upper) bounds constraining the parameters (possibly `-/+np.inf` for unbounded parameters);
 - `PLB` and `PUB`: arrays of plausible lower (resp. upper) bounds: that is, a box that ideally brackets a high posterior density region of the target.
 
 The optional `seed` argument controls PyVBMC's internal random generator for reproducible runs.
-For independent runs, leave `seed` unset or use different seeds. See the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs) for more details.
+For independent runs, leave `seed` unset or use different seeds. See the [reproducibility guide](https://acerbilab.org/pyvbmc/quickstart.html#reproducible-runs) for more details.
 
 The outputs are:
 - `vp`: a `VariationalPosterior` object which approximates the true target density;
@@ -157,18 +157,18 @@ The outputs are:
   - `"elbo"`: the estimated lower bound on the log model evidence (log normalization constant);
   - `"elbo_sd"`: the standard deviation of the estimate of the ELBO (*not* the error between the ELBO and the true log model evidence, which is generally unknown).
 
-The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://acerbilab.github.io/pyvbmc/api/classes/variational_posterior.html) for details.
+The `vp` object can be manipulated in various ways. For example, we can draw samples from `vp` with the `vp.sample()` method, or evaluate its density at a point with `vp.pdf()` (or log-density with `vp.log_pdf()`). See the [`VariationalPosterior` class documentation](https://acerbilab.org/pyvbmc/api/classes/variational_posterior.html) for details.
 
 ### PyVBMC with noisy targets
 
 The quick start example above works for deterministic (noiseless) evaluations of the target log-density. PyVBMC also supports *noisy* evaluations of the target.
 Noisy evaluations often arise from simulation-based models, for which a direct expression of the (log) likelihood is not available.
 
-For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function).
+For information on how to run PyVBMC on a noisy target, see [this example notebook](examples/pyvbmc_example_6_noisy_likelihoods.ipynb) and the [PyVBMC FAQ](https://acerbilab.org/pyvbmc/faq.html#faq-noisy-target-function).
 
 Note that `VBMC(seed=...)` only controls the internal random stream of PyVBMC and not
 that of your simulations. Reproducing the analysis also requires setting the
-simulator's seed before the run. See the [reproducibility guide](https://acerbilab.github.io/pyvbmc/quickstart.html#reproducible-runs) for how to do this.
+simulator's seed before the run. See the [reproducibility guide](https://acerbilab.org/pyvbmc/quickstart.html#reproducible-runs) for how to do this.
 
 ### Combine runs and use the posterior downstream
 
@@ -177,20 +177,20 @@ posteriors of several completed PyVBMC runs on the same model and data into a st
 posterior. Stacking the posteriors almost always provides a better approximation
 of the true posterior (sometimes much better), and it works as a post-processing step that
 does not require further model evaluations. See [Example 7](examples/pyvbmc_example_7_stacking.ipynb) and the
-[`SVBMC` documentation](https://acerbilab.github.io/pyvbmc/api/classes/svbmc.html).
+[`SVBMC` documentation](https://acerbilab.org/pyvbmc/api/classes/svbmc.html).
 
 **Export posteriors:** A fitted `VariationalPosterior` can also be exported as a Torch distribution
 with `vp.to_torch()`, or as samples in an ArviZ DataTree with `vp.to_arviz()`.
-See the [posterior export guide](https://acerbilab.github.io/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream)
+See the [posterior export guide](https://acerbilab.org/pyvbmc/quickstart.html#use-a-fitted-posterior-downstream)
 and [PyVBMC Example 9: Torch and JAX models and posterior exports](examples/pyvbmc_example_9_torch_jax.ipynb)
 for worked examples, including posterior predictions and density gradients in
 Torch and summaries in ArviZ.
 
 ## Next steps
 
-Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.github.io/pyvbmc/examples.html) on the [main documentation pages](https://acerbilab.github.io/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some of its more advanced features.
+Once installed, example Jupyter notebooks can be found in the `pyvbmc/examples` directory. They can also be [viewed statically](https://acerbilab.org/pyvbmc/examples.html) on the [main documentation pages](https://acerbilab.org/pyvbmc/index.html). These examples will walk you through the basic usage of PyVBMC as well as some of its more advanced features.
 
-For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the [PyVBMC FAQ](https://acerbilab.github.io/pyvbmc/faq.html).
+For practical recommendations, such as how to set `LB` and `UB` and the plausible bounds, check out the [PyVBMC FAQ](https://acerbilab.org/pyvbmc/faq.html).
 
 ## How does it work?
 

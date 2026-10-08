@@ -6,7 +6,7 @@ PyVBMC is the port of the MATLAB VBMC algorithm to Python 3.x (development has t
 
 The reference code is the :labrepos:`MATLAB toolbox <vbmc>`.
 
-The documentation is available at: https://acerbilab.github.io/pyvbmc/
+The documentation is available at: https://acerbilab.org/pyvbmc/
 
 Installation instructions for developers
 ########################################
