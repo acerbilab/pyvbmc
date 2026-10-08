@@ -70,9 +70,10 @@ adding Torch to the repository venv.
   `svbmc.utils`, keeps its own `targets`, maps `testing=True` to a fixed
   seed with a deprecation warning, and reports its own `__version__`. On
   import it warns that the package is deprecated, naming `pyvbmc.SVBMC`
-  and the migration table of the `SVBMC` page, and the standalone
-  repository's README directs users to PyVBMC. Out of scope for this
-  plan.
+  and the migration table of the `SVBMC` page. The repository
+  `acerbilab/svbmc` stays, as the code of the S-VBMC paper, and its README
+  opens with a note that S-VBMC is integrated in PyVBMC. Out of scope for
+  this plan.
 - **Performance follow-up (PI, 2026-09-13).** The shared-preparation and
   vectorized-entropy speedups measured in the prototype are in scope for
   1.5 as a separate change after integration. Preserve the method and sampled

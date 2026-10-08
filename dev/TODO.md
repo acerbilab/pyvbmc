@@ -127,8 +127,9 @@ records its execution.
   forwards the old imports to the integrated implementation, so that
   existing scripts keep running, and warns on import that the package is
   deprecated, naming `pyvbmc.SVBMC` and the migration table of the `SVBMC`
-  page; the standalone repository's README directs users to PyVBMC. See the
-  [integration plan](plans/svbmc-integration.md).
+  page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
+  paper, and its README opens with a note that S-VBMC is integrated in
+  PyVBMC. See the [integration plan](plans/svbmc-integration.md).
 - [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
   [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
   that bumps the version and the source hash. Its PR 11 (open on
