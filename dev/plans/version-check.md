@@ -3,8 +3,8 @@
 Created: 2026-09-30. Status: **COMPLETE** — every decision ruled by the PI
 on 2026-09-30; merged into `dev-next` at `01bd00de` the same day.
 Executors: Sol implements phases 1 to 3; a fresh Sol reviewer runs the check
-of phase 4. The roadmap's pickup 14 and `dev/TODO.md` ("Review of the
-tips") link here.
+of phase 4. The roadmap's pickup 14 and `dev/TODO.md` (its working rule of
+a release at least once a year) link here.
 
 ## Goal and settled scope
 
@@ -264,15 +264,18 @@ others as recommended.
   - a readable reply with no release that counts: the failure message with
     the reason `no release found`;
   - an installer other than pip or conda: `... Update with: python -m pip
-    install --upgrade pyvbmc, or with conda: conda update
-    --channel=conda-forge pyvbmc (the conda-forge package can follow PyPI
-    by a few days)`.
+    install --upgrade pyvbmc, or with conda: conda install
+    --channel=conda-forge "pyvbmc>={latest}" (the conda-forge package can
+    follow PyPI by a few days)`.
 - The update command follows the installer, read from the `INSTALLER` file of
   the installed distribution (`importlib.metadata.distribution("pyvbmc")`):
   `pip` gives `python -m pip install --upgrade pyvbmc`; `conda` gives
-  `conda update --channel=conda-forge pyvbmc`, with a note that the
-  conda-forge package can follow PyPI by a few days; anything else gives
-  both.
+  `conda install --channel=conda-forge "pyvbmc>={latest}"`, with a note
+  that the conda-forge package can follow PyPI by a few days; anything else
+  gives both. The conda command names the release because conda can keep
+  an installed release without a warning when asked for the package alone
+  (PI, 2026-10-08, in the release sweep's final delta pass; until then it
+  was `conda update --channel=conda-forge pyvbmc`).
 
 ## Live checklist
 

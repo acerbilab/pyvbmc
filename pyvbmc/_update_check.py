@@ -1,9 +1,9 @@
 """On-request check of PyPI for a newer release of PyVBMC.
 
 `check_for_updates` is the only code in the package that opens a network
-connection, and it runs only when the user calls it. The networking modules
-are imported only when it runs, so that ``import pyvbmc`` imports none of
-them.
+connection, and it runs only when the user calls it. The modules that make
+the request are imported inside it, so that loading this module imports none
+of them.
 """
 
 from __future__ import annotations
@@ -20,7 +20,9 @@ MAX_TIMEOUT = 3600.0
 MAX_REPLY_BYTES = 16 * 1024 * 1024
 
 PIP_COMMAND = "python -m pip install --upgrade pyvbmc"
-CONDA_COMMAND = "conda update --channel=conda-forge pyvbmc"
+# Conda can keep an installed release without a warning when asked for
+# the package alone, so the command names the release.
+CONDA_COMMAND = 'conda install --channel=conda-forge "pyvbmc>={latest}"'
 CONDA_NOTE = "(the conda-forge package can follow PyPI by a few days)"
 
 NEWER_MESSAGE = (
@@ -142,7 +144,7 @@ def check_for_updates(*, timeout: float = 5.0) -> UpdateCheck:
             message = NEWER_MESSAGE.format(
                 latest=latest,
                 installed=installed,
-                command=_update_command(_installer()),
+                command=_update_command(_installer(), latest),
             )
         elif installed_release == latest_release:
             update_available = False
@@ -183,12 +185,13 @@ def _installer() -> str | None:
     return text.strip().lower() or None
 
 
-def _update_command(installer: str | None) -> str:
+def _update_command(installer: str | None, latest: str) -> str:
+    conda = f"{CONDA_COMMAND.format(latest=latest)} {CONDA_NOTE}"
     if installer == "pip":
         return PIP_COMMAND
     if installer == "conda":
-        return f"{CONDA_COMMAND} {CONDA_NOTE}"
-    return f"{PIP_COMMAND}, or with conda: {CONDA_COMMAND} {CONDA_NOTE}"
+        return conda
+    return f"{PIP_COMMAND}, or with conda: {conda}"
 
 
 def _parse_release(text: str | None) -> tuple[int, int, int] | None:

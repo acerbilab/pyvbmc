@@ -26,12 +26,12 @@ from pyvbmc._update_check import UpdateCheck, check_for_updates
 URL = "https://pypi.org/pypi/pyvbmc/json"
 PIP = "python -m pip install --upgrade pyvbmc"
 CONDA = (
-    "conda update --channel=conda-forge pyvbmc "
+    'conda install --channel=conda-forge "pyvbmc>=1.5.0" '
     "(the conda-forge package can follow PyPI by a few days)"
 )
 BOTH = (
     "python -m pip install --upgrade pyvbmc, or with conda: "
-    "conda update --channel=conda-forge pyvbmc "
+    'conda install --channel=conda-forge "pyvbmc>=1.5.0" '
     "(the conda-forge package can follow PyPI by a few days)"
 )
 
