@@ -1497,12 +1497,13 @@ class VBMC:
         ValueError
             If no fresh function-equivalent budget remains for the run.
         RuntimeError
-            If the run's :class:`~pyvbmc.pymc.PyMCTarget` has changed since
-            the run was set up: an array that the model reads inside the body
-            of a ``pytensor.scan`` loop or of an ``OpFromGraph`` was changed
-            in place, or, for a loaded run, the target no longer computes the
-            log density the run recorded. The run's results remain valid;
-            build a new target to refit.
+            If the :class:`~pyvbmc.pymc.PyMCTarget` of a run made with
+            ``VBMC(target)`` no longer matches the run: an array that the
+            model reads inside the body of a ``pytensor.scan`` loop or of an
+            ``OpFromGraph`` was changed in place, or, for a loaded run, the
+            target no longer computed the log density recorded during setup.
+            Restoring the array lets a run that was not loaded continue;
+            otherwise, build a new target and run to fit the changed data.
 
         Notes
         -----
@@ -1512,16 +1513,22 @@ class VBMC:
         """
         # Initialize main logger with potentially new options:
         self.logger = self._init_logger()
-        change = getattr(self, "_pymc_target_changed", None)
-        if change is None:
-            change = self._pymc_target_change()
+        flagged = getattr(self, "_pymc_target_changed", None)
+        if flagged is not None:
+            raise RuntimeError(
+                "optimize() is refused: the PyMC target of this run no "
+                f"longer matched the run when it was loaded ({flagged}). The "
+                "run's results so far remain valid; to fit the changed data, "
+                "build a new PyMCTarget and a new VBMC run."
+            )
+        change = self._pymc_target_change()
         if change is not None:
             raise RuntimeError(
-                "optimize() is refused: the PyMC target of this run has "
-                f"changed since the run was set up ({change}), so further "
-                "evaluations may not match the ones the run recorded. The "
-                "run's results remain valid; to refit, build a new "
-                "PyMCTarget from the original model and data."
+                "optimize() is refused: the PyMC target of this run no "
+                f"longer matches the run ({change}), so further evaluations "
+                "may not match the ones the run recorded. Restore the "
+                "original values to continue this run, or build a new "
+                "PyMCTarget and a new VBMC run to fit the changed data."
             )
         if self._budget_active and (
             self.function_logger.func_count >= self._effective_max_fun_evals
@@ -3377,11 +3384,12 @@ class VBMC:
           Python versions, save the variational posterior on its own
           (``vp.save``); its file holds no bytecode.
 
-        Saving a run whose :class:`~pyvbmc.pymc.PyMCTarget` has changed since
-        the run was set up (an array that the model reads inside the body of a
-        ``pytensor.scan`` loop or of an ``OpFromGraph`` was changed in place)
-        warns: the file records the changed target, and loading it will warn
-        and refuse to continue the run.
+        Saving a run made with ``VBMC(target)`` whose
+        :class:`~pyvbmc.pymc.PyMCTarget` no longer matches the run (an array
+        that the model reads inside the body of a ``pytensor.scan`` loop or of
+        an ``OpFromGraph`` was changed in place, or loading marked the run)
+        warns: the file records the target as it is, and ``optimize`` refuses
+        to continue the run once it is loaded.
 
         Parameters
         ----------
@@ -3407,11 +3415,11 @@ class VBMC:
         change = flagged or self._pymc_target_change()
         if change is not None:
             message = (
-                "The PyMC target of this run has changed since the run was "
-                f"set up: {change}. The file records the changed target, "
-                "whose log density may differ from the one the run was "
-                "fitted to; loading it will warn and refuse to continue the "
-                "run."
+                "The PyMC target of this run no longer matches the run: "
+                f"{change}. The file records the target as it is, whose log "
+                "density may differ from the one the run was fitted to, and "
+                "optimize() will refuse to continue the run once it is "
+                "loaded."
             )
             if flagged is None:
                 message += (
@@ -3449,11 +3457,12 @@ class VBMC:
           Python versions, save the variational posterior on its own
           (``vp.save``); its file holds no bytecode.
 
-        Loading a run made with a :class:`~pyvbmc.pymc.PyMCTarget` evaluates
-        the target's log density once, at the starting point, and compares it
-        with the value the run recorded. If the target has changed since the
-        run was set up, loading warns; the run's results remain valid, and
-        ``optimize`` refuses to continue the run.
+        Loading a run made with ``VBMC(target)`` from a
+        :class:`~pyvbmc.pymc.PyMCTarget` checks the arrays that the target
+        could not copy and evaluates its log density once, at the starting
+        point, against the value recorded during setup. If the target no
+        longer matches the run, loading warns; the run's results remain
+        valid, and ``optimize`` refuses to continue the run.
 
         Parameters
         ----------
@@ -3797,13 +3806,13 @@ class VBMC:
             vbmc._pymc_target_changed = vbmc._pymc_target_change(evaluate=True)
             if vbmc._pymc_target_changed is not None:
                 get_logger("VBMC").warning(
-                    "The PyMC target of this run has changed since the run "
-                    f"was set up: {vbmc._pymc_target_changed}. The run itself "
-                    "is intact: its variational posterior, ELBO and iteration "
-                    "history remain valid. optimize() is refused for this "
-                    "run, since further evaluations may not match the ones "
-                    "it recorded; to refit, build a new PyMCTarget from the "
-                    "original model and data."
+                    "The PyMC target of this run no longer matches the run: "
+                    f"{vbmc._pymc_target_changed}. The run's results so far "
+                    "remain valid: its variational posterior, ELBO and "
+                    "iteration history. optimize() is refused for this run, "
+                    "since further evaluations may not match the ones it "
+                    "recorded; to fit the changed data, build a new "
+                    "PyMCTarget and a new VBMC run."
                 )
 
         return vbmc

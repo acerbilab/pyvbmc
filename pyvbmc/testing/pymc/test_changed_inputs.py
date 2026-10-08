@@ -16,7 +16,7 @@ from pyvbmc import VBMC
 from pyvbmc.pymc import PyMCTarget
 
 # A refused optimize() returns at once; the cap bounds the run otherwise.
-OPTIONS = {"display": "off", "max_iter": 1}
+OPTIONS = {"display": "off", "min_iter": 0, "max_iter": 1}
 REFUSED = r"optimize\(\) is refused"
 
 
@@ -59,7 +59,7 @@ def _warnings(caplog):
         record.getMessage()
         for record in caplog.records
         if record.levelno == logging.WARNING
-        and "PyMC target of this run has changed" in record.getMessage()
+        and "PyMC target of this run no longer matches" in record.getMessage()
     ]
 
 
@@ -85,6 +85,9 @@ def test_changed_loop_array_warns_and_refuses_to_continue(tmp_path, caplog):
     vbmc.save(tmp_path / "run")
     (saved,) = _warnings(caplog)
     assert "pytensor.scan" in saved
+    # Restoring the array lets the run continue.
+    weights -= 3.0
+    assert vbmc._pymc_target_change() is None
 
     caplog.clear()
     loaded = VBMC.load(tmp_path / "run")
@@ -123,6 +126,45 @@ def test_changed_array_in_a_vectorized_operation_is_detected():
     assert "OpFromGraph" in vbmc._pymc_target_change()
     with pytest.raises(RuntimeError, match=REFUSED):
         vbmc.optimize()
+
+
+def test_changed_array_moved_out_of_its_loop_is_detected(tmp_path, caplog):
+    covariates = np.array([[1.0, 0.75], [0.25, 1.5]])
+    with pm.Model() as model:
+        scale = pm.HalfNormal("scale")
+        # The term does not change between iterations, so compiling moves it,
+        # and the array it reads, out of the loop. At the starting point,
+        # scale = 1, the term is zero whatever the array holds, so only the
+        # digest can show the change.
+        total = pytensor.scan(
+            lambda i, accumulated, s: accumulated
+            + pt.dot(
+                pt.as_tensor_variable(covariates),
+                pt.stack([s - 1.0, s - 1.0]),
+            )[i % 2],
+            sequences=pt.arange(3),
+            outputs_info=pt.zeros(()),
+            non_sequences=[scale],
+            return_updates=False,
+        )[-1]
+        pm.Normal("y", total, 1.0, observed=np.array(2.0))
+    target = PyMCTarget(
+        model,
+        start={"scale": 1.0},
+        plausible_bounds={"scale": (0.3, 3.0)},
+        seed=932,
+    )
+    vbmc = VBMC(target, options=OPTIONS, seed=933)
+    covariates += 3.0
+
+    assert "pytensor.scan" in vbmc._pymc_target_change()
+    with pytest.raises(RuntimeError, match=REFUSED):
+        vbmc.optimize()
+    vbmc.save(tmp_path / "run")
+    assert _warnings(caplog)
+    loaded = VBMC.load(tmp_path / "run")
+    assert "pytensor.scan" in loaded._pymc_target_changed
+    assert "starting point" not in loaded._pymc_target_changed
 
 
 def test_only_loading_evaluates_the_target_once(tmp_path, monkeypatch):
@@ -186,12 +228,15 @@ def test_load_warns_when_the_target_fails_to_evaluate(
 
 def test_target_without_a_digest_is_checked_by_its_density(tmp_path, caplog):
     target = _plain_target()
-    # As a target built before the digest existed.
-    del target._inner_digest
+    # As a target pickled before the digest existed.
+    del target._constants_digest
     vbmc = VBMC(target, options=OPTIONS, seed=931)
     assert vbmc._pymc_target_change() is None
+    X_setup, y_setup = target.setup_evaluations
+    target.setup_evaluations = (X_setup, y_setup + 1.0)
     vbmc.save(tmp_path / "run")
+    assert not _warnings(caplog)
 
     loaded = VBMC.load(tmp_path / "run")
-    assert loaded._pymc_target_changed is None
-    assert not _warnings(caplog)
+    assert "starting point" in loaded._pymc_target_changed
+    assert "pytensor.scan" not in loaded._pymc_target_changed

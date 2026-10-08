@@ -573,7 +573,7 @@ class PyMCTarget:
 
         self._capture_export_metadata()
         self._compile_density(pm)
-        self._inner_digest = _compat.inner_array_digest(
+        self._constants_digest = _compat.constants_digest(
             self._compiled_functions()
         )
 
@@ -954,7 +954,8 @@ class PyMCTarget:
                 "Compiled PyMC log densities must have float64 outputs."
             )
         # The compiled densities are kept, and recompiled when a saved run is
-        # loaded, so they hold copies of every array that reaches them.
+        # loaded, so they hold copies of the arrays that reach them from
+        # outside the snapshot.
         logp_graph, plain_graph = _compat.copy_array_constants(
             [logp_graph, plain_graph],
             owned=_compat.numeric_array_constants(self._partial),
@@ -982,8 +983,9 @@ class PyMCTarget:
 
         The target copies the arrays of its graphs, apart from those that
         the inner graph of an operation reads (the body of a
-        ``pytensor.scan`` loop or of an ``OpFromGraph``), which stay the
-        caller's; a change to one of those shows in the digest taken at
+        ``pytensor.scan`` loop or of an ``OpFromGraph``), which stay shared,
+        and which compiling can move out of the loop; a change to one of
+        those shows in the digest of the compiled functions' arrays taken at
         construction. With ``evaluate``, one evaluation compares the log
         density at the starting point with the value recorded during setup,
         which also detects other causes, such as another version of PyMC or
@@ -1000,12 +1002,12 @@ class PyMCTarget:
             The changes found, or `None` if there are none.
         """
         changes = []
-        recorded_digest = getattr(self, "_inner_digest", None)
+        recorded_digest = getattr(self, "_constants_digest", None)
         if recorded_digest is not None:
             # A check that fails is reported, so that loading a run never
             # fails because of it.
             try:
-                digest = _compat.inner_array_digest(self._compiled_functions())
+                digest = _compat.constants_digest(self._compiled_functions())
             except Exception as exc:
                 changes.append(
                     "the arrays that the target reads could not be checked "
@@ -1014,8 +1016,9 @@ class PyMCTarget:
             else:
                 if digest != recorded_digest:
                     changes.append(
-                        "an array that the target reads inside the body of a "
-                        "pytensor.scan loop or of an OpFromGraph has changed"
+                        "an array that the target reads from the body of a "
+                        "pytensor.scan loop or of an OpFromGraph has changed "
+                        "since the target was built"
                     )
         if evaluate:
             X_setup, y_setup = self.setup_evaluations

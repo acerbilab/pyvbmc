@@ -154,14 +154,16 @@ def _array_digest(data):
     return digest.digest()
 
 
-def inner_array_digest(functions):
-    """Return a digest of the arrays in the inner graphs of compiled functions.
+def constants_digest(functions):
+    """Return a digest of the arrays that compiled functions read.
 
     The copies that `snapshot_model` and `copy_array_constants` make do not
     enter the inner graph of an operation, such as the body of a scan loop
-    or of an ``OpFromGraph``, so an array that such a graph reads stays the
-    caller's. The digest covers the numeric arrays of every inner graph
-    that the functions reach, in no particular order: two digests differ
+    or of an ``OpFromGraph``, so an array that such a graph reads stays
+    shared, and compiling can move it out of the loop into the function's
+    own graph. The digest covers the numeric arrays of the functions'
+    graphs and of every inner graph they reach, as a set of contents, so
+    that it does not depend on which objects hold them: two digests differ
     when one of those arrays has changed between them.
     """
     pm, _, _ = import_pymc()
@@ -170,7 +172,7 @@ def inner_array_digest(functions):
         from pytensor.graph.op import HasInnerGraph
         from pytensor.graph.traversal import ancestors, graph_inputs
     except (AttributeError, ImportError) as exc:
-        raise _version_error(pm, "inner-graph traversal", exc)
+        raise _version_error(pm, "graph traversal for the digest", exc)
 
     try:
         pending = []
@@ -182,9 +184,17 @@ def inner_array_digest(functions):
         raise _version_error(pm, "compiled function graphs", exc)
     seen_nodes = set()
     seen_constants = set()
-    digests = []
+    digests = set()
     while pending:
-        for variable in ancestors(pending.pop()):
+        outputs = pending.pop()
+        for value in graph_inputs(outputs):
+            if value in seen_constants or not _is_numeric_array_constant(
+                value, Constant
+            ):
+                continue
+            seen_constants.add(value)
+            digests.add(_array_digest(value.data))
+        for variable in ancestors(outputs):
             node = variable.owner
             if node is None or node in seen_nodes:
                 continue
@@ -194,17 +204,8 @@ def inner_array_digest(functions):
             op = node.op
             while not isinstance(op, HasInnerGraph) and hasattr(op, "core_op"):
                 op = op.core_op
-            if not isinstance(op, HasInnerGraph):
-                continue
-            inner_outputs = list(op.inner_outputs)
-            pending.append(inner_outputs)
-            for value in graph_inputs(inner_outputs):
-                if value in seen_constants or not _is_numeric_array_constant(
-                    value, Constant
-                ):
-                    continue
-                seen_constants.add(value)
-                digests.append(_array_digest(value.data))
+            if isinstance(op, HasInnerGraph):
+                pending.append(list(op.inner_outputs))
     combined = hashlib.blake2b(digest_size=16)
     for digest in sorted(digests):
         combined.update(digest)
@@ -217,11 +218,14 @@ def snapshot_model(model):
     Numeric shared variables become constants holding copies of their
     values, and array constants are replaced with copies of themselves, so
     that a later change to the caller's arrays or shared variables reaches
-    neither the snapshot, nor its compiled functions, nor a copy of it
-    restored from a pickle. The constants inside an op's inner graph, such
-    as the body of a scan loop, stay shared: PyTensor interns the nodes of
-    inner graphs by the values of their constants, so a copy resolves to
-    the original nodes.
+    neither the snapshot nor a copy of it restored from a pickle. A graph
+    built from the snapshot later, such as its log density, can still take
+    in caller arrays that a ``CustomDist`` log-density function or a
+    transform's bounds function writes into it; `copy_array_constants`
+    copies those. The constants inside an op's inner graph, such as the
+    body of a scan loop, stay shared: PyTensor interns the nodes of inner
+    graphs by the values of their constants, so a copy resolves to the
+    original nodes.
     """
     check_model(model)
     pm, _, _ = import_pymc()
@@ -342,4 +346,4 @@ def snapshot_model(model):
     return snapshot, original_names
 
 
-__all__ = ["copy_array_constants", "inner_array_digest", "snapshot_model"]
+__all__ = ["constants_digest", "copy_array_constants", "snapshot_model"]

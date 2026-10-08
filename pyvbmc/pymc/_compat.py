@@ -281,9 +281,9 @@ def copy_array_constants(outputs, owned=()):
     return copy_constants(outputs, owned)
 
 
-def inner_array_digest(functions):
-    """Return a digest of the arrays in the inner graphs of ``functions``."""
-    from pyvbmc.pymc._snapshot import inner_array_digest as digest
+def constants_digest(functions):
+    """Return a digest of the arrays that compiled ``functions`` read."""
+    from pyvbmc.pymc._snapshot import constants_digest as digest
 
     return digest(functions)
 
@@ -301,10 +301,10 @@ __all__ = [
     "check_model",
     "clone_model",
     "closed_form",
+    "constants_digest",
     "copy_array_constants",
     "default_transform",
     "import_pymc",
-    "inner_array_digest",
     "is_known_real_line",
     "missing_derivative_errors",
     "numeric_array_constants",
