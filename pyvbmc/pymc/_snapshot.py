@@ -162,53 +162,60 @@ def constants_digest(functions):
     or of an ``OpFromGraph``, so an array that such a graph reads stays
     shared, and compiling can move it out of the loop into the function's
     own graph. The digest covers the numeric arrays of the functions'
-    graphs and of every inner graph they reach, as a set of contents, so
-    that it does not depend on which objects hold them: two digests differ
-    when one of those arrays has changed between them.
+    graphs and of every inner graph they reach, in deterministic graph
+    order, separately for each function. Every occurrence contributes,
+    including repeated uses of one constant, so exchanging two arrays'
+    contents changes the digest. Object identities are used only to cache
+    array hashes within this call; they are not part of the digest.
     """
     pm, _, _ = import_pymc()
     try:
         from pytensor.graph.basic import Constant
         from pytensor.graph.op import HasInnerGraph
-        from pytensor.graph.traversal import ancestors, graph_inputs
+        from pytensor.graph.traversal import io_toposort
     except (AttributeError, ImportError) as exc:
         raise _version_error(pm, "graph traversal for the digest", exc)
 
     try:
-        pending = []
+        graphs = []
         for function in functions:
             # PyMC's point functions wrap the compiled function.
             maker = getattr(function, "maker", None) or function.f.maker
-            pending.append(list(maker.fgraph.outputs))
+            graphs.append(list(maker.fgraph.outputs))
     except AttributeError as exc:
         raise _version_error(pm, "compiled function graphs", exc)
-    seen_nodes = set()
-    seen_constants = set()
-    digests = set()
-    while pending:
-        outputs = pending.pop()
-        for value in graph_inputs(outputs):
-            if value in seen_constants or not _is_numeric_array_constant(
-                value, Constant
-            ):
-                continue
-            seen_constants.add(value)
-            digests.add(_array_digest(value.data))
-        for variable in ancestors(outputs):
-            node = variable.owner
-            if node is None or node in seen_nodes:
-                continue
-            seen_nodes.add(node)
+    combined = hashlib.blake2b(digest_size=16)
+    array_digests = {}
+
+    def record_constant(value):
+        if _is_numeric_array_constant(value, Constant):
+            if value not in array_digests:
+                array_digests[value] = _array_digest(value.data)
+            combined.update(b"constant" + array_digests[value])
+
+    def record_graph(outputs):
+        combined.update(b"graph")
+        # Ordered outputs and node inputs determine the topological walk.
+        # Record input edges, rather than unique leaves, so constant merging
+        # during compilation does not discard repeated array occurrences.
+        for node in io_toposort([], outputs):
+            for value in node.inputs:
+                record_constant(value)
             # A Blockwise operation, as vectorizing builds, holds its inner
             # graph in the operation it applies.
             op = node.op
             while not isinstance(op, HasInnerGraph) and hasattr(op, "core_op"):
                 op = op.core_op
             if isinstance(op, HasInnerGraph):
-                pending.append(list(op.inner_outputs))
-    combined = hashlib.blake2b(digest_size=16)
-    for digest in sorted(digests):
-        combined.update(digest)
+                record_graph(list(op.inner_outputs))
+        # A graph can also return a constant without an owning node.
+        for value in outputs:
+            record_constant(value)
+        combined.update(b"end-graph")
+
+    for outputs in graphs:
+        combined.update(b"function")
+        record_graph(outputs)
     return combined.hexdigest()
 
 

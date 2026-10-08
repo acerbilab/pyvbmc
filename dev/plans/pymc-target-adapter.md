@@ -1991,7 +1991,11 @@ and this plan (the design decisions and the execution record).
   arrays that its compiled functions read, in their own graphs and in
   every inner graph they reach (including the operation that a
   `Blockwise` applies), since compiling can move such an array out of
-  its loop. `VBMC.save` compares it and warns. `VBMC.load` compares it
+  its loop. Each function contributes its arrays in graph walk order,
+  including each use of a constant and the boundaries of inner graphs.
+  Array hashes are cached within the call, but each occurrence contributes
+  to the digest: arrays exchanging contents must remain detectable.
+  `VBMC.save` compares it and warns. `VBMC.load` compares it
   and evaluates the log density once, at the starting point, against
   the value recorded during setup, which also catches causes that leave
   the arrays alone (a PyMC or PyTensor version that computes
@@ -2015,6 +2019,26 @@ and this plan (the design decisions and the execution record).
   would not reach the loops that PyMC builds with the density).
 
 ## Execution record
+
+- 2026-10-08: the array digest preserves graph roles. Collecting array
+  hashes into a set missed two captured arrays exchanging contents: an
+  `OpFromGraph` model retained its starting-point density while its density
+  at another point changed from -4.240157 to -7.307399 after save/load,
+  without a warning or refusal. The digest uses an ordered topological walk
+  per compiled function, records each constant input occurrence and enters
+  inner graphs at the operation that uses them. Each constant's bytes are
+  hashed once per call; object identities are not included in the digest.
+  The swapped-array regression in `test_changed_inputs.py` fails with the
+  set digest and checks the live refusal, save/load warnings and loaded
+  refusal while the starting-point value stays unchanged.
+  `test_digest_persistence.py` checks unchanged scan-loop, GARCH11,
+  `OpFromGraph` and automatic-start models. Each makes one seeded VBMC
+  iteration, then loads both the saved state and iteration 0 and re-saves
+  them through two fresh-process cycles with different Python hash seeds,
+  checking the digest, density and absence of refusal flags or warnings.
+  The full PyMC suite passes with both the default linker and `linker=py`:
+  130 tests in each configuration (Python 3.12.6, PyMC 6.3.2, PyTensor
+  3.3.2). An independent static review found no further issues.
 
 - 2026-10-08: the target copies the NumPy arrays of the model and of its
   log density. PyTensor wraps an array written into a graph (covariates

@@ -167,6 +167,56 @@ def test_changed_array_moved_out_of_its_loop_is_detected(tmp_path, caplog):
     assert "starting point" not in loaded._pymc_target_changed
 
 
+def test_swapped_inner_arrays_are_detected_with_unchanged_start(
+    tmp_path, caplog
+):
+    first = np.array([1.13, 2.27])
+    second = np.array([3.39, 4.41])
+    x = pt.dscalar("x")
+    mean = OpFromGraph(
+        [x],
+        [
+            pt.dot(first, pt.stack([x, x**2]))
+            + pt.dot(second, pt.stack([x**3, x**4]))
+        ],
+    )
+    with pm.Model() as model:
+        beta = pm.Normal("beta", 0.0, 2.0)
+        pm.Normal("y", mean(beta), 1.0, observed=np.array(0.0))
+    target = PyMCTarget(
+        model,
+        start={"beta": 0.0},
+        plausible_bounds={"beta": (-2.0, 2.0)},
+        seed=934,
+    )
+    vbmc = VBMC(target, options=OPTIONS, seed=935)
+    start_value = target.log_joint(target.x0)
+    probe = np.array([0.5])
+    probe_value = target.log_joint(probe)
+
+    # Both arrays are still present, with their roles exchanged. The density
+    # at zero cannot reveal the change because every term vanishes there.
+    original = first.copy()
+    first[:] = second
+    second[:] = original
+    assert target.log_joint(target.x0) == start_value
+    assert "OpFromGraph" in vbmc._pymc_target_change()
+    with pytest.raises(RuntimeError, match=REFUSED):
+        vbmc.optimize()
+    vbmc.save(tmp_path / "swapped")
+    assert _warnings(caplog)
+
+    caplog.clear()
+    loaded = VBMC.load(tmp_path / "swapped")
+    assert loaded.target.log_joint(loaded.target.x0) == start_value
+    assert loaded.target.log_joint(probe) != pytest.approx(probe_value)
+    assert "OpFromGraph" in loaded._pymc_target_changed
+    assert "starting point" not in loaded._pymc_target_changed
+    assert _warnings(caplog)
+    with pytest.raises(RuntimeError, match=REFUSED):
+        loaded.optimize()
+
+
 def test_only_loading_evaluates_the_target_once(tmp_path, monkeypatch):
     weights = np.array([2.25, 0.5, 1.75])
     vbmc = VBMC(_loop_target(weights), options=OPTIONS, seed=930)
