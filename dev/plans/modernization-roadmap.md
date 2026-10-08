@@ -1309,7 +1309,8 @@ must cover the settled release code, API and behavior before publication.
   the lab's tools for fitting models to data; the docs' footer, package
   metadata, FAQ, agent skill, Example 6 and complementary-method tip link
   the same page. Links naming Luigi Acerbi use his personal page, and lab
-  and membership links use the group's page. The `pybads` tip retains its
+  links use the group's page. Individual developers link to personal
+  profiles or the People page. The `pybads` tip retains its
   PyBADS documentation link alongside the tools page; the
   [tips plan](runtime-tips.md#review-before-the-15-release) records it.
   The Sphinx HTML build passed with warnings treated as errors, and the

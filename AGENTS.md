@@ -334,9 +334,11 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
 ## Conventions
 
 - **Links to the lab.** In what ships or is published, a link that names
-  Luigi Acerbi goes to his personal page, https://lacerbi.github.io/, and
-  one that names the lab or its members to the group's page,
+  Luigi Acerbi goes to his personal page, https://lacerbi.github.io/.
+  Links naming the lab use the group's page,
   https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence.
+  Individual developers link to their personal profiles or the lab's
+  `/people` page.
   A paragraph that sends the reader to another of the lab's methods
   (PyBADS, PyIBS, MATLAB VBMC) links https://acerbilab.org/model-fitting/
   with the text "tools for fitting models to data". The README and docs'
