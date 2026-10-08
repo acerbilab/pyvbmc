@@ -249,7 +249,9 @@ def test_class_docstring_documents_the_constructor_arguments():
     """The class docstring is the published documentation of the
     constructor, so the names it documents are the ones a caller passes."""
     documented = set(
-        re.findall(r"^    (\w+) : ", ParameterTransformer.__doc__, re.M)
+        re.findall(
+            r"^(\w+) : ", inspect.cleandoc(ParameterTransformer.__doc__), re.M
+        )
     )
     signature = inspect.signature(ParameterTransformer.__init__).parameters
     assert documented == set(signature) - {"self"}

@@ -124,8 +124,8 @@ def test_a_box_constructor_documents_its_arguments_and_its_refusals(
     """The constructor docstring is the published documentation of the
     class: it names every argument a caller passes, `D` among them, and its
     refusals include the one of an argument whose shape disagrees."""
-    documentation = cls.__init__.__doc__
-    documented = set(re.findall(r"^        (\w+) : ", documentation, re.M))
+    documentation = inspect.cleandoc(cls.__init__.__doc__)
+    documented = set(re.findall(r"^(\w+) : ", documentation, re.M))
     signature = inspect.signature(cls.__init__).parameters
     assert documented == set(signature) - {"self"}
 

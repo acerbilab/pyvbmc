@@ -8,7 +8,7 @@ and where to pick up. Update it in place; do not add status to the devlogs.
 Branch: `dev-next`. No PR to `main` until the work here is done: one PR at
 the end (decided 2026-09-02, superseding the per-stage PRs of devlog §11).
 CI on `dev*` branches: pushes that touch the package run a reduced smoke
-(Ubuntu, Python 3.12) of the `tests` workflow automatically (added
+(Ubuntu, Python 3.14) of the `tests` workflow automatically (added
 2026-09-03); dispatch the workflow by hand for the full matrix before
 anything that changes numerics lands.
 

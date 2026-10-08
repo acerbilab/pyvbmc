@@ -37,8 +37,8 @@ jobs:
   tests:
     uses: ./.github/workflows/test-matrix.yml
     with:
-      # Full 3 OS x 3 Python matrix on schedule and dispatch; Ubuntu with
+      # Full 3 OS x 5 Python matrix on schedule and dispatch; Ubuntu with
       # the newest Python only on branch pushes.
       os: ${{ github.event_name == 'push' && '["ubuntu-latest"]' || '["ubuntu-latest", "windows-latest", "macos-latest"]' }}
-      python-version: ${{ github.event_name == 'push' && '["3.12"]' || '["3.10", "3.11", "3.12"]' }}
+      python-version: ${{ github.event_name == 'push' && '["3.14"]' || '["3.10", "3.11", "3.12", "3.13", "3.14"]' }}
       gpyreg-ref: ${{ github.event_name == 'schedule' && 'main' || inputs.gpyreg-ref || '' }}
