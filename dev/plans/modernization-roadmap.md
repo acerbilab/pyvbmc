@@ -1417,8 +1417,10 @@ must cover the settled release code, API and behavior before publication.
   and corrected in its file, two of them in code (the tips of naive
   stacking and the conda command of `check_for_updates`) and one in the
   changelog; the ledger's section "Final delta review, 2026-10-08"
-  records them.
-- [ ] Verify revised examples and links, build the documentation and check
+  records them. A further pass at `1f774c95`, approved by the PI on
+  2026-10-08, covers PR #191's prose; the ledger's "PR #191 delta review"
+  records the persistence clarification and API-link corrections.
+- [x] Verify revised examples and links, build the documentation and check
   the rendered pages on the settled release code, and check the
   [agent skill](../../skills/pyvbmc/SKILL.md) against the release docs. On
   2026-09-27 the Sphinx build of `dev-next` gave no warning, `linkcheck` and
@@ -1431,6 +1433,23 @@ must cover the settled release code, API and behavior before publication.
   section the skill names. The links to `main` in the skill and the docs
   resolve only once the release merge puts the 1.5 files there, so a
   `linkcheck` follows that merge.
+  Repeated after PR #191 on 2026-10-08 (`1f774c95`, with documentation
+  corrections in `544224c5`): Sphinx 9.1.0 passed with `-W --keep-going
+  -E -a`; all 92 rendered HTML pages (excluding two theme templates) have
+  valid local and same-site files and anchors. Browser inspection covered
+  `PyMCTarget` and `VBMC.save`, `load` and `optimize`. The skill's 13
+  source links exist and its named sections agree with the docs.
+  `linkcheck` completed with 69 working, 6 redirected and 41 unchecked
+  links. Its 12 failures are seven unpublished 1.5 destinations, four
+  HTTP 403 responses (Wikipedia and Stack Exchange), and a GitHub wiki
+  anchor whose canonical permalink was confirmed in the browser. It also
+  reports two warnings because its builder cannot render Example 2's HTML
+  output. These are not a clean external-link gate; the post-merge pass
+  remains below. The logs and artifact inventories are indexed in
+  `dev/scripts/runs/LOCAL.md`, "Release validation after PR #191".
+- [ ] Repeat `linkcheck` after the release merge publishes the 1.5 source
+  files and documentation; recheck the blocked external sites and the
+  GitHub wiki anchor as well as the formerly unpublished destinations.
 - [x] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
@@ -1455,14 +1474,17 @@ must cover the settled release code, API and behavior before publication.
   both by the script gave the new outputs again, identical but for the
   startup tip. The notebooks' code is unchanged, and so are the scripts in
   `examples/scripts/`.
+  Example 8 was checked statically after PR #191 on 2026-10-08: its model
+  uses unchanged outer-graph arrays, no inner graphs and no save/load,
+  so copying its constants and checking their digest changes neither its
+  numerical results nor its warnings. It was not re-executed in that pass.
 - [ ] In the release pull request, set `RELEASE_DATE` in
   `pyvbmc/_release.py` to the date of the changelog heading
   `## [X.Y.Z] - YYYY-MM-DD` that the release gives its section: the
   old-release reminder tells the age of the installed release by it, and
   `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
-- [ ] Run the final integrated tests, the required CI matrix and the
-  package checks, and prepare the golden-trace release archive (the
-  [reference record](../golden/promotion_20261007/README.md)). The package
+- [x] Run the final integrated tests, the required CI matrix and the
+  package checks (2026-10-08, after PR #191). The package
   checks include what the sdist ships: setuptools_scm puts every tracked
   file in it, and of `MANIFEST.in` only the `prune` lines have an effect
   (`docsrc`, `dev`, `papers`), its `include` lines naming files that the
@@ -1470,6 +1492,34 @@ must cover the settled release code, API and behavior before publication.
   before `dev` and `papers` were pruned) and the wheel unchanged; from the
   sdist the tests that read `dev/scripts` skip, among them 7 of the oracle
   tests.
+  At `1f774c95`, the full local extras suite first stopped at a
+  platform-bound active-sample oracle (451 passed, 8 skipped, 5 reruns):
+  its environment has NumPy 2.5.3 and cma 4.5.0, while the reference
+  environment has 2.5.2 and 4.4.4. In the latter, all 12 oracle fixtures
+  passed `--check --exact`, with BLAS single-threaded. The extras suite
+  then passed 3022 tests, with 33 skips and 28 platform-bound oracle cases
+  deselected (`-k 'not (test_oracle and (active_sample_step or gp_fit))'`).
+  The skips are inapplicable parameter/oracle cases and unavailable CUDA;
+  PyMC, ArviZ and CPU Torch tests ran. Both environments imported this
+  checkout and the sibling gpyreg 1.4.0 at `682585f7`.
+  The PI approved expanding CI to Python 3.10–3.14 in
+  [PR #192](https://github.com/acerbilab/pyvbmc/pull/192).
+  [All 15 cells passed](https://github.com/acerbilab/pyvbmc/actions/runs/37823357632)
+  at `157714ae`: 2559 tests in each core cell; 3020 in Ubuntu 3.14 with
+  PyMC 6.3.2, PyTensor 3.3.3, ArviZ 1.3.0 and Torch 2.14.1+cpu. The
+  subsequent commit `b4bf94c5` updates only the tested-version text and
+  its record. The matrix change still needs that PR's merge.
+  `python -m build` built an 8,589,003-byte sdist (441 files) and a
+  3,027,550-byte wheel (122 files), building the wheel from the sdist.
+  All 291 tracked test/fixture files ship in the sdist; none ship in the
+  wheel. The wheel contains all 88 checked runtime code/data files, all
+  nine notebooks, the option files and S-VBMC license. The pruned trees
+  are absent from the sdist. Imports and resources passed from an isolated
+  wheel installation. These are validation builds with a development
+  version, not release uploads. No fixture or numerical reference changed.
+- [ ] Prepare the golden-trace release archive (the
+  [reference record](../golden/promotion_20261007/README.md)) and the
+  other agreed archives in the operator's account, as described below.
 - [ ] Decide which locally held artifacts attach to the release as archives
   rather than commits: the golden reference traces, the run pools, the
   captured frozen states and the raw campaign records that
