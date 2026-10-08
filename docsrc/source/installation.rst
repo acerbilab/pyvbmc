@@ -8,13 +8,19 @@ or newer.
 Basic installation
 ==================
 
-Install PyVBMC with pip::
+Install or upgrade PyVBMC with pip::
 
-  python -m pip install pyvbmc
+  python -m pip install --upgrade pyvbmc
 
-or with Conda::
+Or install it with Conda::
 
   conda install --channel=conda-forge pyvbmc
+
+PyVBMC 1.5 requires NumPy 2.0, SciPy 1.15 and matplotlib 3.9 or newer, and
+its conda-forge package requires Python 3.11 or newer. In an environment
+that holds an older version of one of them, ``conda`` can install PyVBMC
+1.0.4 instead, without a warning: ask it for ``"pyvbmc>=1.5"``, or see the
+:ref:`FAQ <faq-conda-installs-an-older-version-of-pyvbmc-why>`.
 
 To learn whether a newer release exists and how to update, see the
 :ref:`FAQ <faq-how-do-i-know-whether-a-newer-version-of-pyvbmc-exists>`.
@@ -32,7 +38,7 @@ torch from its official CPU wheel index first, then install the PyVBMC
 extra::
 
   python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-  python -m pip install "pyvbmc[torch]"
+  python -m pip install --upgrade "pyvbmc[torch]"
 
 Installing torch first ensures that pip selects a CPU wheel. If your model or
 export will run on an accelerator, follow the `torch installation selector
@@ -41,7 +47,7 @@ installing ``pyvbmc[torch]``.
 
 With Conda, install the named packages directly::
 
-  conda install --channel=conda-forge pyvbmc pytorch
+  conda install --channel=conda-forge "pyvbmc>=1.5" pytorch
 
 ArviZ
 -----
@@ -49,14 +55,14 @@ ArviZ
 The :meth:`~pyvbmc.VariationalPosterior.to_arviz` export uses the current
 ArviZ DataTree format and requires Python 3.12 or newer. Install it with::
 
-  python -m pip install "pyvbmc[arviz]"
+  python -m pip install --upgrade "pyvbmc[arviz]"
 
 PyVBMC itself continues to support Python 3.10 and newer. On Python 3.10 or
 3.11, pip does not install the ArviZ dependencies because of their Python
 version marker, and ``to_arviz`` is unavailable. With Conda, install the
 corresponding packages directly::
 
-  conda install --channel=conda-forge pyvbmc arviz arviz-base
+  conda install --channel=conda-forge "pyvbmc>=1.5" arviz arviz-base
 
 PyMC
 ----
@@ -64,7 +70,7 @@ PyMC
 The :class:`~pyvbmc.pymc.PyMCTarget` adapter requires Python 3.12 or newer.
 Install PyMC and the ArviZ data interface with::
 
-  python -m pip install "pyvbmc[pymc]"
+  python -m pip install --upgrade "pyvbmc[pymc]"
 
 The adapter is tested with PyMC 6.3.2, PyTensor 3.3.1–3.3.2 and ArviZ 1.3.0,
 using PyTensor's default Numba linker on Windows and Linux. PyVBMC itself
@@ -73,7 +79,7 @@ not install the PyMC dependencies because of their Python version marker, and
 ``PyMCTarget`` is unavailable. With Conda, install the named packages
 directly::
 
-  conda install --channel=conda-forge pyvbmc pymc
+  conda install --channel=conda-forge "pyvbmc>=1.5" pymc
 
 The bracketed ``torch``, ``arviz`` and ``pymc`` names are pip dependency
 groups; they are not Conda package names. All three integrations are optional
@@ -98,13 +104,13 @@ Open the example notebooks with::
 
 Example 2 uses ``plotly`` for one interactive figure. Install it with::
 
-  python -m pip install "pyvbmc[examples]"
+  python -m pip install --upgrade "pyvbmc[examples]"
 
 :ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` uses both
 posterior exports and requires Python 3.12 or newer. A CPU-only environment is
 sufficient. Install its PyVBMC dependencies with::
 
-  python -m pip install "pyvbmc[torch,arviz]"
+  python -m pip install --upgrade "pyvbmc[torch,arviz]"
 
 Install JAX separately to run the short JAX target section, following the
 `JAX installation guide <https://docs.jax.dev/en/latest/installation.html>`_.

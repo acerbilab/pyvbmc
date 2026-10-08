@@ -345,6 +345,15 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   the overview link alongside the direct link to the named method, helping
   readers discover related tools. Vary the link text and sentence to suit
   the context, and omit only redundant nearby repeats.
+- **Install commands.** In what ships or is published, a pip command that
+  installs PyVBMC for a user carries `--upgrade`, extras included
+  (`pip install --upgrade "pyvbmc[torch]"`), and names no other package:
+  without the flag, pip keeps an older release that is installed already,
+  and only warns when that release lacks the extra; with it, pip also
+  upgrades every other package the command names. Conda can keep an
+  installed release, or install an older one into an environment that holds
+  older dependencies, without a warning, so a Conda command for a feature
+  asks for the release that added it (`"pyvbmc>=1.5"`).
 - **Commits** follow conventional commits. A `Co-Authored-By:` line is fine;
   a `Claude-Session:` trailer is not, even where the session's own
   attribution instructions ask for one.

@@ -169,9 +169,16 @@ records its execution.
   (`conda-forge/pybads-feedstock` #12, merged 2026-10-06). Check the published package's requirements
   against `pyproject.toml`: 1.5 needs gpyreg 1.4.0 or later, on
   conda-forge since 2026-09-30, and adds `filelock`, `platformdirs` and
-  `threadpoolctl`. conda-forge's
-  `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
-  where PyPI's is 3.10.
+  `threadpoolctl`. The recipe's floors are older than those of PyPI's
+  1.0.4, so a comparison of the two releases' PyPI metadata does not show
+  them: they rise by hand to NumPy 2.0 (from 1.22.1), SciPy 1.15 (from
+  1.7.3), matplotlib-base 3.9 (from 3.5.1) and cma 3.4 (from 3.1.0), and
+  `plotly`, `pytest`, `pytest-mock` and `pytest-rerunfailures` leave the
+  run requirements for the extras. The README, the installation page and
+  the FAQ, which say that conda can install 1.0.4 into an environment that
+  holds an older NumPy, SciPy, matplotlib or Python, are true only once the
+  recipe requires these versions. conda-forge's `python_min`, 3.11 on
+  2026-09-25, is the conda package's Python floor, where PyPI's is 3.10.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 

@@ -108,8 +108,9 @@ An error is raised for calls and values that 1.0.4 accepted:
   evaluations of the target (Silvestrin, Li & Acerbi, 2025). Use it when
   repeated runs disagree, or when each captures a part of a multimodal
   posterior.
-  - It needs `pip install "pyvbmc[torch]"`. A stack saved with `stacked.save`
-    loads with `SVBMC.load` under another Python version and without Torch.
+  - It needs `pip install --upgrade "pyvbmc[torch]"`. A stack saved with
+    `stacked.save` loads with `SVBMC.load` under another Python version and
+    without Torch.
   - When any of the runs it keeps had a noisy target, `stacked.elbo` is a
     two-level shrinkage estimate, since choosing the weights on noisy
     estimates adds optimism to the raw value, the more so the more runs are
@@ -127,10 +128,10 @@ An error is raised for calls and values that 1.0.4 accepted:
   point and the plausible box with a budget of model evaluations that the run
   reuses (`setup_budget=`). `target.to_arviz(vp)` exports draws under the
   names and shapes of the model's variables. It needs
-  `pip install "pyvbmc[pymc]"`, PyMC 6.3 or later and Python 3.12 or later; a
-  model it cannot handle, such as one with a discrete variable, is refused
-  with `pyvbmc.pymc.UnsupportedModel`. See the `PyMCTarget` page of the
-  documentation and Example 8.
+  `pip install --upgrade "pyvbmc[pymc]"`, PyMC 6.3 or later and Python 3.12
+  or later; a model it cannot handle, such as one with a discrete variable,
+  is refused with `pyvbmc.pymc.UnsupportedModel`. See the `PyMCTarget` page
+  of the documentation and Example 8.
 - **Vectorized targets.** With `options={"vectorized_target": True}`, the
   target takes an `(N, D)` array and returns one value per row (and one noise
   SD per row with `specify_target_noise`), and PyVBMC evaluates the whole
@@ -191,9 +192,9 @@ An error is raised for calls and values that 1.0.4 accepted:
   dimension, which moves the results of every run; see its release notes.
   `filelock`, `platformdirs` and `threadpoolctl` are new dependencies.
   `pytest` and `plotly` are in the extras `test` and `examples` (Example 2
-  needs `pip install "pyvbmc[examples]"`), and the test suite is no longer
-  part of the wheel. PyVBMC 1.0.4 fails at the first GP fit of a noisy target
-  without `specify_target_noise` when it gets gpyreg 1.3.0 or later.
+  needs `pip install --upgrade "pyvbmc[examples]"`), and the test suite is no
+  longer part of the wheel. PyVBMC 1.0.4 fails at the first GP fit of a noisy
+  target without `specify_target_noise` when it gets gpyreg 1.3.0 or later.
 - **Results differ from 1.0.4, also with a fixed seed.** Several steps of the
   algorithm have been corrected, most of them to do what MATLAB VBMC does, and
   each changes the course of a run. The main ones:
