@@ -10,7 +10,7 @@ import copy
 
 import numpy as np
 
-TESTED_RANGE = "PyMC 6.3.2, PyTensor 3.3.1–3.3.2 and ArviZ 1.3.0"
+TESTED_RANGE = "PyMC 6.3.2, PyTensor 3.3.1–3.3.3 and ArviZ 1.3.0"
 
 
 class UnsupportedModel(ValueError):

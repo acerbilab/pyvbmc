@@ -2020,6 +2020,17 @@ and this plan (the design decisions and the execution record).
 
 ## Execution record
 
+- 2026-10-08: with the PI's approval, the release-validation CI pass added
+  Python 3.13 and 3.14 while retaining 3.10. The full three-OS matrix at
+  `157714ae` passed all 15 cells
+  ([run](https://github.com/acerbilab/pyvbmc/actions/runs/37823357632)).
+  The Ubuntu 3.14 extras cell passed 3020 tests (63 skipped) with PyMC
+  6.3.2, PyTensor 3.3.3, ArviZ 1.3.0, NumPy 2.5.3, SciPy 1.18.1 and
+  CPU Torch 2.14.1; PyTensor selected `NumbaLinker`. Both `TESTED_RANGE`
+  and the installation page include 3.3.3. The five constructor-docstring
+  checks normalize indentation with `inspect.cleandoc`, so Python 3.13's
+  dedenting of stored docstrings does not change their comparisons.
+
 - 2026-10-08: the array digest preserves graph roles. Collecting array
   hashes into a set missed two captured arrays exchanging contents: an
   `OpFromGraph` model retained its starting-point density while its density
