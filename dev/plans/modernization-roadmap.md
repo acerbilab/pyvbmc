@@ -1305,10 +1305,13 @@ must cover the settled release code, API and behavior before publication.
   README and docs' "What's new" blocks summarize the changelog and are
   kept in step with it. Dating the release remains in the final pass.
 - [x] Apply PyBADS's convention for links to the lab (2026-10-07), recorded
-  in `AGENTS.md`, "Links to the lab". The README and docs' index introduce
-  the lab's model-fitting software; the docs' footer, package metadata,
-  agent skill and complementary-method tip link the same overview.
-  Detailed guidance in the FAQ and examples links directly to each method.
+  in `AGENTS.md`, "Links to the lab". The README, docs' index and FAQ
+  introductions link the lab's model-fitting software; the docs' footer,
+  package metadata, agent skill and complementary-method tip link the same
+  overview.
+  Referrals in the README, docs' index, FAQ and Example 6 pair direct method
+  links with the overview, using wording suited to each passage and omitting
+  redundant nearby repeats.
   Links naming Luigi Acerbi use his personal page, and lab
   links use the group's page. Individual developers link to personal
   profiles or the People page; links labeled "members" go to the People
@@ -1321,9 +1324,8 @@ must cover the settled release code, API and behavior before publication.
   responded successfully. Rendered-page checks and independent review
   passed. All nine notebooks retain their code and stored outputs; none
   shows the changed tip.
-  The wording pass of 2026-10-08 removed repeated overview boilerplate
-  from method referrals and shortened the footer. The convention allows
-  concise link labels suited to their context.
+  The wording pass of 2026-10-08 varied the overview referrals, added a
+  prominent link in the FAQ introduction and shortened the footer.
 - [x] Review the main documentation sources under `docsrc/`, tutorials and
   examples for consistency with the completed 1.5 release. Check setup,
   options, diagnostics and linked guidance against the final implementation:

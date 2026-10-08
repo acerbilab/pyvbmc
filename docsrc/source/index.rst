@@ -90,7 +90,7 @@ PyVBMC is effective when:
 
 For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as `Stan <https://mc-stan.org/>`_ or `PyMC <https://www.pymc.io/>`_; PyMC users with an expensive supported model can pass it to PyVBMC through :class:`~pyvbmc.pymc.PyMCTarget`.
 
-Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out :labrepos:`Bayesian Adaptive Direct Search in Python (PyBADS) <pybads>`, our companion method for fast Bayesian optimization.
+Note: Our `model-fitting tools <https://acerbilab.org/model-fitting/>`__ include :labrepos:`Bayesian Adaptive Direct Search in Python (PyBADS) <pybads>` for finding point estimates or better starting points for PyVBMC.
 
 How-to
 ######

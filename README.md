@@ -49,13 +49,15 @@ copy the folder again from the PyVBMC version you use.
 PyVBMC is effective when:
 
 - the model log-likelihood function is a black-box (e.g., the gradient is unavailable);
-- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function) (e.g., estimated [via simulation](https://github.com/acerbilab/pyibs));
+- likelihood evaluations are moderately expensive (say, around 0.1 seconds or more) or [noisy](https://acerbilab.github.io/pyvbmc/faq.html#faq-noisy-target-function);
 - the model has up to `D = 10` continuous parameters (maybe a few more, but no more than `D = 20`);
 - the target posterior distribution is continuous and reasonably smooth (see [here](https://acerbilab.github.io/pyvbmc/faq.html#faq-general)).
 
+For likelihood estimates from model simulations, see [PyIBS](https://github.com/acerbilab/pyibs) and the lab's [related software](https://acerbilab.org/model-fitting/).
+
 For a fast, noiseless likelihood, consider inference methods such as MCMC, available in probabilistic programming frameworks such as [Stan](https://mc-stan.org/) or [PyMC](https://www.pymc.io/); PyMC users with an expensive supported model can pass it to PyVBMC through [`PyMCTarget`](https://acerbilab.github.io/pyvbmc/api/classes/pymc_target.html).
 
-Note: If you are interested in point estimates or in finding better starting points for PyVBMC, check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
+Note: Our [model-fitting tools](https://acerbilab.org/model-fitting/) include [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for finding point estimates or better starting points for PyVBMC.
 
 ## Installation
 
@@ -236,7 +238,7 @@ Besides formal citations, you can demonstrate your appreciation for PyVBMC in th
 - Follow Luigi Acerbi on [Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) in the lab's [Discussions forum](https://github.com/orgs/acerbilab/discussions).
 
-You may also want to check out [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads), our companion method for fast Bayesian optimization.
+You may also want to explore our [other model-fitting methods](https://acerbilab.org/model-fitting/), including [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for fast Bayesian optimization.
 
 ### Additional references
 
