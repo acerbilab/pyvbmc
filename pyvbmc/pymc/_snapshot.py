@@ -114,9 +114,11 @@ def copy_array_constants(outputs, owned=()):
     """Return graphs computing `outputs` from copies of their arrays.
 
     Every numeric array constant of the graphs, other than those in
-    `owned`, is replaced with a copy of itself. PyMC builds a log density
-    when it is requested, so the arrays that a ``CustomDist`` log-density
-    function writes into it never pass through the snapshot.
+    `owned`, is replaced with a copy of itself; the inner graphs of
+    operations are not entered. PyMC builds a log density, and a transform
+    its maps, when they are requested, so the arrays that a ``CustomDist``
+    log-density function or a transform's bounds function writes into them
+    never pass through the snapshot.
     """
     pm, _, _ = import_pymc()
     try:
@@ -124,7 +126,7 @@ def copy_array_constants(outputs, owned=()):
         from pytensor.graph.replace import clone_replace
         from pytensor.graph.traversal import graph_inputs
     except (AttributeError, ImportError) as exc:
-        raise _version_error(pm, "log-density graph traversal", exc)
+        raise _version_error(pm, "graph traversal for copied constants", exc)
 
     owned = set(owned)
     replacements = {
@@ -134,9 +136,14 @@ def copy_array_constants(outputs, owned=()):
     }
     if not replacements:
         return list(outputs)
-    return clone_replace(
-        list(outputs), replace=replacements, rebuild_strict=False
-    )
+    try:
+        return clone_replace(
+            list(outputs), replace=replacements, rebuild_strict=False
+        )
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise _version_error(
+            pm, "graph reconstruction for copied constants", exc
+        )
 
 
 def snapshot_model(model):

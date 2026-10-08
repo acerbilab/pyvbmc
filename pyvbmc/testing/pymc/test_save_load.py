@@ -220,6 +220,42 @@ def test_vbmc_save_load_keeps_density_after_caller_array_changes(
         np.testing.assert_allclose(actual, y_setup, rtol=0, atol=1e-10)
 
 
+def test_vbmc_save_load_keeps_maps_after_caller_array_changes(tmp_path):
+    from pymc.distributions.transforms import Interval
+
+    lower = np.array([0.0, 1.0])
+    with pm.Model() as model:
+        # PyMC calls the bounds function only when it builds a map.
+        pm.Normal(
+            "x",
+            2.0,
+            2.0,
+            shape=2,
+            transform=Interval(bounds_fn=lambda *args: (lower, None)),
+        )
+    target = PyMCTarget(
+        model,
+        start={"x": np.array([1.0, 2.0])},
+        plausible_bounds={"x": (np.array([0.5, 1.5]), np.array([3.0, 4.0]))},
+        seed=921,
+    )
+    vbmc = VBMC(target, options={"display": "off"}, seed=922)
+    points = np.vstack((target.x0, target.plb, target.pub))
+    mapped = target.to_model_variables(points)["x"].copy()
+
+    lower += 0.25
+    path = tmp_path / "pymc_map_constants"
+    vbmc.save(path)
+    loaded = VBMC.load(path)
+
+    for candidate in (target, loaded.target):
+        np.testing.assert_array_equal(
+            candidate.to_model_variables(points)["x"], mapped
+        )
+        recovered = candidate.from_model_variables({"x": mapped[0]})
+        np.testing.assert_allclose(recovered, points[0], rtol=0, atol=1e-12)
+
+
 def test_target_deepcopy_and_dill_round_trip(lifecycle_target):
     target = lifecycle_target["target"]
     copied = copy.deepcopy(target)

@@ -2003,9 +2003,12 @@ and this plan (the design decisions and the execution record).
   as it already replaces numeric shared variables, and reports a PyMC
   incompatibility if the snapshot still holds a constant of the source
   model. PyMC calls a `CustomDist` log-density function only when it
-  builds the density, so `_compile_density` also copies the arrays of the
-  two density graphs that are not the snapshot's own before compiling
-  them; only those two functions outlive construction.
+  builds the density, and a transform's bounds function only when it
+  builds a map, so the target also copies the arrays that are not the
+  snapshot's own in the graphs of the compiled functions it keeps: the
+  two densities (`_compile_density`) and each variable's forward and
+  backward map. The gradient, the Hessian and the support probe are used
+  during construction only.
 
   An array that the inner graph of an operation reads as a constant (the
   body of a `pytensor.scan` loop, whether the loop's function captures it
@@ -2020,8 +2023,12 @@ and this plan (the design decisions and the execution record).
   in `sequences`, reach the loop as outer inputs and stay fixed. PyMC's
   own loops took no caller array into the density with `AR`,
   `GaussianRandomWalk`, `EulerMaruyama` (whose drift function captured
-  an array) or `Truncated`; `GARCH11` passes `omega` into its loop, which
-  showed the change under the Python linker and not under Numba. The
+  an array) or `Truncated`. `GARCH11` passes `omega` into its loop in
+  `non_sequences`; the snapshot copies `omega` where it is an input of
+  the distribution, but the loop that PyMC builds for the density
+  interns back to the caller's array, so under `FAST_COMPILE` a change to
+  it moved the density live and restored (-4.19 to -13.76), and in the
+  default mode it did not, with either linker. The
   `PyMCTarget` page names the exception and directs such arrays to
   `pm.Data`; whether it stays a documented exception awaits the PI's
   ruling (`dev/TODO.md`). Python code inside a custom operation is
@@ -2032,8 +2039,9 @@ and this plan (the design decisions and the execution record).
   that the check for retained constants fires;
   `test_save_load.py` saves and loads a run after the change, with the
   arrays in the model's graph and in a `CustomDist` log-density
-  function, against its setup observations. Each fails without its part
-  of the fix. The 116 tests of `pyvbmc/testing/pymc` pass under the
+  function, against its setup observations, and with the array in a
+  transform's bounds function, against the maps. Each fails without its
+  part of the fix. The 117 tests of `pyvbmc/testing/pymc` pass under the
   default Numba linker and under the Python linker (PyMC 6.3.2, PyTensor
   3.3.2, Python 3.13).
 

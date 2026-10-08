@@ -476,6 +476,9 @@ class PyMCTarget:
 
         self.kept = {}
         self._maps = {}
+        # The compiled maps are kept, as the densities are, so they hold
+        # copies of the arrays that a transform writes into them.
+        owned = set(_compat.numeric_array_constants(self._partial))
         for name, rv, value_name, shape in zip(
             self.names, self._ordered_rvs, self.value_names, self.shapes
         ):
@@ -511,7 +514,10 @@ class PyMCTarget:
                 raise _compat.UnsupportedModel(
                     f"{name}: transform maps must evaluate in float64."
                 )
-            backward = pytensor.function([input_var], backward_expr)
+            backward = pytensor.function(
+                [input_var],
+                _compat.copy_array_constants([backward_expr], owned)[0],
+            )
             try:
                 forward_graph = transform.forward(input_var, *rv.owner.inputs)
             except TypeError as exc:
@@ -523,7 +529,10 @@ class PyMCTarget:
                 raise _compatibility_error(
                     pm, "transform forward/backward methods", exc
                 ) from exc
-            forward = pytensor.function([input_var], forward_graph)
+            forward = pytensor.function(
+                [input_var],
+                _compat.copy_array_constants([forward_graph], owned)[0],
+            )
             probe = _as_float64(
                 point[value_name], f"initial value for {value_name}"
             ).reshape((1, *shape))

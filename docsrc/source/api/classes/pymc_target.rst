@@ -193,8 +193,9 @@ remains available for posterior prediction.
 
 An array that the body of a ``pytensor.scan`` loop or of an ``OpFromGraph``
 reads as a constant is the exception: PyTensor keeps it inside that operation,
-which the target shares with the original model. Pass such an array in as
-``pm.Data``, or leave it unchanged while the target is in use.
+where the target does not copy it. Pass such an array to a loop in
+``sequences`` or as ``pm.Data``, and to an ``OpFromGraph`` as one of its inputs;
+otherwise leave it unchanged while the target is in use.
 
 Saving a :class:`~pyvbmc.VBMC` instance retains the adapter, its fixed
 inference snapshot, original prediction model, setup observations and budget
