@@ -1998,8 +1998,10 @@ and this plan (the design decisions and the execution record).
   run. A check that fails, such as an evaluation that raises, counts as
   a change, so that loading never fails because of it. `optimize()`
   refuses a marked run, or one whose digest has changed, with a
-  `RuntimeError`. One evaluation at load is the whole cost in target
-  calls, since a PyMC density need not be cheap; the tolerance is 1e-8,
+  `RuntimeError`, which nothing overrides: the PI (2026-10-08) leaves an
+  override until users report refusals they need to pass. One evaluation
+  at load is the whole cost in target calls, since a PyMC density need
+  not be cheap; the tolerance is 1e-8,
   absolute below 1 and relative above. The checks need the association
   that `VBMC(target)` makes; a run built from `VBMC(target.log_joint,
   ...)` goes without them, as the `PyMCTarget` page says. Rejected: refusing such models at construction (it would
