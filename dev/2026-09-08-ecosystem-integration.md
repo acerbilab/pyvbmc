@@ -131,6 +131,11 @@ follows PyVBMC's release version.
 Publish the forwarding release after the PyVBMC version it requires is
 available. Coordinate both repositories' release notes and document the
 migration and support window for existing users.
+*Added 2026-10-08:* the PI ruled that the standalone package is deprecated
+in favor of `pyvbmc.SVBMC`: the forwarding release is its last, and it
+warns on import that the package is deprecated
+([integration plan](plans/svbmc-integration.md)). This settles question
+(4) of the review scope below.
 
 The thirty compatibility fixtures are input `VariationalPosterior` pickles.
 They encode the existing

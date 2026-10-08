@@ -3,7 +3,7 @@
 Execution plan and worklog for bringing the S-VBMC implementation into
 PyVBMC. Implementation is complete: work on `dev-svbmc-integration`, opened
 from `dev-next` at `e29c5e7`, was merged into `dev-next` on 2026-09-11.
-The forwarding release of the standalone `svbmc` package follows PyVBMC
+The release that deprecates the standalone `svbmc` package follows PyVBMC
 1.5 publication. The design is the
 [integration proposal](../2026-09-08-ecosystem-integration.md), whose open
 questions the PI settled on 2026-09-11 as recorded below. Evidence the plan
@@ -63,12 +63,16 @@ adding Torch to the repository venv.
   warped and unwarped runs. Regression references (weights, ELBO, entropy of a
   seeded short optimization) pin the numerics for the later performance
   change.
-- **Compatibility release.** A forwarding `svbmc` release depending on
-  `pyvbmc[torch]>=1.5` is prepared and published only after PyVBMC 1.5
+- **Deprecation release.** The standalone package is deprecated in favor
+  of `pyvbmc.SVBMC` (PI, 2026-10-08), and its last release, depending on
+  `pyvbmc[torch]>=1.5`, is prepared and published only after PyVBMC 1.5
   is on PyPI. It forwards `svbmc.SVBMC`, `svbmc.svbmc.SVBMC` and
   `svbmc.utils`, keeps its own `targets`, maps `testing=True` to a fixed
-  seed with a deprecation warning, and reports its own `__version__`.
-  Out of scope for this plan.
+  seed with a deprecation warning, and reports its own `__version__`. On
+  import it warns that the package is deprecated, naming `pyvbmc.SVBMC`
+  and the migration table of the `SVBMC` page, and the standalone
+  repository's README directs users to PyVBMC. Out of scope for this
+  plan.
 - **Performance follow-up (PI, 2026-09-13).** The shared-preparation and
   vectorized-entropy speedups measured in the prototype are in scope for
   1.5 as a separate change after integration. Preserve the method and sampled

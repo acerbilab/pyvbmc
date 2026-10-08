@@ -121,10 +121,14 @@ records its execution.
 
 ## After PyVBMC 1.5 is published
 
-- [ ] **Standalone `svbmc` compatibility release.** It depends on
-  `pyvbmc[torch]>=1.5` and forwards old `svbmc` imports to the integrated
-  implementation. S-VBMC is already available through PyVBMC; this serves
-  users of the old package. See the [integration plan](plans/svbmc-integration.md).
+- [ ] **Deprecate the standalone `svbmc` package.** S-VBMC is part of
+  PyVBMC from 1.5, and users are directed to `pyvbmc.SVBMC` (PI,
+  2026-10-08). The last release of `svbmc` depends on `pyvbmc[torch]>=1.5`,
+  forwards the old imports to the integrated implementation, so that
+  existing scripts keep running, and warns on import that the package is
+  deprecated, naming `pyvbmc.SVBMC` and the migration table of the `SVBMC`
+  page; the standalone repository's README directs users to PyVBMC. See the
+  [integration plan](plans/svbmc-integration.md).
 - [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
   [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
   that bumps the version and the source hash. Its PR 11 (open on

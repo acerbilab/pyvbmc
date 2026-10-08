@@ -72,8 +72,8 @@ over default VIQR.
 S-VBMC preparation and entropy optimizations are a separate performance
 task validated against the regression references;
 [svbmc-speedups.md](svbmc-speedups.md) records the implementation and
-measurement. The standalone `svbmc` compatibility release follows PyVBMC
-1.5 on PyPI.
+measurement. The release that deprecates the standalone `svbmc` package,
+in favor of `pyvbmc.SVBMC`, follows PyVBMC 1.5 on PyPI.
 
 - [x] **Stage 0 — test oracle** (devlog §10)
   - [x] finite-difference checks: `entmc`, `entlb` (pre-existing),
@@ -903,8 +903,9 @@ The open work for 1.5 is the list "In scope for 1.5" of
     option; a `seed` argument replaces `testing`; explicit float64; the toy
     targets stay in the standalone package; fixtures as plain-array
     snapshots plus a generated D=1, bounded and warped set. Execution and
-    worklog: [svbmc-integration.md](svbmc-integration.md). The forwarding
-    `svbmc` release waits for the 1.5 publication.
+    worklog: [svbmc-integration.md](svbmc-integration.md). The release that
+    deprecates the standalone `svbmc` package waits for the 1.5
+    publication.
     **Delivered (2026-09-11, merged into `dev-next` at `0b5af29`):**
     `pyvbmc.svbmc` with `SVBMC` and the `utils` helpers (the toy targets
     stay in the standalone package), `pyvbmc.SVBMC` resolved lazily so
@@ -918,8 +919,8 @@ The open work for 1.5 is the list "In scope for 1.5" of
     installation note and Example 7. Two further upstream defects fixed on
     the way: `find_init_bounds` rejected `(1, D)` bounds, and
     `stacked_ELBO` left tensor weights unnormalized. Branch smoke: run
-    34632149372. Remaining: the forwarding `svbmc` release after the 1.5
-    publication. The preparation/entropy speedups followed in
+    34632149372. Remaining: the release that deprecates the standalone
+    `svbmc` package, after the 1.5 publication. The preparation/entropy speedups followed in
     [svbmc-speedups.md](svbmc-speedups.md).
 11. **Stage 3 integrated before the reference extension** (PI,
     2026-09-06). Feature code `4ee612d` was fast-forwarded into `dev-next`

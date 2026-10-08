@@ -36,6 +36,7 @@ this skill folder has been copied elsewhere.
 | Handle noisy likelihoods | The FAQ's “Noisy target function” section and [Example 6](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_6_noisy_likelihoods.ipynb). |
 | Interpret results, compare runs, or troubleshoot | The FAQ's “Output arguments”, “Display” and “Troubleshooting” sections; [Example 4](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_4_validation.ipynb) for validation. |
 | Save or resume; combine posteriors | The FAQ's “How do I save and continue a run?” and “Can I combine the posteriors of several runs?”; [Example 7](https://github.com/acerbilab/pyvbmc/blob/main/examples/pyvbmc_example_7_stacking.ipynb) for S-VBMC. |
+| Migrate code that imports the standalone `svbmc` package | It is deprecated in favor of `pyvbmc.SVBMC`: the [`SVBMC` API page](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/api/classes/svbmc.rst), section “Differences from the standalone `svbmc` package”, with its migration table. |
 | Look up exact arguments, options or posterior methods | The [API reference](https://acerbilab.org/pyvbmc/documentation.html), with sources under `docsrc/source/api/` and implementation docstrings under `pyvbmc/`. The quickstart also covers vectorized targets and optional exports; the FAQ's “Troubleshooting” section covers reproducibility. |
 
 The FAQ is [docsrc/source/faq.md](https://github.com/acerbilab/pyvbmc/blob/main/docsrc/source/faq.md).

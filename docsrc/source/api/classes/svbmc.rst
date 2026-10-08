@@ -180,10 +180,11 @@ Differences from the standalone ``svbmc`` package
 -------------------------------------------------
 
 The implementation derives from the standalone S-VBMC package
-(``acerbilab/svbmc``, version 0.1.1); its BSD 3-Clause license notice ships
-with the subpackage, ``pyvbmc.svbmc``. The method and the optimizer of the
-weights are the same, and on our benchmark the two reach the same weights.
-What differs:
+(``acerbilab/svbmc``, version 0.1.1), which is deprecated in its favor: use
+``pyvbmc.SVBMC`` for new and existing code. The package's BSD 3-Clause
+license notice ships with the subpackage, ``pyvbmc.svbmc``. The method and
+the optimizer of the weights are the same, and on our benchmark the two
+reach the same weights. What differs:
 
 - It is faster. The work that the components of one run share, its parameter
   transform above all, is done once per run rather than once per component.
