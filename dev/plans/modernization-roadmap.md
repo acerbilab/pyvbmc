@@ -1521,20 +1521,27 @@ must cover the settled release code, API and behavior before publication.
   are absent from the sdist. Imports and resources passed from an isolated
   wheel installation. These are validation builds with a development
   version, not release uploads. No fixture or numerical reference changed.
-- [ ] Prepare the golden-trace release archive (the
-  [reference record](../golden/promotion_20261007/README.md)) and the
-  other agreed archives in the operator's account, as described below.
-- [ ] Decide which locally held artifacts attach to the release as archives
-  rather than commits: the golden reference traces, the run pools, the
-  captured frozen states and the raw campaign records that
-  `dev/scripts/runs/LOCAL.md` lists on the holding machine, the release
-  gate's campaigns (the [Slurm plan](slurm-benchmark-support.md), "Records
-  and hand-back": their raw archives hold site details and stay in draft
-  releases, and their redacted copies are the tracked record) and its
-  replay fingerprints (that plan's Phase 9). The draft releases
-  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the pool
-  and its analyses as archives, so the decision is which of the remaining
-  artifacts a reader of the release needs to revalidate its results.
+- [x] Prepare and verify the public population and pool archives, as
+  selected by the PI's 2026-09-28 decision in the
+  [Slurm plan](slurm-benchmark-support.md), "Records and hand-back".
+  The operator rebuilt both with the corrected redaction tools at
+  `a5a4fa65` and staged them in `release-gate-public-refresh-20261009`.
+  On 2026-10-09 an independent download passed `campaign_public.py check`
+  with identical verifier modules: 2400 population cases and 2930 pool
+  cases, no exemptions, all 7212 tracked copies byte-identical to the
+  October 2 hand-back and their source hashes unchanged. The
+  [campaign record](../experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
+  holds the asset hashes; `dev/scripts/runs/LOCAL.md`, "Public release
+  archives refreshed on 2026-10-09", indexes the local checks.
+- [x] Back up the replay fingerprints and earlier reference traces in
+  draft releases. `golden-traces-backup-20261008` holds the 56 fingerprint
+  and gate-run files of `reference_2400_20261007`, verified against the
+  promotion manifest and inside the archive; the uploaded sizes and
+  SHA-256 digests matched on 2026-10-08. Earlier traces remain in
+  `golden-traces-backup-20260928`. These backups and the raw campaign
+  archives stay in drafts; the stacking's tracked records hold every cell.
+- [ ] Attach the checked public population and pool parts and their
+  checksum files to the final release, using the refreshed assets above.
 - [x] Prepare the branch guidance for the release merge (2026-10-08):
   current contribution and hand-back instructions target `main`; campaign
   setup names a pinned release commit. Historical branch names remain in

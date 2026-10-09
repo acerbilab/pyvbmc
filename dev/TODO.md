@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-08. These lists describe scope, not priority or execution
+Updated 2026-10-09. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -22,17 +22,13 @@ that day or on 2026-10-14 (PI, 2026-10-08).
     the post-PR #191 Sphinx build, rendered-page and skill review, local
     tests, expanded CI matrix and package checks are recorded in the
     roadmap;
-  - the artifacts that attach to the release as archives (PI, 2026-09-28;
-    the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
-    hand-back"): the release gate's after-arm population and its pools,
-    each built apart from its draft release from the numeric files and the
-    redacted copies by `scripts/hpc/campaign_public.sh`, in the operator's
-    account after the redaction
-    (the stacking's tracked copies hold every cell already);
-    the draft releases of the campaigns stay drafts, since their raw
-    archives hold the cluster's details and the operator's paths; the
-    replay fingerprints and the earlier references' traces are backed up
-    in a draft release of their own;
+  - attach the checked public population and pool archives from the draft
+    `release-gate-public-refresh-20261009` to the final release. The
+    [campaign record](experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
+    holds the filenames, sizes, hashes and independent verification;
+    the stacking's tracked copies hold every cell already. Keep the raw
+    campaign releases and the fingerprint/earlier-trace backups as drafts
+    ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back");
   - the release pull request into `main`, its CI checks, and the deletion
     of `origin/dev-port-review` when it merges;
   - confirm the planned 2026-10-13 release date before tagging and
