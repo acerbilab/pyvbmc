@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-09. These lists describe scope, not priority or execution
+Updated 2026-10-10. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -39,11 +39,21 @@ that day or on 2026-10-14 (PI, 2026-10-08).
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
   its seventh draft was approved and mastered on 2026-10-05, and it has
   not yet been uploaded to YouTube (PI, 2026-10-07). Upload it first,
-  then follow PyBADS's treatment of its film: add the final YouTube
-  link to `README.md` and `docsrc/source/index.rst`, in the introduction
-  and alongside the explanation of the method (`How does it work?` in
-  the README, `Example run` on the docs' index). Then add the video to
-  the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/)
+  then follow PyBADS's treatment of its film (`README.md` and
+  `docsrc/source/index.rst` of `acerbilab/pybads`, PRs #114 to #125):
+  - in the introduction of `README.md` and `docsrc/source/index.rst`, the
+    line "Watch a [N-minute film](link) that explains how PyVBMC works"
+    and a frame of the film with a play button, saved as
+    `docsrc/source/_static/pyvbmc-film-thumbnail.jpg` and linked to the
+    video (the README shows it from its `raw.githubusercontent.com`
+    address on `main`; the index as a `figure` with `:target:`, the line
+    as its caption);
+  - the same line at the top of the explanation of the method: in bold
+    under `How does it work?` in the README, in a `tip` box under
+    `Example run` on the docs' index.
+
+  Then add the video to the lab's
+  [tools for fitting models to data](https://acerbilab.org/model-fitting/)
   page.
 
   The film's source is on `feat-3d-animation`, under
