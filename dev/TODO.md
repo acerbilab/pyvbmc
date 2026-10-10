@@ -1,12 +1,16 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-08. These lists describe scope, not priority or execution
+Updated 2026-10-10. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
 the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
+
+The planned release date is 2026-10-13: circulate the soft release within
+the lab and complete the checks before the public announcement, later
+that day or on 2026-10-14 (PI, 2026-10-08).
 
 ## In scope for 1.5
 
@@ -18,31 +22,38 @@ records its execution.
     the post-PR #191 Sphinx build, rendered-page and skill review, local
     tests, expanded CI matrix and package checks are recorded in the
     roadmap;
-  - the artifacts that attach to the release as archives (PI, 2026-09-28;
-    the [Slurm plan](plans/slurm-benchmark-support.md), "Records and
-    hand-back"): the release gate's after-arm population and its pools,
-    each built apart from its draft release from the numeric files and the
-    redacted copies by `scripts/hpc/campaign_public.sh`, in the operator's
-    account after the redaction
-    (the stacking's tracked copies hold every cell already);
-    the draft releases of the campaigns stay drafts, since their raw
-    archives hold the cluster's details and the operator's paths; the
-    replay fingerprints and the earlier references' traces are backed up
-    in a draft release of their own;
-  - the references to `dev-next` that change with the release merge, and
-    the deletion of `origin/dev-port-review` at that merge;
-  - `RELEASE_DATE` in `pyvbmc/_release.py` set to the date of the
-    changelog's release heading, in the release pull request (`AGENTS.md`,
-    "Release date").
+  - attach the checked public population and pool archives from the draft
+    `release-gate-public-refresh-20261009` to the final release. The
+    [campaign record](experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
+    holds the filenames, sizes, hashes and independent verification;
+    the stacking's tracked copies hold every cell already. Keep the raw
+    campaign releases and the fingerprint/earlier-trace backups as drafts
+    ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back");
+  - the release pull request into `main`, its CI checks, and the deletion
+    of `origin/dev-port-review` when it merges;
+  - confirm the planned 2026-10-13 release date before tagging and
+    publishing: `RELEASE_DATE` in `pyvbmc/_release.py` and the changelog's
+    1.5.0 heading are prepared with that date and must stay in agreement
+    if the schedule changes (`AGENTS.md`, "Release date").
 
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
   its seventh draft was approved and mastered on 2026-10-05, and it has
   not yet been uploaded to YouTube (PI, 2026-10-07). Upload it first,
-  then follow PyBADS's treatment of its film: add the final YouTube
-  link to `README.md` and `docsrc/source/index.rst`, in the introduction
-  and alongside the explanation of the method (`How does it work?` in
-  the README, `Example run` on the docs' index). Then add the video to
-  the lab's [tools for fitting models to data](https://acerbilab.org/model-fitting/)
+  then follow PyBADS's treatment of its film (`README.md` and
+  `docsrc/source/index.rst` of `acerbilab/pybads`, PRs #114 to #125):
+  - in the introduction of `README.md` and `docsrc/source/index.rst`, the
+    line "Watch a [N-minute film](link) that explains how PyVBMC works"
+    and a frame of the film with a play button, saved as
+    `docsrc/source/_static/pyvbmc-film-thumbnail.jpg` and linked to the
+    video (the README shows it from its `raw.githubusercontent.com`
+    address on `main`; the index as a `figure` with `:target:`, the line
+    as its caption);
+  - the same line at the top of the explanation of the method: in bold
+    under `How does it work?` in the README, in a `tip` box under
+    `Example run` on the docs' index.
+
+  Then add the video to the lab's
+  [tools for fitting models to data](https://acerbilab.org/model-fitting/)
   page.
 
   The film's source is on `feat-3d-animation`, under
@@ -204,14 +215,8 @@ records its execution.
   golden suite; the reference that replaced them after the port review,
   `reference_2400_20261007`, runs the whole `production` suite.
   The E5 report's F3 section records how the difference was found.
-- Use feature branches for implementation. Planning, proposal, handoff and
-  status edits belong on `dev-next`. Leave unrelated work intact.
-- Dependabot's PRs target `main`, whose `tests.yml` and `merge-tests.yml`
-  `dev-next` has replaced (its tests run through `test-matrix.yml`, which
-  Dependabot does not see from `main`). Until `dev-next` merges into
-  `main`, a bump is applied on `dev-next`, in every workflow that uses the
-  action, and its PR closed: merged into `main`, it makes those files
-  conflict in the release merge.
+- Use feature branches from `main` for implementation and planning
+  changes, with pull requests into `main`. Leave unrelated work intact.
 
 ## Completed baseline and local artifacts
 

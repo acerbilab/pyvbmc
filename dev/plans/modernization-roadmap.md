@@ -5,8 +5,9 @@ Status tracker for the staged plan in
 rationale and the decisions; this file holds only what is done, what is next,
 and where to pick up. Update it in place; do not add status to the devlogs.
 
-Branch: `dev-next`. No PR to `main` until the work here is done: one PR at
-the end (decided 2026-09-02, superseding the per-stage PRs of devlog §11).
+Integration branch: `main`. Changes use feature branches and pull requests.
+PyVBMC 1.5.0 is scheduled for 2026-10-13, with a soft release and lab checks
+before the public announcement later that day or on 2026-10-14.
 CI on `dev*` branches: pushes that touch the package run a reduced smoke
 (Ubuntu, Python 3.14) of the `tests` workflow automatically (added
 2026-09-03); dispatch the workflow by hand for the full matrix before
@@ -1478,11 +1479,20 @@ must cover the settled release code, API and behavior before publication.
   uses unchanged outer-graph arrays, no inner graphs and no save/load,
   so copying its constants and checking their digest changes neither its
   numerical results nor its warnings. It was not re-executed in that pass.
-- [ ] In the release pull request, set `RELEASE_DATE` in
-  `pyvbmc/_release.py` to the date of the changelog heading
-  `## [X.Y.Z] - YYYY-MM-DD` that the release gives its section: the
-  old-release reminder tells the age of the installed release by it, and
+  On 2026-10-10 all nine ran again at `89007a4e`, after PR #191, with the
+  cell that installs PyVBMC in Colab added before each one's first code
+  cell, and passed their checks (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-10)"). Their outputs equal those of 2026-10-08 but
+  for the startup tip of Example 5, a function's address and Plotly's
+  element ids in Example 2, and xarray's element ids in Example 8; the
+  scripts in `examples/scripts/` are regenerated.
+- [x] Prepare the 1.5.0 changelog heading and `RELEASE_DATE` in
+  `pyvbmc/_release.py` with the planned release date, 2026-10-13
+  (PI, 2026-10-08). The old-release reminder reads this date;
   `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
+  All 71 tests in that module passed on 2026-10-08.
+- [ ] Confirm the release date before tagging and publishing, updating
+  both the changelog heading and `RELEASE_DATE` if the schedule changes.
 - [x] Run the final integrated tests, the required CI matrix and the
   package checks (2026-10-08, after PR #191). The package
   checks include what the sdist ships: setuptools_scm puts every tracked
@@ -1518,31 +1528,35 @@ must cover the settled release code, API and behavior before publication.
   are absent from the sdist. Imports and resources passed from an isolated
   wheel installation. These are validation builds with a development
   version, not release uploads. No fixture or numerical reference changed.
-- [ ] Prepare the golden-trace release archive (the
-  [reference record](../golden/promotion_20261007/README.md)) and the
-  other agreed archives in the operator's account, as described below.
-- [ ] Decide which locally held artifacts attach to the release as archives
-  rather than commits: the golden reference traces, the run pools, the
-  captured frozen states and the raw campaign records that
-  `dev/scripts/runs/LOCAL.md` lists on the holding machine, the release
-  gate's campaigns (the [Slurm plan](slurm-benchmark-support.md), "Records
-  and hand-back": their raw archives hold site details and stay in draft
-  releases, and their redacted copies are the tracked record) and its
-  replay fingerprints (that plan's Phase 9). The draft releases
-  `svbmc-pool-20260914` and `svbmc-analyses-20260915` already hold the pool
-  and its analyses as archives, so the decision is which of the remaining
-  artifacts a reader of the release needs to revalidate its results.
-- [ ] At the release merge, remove the references to the `dev-next` branch
-  that are not historical: `dev-next` merges into `main` for the release,
-  so nothing a user or contributor reads after it points at `dev-next`;
-  dated devlogs and plan worklogs may keep it as history. The agent skill's
-  source links point at `main` since 2026-09-27. What still names
-  `dev-next` as the working branch is true until the release merge and
-  changes with it: the working rules at the end of `TODO.md`, the header of
-  this roadmap, the [Slurm plan](slurm-benchmark-support.md)'s account of
-  the harnesses on `dev-next`, and the open items of `TODO.md`. The release
-  merge also deletes `origin/dev-port-review`, which is merged into
-  `dev-next` and kept until the release (the
+- [x] Prepare and verify the public population and pool archives, as
+  selected by the PI's 2026-09-28 decision in the
+  [Slurm plan](slurm-benchmark-support.md), "Records and hand-back".
+  The operator rebuilt both with the corrected redaction tools at
+  `a5a4fa65` and staged them in `release-gate-public-refresh-20261009`.
+  On 2026-10-09 an independent download passed `campaign_public.py check`
+  with identical verifier modules: 2400 population cases and 2930 pool
+  cases, no exemptions, all 7212 tracked copies byte-identical to the
+  October 2 hand-back and their source hashes unchanged. The
+  [campaign record](../experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
+  holds the asset hashes; `dev/scripts/runs/LOCAL.md`, "Public release
+  archives refreshed on 2026-10-09", indexes the local checks.
+- [x] Back up the replay fingerprints and earlier reference traces in
+  draft releases. `golden-traces-backup-20261008` holds the 56 fingerprint
+  and gate-run files of `reference_2400_20261007`, verified against the
+  promotion manifest and inside the archive; the uploaded sizes and
+  SHA-256 digests matched on 2026-10-08. Earlier traces remain in
+  `golden-traces-backup-20260928`. These backups and the raw campaign
+  archives stay in drafts; the stacking's tracked records hold every cell.
+- [ ] Attach the checked public population and pool parts and their
+  checksum files to the final release, using the refreshed assets above.
+- [x] Prepare the branch guidance for the release merge (2026-10-08):
+  current contribution and hand-back instructions target `main`; campaign
+  setup names a pinned release commit. Historical branch names remain in
+  dated records and completed implementation plans. The agent skill's
+  source links point at `main` since 2026-09-27.
+- [ ] Open and validate the release pull request into `main`, then merge
+  it when the remaining release checks are complete. Delete
+  `origin/dev-port-review` at that merge; it is retained until then (the
   [release sweep](../results/2026-09-27-release-sweep.md)'s ruling C-3).
 
 ## Post-release follow-up

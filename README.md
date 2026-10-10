@@ -39,6 +39,8 @@ The [changelog](CHANGELOG.md) lists what changed since PyVBMC 1.0.4, including t
 
 The full documentation is available at: https://acerbilab.org/pyvbmc/
 
+Its [FAQ](https://acerbilab.org/pyvbmc/faq.html) collects questions and answers on installing PyVBMC, setting up the target, the prior and the bounds, noisy targets, reading the results, and runs that go wrong.
+
 For coding agents, the [PyVBMC skill](skills/pyvbmc/SKILL.md) points to the
 documentation relevant to each task. Give your agent that file, or copy the
 `skills/pyvbmc` folder into its skill directory. To update a copied skill,
@@ -214,7 +216,9 @@ See the VBMC papers [[1-3](#references-and-citation)] for more details.
 
 PyVBMC is under active development. The VBMC algorithm has been extensively tested in several benchmarks and published papers, and the benchmarks have been replicated using PyVBMC. But as with any approximate inference technique, you should double-check your results. See the [examples](examples) for descriptions of the convergence diagnostics and suggestions on validating PyVBMC's results with multiple runs.
 
-If you have trouble doing something with PyVBMC, spot bugs or strange behavior, or you simply have some questions, please feel free to:
+Many questions are answered in the [FAQ](https://acerbilab.org/pyvbmc/faq.html). Its [Troubleshooting](https://acerbilab.org/pyvbmc/faq.html#faq-troubleshooting) section says how to check that a run went well, and covers runs that have not converged, targets that return invalid values, results that differ from run to run, and saving, continuing and combining runs.
+
+If the FAQ does not help, you spot bugs or strange behavior, or you simply have some questions, please feel free to:
 - Post in the lab's [Discussions forum](https://github.com/orgs/acerbilab/discussions) with questions or comments about PyVBMC, your problems & applications;
 - [Open an issue](https://github.com/acerbilab/pyvbmc/issues/new) on GitHub;
 - Contact the project lead at <luigi.acerbi@helsinki.fi>, putting 'PyVBMC' in the subject of the email.
@@ -235,9 +239,8 @@ If you use S-VBMC (see [Additional references](#additional-references)), please 
 
 Besides formal citations, you can demonstrate your appreciation for PyVBMC in the following ways:
 
-- *Star :star:* the VBMC repository on GitHub;
-- [Subscribe](http://eepurl.com/idcvc9) to the lab's newsletter for news and updates (new features, bug fixes, new releases, etc.);
-- Follow Luigi Acerbi on [Twitter](https://twitter.com/AcerbiLuigi) for updates about VBMC/PyVBMC and other projects;
+- *Star :star:* the PyVBMC repository on GitHub;
+- Follow Luigi Acerbi on [X](https://x.com/AcerbiLuigi) or [Bluesky](https://bsky.app/profile/lacerbi.bsky.social) for updates about VBMC/PyVBMC and other projects;
 - Tell us about your model-fitting problem and your experience with PyVBMC (positive or negative) in the lab's [Discussions forum](https://github.com/orgs/acerbilab/discussions).
 
 You may also want to explore our [other model-fitting methods](https://acerbilab.org/model-fitting/), including [Bayesian Adaptive Direct Search in Python (PyBADS)](https://github.com/acerbilab/pybads) for fast Bayesian optimization.
