@@ -1479,6 +1479,13 @@ must cover the settled release code, API and behavior before publication.
   uses unchanged outer-graph arrays, no inner graphs and no save/load,
   so copying its constants and checking their digest changes neither its
   numerical results nor its warnings. It was not re-executed in that pass.
+  On 2026-10-10 all nine ran again at `89007a4e`, after PR #191, with the
+  cell that installs PyVBMC in Colab added before each one's first code
+  cell, and passed their checks (`dev/scripts/runs/LOCAL.md`, "Example
+  notebooks (2026-10-10)"). Their outputs equal those of 2026-10-08 but
+  for the startup tip of Example 5, a function's address and Plotly's
+  element ids in Example 2, and xarray's element ids in Example 8; the
+  scripts in `examples/scripts/` are regenerated.
 - [x] Prepare the 1.5.0 changelog heading and `RELEASE_DATE` in
   `pyvbmc/_release.py` with the planned release date, 2026-10-13
   (PI, 2026-10-08). The old-release reminder reads this date;
