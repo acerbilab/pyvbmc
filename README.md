@@ -43,7 +43,8 @@ Its [FAQ](https://acerbilab.org/pyvbmc/faq.html) collects questions and answers 
 
 For coding agents, the [PyVBMC skill](https://github.com/acerbilab/pyvbmc/blob/main/skills/pyvbmc/SKILL.md) points to the
 documentation relevant to each task. Give your agent that file, or copy the
-`skills/pyvbmc` folder into its skill directory. To update a copied skill,
+[`skills/pyvbmc`](https://github.com/acerbilab/pyvbmc/tree/main/skills/pyvbmc)
+folder into its skill directory. To update a copied skill,
 copy the folder again from the PyVBMC version you use.
 
 ### When should I use PyVBMC?

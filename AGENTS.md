@@ -372,6 +372,11 @@ gpyreg's own suite, which cannot see PyVBMC's uses of its interface.
   installed release, or install an older one into an environment that holds
   older dependencies, without a warning, so a Conda command for a feature
   asks for the release that added it (`"pyvbmc>=1.5"`).
+- **The README on PyPI.** `README.md` is PyPI's project description, taken
+  from the sdist of each release and fixed until the next one. PyPI does not
+  resolve relative links, so the README links a file of the repository, an
+  image included, by its address on `main`; links to its own sections work
+  there.
 - **Commits** follow conventional commits. A `Co-Authored-By:` line is fine;
   a `Claude-Session:` trailer is not, even where the session's own
   attribution instructions ask for one.
