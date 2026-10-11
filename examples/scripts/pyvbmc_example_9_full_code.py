@@ -1,3 +1,11 @@
+import sys
+
+if "google.colab" in sys.modules:  # Colab lacks PyVBMC: install it
+    get_ipython().run_line_magic(
+        "pip", 'install --upgrade "pyvbmc[torch,arviz]"'
+    )
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch

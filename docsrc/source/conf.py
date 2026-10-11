@@ -94,8 +94,6 @@ html_theme_options = {
     "repository_url": "https://github.com/acerbilab/pyvbmc",
     "repository_branch": "main",
     "launch_buttons": {
-        "binderhub_url": "https://mybinder.org",
-        "notebook_interface": "jupyterlab",
         "colab_url": "https://colab.research.google.com/",
     },
     "use_edit_page_button": True,

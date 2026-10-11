@@ -302,3 +302,40 @@ left out. The pools' holds 8798 files: the 5860 run files (each run's
 `.npz` and its `.json`, the latter redacted as the copies are), the 2930
 completion records, the 6 tracked copies, their `redaction.json` and
 `public.json`.
+
+## Public asset refresh, 2026-10-09
+
+The operator rebuilt the public population and pool assets from the
+original campaign directories with the redaction and public-asset tools at
+`a5a4fa65321ff4dbd55794aa2abdffb0a81ed103`, and checked them with
+`campaign_public.sh --check`. They are staged in the draft release
+[`release-gate-public-refresh-20261009`](https://github.com/acerbilab/pyvbmc/releases/tag/untagged-67dcc393f94c20f4d412).
+These are the public assets to attach to PyVBMC 1.5; they supersede the
+October 2 public assets listed above, whose builder preceded the later
+redaction fixes. The earlier assets and raw campaign archives remain in
+their draft releases.
+
+| Asset | Bytes | SHA-256 |
+|---|---:|---|
+| `population_after.public.tar.gz.000` | 656433969 | `63d7f7646391041e4f169db8a240815027840c1d8258ce825c9e36b9b32d39e6` |
+| `pools.public.tar.gz.000` | 259769613 | `51c48035dcdf19d30d9a04f0747cc34823750641212c39b3e68799ec2a361822` |
+
+Each archive has its `.public.tar.gz.sha256` listing in that draft release.
+On 2026-10-09, an independent download verified all four uploaded files
+against GitHub's digests and the archive parts against their listings.
+`campaign_public.py check` passed with verifier modules byte-equivalent
+to the builder's after LF normalization. Both `public.json` files name
+`a5a4fa65` and contain no exemptions or additional path mappings.
+
+The population archive holds 12008 files and all 2400 cases; the pool
+archive holds 8798 files and all 2930 cases. All 7206 population tracked
+copies and all 6 pool tracked copies are byte-identical to this hand-back,
+and the source hashes recorded by the refreshed redaction reports equal
+the original reports'. The redaction reports differ only in their
+generation time. Their failed, interrupted and missing case lists are
+empty. These comparisons preserve the historical copies and hashes above.
+
+The downloaded assets, inventories and verification logs are indexed in
+`dev/scripts/runs/LOCAL.md`, "Public release archives refreshed on
+2026-10-09". Attaching the verified public assets to the final release
+remains a publication step.

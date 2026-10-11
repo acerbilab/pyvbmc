@@ -113,9 +113,13 @@ notebooks by their labels and file names, so renaming one of those means
 updating them.
 
 The notebooks in `examples/` are never executed in CI or in the docs build,
-so a change that breaks one goes unnoticed until someone runs it.
-`examples/scripts/*.py` are generated from them by `examples/scripts/Makefile`;
-regenerate, do not edit.
+so a change that breaks one goes unnoticed until someone runs it. Each
+notebook opens with a cell that installs PyVBMC, with the extras that the
+notebook needs, when it runs in Colab (`"google.colab" in sys.modules`);
+the Colab button of the rendered notebooks (`launch_buttons` in
+`docsrc/source/conf.py`) depends on it, and a new notebook takes the same
+cell. `examples/scripts/*.py` are generated from them by
+`examples/scripts/Makefile`; regenerate, do not edit.
 
 ## Architecture
 
