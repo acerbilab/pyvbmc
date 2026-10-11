@@ -1,6 +1,6 @@
 # PyVBMC 1.5: remaining work and scope
 
-Updated 2026-10-10. These lists describe scope, not priority or execution
+Updated 2026-10-11. These lists describe scope, not priority or execution
 order; independent workstreams can be picked up in any order. Inclusion in
 scope does not settle an implementation design or launch a campaign.
 Completed 1.5 work is not listed here, apart from the active reference and
@@ -8,9 +8,10 @@ the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
-The planned release date is 2026-10-13: circulate the soft release within
-the lab and complete the checks before the public announcement, later
-that day or on 2026-10-14 (PI, 2026-10-08).
+The release date is 2026-10-12: PyVBMC 1.5.0 goes to PyPI and conda-forge
+on that day and not before (PI, 2026-10-11). The soft release circulates
+within the lab, and its checks are complete before the public
+announcement.
 
 ## In scope for 1.5
 
@@ -31,10 +32,9 @@ that day or on 2026-10-14 (PI, 2026-10-08).
     ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back");
   - the release pull request into `main`, its CI checks, and the deletion
     of `origin/dev-port-review` when it merges;
-  - confirm the planned 2026-10-13 release date before tagging and
-    publishing: `RELEASE_DATE` in `pyvbmc/_release.py` and the changelog's
-    1.5.0 heading are prepared with that date and must stay in agreement
-    if the schedule changes (`AGENTS.md`, "Release date").
+  - tag and publish on 2026-10-12, the date that `RELEASE_DATE` in
+    `pyvbmc/_release.py` and the changelog's 1.5.0 heading carry; a change
+    of schedule moves both (`AGENTS.md`, "Release date").
 
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
   it was mastered on 2026-10-11 with the PI's own narration, and it has

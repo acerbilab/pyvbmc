@@ -6,8 +6,8 @@ rationale and the decisions; this file holds only what is done, what is next,
 and where to pick up. Update it in place; do not add status to the devlogs.
 
 Integration branch: `main`. Changes use feature branches and pull requests.
-PyVBMC 1.5.0 is scheduled for 2026-10-13, with a soft release and lab checks
-before the public announcement later that day or on 2026-10-14.
+PyVBMC 1.5.0 is scheduled for 2026-10-12, with lab checks of the soft release
+before the public announcement.
 CI on `dev*` branches: pushes that touch the package run a reduced smoke
 (Ubuntu, Python 3.14) of the `tests` workflow automatically (added
 2026-09-03); dispatch the workflow by hand for the full matrix before
@@ -1491,8 +1491,11 @@ must cover the settled release code, API and behavior before publication.
   (PI, 2026-10-08). The old-release reminder reads this date;
   `pyvbmc/testing/vbmc/test_release_reminder.py` checks that the two agree.
   All 71 tests in that module passed on 2026-10-08.
-- [ ] Confirm the release date before tagging and publishing, updating
+- [x] Confirm the release date before tagging and publishing, updating
   both the changelog heading and `RELEASE_DATE` if the schedule changes.
+  On 2026-10-11 the PI set the date to 2026-10-12, with publication on
+  PyPI and conda-forge on that day and not before; both carry it, and the
+  71 tests of `test_release_reminder.py` passed.
 - [x] Run the final integrated tests, the required CI matrix and the
   package checks (2026-10-08, after PR #191). The package
   checks include what the sdist ships: setuptools_scm puts every tracked
