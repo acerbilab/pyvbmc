@@ -1451,6 +1451,10 @@ must cover the settled release code, API and behavior before publication.
 - [ ] Repeat `linkcheck` after the release merge publishes the 1.5 source
   files and documentation; recheck the blocked external sites and the
   GitHub wiki anchor as well as the formerly unpublished destinations.
+  PyPI renders the README from the sdist and does not resolve relative
+  links, so since 2026-10-11 the README links the repository's files by
+  their address on `main`; `linkcheck` does not read the README, so check
+  those links after the merge as well.
 - [x] Re-execute every example notebook with the release code and commit
   its outputs, which the docs build renders as stored
   (`nb_execution_mode = "off"`): `dev/scripts/execute_notebooks.py`
@@ -1531,6 +1535,11 @@ must cover the settled release code, API and behavior before publication.
   are absent from the sdist. Imports and resources passed from an isolated
   wheel installation. These are validation builds with a development
   version, not release uploads. No fixture or numerical reference changed.
+  On 2026-10-11 a build at `ebef1366` with the version set to 1.5.0
+  passed `twine check --strict`, which renders the README as PyPI does,
+  and its wheel held the same 122 files; the `build` workflow, dispatched
+  on `dev-next` at `b61e6f7c`, built the package with the v7 checkout and
+  setup actions that the release workflow calls.
 - [x] Prepare and verify the public population and pool archives, as
   selected by the PI's 2026-09-28 decision in the
   [Slurm plan](slurm-benchmark-support.md), "Records and hand-back".
@@ -1552,6 +1561,10 @@ must cover the settled release code, API and behavior before publication.
   archives stay in drafts; the stacking's tracked records hold every cell.
 - [ ] Attach the checked public population and pool parts and their
   checksum files to the final release, using the refreshed assets above.
+  On 2026-10-11 the four files were attached to the draft release
+  `v1.5.0` from the verified local copies; their GitHub digests and sizes
+  equal the campaign record's. They are public once the draft is
+  published.
 - [x] Prepare the branch guidance for the release merge (2026-10-08):
   current contribution and hand-back instructions target `main`; campaign
   setup names a pinned release commit. Historical branch names remain in
@@ -1561,6 +1574,35 @@ must cover the settled release code, API and behavior before publication.
   it when the remaining release checks are complete. Delete
   `origin/dev-port-review` at that merge; it is retained until then (the
   [release sweep](../results/2026-09-27-release-sweep.md)'s ruling C-3).
+  [PR #195](https://github.com/acerbilab/pyvbmc/pull/195), from
+  `dev-next`, passed its full test matrix in all 15 cells at `b61e6f7c`
+  on 2026-10-11, with 3020 tests in the Ubuntu 3.14 cell, which installs
+  the optional integrations. `main` requires one approving review, which
+  an administrator can bypass. Merge it with a merge commit, not a squash
+  or a rebase: the records cite commits of `dev-next` by hash.
+- [ ] Publish the release on 2026-10-12, after the release merge. The
+  draft release `v1.5.0` holds the release notes and the public archives.
+  Its target, `main`, is resolved when it is published: published before
+  the merge, it would tag the old `main` and upload that code to PyPI as
+  1.5.0, a version number PyPI never accepts again. The steps:
+  1. Check that the `build` and `docs` runs of the merge's push to `main`
+     passed and that the 1.5 documentation is served.
+  2. Set the draft's target to the merge commit (`gh release edit v1.5.0
+     --target <merge commit>`), check it, and publish the draft.
+     Publishing creates the tag and runs `release.yml`, which builds from
+     the tag, so that setuptools_scm reads 1.5.0, and uploads to PyPI with
+     the `PYPI_PASSWORD` secret (set in March 2023). If the upload fails,
+     re-run the run's failed jobs, or dispatch `release.yml` with `--ref
+     v1.5.0`: a build from a branch has no tags and yields a version such
+     as `0.1.dev1+gb61e6f7c5`, which PyPI refuses.
+  3. Fast-forward `dev-next` to the merge commit, so that the tag is
+     reachable from it; a build of `dev-next` otherwise reads a
+     development version of 1.0.5.
+  4. Install the release into a fresh environment with `pip install
+     --upgrade pyvbmc` and check its version and import.
+  5. Update the conda-forge recipe (`TODO.md`, "conda-forge"), and name
+     the published release in the campaign record's "Public asset
+     refresh" section.
 
 ## Post-release follow-up
 
