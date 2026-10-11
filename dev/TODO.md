@@ -37,8 +37,8 @@ that day or on 2026-10-14 (PI, 2026-10-08).
     if the schedule changes (`AGENTS.md`, "Release date").
 
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
-  its seventh draft was approved and mastered on 2026-10-05, and it has
-  not yet been uploaded to YouTube (PI, 2026-10-07). Upload it first,
+  it was mastered on 2026-10-11 with the PI's own narration, and it has
+  not yet been uploaded to YouTube. Upload it first,
   then follow PyBADS's treatment of its film (`README.md` and
   `docsrc/source/index.rst` of `acerbilab/pybads`, PRs #114 to #125):
   - in the introduction of `README.md` and `docsrc/source/index.rst`, the
