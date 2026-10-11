@@ -14,32 +14,38 @@ with the numbers quoted in the README. `trace.js` is a run of the PyVBMC of
 it reproduced byte for byte; the PyVBMC of `254dd6cc` gives its seed
 another run (Seeds, below).
 
-The film (`film.html`) is finished: its seventh draft, narrated by Travis
-(ElevenLabs) with every line passing `scripts/verify_voice.py`, was
-approved by the director and a postdoc of the lab on 2026-10-05, and is
-mastered at 1920 x 1080 and -16 LUFS, with captions and without, beside
-the `.srt` of its captions. Outside the captions the two masters differ by
-no more than two encodings of the same frames do (at least 40.3 dB PSNR on
-every frame, where the sixth draft's pair reached 39.3 dB), and each `.srt`
-cue matches the timeline that the page plays. The title from the first
-frame (below) came after that approval and was checked in stills of the
-opening and in the masters. The end card's install line is `pip install
+The film (`film.html`) is finished and narrated by the director. He read
+the script three times on 2026-10-11 (`voice-luigi/raw/`), and the third
+reading, cut into the lines by `scripts/cut_take.py`, replaced Travis's
+voice after he had watched a 960 x 540 draft of it in the film (*The
+narrator*, below). `scripts/verify_voice.py` lists 11 of its 41 lines as
+heard otherwise by Whisper, among them "feeds" for "fits", "these" for
+"this" and "a number" for "that number"; the director heard them in that
+draft and kept them. The cues that fall on words inside lines follow his
+delivery (`README.md`, "The film"). The film runs 3:01 and is mastered at
+1920 x 1080 and -16 LUFS, with captions and without, beside the `.srt` of
+its captions. Above the captions the two masters match at 44.1 dB PSNR on
+average and 39.6 dB at worst, against 31.6 dB one frame apart, so they are
+aligned frame for frame, and the `.srt`'s 41 cues match the timeline that
+the page plays to the millisecond. The end card's install line is `pip install
 --upgrade pyvbmc`, as PyVBMC's README installs it: it also upgrades an
 older PyVBMC that a viewer has installed, which `pip install pyvbmc`
-leaves in place. It was changed after mastering (2026-10-08): each
-master's last 10 s, from its last keyframe before the card (158.17 s with
-captions, 158.33 s without), was recorded again with `record.mjs
---replay` and spliced in by stream copy (`README.md`, "The film"). The
-frames before the splice are the masters' own, and the sound is unchanged.
-Before the card the new frames match the old at 45 dB PSNR or better, and
-on the card everything but the install line at 46.8 dB or better; the two
-masters still differ by no more than two encodings do (at least 42.6 dB
-over the new stretch). The masters with the old line are kept in
-`renders/draft7-pip-install/`. The sixth draft had been mastered before the
-director changed the film's framing (*The framing*, below); its masters and
-takes are kept (`renders/draft6/`, `voice-travis-draft6/`). Publishing it
-remains (`TODO.md`, "The video"). The masters, drafts and voice takes are
-local media (`README.md`, "The film").
+leaves in place.
+
+Travis's masters of the seventh draft are kept in `renders/travis/`. That
+draft, with every line passing `verify_voice.py`, was approved by the
+director and a postdoc of the lab on 2026-10-05; the title from the first
+frame (below) came after the approval, and on 2026-10-08 the masters' end
+card got the install line above by recording their last 10 s again with
+`record.mjs --replay` and splicing it in by stream copy (`README.md`, "The
+film"). Outside the captions the two masters differ by no more than two
+encodings of the same frames do (at least 40.3 dB PSNR on every frame). The
+masters with the earlier install line are in `renders/draft7-pip-install/`.
+The sixth draft had been mastered before the director changed the film's
+framing (*The framing*, below); its masters and takes are kept
+(`renders/draft6/`, `voice-travis-draft6/`). Publishing the film remains
+(`TODO.md`, "The video"). The masters, drafts, recordings and voice takes
+are local media (`README.md`, "The film").
 
 `wordmark.html` and `trace_wordmark.js` are a working first version of the
 wordmark finale: the self-check passes on the trace with the numbers quoted
@@ -202,8 +208,9 @@ the video in the same style. The video's audience is scientists who fit
 models, most of whom do not know Gaussian processes or variational
 inference. Its
 angle is Bayesian optimization applied to the whole posterior. Its
-drafts were voiced with Kokoro, an open model, while the script changed;
-the final voice is Travis, from the ElevenLabs Voice Library.
+drafts were voiced with Kokoro, an open model, while the script changed,
+and then by Travis, from the ElevenLabs Voice Library; the director narrates
+the final film.
 `STORYBOARD.md` has the rest.
 
 **The film page.** `film.html` is a copy of `wordmark.html` with its own
@@ -257,11 +264,22 @@ the README asks to keep in step. Other decisions:
   methods.
 - *The number of mixture components and the evidence stay hidden* until the
   narration introduces them, because a number nobody has explained is noise.
-- *The voice.* The film wants a light American accent and the delivery of a
-  technical scientist, unlike the voice of the lab's earlier film. The
-  Voice Library's tags matched mostly performed reads (social media,
-  customer support, meditation), so the choice came from auditions of six
-  lines of this script. Travis was chosen over Sebastian and Tess, both
+- *The narrator* (the director, 2026-10-11). Before publishing, the
+  director chose to narrate the film himself, seeing no strong reason for a
+  synthetic voice. He read the whole script three times from a reading
+  script, going back over a line, or a pair of lines, when a reading went
+  wrong; `scripts/cut_take.py` keeps each line's last complete reading and
+  drops false starts. He kept the third reading after hearing each one
+  under the score and watching the third in a draft of the film. It is
+  13 s longer than Travis's (3:01 against 2:48). The cues on words inside
+  lines were moved to it: those of `a3` came 0.65 s earlier, since he says
+  the name as one word where Travis spelled out its letters, and those of
+  `p1`, `p5`, `a1` and `f3` by 0.15 to 0.4 s.
+- *The synthetic voice.* The film wanted a light American accent and the
+  delivery of a technical scientist, unlike the voice of the lab's earlier
+  film. The Voice Library's tags matched mostly performed reads (social
+  media, customer support, meditation), so the choice came from auditions
+  of six lines of this script. Travis was chosen over Sebastian and Tess, both
   British. The library's most cloned voices, heard in many other videos,
   were left out. After the sixth draft, a second round on the same lines
   tried Tamsin (British), two voices named Adam (ElevenLabs' own "Dominant,

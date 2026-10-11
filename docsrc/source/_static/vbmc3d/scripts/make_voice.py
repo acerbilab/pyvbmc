@@ -29,9 +29,13 @@ The "engine" of narration.json picks the voice.
   locally. A line is voiced when OUT has no clip of it, when --only names it
   or its scene, or with --all. Kokoro does not give the same take twice, so
   voicing a line again moves the timeline.
+- "recorded" (the settings under "recorded") cuts the lines out of a
+  narrator's read-through, the file OUT/<take> (scripts/cut_take.py), on
+  every run; --only and --all have no effect.
 
-Needs numpy, scipy and soundfile, and kokoro (0.9.4 or later) for the Kokoro
-engine, which fetches its weights from the Hugging Face hub into HF_HOME.
+Needs numpy, scipy and soundfile, kokoro (0.9.4 or later) for the Kokoro
+engine, which fetches its weights from the Hugging Face hub into HF_HOME, and
+faster-whisper for the recorded engine, which fetches its model there too.
 """
 
 import argparse
@@ -216,6 +220,16 @@ def eleven_lines(spec, out, voice_dir, only, everything):
     return f"elevenlabs:{cfg['voice_name']}", cfg["speed"]
 
 
+def recorded_lines(spec, out, voice_dir):
+    """Cut the lines out of the narrator's take; the voice's name and speed."""
+    from cut_take import cut
+
+    cfg = spec["recorded"]
+    lines = [line for scene in spec["scenes"] for line in scene["lines"]]
+    cut(out / cfg["take"], lines, voice_dir, out)
+    return f"recorded:{cfg['narrator']}", 1.0
+
+
 def srt_time(t):
     ms = int(round(t * 1000))
     h, ms = divmod(ms, 3600_000)
@@ -236,8 +250,11 @@ def main():
     only = {s for s in args.only.split(",") if s}
     voice_dir = args.out / "voice"
     voice_dir.mkdir(parents=True, exist_ok=True)
-    if spec.get("engine", "kokoro") == "elevenlabs":
+    engine = spec.get("engine", "kokoro")
+    if engine == "elevenlabs":
         voice, speed = eleven_lines(spec, args.out, voice_dir, only, args.all)
+    elif engine == "recorded":
+        voice, speed = recorded_lines(spec, args.out, voice_dir)
     else:
         voice, speed = kokoro_lines(spec, voice_dir, only, args.all)
 

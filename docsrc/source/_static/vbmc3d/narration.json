@@ -1,5 +1,6 @@
 {
-  "engine": "elevenlabs",
+  "engine": "recorded",
+  "recorded": { "narrator": "Luigi Acerbi", "take": "raw/test3.wav" },
   "elevenlabs": { "voice_name": "Travis", "voice_id": "brkaXeg2GVKseQkCHQra", "model": "eleven_multilingual_v2", "stability": 0.5, "similarity": 0.75, "style": 0.0, "speed": 0.95, "seed": 300 },
   "voice": "af_heart",
   "speed": 1.0,

@@ -193,7 +193,7 @@
       <li>Acerbi (2018). <i>Variational Bayesian Monte Carlo.</i> NeurIPS.</li>
       <li>Acerbi (2020). <i>Variational Bayesian Monte Carlo with noisy likelihoods.</i> NeurIPS.</li>
     </ol>
-    <div class="credit">MACHINE AND HUMAN INTELLIGENCE GROUP &middot; UNIVERSITY OF HELSINKI<br>RESEARCH COUNCIL OF FINLAND &middot; ELLIS INSTITUTE FINLAND<br>DIRECTED BY LUIGI ACERBI &middot; MADE WITH CLAUDE CODE &middot; VOICE: ELEVENLABS</div>
+    <div class="credit">MACHINE AND HUMAN INTELLIGENCE GROUP &middot; UNIVERSITY OF HELSINKI<br>RESEARCH COUNCIL OF FINLAND &middot; ELLIS INSTITUTE FINLAND<br>DIRECTED AND NARRATED BY LUIGI ACERBI &middot; MADE WITH CLAUDE CODE</div>
   </div></div>
 
   <div id="foot" class="hud">
@@ -515,7 +515,7 @@ function refit(t, gpFrom, g0, g1, v0, v1) {
 // Iteration 1: the heat of the acquisition function comes up with "Where to evaluate next?", and the
 // first point lands as the narration says where PyVBMC looks. The other four follow at a steady pace.
 {
-  const subs = ITS[1].sub, wins = [], land0 = LN.a3.t0 + 3.4;
+  const subs = ITS[1].sub, wins = [], land0 = LN.a3.t0 + 2.75;
   wins.push({ t0: LN.a1.t0, t1: land0 + 0.7, land: land0, drop: 1.0 });
   const a = land0 + 0.7, f0 = SC.acquire.t1 - 1.5, dp = (f0 - a) / (subs.length - 1);
   for (let j = 1; j < subs.length; j++) { const t0 = a + (j - 1) * dp; wins.push({ t0, t1: t0 + dp, land: t0 + 0.78 * dp, drop: 0.33 * dp }); }
@@ -556,8 +556,8 @@ const T_TRUTH = LN.r2.t0 - 0.2, T_DEN = LN.e1.t0, T_WORD = SC.wordmark.t0, T_CAR
 const segWord = { t0: T_WORD };
 
 // The opening (trace_intro.js): one evaluation, the landscape, an MCMC chain and a PyBADS run on it.
-// The evaluation lands, and its label "3 MIN" appears, just before the narration's "minutes" (2.7 s into p1).
-const T_PROBE = LN.p1.t0 + 1.5, T_LAND = T_PROBE + 1.0, T_DARK = LN.s1.t0;
+// The evaluation lands, and its label "3 MIN" appears, just before the narration's "minutes" (2.5 s into p1).
+const T_PROBE = LN.p1.t0 + 1.35, T_LAND = T_PROBE + 1.0, T_DARK = LN.s1.t0;
 const T_CHAIN = [LN.m1.t0, LN.m3.t0 + 0.6];   // the chain grows from one state to all of them over this span
 const T_BADS = [LN.o1.t0 + 0.8, LN.o2.t1];
 const T_SPREAD = LN.o3.t0 + 0.3;
@@ -1113,7 +1113,7 @@ function updateHud(ts, landed) {
   setAlpha("payV", ease((ts - LN.f1.t0) / 0.5)); setAlpha("payM", ease((ts - LN.f2.t0) / 0.5));
   setAlpha("payVt", ease((ts - LN.f3.t0) / 0.5)); setAlpha("payLt", ease((ts - LN.f3.t0 - 0.15) / 0.5)); setAlpha("payMt", ease((ts - LN.f3.t0 - 0.3) / 0.5));
   setAlpha("payVs", ease((ts - LN.f4.t0) / 0.5)); setAlpha("payLs", ease((ts - LN.f4.t0 - 0.15) / 0.5)); setAlpha("payMs", ease((ts - LN.f4.t0 - 0.3) / 0.5));
-  document.querySelector("#payoff .note").style.opacity = ease((ts - LN.f3.t0 - 0.8) / 0.6).toFixed(3);
+  document.querySelector("#payoff .note").style.opacity = ease((ts - LN.f3.t0 - 1.2) / 0.6).toFixed(3);
   setAlpha("card", ease((ts - T_CARD - 0.3) / 1.0));
   setAlpha("fnoteBQ", win(ts, LN.w3.t0 + 0.4, SC.mixture.t1, 0.4, 0.6));
   setAlpha("fnote", Math.max(win(ts, T_CHAIN[1], SC.bayesopt.t0, 0.4, 0.6), win(ts, LN.f2.t0, T_WORD + 0.3, 0.5, 0.8)));
@@ -1200,13 +1200,13 @@ const vp0 = vpComp[ITS[0].vpIdx].reduce((a, b) => (b.w > a.w ? b : a));
 label("3 MIN", "", T_LAND - 0.1, LN.p2.t1, () => P0);
 label("HOW PLAUSIBLE?", "", LN.p3.t0 + 0.2, LN.p3.t1, (t) => { const [x, z] = cursorAt(t); return [x, 0.01, z]; });
 label("MORE PLAUSIBLE", "", LN.p5.t0, SC.cost.t1 + 0.4, () => surf(0, -2));
-label("LESS PLAUSIBLE", "", LN.p5.t0 + 1.2, SC.cost.t1 + 0.4, () => surf(-1, 8.5));
+label("LESS PLAUSIBLE", "", LN.p5.t0 + 1.55, SC.cost.t1 + 0.4, () => surf(-1, 8.5));
 label("BEST FIT", "", T_BADS[1] - 0.3, LN.o3.t1 + 0.4, () => BEST);
 label("Gaussian process", "term", LN.g2.t0 + 0.2, LN.g3.t0 + 0.3, () => { const p = nodeTop(FOCUS); return [p[0], p[1] + 0.14, p[2]]; });
 label("EXACT HERE", "", LN.g3.t0 + 0.7, LN.g4.t0 - 0.1, () => nodeTop(FOCUS));
 label("variational inference", "term", LN.q1.t0 + 1.0, LN.q3.t1 + 0.3, () => [toX(vp0.x), LIFT + HGT * hLog(vpMax[ITS[0].vpIdx]) + 0.08, toZ(vp0.y)]);
-label("acquisition function", "term", LN.a1.t0 + 0.7, LN.a3.t0 + 1.6, () => [acqEv[0].x, 0.01, acqEv[0].z]);
-label("active learning", "term", LN.a3.t0 + 1.9, LN.a3.t1 + 0.4, () => [acqEv[0].x, 0.9, acqEv[0].z]);
+label("acquisition function", "term", LN.a1.t0 + 1.0, LN.a3.t0 + 0.95, () => [acqEv[0].x, 0.01, acqEv[0].z]);
+label("active learning", "term", LN.a3.t0 + 1.2, LN.a3.t1 + 0.4, () => [acqEv[0].x, 0.9, acqEv[0].z]);
 label("OPTIMIZER", "", LN.a2.t0 + 0.2, LN.a2.t1 + 0.4, () => BEST);
 
 // ---------------------------------------------------------------- update

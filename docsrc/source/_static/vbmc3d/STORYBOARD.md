@@ -1,6 +1,6 @@
 # The PyVBMC video: storyboard
 
-A narrated video of under three minutes that explains what PyVBMC
+A narrated video of about three minutes that explains what PyVBMC
 does. `film.html` draws it in the wireframe style of `wordmark.html` and
 plays that page's run (the banana, seed 42). The page itself stays an
 unnarrated exhibit that a viewer can scrub and explore. The video walks
@@ -35,10 +35,13 @@ film. Everything they produce apart from the two generated `.js` files
 (voice takes and clips, sound, frames, videos) goes to the gitignored
 `dev/media/vbmc3d-film/`.
 
-The voice is Travis, a voice of the ElevenLabs Voice Library with a light
-American accent, voiced with `eleven_multilingual_v2` one take per scene.
-Kokoro (`af_heart`), an open model run locally, voiced the drafts while the
-script changed, and `narration.json` can switch back to it.
+The narrator is the director, Luigi Acerbi. He read the whole script in one
+recording, and `scripts/make_voice.py` cuts the lines out of it
+(`scripts/cut_take.py`). Through the seventh draft the voice was Travis, a
+voice of the ElevenLabs Voice Library with a light American accent, voiced
+with `eleven_multilingual_v2` one take per scene, and Kokoro (`af_heart`),
+an open model run locally, voiced the drafts before it while the script
+changed. `narration.json` can switch back to either.
 
 ## Style
 
@@ -83,9 +86,10 @@ script changed, and `narration.json` can switch back to it.
 
 ## Scenes
 
-Times are those of Travis's takes and move whenever a scene is re-voiced.
+Times are those of the narrator's recording and move whenever a line is
+recorded again.
 
-### 1. The cost of a posterior (0:00–0:18)
+### 1. The cost of a posterior (0:00–0:19)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -95,7 +99,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | p4 | Picture the posterior as a landscape. | The true landscape rises out of the floor as a dim grey wireframe. |
 | p5 | The higher the ground, the more plausible the setting. | Labels on the peak and on the flat between the arms, *MORE PLAUSIBLE* and *LESS PLAUSIBLE*. |
 
-### 2. Markov chain Monte Carlo (0:18–0:27)
+### 2. Markov chain Monte Carlo (0:19–0:30)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -103,7 +107,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | m2 | It needs tens of thousands of evaluations. | The ensemble speeds up until its dots cover the ridge. The count stops at *27,828\**. The footnote appears in the bottom right. |
 | m3 | At a few minutes each, you would wait weeks. | The cost readout reaches *8.3 weeks*. |
 
-### 3. Bayesian optimization (0:27–0:42)
+### 3. Bayesian optimization (0:30–0:46)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -111,14 +115,14 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | o2 | It learns the landscape from the points it has seen, then decides where to explore next. | A faint line joins the points in order. A ring and the label *BEST FIT* mark the last one. |
 | o3 | PyVBMC does the same for the whole posterior. | The true posterior glows magenta on the floor. The glow spreads from the best fit along the whole banana. |
 
-### 4. In the dark (0:42–0:48)
+### 4. In the dark (0:46–0:53)
 
 | Line | Narration | Picture |
 |---|---|---|
 | s1 | We start in the dark. | The grey landscape, the points and the glow fade out. The readout switches to *PYVBMC* at zero evaluations. |
 | s2 | Each evaluation reveals the height at a single point. | The ten evaluations of the initial design drop one by one. |
 
-### 5. The surrogate (0:48–1:05)
+### 5. The surrogate (0:53–1:11)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -128,7 +132,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | g4 | Everywhere else it wobbles. | The camera pulls back over the outskirts. Readout `UNCERTAINTY wibbly-wobbly`. |
 | g5 | The more it wobbles, the less it knows. | The colour key appears: amber unsure, cyan sure. |
 
-### 6. The mixture (1:05–1:26)
+### 6. The mixture (1:11–1:33)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -139,7 +143,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | q2 | This is its first guess at the posterior. | The magenta sheet beside the surrogate's ridge. |
 | q3 | For now it is a crude one. | Hold. The two components are visibly blunter than the ridge. The samples and the footnote fade with the scene. |
 
-### 7. Where to evaluate next (1:26–1:41)
+### 7. Where to evaluate next (1:33–1:48)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -147,7 +151,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | a2 | An optimizer would head for the peak. | PyBADS's points from scene 3 flicker at the peak, with the label *OPTIMIZER*. |
 | a3 | PyVBMC is after the whole posterior, so it explores places that are plausible and still uncertain. | A yellow beam marks the brightest spot. The first evaluation of iteration 1 drops into it. The other four follow, each into its own heat. The surrogate and the mixture refit. The label *active learning* appears on the beam over the first evaluation. |
 
-### 8. The loop (1:41–1:46)
+### 8. The loop (1:48–1:55)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -155,7 +159,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | l2 | Update the surrogate. | It lights *SURROGATE* as the surrogate refits. |
 | l3 | Refit the mixture. | It lights *MIXTURE* as the mixture refits. |
 
-### 9. Time-lapse (1:46–2:04)
+### 9. Time-lapse (1:55–2:13)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -163,14 +167,14 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | l4 | Round after round, the wobbling dies down. | The sheet turns from amber to cyan. The `wibbly-wobbly` readout fades. |
 | l5 | The mixture grows new components to follow the ridge. | The component count climbs from 2 to 21, then to 50 at the final boost. |
 
-### 10. The reveal (2:04–2:10)
+### 10. The reveal (2:13–2:18)
 
 | Line | Narration | Picture |
 |---|---|---|
 | r1 | PyVBMC never saw the true landscape. | The camera orbits. |
 | r2 | Here it is. | The grey landscape rises into place under the surrogate and the mixture. Where they coincide, the wires add up to white. |
 
-### 11. The evidence (2:10–2:19)
+### 11. The evidence (2:18–2:29)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -178,7 +182,7 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | e2 | You need that number to compare two models. | Hold. |
 | e3 | The estimate lands close to the true value. | *TRUE +0.000* appears beside it. |
 
-### 12. The payoff (2:19–2:33)
+### 12. The payoff (2:29–2:46)
 
 | Line | Narration | Picture |
 |---|---|---|
@@ -187,14 +191,14 @@ Times are those of Travis's takes and move whenever a scene is re-voiced.
 | f3 | Weeks of waiting became an afternoon. | Under each count, its cost, *5 h 15 min* and *8.3 weeks*, with *AT 3 MIN EACH* between them, then *A 2-PARAMETER EXAMPLE*. |
 | f4 | At a second per evaluation, hours become minutes. | A second row of costs, *2 min* and *7 h 44 min*, with *AT 1 S EACH* between them. |
 
-### 13. The wordmark (2:33–2:40)
+### 13. The wordmark (2:46–2:53)
 
 No narration. This is the page's finale. The camera pulls up until the
 posterior is the V of the wordmark. "Py" and "BMC" appear beside it. Then
 *1.5* appears after the word, smaller and in cyan, its top on the letters'
 cap line, as the version hangs from the top of `logo.svg`.
 
-### 14. End card (2:40–2:48)
+### 14. End card (2:53–3:01)
 
 No narration. The wordmark dims behind **PyVBMC 1.5** and the method's
 name, Variational Bayesian Monte Carlo, then `pip install --upgrade
@@ -203,8 +207,8 @@ tools, which links PyVBMC and PyBADS. Below them are the three references of the
 README (Huggins et al. 2023, JOSS; Acerbi 2018, NeurIPS; Acerbi 2020,
 NeurIPS), then three credit lines: "Machine and Human Intelligence Group ·
 University of Helsinki", "Research Council of Finland · ELLIS Institute
-Finland" and "Directed by Luigi Acerbi · Made with Claude Code · Voice:
-ElevenLabs".
+Finland" and "Directed and narrated by Luigi Acerbi · Made with Claude
+Code".
 
 ## Sound
 

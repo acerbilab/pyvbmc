@@ -49,8 +49,8 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 ### The video
 
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
-the commands. The film is mastered from its seventh draft (`NOTES.md`,
-Status); what is left is to publish it:
+the commands. The film is mastered with the director's narration
+(`NOTES.md`, Status); what is left is to publish it:
 
 1. **Upload the clean master to YouTube** with its `.srt`, as the English
    subtitles. An upload of the sixth draft's master was begun on
@@ -60,13 +60,13 @@ Status); what is left is to publish it:
    media notes (`dev/scripts/runs/LOCAL.md` says where); the chapters
    follow the scene times of `STORYBOARD.md`.
 2. **Post the film**: the captioned master natively on Bluesky and
-   LinkedIn (2:48 and 179 MB are inside both platforms' limits), and the
+   LinkedIn (3:01 and 187 MB are inside both platforms' limits), and the
    YouTube link on X, which caps free accounts at 2:20.
 3. **Link the film** from the documentation and the README. Where it goes
    is part of the second of the next actions above, which page the
    documentation shows and how.
-4. **Back up `dev/media/vbmc3d-film/`** (the Travis takes of both drafts,
-   the masters, the thumbnail): it exists only in this worktree, and
+4. **Back up `dev/media/vbmc3d-film/`** (the director's recordings, the
+   Travis takes of both drafts, the masters, the thumbnail): it exists only in this worktree, and
    removing the worktree deletes it.
 
 ## Constraints
