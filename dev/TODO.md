@@ -11,7 +11,8 @@ records its execution.
 The release date is 2026-10-12: PyVBMC 1.5.0 is published on PyPI and
 conda-forge no earlier than that day (PI, 2026-10-11). The soft release
 circulates within the lab, and its checks are completed before the public
-announcement.
+announcement, likely on 2026-10-13, a date that does not bind (PI,
+2026-10-11).
 
 ## In scope for 1.5
 

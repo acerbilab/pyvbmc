@@ -7,7 +7,7 @@ and where to pick up. Update it in place; do not add status to the devlogs.
 
 Integration branch: `main`. Changes use feature branches and pull requests.
 PyVBMC 1.5.0 is scheduled for 2026-10-12, with lab checks of the soft release
-before the public announcement.
+before the public announcement, likely on 2026-10-13.
 CI on `dev*` branches: pushes that touch the package run a reduced smoke
 (Ubuntu, Python 3.14) of the `tests` workflow automatically (added
 2026-09-03); dispatch the workflow by hand for the full matrix before
