@@ -8,33 +8,36 @@ the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
-The release date is 2026-10-12: PyVBMC 1.5.0 goes to PyPI and conda-forge
-on that day and not before (PI, 2026-10-11). The soft release circulates
-within the lab, and its checks are complete before the public
-announcement.
+The release date is 2026-10-12: PyVBMC 1.5.0 is published on PyPI and
+conda-forge no earlier than that day (PI, 2026-10-11). The soft release
+circulates within the lab, and its checks are completed before the public
+announcement, likely on 2026-10-13, a date that does not bind (PI,
+2026-10-11).
 
 ## In scope for 1.5
 
 - [ ] **Release documentation and validation.** The final pass on the
   settled release code; each step's procedure is in the roadmap's
   [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
-  - `linkcheck` after the merge into `main` publishes the 1.5 files and
-    docs, including the external links blocked during the 2026-10-08 pass;
+  - merge the release pull request into `main`, PR #195, whose full test
+    matrix passed on 2026-10-11, and delete `origin/dev-port-review` when
+    it merges;
+  - `linkcheck` after the merge publishes the 1.5 files and docs, including
+    the external links blocked during the 2026-10-08 pass, and a check of
+    the README's links to files on `main`, which `linkcheck` does not read;
     the post-PR #191 Sphinx build, rendered-page and skill review, local
     tests, expanded CI matrix and package checks are recorded in the
     roadmap;
-  - attach the checked public population and pool archives from the draft
-    `release-gate-public-refresh-20261009` to the final release. The
+  - publish the draft release `v1.5.0` on 2026-10-12, the date that
+    `RELEASE_DATE` in `pyvbmc/_release.py` and the changelog's 1.5.0
+    heading carry (a change of schedule moves both; `AGENTS.md`, "Release
+    date"). The draft holds the checked public population and pool
+    archives; the
     [campaign record](experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
-    holds the filenames, sizes, hashes and independent verification;
-    the stacking's tracked copies hold every cell already. Keep the raw
+    holds their filenames, sizes, hashes and independent verification,
+    and the stacking's tracked copies hold every cell already. Keep the raw
     campaign releases and the fingerprint/earlier-trace backups as drafts
-    ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back");
-  - the release pull request into `main`, its CI checks, and the deletion
-    of `origin/dev-port-review` when it merges;
-  - tag and publish on 2026-10-12, the date that `RELEASE_DATE` in
-    `pyvbmc/_release.py` and the changelog's 1.5.0 heading carry; a change
-    of schedule moves both (`AGENTS.md`, "Release date").
+    ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back").
 
 - [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
   it was mastered on 2026-10-11 with the PI's own narration, and it has
@@ -173,9 +176,26 @@ announcement.
   `gpyreg <1.3` and `numpy <2.4`, with which they fail; until it merges,
   conda pairs 1.0.4 with gpyreg 1.4.0 and the newest NumPy. conda-forge's
   `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
-  where PyPI's is 3.10.
+  where PyPI's is 3.10. The recipe lists `pyvbmc/svbmc/LICENSE.txt`, the
+  license of the S-VBMC code, beside `LICENSE`, and its `doc_url` is
+  https://acerbilab.org/pyvbmc/.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
+- [ ] **Packaging metadata.** A build of 1.5.0 warns of two parts of its
+  configuration that setuptools will stop accepting: the `project.license`
+  table, which setuptools stops supporting on 2027-02-18 (a `license` SPDX
+  string with `license-files` needs setuptools 77), and the subpackages that
+  `[tool.setuptools] packages` does not list, among them `pyvbmc.vbmc` and
+  `pyvbmc.entropy`, which ship as package data and which a later setuptools
+  would leave out of the wheel. Both hold since 1.0.4; fix them in the next
+  release, checking that the wheel still holds every runtime file and no
+  test.
+- [ ] **Merged branches.** `feat-*` branches read as live work (`AGENTS.md`,
+  "Branches"), so delete those on `origin` that the release merge holds,
+  with the merged `fix-*` branch: `feat-ci-python-313-314`,
+  `feat-pymc-snapshot-constants`, `feat-release-1.5-preparation`,
+  `feat-release-1.5-procedure`, `feat-release-validation-191` and
+  `fix-arm0-failure-record`.
 
 ## Dependencies and working rules
 
