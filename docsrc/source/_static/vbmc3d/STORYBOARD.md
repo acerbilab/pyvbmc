@@ -238,8 +238,8 @@ sets the loudness to -16 LUFS.
   uses 85, so the comparison does not flatter PyVBMC.
 - *Far fewer evaluations* for Bayesian optimization. The PyBADS run of
   scene 3 reaches the peak in 67 evaluations.
-- *Seconds, or minutes*. The README recommends PyVBMC from about half a
-  second per evaluation.
+- *Seconds, or minutes*. The README recommends PyVBMC for likelihoods
+  that take around 0.1 s or more per evaluation, or are noisy.
 - *Weeks* and *an afternoon* assume 3 min per evaluation, as the readout
   says. 27,828 evaluations take 8.3 weeks and 105 take 5 h 15 min.
 - *Hours become minutes* at 1 s per evaluation: 27,828 evaluations take

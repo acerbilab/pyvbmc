@@ -50,21 +50,21 @@ there (the alternatives are in `NOTES.md`, "Needles after the first fit").
 
 `STORYBOARD.md` has the script and the scenes, and README.md ("The film")
 the commands. The film is mastered with the director's narration
-(`NOTES.md`, Status); what is left is to publish it:
+(`NOTES.md`, Status), and publishing it takes four steps, the first and
+third done:
 
-1. **Upload the clean master to YouTube** with its `.srt`, as the English
-   subtitles. An upload of the sixth draft's master was begun on
-   2026-10-04 and kept unlisted; it is deleted, since YouTube does not
-   replace the video of an upload. The title, the description, the
-   chapters, the thumbnail and the social posts are drafted with the lab's
+1. **The clean master is on YouTube** with its `.srt` as the English
+   subtitles, since 2026-10-12: https://youtu.be/dEwiE5PLcA4. Its
+   description, chapters and the social posts are drafted with the lab's
    media notes (`dev/scripts/runs/LOCAL.md` says where); the chapters
    follow the scene times of `STORYBOARD.md`.
 2. **Post the film**: the captioned master natively on Bluesky and
    LinkedIn (3:01 and 187 MB are inside both platforms' limits), and the
    YouTube link on X, which caps free accounts at 2:20.
-3. **Link the film** from the documentation and the README. Where it goes
-   is part of the second of the next actions above, which page the
-   documentation shows and how.
+3. **The README and the documentation link the film**, with its thumbnail
+   in their introduction (`f88f67ee` on `dev-next`, 2026-10-12). Where the
+   documentation shows the animation page itself is part of the second of
+   the next actions above.
 4. **Back up `dev/media/vbmc3d-film/`** (the director's recordings, the
    Travis takes of both drafts, the masters, the thumbnail): it exists only in this worktree, and
    removing the worktree deletes it.

@@ -238,9 +238,9 @@ the README asks to keep in step. Other decisions:
   film's first line was "Your model's likelihood takes minutes to
   compute.", and with the 3-minute readout and the payoff's "Weeks of
   waiting became an afternoon" it anchored PyVBMC on very expensive
-  likelihoods, while the README recommends it from about half a second
-  per evaluation. A viewer whose likelihood takes a second could conclude
-  that the tool is not for them. The first line now names the range
+  likelihoods, while the README recommended it from about half a second
+  per evaluation (from around 0.1 s since 2026-10-07). A viewer whose
+  likelihood takes a second could conclude that the tool is not for them. The first line now names the range
   ("seconds, or minutes"), the 3 minutes stay as the worked example from
   the first evaluation to the payoff, and the payoff adds a line and a
   second row of costs at 1 s per evaluation, where the gap between hours
