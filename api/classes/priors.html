@@ -1113,13 +1113,14 @@ scalar, so that it stands for more than one variable.</p>
 <dt class="sig sig-object py" id="pyvbmc.priors.UserFunction">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvbmc.priors.</span></span><span class="sig-name descname"><span class="pre">UserFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pyvbmc/priors/user_function.html#UserFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyvbmc.priors.UserFunction" title="Link to this definition">#</a></dt>
 <dd><p>Lightweight wrapper for user-defined priors.</p>
+<p>An instance’s <code class="docutils literal notranslate"><span class="pre">log_pdf</span></code> is the user-provided function for the
+log-density of the prior, and its <code class="docutils literal notranslate"><span class="pre">sample</span></code> is the user-provided
+function for sampling from the prior, or <cite>None</cite> if none was provided;
+both are set at initialization, in place of the methods of the same
+names.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><a class="reference internal" href="#pyvbmc.priors.Prior.log_pdf" title="pyvbmc.priors.Prior.log_pdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_pdf</span></code></a><span class="classifier">callable</span></dt><dd><p>Compute the log-pdf of the distribution.</p>
-</dd>
-<dt><a class="reference internal" href="#pyvbmc.priors.Prior.sample" title="pyvbmc.priors.Prior.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a><span class="classifier">callable or None</span></dt><dd><p>Unused.</p>
-</dd>
 <dt><strong>D</strong><span class="classifier">int or None</span></dt><dd><p>The dimension of the prior, if provided.</p>
 </dd>
 </dl>

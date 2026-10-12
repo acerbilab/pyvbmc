@@ -428,12 +428,14 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">UserFunction</span><span class="p">(</span><span class="n">Prior</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Lightweight wrapper for user-defined priors.</span>
 
+<span class="sd">    An instance's ``log_pdf`` is the user-provided function for the</span>
+<span class="sd">    log-density of the prior, and its ``sample`` is the user-provided</span>
+<span class="sd">    function for sampling from the prior, or `None` if none was provided;</span>
+<span class="sd">    both are set at initialization, in place of the methods of the same</span>
+<span class="sd">    names.</span>
+
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    log_pdf : callable</span>
-<span class="sd">        The user-provided function representing the log-density of the prior.</span>
-<span class="sd">    sample : callable or None</span>
-<span class="sd">        A function for sampling from the prior, if provided.</span>
 <span class="sd">    D : int or None</span>
 <span class="sd">        The dimension of the prior, if provided.</span>
 <span class="sd">    """</span>
