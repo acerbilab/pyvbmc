@@ -10,7 +10,7 @@
 [![docs](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/docs.yml?branch=main&label=docs)](https://github.com/acerbilab/pyvbmc/actions/workflows/docs.yml)
 [![build](https://img.shields.io/github/actions/workflow/status/acerbilab/pyvbmc/build.yml?branch=main&label=build)](https://github.com/acerbilab/pyvbmc/actions/workflows/build.yml)
 
-PyVBMC is one of the open-source [tools for fitting models to data](https://acerbilab.org/model-fitting/) from [Luigi Acerbi's group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki. Check out our other tools, such as [PyBADS](https://github.com/acerbilab/pybads) for point estimates and [PyIBS](https://github.com/acerbilab/pyibs) for models that can only be simulated.
+PyVBMC is one of the open-source [tools for fitting models to data](https://acerbilab.org/model-fitting/) from the [Machine and Human Intelligence Group](https://www.helsinki.fi/en/researchgroups/machine-and-human-intelligence) at the University of Helsinki. Check out our other tools, such as [PyBADS](https://github.com/acerbilab/pybads) for point estimates and [PyIBS](https://github.com/acerbilab/pyibs) for models that can only be simulated.
 
 ### What is it?
 
