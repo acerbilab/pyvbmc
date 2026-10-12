@@ -168,10 +168,10 @@ CHECKS = {
             None,
             """
             assert results["convergence_status"] == "probable"
-            assert budget["used"] <= budget["limit"], budget
-            nuts_summary = az.summary(
-                nuts_data, var_names=["beta", "sigma"], kind="stats"
-            )
+            assert abs(results["elbo"] - lml_true) < 0.05, results["elbo"]
+            used = results["evaluation_budget"]["used"]
+            assert used < 100, used
+            assert n_gradients > 10_000, n_gradients
             for name in vbmc_summary.index:
                 gap = abs(
                     vbmc_summary.loc[name, "mean"]

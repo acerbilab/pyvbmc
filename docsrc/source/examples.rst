@@ -11,9 +11,10 @@ The three integration examples have optional dependencies:
 
 - :ref:`PyVBMC Example 7: Stacking the posteriors of several runs (S-VBMC)`
   combines completed runs and requires ``pyvbmc[torch]``.
-- :ref:`PyVBMC Example 8: Fitting a PyMC model` covers model setup, fitting,
-  structured export and posterior prediction. It requires Python 3.12 or
-  newer and ``pyvbmc[pymc]``.
+- :ref:`PyVBMC Example 8: Fitting a PyMC model` fits a PyMC model, returns
+  its posterior to PyMC and ArviZ for summaries and posterior prediction, and
+  checks the model evidence against its exact value and the posterior against
+  NUTS. It requires Python 3.12 or newer and ``pyvbmc[pymc]``.
 - :ref:`PyVBMC Example 9: Torch and JAX models and posterior exports` fits a
   two-parameter psychometric curve with a Torch target, shows the equivalent
   short JAX target wrapper, then makes posterior probability predictions and
