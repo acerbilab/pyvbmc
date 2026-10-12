@@ -1,15 +1,32 @@
 name: publish-release
 
 on:
-  # `published` is sent whether a release is published at once or as a saved
-  # draft; `created` is sent for a draft when it is saved, and Actions ignores
-  # it then, so publishing that draft later would not start the upload.
+  # `published` is sent for a release published directly or from a saved
+  # draft. `created` is sent for a draft when it is saved, and Actions ignores
+  # it then, so it would miss a release prepared as a draft.
   release:
     types: [published]
   workflow_dispatch:
 
 jobs:
+  # Only a version tag (v1.5.0) uploads. The repository's data releases are
+  # published too, and setuptools_scm would read a version from their tags
+  # (`release-gate-public-refresh-20261009` as 20261009).
+  version_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.check.outputs.ok }}
+    steps:
+      - id: check
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+ ]]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$GITHUB_REF_NAME is not a version tag: nothing is uploaded"
+          fi
   build:
+    needs: [version_tag]
+    if: needs.version_tag.outputs.ok == 'true'
     uses: acerbilab/pyvbmc/.github/workflows/build.yml@main
   upload_to_pypi:
     needs: [build]
