@@ -8,62 +8,16 @@ the locally held artifacts that the last section describes: the
 [roadmap](plans/modernization-roadmap.md) retains it, and each item's plan
 records its execution.
 
-The release date is 2026-10-12: PyVBMC 1.5.0 is published on PyPI and
-conda-forge no earlier than that day (PI, 2026-10-11). The soft release
-circulates within the lab, and its checks are completed before the public
-announcement, likely on 2026-10-13, a date that does not bind (PI,
-2026-10-11).
+PyVBMC 1.5.0 was released on 2026-10-12, on GitHub, PyPI and
+conda-forge. The soft release circulates within the lab, and its checks
+are completed before the public announcement, likely on 2026-10-13, a
+date that does not bind (PI, 2026-10-11).
 
 ## In scope for 1.5
 
-- [ ] **Release documentation and validation.** The final pass on the
-  settled release code; each step's procedure is in the roadmap's
-  [pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist):
-  - merge the release pull request into `main`, PR #195, whose full test
-    matrix passed on 2026-10-11, and delete `origin/dev-port-review` when
-    it merges;
-  - `linkcheck` after the merge publishes the 1.5 files and docs, including
-    the external links blocked during the 2026-10-08 pass, and a check of
-    the README's links to files on `main`, which `linkcheck` does not read;
-    the post-PR #191 Sphinx build, rendered-page and skill review, local
-    tests, expanded CI matrix and package checks are recorded in the
-    roadmap;
-  - publish the draft release `v1.5.0` on 2026-10-12, the date that
-    `RELEASE_DATE` in `pyvbmc/_release.py` and the changelog's 1.5.0
-    heading carry (a change of schedule moves both; `AGENTS.md`, "Release
-    date"). The draft holds the checked public population and pool
-    archives; the
-    [campaign record](experiments/release_gate_20261002/README.md#public-asset-refresh-2026-10-09)
-    holds their filenames, sizes, hashes and independent verification,
-    and the stacking's tracked copies hold every cell already. Keep the raw
-    campaign releases and the fingerprint/earlier-trace backups as drafts
-    ([Slurm plan](plans/slurm-benchmark-support.md), "Records and hand-back").
-
-- [ ] **Publish and link the PyVBMC film.** The film is ready for upload:
-  it was mastered on 2026-10-11 with the PI's own narration, and it has
-  not yet been uploaded to YouTube. Upload it first,
-  then follow PyBADS's treatment of its film (`README.md` and
-  `docsrc/source/index.rst` of `acerbilab/pybads`, PRs #114 to #125):
-  - in the introduction of `README.md` and `docsrc/source/index.rst`, the
-    line "Watch a [N-minute film](link) that explains how PyVBMC works"
-    and a frame of the film with a play button, saved as
-    `docsrc/source/_static/pyvbmc-film-thumbnail.jpg` and linked to the
-    video (the README shows it from its `raw.githubusercontent.com`
-    address on `main`; the index as a `figure` with `:target:`, the line
-    as its caption);
-  - the same line at the top of the explanation of the method: in bold
-    under `How does it work?` in the README, in a `tip` box under
-    `Example run` on the docs' index.
-
-  Then add the video to the lab's
-  [tools for fitting models to data](https://acerbilab.org/model-fitting/)
-  page.
-
-  The film's source is on `feat-3d-animation`, under
-  `docsrc/source/_static/vbmc3d/`; its `README.md`, `NOTES.md` and
-  `TODO.md` hold the design, production record and publishing steps.
-  `dev/scripts/runs/LOCAL.md` lists the masters and the publishing kit.
-  The film quotes the [matched MCMC budget](plans/matched-mcmc-budget.md).
+Nothing remains: the roadmap's
+[pre-release checklist](plans/modernization-roadmap.md#pre-release-checklist)
+records the release and the checks before it.
 
 ## Outside 1.5 scope
 
@@ -144,41 +98,78 @@ announcement, likely on 2026-10-13, a date that does not bind (PI,
   page. The repository `acerbilab/svbmc` stays, as the code of the S-VBMC
   paper, and its README opens with a note that S-VBMC is integrated in
   PyVBMC. See the [integration plan](plans/svbmc-integration.md).
-- [ ] **conda-forge.** Once 1.5 is on PyPI, the version bot of the
-  [feedstock](https://github.com/conda-forge/pyvbmc-feedstock) opens a PR
-  that bumps the version and the source hash. Its PR 11 (open on
-  2026-10-06) proposes `bot: {automerge: true, inspection:
+- [ ] **Zenodo.** The repository's webhook to Zenodo archives each release
+  as a new version of the record
+  [10.5281/zenodo.10659431](https://doi.org/10.5281/zenodo.10659431),
+  which holds v1.0.2 to v1.0.4 and archived v1.0.4 six seconds after its
+  publication; an older record, 10.5281/zenodo.7966314, holds v1.0.1
+  alone. For `v1.5.0` the webhook's deliveries on 2026-10-12 got HTTP 409
+  for `published` ("The release has already been received") and 202 for
+  `released`, after a 202 for `created` when the draft was saved on
+  2026-10-11, and no record of 1.5.0 existed at 08:04 UTC. The owner of
+  the Zenodo account that holds the integration can see the release's
+  state on its GitHub page, and can otherwise add 1.5.0 by hand, as a new
+  version of 10659431 with the release's source archive. A version's
+  authors come from `CITATION.cff`, which lists Francesco Silvestrin, the
+  first author of the S-VBMC paper, since 2026-10-12 (PI); a version made
+  from `v1.5.0`, whose `CITATION.cff` does not, takes him in by an edit on
+  Zenodo. `CITATION.cff`'s `doi` is 10659431's concept DOI, which resolves
+  to the latest version, since the same day. If the draft saved before
+  publication is what kept Zenodo from archiving 1.5.0, a release prepared
+  the same way meets the same; check Zenodo after the next one.
+- [ ] **The old PyPI token.** Until 2026-10-12, `PYPI_PASSWORD` held a
+  token set on 2023-03-16 whose owner is not known: the PI's PyPI account
+  holds no token for pyvbmc, and only the owner can revoke it. pyvbmc's
+  collaborators page on PyPI lists the accounts that can upload. gpyreg's
+  secret of the same name was set a minute after it and uploaded gpyreg
+  1.4.0 on 2026-09-30, so it likely holds the same token: give it a token
+  scoped to gpyreg before the old one is revoked. PyPI's Trusted
+  Publishing would replace both secrets with credentials that each
+  upload workflow obtains for itself.
+- [ ] **gpyreg's upload trigger.** gpyreg's `release.yml` triggers on
+  `created` as PyVBMC's did, so publishing a saved draft does not start its
+  upload; [acerbilab/gpyreg#70](https://github.com/acerbilab/gpyreg/pull/70)
+  changes it to `published`, for version tags.
+- [ ] **conda-forge.** Merge or close the feedstock's PR 11 (open since
+  2026-09-25). It proposes `bot: {automerge: true, inspection:
   update-grayskull}` in the feedstock's `conda-forge.yml`, as gpyreg's and
-  PyBADS's feedstocks have, so that the bot's PR takes the requirements
-  from the PyPI metadata and merges itself once the feedstock's CI passes.
-  Under those settings the bot's PR for gpyreg 1.4.0
-  (`conda-forge/gpyreg-feedstock` #13) changed the version and the hash
-  alone, though its analysis listed the run requirements that 1.4.0 had
-  dropped, and merged itself; a second PR, under build number 1, removed
-  them (#14). So the recipe's requirements, still those of 1.0.4, are
-  updated by hand, in a PR opened before the bot's or pushed to it before
-  it merges (removing `[bot-automerge]` from the bot's title keeps it from
-  merging itself), as PyBADS 1.5.0 did
-  (`conda-forge/pybads-feedstock` #12, merged 2026-10-06). Check the published package's requirements
-  against `pyproject.toml`: 1.5 needs gpyreg 1.4.0 or later, on
-  conda-forge since 2026-09-30, and adds `filelock`, `platformdirs` and
-  `threadpoolctl`. The recipe's floors are older than those of PyPI's
-  1.0.4, so a comparison of the two releases' PyPI metadata does not show
-  them: they rise by hand to NumPy 2.0 (from 1.22.1), SciPy 1.15 (from
-  1.7.3), matplotlib-base 3.9 (from 3.5.1) and cma 3.4 (from 3.1.0), and
-  `plotly`, `pytest`, `pytest-mock` and `pytest-rerunfailures` leave the
-  run requirements for the extras. The README, the installation page and
-  the FAQ, which say that conda can install 1.0.4 into an environment that
-  holds an older NumPy, SciPy, matplotlib or Python, are true only once the
-  recipe requires these versions. The repodata patch
-  `conda-forge/conda-forge-repodata-patches-feedstock` #1274 (open on
-  2026-10-08) bounds every earlier release, 0.9.0 to 1.0.4, at
-  `gpyreg <1.3` and `numpy <2.4`, with which they fail; until it merges,
-  conda pairs 1.0.4 with gpyreg 1.4.0 and the newest NumPy. conda-forge's
-  `python_min`, 3.11 on 2026-09-25, is the conda package's Python floor,
-  where PyPI's is 3.10. The recipe lists `pyvbmc/svbmc/LICENSE.txt`, the
-  license of the S-VBMC code, beside `LICENSE`, and its `doc_url` is
-  https://acerbilab.org/pyvbmc/.
+  PyBADS's feedstocks have, so that the version bot's PR takes the
+  requirements from the PyPI metadata and merges itself once the
+  feedstock's CI passes. Under those settings the bot's PR for gpyreg
+  1.4.0 (`conda-forge/gpyreg-feedstock` #13) changed the version and the
+  hash alone, though its analysis listed the run requirements that 1.4.0
+  had dropped, and merged itself. So a release that changes the
+  requirements has them changed by hand, in a PR opened before the bot's
+  or pushed to the bot's before it merges; removing `[bot-automerge]` from
+  the bot's title keeps it from merging itself. The repodata patch
+  `conda-forge/conda-forge-repodata-patches-feedstock` #1274 (open since
+  2026-10-08) bounds every release from 0.9.0 to 1.0.4 at `gpyreg <1.3`
+  and `numpy <2.4`, beyond which they fail; until it merges, conda can
+  install 1.0.4 with a gpyreg or a NumPy that it fails with, in an
+  environment whose Python or other packages exclude 1.5.0. The conda
+  package's Python floor is conda-forge's `python_min` at the feedstock's
+  last rerender (3.11 for 1.5.0), which the README and the installation
+  page state; a rerender after conda-forge raises it raises the floor.
+- [ ] **PR #73.** The pull request "pymc integration" (aloctavodia, open
+  since 2022) is superseded by `pyvbmc.PyMCTarget`; close it with thanks
+  and a pointer to the PyMC guide of the quickstart and Example 8.
+- [ ] **Two ambiguous cross-references.** The attributes `log_pdf` and
+  `sample` of the `UserFunction` docstring
+  (`pyvbmc/priors/user_function.py`) are cross-references that the
+  `docs` workflow's builds of 2026-10-12 find ambiguous: `log_pdf` matches
+  the methods of `Prior` and `VariationalPosterior`, and `sample` those of
+  `Prior`, `SVBMC` and `VariationalPosterior`. Sphinx links each to one of
+  them. Qualify them.
+- [ ] **The `vp.plot()` tip's anchor, for 1.5.1.** The startup tip about
+  `vp.plot()` (`pyvbmc/vbmc/_tip_catalog.py`) links
+  `variational_posterior.html#pyvbmc.VariationalPosterior.VariationalPosterior.plot`,
+  but the page's anchor for the method is
+  `pyvbmc.variational_posterior.VariationalPosterior.plot` since the page
+  documents the methods with its class (`544224c5`, 2026-10-08), so the
+  link opens the page at its top. 1.5.0 ships the tip so, and the stored
+  output of Example 6 shows it. Correct the anchor, check the other links
+  of both tip catalogs, anchors included, against the published
+  documentation, and execute Example 6 again.
 - [ ] **Respond to issue #138 about RNG control** with the released API/docs.
   See the [post-release follow-up](plans/modernization-roadmap.md#post-release-follow-up).
 - [ ] **Packaging metadata.** A build of 1.5.0 warns of two parts of its
@@ -195,7 +186,8 @@ announcement, likely on 2026-10-13, a date that does not bind (PI,
   with the merged `fix-*` branch: `feat-ci-python-313-314`,
   `feat-pymc-snapshot-constants`, `feat-release-1.5-preparation`,
   `feat-release-1.5-procedure`, `feat-release-validation-191` and
-  `fix-arm0-failure-record`.
+  `fix-arm0-failure-record`, and `feat-release-1.5-publication` once it
+  merges.
 - [ ] **A readable `print(target)`, for 1.5.1.** `PyMCTarget.__str__`
   (`pyvbmc/pymc/_target.py`) prints a variable's hard and plausible bounds
   as two NumPy arrays at full precision, the lower bounds of all its
